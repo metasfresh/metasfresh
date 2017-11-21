@@ -17,15 +17,12 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
-import javax.sql.RowSet;
-
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.collections.ListUtils;
-import org.compiere.util.DB;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,7 +34,6 @@ import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -65,12 +61,6 @@ import mockit.Mocked;
 public class StockRepositoryTest
 {
 	private static final String STORAGE_ATTRIBUTES_KEY = "Key1" + ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER + "Key2";
-
-	@Mocked
-	DB db;
-
-	@Mocked
-	RowSet rowSet;
 
 	@Before
 	public void init()
@@ -115,9 +105,6 @@ public class StockRepositoryTest
 				.withProductDescriptor(productDescriptor);
 		return materialDescriptor;
 	}
-
-	// TODO
-	// exclusion of storage attributes keys (->i.e."none of the previous or sth)
 
 	@Test
 	public void createDBQuery_for_simple_stock_query()
@@ -215,20 +202,7 @@ public class StockRepositoryTest
 		assertThat(includedCompositeOrFilter).hasCompositeAndFilter();
 		final List<ICompositeQueryFilter> includedCompositeAndFilters = extractFilters(includedCompositeOrFilter, ICompositeQueryFilter.class);
 
-		assertThat(includedCompositeAndFilters).anySatisfy(includedCompositeAndFilter -> {
-
-			assertThat(includedCompositeAndFilter).isJoinAnd();
-			assertThat(includedCompositeAndFilter).hasNotQueryFilter();
-			final List<NotQueryFilter> notQueryFilters = extractFilters(includedCompositeAndFilter, NotQueryFilter.class);
-			assertThat(notQueryFilters).hasSize(2);
-
-			assertThat(notQueryFilters).anySatisfy(notQueryFilter -> {
-				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, "%Key3%");
-			});
-			assertThat(notQueryFilters).anySatisfy(notQueryFilter -> {
-				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, "%Key1%Key2%");
-			});
-		});
+		assertHasOneFilterWithNotLikeExpressions(includedCompositeAndFilters);
 	}
 
 	private void assertHasOneANDFilterWithLikeExpression(
@@ -255,6 +229,25 @@ public class StockRepositoryTest
 		assertThat(includedCompositeAndFilters).allSatisfy(filter -> {
 			assertThat(filter).isJoinAnd();
 			assertThat(filter).hasInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Product_ID, productIds);
+		});
+	}
+
+	private void assertHasOneFilterWithNotLikeExpressions(
+			@NonNull final List<ICompositeQueryFilter> includedCompositeAndFilters)
+	{
+		assertThat(includedCompositeAndFilters).anySatisfy(includedCompositeAndFilter -> {
+
+			assertThat(includedCompositeAndFilter).isJoinAnd();
+			assertThat(includedCompositeAndFilter).hasNotQueryFilter();
+			final List<NotQueryFilter> notQueryFilters = extractFilters(includedCompositeAndFilter, NotQueryFilter.class);
+			assertThat(notQueryFilters).hasSize(2);
+
+			assertThat(notQueryFilters).anySatisfy(notQueryFilter -> {
+				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, "%Key3%");
+			});
+			assertThat(notQueryFilters).anySatisfy(notQueryFilter -> {
+				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, "%Key1%Key2%");
+			});
 		});
 	}
 

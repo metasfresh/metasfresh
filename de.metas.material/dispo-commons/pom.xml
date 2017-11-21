@@ -82,15 +82,6 @@
 			<scope>test</scope>
 		</dependency>
 
-
-		<!-- TEST enforcer rule in service -->
-		<!-- 
-		<dependency>
-			<groupId>de.metas.business</groupId>
-			<artifactId>de.metas.business</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-		-->
 	</dependencies>
 
 	<build>

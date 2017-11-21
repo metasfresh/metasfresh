@@ -309,11 +309,13 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	public I_M_AttributeSetInstance createASIFromAttributeSet(@NonNull final IAttributeSet attributeSet)
 	{
 		final int productId = -1;
-		return createASIFromProductAndAttributeSet(productId, attributeSet);
+		return createASIWithASFromProductAndInsertAttributeSet(productId, attributeSet);
 	}
 
 	@Override
-	public I_M_AttributeSetInstance createASIFromProductAndAttributeSet(final int productId, @NonNull final IAttributeSet attributeSet)
+	public I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(
+			final int productId,
+			@NonNull final IAttributeSet attributeSet)
 	{
 		final I_M_AttributeSetInstance attributeSetInstance;
 		if (productId > 0)

@@ -99,9 +99,6 @@ node('agent && linux')
  				final MvnConf mvnReactorConf = mvnConf.withPomFile('de.metas.reactor/pom.xml');
 				echo "mvnReactorConf=${mvnReactorConf}"
 
-//				// update the versions of metas dependencies that are external to our reactor modules
-//				sh "mvn --settings ${mvnReactorConf.settingsFile} --file ${mvnReactorConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnReactorConf.resolveParams} ${VERSIONS_PLUGIN}:use-latest-versions"
-
 				// build and deploy
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
