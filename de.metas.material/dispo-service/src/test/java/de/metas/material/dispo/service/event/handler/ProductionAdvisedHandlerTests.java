@@ -183,8 +183,8 @@ public class ProductionAdvisedHandlerTests
 
 	private ProductionAdvisedEvent createproductionAdvisedEvent()
 	{
-		final ProductDescriptor rawProductDescriptor1 = ProductDescriptor.forProductIdAndEmptyAttribute(rawProduct1Id);
-		final ProductDescriptor rawProductDescriptor2 = ProductDescriptor.forProductIdAndEmptyAttribute(rawProduct2Id);
+		final ProductDescriptor rawProductDescriptor1 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct1Id);
+		final ProductDescriptor rawProductDescriptor2 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct2Id);
 
 		final ProductionAdvisedEvent productionAdvisedEvent = ProductionAdvisedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))

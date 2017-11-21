@@ -112,7 +112,7 @@ public class ForecastCreatedHandlerTest
 		// @formatter:off
 		new Expectations()
 		{{
-			stockRepository.retrieveSingleAvailableStockQty(query);
+			stockRepository.retrieveAvailableStockQtySum(query);
 			times = 1; result = BigDecimal.ZERO;
 
 			materialEventService.fireEvent(with(eventQuantity("8")));
@@ -148,7 +148,7 @@ public class ForecastCreatedHandlerTest
 		// @formatter:off
 		new Expectations()
 		{{
-			stockRepository.retrieveSingleAvailableStockQty(query);
+			stockRepository.retrieveAvailableStockQtySum(query);
 			times = 1; result = new BigDecimal("3");
 
 			materialEventService.fireEvent(with(eventQuantity("5")));

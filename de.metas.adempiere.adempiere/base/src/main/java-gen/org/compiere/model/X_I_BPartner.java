@@ -14,7 +14,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 43477797L;
+	private static final long serialVersionUID = -382576215L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -1046,6 +1046,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getName2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name2);
+	}
+
+	/** Set Organisations-Schlüssel.
+		@param OrgValue 
+		Suchschlüssel der Organisation
+	  */
+	@Override
+	public void setOrgValue (java.lang.String OrgValue)
+	{
+		set_Value (COLUMNNAME_OrgValue, OrgValue);
+	}
+
+	/** Get Organisations-Schlüssel.
+		@return Suchschlüssel der Organisation
+	  */
+	@Override
+	public java.lang.String getOrgValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_OrgValue);
 	}
 
 	/** Set Kennwort.

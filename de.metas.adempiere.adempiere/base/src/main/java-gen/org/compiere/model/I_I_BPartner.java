@@ -1209,6 +1209,31 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_Name2 = "Name2";
 
 	/**
+	 * Set Organisations-Schlüssel.
+	 * Suchschlüssel der Organisation
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setOrgValue (java.lang.String OrgValue);
+
+	/**
+	 * Get Organisations-Schlüssel.
+	 * Suchschlüssel der Organisation
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getOrgValue();
+
+    /** Column definition for OrgValue */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_OrgValue = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "OrgValue", null);
+    /** Column name OrgValue */
+    public static final String COLUMNNAME_OrgValue = "OrgValue";
+
+	/**
 	 * Set Kennwort.
 	 * Password of any length (case sensitive)
 	 *

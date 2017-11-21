@@ -1,5 +1,4 @@
 ﻿#!/bin/bash
-
 set -e
 
 
@@ -22,7 +21,7 @@ echo_variable_values()
  echo "DB_PORT=${db_port}"
  echo "DB_NAME=${db_name}"
  echo "DB_USER=${db_user}"
- echo "DB_PASSWORD=(that's secret)"
+ echo "DB_PASSWORD=*******"
  echo "SKIP_DB_UPDATE=${skip_run_db_update}"
  echo "APP_HOST=${app_host}"
 }

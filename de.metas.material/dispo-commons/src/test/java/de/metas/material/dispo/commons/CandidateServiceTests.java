@@ -79,7 +79,7 @@ public class CandidateServiceTests
 		final Candidate candidate2 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(310))
+						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
 				.withProductionDetail(ProductionDetail.builder()
 						.plantId(210)
@@ -90,7 +90,7 @@ public class CandidateServiceTests
 		final Candidate candidate3 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(320))
+						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
 				.withProductionDetail(ProductionDetail.builder()
 						.plantId(210)
@@ -132,7 +132,7 @@ public class CandidateServiceTests
 		final Candidate candidate2 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(310))
+						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
 				.withDistributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)
@@ -144,7 +144,7 @@ public class CandidateServiceTests
 		final Candidate candidate3 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(320))
+						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
 				.withDistributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)
