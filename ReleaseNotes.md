@@ -35,6 +35,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1352](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1352) Cannot clear dropdown fields
     * Fix for Dropdown Fields, now allowing to select empty values again.
+  * [#1365](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1365) Error with alt+space for expand
+    * Fixes the keyboard Hotkey for expan in Document Windows.
 
 # metasfresh 5.36 (2017-47)
 
