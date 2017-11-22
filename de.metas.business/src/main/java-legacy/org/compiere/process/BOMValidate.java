@@ -31,51 +31,37 @@ import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Product_BOM;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * 	Validate BOM
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: BOMValidate.java,v 1.3 2006/07/30 00:51:01 jjanke Exp $
  */
-public class BOMValidate extends JavaProcess
+public class BOMValidate extends JavaProcess implements IProcessPrecondition
 {
-	/**	The Product			*/
+
+	@Param(parameterName = "p_M_Product_Category_ID", mandatory = false)
+	private int p_M_Product_Category_ID;
+
+	@Param(parameterName = "IsReValidate", mandatory = true)
+	private boolean p_IsReValidate;
+
 	private int		p_M_Product_ID = 0;
-	/** Product Category	*/
-	private int		p_M_Product_Category_ID = 0;
-	/** Re-Validate			*/
-	private boolean	p_IsReValidate = false;
-	
-	/**	Product				*/
 	private MProduct			m_product = null;
-	/**	List of Products	*/
 	private ArrayList<MProduct>	m_products = null;
-	
-	/**
-	 * 	Prepare
-	 */
+
+
+	@Override
 	protected void prepare ()
 	{
-		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
-		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-				;
-			else if (name.equals("M_Product_Category_ID"))
-				p_M_Product_Category_ID = para[i].getParameterAsInt();
-			else if (name.equals("IsReValidate"))
-				p_IsReValidate = "Y".equals(para[i].getParameter());
-			else
-				log.error("Unknown Parameter: " + name);
-		}
-		
-		
 		p_M_Product_ID = getM_Product_ID();
-	}	//	prepare
+	}
 
 	private int getM_Product_ID()
 	{
@@ -93,14 +79,15 @@ public class BOMValidate extends JavaProcess
 		{
 			throw new AdempiereException(StringUtils.formatMessage("Table {} has not yet been implemented to support BOM validation.", tableName));
 		}
-			
+
 	}
-	
+
 	/**
 	 * 	Process
 	 *	@return Info
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		if (p_M_Product_ID != 0)
@@ -116,11 +103,17 @@ public class BOMValidate extends JavaProcess
 		String sql = "SELECT * FROM M_Product "
 			+ "WHERE IsBOM='Y' AND ";
 		if (p_M_Product_Category_ID == 0)
+		{
 			sql += "AD_Client_ID=? ";
+		}
 		else
+		{
 			sql += "M_Product_Category_ID=? ";
+		}
 		if (!p_IsReValidate)
+		{
 			sql += "AND IsVerified<>'Y' ";
+		}
 		sql += "ORDER BY Name";
 		int AD_Client_ID = Env.getAD_Client_ID(getCtx());
 		ResultSet rs = null;
@@ -128,9 +121,13 @@ public class BOMValidate extends JavaProcess
 		{
 			pstmt = DB.prepareStatement (sql, null);
 			if (p_M_Product_Category_ID == 0)
+			{
 				pstmt.setInt (1, AD_Client_ID);
+			}
 			else
+			{
 				pstmt.setInt(1, p_M_Product_Category_ID);
+			}
 			rs = pstmt.executeQuery ();
 			while (rs.next ())
 			{
@@ -151,8 +148,8 @@ public class BOMValidate extends JavaProcess
 		return "#" + counter;
 	}	//	doIt
 
-	
-	
+
+
 	/**
 	 * 	Validate Product
 	 *	@param product product
@@ -161,24 +158,26 @@ public class BOMValidate extends JavaProcess
 	private String validateProduct (MProduct product)
 	{
 		if (!product.isBOM())
+		{
 			return product.getName() + " @NotValid@ @M_BOM_ID@";
+		}
 		m_product = product;
-	
+
 		//	Check Old Product BOM Structure
 		log.info(m_product.getName());
-		m_products = new ArrayList<MProduct>();
+		m_products = new ArrayList<>();
 		if (!validateOldProduct (m_product))
 		{
 			m_product.setIsVerified(false);
 			m_product.save();
 			return m_product.getName() + " @NotValid@";
 		}
-		
+
 		//	New Structure
 		MBOM[] boms = MBOM.getOfProduct(getCtx(), p_M_Product_ID, get_TrxName(), null);
 		for (int i = 0; i < boms.length; i++)
 		{
-			m_products = new ArrayList<MProduct>();
+			m_products = new ArrayList<>();
 			if (!validateBOM(boms[i]))
 			{
 				m_product.setIsVerified(false);
@@ -186,7 +185,7 @@ public class BOMValidate extends JavaProcess
 				return m_product.getName() + " " + boms[i].getName() + " @NotValid@";
 			}
 		}
-		
+
 		//	OK
 		m_product.setIsVerified(true);
 		m_product.save();
@@ -202,11 +201,13 @@ public class BOMValidate extends JavaProcess
 	private boolean validateOldProduct (MProduct product)
 	{
 		if (!product.isBOM())
+		{
 			return true;
+		}
 		//
 		if (m_products.contains(product))
 		{
-			log.warn(m_product.getName() + " recursively includes " + product.getName());
+			log.warn("{} recursively includes {}", m_product.getName(), product.getName());
 			return false;
 		}
 		m_products.add(product);
@@ -218,9 +219,13 @@ public class BOMValidate extends JavaProcess
 			MProductBOM productsBOM = productsBOMs[i];
 			MProduct pp = new MProduct(getCtx(), productsBOM.getM_ProductBOM_ID(), get_TrxName());
 			if (!pp.isBOM())
+			{
 				log.trace(pp.getName());
+			}
 			else if (!validateOldProduct(pp))
+			{
 				return false;
+			}
 		}
 		return true;
 	}	//	validateOldProduct
@@ -238,7 +243,9 @@ public class BOMValidate extends JavaProcess
 			MBOMProduct BOMproduct = BOMproducts[i];
 			MProduct pp = new MProduct(getCtx(), BOMproduct.getM_BOMProduct_ID(), get_TrxName());
 			if (pp.isBOM())
+			{
 				return validateProduct(pp, bom.getBOMType(), bom.getBOMUse());
+			}
 		}
 		return true;
 	}	//	validateBOM
@@ -253,19 +260,21 @@ public class BOMValidate extends JavaProcess
 	private boolean validateProduct (MProduct product, String BOMType, String BOMUse)
 	{
 		if (!product.isBOM())
+		{
 			return true;
+		}
 		//
 		String restriction = "BOMType='" + BOMType + "' AND BOMUse='" + BOMUse + "'";
 		MBOM[] boms = MBOM.getOfProduct(getCtx(), p_M_Product_ID, get_TrxName(),
 			restriction);
 		if (boms.length != 1)
 		{
-			log.warn(restriction + " - Length=" + boms.length);
+			log.warn("{} - Length={}", restriction, boms.length);
 			return false;
 		}
 		if (m_products.contains(product))
 		{
-			log.warn(m_product.getName() + " recursively includes " + product.getName());
+			log.warn("{} recursively includes {}", m_product.getName(), product.getName());
 			return false;
 		}
 		m_products.add(product);
@@ -278,9 +287,18 @@ public class BOMValidate extends JavaProcess
 			MBOMProduct BOMproduct = BOMproducts[i];
 			MProduct pp = new MProduct(getCtx(), BOMproduct.getM_BOMProduct_ID(), get_TrxName());
 			if (pp.isBOM())
+			{
 				return validateProduct(pp, bom.getBOMType(), bom.getBOMUse());
+			}
 		}
 		return true;
 	}	//	validateProduct
-	
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }	//	BOMValidate
