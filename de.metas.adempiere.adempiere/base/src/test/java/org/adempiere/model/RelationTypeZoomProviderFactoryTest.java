@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.impl.LookupDAO;
 import org.adempiere.ad.service.impl.LookupDAO.TableRefInfo;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
@@ -56,7 +57,7 @@ public class RelationTypeZoomProviderFactoryTest
 	}
 
 	@Test
-	public void findZoomProvider()
+	public void findZoomProvider_ReferenceTarget()
 	{
 
 		final String refTargetName = "RefTargetName1";
@@ -108,6 +109,30 @@ public class RelationTypeZoomProviderFactoryTest
 		final RelationTypeZoomProvider zoomProvider = RelationTypeZoomProvidersFactory.findZoomProvider(relationType);
 
 		assertThat(zoomProvider.isReferenceTarget()).isTrue();
+	}
+	
+	@Test(expected = AdempiereException.class)
+	public void findZoomProvider_DefaultRelType_NoSource()
+	{
+
+		final String refTargetName = "RefTargetName1";
+		final String validationType = X_AD_Reference.VALIDATIONTYPE_TableValidation;
+		final I_AD_Reference referenceTarget = createReferenceTarget(refTargetName, validationType);
+
+		final String tableName = "TableName";
+		final I_AD_Table table = createTable(tableName);
+
+		final String keyColumnName = "TableName_ID";
+		createColumn(table, keyColumnName);
+
+		createRefTable(referenceTarget, table);
+
+		final boolean isReferenceTarget = false;
+		final I_AD_RelationType relationType = createRelationType(isReferenceTarget, referenceTarget);
+
+		
+		RelationTypeZoomProvidersFactory.findZoomProvider(relationType);
+
 	}
 
 	private I_AD_Column createColumn(I_AD_Table table, String columnname)
