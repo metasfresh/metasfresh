@@ -423,7 +423,6 @@ class Table extends Component {
 
     handleKeyDown = (e) => {
         const {selected, rows, listenOnKeys, collapsedArrayMap} = this.state;
-
         if(!listenOnKeys){
             return;
         }

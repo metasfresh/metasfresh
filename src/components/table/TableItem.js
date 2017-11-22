@@ -99,15 +99,21 @@ class TableItem extends Component {
     }
 
     listenOnKeysTrue = () => {
+        const { changeListenOnTrue } = this.props;
+
         this.setState({
             listenOnKeys: true
         });
+        changeListenOnTrue();
     }
 
     listenOnKeysFalse = () => {
+        const { changeListenOnFalse } = this.props;
+
         this.setState({
             listenOnKeys: false
         });
+        changeListenOnFalse();
     }
 
     handleKey = (e, property) => {
@@ -127,8 +133,6 @@ class TableItem extends Component {
 
         this.handleEditProperty(e);
         this.listenOnKeysTrue();
-
-        changeListenOnTrue();
 
         activeCell && activeCell.focus();
     }
@@ -215,6 +219,7 @@ class TableItem extends Component {
                         onCellChange={onItemChange}
                         updatedRow={updatedRow || newRow}
                         updateRow={this.updateRow}
+                        listenOnKeysTrue={this.listenOnKeysTrue}
                         listenOnKeysFalse={this.listenOnKeysFalse}
                         closeTableField={(e) => this.closeTableField(e)}
                         handleRightClick={(e) => handleRightClick(

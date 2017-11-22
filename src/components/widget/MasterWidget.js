@@ -192,7 +192,8 @@ class MasterWidget extends Component {
             dataId, rowId, tabId, icon, gridAlign, isModal, entity,
             handleBackdropLock, tabIndex, dropdownOpenCallback, autoFocus,
             fullScreen, disabled, buttonProcessId, listenOnKeys,
-            listenOnKeysFalse, closeTableField, allowShowPassword, onBlurWidget
+            listenOnKeysFalse, listenOnKeysTrue, closeTableField,
+            allowShowPassword, onBlurWidget
         } = this.props;
 
         const {updated, data} = this.state;
@@ -204,7 +205,7 @@ class MasterWidget extends Component {
                     isModal, noLabel, type, caption, handleBackdropLock,
                     tabIndex, dropdownOpenCallback, autoFocus, fullScreen,
                     disabled, buttonProcessId, listenOnKeys, listenOnKeysFalse,
-                    closeTableField, data, onBlurWidget
+                    listenOnKeysTrue, closeTableField, data, onBlurWidget
                 }}
                 handlePatch={this.handlePatch}
                 handleChange={this.handleChange}
