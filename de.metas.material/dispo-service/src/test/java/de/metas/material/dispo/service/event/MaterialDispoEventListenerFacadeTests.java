@@ -148,7 +148,7 @@ public class MaterialDispoEventListenerFacadeTests
 	 * This test is more for myself, to figure out how the system works :-$
 	 */
 	@Test
-	public void testShipmentScheduleEvent_then_distributionAdvisedEvent()
+	public void test_shipmentScheduleCreatedEvent_then_distributionAdvisedEvent()
 	{
 		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedHandlerTests.createShipmentScheduleTestEvent();
 		final Date shipmentScheduleEventTime = shipmentScheduleEvent.getMaterialDescriptor().getDate();

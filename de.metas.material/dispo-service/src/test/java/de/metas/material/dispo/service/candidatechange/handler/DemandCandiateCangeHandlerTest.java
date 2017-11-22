@@ -24,8 +24,8 @@ import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
@@ -33,8 +33,8 @@ import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
 import lombok.NonNull;
 import mockit.Expectations;
@@ -102,7 +102,7 @@ public class DemandCandiateCangeHandlerTest
 	{
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
 		setupRetrieveLatestMatchOrNullAlwaysReturnsNull();
-		setupRepositorReturnsQuantityForMaterial("0", candidate.getMaterialDescriptor());
+		setupRepositoryReturnsQuantityForMaterial("0", candidate.getMaterialDescriptor());
 
 		demandCandiateHandler.onCandidateNewOrChange(candidate);
 
@@ -124,7 +124,7 @@ public class DemandCandiateCangeHandlerTest
 	public void testOnDemandCandidateCandidateNewOrChange_unsufficient_stock()
 	{
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
-		setupRepositorReturnsQuantityForMaterial("10", candidate.getMaterialDescriptor());
+		setupRepositoryReturnsQuantityForMaterial("10", candidate.getMaterialDescriptor());
 		setupRetrieveLatestMatchOrNullAlwaysReturnsNull();
 
 		demandCandiateHandler.onCandidateNewOrChange(candidate);
@@ -149,7 +149,7 @@ public class DemandCandiateCangeHandlerTest
 	public void testOnDemandCandidateCandidateNewOrChange_unsufficient_stock_2()
 	{
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
-		setupRepositorReturnsQuantityForMaterial("0", candidate.getMaterialDescriptor());
+		//setupRepositoryReturnsQuantityForMaterial("0", candidate.getMaterialDescriptor());
 
 		final Candidate preexistingStockCandidate = Candidate.builder()
 				.type(CandidateType.STOCK)
@@ -177,7 +177,7 @@ public class DemandCandiateCangeHandlerTest
 		assertThat(newStockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
 	}
 
-	public void setupRepositorReturnsQuantityForMaterial(final String quantity, final MaterialDescriptor materialDescriptor)
+	public void setupRepositoryReturnsQuantityForMaterial(final String quantity, final MaterialDescriptor materialDescriptor)
 	{
 		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptor);
 

@@ -9,10 +9,11 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -51,9 +52,9 @@ public class DemandCandiateHandler implements CandidateHandler
 
 	private final MaterialEventService materialEventService;
 
-	private final StockCandidateService stockCandidateService;
+	private final StockCandidateService stockCandidateServiceRetrieval;
 
-	private final CandidateRepositoryWriteService candidateRepositoryCommands;
+	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	public DemandCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
@@ -63,10 +64,10 @@ public class DemandCandiateHandler implements CandidateHandler
 			@NonNull final StockCandidateService stockCandidateService)
 	{
 		this.candidateRepository = candidateRepository;
-		this.candidateRepositoryCommands = candidateRepositoryCommands;
+		this.candidateRepositoryWriteService = candidateRepositoryCommands;
 		this.materialEventService = materialEventService;
 		this.stockRepository = stockRepository;
-		this.stockCandidateService = stockCandidateService;
+		this.stockCandidateServiceRetrieval = stockCandidateService;
 	}
 
 	@Override
@@ -77,16 +78,13 @@ public class DemandCandiateHandler implements CandidateHandler
 
 	/**
 	 * Persists (updates or creates) the given demand candidate and also it's <b>child</b> stock candidate.
-	 *
-	 * @param demandCandidate
-	 * @return
 	 */
 	@Override
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate demandCandidate)
 	{
 		assertCorrectCandidateType(demandCandidate);
 
-		final Candidate demandCandidateWithId = candidateRepositoryCommands
+		final Candidate demandCandidateWithId = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
 
 		if (demandCandidateWithId.getQuantity().signum() == 0)
@@ -104,29 +102,66 @@ public class DemandCandiateHandler implements CandidateHandler
 		if (possibleChildStockCandidate.isPresent())
 		{
 			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* candidate
-			childStockWithDemand = stockCandidateService
+			childStockWithDemand = stockCandidateServiceRetrieval
 					.updateStock(
 							demandCandidateWithId, () -> {
 								// don't check if we might create a new stock candidate, because we know we don't.
 								// Instead we might run into trouble with CandidateRepository.retrieveExact() and multiple matching records.
 								// So get the one that we know already exists and just update its quantity
 								final Candidate childStockCandidate = possibleChildStockCandidate.get();
-								return candidateRepositoryCommands
+								return candidateRepositoryWriteService
 										.updateQty(
 												childStockCandidate
 														.withQuantity(
 																childStockCandidate.getQuantity().subtract(demandCandidateWithId.getQuantity())));
 							});
 		}
-
 		else
 		{
-			childStockWithDemand = stockCandidateService.addOrUpdateStock(
-					demandCandidate
-							.withSeqNo(expectedStockSeqNo)
-							.withQuantity(demandCandidateWithId.getQuantity().negate())
-							.withParentId(demandCandidateWithId.getId()));
+			// check if there is a supply record with the same demand detail and material descriptor, check
+			final CandidatesQuery queryForExistingSupply = CandidatesQuery.builder()
+					.type(CandidateType.SUPPLY)
+					.demandDetail(demandCandidateWithId.getDemandDetail())
+					.materialDescriptor(demandCandidateWithId.getMaterialDescriptor().withoutQuantity())
+					.build();
+
+			final Candidate existingSupplyParentStockWithoutOwnParentId;
+			final Candidate existingSupply = candidateRepository.retrieveLatestMatchOrNull(queryForExistingSupply);
+			if (existingSupply != null && existingSupply.getParentId() > 0)
+			{
+				final Candidate existingSupplyParentStock = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(existingSupply.getParentId()));
+				if (existingSupplyParentStock.getParentId() > 0)  // we only want to dock with currently "dangling" stock records
+				{
+					existingSupplyParentStockWithoutOwnParentId = null;
+				}
+				else
+				{
+					existingSupplyParentStockWithoutOwnParentId = existingSupplyParentStock;
+				}
+			}
+			else
+			{
+				existingSupplyParentStockWithoutOwnParentId = null;
+			}
+			if (existingSupplyParentStockWithoutOwnParentId != null)
+			{
+				final Candidate existingSupplyParentWithUpdatedQty = existingSupplyParentStockWithoutOwnParentId
+						.withQuantity(existingSupplyParentStockWithoutOwnParentId.getQuantity().subtract(demandCandidateWithId.getQuantity()))
+						.withParentId(CandidatesQuery.UNSPECIFIED_PARENT_ID);
+
+				candidateRepositoryWriteService.updateQty(existingSupplyParentWithUpdatedQty);
+				childStockWithDemand = existingSupplyParentWithUpdatedQty;
+			}
+			else
+			{
+				final Candidate newDemandCandidateChild = stockCandidateServiceRetrieval.createStockCandidate(demandCandidateWithId.withNegatedQuantity());
+				childStockWithDemand = candidateRepositoryWriteService
+						.addOrUpdatePreserveExistingSeqNo(newDemandCandidateChild);
+			}
 		}
+
+		candidateRepositoryWriteService.updateOverwriteStoredSeqNo(childStockWithDemand
+				.withParentId(demandCandidateWithId.getId()));
 
 		final Candidate demandCandidateToReturn;
 
@@ -136,7 +171,7 @@ public class DemandCandiateHandler implements CandidateHandler
 			// keep it and in turn update the demandCandidate's seqNo accordingly
 			demandCandidateToReturn = demandCandidate
 					.withSeqNo(childStockWithDemand.getSeqNo() - 1);
-			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(demandCandidateToReturn);
+			candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(demandCandidateToReturn);
 		}
 		else
 		{

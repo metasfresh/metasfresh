@@ -57,6 +57,7 @@ public class RepositoryCommonsTest
 		performDateFilterTest(DateOperator.AFTER, Operator.GREATER);
 		performDateFilterTest(DateOperator.AT_OR_AFTER, Operator.GREATER_OR_EQUAL);
 		performDateFilterTest(DateOperator.BEFORE_OR_AT, Operator.LESS_OR_EQUAL);
+		performDateFilterTest(DateOperator.BEFORE, Operator.LESS);
 	}
 
 	@Test
@@ -166,6 +167,7 @@ public class RepositoryCommonsTest
 						.date(NOW)
 						.build())
 				.build();
+
 		final IQueryBuilder<I_MD_Candidate> queryBuilder = RepositoryCommons.mkQueryBuilder(query);
 		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = queryBuilder.getCompositeFilter();
 		final List<IQueryFilter<I_MD_Candidate>> filters = compositeFilter.getFilters();

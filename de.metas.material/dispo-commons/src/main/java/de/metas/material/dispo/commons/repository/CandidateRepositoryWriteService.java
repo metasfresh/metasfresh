@@ -116,10 +116,22 @@ public class CandidateRepositoryWriteService
 		return addOrUpdate(candidate, true);
 	}
 
+	public Candidate updateOverwriteStoredSeqNo(@NonNull final Candidate candidate)
+	{
+		Check.errorIf(candidate.getId() <= 0, "The candidate parameter needs to have Id>0; candidate={}", candidate);
+		final CandidatesQuery query = CandidatesQuery.fromId(candidate.getId());
+
+		return addOrUpdate(query, candidate, false);
+	}
+
 	private Candidate addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
 	{
 		final CandidatesQuery query = CandidatesQuery.fromCandidate(candidate, preserveExistingSeqNoAndParentId);
+		return addOrUpdate(query, candidate, preserveExistingSeqNoAndParentId);
+	}
 
+	private Candidate addOrUpdate(final CandidatesQuery query, final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
+	{
 		final I_MD_Candidate oldCandidateRecord = RepositoryCommons
 				.mkQueryBuilder(query)
 				.create().firstOnly(I_MD_Candidate.class);

@@ -17,8 +17,8 @@ import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.event.commons.MaterialDescriptor;
 
 /*
@@ -73,9 +73,6 @@ public class StockCandidateServiceTests
 		candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(stockCandidate);
 	}
 
-	/**
-	 * Verifies that if a new stock candidate is created with a time before any existing candidates, then that candidate is created with a zero quantity.
-	 */
 	@Test
 	public void createStockCandidate_before_existing()
 	{
@@ -95,12 +92,9 @@ public class StockCandidateServiceTests
 				.build();
 
 		final Candidate newCandidateBefore = stockCandidateService.createStockCandidate(candidate);
-		assertThat(newCandidateBefore.getQuantity()).isEqualByComparingTo("1"); // WTF?? why not zero?
+		assertThat(newCandidateBefore.getQuantity()).isEqualByComparingTo(/*0+1=*/"1");
 	}
 
-	/**
-	 * Verifies that if a new stock candidate is created with a time after an existing candidates, then that candidate is created with the predecessor's quantity.
-	 */
 	@Test
 	public void createStockCandidate_after_existing()
 	{
@@ -120,6 +114,6 @@ public class StockCandidateServiceTests
 				.build();
 
 		final Candidate newCandidateAfter = stockCandidateService.createStockCandidate(candidate);
-		assertThat(newCandidateAfter.getQuantity()).isEqualByComparingTo("11");
+		assertThat(newCandidateAfter.getQuantity()).isEqualByComparingTo(/*10+1=*/"11");
 	}
 }

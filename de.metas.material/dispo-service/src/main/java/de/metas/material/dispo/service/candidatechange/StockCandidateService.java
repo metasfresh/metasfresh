@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.CandidatesQuery.CandidatesQueryBuilder;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -58,7 +59,7 @@ public class StockCandidateService
 	/**
 	 * Creates and returns <b>but does not store</b> a new stock candidate
 	 * whose quantity is the quantity of the given {@code candidate} plus the quantity from
-	 * the next-younger (or same-age!) stock candidate that has the same product, storage attributes key and warehouse.
+	 * the next-younger (not same-age!) stock candidate that has the same product, storage attributes key and warehouse.
 	 *
 	 * If there is no such next-younger stock candidate (i.e. if this is the very first stock candidate to be created for the given product and locator), then a quantity of zero is taken.
 	 *
@@ -72,21 +73,37 @@ public class StockCandidateService
 	 */
 	public Candidate createStockCandidate(@NonNull final Candidate candidate)
 	{
-		final Candidate stockOrNull = candidateRepositoryRetrieval
-				.retrieveLatestMatchOrNull(candidate.createStockQueryBuilder()
+		// TODO cleanup when it's fine
+		final CandidatesQueryBuilder stockQueryBuilder = candidate.createStockQueryBuilderWithBeforeOperator();
+		// if (candidate.getParentId() > 0)
+		// {
+		// stockQueryBuilder.parentId(candidate.getParentId());
+		// }
+		final Candidate previousStockOrNull = candidateRepositoryRetrieval
+				.retrieveLatestMatchOrNull(stockQueryBuilder
+						.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
 						.build());
 
-		final BigDecimal formerQuantity = stockOrNull != null
-				? stockOrNull.getQuantity()
+		final BigDecimal previousQuantity = previousStockOrNull != null
+				? previousStockOrNull.getQuantity()
 				: BigDecimal.ZERO;
-
-		final Integer groupId = stockOrNull != null
-				? stockOrNull.getGroupId()
-				: 0;
 
 		final MaterialDescriptor materialDescriptor = candidate
 				.getMaterialDescriptor()
-				.withQuantity(formerQuantity.add(candidate.getQuantity()));
+				.withQuantity(previousQuantity.add(candidate.getQuantity()));
+
+//		final Candidate updatableStockOrNull = candidateRepositoryRetrieval
+//				.retrieveLatestMatchOrNull(stockQueryBuilder
+//						.parentId(candidate.getParentId())
+//						.build());
+
+		final Integer groupId = previousStockOrNull != null
+				? previousStockOrNull.getGroupId()
+				: 0;
+
+//				candidate
+//				.withType(CandidateType.STOCK)
+//				.withMaterialDescriptor(materialDescriptor);
 
 		return Candidate.builder()
 				.type(CandidateType.STOCK)
@@ -113,7 +130,9 @@ public class StockCandidateService
 	public Candidate addOrUpdateStock(@NonNull final Candidate relatedCandidate)
 	{
 		final Supplier<Candidate> stockCandidateToUpdate = () -> {
-			final Candidate stockCandidateToPersist = createStockCandidate(relatedCandidate);
+			final Candidate stockCandidateToPersist = createStockCandidate(relatedCandidate
+					//.withParentId(CandidatesQuery.UNSPECIFIED_PARENT_ID) // TODO cleanup when OK
+					);
 
 			final Candidate persistedStockCandidate = candidateRepositoryCommands
 					.addOrUpdatePreserveExistingSeqNo(stockCandidateToPersist);
@@ -156,8 +175,8 @@ public class StockCandidateService
 		}
 		applyDeltaToMatchingLaterStockCandidates(
 				relatedCandiateWithDelta.getMaterialDescriptor(),
-				relatedCandiateWithDelta.getMaterialDescriptor().getWarehouseId(),
-				relatedCandiateWithDelta.getMaterialDescriptor().getDate(),
+//				relatedCandiateWithDelta.getMaterialDescriptor().getWarehouseId(),
+//				relatedCandiateWithDelta.getMaterialDescriptor().getDate(),
 				persistedStockCandidate.getGroupId(),
 				delta);
 		return persistedStockCandidate;
@@ -175,22 +194,23 @@ public class StockCandidateService
 	 * @param groupId the groupId to set to every stock record that we matched
 	 * @param delta the quantity (positive or negative) to add to every stock record that we matched
 	 */
-	@VisibleForTesting
+	public
 	/* package */ void applyDeltaToMatchingLaterStockCandidates(
-			@NonNull final ProductDescriptor productDescriptor,
-			@NonNull final Integer warehouseId,
-			@NonNull final Date date,
+			@NonNull final MaterialDescriptor materialDescriptor,
+//			@NonNull final Integer warehouseId,
+//			@NonNull final Date date,
 			@NonNull final Integer groupId,
 			@NonNull final BigDecimal delta)
 	{
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
 				.materialDescriptor(MaterialDescriptor.builderForQuery()
-						.date(date)
-						.productDescriptor(productDescriptor)
-						.warehouseId(warehouseId)
+						.date(materialDescriptor.getDate())
+						.productDescriptor(materialDescriptor)
+						.warehouseId(materialDescriptor.getWarehouseId())
 						.dateOperator(DateOperator.AFTER)
 						.build())
+				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
 				.matchExactStorageAttributesKey(true)
 				.build();
 

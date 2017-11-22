@@ -6,6 +6,7 @@ import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
@@ -24,7 +25,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,6 +38,7 @@ import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.StockRepository;
@@ -79,7 +80,7 @@ public class CandidateChangeHandlerTests
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private final Date t1 = SystemTime.asDate();
+	private final Date t1 = TimeUtil.parseTimestamp("2017-11-22 00:00");
 	private final Date t2 = TimeUtil.addMinutes(t1, 10);
 	private final Date t3 = TimeUtil.addMinutes(t1, 20);
 	private final Date t4 = TimeUtil.addMinutes(t1, 30);
@@ -232,18 +233,21 @@ public class CandidateChangeHandlerTests
 		}
 
 		// do the test
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builderForQuery()
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
+				.date(t2)
+				.build();
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
-				createProductDescriptor(),
-				WAREHOUSE_ID,
-				t2,
+				materialDescriptor,
 				earlierCandidate.getGroupId(),
 				new BigDecimal("3"));
 
 		// assert that every stock record got some groupId
-		DispoTestUtils.retrieveAllRecords().forEach(r -> assertThat(r.getMD_Candidate_GroupId(), greaterThan(0)));
+		assertThat(DispoTestUtils.retrieveAllRecords()).allSatisfy(r -> assertThatModel(r).hasValueGreaterThanZero(I_MD_Candidate.COLUMN_MD_Candidate_GroupId));
 
-		final Candidate earlierCandidateAfterChange = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(mkStockUntilSegment(t1, WAREHOUSE_ID));
-		assertThat(earlierCandidateAfterChange).isNotNull();
+		final Candidate earlierCandidateAfterChange = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(mkQueryForStockUntilDate(t1, WAREHOUSE_ID));
+		assertThat(earlierCandidateAfterChange).as("Expected canddiate with Date=<%s> and warehouseId=<%s> to exist", t1, WAREHOUSE_ID).isNotNull();
 		assertThat(earlierCandidateAfterChange.getQuantity()).isEqualTo(earlierCandidate.getQuantity()); // quantity shall be unchanged
 		assertThat(earlierCandidateAfterChange.getGroupId()).isEqualTo(earlierCandidate.getGroupId()); // basically the same candidate
 
@@ -251,7 +255,7 @@ public class CandidateChangeHandlerTests
 		assertThat(candidateRecordAfterChange.getQty()).isEqualByComparingTo("10"); // quantity shall be unchanged, because that method shall only update *later* records
 		assertThat(candidateRecordAfterChange.getMD_Candidate_GroupId(), not(is(earlierCandidate.getGroupId())));
 
-		final Candidate laterCandidateAfterChange = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(mkStockUntilSegment(t3, WAREHOUSE_ID));
+		final Candidate laterCandidateAfterChange = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(mkQueryForStockUntilDate(t3, WAREHOUSE_ID));
 		assertThat(laterCandidateAfterChange).isNotNull();
 		assertThat(laterCandidateAfterChange.getQuantity()).isEqualByComparingTo("13"); // quantity shall be plus 3
 		assertThat(laterCandidateAfterChange.getGroupId()).isEqualTo(earlierCandidate.getGroupId());
@@ -266,7 +270,7 @@ public class CandidateChangeHandlerTests
 
 	}
 
-	private CandidatesQuery mkStockUntilSegment(@NonNull final Date timestamp, final int warehouseId)
+	private CandidatesQuery mkQueryForStockUntilDate(@NonNull final Date timestamp, final int warehouseId)
 	{
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
@@ -276,87 +280,32 @@ public class CandidateChangeHandlerTests
 						.date(timestamp)
 						.dateOperator(DateOperator.BEFORE_OR_AT)
 						.build())
+				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
 				.build();
 	}
 
-	/**
-	 * <table border="1">
-	 * <thead>
-	 * <tr>
-	 * <th>#</th>
-	 * <th>event</th>
-	 * <th>candidates</th>
-	 * <th>onHandQty</th>
-	 * <th>comment</th>
-	 * </tr>
-	 * </thead>
-	 * <tbody>
-	 * <tr>
-	 * <td>1</td>
-	 * <td>t1,w1,l1 =&gt; + 10</td>
-	 * <td><strong>(t1,w1,l1) 10</strong></td>
-	 * <td>t1 10</td>
-	 * <td></td>
-	 * </tr>
-	 * <tr>
-	 * <td>2</td>
-	 * <td>t4,w1,l1 =&gt; + 2</td>
-	 * <td>(t1,w1,l1) 10<br>
-	 * <strong>(t4,w1,l1) 12</strong></td>
-	 * <td>t1 10<br>
-	 * t4 12</td>
-	 * <td></td>
-	 * </tr>
-	 * <tr>
-	 * <td>3</td>
-	 * <td>t3,w1,l1 =&gt; - 3</td>
-	 * <td>(t1,w1,l1) 10<br>
-	 * <strong>(t3,w1,l1) 7</strong><br>
-	 * (t4,w1,l1) 9</td>
-	 * <td>t1 10<br>
-	 * t3 7<br>
-	 * t4 9</td>
-	 * <td>the event causes a new record to be squeezed<br>
-	 * between the records of events 1 and 2</td>
-	 * </tr>
-	 * <tr>
-	 * <td>4</td>
-	 * <td>t2,w1,<strong>l2</strong> =&gt; - 4</td>
-	 * <td>(t1,w1,l1) 10<br>
-	 * (t3,w1,l1) 7<br>
-	 * (t4,w1,l1) 9<br>
-	 * <strong>(t2,w1,l2) -4</strong></td>
-	 * <td>t1 10<br>
-	 * t2 6<br>
-	 * t3 4<br>
-	 * t4 5</td>
-	 * <td></td>
-	 * </tr>
-	 * </tbody>
-	 * </table>
-	 */
 	@Test
 	public void testUpdateStockDifferentTimes()
 	{
-		invokeUpdateStock(t1, new BigDecimal("10"));
-		invokeUpdateStock(t4, new BigDecimal("2"));
-		invokeUpdateStock(t3, new BigDecimal("-3"));
-		invokeUpdateStock(t2, new BigDecimal("-4"));
+		invokeAddOrUpdateStock(t1, "10");
+		invokeAddOrUpdateStock(t4, "2");
+		invokeAddOrUpdateStock(t3, "-3");
+		invokeAddOrUpdateStock(t2, "-4");
 
 		final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
 		assertThat(records).hasSize(4);
 
 		assertThat(records.get(0).getDateProjected().getTime()).isEqualTo(t1.getTime());
-		assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("10"));
+		assertThat(records.get(0).getQty()).isEqualByComparingTo("10");
 
 		assertThat(records.get(1).getDateProjected().getTime()).isEqualTo(t2.getTime());
-		assertThat(records.get(1).getQty()).isEqualByComparingTo(new BigDecimal("6"));
+		assertThat(records.get(1).getQty()).isEqualByComparingTo("6");
 
 		assertThat(records.get(2).getDateProjected().getTime()).isEqualTo(t3.getTime());
-		assertThat(records.get(2).getQty()).isEqualByComparingTo(new BigDecimal("3"));
+		assertThat(records.get(2).getQty()).isEqualByComparingTo("3");
 
 		assertThat(records.get(3).getDateProjected().getTime()).isEqualTo(t4.getTime());
-		assertThat(records.get(3).getQty()).isEqualByComparingTo(new BigDecimal("5"));
+		assertThat(records.get(3).getQty()).isEqualByComparingTo("5");
 
 		// all these stock records need to have the same group-ID
 		final int groupId = records.get(0).getMD_Candidate_GroupId();
@@ -364,14 +313,13 @@ public class CandidateChangeHandlerTests
 		records.forEach(r -> assertThat(r.getMD_Candidate_GroupId()).isEqualTo(groupId));
 	}
 
-	private Candidate invokeUpdateStock(final Date t, final BigDecimal qty)
+	private Candidate invokeAddOrUpdateStock(@NonNull final Date date, @NonNull final String qty)
 	{
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.complete(true)
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCompleteDescriptor()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
-				.quantity(qty)
-				.date(t)
+				.quantity(new BigDecimal(qty))
+				.date(date)
 				.build();
 
 		final Candidate candidate = Candidate.builder()
@@ -388,63 +336,64 @@ public class CandidateChangeHandlerTests
 	 * Similar to {@link #testUpdateStockDifferentTimes()}, but two invocations have the same timestamp.
 	 */
 	@Test
-	public void testUpdateStockWithOverlappingTime()
+	public void addOrUpdateStock_With_Overlapping_Time()
 	{
 		{
-			invokeUpdateStock(t1, new BigDecimal("10"));
+			invokeAddOrUpdateStock(t1, "10");
 
 			final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
 			assertThat(records).hasSize(1);
 			assertThat(records.get(0).getDateProjected().getTime()).isEqualTo(t1.getTime());
-			assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("10"));
+			assertThat(records.get(0).getQty()).isEqualByComparingTo("10");
 		}
 
 		{
-			invokeUpdateStock(t4, new BigDecimal("2"));
+			invokeAddOrUpdateStock(t4, "2");
 
 			final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
 			assertThat(records).hasSize(2);
 			assertThat(records.get(0).getDateProjected().getTime()).isEqualTo(t1.getTime());
-			assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("10"));
+			assertThat(records.get(0).getQty()).isEqualByComparingTo("10");
 			assertThat(records.get(1).getDateProjected().getTime()).isEqualTo(t4.getTime());
-			assertThat(records.get(1).getQty()).isEqualByComparingTo(new BigDecimal("12"));
+			assertThat(records.get(1).getQty()).isEqualByComparingTo("12");
 		}
 
 		{
-			invokeUpdateStock(t3, new BigDecimal("-3"));
+			invokeAddOrUpdateStock(t3, "-3");
 
 			final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
 			assertThat(records).hasSize(3);
 
 			assertThat(records.get(0).getDateProjected().getTime()).isEqualTo(t1.getTime());
-			assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("10"));
+			assertThat(records.get(0).getQty()).isEqualByComparingTo("10");
 			assertThat(records.get(1).getDateProjected().getTime()).isEqualTo(t3.getTime());
-			assertThat(records.get(1).getQty()).isEqualByComparingTo(new BigDecimal("7"));
+			assertThat(records.get(1).getQty()).isEqualByComparingTo("7");
 			assertThat(records.get(2).getDateProjected().getTime()).isEqualTo(t4.getTime());
-			assertThat(records.get(2).getQty()).isEqualByComparingTo(new BigDecimal("9"));
+			assertThat(records.get(2).getQty()).isEqualByComparingTo("9");
 		}
 
 		{
-			invokeUpdateStock(t3, new BigDecimal("-4")); // same time again!
+			invokeAddOrUpdateStock(t3, "-4"); // same time again!
 
 			final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
 			assertThat(records).hasSize(3);
 
 			assertThat(records.get(0).getDateProjected().getTime()).isEqualTo(t1.getTime());
-			assertThat(records.get(0).getQty()).isEqualByComparingTo(new BigDecimal("10"));
+			assertThat(records.get(0).getQty()).isEqualByComparingTo("10");
 
 			assertThat(records.get(1).getDateProjected().getTime()).isEqualTo(t3.getTime());
-			assertThat(records.get(1).getQty()).isEqualByComparingTo(new BigDecimal("3"));
+			assertThat(records.get(1).getQty()).isEqualByComparingTo("3");
 
 			assertThat(records.get(2).getDateProjected().getTime()).isEqualTo(t4.getTime());
-			assertThat(records.get(2).getQty()).isEqualByComparingTo(new BigDecimal("5"));
+			assertThat(records.get(2).getQty()).isEqualByComparingTo("5");
 		}
 
 		// all these stock records need to have the same group-ID
 		final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
+		assertThatModel(records.get(0)).hasValueGreaterThanZero(I_MD_Candidate.COLUMN_MD_Candidate_GroupId);
+
 		final int groupId = records.get(0).getMD_Candidate_GroupId();
-		assertThat(groupId, greaterThan(0));
-		records.forEach(r -> assertThat(r.getMD_Candidate_GroupId()).isEqualTo(groupId));
+		assertThat(records).allSatisfy(r -> assertThatModel(r).hasNonNullValue(I_MD_Candidate.COLUMN_MD_Candidate_GroupId, groupId));
 	}
 
 	public List<I_MD_Candidate> retrieveAllRecordsSorted()
@@ -490,13 +439,80 @@ public class CandidateChangeHandlerTests
 	}
 
 	/**
-	 * Similar to {@link #testOnDemandCandidateCandidateNewOrChange_noOlderRecords()}, but then adds an accompanying demand and verifies the SeqNo values
+	 * Similar to testOnDemandCandidateCandidateNewOrChange_noOlderRecords, but then adds an accompanying demand and verifies the SeqNo values
 	 */
 	@Test
-	public void testDemandCandidate_Then_UnrelatedSupplyCandidate()
+	public void onCandidateNewOrChange_demand_then_unrelated_supply()
 	{
 		final BigDecimal qty = new BigDecimal("23");
 
+		createAndAddDemandWithQtyandDemandDetail(qty, 20);
+		// we don't really check here..this first part is already verified in testOnDemandCandidateCandidateNewOrChange_noOlderRecords()
+		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2); // one demand, one stock
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK).get(0).getQty()).isEqualByComparingTo("-23");
+
+		createAndAddSupplyWithQtyandDemandDetail(qty, 30);
+		{
+			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
+			// we need one demand, one supply and *two* different stocks, since demand and supply are not related
+			assertThat(records).hasSize(4);
+
+			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+			final I_MD_Candidate firstStockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+			final I_MD_Candidate secondStockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(1);
+
+			assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, demandRecord.getSeqNo() + 1);
+
+			assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, secondStockRecord.getSeqNo() + 1);  // as before
+
+			// shall be balanced between the demand and the supply
+			assertThatModel(secondStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, firstStockRecord.getDateProjected());
+			assertThat(secondStockRecord.getQty()).isEqualByComparingTo("23");
+			assertThat(firstStockRecord.getQty()).isEqualByComparingTo("-23");
+		}
+	}
+
+	@Test
+	public void onCandidateNewOrChange_demand_then_related_supply()
+	{
+		final BigDecimal qty = new BigDecimal("23");
+
+		createAndAddDemandWithQtyandDemandDetail(qty, 20);
+		// we don't really check here..this first part is already verified in testOnDemandCandidateCandidateNewOrChange_noOlderRecords()
+		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2); // one demand, one stock
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK).get(0).getQty()).isEqualByComparingTo("-23");
+
+		createAndAddSupplyWithQtyandDemandDetail(qty, 20);
+		{
+			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
+			// we need one demand, one supply and *two* different stocks, since demand and supply are not related
+			assertThat(records).hasSize(3);
+
+			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+			final I_MD_Candidate firstStockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+
+			assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, demandRecord.getMD_Candidate_ID());
+			assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, firstStockRecord.getMD_Candidate_ID());
+
+			assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, demandRecord.getSeqNo() + 1);
+			assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, firstStockRecord.getSeqNo() + 1);
+
+			// assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, secondStockRecord.getSeqNo() + 1); // as before
+
+			// shall be balanced between the demand and the supply
+			// assertThatModel(secondStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, firstStockRecord.getDateProjected());
+			// assertThat(secondStockRecord.getQty()).isEqualByComparingTo("23");
+			assertThat(firstStockRecord.getQty()).isEqualByComparingTo("0");
+		}
+	}
+
+	private void createAndAddDemandWithQtyandDemandDetail(
+			@NonNull final BigDecimal qty,
+			final int shipmentScheduleIdForDemandDetail)
+	{
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
@@ -515,11 +531,15 @@ public class CandidateChangeHandlerTests
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(materialDescr)
+				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleIdForDemandDetail, 0))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
-		// we don't really check here..this first part is already verified in testOnDemandCandidateCandidateNewOrChange_noOlderRecords()
-		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2); // one demand, one stock
+	}
 
+	private void createAndAddSupplyWithQtyandDemandDetail(
+			@NonNull final BigDecimal qty,
+			final int shipmentScheduleIdForDemandDetail)
+	{
 		final MaterialDescriptor supplyMaterialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
@@ -533,99 +553,59 @@ public class CandidateChangeHandlerTests
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(supplyMaterialDescriptor)
+				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleIdForDemandDetail, 0))
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
-		{
-			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
-			// one demand, one supply and two different stocks, since demand and supply are not related
-			assertThat(records).hasSize(4);
-
-			// TODO
-			// final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
-			// final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
-			// final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
-			//
-			// // first the the demand then the stock, then the supply; i.e. the demand has the smallest SeqNo, the supply has the biggest
-			// assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() + 1);
-			// assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1);
-
-			// shall both be balanced between the demand and the supply
-			assertThat(DispoTestUtils.filter(CandidateType.STOCK))
-					.allSatisfy(stockRecord -> assertThat(stockRecord.getQty()).isEqualByComparingTo("0"));
-		}
 	}
 
 	/**
-	 * Similar to {@link #testDemandCandidate_Then_UnrelatedSupplyCandidate()}, but this time, we first add the supply candidate.
+	 * Similar to {@link #testDemand_Then_UnrelatedSupply()}, but this time, we first add the supply candidate.
 	 * Therefore its {@link I_MD_Candidate} records gets to be persisted first. still, the {@code SeqNo} needs to be "stable".
 	 */
 	@Test
-	public void test_SupplyCandidate_Then_UnrelatedDemandCandidate()
+	public void onCandidateNewOrChange_supply_then_unrelated_demand()
 	{
 		final BigDecimal qty = new BigDecimal("23");
 
-		final MaterialDescriptor supplyMaterialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
-				.productDescriptor(createProductDescriptor())
-				.warehouseId(WAREHOUSE_ID)
-				.quantity(qty)
-				.date(NOW)
-				.build();
-
-		final Candidate supplyCandidate = Candidate.builder()
-				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
-				.materialDescriptor(supplyMaterialDescriptor)
-				.build();
-		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
+		createAndAddSupplyWithQtyandDemandDetail(qty, 20);
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(1);
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK).get(0).getQty()).isEqualByComparingTo("23");
 
 		{
 			assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2); // one supply, one stock
 
 			final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
 			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
-			assertThat(supplyRecord.getMD_Candidate_Parent_ID()).isEqualTo(stockRecord.getMD_Candidate_ID());
-			assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1);
+
+			assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, stockRecord.getMD_Candidate_ID());
+			assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, stockRecord.getSeqNo() + 1);
 		}
 
-		final MaterialDescriptor demandMaterialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
-				.productDescriptor(createProductDescriptor())
-				.warehouseId(WAREHOUSE_ID)
-				.quantity(qty)
-				.date(NOW)
-				.build();
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
-				stockRepository,
-				demandMaterialDescriptor,
-				"0");
-		final Candidate demandCandidate = Candidate.builder()
-				.type(CandidateType.DEMAND)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
-				.materialDescriptor(demandMaterialDescriptor)
-				.build();
-		candidateChangeHandler.onCandidateNewOrChange(demandCandidate);
-
+		createAndAddDemandWithQtyandDemandDetail(qty, 30);
 		{
-			// one demand, one supply and two different stocks, since demand and supply are not related
 			assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(4);
 
-			// TODO
-			// final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
-			// final I_MD_Candidate firstStockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
-			// final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+			final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.filter(CandidateType.STOCK);
+			assertThat(allStockCandidates).hasSize(2);
 
-			// assertThat(supplyRecord.getSeqNo()).isEqualTo(firstStockRecord.getSeqNo() + 1); // as before
-			// assertThat(firstStockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() + 1);
+			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
+			final I_MD_Candidate firstStockRecord = allStockCandidates.get(0);
+
+			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
+			final I_MD_Candidate secondStockRecord = allStockCandidates.get(1);
+
+			assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, firstStockRecord.getSeqNo() + 1);  // as before
+			assertThatModel(secondStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, demandRecord.getSeqNo() + 1);
 
 			// shall both be balanced between the demand and the supply
-			assertThat(DispoTestUtils.filter(CandidateType.STOCK))
-					.allSatisfy(stockRecord -> assertThat(stockRecord.getQty()).isEqualByComparingTo("0"));
+			assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, secondStockRecord.getDateProjected());
+			assertThat(firstStockRecord.getQty()).isEqualByComparingTo("23");
+			assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-23");
 		}
 	}
+
+	// tODO make it work for supply and demand that are related via demanddetail
 
 	/**
 	 * Like {@link #testOnDemandCandidateCandidateNewOrChange_noOlderRecords()},

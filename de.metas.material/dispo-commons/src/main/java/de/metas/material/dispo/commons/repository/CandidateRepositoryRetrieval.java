@@ -112,7 +112,7 @@ public class CandidateRepositoryRetrieval
 	@VisibleForTesting
 	Optional<Candidate> fromCandidateRecord(final I_MD_Candidate candidateRecordOrNull)
 	{
-		if (candidateRecordOrNull == null || isNew(candidateRecordOrNull))
+		if (candidateRecordOrNull == null || isNew(candidateRecordOrNull) || candidateRecordOrNull.getMD_Candidate_ID() <= 0)
 		{
 			return Optional.empty();
 		}
@@ -271,14 +271,14 @@ public class CandidateRepositoryRetrieval
 	{
 		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = RepositoryCommons.mkQueryBuilder(query);
 
-		final I_MD_Candidate candidateRecordOrNull = addOrderingLastestFirst(queryBuilderWithoutOrdering)
+		final I_MD_Candidate candidateRecordOrNull = addOrderingLatestFirst(queryBuilderWithoutOrdering)
 				.create()
 				.first();
 
 		return fromCandidateRecord(candidateRecordOrNull).orElse(null);
 	}
 
-	private IQueryBuilder<I_MD_Candidate> addOrderingLastestFirst(
+	private IQueryBuilder<I_MD_Candidate> addOrderingLatestFirst(
 			@NonNull final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering)
 	{
 		return queryBuilderWithoutOrdering

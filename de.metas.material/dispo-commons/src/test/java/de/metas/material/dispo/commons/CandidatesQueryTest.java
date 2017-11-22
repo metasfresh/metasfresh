@@ -1,6 +1,7 @@
 package de.metas.material.dispo.commons;
 
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
@@ -46,12 +47,14 @@ public class CandidatesQueryTest
 	{
 		final CandidatesQuery result = CandidatesQuery.builder().build();
 		assertThat(result).isNotNull();
+		assertThat(result.getParentId()).isEqualTo(CandidatesQuery.UNSPECIFIED_PARENT_ID);
+		assertThat(result.getId()).isEqualTo(CandidatesQuery.UNSPECIFIED_ID);
 	}
 
 	@Test
 	public void fromCandidate()
 	{
-		final Timestamp date = SystemTime.asTimestamp();
+		final Timestamp date = new Timestamp(NOW.getTime());
 
 		final Candidate cand = Candidate.builder().type(CandidateType.STOCK)
 				.materialDescriptor(createMaterialDescriptor().withDate(date))
@@ -66,7 +69,7 @@ public class CandidatesQueryTest
 		assertThat(query.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 
 		assertThat(query.getType()).isEqualTo(CandidateType.STOCK);
-		assertThat(query.getParentId()).isEqualTo(0);
+		assertThat(query.getParentId()).isEqualTo(CandidatesQuery.UNSPECIFIED_PARENT_ID);
 	}
 
 	@Test
