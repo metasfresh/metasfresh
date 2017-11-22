@@ -37,6 +37,8 @@ Here come the actual release notes:
     * Fix for Dropdown Fields, now allowing to select empty values again.
   * [#1365](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1365) Error with alt+space for expand
     * Fixes the keyboard Hotkey for expan in Document Windows.
+  * [#1374](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1374) Keyboard alt+u in Sales Order
+    * Fixes the Document Action Shortcut alt+u for complete action in all Document Windows.
 
 # metasfresh 5.36 (2017-47)
 
