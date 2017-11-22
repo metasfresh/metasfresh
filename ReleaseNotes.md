@@ -20,17 +20,23 @@ Here come the actual release notes:
     * Improved Translation and Naming in Procurement Planning window.
   * [#2982](https://github.com/metasfresh/metasfresh/issues/2982) Filter for Shipment Documentstatus is missing in WebUI
     * New filter criteria "documentstatus" added to Shipment window.
+  * [#2987](https://github.com/metasfresh/metasfresh/issues/2987) Adjust the Naming of Locators
+    * Improvement of the Locator Naming.
   * [#3002](https://github.com/metasfresh/metasfresh/issues/3002) WebUI: New Window for HU Transaction
     * New window for Handling Unit transaction in WebUI.
   * [#3003](https://github.com/metasfresh/metasfresh/issues/3003) WebUI: Adjustments on HU Trace Window
     * Improvement in Handling Unit Trace Window, rearranging fields, new filter criteria and improved translations for en_US, de_DE.
   * [#3005](https://github.com/metasfresh/metasfresh/issues/3005) Manufacturing Order add Filter for Planstatus
     * Additional, new filter criteria in manufacturing order.
+  * [#3032](https://github.com/metasfresh/metasfresh/issues/3032) SSCC Product description Field cut off
+    * Improvement of the SSCC Label, now alloing to have Product Names that extend the width into more than 1 line.
 
 ## Fixes
 * metasfresh-webui-frontend
   * [#1352](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1352) Cannot clear dropdown fields
     * Fix for Dropdown Fields, now allowing to select empty values again.
+  * [#1365](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1365) Error with alt+space for expand
+    * Fixes the keyboard Hotkey for expan in Document Windows.
 
 # metasfresh 5.36 (2017-47)
 
@@ -39,16 +45,23 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#1964](https://github.com/metasfresh/metasfresh/issues/1964) ESR Import w/o Invoice reference (w/ reversed Invoice)
+    * New Action and workflow in ESR Import now creating the Payment first and providing an action if allocation cannot be done.
   * [#2871](https://github.com/metasfresh/metasfresh/issues/2871) Window Design Webui: Improve windows with Posted field
     * Adding missing default Values for Posted columns in various Table Definitions.
   * [#2872](https://github.com/metasfresh/metasfresh/issues/2872) Window Design Webui : Improve Distribution Order window
     * Improved Layout and Translations for the Distribution Order Window in WebUI.
   * [#2908](https://github.com/metasfresh/metasfresh/issues/2908) Provide Doc Action voiding for contract period
+    * New document action in contract period allowing to void now.
   * [#2911](https://github.com/metasfresh/metasfresh/issues/2911) Create Action for changing price and qty for a contract
+    * New action that allows to adjust the price and qty for an already created contract.
   * [#2932](https://github.com/metasfresh/metasfresh/issues/2932) standalone report / jasper service
+    * Moving the Jasper Handling to a standalone Jasperreport service.
   * [#2937](https://github.com/metasfresh/metasfresh/issues/2937) Jasper Reports: New Purchase Order, Inout and Invoice Layout
+    * Addintional new Layouts for Document Jasperreports on purchase side.
   * [#2940](https://github.com/metasfresh/metasfresh/issues/2940) Shipment Date = Promised Date
+    * Adjustment of the Inout Generate Date when creating from shipment candidates. Now using the promised date as initial shipment date.
   * [#2942](https://github.com/metasfresh/metasfresh/issues/2942) Fix the message for PrintJob_Done
+    * Adjusted message for finished Print Jobs.
   * [#2959](https://github.com/metasfresh/metasfresh/issues/2959) Default WebUI Window for Distribution Orderlines Handling
     * New Window for Distribution Orderlines that allows better Distrbution handling in WebUI.
   * [#2963](https://github.com/metasfresh/metasfresh/issues/2963) flatrate: use datepromised instead of order data for master and startdate
