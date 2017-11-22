@@ -59,6 +59,8 @@ import de.metas.ui.web.base.session.UserPreference;
 {
 	private static final long serialVersionUID = 4046535476486036184L;
 
+	static final String CTXNAME_IsServerContext = "#IsWebuiServerContext";
+
 	// ---------------------------------------------------------------------------------------------
 	// NOTE: make sure none of those fields are "final" because this will prevent deserialization
 	// ---------------------------------------------------------------------------------------------
@@ -69,7 +71,8 @@ import de.metas.ui.web.base.session.UserPreference;
 	private UserPreference userPreference = null;
 	private boolean loggedIn = false;
 	private Locale locale = null;
-	
+	private Properties ctx;
+
 	//
 	// User info
 	private String userFullname;
@@ -85,16 +88,15 @@ import de.metas.ui.web.base.session.UserPreference;
 	@Value("${metasfresh.webui.debug.allowDeprecatedRestAPI:false}")
 	private boolean defaultAllowDeprecatedRestAPI;
 	private boolean allowDeprecatedRestAPI;
-	
+
 	@Value("${metasfresh.webui.http.cache.maxAge:60}")
 	private int defaultHttpCacheMaxAge;
 	private int httpCacheMaxAge;
-	
+
 	// TODO: set default to "true" after https://github.com/metasfresh/metasfresh-webui-frontend/issues/819
 	@Value("${metasfresh.webui.http.use.AcceptLanguage:false}")
 	private boolean defaultUseHttpAcceptLanguage;
 	private boolean useHttpAcceptLanguage;
-
 
 	//
 	public InternalUserSessionData()
@@ -105,7 +107,10 @@ import de.metas.ui.web.base.session.UserPreference;
 		userPreference = new UserPreference();
 		loggedIn = false;
 
-		//
+		// Context
+		ctx = new Properties();
+		Env.setContext(ctx, CTXNAME_IsServerContext, false);
+
 		// Set initial language
 		try
 		{
@@ -158,17 +163,17 @@ import de.metas.ui.web.base.session.UserPreference;
 
 		UserSession.logger.trace("User session deserialized: {}", this);
 	}
-	
+
 	Properties getCtx()
 	{
-		return Env.getCtx();
+		return ctx;
 	}
 
 	public int getAD_Client_ID()
 	{
 		return Env.getAD_Client_ID(getCtx());
 	}
-	
+
 	public int getAD_Org_ID()
 	{
 		return Env.getAD_Org_ID(getCtx());
@@ -204,6 +209,10 @@ import de.metas.ui.web.base.session.UserPreference;
 		return Env.getLanguage(getCtx());
 	}
 
+	/**
+	 * @param lang
+	 * @return previous language
+	 */
 	String verifyLanguageAndSet(final Language lang)
 	{
 		final Properties ctx = getCtx();

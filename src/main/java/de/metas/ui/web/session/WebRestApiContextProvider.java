@@ -12,8 +12,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.WebRestApiApplication;
@@ -47,10 +45,7 @@ public final class WebRestApiContextProvider implements ContextProvider, Seriali
 {
 	private static final Logger logger = LogManager.getLogger(WebRestApiContextProvider.class);
 
-	private static final String ATTRIBUTE_UserSessionCtx = WebRestApiContextProvider.class.getName() + ".UserSessionCtx";
-	private static final String CTXNAME_IsServerContext = "#IsWebuiServerContext";
-
-	private final InheritableThreadLocal<Properties> temporaryCtxHolder = new InheritableThreadLocal<Properties>();
+	private final InheritableThreadLocal<Properties> temporaryCtxHolder = new InheritableThreadLocal<>();
 	private final AbstractPropertiesProxy ctxProxy = new AbstractPropertiesProxy()
 	{
 		@Override
@@ -71,7 +66,7 @@ public final class WebRestApiContextProvider implements ContextProvider, Seriali
 		//
 		// Create the server context
 		serverCtx = new Properties();
-		Env.setContext(serverCtx, CTXNAME_IsServerContext, true);
+		Env.setContext(serverCtx, InternalUserSessionData.CTXNAME_IsServerContext, true);
 	}
 
 	@Override
@@ -103,31 +98,17 @@ public final class WebRestApiContextProvider implements ContextProvider, Seriali
 
 		//
 		// Get the context from current session
-		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-		if (requestAttributes != null)
+		final UserSession userSession = UserSession.getCurrentOrNull();
+		if (userSession != null)
 		{
-			Properties userSessionCtx = (Properties)requestAttributes.getAttribute(ATTRIBUTE_UserSessionCtx, RequestAttributes.SCOPE_SESSION);
-			if (userSessionCtx == null)
-			{
-				// Create user session context
-				userSessionCtx = new Properties();
-				Env.setContext(userSessionCtx, CTXNAME_IsServerContext, false);
-
-				requestAttributes.setAttribute(ATTRIBUTE_UserSessionCtx, userSessionCtx, RequestAttributes.SCOPE_SESSION);
-
-				if (logger.isDebugEnabled())
-				{
-					logger.debug("Created user session context: sessionId={}, context={}", requestAttributes.getSessionId(), userSessionCtx);
-				}
-			}
-
-			logger.trace("Returning user session context: {}", temporaryCtx);
+			final Properties userSessionCtx = userSession.getCtx();
+			logger.trace("Returning user session context: {}", userSessionCtx);
 			return userSessionCtx;
 		}
 
 		//
 		// If there was no current session it means we are running on server side, so return the server context
-		logger.trace("Returning server context: {}", temporaryCtx);
+		logger.trace("Returning server context: {}", serverCtx);
 		return serverCtx;
 	}
 

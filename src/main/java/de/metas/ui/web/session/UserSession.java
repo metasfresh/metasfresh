@@ -161,10 +161,11 @@ public class UserSession
 	}
 
 	/**
-	 * @return session's context
-	 * @see de.metas.ui.web.session.WebRestApiContextProvider
+	 * Never call it directly. Consider calling {@link Env#getCtx()}.
+	 * 
+	 * @return effective session context
 	 */
-	public Properties getCtx()
+	Properties getCtx()
 	{
 		return data.getCtx();
 	}
@@ -213,18 +214,17 @@ public class UserSession
 			throw new NotLoggedInException();
 		}
 	}
-	
+
 	public void assertLoggedInAsSysAdmin()
 	{
 		assertLoggedIn();
-		
+
 		final int adRoleId = data.getAD_Role_ID();
-		if(adRoleId != IUserRolePermissions.SYSTEM_ROLE_ID)
+		if (adRoleId != IUserRolePermissions.SYSTEM_ROLE_ID)
 		{
 			throw new NotLoggedInAsSysAdminException();
 		}
 	}
-
 
 	public void assertNotLoggedIn()
 	{
@@ -289,12 +289,11 @@ public class UserSession
 	{
 		return data.getLocale();
 	}
-	
+
 	public UserSessionLocale getUserSessionLocale()
 	{
 		return UserSessionLocale.get(getAD_Language());
 	}
-
 
 	public boolean isUseHttpAcceptLanguage()
 	{
@@ -369,10 +368,10 @@ public class UserSession
 		data.setUserFullname(userFullname);
 		return userFullnameOld;
 	}
-	
+
 	/** @return websocket notifications endpoint on which the frontend shall listen */
 	public String getWebsocketEndpoint()
-	{		
+	{
 		return WebSocketConfig.buildUserSessionTopicName(getAD_User_ID());
 	}
 
@@ -426,7 +425,7 @@ public class UserSession
 	{
 		return data.getHttpCacheMaxAge();
 	}
-	
+
 	/**
 	 * Event fired when the user language was changed.
 	 * Usually it is user triggered.
