@@ -28,6 +28,8 @@ Here come the actual release notes:
     * Improvement in Handling Unit Trace Window, rearranging fields, new filter criteria and improved translations for en_US, de_DE.
   * [#3005](https://github.com/metasfresh/metasfresh/issues/3005) Manufacturing Order add Filter for Planstatus
     * Additional, new filter criteria in manufacturing order.
+  * [#3032](https://github.com/metasfresh/metasfresh/issues/3032) SSCC Product description Field cut off
+    * Improvement of the SSCC Label, now alloing to have Product Names that extend the width into more than 1 line.
 
 ## Fixes
 * metasfresh-webui-frontend
