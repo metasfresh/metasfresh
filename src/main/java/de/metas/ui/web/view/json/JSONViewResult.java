@@ -150,14 +150,7 @@ public final class JSONViewResult
 		this.size = size >= 0 ? size : null;
 
 		staticFilters = JSONStickyDocumentFilter.ofStickyFiltersList(viewResult.getStickyFilters(), adLanguage);
-
-		// FIXME: after https://github.com/metasfresh/metasfresh-webui-frontend/issues/948 is implemented,
-		// we shall NOT add the sticky filters to "filters" list.
-		// filters = JSONDocumentFilter.ofList(viewResult.getFilters(), adLanguage);
-		filters = ImmutableList.<JSONDocumentFilter> builder()
-				.addAll(JSONDocumentFilter.ofList(viewResult.getFilters(), adLanguage))
-				.addAll(JSONDocumentFilter.ofStickyFiltersList(viewResult.getStickyFilters(), adLanguage))
-				.build();
+		filters = JSONDocumentFilter.ofList(viewResult.getFilters(), adLanguage);
 
 		orderBy = JSONViewOrderBy.ofList(viewResult.getOrderBys());
 
