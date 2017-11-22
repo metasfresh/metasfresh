@@ -323,7 +323,7 @@ public class LetterRestController
 	@ApiOperation("Available Email templates")
 	public JSONLookupValuesList getTemplates()
 	{
-		return MADBoilerPlate.getAll(userSession.getCtx())
+		return MADBoilerPlate.getAll(Env.getCtx())
 				.stream()
 				.map(adBoilerPlate -> JSONLookupValue.of(adBoilerPlate.getAD_BoilerPlate_ID(), adBoilerPlate.getName()))
 				.collect(JSONLookupValuesList.collect());
@@ -331,7 +331,7 @@ public class LetterRestController
 
 	private void applyTemplate(final WebuiLetter letter, final WebuiLetterBuilder newLetterBuilder, final LookupValue templateLookupValue)
 	{
-		final Properties ctx = userSession.getCtx();
+		final Properties ctx = Env.getCtx();
 		final int textTemplateId = templateLookupValue.getIdAsInt();
 		final MADBoilerPlate boilerPlate = MADBoilerPlate.get(ctx, textTemplateId);
 
