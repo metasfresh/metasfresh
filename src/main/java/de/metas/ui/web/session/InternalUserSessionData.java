@@ -114,8 +114,7 @@ import de.metas.ui.web.base.session.UserPreference;
 		// Set initial language
 		try
 		{
-			final Locale locale = LocaleContextHolder.getLocale();
-			final Language language = Language.getLanguage(locale);
+			final Language language = findInitialLanguage();
 			verifyLanguageAndSet(language);
 		}
 		catch (final Exception e)
@@ -124,6 +123,21 @@ import de.metas.ui.web.base.session.UserPreference;
 		}
 
 		UserSession.logger.trace("User session created: {}", this);
+	}
+	
+	private static final Language findInitialLanguage()
+	{
+		final Locale locale = LocaleContextHolder.getLocale();
+		if(locale != null)
+		{
+			final Language language = Language.findLanguageByLocale(locale);
+			if(language != null)
+			{
+				return language;
+			}
+		}
+		
+		return Language.getBaseLanguage();
 	}
 
 	@Override
