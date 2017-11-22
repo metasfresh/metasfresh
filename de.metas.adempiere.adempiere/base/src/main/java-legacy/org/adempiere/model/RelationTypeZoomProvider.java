@@ -82,9 +82,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 	// #2340
 	// Reference Target zoom provider destination
-	private final ReferenceTargetZoomProviderDestination referenceTarget;
-
-	
+	// private final ReferenceTargetZoomProviderDestination referenceTarget;
 
 	private RelationTypeZoomProvider(final Builder builder)
 	{
@@ -99,16 +97,13 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		source = isReferenceTarget ? null : new ZoomProviderDestination(
 				builder.getSource_Reference_ID(),
 				builder.getSourceTableRefInfoOrNull(),
-				builder.getSourceRoleDisplayName());
-		target = isReferenceTarget ? null : new ZoomProviderDestination(
+				builder.getSourceRoleDisplayName(),
+				false);
+		target = new ZoomProviderDestination(
 				builder.getTarget_Reference_ID(),
 				builder.getTargetTableRefInfoOrNull(),
-				builder.getTargetRoleDisplayName());
-
-		referenceTarget = isReferenceTarget ? new ReferenceTargetZoomProviderDestination(
-				builder.getTarget_Reference_ID(),
-				builder.getTargetTableRefInfoOrNull(),
-				builder.getTargetRoleDisplayName()) : null;
+				builder.getTargetRoleDisplayName(),
+				isReferenceTarget);
 
 	}
 
@@ -136,7 +131,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		// the reference target column to be linked with the zoomSource
 		if (isReferenceTarget)
 		{
-			final ReferenceTargetZoomProviderDestination referenceTarget = getReferenceTarget();
+			final ZoomProviderDestination referenceTarget = getTarget();
 
 			adWindowId = getRefTableAD_Window_ID(referenceTarget.getTableRefInfo(), zoomSource.isSOTrx());
 
@@ -149,6 +144,8 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			final IPair<ZoomProviderDestination, ZoomProviderDestination> sourceAndTarget = findSourceAndTargetEffective(zoomSource);
 
 			final ZoomProviderDestination source = sourceAndTarget.getLeft();
+			Check.assumeNotNull(source, "Source cannot be left empty");
+
 			final ZoomProviderDestination target = sourceAndTarget.getRight();
 
 			if (!source.matchesAsSource(zoomSource))
@@ -181,12 +178,11 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	{
 		return directed;
 	}
-	
+
 	public boolean isReferenceTarget()
 	{
 		return isReferenceTarget;
 	}
-
 
 	private String getZoomInfoId()
 	{
@@ -206,11 +202,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	private ZoomProviderDestination getSource()
 	{
 		return source;
-	}
-
-	private ReferenceTargetZoomProviderDestination getReferenceTarget()
-	{
-		return referenceTarget;
 	}
 
 	/**
@@ -260,19 +251,18 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	{
 		final StringBuilder queryWhereClause = new StringBuilder();
 
-		final ITableRefInfo refTable = isReferenceTarget ? getReferenceTarget().getTableRefInfo() : getTarget().getTableRefInfo();
+		final ITableRefInfo refTable = getTarget().getTableRefInfo();
 
 		final String tableName = refTable.getTableName();
 		final String columnName = refTable.getDisplayColumn();
 
 		if (isReferenceTarget)
 		{
-
 			int referenceTargetColumn = getReferenceTargetColumnID(refTable.getTableName());
-			
+
 			// TODO fix this message, bring more context
 			Check.assume(referenceTargetColumn > 0, "The table " + tableName + "must have a Record_ID column so it can be part of a ReferenceTarget relation type");
-			final I_AD_Column columnReference = InterfaceWrapperHelper.create(zoomSource.getCtx(), referenceTargetColumn , I_AD_Column.class, zoomSource.getTrxName());
+			final I_AD_Column columnReference = InterfaceWrapperHelper.create(zoomSource.getCtx(), referenceTargetColumn, I_AD_Column.class, zoomSource.getTrxName());
 
 			Check.assumeNotNull(columnReference, "The reference table {} does not have a Column ReferenceTarget defined", refTable);
 
@@ -317,26 +307,25 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	{
 		final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 		final IColumnBL columnBL = Services.get(IColumnBL.class);
-		
-		final I_AD_Column recordColumn = tableDAO .retrieveColumnOrNull(tableName, ITableRecordReference.COLUMNNAME_Record_ID);
 
-		if(recordColumn != null)
+		final I_AD_Column recordColumn = tableDAO.retrieveColumnOrNull(tableName, ITableRecordReference.COLUMNNAME_Record_ID);
+
+		if (recordColumn != null)
 		{
 			return recordColumn.getAD_Column_ID();
 		}
-		
-		
+
 		final I_AD_Table table = tableDAO.retrieveTable(tableName);
 		final List<I_AD_Column> allColumns = tableDAO.retrieveColumnsForTable(table);
-		
-		for(final I_AD_Column column: allColumns)
+
+		for (final I_AD_Column column : allColumns)
 		{
-			if(columnBL.isRecordColumnName(column.getColumnName()))
+			if (columnBL.isRecordColumnName(column.getColumnName()))
 			{
 				return column.getAD_Column_ID();
 			}
 		}
-		
+
 		return -1;
 	}
 
@@ -415,66 +404,22 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				.list(clazz);
 	}
 
-	private static final class ReferenceTargetZoomProviderDestination
-	{
-
-		private final int AD_Reference_ID;
-		private final ITableRefInfo tableRefInfo;
-		private final ITranslatableString roleDisplayName;
-
-		private ReferenceTargetZoomProviderDestination(final int AD_Reference_ID, @NonNull final ITableRefInfo tableRefInfo, @Nullable final ITranslatableString roleDisplayName)
-		{
-			super();
-			Preconditions.checkArgument(AD_Reference_ID > 0, "AD_Reference_ID > 0");
-			this.AD_Reference_ID = AD_Reference_ID;
-			this.tableRefInfo = tableRefInfo;
-			this.roleDisplayName = roleDisplayName;
-
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("AD_Reference_ID", AD_Reference_ID)
-					.add("roleDisplayName", roleDisplayName)
-					.add("tableRefInfo", tableRefInfo)
-					.toString();
-
-		}
-
-		public ITableRefInfo getTableRefInfo()
-		{
-			return tableRefInfo;
-		}
-
-		public ITranslatableString getRoleDisplayName(final int fallbackAD_Window_ID)
-		{
-			if (roleDisplayName != null)
-			{
-				return roleDisplayName;
-			}
-
-			// Fallback to window name
-			final ITranslatableString windowName = Services.get(IADWindowDAO.class).retrieveWindowName(fallbackAD_Window_ID);
-			Check.errorIf(windowName == null, "Found no display string for, destination={}, AD_Window_ID={}", this, fallbackAD_Window_ID);
-			return windowName;
-		}
-	}
-
+	
 	private static final class ZoomProviderDestination
 	{
 		private final int AD_Reference_ID;
 		private final ITableRefInfo tableRefInfo;
 		private final ITranslatableString roleDisplayName;
+		private final boolean isReferenceTarget;
 
-		private ZoomProviderDestination(final int AD_Reference_ID, @NonNull final ITableRefInfo tableRefInfo, @Nullable final ITranslatableString roleDisplayName)
+		private ZoomProviderDestination(final int AD_Reference_ID, @NonNull final ITableRefInfo tableRefInfo, @Nullable final ITranslatableString roleDisplayName, final boolean isReferenceTarget)
 		{
 			super();
 			Preconditions.checkArgument(AD_Reference_ID > 0, "AD_Reference_ID > 0");
 			this.AD_Reference_ID = AD_Reference_ID;
 			this.tableRefInfo = tableRefInfo;
 			this.roleDisplayName = roleDisplayName;
+			this.isReferenceTarget = isReferenceTarget;
 
 		}
 
@@ -513,11 +458,11 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		public boolean matchesAsSource(final IZoomSource zoomSource)
 		{
-			// if (isReferenceTarget())
-			// {
-			// // the source always matches if the target is ReferenceTarget
-			// return true;
-			// }
+			if (isReferenceTarget)
+			{
+				// the source always matches if the target is ReferenceTarget
+				return true;
+			}
 
 			final String whereClause = tableRefInfo.getWhereClause();
 			if (Check.isEmpty(whereClause, true))
