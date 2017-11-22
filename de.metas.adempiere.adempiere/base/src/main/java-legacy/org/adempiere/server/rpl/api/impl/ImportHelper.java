@@ -893,7 +893,7 @@ public class ImportHelper implements IImportHelper
 
 					// 03534: note that a Button can be 'anything' in the case of C_BPartner.AD_OrgBP_ID, it is a table reference to AD_Org
 					|| DisplayType.Button == adReferenceId && column.getAD_Reference_Value_ID() > 0
-					&& X_AD_Reference.VALIDATIONTYPE_Tabellenvalidierung.equals(column.getAD_Reference_Value().getValidationType()))
+					&& X_AD_Reference.VALIDATIONTYPE_TableValidation.equals(column.getAD_Reference_Value().getValidationType()))
 			{
 				// 02775
 				// Note: Even with displayType being ID, we still can't assume an integer in all cases. E.g. AD_Languange

@@ -133,7 +133,7 @@ public class CtrlRelationTarget
 			refSource.setAD_Org_ID(orgId);
 			refSource.setEntityType(entityType);
 			refSource.setName(mkNameOfSourceRef(ctx));
-			refSource.setValidationType(X_AD_Reference.VALIDATIONTYPE_Tabellenvalidierung);
+			refSource.setValidationType(X_AD_Reference.VALIDATIONTYPE_TableValidation);
 			refSource.saveEx();
 			relType.setAD_Reference_Source_ID(refSource.get_ID());
 
@@ -146,7 +146,7 @@ public class CtrlRelationTarget
 			refTarget.setAD_Org_ID(orgId);
 			refTarget.setEntityType(entityType);
 			refTarget.setName(mkNameOfTargetRef(ctx));
-			refTarget.setValidationType(X_AD_Reference.VALIDATIONTYPE_Tabellenvalidierung);
+			refTarget.setValidationType(X_AD_Reference.VALIDATIONTYPE_TableValidation);
 			refTarget.saveEx();
 			relType.setAD_Reference_Target_ID(refTarget.get_ID());
 

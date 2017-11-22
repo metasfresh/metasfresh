@@ -60,7 +60,7 @@ public class RelationTypeZoomProviderFactoryTest
 	{
 
 		final String refTargetName = "RefTargetName1";
-		final String validationType = X_AD_Reference.VALIDATIONTYPE_Tabellenvalidierung;
+		final String validationType = X_AD_Reference.VALIDATIONTYPE_TableValidation;
 		final I_AD_Reference referenceTarget = createReferenceTarget(refTargetName, validationType);
 
 		final String tableName = "TableName";

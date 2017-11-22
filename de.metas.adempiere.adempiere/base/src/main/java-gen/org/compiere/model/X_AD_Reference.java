@@ -14,7 +14,7 @@ public class X_AD_Reference extends org.compiere.model.PO implements I_AD_Refere
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -142059681L;
+	private static final long serialVersionUID = 1980394103L;
 
     /** Standard Constructor */
     public X_AD_Reference (Properties ctx, int AD_Reference_ID, String trxName)
@@ -179,12 +179,12 @@ public class X_AD_Reference extends org.compiere.model.PO implements I_AD_Refere
 	 * Reference name: AD_Reference Validation Types
 	 */
 	public static final int VALIDATIONTYPE_AD_Reference_ID=2;
-	/** Listenvalidierung = L */
-	public static final String VALIDATIONTYPE_Listenvalidierung = "L";
-	/** Datentyp = D */
-	public static final String VALIDATIONTYPE_Datentyp = "D";
-	/** Tabellenvalidierung = T */
-	public static final String VALIDATIONTYPE_Tabellenvalidierung = "T";
+	/** ListValidation = L */
+	public static final String VALIDATIONTYPE_ListValidation = "L";
+	/** DataType = D */
+	public static final String VALIDATIONTYPE_DataType = "D";
+	/** TableValidation = T */
+	public static final String VALIDATIONTYPE_TableValidation = "T";
 	/** Set Validation type.
 		@param ValidationType 
 		Different method of validating data
