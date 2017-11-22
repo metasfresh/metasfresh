@@ -85,6 +85,23 @@ public class BOMValidate extends JavaProcess implements IProcessPrecondition
 
 	}
 
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	{
+		if (!(I_M_Product.Table_Name.equals(context.getTableName()) || I_PP_Product_BOM.Table_Name.equals(context.getTableName())))
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+
+		if (context.getSelectionSize()>1)
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
 	/**
 	 * Process
 	 *
@@ -270,12 +287,4 @@ public class BOMValidate extends JavaProcess implements IProcessPrecondition
 		final MBOM bom = boms[0];
 		return validateBOM(bom);
 	}
-
-	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }
