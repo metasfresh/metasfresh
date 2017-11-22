@@ -152,6 +152,7 @@ public class BOMValidate extends JavaProcess implements IProcessPrecondition
 		return "#" + counter.get();
 	}	// doIt
 
+
 	/**
 	 * Validate Product
 	 *
@@ -167,12 +168,10 @@ public class BOMValidate extends JavaProcess implements IProcessPrecondition
 		m_product = product;
 
 		// Check Old Product BOM Structure
-		log.info(m_product.getName());
 		m_products = new ArrayList<>();
 		if (!validateOldProduct(m_product))
 		{
-			m_product.setIsVerified(false);
-			save(m_product);
+			saveVerifiedProduct(m_product, false);
 			return m_product.getName() + " @NotValid@";
 		}
 
@@ -183,15 +182,13 @@ public class BOMValidate extends JavaProcess implements IProcessPrecondition
 			m_products = new ArrayList<>();
 			if (!validateBOM(boms[i]))
 			{
-				m_product.setIsVerified(false);
-				save(m_product);
+				saveVerifiedProduct(m_product, false);
 				return m_product.getName() + " " + boms[i].getName() + " @NotValid@";
 			}
 		}
 
 		// OK
-		m_product.setIsVerified(true);
-		save(m_product);
+		saveVerifiedProduct(m_product, true);
 		return m_product.getName() + " @IsValid@";
 	}	// validateProduct
 
@@ -203,34 +200,30 @@ public class BOMValidate extends JavaProcess implements IProcessPrecondition
 	 */
 	private boolean validateOldProduct(@NonNull final I_M_Product product)
 	{
-		if (!product.isBOM())
+		if (!product.isBOM() || m_products.contains(product))
 		{
 			return true;
 		}
-		//
-		if (m_products.contains(product))
-		{
-			log.warn("{} recursively includes {}", m_product.getName(), product.getName());
-			return false;
-		}
+
 		m_products.add(product);
-		log.debug(product.getName());
-		//
+
 		final MProductBOM[] productsBOMs = MProductBOM.getBOMLines(InterfaceWrapperHelper.getPO(product));
 		for (int i = 0; i < productsBOMs.length; i++)
 		{
 			MProductBOM productsBOM = productsBOMs[i];
 			final I_M_Product pp = InterfaceWrapperHelper.create(getCtx(), productsBOM.getM_ProductBOM_ID(), I_M_Product.class, get_TrxName());
-			if (!pp.isBOM())
-			{
-				log.trace(pp.getName());
-			}
-			else if (!validateOldProduct(pp))
+			if (pp.isBOM() && !validateOldProduct(pp))
 			{
 				return false;
 			}
 		}
 		return true;
+	}
+
+	private void saveVerifiedProduct(@NonNull final I_M_Product product, final boolean isVerified)
+	{
+		product.setIsVerified(isVerified);
+		save(product);
 	}
 
 	/**
@@ -268,22 +261,15 @@ public class BOMValidate extends JavaProcess implements IProcessPrecondition
 		{
 			return true;
 		}
-		//
-		final String restriction = "BOMType='" + BOMType + "' AND BOMUse='" + BOMUse + "'";
-		final MBOM[] boms = MBOM.getOfProduct(getCtx(), p_M_Product_ID, get_TrxName(),
-				restriction);
-		if (boms.length != 1)
-		{
-			log.warn("{} - Length={}", restriction, boms.length);
-			return false;
-		}
-		if (m_products.contains(product))
-		{
-			log.warn("{} recursively includes {}", m_product.getName(), product.getName());
-			return false;
-		}
-		m_products.add(product);
 
+		final String restriction = "BOMType='" + BOMType + "' AND BOMUse='" + BOMUse + "'";
+		final MBOM[] boms = MBOM.getOfProduct(getCtx(), p_M_Product_ID, get_TrxName(), restriction);
+		if (boms.length != 1 || m_products.contains(product))
+		{
+			return false;
+		}
+
+		m_products.add(product);
 		final MBOM bom = boms[0];
 		return validateBOM(bom);
 	}
