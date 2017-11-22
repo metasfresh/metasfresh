@@ -57,7 +57,7 @@ public class RelationTypeZoomProviderFactoryTest
 	}
 
 	@Test
-	public void findZoomProvider_ReferenceTarget()
+	public void findZoomProvider_IsTableRecordIdTarget()
 	{
 
 		final String refTargetName = "RefTargetName1";
@@ -71,7 +71,7 @@ public class RelationTypeZoomProviderFactoryTest
 		createColumn(table, keyColumnName);
 
 		final String recordColumnname = "Record_ID";
-		final I_AD_Column recordID = createColumn(table, recordColumnname);
+		createColumn(table, recordColumnname);
 		createRefTable(referenceTarget, table);
 
 		final boolean isReferenceTarget = true;
@@ -91,9 +91,7 @@ public class RelationTypeZoomProviderFactoryTest
 				.setZoomPO_Window_ID(-1)
 				.setZoomAD_Window_ID_Override(-1)
 				.setAutoComplete(false)
-				// #2340 ReferenceTarget
-				.setReferenceTarget(isReferenceTarget)
-				.setReferenceTargetColumnID(recordID.getAD_Column_ID())
+
 				.build();
 
 		Services.registerService(ILookupDAO.class, lookupDao);
@@ -110,7 +108,7 @@ public class RelationTypeZoomProviderFactoryTest
 
 		assertThat(zoomProvider.isReferenceTarget()).isTrue();
 	}
-	
+
 	@Test(expected = AdempiereException.class)
 	public void findZoomProvider_DefaultRelType_NoSource()
 	{
@@ -130,7 +128,6 @@ public class RelationTypeZoomProviderFactoryTest
 		final boolean isReferenceTarget = false;
 		final I_AD_RelationType relationType = createRelationType(isReferenceTarget, referenceTarget);
 
-		
 		RelationTypeZoomProvidersFactory.findZoomProvider(relationType);
 
 	}

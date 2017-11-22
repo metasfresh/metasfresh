@@ -406,10 +406,6 @@ public class LookupDAO implements ILookupDAO
 		private int zoomAD_Window_ID_Override = -1;
 		private boolean autoComplete = true;
 
-		// #2340 ReferenceTarget
-		private boolean isReferenceTarget = false;
-		private int referenceTargetColumnID = -1;
-
 		private TableRefInfoBuilder()
 		{
 			super();
@@ -498,17 +494,7 @@ public class LookupDAO implements ILookupDAO
 			return this;
 		}
 
-		public TableRefInfoBuilder setReferenceTarget(final boolean isReferenceTarget)
-		{
-			this.isReferenceTarget = isReferenceTarget;
-			return this;
-		}
-
-		public TableRefInfoBuilder setReferenceTargetColumnID(final int referenceTargetColumnID)
-		{
-			this.referenceTargetColumnID = referenceTargetColumnID;
-			return this;
-		}
+		
 
 	}
 
