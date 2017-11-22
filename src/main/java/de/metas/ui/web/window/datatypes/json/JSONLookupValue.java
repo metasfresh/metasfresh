@@ -138,6 +138,7 @@ public final class JSONLookupValue
 		return of(id, "<" + id + ">");
 	}
 
+	// IMPORTANT: when changing this property name, pls also check/change de.metas.handlingunits.attribute.impl.AbstractAttributeValue.extractKey(Map<String, String>, I_M_Attribute)
 	private static final String PROPERTY_Key = "key";
 	@JsonProperty(PROPERTY_Key)
 	private final String key;
