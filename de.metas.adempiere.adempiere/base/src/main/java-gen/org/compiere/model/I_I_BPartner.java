@@ -1015,6 +1015,52 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_IsEmployee = "IsEmployee";
 
 	/**
+	 * Set Pharmacie Permission.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPharmaciePermission (boolean IsPharmaciePermission);
+
+	/**
+	 * Get Pharmacie Permission.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPharmaciePermission();
+
+    /** Column definition for IsPharmaciePermission */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsPharmaciePermission = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsPharmaciePermission", null);
+    /** Column name IsPharmaciePermission */
+    public static final String COLUMNNAME_IsPharmaciePermission = "IsPharmaciePermission";
+
+	/**
+	 * Set SEPA Signed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsSEPASigned (boolean IsSEPASigned);
+
+	/**
+	 * Get SEPA Signed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isSEPASigned();
+
+    /** Column definition for IsSEPASigned */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsSEPASigned = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsSEPASigned", null);
+    /** Column name IsSEPASigned */
+    public static final String COLUMNNAME_IsSEPASigned = "IsSEPASigned";
+
+	/**
 	 * Set Lieferstandard.
 	 * Liefer-Adresse für den Geschäftspartner
 	 *
@@ -1209,6 +1255,31 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_Name2 = "Name2";
 
 	/**
+	 * Set Name3.
+	 * Zusätzliche Bezeichnung
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setName3 (java.lang.String Name3);
+
+	/**
+	 * Get Name3.
+	 * Zusätzliche Bezeichnung
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getName3();
+
+    /** Column definition for Name3 */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Name3 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Name3", null);
+    /** Column name Name3 */
+    public static final String COLUMNNAME_Name3 = "Name3";
+
+	/**
 	 * Set Organisations-Schlüssel.
 	 * Suchschlüssel der Organisation
 	 *
@@ -1257,6 +1328,29 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Password = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Password", null);
     /** Column name Password */
     public static final String COLUMNNAME_Password = "Password";
+
+	/**
+	 * Set Pharmaproductpermlaw52.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPharmaproductpermlaw52 (java.lang.String Pharmaproductpermlaw52);
+
+	/**
+	 * Get Pharmaproductpermlaw52.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPharmaproductpermlaw52();
+
+    /** Column definition for Pharmaproductpermlaw52 */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Pharmaproductpermlaw52 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Pharmaproductpermlaw52", null);
+    /** Column name Pharmaproductpermlaw52 */
+    public static final String COLUMNNAME_Pharmaproductpermlaw52 = "Pharmaproductpermlaw52";
 
 	/**
 	 * Set Telefon.

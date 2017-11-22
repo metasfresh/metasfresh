@@ -14,7 +14,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -382576215L;
+	private static final long serialVersionUID = 578663864L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -28,6 +28,8 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 			setIsBillToContact_Default (false); // N
 			setIsBillToDefault (false); // N
 			setIsDefaultContact (false); // N
+			setIsPharmaciePermission (false); // N
+			setIsSEPASigned (false); // N
 			setIsShipTo (false); // N
 			setIsShipToContact_Default (false); // N
 			setIsShipToDefault (false); // N
@@ -877,6 +879,52 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return false;
 	}
 
+	/** Set Pharmacie Permission.
+		@param IsPharmaciePermission Pharmacie Permission	  */
+	@Override
+	public void setIsPharmaciePermission (boolean IsPharmaciePermission)
+	{
+		set_Value (COLUMNNAME_IsPharmaciePermission, Boolean.valueOf(IsPharmaciePermission));
+	}
+
+	/** Get Pharmacie Permission.
+		@return Pharmacie Permission	  */
+	@Override
+	public boolean isPharmaciePermission () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPharmaciePermission);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set SEPA Signed.
+		@param IsSEPASigned SEPA Signed	  */
+	@Override
+	public void setIsSEPASigned (boolean IsSEPASigned)
+	{
+		set_Value (COLUMNNAME_IsSEPASigned, Boolean.valueOf(IsSEPASigned));
+	}
+
+	/** Get SEPA Signed.
+		@return SEPA Signed	  */
+	@Override
+	public boolean isSEPASigned () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSEPASigned);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Lieferstandard.
 		@param IsShipTo 
 		Liefer-Adresse für den Geschäftspartner
@@ -1048,6 +1096,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Name2);
 	}
 
+	/** Set Name3.
+		@param Name3 
+		Zusätzliche Bezeichnung
+	  */
+	@Override
+	public void setName3 (java.lang.String Name3)
+	{
+		set_Value (COLUMNNAME_Name3, Name3);
+	}
+
+	/** Get Name3.
+		@return Zusätzliche Bezeichnung
+	  */
+	@Override
+	public java.lang.String getName3 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Name3);
+	}
+
 	/** Set Organisations-Schlüssel.
 		@param OrgValue 
 		Suchschlüssel der Organisation
@@ -1084,6 +1151,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getPassword () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Password);
+	}
+
+	/** Set Pharmaproductpermlaw52.
+		@param Pharmaproductpermlaw52 Pharmaproductpermlaw52	  */
+	@Override
+	public void setPharmaproductpermlaw52 (java.lang.String Pharmaproductpermlaw52)
+	{
+		set_Value (COLUMNNAME_Pharmaproductpermlaw52, Pharmaproductpermlaw52);
+	}
+
+	/** Get Pharmaproductpermlaw52.
+		@return Pharmaproductpermlaw52	  */
+	@Override
+	public java.lang.String getPharmaproductpermlaw52 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Pharmaproductpermlaw52);
 	}
 
 	/** Set Telefon.
