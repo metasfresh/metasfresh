@@ -84,6 +84,8 @@ public class PickingSlotViewFactory implements IViewFactory
 				.setCaption("Picking slots")
 				.addElementsFromViewRowClass(PickingSlotRow.class, viewDataType)
 				.setHasTreeSupport(true)
+				.setTreeCollapsible(true)
+				.setTreeExpandedDepth(ViewLayout.TreeExpandedDepth_ExpandedFirstLevel)
 				.build();
 	}
 
