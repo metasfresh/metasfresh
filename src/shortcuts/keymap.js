@@ -33,7 +33,7 @@ export default {
 
     /* Table context */
     TOGGLE_QUICK_INPUT: `${mod}+Q`,
-    TOGGLE_EXPAND: `${mod}+Spacebar`,
+    TOGGLE_EXPAND: `${mod}++`,
 
     /* Pagination context */
     NEXT_PAGE: 'PageDown',
