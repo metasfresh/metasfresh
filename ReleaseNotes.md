@@ -65,9 +65,11 @@ Here come the actual release notes:
   * [#2959](https://github.com/metasfresh/metasfresh/issues/2959) Default WebUI Window for Distribution Orderlines Handling
     * New Window for Distribution Orderlines that allows better Distrbution handling in WebUI.
   * [#2963](https://github.com/metasfresh/metasfresh/issues/2963) flatrate: use datepromised instead of order data for master and startdate
+    * Adjustment in Flatrate contract, switching Master Order and Startdate to datepromised.
   * [#2969](https://github.com/metasfresh/metasfresh/issues/2969) Add SQL Column M_Warehouse to Distribution Orderline
     * New Field Warehouse anf Filter in Distribution Editor.
   * [#2975](https://github.com/metasfresh/metasfresh/issues/2975) sales invoice jasper: group products by product category
+    * Adjustment of sales invoice jasperreport, now allowing the grouping by products.
   * [#2978](https://github.com/metasfresh/metasfresh/issues/2978) New Window in WebUI for EDI DESADV
     * New Window for EDI DESADV records in WebUI.
   * [#2985](https://github.com/metasfresh/metasfresh/issues/2985) Refining Distribution Editor Window in WebUI
@@ -83,20 +85,28 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#670](https://github.com/metasfresh/metasfresh-webui-api/issues/670) views: backend shall specify which columns are editable and how to render the editor
+    * New functionality in webui api, now specifying the editable fields in grid view to frontend.
 
 * metasfresh-webui-frontend
   * [#1222](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1222) Keyboard Shortcut for "Select all"/ "Select all x rows"
+    * New Keyboard shortcut for select all/ select all x rows with toggle functioanlity.
   * [#1335](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1335) views: backend shall specify which columns are editable and how to render the editor (frontend)
+    * Frontend implementation for the editable fields in main grid view.
 
 ## Fixes
 * metasfesh-app
   * [#2965](https://github.com/metasfresh/metasfresh/issues/2965) error for HU changing locator if status E
+    * Fix for an issue that appeared when moving handling units in the warehouse and changing the locator.
   * [#2966](https://github.com/metasfresh/metasfresh/issues/2966) error in console when creating customer return
+    * Fixes an issue in customer returns.
 
 * metasfresh-webui-api
   * [#677](https://github.com/metasfresh/metasfresh-webui-api/issues/677) Close all picking candidates only if the view was closed/removed by user
+    * Picking candidates are only closed when the picking slot belongs to a rack system and the user closes the modal view.
   * [#678](https://github.com/metasfresh/metasfresh-webui-api/issues/678) HU that was taken out in Picking Try Clearing shall remain Picked
+    * Fix for the status of Handling Units after picking tray clearing. Now the handling units remain in picked status.
   * [#681](https://github.com/metasfresh/metasfresh-webui-api/issues/681) Picking not possible for >1 orderline in Picking Terminal
+    * Fix for Picking terminal, now allowing to select and pick more than 1 line at once.
 
 * metasfresh-webui-frontend
   * [#1333](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1333) Process panel is closed even if /start failed
