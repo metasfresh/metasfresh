@@ -1,6 +1,6 @@
 package de.metas.ui.web.view;
 
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -518,7 +518,7 @@ public class DefaultView implements IEditableView
 		private DocumentId parentRowId;
 		private final IViewDataRepository viewDataRepository;
 
-		private List<DocumentFilter> _stickyFilters;
+		private LinkedHashMap<String, DocumentFilter> _stickyFiltersById;
 		private List<DocumentFilter> _filters;
 
 		private Builder(@NonNull final IViewDataRepository viewDataRepository)
@@ -604,11 +604,11 @@ public class DefaultView implements IEditableView
 				return this;
 			}
 
-			if (_stickyFilters == null)
+			if (_stickyFiltersById == null)
 			{
-				_stickyFilters = new ArrayList<>();
+				_stickyFiltersById = new LinkedHashMap<>();
 			}
-			_stickyFilters.add(stickyFilter);
+			_stickyFiltersById.put(stickyFilter.getFilterId(), stickyFilter);
 
 			return this;
 		}
@@ -620,18 +620,14 @@ public class DefaultView implements IEditableView
 				return this;
 			}
 
-			if (_stickyFilters == null)
-			{
-				_stickyFilters = new ArrayList<>();
-			}
-			_stickyFilters.addAll(stickyFilters);
+			stickyFilters.forEach(this::addStickyFilter);
 
 			return this;
 		}
 
 		private ImmutableList<DocumentFilter> getStickyFilters()
 		{
-			return _stickyFilters == null ? ImmutableList.of() : ImmutableList.copyOf(_stickyFilters);
+			return _stickyFiltersById == null ? ImmutableList.of() : ImmutableList.copyOf(_stickyFiltersById.values());
 		}
 
 		public Builder setFilters(final List<DocumentFilter> filters)
