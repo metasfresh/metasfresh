@@ -20,12 +20,12 @@ import org.compiere.model.ModelValidationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -106,12 +106,16 @@ import org.compiere.model.ModelValidationEngine;
 		bpartner.setValue(extractBPValue(importRecord));
 		bpartner.setName(extractBPName(importRecord));
 		bpartner.setName2(importRecord.getName2());
+		bpartner.setName3(importRecord.getName3());
+		bpartner.setPharmaproductpermlaw52(importRecord.getPharmaproductpermlaw52());
 		bpartner.setDescription(importRecord.getDescription());
 		bpartner.setDUNS(importRecord.getDUNS());
 		bpartner.setVATaxID(importRecord.getTaxID());
 		bpartner.setNAICS(importRecord.getNAICS());
 		bpartner.setC_BP_Group_ID(importRecord.getC_BP_Group_ID());
 		bpartner.setAD_Language(importRecord.getAD_Language());
+		bpartner.setIsSEPASigned(importRecord.isSEPASigned());
+		bpartner.setIsPharmaciePermission(importRecord.isPharmaciePermission());
 		return bpartner;
 	}
 
@@ -144,7 +148,18 @@ import org.compiere.model.ModelValidationEngine;
 		if (importRecord.getName() != null)
 		{
 			bpartner.setName(importRecord.getName());
+		}
+		if (importRecord.getName2() != null)
+		{
 			bpartner.setName2(importRecord.getName2());
+		}
+		if (importRecord.getName3() != null)
+		{
+			bpartner.setName3(importRecord.getName3());
+		}
+		if (importRecord.getPharmaproductpermlaw52() != null)
+		{
+			bpartner.setPharmaproductpermlaw52(importRecord.getPharmaproductpermlaw52());
 		}
 		if (importRecord.getDUNS() != null)
 		{
@@ -171,7 +186,8 @@ import org.compiere.model.ModelValidationEngine;
 		{
 			bpartner.setAD_Language(importRecord.getAD_Language());
 		}
-
+		bpartner.setIsSEPASigned(importRecord.isSEPASigned());
+		bpartner.setIsPharmaciePermission(importRecord.isPharmaciePermission());
 		return bpartner;
 	}
 
