@@ -75,7 +75,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	private final boolean directed;
 	private final String zoomInfoId;
 	private final String internalName;
-	private final boolean isReferenceTarget;
+	private final boolean isTableRecordIdTarget;
 
 	private final ZoomProviderDestination source;
 	private final ZoomProviderDestination target;
@@ -92,9 +92,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		zoomInfoId = builder.getZoomInfoId();
 		internalName = builder.getInternalName();
 
-		isReferenceTarget = builder.isReferenceTarget();
+		isTableRecordIdTarget = builder.isTableRecordIdTarget();
 
-		source = isReferenceTarget ? null : new ZoomProviderDestination(
+		source = isTableRecordIdTarget ? null : new ZoomProviderDestination(
 				builder.getSource_Reference_ID(),
 				builder.getSourceTableRefInfoOrNull(),
 				builder.getSourceRoleDisplayName(),
@@ -103,7 +103,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				builder.getTarget_Reference_ID(),
 				builder.getTargetTableRefInfoOrNull(),
 				builder.getTargetRoleDisplayName(),
-				isReferenceTarget);
+				isTableRecordIdTarget);
 
 	}
 
@@ -117,7 +117,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				.add("directed", directed)
 				.add("source", source)
 				.add("target", target)
-				.add("isReferenceTarget", isReferenceTarget)
+				.add("isReferenceTarget", isTableRecordIdTarget)
 				.toString();
 	}
 
@@ -129,7 +129,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		// #2340 Reference Target relation type: There is no source, only a target that contains the table and
 		// the reference target column to be linked with the zoomSource
-		if (isReferenceTarget)
+		if (isTableRecordIdTarget)
 		{
 			final ZoomProviderDestination referenceTarget = getTarget();
 
@@ -164,7 +164,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return ImmutableList.of();
 		}
 
-		final MQuery query = mkQuery(zoomSource, isReferenceTarget);
+		final MQuery query = mkQuery(zoomSource, isTableRecordIdTarget);
 
 		if (checkRecordsCount)
 		{
@@ -179,9 +179,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return directed;
 	}
 
-	public boolean isReferenceTarget()
+	public boolean isTableRecordIdTarget()
 	{
-		return isReferenceTarget;
+		return isTableRecordIdTarget;
 	}
 
 	private String getZoomInfoId()
@@ -545,7 +545,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		public RelationTypeZoomProvider buildOrNull()
 		{
-			if (!isReferenceTarget() && getSourceTableRefInfoOrNull() == null)
+			if (!isTableRecordIdTarget() && getSourceTableRefInfoOrNull() == null)
 			{
 
 				logger.info("Skip building {} because source tableRefInfo is null", this);
@@ -671,13 +671,13 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return targetRoleDisplayName;
 		}
 
-		public Builder setIsReferenceTarget(boolean isReferenceTarget)
+		public Builder setIsTableRecordIdTarget(boolean isReferenceTarget)
 		{
 			this.isReferenceTarget = isReferenceTarget;
 			return this;
 		}
 
-		private boolean isReferenceTarget()
+		private boolean isTableRecordIdTarget()
 		{
 			return isReferenceTarget;
 		}

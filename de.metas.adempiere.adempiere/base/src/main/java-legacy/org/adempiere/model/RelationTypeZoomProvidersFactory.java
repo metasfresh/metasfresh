@@ -99,7 +99,6 @@ public final class RelationTypeZoomProvidersFactory
 					+ "  ORDER BY rt.Name";
 
 	/**
-	 * Selection for ReferenceTarget relation types.
 	 * The ReferenceTarget relation types only have Target reference ( no source) and thye must contains the columns "AD_Table_ID" and "Record_ID" which will make the link with the source table ( the current table in the context)
 	 */
 	private final static String SQL_Reference = "  SELECT " //
@@ -281,7 +280,7 @@ public final class RelationTypeZoomProvidersFactory
 				.setTarget_Reference_AD(relationType.getAD_Reference_Target_ID())
 				.setTargetRoleDisplayName(roleTargetDisplayName)
 				//
-				.setIsReferenceTarget(relationType.isTableRecordIdTarget())
+				.setIsTableRecordIdTarget(relationType.isTableRecordIdTarget())
 				//
 				.buildOrNull();
 		

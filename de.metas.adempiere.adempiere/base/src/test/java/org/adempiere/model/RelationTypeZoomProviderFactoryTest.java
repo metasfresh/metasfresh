@@ -74,8 +74,8 @@ public class RelationTypeZoomProviderFactoryTest
 		createColumn(table, recordColumnname);
 		createRefTable(referenceTarget, table);
 
-		final boolean isReferenceTarget = true;
-		final I_AD_RelationType relationType = createRelationType(isReferenceTarget, referenceTarget);
+		final boolean isTableRecordIdTarget = true;
+		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, referenceTarget);
 
 		TableRefInfo build = LookupDAO.TableRefInfo.builder()
 				.setName(refTargetName)
@@ -91,7 +91,6 @@ public class RelationTypeZoomProviderFactoryTest
 				.setZoomPO_Window_ID(-1)
 				.setZoomAD_Window_ID_Override(-1)
 				.setAutoComplete(false)
-
 				.build();
 
 		Services.registerService(ILookupDAO.class, lookupDao);
@@ -106,7 +105,7 @@ public class RelationTypeZoomProviderFactoryTest
 
 		final RelationTypeZoomProvider zoomProvider = RelationTypeZoomProvidersFactory.findZoomProvider(relationType);
 
-		assertThat(zoomProvider.isReferenceTarget()).isTrue();
+		assertThat(zoomProvider.isTableRecordIdTarget()).isTrue();
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -125,8 +124,8 @@ public class RelationTypeZoomProviderFactoryTest
 
 		createRefTable(referenceTarget, table);
 
-		final boolean isReferenceTarget = false;
-		final I_AD_RelationType relationType = createRelationType(isReferenceTarget, referenceTarget);
+		final boolean isTableRecordIdTarget = false;
+		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, referenceTarget);
 
 		RelationTypeZoomProvidersFactory.findZoomProvider(relationType);
 
@@ -161,10 +160,10 @@ public class RelationTypeZoomProviderFactoryTest
 		return refTable;
 	}
 
-	private I_AD_RelationType createRelationType(final boolean isReferenceTarget, final I_AD_Reference referenceTarget)
+	private I_AD_RelationType createRelationType(final boolean IsTableRecordIdTarget, final I_AD_Reference referenceTarget)
 	{
 		final I_AD_RelationType relationType = newInstance(I_AD_RelationType.class);
-		relationType.setIsTableRecordIdTarget(isReferenceTarget);
+		relationType.setIsTableRecordIdTarget(IsTableRecordIdTarget);
 		relationType.setAD_Reference_Target(referenceTarget);
 
 		save(relationType);
