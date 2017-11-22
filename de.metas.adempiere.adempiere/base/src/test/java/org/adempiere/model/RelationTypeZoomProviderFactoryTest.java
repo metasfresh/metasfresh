@@ -167,7 +167,7 @@ public class RelationTypeZoomProviderFactoryTest
 	private I_AD_RelationType createRelationType(final boolean isReferenceTarget, final I_AD_Reference referenceTarget)
 	{
 		final I_AD_RelationType relationType = newInstance(I_AD_RelationType.class);
-		relationType.setIsReferenceTarget(isReferenceTarget);
+		relationType.setIsTableRecordIdTarget(isReferenceTarget);
 		relationType.setAD_Reference_Target(referenceTarget);
 
 		save(relationType);

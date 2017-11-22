@@ -82,7 +82,7 @@ public final class RelationTypeZoomProvidersFactory
 					+ "    AD_RelationType rt, AD_Reference ref, AD_Ref_Table tab" //
 					+ "  WHERE " //
 					+ "    rt.IsActive='Y'" //
-					+ "    AND rt." + I_AD_RelationType.COLUMNNAME_IsReferenceTarget + " = 'N'"
+					+ "    AND rt." + I_AD_RelationType.COLUMNNAME_IsTableRecordIdTarget + " = 'N'"
 					+ "    AND ref.IsActive='Y'" //
 					+ "    AND ref.ValidationType='T'" // must have table validation
 					+ "    AND (" // join the source AD_Reference
@@ -112,7 +112,7 @@ public final class RelationTypeZoomProvidersFactory
 			+ "    AD_RelationType rt, AD_Reference ref, AD_Ref_Table tab" //
 			+ "  WHERE " //
 			+ "    rt.IsActive='Y'" //
-			+ "    AND rt." + I_AD_RelationType.COLUMNNAME_IsReferenceTarget + " = 'Y'"
+			+ "    AND rt." + I_AD_RelationType.COLUMNNAME_IsTableRecordIdTarget + " = 'Y'"
 			+ "    AND ref.IsActive='Y'" //
 			+ "    AND ref.ValidationType='T'" // must have table validation
 
@@ -281,7 +281,7 @@ public final class RelationTypeZoomProvidersFactory
 				.setTarget_Reference_AD(relationType.getAD_Reference_Target_ID())
 				.setTargetRoleDisplayName(roleTargetDisplayName)
 				//
-				.setIsReferenceTarget(relationType.isReferenceTarget())
+				.setIsReferenceTarget(relationType.isTableRecordIdTarget())
 				//
 				.buildOrNull();
 		

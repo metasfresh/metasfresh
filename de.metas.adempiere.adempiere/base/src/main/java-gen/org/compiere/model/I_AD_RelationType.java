@@ -305,27 +305,27 @@ public interface I_AD_RelationType
     public static final String COLUMNNAME_IsDirected = "IsDirected";
 
 	/**
-	 * Set IsReferenceTarget.
+	 * Set IsTableRecordIdTarget .
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsReferenceTarget (boolean IsReferenceTarget);
+	public void setIsTableRecordIdTarget (boolean IsTableRecordIdTarget);
 
 	/**
-	 * Get IsReferenceTarget.
+	 * Get IsTableRecordIdTarget .
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isReferenceTarget();
+	public boolean isTableRecordIdTarget();
 
-    /** Column definition for IsReferenceTarget */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_IsReferenceTarget = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "IsReferenceTarget", null);
-    /** Column name IsReferenceTarget */
-    public static final String COLUMNNAME_IsReferenceTarget = "IsReferenceTarget";
+    /** Column definition for IsTableRecordIdTarget */
+    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_IsTableRecordIdTarget = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "IsTableRecordIdTarget", null);
+    /** Column name IsTableRecordIdTarget */
+    public static final String COLUMNNAME_IsTableRecordIdTarget = "IsTableRecordIdTarget";
 
 	/**
 	 * Set Name.

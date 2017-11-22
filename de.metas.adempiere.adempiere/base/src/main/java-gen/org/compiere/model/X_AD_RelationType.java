@@ -14,7 +14,7 @@ public class X_AD_RelationType extends org.compiere.model.PO implements I_AD_Rel
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1435148794L;
+	private static final long serialVersionUID = -1444338840L;
 
     /** Standard Constructor */
     public X_AD_RelationType (Properties ctx, int AD_RelationType_ID, String trxName)
@@ -25,7 +25,7 @@ public class X_AD_RelationType extends org.compiere.model.PO implements I_AD_Rel
 			setAD_RelationType_ID (0);
 			setEntityType (null); // de.metas.swat
 			setIsDirected (false); // N
-			setIsReferenceTarget (false); // N
+			setIsTableRecordIdTarget (false); // N
 			setName (null);
         } */
     }
@@ -227,20 +227,20 @@ public class X_AD_RelationType extends org.compiere.model.PO implements I_AD_Rel
 		return false;
 	}
 
-	/** Set IsReferenceTarget.
-		@param IsReferenceTarget IsReferenceTarget	  */
+	/** Set IsTableRecordIdTarget .
+		@param IsTableRecordIdTarget IsTableRecordIdTarget 	  */
 	@Override
-	public void setIsReferenceTarget (boolean IsReferenceTarget)
+	public void setIsTableRecordIdTarget (boolean IsTableRecordIdTarget)
 	{
-		set_Value (COLUMNNAME_IsReferenceTarget, Boolean.valueOf(IsReferenceTarget));
+		set_Value (COLUMNNAME_IsTableRecordIdTarget, Boolean.valueOf(IsTableRecordIdTarget));
 	}
 
-	/** Get IsReferenceTarget.
-		@return IsReferenceTarget	  */
+	/** Get IsTableRecordIdTarget .
+		@return IsTableRecordIdTarget 	  */
 	@Override
-	public boolean isReferenceTarget () 
+	public boolean isTableRecordIdTarget () 
 	{
-		Object oo = get_Value(COLUMNNAME_IsReferenceTarget);
+		Object oo = get_Value(COLUMNNAME_IsTableRecordIdTarget);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
