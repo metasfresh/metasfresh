@@ -157,10 +157,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount
-		if (orderLine.getPriceActual().signum() == 0)
-		{
-			calculatePriceActual(orderLine, pricingResult.getPrecision());
-		}
+		calculatePriceActual(orderLine, pricingResult.getPrecision());
 
 		//
 		// C_Currency_ID, Price_UOM_ID(again?), M_PriceList_Version_ID
