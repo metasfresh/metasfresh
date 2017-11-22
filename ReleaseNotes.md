@@ -20,12 +20,16 @@ Here come the actual release notes:
     * Improved Translation and Naming in Procurement Planning window.
   * [#2982](https://github.com/metasfresh/metasfresh/issues/2982) Filter for Shipment Documentstatus is missing in WebUI
     * New filter criteria "documentstatus" added to Shipment window.
+  * [#2987](https://github.com/metasfresh/metasfresh/issues/2987) Adjust the Naming of Locators
+    * Improvement of the Locator Naming.
   * [#3002](https://github.com/metasfresh/metasfresh/issues/3002) WebUI: New Window for HU Transaction
     * New window for Handling Unit transaction in WebUI.
   * [#3003](https://github.com/metasfresh/metasfresh/issues/3003) WebUI: Adjustments on HU Trace Window
     * Improvement in Handling Unit Trace Window, rearranging fields, new filter criteria and improved translations for en_US, de_DE.
   * [#3005](https://github.com/metasfresh/metasfresh/issues/3005) Manufacturing Order add Filter for Planstatus
     * Additional, new filter criteria in manufacturing order.
+  * [#3032](https://github.com/metasfresh/metasfresh/issues/3032) SSCC Product description Field cut off
+    * Improvement of the SSCC Label, now alloing to have Product Names that extend the width into more than 1 line.
 
 ## Fixes
 * metasfresh-webui-frontend
