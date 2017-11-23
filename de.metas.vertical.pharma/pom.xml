@@ -18,4 +18,12 @@
 		<migration-sql-basedir>45-de.metas.vertical.pharma</migration-sql-basedir>
 	</properties>
 	
+	<dependencies>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+	</dependencies>
+	
 </project>
