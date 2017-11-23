@@ -643,7 +643,7 @@ public class PickingSlotKey extends TerminalKey
 	public void allocateDynamicPickingSlotIfPossible(final int bpartnerId, final int bpartnerLocationId)
 	{
 		final I_M_PickingSlot pickingSlot = getM_PickingSlot();
-		huPickingSlotBL.allocatePickingSlot(pickingSlot, bpartnerId, bpartnerLocationId);
+		huPickingSlotBL.allocatePickingSlotIfPossible(pickingSlot, bpartnerId, bpartnerLocationId);
 
 		// make sure name gets up2date
 		updateName();
@@ -654,6 +654,6 @@ public class PickingSlotKey extends TerminalKey
 	 */
 	public void releasePickingSlot()
 	{
-		huPickingSlotBL.releasePickingSlot(getM_PickingSlot());
+		huPickingSlotBL.releasePickingSlotIfPossible(getM_PickingSlot());
 	}
 }
