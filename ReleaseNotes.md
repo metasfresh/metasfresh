@@ -57,6 +57,7 @@ Here come the actual release notes:
 * metasfesh-app
   * [#2965](https://github.com/metasfresh/metasfresh/issues/2965) error for HU changing locator if status E
   * [#2966](https://github.com/metasfresh/metasfresh/issues/2966) error in console when creating customer return
+  * [#3035](https://github.com/metasfresh/metasfresh/issues/3035) Linenet amount not updated in sales order after setting flatrate condition
 
 * metasfresh-webui-api
   * [#677](https://github.com/metasfresh/metasfresh-webui-api/issues/677) Close all picking candidates only if the view was closed/removed by user
