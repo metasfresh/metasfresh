@@ -1,22 +1,20 @@
 import React, { Component } from 'react';
-import {connect} from 'react-redux';
 
-import {patchRequest} from '../../actions/GenericActions';
+import { patchRequest } from '../../actions/GenericActions';
 
-class BookmarkButton extends Component {
+export default class BookmarkButton extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
             isBookmarkButtonShowed: false,
             isBookmark: props.isBookmark
-        }
+        };
     }
 
-    componentWillReceiveProps = (next) => {
-        if(next.isBookmark !== this.props.isBookmark){
-            this.setState({
-                isBookmark: next.isBookmark
-            })
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.isBookmark !== this.props.isBookmark) {
+            this.setState({ isBookmark: nextProps.isBookmark });
         }
     }
 
@@ -27,8 +25,8 @@ class BookmarkButton extends Component {
     }
 
     handleClick = () => {
-        const {dispatch, nodeId, updateData} = this.props;
-        const {isBookmark} = this.state;
+        const { nodeId, updateData } = this.props;
+        const { isBookmark } = this.state;
 
         patchRequest({
             entity: 'menu',
@@ -37,16 +35,19 @@ class BookmarkButton extends Component {
             subentity: 'node',
             subentityId: nodeId
         }).then(response => {
-            this.setState({isBookmark: !isBookmark})
-            updateData && updateData(response.data);
+            this.setState({ isBookmark: !isBookmark });
+
+            if (updateData) {
+              updateData(response.data);
+            }
         });
     }
 
     render() {
-        const {children, alwaysShowed, transparentBookmarks} = this.props;
-        const {isBookmarkButtonShowed, isBookmark} = this.state;
+        const { children, alwaysShowed, transparentBookmarks } = this.props;
+        const { isBookmarkButtonShowed, isBookmark } = this.state;
 
-        if(transparentBookmarks){
+        if (transparentBookmarks) {
             return children;
         }
 
@@ -70,7 +71,3 @@ class BookmarkButton extends Component {
         );
     }
 }
-
-BookmarkButton = connect()(BookmarkButton)
-
-export default BookmarkButton;
