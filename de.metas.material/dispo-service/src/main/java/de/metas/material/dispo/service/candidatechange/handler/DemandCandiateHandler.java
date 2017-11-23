@@ -52,7 +52,7 @@ public class DemandCandiateHandler implements CandidateHandler
 
 	private final MaterialEventService materialEventService;
 
-	private final StockCandidateService stockCandidateServiceRetrieval;
+	private final StockCandidateService stockCandidateService;
 
 	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
@@ -67,7 +67,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		this.candidateRepositoryWriteService = candidateRepositoryCommands;
 		this.materialEventService = materialEventService;
 		this.stockRepository = stockRepository;
-		this.stockCandidateServiceRetrieval = stockCandidateService;
+		this.stockCandidateService = stockCandidateService;
 	}
 
 	@Override
@@ -97,24 +97,13 @@ public class DemandCandiateHandler implements CandidateHandler
 		final int expectedStockSeqNo = demandCandidateWithId.getSeqNo() + 1;
 
 		final Candidate childStockWithDemand;
+		final Candidate childStockWithDemandDelta;
 
 		final Optional<Candidate> possibleChildStockCandidate = candidateRepository.retrieveSingleChild(demandCandidateWithId.getId());
 		if (possibleChildStockCandidate.isPresent())
 		{
-			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* candidate
-			childStockWithDemand = stockCandidateServiceRetrieval
-					.updateStock(
-							demandCandidateWithId, () -> {
-								// don't check if we might create a new stock candidate, because we know we don't.
-								// Instead we might run into trouble with CandidateRepository.retrieveExact() and multiple matching records.
-								// So get the one that we know already exists and just update its quantity
-								final Candidate childStockCandidate = possibleChildStockCandidate.get();
-								return candidateRepositoryWriteService
-										.updateQty(
-												childStockCandidate
-														.withQuantity(
-																childStockCandidate.getQuantity().subtract(demandCandidateWithId.getQuantity())));
-							});
+			childStockWithDemand = possibleChildStockCandidate.get().withQuantity(demandCandidate.getQuantity().negate());
+			childStockWithDemandDelta = stockCandidateService.updateQty(childStockWithDemand);
 		}
 		else
 		{
@@ -145,32 +134,39 @@ public class DemandCandiateHandler implements CandidateHandler
 			}
 			if (existingSupplyParentStockWithoutOwnParentId != null)
 			{
-				final Candidate existingSupplyParentWithUpdatedQty = existingSupplyParentStockWithoutOwnParentId
+				final Candidate existingSupplyParentStockWithUpdatedQty = existingSupplyParentStockWithoutOwnParentId
 						.withQuantity(existingSupplyParentStockWithoutOwnParentId.getQuantity().subtract(demandCandidateWithId.getQuantity()))
 						.withParentId(CandidatesQuery.UNSPECIFIED_PARENT_ID);
 
-				candidateRepositoryWriteService.updateQty(existingSupplyParentWithUpdatedQty);
-				childStockWithDemand = existingSupplyParentWithUpdatedQty;
+				childStockWithDemandDelta = stockCandidateService.updateQty(existingSupplyParentStockWithUpdatedQty);
+				childStockWithDemand = existingSupplyParentStockWithUpdatedQty;
 			}
 			else
 			{
-				final Candidate newDemandCandidateChild = stockCandidateServiceRetrieval.createStockCandidate(demandCandidateWithId.withNegatedQuantity());
-				childStockWithDemand = candidateRepositoryWriteService
+				final Candidate newDemandCandidateChild = stockCandidateService.createStockCandidate(demandCandidateWithId.withNegatedQuantity());
+				childStockWithDemandDelta = candidateRepositoryWriteService
 						.addOrUpdatePreserveExistingSeqNo(newDemandCandidateChild);
+				childStockWithDemand = childStockWithDemandDelta.withQuantity(newDemandCandidateChild.getQuantity());
 			}
 		}
 
 		candidateRepositoryWriteService.updateOverwriteStoredSeqNo(childStockWithDemand
 				.withParentId(demandCandidateWithId.getId()));
 
+		final BigDecimal delta = childStockWithDemandDelta.getQuantity();
+		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
+				childStockWithDemandDelta.getMaterialDescriptor(),
+				childStockWithDemandDelta.getGroupId(),
+				delta);
+
 		final Candidate demandCandidateToReturn;
 
-		if (childStockWithDemand.getSeqNo() != expectedStockSeqNo)
+		if (childStockWithDemandDelta.getSeqNo() != expectedStockSeqNo)
 		{
 			// there was already a stock candidate which already had a seqNo.
 			// keep it and in turn update the demandCandidate's seqNo accordingly
 			demandCandidateToReturn = demandCandidate
-					.withSeqNo(childStockWithDemand.getSeqNo() - 1);
+					.withSeqNo(childStockWithDemandDelta.getSeqNo() - 1);
 			candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(demandCandidateToReturn);
 		}
 		else

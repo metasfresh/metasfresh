@@ -25,8 +25,8 @@ import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -151,7 +151,7 @@ public class SupplyCandiateCangeHandlerTest
 	}
 
 	@Test
-	public void testOnSupplyCandidateNewOrChange_noOlderRecords_invokeTwiceWithDifferent()
+	public void onCandidateNewOrChange_noOlderRecords_invokeTwice_withDifferentQuantites()
 	{
 		final BigDecimal qty = new BigDecimal("23");
 
@@ -194,7 +194,7 @@ public class SupplyCandiateCangeHandlerTest
 	 * If this test fails, please first verify whether {@link #testOnStockCandidateNewOrChanged()} and {@link #testOnSupplyCandidateNewOrChange_noOlderRecords()} work.
 	 */
 	@Test
-	public void testOnSupplyCandidateNewOrChange()
+	public void onCandidateNewOrChange()
 	{
 		final BigDecimal olderStockQty = new BigDecimal("11");
 

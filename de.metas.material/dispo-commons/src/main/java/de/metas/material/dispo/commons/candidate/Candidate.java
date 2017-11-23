@@ -129,6 +129,16 @@ public class Candidate
 				.matchExactStorageAttributesKey(true);
 	}
 
+	public Candidate withAddedQuantity(@NonNull final BigDecimal addedQuantity)
+	{
+		return withQuantity(getQuantity().add(addedQuantity));
+	}
+
+	public Candidate withNegatedQuantity()
+	{
+		return withQuantity(getQuantity().negate());
+	}
+
 	public BigDecimal getQuantity()
 	{
 		return materialDescriptor.getQuantity();
@@ -137,11 +147,6 @@ public class Candidate
 	public Candidate withQuantity(@NonNull final BigDecimal quantity)
 	{
 		return withMaterialDescriptor(materialDescriptor.withQuantity(quantity));
-	}
-
-	public Candidate withNegatedQuantity()
-	{
-		return withQuantity(getQuantity().negate());
 	}
 
 	public Candidate withDate(@NonNull final Date date)

@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -24,8 +25,8 @@ import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -183,12 +184,22 @@ public class MaterialDispoEventListenerFacadeTests
 		final I_MD_Candidate toWarehouseSharedStock = DispoTestUtils.filter(CandidateType.STOCK, toWarehouseId).get(0);
 		final I_MD_Candidate toWarehouseSupply = DispoTestUtils.filter(CandidateType.SUPPLY, toWarehouseId).get(0);
 
-		assertThat(toWarehouseDemand.getSeqNo()).isEqualTo(toWarehouseSharedStock.getSeqNo() - 1);
-		assertThat(toWarehouseSharedStock.getSeqNo()).isEqualTo(toWarehouseSupply.getSeqNo() - 1);
+		final I_MD_Candidate fromWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, fromWarehouseId).get(0);
+		final I_MD_Candidate toWarehouseStock = DispoTestUtils.filter(CandidateType.STOCK, fromWarehouseId).get(0);
 
-		assertThat(toWarehouseDemand.getQty()).isEqualByComparingTo(BigDecimal.TEN);
+		final List<I_MD_Candidate> allRecordsBySeqNo = DispoTestUtils.sortBySeqNo(DispoTestUtils.retrieveAllRecords());
+		assertThat(allRecordsBySeqNo).containsExactly(
+				toWarehouseDemand,
+				toWarehouseSharedStock,
+				toWarehouseSupply,
+				fromWarehouseDemand,
+				toWarehouseStock);
+
+		assertThat(toWarehouseDemand.getQty()).isEqualByComparingTo("10");
 		assertThat(toWarehouseSharedStock.getQty()).isZero();
-		assertThat(toWarehouseSupply.getQty()).isEqualByComparingTo(BigDecimal.TEN);
+		assertThat(toWarehouseSupply.getQty()).isEqualByComparingTo("10");
+		assertThat(fromWarehouseDemand.getQty()).isEqualByComparingTo("10");
+		assertThat(toWarehouseStock.getQty()).isEqualByComparingTo("-10");
 	}
 
 	@Test

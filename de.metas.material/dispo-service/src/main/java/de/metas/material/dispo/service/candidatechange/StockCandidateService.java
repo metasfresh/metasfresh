@@ -1,13 +1,15 @@
 package de.metas.material.dispo.service.candidatechange;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 import java.util.function.Supplier;
 
 import org.springframework.stereotype.Service;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.CandidatesQuery.CandidatesQueryBuilder;
@@ -15,9 +17,9 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
-import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 
 /*
@@ -175,11 +177,37 @@ public class StockCandidateService
 		}
 		applyDeltaToMatchingLaterStockCandidates(
 				relatedCandiateWithDelta.getMaterialDescriptor(),
-//				relatedCandiateWithDelta.getMaterialDescriptor().getWarehouseId(),
-//				relatedCandiateWithDelta.getMaterialDescriptor().getDate(),
 				persistedStockCandidate.getGroupId(),
 				delta);
 		return persistedStockCandidate;
+	}
+
+	/**
+	 * Updates the qty of the given candidate.
+	 * Differs from {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)} in that
+	 * only the ID of the given {@code candidateToUpdate} is used, and if there is no existing persisted record, then an exception is thrown.
+	 * Also it just updates the underlying persisted record of the given {@code candidateToUpdate} and nothing else.
+	 *
+	 *
+	 * @param candidateToUpdate the candidate to update. Needs to have {@link Candidate#getId()} > 0.
+	 *
+	 * @return a copy of the given {@code candidateToUpdate} with the quantity being a delta, similar to the return value of {@link #addOrUpdate(Candidate, boolean)}.
+	 */
+	public Candidate updateQty(@NonNull final Candidate candidateToUpdate)
+	{
+		Preconditions.checkState(candidateToUpdate.getId() > 0,
+				"Parameter 'candidateToUpdate' needs to have Id > 0; candidateToUpdate=%s",
+				candidateToUpdate);
+
+		final I_MD_Candidate candidateRecord = load(candidateToUpdate.getId(), I_MD_Candidate.class);
+		final BigDecimal oldQty = candidateRecord.getQty();
+
+		candidateRecord.setQty(candidateToUpdate.getQuantity());
+		save(candidateRecord);
+
+		final BigDecimal qtyDelta = candidateToUpdate.getQuantity().subtract(oldQty);
+
+		return candidateToUpdate.withQuantity(qtyDelta);
 	}
 
 	/**

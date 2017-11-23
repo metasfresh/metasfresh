@@ -8,7 +8,6 @@ import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
@@ -18,13 +17,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -284,131 +279,6 @@ public class CandidateChangeHandlerTests
 				.build();
 	}
 
-	@Test
-	public void testUpdateStockDifferentTimes()
-	{
-		invokeAddOrUpdateStock(t1, "10");
-		invokeAddOrUpdateStock(t4, "2");
-		invokeAddOrUpdateStock(t3, "-3");
-		invokeAddOrUpdateStock(t2, "-4");
-
-		final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
-		assertThat(records).hasSize(4);
-
-		assertThat(records.get(0).getDateProjected().getTime()).isEqualTo(t1.getTime());
-		assertThat(records.get(0).getQty()).isEqualByComparingTo("10");
-
-		assertThat(records.get(1).getDateProjected().getTime()).isEqualTo(t2.getTime());
-		assertThat(records.get(1).getQty()).isEqualByComparingTo("6");
-
-		assertThat(records.get(2).getDateProjected().getTime()).isEqualTo(t3.getTime());
-		assertThat(records.get(2).getQty()).isEqualByComparingTo("3");
-
-		assertThat(records.get(3).getDateProjected().getTime()).isEqualTo(t4.getTime());
-		assertThat(records.get(3).getQty()).isEqualByComparingTo("5");
-
-		// all these stock records need to have the same group-ID
-		final int groupId = records.get(0).getMD_Candidate_GroupId();
-		assertThat(groupId, greaterThan(0));
-		records.forEach(r -> assertThat(r.getMD_Candidate_GroupId()).isEqualTo(groupId));
-	}
-
-	private Candidate invokeAddOrUpdateStock(@NonNull final Date date, @NonNull final String qty)
-	{
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCompleteDescriptor()
-				.productDescriptor(createProductDescriptor())
-				.warehouseId(WAREHOUSE_ID)
-				.quantity(new BigDecimal(qty))
-				.date(date)
-				.build();
-
-		final Candidate candidate = Candidate.builder()
-				.type(CandidateType.STOCK)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
-				.materialDescriptor(materialDescr)
-				.build();
-		final Candidate processedCandidate = stockCandidateService.addOrUpdateStock(candidate);
-		return processedCandidate;
-	}
-
-	/**
-	 * Similar to {@link #testUpdateStockDifferentTimes()}, but two invocations have the same timestamp.
-	 */
-	@Test
-	public void addOrUpdateStock_With_Overlapping_Time()
-	{
-		{
-			invokeAddOrUpdateStock(t1, "10");
-
-			final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
-			assertThat(records).hasSize(1);
-			assertThat(records.get(0).getDateProjected().getTime()).isEqualTo(t1.getTime());
-			assertThat(records.get(0).getQty()).isEqualByComparingTo("10");
-		}
-
-		{
-			invokeAddOrUpdateStock(t4, "2");
-
-			final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
-			assertThat(records).hasSize(2);
-			assertThat(records.get(0).getDateProjected().getTime()).isEqualTo(t1.getTime());
-			assertThat(records.get(0).getQty()).isEqualByComparingTo("10");
-			assertThat(records.get(1).getDateProjected().getTime()).isEqualTo(t4.getTime());
-			assertThat(records.get(1).getQty()).isEqualByComparingTo("12");
-		}
-
-		{
-			invokeAddOrUpdateStock(t3, "-3");
-
-			final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
-			assertThat(records).hasSize(3);
-
-			assertThat(records.get(0).getDateProjected().getTime()).isEqualTo(t1.getTime());
-			assertThat(records.get(0).getQty()).isEqualByComparingTo("10");
-			assertThat(records.get(1).getDateProjected().getTime()).isEqualTo(t3.getTime());
-			assertThat(records.get(1).getQty()).isEqualByComparingTo("7");
-			assertThat(records.get(2).getDateProjected().getTime()).isEqualTo(t4.getTime());
-			assertThat(records.get(2).getQty()).isEqualByComparingTo("9");
-		}
-
-		{
-			invokeAddOrUpdateStock(t3, "-4"); // same time again!
-
-			final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
-			assertThat(records).hasSize(3);
-
-			assertThat(records.get(0).getDateProjected().getTime()).isEqualTo(t1.getTime());
-			assertThat(records.get(0).getQty()).isEqualByComparingTo("10");
-
-			assertThat(records.get(1).getDateProjected().getTime()).isEqualTo(t3.getTime());
-			assertThat(records.get(1).getQty()).isEqualByComparingTo("3");
-
-			assertThat(records.get(2).getDateProjected().getTime()).isEqualTo(t4.getTime());
-			assertThat(records.get(2).getQty()).isEqualByComparingTo("5");
-		}
-
-		// all these stock records need to have the same group-ID
-		final List<I_MD_Candidate> records = retrieveAllRecordsSorted();
-		assertThatModel(records.get(0)).hasValueGreaterThanZero(I_MD_Candidate.COLUMN_MD_Candidate_GroupId);
-
-		final int groupId = records.get(0).getMD_Candidate_GroupId();
-		assertThat(records).allSatisfy(r -> assertThatModel(r).hasNonNullValue(I_MD_Candidate.COLUMN_MD_Candidate_GroupId, groupId));
-	}
-
-	public List<I_MD_Candidate> retrieveAllRecordsSorted()
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL
-				.createQueryBuilder(I_MD_Candidate.class)
-				.orderBy()
-				.addColumn(I_MD_Candidate.COLUMN_DateProjected)
-				.addColumn(I_MD_Candidate.COLUMN_MD_Candidate_ID)
-				.endOrderBy()
-				.create()
-				.list();
-	}
-
 	/**
 	 * Verifies that {@link CandidateChangeService#addOrUpdateStock(Candidate)} also works if the candidate we update with is not a stock candidate.
 	 */
@@ -604,105 +474,4 @@ public class CandidateChangeHandlerTests
 			assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-23");
 		}
 	}
-
-	// tODO make it work for supply and demand that are related via demanddetail
-
-	/**
-	 * Like {@link #testOnDemandCandidateCandidateNewOrChange_noOlderRecords()},
-	 * but the method under test is called two times. We expect the code to recognize this and not count the 2nd invocation.
-	 */
-	@Test
-	public void testOnDemandCandidateCandidateNewOrChange_noOlderRecords_invokeTwiceWithSame()
-	{
-		final BigDecimal qty = new BigDecimal("23");
-
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
-				.productDescriptor(createProductDescriptor())
-				.warehouseId(WAREHOUSE_ID)
-				.quantity(qty)
-				.date(NOW)
-				.build();
-
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
-				stockRepository,
-				materialDescriptor,
-				"0");
-
-		final Candidate candidate = Candidate.builder()
-				.type(CandidateType.DEMAND)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
-				.materialDescriptor(materialDescriptor)
-				.build();
-
-		final Consumer<Candidate> doTest = candidateUnderTest -> {
-
-			candidateChangeHandler.onCandidateNewOrChange(candidateUnderTest);
-
-			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
-			assertThat(records).hasSize(2);
-			final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
-			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
-
-			assertThat(demandRecord.getQty()).isEqualByComparingTo(qty);
-			assertThat(stockRecord.getQty()).isEqualByComparingTo(qty.negate()); // ..because there was no older record, the "delta" we provided is the current quantity
-			assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
-
-			assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() + 1); // when we sort by SeqNo, the demand needs to be first and thus have a smaller value
-		};
-
-		doTest.accept(candidate); // first invocation
-		doTest.accept(candidate); // second invocation
-	}
-
-	/**
-	 * like {@link #testOnDemandCandidateCandidateNewOrChange_noOlderRecords_invokeTwiceWitDifferent()},
-	 * but on the 2nd invocation, a different demand-quantity is used.
-	 */
-	@Test
-	public void testOnDemandCandidateCandidateNewOrChange_noOlderRecords_invokeTwiceWitDifferent()
-	{
-		final BigDecimal qty = new BigDecimal("23");
-		final Date t = t1;
-
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
-				.productDescriptor(createProductDescriptor())
-				.warehouseId(WAREHOUSE_ID)
-				.quantity(qty)
-				.date(t)
-				.build();
-
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
-				stockRepository,
-				materialDescriptor,
-				"0");
-
-		final Candidate candidate = Candidate.builder()
-				.type(CandidateType.DEMAND)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
-				.materialDescriptor(materialDescriptor)
-				.build();
-
-		final BiConsumer<Candidate, BigDecimal> doTest = (candidateUnderTest, expectedQty) -> {
-			candidateChangeHandler.onCandidateNewOrChange(candidateUnderTest);
-
-			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
-			assertThat(records).hasSize(2);
-			final I_MD_Candidate stockRecord = DispoTestUtils.filter(CandidateType.STOCK).get(0);
-			final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
-
-			assertThat(demandRecord.getQty()).isEqualByComparingTo(expectedQty);
-			assertThat(stockRecord.getQty()).isEqualByComparingTo(expectedQty.negate()); // ..because there was no older record, the "delta" we provided is the current quantity
-			assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
-
-			assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() + 1); // when we sort by SeqNo, the demand needs to be first and thus have the smaller number
-		};
-
-		doTest.accept(candidate, qty); // first invocation
-		doTest.accept(candidate.withQuantity(qty.add(BigDecimal.ONE)), qty.add(BigDecimal.ONE)); // second invocation
-	}
-
 }

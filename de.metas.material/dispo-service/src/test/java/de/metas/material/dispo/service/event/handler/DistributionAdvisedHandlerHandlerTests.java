@@ -219,12 +219,12 @@ public class DistributionAdvisedHandlerHandlerTests
 		assertThat(demandStockRecord.getQty()).isEqualByComparingTo("-10");
 
 		// For display reasons we expect the MD_Candidate_IDs to have a strict order.
-		final List<Integer> allRecordSeqNos = DispoTestUtils.retrieveAllRecords().stream().map(r -> r.getSeqNo()).sorted().collect(Collectors.toList());
-		assertThat(allRecordSeqNos).containsExactly(
-				supplyStockRecord.getSeqNo(),
-				supplyRecord.getSeqNo(),
-				demandRecord.getSeqNo(),
-				demandStockRecord.getSeqNo());
+		final List<I_MD_Candidate> allRecordsBySeqNo = DispoTestUtils.sortBySeqNo(DispoTestUtils.retrieveAllRecords());
+		assertThat(allRecordsBySeqNo).containsExactly(
+				supplyStockRecord,
+				supplyRecord,
+				demandRecord,
+				demandStockRecord);
 	}
 
 	/**
