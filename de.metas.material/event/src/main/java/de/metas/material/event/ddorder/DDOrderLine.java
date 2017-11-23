@@ -75,5 +75,4 @@ public class DDOrderLine
 
 		this.ddOrderLineId = ddOrderLineId;
 	}
-
 }

@@ -1,4 +1,4 @@
-package de.metas.material.event.demandWasFound;
+package de.metas.material.event.supplyrequired;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
@@ -36,12 +36,12 @@ public class SupplyRequiredEvent implements MaterialEvent
 	public static final String TYPE = "SupplyRequiredEvent";
 
 	@NonNull
-	SupplyRequiredDescriptor materialDemandDescriptor;
+	SupplyRequiredDescriptor supplyRequiredDescriptor;
 
 
 	@Override
 	public EventDescriptor getEventDescriptor()
 	{
-		return materialDemandDescriptor.getEventDescr();
+		return supplyRequiredDescriptor.getEventDescr();
 	}
 }
