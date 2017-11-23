@@ -23,7 +23,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.PickingCandidateService.AddQtyToHURequest;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -117,19 +116,18 @@ public class WEBUI_Picking_PickQtyToNewHU
 	}
 
 	private void addPickedQuantity(
-			@NonNull final I_M_HU hu, 
+			@NonNull final I_M_HU hu,
 			@NonNull final PickingSlotRow pickingSlotRow)
 	{
 		if (qtyCU.signum() > 0)
 		{
-			final AddQtyToHURequest request = AddQtyToHURequest.builder()
+			pickingCandidateService.addQtyToHU()
 					.qtyCU(qtyCU)
-					.targetHuId(hu.getM_HU_ID())
+					.targetHUId(hu.getM_HU_ID())
 					.pickingSlotId(pickingSlotRow.getPickingSlotId())
 					.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
-					.build();
-
-			pickingCandidateService.addQtyToHU(request);
+					.build()
+					.performAndGetQtyPicked();
 		}
 	}
 
