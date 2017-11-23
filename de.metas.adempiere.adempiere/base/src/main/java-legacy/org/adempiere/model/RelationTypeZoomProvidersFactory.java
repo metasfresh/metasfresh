@@ -21,9 +21,12 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.PORelationException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Ref_Table;
+import org.compiere.model.I_AD_Reference;
 import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
+import org.compiere.model.X_AD_Reference;
 import org.compiere.model.X_AD_RelationType;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
@@ -70,59 +73,73 @@ public final class RelationTypeZoomProvidersFactory
 	 * <p>
 	 * <b>Warning:</b> Doesn't support POs with more or less than one key column.
 	 */
-	private final static String SQL =                 //
-			"  SELECT " //
-					+ "    rt.AD_RelationType_ID AS " + I_AD_RelationType.COLUMNNAME_AD_RelationType_ID //
-					+ ",   rt.Name AS " + I_AD_RelationType.COLUMNNAME_Name //
-					+ ",   rt.IsDirected AS " + I_AD_RelationType.COLUMNNAME_IsDirected //
-					+ ",   ref.AD_Reference_ID AS " + COLUMNNAME_AD_Reference_ID //
-					+ ",   tab.WhereClause AS " + COLUMNNAME_WhereClause //
-					+ ",   tab.OrderByClause AS " + COLUMNNAME_OrderByClause //
-					+ "  FROM" //
-					+ "    AD_RelationType rt, AD_Reference ref, AD_Ref_Table tab" //
-					+ "  WHERE " //
-					+ "    rt.IsActive='Y'" //
-					+ "    AND rt." + I_AD_RelationType.COLUMNNAME_IsTableRecordIdTarget + " = 'N'"
-					+ "    AND ref.IsActive='Y'" //
-					+ "    AND ref.ValidationType='T'" // must have table validation
-					+ "    AND (" // join the source AD_Reference
-					+ "      rt.AD_Reference_Source_ID=ref.AD_Reference_ID" //
-					+ "      OR (" // not directed? -> also join the target AD_Reference
-					+ "        rt.IsDirected='N' " //
-					+ "        AND rt.AD_Reference_Target_ID=ref.AD_Reference_ID" //
-					+ "      )" //
-					+ "    )" //
-					+ "    AND tab.IsActive='Y'" // Join the AD_Reference's AD_Ref_Table
-					+ "    AND tab.AD_Reference_ID=ref.AD_Reference_ID" //
-					+ "    AND tab.AD_Table_ID=?" //
-					+ "    AND tab.AD_Key=?" //
-					+ "  ORDER BY rt.Name";
 
-	/**
-	 * The ReferenceTarget relation types only have Target reference ( no source) and thye must contains the columns "AD_Table_ID" and "Record_ID" which will make the link with the source table ( the current table in the context)
-	 */
-	private final static String SQL_Reference = "  SELECT " //
-			+ "    rt.AD_RelationType_ID AS " + I_AD_RelationType.COLUMNNAME_AD_RelationType_ID //
-			+ ",   rt.Name AS " + I_AD_RelationType.COLUMNNAME_Name //
-			+ ",   rt.IsDirected AS " + I_AD_RelationType.COLUMNNAME_IsDirected //
-			+ ",   ref.AD_Reference_ID AS " + COLUMNNAME_AD_Reference_ID //
+	private final static String SQL_Default_RelationType = createSelectFrom()
+			+ createSharedWhereClause()
+			+ createDefaultRelationTypeSpecificWhereClause()
+			+ createOrderBy();
 
-			+ "  FROM" //
-			+ "    AD_RelationType rt, AD_Reference ref, AD_Ref_Table tab" //
-			+ "  WHERE " //
-			+ "    rt.IsActive='Y'" //
-			+ "    AND rt." + I_AD_RelationType.COLUMNNAME_IsTableRecordIdTarget + " = 'Y'"
-			+ "    AND ref.IsActive='Y'" //
-			+ "    AND ref.ValidationType='T'" // must have table validation
+	
+	private final static String SQL_TableRecordIDReference_RelationType = createSelectFrom()
+			+ createSharedWhereClause()
+			+ createTableRecordIDReferenceRelationTypeSpecificWhereClause()
+			+ createOrderBy();
+	
 
-			+ "    AND (" // join the source AD_Reference
-			+ "      rt.AD_Reference_Source_ID is null" //
-			+ "      AND " // not directed? -> also join the target AD_Reference
-			+ "        rt.AD_Reference_Target_ID=ref.AD_Reference_ID" //
-			+ "      )" //
-			+ "    AND tab.IsActive='Y'" // Join the AD_Reference's AD_Ref_Table
-			+ "    AND tab.AD_Reference_ID=ref.AD_Reference_ID" //
-			+ "  ORDER BY rt.Name";
+	private static String createSelectFrom()
+	{
+		return "  SELECT " //
+				+ "    rt.AD_RelationType_ID AS " + I_AD_RelationType.COLUMNNAME_AD_RelationType_ID
+				+ ",   rt.Name AS " + I_AD_RelationType.COLUMNNAME_Name
+				+ ",   rt.IsDirected AS " + I_AD_RelationType.COLUMNNAME_IsDirected
+				+ ",   ref.AD_Reference_ID AS " + COLUMNNAME_AD_Reference_ID
+				+ ",   tab.WhereClause AS " + COLUMNNAME_WhereClause 
+				+ ",   tab.OrderByClause AS " + COLUMNNAME_OrderByClause 
+				+ "  FROM "
+				+ I_AD_RelationType.Table_Name + " rt, "
+				+ I_AD_Reference.Table_Name + " ref, "
+				+ I_AD_Ref_Table.Table_Name + " tab ";
+	}
+	
+
+	private static String createSharedWhereClause()
+	{
+		return "  WHERE "
+				+ "    rt.IsActive='Y'"
+				+ "    AND ref.IsActive='Y'" //
+				+ "    AND ref.ValidationType=" + X_AD_Reference.VALIDATIONTYPE_TableValidation
+				+ "    AND tab.IsActive='Y'"
+				+ "    AND tab.AD_Reference_ID=ref.AD_Reference_ID ";
+	}
+
+	private static String createDefaultRelationTypeSpecificWhereClause()
+	{
+		return "    AND rt." + I_AD_RelationType.COLUMNNAME_IsTableRecordIdTarget + " = 'N'"
+				+ "    AND tab.AD_Table_ID=?"
+				+ "    AND tab.AD_Key=?"
+				+ "    AND (" // join the source AD_Reference
+				+ "      rt.AD_Reference_Source_ID=ref.AD_Reference_ID" //
+				+ "      OR (" // not directed? -> also join the target AD_Reference
+				+ "        rt.IsDirected='N' "
+				+ "        AND rt.AD_Reference_Target_ID=ref.AD_Reference_ID"
+				+ "      )"
+				+ "    )";
+	}
+
+	private static String createTableRecordIDReferenceRelationTypeSpecificWhereClause()
+	{
+		return "    AND rt." + I_AD_RelationType.COLUMNNAME_IsTableRecordIdTarget + " = 'Y'"
+				+ "   AND  rt." + I_AD_RelationType.COLUMNNAME_AD_Reference_Source_ID + " is null"
+				+ "   AND   rt." + I_AD_RelationType.COLUMNNAME_AD_Reference_Target_ID + " =ref.AD_Reference_ID ";
+
+	}
+	
+
+	private static String createOrderBy()
+	{
+		return "  ORDER BY rt.Name ";
+	}
+
 
 	private final CCache<String, List<RelationTypeZoomProvider>> sourceTableName2zoomProviders = CCache.newLRUCache(I_AD_RelationType.Table_Name + "#ZoomProvidersBySourceTableName", 100, 0);
 
@@ -131,9 +148,12 @@ public final class RelationTypeZoomProvidersFactory
 		super();
 	}
 
+
+
+
 	public List<RelationTypeZoomProvider> getZoomProvidersBySourceTableName(final String sourceTableName)
 	{
-		return sourceTableName2zoomProviders.getOrLoad(sourceTableName, () -> retrieveZoomProvidersBySourceTableName(sourceTableName));
+		return sourceTableName2zoomProviders.getOrLoad(sourceTableName, () -> retrieveDefaultZoomProvidersBySourceTableName(sourceTableName));
 	}
 
 	public RelationTypeZoomProvider getZoomProviderBySourceTableNameAndInternalName(final String sourceTableName, final String internalName)
@@ -145,7 +165,7 @@ public final class RelationTypeZoomProvidersFactory
 				.orElseThrow(() -> new IllegalArgumentException("No zoom provider found for sourceTableName=" + sourceTableName + ", internalName=" + internalName));
 	}
 
-	public List<RelationTypeZoomProvider> retrieveReferenceZoomProvidersBySourceTableName(final String tableName)
+	public List<RelationTypeZoomProvider> retrieveTableRecordIDZoomProvidersBySourceTableName(final String tableName)
 	{
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 
@@ -162,7 +182,7 @@ public final class RelationTypeZoomProvidersFactory
 
 		try
 		{
-			pstmt = DB.prepareStatement(SQL_Reference, ITrx.TRXNAME_None);
+			pstmt = DB.prepareStatement(SQL_TableRecordIDReference_RelationType, ITrx.TRXNAME_None);
 
 			rs = pstmt.executeQuery();
 
@@ -173,7 +193,7 @@ public final class RelationTypeZoomProvidersFactory
 		}
 		catch (final SQLException e)
 		{
-			throw new DBException(e, SQL);
+			throw new DBException(e, SQL_TableRecordIDReference_RelationType);
 		}
 		finally
 		{
@@ -182,7 +202,7 @@ public final class RelationTypeZoomProvidersFactory
 
 	}
 
-	private List<RelationTypeZoomProvider> retrieveZoomProvidersBySourceTableName(final String tableName)
+	private List<RelationTypeZoomProvider> retrieveDefaultZoomProvidersBySourceTableName(final String tableName)
 	{
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 
@@ -202,7 +222,7 @@ public final class RelationTypeZoomProvidersFactory
 		final Object[] sqlParams = new Object[] { adTableId, keyColumnId };
 		try
 		{
-			pstmt = DB.prepareStatement(SQL, ITrx.TRXNAME_None);
+			pstmt = DB.prepareStatement(SQL_Default_RelationType, ITrx.TRXNAME_None);
 			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 
@@ -213,7 +233,7 @@ public final class RelationTypeZoomProvidersFactory
 		}
 		catch (final SQLException e)
 		{
-			throw new DBException(e, SQL, sqlParams);
+			throw new DBException(e, SQL_Default_RelationType, sqlParams);
 		}
 		finally
 		{
@@ -283,7 +303,7 @@ public final class RelationTypeZoomProvidersFactory
 				.setIsTableRecordIdTarget(relationType.isTableRecordIdTarget())
 				//
 				.buildOrNull();
-		
+
 		return zoomProvider;
 	}
 }
