@@ -30,6 +30,8 @@ Here come the actual release notes:
     * Additional, new filter criteria in manufacturing order.
   * [#3032](https://github.com/metasfresh/metasfresh/issues/3032) SSCC Product description Field cut off
     * Improvement of the SSCC Label, now alloing to have Product Names that extend the width into more than 1 line.
+  * [#3039](https://github.com/metasfresh/metasfresh/issues/3039) Forecast Window adjustments
+    * Improvement and extension of the Forecast Window in WebUI, adding new Fields Businesspartner, Date Promised, Warehouse to Forecast Header.
 
 ## Fixes
 * metasfresh-webui-frontend
