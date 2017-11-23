@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.springframework.stereotype.Service;
 
@@ -75,12 +74,8 @@ public class StockCandidateService
 	 */
 	public Candidate createStockCandidate(@NonNull final Candidate candidate)
 	{
-		// TODO cleanup when it's fine
-		final CandidatesQueryBuilder stockQueryBuilder = candidate.createStockQueryBuilderWithBeforeOperator();
-		// if (candidate.getParentId() > 0)
-		// {
-		// stockQueryBuilder.parentId(candidate.getParentId());
-		// }
+		final CandidatesQueryBuilder stockQueryBuilder = createStockQueryBuilderWithBeforeOperator(candidate);
+
 		final Candidate previousStockOrNull = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(stockQueryBuilder
 						.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
@@ -94,18 +89,9 @@ public class StockCandidateService
 				.getMaterialDescriptor()
 				.withQuantity(previousQuantity.add(candidate.getQuantity()));
 
-//		final Candidate updatableStockOrNull = candidateRepositoryRetrieval
-//				.retrieveLatestMatchOrNull(stockQueryBuilder
-//						.parentId(candidate.getParentId())
-//						.build());
-
 		final Integer groupId = previousStockOrNull != null
 				? previousStockOrNull.getGroupId()
 				: 0;
-
-//				candidate
-//				.withType(CandidateType.STOCK)
-//				.withMaterialDescriptor(materialDescriptor);
 
 		return Candidate.builder()
 				.type(CandidateType.STOCK)
@@ -118,68 +104,14 @@ public class StockCandidateService
 				.build();
 	}
 
-	/**
-	 * This method creates or updates a stock candidate according to the given candidate.
-	 * It then updates the quantities of all "later" stock candidates that have the same product etc.<br>
-	 * according to the delta between the candidate's former value (or zero if it was only just added) and it's new value.
-	 *
-	 * @param relatedCandidate a candidate that can have any type and a quantity which is a <b>delta</b>, i.e. a quantity that is added or removed at the candidate's date.
-	 *
-	 * @return a candidate with type {@link CandidateType#STOCK} that reflects what was persisted in the DB.<br>
-	 *         The candidate will have an ID and its quantity will not be a delta, but the "absolute" projected quantity at the given time.<br>
-	 *         Note: this method does not establish a parent-child relationship between any two records
-	 */
-	public Candidate addOrUpdateStock(@NonNull final Candidate relatedCandidate)
+	private CandidatesQueryBuilder createStockQueryBuilderWithBeforeOperator(@NonNull final Candidate candidate)
 	{
-		final Supplier<Candidate> stockCandidateToUpdate = () -> {
-			final Candidate stockCandidateToPersist = createStockCandidate(relatedCandidate
-					//.withParentId(CandidatesQuery.UNSPECIFIED_PARENT_ID) // TODO cleanup when OK
-					);
-
-			final Candidate persistedStockCandidate = candidateRepositoryCommands
-					.addOrUpdatePreserveExistingSeqNo(stockCandidateToPersist);
-
-			return persistedStockCandidate;
-		};
-
-		return updateStock(
-				relatedCandidate,
-				stockCandidateToUpdate);
-	}
-
-	/**
-	 * Updates the qty for the stock candidate returned by the given {@code stockCandidateToUpdate} and it's later stock candidates
-	 *
-	 * @param relatedCandiateWithDelta
-	 * @param stockCandidateToUpdate
-	 * @return
-	 */
-	public Candidate updateStock(
-			@NonNull final Candidate relatedCandiateWithDelta,
-			@NonNull final Supplier<Candidate> stockCandidateToUpdate)
-	{
-		final CandidatesQuery query = CandidatesQuery.fromCandidate(relatedCandiateWithDelta, false);
-
-		final Candidate previousCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
-
-		final Candidate persistedStockCandidate = stockCandidateToUpdate.get();
-
-		final BigDecimal delta;
-		if (previousCandidateOrNull != null)
-		{
-			// there was already a persisted candidate. This means that the addOrReplace already did the work of providing our delta between the old and the current status.
-			delta = persistedStockCandidate.getQuantity();
-		}
-		else
-		{
-			// there was no persisted candidate, so we basically propagate the full qty (positive or negative) of the given candidate upwards
-			delta = relatedCandiateWithDelta.getQuantity();
-		}
-		applyDeltaToMatchingLaterStockCandidates(
-				relatedCandiateWithDelta.getMaterialDescriptor(),
-				persistedStockCandidate.getGroupId(),
-				delta);
-		return persistedStockCandidate;
+		return CandidatesQuery.builder()
+				.materialDescriptor(candidate.getMaterialDescriptor()
+						.withoutQuantity()
+						.withDateOperator(DateOperator.BEFORE))
+				.type(CandidateType.STOCK)
+				.matchExactStorageAttributesKey(true);
 	}
 
 	/**

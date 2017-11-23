@@ -50,7 +50,7 @@ import lombok.experimental.Wither;
 @Wither
 public final class CandidatesQuery
 {
-	public static final ProductionDetail NO_PRODUCTION_DETAIL = ProductionDetail.builder().build();
+	public static final ProductionDetail NO_PRODUCTION_DETAIL = ProductionDetail.builder().uomId(99999999).plantId(99999999).build();
 
 	public static final DistributionDetail NO_DISTRIBUTION_DETAIL = DistributionDetail.builder().build();
 

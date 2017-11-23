@@ -6,11 +6,8 @@ import java.util.List;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
-import de.metas.material.dispo.commons.CandidatesQuery.CandidatesQueryBuilder;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -99,35 +96,6 @@ public class Candidate
 
 	@Singular
 	List<TransactionDetail> transactionDetails;
-
-	public CandidatesQueryBuilder createStockQueryBuilder()
-	{
-		return CandidatesQuery.builder()
-				.materialDescriptor(materialDescriptor
-						.withoutQuantity()
-						.withDateOperator(DateOperator.BEFORE_OR_AT)) // TODO cleanup when done
-
-				// why not before: because there might be a stock candidate *at the same time* which we might update.
-				// this query needs to include that stock candidate, otherwise we won't update that stock candidate with the correct quantity
-				// (see impl in StockCandidateService.createStockCandidate() )
-				// .withDateOperator(DateOperator.BEFORE))
-				.type(CandidateType.STOCK)
-				.matchExactStorageAttributesKey(true);
-	}
-
-	public CandidatesQueryBuilder createStockQueryBuilderWithBeforeOperator()
-	{
-		return CandidatesQuery.builder()
-				.materialDescriptor(materialDescriptor
-						.withoutQuantity()
-						// .withDateOperator(DateOperator.BEFORE_OR_AT)) //TODO cleanup when done
-
-						// why before: because we already checked if there is an existing candidate with the same date that we will update.
-						// if yes then we already got it elsewhere, updated it's quantity and don't need this qury
-						.withDateOperator(DateOperator.BEFORE))
-				.type(CandidateType.STOCK)
-				.matchExactStorageAttributesKey(true);
-	}
 
 	public Candidate withAddedQuantity(@NonNull final BigDecimal addedQuantity)
 	{

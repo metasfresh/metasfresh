@@ -2,7 +2,7 @@ package de.metas.material.dispo.service.event.handler;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.commons.CandidateService;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
@@ -43,7 +43,7 @@ import lombok.NonNull;
 public class ProductionAdvisedHandler
 {
 	private final CandidateChangeService candidateChangeHandler;
-	private final CandidateService candidateService;
+	private final RequestMaterialOrderService candidateService;
 
 	/**
 	 *
@@ -52,7 +52,7 @@ public class ProductionAdvisedHandler
 	 */
 	public ProductionAdvisedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final CandidateService candidateService)
+			@NonNull final RequestMaterialOrderService candidateService)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
 		this.candidateService = candidateService;
@@ -137,6 +137,7 @@ public class ProductionAdvisedHandler
 		return candidateStatus;
 	}
 
+
 	private static ProductionDetail createProductionDetailForPPOrder(@NonNull final PPOrder ppOrder)
 	{
 		final ProductionDetail productionCandidateDetail = ProductionDetail.builder()
@@ -144,6 +145,7 @@ public class ProductionAdvisedHandler
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.ppOrderId(ppOrder.getPpOrderId())
 				.ppOrderDocStatus(ppOrder.getDocStatus())
+				.uomId(ppOrder.getUomId())
 				.build();
 		return productionCandidateDetail;
 	}

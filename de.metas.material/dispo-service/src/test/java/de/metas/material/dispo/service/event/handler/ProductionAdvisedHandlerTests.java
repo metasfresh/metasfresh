@@ -18,8 +18,8 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.commons.DispoTestUtils;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
@@ -101,7 +101,7 @@ public class ProductionAdvisedHandlerTests
 						stockRepository,
 						stockCandidateService)));
 
-		final CandidateService candidateService = new CandidateService(
+		final RequestMaterialOrderService candidateService = new RequestMaterialOrderService(
 				candidateRepository,
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
@@ -181,40 +181,48 @@ public class ProductionAdvisedHandlerTests
 
 	private ProductionAdvisedEvent createproductionAdvisedEvent()
 	{
-		final ProductDescriptor rawProductDescriptor1 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct1Id);
-		final ProductDescriptor rawProductDescriptor2 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct2Id);
+		final PPOrder ppOrder = createPpOrder();
 
 		final ProductionAdvisedEvent productionAdvisedEvent = ProductionAdvisedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.supplyRequiredDescriptor(null)
-				.ppOrder(PPOrder.builder()
-						.orgId(ORG_ID)
-						.datePromised(AFTER_NOW)
-						.dateStartSchedule(NOW)
-						.productDescriptor(createProductDescriptor())
-						.quantity(BigDecimal.ONE)
-						.warehouseId(intermediateWarehouseId)
-						.plantId(120)
-						.uomId(130)
-						.productPlanningId(140)
-						.line(PPOrderLine.builder()
-								.description("descr1")
-								.productDescriptor(rawProductDescriptor1)
-								.qtyRequired(BigDecimal.TEN)
-								.productBomLineId(1020)
-								.receipt(false)
-								.build())
-						.line(PPOrderLine.builder()
-								.description("descr2")
-								.productDescriptor(rawProductDescriptor2)
-								.qtyRequired(eleven)
-								.productBomLineId(1030)
-								.receipt(false)
-								.build())
-						.build())
+				.ppOrder(ppOrder)
 				.build();
+
 		assertThat(productionAdvisedEvent.getSupplyRequiredDescriptor()).isNull();
 		return productionAdvisedEvent;
 	}
 
+	private PPOrder createPpOrder()
+	{
+		final ProductDescriptor rawProductDescriptor1 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct1Id);
+		final ProductDescriptor rawProductDescriptor2 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct2Id);
+
+		final PPOrder ppOrder = PPOrder.builder()
+				.orgId(ORG_ID)
+				.datePromised(AFTER_NOW)
+				.dateStartSchedule(NOW)
+				.productDescriptor(createProductDescriptor())
+				.quantity(BigDecimal.ONE)
+				.warehouseId(intermediateWarehouseId)
+				.plantId(120)
+				.uomId(130)
+				.productPlanningId(140)
+				.line(PPOrderLine.builder()
+						.description("descr1")
+						.productDescriptor(rawProductDescriptor1)
+						.qtyRequired(BigDecimal.TEN)
+						.productBomLineId(1020)
+						.receipt(false)
+						.build())
+				.line(PPOrderLine.builder()
+						.description("descr2")
+						.productDescriptor(rawProductDescriptor2)
+						.qtyRequired(eleven)
+						.productBomLineId(1030)
+						.receipt(false)
+						.build())
+				.build();
+		return ppOrder;
+	}
 }

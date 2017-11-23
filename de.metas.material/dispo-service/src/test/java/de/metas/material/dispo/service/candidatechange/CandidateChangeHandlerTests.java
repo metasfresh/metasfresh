@@ -280,35 +280,6 @@ public class CandidateChangeHandlerTests
 	}
 
 	/**
-	 * Verifies that {@link CandidateChangeService#addOrUpdateStock(Candidate)} also works if the candidate we update with is not a stock candidate.
-	 */
-	@Test
-	public void testOnStockCandidateNewOrChangedNotStockType()
-	{
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.complete(true)
-				.productDescriptor(createProductDescriptor())
-				.warehouseId(WAREHOUSE_ID)
-				.quantity(new BigDecimal("10"))
-				.date(t2)
-				.build();
-
-		final Candidate candidate = Candidate.builder()
-				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
-				.materialDescriptor(materialDescr)
-				.build();
-
-		final Candidate processedCandidate = stockCandidateService.addOrUpdateStock(candidate);
-		assertThat(processedCandidate.getType()).isEqualTo(CandidateType.STOCK);
-		assertThat(processedCandidate.getMaterialDescriptor().getDate().getTime()).isEqualTo(t2.getTime());
-		assertThat(processedCandidate.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(BigDecimal.TEN);
-		assertThat(processedCandidate.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(processedCandidate.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-	}
-
-	/**
 	 * Similar to testOnDemandCandidateCandidateNewOrChange_noOlderRecords, but then adds an accompanying demand and verifies the SeqNo values
 	 */
 	@Test

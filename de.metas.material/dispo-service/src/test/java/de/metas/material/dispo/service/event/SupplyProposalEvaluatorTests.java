@@ -19,7 +19,7 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.CandidateService;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
@@ -122,7 +122,7 @@ public class SupplyProposalEvaluatorTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new CandidateService(candidateRepositoryRetrieval, materialEventService));
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, materialEventService));
 	}
 
 	/**

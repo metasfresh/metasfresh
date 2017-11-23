@@ -7,7 +7,7 @@ import java.util.Set;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.commons.CandidateService;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
@@ -55,14 +55,14 @@ public class DistributionAdvisedHandler
 	private final CandidateRepositoryWriteService candidateRepositoryCommands;
 	private final SupplyProposalEvaluator supplyProposalEvaluator;
 	private final CandidateChangeService candidateChangeHandler;
-	private final CandidateService candidateService;
+	private final RequestMaterialOrderService candidateService;
 
 	public DistributionAdvisedHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final SupplyProposalEvaluator supplyProposalEvaluator,
-			@NonNull final CandidateService candidateService)
+			@NonNull final RequestMaterialOrderService candidateService)
 	{
 		this.candidateService = candidateService;
 		this.candidateChangeHandler = candidateChangeHandler;

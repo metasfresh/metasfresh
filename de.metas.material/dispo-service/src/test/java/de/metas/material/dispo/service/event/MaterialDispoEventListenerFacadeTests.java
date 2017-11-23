@@ -21,7 +21,7 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.CandidateService;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -118,7 +118,7 @@ public class MaterialDispoEventListenerFacadeTests
 						stockCandidateService),
 				new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService)));
 
-		final CandidateService candidateService = new CandidateService(
+		final RequestMaterialOrderService candidateService = new RequestMaterialOrderService(
 				candidateRepositoryRetrieval,
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
@@ -127,7 +127,7 @@ public class MaterialDispoEventListenerFacadeTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new CandidateService(candidateRepositoryRetrieval, materialEventService));
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, materialEventService));
 
 		final ProductionAdvisedHandler productionAdvisedEventHandler = new ProductionAdvisedHandler(candidateChangeHandler, candidateService);
 

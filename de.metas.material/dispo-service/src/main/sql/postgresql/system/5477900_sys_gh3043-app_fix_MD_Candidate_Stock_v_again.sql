@@ -18,17 +18,17 @@ SELECT
 	stockPerDate.StorageAttributesKey,
 	stockPerDate.Qty
 FROM 
-	( /* get the different product, warehouse and dateProjected values taht we have */
+	( /* "main": get the different product, warehouse and dateProjected values that we have. the rest shall be joined */
 		SELECT DISTINCT M_Product_ID, M_Warehouse_ID, DateProjected 
 		FROM MD_Candidate 
 		WHERE IsActive='Y' AND MD_Candidate_Type='STOCK' 
 	) main
 	JOIN LATERAL 
-	( /* for each combination from "main", join the "youngest" stock records which are older or as old as main */
+	( /* "stockPerDate": for each combination from "main", join the latest stock records which are older or as old as main */
 		SELECT DISTINCT ON (M_Product_ID, StorageAttributesKey, M_Warehouse_ID)
 			M_Product_ID, M_Warehouse_ID, DateProjected, StorageAttributesKey,
 			Qty
-		FROM ( /* we might have multiple stopck records with the same product, warehouse etc, so aggregate them */
+		FROM ( /* we might have multiple stock records with the same product, warehouse etc, so aggregate them */
 			SELECT 
 				M_Product_ID, M_Warehouse_ID, DateProjected, StorageAttributesKey,
 				SUM(Qty) as Qty
@@ -48,7 +48,7 @@ ORDER BY
 	M_Product_ID, StorageAttributesKey, M_Warehouse_ID, Dateprojected DESC
 ;
 COMMENT ON VIEW public.MD_Candidate_Stock_v 
-IS 'For each distinct (M_Product_ID, M_Warehouse_ID, DateProjected) that occurs in any active STOCK MD_Candidate,
-this view selects the different Qtys and StorageAttributesKeys for that time, product and warehouse.
-Note that those Qtys and StorageAttributesKeys could be "older" than the respective time, 
+IS 'For each distinct (DateProjected, M_Product_ID, M_Warehouse_ID) that occurs in any active STOCK MD_Candidate,
+this view selects the different Qtys and StorageAttributesKeys for that date, product and warehouse.
+Note that those Qtys and StorageAttributesKeys can be from MD_Candidate whose DateProjected is before the respective date, 
 if they were not yet superseeded by more recent values';

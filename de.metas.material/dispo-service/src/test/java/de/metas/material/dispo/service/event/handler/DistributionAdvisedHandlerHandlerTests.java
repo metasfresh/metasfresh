@@ -23,7 +23,7 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.CandidateService;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -137,7 +137,7 @@ public class DistributionAdvisedHandlerHandlerTests
 				candidateRepositoryCommands,
 				candidateChangeService,
 				supplyProposalEvaluator,
-				new CandidateService(candidateRepository, materialEventService));
+				new RequestMaterialOrderService(candidateRepository, materialEventService));
 	}
 
 	/**
