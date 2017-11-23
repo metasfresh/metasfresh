@@ -8,8 +8,10 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 
 /*
  * #%L
@@ -21,12 +23,12 @@ import de.metas.material.event.commons.ProductDescriptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -81,4 +83,13 @@ public class EventTestHelper
 				ATTRIBUTE_SET_INSTANCE_ID + offset);
 	}
 
+	public static SupplyRequiredDescriptor createSupplyRequiredDescriptor()
+	{
+		return SupplyRequiredDescriptor.builder()
+				.shipmentScheduleId(21)
+				.demandCandidateId(41)
+				.eventDescr(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.materialDescriptor(createMaterialDescriptor())
+				.build();
+	}
 }

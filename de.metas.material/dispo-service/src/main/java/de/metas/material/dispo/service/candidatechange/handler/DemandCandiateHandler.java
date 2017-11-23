@@ -18,7 +18,7 @@ import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 
 /*
@@ -186,8 +186,9 @@ public class DemandCandiateHandler implements CandidateHandler
 				// notify whoever is in charge that we have a demand to balance
 				final BigDecimal requiredAdditionalQty = demandCandidate.getQuantity().subtract(availableQuantity);
 
-				final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEventCreator.createMaterialDemandEvent(demandCandidateWithId, requiredAdditionalQty);
-				materialEventService.fireEvent(materialDemandEvent);
+				final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
+						.createSupplyRequiredEvent(demandCandidateWithId, requiredAdditionalQty);
+				materialEventService.fireEvent(supplyRequiredEvent);
 			}
 		}
 		return demandCandidateToReturn;

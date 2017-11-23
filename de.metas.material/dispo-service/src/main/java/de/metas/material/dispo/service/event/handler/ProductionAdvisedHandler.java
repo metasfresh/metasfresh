@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.event.handler;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
@@ -58,18 +60,21 @@ public class ProductionAdvisedHandler
 		this.candidateService = candidateService;
 	}
 
-	public void handleProductionAdvisedEvent(final ProductionAdvisedEvent event)
+	public void handleProductionAdvisedEvent(final ProductionAdvisedEvent productionAdvisedEvent)
 	{
-		final PPOrder ppOrder = event.getPpOrder();
+		final PPOrder ppOrder = productionAdvisedEvent.getPpOrder();
 
 		final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
 
-		final Candidate supplyCandidate = Candidate.builderForEventDescr(event.getEventDescriptor())
+		final DemandDetail demandDetailOrNull = DemandDetail.createOrNull(
+				Optional.ofNullable(productionAdvisedEvent.getSupplyRequiredDescriptor()));
+
+		final Candidate supplyCandidate = Candidate.builderForEventDescr(productionAdvisedEvent.getEventDescriptor())
 				.type(CandidateType.SUPPLY)
 				.subType(CandidateSubType.PRODUCTION)
 				.status(candidateStatus)
 				.productionDetail(createProductionDetailForPPOrder(ppOrder))
-				.demandDetail(DemandDetail.forOrderLineIdOrNull(ppOrder.getOrderLineId()))
+				.demandDetail(demandDetailOrNull)
 				.materialDescriptor(createMAterialDescriptorFromPpOrder(ppOrder))
 				.build();
 
@@ -77,7 +82,7 @@ public class ProductionAdvisedHandler
 
 		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
 		{
-			final CandidateBuilder builder = Candidate.builderForEventDescr(event.getEventDescriptor())
+			final CandidateBuilder builder = Candidate.builderForEventDescr(productionAdvisedEvent.getEventDescriptor())
 					.type(ppOrderLine.isReceipt() ? CandidateType.SUPPLY : CandidateType.DEMAND)
 					.subType(CandidateSubType.PRODUCTION)
 					.status(candidateStatus)
@@ -164,5 +169,4 @@ public class ProductionAdvisedHandler
 				.ppOrderLineId(ppOrderLine.getPpOrderLineId())
 				.build();
 	}
-
 }

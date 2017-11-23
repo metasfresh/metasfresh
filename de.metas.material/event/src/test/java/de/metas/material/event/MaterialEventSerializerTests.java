@@ -23,7 +23,6 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.ddorder.DistributionAdvisedEvent;
 import de.metas.material.event.ddorder.DistributionRequestedEvent;
-import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
@@ -32,6 +31,7 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.ProductionAdvisedEvent;
 import de.metas.material.event.pporder.ProductionRequestedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 
 /*
@@ -80,6 +80,7 @@ public class MaterialEventSerializerTests
 	public void distributionAdvisedEvent()
 	{
 		final DistributionAdvisedEvent event = DistributionAdvisedEvent.builder()
+				.supplyRequiredDescriptor(SupplyRequiredDescriptor.builder().forecastLineId(23).build())
 				.ddOrder(createDdOrder())
 				.fromWarehouseId(30)
 				.eventDescriptor(createEventDescriptor())
@@ -211,7 +212,7 @@ public class MaterialEventSerializerTests
 	public void materialDemandEvent()
 	{
 		final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEvent.builder()
-				.materialDemandDescriptor(createSupplyRequiredDescriptor())
+				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.build();
 		assertEventEqualAfterSerializeDeserialize(materialDemandEvent);
 	}

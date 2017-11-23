@@ -78,7 +78,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 		assertCorrectCandidateType(supplyCandidate);
 
 		// store the supply candidate and get both it's ID and qty-delta
-		// TODO test: if we add a supplyCandidate that has an unspecified parent-id and and in DB there is an MD_Candidate with parentId > 0,
+		// TODO 3034 test: if we add a supplyCandidate that has an unspecified parent-id and and in DB there is an MD_Candidate with parentId > 0,
 		// then supplyCandidateDeltaWithId needs ton have that parentId
 		final Candidate supplyCandidateDeltaWithId = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
 		final Candidate supplyCandidateWithIdAndParentId = supplyCandidateDeltaWithId.withQuantity(supplyCandidate.getQuantity());
@@ -124,19 +124,11 @@ public class SupplyCandiateHandler implements CandidateHandler
 				final Candidate newSupplyCandidateParent = stockCandidateService.createStockCandidate(supplyCandidateWithIdAndParentId);
 				parentStockCandidateWithIdAndDelta = candidateRepositoryWriteService.addOrUpdatePreserveExistingSeqNo(newSupplyCandidateParent);
 			}
-
-			// // update (or add) the stock with the delta
-			// parentStockCandidateWithId = stockCandidateService.addOrUpdateStock(supplyCandidateDeltaWithId
-			// // but don't provide the supply's SeqNo, because there might already be a stock record which we might override (even if the supply candidate is not yet linked to it);
-			// // plus, the supply's seqNo shall depend on the stock's anyways
-			// .withSeqNo(-1));
 		}
 
 		final BigDecimal delta = parentStockCandidateWithIdAndDelta.getQuantity();
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
 				parentStockCandidateWithIdAndDelta.getMaterialDescriptor(),
-				// relatedCandiateWithDelta.getMaterialDescriptor().getWarehouseId(),
-				// relatedCandiateWithDelta.getMaterialDescriptor().getDate(),
 				parentStockCandidateWithIdAndDelta.getGroupId(),
 				delta);
 
@@ -150,11 +142,6 @@ public class SupplyCandiateHandler implements CandidateHandler
 		return supplyCandidateDeltaWithId
 				.withParentId(parentStockCandidateWithIdAndDelta.getId())
 				.withSeqNo(parentStockCandidateWithIdAndDelta.getSeqNo() + 1);
-
-		// e.g.
-		// supply-candidate with 23 (i.e. +23)
-		// parent-stockCandidate used to have -44 (because of "earlier" candidate)
-		// now has -21
 	}
 
 	private void assertCorrectCandidateType(@NonNull final Candidate supplyCandidate)

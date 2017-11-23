@@ -38,7 +38,7 @@ import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -200,10 +200,10 @@ public class DemandCandiateCangeHandlerTest
 
 			assertThat(event).isInstanceOf(SupplyRequiredEvent.class);
 			final SupplyRequiredEvent materialDemandEvent = (SupplyRequiredEvent)event;
-			final SupplyRequiredDescriptor materialDemandDescriptor = materialDemandEvent.getMaterialDemandDescriptor();
-			assertThat(materialDemandDescriptor).isNotNull();
+			final SupplyRequiredDescriptor supplyRequiredDescriptor = materialDemandEvent.getSupplyRequiredDescriptor();
+			assertThat(supplyRequiredDescriptor).isNotNull();
 
-			final MaterialDescriptor materialDescriptorOfEvent = materialDemandDescriptor.getMaterialDescriptor();
+			final MaterialDescriptor materialDescriptorOfEvent = supplyRequiredDescriptor.getMaterialDescriptor();
 			assertThat(materialDescriptorOfEvent.getProductId()).isEqualTo(PRODUCT_ID);
 			assertThat(materialDescriptorOfEvent.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 			assertThat(materialDescriptorOfEvent.getQuantity()).isEqualByComparingTo(expectedQty);
@@ -345,10 +345,10 @@ public class DemandCandiateCangeHandlerTest
 			assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() + 1); // when we sort by SeqNo, the demand needs to be first and thus have the smaller number
 		};
 
+		// first invocation
 		doTest.accept(candidate, qty);
 
-		// second invocation
-		// TODO: also test this for supply
+		// second invocation with different quantity
 		final Candidate secondInvocationCanddiate = candidate.withQuantity(qty.add(BigDecimal.ONE));
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
 				stockRepository,

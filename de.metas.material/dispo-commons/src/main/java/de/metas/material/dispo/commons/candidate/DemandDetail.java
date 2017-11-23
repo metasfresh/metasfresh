@@ -31,16 +31,16 @@ import lombok.Value;
 @Value
 public class DemandDetail
 {
-	public static DemandDetail createOrNull(@NonNull final Optional<SupplyRequiredDescriptor> materialDemandDescr)
+	public static DemandDetail createOrNull(@NonNull final Optional<SupplyRequiredDescriptor> supplyRequiredDescriptor)
 	{
-		if (!materialDemandDescr.isPresent())
+		if (!supplyRequiredDescriptor.isPresent())
 		{
 			return null;
 		}
 		return new DemandDetail(
-				materialDemandDescr.get().getForecastLineId(),
-				materialDemandDescr.get().getShipmentScheduleId(),
-				materialDemandDescr.get().getOrderLineId());
+				supplyRequiredDescriptor.get().getForecastLineId(),
+				supplyRequiredDescriptor.get().getShipmentScheduleId(),
+				supplyRequiredDescriptor.get().getOrderLineId());
 	}
 
 	public static DemandDetail forDemandDetailRecord(@NonNull final I_MD_Candidate_Demand_Detail demandDetailRecord)
