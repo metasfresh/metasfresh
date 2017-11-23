@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.candidatechange;
 
+import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
 import static de.metas.material.event.EventTestHelper.CLIENT_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
@@ -161,27 +162,12 @@ public class CandidateChangeHandlerTests
 	public void testApplyDeltaToLaterStockCandidates()
 	{
 		final Candidate earlierCandidate;
-		final Candidate candidate;
 		final Candidate evenLaterCandidate;
 		final Candidate evenLaterCandidateWithDifferentWarehouse;
 
 		// preparations
 		{
-			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-					.complete(true)
-					.productDescriptor(createProductDescriptor())
-					.warehouseId(WAREHOUSE_ID)
-					.quantity(new BigDecimal("10"))
-					.date(t2)
-					.build();
-
-			candidate = Candidate.builder()
-					.type(CandidateType.STOCK)
-					.clientId(CLIENT_ID)
-					.orgId(ORG_ID)
-					.materialDescriptor(materialDescriptor)
-					.build();
-			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(candidate);
+			final MaterialDescriptor materialDescriptor = createAndAddStockCandidate(t2);
 
 			final MaterialDescriptor earlierMaterialDescriptor = materialDescriptor.withDate(t1);
 
@@ -263,6 +249,27 @@ public class CandidateChangeHandlerTests
 		assertThat(evenLaterCandidateWithDifferentWarehouseAfterChange.getQty()).isEqualByComparingTo("12"); // quantity shall be unchanged, because we changed another warehouse and this one should not have been matched
 		assertThat(evenLaterCandidateWithDifferentWarehouseAfterChange.getMD_Candidate_GroupId(), not(is(earlierCandidate.getGroupId())));
 
+	}
+
+	private MaterialDescriptor createAndAddStockCandidate(Date dateProjected)
+	{
+		final Candidate candidate;
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+				.complete(true)
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
+				.quantity(new BigDecimal("10"))
+				.date(dateProjected)
+				.build();
+
+		candidate = Candidate.builder()
+				.type(CandidateType.STOCK)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.materialDescriptor(materialDescriptor)
+				.build();
+		candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(candidate);
+		return materialDescriptor;
 	}
 
 	private CandidatesQuery mkQueryForStockUntilDate(@NonNull final Date timestamp, final int warehouseId)
@@ -405,7 +412,7 @@ public class CandidateChangeHandlerTests
 	 * Therefore its {@link I_MD_Candidate} records gets to be persisted first. still, the {@code SeqNo} needs to be "stable".
 	 */
 	@Test
-	public void onCandidateNewOrChange_supply_then_unrelated_demand()
+	public void onCandidateNewOrChange_supply_then_unrelated_demand_no_initital_stock()
 	{
 		final BigDecimal qty = new BigDecimal("23");
 
@@ -439,10 +446,85 @@ public class CandidateChangeHandlerTests
 			assertThatModel(supplyRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, firstStockRecord.getSeqNo() + 1);  // as before
 			assertThatModel(secondStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_SeqNo, demandRecord.getSeqNo() + 1);
 
-			// shall both be balanced between the demand and the supply
+			// shall both be balanced between the demand and the supply, so that in sume we have zero
 			assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, secondStockRecord.getDateProjected());
 			assertThat(firstStockRecord.getQty()).isEqualByComparingTo("23");
 			assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-23");
 		}
+	}
+
+	@Test
+	public void onCandidateNewOrChange_supply_then_unrelated_demand_initital_stock()
+	{
+		createAndAddStockCandidate(BEFORE_NOW); // has qty=10
+
+		final BigDecimal qty = new BigDecimal("23");
+		createAndAddSupplyWithQtyandDemandDetail(qty, 20);
+		createAndAddDemandWithQtyandDemandDetail(qty, 30);
+
+		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(5);
+
+		final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.filter(CandidateType.STOCK);
+		assertThat(allStockCandidates).hasSize(3);
+		final I_MD_Candidate initialStockRecord = allStockCandidates.get(0);
+		final I_MD_Candidate firstStockRecord = allStockCandidates.get(1);
+		final I_MD_Candidate secondStockRecord = allStockCandidates.get(2);
+
+		assertThat(initialStockRecord.getQty()).isEqualByComparingTo("10"); // shall be unchanged
+		assertThat(firstStockRecord.getQty()).isEqualByComparingTo("33");
+		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-23");
+	}
+
+	@Test
+	public void onCandidateNewOrChange_demand_then_unrelated_demand_no_initital_stock()
+	{
+		final BigDecimal qty = new BigDecimal("23");
+
+		createAndAddDemandWithQtyandDemandDetail(qty, 20);
+		createAndAddDemandWithQtyandDemandDetail(qty, 30);
+
+		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(4);
+
+		final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.filter(CandidateType.STOCK);
+		assertThat(allStockCandidates).hasSize(2);
+
+		final I_MD_Candidate firstStockRecord = allStockCandidates.get(0);
+		final I_MD_Candidate secondStockRecord = allStockCandidates.get(1);
+
+		final List<I_MD_Candidate> allDemandRecords = DispoTestUtils.filter(CandidateType.DEMAND);
+		assertThat(allDemandRecords).hasSize(2);
+
+		// in sum, we now have -46 for this time, product, warehouse and storageAttributesKey
+		assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, secondStockRecord.getDateProjected());
+		assertThat(firstStockRecord.getQty()).isEqualByComparingTo("-23");
+		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-23");
+	}
+
+	@Test
+	public void onCandidateNewOrChange_demand_then_unrelated_demand_initital_stock()
+	{
+		createAndAddStockCandidate(BEFORE_NOW); // has qty=10
+
+		final BigDecimal qty = new BigDecimal("8");
+		createAndAddDemandWithQtyandDemandDetail(qty, 20);
+		createAndAddDemandWithQtyandDemandDetail(qty, 30);
+
+		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(5);
+
+		final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.filter(CandidateType.STOCK);
+		assertThat(allStockCandidates).hasSize(3);
+		final I_MD_Candidate initialStockRecord = allStockCandidates.get(0);
+		final I_MD_Candidate firstStockRecord = allStockCandidates.get(1);
+		final I_MD_Candidate secondStockRecord = allStockCandidates.get(2);
+
+		final List<I_MD_Candidate> allDemandRecords = DispoTestUtils.filter(CandidateType.DEMAND);
+		assertThat(allDemandRecords).hasSize(2);
+
+		// in sum, we now have -46 for this time, product, warehouse and storageAttributesKey
+		assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, secondStockRecord.getDateProjected());
+
+		assertThat(initialStockRecord.getQty()).isEqualByComparingTo("10"); // shall be unchanged
+		assertThat(firstStockRecord.getQty()).isEqualByComparingTo("2");
+		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-8");
 	}
 }

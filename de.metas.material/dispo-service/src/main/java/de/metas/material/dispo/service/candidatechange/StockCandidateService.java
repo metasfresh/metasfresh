@@ -81,13 +81,26 @@ public class StockCandidateService
 						.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
 						.build());
 
-		final BigDecimal previousQuantity = previousStockOrNull != null
-				? previousStockOrNull.getQuantity()
-				: BigDecimal.ZERO;
+		// TODO i know from the unit tests this kindof works, but i need to better understand it 
+		final BigDecimal newQty;
+		if (previousStockOrNull == null)
+		{
+			newQty = candidate.getQuantity();
+		}
+		else if (previousStockOrNull.getDate().before(candidate.getDate()))
+		{
+			final BigDecimal previousQuantity = previousStockOrNull.getQuantity();
+			newQty = previousQuantity.add(candidate.getQuantity());
+		}
+		else
+		{
+			// previousStockOrNull has the same date as the given "candidate"
+			newQty = candidate.getQuantity();
+		}
 
 		final MaterialDescriptor materialDescriptor = candidate
 				.getMaterialDescriptor()
-				.withQuantity(previousQuantity.add(candidate.getQuantity()));
+				.withQuantity(newQty);
 
 		final Integer groupId = previousStockOrNull != null
 				? previousStockOrNull.getGroupId()
@@ -109,7 +122,7 @@ public class StockCandidateService
 		return CandidatesQuery.builder()
 				.materialDescriptor(candidate.getMaterialDescriptor()
 						.withoutQuantity()
-						.withDateOperator(DateOperator.BEFORE))
+						.withDateOperator(DateOperator.BEFORE_OR_AT))
 				.type(CandidateType.STOCK)
 				.matchExactStorageAttributesKey(true);
 	}
@@ -154,11 +167,8 @@ public class StockCandidateService
 	 * @param groupId the groupId to set to every stock record that we matched
 	 * @param delta the quantity (positive or negative) to add to every stock record that we matched
 	 */
-	public
-	/* package */ void applyDeltaToMatchingLaterStockCandidates(
+	public void applyDeltaToMatchingLaterStockCandidates(
 			@NonNull final MaterialDescriptor materialDescriptor,
-//			@NonNull final Integer warehouseId,
-//			@NonNull final Date date,
 			@NonNull final Integer groupId,
 			@NonNull final BigDecimal delta)
 	{
