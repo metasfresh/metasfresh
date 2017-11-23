@@ -14,7 +14,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.dao.impl.StringLikeFilter;
 import org.adempiere.util.Services;
 import org.junit.Test;
 
@@ -104,7 +103,7 @@ public class RepositoryCommonsTest
 	}
 
 	@Test
-	public void addProductionDetailToFilter_with_StorageAttributesKey_no_exact_matching()
+	public void addMaterialDescriptorToQueryBuilderIfNotNull_with_StorageAttributesKey_no_exact_matching()
 	{
 		final MaterialDescriptor materialDescriptor = commonSetupFor_addProductionDetailToFilter_with_StorageAttributesKey();
 
@@ -114,17 +113,11 @@ public class RepositoryCommonsTest
 		final List<IQueryFilter<I_MD_Candidate>> filters = queryBuilder.getCompositeFilter().getFilters();
 
 		assertThat(filters).hasSize(1);
-		final IQueryFilter<I_MD_Candidate> asiKeyFilter = filters.get(0);
-		assertThat(asiKeyFilter).isInstanceOf(StringLikeFilter.class);
-
-		final StringLikeFilter<I_MD_Candidate> likeFilter = (StringLikeFilter<I_MD_Candidate>)asiKeyFilter;
-		assertThat(likeFilter.getColumnName()).isEqualTo(I_MD_Candidate.COLUMNNAME_StorageAttributesKey);
-		assertThat(likeFilter.getOperator()).isEqualTo(Operator.STRING_LIKE);
-		assertThat(likeFilter.getValue()).isEqualTo("Key1%Key2%Key3");
+		assertThat(filters.get(0)).isStringLikeFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, "Key1%Key2%Key3");
 	}
 
 	@Test
-	public void addProductionDetailToFilter_with_StorageAttributesKey_exact_matching()
+	public void addMaterialDescriptorToQueryBuilderIfNotNull_with_StorageAttributesKey_exact_matching()
 	{
 		final MaterialDescriptor materialDescriptor = commonSetupFor_addProductionDetailToFilter_with_StorageAttributesKey();
 

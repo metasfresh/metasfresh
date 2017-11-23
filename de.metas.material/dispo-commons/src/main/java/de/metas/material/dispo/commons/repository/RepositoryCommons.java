@@ -107,7 +107,6 @@ public class RepositoryCommons
 		}
 		if (query.getParentDemandDetail() != null)
 		{
-			// TODO test
 			final IQueryBuilder<I_MD_Candidate> parentBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 					.addOnlyActiveRecordsFilter();
 			addDemandDetailToBuilder(query.getParentDemandDetail(), parentBuilder);
