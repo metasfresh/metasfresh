@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.CandidatesQuery;
-import de.metas.material.dispo.commons.CandidatesQuery.CandidatesQueryBuilder;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -74,14 +73,12 @@ public class StockCandidateService
 	 */
 	public Candidate createStockCandidate(@NonNull final Candidate candidate)
 	{
-		final CandidatesQueryBuilder stockQueryBuilder = createStockQueryBuilderWithBeforeOperator(candidate);
-
-		final Candidate previousStockOrNull = candidateRepositoryRetrieval
-				.retrieveLatestMatchOrNull(stockQueryBuilder
-						.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
-						.build());
-
-		// TODO i know from the unit tests this kindof works, but i need to better understand it 
+		final Candidate previousStockOrNull;
+		{
+			final CandidatesQuery stockQuery = createStockQueryBuilderWithDateOperator(candidate, DateOperator.BEFORE_OR_AT);
+			previousStockOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(stockQuery);
+		}
+		// TODO i know from the unit tests this kindof works, but i need to better understand it
 		final BigDecimal newQty;
 		if (previousStockOrNull == null)
 		{
@@ -89,7 +86,11 @@ public class StockCandidateService
 		}
 		else if (previousStockOrNull.getDate().before(candidate.getDate()))
 		{
-			final BigDecimal previousQuantity = previousStockOrNull.getQuantity();
+			final CandidatesQuery stockQuery = createStockQueryBuilderWithDateOperator(previousStockOrNull, DateOperator.AT);
+			final BigDecimal previousQuantity = candidateRepositoryRetrieval
+					.retrieveOrderedByDateAndSeqNo(stockQuery).stream().map(Candidate::getQuantity)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+
 			newQty = previousQuantity.add(candidate.getQuantity());
 		}
 		else
@@ -117,14 +118,18 @@ public class StockCandidateService
 				.build();
 	}
 
-	private CandidatesQueryBuilder createStockQueryBuilderWithBeforeOperator(@NonNull final Candidate candidate)
+	private CandidatesQuery createStockQueryBuilderWithDateOperator(
+			@NonNull final Candidate candidate,
+			@NonNull final DateOperator dateOperator)
 	{
 		return CandidatesQuery.builder()
 				.materialDescriptor(candidate.getMaterialDescriptor()
 						.withoutQuantity()
-						.withDateOperator(DateOperator.BEFORE_OR_AT))
+						.withDateOperator(dateOperator))
 				.type(CandidateType.STOCK)
-				.matchExactStorageAttributesKey(true);
+				.matchExactStorageAttributesKey(true)
+				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
+				.build();
 	}
 
 	/**

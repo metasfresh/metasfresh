@@ -8,12 +8,15 @@ import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -76,10 +79,10 @@ public class CandidateChangeHandlerTests
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private final Date t1 = TimeUtil.parseTimestamp("2017-11-22 00:00");
-	private final Date t2 = TimeUtil.addMinutes(t1, 10);
-	private final Date t3 = TimeUtil.addMinutes(t1, 20);
-	private final Date t4 = TimeUtil.addMinutes(t1, 30);
+	private final Timestamp t1 = TimeUtil.parseTimestamp("2017-11-22 00:00");
+	private final Timestamp t2 = TimeUtil.addMinutes(t1, 10);
+	private final Timestamp t3 = TimeUtil.addMinutes(t1, 20);
+	private final Timestamp t4 = TimeUtil.addMinutes(t1, 30);
 
 	private final int OTHER_WAREHOUSE_ID = WAREHOUSE_ID + 10;
 
@@ -167,7 +170,7 @@ public class CandidateChangeHandlerTests
 
 		// preparations
 		{
-			final MaterialDescriptor materialDescriptor = createAndAddStockCandidate(t2);
+			final MaterialDescriptor materialDescriptor = createAndAddStock(t2);
 
 			final MaterialDescriptor earlierMaterialDescriptor = materialDescriptor.withDate(t1);
 
@@ -251,9 +254,9 @@ public class CandidateChangeHandlerTests
 
 	}
 
-	private MaterialDescriptor createAndAddStockCandidate(Date dateProjected)
+	private MaterialDescriptor createAndAddStock(
+			@NonNull final Date dateProjected)
 	{
-		final Candidate candidate;
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
 				.productDescriptor(createProductDescriptor())
@@ -262,13 +265,20 @@ public class CandidateChangeHandlerTests
 				.date(dateProjected)
 				.build();
 
-		candidate = Candidate.builder()
-				.type(CandidateType.STOCK)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
-				.materialDescriptor(materialDescriptor)
-				.build();
-		candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(candidate);
+		final I_MD_Candidate stockRecord = newInstance(I_MD_Candidate.class);
+		stockRecord.setAD_Org_ID(ORG_ID);
+		stockRecord.setMD_Candidate_Type(CandidateType.STOCK.toString());
+		stockRecord.setM_Warehouse_ID(materialDescriptor.getWarehouseId());
+		stockRecord.setQty(materialDescriptor.getQuantity());
+		stockRecord.setDateProjected(new Timestamp(dateProjected.getTime()));
+		stockRecord.setM_Product_ID(materialDescriptor.getProductId());
+		stockRecord.setStorageAttributesKey(materialDescriptor.getStorageAttributesKey());
+		stockRecord.setM_AttributeSetInstance_ID(materialDescriptor.getAttributeSetInstanceId());
+		save(stockRecord);
+
+		stockRecord.setMD_Candidate_GroupId(stockRecord.getMD_Candidate_ID());
+		save(stockRecord);
+
 		return materialDescriptor;
 	}
 
@@ -412,7 +422,7 @@ public class CandidateChangeHandlerTests
 	 * Therefore its {@link I_MD_Candidate} records gets to be persisted first. still, the {@code SeqNo} needs to be "stable".
 	 */
 	@Test
-	public void onCandidateNewOrChange_supply_then_unrelated_demand_no_initital_stock()
+	public void onCandidateNewOrChange_supply_then_unrelated_demand_no_initial_stock()
 	{
 		final BigDecimal qty = new BigDecimal("23");
 
@@ -454,9 +464,9 @@ public class CandidateChangeHandlerTests
 	}
 
 	@Test
-	public void onCandidateNewOrChange_supply_then_unrelated_demand_initital_stock()
+	public void onCandidateNewOrChange_supply_then_unrelated_demand_initial_stock()
 	{
-		createAndAddStockCandidate(BEFORE_NOW); // has qty=10
+		createAndAddStock(BEFORE_NOW); // has qty=10
 
 		final BigDecimal qty = new BigDecimal("23");
 		createAndAddSupplyWithQtyandDemandDetail(qty, 20);
@@ -476,7 +486,7 @@ public class CandidateChangeHandlerTests
 	}
 
 	@Test
-	public void onCandidateNewOrChange_demand_then_unrelated_demand_no_initital_stock()
+	public void onCandidateNewOrChange_demand_then_unrelated_demand_no_initial_stock()
 	{
 		final BigDecimal qty = new BigDecimal("23");
 
@@ -501,21 +511,23 @@ public class CandidateChangeHandlerTests
 	}
 
 	@Test
-	public void onCandidateNewOrChange_demand_then_unrelated_demand_initital_stock()
+	public void onCandidateNewOrChange_demand_then_unrelated_demand_double_initial_stock()
 	{
-		createAndAddStockCandidate(BEFORE_NOW); // has qty=10
+		createAndAddStock(BEFORE_NOW); // has qty=10
+		createAndAddStock(BEFORE_NOW); // has qty=10
 
-		final BigDecimal qty = new BigDecimal("8");
+		final BigDecimal qty = new BigDecimal("12");
 		createAndAddDemandWithQtyandDemandDetail(qty, 20);
 		createAndAddDemandWithQtyandDemandDetail(qty, 30);
 
-		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(5);
+		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(6);
 
 		final List<I_MD_Candidate> allStockCandidates = DispoTestUtils.filter(CandidateType.STOCK);
-		assertThat(allStockCandidates).hasSize(3);
-		final I_MD_Candidate initialStockRecord = allStockCandidates.get(0);
-		final I_MD_Candidate firstStockRecord = allStockCandidates.get(1);
-		final I_MD_Candidate secondStockRecord = allStockCandidates.get(2);
+		assertThat(allStockCandidates).hasSize(4);
+		final I_MD_Candidate firstInitialStockRecord = allStockCandidates.get(0);
+		final I_MD_Candidate secondInitialStockRecord = allStockCandidates.get(1);
+		final I_MD_Candidate firstStockRecord = allStockCandidates.get(2);
+		final I_MD_Candidate secondStockRecord = allStockCandidates.get(3);
 
 		final List<I_MD_Candidate> allDemandRecords = DispoTestUtils.filter(CandidateType.DEMAND);
 		assertThat(allDemandRecords).hasSize(2);
@@ -523,8 +535,12 @@ public class CandidateChangeHandlerTests
 		// in sum, we now have -46 for this time, product, warehouse and storageAttributesKey
 		assertThatModel(firstStockRecord).hasNonNullValue(I_MD_Candidate.COLUMN_DateProjected, secondStockRecord.getDateProjected());
 
-		assertThat(initialStockRecord.getQty()).isEqualByComparingTo("10"); // shall be unchanged
-		assertThat(firstStockRecord.getQty()).isEqualByComparingTo("2");
-		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-8");
+		// -> overall stock at BEFORE_NOW is 20
+		assertThat(firstInitialStockRecord.getQty()).isEqualByComparingTo("10"); // shall be unchanged
+		assertThat(secondInitialStockRecord.getQty()).isEqualByComparingTo("10"); // shall be unchanged
+
+		// -> overall stock at NOW is (20 - 24) = -4 = (8 -12)
+		assertThat(firstStockRecord.getQty()).isEqualByComparingTo("8");
+		assertThat(secondStockRecord.getQty()).isEqualByComparingTo("-12");
 	}
 }
