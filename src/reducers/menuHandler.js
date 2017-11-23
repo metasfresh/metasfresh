@@ -15,7 +15,7 @@ export default function menuHandler(state = initialState, action) {
                 ...state,
                 breadcrumb: state.breadcrumb.map(
                     node =>
-                        node.children.nodeId === action.node.nodeId
+                        node.nodeId === action.node.nodeId
                             ? { ...node, children: action.node }
                             : node
                 )
