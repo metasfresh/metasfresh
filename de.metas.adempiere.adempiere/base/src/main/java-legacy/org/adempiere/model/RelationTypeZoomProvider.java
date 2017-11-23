@@ -92,7 +92,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				builder.getSource_Reference_ID(),
 				builder.getSourceTableRefInfoOrNull(),
 				builder.getSourceRoleDisplayName(),
-				false);
+				isTableRecordIdTarget);
 		target = new ZoomProviderDestination(
 				builder.getTarget_Reference_ID(),
 				builder.getTargetTableRefInfoOrNull(),
@@ -205,6 +205,8 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	{
 		final ZoomProviderDestination target = getTarget();
 		final ZoomProviderDestination source = getSource();
+		
+		Check.assumeNotNull(source, "The Source cannot be null");
 
 		if (isDirected())
 		{
@@ -363,19 +365,18 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	}
 
 	/**
-	 * 
-	 * Retrieve destinations for the source given as parameter.
-	 * NOTE: This is not suitable for REferenceTarget relation types, only for the normal kind!
+	 * Retrieve destinations for the zoom origin given as parameter.
+	 * NOTE: This is not suitable for TableRecordIdTarget relation types, only for the default kind!
 	 * 
 	 * @param ctx
-	 * @param sourcePO
+	 * @param zoomOriginPO
 	 * @param clazz
 	 * @param trxName
 	 * @return
 	 */
-	public <T> List<T> retrieveDestinations(final Properties ctx, final PO sourcePO, final Class<T> clazz, final String trxName)
+	public <T> List<T> retrieveDestinations(final Properties ctx, final PO zoomOriginPO, final Class<T> clazz, final String trxName)
 	{
-		final IZoomSource zoomOrigin = POZoomSource.of(sourcePO, -1);
+		final IZoomSource zoomOrigin = POZoomSource.of(zoomOriginPO, -1);
 
 		final boolean isTableRecordID = false;
 		
