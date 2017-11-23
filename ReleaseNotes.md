@@ -41,6 +41,8 @@ Here come the actual release notes:
     * Fixes the keyboard Hotkey for expan in Document Windows.
   * [#1374](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1374) Keyboard alt+u in Sales Order
     * Fixes the Document Action Shortcut alt+u for complete action in all Document Windows.
+  * [#1376](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1376) Navigation Menu Favorite stars wrong
+    * Fix for the Bookmark Functionality in WebUI Window and Navigation Sitemap.
 
 # metasfresh 5.36 (2017-47)
 
