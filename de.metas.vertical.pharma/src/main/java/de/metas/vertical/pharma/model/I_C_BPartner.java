@@ -1,7 +1,7 @@
 package de.metas.vertical.pharma.model;
 
 
-public interface I_C_BPartner extends I_C_BPartner
+public interface I_C_BPartner extends org.compiere.model.I_C_BPartner
 {
 	public static final String COLUMNNAME_IsPharmaciePermission = "IsPharmaciePermission";
 	public void setIsPharmaciePermission (boolean IsPharmaciePermission);
