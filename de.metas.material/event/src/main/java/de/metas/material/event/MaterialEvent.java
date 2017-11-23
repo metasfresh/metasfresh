@@ -6,11 +6,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DistributionRequestedEvent;
 import de.metas.material.event.ddorder.DistributionAdvisedEvent;
-import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.pporder.ProductionRequestedEvent;
 import de.metas.material.event.pporder.ProductionAdvisedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 
 /*

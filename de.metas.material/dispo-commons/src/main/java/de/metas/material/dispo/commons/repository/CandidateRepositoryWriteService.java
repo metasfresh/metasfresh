@@ -1,7 +1,6 @@
 package de.metas.material.dispo.commons.repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -59,34 +58,6 @@ import lombok.NonNull;
 public class CandidateRepositoryWriteService
 {
 	/**
-	 * Updates the qty of the given candidate.
-	 * Differs from {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)} in that
-	 * only the ID of the given {@code candidateToUpdate} is used, and if there is no existing persisted record, then an exception is thrown.
-	 * Also it just updates the underlying persisted record of the given {@code candidateToUpdate} and nothing else.
-	 *
-	 *
-	 * @param candidateToUpdate the candidate to update. Needs to have {@link Candidate#getId()} > 0.
-	 *
-	 * @return a copy of the given {@code candidateToUpdate} with the quantity being a delta, similar to the return value of {@link #addOrUpdate(Candidate, boolean)}.
-	 */
-	public Candidate updateQty(@NonNull final Candidate candidateToUpdate)
-	{
-		Preconditions.checkState(candidateToUpdate.getId() > 0,
-				"Parameter 'candidateToUpdate' needs to have Id > 0; candidateToUpdate=%s",
-				candidateToUpdate);
-
-		final I_MD_Candidate candidateRecord = load(candidateToUpdate.getId(), I_MD_Candidate.class);
-		final BigDecimal oldQty = candidateRecord.getQty();
-
-		candidateRecord.setQty(candidateToUpdate.getQuantity());
-		save(candidateRecord);
-
-		final BigDecimal qtyDelta = candidateToUpdate.getQuantity().subtract(oldQty);
-
-		return candidateToUpdate.withQuantity(qtyDelta);
-	}
-
-	/**
 	 * Stores the given {@code candidate}.
 	 * If there is already an existing candidate in the store, it is loaded, its fields are updated and the result is saved.<br>
 	 * If the given {@code candidate} specifies a {@link Candidate#getSeqNo()}, then that value will be persisted, even if there is already a different value stored in the underlying {@link I_MD_Candidate} record.
@@ -116,9 +87,22 @@ public class CandidateRepositoryWriteService
 		return addOrUpdate(candidate, true);
 	}
 
-	private Candidate addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNo)
+	public Candidate updateOverwriteStoredSeqNo(@NonNull final Candidate candidate)
 	{
-		final CandidatesQuery query = CandidatesQuery.fromCandidate(candidate);
+		Check.errorIf(candidate.getId() <= 0, "The candidate parameter needs to have Id>0; candidate={}", candidate);
+		final CandidatesQuery query = CandidatesQuery.fromId(candidate.getId());
+
+		return addOrUpdate(query, candidate, false);
+	}
+
+	private Candidate addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
+	{
+		final CandidatesQuery query = CandidatesQuery.fromCandidate(candidate, preserveExistingSeqNoAndParentId);
+		return addOrUpdate(query, candidate, preserveExistingSeqNoAndParentId);
+	}
+
+	private Candidate addOrUpdate(final CandidatesQuery query, final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
+	{
 		final I_MD_Candidate oldCandidateRecord = RepositoryCommons
 				.mkQueryBuilder(query)
 				.create().firstOnly(I_MD_Candidate.class);
@@ -129,7 +113,7 @@ public class CandidateRepositoryWriteService
 		final I_MD_Candidate synchedRecord = updateOrCreateCandidateRecord(
 				oldCandidateRecord,
 				candidate,
-				preserveExistingSeqNo);
+				preserveExistingSeqNoAndParentId);
 		save(synchedRecord); // save now, because we need to have MD_Candidate_ID > 0
 
 		setFallBackSeqNoAndGroupIdIfNeeded(synchedRecord);

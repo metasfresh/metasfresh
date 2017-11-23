@@ -19,7 +19,7 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.CandidateService;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
@@ -122,7 +122,7 @@ public class SupplyProposalEvaluatorTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new CandidateService(candidateRepositoryRetrieval, materialEventService));
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, materialEventService));
 	}
 
 	/**
@@ -244,7 +244,7 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChain()
 	{
-		DistributionAdvisedHandlerHandlerTests.performTestTwoDistibutionPlanEvents(distributionAdvisedEventHandler);
+		DistributionAdvisedHandlerHandlerTests.handleDistributionAdvisedEvent_with_two_events_chronological(distributionAdvisedEventHandler);
 
 		// propose what would create an additional demand on A and an additional supply on B. nothing wrong with that
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
@@ -280,7 +280,7 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChainOpposite()
 	{
-		DistributionAdvisedHandlerHandlerTests.performTestTwoDistibutionPlanEvents(distributionAdvisedEventHandler);
+		DistributionAdvisedHandlerHandlerTests.handleDistributionAdvisedEvent_with_two_events_chronological(distributionAdvisedEventHandler);
 		// we now have an unbalanced demand with a stock of -10 in "fromWarehouseId" (because that's where the "last" demand of the "last" DistibutionPlan is)
 		// and we have a stock of +10 in "toWarehouseId"
 

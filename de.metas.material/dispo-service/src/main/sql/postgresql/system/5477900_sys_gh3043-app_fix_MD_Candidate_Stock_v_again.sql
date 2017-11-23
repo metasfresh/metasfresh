@@ -1,4 +1,14 @@
 
+ALTER INDEX public.md_candidate_uc_stock
+  RENAME TO md_candidate_stock_perf;
+COMMENT ON INDEX public.md_candidate_stock_perf
+  IS 'This index has the purpose of supporting the view MD_Candidate_Stock_v in finding the latest DateProjected for a given product-id, warehouse-id and StorageAttributesKey-(like-)expression
+
+Note: the Qty column is in so that hopefully MD_Candidate_Stock_v can do an index-inly-scan';
+
+UPDATE MD_Candidate SET storageattributeskey='' WHERE storageattributeskey='EMPTY';
+
+
 DROP VIEW IF EXISTS public.MD_Candidate_Stock_v;
 CREATE OR REPLACE VIEW public.MD_Candidate_Stock_v AS 
 SELECT

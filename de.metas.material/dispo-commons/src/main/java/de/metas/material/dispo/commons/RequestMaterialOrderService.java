@@ -50,12 +50,12 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class CandidateService
+public class RequestMaterialOrderService
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
 	private final MaterialEventService materialEventService;
 
-	public CandidateService(
+	public RequestMaterialOrderService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final MaterialEventService materialEventService)
 	{
@@ -74,7 +74,7 @@ public class CandidateService
 		switch (group.get(0).getSubType())
 		{
 			case PRODUCTION:
-				requestProductionOrder(group);
+				createAndFireProductionRequestedEvent(group);
 				break;
 			case DISTRIBUTION:
 				requestDistributionOrder(group);
@@ -92,14 +92,14 @@ public class CandidateService
 	 * @return
 	 */
 
-	private void requestProductionOrder(@NonNull final List<Candidate> group)
+	private void createAndFireProductionRequestedEvent(@NonNull final List<Candidate> group)
 	{
-		final ProductionRequestedEvent ppOrderRequestEvent = createPPOrderRequestEvent(group);
+		final ProductionRequestedEvent ppOrderRequestEvent = createProductionRequestedEvent(group);
 		materialEventService.fireEvent(ppOrderRequestEvent);
 	}
 
 	@VisibleForTesting
-	ProductionRequestedEvent createPPOrderRequestEvent(final List<Candidate> group)
+	ProductionRequestedEvent createProductionRequestedEvent(final List<Candidate> group)
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 

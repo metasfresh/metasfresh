@@ -15,7 +15,7 @@ import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 
 /*
  * #%L
@@ -59,10 +59,10 @@ public class SupplyRequiredEventCreatorTest
 						.warehouseId(WAREHOUSE_ID)
 						.build())
 				.build();
-		final SupplyRequiredEvent result = SupplyRequiredEventCreator.createMaterialDemandEvent(demandCandidate, BigDecimal.TEN);
+		final SupplyRequiredEvent result = SupplyRequiredEventCreator.createSupplyRequiredEvent(demandCandidate, BigDecimal.TEN);
 		assertThat(result).isNotNull();
 		assertThat(result.getEventDescriptor().getClientId()).isEqualTo(20);
 		assertThat(result.getEventDescriptor().getOrgId()).isEqualTo(30);
-		assertThat(result.getMaterialDemandDescriptor().getDemandCandidateId()).isEqualTo(10);
+		assertThat(result.getSupplyRequiredDescriptor().getDemandCandidateId()).isEqualTo(10);
 	}
 }
