@@ -18,11 +18,13 @@ export default class BookmarkButton extends Component {
         }
     }
 
-    toggleBookmarkButton = () => {
-        this.setState(prev => ({
-            isBookmarkButtonShowed: !prev.isBookmarkButtonShowed
-        }));
-    }
+    handleButtonEnter = () => {
+        this.setState({ isBookmarkButtonShowed: true });
+    };
+
+    handleButtonLeave = () => {
+        this.setState({ isBookmarkButtonShowed: false });
+    };
 
     handleClick = () => {
         const { nodeId, updateData } = this.props;
@@ -53,8 +55,8 @@ export default class BookmarkButton extends Component {
 
         return (
             <span
-                onMouseEnter={this.toggleBookmarkButton}
-                onMouseLeave={this.toggleBookmarkButton}
+                onMouseEnter={this.handleButtonEnter}
+                onMouseLeave={this.handleButtonLeave}
                 className="btn-bookmark"
             >
                 {children}
