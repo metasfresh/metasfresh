@@ -245,7 +245,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	 */
 	private MQuery mkZoomOriginQuery(final IZoomSource zoomOrigin, final boolean isTableRecordIdTarget)
 	{
-		final String queryWhereClause = createZoomOriginQueryWhereClause (zoomOrigin, isTableRecordIdTarget);
+		final String queryWhereClause = createZoomOriginQueryWhereClause (zoomOrigin);
 		
 		final ITableRefInfo refTable = getTarget().getTableRefInfo();
 		
@@ -260,7 +260,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return query;
 	}
 
-	private String createZoomOriginQueryWhereClause(final IZoomSource zoomOrigin, final boolean isTableRecordIdTarget2)
+	private String createZoomOriginQueryWhereClause(final IZoomSource zoomOrigin)
 	{
 		final IADTableDAO tableDAO  = Services.get(IADTableDAO.class);
 		
