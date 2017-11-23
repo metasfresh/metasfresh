@@ -82,8 +82,6 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 
 		purchaseCandidateRepo.saveAll(purchaseCandidates);
 
-		// TODO: notify user in charge that the purchase orders were created
-
 		return Result.SUCCESS;
 	}
 
@@ -110,5 +108,4 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 
 		return purchaseCandidates;
 	}
-
 }

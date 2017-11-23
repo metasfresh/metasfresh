@@ -101,7 +101,7 @@ public class DemandCandiateCangeHandlerTest
 	}
 
 	@Test
-	public void testOnDemandCandidateCandidateNewOrChange_no_stock()
+	public void onCandidateNewOrChange_no_stock()
 	{
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
 		setupRetrieveLatestMatchOrNullAlwaysReturnsNull();
@@ -124,7 +124,7 @@ public class DemandCandiateCangeHandlerTest
 	}
 
 	@Test
-	public void testOnDemandCandidateCandidateNewOrChange_unsufficient_stock()
+	public void onCandidateNewOrChange_unsufficient_stock()
 	{
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
 		setupRepositoryReturnsQuantityForMaterial("10", candidate.getMaterialDescriptor());
@@ -148,7 +148,8 @@ public class DemandCandiateCangeHandlerTest
 		assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() + 1); // when we sort by SeqNo, the demand needs to be first and thus have the smaller value
 	}
 
-	public void setupRepositoryReturnsQuantityForMaterial(final String quantity, final MaterialDescriptor materialDescriptor)
+
+	private void setupRepositoryReturnsQuantityForMaterial(final String quantity, final MaterialDescriptor materialDescriptor)
 	{
 		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptor);
 
@@ -161,7 +162,7 @@ public class DemandCandiateCangeHandlerTest
 		}}; // @formatter:on
 	}
 
-	public void setupRetrieveLatestMatchOrNullAlwaysReturnsNull()
+	private void setupRetrieveLatestMatchOrNullAlwaysReturnsNull()
 	{
 		// @formatter:off
 		new Expectations()
