@@ -32,6 +32,10 @@ Here come the actual release notes:
     * Improvement of the SSCC Label, now alloing to have Product Names that extend the width into more than 1 line.
   * [#3039](https://github.com/metasfresh/metasfresh/issues/3039) Forecast Window adjustments
     * Improvement and extension of the Forecast Window in WebUI, adding new Fields Businesspartner, Date Promised, Warehouse to Forecast Header.
+  * [#3047](https://github.com/metasfresh/metasfresh/issues/3047) WebUI: New Window for Quality Note
+    * New Window for Quality Note in WebUI, allowing to mmaintain the available Quality Notes and Performace Types for Material Receipt.
+  * [#3048](https://github.com/metasfresh/metasfresh/issues/3048) WebUI: Date Filter missing in Material Receipt Dispo
+    * New Date Filter added to material Receipt Dispo.
 
 ## Fixes
 * metasfresh-webui-frontend
