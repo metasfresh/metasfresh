@@ -86,14 +86,20 @@ public class StockRepository
 
 	private Timestamp retrieveMaxDateLessOrEqual(@NonNull final Date date)
 	{
-		final Timestamp latestDateOrNull = Services.get(IQueryBL.class)
+		// final Timestamp latestDateOrNull = Services.get(IQueryBL.class)
+		// .createQueryBuilder(I_MD_Candidate_Stock_v.class)
+		// .addCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, new Timestamp(date.getTime()))
+		// .orderBy().addColumnDescending(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected).endOrderBy()
+		// .create()
+		// TODO: this first implementation ignores Ordering!
+		// .first(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected, Timestamp.class);
+		final I_MD_Candidate_Stock_v stockRecordOrNull = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_Candidate_Stock_v.class)
-				.addCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, date)
+				.addCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, new Timestamp(date.getTime()))
 				.orderBy().addColumnDescending(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected).endOrderBy()
 				.create()
-				.first(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected, Timestamp.class);
-
-		return latestDateOrNull;
+				.first();
+		return stockRecordOrNull == null ? null : stockRecordOrNull.getDateProjected();
 	}
 
 	@VisibleForTesting
