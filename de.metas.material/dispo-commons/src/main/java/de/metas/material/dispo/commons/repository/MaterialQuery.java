@@ -2,7 +2,6 @@ package de.metas.material.dispo.commons.repository;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
@@ -55,19 +54,16 @@ public class MaterialQuery
 	@NonNull
 	Date date;
 
-	@NonNull
 	List<Integer> productIds;
 
-	@NonNull
 	List<String> storageAttributesKeys;
 
 	@Builder
 	private MaterialQuery(
 			final int warehouseId,
 			final Date date,
-			@Singular final Set<Integer> productIds,
-			@Singular final List<String> storageAttributesKeys,
-			final int dimensionSpecId)
+			@Singular final List<Integer> productIds,
+			@Singular final List<String> storageAttributesKeys)
 	{
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
@@ -75,5 +71,10 @@ public class MaterialQuery
 		this.date = date != null ? date : SystemTime.asDate();
 		this.productIds = ImmutableList.copyOf(productIds);
 		this.storageAttributesKeys = storageAttributesKeys;
+	}
+
+	public MaterialQuery withDate(@NonNull final Date newDate)
+	{
+		return new MaterialQuery(warehouseId, newDate, productIds, storageAttributesKeys);
 	}
 }

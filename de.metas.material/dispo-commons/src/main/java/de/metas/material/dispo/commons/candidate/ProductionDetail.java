@@ -1,5 +1,7 @@
 package de.metas.material.dispo.commons.candidate;
 
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -25,12 +27,8 @@ import lombok.Value;
  * #L%
  */
 @Value
-@Builder
 public class ProductionDetail
 {
-	/**
-	 * Only set if this instance related to a ppOrder header.
-	 */
 	int plantId;
 
 	int uomId;
@@ -46,4 +44,33 @@ public class ProductionDetail
 	String ppOrderDocStatus;
 
 	int ppOrderLineId;
+
+	@Builder
+	private ProductionDetail(
+			int plantId,
+			int uomId,
+			int productPlanningId,
+			int productBomLineId,
+			String description,
+			int ppOrderId,
+			String ppOrderDocStatus,
+			int ppOrderLineId)
+	{
+		final boolean detailForPpOrderHead = productBomLineId <= 0;
+		if (detailForPpOrderHead)
+		{
+			// these two need to be available when using this productionDetail to ppOrder pojo
+			checkIdGreaterThanZero("plantId", plantId);
+			checkIdGreaterThanZero("uomId", uomId);
+		}
+		this.plantId = plantId;
+		this.uomId = uomId;
+
+		this.productPlanningId = productPlanningId;
+		this.productBomLineId = productBomLineId;
+		this.description = description;
+		this.ppOrderId = ppOrderId;
+		this.ppOrderDocStatus = ppOrderDocStatus;
+		this.ppOrderLineId = ppOrderLineId;
+	}
 }

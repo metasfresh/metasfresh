@@ -7,8 +7,6 @@ import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 
@@ -20,11 +18,11 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.commons.DispoTestUtils;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -103,7 +101,7 @@ public class ProductionAdvisedHandlerTests
 						stockRepository,
 						stockCandidateService)));
 
-		final CandidateService candidateService = new CandidateService(
+		final RequestMaterialOrderService candidateService = new RequestMaterialOrderService(
 				candidateRepository,
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
@@ -111,7 +109,7 @@ public class ProductionAdvisedHandlerTests
 	}
 
 	@Test
-	public void testproductionAdvisedEvent()
+	public void handleProductionAdvisedEvent()
 	{
 		final ProductionAdvisedEvent productionAdvisedEvent = createproductionAdvisedEvent();
 
@@ -119,7 +117,7 @@ public class ProductionAdvisedHandlerTests
 	}
 
 	@Test
-	public void testproductionAdvisedEvent_invoke_twice()
+	public void handleProductionAdvisedEvent_invoke_twice()
 	{
 		final ProductionAdvisedEvent productionAdvisedEvent = createproductionAdvisedEvent();
 
@@ -131,7 +129,7 @@ public class ProductionAdvisedHandlerTests
 	{
 		productionAdvisedEventHandler.handleProductionAdvisedEvent(productionAdvisedEvent);
 
-		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY).size()).isEqualTo(1); //
+		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1); //
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // we have two different inputs
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(3); // one stock record per supply, one per demand
 
@@ -139,7 +137,7 @@ public class ProductionAdvisedHandlerTests
 		assertThat(t2Stock.getQty()).isEqualByComparingTo(BigDecimal.ONE);
 		assertThat(t2Stock.getM_Product_ID()).isEqualTo(PRODUCT_ID);
 		assertThat(t2Stock.getMD_Candidate_GroupId()).isGreaterThan(0); // stock candidates have their own groupIds too
-		assertThat(t2Stock.getMD_Candidate_Parent_ID(), lessThanOrEqualTo(0));
+		assertThat(t2Stock.getMD_Candidate_Parent_ID()).isLessThanOrEqualTo(0);
 
 		final I_MD_Candidate t2Supply = DispoTestUtils.filter(CandidateType.SUPPLY, AFTER_NOW).get(0);
 		assertThat(t2Supply.getQty()).isEqualByComparingTo(BigDecimal.ONE);
@@ -183,40 +181,48 @@ public class ProductionAdvisedHandlerTests
 
 	private ProductionAdvisedEvent createproductionAdvisedEvent()
 	{
-		final ProductDescriptor rawProductDescriptor1 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct1Id);
-		final ProductDescriptor rawProductDescriptor2 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct2Id);
+		final PPOrder ppOrder = createPpOrder();
 
 		final ProductionAdvisedEvent productionAdvisedEvent = ProductionAdvisedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.supplyRequiredDescriptor(null)
-				.ppOrder(PPOrder.builder()
-						.orgId(ORG_ID)
-						.datePromised(AFTER_NOW)
-						.dateStartSchedule(NOW)
-						.productDescriptor(createProductDescriptor())
-						.quantity(BigDecimal.ONE)
-						.warehouseId(intermediateWarehouseId)
-						.plantId(120)
-						.uomId(130)
-						.productPlanningId(140)
-						.line(PPOrderLine.builder()
-								.description("descr1")
-								.productDescriptor(rawProductDescriptor1)
-								.qtyRequired(BigDecimal.TEN)
-								.productBomLineId(1020)
-								.receipt(false)
-								.build())
-						.line(PPOrderLine.builder()
-								.description("descr2")
-								.productDescriptor(rawProductDescriptor2)
-								.qtyRequired(eleven)
-								.productBomLineId(1030)
-								.receipt(false)
-								.build())
-						.build())
+				.ppOrder(ppOrder)
 				.build();
+
 		assertThat(productionAdvisedEvent.getSupplyRequiredDescriptor()).isNull();
 		return productionAdvisedEvent;
 	}
 
+	private PPOrder createPpOrder()
+	{
+		final ProductDescriptor rawProductDescriptor1 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct1Id);
+		final ProductDescriptor rawProductDescriptor2 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct2Id);
+
+		final PPOrder ppOrder = PPOrder.builder()
+				.orgId(ORG_ID)
+				.datePromised(AFTER_NOW)
+				.dateStartSchedule(NOW)
+				.productDescriptor(createProductDescriptor())
+				.quantity(BigDecimal.ONE)
+				.warehouseId(intermediateWarehouseId)
+				.plantId(120)
+				.uomId(130)
+				.productPlanningId(140)
+				.line(PPOrderLine.builder()
+						.description("descr1")
+						.productDescriptor(rawProductDescriptor1)
+						.qtyRequired(BigDecimal.TEN)
+						.productBomLineId(1020)
+						.receipt(false)
+						.build())
+				.line(PPOrderLine.builder()
+						.description("descr2")
+						.productDescriptor(rawProductDescriptor2)
+						.qtyRequired(eleven)
+						.productBomLineId(1030)
+						.receipt(false)
+						.build())
+				.build();
+		return ppOrder;
+	}
 }

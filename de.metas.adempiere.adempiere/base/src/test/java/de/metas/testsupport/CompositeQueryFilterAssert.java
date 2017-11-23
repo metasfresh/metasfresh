@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
@@ -217,6 +218,21 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 
 			final boolean hasOperator = Objects.equals(compareQueryFilter.getOperator(), operator);
 			if (!hasOperator)
+			{
+				return false;
+			}
+
+			return true;
+		};
+		return anyFilterMatches(p);
+	}
+
+	public CompositeQueryFilterAssert hasActiveRecordQueryFilter()
+	{
+		final Predicate<IQueryFilter> p = filter -> {
+
+			final ActiveRecordQueryFilter compareQueryFilter = castOrNull(filter, ActiveRecordQueryFilter.class);
+			if (compareQueryFilter == null)
 			{
 				return false;
 			}
