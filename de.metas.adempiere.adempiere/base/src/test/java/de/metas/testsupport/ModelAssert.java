@@ -1,9 +1,17 @@
 package de.metas.testsupport;
 
+import java.math.BigDecimal;
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.ModelColumn;
 import org.assertj.core.api.AbstractAssert;
+
+import com.google.common.base.Optional;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -27,6 +35,7 @@ import org.assertj.core.api.AbstractAssert;
  * #L%
  */
 
+@SuppressWarnings("rawtypes")
 public class ModelAssert extends AbstractAssert<ModelAssert, Object>
 {
 	public ModelAssert(@Nullable final Object actual)
@@ -39,8 +48,9 @@ public class ModelAssert extends AbstractAssert<ModelAssert, Object>
 		return new ModelAssert(actual);
 	}
 
-	public ModelAssert hasSameIdAs(final Object otherModel)
+	public ModelAssert hasSameIdAs(@NonNull final Object otherModel)
 	{
+		isNotNull();
 		final int otherId = InterfaceWrapperHelper.getId(otherModel);
 		final int actualId = InterfaceWrapperHelper.getId(actual);
 		if (otherId != actualId)
@@ -49,5 +59,56 @@ public class ModelAssert extends AbstractAssert<ModelAssert, Object>
 		}
 
 		return this;
+	}
+
+	public ModelAssert hasValueGreaterThanZero(@NonNull final ModelColumn column)
+	{
+		final Object value = retrieveValueNotNull(column);
+
+		if (value instanceof BigDecimal)
+		{
+			final BigDecimal bdValue = (BigDecimal)value;
+			if (bdValue.signum() <= 0)
+			{
+				failWithMessage("Expected column <%s> of \nmodel <%s>\nto be > 0, but is <%s>", column.getColumnName(), actual, bdValue);
+			}
+		}
+		else if (value instanceof Integer)
+		{
+			final Integer intValue = (Integer)value;
+
+			if (intValue <= 0)
+			{
+				failWithMessage("Expected column <%s> of \nmodel <%s>\nto be > 0, but is <%s>", column.getColumnName(), actual, intValue);
+			}
+		}
+		return this;
+	}
+
+	public ModelAssert hasNonNullValue(@NonNull final ModelColumn column, @NonNull final Object value)
+	{
+		final Object actualValue = retrieveValueNotNull(column);
+		if (!Objects.equals(value, actualValue))
+		{
+			failWithMessage("Expected column <%s> of \nmodel <%s>\nto be equal to <%s>, but is <%s>", column.getColumnName(), actual, value, actualValue);
+		}
+		return this;
+	}
+
+	@NonNull
+	private Object retrieveValueNotNull(@NonNull final ModelColumn column)
+	{
+		isNotNull();
+		final Optional<Object> value = InterfaceWrapperHelper.getValue(actual, column.getColumnName());
+		if (!value.isPresent())
+		{
+			failWithMessage("Expected column <%s> of \nmodel <%s>\nto have a value", column.getColumnName(), actual);
+		}
+		if (value.get() == null)
+		{
+			failWithMessage("Expected column <%s> of \nmodel <%s>\nto have a non-null value", column.getColumnName(), actual);
+		}
+
+		return value.get();
 	}
 }

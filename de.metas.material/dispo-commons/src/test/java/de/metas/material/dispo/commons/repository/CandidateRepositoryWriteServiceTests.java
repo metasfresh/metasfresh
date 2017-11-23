@@ -84,35 +84,6 @@ public class CandidateRepositoryWriteServiceTests
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryCommands);
 	}
 
-	@Test(expected = RuntimeException.class)
-	public void updateQuantity_error_if_missing_candidate_record()
-	{
-		final Candidate candidate = Candidate.builder()
-				.type(CandidateType.DEMAND)
-				.materialDescriptor(createMaterialDescriptor())
-				.id(23)
-				.build();
-
-		candidateRepositoryCommands.updateQty(candidate);
-	}
-
-	@Test
-	public void updateQuantity()
-	{
-		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
-		candidateRecord.setQty(BigDecimal.TEN);
-		save(candidateRecord);
-		final Candidate candidate = Candidate.builder()
-				.type(CandidateType.DEMAND)
-				.materialDescriptor(createMaterialDescriptor().withQuantity(BigDecimal.ONE))
-				.id(candidateRecord.getMD_Candidate_ID())
-				.build();
-
-		final Candidate result = candidateRepositoryCommands.updateQty(candidate);
-
-		assertThat(result.getQuantity()).isEqualByComparingTo("-9"); // new qty of 1 minus old qty of 10
-	}
-
 	@Test
 	public void updateCandidateRecordFromCandidate()
 	{

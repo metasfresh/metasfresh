@@ -1,6 +1,8 @@
 package de.metas.material.dispo.commons.repository;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,7 +51,12 @@ public class StockRepository
 	@NonNull
 	public BigDecimal retrieveAvailableStockQtySum(@NonNull final MaterialQuery query)
 	{
-		final BigDecimal qty = createDBQueryForMaterialQuery(query)
+		final Timestamp latestDateOrNull = retrieveMaxDateLessOrEqual(query.getDate());
+		if (latestDateOrNull == null)
+		{
+			return BigDecimal.ZERO;
+		}
+		final BigDecimal qty = createDBQueryForMaterialQuery(query.withDate(latestDateOrNull))
 				.create()
 				.aggregate(I_MD_Candidate.COLUMNNAME_Qty, IQuery.AGGREGATE_SUM, BigDecimal.class);
 
@@ -59,24 +66,42 @@ public class StockRepository
 	@NonNull
 	public AvailableStockResult retrieveAvailableStock(@NonNull final MaterialQuery query)
 	{
-		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = createDBQueryForMaterialQuery(query);
+		final AvailableStockResult result = AvailableStockResult.createEmptyForQuery(query);
+
+		final Timestamp latestDateOrNull = retrieveMaxDateLessOrEqual(query.getDate());
+		if (latestDateOrNull == null)
+		{
+			return result;
+		}
+
+		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = createDBQueryForMaterialQuery(query.withDate(latestDateOrNull));
 		final List<I_MD_Candidate_Stock_v> stockRecords = dbQuery
 				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
 				.create()
 				.list();
 
-		final AvailableStockResult result = AvailableStockResult.createEmptyForQuery(query);
-
 		applyStockRecordsToEmptyResult(result, stockRecords);
 		return result;
+	}
+
+	private Timestamp retrieveMaxDateLessOrEqual(@NonNull final Date date)
+	{
+		final Timestamp latestDateOrNull = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Candidate_Stock_v.class)
+				.addCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, date)
+				.orderBy().addColumnDescending(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected).endOrderBy()
+				.create()
+				.first(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected, Timestamp.class);
+
+		return latestDateOrNull;
 	}
 
 	@VisibleForTesting
 	IQueryBuilder<I_MD_Candidate_Stock_v> createDBQueryForMaterialQuery(@NonNull final MaterialQuery query)
 	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_MD_Candidate_Stock_v> queryBuilder = createInitialQueryBuilderForDateAndWarehouse(query);
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> orFilterForDifferentStorageAttributesKeys = queryBL
 				.createCompositeQueryFilter(I_MD_Candidate_Stock_v.class)
 				.setJoinOr();
@@ -90,13 +115,14 @@ public class StockRepository
 		return queryBuilder;
 	}
 
-	private IQueryBuilder<I_MD_Candidate_Stock_v> createInitialQueryBuilderForDateAndWarehouse(@NonNull final MaterialQuery query)
+	private IQueryBuilder<I_MD_Candidate_Stock_v> createInitialQueryBuilderForDateAndWarehouse(
+			@NonNull final MaterialQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_MD_Candidate_Stock_v> queryBuilder = queryBL
 				.createQueryBuilder(I_MD_Candidate_Stock_v.class)
-				.addCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, query.getDate());
+				.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, query.getDate());
 
 		if (query.getWarehouseId() > 0)
 		{

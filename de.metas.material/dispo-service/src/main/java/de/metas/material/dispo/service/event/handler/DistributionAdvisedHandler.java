@@ -2,21 +2,22 @@ package de.metas.material.dispo.service.event.handler;
 
 import java.sql.Timestamp;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
@@ -55,14 +56,14 @@ public class DistributionAdvisedHandler
 	private final CandidateRepositoryWriteService candidateRepositoryCommands;
 	private final SupplyProposalEvaluator supplyProposalEvaluator;
 	private final CandidateChangeService candidateChangeHandler;
-	private final CandidateService candidateService;
+	private final RequestMaterialOrderService candidateService;
 
 	public DistributionAdvisedHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final SupplyProposalEvaluator supplyProposalEvaluator,
-			@NonNull final CandidateService candidateService)
+			@NonNull final RequestMaterialOrderService candidateService)
 	{
 		this.candidateService = candidateService;
 		this.candidateChangeHandler = candidateChangeHandler;
@@ -113,12 +114,15 @@ public class DistributionAdvisedHandler
 					.warehouseId(distributionAdvisedEvent.getToWarehouseId())
 					.build();
 
+			final DemandDetail demandDetailOrNull = DemandDetail.createOrNull(
+					Optional.ofNullable(distributionAdvisedEvent.getSupplyRequiredDescriptor()));
+
 			final Candidate supplyCandidate = Candidate.builderForEventDescr(distributionAdvisedEvent.getEventDescriptor())
 					.type(CandidateType.SUPPLY)
 					.status(candidateStatus)
 					.subType(CandidateSubType.DISTRIBUTION)
 					.materialDescriptor(materialDescriptor)
-					.demandDetail(DemandDetail.forOrderLineIdOrNull(ddOrderLine.getSalesOrderLineId()))
+					.demandDetail(demandDetailOrNull)
 					.distributionDetail(createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine))
 					.build();
 

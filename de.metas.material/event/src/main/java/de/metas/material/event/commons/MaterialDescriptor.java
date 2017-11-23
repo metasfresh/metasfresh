@@ -43,13 +43,15 @@ public class MaterialDescriptor extends ProductDescriptor
 {
 	public enum DateOperator
 	{
+		BEFORE,
+
 		BEFORE_OR_AT,
 
-		AFTER,
+		AT,
 
 		AT_OR_AFTER,
 
-		AT
+		AFTER
 	}
 
 	/**
