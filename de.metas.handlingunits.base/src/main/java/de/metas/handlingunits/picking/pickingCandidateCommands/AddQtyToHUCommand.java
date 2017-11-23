@@ -1,7 +1,6 @@
 package de.metas.handlingunits.picking.pickingCandidateCommands;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -10,6 +9,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
@@ -31,10 +31,10 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.PickingCandidateService.AddQtyToHURequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -47,49 +47,65 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class AddQtyToHU
+public class AddQtyToHUCommand
 {
-	private static final Logger logger = LogManager.getLogger(AddQtyToHU.class);
+	private static final Logger logger = LogManager.getLogger(AddQtyToHUCommand.class);
 
 	private final PickingCandidateRepository pickingCandidateRepository;
 
-	public AddQtyToHU(@NonNull final PickingCandidateRepository pickingCandidateRepository)
-	{
-		this.pickingCandidateRepository = pickingCandidateRepository;
+	private final BigDecimal qtyCU;
+	private final int targetHUId;
+	private final int pickingSlotId;
+	private final int shipmentScheduleId;
 
-	}
-
-	public Quantity perform(@NonNull final AddQtyToHURequest addQtyToHURequest)
+	@Builder
+	private AddQtyToHUCommand(
+			@NonNull final PickingCandidateRepository pickingCandidateRepository,
+			@NonNull final BigDecimal qtyCU,
+			final int targetHUId,
+			final int pickingSlotId,
+			final int shipmentScheduleId)
 	{
-		final BigDecimal qtyCU = addQtyToHURequest.getQtyCU();
+		Check.assume(targetHUId > 0, "targetHuId > 0");
+		Check.assume(pickingSlotId > 0, "pickingSlotId > 0");
+		Check.assume(shipmentScheduleId > 0, "shipmentScheduleId > 0");
 		if (qtyCU.signum() <= 0)
 		{
 			throw new AdempiereException("@Invalid@ @QtyCU@");
 		}
 
-		final int shipmentScheduleId = addQtyToHURequest.getShipmentScheduleId();
-		final int pickingSlotId = addQtyToHURequest.getPickingSlotId();
-		final int huId = addQtyToHURequest.getTargetHuId();
+		this.pickingCandidateRepository = pickingCandidateRepository;
+		this.qtyCU = qtyCU;
+		this.targetHUId = targetHUId;
+		this.pickingSlotId = pickingSlotId;
+		this.shipmentScheduleId = shipmentScheduleId;
 
+	}
+
+	/**
+	 * @return the quantity that was effectively added. We can only add the quantity that's still left in our source HUs.
+	 */
+	public Quantity performAndGetQtyPicked()
+	{
 		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final I_M_Product product = shipmentSchedule.getM_Product();
 
-		final I_M_Picking_Candidate candidate = pickingCandidateRepository.getCreateCandidate(huId, pickingSlotId, shipmentScheduleId);
+		final I_M_Picking_Candidate candidate = pickingCandidateRepository.getCreateCandidate(targetHUId, pickingSlotId, shipmentScheduleId);
 
 		final HUListAllocationSourceDestination source = createAllocationSource(shipmentSchedule);
-		final IAllocationDestination destination = createAllocationDestination(huId);
+		final IAllocationDestination destination = createAllocationDestination(targetHUId);
 
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
@@ -110,7 +126,7 @@ public class AddQtyToHU
 				.setAllowPartialLoads(true) // don't fail if the the picking staff attempted to to pick more than the TU's capacity
 				.setAllowPartialUnloads(true) // don't fail if the the picking staff attempted to to pick more than the shipment schedule's quantity to deliver.
 				.load(request);
-		logger.info("addQtyToHU done; huId={}, qtyCU={}, loadResult={}", huId, qtyCU, loadResult);
+		logger.info("addQtyToHU done; huId={}, qtyCU={}, loadResult={}", targetHUId, qtyCU, loadResult);
 
 		// Update the candidate
 		final Quantity qtyPicked = Quantity.of(loadResult.getQtyAllocated(), request.getC_UOM());
@@ -121,7 +137,7 @@ public class AddQtyToHU
 
 	/**
 	 * Source - take the preselected sourceHUs
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 * @return
 	 */
@@ -174,6 +190,6 @@ public class AddQtyToHU
 
 		candidate.setQtyPicked(qtyNew.getQty());
 		candidate.setC_UOM(qtyNew.getUOM());
-		save(candidate);
+		pickingCandidateRepository.save(candidate);
 	}
 }
