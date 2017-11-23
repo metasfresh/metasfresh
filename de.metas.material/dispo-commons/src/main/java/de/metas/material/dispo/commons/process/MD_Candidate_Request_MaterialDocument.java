@@ -7,7 +7,7 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.material.dispo.commons.CandidateService;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.process.IProcessPrecondition;
@@ -38,7 +38,7 @@ import de.metas.process.ProcessPreconditionsResolution;
  */
 
 /**
- * Invokes {@link CandidateService#requestMaterialOrder(Integer)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
+ * Invokes {@link RequestMaterialOrderService#requestMaterialOrder(Integer)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -58,7 +58,7 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 	protected String doIt() throws Exception
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final CandidateService service = Adempiere.getBean(CandidateService.class);
+		final RequestMaterialOrderService service = Adempiere.getBean(RequestMaterialOrderService.class);
 
 		queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
@@ -68,7 +68,7 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 				.filter(subTypePredicate)
 				.map(r -> r.getMD_Candidate_GroupId())
 				.distinct()
-				.peek(groupId -> addLog("Calling {}.requestOrder() for groupId={}", CandidateService.class.getSimpleName(), groupId))
+				.peek(groupId -> addLog("Calling {}.requestOrder() for groupId={}", RequestMaterialOrderService.class.getSimpleName(), groupId))
 				.forEach(groupId -> {
 					service.requestMaterialOrder(groupId);
 				});

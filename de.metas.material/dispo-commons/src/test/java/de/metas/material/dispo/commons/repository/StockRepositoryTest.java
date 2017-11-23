@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.collections.ListUtils;
@@ -79,7 +78,6 @@ public class StockRepositoryTest
 
 		final BigDecimal result = new StockRepository().retrieveAvailableStockQtySum(query);
 		assertThat(result).isEqualByComparingTo("10");
-
 	}
 
 	private I_MD_Candidate_Stock_v createStockRecord(int warehouseId)
@@ -138,7 +136,7 @@ public class StockRepositoryTest
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
-		assertThat(dbFilter).hasCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, NOW);
+		assertThat(dbFilter).hasEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, NOW);
 
 		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
 		assertThat(includedCompositeOrFilter).isJoinOr();
@@ -161,7 +159,7 @@ public class StockRepositoryTest
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
-		assertThat(dbFilter).hasCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, NOW);
+		assertThat(dbFilter).hasEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, NOW);
 
 		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
 		assertThat(includedCompositeOrFilter).isJoinOr();
@@ -188,7 +186,7 @@ public class StockRepositoryTest
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
-		assertThat(dbFilter).hasCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, NOW);
+		assertThat(dbFilter).hasEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, NOW);
 
 		assertThat(dbFilter).hasCompositeOrFilter();
 		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);

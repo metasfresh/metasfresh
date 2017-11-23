@@ -39,14 +39,9 @@ import de.metas.material.planning.IMaterialPlanningContext;
 @Service
 public class DDOrderDemandMatcher implements IMaterialDemandMatcher
 {
-
-	/**
-	 *
-	 */
 	@Override
 	public boolean matches(final IMaterialPlanningContext mrpContext)
 	{
-
 		if (!mrpContext.isRequireDRP())
 		{
 			Loggables.get().addLog("DRP not enabled in given mrpContext={}", mrpContext);

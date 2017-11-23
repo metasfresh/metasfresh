@@ -15,7 +15,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 
 /*
@@ -100,9 +100,9 @@ public class StockUpCandiateHandler implements CandidateHandler
 
 		if (requiredAdditionalQty.signum() > 0)
 		{
-			final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEventCreator //
-					.createMaterialDemandEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty);
-			materialEventService.fireEvent(materialDemandEvent);
+			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
+					.createSupplyRequiredEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty);
+			materialEventService.fireEvent(supplyRequiredEvent);
 		}
 
 		return candidateWithQtyDeltaAndId;
