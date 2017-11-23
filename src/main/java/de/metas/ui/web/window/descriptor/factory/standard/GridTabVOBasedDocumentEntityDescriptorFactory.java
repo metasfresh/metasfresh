@@ -435,7 +435,7 @@ import lombok.NonNull;
 		// Generic ZoomInto button
 		if (tableName != null)
 		{
-			if (adColumnBL.isRecordColumnName(fieldName))
+			if (adColumnBL.isRecordIdColumnName(fieldName))
 			{
 				final String zoomIntoTableIdFieldName = adColumnBL.getTableColumnName(tableName, fieldName).orElse(null);
 				if (zoomIntoTableIdFieldName != null)
