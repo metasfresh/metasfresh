@@ -18,7 +18,7 @@ export default {
     OPEN_EMAIL: `${mod}+K`,
     OPEN_LETTER: `${mod}+R`,
     DELETE_DOCUMENT: `${mod}+D`,
-    NEW_DOCUMENT: `${mod}+M`,
+    NEW_DOCUMENT: `${mod}+N`,
     TOGGLE_EDIT_MODE: `${mod}+O`,
 
     /* Document list context */
