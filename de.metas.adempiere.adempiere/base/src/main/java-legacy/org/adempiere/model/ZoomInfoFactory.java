@@ -458,8 +458,7 @@ public class ZoomInfoFactory
 
 		// NOTE: Zoom providers order matter because in case it finds some duplicates (i.e. same window),
 		// it will pick only the first one (i.e. the one from the first provider).
-		zoomProviders.addAll(RelationTypeZoomProvidersFactory.instance.getZoomProvidersBySourceTableName(tableName));
-		zoomProviders.addAll(RelationTypeZoomProvidersFactory.instance.retrieveTableRecordIDZoomProvidersBySourceTableName(tableName));
+		zoomProviders.addAll(RelationTypeZoomProvidersFactory.instance.getZoomProvidersByZoomOriginTableName(tableName));
 		zoomProviders.add(GenericZoomProvider.instance);
 		if (factAcctZoomProviderEnabled)
 		{

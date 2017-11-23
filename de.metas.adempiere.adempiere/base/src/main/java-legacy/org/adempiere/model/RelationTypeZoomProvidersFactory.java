@@ -24,7 +24,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_Reference;
 import org.compiere.model.I_AD_RelationType;
-import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.X_AD_Reference;
 import org.compiere.model.X_AD_RelationType;
@@ -67,24 +66,15 @@ public final class RelationTypeZoomProvidersFactory
 
 	public static final transient RelationTypeZoomProvidersFactory instance = new RelationTypeZoomProvidersFactory();
 
-	/**
-	 * Selection for those relation types whose AD_Reference(s) might match a given PO. Only evaluates the table and key
-	 * column of the reference's AD_Ref_Table entries. See {@link #retrieveTypes(PO, int)}.
-	 * <p>
-	 * <b>Warning:</b> Doesn't support POs with more or less than one key column.
-	 */
-
 	private final static String SQL_Default_RelationType = createSelectFrom()
 			+ createSharedWhereClause()
 			+ createDefaultRelationTypeSpecificWhereClause()
 			+ createOrderBy();
 
-	
 	private final static String SQL_TableRecordIDReference_RelationType = createSelectFrom()
 			+ createSharedWhereClause()
 			+ createTableRecordIDReferenceRelationTypeSpecificWhereClause()
 			+ createOrderBy();
-	
 
 	private static String createSelectFrom()
 	{
@@ -93,14 +83,13 @@ public final class RelationTypeZoomProvidersFactory
 				+ ",   rt.Name AS " + I_AD_RelationType.COLUMNNAME_Name
 				+ ",   rt.IsDirected AS " + I_AD_RelationType.COLUMNNAME_IsDirected
 				+ ",   ref.AD_Reference_ID AS " + COLUMNNAME_AD_Reference_ID
-				+ ",   tab.WhereClause AS " + COLUMNNAME_WhereClause 
-				+ ",   tab.OrderByClause AS " + COLUMNNAME_OrderByClause 
+				+ ",   tab.WhereClause AS " + COLUMNNAME_WhereClause
+				+ ",   tab.OrderByClause AS " + COLUMNNAME_OrderByClause
 				+ "  FROM "
 				+ I_AD_RelationType.Table_Name + " rt, "
 				+ I_AD_Reference.Table_Name + " ref, "
 				+ I_AD_Ref_Table.Table_Name + " tab ";
 	}
-	
 
 	private static String createSharedWhereClause()
 	{
@@ -133,113 +122,73 @@ public final class RelationTypeZoomProvidersFactory
 				+ "   AND   rt." + I_AD_RelationType.COLUMNNAME_AD_Reference_Target_ID + " =ref.AD_Reference_ID ";
 
 	}
-	
 
 	private static String createOrderBy()
 	{
 		return "  ORDER BY rt.Name ";
 	}
 
-
 	private final CCache<String, List<RelationTypeZoomProvider>> sourceTableName2zoomProviders = CCache.newLRUCache(I_AD_RelationType.Table_Name + "#ZoomProvidersBySourceTableName", 100, 0);
 
-	private RelationTypeZoomProvidersFactory()
+
+	public List<RelationTypeZoomProvider> getZoomProvidersByZoomOriginTableName(final String zoomOriginTableName)
 	{
-		super();
+		return sourceTableName2zoomProviders.getOrLoad(zoomOriginTableName, () -> retrieveZoomProvidersBySourceTableName(zoomOriginTableName));
 	}
 
-
-
-
-	public List<RelationTypeZoomProvider> getZoomProvidersBySourceTableName(final String sourceTableName)
+	public List<RelationTypeZoomProvider> retrieveZoomProvidersBySourceTableName(final String zoomOriginTableName)
 	{
-		return sourceTableName2zoomProviders.getOrLoad(sourceTableName, () -> retrieveDefaultZoomProvidersBySourceTableName(sourceTableName));
-	}
+		Check.assumeNotEmpty(zoomOriginTableName, "tableName is not empty");
 
-	public RelationTypeZoomProvider getZoomProviderBySourceTableNameAndInternalName(final String sourceTableName, final String internalName)
-	{
-		return getZoomProvidersBySourceTableName(sourceTableName)
-				.stream()
-				.filter(zoomProvider -> Objects.equals(internalName, zoomProvider.getInternalName()))
-				.findFirst()
-				.orElseThrow(() -> new IllegalArgumentException("No zoom provider found for sourceTableName=" + sourceTableName + ", internalName=" + internalName));
-	}
+		final POInfo zoomOriginPOInfo = POInfo.getPOInfo(zoomOriginTableName);
+		final String keyColumnName = zoomOriginPOInfo.getKeyColumnName();
 
-	public List<RelationTypeZoomProvider> retrieveTableRecordIDZoomProvidersBySourceTableName(final String tableName)
-	{
-		Check.assumeNotEmpty(tableName, "tableName is not empty");
-
-		final POInfo poInfo = POInfo.getPOInfo(tableName);
-
-		if (poInfo.getKeyColumnName() == null)
-		{
-			logger.error("{} does not have a single key column", tableName);
-			throw PORelationException.throwWrongKeyColumnCount(tableName, poInfo.getKeyColumnNames());
-		}
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-
-		try
-		{
-			pstmt = DB.prepareStatement(SQL_TableRecordIDReference_RelationType, ITrx.TRXNAME_None);
-
-			rs = pstmt.executeQuery();
-
-			final List<RelationTypeZoomProvider> result = retrieveZoomProviders(rs);
-			logger.info("There are {} matching types for {}", result.size(), tableName);
-
-			return result;
-		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, SQL_TableRecordIDReference_RelationType);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-
-	}
-
-	private List<RelationTypeZoomProvider> retrieveDefaultZoomProvidersBySourceTableName(final String tableName)
-	{
-		Check.assumeNotEmpty(tableName, "tableName is not empty");
-
-		final POInfo poInfo = POInfo.getPOInfo(tableName);
-		final String keyColumnName = poInfo.getKeyColumnName();
 		if (keyColumnName == null)
 		{
-			logger.error("{} does not have a single key column", tableName);
-			throw PORelationException.throwWrongKeyColumnCount(tableName, poInfo.getKeyColumnNames());
+			logger.error("{} does not have a single key column", zoomOriginTableName);
+			throw PORelationException.throwWrongKeyColumnCount(zoomOriginTableName, zoomOriginPOInfo.getKeyColumnNames());
 		}
+		
+		final int adTableId = zoomOriginPOInfo.getAD_Table_ID();
+		final int keyColumnId = zoomOriginPOInfo.getAD_Column_ID(keyColumnName);
 
-		final int adTableId = poInfo.getAD_Table_ID();
-		final int keyColumnId = poInfo.getAD_Column_ID(keyColumnName);
+		final Object[] sqlParamsDefaultRelationType = new Object[] { adTableId, keyColumnId };
+
+		final List<RelationTypeZoomProvider> relationTypeZoomProviders = new ArrayList<>();
+
+		relationTypeZoomProviders.addAll(runRelationTypeSQLQuery(SQL_Default_RelationType, sqlParamsDefaultRelationType));
+
+		relationTypeZoomProviders.addAll(runRelationTypeSQLQuery(SQL_TableRecordIDReference_RelationType, null));
+
+		logger.info("There are {} matching types for {}", relationTypeZoomProviders.size(), zoomOriginTableName);
+		
+		return relationTypeZoomProviders;
+	}
+
+	private static List<RelationTypeZoomProvider> runRelationTypeSQLQuery(final String sqlQuery, final Object[] sqlParams)
+	{
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		final Object[] sqlParams = new Object[] { adTableId, keyColumnId };
+
 		try
 		{
-			pstmt = DB.prepareStatement(SQL_Default_RelationType, ITrx.TRXNAME_None);
+			pstmt = DB.prepareStatement(sqlQuery, ITrx.TRXNAME_None);
 			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 
 			final List<RelationTypeZoomProvider> result = retrieveZoomProviders(rs);
-			logger.info("There are {} matching types for {}", result.size(), tableName);
-
+			
 			return result;
 		}
 		catch (final SQLException e)
 		{
-			throw new DBException(e, SQL_Default_RelationType, sqlParams);
+			throw new DBException(e, sqlQuery, sqlParams);
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
 		}
-
 	}
 
 	private static List<RelationTypeZoomProvider> retrieveZoomProviders(final ResultSet rs) throws SQLException
@@ -279,6 +228,7 @@ public final class RelationTypeZoomProvidersFactory
 		return result;
 
 	}
+	
 
 	@VisibleForTesting
 	protected static RelationTypeZoomProvider findZoomProvider(final I_AD_RelationType relationType)
@@ -305,5 +255,15 @@ public final class RelationTypeZoomProvidersFactory
 				.buildOrNull();
 
 		return zoomProvider;
+	}
+	
+
+	public RelationTypeZoomProvider getZoomProviderBySourceTableNameAndInternalName(final String zoomOriginTableName, final String internalName)
+	{
+		return getZoomProvidersByZoomOriginTableName(zoomOriginTableName)
+				.stream()
+				.filter(zoomProvider -> Objects.equals(internalName, zoomProvider.getInternalName()))
+				.findFirst()
+				.orElseThrow(() -> new IllegalArgumentException("No zoom provider found for sourceTableName=" + zoomOriginTableName + ", internalName=" + internalName));
 	}
 }
