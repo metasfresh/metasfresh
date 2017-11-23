@@ -23,7 +23,6 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_Table;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
@@ -35,7 +34,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.service.IColumnBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -245,34 +243,54 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	 */
 	private MQuery mkZoomOriginQuery(final IZoomSource zoomOrigin, final boolean isTableRecordIdTarget)
 	{
+		final String queryWhereClause = createZoomOriginQueryWhereClause (zoomOrigin, isTableRecordIdTarget);
+		
+		final ITableRefInfo refTable = getTarget().getTableRefInfo();
+		
+		final String tableName = refTable.getTableName();
+		final String columnName = refTable.getKeyColumn();
+
+		final MQuery query = new MQuery();
+		query.addRestriction(queryWhereClause);
+		query.setZoomTableName(tableName);
+		query.setZoomColumnName(columnName);
+
+		return query;
+	}
+
+	private String createZoomOriginQueryWhereClause(final IZoomSource zoomOrigin, final boolean isTableRecordIdTarget2)
+	{
+		final IADTableDAO tableDAO  = Services.get(IADTableDAO.class);
+		
 		final StringBuilder queryWhereClause = new StringBuilder();
 
 		final ITableRefInfo refTable = getTarget().getTableRefInfo();
 
 		final String tableName = refTable.getTableName();
-		final String columnName = refTable.getDisplayColumn();
 
 		if (isTableRecordIdTarget)
 		{
-			int referenceTargetColumn = findTargetColumnRecordId(refTable.getTableName());
-
-			Check.assume(referenceTargetColumn > 0, "The table " + tableName + "must have a Record_ID column so it can be part of a ReferenceTarget relation type");
-			final I_AD_Column columnReference = InterfaceWrapperHelper.create(zoomOrigin.getCtx(), referenceTargetColumn, I_AD_Column.class, zoomOrigin.getTrxName());
-
-			Check.assumeNotNull(columnReference, "The reference table {} does not have a Column ReferenceTarget defined", refTable);
+			
+			final I_AD_Column recordIdColumn = tableDAO.retrieveColumnOrNull(tableName, ITableRecordReference.COLUMNNAME_Record_ID);
+			
+			Check.assumeNotNull(recordIdColumn, "The table {} must have and AD_Table_ID and a Record_ID column to be used in a TableRecordIdTarget relation type", tableName);
+			
+			final I_AD_Column adTableIdColumn = tableDAO.retrieveColumnOrNull(tableName, ITableRecordReference.COLUMNNAME_AD_Table_ID);
+			
+			Check.assumeNotNull(adTableIdColumn, "The table {} must have and AD_Table_ID and a Record_ID column to be used in a TableRecordIdTarget relation type", tableName);
 
 			queryWhereClause
 					.append(zoomOrigin.getAD_Table_ID())
 					.append(" = ")
 					.append(tableName)
 					.append(".")
-					.append("AD_Table_ID")
+					.append(adTableIdColumn.getColumnName())
 					.append(" AND ")
 					.append(zoomOrigin.getRecord_ID())
 					.append(" = ")
 					.append(tableName)
 					.append(".")
-					.append(columnReference.getColumnName());
+					.append(recordIdColumn.getColumnName());
 
 		}
 		else
@@ -289,41 +307,11 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				throw new AdempiereException("RefTable " + refTable + " has no whereClause, so RelationType " + this + " needs to be explicit");
 			}
 		}
-
-		final MQuery query = new MQuery();
-		query.addRestriction(queryWhereClause.toString());
-		query.setZoomTableName(tableName);
-		query.setZoomColumnName(columnName);
-
-		return query;
+		
+		return queryWhereClause.toString();
 	}
 
-	private int findTargetColumnRecordId(final String zoomOriginTableName)
-	{
-		final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-		final IColumnBL columnBL = Services.get(IColumnBL.class);
-
-		final I_AD_Column recordColumn = tableDAO.retrieveColumnOrNull(zoomOriginTableName, ITableRecordReference.COLUMNNAME_Record_ID);
-
-		if (recordColumn != null)
-		{
-			return recordColumn.getAD_Column_ID();
-		}
-
-		final I_AD_Table table = tableDAO.retrieveTable(zoomOriginTableName);
-		final List<I_AD_Column> allColumns = tableDAO.retrieveColumnsForTable(table);
-
-		for (final I_AD_Column column : allColumns)
-		{
-			if (columnBL.isRecordColumnName(column.getColumnName()))
-			{
-				return column.getAD_Column_ID();
-			}
-		}
-
-		return -1;
-	}
-
+	
 	/**
 	 * Parses given <code>where</code>
 	 *
