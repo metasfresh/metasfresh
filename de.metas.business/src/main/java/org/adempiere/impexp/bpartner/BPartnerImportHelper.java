@@ -107,7 +107,6 @@ import org.compiere.model.ModelValidationEngine;
 		bpartner.setName(extractBPName(importRecord));
 		bpartner.setName2(importRecord.getName2());
 		bpartner.setName3(importRecord.getName3());
-		bpartner.setPharmaproductpermlaw52(importRecord.getPharmaproductpermlaw52());
 		bpartner.setDescription(importRecord.getDescription());
 		bpartner.setDUNS(importRecord.getDUNS());
 		bpartner.setVATaxID(importRecord.getTaxID());
@@ -115,7 +114,6 @@ import org.compiere.model.ModelValidationEngine;
 		bpartner.setC_BP_Group_ID(importRecord.getC_BP_Group_ID());
 		bpartner.setAD_Language(importRecord.getAD_Language());
 		bpartner.setIsSEPASigned(importRecord.isSEPASigned());
-		bpartner.setIsPharmaciePermission(importRecord.isPharmaciePermission());
 		return bpartner;
 	}
 
@@ -157,10 +155,6 @@ import org.compiere.model.ModelValidationEngine;
 		{
 			bpartner.setName3(importRecord.getName3());
 		}
-		if (importRecord.getPharmaproductpermlaw52() != null)
-		{
-			bpartner.setPharmaproductpermlaw52(importRecord.getPharmaproductpermlaw52());
-		}
 		if (importRecord.getDUNS() != null)
 		{
 			bpartner.setDUNS(importRecord.getDUNS());
@@ -187,7 +181,6 @@ import org.compiere.model.ModelValidationEngine;
 			bpartner.setAD_Language(importRecord.getAD_Language());
 		}
 		bpartner.setIsSEPASigned(importRecord.isSEPASigned());
-		bpartner.setIsPharmaciePermission(importRecord.isPharmaciePermission());
 		return bpartner;
 	}
 

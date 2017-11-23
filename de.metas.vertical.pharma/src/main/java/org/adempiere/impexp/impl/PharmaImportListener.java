@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import org.adempiere.impexp.IImportListener;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 
 import de.metas.vertical.pharma.model.I_C_BPartner;
 import de.metas.vertical.pharma.model.I_I_BPartner;
@@ -53,7 +54,10 @@ public class PharmaImportListener implements IImportListener
 		final I_I_BPartner ibpartner = InterfaceWrapperHelper.create(model, I_I_BPartner.class);
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(model, I_C_BPartner.class);
 		bpartner.setIsPharmaciePermission(ibpartner.isPharmaciePermission());
-		bpartner.setPharmaproductpermlaw52(ibpartner.getPharmaproductpermlaw52());
+		if (!Check.isEmpty(ibpartner.getPharmaproductpermlaw52(),true))
+		{
+			bpartner.setPharmaproductpermlaw52(ibpartner.getPharmaproductpermlaw52());
+		}
 		save(bpartner);
 	}
 
