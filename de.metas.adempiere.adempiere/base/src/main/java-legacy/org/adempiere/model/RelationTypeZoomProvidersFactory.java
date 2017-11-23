@@ -96,7 +96,7 @@ public final class RelationTypeZoomProvidersFactory
 		return "  WHERE "
 				+ "    rt.IsActive='Y'"
 				+ "    AND ref.IsActive='Y'" //
-				+ "    AND ref.ValidationType=" + X_AD_Reference.VALIDATIONTYPE_TableValidation
+				+ "    AND ref.ValidationType = '" + X_AD_Reference.VALIDATIONTYPE_TableValidation + "'"
 				+ "    AND tab.IsActive='Y'"
 				+ "    AND tab.AD_Reference_ID=ref.AD_Reference_ID ";
 	}
