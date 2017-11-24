@@ -9,14 +9,19 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.lock.api.ILockAutoCloseable;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.LockOwner;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 
 /*
@@ -44,6 +49,8 @@ import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 @Repository
 public class PurchaseCandidateRepository
 {
+	private final LockOwner lockOwner = LockOwner.newOwner(PurchaseCandidateRepository.class.getSimpleName());
+
 	public Stream<PurchaseCandidate> streamAllBySalesOrderLineIds(final Collection<Integer> salesOrderLineIds)
 	{
 		if (salesOrderLineIds.isEmpty())
@@ -73,7 +80,7 @@ public class PurchaseCandidateRepository
 				.stream(I_C_PurchaseCandidate.class)
 				.map(this::toPurchaseCandidate);
 	}
-	
+
 	public List<Integer> getAllPurchaseCandidateIdsBySalesOrderId(final int salesOrderId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -87,15 +94,32 @@ public class PurchaseCandidateRepository
 
 	public void saveAll(final Collection<PurchaseCandidate> purchaseCandidates)
 	{
+		boolean doLock = true;
+		saveAll(purchaseCandidates, doLock);
+	}
+
+	public void saveAllNoLock(final Collection<PurchaseCandidate> purchaseCandidates)
+	{
+		boolean doLock = false;
+		saveAll(purchaseCandidates, doLock);
+	}
+
+	private void saveAll(final Collection<PurchaseCandidate> purchaseCandidates, final boolean doLock)
+	{
 		if (purchaseCandidates.isEmpty())
 		{
 			return;
 		}
 
 		final Set<Integer> purchaseCandidateIds = purchaseCandidates.stream()
+				.filter(PurchaseCandidate::hasChanges)
 				.map(PurchaseCandidate::getRepoId)
 				.filter(id -> id > 0)
 				.collect(ImmutableSet.toImmutableSet());
+		if (purchaseCandidateIds.isEmpty())
+		{
+			return;
+		}
 
 		final Map<Integer, I_C_PurchaseCandidate> recordsById = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_PurchaseCandidate.class)
@@ -103,11 +127,32 @@ public class PurchaseCandidateRepository
 				.create()
 				.map(I_C_PurchaseCandidate.class, I_C_PurchaseCandidate::getC_PurchaseCandidate_ID);
 
-		purchaseCandidates.forEach(purchaseCandidate -> {
-			final int repoId = purchaseCandidate.getRepoId();
-			final I_C_PurchaseCandidate existingRecord = repoId > 0 ? recordsById.get(repoId) : null;
-			save(purchaseCandidate, existingRecord);
-		});
+		final ILockAutoCloseable lock = doLock ? lockByIds(purchaseCandidateIds) : null;
+		try
+		{
+			purchaseCandidates.forEach(purchaseCandidate -> {
+				final int repoId = purchaseCandidate.getRepoId();
+				final I_C_PurchaseCandidate existingRecord = repoId > 0 ? recordsById.get(repoId) : null;
+				save(purchaseCandidate, existingRecord);
+			});
+		}
+		finally
+		{
+			if (lock != null)
+			{
+				lock.close();
+			}
+		}
+	}
+
+	private ILockAutoCloseable lockByIds(final Set<Integer> purchaseCandidateIds)
+	{
+		return Services.get(ILockManager.class).lock()
+				.setOwner(lockOwner)
+				.setAutoCleanup(true)
+				.addRecordsByModel(TableRecordReference.ofRecordIds(I_C_PurchaseCandidate.Table_Name, purchaseCandidateIds))
+				.acquire()
+				.asAutoCloseable();
 	}
 
 	/**
@@ -115,6 +160,14 @@ public class PurchaseCandidateRepository
 	 */
 	private final void save(final PurchaseCandidate purchaseCandidate, final I_C_PurchaseCandidate existingRecord)
 	{
+		if (existingRecord != null)
+		{
+			if (existingRecord.isProcessed() && !purchaseCandidate.isProcessed())
+			{
+				throw new AdempiereException("Purchase candidate was already processed").setParameter("purchaseCandidate", purchaseCandidate);
+			}
+		}
+
 		I_C_PurchaseCandidate record = existingRecord;
 		if (record == null)
 		{
@@ -135,8 +188,7 @@ public class PurchaseCandidateRepository
 		record.setProcessed(purchaseCandidate.isProcessed());
 
 		InterfaceWrapperHelper.save(record);
-
-		purchaseCandidate.setRepoId(record.getC_PurchaseCandidate_ID());
+		purchaseCandidate.markSaved(record.getC_PurchaseCandidate_ID());
 	}
 
 	/**
@@ -144,6 +196,8 @@ public class PurchaseCandidateRepository
 	 */
 	private PurchaseCandidate toPurchaseCandidate(final I_C_PurchaseCandidate purchaseCandidatePO)
 	{
+		final boolean locked = Services.get(ILockManager.class).isLocked(purchaseCandidatePO);
+
 		return PurchaseCandidate.builder()
 				.repoId(purchaseCandidatePO.getC_PurchaseCandidate_ID())
 				.salesOrderId(purchaseCandidatePO.getC_OrderSO_ID())
@@ -156,6 +210,7 @@ public class PurchaseCandidateRepository
 				.qtyRequired(purchaseCandidatePO.getQtyRequiered())
 				.datePromised(purchaseCandidatePO.getDatePromised())
 				.processed(purchaseCandidatePO.isProcessed())
+				.locked(locked)
 				.build();
 	}
 
