@@ -1,10 +1,9 @@
 package de.metas.vertical.pharma;
 
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.impexp.impl.PharmaImportInterceptor;
-import org.compiere.model.MClient;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
+import org.compiere.model.I_AD_Client;
 
 import de.metas.vertical.pharma.model.I_C_BPartner;
 
@@ -36,37 +35,11 @@ import de.metas.vertical.pharma.model.I_C_BPartner;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class Main implements ModelValidator
+public class Main extends AbstractModuleInterceptor
 {
-
-
 	@Override
-	public void initialize(ModelValidationEngine engine, MClient client)
+	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		engine.addImportValidate(I_C_BPartner.Table_Name, PharmaImportInterceptor.instance);
-	}
-
-	@Override
-	public int getAD_Client_ID()
-	{
-		return 0;
-	}
-
-	@Override
-	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
-	{
-		return null;
-	}
-
-	@Override
-	public String modelChange(PO po, int type) throws Exception
-	{
-		return null;
-	}
-
-	@Override
-	public String docValidate(PO po, int timing) throws Exception
-	{
-		return null;
 	}
 }

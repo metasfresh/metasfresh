@@ -50,8 +50,8 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.IImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
+import org.adempiere.impexp.IImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.processing.model.MADProcessablePO;
 import org.adempiere.processing.service.IProcessingService;
@@ -235,7 +235,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 		{
 			final String classNames = client.getModelValidationClasses();
 			if (classNames == null || classNames.trim().length() == 0)
+			{
 				continue;
+			}
 			loadModuleActivatorClasses(client, classNames.trim());
 		}
 		// logging to db will try to init ModelValidationEngine again!
@@ -346,10 +348,14 @@ public class ModelValidationEngine implements IModelValidationEngine
 			{
 				className = st.nextToken();
 				if (className == null)
+				{
 					continue;
+				}
 				className = className.trim();
 				if (className.length() == 0)
+				{
 					continue;
+				}
 				//
 				loadModuleActivatorClass(client, className);
 			}
@@ -484,7 +490,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 			{
 				String error = validator.login(AD_Org_ID, AD_Role_ID, AD_User_ID);
 				if (error != null && error.length() > 0)
+				{
 					return error;
+				}
 			}
 		}
 
@@ -606,10 +614,14 @@ public class ModelValidationEngine implements IModelValidationEngine
 	public void addModelChange(String tableName, ModelValidator listener)
 	{
 		if (tableName == null || listener == null)
+		{
 			return;
+		}
 		//
 		if (listener.getAD_Client_ID() < 0)
+		{
 			registerGlobal(listener);
+		}
 		String propertyName = getPropertyName(tableName, listener);
 		ArrayList<ModelValidator> list = m_modelChangeListeners.get(propertyName);
 		if (list == null)
@@ -653,14 +665,20 @@ public class ModelValidationEngine implements IModelValidationEngine
 	public void removeModelChange(String tableName, ModelValidator listener)
 	{
 		if (tableName == null || listener == null)
+		{
 			return;
+		}
 		String propertyName = getPropertyName(tableName, listener);
 		ArrayList<ModelValidator> list = m_modelChangeListeners.get(propertyName);
 		if (list == null)
+		{
 			return;
+		}
 		list.remove(listener);
 		if (list.size() == 0)
+		{
 			m_modelChangeListeners.remove(propertyName);
+		}
 	}	// removeModelValidator
 
 	@Override
@@ -747,14 +765,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		//
 		// Execute interceptors
 		final String trxName = po.get_TrxName();
-		executeInTrx(trxName, changeType, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				fireModelChange0(po, changeType, interceptorsSystem, interceptorsClient, scriptValidators);
-			}
-		});
+		executeInTrx(trxName, changeType, () -> fireModelChange0(po, changeType, interceptorsSystem, interceptorsClient, scriptValidators));
 	}	// fireModelChange
 
 	private final void executeInTrx(final String trxName, final int changeTypeOrDocTiming, final Runnable runnable)
@@ -953,7 +964,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}
 
 	private void handleTypeSubsequent(
-			@NonNull final PO po, 
+			@NonNull final PO po,
 			@NonNull final ModelValidator validator)
 	{
 		if (m_modelChangeSubsequent.containsKey(validator))
@@ -978,10 +989,14 @@ public class ModelValidationEngine implements IModelValidationEngine
 	public void addDocValidate(String tableName, ModelValidator listener)
 	{
 		if (tableName == null || listener == null)
+		{
 			return;
+		}
 		//
 		if (listener.getAD_Client_ID() < 0)
+		{
 			registerGlobal(listener);
+		}
 		String propertyName = getPropertyName(tableName, listener);
 		ArrayList<ModelValidator> list = m_docValidateListeners.get(propertyName);
 		if (list == null)
@@ -1017,14 +1032,20 @@ public class ModelValidationEngine implements IModelValidationEngine
 	public void removeDocValidate(String tableName, ModelValidator listener)
 	{
 		if (tableName == null || listener == null)
+		{
 			return;
+		}
 		String propertyName = getPropertyName(tableName, listener);
 		ArrayList<ModelValidator> list = m_docValidateListeners.get(propertyName);
 		if (list == null)
+		{
 			return;
+		}
 		list.remove(listener);
 		if (list.size() == 0)
+		{
 			m_docValidateListeners.remove(propertyName);
+		}
 	}	// removeDocValidate
 
 	/**
@@ -1100,14 +1121,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		//
 		// Execute interceptors
 		final String trxName = po.get_TrxName();
-		executeInTrx(trxName, docTiming, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				fireDocValidate0(po, docTiming, interceptorsSystem, interceptorsClient, scriptValidators);
-			}
-		});
+		executeInTrx(trxName, docTiming, () -> fireDocValidate0(po, docTiming, interceptorsSystem, interceptorsClient, scriptValidators));
 
 		return null;
 	}	// fireDocValidate
@@ -1165,12 +1179,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}
 
-	/**************************************************************************
-	 * Add Date Import Validation Listener
-	 *
-	 * @param tableName table name
-	 * @param listener listener
-	 */
+	@Override
 	public void addImportValidate(String importTableName, IImportInterceptor listener)
 	{
 		String propertyName = getPropertyName(importTableName);
@@ -1198,7 +1207,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 	public <ImportRecordType> void fireImportValidate(IImportProcess<ImportRecordType> process, ImportRecordType importModel, Object targetModel, int timing)
 	{
 		if (m_impValidateListeners.size() == 0)
+		{
 			return;
+		}
 
 		String propertyName = getPropertyName(process.getImportTableName());
 		ArrayList<IImportInterceptor> list = m_impValidateListeners.get(propertyName);
@@ -1239,7 +1250,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 	public StringBuilder getInfoDetail(StringBuilder sb, Properties ctx)
 	{
 		if (sb == null)
+		{
 			sb = new StringBuilder();
+		}
 		sb.append("=== ModelValidationEngine ===").append(Env.NL);
 		sb.append("Validators #").append(m_validators.size()).append(Env.NL);
 		for (ModelValidator mv : m_validators)
@@ -1305,7 +1318,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 				try
 				{
 					if (m != null)
+					{
 						m.invoke(validator, ctx);
+					}
 				}
 				catch (Exception e)
 				{
@@ -1339,7 +1354,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 				try
 				{
 					if (m != null)
+					{
 						m.invoke(validator);
+					}
 				}
 				catch (Exception e)
 				{
@@ -1352,7 +1369,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 	private final void registerGlobal(ModelValidator validator)
 	{
 		if (!m_globalValidators.contains(validator))
+		{
 			m_globalValidators.add(validator);
+		}
 	}
 
 	private final boolean appliesFor(ModelValidator validator, int AD_Client_ID)
