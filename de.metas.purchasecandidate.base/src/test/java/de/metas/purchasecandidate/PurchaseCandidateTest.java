@@ -98,6 +98,7 @@ public class PurchaseCandidateTest
 	private PurchaseCandidate createDummyPurchaseCandidate(final int repoId)
 	{
 		return PurchaseCandidate.builder()
+				.repoId(repoId)
 				.salesOrderId(1)
 				.salesOrderLineId(2)
 				.orgId(3)
