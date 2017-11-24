@@ -17,6 +17,9 @@ public class BankRepository
 				.addEqualsFilter(I_C_Bank.COLUMNNAME_SwiftCode, swiftCode)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
+				.orderBy()
+				.addColumn(I_C_Bank.COLUMNNAME_SwiftCode)
+				.endOrderBy()
 				.create()
 				.first();
 	}
