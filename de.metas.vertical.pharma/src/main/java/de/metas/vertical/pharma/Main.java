@@ -2,7 +2,7 @@ package de.metas.vertical.pharma;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.impexp.ImportService;
-import org.adempiere.impexp.impl.PharmaImportListener;
+import org.adempiere.impexp.impl.PharmaImportInterceptor;
 import org.compiere.Adempiere;
 
 import de.metas.vertical.pharma.model.I_C_BPartner;
@@ -46,6 +46,6 @@ public class Main extends AbstractModuleInterceptor
 	private void setupPharmaImportListeners()
 	{
 		final ImportService importService = Adempiere.getBean(ImportService.class);
-		importService.registerListenerForTableName(PharmaImportListener.instance, I_C_BPartner.Table_Name);
+		importService.registerListenerForTableName(PharmaImportInterceptor.instance, I_C_BPartner.Table_Name);
 	}
 }

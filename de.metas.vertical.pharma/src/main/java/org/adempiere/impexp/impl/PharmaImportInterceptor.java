@@ -5,14 +5,13 @@ package org.adempiere.impexp.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import org.adempiere.impexp.IImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
+import org.adempiere.impexp.IImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 
 import de.metas.vertical.pharma.model.I_C_BPartner;
 import de.metas.vertical.pharma.model.I_I_BPartner;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -40,32 +39,26 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class PharmaImportListener implements IImportInterceptor
+public class PharmaImportInterceptor implements IImportInterceptor
 {
-	public static final PharmaImportListener instance = new PharmaImportListener();
+	public static final PharmaImportInterceptor instance = new PharmaImportInterceptor();
 
-	private PharmaImportListener()
+	private PharmaImportInterceptor()
 	{
 
 	}
 
-	public void onImport(@NonNull final Object importRecord, @NonNull final Object model)
+	@Override
+	public void onImport(IImportProcess<?> process, Object importModel, Object targetModel, int timing)
 	{
-		final I_I_BPartner ibpartner = InterfaceWrapperHelper.create(model, I_I_BPartner.class);
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(model, I_C_BPartner.class);
+		final I_I_BPartner ibpartner = InterfaceWrapperHelper.create(importModel, I_I_BPartner.class);
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(targetModel, I_C_BPartner.class);
 		bpartner.setIsPharmaciePermission(ibpartner.isPharmaciePermission());
 		if (!Check.isEmpty(ibpartner.getPharmaproductpermlaw52(),true))
 		{
 			bpartner.setPharmaproductpermlaw52(ibpartner.getPharmaproductpermlaw52());
 		}
 		save(bpartner);
-	}
-
-	@Override
-	public void onImport(IImportProcess<?> process, Object importModel, Object targetModel, int timing)
-	{
-		// TODO Auto-generated method stub
-
 	}
 
 }
