@@ -80,7 +80,7 @@ class PurchaseRowsSaver
 				.filter(id -> !purchaseCandidateIdsSaved.contains(id))
 				.collect(ImmutableSet.toImmutableSet());
 		purchaseCandidatesRepo.deleteByIds(purchaseCandidateIdsToDelete);
-		
+
 		return purchaseCandidatesToSave;
 	}
 
@@ -99,17 +99,19 @@ class PurchaseRowsSaver
 					.vendorBPartnerId(row.getVendorBPartnerId())
 					.qtyRequired(row.getQtyToPurchase())
 					.datePromised(row.getDatePromised())
+					.processed(false)
+					.locked(false)
 					.build();
 		}
 		else
 		{
-			if (purchaseCandidate.isProcessed())
-			{
-				throw new AdempiereException("Purchase candidate already processed: " + purchaseCandidate);
-			}
-
 			purchaseCandidate.setQtyRequired(row.getQtyToPurchase());
 			purchaseCandidate.setDatePromised(row.getDatePromised());
+			
+			if (purchaseCandidate.isProcessedOrLocked() && purchaseCandidate.hasChanges())
+			{
+				throw new AdempiereException("Purchase candidate is not editable: " + purchaseCandidate);
+			}
 		}
 
 		return purchaseCandidate;

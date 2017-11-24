@@ -207,7 +207,7 @@ class PurchaseRowsLoader
 				.purcaseCandidateRepoId(purchaseCandidate.getRepoId())
 				.orgId(purchaseCandidate.getOrgId())
 				.warehouseId(purchaseCandidate.getWarehouseId())
-				.readonly(purchaseCandidate.isProcessed())
+				.readonly(purchaseCandidate.isProcessedOrLocked())
 				.build();
 	}
 

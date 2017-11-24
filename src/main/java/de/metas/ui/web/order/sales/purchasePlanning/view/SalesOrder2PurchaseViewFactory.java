@@ -101,7 +101,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	{
 		final ITranslatableString caption = Services.get(IADProcessDAO.class).retrieveProcessNameByClassIfUnique(WEBUI_SalesOrder_PurchaseView_Launcher.class)
 				.orElse(null);
-		
+
 		return ViewLayout.builder()
 				.setWindowId(windowId)
 				.setCaption(caption)
@@ -206,10 +206,13 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		if (IDocument.STATUS_Completed.equals(salesOrder.getDocStatus()))
 		{
 			final Set<Integer> purchaseCandidateIds = purchaseCandidates.stream()
-					.filter(purchaseCandidate -> !purchaseCandidate.isProcessed())
+					.filter(purchaseCandidate -> !purchaseCandidate.isProcessedOrLocked())
 					.map(PurchaseCandidate::getRepoId)
 					.collect(ImmutableSet.toImmutableSet());
-			C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds);
+			if (purchaseCandidateIds.size() > 0)
+			{
+				C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds);
+			}
 		}
 	}
 
