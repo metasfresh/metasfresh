@@ -14,7 +14,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 634987323L;
+	private static final long serialVersionUID = -1051207302L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -1570,6 +1570,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getRegionName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RegionName);
+	}
+
+	/** Set Short Description.
+		@param ShortDescription Short Description	  */
+	@Override
+	public void setShortDescription (java.lang.String ShortDescription)
+	{
+		set_Value (COLUMNNAME_ShortDescription, ShortDescription);
+	}
+
+	/** Get Short Description.
+		@return Short Description	  */
+	@Override
+	public java.lang.String getShortDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ShortDescription);
 	}
 
 	/** Set Swift code.

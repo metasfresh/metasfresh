@@ -1744,6 +1744,29 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_RegionName = "RegionName";
 
 	/**
+	 * Set Short Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setShortDescription (java.lang.String ShortDescription);
+
+	/**
+	 * Get Short Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getShortDescription();
+
+    /** Column definition for ShortDescription */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_ShortDescription = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "ShortDescription", null);
+    /** Column name ShortDescription */
+    public static final String COLUMNNAME_ShortDescription = "ShortDescription";
+
+	/**
 	 * Set Swift code.
 	 * Swift Code or BIC
 	 *
