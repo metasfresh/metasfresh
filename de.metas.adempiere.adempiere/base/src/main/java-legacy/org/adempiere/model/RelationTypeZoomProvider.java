@@ -68,8 +68,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return new Builder();
 	}
 
-	// services
-	final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	
 
 	private static final Logger logger = LogManager.getLogger(RelationTypeZoomProvider.class);
 
@@ -268,6 +267,8 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 	private String createZoomOriginQueryWhereClause(final IZoomSource zoomOrigin)
 	{
+		// services
+		final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 		final StringBuilder queryWhereClause = new StringBuilder();
 
