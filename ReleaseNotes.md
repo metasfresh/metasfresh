@@ -36,6 +36,8 @@ Here come the actual release notes:
     * New Window for Quality Note in WebUI, allowing to mmaintain the available Quality Notes and Performace Types for Material Receipt.
   * [#3048](https://github.com/metasfresh/metasfresh/issues/3048) WebUI: Date Filter missing in Material Receipt Dispo
     * New Date Filter added to material Receipt Dispo.
+  * [#3061](https://github.com/metasfresh/metasfresh/issues/3061) Adjust OrderBy in Materialdispo
+    * Improvement of Ordering in Materiadispo.
 
 ## Fixes
 * metasfresh-webui-frontend

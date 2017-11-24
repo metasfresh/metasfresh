@@ -39,7 +39,6 @@ import lombok.NonNull;
 @Service
 public class ProductionAdvisedEventCreator
 {
-
 	private final PPOrderDemandMatcher ppOrderDemandMatcher;
 
 	private final PPOrderPojoSupplier ppOrderPojoSupplier;

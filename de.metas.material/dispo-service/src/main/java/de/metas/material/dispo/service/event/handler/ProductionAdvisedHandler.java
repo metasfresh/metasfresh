@@ -75,7 +75,7 @@ public class ProductionAdvisedHandler
 				.status(candidateStatus)
 				.productionDetail(createProductionDetailForPPOrder(ppOrder))
 				.demandDetail(demandDetailOrNull)
-				.materialDescriptor(createMAterialDescriptorFromPpOrder(ppOrder))
+				.materialDescriptor(createMaterialDescriptorFromPpOrder(ppOrder))
 				.build();
 
 		final Candidate candidateWithGroupId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
@@ -89,7 +89,7 @@ public class ProductionAdvisedHandler
 					.groupId(candidateWithGroupId.getGroupId())
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)
 					.materialDescriptor(createMaterialDescriptorForPpOrderAndLine(ppOrder, ppOrderLine))
-					.demandDetail(DemandDetail.forOrderLineIdOrNull(ppOrder.getOrderLineId()))
+					.demandDetail(demandDetailOrNull)
 					.productionDetail(createProductionDetailForPPOrderAndLine(ppOrder, ppOrderLine));
 
 			// in case of CandidateType.DEMAND this might trigger further demand events
@@ -102,7 +102,7 @@ public class ProductionAdvisedHandler
 		}
 	}
 
-	private static MaterialDescriptor createMAterialDescriptorFromPpOrder(final PPOrder ppOrder)
+	private static MaterialDescriptor createMaterialDescriptorFromPpOrder(final PPOrder ppOrder)
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
