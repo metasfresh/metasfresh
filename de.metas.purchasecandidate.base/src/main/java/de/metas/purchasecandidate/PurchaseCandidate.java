@@ -34,7 +34,6 @@ import lombok.Setter;
  * #L%
  */
 
-@Builder
 @Data
 public class PurchaseCandidate
 {
@@ -71,7 +70,7 @@ public class PurchaseCandidate
 	private final boolean locked;
 
 	@Builder
-	public PurchaseCandidate(
+	private PurchaseCandidate(
 			final int repoId,
 			final int salesOrderId,
 			final int salesOrderLineId,
