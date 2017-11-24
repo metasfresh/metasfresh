@@ -74,7 +74,7 @@ import de.metas.currency.ICurrencyBL;
 			bankAccount.setIBAN(importRecord.getIBAN());
 			bankAccount.setA_Name(importRecord.getSwiftCode());
 			bankAccount.setC_Currency_ID(Services.get(ICurrencyBL.class).getBaseCurrency(process.getCtx()).getC_Currency_ID());
-			final I_C_Bank bank = Adempiere.getBean(BankRepository.class).findbankBySwiftCode(importRecord.getSwiftCode());
+			final I_C_Bank bank = Adempiere.getBean(BankRepository.class).findBankBySwiftCode(importRecord.getSwiftCode());
 			if (bank != null)
 			{
 				bankAccount.setC_Bank(bank);

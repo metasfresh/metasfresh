@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class BankRepository
 {
-	public I_C_Bank findbankBySwiftCode(String swiftCode)
+	public I_C_Bank findBankBySwiftCode(String swiftCode)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Bank.class, Env.getCtx(), ITrx.TRXNAME_None)
