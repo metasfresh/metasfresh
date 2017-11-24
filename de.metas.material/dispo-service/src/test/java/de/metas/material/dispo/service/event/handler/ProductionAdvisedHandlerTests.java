@@ -115,18 +115,14 @@ public class ProductionAdvisedHandlerTests
 	@Test
 	public void handleProductionAdvisedEvent()
 	{
-		final ProductionAdvisedEvent productionAdvisedEvent = createproductionAdvisedEvent();
-
-		perform_testproductionAdvisedEvent(productionAdvisedEvent);
+		perform_testproductionAdvisedEvent(createPPOrderEventWithPpOrderId(0));
 	}
 
 	@Test
 	public void handleProductionAdvisedEvent_invoke_twice()
 	{
-		final ProductionAdvisedEvent productionAdvisedEvent = createproductionAdvisedEvent();
-
-		perform_testproductionAdvisedEvent(productionAdvisedEvent);
-		perform_testproductionAdvisedEvent(productionAdvisedEvent);
+		perform_testproductionAdvisedEvent(createPPOrderEventWithPpOrderId(0));
+		perform_testproductionAdvisedEvent(createPPOrderEventWithPpOrderId(30));
 	}
 
 	private void perform_testproductionAdvisedEvent(final ProductionAdvisedEvent productionAdvisedEvent)
@@ -183,13 +179,12 @@ public class ProductionAdvisedHandlerTests
 		assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isNotEqualTo(t1Product1Stock.getMD_Candidate_GroupId());  // stock candidates' groupIds are different if they are about different products or warehouses
 
 		final int ppOrderId = productionAdvisedEvent.getPpOrder().getPpOrderId();
-		assertThat(ppOrderId).isGreaterThan(0); // just a guard
 		assertThat(DispoTestUtils.filterExclStock()).allSatisfy(r -> assertCandidateRecordHasPpOorderId(r, ppOrderId));
 	}
 
-	private ProductionAdvisedEvent createproductionAdvisedEvent()
+	private ProductionAdvisedEvent createPPOrderEventWithPpOrderId(final int ppOrderId)
 	{
-		final PPOrder ppOrder = createPpOrder();
+		final PPOrder ppOrder = createPpOrderWithPpOrderId(ppOrderId);
 
 		final ProductionAdvisedEvent productionAdvisedEvent = ProductionAdvisedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
@@ -198,16 +193,18 @@ public class ProductionAdvisedHandlerTests
 				.build();
 
 		assertThat(productionAdvisedEvent.getSupplyRequiredDescriptor()).isNull();
+		assertThat(ppOrder.getPpOrderId()).isEqualTo(ppOrderId);
+
 		return productionAdvisedEvent;
 	}
 
-	private PPOrder createPpOrder()
+	private PPOrder createPpOrderWithPpOrderId(final int ppOrderId)
 	{
 		final ProductDescriptor rawProductDescriptor1 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct1Id);
 		final ProductDescriptor rawProductDescriptor2 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct2Id);
 
 		final PPOrder ppOrder = PPOrder.builder()
-				.ppOrderId(30)
+				.ppOrderId(ppOrderId)
 				.orgId(ORG_ID)
 				.datePromised(AFTER_NOW)
 				.dateStartSchedule(NOW)
