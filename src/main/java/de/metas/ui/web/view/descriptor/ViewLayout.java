@@ -448,19 +448,19 @@ public class ViewLayout implements ETagAware
 			return detailId;
 		}
 
-		public Builder setCaption(final ITranslatableString caption)
+		public Builder setCaption(@Nullable final ITranslatableString caption)
 		{
 			this.caption = caption;
 			return this;
 		}
 
-		public Builder setCaption(final String caption)
+		public Builder setCaption(@Nullable final String caption)
 		{
 			setCaption(ImmutableTranslatableString.constant(caption));
 			return this;
 		}
 
-		public Builder setDescription(final ITranslatableString description)
+		public Builder setDescription(@Nullable final ITranslatableString description)
 		{
 			this.description = description;
 			return this;

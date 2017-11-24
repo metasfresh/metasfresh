@@ -85,11 +85,12 @@ public class HUEditorViewFactory implements IViewFactory
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	private final ImmutableListMultimap<String, HUEditorViewCustomizer> viewCustomizersByReferencingTableName;
+	private final ImmutableMap<String, HUEditorRowIsProcessedPredicate> rowProcessedPredicateByReferencingTableName;
+	private final ImmutableMap<String, Boolean> rowAttributesAlwaysReadonlyByReferencingTableName;
 
 	private final transient CCache<Integer, SqlViewBinding> sqlViewBindingCache = CCache.newCache("SqlViewBinding", 1, 0);
 	private final transient CCache<ArrayKey, ViewLayout> layouts = CCache.newLRUCache("HUEditorViewFactory#Layouts", 10, 0);
 
-	private ImmutableMap<String, HUEditorRowIsProcessedPredicate> rowProcessedPredicateByReferencingTableName;
 
 	@Autowired
 	private HUEditorViewFactory(final List<HUEditorViewCustomizer> viewCustomizers)
@@ -103,6 +104,12 @@ public class HUEditorViewFactory implements IViewFactory
 				.distinct()
 				.collect(ImmutableMap.toImmutableMap(HUEditorViewCustomizer::getReferencingTableNameToMatch, HUEditorViewCustomizer::getHUEditorRowIsProcessedPredicate));
 		logger.info("Initialized row processed predicates: {}", rowProcessedPredicateByReferencingTableName);
+		
+		this.rowAttributesAlwaysReadonlyByReferencingTableName = viewCustomizers.stream()
+				.filter(viewCustomizer -> viewCustomizer.isAttributesAlwaysReadonly() != null)
+				.distinct()
+				.collect(ImmutableMap.toImmutableMap(HUEditorViewCustomizer::getReferencingTableNameToMatch, HUEditorViewCustomizer::isAttributesAlwaysReadonly));
+		logger.info("Initialized row attributes always readonly flags: {}", rowAttributesAlwaysReadonlyByReferencingTableName);
 	}
 
 	private List<HUEditorViewCustomizer> getViewCustomizers(final String referencingTableName)
@@ -260,11 +267,12 @@ public class HUEditorViewFactory implements IViewFactory
 		final List<DocumentFilter> filters = request.getOrUnwrapFilters(filterDescriptors);
 
 		final WindowId windowId = viewId.getWindowId();
+		final boolean attributesAlwaysReadonly = rowAttributesAlwaysReadonlyByReferencingTableName.getOrDefault(referencingTableName, Boolean.TRUE);
 		final HUEditorViewRepository huEditorViewRepository = SqlHUEditorViewRepository.builder()
 				.windowId(windowId)
 				.rowProcessedPredicate(getRowProcessedPredicate(referencingTableName))
 				.attributesProvider(HUEditorRowAttributesProvider.builder()
-						.readonly(WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(windowId)) // readonly if it's actually the HU window
+						.readonly(attributesAlwaysReadonly)
 						.build())
 				.sqlViewBinding(sqlViewBinding)
 				.build();

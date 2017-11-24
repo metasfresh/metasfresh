@@ -569,7 +569,7 @@ public class DocumentCollection
 		final TableRecordReference recordRef = getTableRecordReference(documentPath);
 
 		final ProcessExecutionResult processExecutionResult = ProcessInfo.builder()
-				.setCtx(userSession.getCtx())
+				.setCtx(Env.getCtx())
 				.setAD_Process_ID(printProcessId)
 				.setWindowNo(windowNo) // important: required for ProcessInfo.findReportingLanguage
 				.setRecord(recordRef)

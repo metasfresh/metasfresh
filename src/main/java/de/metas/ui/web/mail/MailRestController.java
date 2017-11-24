@@ -17,6 +17,7 @@ import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -198,7 +199,7 @@ public class MailRestController
 
 		//
 		// Create the email object
-		final I_AD_Client adClient = Services.get(IClientDAO.class).retriveClient(userSession.getCtx(), userSession.getAD_Client_ID());
+		final I_AD_Client adClient = Services.get(IClientDAO.class).retriveClient(Env.getCtx(), userSession.getAD_Client_ID());
 		final String mailCustomType = null;
 		final I_AD_User from = Services.get(IUserDAO.class).retrieveUser(webuiEmail.getFrom().getIdAsInt());
 		final List<String> toList = extractEMailAddreses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
@@ -411,7 +412,7 @@ public class MailRestController
 	@ApiOperation("Available Email templates")
 	public JSONLookupValuesList getTemplates()
 	{
-		return MADBoilerPlate.getAll(userSession.getCtx())
+		return MADBoilerPlate.getAll(Env.getCtx())
 				.stream()
 				.map(adBoilerPlate -> JSONLookupValue.of(adBoilerPlate.getAD_BoilerPlate_ID(), adBoilerPlate.getName()))
 				.collect(JSONLookupValuesList.collect());
@@ -419,7 +420,7 @@ public class MailRestController
 
 	private void applyTemplate(final WebuiEmail email, final WebuiEmailBuilder newEmailBuilder, final LookupValue templateId)
 	{
-		final Properties ctx = userSession.getCtx();
+		final Properties ctx = Env.getCtx();
 		final MADBoilerPlate boilerPlate = MADBoilerPlate.get(ctx, templateId.getIdAsInt());
 
 		//

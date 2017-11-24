@@ -147,6 +147,17 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		Check.assumeNotNull(_view, "View loaded");
 		return _view;
 	}
+	
+	protected final <T extends IView> boolean isViewClass(@NonNull final Class<T> expectedViewClass)
+	{
+		final IView view = _view;
+		if(view == null)
+		{
+			return false;
+		}
+		
+		return expectedViewClass.isAssignableFrom(view.getClass());
+	}
 
 	protected final void invalidateView(@NonNull final ViewId viewId)
 	{

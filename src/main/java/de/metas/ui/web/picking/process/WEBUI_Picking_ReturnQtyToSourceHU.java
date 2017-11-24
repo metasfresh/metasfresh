@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.PickingCandidateService.RemoveQtyFromHURequest;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
@@ -90,14 +89,12 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 
-		final RemoveQtyFromHURequest request = RemoveQtyFromHURequest.builder()
+		pickingCandidateService.removeQtyFromHU()
 				.qtyCU(qtyCU)
 				.huId(pickingSlotRow.getHuId())
-				.pickingSlotId(pickingSlotRow.getPickingSlotId())
 				.productId(pickingSlotRow.getHuProductId())
-				.build();
-
-		pickingCandidateService.removeQtyFromHU(request);
+				.build()
+				.perform();
 
 		invalidateView();
 		invalidateParentView();

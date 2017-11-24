@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.PickingCandidateService.AddQtyToHURequest;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -94,14 +93,13 @@ public class WEBUI_Picking_PickQtyToExistingHU
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 
-		final AddQtyToHURequest request = AddQtyToHURequest.builder()
+		pickingCandidateService.addQtyToHU()
 				.qtyCU(qtyCU)
-				.targetHuId(pickingSlotRow.getHuId())
+				.targetHUId(pickingSlotRow.getHuId())
 				.pickingSlotId(pickingSlotRow.getPickingSlotId())
 				.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
-				.build();
-
-		pickingCandidateService.addQtyToHU(request);
+				.build()
+				.performAndGetQtyPicked();
 
 		invalidateView();
 		invalidateParentView();

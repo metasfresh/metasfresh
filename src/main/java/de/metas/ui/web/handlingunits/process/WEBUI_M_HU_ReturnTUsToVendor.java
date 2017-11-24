@@ -71,6 +71,11 @@ public class WEBUI_M_HU_ReturnTUsToVendor extends HUEditorProcessTemplate implem
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
+		if(!isHUEditorView())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
+		}
+
 		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
 		if (!selectedRowIds.isSingleDocumentId())
 		{

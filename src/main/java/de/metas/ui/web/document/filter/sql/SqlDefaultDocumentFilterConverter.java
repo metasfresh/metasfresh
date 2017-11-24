@@ -2,6 +2,7 @@ package de.metas.ui.web.document.filter.sql;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.adempiere.db.DBConstants;
 import org.compiere.util.DB;
@@ -74,8 +75,8 @@ import lombok.NonNull;
 	/** Build document filter where clause */
 	@Override
 	public String getSql(
-			@NonNull final SqlParamsCollector sqlParams, 
-			@NonNull final DocumentFilter filter, 
+			@NonNull final SqlParamsCollector sqlParams,
+			@NonNull final DocumentFilter filter,
 			@NonNull final SqlOptions sqlOpts)
 	{
 		final StringBuilder sql = new StringBuilder();
@@ -98,7 +99,6 @@ import lombok.NonNull;
 
 		return sql.toString();
 	}
-	
 
 	/** Build document filter parameter where clause */
 	private String buildSqlWhereClause(final SqlParamsCollector sqlParams, final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
@@ -108,11 +108,11 @@ import lombok.NonNull;
 		if (filterParam.isSqlFilter())
 		{
 			String sqlWhereClause = filterParam.getSqlWhereClause();
-			if(sqlOpts.isUseTableAlias())
+			if (sqlOpts.isUseTableAlias())
 			{
 				sqlWhereClause = replaceTableNameWithTableAlias(sqlWhereClause);
 			}
-			
+
 			final List<Object> sqlWhereClauseParams = filterParam.getSqlWhereClauseParams();
 			sqlParams.collectAll(sqlWhereClauseParams);
 			return sqlWhereClause;
@@ -123,7 +123,6 @@ import lombok.NonNull;
 		final String fieldName = filterParam.getFieldName();
 		final SqlEntityFieldBinding fieldBinding = entityBinding.getFieldByFieldName(fieldName);
 		final String columnSql = extractColumnSql(fieldBinding, sqlOpts);
-		
 
 		final Operator operator = filterParam.getOperator();
 		switch (operator)
@@ -205,10 +204,10 @@ import lombok.NonNull;
 			}
 		}
 	}
-	
+
 	private String extractColumnSql(@NonNull final SqlEntityFieldBinding fieldBinding, final SqlOptions sqlOpts)
 	{
-		if(sqlOpts.isUseTableAlias())
+		if (sqlOpts.isUseTableAlias())
 		{
 			return replaceTableNameWithTableAlias(fieldBinding.getColumnSql());
 		}
@@ -336,7 +335,8 @@ import lombok.NonNull;
 			return sql;
 		}
 
-		final String sqlFixed = sql.replace(entityBinding.getTableName() + ".", entityBinding.getTableAlias() + ".");
+		final String matchTableNameIgnoringCase = "(?i)" + Pattern.quote(entityBinding.getTableName() + ".");
+		final String sqlFixed = sql.replaceAll(matchTableNameIgnoringCase, entityBinding.getTableAlias() + ".");
 		return sqlFixed;
 	}
 

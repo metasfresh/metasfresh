@@ -88,11 +88,11 @@ public final class PackageableRow implements IViewRow
 		})
 	private final BigDecimal qtyPickedPlanned;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.DateTime, captionKey = I_M_Packageable_V.COLUMNNAME_DeliveryDate, layouts =
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_BPartner_ID, layouts =
 		{
 				@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40)
 		})
-	private final java.util.Date deliveryDate;
+	private final LookupValue bpartner;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.DateTime, captionKey = I_M_Packageable_V.COLUMNNAME_PreparationDate, layouts =
 		{
@@ -123,7 +123,7 @@ public final class PackageableRow implements IViewRow
 			final LookupValue product,
 			final BigDecimal qtyToDeliver,
 			final BigDecimal qtyPickedPlanned,
-			final Date deliveryDate,
+			final LookupValue bpartner,
 			final Date preparationDate,
 			final int shipmentScheduleId)
 	{
@@ -137,7 +137,7 @@ public final class PackageableRow implements IViewRow
 		this.product = product;
 		this.qtyToDeliver = qtyToDeliver;
 		this.qtyPickedPlanned = qtyPickedPlanned != null ? qtyPickedPlanned : BigDecimal.ZERO;
-		this.deliveryDate = deliveryDate;
+		this.bpartner = bpartner;
 		this.preparationDate = preparationDate;
 		this.shipmentScheduleId = shipmentScheduleId;
 

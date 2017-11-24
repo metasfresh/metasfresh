@@ -190,6 +190,11 @@ public class WEBUI_M_HU_Transform
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
+		if(!isHUEditorView())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
+		}
+		
 		if (!getSelectedDocumentIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();

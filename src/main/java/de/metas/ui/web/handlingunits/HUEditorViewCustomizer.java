@@ -41,6 +41,11 @@ public interface HUEditorViewCustomizer
 	{
 		return null;
 	}
+	
+	default Boolean isAttributesAlwaysReadonly()
+	{
+		return null;
+	}
 
 	/**
 	 * Called before the {@link HUEditorView} is created.

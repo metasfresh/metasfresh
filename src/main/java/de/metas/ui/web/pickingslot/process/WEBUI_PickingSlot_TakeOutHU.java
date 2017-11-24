@@ -8,6 +8,7 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
@@ -19,8 +20,10 @@ import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorView;
@@ -53,6 +56,9 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 public class WEBUI_PickingSlot_TakeOutHU extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
+	@Autowired
+	private PickingCandidateRepository pickingCandidateRepository;
+
 	private final List<Integer> huIdsRemoved = new ArrayList<>();
 
 	@Override
@@ -110,6 +116,15 @@ public class WEBUI_PickingSlot_TakeOutHU extends ViewBasedProcessTemplate implem
 				save(hu);
 			}
 		}
+
+		//
+		// Inactive all those picking candidates
+		pickingCandidateRepository.retrievePickingCandidatesByHUIds(ImmutableList.of(hu.getM_HU_ID()))
+				.forEach(pickingCandidate -> {
+					pickingCandidate.setIsActive(false);
+					pickingCandidate.setStatus(X_M_Picking_Candidate.STATUS_CL);
+					save(pickingCandidate);
+				});
 
 		huIdsRemoved.add(hu.getM_HU_ID());
 

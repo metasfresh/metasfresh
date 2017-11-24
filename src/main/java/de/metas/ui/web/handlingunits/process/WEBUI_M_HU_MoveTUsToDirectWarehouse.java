@@ -57,6 +57,11 @@ public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
+		if(!isHUEditorView())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
+		}
+
 		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
 		if (!selectedRowIds.isSingleDocumentId())
 		{

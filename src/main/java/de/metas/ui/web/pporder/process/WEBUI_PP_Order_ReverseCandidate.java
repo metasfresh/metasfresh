@@ -54,6 +54,10 @@ public class WEBUI_PP_Order_ReverseCandidate
 		}
 
 		final PPOrderLineRow row = getSingleSelectedRow();
+		if(row.isSourceHU())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Not available for source HU line");
+		}
 
 		if (row.getPP_Order_Qty_ID() <= 0)
 		{

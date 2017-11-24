@@ -48,6 +48,11 @@ public class WEBUI_M_HU_PrintReceiptLabel
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
+		if(!isHUEditorView())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
+		}
+
 		final HUReportService huReportService = HUReportService.get();
 
 		final Properties ctx = Env.getCtx(); // note: at this point, the JavaProces's ctx was not set so we are using the global context

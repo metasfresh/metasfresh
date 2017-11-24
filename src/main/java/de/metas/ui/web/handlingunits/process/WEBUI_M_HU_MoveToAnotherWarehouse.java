@@ -57,6 +57,11 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse extends HUEditorProcessTemplate i
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
+		if(!isHUEditorView())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
+		}
+
 		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL).findAny().isPresent())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));

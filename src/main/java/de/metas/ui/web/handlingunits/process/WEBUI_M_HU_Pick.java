@@ -74,7 +74,11 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		final ImmutableList<HURow> firstRows = streamHURows().limit(2).collect(ImmutableList.toImmutableList());
 		if (firstRows.isEmpty())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_M_HU_Messages.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
+			// NOTE: we decided to hide this action when there is not available,
+			// because we want to cover the requirements of https://github.com/metasfresh/metasfresh-webui-api/issues/683,
+			// were we need to hide the action for source HU lines... and does not worth the effort to handle particularly that case.
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no eligible HU rows found");
+			// return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_M_HU_Messages.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
 
 		if (firstRows.size() != 1)
@@ -188,6 +192,13 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		else if (row instanceof PPOrderLineRow)
 		{
 			final PPOrderLineRow ppOrderLineRow = PPOrderLineRow.cast(row);
+
+			// this process does not apply to source HUs
+			if (ppOrderLineRow.isSourceHU())
+			{
+				return null;
+			}
+
 			if (!ppOrderLineRow.getType().isHUOrHUStorage())
 			{
 				return null;
