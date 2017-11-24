@@ -36,7 +36,7 @@ public class PurchaseCandidateTest
 	@Test
 	public void markProcessedAndCheckChanges()
 	{
-		final PurchaseCandidate candidate = createDummyPurchaseCandidate();
+		final PurchaseCandidate candidate = createDummyPurchaseCandidate(1);
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 		assertThat(candidate.isProcessed()).isFalse();
@@ -58,7 +58,7 @@ public class PurchaseCandidateTest
 	@Test
 	public void changeQtyRequiredAndCheckChanges()
 	{
-		final PurchaseCandidate candidate = createDummyPurchaseCandidate();
+		final PurchaseCandidate candidate = createDummyPurchaseCandidate(1);
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 
@@ -78,7 +78,7 @@ public class PurchaseCandidateTest
 	@Test
 	public void changeDatePromisedAndCheckChanges()
 	{
-		final PurchaseCandidate candidate = createDummyPurchaseCandidate();
+		final PurchaseCandidate candidate = createDummyPurchaseCandidate(1);
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 
@@ -95,10 +95,9 @@ public class PurchaseCandidateTest
 		assertThat(candidate.copy().hasChanges()).isFalse();
 	}
 
-	private PurchaseCandidate createDummyPurchaseCandidate()
+	private PurchaseCandidate createDummyPurchaseCandidate(final int repoId)
 	{
 		return PurchaseCandidate.builder()
-				// .repoId()
 				.salesOrderId(1)
 				.salesOrderLineId(2)
 				.orgId(3)
