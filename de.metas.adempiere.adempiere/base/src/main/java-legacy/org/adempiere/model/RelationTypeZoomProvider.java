@@ -31,7 +31,6 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
@@ -92,16 +91,22 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		isTableRecordIdTarget = builder.isTableRecordIdTarget();
 
-		source = isTableRecordIdTarget ? null : new ZoomProviderDestination(new ZoomProviderDestinationParameters(builder.getSource_Reference_ID(),
-				builder.getSourceTableRefInfoOrNull(),
-				builder.getSourceRoleDisplayName(),
-				isTableRecordIdTarget));
-		
-		target = new ZoomProviderDestination(new ZoomProviderDestinationParameters(
-				builder.getTarget_Reference_ID(),
-				builder.getTargetTableRefInfoOrNull(),
-				builder.getTargetRoleDisplayName(),
-				isTableRecordIdTarget));
+		source = isTableRecordIdTarget ? null : ZoomProviderDestination.builder()
+				.adReferenceId(builder.getSource_Reference_ID())
+				.tableRefInfo(builder.getSourceTableRefInfoOrNull())
+				.roleDisplayName(builder.getTargetRoleDisplayName())
+				.tableRecordIdTarget(isTableRecordIdTarget)
+				.build();
+			
+		target = 
+				
+				ZoomProviderDestination.builder()
+				.adReferenceId(builder.getTarget_Reference_ID())
+				.tableRefInfo(builder.getTargetTableRefInfoOrNull())
+				.roleDisplayName(builder.getTargetRoleDisplayName())
+				.tableRecordIdTarget(isTableRecordIdTarget)
+				.build();
+
 
 	}
 
@@ -366,7 +371,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	/**
 	 * Retrieve destinations for the zoom origin given as parameter.
 	 * NOTE: This is not suitable for TableRecordIdTarget relation types, only for the default kind!
-	 * 
+	 *
 	 * @param ctx
 	 * @param zoomOriginPO
 	 * @param clazz
@@ -386,45 +391,31 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				.list(clazz);
 	}
 
+	@Value
 	private static final class ZoomProviderDestination
 	{
-		private final int AD_Reference_ID;
+		private final int adReferenceId;
 		private final ITableRefInfo tableRefInfo;
 		private final ITranslatableString roleDisplayName;
-		private final boolean isTableRecordIdTarget;
+		private final boolean tableRecordIdTarget;
 
-		private ZoomProviderDestination(final ZoomProviderDestinationParameters zoomProviderDestinationParameters)
-
-		// final int AD_Reference_ID, @NonNull final ITableRefInfo tableRefInfo, @Nullable final ITranslatableString roleDisplayName, final boolean isReferenceTarget)
+		@lombok.Builder
+		private ZoomProviderDestination(
+				final int adReferenceId,
+				@NonNull final ITableRefInfo tableRefInfo,
+				@Nullable final ITranslatableString roleDisplayName,
+				@NonNull final Boolean tableRecordIdTarget)
 		{
-			super();
-			final int referenceId = zoomProviderDestinationParameters.getAD_Reference_ID();
-			Preconditions.checkArgument(referenceId > 0, "AD_Reference_ID > 0");
-			this.AD_Reference_ID = referenceId;
-			this.tableRefInfo = zoomProviderDestinationParameters.getTableRefInfo();
-			this.roleDisplayName = zoomProviderDestinationParameters.getRoleDisplayName();
-			this.isTableRecordIdTarget = zoomProviderDestinationParameters.isTableRecordIdTarget();
-
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("AD_Reference_ID", AD_Reference_ID)
-					.add("roleDisplayName", roleDisplayName)
-					.add("tableRefInfo", tableRefInfo)
-					.toString();
+			Check.assume(adReferenceId > 0, "adReferenceId > 0");
+			this.adReferenceId = adReferenceId;
+			this.tableRefInfo = tableRefInfo;
+			this.roleDisplayName = roleDisplayName;
+			this.tableRecordIdTarget = tableRecordIdTarget;
 		}
 
 		public String getTableName()
 		{
 			return tableRefInfo.getTableName();
-		}
-
-		public ITableRefInfo getTableRefInfo()
-		{
-			return tableRefInfo;
 		}
 
 		public ITranslatableString getRoleDisplayName(final int fallbackAD_Window_ID)
@@ -442,7 +433,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		public boolean matchesAsSource(final IZoomSource zoomSource)
 		{
-			if (isTableRecordIdTarget)
+			if (tableRecordIdTarget)
 			{
 				// the source always matches if the target is ReferenceTarget
 				return true;
@@ -655,9 +646,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return targetRoleDisplayName;
 		}
 
-		public Builder setIsTableRecordIdTarget(boolean isReferenceTarget)
+		public Builder setIsTableRecordIdTarget(final boolean isReferenceTarget)
 		{
-			this.isTableRecordIDTarget = isReferenceTarget;
+			isTableRecordIDTarget = isReferenceTarget;
 			return this;
 		}
 
@@ -666,17 +657,4 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return isTableRecordIDTarget;
 		}
 	}
-
-	@Value
-	public static class ZoomProviderDestinationParameters
-	{
-		private final int AD_Reference_ID;
-		@NonNull
-		private final ITableRefInfo tableRefInfo;
-		@Nullable
-		private final ITranslatableString roleDisplayName;
-		private final boolean tableRecordIdTarget;
-
-	}
-
 }
