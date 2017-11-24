@@ -177,13 +177,11 @@ public class DemandCandiateHandler implements CandidateHandler
 		if (demandCandidate.getType() == CandidateType.DEMAND)
 		{
 			final MaterialQuery query = MaterialQuery.forMaterialDescriptor(demandCandidate.getMaterialDescriptor());
-			final BigDecimal availableQuantity = stockRepository.retrieveAvailableStockQtySum(query);
+			final BigDecimal availableQuantityAfterDemandWasApplied = stockRepository.retrieveAvailableStockQtySum(query);
 
-			if (availableQuantity.signum() < 0)
+			if (availableQuantityAfterDemandWasApplied.signum() < 0)
 			{
-				// there would be no more stock left, so
-				// notify whoever is in charge that we have a demand to balance
-				final BigDecimal requiredQty = availableQuantity.negate();
+				final BigDecimal requiredQty = availableQuantityAfterDemandWasApplied.negate();
 
 				final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
 						.createSupplyRequiredEvent(demandCandidateWithId, requiredQty);

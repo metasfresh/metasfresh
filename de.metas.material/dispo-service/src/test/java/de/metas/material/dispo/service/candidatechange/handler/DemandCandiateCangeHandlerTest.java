@@ -105,7 +105,7 @@ public class DemandCandiateCangeHandlerTest
 	{
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
 		setupRetrieveLatestMatchOrNullAlwaysReturnsNull();
-		setupRepositoryReturnsQuantityForMaterial("0", candidate.getMaterialDescriptor());
+		setupRepositoryReturnsQuantityForMaterial("-23", candidate.getMaterialDescriptor());
 
 		demandCandidateHandler.onCandidateNewOrChange(candidate);
 
@@ -127,7 +127,7 @@ public class DemandCandiateCangeHandlerTest
 	public void onCandidateNewOrChange_unsufficient_stock()
 	{
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
-		setupRepositoryReturnsQuantityForMaterial("10", candidate.getMaterialDescriptor());
+		setupRepositoryReturnsQuantityForMaterial("-13", candidate.getMaterialDescriptor());
 		setupRetrieveLatestMatchOrNullAlwaysReturnsNull();
 
 		demandCandidateHandler.onCandidateNewOrChange(candidate);
