@@ -110,6 +110,8 @@ import org.compiere.model.ModelValidationEngine;
 		bpartner.setDescription(importRecord.getDescription());
 		bpartner.setDUNS(importRecord.getDUNS());
 		bpartner.setVATaxID(importRecord.getTaxID());
+		bpartner.setC_InvoiceSchedule_ID(importRecord.getC_InvoiceSchedule_ID());
+		bpartner.setPaymentRule(importRecord.getPaymentRule());
 		bpartner.setNAICS(importRecord.getNAICS());
 		bpartner.setC_BP_Group_ID(importRecord.getC_BP_Group_ID());
 		bpartner.setAD_Language(importRecord.getAD_Language());
@@ -175,10 +177,17 @@ import org.compiere.model.ModelValidationEngine;
 		{
 			bpartner.setC_BP_Group_ID(importRecord.getC_BP_Group_ID());
 		}
-
 		if (importRecord.getAD_Language() != null)
 		{
 			bpartner.setAD_Language(importRecord.getAD_Language());
+		}
+		if (importRecord.getC_InvoiceSchedule_ID() > 0)
+		{
+			bpartner.setC_InvoiceSchedule_ID(importRecord.getC_InvoiceSchedule_ID());
+		}
+		if (importRecord.getPaymentRule() != null)
+		{
+			bpartner.setPaymentRule(importRecord.getPaymentRule());
 		}
 		bpartner.setIsSEPASigned(importRecord.isSEPASigned());
 		return bpartner;

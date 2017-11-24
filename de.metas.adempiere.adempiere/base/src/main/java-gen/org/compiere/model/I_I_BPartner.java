@@ -2,10 +2,10 @@ package org.compiere.model;
 
 
 /** Generated Interface for I_BPartner
- *  @author Adempiere (generated)
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_I_BPartner
+public interface I_I_BPartner 
 {
 
     /** TableName=I_BPartner */
@@ -35,7 +35,7 @@ public interface I_I_BPartner
 	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_Client>(I_I_BPartner.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -60,7 +60,7 @@ public interface I_I_BPartner
 	public java.lang.String getAD_Language();
 
     /** Column definition for AD_Language */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "AD_Language", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "AD_Language", null);
     /** Column name AD_Language */
     public static final String COLUMNNAME_AD_Language = "AD_Language";
 
@@ -89,7 +89,7 @@ public interface I_I_BPartner
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_Org>(I_I_BPartner.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -118,7 +118,7 @@ public interface I_I_BPartner
 	public void setAD_User(org.compiere.model.I_AD_User AD_User);
 
     /** Column definition for AD_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_User>(I_I_BPartner.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_ID */
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
@@ -143,7 +143,7 @@ public interface I_I_BPartner
 	public java.lang.String getAddress1();
 
     /** Column definition for Address1 */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Address1 = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Address1", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Address1 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Address1", null);
     /** Column name Address1 */
     public static final String COLUMNNAME_Address1 = "Address1";
 
@@ -168,7 +168,7 @@ public interface I_I_BPartner
 	public java.lang.String getAddress2();
 
     /** Column definition for Address2 */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Address2 = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Address2", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Address2 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Address2", null);
     /** Column name Address2 */
     public static final String COLUMNNAME_Address2 = "Address2";
 
@@ -193,7 +193,7 @@ public interface I_I_BPartner
 	public java.lang.String getAddress3();
 
     /** Column definition for Address3 */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Address3 = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Address3", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Address3 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Address3", null);
     /** Column name Address3 */
     public static final String COLUMNNAME_Address3 = "Address3";
 
@@ -218,7 +218,7 @@ public interface I_I_BPartner
 	public java.lang.String getAddress4();
 
     /** Column definition for Address4 */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Address4 = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Address4", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Address4 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Address4", null);
     /** Column name Address4 */
     public static final String COLUMNNAME_Address4 = "Address4";
 
@@ -243,7 +243,7 @@ public interface I_I_BPartner
 	public java.sql.Timestamp getBirthday();
 
     /** Column definition for Birthday */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Birthday = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Birthday", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Birthday = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Birthday", null);
     /** Column name Birthday */
     public static final String COLUMNNAME_Birthday = "Birthday";
 
@@ -268,9 +268,38 @@ public interface I_I_BPartner
 	public java.lang.String getBPContactGreeting();
 
     /** Column definition for BPContactGreeting */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_BPContactGreeting = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "BPContactGreeting", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_BPContactGreeting = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "BPContactGreeting", null);
     /** Column name BPContactGreeting */
     public static final String COLUMNNAME_BPContactGreeting = "BPContactGreeting";
+
+	/**
+	 * Set Bankverbindung.
+	 * Bankverbindung des Geschäftspartners
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
+
+	/**
+	 * Get Bankverbindung.
+	 * Bankverbindung des Geschäftspartners
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BP_BankAccount_ID();
+
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount();
+
+	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount);
+
+    /** Column definition for C_BP_BankAccount_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccount_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BP_BankAccount>(I_I_BPartner.class, "C_BP_BankAccount_ID", org.compiere.model.I_C_BP_BankAccount.class);
+    /** Column name C_BP_BankAccount_ID */
+    public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
 	 * Set Geschäftspartnergruppe.
@@ -297,7 +326,7 @@ public interface I_I_BPartner
 	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group);
 
     /** Column definition for C_BP_Group_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BP_Group>(I_I_BPartner.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
     /** Column name C_BP_Group_ID */
     public static final String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
@@ -326,7 +355,7 @@ public interface I_I_BPartner
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BPartner>(I_I_BPartner.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -355,7 +384,7 @@ public interface I_I_BPartner
 	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
 
     /** Column definition for C_BPartner_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_BPartner_Location>(I_I_BPartner.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
@@ -384,7 +413,7 @@ public interface I_I_BPartner
 	public void setC_Country(org.compiere.model.I_C_Country C_Country);
 
     /** Column definition for C_Country_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_Country>(I_I_BPartner.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
     /** Column name C_Country_ID */
     public static final String COLUMNNAME_C_Country_ID = "C_Country_ID";
 
@@ -413,9 +442,38 @@ public interface I_I_BPartner
 	public void setC_Greeting(org.compiere.model.I_C_Greeting C_Greeting);
 
     /** Column definition for C_Greeting_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_Greeting> COLUMN_C_Greeting_ID = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "C_Greeting_ID", org.compiere.model.I_C_Greeting.class);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_Greeting> COLUMN_C_Greeting_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_Greeting>(I_I_BPartner.class, "C_Greeting_ID", org.compiere.model.I_C_Greeting.class);
     /** Column name C_Greeting_ID */
     public static final String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
+
+	/**
+	 * Set Terminplan Rechnung.
+	 * Plan für die Rechnungsstellung
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID);
+
+	/**
+	 * Get Terminplan Rechnung.
+	 * Plan für die Rechnungsstellung
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_InvoiceSchedule_ID();
+
+	public org.compiere.model.I_C_InvoiceSchedule getC_InvoiceSchedule();
+
+	public void setC_InvoiceSchedule(org.compiere.model.I_C_InvoiceSchedule C_InvoiceSchedule);
+
+    /** Column definition for C_InvoiceSchedule_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_InvoiceSchedule> COLUMN_C_InvoiceSchedule_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_InvoiceSchedule>(I_I_BPartner.class, "C_InvoiceSchedule_ID", org.compiere.model.I_C_InvoiceSchedule.class);
+    /** Column name C_InvoiceSchedule_ID */
+    public static final String COLUMNNAME_C_InvoiceSchedule_ID = "C_InvoiceSchedule_ID";
 
 	/**
 	 * Set Region.
@@ -442,7 +500,7 @@ public interface I_I_BPartner
 	public void setC_Region(org.compiere.model.I_C_Region C_Region);
 
     /** Column definition for C_Region_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_Region> COLUMN_C_Region_ID = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "C_Region_ID", org.compiere.model.I_C_Region.class);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_Region> COLUMN_C_Region_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_Region>(I_I_BPartner.class, "C_Region_ID", org.compiere.model.I_C_Region.class);
     /** Column name C_Region_ID */
     public static final String COLUMNNAME_C_Region_ID = "C_Region_ID";
 
@@ -467,7 +525,7 @@ public interface I_I_BPartner
 	public java.lang.String getCity();
 
     /** Column definition for City */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_City = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "City", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_City = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "City", null);
     /** Column name City */
     public static final String COLUMNNAME_City = "City";
 
@@ -492,7 +550,7 @@ public interface I_I_BPartner
 	public java.lang.String getComments();
 
     /** Column definition for Comments */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Comments = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Comments", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Comments = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Comments", null);
     /** Column name Comments */
     public static final String COLUMNNAME_Comments = "Comments";
 
@@ -515,7 +573,7 @@ public interface I_I_BPartner
 	public java.lang.String getCompanyname();
 
     /** Column definition for Companyname */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Companyname = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Companyname", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Companyname = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Companyname", null);
     /** Column name Companyname */
     public static final String COLUMNNAME_Companyname = "Companyname";
 
@@ -540,7 +598,7 @@ public interface I_I_BPartner
 	public java.lang.String getContactDescription();
 
     /** Column definition for ContactDescription */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_ContactDescription = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "ContactDescription", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_ContactDescription = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "ContactDescription", null);
     /** Column name ContactDescription */
     public static final String COLUMNNAME_ContactDescription = "ContactDescription";
 
@@ -565,7 +623,7 @@ public interface I_I_BPartner
 	public java.lang.String getCountryCode();
 
     /** Column definition for CountryCode */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_CountryCode = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "CountryCode", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_CountryCode = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "CountryCode", null);
     /** Column name CountryCode */
     public static final String COLUMNNAME_CountryCode = "CountryCode";
 
@@ -580,7 +638,7 @@ public interface I_I_BPartner
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Created", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -595,7 +653,7 @@ public interface I_I_BPartner
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_User>(I_I_BPartner.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -618,7 +676,7 @@ public interface I_I_BPartner
 	public java.lang.String getDescription();
 
     /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Description", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
@@ -643,7 +701,7 @@ public interface I_I_BPartner
 	public java.lang.String getDUNS();
 
     /** Column definition for DUNS */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_DUNS = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "DUNS", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_DUNS = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "DUNS", null);
     /** Column name DUNS */
     public static final String COLUMNNAME_DUNS = "DUNS";
 
@@ -668,7 +726,7 @@ public interface I_I_BPartner
 	public java.lang.String getEMail();
 
     /** Column definition for EMail */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_EMail = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "EMail", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_EMail = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "EMail", null);
     /** Column name EMail */
     public static final String COLUMNNAME_EMail = "EMail";
 
@@ -693,7 +751,7 @@ public interface I_I_BPartner
 	public java.lang.String getFax();
 
     /** Column definition for Fax */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Fax = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Fax", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Fax = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Fax", null);
     /** Column name Fax */
     public static final String COLUMNNAME_Fax = "Fax";
 
@@ -718,7 +776,7 @@ public interface I_I_BPartner
 	public java.lang.String getFirstname();
 
     /** Column definition for Firstname */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Firstname = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Firstname", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Firstname = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Firstname", null);
     /** Column name Firstname */
     public static final String COLUMNNAME_Firstname = "Firstname";
 
@@ -743,7 +801,7 @@ public interface I_I_BPartner
 	public java.lang.String getGroupValue();
 
     /** Column definition for GroupValue */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_GroupValue = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "GroupValue", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_GroupValue = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "GroupValue", null);
     /** Column name GroupValue */
     public static final String COLUMNNAME_GroupValue = "GroupValue";
 
@@ -766,7 +824,7 @@ public interface I_I_BPartner
 	public int getI_BPartner_ID();
 
     /** Column definition for I_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_I_BPartner_ID = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "I_BPartner_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_I_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "I_BPartner_ID", null);
     /** Column name I_BPartner_ID */
     public static final String COLUMNNAME_I_BPartner_ID = "I_BPartner_ID";
 
@@ -791,7 +849,7 @@ public interface I_I_BPartner
 	public java.lang.String getI_ErrorMsg();
 
     /** Column definition for I_ErrorMsg */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_I_ErrorMsg = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "I_ErrorMsg", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_I_ErrorMsg = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "I_ErrorMsg", null);
     /** Column name I_ErrorMsg */
     public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
 
@@ -816,9 +874,34 @@ public interface I_I_BPartner
 	public boolean isI_IsImported();
 
     /** Column definition for I_IsImported */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_I_IsImported = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "I_IsImported", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_I_IsImported = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "I_IsImported", null);
     /** Column name I_IsImported */
     public static final String COLUMNNAME_I_IsImported = "I_IsImported";
+
+	/**
+	 * Set IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIBAN (java.lang.String IBAN);
+
+	/**
+	 * Get IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getIBAN();
+
+    /** Column definition for IBAN */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IBAN = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IBAN", null);
+    /** Column name IBAN */
+    public static final String COLUMNNAME_IBAN = "IBAN";
 
 	/**
 	 * Set Interessengebiet.
@@ -841,7 +924,7 @@ public interface I_I_BPartner
 	public java.lang.String getInterestAreaName();
 
     /** Column definition for InterestAreaName */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_InterestAreaName = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "InterestAreaName", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_InterestAreaName = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "InterestAreaName", null);
     /** Column name InterestAreaName */
     public static final String COLUMNNAME_InterestAreaName = "InterestAreaName";
 
@@ -866,7 +949,7 @@ public interface I_I_BPartner
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -891,7 +974,7 @@ public interface I_I_BPartner
 	public boolean isBillTo();
 
     /** Column definition for IsBillTo */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsBillTo = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "IsBillTo", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsBillTo = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsBillTo", null);
     /** Column name IsBillTo */
     public static final String COLUMNNAME_IsBillTo = "IsBillTo";
 
@@ -914,7 +997,7 @@ public interface I_I_BPartner
 	public boolean isBillToContact_Default();
 
     /** Column definition for IsBillToContact_Default */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsBillToContact_Default = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "IsBillToContact_Default", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsBillToContact_Default = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsBillToContact_Default", null);
     /** Column name IsBillToContact_Default */
     public static final String COLUMNNAME_IsBillToContact_Default = "IsBillToContact_Default";
 
@@ -937,7 +1020,7 @@ public interface I_I_BPartner
 	public boolean isBillToDefault();
 
     /** Column definition for IsBillToDefault */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsBillToDefault = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "IsBillToDefault", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsBillToDefault = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsBillToDefault", null);
     /** Column name IsBillToDefault */
     public static final String COLUMNNAME_IsBillToDefault = "IsBillToDefault";
 
@@ -962,7 +1045,7 @@ public interface I_I_BPartner
 	public boolean isCustomer();
 
     /** Column definition for IsCustomer */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsCustomer = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "IsCustomer", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsCustomer = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsCustomer", null);
     /** Column name IsCustomer */
     public static final String COLUMNNAME_IsCustomer = "IsCustomer";
 
@@ -985,7 +1068,7 @@ public interface I_I_BPartner
 	public boolean isDefaultContact();
 
     /** Column definition for IsDefaultContact */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsDefaultContact = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "IsDefaultContact", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsDefaultContact = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsDefaultContact", null);
     /** Column name IsDefaultContact */
     public static final String COLUMNNAME_IsDefaultContact = "IsDefaultContact";
 
@@ -1010,7 +1093,7 @@ public interface I_I_BPartner
 	public boolean isEmployee();
 
     /** Column definition for IsEmployee */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsEmployee = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "IsEmployee", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsEmployee = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsEmployee", null);
     /** Column name IsEmployee */
     public static final String COLUMNNAME_IsEmployee = "IsEmployee";
 
@@ -1033,7 +1116,7 @@ public interface I_I_BPartner
 	public boolean isSEPASigned();
 
     /** Column definition for IsSEPASigned */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsSEPASigned = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "IsSEPASigned", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsSEPASigned = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsSEPASigned", null);
     /** Column name IsSEPASigned */
     public static final String COLUMNNAME_IsSEPASigned = "IsSEPASigned";
 
@@ -1058,7 +1141,7 @@ public interface I_I_BPartner
 	public boolean isShipTo();
 
     /** Column definition for IsShipTo */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsShipTo = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "IsShipTo", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsShipTo = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsShipTo", null);
     /** Column name IsShipTo */
     public static final String COLUMNNAME_IsShipTo = "IsShipTo";
 
@@ -1081,7 +1164,7 @@ public interface I_I_BPartner
 	public boolean isShipToContact_Default();
 
     /** Column definition for IsShipToContact_Default */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsShipToContact_Default = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "IsShipToContact_Default", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsShipToContact_Default = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsShipToContact_Default", null);
     /** Column name IsShipToContact_Default */
     public static final String COLUMNNAME_IsShipToContact_Default = "IsShipToContact_Default";
 
@@ -1104,7 +1187,7 @@ public interface I_I_BPartner
 	public boolean isShipToDefault();
 
     /** Column definition for IsShipToDefault */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsShipToDefault = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "IsShipToDefault", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsShipToDefault = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsShipToDefault", null);
     /** Column name IsShipToDefault */
     public static final String COLUMNNAME_IsShipToDefault = "IsShipToDefault";
 
@@ -1129,7 +1212,7 @@ public interface I_I_BPartner
 	public boolean isVendor();
 
     /** Column definition for IsVendor */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsVendor = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "IsVendor", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_IsVendor = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "IsVendor", null);
     /** Column name IsVendor */
     public static final String COLUMNNAME_IsVendor = "IsVendor";
 
@@ -1152,7 +1235,7 @@ public interface I_I_BPartner
 	public java.lang.String getLastname();
 
     /** Column definition for Lastname */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Lastname = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Lastname", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Lastname = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Lastname", null);
     /** Column name Lastname */
     public static final String COLUMNNAME_Lastname = "Lastname";
 
@@ -1177,7 +1260,7 @@ public interface I_I_BPartner
 	public java.lang.String getNAICS();
 
     /** Column definition for NAICS */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_NAICS = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "NAICS", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_NAICS = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "NAICS", null);
     /** Column name NAICS */
     public static final String COLUMNNAME_NAICS = "NAICS";
 
@@ -1202,7 +1285,7 @@ public interface I_I_BPartner
 	public java.lang.String getName();
 
     /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Name", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 
@@ -1227,7 +1310,7 @@ public interface I_I_BPartner
 	public java.lang.String getName2();
 
     /** Column definition for Name2 */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Name2 = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Name2", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Name2 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Name2", null);
     /** Column name Name2 */
     public static final String COLUMNNAME_Name2 = "Name2";
 
@@ -1252,7 +1335,7 @@ public interface I_I_BPartner
 	public java.lang.String getName3();
 
     /** Column definition for Name3 */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Name3 = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Name3", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Name3 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Name3", null);
     /** Column name Name3 */
     public static final String COLUMNNAME_Name3 = "Name3";
 
@@ -1277,7 +1360,7 @@ public interface I_I_BPartner
 	public java.lang.String getOrgValue();
 
     /** Column definition for OrgValue */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_OrgValue = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "OrgValue", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_OrgValue = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "OrgValue", null);
     /** Column name OrgValue */
     public static final String COLUMNNAME_OrgValue = "OrgValue";
 
@@ -1302,9 +1385,34 @@ public interface I_I_BPartner
 	public java.lang.String getPassword();
 
     /** Column definition for Password */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Password = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Password", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Password = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Password", null);
     /** Column name Password */
     public static final String COLUMNNAME_Password = "Password";
+
+	/**
+	 * Set Zahlungsweise.
+	 * Wie die Rechnung bezahlt wird
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPaymentRule (java.lang.String PaymentRule);
+
+	/**
+	 * Get Zahlungsweise.
+	 * Wie die Rechnung bezahlt wird
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPaymentRule();
+
+    /** Column definition for PaymentRule */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_PaymentRule = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "PaymentRule", null);
+    /** Column name PaymentRule */
+    public static final String COLUMNNAME_PaymentRule = "PaymentRule";
 
 	/**
 	 * Set Telefon.
@@ -1327,7 +1435,7 @@ public interface I_I_BPartner
 	public java.lang.String getPhone();
 
     /** Column definition for Phone */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Phone = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Phone", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Phone = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Phone", null);
     /** Column name Phone */
     public static final String COLUMNNAME_Phone = "Phone";
 
@@ -1352,7 +1460,7 @@ public interface I_I_BPartner
 	public java.lang.String getPhone2();
 
     /** Column definition for Phone2 */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Phone2 = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Phone2", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Phone2 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Phone2", null);
     /** Column name Phone2 */
     public static final String COLUMNNAME_Phone2 = "Phone2";
 
@@ -1377,7 +1485,7 @@ public interface I_I_BPartner
 	public java.lang.String getPostal();
 
     /** Column definition for Postal */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Postal = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Postal", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Postal = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Postal", null);
     /** Column name Postal */
     public static final String COLUMNNAME_Postal = "Postal";
 
@@ -1402,7 +1510,7 @@ public interface I_I_BPartner
 	public java.lang.String getPostal_Add();
 
     /** Column definition for Postal_Add */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Postal_Add = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Postal_Add", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Postal_Add = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Postal_Add", null);
     /** Column name Postal_Add */
     public static final String COLUMNNAME_Postal_Add = "Postal_Add";
 
@@ -1427,7 +1535,7 @@ public interface I_I_BPartner
 	public boolean isProcessed();
 
     /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Processed", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Processed", null);
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
@@ -1450,7 +1558,7 @@ public interface I_I_BPartner
 	public boolean isProcessing();
 
     /** Column definition for Processing */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Processing", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Processing", null);
     /** Column name Processing */
     public static final String COLUMNNAME_Processing = "Processing";
 
@@ -1479,7 +1587,7 @@ public interface I_I_BPartner
 	public void setR_InterestArea(org.compiere.model.I_R_InterestArea R_InterestArea);
 
     /** Column definition for R_InterestArea_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_R_InterestArea> COLUMN_R_InterestArea_ID = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "R_InterestArea_ID", org.compiere.model.I_R_InterestArea.class);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_R_InterestArea> COLUMN_R_InterestArea_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_R_InterestArea>(I_I_BPartner.class, "R_InterestArea_ID", org.compiere.model.I_R_InterestArea.class);
     /** Column name R_InterestArea_ID */
     public static final String COLUMNNAME_R_InterestArea_ID = "R_InterestArea_ID";
 
@@ -1504,9 +1612,34 @@ public interface I_I_BPartner
 	public java.lang.String getRegionName();
 
     /** Column definition for RegionName */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_RegionName = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "RegionName", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_RegionName = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "RegionName", null);
     /** Column name RegionName */
     public static final String COLUMNNAME_RegionName = "RegionName";
+
+	/**
+	 * Set Swift code.
+	 * Swift Code or BIC
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSwiftCode (java.lang.String SwiftCode);
+
+	/**
+	 * Get Swift code.
+	 * Swift Code or BIC
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getSwiftCode();
+
+    /** Column definition for SwiftCode */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_SwiftCode = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "SwiftCode", null);
+    /** Column name SwiftCode */
+    public static final String COLUMNNAME_SwiftCode = "SwiftCode";
 
 	/**
 	 * Set Steuer-ID.
@@ -1529,7 +1662,7 @@ public interface I_I_BPartner
 	public java.lang.String getTaxID();
 
     /** Column definition for TaxID */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_TaxID = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "TaxID", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_TaxID = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "TaxID", null);
     /** Column name TaxID */
     public static final String COLUMNNAME_TaxID = "TaxID";
 
@@ -1554,7 +1687,7 @@ public interface I_I_BPartner
 	public java.lang.String getTitle();
 
     /** Column definition for Title */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Title = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Title", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Title = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Title", null);
     /** Column name Title */
     public static final String COLUMNNAME_Title = "Title";
 
@@ -1569,7 +1702,7 @@ public interface I_I_BPartner
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -1584,7 +1717,7 @@ public interface I_I_BPartner
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_AD_User>(I_I_BPartner.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
@@ -1609,7 +1742,7 @@ public interface I_I_BPartner
 	public java.lang.String getValue();
 
     /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<>(I_I_BPartner.class, "Value", null);
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Value", null);
     /** Column name Value */
     public static final String COLUMNNAME_Value = "Value";
 }
