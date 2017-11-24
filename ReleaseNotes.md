@@ -39,6 +39,10 @@ Here come the actual release notes:
   * [#3061](https://github.com/metasfresh/metasfresh/issues/3061) Adjust OrderBy in Materialdispo
     * Improvement of Ordering in Materiadispo.
 
+* metasfresh-webui-api
+  * [#611](https://github.com/metasfresh/metasfresh-webui-api/issues/611) Destroyed HUs in HU Editor
+    * Improving the filtering of Handling Unit Window now not showing destryed HU anymore.
+
 ## Fixes
 * metasfresh-webui-frontend
   * [#1352](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1352) Cannot clear dropdown fields
