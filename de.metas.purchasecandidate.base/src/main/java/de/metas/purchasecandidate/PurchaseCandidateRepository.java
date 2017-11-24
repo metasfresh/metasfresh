@@ -17,6 +17,8 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.lock.api.ILockAutoCloseable;
@@ -106,33 +108,39 @@ public class PurchaseCandidateRepository
 
 	private void saveAll(final Collection<PurchaseCandidate> purchaseCandidates, final boolean doLock)
 	{
-		if (purchaseCandidates.isEmpty())
+		final List<PurchaseCandidate> purchaseCandidatesToSave = purchaseCandidates.stream()
+				.filter(PurchaseCandidate::hasChanges)
+				.collect(ImmutableList.toImmutableList());
+		if (purchaseCandidatesToSave.isEmpty())
 		{
 			return;
 		}
 
-		final Set<Integer> purchaseCandidateIds = purchaseCandidates.stream()
-				.filter(PurchaseCandidate::hasChanges)
+		final Set<Integer> existingPurchaseCandidateIds = purchaseCandidatesToSave.stream()
 				.map(PurchaseCandidate::getRepoId)
 				.filter(id -> id > 0)
 				.collect(ImmutableSet.toImmutableSet());
-		if (purchaseCandidateIds.isEmpty())
+
+		final Map<Integer, I_C_PurchaseCandidate> existingRecordsById;
+		if (!existingPurchaseCandidateIds.isEmpty())
 		{
-			return;
+			existingRecordsById = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_C_PurchaseCandidate.class)
+					.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_C_PurchaseCandidate_ID, existingPurchaseCandidateIds)
+					.create()
+					.map(I_C_PurchaseCandidate.class, I_C_PurchaseCandidate::getC_PurchaseCandidate_ID);
+		}
+		else
+		{
+			existingRecordsById = ImmutableMap.of();
 		}
 
-		final Map<Integer, I_C_PurchaseCandidate> recordsById = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_PurchaseCandidate.class)
-				.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_C_PurchaseCandidate_ID, purchaseCandidateIds)
-				.create()
-				.map(I_C_PurchaseCandidate.class, I_C_PurchaseCandidate::getC_PurchaseCandidate_ID);
-
-		final ILockAutoCloseable lock = doLock ? lockByIds(purchaseCandidateIds) : null;
+		final ILockAutoCloseable lock = doLock && !existingPurchaseCandidateIds.isEmpty() ? lockByIds(existingPurchaseCandidateIds) : null;
 		try
 		{
-			purchaseCandidates.forEach(purchaseCandidate -> {
+			purchaseCandidatesToSave.forEach(purchaseCandidate -> {
 				final int repoId = purchaseCandidate.getRepoId();
-				final I_C_PurchaseCandidate existingRecord = repoId > 0 ? recordsById.get(repoId) : null;
+				final I_C_PurchaseCandidate existingRecord = repoId > 0 ? existingRecordsById.get(repoId) : null;
 				save(purchaseCandidate, existingRecord);
 			});
 		}
