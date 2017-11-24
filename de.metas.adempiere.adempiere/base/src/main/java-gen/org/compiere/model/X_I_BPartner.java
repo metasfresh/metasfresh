@@ -14,7 +14,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1397877783L;
+	private static final long serialVersionUID = 415644125L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -700,6 +700,25 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Firstname);
 	}
 
+	/** Set Erster Verkauf.
+		@param FirstSale 
+		Datum des Ersten Verkaufs
+	  */
+	@Override
+	public void setFirstSale (java.sql.Timestamp FirstSale)
+	{
+		set_Value (COLUMNNAME_FirstSale, FirstSale);
+	}
+
+	/** Get Erster Verkauf.
+		@return Datum des Ersten Verkaufs
+	  */
+	@Override
+	public java.sql.Timestamp getFirstSale () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_FirstSale);
+	}
+
 	/** Set Gruppen-Schlüssel.
 		@param GroupValue 
 		Business Partner Group Key
@@ -822,6 +841,22 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getInterestAreaName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_InterestAreaName);
+	}
+
+	/** Set Status Terminplan.
+		@param InvoiceSchedule Status Terminplan	  */
+	@Override
+	public void setInvoiceSchedule (java.lang.String InvoiceSchedule)
+	{
+		set_Value (COLUMNNAME_InvoiceSchedule, InvoiceSchedule);
+	}
+
+	/** Get Status Terminplan.
+		@return Status Terminplan	  */
+	@Override
+	public java.lang.String getInvoiceSchedule () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InvoiceSchedule);
 	}
 
 	/** Set Vorbelegung Rechnung.

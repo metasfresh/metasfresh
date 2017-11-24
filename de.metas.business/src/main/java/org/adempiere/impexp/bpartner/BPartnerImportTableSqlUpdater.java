@@ -70,6 +70,8 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateInterestAreas(whereClause);
 
+		dbUpdateInvoiceSchedules(whereClause);
+
 		dbUpdateErrorMessages(whereClause);
 	}
 
@@ -259,6 +261,26 @@ public class BPartnerImportTableSqlUpdater
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Set Interest Area={}", no);
+	}
+
+	private void dbUpdateInvoiceSchedules(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET C_InvoiceSchedule_ID=(SELECT C_InvoiceSchedule_ID FROM C_InvoiceSchedule is"
+				+ " WHERE i.InvoiceSchedule=is.Name AND is.AD_Client_ID IN (0, i.AD_Client_ID)) "
+				+ "WHERE C_InvoiceSchedule_ID IS NULL AND InvoiceSchedule IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set Greeting={}", no);
+		//
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid InvoiceSchedule, ' "
+				+ "WHERE C_InvoiceSchedule_ID IS NULL AND InvoiceSchedule IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Invalid InvoiceSchedule={}", no);
 	}
 
 	private void dbUpdateErrorMessages(final String whereClause)

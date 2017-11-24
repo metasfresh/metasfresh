@@ -781,6 +781,31 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_Firstname = "Firstname";
 
 	/**
+	 * Set Erster Verkauf.
+	 * Datum des Ersten Verkaufs
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setFirstSale (java.sql.Timestamp FirstSale);
+
+	/**
+	 * Get Erster Verkauf.
+	 * Datum des Ersten Verkaufs
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getFirstSale();
+
+    /** Column definition for FirstSale */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_FirstSale = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "FirstSale", null);
+    /** Column name FirstSale */
+    public static final String COLUMNNAME_FirstSale = "FirstSale";
+
+	/**
 	 * Set Gruppen-Schlüssel.
 	 * Business Partner Group Key
 	 *
@@ -927,6 +952,29 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_InterestAreaName = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "InterestAreaName", null);
     /** Column name InterestAreaName */
     public static final String COLUMNNAME_InterestAreaName = "InterestAreaName";
+
+	/**
+	 * Set Status Terminplan.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setInvoiceSchedule (java.lang.String InvoiceSchedule);
+
+	/**
+	 * Get Status Terminplan.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getInvoiceSchedule();
+
+    /** Column definition for InvoiceSchedule */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_InvoiceSchedule = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "InvoiceSchedule", null);
+    /** Column name InvoiceSchedule */
+    public static final String COLUMNNAME_InvoiceSchedule = "InvoiceSchedule";
 
 	/**
 	 * Set Aktiv.
