@@ -14,7 +14,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 415644125L;
+	private static final long serialVersionUID = 634987323L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -1296,6 +1296,64 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_PaymentRule);
 	}
 
+	/** 
+	 * PaymentRulePO AD_Reference_ID=195
+	 * Reference name: _Payment Rule
+	 */
+	public static final int PAYMENTRULEPO_AD_Reference_ID=195;
+	/** Cash = B */
+	public static final String PAYMENTRULEPO_Cash = "B";
+	/** CreditCard = K */
+	public static final String PAYMENTRULEPO_CreditCard = "K";
+	/** DirectDeposit = T */
+	public static final String PAYMENTRULEPO_DirectDeposit = "T";
+	/** Check = S */
+	public static final String PAYMENTRULEPO_Check = "S";
+	/** OnCredit = P */
+	public static final String PAYMENTRULEPO_OnCredit = "P";
+	/** DirectDebit = D */
+	public static final String PAYMENTRULEPO_DirectDebit = "D";
+	/** Mixed = M */
+	public static final String PAYMENTRULEPO_Mixed = "M";
+	/** Set Zahlungsweise.
+		@param PaymentRulePO 
+		Möglichkeiten der Bezahlung einer Bestellung
+	  */
+	@Override
+	public void setPaymentRulePO (java.lang.String PaymentRulePO)
+	{
+
+		set_Value (COLUMNNAME_PaymentRulePO, PaymentRulePO);
+	}
+
+	/** Get Zahlungsweise.
+		@return Möglichkeiten der Bezahlung einer Bestellung
+	  */
+	@Override
+	public java.lang.String getPaymentRulePO () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PaymentRulePO);
+	}
+
+	/** Set Zahlungskondition.
+		@param PaymentTerm 
+		Zahlungskondition
+	  */
+	@Override
+	public void setPaymentTerm (java.lang.String PaymentTerm)
+	{
+		set_Value (COLUMNNAME_PaymentTerm, PaymentTerm);
+	}
+
+	/** Get Zahlungskondition.
+		@return Zahlungskondition
+	  */
+	@Override
+	public java.lang.String getPaymentTerm () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PaymentTerm);
+	}
+
 	/** Set Telefon.
 		@param Phone 
 		Beschreibt eine Telefon Nummer
@@ -1332,6 +1390,43 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public java.lang.String getPhone2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Phone2);
+	}
+
+	@Override
+	public org.compiere.model.I_C_PaymentTerm getPO_PaymentTerm() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PO_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
+	}
+
+	@Override
+	public void setPO_PaymentTerm(org.compiere.model.I_C_PaymentTerm PO_PaymentTerm)
+	{
+		set_ValueFromPO(COLUMNNAME_PO_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, PO_PaymentTerm);
+	}
+
+	/** Set Zahlungskondition.
+		@param PO_PaymentTerm_ID 
+		Zahlungskondition für die Bestellung
+	  */
+	@Override
+	public void setPO_PaymentTerm_ID (int PO_PaymentTerm_ID)
+	{
+		if (PO_PaymentTerm_ID < 1) 
+			set_Value (COLUMNNAME_PO_PaymentTerm_ID, null);
+		else 
+			set_Value (COLUMNNAME_PO_PaymentTerm_ID, Integer.valueOf(PO_PaymentTerm_ID));
+	}
+
+	/** Get Zahlungskondition.
+		@return Zahlungskondition für die Bestellung
+	  */
+	@Override
+	public int getPO_PaymentTerm_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PO_PaymentTerm_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set PLZ.

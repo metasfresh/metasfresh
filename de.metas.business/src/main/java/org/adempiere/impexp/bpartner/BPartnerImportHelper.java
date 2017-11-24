@@ -112,6 +112,8 @@ import org.compiere.model.ModelValidationEngine;
 		bpartner.setVATaxID(importRecord.getTaxID());
 		bpartner.setC_InvoiceSchedule_ID(importRecord.getC_InvoiceSchedule_ID());
 		bpartner.setPaymentRule(importRecord.getPaymentRule());
+		bpartner.setPaymentRulePO(importRecord.getPaymentRulePO());
+		bpartner.setPO_PaymentTerm_ID(importRecord.getPO_PaymentTerm_ID());
 		bpartner.setNAICS(importRecord.getNAICS());
 		bpartner.setC_BP_Group_ID(importRecord.getC_BP_Group_ID());
 		bpartner.setAD_Language(importRecord.getAD_Language());

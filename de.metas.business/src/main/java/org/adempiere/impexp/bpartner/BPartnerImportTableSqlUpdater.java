@@ -72,6 +72,8 @@ public class BPartnerImportTableSqlUpdater
 
 		dbUpdateInvoiceSchedules(whereClause);
 
+		dbUpdatePO_PaymentTerms(whereClause);
+
 		dbUpdateErrorMessages(whereClause);
 	}
 
@@ -281,6 +283,26 @@ public class BPartnerImportTableSqlUpdater
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Invalid InvoiceSchedule={}", no);
+	}
+
+	private void dbUpdatePO_PaymentTerms(final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET PO_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
+				+ " WHERE i.PaymentTerm=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
+				+ "WHERE PO_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set PO_PaymentTerm={}", no);
+		//
+		sql = new StringBuilder("UPDATE I_BPartner i "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid PO_PaymentTerm, ' "
+				+ "WHERE PO_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Invalid PO_PaymentTerm={}", no);
 	}
 
 	private void dbUpdateErrorMessages(final String whereClause)

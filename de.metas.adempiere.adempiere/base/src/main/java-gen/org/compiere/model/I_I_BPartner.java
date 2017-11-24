@@ -1463,6 +1463,56 @@ public interface I_I_BPartner
     public static final String COLUMNNAME_PaymentRule = "PaymentRule";
 
 	/**
+	 * Set Zahlungsweise.
+	 * Möglichkeiten der Bezahlung einer Bestellung
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPaymentRulePO (java.lang.String PaymentRulePO);
+
+	/**
+	 * Get Zahlungsweise.
+	 * Möglichkeiten der Bezahlung einer Bestellung
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPaymentRulePO();
+
+    /** Column definition for PaymentRulePO */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_PaymentRulePO = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "PaymentRulePO", null);
+    /** Column name PaymentRulePO */
+    public static final String COLUMNNAME_PaymentRulePO = "PaymentRulePO";
+
+	/**
+	 * Set Zahlungskondition.
+	 * Zahlungskondition
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPaymentTerm (java.lang.String PaymentTerm);
+
+	/**
+	 * Get Zahlungskondition.
+	 * Zahlungskondition
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPaymentTerm();
+
+    /** Column definition for PaymentTerm */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_PaymentTerm = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "PaymentTerm", null);
+    /** Column name PaymentTerm */
+    public static final String COLUMNNAME_PaymentTerm = "PaymentTerm";
+
+	/**
 	 * Set Telefon.
 	 * Beschreibt eine Telefon Nummer
 	 *
@@ -1511,6 +1561,35 @@ public interface I_I_BPartner
     public static final org.adempiere.model.ModelColumn<I_I_BPartner, Object> COLUMN_Phone2 = new org.adempiere.model.ModelColumn<I_I_BPartner, Object>(I_I_BPartner.class, "Phone2", null);
     /** Column name Phone2 */
     public static final String COLUMNNAME_Phone2 = "Phone2";
+
+	/**
+	 * Set Zahlungskondition.
+	 * Zahlungskondition für die Bestellung
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPO_PaymentTerm_ID (int PO_PaymentTerm_ID);
+
+	/**
+	 * Get Zahlungskondition.
+	 * Zahlungskondition für die Bestellung
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPO_PaymentTerm_ID();
+
+	public org.compiere.model.I_C_PaymentTerm getPO_PaymentTerm();
+
+	public void setPO_PaymentTerm(org.compiere.model.I_C_PaymentTerm PO_PaymentTerm);
+
+    /** Column definition for PO_PaymentTerm_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_PaymentTerm> COLUMN_PO_PaymentTerm_ID = new org.adempiere.model.ModelColumn<I_I_BPartner, org.compiere.model.I_C_PaymentTerm>(I_I_BPartner.class, "PO_PaymentTerm_ID", org.compiere.model.I_C_PaymentTerm.class);
+    /** Column name PO_PaymentTerm_ID */
+    public static final String COLUMNNAME_PO_PaymentTerm_ID = "PO_PaymentTerm_ID";
 
 	/**
 	 * Set PLZ.
