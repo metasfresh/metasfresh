@@ -32,9 +32,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
-import org.adempiere.impexp.ImportService;
 import org.adempiere.util.lang.IMutable;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.MContactInterest;
@@ -156,10 +154,6 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				throw new AdempiereException("Same BPValue as previous line but not same BPartner linked");
 			}
 		}
-
-		final ImportService importService = Adempiere.getBean(ImportService.class);
-		importService.getHandler(I_C_BPartner.Table_Name)
-				.onImport(importRecord, importRecord.getC_BPartner());
 
 		bpartnerLocationImporter.importRecord(importRecord, context.getPreviousImportRecordsForSameBP());
 		bpartnerContactImporter.importRecord(importRecord);
