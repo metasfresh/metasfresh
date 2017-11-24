@@ -3,6 +3,7 @@ package de.metas.purchasecandidate.order;
 import org.adempiere.util.collections.MapReduceAggregator;
 import org.compiere.model.I_C_Order;
 
+import de.metas.order.event.OrderUserNotifications;
 import de.metas.purchasecandidate.PurchaseCandidate;
 
 /*
@@ -29,7 +30,7 @@ import de.metas.purchasecandidate.PurchaseCandidate;
 
 /**
  * Aggregates {@link PurchaseCandidate}s and creates completed purchase orders ({@link I_C_Order}).
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -39,6 +40,8 @@ public class PurchaseOrderFromCandidatesAggregator extends MapReduceAggregator<P
 	{
 		return new PurchaseOrderFromCandidatesAggregator();
 	}
+
+	private final OrderUserNotifications userNotifications = OrderUserNotifications.newInstance();
 
 	private PurchaseOrderFromCandidatesAggregator()
 	{
@@ -69,7 +72,10 @@ public class PurchaseOrderFromCandidatesAggregator extends MapReduceAggregator<P
 	protected PurchaseOrderFromCandidatesFactory createGroup(final Object itemHashKey, final PurchaseCandidate item_NOTUSED)
 	{
 		final PurchaseOrderAggregationKey orderAggregationKey = PurchaseOrderAggregationKey.cast(itemHashKey);
-		return PurchaseOrderFromCandidatesFactory.newInstance(orderAggregationKey);
+		return PurchaseOrderFromCandidatesFactory.builder()
+				.orderAggregationKey(orderAggregationKey)
+				.userNotifications(userNotifications)
+				.build();
 	}
 
 	@Override

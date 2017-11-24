@@ -349,7 +349,7 @@ import de.metas.notification.INotificationBL;
 	private void markStartProcessing(final I_C_Queue_WorkPackage workPackage)
 	{
 		workPackage.setLastStartTime(SystemTime.asTimestamp());
-		queueDAO.saveInLocalTrx(workPackage);
+		queueDAO.save(workPackage);
 	}
 
 	/**
@@ -394,7 +394,7 @@ import de.metas.notification.INotificationBL;
 
 		setLastEndTime(workPackage); // update statistics
 
-		queueDAO.saveInLocalTrx(workPackage);
+		queueDAO.save(workPackage);
 	}
 
 	/**
@@ -428,7 +428,7 @@ import de.metas.notification.INotificationBL;
 
 		setLastEndTime(workPackage); // update statistics
 
-		queueDAO.saveInLocalTrx(workPackage);
+		queueDAO.save(workPackage);
 
 		final String processorName;
 		final I_C_Queue_Block queueBlock = workPackage.getC_Queue_Block();
@@ -473,7 +473,7 @@ import de.metas.notification.INotificationBL;
 
 		setLastEndTime(workPackage); // update statistics
 
-		queueDAO.saveInLocalTrx(workPackage);
+		queueDAO.save(workPackage);
 
 		// log error to console (for later audit):
 		final Level logLevel = Services.get(IDeveloperModeBL.class).isEnabled() ? Level.WARN : Level.INFO;
