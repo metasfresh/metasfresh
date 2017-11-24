@@ -24,8 +24,8 @@ import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DistributionAdvisedEvent;
 import lombok.NonNull;
 
 /*
@@ -50,7 +50,7 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class DistributionAdvisedHandler
+public class DDOrderAdvisedHandler
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
 	private final CandidateRepositoryWriteService candidateRepositoryCommands;
@@ -58,7 +58,7 @@ public class DistributionAdvisedHandler
 	private final CandidateChangeService candidateChangeHandler;
 	private final RequestMaterialOrderService candidateService;
 
-	public DistributionAdvisedHandler(
+	public DDOrderAdvisedHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
 			@NonNull final CandidateChangeService candidateChangeHandler,
@@ -72,7 +72,7 @@ public class DistributionAdvisedHandler
 		this.supplyProposalEvaluator = supplyProposalEvaluator;
 	}
 
-	public void handleDistributionAdvisedEvent(final DistributionAdvisedEvent distributionAdvisedEvent)
+	public void handleDistributionAdvisedEvent(final DDOrderAdvisedOrCreatedEvent distributionAdvisedEvent)
 	{
 		final DDOrder ddOrder = distributionAdvisedEvent.getDdOrder();
 		final CandidateStatus candidateStatus;
@@ -119,6 +119,7 @@ public class DistributionAdvisedHandler
 
 			final Candidate supplyCandidate = Candidate.builderForEventDescr(distributionAdvisedEvent.getEventDescriptor())
 					.type(CandidateType.SUPPLY)
+					.groupId(distributionAdvisedEvent.getGroupId())
 					.status(candidateStatus)
 					.subType(CandidateSubType.DISTRIBUTION)
 					.materialDescriptor(materialDescriptor)

@@ -17,7 +17,7 @@ import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.ProductionAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
 import lombok.NonNull;
 
 /*
@@ -42,25 +42,25 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class ProductionAdvisedHandler
+public class PPOrderAdvisedHandler
 {
 	private final CandidateChangeService candidateChangeHandler;
-	private final RequestMaterialOrderService candidateService;
+	private final RequestMaterialOrderService requestMaterialOrderService;
 
 	/**
 	 *
 	 * @param candidateChangeHandler
 	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
 	 */
-	public ProductionAdvisedHandler(
+	public PPOrderAdvisedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final RequestMaterialOrderService candidateService)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
-		this.candidateService = candidateService;
+		this.requestMaterialOrderService = candidateService;
 	}
 
-	public void handleProductionAdvisedEvent(final ProductionAdvisedEvent productionAdvisedEvent)
+	public void handleProductionAdvisedEvent(final PPOrderAdvisedOrCreatedEvent productionAdvisedEvent)
 	{
 		final PPOrder ppOrder = productionAdvisedEvent.getPpOrder();
 
@@ -98,7 +98,7 @@ public class ProductionAdvisedHandler
 
 		if (ppOrder.isAdvisedToCreatePPOrder())
 		{
-			candidateService.requestMaterialOrder(candidateWithGroupId.getGroupId());
+			requestMaterialOrderService.requestMaterialOrder(candidateWithGroupId.getGroupId());
 		}
 	}
 

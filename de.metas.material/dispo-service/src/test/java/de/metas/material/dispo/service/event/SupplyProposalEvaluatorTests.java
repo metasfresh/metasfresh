@@ -30,7 +30,7 @@ import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
-import de.metas.material.dispo.service.event.handler.DistributionAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.DDOrderAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.DistributionAdvisedHandlerHandlerTests;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -76,7 +76,7 @@ public class SupplyProposalEvaluatorTests
 
 	private static final int DEMAND_WAREHOUSE_ID = 6;
 
-	private DistributionAdvisedHandler distributionAdvisedEventHandler;
+	private DDOrderAdvisedHandler distributionAdvisedEventHandler;
 
 	/**
 	 * This is the code under test
@@ -117,7 +117,7 @@ public class SupplyProposalEvaluatorTests
 						stockCandidateService
 						)));
 
-		distributionAdvisedEventHandler = new DistributionAdvisedHandler(
+		distributionAdvisedEventHandler = new DDOrderAdvisedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
 				candidateChangeHandler,

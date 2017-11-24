@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.ProductionAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.pporder.PPOrderDemandMatcher;
 import de.metas.material.planning.pporder.PPOrderPojoSupplier;
@@ -51,7 +51,7 @@ public class ProductionAdvisedEventCreator
 		this.ppOrderPojoSupplier = ppOrderPojoSupplier;
 	}
 
-	public List<ProductionAdvisedEvent> createProductionAdvisedEvents(
+	public List<PPOrderAdvisedOrCreatedEvent> createProductionAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMutableMRPContext mrpContext)
 	{
@@ -65,7 +65,7 @@ public class ProductionAdvisedEventCreator
 						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext),
 						SupplyRequiredHandlerUtils.mkMRPNotesCollector());
 
-		final ProductionAdvisedEvent event = ProductionAdvisedEvent.builder()
+		final PPOrderAdvisedOrCreatedEvent event = PPOrderAdvisedOrCreatedEvent.builder()
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.eventDescriptor(supplyRequiredDescriptor.getEventDescr().createNew())
 				.ppOrder(ppOrder)

@@ -87,7 +87,7 @@ public class CandidateRepositoryWriteService
 		return addOrUpdate(candidate, true);
 	}
 
-	public Candidate updateOverwriteStoredSeqNo(@NonNull final Candidate candidate)
+	public Candidate updateCandidateIdentifiedById(@NonNull final Candidate candidate)
 	{
 		Check.errorIf(candidate.getId() <= 0, "The candidate parameter needs to have Id>0; candidate={}", candidate);
 		final CandidatesQuery query = CandidatesQuery.fromId(candidate.getId());
@@ -101,11 +101,15 @@ public class CandidateRepositoryWriteService
 		return addOrUpdate(query, candidate, preserveExistingSeqNoAndParentId);
 	}
 
-	private Candidate addOrUpdate(final CandidatesQuery query, final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
+	private Candidate addOrUpdate(
+			@NonNull final CandidatesQuery singleCandidateOrNullQuery,
+			@NonNull final Candidate candidate,
+			final boolean preserveExistingSeqNoAndParentId)
 	{
 		final I_MD_Candidate oldCandidateRecord = RepositoryCommons
-				.mkQueryBuilder(query)
-				.create().firstOnly(I_MD_Candidate.class);
+				.mkQueryBuilder(singleCandidateOrNullQuery)
+				.create()
+				.firstOnly(I_MD_Candidate.class);
 
 		final BigDecimal oldqty = oldCandidateRecord != null ? oldCandidateRecord.getQty() : BigDecimal.ZERO;
 		final BigDecimal qtyDelta = candidate.getQuantity().subtract(oldqty);

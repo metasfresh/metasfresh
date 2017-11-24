@@ -46,14 +46,14 @@ import lombok.NonNull;
 public class StockCandidateService
 {
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-	private final CandidateRepositoryWriteService candidateRepositoryCommands;
+	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	public StockCandidateService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands)
 	{
 		this.candidateRepositoryRetrieval = candidateRepository;
-		this.candidateRepositoryCommands = candidateRepositoryCommands;
+		this.candidateRepositoryWriteService = candidateRepositoryCommands;
 	}
 
 	/**
@@ -193,7 +193,7 @@ public class StockCandidateService
 		for (final Candidate candidate : candidatesToUpdate)
 		{
 			final BigDecimal newQty = candidate.getQuantity().add(delta);
-			candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(candidate
+			candidateRepositoryWriteService.updateCandidateIdentifiedById(candidate
 					.withQuantity(newQty)
 					.withGroupId(groupId));
 		}

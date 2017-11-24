@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.ProductionAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
 import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
@@ -67,7 +67,7 @@ public class ProductionAdvisedEventCreatorTest
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptor();
 
 		final ProductionAdvisedEventCreator productionAdvisedEventCreator = new ProductionAdvisedEventCreator(ppOrderDemandMatcher, ppOrderPojoSupplier);
-		final List<ProductionAdvisedEvent> events = productionAdvisedEventCreator.createProductionAdvisedEvents(supplyRequiredDescriptor, mrpContext);
+		final List<PPOrderAdvisedOrCreatedEvent> events = productionAdvisedEventCreator.createProductionAdvisedEvents(supplyRequiredDescriptor, mrpContext);
 		assertThat(events).hasSize(1);
 		assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
 	}

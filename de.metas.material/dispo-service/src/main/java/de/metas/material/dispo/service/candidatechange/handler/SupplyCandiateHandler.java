@@ -134,7 +134,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 
 		// set the stock candidate as parent for the supply candidate
 		// the return value would have qty=0, but in the repository we updated the parent-ID
-		candidateRepositoryWriteService.updateOverwriteStoredSeqNo(
+		candidateRepositoryWriteService.updateCandidateIdentifiedById(
 				supplyCandidateWithIdAndParentId
 						.withParentId(parentStockCandidateWithIdAndDelta.getId())
 						.withSeqNo(parentStockCandidateWithIdAndDelta.getSeqNo() + 1));

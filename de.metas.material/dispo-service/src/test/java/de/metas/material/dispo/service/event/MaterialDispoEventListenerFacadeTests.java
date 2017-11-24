@@ -21,9 +21,9 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
@@ -33,17 +33,17 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
-import de.metas.material.dispo.service.event.handler.DistributionAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.DDOrderAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
-import de.metas.material.dispo.service.event.handler.ProductionAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.PPOrderAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.dispo.service.event.handler.TransactionCreatedHandler;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DistributionAdvisedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import mockit.Mocked;
@@ -122,14 +122,14 @@ public class MaterialDispoEventListenerFacadeTests
 				candidateRepositoryRetrieval,
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
-		final DistributionAdvisedHandler distributionAdvisedEventHandler = new DistributionAdvisedHandler(
+		final DDOrderAdvisedHandler distributionAdvisedEventHandler = new DDOrderAdvisedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
 				new RequestMaterialOrderService(candidateRepositoryRetrieval, materialEventService));
 
-		final ProductionAdvisedHandler productionAdvisedEventHandler = new ProductionAdvisedHandler(candidateChangeHandler, candidateService);
+		final PPOrderAdvisedHandler productionAdvisedEventHandler = new PPOrderAdvisedHandler(candidateChangeHandler, candidateService);
 
 		final ForecastCreatedHandler forecastCreatedEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
 
@@ -159,7 +159,7 @@ public class MaterialDispoEventListenerFacadeTests
 		mdEventListener.onEvent(shipmentScheduleEvent);
 
 		// create a distributionAdvisedEvent event which matches the shipmentscheduleEvent that we processed in testShipmentScheduleEvent()
-		final DistributionAdvisedEvent event = DistributionAdvisedEvent.builder()
+		final DDOrderAdvisedOrCreatedEvent event = DDOrderAdvisedOrCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)

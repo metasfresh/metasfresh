@@ -37,7 +37,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.ProductionAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
 import lombok.NonNull;
 import mockit.Mocked;
 
@@ -79,7 +79,7 @@ public class ProductionAdvisedHandlerTests
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private ProductionAdvisedHandler productionAdvisedEventHandler;
+	private PPOrderAdvisedHandler productionAdvisedEventHandler;
 
 	private StockRepository stockRepository;
 
@@ -109,7 +109,7 @@ public class ProductionAdvisedHandlerTests
 				candidateRepository,
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
-		productionAdvisedEventHandler = new ProductionAdvisedHandler(candidateChangeHandler, candidateService);
+		productionAdvisedEventHandler = new PPOrderAdvisedHandler(candidateChangeHandler, candidateService);
 	}
 
 	@Test
@@ -125,7 +125,7 @@ public class ProductionAdvisedHandlerTests
 		perform_testproductionAdvisedEvent(createPPOrderEventWithPpOrderId(30));
 	}
 
-	private void perform_testproductionAdvisedEvent(final ProductionAdvisedEvent productionAdvisedEvent)
+	private void perform_testproductionAdvisedEvent(final PPOrderAdvisedOrCreatedEvent productionAdvisedEvent)
 	{
 		productionAdvisedEventHandler.handleProductionAdvisedEvent(productionAdvisedEvent);
 
@@ -182,11 +182,11 @@ public class ProductionAdvisedHandlerTests
 		assertThat(DispoTestUtils.filterExclStock()).allSatisfy(r -> assertCandidateRecordHasPpOorderId(r, ppOrderId));
 	}
 
-	private ProductionAdvisedEvent createPPOrderEventWithPpOrderId(final int ppOrderId)
+	private PPOrderAdvisedOrCreatedEvent createPPOrderEventWithPpOrderId(final int ppOrderId)
 	{
 		final PPOrder ppOrder = createPpOrderWithPpOrderId(ppOrderId);
 
-		final ProductionAdvisedEvent productionAdvisedEvent = ProductionAdvisedEvent.builder()
+		final PPOrderAdvisedOrCreatedEvent productionAdvisedEvent = PPOrderAdvisedOrCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.supplyRequiredDescriptor(null)
 				.ppOrder(ppOrder)

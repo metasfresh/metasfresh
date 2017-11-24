@@ -9,6 +9,7 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IDDOrderDAO;
+import org.eevolution.event.DDOrderRequestedEventHandler;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
@@ -18,8 +19,8 @@ import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
+import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DistributionAdvisedEvent;
 import de.metas.material.planning.ddorder.DDOrderUtil;
 
 /**
@@ -37,7 +38,7 @@ public class DD_OrderFireMaterialEvent
 		{
 				ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE
 		}, ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
-	public void fireMaterialEvent(final I_DD_Order ddOrder, final int timing)
+	public void fireMaterialEvent(final I_DD_Order ddOrder)
 	{
 		// when going with @DocAction, here the ppOrder's docStatus would still be "IP" even if we are invoked on afterComplete..
 		// also, it might still be rolled back
@@ -52,6 +53,8 @@ public class DD_OrderFireMaterialEvent
 				.shipperId(ddOrder.getM_Shipper_ID());
 
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
+
+		final int groupIdFromDDOrderRequestedEvent = DDOrderRequestedEventHandler.ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.getValue(ddOrder, 0);
 
 		final List<I_DD_OrderLine> ddOrderLines = Services.get(IDDOrderDAO.class).retrieveLines(ddOrder);
 		for (final I_DD_OrderLine line : ddOrderLines)
@@ -68,11 +71,12 @@ public class DD_OrderFireMaterialEvent
 							.durationDays(durationDays)
 							.build());
 
-			final DistributionAdvisedEvent event = DistributionAdvisedEvent.builder()
+			final DDOrderAdvisedOrCreatedEvent event = DDOrderAdvisedOrCreatedEvent.builder()
 					.eventDescriptor(EventDescriptor.createNew(ddOrder))
 					.ddOrder(ddOrderPojoBuilder.build())
 					.fromWarehouseId(line.getM_Locator().getM_Warehouse_ID())
 					.toWarehouseId(line.getM_LocatorTo().getM_Warehouse_ID())
+					.groupId(groupIdFromDDOrderRequestedEvent)
 					.build();
 
 			final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);

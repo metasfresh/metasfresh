@@ -12,8 +12,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DistributionAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
@@ -57,7 +57,7 @@ public class DistributionAdvisedEventCreator
 		this.ddOrderPojoSupplier = ddOrderPojoSupplier;
 	}
 
-	public List<DistributionAdvisedEvent> createDistributionAdvisedEvents(
+	public List<DDOrderAdvisedOrCreatedEvent> createDistributionAdvisedEvents(
 			final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			final IMutableMRPContext mrpContext)
 	{
@@ -66,7 +66,7 @@ public class DistributionAdvisedEventCreator
 			return ImmutableList.of();
 		}
 
-		final List<DistributionAdvisedEvent> events = new ArrayList<>();
+		final List<DDOrderAdvisedOrCreatedEvent> events = new ArrayList<>();
 
 		final List<DDOrder> ddOrders = ddOrderPojoSupplier
 				.supplyPojos(
@@ -87,7 +87,7 @@ public class DistributionAdvisedEventCreator
 						I_DD_NetworkDistributionLine.class,
 						mrpContext.getTrxName());
 
-				final DistributionAdvisedEvent distributionAdvisedEvent = DistributionAdvisedEvent.builder()
+				final DDOrderAdvisedOrCreatedEvent distributionAdvisedEvent = DDOrderAdvisedOrCreatedEvent.builder()
 						.supplyRequiredDescriptor(supplyRequiredDescriptor)
 						.eventDescriptor(supplyRequiredDescriptor.getEventDescr().createNew())
 						.fromWarehouseId(networkLine.getM_WarehouseSource_ID())

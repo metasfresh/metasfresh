@@ -150,7 +150,7 @@ public class DemandCandiateHandler implements CandidateHandler
 			}
 		}
 
-		candidateRepositoryWriteService.updateOverwriteStoredSeqNo(childStockWithDemand
+		candidateRepositoryWriteService.updateCandidateIdentifiedById(childStockWithDemand
 				.withParentId(demandCandidateWithId.getId()));
 
 		final BigDecimal delta = childStockWithDemandDelta.getQuantity();
