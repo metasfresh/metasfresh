@@ -160,7 +160,8 @@ public class PurchaseCandidate
 
 	public boolean hasChanges()
 	{
-		return processed != processedInitial
+		return repoId <= 0 // never saved
+				|| processed != processedInitial
 				|| purchaseOrderLineId != purchaseOrderLineIdInitial
 				|| qtyRequired.compareTo(qtyRequiredInitial) != 0
 				|| !Objects.equals(datePromised, datePromisedInitial);
