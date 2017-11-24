@@ -128,7 +128,6 @@ class TableItem extends Component {
     }
 
     closeTableField = (e) => {
-        const { changeListenOnTrue } = this.props;
         const {activeCell} = this.state;
 
         this.handleEditProperty(e);
@@ -167,8 +166,10 @@ class TableItem extends Component {
                 const supportFieldEdit = mainTable &&
                     this.isAllowedFieldEdit(item);
                 const property = item.fields[0].field;
-                let isEditable = item.viewEditorRenderMode ===
-                    VIEW_EDITOR_RENDER_MODES[2];
+                let isEditable = ((cells[property] &&
+                    cells[property].viewEditorRenderMode
+                ) || item.viewEditorRenderMode
+                    ) === VIEW_EDITOR_RENDER_MODES[2];
 
                 let widgetData = item.fields.map(
                     (prop) => {
