@@ -798,3 +798,12 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-11-24 13:04:05'
 UPDATE AD_Field SET Name='Menge',Updated=TO_TIMESTAMP('2017-11-24 13:04:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560588
 ;
 
+-- 2017-11-24T13:09:27.576
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Mengeneinheit',Updated=TO_TIMESTAMP('2017-11-24 13:09:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560593
+;
+
+-- 2017-11-24T13:09:39.500
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='In Verarbeitung',Updated=TO_TIMESTAMP('2017-11-24 13:09:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560590
+;
