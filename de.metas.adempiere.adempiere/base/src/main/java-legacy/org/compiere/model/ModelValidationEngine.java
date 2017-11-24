@@ -51,7 +51,7 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.IImportProcess;
-import org.adempiere.impexp.IImportValidator;
+import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.processing.model.MADProcessablePO;
 import org.adempiere.processing.service.IProcessingService;
@@ -438,7 +438,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	/** Document Validation Listeners */
 	private Hashtable<String, ArrayList<ModelValidator>> m_docValidateListeners = new Hashtable<>();
 	/** Data Import Validation Listeners */
-	private Hashtable<String, ArrayList<IImportValidator>> m_impValidateListeners = new Hashtable<>();
+	private Hashtable<String, ArrayList<IImportInterceptor>> m_impValidateListeners = new Hashtable<>();
 
 	private ArrayList<ModelValidator> m_globalValidators = new ArrayList<>();
 
@@ -1171,10 +1171,10 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @param tableName table name
 	 * @param listener listener
 	 */
-	public void addImportValidate(String importTableName, IImportValidator listener)
+	public void addImportValidate(String importTableName, IImportInterceptor listener)
 	{
 		String propertyName = getPropertyName(importTableName);
-		ArrayList<IImportValidator> list = m_impValidateListeners.get(propertyName);
+		ArrayList<IImportInterceptor> list = m_impValidateListeners.get(propertyName);
 		if (list == null)
 		{
 			list = new ArrayList<>();
@@ -1188,7 +1188,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}
 
 	/**
-	 * Fire Import Validation. Call {@link IImportValidator#validate(IImportProcess, Object, Object, int)} or registered validators.
+	 * Fire Import Validation. Call {@link IImportInterceptor#onImport(IImportProcess, Object, Object, int)} or registered validators.
 	 *
 	 * @param process import process
 	 * @param importModel import record (e.g. X_I_BPartner)
@@ -1201,12 +1201,12 @@ public class ModelValidationEngine implements IModelValidationEngine
 			return;
 
 		String propertyName = getPropertyName(process.getImportTableName());
-		ArrayList<IImportValidator> list = m_impValidateListeners.get(propertyName);
+		ArrayList<IImportInterceptor> list = m_impValidateListeners.get(propertyName);
 		if (list != null)
 		{
-			for (IImportValidator validator : list)
+			for (IImportInterceptor intercepto : list)
 			{
-				validator.validate(process, importModel, targetModel, timing);
+				intercepto.onImport(process, importModel, targetModel, timing);
 			}
 		}
 	}

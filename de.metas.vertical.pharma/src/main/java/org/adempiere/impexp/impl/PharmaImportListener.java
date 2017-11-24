@@ -5,7 +5,8 @@ package org.adempiere.impexp.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import org.adempiere.impexp.IImportListener;
+import org.adempiere.impexp.IImportProcess;
+import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 
@@ -39,7 +40,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class PharmaImportListener implements IImportListener
+public class PharmaImportListener implements IImportInterceptor
 {
 	public static final PharmaImportListener instance = new PharmaImportListener();
 
@@ -48,7 +49,6 @@ public class PharmaImportListener implements IImportListener
 
 	}
 
-	@Override
 	public void onImport(@NonNull final Object importRecord, @NonNull final Object model)
 	{
 		final I_I_BPartner ibpartner = InterfaceWrapperHelper.create(model, I_I_BPartner.class);
@@ -59,6 +59,13 @@ public class PharmaImportListener implements IImportListener
 			bpartner.setPharmaproductpermlaw52(ibpartner.getPharmaproductpermlaw52());
 		}
 		save(bpartner);
+	}
+
+	@Override
+	public void onImport(IImportProcess<?> process, Object importModel, Object targetModel, int timing)
+	{
+		// TODO Auto-generated method stub
+
 	}
 
 }
