@@ -125,6 +125,7 @@ Here come the actual release notes:
     * Fix for the status of Handling Units after picking tray clearing. Now the handling units remain in picked status.
   * [#681](https://github.com/metasfresh/metasfresh-webui-api/issues/681) Picking not possible for >1 orderline in Picking Terminal
     * Fix for Picking terminal, now allowing to select and pick more than 1 line at once.
+  * [#696](https://github.com/metasfresh/metasfresh-webui-api/issues/696) Material receipt schedule: attributes read-only
 
 * metasfresh-webui-frontend
   * [#1333](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1333) Process panel is closed even if /start failed
