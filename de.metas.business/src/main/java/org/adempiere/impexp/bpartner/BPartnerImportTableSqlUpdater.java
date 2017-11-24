@@ -268,12 +268,12 @@ public class BPartnerImportTableSqlUpdater
 		StringBuilder sql;
 		int no;
 		sql = new StringBuilder("UPDATE I_BPartner i "
-				+ "SET C_InvoiceSchedule_ID=(SELECT C_InvoiceSchedule_ID FROM C_InvoiceSchedule is"
-				+ " WHERE i.InvoiceSchedule=is.Name AND is.AD_Client_ID IN (0, i.AD_Client_ID)) "
+				+ "SET C_InvoiceSchedule_ID=(SELECT C_InvoiceSchedule_ID FROM C_InvoiceSchedule invSched"
+				+ " WHERE i.InvoiceSchedule=invSched.Name AND invSched.AD_Client_ID IN (0, i.AD_Client_ID)) "
 				+ "WHERE C_InvoiceSchedule_ID IS NULL AND InvoiceSchedule IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set Greeting={}", no);
+		logger.debug("Set InvoiceSchedule={}", no);
 		//
 		sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid InvoiceSchedule, ' "
