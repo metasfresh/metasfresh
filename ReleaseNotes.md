@@ -70,52 +70,53 @@ Here come the actual release notes:
     * New document action in contract period allowing to void now.
   * [#2911](https://github.com/metasfresh/metasfresh/issues/2911) Create Action for changing price and qty for a contract
     * New action that allows to adjust the price and qty for an already created contract.
-  * [#2932](https://github.com/metasfresh/metasfresh/issues/2932) standalone report / jasper service
+  * [#2932](https://github.com/metasfresh/metasfresh/issues/2932) Standalone report / jasper service
     * Moving the Jasper Handling to a standalone Jasperreport service.
   * [#2937](https://github.com/metasfresh/metasfresh/issues/2937) Jasper Reports: New Purchase Order, Inout and Invoice Layout
-    * Addintional new Layouts for Document Jasperreports on purchase side.
+    * Additional new Layouts for Document Jasperreports on purchase side.
   * [#2940](https://github.com/metasfresh/metasfresh/issues/2940) Shipment Date = Promised Date
     * Adjustment of the Inout Generate Date when creating from shipment candidates. Now using the promised date as initial shipment date.
   * [#2942](https://github.com/metasfresh/metasfresh/issues/2942) Fix the message for PrintJob_Done
     * Adjusted message for finished Print Jobs.
   * [#2959](https://github.com/metasfresh/metasfresh/issues/2959) Default WebUI Window for Distribution Orderlines Handling
     * New Window for Distribution Orderlines that allows better Distrbution handling in WebUI.
-  * [#2963](https://github.com/metasfresh/metasfresh/issues/2963) flatrate: use datepromised instead of order data for master and startdate
+  * [#2963](https://github.com/metasfresh/metasfresh/issues/2963) Flatrate: use datepromised instead of order data for master and startdate
     * Adjustment in Flatrate contract, switching Master Order and Startdate to datepromised.
   * [#2969](https://github.com/metasfresh/metasfresh/issues/2969) Add SQL Column M_Warehouse to Distribution Orderline
-    * New Field Warehouse anf Filter in Distribution Editor.
-  * [#2975](https://github.com/metasfresh/metasfresh/issues/2975) sales invoice jasper: group products by product category
+    * New Field Warehouse and Filter in Distribution Editor.
+  * [#2975](https://github.com/metasfresh/metasfresh/issues/2975) Sales invoice jasper: group products by product category
     * Adjustment of sales invoice jasperreport, now allowing the grouping by products.
   * [#2978](https://github.com/metasfresh/metasfresh/issues/2978) New Window in WebUI for EDI DESADV
     * New Window for EDI DESADV records in WebUI.
-  * [#2985](https://github.com/metasfresh/metasfresh/issues/2985) Refining Distribution Editor Window in WebUI
-    * Improvements for the Distribution Editor Window in WebUI. Additional Translations for de_DE and en_US Language/ Locale.
-  * [#2989](https://github.com/metasfresh/metasfresh/issues/2989) Filter for GAP No. is missing in Businesspartner window
-    * Adding the GAP Filter to Businesspartner Window.
   * [#2980](https://github.com/metasfresh/metasfresh/issues/2980) Date Filter missing in Order Control Window
     * New Filter in Order Control Window for Date, CreatedBy and more.
   * [#2981](https://github.com/metasfresh/metasfresh/issues/2981) Action translation in Invoice Candidates Window
     * Improved Translation for Action Menu in invoice candidate window.
+  * [#2985](https://github.com/metasfresh/metasfresh/issues/2985) Refining Distribution Editor Window in WebUI
+    * Improvements for the Distribution Editor Window in WebUI. Additional Translations for de_DE and en_US Language/ Locale.
+  * [#2989](https://github.com/metasfresh/metasfresh/issues/2989) Filter for GAP No. is missing in Businesspartner window
+    * Adding the GAP Filter to Businesspartner Window.
   * [#2992](https://github.com/metasfresh/metasfresh/issues/2992) WebUI: Window Shipment Packing Item
     * Adaption of Field Names to current WebUI Guidelines.
 
 * metasfresh-webui-api
-  * [#670](https://github.com/metasfresh/metasfresh-webui-api/issues/670) views: backend shall specify which columns are editable and how to render the editor
+  * [#670](https://github.com/metasfresh/metasfresh-webui-api/issues/670) Views: backend shall specify which columns are editable and how to render the editor
     * New functionality in webui api, now specifying the editable fields in grid view to frontend.
 
 * metasfresh-webui-frontend
   * [#1222](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1222) Keyboard Shortcut for "Select all"/ "Select all x rows"
     * New Keyboard shortcut for select all/ select all x rows with toggle functioanlity.
-  * [#1335](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1335) views: backend shall specify which columns are editable and how to render the editor (frontend)
+  * [#1335](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1335) Views: backend shall specify which columns are editable and how to render the editor (frontend)
     * Frontend implementation for the editable fields in main grid view.
 
 ## Fixes
 * metasfesh-app
-  * [#2965](https://github.com/metasfresh/metasfresh/issues/2965) error for HU changing locator if status E
+  * [#2965](https://github.com/metasfresh/metasfresh/issues/2965) Error for HU changing locator if status E
     * Fix for an issue that appeared when moving handling units in the warehouse and changing the locator.
-  * [#2966](https://github.com/metasfresh/metasfresh/issues/2966) error in console when creating customer return
+  * [#2966](https://github.com/metasfresh/metasfresh/issues/2966) Error in console when creating customer return
     * Fixes an issue in customer returns.
   * [#3035](https://github.com/metasfresh/metasfresh/issues/3035) Linenet amount not updated in sales order after setting flatrate condition
+    * Fix for the Linenet Amount in Sales Order after setting a flatrate condition.
 
 * metasfresh-webui-api
   * [#677](https://github.com/metasfresh/metasfresh-webui-api/issues/677) Close all picking candidates only if the view was closed/removed by user
@@ -124,6 +125,7 @@ Here come the actual release notes:
     * Fix for the status of Handling Units after picking tray clearing. Now the handling units remain in picked status.
   * [#681](https://github.com/metasfresh/metasfresh-webui-api/issues/681) Picking not possible for >1 orderline in Picking Terminal
     * Fix for Picking terminal, now allowing to select and pick more than 1 line at once.
+  * [#696](https://github.com/metasfresh/metasfresh-webui-api/issues/696) Material receipt schedule: attributes read-only
 
 * metasfresh-webui-frontend
   * [#1333](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1333) Process panel is closed even if /start failed
