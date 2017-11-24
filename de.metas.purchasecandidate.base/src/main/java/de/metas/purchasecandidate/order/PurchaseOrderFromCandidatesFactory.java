@@ -1,10 +1,18 @@
 package de.metas.purchasecandidate.order;
 
-import java.util.IdentityHashMap;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.util.IdentityHashMap;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.adempiere.model.I_C_Order;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
+import de.metas.order.event.OrderUserNotifications;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -37,21 +45,22 @@ import lombok.NonNull;
  */
 /* package */ final class PurchaseOrderFromCandidatesFactory
 {
-	public static PurchaseOrderFromCandidatesFactory newInstance(final PurchaseOrderAggregationKey orderAggregationKey)
-	{
-		return new PurchaseOrderFromCandidatesFactory(orderAggregationKey);
-	}
-
 	private final OrderFactory orderFactory;
 	private final IdentityHashMap<PurchaseCandidate, OrderLineBuilder> purchaseCandidate2OrderLineBuilder = new IdentityHashMap<>();
+	private final OrderUserNotifications userNotifications;
 
-	private PurchaseOrderFromCandidatesFactory(@NonNull final PurchaseOrderAggregationKey orderAggregationKey)
+	@Builder
+	private PurchaseOrderFromCandidatesFactory(
+			@NonNull final PurchaseOrderAggregationKey orderAggregationKey,
+			@NonNull OrderUserNotifications userNotifications)
 	{
 		orderFactory = OrderFactory.newPurchaseOrder()
 				.orgId(orderAggregationKey.getOrgId())
 				.warehouseId(orderAggregationKey.getWarehouseId())
 				.shipBPartner(orderAggregationKey.getVendorBPartnerId())
 				.datePromised(orderAggregationKey.getDatePromised());
+
+		this.userNotifications = userNotifications;
 	}
 
 	public void addCandidate(final PurchaseCandidate candidate)
@@ -67,13 +76,32 @@ import lombok.NonNull;
 
 	public void createAndComplete()
 	{
-		orderFactory.createAndComplete();
+		final I_C_Order order = orderFactory.createAndComplete();
 
 		purchaseCandidate2OrderLineBuilder.forEach(this::updatePurchaseCandidateFromOrderLineBuilder);
+
+		final Set<Integer> userIdsToNotify = getUserIdsToNotify();
+		if (!userIdsToNotify.isEmpty())
+		{
+			userNotifications.queueEventsUntilCurrentTrxCommit();
+			userNotifications.notifyOrderCompleted(order, userIdsToNotify);
+		}
 	}
 
 	private void updatePurchaseCandidateFromOrderLineBuilder(final PurchaseCandidate candidate, final OrderLineBuilder orderLineBuilder)
 	{
 		candidate.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderLineId());
 	}
+
+	private Set<Integer> getUserIdsToNotify()
+	{
+		return purchaseCandidate2OrderLineBuilder.keySet()
+				.stream()
+				.map(PurchaseCandidate::getSalesOrderId)
+				.distinct()
+				.map(salesOrderId -> load(salesOrderId, I_C_Order.class))
+				.map(I_C_Order::getCreatedBy)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 }

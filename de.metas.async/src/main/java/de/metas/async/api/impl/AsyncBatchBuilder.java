@@ -78,7 +78,7 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 			asyncBatch.setCountExpected(getCountExpected());
 		}
 		asyncBatch.setC_Async_Batch_Type(getC_Async_Batch_Type());
-		queueDAO.saveInLocalTrx(asyncBatch);
+		queueDAO.save(asyncBatch);
 
 		// the orders it's very important: first enque and then set the batch
 		// otherwise, will be counted also the workpackage for the batch

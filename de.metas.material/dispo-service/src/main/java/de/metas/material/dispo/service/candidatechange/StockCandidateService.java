@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.CandidatesQuery;
-import de.metas.material.dispo.commons.CandidatesQuery.CandidatesQueryBuilder;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -74,20 +73,35 @@ public class StockCandidateService
 	 */
 	public Candidate createStockCandidate(@NonNull final Candidate candidate)
 	{
-		final CandidatesQueryBuilder stockQueryBuilder = createStockQueryBuilderWithBeforeOperator(candidate);
+		final Candidate previousStockOrNull;
+		{
+			final CandidatesQuery stockQuery = createStockQueryBuilderWithDateOperator(candidate, DateOperator.BEFORE_OR_AT);
+			previousStockOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(stockQuery);
+		}
+		// TODO i know from the unit tests this kindof works, but i need to better understand it
+		final BigDecimal newQty;
+		if (previousStockOrNull == null)
+		{
+			newQty = candidate.getQuantity();
+		}
+		else if (previousStockOrNull.getDate().before(candidate.getDate()))
+		{
+			final CandidatesQuery stockQuery = createStockQueryBuilderWithDateOperator(previousStockOrNull, DateOperator.AT);
+			final BigDecimal previousQuantity = candidateRepositoryRetrieval
+					.retrieveOrderedByDateAndSeqNo(stockQuery).stream().map(Candidate::getQuantity)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-		final Candidate previousStockOrNull = candidateRepositoryRetrieval
-				.retrieveLatestMatchOrNull(stockQueryBuilder
-						.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
-						.build());
-
-		final BigDecimal previousQuantity = previousStockOrNull != null
-				? previousStockOrNull.getQuantity()
-				: BigDecimal.ZERO;
+			newQty = previousQuantity.add(candidate.getQuantity());
+		}
+		else
+		{
+			// previousStockOrNull has the same date as the given "candidate"
+			newQty = candidate.getQuantity();
+		}
 
 		final MaterialDescriptor materialDescriptor = candidate
 				.getMaterialDescriptor()
-				.withQuantity(previousQuantity.add(candidate.getQuantity()));
+				.withQuantity(newQty);
 
 		final Integer groupId = previousStockOrNull != null
 				? previousStockOrNull.getGroupId()
@@ -104,14 +118,18 @@ public class StockCandidateService
 				.build();
 	}
 
-	private CandidatesQueryBuilder createStockQueryBuilderWithBeforeOperator(@NonNull final Candidate candidate)
+	private CandidatesQuery createStockQueryBuilderWithDateOperator(
+			@NonNull final Candidate candidate,
+			@NonNull final DateOperator dateOperator)
 	{
 		return CandidatesQuery.builder()
 				.materialDescriptor(candidate.getMaterialDescriptor()
 						.withoutQuantity()
-						.withDateOperator(DateOperator.BEFORE))
+						.withDateOperator(dateOperator))
 				.type(CandidateType.STOCK)
-				.matchExactStorageAttributesKey(true);
+				.matchExactStorageAttributesKey(true)
+				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
+				.build();
 	}
 
 	/**
@@ -154,11 +172,8 @@ public class StockCandidateService
 	 * @param groupId the groupId to set to every stock record that we matched
 	 * @param delta the quantity (positive or negative) to add to every stock record that we matched
 	 */
-	public
-	/* package */ void applyDeltaToMatchingLaterStockCandidates(
+	public void applyDeltaToMatchingLaterStockCandidates(
 			@NonNull final MaterialDescriptor materialDescriptor,
-//			@NonNull final Integer warehouseId,
-//			@NonNull final Date date,
 			@NonNull final Integer groupId,
 			@NonNull final BigDecimal delta)
 	{

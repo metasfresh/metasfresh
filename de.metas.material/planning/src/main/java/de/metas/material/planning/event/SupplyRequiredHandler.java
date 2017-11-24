@@ -16,7 +16,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.event.DemandHandlerAuditEvent;
@@ -58,14 +57,21 @@ import lombok.NonNull;
 @Service
 public class SupplyRequiredHandler
 {
+	private final DistributionAdvisedEventCreator distributionAdvisedEventCreator;
 
-	@Autowired
-	private DistributionAdvisedEventCreator distributionAdvisedEventCreator;
+	private final ProductionAdvisedEventCreator productionAdvisedEventCreator;
 
-	private ProductionAdvisedEventCreator productionAdvisedEventCreator;
+	private final MaterialEventService materialEventService;
 
-	@Autowired
-	private MaterialEventService materialEventService;
+	public SupplyRequiredHandler(
+			@NonNull final DistributionAdvisedEventCreator distributionAdvisedEventCreator,
+			@NonNull final ProductionAdvisedEventCreator productionAdvisedEventCreator,
+			@NonNull final MaterialEventService materialEventService)
+	{
+		this.distributionAdvisedEventCreator = distributionAdvisedEventCreator;
+		this.productionAdvisedEventCreator = productionAdvisedEventCreator;
+		this.materialEventService = materialEventService;
+	}
 
 	/**
 	 * Invokes our {@link DDOrderPojoSupplier} and returns the resulting {@link DDOrder} pojo as {@link DistributionAdvisedEvent}
