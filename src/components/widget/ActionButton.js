@@ -178,8 +178,8 @@ class ActionButton extends Component {
                 <DocumentStatusContextShortcuts
                     handleDocumentCompleteStatus={() => {
                         this.handleChangeStatus(
-                            list.find(elem => elem.key === 'CO')
-                        );
+                            list.filter(elem => !!elem.CO)[0]
+                        )
                     }}
                 />
             </div>
