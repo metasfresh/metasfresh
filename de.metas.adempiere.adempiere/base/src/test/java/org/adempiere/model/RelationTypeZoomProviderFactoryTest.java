@@ -54,15 +54,17 @@ public class RelationTypeZoomProviderFactoryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		Services.registerService(ILookupDAO.class, lookupDao);
 	}
 
 	@Test
-	public void findZoomProvider_IsTableRecordIdTarget()
+	public void findZoomProvider_IsTableRecordIdTarget_NoSource()
 	{
 
 		final String refTargetName = "RefTargetName1";
 		final String validationType = X_AD_Reference.VALIDATIONTYPE_TableValidation;
-		final I_AD_Reference referenceTarget = createReferenceTarget(refTargetName, validationType);
+		final I_AD_Reference referenceTarget = createReferenceSourceOrTarget(refTargetName, validationType);
 
 		final String tableName = "TableName";
 		final I_AD_Table table = createTable(tableName);
@@ -75,7 +77,7 @@ public class RelationTypeZoomProviderFactoryTest
 		createRefTable(referenceTarget, table);
 
 		final boolean isTableRecordIdTarget = true;
-		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, referenceTarget);
+		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, null, referenceTarget);
 
 		TableRefInfo build = LookupDAO.TableRefInfo.builder()
 				.setName(refTargetName)
@@ -93,19 +95,71 @@ public class RelationTypeZoomProviderFactoryTest
 				.setAutoComplete(false)
 				.build();
 
-		Services.registerService(ILookupDAO.class, lookupDao);
-
-		new Expectations()
-		{
-			{
-				lookupDao.retrieveTableRefInfo(referenceTarget.getAD_Reference_ID());
-				result = build;
-			}
-		};
+		lookupDaoExpectations(referenceTarget.getAD_Reference_ID(), build);
 
 		final RelationTypeZoomProvider zoomProvider = RelationTypeZoomProvidersFactory.findZoomProvider(relationType);
 
 		assertThat(zoomProvider.isTableRecordIdTarget()).isTrue();
+	}
+	
+	
+
+	@Test
+	public void findZoomProvider_Is_Not_TableRecordIdTarget_WithSource()
+	{
+
+		final String refTargetName = "RefTargetName1";
+		final String validationType = X_AD_Reference.VALIDATIONTYPE_TableValidation;
+		final I_AD_Reference referenceTarget = createReferenceSourceOrTarget(refTargetName, validationType);
+		
+		final String refSourceName = "RefSourceName1";
+		final I_AD_Reference referenceSource = createReferenceSourceOrTarget(refSourceName, validationType);
+
+		final String tableName = "TableName";
+		final I_AD_Table table = createTable(tableName);
+
+		final String keyColumnName = "TableName_ID";
+		createColumn(table, keyColumnName);
+
+		final String recordColumnname = "Record_ID";
+		createColumn(table, recordColumnname);
+		createRefTable(referenceTarget, table);
+
+		final boolean isTableRecordIdTarget = false;
+		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, referenceSource,  referenceTarget);
+
+		TableRefInfo build = LookupDAO.TableRefInfo.builder()
+				.setName(refTargetName)
+				.setTableName(tableName)
+				.setKeyColumn(keyColumnName)
+				.setDisplayColumn(keyColumnName)
+				.setValueDisplayed(true)
+				.setDisplayColumnSQL("")
+				.setTranslated(true)
+				.setWhereClause("")
+				.setOrderByClause("")
+				.setZoomSO_Window_ID(-1)
+				.setZoomPO_Window_ID(-1)
+				.setZoomAD_Window_ID_Override(-1)
+				.setAutoComplete(false)
+				.build();
+
+		lookupDaoExpectations(referenceTarget.getAD_Reference_ID(), build);
+
+		final RelationTypeZoomProvider zoomProvider = RelationTypeZoomProvidersFactory.findZoomProvider(relationType);
+
+		assertThat(zoomProvider.isTableRecordIdTarget()).isFalse();
+	}
+
+	private void lookupDaoExpectations(final int referenceID, final TableRefInfo builder)
+	{
+		new Expectations()
+		{
+			{
+				lookupDao.retrieveTableRefInfo(referenceID);
+				result = builder;
+			}
+		};
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -114,7 +168,7 @@ public class RelationTypeZoomProviderFactoryTest
 
 		final String refTargetName = "RefTargetName1";
 		final String validationType = X_AD_Reference.VALIDATIONTYPE_TableValidation;
-		final I_AD_Reference referenceTarget = createReferenceTarget(refTargetName, validationType);
+		final I_AD_Reference referenceTarget = createReferenceSourceOrTarget(refTargetName, validationType);
 
 		final String tableName = "TableName";
 		final I_AD_Table table = createTable(tableName);
@@ -125,7 +179,7 @@ public class RelationTypeZoomProviderFactoryTest
 		createRefTable(referenceTarget, table);
 
 		final boolean isTableRecordIdTarget = false;
-		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, referenceTarget);
+		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, null,  referenceTarget);
 
 		RelationTypeZoomProvidersFactory.findZoomProvider(relationType);
 
@@ -160,23 +214,24 @@ public class RelationTypeZoomProviderFactoryTest
 		return refTable;
 	}
 
-	private I_AD_RelationType createRelationType(final boolean IsTableRecordIdTarget, final I_AD_Reference referenceTarget)
+	private I_AD_RelationType createRelationType(final boolean IsTableRecordIdTarget, final I_AD_Reference referenceSource, final I_AD_Reference referenceTarget)
 	{
 		final I_AD_RelationType relationType = newInstance(I_AD_RelationType.class);
 		relationType.setIsTableRecordIdTarget(IsTableRecordIdTarget);
+		relationType.setAD_Reference_Source(referenceSource);
 		relationType.setAD_Reference_Target(referenceTarget);
 
 		save(relationType);
 		return relationType;
 	}
 
-	private I_AD_Reference createReferenceTarget(final String name, final String validationType)
+	private I_AD_Reference createReferenceSourceOrTarget(final String name, final String validationType)
 	{
-		final I_AD_Reference referenceTarget = newInstance(I_AD_Reference.class);
-		referenceTarget.setName(name);
-		referenceTarget.setValidationType(validationType);
+		final I_AD_Reference reference = newInstance(I_AD_Reference.class);
+		reference.setName(name);
+		reference.setValidationType(validationType);
 
-		save(referenceTarget);
-		return referenceTarget;
+		save(reference);
+		return reference;
 	}
 }

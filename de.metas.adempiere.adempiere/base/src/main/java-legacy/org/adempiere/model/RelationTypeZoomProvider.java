@@ -158,7 +158,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return ImmutableList.of();
 		}
 
-		final MQuery query = mkZoomOriginQuery(zoomOrigin, isTableRecordIdTarget);
+		final MQuery query = mkZoomOriginQuery(zoomOrigin);
 
 		if (checkRecordsCount)
 		{
@@ -243,7 +243,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	/**
 	 * @return a query which will find all zoomSource references in given target
 	 */
-	private MQuery mkZoomOriginQuery(final IZoomSource zoomOrigin, final boolean isTableRecordIdTarget)
+	private MQuery mkZoomOriginQuery(final IZoomSource zoomOrigin)
 	{
 		final String queryWhereClause = createZoomOriginQueryWhereClause (zoomOrigin);
 		
@@ -377,10 +377,8 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	public <T> List<T> retrieveDestinations(final Properties ctx, final PO zoomOriginPO, final Class<T> clazz, final String trxName)
 	{
 		final IZoomSource zoomOrigin = POZoomSource.of(zoomOriginPO, -1);
-
-		final boolean isTableRecordID = false;
 		
-		final MQuery query = mkZoomOriginQuery(zoomOrigin, isTableRecordID);
+		final MQuery query = mkZoomOriginQuery(zoomOrigin);
 
 		return new Query(ctx, query.getZoomTableName(), query.getWhereClause(false), trxName)
 				.setClient_ID()
@@ -512,7 +510,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		private Boolean directed;
 		private String internalName;
 		private int adRelationTypeId;
-		private boolean isTableRecordIDTarget;
+		private boolean isTableRecordIDTarget = false;
 
 		private int sourceReferenceId = -1;
 		private ITranslatableString sourceRoleDisplayName;
