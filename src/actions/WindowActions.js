@@ -472,13 +472,15 @@ export function patch(
             viewId,
             isEdit
         }).then(response => {
+            let data = response.data instanceof Array ?
+                response.data : [response.data];
             dispatch(mapDataToState(
-                response.data, isModal, rowId, id, windowType, isAdvanced
+                data, isModal, rowId, id, windowType, isAdvanced
             ));
 
             dispatch(indicatorState('saved'));
 
-            return response.data;
+            return data;
         }).catch(() => {
             getData(
                 entity, windowType, id, tabId, rowId, null, null, isAdvanced,
