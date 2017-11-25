@@ -243,3 +243,58 @@ UPDATE AD_Field SET Name='Mengeneinheit',Updated=TO_TIMESTAMP('2017-11-25 13:24:
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2017-11-25 13:24:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548823
 ;
 
+-- 2017-11-25T13:28:17.495
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Stückliste Nutzung',Updated=TO_TIMESTAMP('2017-11-25 13:28:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53800
+;
+
+-- 2017-11-25T13:28:32.385
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Produktionsauftrag Stückliste',Updated=TO_TIMESTAMP('2017-11-25 13:28:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53803
+;
+
+-- 2017-11-25T13:28:42.883
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Kopieren Von',Updated=TO_TIMESTAMP('2017-11-25 13:28:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53802
+;
+
+-- 2017-11-25T13:28:47.195
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Stücklisten Zugehörigkeit',Updated=TO_TIMESTAMP('2017-11-25 13:28:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53799
+;
+
+-- 2017-11-25T13:30:46.531
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Kritische Komponente',Updated=TO_TIMESTAMP('2017-11-25 13:30:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53762
+;
+
+-- 2017-11-25T13:30:58.771
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Komponenten Typ',Updated=TO_TIMESTAMP('2017-11-25 13:30:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53760
+;
+
+-- 2017-11-25T13:31:09.673
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Prognose',Updated=TO_TIMESTAMP('2017-11-25 13:31:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53771
+;
+
+-- 2017-11-25T13:31:10.707
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Qty Scrap',Updated=TO_TIMESTAMP('2017-11-25 13:31:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53781
+;
+
+-- 2017-11-25T13:31:19.932
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Menge abgewiesen',Updated=TO_TIMESTAMP('2017-11-25 13:31:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53780
+;
+
+-- 2017-11-25T13:31:29.647
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Menge Ausschuss',Updated=TO_TIMESTAMP('2017-11-25 13:31:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53781
+;
+
+-- 2017-11-25T13:31:45.279
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Menge gebucht',Updated=TO_TIMESTAMP('2017-11-25 13:31:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53782
+;
+
