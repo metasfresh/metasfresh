@@ -103,3 +103,143 @@ UPDATE AD_UI_ElementGroup SET Name='dates',Updated=TO_TIMESTAMP('2017-11-25 12:4
 UPDATE AD_Field SET Name='Mengeneinheit',Updated=TO_TIMESTAMP('2017-11-25 13:09:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=54150
 ;
 
+-- 2017-11-25T13:12:58.240
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Datum',Updated=TO_TIMESTAMP('2017-11-25 13:12:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=542357
+;
+
+-- 2017-11-25T13:13:01.339
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=40,Updated=TO_TIMESTAMP('2017-11-25 13:13:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=542351
+;
+
+-- 2017-11-25T13:13:04.070
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=50,Updated=TO_TIMESTAMP('2017-11-25 13:13:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=542375
+;
+
+-- 2017-11-25T13:13:06.692
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=60,Updated=TO_TIMESTAMP('2017-11-25 13:13:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=542358
+;
+
+-- 2017-11-25T13:13:09.713
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=70,Updated=TO_TIMESTAMP('2017-11-25 13:13:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=542359
+;
+
+-- 2017-11-25T13:13:13.178
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=80,Updated=TO_TIMESTAMP('2017-11-25 13:13:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=542362
+;
+
+-- 2017-11-25T13:14:07.110
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Kosten',Updated=TO_TIMESTAMP('2017-11-25 13:14:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=53038
+;
+
+-- 2017-11-25T13:17:27.447
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Produkt Attribute',Updated=TO_TIMESTAMP('2017-11-25 13:17:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540699
+;
+
+-- 2017-11-25T13:17:37.675
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-11-25 13:17:37','YYYY-MM-DD HH24:MI:SS'),Name='Product Attributes' WHERE AD_Tab_ID=540699 AND AD_Language='en_US'
+;
+
+-- 2017-11-25T13:17:44.896
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-11-25 13:17:44','YYYY-MM-DD HH24:MI:SS'),Name='Costs' WHERE AD_Tab_ID=53038 AND AD_Language='en_US'
+;
+
+-- 2017-11-25T13:19:07.105
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Attribut Wert',Updated=TO_TIMESTAMP('2017-11-25 13:19:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556229
+;
+
+-- 2017-11-25T13:19:16.165
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Attribut',Updated=TO_TIMESTAMP('2017-11-25 13:19:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556226
+;
+
+-- 2017-11-25T13:19:50.715
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Arbeitsablauf',Updated=TO_TIMESTAMP('2017-11-25 13:19:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53811
+;
+
+-- 2017-11-25T13:20:07.353
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Aktivität',Updated=TO_TIMESTAMP('2017-11-25 13:20:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53812
+;
+
+-- 2017-11-25T13:20:13.906
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Prozess Typ',Updated=TO_TIMESTAMP('2017-11-25 13:20:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53820
+;
+
+-- 2017-11-25T13:20:24.667
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Menge Batch Größe',Updated=TO_TIMESTAMP('2017-11-25 13:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53822
+;
+
+-- 2017-11-25T13:20:35.759
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Status Veröffentlichung',Updated=TO_TIMESTAMP('2017-11-25 13:20:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53827
+;
+
+-- 2017-11-25T13:20:46.164
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Ersteller',Updated=TO_TIMESTAMP('2017-11-25 13:20:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53831
+;
+
+-- 2017-11-25T13:20:58.648
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Arbeitszeit',Updated=TO_TIMESTAMP('2017-11-25 13:20:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53834
+;
+
+-- 2017-11-25T13:21:08.426
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Warte Zeit',Updated=TO_TIMESTAMP('2017-11-25 13:21:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53840
+;
+
+-- 2017-11-25T13:21:35.276
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Verantwortlicher Arbeitsablauf',Updated=TO_TIMESTAMP('2017-11-25 13:21:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53806
+;
+
+-- 2017-11-25T13:21:46.204
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Arbeitsablauf Art',Updated=TO_TIMESTAMP('2017-11-25 13:21:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53819
+;
+
+-- 2017-11-25T13:21:58.332
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Arbeitsablauf Prozessor',Updated=TO_TIMESTAMP('2017-11-25 13:21:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53807
+;
+
+-- 2017-11-25T13:22:12.596
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Arbeitsablauf Validieren',Updated=TO_TIMESTAMP('2017-11-25 13:22:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53842
+;
+
+-- 2017-11-25T13:23:45.634
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Aktuelle Kosten unterhalb',Updated=TO_TIMESTAMP('2017-11-25 13:23:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53741
+;
+
+-- 2017-11-25T13:24:13.232
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Aktuelle Kosten Level',Updated=TO_TIMESTAMP('2017-11-25 13:24:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53741
+;
+
+-- 2017-11-25T13:24:43.024
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Mengeneinheit',Updated=TO_TIMESTAMP('2017-11-25 13:24:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=554738
+;
+
+-- 2017-11-25T13:24:53.543
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2017-11-25 13:24:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548823
+;
+
