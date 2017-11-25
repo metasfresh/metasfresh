@@ -170,7 +170,7 @@ UPDATE AD_Field SET Name='Arbeitsablauf',Updated=TO_TIMESTAMP('2017-11-25 13:19:
 
 -- 2017-11-25T13:20:07.353
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET Name='Aktivität',Updated=TO_TIMESTAMP('2017-11-25 13:20:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53812
+UPDATE AD_Field SET Name='AktivitÃ¤t',Updated=TO_TIMESTAMP('2017-11-25 13:20:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53812
 ;
 
 -- 2017-11-25T13:20:13.906
@@ -180,12 +180,12 @@ UPDATE AD_Field SET Name='Prozess Typ',Updated=TO_TIMESTAMP('2017-11-25 13:20:13
 
 -- 2017-11-25T13:20:24.667
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET Name='Menge Batch Größe',Updated=TO_TIMESTAMP('2017-11-25 13:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53822
+UPDATE AD_Field SET Name='Menge Batch GrÃ¶ÃŸe',Updated=TO_TIMESTAMP('2017-11-25 13:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53822
 ;
 
 -- 2017-11-25T13:20:35.759
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET Name='Status Veröffentlichung',Updated=TO_TIMESTAMP('2017-11-25 13:20:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53827
+UPDATE AD_Field SET Name='Status VerÃ¶ffentlichung',Updated=TO_TIMESTAMP('2017-11-25 13:20:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53827
 ;
 
 -- 2017-11-25T13:20:46.164
@@ -245,12 +245,12 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP
 
 -- 2017-11-25T13:28:17.495
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET Name='Stückliste Nutzung',Updated=TO_TIMESTAMP('2017-11-25 13:28:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53800
+UPDATE AD_Field SET Name='StÃ¼ckliste Nutzung',Updated=TO_TIMESTAMP('2017-11-25 13:28:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53800
 ;
 
 -- 2017-11-25T13:28:32.385
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET Name='Produktionsauftrag Stückliste',Updated=TO_TIMESTAMP('2017-11-25 13:28:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53803
+UPDATE AD_Field SET Name='Produktionsauftrag StÃ¼ckliste',Updated=TO_TIMESTAMP('2017-11-25 13:28:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53803
 ;
 
 -- 2017-11-25T13:28:42.883
@@ -260,7 +260,7 @@ UPDATE AD_Field SET Name='Kopieren Von',Updated=TO_TIMESTAMP('2017-11-25 13:28:4
 
 -- 2017-11-25T13:28:47.195
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET Name='Stücklisten Zugehörigkeit',Updated=TO_TIMESTAMP('2017-11-25 13:28:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53799
+UPDATE AD_Field SET Name='StÃ¼cklisten ZugehÃ¶rigkeit',Updated=TO_TIMESTAMP('2017-11-25 13:28:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53799
 ;
 
 -- 2017-11-25T13:30:46.531
@@ -296,5 +296,15 @@ UPDATE AD_Field SET Name='Menge Ausschuss',Updated=TO_TIMESTAMP('2017-11-25 13:3
 -- 2017-11-25T13:31:45.279
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Field SET Name='Menge gebucht',Updated=TO_TIMESTAMP('2017-11-25 13:31:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53782
+;
+
+-- 2017-11-25T13:38:15.649
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=540186, SeqNo=60,Updated=TO_TIMESTAMP('2017-11-25 13:38:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=542323
+;
+
+-- 2017-11-25T13:38:46.724
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsAdvancedField='N',Updated=TO_TIMESTAMP('2017-11-25 13:38:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=542323
 ;
 
