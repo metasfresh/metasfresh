@@ -40,6 +40,8 @@ Here come the actual release notes:
     * New Date Filter added to material Receipt Dispo.
   * [#3061](https://github.com/metasfresh/metasfresh/issues/3061) Adjust OrderBy in Materialdispo
     * Improvement of Ordering in Materiadispo.
+  * [#3082](https://github.com/metasfresh/metasfresh/issues/3082) New Window for manual OnHand Qty in WebUI
+    * New Window for the maintenance of manual OnHand Qty in metasfresh. This feature is used in fresh produce companies with fast moving consumer goods and raw materials.
 
 * metasfresh-webui-api
   * [#611](https://github.com/metasfresh/metasfresh-webui-api/issues/611) Destroyed HUs in HU Editor
