@@ -19,12 +19,15 @@ class DatetimeRange extends Component {
                 endDate: Moment(valueTo)
             });
         }else{
-            const initDate = new Date();
+            let initStartDate = new Date();
+            let initEndDate = new Date();
+            initStartDate.setHours(0, 0, 0, 0);
+            initEndDate.setHours(23, 59, 0, 0);
             this.setState({
-                startDate: initDate,
-                endDate: initDate
+                startDate: initStartDate,
+                endDate: initEndDate
             }, () => {
-                onChange(initDate, initDate)
+                onChange(initStartDate, initEndDate)
             });
         }
     }
