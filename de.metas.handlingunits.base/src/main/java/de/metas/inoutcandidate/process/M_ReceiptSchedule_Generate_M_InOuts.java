@@ -98,7 +98,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 	{
 		final Iterator<I_M_ReceiptSchedule> receiptScheds = createIterator();
 
-		final Mutable<Integer> counter = new Mutable<Integer>(0);
+		final Mutable<Integer> counter = new Mutable<>(0);
 
 		trxItemProcessorExecutorService
 				.<I_M_ReceiptSchedule, Void> createExecutor()
@@ -166,12 +166,6 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 		{
 			receiptScheduleBL.close(item);
 			addLog("Closing M_ReceiptSchedule " + item + " without having created a receipt, because QtyOrdered=" + item.getQtyOrdered() + " and QtyMoved=" + item.getQtyMoved());
-			return;
-		}
-
-		if (!item.isHUPrepared())
-		{
-			addLog("Skipping M_ReceiptSchedule " + item + " because of HUPrepared=N");
 			return;
 		}
 
