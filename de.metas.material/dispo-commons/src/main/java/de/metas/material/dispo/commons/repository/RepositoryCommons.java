@@ -84,6 +84,11 @@ public class RepositoryCommons
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, query.getParentId());
 		}
 
+		if (query.getGroupId() > 0)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_GroupId, query.getGroupId());
+		}
+
 		addMaterialDescriptorToQueryBuilderIfNotNull(
 				query.getMaterialDescriptor(),
 				query.isMatchExactStorageAttributesKey(),
@@ -105,6 +110,7 @@ public class RepositoryCommons
 				builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, I_MD_Candidate.COLUMN_MD_Candidate_ID, parentBuilder.create());
 			}
 		}
+
 		if (query.getParentDemandDetail() != null)
 		{
 			final IQueryBuilder<I_MD_Candidate> parentBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class)

@@ -2,7 +2,6 @@ package de.metas.material.dispo.service.event.handler;
 
 import java.sql.Timestamp;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import org.compiere.util.TimeUtil;
@@ -24,8 +23,8 @@ import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DistributionAdvisedEvent;
 import lombok.NonNull;
 
 /*
@@ -50,40 +49,33 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class DistributionAdvisedHandler
+public class DDOrderAdvisedHandler
 {
-	private final CandidateRepositoryRetrieval candidateRepository;
-	private final CandidateRepositoryWriteService candidateRepositoryCommands;
+	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	private final CandidateRepositoryWriteService candidateRepositoryWrite;
 	private final SupplyProposalEvaluator supplyProposalEvaluator;
 	private final CandidateChangeService candidateChangeHandler;
-	private final RequestMaterialOrderService candidateService;
+	private final RequestMaterialOrderService requestMaterialOrderService;
 
-	public DistributionAdvisedHandler(
+	public DDOrderAdvisedHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final SupplyProposalEvaluator supplyProposalEvaluator,
 			@NonNull final RequestMaterialOrderService candidateService)
 	{
-		this.candidateService = candidateService;
+		requestMaterialOrderService = candidateService;
 		this.candidateChangeHandler = candidateChangeHandler;
-		this.candidateRepository = candidateRepository;
-		this.candidateRepositoryCommands = candidateRepositoryCommands;
+		candidateRepositoryRetrieval = candidateRepository;
+		candidateRepositoryWrite = candidateRepositoryCommands;
 		this.supplyProposalEvaluator = supplyProposalEvaluator;
 	}
 
-	public void handleDistributionAdvisedEvent(final DistributionAdvisedEvent distributionAdvisedEvent)
+	public void handleDistributionAdvisedEvent(final DDOrderAdvisedOrCreatedEvent event)
 	{
-		final DDOrder ddOrder = distributionAdvisedEvent.getDdOrder();
-		final CandidateStatus candidateStatus;
-		if (ddOrder.getDdOrderId() <= 0)
-		{
-			candidateStatus = CandidateStatus.doc_planned;
-		}
-		else
-		{
-			candidateStatus = EventUtil.getCandidateStatus(ddOrder.getDocStatus());
-		}
+		final DDOrder ddOrder = event.getDdOrder();
+
+		final CandidateStatus candidateStatus = computeCandidateStatus(ddOrder);
 
 		final Set<Integer> groupIdsWithRequestedPPOrders = new HashSet<>();
 
@@ -94,15 +86,11 @@ public class DistributionAdvisedHandler
 			final SupplyProposal proposal = SupplyProposal.builder()
 					.date(orderLineStartDate)
 					.productDescriptor(ddOrderLine.getProductDescriptor())
-					.destWarehouseId(distributionAdvisedEvent.getToWarehouseId())
-					.sourceWarehouseId(distributionAdvisedEvent.getFromWarehouseId())
+					.destWarehouseId(event.getToWarehouseId())
+					.sourceWarehouseId(event.getFromWarehouseId())
 					.build();
-			if (!supplyProposalEvaluator.evaluateSupply(proposal))
+			if (!supplyProposalEvaluator.isProposalAccepted(proposal))
 			{
-				// 'supplyProposalEvaluator' told us to ignore the given supply candidate.
-				// the reason for this could be that it found an already existing distribution plan pointing in the other direction.
-				// so instead of playing an infinite game of ping-ping with the material-planning component, it ignored the given 'event'
-				// and leave it to the user to come up with a great idea.
 				return;
 			}
 
@@ -111,16 +99,16 @@ public class DistributionAdvisedHandler
 					.date(ddOrder.getDatePromised())
 					.productDescriptor(ddOrderLine.getProductDescriptor())
 					.quantity(ddOrderLine.getQty())
-					.warehouseId(distributionAdvisedEvent.getToWarehouseId())
+					.warehouseId(event.getToWarehouseId())
 					.build();
 
-			final DemandDetail demandDetailOrNull = DemandDetail.createOrNull(
-					Optional.ofNullable(distributionAdvisedEvent.getSupplyRequiredDescriptor()));
+			final DemandDetail demandDetailOrNull = DemandDetail.createOrNull(event.getSupplyRequiredDescriptor());
 
-			final Candidate supplyCandidate = Candidate.builderForEventDescr(distributionAdvisedEvent.getEventDescriptor())
+			final Candidate supplyCandidate = Candidate.builderForEventDescr(event.getEventDescriptor())
 					.type(CandidateType.SUPPLY)
-					.status(candidateStatus)
 					.subType(CandidateSubType.DISTRIBUTION)
+					.groupId(event.getGroupId())
+					.status(candidateStatus)
 					.materialDescriptor(materialDescriptor)
 					.demandDetail(demandDetailOrNull)
 					.distributionDetail(createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine))
@@ -129,8 +117,7 @@ public class DistributionAdvisedHandler
 			final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 			if (supplyCandidateWithId.getQuantity().signum() == 0)
 			{
-				// nothing was added as supply in the destination warehouse, so there is no demand to register either
-				return;
+				return; // nothing was added as supply in the destination warehouse, so there is no demand to register either
 			}
 
 			// we expect the demand candidate to go with the supplyCandidates SeqNo + 1,
@@ -145,33 +132,46 @@ public class DistributionAdvisedHandler
 					.withParentId(supplyCandidateWithId.getId())
 					.withQuantity(supplyCandidateWithId.getQuantity()) // what was added as supply in the destination warehouse needs to be registered as demand in the source warehouse
 					.withDate(orderLineStartDate)
-					.withWarehouseId(distributionAdvisedEvent.getFromWarehouseId())
+					.withWarehouseId(event.getFromWarehouseId())
 					.withSeqNo(expectedSeqNoForDemandCandidate);
 
 			// this might cause 'candidateChangeHandler' to trigger another event
 			final Candidate demandCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(demandCandidate);
 
-			if (expectedSeqNoForDemandCandidate != demandCandidateWithId.getSeqNo())
+			final int seqNoOfDemand = demandCandidateWithId.getSeqNo();
+			if (expectedSeqNoForDemandCandidate != seqNoOfDemand)
 			{
 				// update/override the SeqNo of both supplyCandidate and supplyCandidate's stock candidate.
-				candidateRepositoryCommands
-						.addOrUpdateOverwriteStoredSeqNo(supplyCandidateWithId
-								.withSeqNo(demandCandidateWithId.getSeqNo() - 1));
+				candidateRepositoryWrite.updateCandidate(supplyCandidateWithId.withSeqNo(seqNoOfDemand - 1));
 
-				final Candidate parentOfSupplyCandidate = candidateRepository
+				final Candidate parentOfSupplyCandidate = candidateRepositoryRetrieval
 						.retrieveLatestMatchOrNull(CandidatesQuery.fromId(supplyCandidateWithId.getParentId()));
-
-				candidateRepositoryCommands
-						.addOrUpdateOverwriteStoredSeqNo(
-								parentOfSupplyCandidate
-										.withSeqNo(demandCandidateWithId.getSeqNo() - 2));
+				candidateRepositoryWrite.updateCandidate(parentOfSupplyCandidate.withSeqNo(seqNoOfDemand - 2));
 			}
 
-			if (ddOrder.isAdvisedToCreateDDrder() && groupIdsWithRequestedPPOrders.add(groupId))
+			if (ddOrder.isAdvisedToCreateDDrder())
 			{
-				candidateService.requestMaterialOrder(groupId);
+				final boolean ddOrderCreationNotYetRequested = groupIdsWithRequestedPPOrders.add(groupId);
+				if (ddOrderCreationNotYetRequested)
+				{
+					requestMaterialOrderService.requestMaterialOrder(groupId);
+				}
 			}
 		}
+	}
+
+	private CandidateStatus computeCandidateStatus(final DDOrder ddOrder)
+	{
+		final CandidateStatus candidateStatus;
+		if (ddOrder.getDdOrderId() <= 0)
+		{
+			candidateStatus = CandidateStatus.doc_planned;
+		}
+		else
+		{
+			candidateStatus = EventUtil.getCandidateStatus(ddOrder.getDocStatus());
+		}
+		return candidateStatus;
 	}
 
 	private DistributionDetail createCandidateDetailFromDDOrderAndLine(

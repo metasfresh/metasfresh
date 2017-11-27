@@ -60,6 +60,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
+import lombok.NonNull;
 
 /**
  *
@@ -617,7 +618,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return list.get(0);
 	}
 
-	public <AT> List<AT> aggregateList(String sqlExpression, @Nullable final String sqlFunction, final Class<AT> returnType) throws DBException
+	public <AT> List<AT> aggregateList(
+			@NonNull String sqlExpression,
+			@Nullable final String sqlFunction,
+			@NonNull final Class<AT> returnType)
 	{
 		// NOTE: it's OK to have the sqlFunction null. Methods like first(columnName, valueClass) are relying on this.
 		// if (Check.isEmpty(sqlFunction, true)) throw new DBException("No Aggregate Function defined");
@@ -660,7 +664,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		sqlSelect.append(" FROM ").append(getSqlFrom());
 
-		final String sql = buildSQL(sqlSelect, false);
+		// we might or might not need the order-by-clause. E.g. when we do first/distinct etc, we do need ordering.
+		final boolean useOrderByClause = true;
+		final String sql = buildSQL(sqlSelect, useOrderByClause);
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try

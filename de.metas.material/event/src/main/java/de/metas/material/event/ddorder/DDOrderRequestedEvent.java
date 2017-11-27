@@ -10,7 +10,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class DistributionRequestedEvent implements MaterialEvent
+public class DDOrderRequestedEvent implements MaterialEvent
 {
 	public static final String TYPE = "DistributionRequestedEvent";
 

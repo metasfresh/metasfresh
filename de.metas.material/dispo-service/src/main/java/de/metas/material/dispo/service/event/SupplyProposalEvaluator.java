@@ -12,8 +12,8 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -72,11 +72,8 @@ public class SupplyProposalEvaluator
 	 * That makes no sense and this method shall therefore return {@code false} on such a folly.
 	 * </li>
 	 * </ul>
-	 *
-	 * @param proposal
-	 * @return
 	 */
-	public boolean evaluateSupply(@NonNull final SupplyProposal proposal)
+	public boolean isProposalAccepted(@NonNull final SupplyProposal proposal)
 	{
 		final CandidatesQuery demandQuery = CandidatesQuery.builder()
 				.type(CandidateType.DEMAND)

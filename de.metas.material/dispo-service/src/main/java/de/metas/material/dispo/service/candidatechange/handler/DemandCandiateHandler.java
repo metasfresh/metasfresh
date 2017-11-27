@@ -77,7 +77,7 @@ public class DemandCandiateHandler implements CandidateHandler
 	}
 
 	/**
-	 * Persists (updates or creates) the given demand candidate and also it's <b>child</b> stock candidate.
+	 * Persists (updates or creates) the given demand candidate and also its <b>child</b> stock candidate.
 	 */
 	@Override
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate demandCandidate)
@@ -107,35 +107,12 @@ public class DemandCandiateHandler implements CandidateHandler
 		}
 		else
 		{
-			// check if there is a supply record with the same demand detail and material descriptor, check
-			final CandidatesQuery queryForExistingSupply = CandidatesQuery.builder()
-					.type(CandidateType.SUPPLY)
-					.demandDetail(demandCandidateWithId.getDemandDetail())
-					.materialDescriptor(demandCandidateWithId.getMaterialDescriptor().withoutQuantity())
-					.build();
-
-			final Candidate existingSupplyParentStockWithoutOwnParentId;
-			final Candidate existingSupply = candidateRepository.retrieveLatestMatchOrNull(queryForExistingSupply);
-			if (existingSupply != null && existingSupply.getParentId() > 0)
+			// check if there is a supply record with the same demand detail and material descriptor
+			final Candidate existingSupplyParentStockWithoutParentId = retrieveSupplyParentStockWithoutParentIdOrNull(demandCandidateWithId);
+			if (existingSupplyParentStockWithoutParentId != null)
 			{
-				final Candidate existingSupplyParentStock = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(existingSupply.getParentId()));
-				if (existingSupplyParentStock.getParentId() > 0)  // we only want to dock with currently "dangling" stock records
-				{
-					existingSupplyParentStockWithoutOwnParentId = null;
-				}
-				else
-				{
-					existingSupplyParentStockWithoutOwnParentId = existingSupplyParentStock;
-				}
-			}
-			else
-			{
-				existingSupplyParentStockWithoutOwnParentId = null;
-			}
-			if (existingSupplyParentStockWithoutOwnParentId != null)
-			{
-				final Candidate existingSupplyParentStockWithUpdatedQty = existingSupplyParentStockWithoutOwnParentId
-						.withQuantity(existingSupplyParentStockWithoutOwnParentId.getQuantity().subtract(demandCandidateWithId.getQuantity()))
+				final Candidate existingSupplyParentStockWithUpdatedQty = existingSupplyParentStockWithoutParentId
+						.withQuantity(existingSupplyParentStockWithoutParentId.getQuantity().subtract(demandCandidateWithId.getQuantity()))
 						.withParentId(CandidatesQuery.UNSPECIFIED_PARENT_ID);
 
 				childStockWithDemandDelta = stockCandidateService.updateQty(existingSupplyParentStockWithUpdatedQty);
@@ -150,7 +127,7 @@ public class DemandCandiateHandler implements CandidateHandler
 			}
 		}
 
-		candidateRepositoryWriteService.updateOverwriteStoredSeqNo(childStockWithDemand
+		candidateRepositoryWriteService.updateCandidate(childStockWithDemand
 				.withParentId(demandCandidateWithId.getId()));
 
 		final BigDecimal delta = childStockWithDemandDelta.getQuantity();
@@ -174,19 +151,9 @@ public class DemandCandiateHandler implements CandidateHandler
 			demandCandidateToReturn = demandCandidateWithId;
 		}
 
-		if (demandCandidate.getType() == CandidateType.DEMAND)
+		if (demandCandidateWithId.getType() == CandidateType.DEMAND)
 		{
-			final MaterialQuery query = MaterialQuery.forMaterialDescriptor(demandCandidate.getMaterialDescriptor());
-			final BigDecimal availableQuantityAfterDemandWasApplied = stockRepository.retrieveAvailableStockQtySum(query);
-
-			if (availableQuantityAfterDemandWasApplied.signum() < 0)
-			{
-				final BigDecimal requiredQty = availableQuantityAfterDemandWasApplied.negate();
-
-				final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
-						.createSupplyRequiredEvent(demandCandidateWithId, requiredQty);
-				materialEventService.fireEvent(supplyRequiredEvent);
-			}
+			fireSupplyRequiredEventIfQtyBelowZero(demandCandidateWithId);
 		}
 		return demandCandidateToReturn;
 	}
@@ -199,5 +166,50 @@ public class DemandCandiateHandler implements CandidateHandler
 				type == CandidateType.DEMAND || type == CandidateType.UNRELATED_DECREASE,
 				"Given parameter 'demandCandidate' has type=%s; demandCandidate=%s",
 				type, demandCandidate);
+	}
+
+	private Candidate retrieveSupplyParentStockWithoutParentIdOrNull(@NonNull final Candidate demandCandidateWithId)
+	{
+		final CandidatesQuery queryForExistingSupply = CandidatesQuery.builder()
+				.type(CandidateType.SUPPLY)
+				.demandDetail(demandCandidateWithId.getDemandDetail())
+				.materialDescriptor(demandCandidateWithId.getMaterialDescriptor().withoutQuantity())
+				.build();
+
+		final Candidate existingSupplyParentStockWithoutOwnParentId;
+		final Candidate existingSupply = candidateRepository.retrieveLatestMatchOrNull(queryForExistingSupply);
+		if (existingSupply != null && existingSupply.getParentId() > 0)
+		{
+			final Candidate existingSupplyParentStock = candidateRepository.retrieveLatestMatchOrNull(CandidatesQuery.fromId(existingSupply.getParentId()));
+			if (existingSupplyParentStock.getParentId() > 0)  // we only want to dock with currently "dangling" stock records
+			{
+				existingSupplyParentStockWithoutOwnParentId = null;
+			}
+			else
+			{
+				existingSupplyParentStockWithoutOwnParentId = existingSupplyParentStock;
+			}
+		}
+		else
+		{
+			existingSupplyParentStockWithoutOwnParentId = null;
+		}
+		return existingSupplyParentStockWithoutOwnParentId;
+	}
+
+
+	private void fireSupplyRequiredEventIfQtyBelowZero(@NonNull final Candidate demandCandidateWithId)
+	{
+		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(demandCandidateWithId.getMaterialDescriptor());
+		final BigDecimal availableQuantityAfterDemandWasApplied = stockRepository.retrieveAvailableStockQtySum(query);
+
+		if (availableQuantityAfterDemandWasApplied.signum() < 0)
+		{
+			final BigDecimal requiredQty = availableQuantityAfterDemandWasApplied.negate();
+
+			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
+					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty);
+			materialEventService.fireEvent(supplyRequiredEvent);
+		}
 	}
 }

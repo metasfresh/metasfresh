@@ -18,7 +18,6 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
@@ -87,7 +86,7 @@ public class CandidateRepositoryWriteService
 		return addOrUpdate(candidate, true);
 	}
 
-	public Candidate updateOverwriteStoredSeqNo(@NonNull final Candidate candidate)
+	public Candidate updateCandidate(@NonNull final Candidate candidate)
 	{
 		Check.errorIf(candidate.getId() <= 0, "The candidate parameter needs to have Id>0; candidate={}", candidate);
 		final CandidatesQuery query = CandidatesQuery.fromId(candidate.getId());
@@ -101,11 +100,15 @@ public class CandidateRepositoryWriteService
 		return addOrUpdate(query, candidate, preserveExistingSeqNoAndParentId);
 	}
 
-	private Candidate addOrUpdate(final CandidatesQuery query, final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
+	private Candidate addOrUpdate(
+			@NonNull final CandidatesQuery singleCandidateOrNullQuery,
+			@NonNull final Candidate candidate,
+			final boolean preserveExistingSeqNoAndParentId)
 	{
 		final I_MD_Candidate oldCandidateRecord = RepositoryCommons
-				.mkQueryBuilder(query)
-				.create().firstOnly(I_MD_Candidate.class);
+				.mkQueryBuilder(singleCandidateOrNullQuery)
+				.create()
+				.firstOnly(I_MD_Candidate.class);
 
 		final BigDecimal oldqty = oldCandidateRecord != null ? oldCandidateRecord.getQty() : BigDecimal.ZERO;
 		final BigDecimal qtyDelta = candidate.getQuantity().subtract(oldqty);
@@ -118,26 +121,15 @@ public class CandidateRepositoryWriteService
 
 		setFallBackSeqNoAndGroupIdIfNeeded(synchedRecord);
 
-		if (candidate.getSubType() == CandidateSubType.PRODUCTION && candidate.getProductionDetail() != null)
-		{
-			addOrRecplaceProductionDetail(candidate, synchedRecord);
-		}
+		addOrRecplaceProductionDetail(candidate, synchedRecord);
 
-		if (candidate.getSubType() == CandidateSubType.DISTRIBUTION && candidate.getDistributionDetail() != null)
-		{
-			addOrRecplaceDistributionDetail(candidate, synchedRecord);
-		}
+		addOrRecplaceDistributionDetail(candidate, synchedRecord);
 
-		if (candidate.getDemandDetail() != null)
-		{
-			// we do this independently of the type; the demand info might be needed by many records, not just by the "first" demand record
-			addOrRecplaceDemandDetail(candidate, synchedRecord);
-		}
+		addOrRecplaceDemandDetail(candidate, synchedRecord);
 
 		addOrReplaceTransactionDetail(candidate, synchedRecord);
 
-		return createNewCandidateWithIdsFromRecord(candidate, synchedRecord)
-				.withQuantity(qtyDelta);
+		return createNewCandidateWithIdsFromRecord(candidate, synchedRecord).withQuantity(qtyDelta);
 	}
 
 	/**
@@ -251,6 +243,12 @@ public class CandidateRepositoryWriteService
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
+		final ProductionDetail productionDetail = candidate.getProductionDetail();
+		if (productionDetail == null)
+		{
+			return;
+		}
+
 		final I_MD_Candidate_Prod_Detail detailRecordToUpdate;
 		final I_MD_Candidate_Prod_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Prod_Detail.class);
 		if (existingDetail == null)
@@ -262,7 +260,7 @@ public class CandidateRepositoryWriteService
 		{
 			detailRecordToUpdate = existingDetail;
 		}
-		final ProductionDetail productionDetail = candidate.getProductionDetail();
+
 		detailRecordToUpdate.setDescription(productionDetail.getDescription());
 		detailRecordToUpdate.setPP_Plant_ID(productionDetail.getPlantId());
 		detailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
@@ -278,6 +276,12 @@ public class CandidateRepositoryWriteService
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
+		final DistributionDetail distributionDetail = candidate.getDistributionDetail();
+		if (distributionDetail == null)
+		{
+			return;
+		}
+
 		final I_MD_Candidate_Dist_Detail detailRecordToUpdate;
 		final I_MD_Candidate_Dist_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Dist_Detail.class);
 		if (existingDetail == null)
@@ -289,7 +293,7 @@ public class CandidateRepositoryWriteService
 		{
 			detailRecordToUpdate = existingDetail;
 		}
-		final DistributionDetail distributionDetail = candidate.getDistributionDetail();
+
 		detailRecordToUpdate.setDD_NetworkDistributionLine_ID(distributionDetail.getNetworkDistributionLineId());
 		detailRecordToUpdate.setPP_Plant_ID(distributionDetail.getPlantId());
 		detailRecordToUpdate.setPP_Product_Planning_ID(distributionDetail.getProductPlanningId());
