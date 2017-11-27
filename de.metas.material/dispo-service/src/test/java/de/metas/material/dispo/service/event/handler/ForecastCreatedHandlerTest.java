@@ -21,8 +21,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
@@ -31,10 +31,10 @@ import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateHa
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 import mockit.Delegate;
 import mockit.Expectations;
@@ -196,7 +196,10 @@ public class ForecastCreatedHandlerTest
 			@SuppressWarnings("unused")
 			public boolean verifyQty(@NonNull final SupplyRequiredEvent event)
 			{
-				return event.getMaterialDemandDescriptor().getMaterialDescriptor().getQuantity().compareTo(new BigDecimal(expectedEventQty)) == 0;
+				return event.getSupplyRequiredDescriptor()
+						.getMaterialDescriptor()
+						.getQuantity()
+						.compareTo(new BigDecimal(expectedEventQty)) == 0;
 			}
 		};
 	}

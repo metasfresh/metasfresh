@@ -16,6 +16,9 @@ import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.lock.api.ILockCommand;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.LockOwner;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
@@ -61,9 +64,15 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 			throw new AdempiereException("No purchase candidates to enqueue");
 		}
 
+		final LockOwner lockOwner = LockOwner.newOwner(C_PurchaseCandidates_GeneratePurchaseOrders.class.getSimpleName());
+		final ILockCommand elementsLocker = Services.get(ILockManager.class).lock()
+				.setOwner(lockOwner)
+				.setAutoCleanup(false);
+
 		Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(C_PurchaseCandidates_GeneratePurchaseOrders.class)
 				.newBlock()
 				.newWorkpackage()
+				.setElementsLocker(elementsLocker)
 				.bindToThreadInheritedTrx()
 				.addElements(purchaseCandidateRecords)
 				.build();
@@ -80,9 +89,7 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 		purchaseOrdersAggregator.addAll(purchaseCandidates.iterator());
 		purchaseOrdersAggregator.closeAllGroups();
 
-		purchaseCandidateRepo.saveAll(purchaseCandidates);
-
-		// TODO: notify user in charge that the purchase orders were created
+		purchaseCandidateRepo.saveAllNoLock(purchaseCandidates); // no lock because they are already locked by us
 
 		return Result.SUCCESS;
 	}
@@ -101,14 +108,13 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 		}
 
 		final List<PurchaseCandidate> purchaseCandidates = purchaseCandidateRepo.streamAllByIds(purchaseCandidateIds)
-				.filter(purchaseCandidate -> !purchaseCandidate.isProcessed()) // only those not processed
+				.filter(purchaseCandidate -> !purchaseCandidate.isProcessed()) // only those not processed, those locked are OK because we locked them
 				.collect(ImmutableList.toImmutableList());
 		if (purchaseCandidates.isEmpty())
 		{
-			throw new AdempiereException("No purchase candidates enqueued");
+			throw new AdempiereException("No eligible purchase candidates enqueued");
 		}
 
 		return purchaseCandidates;
 	}
-
 }

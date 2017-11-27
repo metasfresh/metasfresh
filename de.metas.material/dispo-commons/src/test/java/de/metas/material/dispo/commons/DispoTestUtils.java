@@ -1,5 +1,6 @@
 package de.metas.material.dispo.commons;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -89,5 +90,21 @@ public class DispoTestUtils
 				.orderBy().addColumn(I_MD_Candidate.COLUMN_MD_Candidate_ID).endOrderBy()
 				.create().list();
 		return allRecords;
+	}
+
+	public List<I_MD_Candidate> sortBySeqNo(@NonNull final List<I_MD_Candidate> candidateRecords)
+	{
+		final List<I_MD_Candidate> allRecordBySeqNo = DispoTestUtils.retrieveAllRecords().stream()
+				.sorted(Comparator.comparing(I_MD_Candidate::getSeqNo))
+				.collect(Collectors.toList());
+		return allRecordBySeqNo;
+	}
+
+	public List<I_MD_Candidate> sortByDateProjected(@NonNull final List<I_MD_Candidate> candidateRecords)
+	{
+		final List<I_MD_Candidate> allRecordBySeqNo = DispoTestUtils.retrieveAllRecords().stream()
+				.sorted(Comparator.comparing(I_MD_Candidate::getDateProjected))
+				.collect(Collectors.toList());
+		return allRecordBySeqNo;
 	}
 }

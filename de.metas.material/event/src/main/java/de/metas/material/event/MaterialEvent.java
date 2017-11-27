@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.ddorder.DistributionRequestedEvent;
-import de.metas.material.event.ddorder.DistributionAdvisedEvent;
-import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
+import de.metas.material.event.ddorder.DDOrderRequestedEvent;
+import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
-import de.metas.material.event.pporder.ProductionRequestedEvent;
-import de.metas.material.event.pporder.ProductionAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 
 /*
@@ -48,12 +48,12 @@ import de.metas.material.event.transactions.TransactionCreatedEvent;
 @JsonSubTypes({
 		@JsonSubTypes.Type(name = SupplyRequiredEvent.TYPE, value = SupplyRequiredEvent.class),
 
-		@JsonSubTypes.Type(name = DistributionAdvisedEvent.TYPE, value = DistributionAdvisedEvent.class),
-		@JsonSubTypes.Type(name = ProductionAdvisedEvent.TYPE, value = ProductionAdvisedEvent.class),
+		@JsonSubTypes.Type(name = DDOrderAdvisedOrCreatedEvent.TYPE, value = DDOrderAdvisedOrCreatedEvent.class),
+		@JsonSubTypes.Type(name = PPOrderAdvisedOrCreatedEvent.TYPE, value = PPOrderAdvisedOrCreatedEvent.class),
 		@JsonSubTypes.Type(name = DemandHandlerAuditEvent.TYPE, value = DemandHandlerAuditEvent.class),
 
-		@JsonSubTypes.Type(name = ProductionRequestedEvent.TYPE, value = ProductionRequestedEvent.class),
-		@JsonSubTypes.Type(name = DistributionRequestedEvent.TYPE, value = DistributionRequestedEvent.class),
+		@JsonSubTypes.Type(name = PPOrderRequestedEvent.TYPE, value = PPOrderRequestedEvent.class),
+		@JsonSubTypes.Type(name = DDOrderRequestedEvent.TYPE, value = DDOrderRequestedEvent.class),
 		@JsonSubTypes.Type(name = ForecastCreatedEvent.TYPE, value = ForecastCreatedEvent.class),
 		
 		@JsonSubTypes.Type(name = ShipmentScheduleCreatedEvent.TYPE, value = ShipmentScheduleCreatedEvent.class),

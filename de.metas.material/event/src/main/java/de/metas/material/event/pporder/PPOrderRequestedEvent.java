@@ -4,7 +4,6 @@ import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,16 +30,19 @@ import lombok.Value;
  * #L%
  */
 /**
- * Send by the material planner when it came up with a brilliant production plan that could be turned into an {@link I_PP_Order} <b>or</or> if a ppOrder was actually created or changed.
+ * Send by the material dispo when it wants a {@link I_PP_Order} to be created.
+ * <p>
+ * <b>Important: right now, any {@link PPOrderLine}s are ignored</b>. The receiver of this event will mostly use
+ * the event's {@link PPOrder}'s {@link PPOrder#getProductPlanningId()} to create the @{code PP_Order}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Value // this implies @AllArgsConstructor which is needed by jackson
+@Value
 @Builder
-final public class ProductionAdvisedEvent implements MaterialEvent
+public class PPOrderRequestedEvent implements MaterialEvent
 {
-	public static final String TYPE = "ProductionAdvisedEvent";
+	public static final String TYPE = "ProductionRequestedEvent";
 
 	@NonNull
 	EventDescriptor eventDescriptor;
@@ -48,5 +50,5 @@ final public class ProductionAdvisedEvent implements MaterialEvent
 	@NonNull
 	PPOrder ppOrder;
 
-	SupplyRequiredDescriptor supplyRequiredDescriptor;
+	int groupId;
 }

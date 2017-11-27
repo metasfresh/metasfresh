@@ -10,18 +10,17 @@ package de.metas.async.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +32,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,17 +40,19 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.logging.LogManager;
 
@@ -62,7 +62,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 
 	/**
 	 * Filter used to skip all elements which are pointing to records (AD_Table_ID/Record_ID) which were already enqueued, even if in another working package
-	 * 
+	 *
 	 * NOTE: to be set by extending classes
 	 */
 	protected IQueryFilter<I_C_Queue_Element> filter_C_Queue_Element_SkipAlreadyScheduledItems;
@@ -71,9 +71,9 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	// Order by (very important): Priority (0 to 9), and ID
 	protected final IQueryOrderBy queueOrderByComparator = Services.get(IQueryBL.class)
 			.createQueryOrderByBuilder(I_C_Queue_WorkPackage.class)
-				.addColumn(I_C_Queue_WorkPackage.COLUMNNAME_Priority)
-				.addColumn(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID)
-				.createQueryOrderBy();
+			.addColumn(I_C_Queue_WorkPackage.COLUMNNAME_Priority)
+			.addColumn(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID)
+			.createQueryOrderBy();
 
 	protected abstract Map<Integer, I_C_Queue_PackageProcessor> retrieveWorkpackageProcessorsMap(Properties ctx);
 
@@ -81,7 +81,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 
 	/**
 	 * Retrieve object from given <code>element</code>
-	 * 
+	 *
 	 * @param element
 	 * @param clazz
 	 * @param trxName
@@ -97,7 +97,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 
 		final Map<Integer, I_C_Queue_PackageProcessor> packageProcessors = retrieveWorkpackageProcessorsMap(ctx);
 		final List<I_C_Queue_Processor_Assign> assignments = retrieveQueueProcessorAssignments(processor);
-		final List<I_C_Queue_PackageProcessor> result = new ArrayList<I_C_Queue_PackageProcessor>();
+		final List<I_C_Queue_PackageProcessor> result = new ArrayList<>();
 		for (final I_C_Queue_Processor_Assign assignment : assignments)
 		{
 			if (!assignment.isActive())
@@ -109,7 +109,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 			final I_C_Queue_PackageProcessor packageProcessor = packageProcessors.get(packageProcessorId);
 			if (packageProcessor == null)
 			{
-				AdempiereException ex = new AdempiereException("No package processor found for C_Queue_PackageProcessor_ID=" + packageProcessorId);
+				final AdempiereException ex = new AdempiereException("No package processor found for C_Queue_PackageProcessor_ID=" + packageProcessorId);
 				logger.warn(ex.getLocalizedMessage(), ex);
 				continue;
 			}
@@ -133,7 +133,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 		final String packageProcessorClassname = packageProcessorClass.getCanonicalName();
 		return retrievePackageProcessorDefByClassname(ctx, packageProcessorClassname);
 	}
-	
+
 	@Override
 	public I_C_Queue_PackageProcessor retrievePackageProcessorDefByClassname(final Properties ctx, final String packageProcessorClassname)
 	{
@@ -172,7 +172,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	 * <p>
 	 * <b>IMPOTRANT:</b> Be careful returning true outside of the unit test mode! The package might be created with a wrong AD_Client_ID and AD_Org_ID, might not be found later-on, then the system
 	 * might attempt to create it again and fail because of UCs.
-	 * 
+	 *
 	 * @return true if we shall create {@link I_C_Queue_PackageProcessor} record for a given classname.
 	 */
 	private boolean isAutocreateWorkpackageProcessorRecordForClassname()
@@ -199,26 +199,38 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	}
 
 	@Override
-	public void saveInLocalTrx(final Object model)
+	public void save(final I_C_Async_Batch asyncBatch)
 	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(model);
-		Check.assume(Services.get(ITrxManager.class).isNull(trxName), "Model {} shall be loaded/saved out of transaction", model);
+		InterfaceWrapperHelper.save(asyncBatch);
+	}
 
-		DB.saveConstraints();
-		DB.getConstraints().addAllowedTrxNamePrefix("POSave");
-		try
-		{
-			InterfaceWrapperHelper.save(model);
-		}
-		finally
-		{
-			DB.restoreConstraints();
-		}
+	@Override
+	public void save(final I_C_Queue_Block block)
+	{
+		InterfaceWrapperHelper.save(block);
+	}
+
+	@Override
+	public void save(final I_C_Queue_WorkPackage workpackage)
+	{
+		InterfaceWrapperHelper.save(workpackage);
+	}
+
+	@Override
+	public void save(final I_C_Queue_WorkPackage_Notified wpNotified)
+	{
+		InterfaceWrapperHelper.save(wpNotified);
+	}
+
+	@Override
+	public void save(I_C_Queue_Element element)
+	{
+		InterfaceWrapperHelper.save(element);
 	}
 
 	/**
 	 * Creates a {@link IQueryBuilder} which selects all {@link I_C_Queue_Element}s for given work package.
-	 * 
+	 *
 	 * @param workPackage
 	 * @param skipAlreadyScheduledItems true if we shall skip all elements which are pointing to records (AD_Table_ID/Record_ID) which were already enqueued earlier and not yet processed.
 	 * @param trxName transaction name
@@ -296,7 +308,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	{
 		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(workPackage, skipAlreadyScheduledItems);
 
-		final List<T> result = new ArrayList<T>(queueElements.size());
+		final List<T> result = new ArrayList<>(queueElements.size());
 		for (final I_C_Queue_Element e : queueElements)
 		{
 			try
@@ -320,15 +332,15 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 
 		return result;
 	}
-	
+
 	@Override
 	public IQueryOrderBy getQueueOrderBy()
 	{
 		return queueOrderByComparator;
 	}
-	
+
 	@Override
-	public boolean isWorkpackageProcessorEnabled(Class<? extends IWorkpackageProcessor> packageProcessorClass)
+	public boolean isWorkpackageProcessorEnabled(final Class<? extends IWorkpackageProcessor> packageProcessorClass)
 	{
 		final String packageProcessorClassname = packageProcessorClass.getCanonicalName();
 		Check.assumeNotEmpty(packageProcessorClassname, "packageProcessorClassname is not empty");

@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -20,29 +21,29 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.CandidateService;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
-import de.metas.material.dispo.service.event.handler.DistributionAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.DDOrderAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
-import de.metas.material.dispo.service.event.handler.ProductionAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.PPOrderAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.dispo.service.event.handler.TransactionCreatedHandler;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DistributionAdvisedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import mockit.Mocked;
@@ -117,18 +118,18 @@ public class MaterialDispoEventListenerFacadeTests
 						stockCandidateService),
 				new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService)));
 
-		final CandidateService candidateService = new CandidateService(
+		final RequestMaterialOrderService candidateService = new RequestMaterialOrderService(
 				candidateRepositoryRetrieval,
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
-		final DistributionAdvisedHandler distributionAdvisedEventHandler = new DistributionAdvisedHandler(
+		final DDOrderAdvisedHandler distributionAdvisedEventHandler = new DDOrderAdvisedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new CandidateService(candidateRepositoryRetrieval, materialEventService));
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, materialEventService));
 
-		final ProductionAdvisedHandler productionAdvisedEventHandler = new ProductionAdvisedHandler(candidateChangeHandler, candidateService);
+		final PPOrderAdvisedHandler productionAdvisedEventHandler = new PPOrderAdvisedHandler(candidateChangeHandler, candidateService);
 
 		final ForecastCreatedHandler forecastCreatedEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
 
@@ -148,7 +149,7 @@ public class MaterialDispoEventListenerFacadeTests
 	 * This test is more for myself, to figure out how the system works :-$
 	 */
 	@Test
-	public void testShipmentScheduleEvent_then_distributionAdvisedEvent()
+	public void test_shipmentScheduleCreatedEvent_then_distributionAdvisedEvent()
 	{
 		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedHandlerTests.createShipmentScheduleTestEvent();
 		final Date shipmentScheduleEventTime = shipmentScheduleEvent.getMaterialDescriptor().getDate();
@@ -158,7 +159,7 @@ public class MaterialDispoEventListenerFacadeTests
 		mdEventListener.onEvent(shipmentScheduleEvent);
 
 		// create a distributionAdvisedEvent event which matches the shipmentscheduleEvent that we processed in testShipmentScheduleEvent()
-		final DistributionAdvisedEvent event = DistributionAdvisedEvent.builder()
+		final DDOrderAdvisedOrCreatedEvent event = DDOrderAdvisedOrCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
@@ -183,12 +184,22 @@ public class MaterialDispoEventListenerFacadeTests
 		final I_MD_Candidate toWarehouseSharedStock = DispoTestUtils.filter(CandidateType.STOCK, toWarehouseId).get(0);
 		final I_MD_Candidate toWarehouseSupply = DispoTestUtils.filter(CandidateType.SUPPLY, toWarehouseId).get(0);
 
-		assertThat(toWarehouseDemand.getSeqNo()).isEqualTo(toWarehouseSharedStock.getSeqNo() - 1);
-		assertThat(toWarehouseSharedStock.getSeqNo()).isEqualTo(toWarehouseSupply.getSeqNo() - 1);
+		final I_MD_Candidate fromWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, fromWarehouseId).get(0);
+		final I_MD_Candidate toWarehouseStock = DispoTestUtils.filter(CandidateType.STOCK, fromWarehouseId).get(0);
 
-		assertThat(toWarehouseDemand.getQty()).isEqualByComparingTo(BigDecimal.TEN);
+		final List<I_MD_Candidate> allRecordsBySeqNo = DispoTestUtils.sortBySeqNo(DispoTestUtils.retrieveAllRecords());
+		assertThat(allRecordsBySeqNo).containsExactly(
+				toWarehouseDemand,
+				toWarehouseSharedStock,
+				toWarehouseSupply,
+				fromWarehouseDemand,
+				toWarehouseStock);
+
+		assertThat(toWarehouseDemand.getQty()).isEqualByComparingTo("10");
 		assertThat(toWarehouseSharedStock.getQty()).isZero();
-		assertThat(toWarehouseSupply.getQty()).isEqualByComparingTo(BigDecimal.TEN);
+		assertThat(toWarehouseSupply.getQty()).isEqualByComparingTo("10");
+		assertThat(fromWarehouseDemand.getQty()).isEqualByComparingTo("10");
+		assertThat(toWarehouseStock.getQty()).isEqualByComparingTo("-10");
 	}
 
 	@Test

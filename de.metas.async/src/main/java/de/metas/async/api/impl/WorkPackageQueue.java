@@ -34,6 +34,7 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -526,7 +527,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			element.setAD_Table_ID(adTableId);
 			element.setRecord_ID(recordId);
 
-			dao.saveInLocalTrx(element);
+			dao.save(element);
 			return element;
 		}
 		catch (final RuntimeException e)
@@ -543,7 +544,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	{
 		try
 		{
-			dao.saveInLocalTrx(workPackage);
+			dao.save(workPackage);
 		}
 		catch (final Throwable e)
 		{
@@ -626,8 +627,9 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		final SyncQueueProcessorListener callback = new SyncQueueProcessorListener();
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-		if (trxManager.isNull(trxName))
+		
+		final ITrx trx = trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
+		if (trxManager.isNull(trx))
 		{
 			// Running out of transaction - marking ready for processing immediately
 			markReadyForProcessing(workPackage, callback);
@@ -719,7 +721,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 			// Mark the workpackage as ready for processing and save it
 			workPackage.setIsReadyForProcessing(true);
-			dao.saveInLocalTrx(workPackage);
+			dao.save(workPackage);
 
 			success = true;
 		}

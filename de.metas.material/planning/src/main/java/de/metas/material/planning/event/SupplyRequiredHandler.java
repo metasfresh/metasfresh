@@ -2,12 +2,10 @@ package de.metas.material.planning.event;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.PlainStringLoggable;
 import org.adempiere.util.Services;
@@ -17,35 +15,20 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.material.event.DemandHandlerAuditEvent;
+import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DistributionAdvisedEvent;
-import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.ProductionAdvisedEvent;
 import de.metas.material.planning.IMRPContextFactory;
-import de.metas.material.planning.IMRPNoteBuilder;
-import de.metas.material.planning.IMRPNotesCollector;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
-import de.metas.material.planning.impl.SimpleMRPNoteBuilder;
-import de.metas.material.planning.pporder.PPOrderDemandMatcher;
-import de.metas.material.planning.pporder.PPOrderPojoSupplier;
 import lombok.NonNull;
 
 /*
@@ -73,23 +56,24 @@ import lombok.NonNull;
 @Service
 public class SupplyRequiredHandler
 {
-	@Autowired
-	private DDOrderDemandMatcher ddOrderDemandMatcher;
+	private final DistributionAdvisedEventCreator distributionAdvisedEventCreator;
 
-	@Autowired
-	private DDOrderPojoSupplier ddOrderPojoSupplier;
+	private final ProductionAdvisedEventCreator productionAdvisedEventCreator;
 
-	@Autowired
-	private PPOrderDemandMatcher ppOrderDemandMatcher;
+	private final MaterialEventService materialEventService;
 
-	@Autowired
-	private PPOrderPojoSupplier ppOrderPojoSupplier;
-
-	@Autowired
-	private MaterialEventService materialEventService;
+	public SupplyRequiredHandler(
+			@NonNull final DistributionAdvisedEventCreator distributionAdvisedEventCreator,
+			@NonNull final ProductionAdvisedEventCreator productionAdvisedEventCreator,
+			@NonNull final MaterialEventService materialEventService)
+	{
+		this.distributionAdvisedEventCreator = distributionAdvisedEventCreator;
+		this.productionAdvisedEventCreator = productionAdvisedEventCreator;
+		this.materialEventService = materialEventService;
+	}
 
 	/**
-	 * Invokes our {@link DDOrderPojoSupplier} and returns the resulting {@link DDOrder} pojo as {@link DistributionAdvisedEvent}
+	 * Invokes our {@link DDOrderPojoSupplier} and returns the resulting {@link DDOrder} pojo as {@link DistributionAdvisedOrCreatedEvent}
 	 *
 	 * @param materialDemandEvent
 	 */
@@ -120,67 +104,11 @@ public class SupplyRequiredHandler
 	{
 		final IMutableMRPContext mrpContext = mkMRPContext(supplyRequiredDescriptor);
 
-		if (ddOrderDemandMatcher.matches(mrpContext))
-		{
-			createAndFireDistributionAdvisedEvents(supplyRequiredDescriptor, mrpContext);
-		}
+		final List<MaterialEvent> events = new ArrayList<>();
+		events.addAll(distributionAdvisedEventCreator.createDistributionAdvisedEvents(supplyRequiredDescriptor, mrpContext));
+		events.addAll(productionAdvisedEventCreator.createProductionAdvisedEvents(supplyRequiredDescriptor, mrpContext));
 
-		if (ppOrderDemandMatcher.matches(mrpContext))
-		{
-			createAndFireProductionAdvisedEvents(supplyRequiredDescriptor, mrpContext);
-		}
-	}
-
-	private void createAndFireDistributionAdvisedEvents(
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final IMutableMRPContext mrpContext)
-	{
-		final List<DDOrder> ddOrders = ddOrderPojoSupplier
-				.supplyPojos(
-						mkRequest(supplyRequiredDescriptor, mrpContext),
-						mkMRPNotesCollector());
-
-		for (final DDOrder ddOrder : ddOrders)
-		{
-			for (final DDOrderLine ddOrderLine : ddOrder.getLines())
-			{
-				Check.errorIf(ddOrderLine.getNetworkDistributionLineId() <= 0,
-						"Every DDOrderLine pojo created by this planner needs to have detworkDistributionLineId > 0, but this one hasn't; ddOrderLine={}",
-						ddOrderLine);
-
-				final I_DD_NetworkDistributionLine networkLine = InterfaceWrapperHelper.create(
-						mrpContext.getCtx(),
-						ddOrderLine.getNetworkDistributionLineId(),
-						I_DD_NetworkDistributionLine.class,
-						mrpContext.getTrxName());
-
-				final DistributionAdvisedEvent distributionAdvisedEvent = DistributionAdvisedEvent.builder()
-						.eventDescriptor(supplyRequiredDescriptor.getEventDescr().createNew())
-						.fromWarehouseId(networkLine.getM_WarehouseSource_ID())
-						.toWarehouseId(networkLine.getM_Warehouse_ID())
-						.ddOrder(ddOrder)
-						.build();
-
-				materialEventService.fireEvent(distributionAdvisedEvent);
-			}
-		}
-	}
-
-	private void createAndFireProductionAdvisedEvents(
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final IMutableMRPContext mrpContext)
-	{
-		final PPOrder ppOrder = ppOrderPojoSupplier
-				.supplyPPOrderPojoWithLines(
-						mkRequest(supplyRequiredDescriptor, mrpContext),
-						mkMRPNotesCollector());
-
-		final ProductionAdvisedEvent event = ProductionAdvisedEvent.builder()
-				.eventDescriptor(supplyRequiredDescriptor.getEventDescr().createNew())
-				.ppOrder(ppOrder)
-				.build();
-
-		materialEventService.fireEvent(event);
+		events.forEach(e -> materialEventService.fireEvent(e));
 	}
 
 	private IMutableMRPContext mkMRPContext(@NonNull final SupplyRequiredDescriptor materialDemandEvent)
@@ -225,40 +153,5 @@ public class SupplyRequiredHandler
 		mrpContext.setAD_Client_ID(org.getAD_Client_ID());
 		mrpContext.setAD_Org(org);
 		return mrpContext;
-	}
-
-	private IMaterialRequest mkRequest(
-			@NonNull final SupplyRequiredDescriptor materialDemandEvent,
-			@NonNull final IMaterialPlanningContext mrpContext)
-	{
-		return MaterialRequest.builder()
-				.qtyToSupply(materialDemandEvent.getMaterialDescriptor().getQuantity())
-				.mrpContext(mrpContext)
-				.mrpDemandBPartnerId(-1)
-				.mrpDemandOrderLineSOId(materialDemandEvent.getOrderLineId())
-				.demandDate(materialDemandEvent.getMaterialDescriptor().getDate())
-				.build();
-	}
-
-	@VisibleForTesting
-	IMRPNotesCollector mkMRPNotesCollector()
-	{
-		return new IMRPNotesCollector()
-		{
-			@Override
-			public IMRPNoteBuilder newMRPNoteBuilder(final IMaterialPlanningContext mrpContext, final String mrpErrorCode)
-			{
-				final SimpleMRPNoteBuilder simpleMRPNoteBuilder = new SimpleMRPNoteBuilder(this, mrps -> Collections.emptySet());
-				return simpleMRPNoteBuilder;
-			}
-
-			@Override
-			public void collectNote(final IMRPNoteBuilder noteBuilder)
-			{
-				// as long as newMRPNoteBuilder() creates a SimpleMRPNoteBuilder with *this* as its node collector,
-				// the following invocation would cause a StackOverFlowError. Plus, idk if and what to actually collect in this use case.
-				// noteBuilder.collect();
-			}
-		};
 	}
 }

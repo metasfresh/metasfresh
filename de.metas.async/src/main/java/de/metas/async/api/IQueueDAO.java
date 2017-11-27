@@ -13,15 +13,14 @@ package de.metas.async.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -31,10 +30,13 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.IQuery;
 
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.spi.IWorkpackageProcessor;
 
 /**
@@ -45,14 +47,22 @@ import de.metas.async.spi.IWorkpackageProcessor;
  */
 public interface IQueueDAO extends ISingletonService
 {
-	void saveInLocalTrx(Object model);
+	void save(I_C_Async_Batch asyncBatch);
+
+	void save(I_C_Queue_Block block);
+
+	void save(I_C_Queue_WorkPackage workpackage);
+
+	void save(I_C_Queue_WorkPackage_Notified wpNotified);
+
+	void save(I_C_Queue_Element element);
 
 	List<I_C_Queue_Processor> retrieveAllProcessors();
 
 	List<I_C_Queue_PackageProcessor> retrieveWorkpackageProcessors(I_C_Queue_Processor processor);
 
 	I_C_Queue_PackageProcessor retrievePackageProcessorDefByClass(Properties ctx, Class<? extends IWorkpackageProcessor> packageProcessorClass);
-	
+
 	I_C_Queue_PackageProcessor retrievePackageProcessorDefByClassname(Properties ctx, String packageProcessorClassname);
 
 	I_C_Queue_PackageProcessor retrievePackageProcessorDefById(Properties ctx, int packageProcessorId);
@@ -118,9 +128,10 @@ public interface IQueueDAO extends ISingletonService
 	 * @return
 	 */
 	IQueryOrderBy getQueueOrderBy();
-	
+
 	/**
 	 * Checks if the workpackage processor is enabled
+	 * 
 	 * @param packageProcessorClass
 	 * @return
 	 */

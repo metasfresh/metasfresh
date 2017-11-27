@@ -1,7 +1,6 @@
 package de.metas.material.dispo.commons.repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -19,7 +18,6 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
@@ -59,34 +57,6 @@ import lombok.NonNull;
 public class CandidateRepositoryWriteService
 {
 	/**
-	 * Updates the qty of the given candidate.
-	 * Differs from {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)} in that
-	 * only the ID of the given {@code candidateToUpdate} is used, and if there is no existing persisted record, then an exception is thrown.
-	 * Also it just updates the underlying persisted record of the given {@code candidateToUpdate} and nothing else.
-	 *
-	 *
-	 * @param candidateToUpdate the candidate to update. Needs to have {@link Candidate#getId()} > 0.
-	 *
-	 * @return a copy of the given {@code candidateToUpdate} with the quantity being a delta, similar to the return value of {@link #addOrUpdate(Candidate, boolean)}.
-	 */
-	public Candidate updateQty(@NonNull final Candidate candidateToUpdate)
-	{
-		Preconditions.checkState(candidateToUpdate.getId() > 0,
-				"Parameter 'candidateToUpdate' needs to have Id > 0; candidateToUpdate=%s",
-				candidateToUpdate);
-
-		final I_MD_Candidate candidateRecord = load(candidateToUpdate.getId(), I_MD_Candidate.class);
-		final BigDecimal oldQty = candidateRecord.getQty();
-
-		candidateRecord.setQty(candidateToUpdate.getQuantity());
-		save(candidateRecord);
-
-		final BigDecimal qtyDelta = candidateToUpdate.getQuantity().subtract(oldQty);
-
-		return candidateToUpdate.withQuantity(qtyDelta);
-	}
-
-	/**
 	 * Stores the given {@code candidate}.
 	 * If there is already an existing candidate in the store, it is loaded, its fields are updated and the result is saved.<br>
 	 * If the given {@code candidate} specifies a {@link Candidate#getSeqNo()}, then that value will be persisted, even if there is already a different value stored in the underlying {@link I_MD_Candidate} record.
@@ -116,12 +86,29 @@ public class CandidateRepositoryWriteService
 		return addOrUpdate(candidate, true);
 	}
 
-	private Candidate addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNo)
+	public Candidate updateCandidate(@NonNull final Candidate candidate)
 	{
-		final CandidatesQuery query = CandidatesQuery.fromCandidate(candidate);
+		Check.errorIf(candidate.getId() <= 0, "The candidate parameter needs to have Id>0; candidate={}", candidate);
+		final CandidatesQuery query = CandidatesQuery.fromId(candidate.getId());
+
+		return addOrUpdate(query, candidate, false);
+	}
+
+	private Candidate addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNoAndParentId)
+	{
+		final CandidatesQuery query = CandidatesQuery.fromCandidate(candidate, preserveExistingSeqNoAndParentId);
+		return addOrUpdate(query, candidate, preserveExistingSeqNoAndParentId);
+	}
+
+	private Candidate addOrUpdate(
+			@NonNull final CandidatesQuery singleCandidateOrNullQuery,
+			@NonNull final Candidate candidate,
+			final boolean preserveExistingSeqNoAndParentId)
+	{
 		final I_MD_Candidate oldCandidateRecord = RepositoryCommons
-				.mkQueryBuilder(query)
-				.create().firstOnly(I_MD_Candidate.class);
+				.mkQueryBuilder(singleCandidateOrNullQuery)
+				.create()
+				.firstOnly(I_MD_Candidate.class);
 
 		final BigDecimal oldqty = oldCandidateRecord != null ? oldCandidateRecord.getQty() : BigDecimal.ZERO;
 		final BigDecimal qtyDelta = candidate.getQuantity().subtract(oldqty);
@@ -129,31 +116,20 @@ public class CandidateRepositoryWriteService
 		final I_MD_Candidate synchedRecord = updateOrCreateCandidateRecord(
 				oldCandidateRecord,
 				candidate,
-				preserveExistingSeqNo);
+				preserveExistingSeqNoAndParentId);
 		save(synchedRecord); // save now, because we need to have MD_Candidate_ID > 0
 
 		setFallBackSeqNoAndGroupIdIfNeeded(synchedRecord);
 
-		if (candidate.getSubType() == CandidateSubType.PRODUCTION && candidate.getProductionDetail() != null)
-		{
-			addOrRecplaceProductionDetail(candidate, synchedRecord);
-		}
+		addOrRecplaceProductionDetail(candidate, synchedRecord);
 
-		if (candidate.getSubType() == CandidateSubType.DISTRIBUTION && candidate.getDistributionDetail() != null)
-		{
-			addOrRecplaceDistributionDetail(candidate, synchedRecord);
-		}
+		addOrRecplaceDistributionDetail(candidate, synchedRecord);
 
-		if (candidate.getDemandDetail() != null)
-		{
-			// we do this independently of the type; the demand info might be needed by many records, not just by the "first" demand record
-			addOrRecplaceDemandDetail(candidate, synchedRecord);
-		}
+		addOrRecplaceDemandDetail(candidate, synchedRecord);
 
 		addOrReplaceTransactionDetail(candidate, synchedRecord);
 
-		return createNewCandidateWithIdsFromRecord(candidate, synchedRecord)
-				.withQuantity(qtyDelta);
+		return createNewCandidateWithIdsFromRecord(candidate, synchedRecord).withQuantity(qtyDelta);
 	}
 
 	/**
@@ -267,6 +243,12 @@ public class CandidateRepositoryWriteService
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
+		final ProductionDetail productionDetail = candidate.getProductionDetail();
+		if (productionDetail == null)
+		{
+			return;
+		}
+
 		final I_MD_Candidate_Prod_Detail detailRecordToUpdate;
 		final I_MD_Candidate_Prod_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Prod_Detail.class);
 		if (existingDetail == null)
@@ -278,7 +260,7 @@ public class CandidateRepositoryWriteService
 		{
 			detailRecordToUpdate = existingDetail;
 		}
-		final ProductionDetail productionDetail = candidate.getProductionDetail();
+
 		detailRecordToUpdate.setDescription(productionDetail.getDescription());
 		detailRecordToUpdate.setPP_Plant_ID(productionDetail.getPlantId());
 		detailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
@@ -294,6 +276,12 @@ public class CandidateRepositoryWriteService
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
+		final DistributionDetail distributionDetail = candidate.getDistributionDetail();
+		if (distributionDetail == null)
+		{
+			return;
+		}
+
 		final I_MD_Candidate_Dist_Detail detailRecordToUpdate;
 		final I_MD_Candidate_Dist_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Dist_Detail.class);
 		if (existingDetail == null)
@@ -305,7 +293,7 @@ public class CandidateRepositoryWriteService
 		{
 			detailRecordToUpdate = existingDetail;
 		}
-		final DistributionDetail distributionDetail = candidate.getDistributionDetail();
+
 		detailRecordToUpdate.setDD_NetworkDistributionLine_ID(distributionDetail.getNetworkDistributionLineId());
 		detailRecordToUpdate.setPP_Plant_ID(distributionDetail.getPlantId());
 		detailRecordToUpdate.setPP_Product_Planning_ID(distributionDetail.getProductPlanningId());

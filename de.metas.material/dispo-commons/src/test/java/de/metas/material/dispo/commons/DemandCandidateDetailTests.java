@@ -3,8 +3,6 @@ package de.metas.material.dispo.commons;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Optional;
-
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.DemandDetail;
@@ -21,12 +19,12 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,10 +34,9 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 public class DemandCandidateDetailTests
 {
 	@Test
-	public void createOrNull_when_empty_optional_then_null()
+	public void createOrNull_when_null_then_null()
 	{
-		final Optional<SupplyRequiredDescriptor> materialDemandDescr = Optional.empty();
-		assertThat(DemandDetail.createOrNull(materialDemandDescr)).isNull();
+		assertThat(DemandDetail.createOrNull(null)).isNull();
 	}
 
 	@Test
@@ -54,7 +51,7 @@ public class DemandCandidateDetailTests
 				.materialDescriptor(createMaterialDescriptor())
 				.build();
 
-		final DemandDetail demandCandidateDetail = DemandDetail.createOrNull(Optional.of(descriptor));
+		final DemandDetail demandCandidateDetail = DemandDetail.createOrNull(descriptor);
 		assertThat(demandCandidateDetail.getForecastLineId()).isEqualTo(1);
 		assertThat(demandCandidateDetail.getShipmentScheduleId()).isEqualTo(2);
 		assertThat(demandCandidateDetail.getOrderLineId()).isEqualTo(3);

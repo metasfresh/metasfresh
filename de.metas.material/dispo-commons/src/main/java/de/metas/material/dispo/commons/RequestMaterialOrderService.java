@@ -21,11 +21,11 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.ddorder.DDOrderLine.DDOrderLineBuilder;
-import de.metas.material.event.ddorder.DistributionRequestedEvent;
+import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.ProductionRequestedEvent;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import lombok.NonNull;
 
 /*
@@ -50,12 +50,12 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class CandidateService
+public class RequestMaterialOrderService
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
 	private final MaterialEventService materialEventService;
 
-	public CandidateService(
+	public RequestMaterialOrderService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final MaterialEventService materialEventService)
 	{
@@ -74,7 +74,7 @@ public class CandidateService
 		switch (group.get(0).getSubType())
 		{
 			case PRODUCTION:
-				requestProductionOrder(group);
+				createAndFireProductionRequestedEvent(group);
 				break;
 			case DISTRIBUTION:
 				requestDistributionOrder(group);
@@ -92,14 +92,14 @@ public class CandidateService
 	 * @return
 	 */
 
-	private void requestProductionOrder(@NonNull final List<Candidate> group)
+	private void createAndFireProductionRequestedEvent(@NonNull final List<Candidate> group)
 	{
-		final ProductionRequestedEvent ppOrderRequestEvent = createPPOrderRequestEvent(group);
+		final PPOrderRequestedEvent ppOrderRequestEvent = createProductionRequestedEvent(group);
 		materialEventService.fireEvent(ppOrderRequestEvent);
 	}
 
 	@VisibleForTesting
-	ProductionRequestedEvent createPPOrderRequestEvent(final List<Candidate> group)
+	PPOrderRequestedEvent createProductionRequestedEvent(final List<Candidate> group)
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
@@ -152,7 +152,7 @@ public class CandidateService
 
 		final Candidate firstGroupMember = group.get(0);
 
-		return ProductionRequestedEvent.builder()
+		return PPOrderRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.ppOrder(ppOrderBuilder.build())
 				.groupId(firstGroupMember.getEffectiveGroupId())
@@ -161,12 +161,12 @@ public class CandidateService
 
 	private void requestDistributionOrder(@NonNull final List<Candidate> group)
 	{
-		final DistributionRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group);
+		final DDOrderRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group);
 		materialEventService.fireEvent(ddOrderRequestEvent);
 	}
 
 	@VisibleForTesting
-	DistributionRequestedEvent createDDOrderRequestEvent(@NonNull final List<Candidate> group)
+	DDOrderRequestedEvent createDDOrderRequestEvent(@NonNull final List<Candidate> group)
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
@@ -213,7 +213,7 @@ public class CandidateService
 
 		final Candidate firstGroupMember = group.get(0);
 
-		return DistributionRequestedEvent.builder()
+		return DDOrderRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.ddOrder(ddOrderBuilder
 						.line(ddOrderLineBuilder

@@ -81,6 +81,13 @@ public class ClosePickingCandidateCommand
 		pickingCandidates.stream()
 				.filter(this::isEligible)
 				.forEach(this::close);
+
+		//
+		// Release the picking slots
+		pickingCandidates.stream()
+				.map(I_M_Picking_Candidate::getM_PickingSlot_ID)
+				.distinct()
+				.forEach(huPickingSlotBL::releasePickingSlotIfPossible);
 	}
 
 	private boolean isEligible(final I_M_Picking_Candidate pickingCandidate)

@@ -111,7 +111,7 @@ import lombok.NonNull;
 		if (asyncBatchSet)
 		{
 			workpackage.setC_Async_Batch(asyncBatch);
-			Services.get(IQueueDAO.class).saveInLocalTrx(asyncBatch);
+			Services.get(IQueueDAO.class).save(asyncBatch);
 		}
 
 		// Create workpackage parameters

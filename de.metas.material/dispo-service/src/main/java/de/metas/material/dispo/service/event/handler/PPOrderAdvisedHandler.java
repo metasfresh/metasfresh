@@ -2,7 +2,7 @@ package de.metas.material.dispo.service.event.handler;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.commons.CandidateService;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
@@ -14,8 +14,8 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.ProductionAdvisedEvent;
 import lombok.NonNull;
 
 /*
@@ -40,65 +40,67 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class ProductionAdvisedHandler
+public class PPOrderAdvisedHandler
 {
 	private final CandidateChangeService candidateChangeHandler;
-	private final CandidateService candidateService;
+	private final RequestMaterialOrderService requestMaterialOrderService;
 
 	/**
 	 *
 	 * @param candidateChangeHandler
 	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
 	 */
-	public ProductionAdvisedHandler(
+	public PPOrderAdvisedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final CandidateService candidateService)
+			@NonNull final RequestMaterialOrderService candidateService)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
-		this.candidateService = candidateService;
+		this.requestMaterialOrderService = candidateService;
 	}
 
-	public void handleProductionAdvisedEvent(final ProductionAdvisedEvent event)
+	public void handleProductionAdvisedEvent(final PPOrderAdvisedOrCreatedEvent productionAdvisedEvent)
 	{
-		final PPOrder ppOrder = event.getPpOrder();
+		final PPOrder ppOrder = productionAdvisedEvent.getPpOrder();
 
 		final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
 
-		final Candidate supplyCandidate = Candidate.builderForEventDescr(event.getEventDescriptor())
+		final DemandDetail demandDetailOrNull = DemandDetail.createOrNull(
+				productionAdvisedEvent.getSupplyRequiredDescriptor());
+
+		final Candidate supplyCandidate = Candidate.builderForEventDescr(productionAdvisedEvent.getEventDescriptor())
 				.type(CandidateType.SUPPLY)
 				.subType(CandidateSubType.PRODUCTION)
 				.status(candidateStatus)
 				.productionDetail(createProductionDetailForPPOrder(ppOrder))
-				.demandDetail(DemandDetail.forOrderLineIdOrNull(ppOrder.getOrderLineId()))
-				.materialDescriptor(createMAterialDescriptorFromPpOrder(ppOrder))
+				.demandDetail(demandDetailOrNull)
+				.materialDescriptor(createMaterialDescriptorFromPpOrder(ppOrder))
 				.build();
 
-		// this might cause 'candidateChangeHandler' to trigger another event
 		final Candidate candidateWithGroupId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 
 		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
 		{
-			final CandidateBuilder builder = Candidate.builderForEventDescr(event.getEventDescriptor())
+			final CandidateBuilder builder = Candidate.builderForEventDescr(productionAdvisedEvent.getEventDescriptor())
 					.type(ppOrderLine.isReceipt() ? CandidateType.SUPPLY : CandidateType.DEMAND)
 					.subType(CandidateSubType.PRODUCTION)
 					.status(candidateStatus)
 					.groupId(candidateWithGroupId.getGroupId())
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)
 					.materialDescriptor(createMaterialDescriptorForPpOrderAndLine(ppOrder, ppOrderLine))
-					.demandDetail(DemandDetail.forOrderLineIdOrNull(ppOrder.getOrderLineId()))
+					.demandDetail(demandDetailOrNull)
 					.productionDetail(createProductionDetailForPPOrderAndLine(ppOrder, ppOrderLine));
 
-			// might trigger further demand events
+			// in case of CandidateType.DEMAND this might trigger further demand events
 			candidateChangeHandler.onCandidateNewOrChange(builder.build());
 		}
 
 		if (ppOrder.isAdvisedToCreatePPOrder())
 		{
-			candidateService.requestMaterialOrder(candidateWithGroupId.getGroupId());
+			requestMaterialOrderService.requestMaterialOrder(candidateWithGroupId.getGroupId());
 		}
 	}
 
-	private static MaterialDescriptor createMAterialDescriptorFromPpOrder(final PPOrder ppOrder)
+	private static MaterialDescriptor createMaterialDescriptorFromPpOrder(final PPOrder ppOrder)
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.complete(true)
@@ -145,6 +147,7 @@ public class ProductionAdvisedHandler
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.ppOrderId(ppOrder.getPpOrderId())
 				.ppOrderDocStatus(ppOrder.getDocStatus())
+				.uomId(ppOrder.getUomId())
 				.build();
 		return productionCandidateDetail;
 	}
@@ -163,5 +166,4 @@ public class ProductionAdvisedHandler
 				.ppOrderLineId(ppOrderLine.getPpOrderLineId())
 				.build();
 	}
-
 }
