@@ -10,12 +10,12 @@ package de.metas.contracts.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -42,6 +43,7 @@ import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeDAO;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -64,19 +66,52 @@ public class ContractChangeBL implements IContractChangeBL
 {
 	private static final Logger logger = LogManager.getLogger(ContractChangeBL.class);
 
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+
+	public static final String MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT = "de.metas.contracts.isNotAllowedToTerminateCurrentContract";
+
 	@Override
 	public void cancelContract(@NonNull final I_C_Flatrate_Term currentTerm,
 			final @NonNull ContractChangeParameters contractChangeParameters)
 	{
 		final I_C_Flatrate_Term initialContract = Services.get(IFlatrateBL.class).getInitialFlatrateTerm(currentTerm);
-		if (initialContract == null)
+		if (initialContract == null || contractChangeParameters.isVoidSingleContract())
 		{
 			cancelContractIfNotCanceledAlready(currentTerm, contractChangeParameters);
+			unlinkContractIfNeeded(currentTerm, contractChangeParameters);
 		}
 		else
 		{
 			// start canceling with first ancestor
 			cancelContractIfNotCanceledAlready(initialContract, contractChangeParameters);
+		}
+	}
+
+	private void unlinkContractIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
+			final @NonNull ContractChangeParameters contractChangeParameters)
+	{
+		if (contractChangeParameters.isVoidSingleContract())
+		{
+			final I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(currentTerm);
+			if (ancestor != null)
+			{
+				ancestor.setC_FlatrateTerm_Next(null);
+				ancestor.setAD_PInstance_EndOfTerm(null);
+				setAncestorMasterEndDateWhenUnlinkContract(ancestor);
+				InterfaceWrapperHelper.save(ancestor);
+			}
+		}
+	}
+
+	private void setAncestorMasterEndDateWhenUnlinkContract(@NonNull final I_C_Flatrate_Term ancestor)
+	{
+		if (ancestor.isAutoRenew())
+		{
+			ancestor.setMasterEndDate(null);
+		}
+		else
+		{
+			ancestor.setMasterEndDate(ancestor.getEndDate());
 		}
 	}
 
@@ -106,21 +141,37 @@ public class ContractChangeBL implements IContractChangeBL
 			return;
 		}
 
+		if (isNotAllowedToTerminateCurrentContract(currentTerm, contractChangeParameters))
+		{
+			throw new AdempiereException(MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT,
+					new Object[] { currentTerm });
+		}
+
 		createCompesationOrderAndDeleteDeliveriesIfNeeded(currentTerm, contractChangeParameters);
 		setTerminatioReasonAndMemo(currentTerm, contractChangeParameters);
-		currentTerm.setMasterEndDate(computeMasterEndDate(currentTerm, contractChangeParameters.getChangeDate()));
+		setMasterDates(currentTerm, contractChangeParameters);
 		currentTerm.setIsCloseInvoiceCandidate(contractChangeParameters.isCloseInvoiceCandidate());
 		currentTerm.setIsAutoRenew(false);
-		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+		setContractStatus(currentTerm, contractChangeParameters);
+		setClosedDocStatusIfNeeded(currentTerm, contractChangeParameters);
 		InterfaceWrapperHelper.save(currentTerm);
 
 		cancelNextContractIfNeeded(currentTerm, contractChangeParameters);
 		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(currentTerm);
 	}
 
-	private boolean isCanceledContract(@NonNull final I_C_Flatrate_Term currentTerm)
+	@Override
+	public boolean isCanceledContract(@NonNull final I_C_Flatrate_Term currentTerm)
 	{
-		return X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(currentTerm.getContractStatus());
+		return X_C_Flatrate_Term.CONTRACTSTATUS_Quit.equals(currentTerm.getContractStatus())
+				|| X_C_Flatrate_Term.CONTRACTSTATUS_Voided.equals(currentTerm.getContractStatus());
+	}
+
+	private boolean isNotAllowedToTerminateCurrentContract(@NonNull final I_C_Flatrate_Term currentTerm,
+			@NonNull final ContractChangeParameters contractChangeParameters)
+	{
+		return contractChangeParameters.isVoidSingleContract() && currentTerm.getC_FlatrateTerm_Next_ID() > 0;
+
 	}
 
 	private void createCompesationOrderAndDeleteDeliveriesIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
@@ -141,7 +192,43 @@ public class ContractChangeBL implements IContractChangeBL
 			currentTerm.setEndDate(computeEndDate(currentTerm, changeDate));
 		}
 	}
-	
+
+	private void setMasterDates(@NonNull final I_C_Flatrate_Term currentTerm,
+			@NonNull final ContractChangeParameters contractChangeParameters)
+	{
+		if (contractChangeParameters.isVoidSingleContract())
+		{
+			currentTerm.setMasterStartDate(null);
+			currentTerm.setMasterEndDate(null);
+		}
+		else
+		{
+			currentTerm.setMasterEndDate(computeMasterEndDate(currentTerm, contractChangeParameters.getChangeDate()));
+		}
+	}
+
+	private void setContractStatus(@NonNull final I_C_Flatrate_Term currentTerm,
+			@NonNull final ContractChangeParameters contractChangeParameters)
+	{
+		if (contractChangeParameters.isVoidSingleContract())
+		{
+			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Voided);
+		}
+		else
+		{
+			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
+		}
+	}
+
+	private void setClosedDocStatusIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
+			@NonNull final ContractChangeParameters contractChangeParameters)
+	{
+		if (contractChangeParameters.isVoidSingleContract())
+		{
+			currentTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Closed);
+		}
+	}
+
 	private void cancelNextContractIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
 			@NonNull final ContractChangeParameters contractChangeParameters)
 	{
@@ -236,7 +323,7 @@ public class ContractChangeBL implements IContractChangeBL
 		final Timestamp changeDate = compensationOrderContext.getChangeDate();
 		final I_C_OrderLine oldOl = compensationOrderContext.isOrderCreated() ? compensationOrderContext.getCurrentTerm().getC_OrderLine_Term() : null;
 		final I_C_Order oldOrder = compensationOrderContext.isOrderCreated() ? oldOl.getC_Order() : null;
-		
+
 		BigDecimal surplusQty = BigDecimal.ZERO;
 		for (final I_C_SubscriptionProgress currentSP : sps)
 		{
@@ -258,8 +345,8 @@ public class ContractChangeBL implements IContractChangeBL
 			orderPA.reserveStock(oldOrder, oldOl);
 		}
 	}
-	
-	private BigDecimal deleteSubscriptionProgressAndComputeSurplusQty(@NonNull final I_C_SubscriptionProgress currentSP , BigDecimal surplusQty)
+
+	private BigDecimal deleteSubscriptionProgressAndComputeSurplusQty(@NonNull final I_C_SubscriptionProgress currentSP, BigDecimal surplusQty)
 	{
 		final String evtType = currentSP.getEventType();
 		final String status = currentSP.getStatus();
@@ -274,7 +361,7 @@ public class ContractChangeBL implements IContractChangeBL
 		{
 			InterfaceWrapperHelper.delete(currentSP);
 		}
-		
+
 		return surplusQty;
 	}
 

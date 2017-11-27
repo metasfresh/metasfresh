@@ -121,7 +121,9 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 		setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance);
 
-		inoutGenerateResult = generateInOuts(ctx, candidates, docActionNone, createPackingLines, manualPackingMaterial, ITrx.TRXNAME_ThreadInherited);
+		inoutGenerateResult = generateInOuts(ctx, candidates, docActionNone, createPackingLines, manualPackingMaterial,
+				true, //isShipmentDateToday:  if this is ever used, it should be on true to keep legacy
+				ITrx.TRXNAME_ThreadInherited);
 		Loggables.get().addLog("Generated " + inoutGenerateResult.toString());
 
 		return Result.SUCCESS;
@@ -163,6 +165,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 			final String processShipmentsDocAction,
 			final boolean createPackingLines,
 			final boolean manualPackingMaterial,
+			final boolean forceDateToday,
 			final String trxName)
 	{
 		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
@@ -174,7 +177,8 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipmentsDocAction(processShipmentsDocAction)
 				.setCreatePackingLines(createPackingLines)
-				.setManualPackingMaterial(manualPackingMaterial);
+				.setManualPackingMaterial(manualPackingMaterial)
+				.computeShipmentDate(forceDateToday);
 
 		//
 		// Create shipment producer batch executor

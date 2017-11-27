@@ -37,7 +37,7 @@ import org.eevolution.mrp.api.IMRPDAO;
 import org.springframework.stereotype.Service;
 
 import de.metas.document.IDocTypeDAO;
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.ddorder.DDOrderUtil;

@@ -61,6 +61,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.jmx.JMXPOJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -392,14 +393,14 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 				{
 					id = nextId(tableName);
 					wrapper.setId(id);
-					
+
 					wrapper.setValue("Updated", now);
 				}
 				if (hasChanges(model))
 				{
 					wrapper.setValue("Updated", now);
 				}
-				
+
 				Map<Integer, Object> tableRecords = cachedObjects.get(tableName);
 				if (tableRecords == null)
 				{
@@ -1074,7 +1075,19 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		Check.assume(selectionId > 0, "selectionId > 0");
 
 		final ImmutableSet<Integer> selectionSet = selection != null ? ImmutableSet.copyOf(selection) : ImmutableSet.of();
-		this.selectionId2selection.put(selectionId, selectionSet);
+
+		final ImmutableSet<Integer> existingSelectionSet = this.selectionId2selection.get(selectionId);
+		if (existingSelectionSet == null)
+		{
+			this.selectionId2selection.put(selectionId, selectionSet);
+		}
+		else
+		{
+			final ImmutableSet<Integer> combinedSelectionSet = ImmutableSet.<Integer> builder()
+					.addAll(existingSelectionSet)
+					.addAll(selectionSet).build();
+			this.selectionId2selection.put(selectionId, combinedSelectionSet);
+		}
 	}
 
 	public I_AD_PInstance createSelectionPInstance(final Properties ctx)
@@ -1134,7 +1147,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	{
 		return getSelectionIds(selectionId).contains(id);
 	}
-	
+
 	public Set<Integer> getSelectionIds(final int selectionId)
 	{
 		final Set<Integer> selection = selectionId2selection.get(selectionId);
@@ -1147,5 +1160,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	public POJOLookupMapRestorePoint createRestorePoint()
 	{
 		return new POJOLookupMapRestorePoint(this);
+	}
+
+	@Override
+	public void addImportInterceptor(String importTableName, IImportInterceptor listener)
+	{
+		// nothing
 	}
 }

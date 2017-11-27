@@ -25,12 +25,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.engine.IDocument;
-import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
-import de.metas.material.event.forecast.ForecastEvent;
+import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 
 /*
@@ -55,7 +56,9 @@ import de.metas.material.event.forecast.ForecastLine;
  * #L%
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
+@SpringBootTest(classes = { StartupListener.class,
+		ShutdownListener.class,
+		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class M_ForecastEventCreatorTest
 {
 	@Rule
@@ -104,7 +107,7 @@ public class M_ForecastEventCreatorTest
 			save(forecastLine2);
 		}
 
-		final ForecastEvent result = M_ForecastEventCreator.createEventWithLinesAndTiming(
+		final ForecastCreatedEvent result = M_ForecastEventCreator.createEventWithLinesAndTiming(
 				ImmutableList.of(forecastLine1, forecastLine2),
 				DocTimingType.AFTER_COMPLETE);
 		assertThat(result).isNotNull();

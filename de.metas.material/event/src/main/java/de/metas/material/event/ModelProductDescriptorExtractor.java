@@ -1,5 +1,7 @@
 package de.metas.material.event;
 
+import de.metas.material.event.commons.ProductDescriptor;
+
 /*
  * #%L
  * metasfresh-material-event

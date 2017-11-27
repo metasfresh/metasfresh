@@ -12,6 +12,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
@@ -22,9 +23,11 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
 import de.metas.StartupListener;
-import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.commons.ProductDescriptor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,11 +52,17 @@ import de.metas.material.event.ModelProductDescriptorExtractor;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
+@SpringBootTest(classes = { StartupListener.class,
+		ShutdownListener.class,
+		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class ProductDescriptorFromAttributeSetInstanceFactoryTest
 {
 	private static final int PRODUCT_ID = 20;
 	private ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory factory;
+
+	private I_M_AttributeValue attributeValue1;
+	private I_M_AttributeValue attributeValue2;
+	private I_M_AttributeValue attributeValue3;
 
 	@Before
 	public void init()
@@ -79,7 +88,7 @@ public class ProductDescriptorFromAttributeSetInstanceFactoryTest
 		assertThat(productDescriptor).isNotNull();
 		assertThat(productDescriptor.getProductId()).isEqualTo(20);
 		assertThat(productDescriptor.getAttributeSetInstanceId()).isEqualTo(AttributeConstants.M_AttributeSetInstance_ID_None);
-		assertThat(productDescriptor.getStorageAttributesKey()).isEqualTo(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED);
+		assertThat(productDescriptor.getStorageAttributesKey()).isEqualTo(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
 	}
 
 	@Test
@@ -110,7 +119,6 @@ public class ProductDescriptorFromAttributeSetInstanceFactoryTest
 		assertProductDescriptorMatchesProductAndASI(productDescriptor, asi);
 	}
 
-
 	@Test
 	public void createProductDescriptor_DD_OrderLine_with_ASI()
 	{
@@ -125,42 +133,54 @@ public class ProductDescriptorFromAttributeSetInstanceFactoryTest
 		assertProductDescriptorMatchesProductAndASI(productDescriptor, asi);
 	}
 
-	public void assertProductDescriptorMatchesProductAndASI(final ProductDescriptor productDescriptor, final I_M_AttributeSetInstance asi)
+	private void assertProductDescriptorMatchesProductAndASI(
+			@NonNull final ProductDescriptor productDescriptor,
+			@NonNull final I_M_AttributeSetInstance asi)
 	{
-		assertThat(productDescriptor).isNotNull();
 		assertThat(productDescriptor.getProductId()).isEqualTo(20);
 		assertThat(productDescriptor.getAttributeSetInstanceId()).isEqualTo(asi.getM_AttributeSetInstance_ID());
-		assertThat(productDescriptor.getStorageAttributesKey()).isEqualTo("value1" + ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER + "value3");
+
+		final String delimiter = ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER;
+
+		assertThat(productDescriptor.getStorageAttributesKey())
+				.isEqualTo(attributeValue1.getM_AttributeValue_ID() + delimiter + attributeValue3.getM_AttributeValue_ID());
 	}
 
-
-
-	public I_M_AttributeSetInstance createASI()
+	private I_M_AttributeSetInstance createASI()
 	{
 		final AttributesTestHelper attributesTestHelper = new AttributesTestHelper();
-		final I_M_Attribute attribut1 = attributesTestHelper.createM_Attribute("testAttrib1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
-		attribut1.setIsStorageRelevant(true);
-		save(attribut1);
 
-		final I_M_Attribute attribut2 = attributesTestHelper.createM_Attribute("testAttrib2", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
-		attribut2.setIsStorageRelevant(false);
-		save(attribut2);
+		final I_M_Attribute attribute1 = attributesTestHelper.createM_Attribute("testAttrib1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		attribute1.setIsStorageRelevant(true);
+		save(attribute1);
 
-		final I_M_Attribute attribut3 = attributesTestHelper.createM_Attribute("testAttrib3", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
-		attribut3.setIsStorageRelevant(true);
-		save(attribut3);
+		final I_M_Attribute attribute2 = attributesTestHelper.createM_Attribute("testAttrib2", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		attribute2.setIsStorageRelevant(false);
+		save(attribute2);
+
+		final I_M_Attribute attribute3 = attributesTestHelper.createM_Attribute("testAttrib3", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		attribute3.setIsStorageRelevant(true);
+		save(attribute3);
+
+		attributeValue1 = attributesTestHelper.createM_AttributeValue(attribute1, "value1");
+		attributeValue2 = attributesTestHelper.createM_AttributeValue(attribute2, "value2");
+		attributeValue3 = attributesTestHelper.createM_AttributeValue(attribute3, "value3");
 
 		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
 		save(asi);
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-		final I_M_AttributeInstance ai1 = attributeSetInstanceBL.getCreateAttributeInstance(asi, attribut1.getM_Attribute_ID());
+
+		final I_M_AttributeInstance ai1 = attributeSetInstanceBL.getCreateAttributeInstance(asi, attribute1.getM_Attribute_ID());
+		ai1.setM_AttributeValue(attributeValue1);
 		ai1.setValue("value1");
 		save(ai1);
-		final I_M_AttributeInstance ai2 = attributeSetInstanceBL.getCreateAttributeInstance(asi, attribut2.getM_Attribute_ID());
+		final I_M_AttributeInstance ai2 = attributeSetInstanceBL.getCreateAttributeInstance(asi, attribute2.getM_Attribute_ID());
+		ai2.setM_AttributeValue(attributeValue2);
 		ai2.setValue("value2");
 		save(ai2);
-		final I_M_AttributeInstance ai3 = attributeSetInstanceBL.getCreateAttributeInstance(asi, attribut3.getM_Attribute_ID());
+		final I_M_AttributeInstance ai3 = attributeSetInstanceBL.getCreateAttributeInstance(asi, attribute3.getM_Attribute_ID());
+		ai3.setM_AttributeValue(attributeValue3);
 		ai3.setValue("value3");
 		save(ai3);
 

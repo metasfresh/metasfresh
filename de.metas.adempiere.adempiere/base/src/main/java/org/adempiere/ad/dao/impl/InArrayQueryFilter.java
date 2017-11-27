@@ -13,15 +13,14 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +36,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.apache.ecs.xhtml.code;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
@@ -89,7 +89,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 		else
 		{
-			this.values = new ArrayList<Object>(values.length);
+			this.values = new ArrayList<>(values.length);
 			for (final Object v : values)
 			{
 				this.values.add(v);
@@ -124,7 +124,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		return "InArrayQueryFilter ["
 				+ (columnName != null ? "columnName=" + columnName + ", " : "")
 				+ "defaultReturnWhenEmpty=" + defaultReturnWhenEmpty
-				+ (values != null ? "values=" + values + ", " : "") // values last, to make this more readbale in case of *many* values
+				+ (values != null ? ", values=" + values : "") // values last, to make this more readable in case of *many* values
 				+ "]";
 	}
 
@@ -137,7 +137,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 * Sets default value to be returned when the "values" list is empty.
 	 *
 	 * @param defaultReturnWhenEmpty
-	 * @return 
+	 * @return
 	 */
 	public InArrayQueryFilter<T> setDefaultReturnWhenEmpty(boolean defaultReturnWhenEmpty)
 	{
@@ -185,6 +185,18 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		return sqlParams;
 	}
 
+	@VisibleForTesting
+	public String getColumnName()
+	{
+		return columnName;
+	}
+
+	@VisibleForTesting
+	public List<Object> getValuesOrNull()
+	{
+		return values;
+	}
+
 	private boolean sqlBuilt = false;
 	private String sqlWhereClause = null;
 	private List<Object> sqlParams = null;
@@ -201,7 +213,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 			sqlWhereClause = defaultReturnWhenEmpty ? SQL_TRUE : SQL_FALSE;
 			sqlParams = Collections.emptyList();
 		}
-		else if(values.size() == 1)
+		else if (values.size() == 1)
 		{
 			final Object value = values.get(0);
 			if (value == null)
@@ -217,7 +229,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 		else
 		{
-			final List<Object> sqlParamsBuilt = new ArrayList<Object>(values.size());
+			final List<Object> sqlParamsBuilt = new ArrayList<>(values.size());
 			final StringBuilder sqlWhereClauseBuilt = new StringBuilder();
 			boolean hasNullValues = false;
 			boolean hasNonNullValues = false;

@@ -321,6 +321,8 @@ public interface IHUQueryBuilder
 	 */
 	IHUQueryBuilder addHUStatusToExclude(String huStatus);
 
+	IHUQueryBuilder addHUStatusesToExclude(Collection<String> huStatuses);
+
 	/**
 	 * Filter only those HUs which have <code>attribute</code> with given <code>value</code>.
 	 *

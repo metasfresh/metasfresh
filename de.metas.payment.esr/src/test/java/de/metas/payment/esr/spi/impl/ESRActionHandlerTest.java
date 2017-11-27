@@ -35,7 +35,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
 
-import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
@@ -48,7 +47,6 @@ import org.compiere.model.I_C_Payment;
 import org.junit.Test;
 
 import de.metas.payment.esr.ESRTestBase;
-import de.metas.payment.esr.ESRTestUtil;
 import de.metas.payment.esr.actionhandler.impl.DunningESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.MoneyTransferedBackESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.UnableToAssignESRActionHandler;
@@ -73,8 +71,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 
 		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
 
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		esrImportBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport);
 
 		refresh(esrImportLine, true);
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Keep_For_Dunning);
@@ -82,7 +79,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 
 		// We need to register the action handler
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Keep_For_Dunning, new DunningESRActionHandler());
-		esrImportBL.complete(esrImport, "", trxRunConfig);
+		esrImportBL.complete(esrImport, "");
 
 		refresh(esrImport, true);
 		refresh(esrImportLine, true);
@@ -103,15 +100,14 @@ public class ESRActionHandlerTest extends ESRTestBase
 
 		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
 
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		esrImportBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport);
 
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
 
 		save(esrImportLine);// We need to register the action handler
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income, new UnableToAssignESRActionHandler());
 
-		esrImportBL.complete(esrImport, "", trxRunConfig);
+		esrImportBL.complete(esrImport, "");
 
 		refresh(esrImport, true);
 		refresh(esrImportLine, true);
@@ -127,23 +123,22 @@ public class ESRActionHandlerTest extends ESRTestBase
 	public void testMoneyTransferedBackESRAction()
 	{
 		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(
-				"000120686", /*invoice doc number*/
-				"10" /* invoice grandtotal */,  
-				false, /*isInvoicePaid*/
-				"000000010501536417000120686", /*complete ESR reference*/
-				"536417000120686", /*invoice reference*/
-				"01-059931-0", /*ESR account number*/
-				"15364170", 
-				"40", /* esr transaction amount*/
-				false /*createAllocation*/);
+				"000120686", /* invoice doc number */
+				"10" /* invoice grandtotal */,
+				false, /* isInvoicePaid */
+				"000000010501536417000120686", /* complete ESR reference */
+				"536417000120686", /* invoice reference */
+				"01-059931-0", /* ESR account number */
+				"15364170",
+				"40", /* esr transaction amount */
+				false /* createAllocation */);
 
 		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
 		assertThat(esrImportLine.getC_Invoice(), notNullValue());
 		assertThat(esrImportLine.getC_Invoice().getGrandTotal(), comparesEqualTo(new BigDecimal("10"))); // guard
 
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		esrImportBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport);
 
 		assertThat("Expecting one payment after esrImportBL.process()", POJOLookupMap.get().getRecords(I_C_Payment.class).size(), is(1));
 
@@ -152,7 +147,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 
 		// We need to register the action handler
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, new MoneyTransferedBackESRActionHandler());
-		esrImportBL.complete(esrImport, "", trxRunConfig);
+		esrImportBL.complete(esrImport, "");
 
 		refresh(esrImport, true);
 		refresh(esrImportLine, true);
@@ -203,8 +198,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 
 		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
 
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		esrImportBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport);
 
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount);
 
@@ -215,7 +209,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 
 		// We need to register the action handler
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount, new WriteoffESRActionHandler());
-		esrImportBL.complete(esrImport, "", trxRunConfig);
+		esrImportBL.complete(esrImport, "");
 
 		refresh(esrImport, true);
 		refresh(esrImportLine, true);

@@ -35,7 +35,7 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.eevolution.event.MaterialDocumentListener;
+import org.eevolution.event.MaterialDispoEventListenerFacade;
 import org.eevolution.mrp.jmx.JMXMRPStatus;
 
 import de.metas.material.event.MaterialEventService;
@@ -144,7 +144,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		}
 
 		// register ourselves as listeners so we can respond to requests from the disposition framework
-		final MaterialDocumentListener materialDocumentListener = Adempiere.getBean(MaterialDocumentListener.class);
+		final MaterialDispoEventListenerFacade materialDocumentListener = Adempiere.getBean(MaterialDispoEventListenerFacade.class);
 		materialEventService.registerListener(materialDocumentListener);
 	}
 }	// LiberoValidator

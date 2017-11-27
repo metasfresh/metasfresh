@@ -129,8 +129,8 @@ public class SubscriptionBL implements ISubscriptionBL
 		newTerm.setPlannedQtyPerUnit(ol.getQtyEntered());
 		newTerm.setC_UOM_ID(ol.getPrice_UOM_ID());
 
-		newTerm.setStartDate(order.getDateOrdered());
-		newTerm.setMasterStartDate(order.getDateOrdered());
+		newTerm.setStartDate(order.getDatePromised());
+		newTerm.setMasterStartDate(order.getDatePromised());
 
 		newTerm.setDeliveryRule(order.getDeliveryRule());
 		newTerm.setDeliveryViaRule(order.getDeliveryViaRule());

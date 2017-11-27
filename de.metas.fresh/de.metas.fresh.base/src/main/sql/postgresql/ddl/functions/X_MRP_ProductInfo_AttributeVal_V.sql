@@ -18,8 +18,6 @@ CREATE OR REPLACE FUNCTION x_mrp_productinfo_attributeval_v(IN dateat date, IN M
 	  	qtyordered_ondate numeric,
 	  	qtymaterialentnahme numeric,
 	  	fresh_qtyonhand_ondate numeric,
-	  	"sp80_qtyonhand_ondate_stö2" numeric,
-	  	sp80_qtyonhand_ondate_ind9 numeric,
 	  	fresh_qtypromised numeric,
 	  	fresh_qtymrp numeric
   	) AS

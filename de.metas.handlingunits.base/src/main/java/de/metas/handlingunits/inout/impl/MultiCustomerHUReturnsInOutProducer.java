@@ -49,12 +49,12 @@ import de.metas.inout.event.ReturnInOutProcessedEventBus;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -64,7 +64,7 @@ import de.metas.inout.event.ReturnInOutProcessedEventBus;
 /**
  * Note: For the time being ( task #1306) there is no requirement to have returns from customer created for more than 1 customer at the same time.
  * But nevertheless, I am writing the implementation similar with the Vendor Return part, to have them structured and to allow the possibility to perform the return from customer also from a POS.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -110,8 +110,7 @@ public class MultiCustomerHUReturnsInOutProducer
 		{
 			// activate hu's children
 			{
-
-				final Set<I_M_HU> childHUs = new HashSet<I_M_HU>();
+				final Set<I_M_HU> childHUs = new HashSet<>();
 
 				{
 					final List<I_M_HU_Item> huItems = handlingUnitsDAO.retrieveItems(hu);

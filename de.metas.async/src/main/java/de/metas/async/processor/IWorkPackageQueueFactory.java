@@ -26,6 +26,7 @@ package de.metas.async.processor;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.util.Env;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Processor;
@@ -49,7 +50,15 @@ public interface IWorkPackageQueueFactory extends ISingletonService
 	 * @return a queue for the given work package processor (as specified by its class)
 	 */
 	IWorkPackageQueue getQueueForEnqueuing(Properties ctx, Class<? extends IWorkpackageProcessor> packageProcessorClass);
-	
+
+	/**
+	 * @return a queue for the given work package processor (as specified by its class)
+	 */
+	default IWorkPackageQueue getQueueForEnqueuing(final Class<? extends IWorkpackageProcessor> packageProcessorClass)
+	{
+		return getQueueForEnqueuing(Env.getCtx(), packageProcessorClass);
+	}
+
 
 	/**
 	 * Return a queue instance for a particular <b>work package processor</b>, in order to create new work-packages for it.

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.util.collections.PagedIterator.Page;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -43,14 +44,14 @@ public class PagedIteratorTests
 				.firstRow(0)
 				.maxRows(55)
 				.pageSize(10)
-				.pageFetcher((firstRow, pageSize) -> generateStringRange(firstRow, pageSize))
+				.pageFetcher((firstRow, pageSize) -> generatePage(firstRow, pageSize))
 				.build();
 
 		final List<String> listActual = IteratorUtils.asList(it);
 		// System.out.println(listActual);
 
 		assertThat(listActual).hasSize(55);
-		assertThat(listActual).isEqualTo(generateStringRange(0, 55));
+		assertThat(listActual).isEqualTo(generatePage(0, 55).getRows());
 	}
 
 	@Test
@@ -60,14 +61,14 @@ public class PagedIteratorTests
 				.firstRow(13)
 				.maxRows(55)
 				.pageSize(10)
-				.pageFetcher((firstRow, pageSize) -> generateStringRange(firstRow, pageSize))
+				.pageFetcher((firstRow, pageSize) -> generatePage(firstRow, pageSize))
 				.build();
 
 		final List<String> listActual = IteratorUtils.asList(it);
 		// System.out.println(listActual);
 
 		assertThat(listActual).hasSize(55);
-		assertThat(listActual).isEqualTo(generateStringRange(13, 55));
+		assertThat(listActual).isEqualTo(generatePage(13, 55).getRows());
 	}
 
 	@Test
@@ -79,7 +80,7 @@ public class PagedIteratorTests
 				.maxRows(57)
 				.pageSize(10)
 				.pageFetcher((firstRow, pageSize) -> {
-					final PageFetcherCall call = generateStringRangeCall(firstRow, pageSize);
+					final PageFetcherCall call = generatePageFetcherCall(firstRow, pageSize);
 					pageFetcherCalls.add(call);
 					return call.getReturnValue();
 				})
@@ -90,14 +91,14 @@ public class PagedIteratorTests
 		// System.out.println("size=" + listActual.size());
 		// pageFetcherCalls.forEach(System.out::println);
 
-		assertThat(listActual).isEqualTo(generateStringRange(0, 57));
+		assertThat(listActual).isEqualTo(generatePage(0, 57).getRows());
 		assertThat(pageFetcherCalls).isEqualTo(ImmutableList.of(
-				generateStringRangeCall(0, 10),
-				generateStringRangeCall(10, 10),
-				generateStringRangeCall(20, 10),
-				generateStringRangeCall(30, 10),
-				generateStringRangeCall(40, 10),
-				generateStringRangeCall(50, 7)));
+				generatePageFetcherCall(0, 10),
+				generatePageFetcherCall(10, 10),
+				generatePageFetcherCall(20, 10),
+				generatePageFetcherCall(30, 10),
+				generatePageFetcherCall(40, 10),
+				generatePageFetcherCall(50, 7)));
 	}
 
 	@Test
@@ -109,7 +110,7 @@ public class PagedIteratorTests
 				.maxRows(55)
 				.pageSize(10)
 				.pageFetcher((firstRow, pageSize) -> {
-					final PageFetcherCall call = generateStringRangeCall(firstRow, pageSize);
+					final PageFetcherCall call = generatePageFetcherCall(firstRow, pageSize);
 					pageFetcherCalls.add(call);
 					return call.getReturnValue();
 				})
@@ -120,24 +121,14 @@ public class PagedIteratorTests
 		// System.out.println("size=" + listActual.size());
 		// pageFetcherCalls.forEach(System.out::println);
 
-		assertThat(listActual).isEqualTo(generateStringRange(13, 55));
+		assertThat(listActual).isEqualTo(generatePage(13, 55).getRows());
 		assertThat(pageFetcherCalls).isEqualTo(ImmutableList.of(
-				generateStringRangeCall(13, 10),
-				generateStringRangeCall(23, 10),
-				generateStringRangeCall(33, 10),
-				generateStringRangeCall(43, 10),
-				generateStringRangeCall(53, 10),
-				generateStringRangeCall(63, 5)));
-	}
-
-	@Test
-	public void pageFetcherReturnsEmpty()
-	{
-		final PagedIterator<String> it = PagedIterator.<String> builder()
-				.pageSize(10)
-				.pageFetcher((firstRow, pageSize) -> ImmutableList.of())
-				.build();
-		assertThat(it).isEmpty();
+				generatePageFetcherCall(13, 10),
+				generatePageFetcherCall(23, 10),
+				generatePageFetcherCall(33, 10),
+				generatePageFetcherCall(43, 10),
+				generatePageFetcherCall(53, 10),
+				generatePageFetcherCall(63, 5)));
 	}
 
 	@Test
@@ -150,7 +141,7 @@ public class PagedIteratorTests
 		assertThat(it).isEmpty();
 	}
 
-	private final List<String> generateStringRange(final int firstRow, final int pageSize)
+	private final Page<String> generatePage(final int firstRow, final int pageSize)
 	{
 		final List<String> rows = new ArrayList<>();
 		int row = firstRow;
@@ -160,15 +151,15 @@ public class PagedIteratorTests
 			row++;
 		}
 
-		return rows;
+		return Page.ofRows(rows);
 	}
 
-	private final PageFetcherCall generateStringRangeCall(final int firstRow, final int pageSize)
+	private final PageFetcherCall generatePageFetcherCall(final int firstRow, final int pageSize)
 	{
 		return PageFetcherCall.builder()
 				.firstRow(firstRow)
 				.pageSize(pageSize)
-				.returnValue(generateStringRange(firstRow, pageSize))
+				.returnValue(generatePage(firstRow, pageSize))
 				.build();
 	}
 
@@ -178,6 +169,6 @@ public class PagedIteratorTests
 	{
 		int firstRow;
 		int pageSize;
-		List<String> returnValue;
+		Page<String> returnValue;
 	}
 }

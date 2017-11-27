@@ -7,7 +7,7 @@ The components are:
   * contains event-pojos
   * events are currently send via the metasfresh distributed event framework (using JMS)
   
-* common
+* commons
   * depends on event
   
 * service(standalone)
@@ -20,6 +20,10 @@ The components are:
   * gets an demand event from SERVICE, sends back a recomendation
   * depends on event, libero
 
+
+* client
+  * offers a richer interface (e.g. with UOM) to callers. Supposed to be *external* to the standalone service.
+  * depends on commons
 
 ## Candidate records
 
@@ -34,6 +38,8 @@ Candidates have different types:
 * `demand`
 * `supply`
 * `stock-up`
+* `unrelated descrease`
+* `unrelated increase`
 
 In addition to its type, the most notable properties of a candidate are
 * date: the (future) time to which the given record relates
@@ -87,6 +93,9 @@ The similariy is that the system will fire a "material demand event" if the stoc
 
 However, the stock-up quantity is not subtracted from the projected quantity.
 
+### `unrelated descrease` and `unrelated increase` candidate
+
+These types are used if the material service is notified about transaction (i.e. `M_Transaction`s) which it did not initiate and "didn't not know about".
 
 ## Sample workflow
 
