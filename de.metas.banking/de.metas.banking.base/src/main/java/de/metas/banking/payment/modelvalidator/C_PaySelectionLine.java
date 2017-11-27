@@ -36,9 +36,9 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.interfaces.I_C_BankStatementLine;
+import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaymentRequestBL;
-import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.model.I_C_Payment_Request;
 
 @Interceptor(I_C_PaySelectionLine.class)

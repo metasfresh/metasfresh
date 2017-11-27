@@ -2,11 +2,13 @@ package de.metas.material.dispo.commons.repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
@@ -49,7 +51,7 @@ public class MaterialQuery
 				.build();
 	}
 
-	int warehouseId;
+	Set<Integer> warehouseIds;
 
 	@NonNull
 	Date date;
@@ -60,14 +62,14 @@ public class MaterialQuery
 
 	@Builder
 	private MaterialQuery(
-			final int warehouseId,
+			@Singular final Set<Integer> warehouseIds,
 			final Date date,
 			@Singular final List<Integer> productIds,
 			@Singular final List<String> storageAttributesKeys)
 	{
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
-		this.warehouseId = warehouseId > 0 ? warehouseId : -1;
+		this.warehouseIds = warehouseIds == null || warehouseIds.isEmpty() ? ImmutableSet.of() : ImmutableSet.copyOf(warehouseIds);
 		this.date = date != null ? date : SystemTime.asDate();
 		this.productIds = ImmutableList.copyOf(productIds);
 		this.storageAttributesKeys = storageAttributesKeys;
@@ -75,6 +77,6 @@ public class MaterialQuery
 
 	public MaterialQuery withDate(@NonNull final Date newDate)
 	{
-		return new MaterialQuery(warehouseId, newDate, productIds, storageAttributesKeys);
+		return new MaterialQuery(warehouseIds, newDate, productIds, storageAttributesKeys);
 	}
 }

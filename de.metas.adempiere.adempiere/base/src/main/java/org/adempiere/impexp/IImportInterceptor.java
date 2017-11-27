@@ -33,7 +33,7 @@ package org.adempiere.impexp;
  * 			<li>FR [ 2788276 ] Data Import Validator
  * 				https://sourceforge.net/tracker/?func=detail&aid=2788276&group_id=176962&atid=879335
  */
-public interface IImportValidator
+public interface IImportInterceptor
 {
 	/** Event triggered before all import records are validated */
 	public static final int TIMING_BEFORE_VALIDATE = 10;
@@ -44,5 +44,5 @@ public interface IImportValidator
 	/** Event triggered after an import record is processed */
 	public static final int TIMING_AFTER_IMPORT = 40;
 	
-	public void validate(IImportProcess<?> process, Object importModel, Object targetModel, int timing);
+	public void onImport(IImportProcess<?> process, Object importModel, Object targetModel, int timing);
 }

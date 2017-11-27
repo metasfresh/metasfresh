@@ -113,7 +113,7 @@ public class StockRepositoryTest
 		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = new StockRepository().createDBQueryForMaterialQuery(query);
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
-		assertThat(dbFilter).hasEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID, WAREHOUSE_ID);
+		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID, WAREHOUSE_ID);
 
 		final ICompositeQueryFilter includedCompositeOrFilter = extractSingleFilter(dbFilter, ICompositeQueryFilter.class);
 		assertThat(includedCompositeOrFilter).isJoinOr();
