@@ -31,7 +31,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.MBOM;
 import org.compiere.model.MBOMProduct;
 import org.compiere.model.MProduct;
-import org.compiere.model.MProductBOM;
 import org.eevolution.model.I_PP_Product_BOM;
 
 import de.metas.process.IProcessPrecondition;
@@ -167,16 +166,8 @@ public class BOMValidate extends JavaProcess implements IProcessPrecondition
 		}
 		m_product = product;
 
-		// Check Old Product BOM Structure
-		m_products = new ArrayList<>();
-		if (!validateOldProduct(m_product))
-		{
-			saveVerifiedProduct(m_product, false);
-			return m_product.getName() + " @NotValid@";
-		}
-
 		// New Structure
-		MBOM[] boms = MBOM.getOfProduct(getCtx(), p_M_Product_ID, get_TrxName(), null);
+		final MBOM[] boms = MBOM.getOfProduct(getCtx(), p_M_Product_ID, get_TrxName(), null);
 		for (int i = 0; i < boms.length; i++)
 		{
 			m_products = new ArrayList<>();
@@ -192,33 +183,6 @@ public class BOMValidate extends JavaProcess implements IProcessPrecondition
 		return m_product.getName() + " @IsValid@";
 	}	// validateProduct
 
-	/**
-	 * Validate Old BOM Product structure
-	 *
-	 * @param product product
-	 * @return true if valid
-	 */
-	private boolean validateOldProduct(@NonNull final I_M_Product product)
-	{
-		if (!product.isBOM() || m_products.contains(product))
-		{
-			return true;
-		}
-
-		m_products.add(product);
-
-		final MProductBOM[] productsBOMs = MProductBOM.getBOMLines(InterfaceWrapperHelper.getPO(product));
-		for (int i = 0; i < productsBOMs.length; i++)
-		{
-			MProductBOM productsBOM = productsBOMs[i];
-			final I_M_Product pp = InterfaceWrapperHelper.create(getCtx(), productsBOM.getM_ProductBOM_ID(), I_M_Product.class, get_TrxName());
-			if (pp.isBOM() && !validateOldProduct(pp))
-			{
-				return false;
-			}
-		}
-		return true;
-	}
 
 	private void saveVerifiedProduct(@NonNull final I_M_Product product, final boolean isVerified)
 	{
