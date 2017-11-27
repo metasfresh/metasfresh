@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -30,7 +14,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 139912957L;
+	private static final long serialVersionUID = -1708192350L;
 
     /** Standard Constructor */
     public X_C_BP_BankAccount (Properties ctx, int C_BP_BankAccount_ID, String trxName)
@@ -39,11 +23,10 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
       /** if (C_BP_BankAccount_ID == 0)
         {
 			setA_Name (null);
-			setC_BPartner_ID (0);
 			setC_BP_BankAccount_ID (0);
+			setC_BPartner_ID (0);
 			setC_Currency_ID (0);
-			setIsACH (true);
-// Y
+			setIsACH (true); // Y
         } */
     }
 
@@ -53,49 +36,14 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_C_BP_BankAccount[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** Set Konto-Nr..
-		@param AccountNo 
-		Account Number
-	  */
-	@Override
-	public void setAccountNo (java.lang.String AccountNo)
-	{
-		set_Value (COLUMNNAME_AccountNo, AccountNo);
-	}
-
-	/** Get Konto-Nr..
-		@return Account Number
-	  */
-	@Override
-	public java.lang.String getAccountNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_AccountNo);
-	}
 
 	/** Set Ort.
 		@param A_City 
@@ -133,43 +81,6 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	public java.lang.String getA_Country () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_A_Country);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
-	}
-
-	/** Set Ansprechpartner.
-		@param AD_User_ID 
-		User within the system - Internal or Business Partner Contact
-	  */
-	@Override
-	public void setAD_User_ID (int AD_User_ID)
-	{
-		if (AD_User_ID < 1) 
-			set_Value (COLUMNNAME_AD_User_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
-	}
-
-	/** Get Ansprechpartner.
-		@return User within the system - Internal or Business Partner Contact
-	  */
-	@Override
-	public int getAD_User_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	/** Set EMail.
@@ -248,14 +159,6 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 		return (java.lang.String)get_Value(COLUMNNAME_A_Name);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return new org.compiere.util.KeyNamePair(get_ID(), getA_Name());
-    }
-
 	/** Set Bundesstaat / -land.
 		@param A_State 
 		State of the Credit Card or Account holder
@@ -311,6 +214,62 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	public java.lang.String getA_Zip () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_A_Zip);
+	}
+
+	/** Set Konto-Nr..
+		@param AccountNo 
+		Account Number
+	  */
+	@Override
+	public void setAccountNo (java.lang.String AccountNo)
+	{
+		set_Value (COLUMNNAME_AccountNo, AccountNo);
+	}
+
+	/** Get Konto-Nr..
+		@return Account Number
+	  */
+	@Override
+	public java.lang.String getAccountNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AccountNo);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setAD_User(org.compiere.model.I_AD_User AD_User)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
+	}
+
+	/** Set Ansprechpartner.
+		@param AD_User_ID 
+		User within the system - Internal or Business Partner Contact
+	  */
+	@Override
+	public void setAD_User_ID (int AD_User_ID)
+	{
+		if (AD_User_ID < 0) 
+			set_Value (COLUMNNAME_AD_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+	}
+
+	/** Get Ansprechpartner.
+		@return User within the system - Internal or Business Partner Contact
+	  */
+	@Override
+	public int getAD_User_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** 
@@ -414,6 +373,31 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 		return ii.intValue();
 	}
 
+	/** Set Bankverbindung.
+		@param C_BP_BankAccount_ID 
+		Bank Account of the Business Partner
+	  */
+	@Override
+	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
+	{
+		if (C_BP_BankAccount_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
+	}
+
+	/** Get Bankverbindung.
+		@return Bank Account of the Business Partner
+	  */
+	@Override
+	public int getC_BP_BankAccount_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
 	{
@@ -446,31 +430,6 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Bankverbindung.
-		@param C_BP_BankAccount_ID 
-		Bank Account of the Business Partner
-	  */
-	@Override
-	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
-	{
-		if (C_BP_BankAccount_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
-	}
-
-	/** Get Bankverbindung.
-		@return Bank Account of the Business Partner
-	  */
-	@Override
-	public int getC_BP_BankAccount_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -585,8 +544,8 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	public static final String CREDITCARDTYPE_Amex = "A";
 	/** MasterCard = M */
 	public static final String CREDITCARDTYPE_MasterCard = "M";
-	/** VISA = V */
-	public static final String CREDITCARDTYPE_VISA = "V";
+	/** Visa = V */
+	public static final String CREDITCARDTYPE_Visa = "V";
 	/** ATM = C */
 	public static final String CREDITCARDTYPE_ATM = "C";
 	/** Diners = D */
@@ -650,6 +609,25 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set IBAN.
+		@param IBAN 
+		International Bank Account Number
+	  */
+	@Override
+	public void setIBAN (java.lang.String IBAN)
+	{
+		set_Value (COLUMNNAME_IBAN, IBAN);
+	}
+
+	/** Get IBAN.
+		@return International Bank Account Number
+	  */
+	@Override
+	public java.lang.String getIBAN () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_IBAN);
+	}
+
 	/** Set ACH.
 		@param IsACH 
 		Automatic Clearing House
@@ -681,12 +659,12 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	 * Reference name: C_Payment AVS
 	 */
 	public static final int R_AVSADDR_AD_Reference_ID=213;
-	/** Zuordnung = Y */
-	public static final String R_AVSADDR_Zuordnung = "Y";
-	/** Keine Zuordnung = N */
-	public static final String R_AVSADDR_KeineZuordnung = "N";
-	/** Nicht verfügbar = X */
-	public static final String R_AVSADDR_NichtVerfuegbar = "X";
+	/** Match = Y */
+	public static final String R_AVSADDR_Match = "Y";
+	/** NoMatch = N */
+	public static final String R_AVSADDR_NoMatch = "N";
+	/** Unavailable = X */
+	public static final String R_AVSADDR_Unavailable = "X";
 	/** Set Addresse verifiziert.
 		@param R_AvsAddr 
 		This address has been verified
@@ -712,12 +690,12 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	 * Reference name: C_Payment AVS
 	 */
 	public static final int R_AVSZIP_AD_Reference_ID=213;
-	/** Zuordnung = Y */
-	public static final String R_AVSZIP_Zuordnung = "Y";
-	/** Keine Zuordnung = N */
-	public static final String R_AVSZIP_KeineZuordnung = "N";
-	/** Nicht verfügbar = X */
-	public static final String R_AVSZIP_NichtVerfuegbar = "X";
+	/** Match = Y */
+	public static final String R_AVSZIP_Match = "Y";
+	/** NoMatch = N */
+	public static final String R_AVSZIP_NoMatch = "N";
+	/** Unavailable = X */
+	public static final String R_AVSZIP_Unavailable = "X";
 	/** Set Postleitzahl verifiziert.
 		@param R_AvsZip 
 		The Zip Code has been verified

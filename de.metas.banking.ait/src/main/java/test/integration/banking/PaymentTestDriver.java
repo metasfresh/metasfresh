@@ -10,12 +10,12 @@ package test.integration.banking;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -55,10 +55,10 @@ import de.metas.adempiere.ait.test.IntegrationTestRunner;
 import de.metas.adempiere.ait.test.annotation.IntegrationTest;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.document.engine.IDocument;
-import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.JavaProcess;
 import test.integration.swat.sales.SalesTestDriver;
@@ -166,10 +166,10 @@ public class PaymentTestDriver extends AIntegrationTestDriver
 				.refreshAllRows();
 
 		final I_C_Payment paymentGrid = InterfaceWrapperHelper.create(window.getGridTab(), I_C_Payment.class);
-		
+
 		//
 		paymentGrid.setPayAmt(BigDecimal.valueOf(90));
-		
+
 		InterfaceWrapperHelper.save(paymentGrid);
 		window.refreshAllRows();
 		assertThat(paymentGrid.getWriteOffAmt(), comparesEqualTo(invoice.getGrandTotal().subtract(BigDecimal.valueOf(90))));
@@ -457,7 +457,7 @@ public class PaymentTestDriver extends AIntegrationTestDriver
 		InterfaceWrapperHelper.refresh(payment);
 		Assert.assertTrue("Payment is not allocateded: " + payment, payment.isAllocated());
 
-		final Map<Integer, I_C_Invoice> invoicesMap = new HashMap<Integer, I_C_Invoice>();
+		final Map<Integer, I_C_Invoice> invoicesMap = new HashMap<>();
 		for (I_C_Invoice invoice : invoices)
 		{
 			Assert.assertNotNull(invoice);
@@ -465,7 +465,7 @@ public class PaymentTestDriver extends AIntegrationTestDriver
 			invoicesMap.put(invoice.getC_Invoice_ID(), invoice);
 		}
 
-		final Map<Integer, I_C_Invoice> unallocatedInvoices = new HashMap<Integer, I_C_Invoice>(invoicesMap);
+		final Map<Integer, I_C_Invoice> unallocatedInvoices = new HashMap<>(invoicesMap);
 		final List<I_C_AllocationLine> allocationLines = fetchAllocationLines(payment);
 		for (I_C_AllocationLine allocationLine : allocationLines)
 		{
