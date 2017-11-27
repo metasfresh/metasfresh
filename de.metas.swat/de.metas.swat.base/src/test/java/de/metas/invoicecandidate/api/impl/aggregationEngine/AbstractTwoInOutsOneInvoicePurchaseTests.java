@@ -61,12 +61,6 @@ public abstract class AbstractTwoInOutsOneInvoicePurchaseTests extends AbstractT
 	}
 
 	@Override
-	protected final boolean config_IsAllowConsolidateInvoice()
-	{
-		return true;
-	}
-
-	@Override
 	protected void step_validate_after_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines, final List<IInvoiceHeader> invoices)
 	{
 		// config-guard

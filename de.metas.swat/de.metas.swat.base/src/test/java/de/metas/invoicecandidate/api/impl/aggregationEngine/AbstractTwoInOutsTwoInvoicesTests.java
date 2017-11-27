@@ -26,9 +26,5 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
 public abstract class AbstractTwoInOutsTwoInvoicesTests extends AbstractTwoInOutsTests
 {
-	@Override
-	protected final boolean config_IsAllowConsolidateInvoice()
-	{
-		return false;
-	}
+
 }

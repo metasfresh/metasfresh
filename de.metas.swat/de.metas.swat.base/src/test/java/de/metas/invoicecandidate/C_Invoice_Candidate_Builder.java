@@ -140,13 +140,12 @@ public class C_Invoice_Candidate_Builder
 		ic.setC_Currency(test.currencyConversionBL.getBaseCurrency(ctx));
 		ic.setDiscount(BigDecimal.valueOf(discount));
 		ic.setQtyOrdered(qty);
-		ic.setQtyToInvoice(Env.ZERO); // to be computed
+		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 		ic.setQtyToInvoice_Override(null); // no override
 		ic.setC_ILCandHandler(test.plainHandler);
 		ic.setIsManual(isManual);
 		ic.setPriceEntered(BigDecimal.valueOf(priceEntered));
 		ic.setPriceEntered_Override(priceEntered_Override);
-		// ic.setAllowConsolidateInvoice(allowConsolidateInvoice);
 
 		Check.errorIf(isSOTrx == null, "this builder={} needs isSOTrx to be set before it is able to build an IC", this); // avoid autoboxing-NPE
 		ic.setIsSOTrx(isSOTrx);
@@ -335,16 +334,6 @@ public class C_Invoice_Candidate_Builder
 		return this;
 	}
 
-	/**
-	 * Configures the IC's BPartner to use/not use an consolitated header aggregation.
-	 *
-	 * @param allowConsolidateInvoice
-	 */
-	public C_Invoice_Candidate_Builder setAllowConsolidateInvoiceOnBPartner(final boolean allowConsolidateInvoice)
-	{
-		this.allowConsolidateInvoice = allowConsolidateInvoice;
-		return this;
-	}
 
 	public C_Invoice_Candidate_Builder setOrderDocNo(final String orderDocNo)
 	{

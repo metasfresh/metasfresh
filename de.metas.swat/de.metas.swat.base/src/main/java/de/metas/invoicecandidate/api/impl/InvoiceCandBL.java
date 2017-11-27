@@ -1027,7 +1027,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		aggregationBL.setHeaderAggregationKey(splitCand);
 		splitCand.setLineAggregationKey(null);
 		splitCand.setLineAggregationKey_Suffix(ic.getLineAggregationKey_Suffix());
-		// splitCand.setAllowConsolidateInvoice(ic.isAllowConsolidateInvoice());
 		splitCand.setDescription(ic.getDescription());
 
 		splitCand.setBill_BPartner_ID(ic.getBill_BPartner_ID());
