@@ -1180,7 +1180,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}
 
 	@Override
-	public void addImportValidate(String importTableName, IImportInterceptor listener)
+	public void addImportInterceptor(String importTableName, IImportInterceptor listener)
 	{
 		String propertyName = getPropertyName(importTableName);
 		ArrayList<IImportInterceptor> list = m_impValidateListeners.get(propertyName);

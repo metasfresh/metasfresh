@@ -1163,7 +1163,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	}
 
 	@Override
-	public void addImportValidate(String importTableName, IImportInterceptor listener)
+	public void addImportInterceptor(String importTableName, IImportInterceptor listener)
 	{
 		// nothing
 	}

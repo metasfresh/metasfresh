@@ -43,5 +43,5 @@ public interface IModelValidationEngine
 
 	void removeModelChange(String tableName, IModelInterceptor interceptor);
 
-	void addImportValidate(String importTableName, IImportInterceptor listener);
+	void addImportInterceptor(String importTableName, IImportInterceptor listener);
 }

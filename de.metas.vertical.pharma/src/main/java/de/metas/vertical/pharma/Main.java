@@ -40,6 +40,6 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		engine.addImportValidate(I_C_BPartner.Table_Name, PharmaImportInterceptor.instance);
+		engine.addImportInterceptor(I_C_BPartner.Table_Name, PharmaImportInterceptor.instance);
 	}
 }
