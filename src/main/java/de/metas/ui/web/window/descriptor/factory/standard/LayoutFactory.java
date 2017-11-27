@@ -414,6 +414,12 @@ public class LayoutFactory
 
 			layoutElementBuilder.addField(layoutElementFieldBuilder);
 		}
+		
+		if (layoutElementBuilder.getFieldsCount() <= 0)
+		{
+			logger.trace("Skip layout element for {} because it has no fields: {}", uiElement, layoutElementBuilder);
+			return null;
+		}
 
 		// NOTE: per jassy request, when dealing with composed lookup fields, first field shall be Lookup and not List.
 		if (layoutElementBuilder.getFieldsCount() > 1)
