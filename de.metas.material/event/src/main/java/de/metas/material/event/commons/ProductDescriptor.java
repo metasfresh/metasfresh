@@ -43,11 +43,6 @@ import lombok.experimental.FieldDefaults;
 		@JsonSubTypes.Type(name = "MaterialDescriptor", value = MaterialDescriptor.class) })
 public class ProductDescriptor
 {
-	public static ProductDescriptor forProductIdAndAttributeSetInstanceId(final int productId, final int attributeSetInstanceId)
-	{
-		throw new UnsupportedOperationException();
-	}
-
 	public static final ProductDescriptor forProductIdOnly(final int productId)
 	{
 		return new ProductDescriptor(false, // complete == false
