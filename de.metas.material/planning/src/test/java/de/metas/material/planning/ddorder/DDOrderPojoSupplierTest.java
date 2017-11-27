@@ -28,10 +28,14 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.planning.exception.MrpException;
+import mockit.Mocked;
 
 public class DDOrderPojoSupplierTest
 {
+	@Mocked
+	private ModelProductDescriptorExtractor modelProductDescriptorExtractor;
 
 	@Test
 	public void test_calculateQtyToMove_ZeroQty()
@@ -98,7 +102,7 @@ public class DDOrderPojoSupplierTest
 			final BigDecimal qtyToMoveRequested,
 			final BigDecimal transferPercent)
 	{
-		final DDOrderPojoSupplier ddOrderPojoSupplier = new DDOrderPojoSupplier();
+		final DDOrderPojoSupplier ddOrderPojoSupplier = new DDOrderPojoSupplier(modelProductDescriptorExtractor);
 
 		final BigDecimal qtyToMoveActual = ddOrderPojoSupplier
 				.calculateQtyToMove(qtyToMoveRequested, transferPercent);
