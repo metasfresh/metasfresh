@@ -21,6 +21,8 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2946](https://github.com/metasfresh/metasfresh/issues/2946) Product: New Field Endcustomer productname and translation
     * Adding new fields for endcustomer productname for product labels and translation.
+  * [#3087](https://github.com/metasfresh/metasfresh/issues/3087) Get rid of group columns in new window for procurement stock count
+    * Adjusting the window Purchase Stock Control and adding Translation for en_US.
 
 # metasfresh 5.37 (2017-48)
 
