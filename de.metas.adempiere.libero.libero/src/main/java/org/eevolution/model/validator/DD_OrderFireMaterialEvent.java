@@ -1,5 +1,6 @@
 package org.eevolution.model.validator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -22,6 +23,7 @@ import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
 import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.ddorder.DDOrderUtil;
+import lombok.NonNull;
 
 /**
  * A dedicated model interceptor whose job it is to fire events on the {@link MaterialEventService}.<br>
@@ -34,15 +36,23 @@ import de.metas.material.planning.ddorder.DDOrderUtil;
 public class DD_OrderFireMaterialEvent
 {
 
-	@ModelChange(timings =
-		{
-				ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE
-		}, ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
-	public void fireMaterialEvent(final I_DD_Order ddOrder)
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE
+	}, ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
+	public void fireMaterialEvent(@NonNull final I_DD_Order ddOrder)
 	{
 		// when going with @DocAction, here the ppOrder's docStatus would still be "IP" even if we are invoked on afterComplete..
 		// also, it might still be rolled back
 		// those aren't show-stoppers, but we therefore rather work with @ModelChange
+
+		final List<DDOrderAdvisedOrCreatedEvent> events = createEvents(ddOrder);
+
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		events.forEach(event -> materialEventService.fireEventAfterNextCommit(event, InterfaceWrapperHelper.getTrxName(ddOrder)));
+	}
+
+	private DDOrderBuilder createAndInitPPOrderPojoBuilder(@NonNull final I_DD_Order ddOrder)
+	{
 		final DDOrderBuilder ddOrderPojoBuilder = DDOrder.builder()
 				.datePromised(ddOrder.getDatePromised())
 				.ddOrderId(ddOrder.getDD_Order_ID())
@@ -51,8 +61,15 @@ public class DD_OrderFireMaterialEvent
 				.plantId(ddOrder.getPP_Plant_ID())
 				.productPlanningId(ddOrder.getPP_Product_Planning_ID())
 				.shipperId(ddOrder.getM_Shipper_ID());
+		return ddOrderPojoBuilder;
+	}
 
-		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
+	private List<DDOrderAdvisedOrCreatedEvent> createEvents(@NonNull final I_DD_Order ddOrder)
+	{
+
+		final DDOrderBuilder ddOrderPojoBuilder = createAndInitPPOrderPojoBuilder(ddOrder);
+
+		final List<DDOrderAdvisedOrCreatedEvent> events = new ArrayList<>();
 
 		final int groupIdFromDDOrderRequestedEvent = DDOrderRequestedEventHandler.ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.getValue(ddOrder, 0);
 
@@ -61,15 +78,7 @@ public class DD_OrderFireMaterialEvent
 		{
 			final int durationDays = DDOrderUtil.calculateDurationDays(ddOrder.getPP_Product_Planning(), line.getDD_NetworkDistributionLine());
 
-			ddOrderPojoBuilder
-					.line(DDOrderLine.builder()
-							.productDescriptor(productDescriptorFactory.createProductDescriptor(line))
-							.ddOrderLineId(line.getDD_OrderLine_ID())
-							.qty(line.getQtyDelivered())
-							.networkDistributionLineId(line.getDD_NetworkDistributionLine_ID())
-							.salesOrderLineId(line.getC_OrderLineSO_ID())
-							.durationDays(durationDays)
-							.build());
+			ddOrderPojoBuilder.line(createDDOrderLinePojo(line, durationDays));
 
 			final DDOrderAdvisedOrCreatedEvent event = DDOrderAdvisedOrCreatedEvent.builder()
 					.eventDescriptor(EventDescriptor.createNew(ddOrder))
@@ -79,9 +88,22 @@ public class DD_OrderFireMaterialEvent
 					.groupId(groupIdFromDDOrderRequestedEvent)
 					.build();
 
-			final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-			materialEventService.fireEventAfterNextCommit(event, InterfaceWrapperHelper.getTrxName(ddOrder));
+			events.add(event);
 		}
+		return events;
 	}
 
+	private DDOrderLine createDDOrderLinePojo(@NonNull final I_DD_OrderLine line, final int durationDays)
+	{
+		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
+
+		return DDOrderLine.builder()
+				.productDescriptor(productDescriptorFactory.createProductDescriptor(line))
+				.ddOrderLineId(line.getDD_OrderLine_ID())
+				.qty(line.getQtyDelivered())
+				.networkDistributionLineId(line.getDD_NetworkDistributionLine_ID())
+				.salesOrderLineId(line.getC_OrderLineSO_ID())
+				.durationDays(durationDays)
+				.build();
+	}
 }

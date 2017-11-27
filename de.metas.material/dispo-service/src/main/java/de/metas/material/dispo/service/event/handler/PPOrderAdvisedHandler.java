@@ -1,7 +1,5 @@
 package de.metas.material.dispo.service.event.handler;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
@@ -16,8 +14,8 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
+import de.metas.material.event.pporder.PPOrderLine;
 import lombok.NonNull;
 
 /*
@@ -67,7 +65,7 @@ public class PPOrderAdvisedHandler
 		final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
 
 		final DemandDetail demandDetailOrNull = DemandDetail.createOrNull(
-				Optional.ofNullable(productionAdvisedEvent.getSupplyRequiredDescriptor()));
+				productionAdvisedEvent.getSupplyRequiredDescriptor());
 
 		final Candidate supplyCandidate = Candidate.builderForEventDescr(productionAdvisedEvent.getEventDescriptor())
 				.type(CandidateType.SUPPLY)
@@ -141,7 +139,6 @@ public class PPOrderAdvisedHandler
 		}
 		return candidateStatus;
 	}
-
 
 	private static ProductionDetail createProductionDetailForPPOrder(@NonNull final PPOrder ppOrder)
 	{

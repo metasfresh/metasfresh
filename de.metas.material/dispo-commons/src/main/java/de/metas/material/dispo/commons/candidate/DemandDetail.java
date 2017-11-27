@@ -1,6 +1,6 @@
 package de.metas.material.dispo.commons.candidate;
 
-import java.util.Optional;
+import javax.annotation.Nullable;
 
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -31,16 +31,16 @@ import lombok.Value;
 @Value
 public class DemandDetail
 {
-	public static DemandDetail createOrNull(@NonNull final Optional<SupplyRequiredDescriptor> supplyRequiredDescriptor)
+	public static DemandDetail createOrNull(@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
-		if (!supplyRequiredDescriptor.isPresent())
+		if (supplyRequiredDescriptor == null)
 		{
 			return null;
 		}
 		return new DemandDetail(
-				supplyRequiredDescriptor.get().getForecastLineId(),
-				supplyRequiredDescriptor.get().getShipmentScheduleId(),
-				supplyRequiredDescriptor.get().getOrderLineId());
+				supplyRequiredDescriptor.getForecastLineId(),
+				supplyRequiredDescriptor.getShipmentScheduleId(),
+				supplyRequiredDescriptor.getOrderLineId());
 	}
 
 	public static DemandDetail forDemandDetailRecord(@NonNull final I_MD_Candidate_Demand_Detail demandDetailRecord)

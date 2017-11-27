@@ -67,6 +67,27 @@ public class PP_OrderFireMaterialEvent
 
 	private PPOrder createPPOrderPojo(@NonNull final I_PP_Order ppOrder)
 	{
+		final PPOrderBuilder ppOrderPojoBuilder = createPPorderPojoBuilder(ppOrder);
+
+		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
+
+		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);
+		for (final I_PP_Order_BOMLine line : orderBOMLines)
+		{
+			ppOrderPojoBuilder.line(PPOrderLine.builder()
+					.productDescriptor(productDescriptorFactory.createProductDescriptor(line))
+					.description(line.getDescription())
+					.ppOrderLineId(line.getPP_Order_BOMLine_ID())
+					.productBomLineId(line.getPP_Product_BOMLine_ID())
+					.qtyRequired(line.getQtyRequiered())
+					.receipt(PPOrderUtil.isReceipt(line.getComponentType()))
+					.build());
+		}
+		return ppOrderPojoBuilder.build();
+	}
+
+	private PPOrderBuilder createPPorderPojoBuilder(@NonNull final I_PP_Order ppOrder)
+	{
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
@@ -83,20 +104,7 @@ public class PP_OrderFireMaterialEvent
 				.uomId(ppOrder.getC_UOM_ID())
 				.warehouseId(ppOrder.getM_Warehouse_ID())
 				.orderLineId(ppOrder.getC_OrderLine_ID());
-
-		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);
-		for (final I_PP_Order_BOMLine line : orderBOMLines)
-		{
-			ppOrderPojoBuilder.line(PPOrderLine.builder()
-					.productDescriptor(productDescriptorFactory.createProductDescriptor(line))
-					.description(line.getDescription())
-					.ppOrderLineId(line.getPP_Order_BOMLine_ID())
-					.productBomLineId(line.getPP_Product_BOMLine_ID())
-					.qtyRequired(line.getQtyRequiered())
-					.receipt(PPOrderUtil.isReceipt(line.getComponentType()))
-					.build());
-		}
-		return ppOrderPojoBuilder.build();
+		return ppOrderPojoBuilder;
 	}
 
 }

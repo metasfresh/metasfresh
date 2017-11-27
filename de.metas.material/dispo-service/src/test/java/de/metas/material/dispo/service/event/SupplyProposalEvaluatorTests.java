@@ -138,7 +138,7 @@ public class SupplyProposalEvaluatorTests
 				.productDescriptor(createProductDescriptor())
 				.build();
 
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isTrue();
 	}
 
 	/**
@@ -156,7 +156,7 @@ public class SupplyProposalEvaluatorTests
 				.productDescriptor(createProductDescriptor())
 				.build();
 
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isTrue();
 	}
 
 	@Test
@@ -175,7 +175,7 @@ public class SupplyProposalEvaluatorTests
 				.productDescriptor(createProductDescriptor())
 				.build();
 
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isTrue();
 	}
 
 	@Test
@@ -194,7 +194,7 @@ public class SupplyProposalEvaluatorTests
 				.productDescriptor(createProductDescriptor())
 				.build();
 
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isFalse();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isFalse();
 	}
 
 	/**
@@ -253,7 +253,7 @@ public class SupplyProposalEvaluatorTests
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.intermediateWarehouseId)
 				.productDescriptor(createProductDescriptor())
 				.build();
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal1)).isTrue();
 
 		// propose what would create an additional demand on B and an additional supply on C. nothing wrong with that either
 		final SupplyProposal supplyProposal2 = SupplyProposal.builder()
@@ -262,7 +262,7 @@ public class SupplyProposalEvaluatorTests
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
 				.productDescriptor(createProductDescriptor())
 				.build();
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal2)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal2)).isTrue();
 
 		// propose what would create an additional demand on A and an additional supply on C. nothing wrong with that either
 		final SupplyProposal supplyProposal3 = SupplyProposal.builder()
@@ -271,7 +271,7 @@ public class SupplyProposalEvaluatorTests
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
 				.productDescriptor(createProductDescriptor())
 				.build();
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal3)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal3)).isTrue();
 	}
 
 	/**
@@ -292,6 +292,6 @@ public class SupplyProposalEvaluatorTests
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.fromWarehouseId)
 				.productDescriptor(createProductDescriptor())
 				.build();
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1)).isFalse();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal1)).isFalse();
 	}
 }
