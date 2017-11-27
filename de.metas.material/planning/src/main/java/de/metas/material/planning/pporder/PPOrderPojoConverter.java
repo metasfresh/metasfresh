@@ -7,7 +7,7 @@ import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.ProductionRequestedEvent;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import lombok.NonNull;
 
 /*
@@ -53,7 +53,7 @@ public class PPOrderPojoConverter
 				.build();
 	}
 
-	public PPOrder asPPOrderPojo(@NonNull final ProductionRequestedEvent event)
+	public PPOrder asPPOrderPojo(@NonNull final PPOrderRequestedEvent event)
 	{
 		return event.getPpOrder();
 	}

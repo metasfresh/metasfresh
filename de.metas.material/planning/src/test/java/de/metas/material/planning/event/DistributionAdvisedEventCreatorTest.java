@@ -16,8 +16,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DistributionAdvisedEvent;
 import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
@@ -90,7 +90,7 @@ public class DistributionAdvisedEventCreatorTest
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptor();
 
 		final DistributionAdvisedEventCreator productionAdvisedEventCreator = new DistributionAdvisedEventCreator(ddOrderDemandMatcher, ddOrderPojoSupplier);
-		final List<DistributionAdvisedEvent> events = productionAdvisedEventCreator.createDistributionAdvisedEvents(supplyRequiredDescriptor, mrpContext);
+		final List<DDOrderAdvisedOrCreatedEvent> events = productionAdvisedEventCreator.createDistributionAdvisedEvents(supplyRequiredDescriptor, mrpContext);
 
 		assertThat(events).hasSize(1);
 		assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
