@@ -107,7 +107,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	@Override
 	public List<Exception> isValidInvoice(final I_C_Invoice invoice)
 	{
-		final List<Exception> feedback = new ArrayList<Exception>();
+		final List<Exception> feedback = new ArrayList<>();
 		final String EDIStatus = invoice.getEDI_ExportStatus();
 		if (!invoice.isEdiEnabled() && !I_EDI_Document.EDI_EXPORTSTATUS_Invalid.equals(EDIStatus))
 		{
@@ -167,7 +167,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		// feedback.add(new EDIFillMandatoryException(org.compiere.model.I_C_Invoice.COLUMNNAME_POReference));
 		// }
 
-		final Set<String> ilMissingFields = new HashSet<String>();
+		final Set<String> ilMissingFields = new HashSet<>();
 		final List<I_C_InvoiceLine> invoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(invoice);
 		for (final I_C_InvoiceLine il : invoiceLines)
 		{
@@ -205,7 +205,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	@Override
 	public List<Exception> isValidInOut(final I_M_InOut inOut)
 	{
-		final List<Exception> feedback = new ArrayList<Exception>();
+		final List<Exception> feedback = new ArrayList<>();
 
 		if (!inOut.isEdiEnabled())
 		{
@@ -274,10 +274,10 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			feedback.addAll(isValidBPLocation(billLocation));
 		}
 
-		final Set<String> iolMissingFields = new HashSet<String>();
-		final Set<String> olMissingFields = new HashSet<String>();
+		final Set<String> iolMissingFields = new HashSet<>();
+		final Set<String> olMissingFields = new HashSet<>();
 		final List<I_M_InOutLine> inOutLines = Services.get(IInOutDAO.class).retrieveLines(inOut, I_M_InOutLine.class);
-		final List<de.metas.interfaces.I_C_OrderLine> inOutOrderLines = new ArrayList<de.metas.interfaces.I_C_OrderLine>(); // orderLines for inOutLines
+		final List<de.metas.interfaces.I_C_OrderLine> inOutOrderLines = new ArrayList<>(); // orderLines for inOutLines
 		for (final I_M_InOutLine inOutLine : inOutLines)
 		{
 			if (inOutLine.isPackagingMaterial())
@@ -360,8 +360,8 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	{
 		Check.assumeNotNull(partner, "C_BPartner not null when validating it");
 
-		final List<Exception> feedback = new ArrayList<Exception>();
-		final List<String> missingFields = new ArrayList<String>();
+		final List<Exception> feedback = new ArrayList<>();
+		final List<String> missingFields = new ArrayList<>();
 
 		final I_C_BPartner ediPartner = InterfaceWrapperHelper.create(partner, I_C_BPartner.class);
 		if (!ediPartner.isEdiRecipient())
@@ -374,11 +374,9 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			missingFields.add(I_C_BPartner.COLUMNNAME_EdiRecipientGLN);
 		}
 
-		//
-		// Explicitly check inside the partner and see how it was allowed (as opposed to checking with IAggregationBL.isAllowConsolidateInvoiceEffective())
 		if (!hasValidInvoiceAggregation(ediPartner))
 		{
-			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Allow_Consolidate_Invoice_Error)));
+			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Invalid_Invoice_Aggregation_Error)));
 		}
 
 		if (Check.isEmpty(ediPartner.getVATaxID(), true))
@@ -416,7 +414,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	{
 		Check.assumeNotNull(bpLocation, "C_BPartner_Location not null when validating it");
 
-		final List<Exception> feedback = new ArrayList<Exception>();
+		final List<Exception> feedback = new ArrayList<>();
 
 		final I_C_BPartner_Location ediLocation = InterfaceWrapperHelper.create(bpLocation, I_C_BPartner_Location.class);
 		if (Check.isEmpty(ediLocation.getGLN(), true))
