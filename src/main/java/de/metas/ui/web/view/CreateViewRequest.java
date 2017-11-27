@@ -84,6 +84,7 @@ public final class CreateViewRequest
 				.setStickyFilters(view.getStickyFilters())
 				.setFiltersFromJSON(jsonFilters)
 				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
+				.setUseAutoFilters(false)
 				.addActions(view.getActions())
 				.addAdditionalRelatedProcessDescriptors(view.getAdditionalRelatedProcessDescriptors());
 	}
@@ -108,6 +109,7 @@ public final class CreateViewRequest
 				.setStickyFilters(stickyFilters)
 				.setFilters(view.getFilters())
 				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
+				.setUseAutoFilters(false)
 				.addActions(view.getActions())
 				.addAdditionalRelatedProcessDescriptors(view.getAdditionalRelatedProcessDescriptors());
 	}
@@ -143,6 +145,8 @@ public final class CreateViewRequest
 	 */
 	@Deprecated
 	Set<Integer> filterOnlyIds;
+	
+	boolean useAutoFilters;
 
 	ViewActionDescriptorsList actions;
 	ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
@@ -159,6 +163,7 @@ public final class CreateViewRequest
 		filterOnlyIds = builder.getFilterOnlyIds();
 		filters = builder.getFilters();
 		stickyFilters = builder.getStickyFilters();
+		useAutoFilters = builder.isUseAutoFilters();
 
 		actions = builder.getActions();
 		additionalRelatedProcessDescriptors = ImmutableList.copyOf(builder.getAdditionalRelatedProcessDescriptors());
@@ -229,6 +234,7 @@ public final class CreateViewRequest
 
 		private List<DocumentFilter> stickyFilters;
 		private DocumentFiltersList filters;
+		private boolean useAutoFilters;
 
 		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
 		private final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = new ArrayList<>();
@@ -356,6 +362,17 @@ public final class CreateViewRequest
 		private Set<Integer> getFilterOnlyIds()
 		{
 			return filterOnlyIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(filterOnlyIds);
+		}
+
+		public Builder setUseAutoFilters(boolean useAutoFilters)
+		{
+			this.useAutoFilters = useAutoFilters;
+			return this;
+		}
+
+		private boolean isUseAutoFilters()
+		{
+			return useAutoFilters;
 		}
 
 		public Builder addActionsFromUtilityClass(final Class<?> utilityClass)

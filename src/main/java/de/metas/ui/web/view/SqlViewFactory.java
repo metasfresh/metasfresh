@@ -4,21 +4,28 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilter.Builder;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.view.CreateViewRequest.DocumentFiltersList;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
@@ -32,6 +39,7 @@ import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.sql.DocumentFieldValueLoader;
@@ -159,16 +167,15 @@ public class SqlViewFactory implements IViewFactory
 	{
 		final WindowId windowId = request.getViewId().getWindowId();
 
-		final SqlViewBindingKey sqlViewBindingKey = new SqlViewBindingKey(
-				windowId,
-				request.getViewTypeRequiredFieldCharacteristic());
+		final JSONViewDataType viewType = request.getViewType();
+		final SqlViewBindingKey sqlViewBindingKey = new SqlViewBindingKey(windowId, viewType.getRequiredFieldCharacteristic());
 
 		final SqlViewBinding sqlViewBinding = getViewBinding(sqlViewBindingKey);
 		final IViewDataRepository viewDataRepository = new SqlViewDataRepository(sqlViewBinding);
 
 		final DefaultView.Builder viewBuilder = DefaultView.builder(viewDataRepository)
 				.setViewId(request.getViewId())
-				.setViewType(request.getViewType())
+				.setViewType(viewType)
 				.setReferencingDocumentPaths(request.getReferencingDocumentPaths())
 				.setParentViewId(request.getParentViewId())
 				.setParentRowId(request.getParentRowId())
@@ -184,6 +191,13 @@ public class SqlViewFactory implements IViewFactory
 		{
 			viewBuilder.setFilters(filters.getFilters());
 		}
+		
+		if (request.isUseAutoFilters())
+		{
+			final List<DocumentFilter> autoFilters = createAutoFilters(windowId, viewType);
+			viewBuilder.addFiltersIfAbsent(autoFilters);
+		}
+
 
 		if (!request.getFilterOnlyIds().isEmpty())
 		{
@@ -204,6 +218,61 @@ public class SqlViewFactory implements IViewFactory
 			final DocumentReference reference = documentReferencesService.getDocumentReference(referencedDocumentPath, targetWindowId);
 			return reference.getFilter();
 		}
+	}
+
+	private List<DocumentFilter> createAutoFilters(final WindowId windowId, final JSONViewDataType viewType)
+	{
+		return getViewFilterDescriptors(windowId, viewType)
+				.stream()
+				.filter(DocumentFilterDescriptor::isAutoFilter)
+				.map(SqlViewFactory::createAutoFilter)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static DocumentFilter createAutoFilter(final DocumentFilterDescriptor filterDescriptor)
+	{
+		if (!filterDescriptor.isAutoFilter())
+		{
+			throw new AdempiereException("Not an auto filter: " + filterDescriptor);
+		}
+
+		final Builder filterBuilder = DocumentFilter.builder()
+				.setFilterId(filterDescriptor.getFilterId());
+
+		filterDescriptor.getParameters()
+				.stream()
+				.filter(DocumentFilterParamDescriptor::isAutoFilter)
+				.map(SqlViewFactory::createAutoFilterParam)
+				.forEach(filterBuilder::addParameter);
+
+		return filterBuilder.build();
+	}
+
+	private static final DocumentFilterParam createAutoFilterParam(final DocumentFilterParamDescriptor filterParamDescriptor)
+	{
+		final Object value;
+		if (filterParamDescriptor.isAutoFilterInitialValueIsDateNow())
+		{
+			final DocumentFieldWidgetType widgetType = filterParamDescriptor.getWidgetType();
+			if (widgetType == DocumentFieldWidgetType.Date)
+			{
+				value = SystemTime.asDayTimestamp();
+			}
+			else
+			{
+				value = SystemTime.asTimestamp();
+			}
+		}
+		else
+		{
+			value = filterParamDescriptor.getAutoFilterInitialValue();
+		}
+
+		return DocumentFilterParam.builder()
+				.setFieldName(filterParamDescriptor.getFieldName())
+				.setOperator(Operator.EQUAL)
+				.setValue(value)
+				.build();
 	}
 
 	private SqlViewBinding getViewBinding(@NonNull final SqlViewBindingKey key)

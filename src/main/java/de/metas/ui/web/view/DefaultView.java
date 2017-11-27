@@ -1,5 +1,6 @@
 package de.metas.ui.web.view;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
@@ -519,7 +520,7 @@ public class DefaultView implements IEditableView
 		private final IViewDataRepository viewDataRepository;
 
 		private LinkedHashMap<String, DocumentFilter> _stickyFiltersById;
-		private List<DocumentFilter> _filters;
+		private LinkedHashMap<String, DocumentFilter> _filtersById = new LinkedHashMap<>();
 
 		private Builder(@NonNull final IViewDataRepository viewDataRepository)
 		{
@@ -632,7 +633,8 @@ public class DefaultView implements IEditableView
 
 		public Builder setFilters(final List<DocumentFilter> filters)
 		{
-			_filters = filters;
+			_filtersById.clear();
+			filters.forEach(filter -> _filtersById.put(filter.getFilterId(), filter));
 			return this;
 		}
 
@@ -644,7 +646,18 @@ public class DefaultView implements IEditableView
 
 		private ImmutableList<DocumentFilter> getFilters()
 		{
-			return _filters == null ? ImmutableList.of() : ImmutableList.copyOf(_filters);
+			return _filtersById.isEmpty() ? ImmutableList.of() : ImmutableList.copyOf(_filtersById.values());
+		}
+
+		public boolean hasFilters()
+		{
+			return !_filtersById.isEmpty();
+		}
+
+		public Builder addFiltersIfAbsent(final Collection<DocumentFilter> filters)
+		{
+			filters.forEach(filter -> _filtersById.putIfAbsent(filter.getFilterId(), filter));
+			return this;
 		}
 	}
 }

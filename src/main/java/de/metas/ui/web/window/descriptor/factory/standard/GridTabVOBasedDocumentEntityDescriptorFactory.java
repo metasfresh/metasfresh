@@ -15,6 +15,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.model.GridFieldDefaultFilterDescriptor;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.I_AD_Column;
@@ -32,6 +33,7 @@ import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor.ButtonFieldActionType;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -43,6 +45,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
+import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import lombok.NonNull;
 
@@ -277,7 +280,7 @@ import lombok.NonNull;
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
 
 			final String ctxTableName = Services.get(IADTableDAO.class).retrieveTableName(gridFieldVO.getAD_Table_ID());
-			
+
 			lookupDescriptorProvider = SqlLookupDescriptor.builder()
 					.setCtxTableName(ctxTableName)
 					.setCtxColumnName(sqlColumnName)
@@ -397,8 +400,7 @@ import lombok.NonNull;
 				.setMandatoryLogic(extractMandatoryLogic(gridFieldVO))
 				.setDisplayLogic(gridFieldVO.getDisplayLogic())
 				//
-				.setDefaultFilterField(gridFieldVO.isSelectionColumn())
-				.setDefaultFilterFieldSeqNo(gridFieldVO.getSelectionColumnSeqNo())
+				.setDefaultFilterInfo(createDefaultFilterDescriptor(gridFieldVO.getDefaultFilterDescriptor(), sqlColumnName, widgetType))
 				//
 				.setDataBinding(fieldBinding);
 
@@ -413,6 +415,59 @@ import lombok.NonNull;
 		//
 		// Collect special field
 		collectSpecialField(fieldBuilder);
+	}
+
+	private DocumentFieldDefaultFilterDescriptor createDefaultFilterDescriptor(
+			final GridFieldDefaultFilterDescriptor gridFieldDefaultFilterInfo,
+			final String fieldName,
+			final DocumentFieldWidgetType widgetType)
+	{
+		if (gridFieldDefaultFilterInfo == null)
+		{
+			return null;
+		}
+
+		final Object autoFilterInitialValue = extractAutoFilterInitialValue(gridFieldDefaultFilterInfo, fieldName, widgetType);
+		
+		return DocumentFieldDefaultFilterDescriptor.builder()
+				.seqNo(gridFieldDefaultFilterInfo.getSeqNo())
+				.rangeFilter(gridFieldDefaultFilterInfo.isRangeFilter())
+				.showFilterIncrementButtons(gridFieldDefaultFilterInfo.isShowFilterIncrementButtons())
+				.autoFilterInitialValue(autoFilterInitialValue)
+				.build();
+	}
+
+	private Object extractAutoFilterInitialValue(final GridFieldDefaultFilterDescriptor gridFieldDefaultFilterInfo, final String fieldName, final DocumentFieldWidgetType widgetType)
+	{
+		final String autoFilterInitialValueStr = gridFieldDefaultFilterInfo.getDefaultValue();
+		
+		if (Check.isEmpty(autoFilterInitialValueStr, true))
+		{
+			return null;
+		}
+		else if (widgetType.isDateOrTime()
+				&& DocumentFieldDefaultFilterDescriptor.AUTOFILTER_INITIALVALUE_DATE_NOW.equalsIgnoreCase(autoFilterInitialValueStr.trim()))
+		{
+			return DocumentFieldDefaultFilterDescriptor.AUTOFILTER_INITIALVALUE_DATE_NOW;
+		}
+		else if (widgetType.getValueClassOrNull() == null) // no default value class are not supported
+		{
+			return null;
+		}
+		else if (widgetType == DocumentFieldWidgetType.Lookup) // lookups are not supported
+		{
+			return null;
+		}
+		else if (widgetType == DocumentFieldWidgetType.List)
+		{
+			return autoFilterInitialValueStr.trim();
+		}
+		else
+		{
+			final Class<?> valueClass = widgetType.getValueClass();
+			final LookupValueByIdSupplier lookupDataSource = null; // does not matter, we already excluded Lookups above
+			return DocumentFieldDescriptor.convertToValueClass(fieldName, autoFilterInitialValueStr, widgetType, valueClass, lookupDataSource);
+		}
 	}
 
 	private ButtonFieldActionDescriptor extractButtonFieldActionDescriptor(final String tableName, final String fieldName, final int adProcessId)
@@ -641,7 +696,7 @@ import lombok.NonNull;
 	{
 		return gridFieldVO.isMandatoryLogicExpression() ? gridFieldVO.getMandatoryLogic() : ConstantLogicExpression.of(gridFieldVO.isMandatory());
 	}
-	
+
 	private final void collectSpecialField(final DocumentFieldDescriptor.Builder field)
 	{
 		if (_specialFieldsCollector == null)

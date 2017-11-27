@@ -14,6 +14,7 @@ import com.google.common.collect.Ordering;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -103,7 +104,7 @@ public final class DocumentFilterDescriptorsProviderFactory
 
 		final List<DocumentFieldDescriptor> filteringFields = fields.stream()
 				.filter(DocumentFieldDescriptor::isDefaultFilterField)
-				.sorted(Ordering.natural().onResultOf(field -> field.getDefaultFilterFieldSeqNo()))
+				.sorted(Ordering.natural().onResultOf(field -> field.getDefaultFilterInfo().getSeqNo()))
 				.collect(ImmutableList.toImmutableList());
 
 		for (final DocumentFieldDescriptor field : filteringFields)
@@ -131,6 +132,7 @@ public final class DocumentFilterDescriptorsProviderFactory
 		final ITranslatableString displayName = field.getCaption();
 		final String fieldName = field.getFieldName();
 		final DocumentFieldWidgetType widgetType = field.getWidgetType();
+		final DocumentFieldDefaultFilterDescriptor filteringInfo = field.getDefaultFilterInfo();
 
 		final LookupDescriptor lookupDescriptor = field.getLookupDescriptor(LookupDescriptorProvider.LookupScope.DocumentFilter);
 
@@ -139,7 +141,7 @@ public final class DocumentFilterDescriptorsProviderFactory
 		{
 			operator = Operator.LIKE_I;
 		}
-		else if (widgetType.isRangeFilteringSupported())
+		else if (filteringInfo.isRangeFilter())
 		{
 			operator = Operator.BETWEEN;
 		}
@@ -154,7 +156,9 @@ public final class DocumentFilterDescriptorsProviderFactory
 				.setWidgetType(widgetType)
 				.setOperator(operator)
 				.setLookupDescriptor(lookupDescriptor)
-				.setMandatory(false);
+				.setMandatory(false)
+				.setShowIncrementDecrementButtons(filteringInfo.isShowFilterIncrementButtons())
+				.setAutoFilterInitialValue(filteringInfo.getAutoFilterInitialValue());
 	}
 
 }

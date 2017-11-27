@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -71,8 +70,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public final class DocumentFieldDescriptor implements Serializable
+public final class DocumentFieldDescriptor
 {
 	public static final Builder builder(final String fieldName)
 	{
@@ -142,8 +140,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 	//
 	// Default filtering options
-	private final boolean defaultFilterField;
-	private final int defaultFilterFieldSeqNo;
+	private final DocumentFieldDefaultFilterDescriptor defaultFilterInfo;
 
 	private DocumentFieldDescriptor(final Builder builder)
 	{
@@ -184,15 +181,7 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		//
 		// Default filtering
-		defaultFilterField = builder.defaultFilterField;
-		if (defaultFilterField)
-		{
-			this.defaultFilterFieldSeqNo = builder.defaultFilterFieldSeqNo > 0 ? builder.defaultFilterFieldSeqNo : Integer.MAX_VALUE;
-		}
-		else
-		{
-			this.defaultFilterFieldSeqNo = -1; // N/A
-		}
+		defaultFilterInfo = builder.defaultFilterInfo;
 	}
 
 	@Override
@@ -682,12 +671,12 @@ public final class DocumentFieldDescriptor implements Serializable
 
 	public boolean isDefaultFilterField()
 	{
-		return defaultFilterField;
+		return defaultFilterInfo != null;
 	}
 
-	public int getDefaultFilterFieldSeqNo()
+	public DocumentFieldDefaultFilterDescriptor getDefaultFilterInfo()
 	{
-		return defaultFilterFieldSeqNo;
+		return defaultFilterInfo;
 	}
 
 	/**
@@ -734,12 +723,10 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		//
 		// Default filtering options
-		private boolean defaultFilterField = false;
-		private int defaultFilterFieldSeqNo = -1;
+		private DocumentFieldDefaultFilterDescriptor defaultFilterInfo = null;
 
 		private Builder(final String fieldName)
 		{
-			super();
 			Check.assumeNotEmpty(fieldName, "fieldName is not empty");
 			this.fieldName = fieldName;
 		}
@@ -1391,15 +1378,9 @@ public final class DocumentFieldDescriptor implements Serializable
 			return true;
 		}
 
-		public Builder setDefaultFilterField(final boolean defaultFilterField)
+		public Builder setDefaultFilterInfo(DocumentFieldDefaultFilterDescriptor defaultFilterInfo)
 		{
-			this.defaultFilterField = defaultFilterField;
-			return this;
-		}
-
-		public Builder setDefaultFilterFieldSeqNo(final int defaultFilterFieldSeqNo)
-		{
-			this.defaultFilterFieldSeqNo = defaultFilterFieldSeqNo;
+			this.defaultFilterInfo = defaultFilterInfo;
 			return this;
 		}
 

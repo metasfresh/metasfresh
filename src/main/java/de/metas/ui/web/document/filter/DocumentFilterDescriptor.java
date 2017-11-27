@@ -62,6 +62,7 @@ public final class DocumentFilterDescriptor
 	private final PanelLayoutType parametersLayoutType;
 	private final Map<String, DocumentFilterParamDescriptor> parametersByName;
 	private final List<DocumentFilterParam> internalParameters;
+	private final boolean autoFilter;
 
 	private final Map<String, Object> debugProperties;
 
@@ -80,6 +81,7 @@ public final class DocumentFilterDescriptor
 		parametersLayoutType = builder.getParametersLayoutType();
 		parametersByName = builder.buildParameters();
 		internalParameters = ImmutableList.copyOf(builder.internalParameters);
+		autoFilter = parametersByName.values().stream().anyMatch(DocumentFilterParamDescriptor::isAutoFilter);
 
 		debugProperties = builder.debugProperties == null ? ImmutableMap.of() : ImmutableMap.copyOf(builder.debugProperties);
 	}
@@ -138,6 +140,11 @@ public final class DocumentFilterDescriptor
 	public Map<String, Object> getDebugProperties()
 	{
 		return debugProperties;
+	}
+	
+	public boolean isAutoFilter()
+	{
+		return autoFilter;
 	}
 
 	//
