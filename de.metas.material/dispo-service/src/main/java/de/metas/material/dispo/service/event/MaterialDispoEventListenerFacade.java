@@ -3,16 +3,16 @@ package de.metas.material.dispo.service.event;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.service.event.handler.DistributionAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.DDOrderAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
-import de.metas.material.dispo.service.event.handler.ProductionAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.PPOrderAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.TransactionCreatedHandler;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
-import de.metas.material.event.ddorder.DistributionAdvisedEvent;
+import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
-import de.metas.material.event.pporder.ProductionAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import lombok.NonNull;
@@ -43,9 +43,9 @@ import lombok.NonNull;
 public class MaterialDispoEventListenerFacade implements MaterialEventListener
 {
 
-	private final ProductionAdvisedHandler productionAdvisedHandler;
+	private final PPOrderAdvisedHandler productionAdvisedHandler;
 
-	private final DistributionAdvisedHandler distributionAdvisedHandler;
+	private final DDOrderAdvisedHandler distributionAdvisedHandler;
 
 	private final ForecastCreatedHandler forecastCreatedHandler;
 
@@ -54,8 +54,8 @@ public class MaterialDispoEventListenerFacade implements MaterialEventListener
 	private final ShipmentScheduleCreatedHandler shipmentScheduleCreatedHandler;
 
 	public MaterialDispoEventListenerFacade(
-			@NonNull final DistributionAdvisedHandler distributionAdvisedHandler,
-			@NonNull final ProductionAdvisedHandler productionAdvisedHandler,
+			@NonNull final DDOrderAdvisedHandler distributionAdvisedHandler,
+			@NonNull final PPOrderAdvisedHandler productionAdvisedHandler,
 			@NonNull final ForecastCreatedHandler forecastCreatedHandler,
 			@NonNull final TransactionCreatedHandler transactionEventHandler,
 			@NonNull final ShipmentScheduleCreatedHandler shipmentScheduleCreatedHandler)
@@ -82,13 +82,13 @@ public class MaterialDispoEventListenerFacade implements MaterialEventListener
 		{
 			forecastCreatedHandler.handleForecastCreatedEvent((ForecastCreatedEvent)event);
 		}
-		else if (event instanceof DistributionAdvisedEvent)
+		else if (event instanceof DDOrderAdvisedOrCreatedEvent)
 		{
-			distributionAdvisedHandler.handleDistributionAdvisedEvent((DistributionAdvisedEvent)event);
+			distributionAdvisedHandler.handleDistributionAdvisedEvent((DDOrderAdvisedOrCreatedEvent)event);
 		}
-		else if (event instanceof ProductionAdvisedEvent)
+		else if (event instanceof PPOrderAdvisedOrCreatedEvent)
 		{
-			productionAdvisedHandler.handleProductionAdvisedEvent((ProductionAdvisedEvent)event);
+			productionAdvisedHandler.handleProductionAdvisedEvent((PPOrderAdvisedOrCreatedEvent)event);
 		}
 	}
 }

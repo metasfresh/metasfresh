@@ -2,9 +2,12 @@ package de.metas.material.event.ddorder;
 
 import org.eevolution.model.I_DD_Order;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,11 +40,9 @@ import lombok.Value;
  */
 @Value
 @Builder
-public class DistributionAdvisedEvent implements MaterialEvent
+public class DDOrderAdvisedOrCreatedEvent implements MaterialEvent
 {
-	public static final String TYPE = "DistributionAdvisedEvent";
-
-	SupplyRequiredDescriptor supplyRequiredDescriptor;
+	public static final String TYPE = "DDOrderAdvisedOrCreatedEvent";
 
 	@NonNull
 	EventDescriptor eventDescriptor;
@@ -61,4 +62,16 @@ public class DistributionAdvisedEvent implements MaterialEvent
 	 */
 	@NonNull
 	Integer toWarehouseId;
+
+	/**
+	 * Set to > 0 if this event is about a "real" DDOrder, and not just the advise to create one
+	 */
+	@JsonProperty
+	int groupId;
+
+	/**
+	 * Set to not-null mainly if this event is about and "advise" that was created due to a {@link SupplyRequiredEvent}, but also<br>
+	 * if this event is about a "wild" PPOrder that was somehow created and has a sale order line ID
+	 */
+	SupplyRequiredDescriptor supplyRequiredDescriptor;
 }

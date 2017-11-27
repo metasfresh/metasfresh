@@ -41,8 +41,8 @@ import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
-import de.metas.material.event.ddorder.DistributionAdvisedEvent;
 import lombok.NonNull;
 import mockit.Mocked;
 
@@ -104,7 +104,7 @@ public class DistributionAdvisedHandlerHandlerTests
 
 	public static final int shipperId = 95;
 
-	private DistributionAdvisedHandler distributionAdvisedHandler;
+	private DDOrderAdvisedHandler distributionAdvisedHandler;
 
 	@Mocked
 	private MaterialEventService materialEventService;
@@ -134,7 +134,7 @@ public class DistributionAdvisedHandlerHandlerTests
 				demandCandiateHandler,
 				supplyCandiateHandler));
 
-		distributionAdvisedHandler = new DistributionAdvisedHandler(
+		distributionAdvisedHandler = new DDOrderAdvisedHandler(
 				candidateRepository,
 				candidateRepositoryCommands,
 				candidateChangeService,
@@ -143,7 +143,7 @@ public class DistributionAdvisedHandlerHandlerTests
 	}
 
 	/**
-	 * Verifies that for a {@link DistributionAdvisedEvent}, the system shall (unless the event is ignored for different reasons!) create two pairs of candidate records:
+	 * Verifies that for a {@link DDOrderAdvisedOrCreatedEvent}, the system shall (unless the event is ignored for different reasons!) create two pairs of candidate records:
 	 * <ul>
 	 * <li>one supply-pair with a supply candidate and its stock <b>parent</b></li>
 	 * <li>one demand-pair with a demand candidate and its stock <b>child</b></li>
@@ -152,7 +152,7 @@ public class DistributionAdvisedHandlerHandlerTests
 	@Test
 	public void handleDistributionAdvisedEvent_with_one_event()
 	{
-		final DistributionAdvisedEvent event = DistributionAdvisedEvent.builder()
+		final DDOrderAdvisedOrCreatedEvent event = DDOrderAdvisedOrCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
@@ -244,7 +244,7 @@ public class DistributionAdvisedHandlerHandlerTests
 	 *
 	 */
 	public static void handleDistributionAdvisedEvent_with_two_events_chronological(
-			@NonNull final DistributionAdvisedHandler distributionAdvisedHandler)
+			@NonNull final DDOrderAdvisedHandler distributionAdvisedHandler)
 	{
 		final int durationOneDay = 1; // => t2 minus 1day = t1 (expected date of the demand candidate)
 		adviseDistributionFromToStartDuration(distributionAdvisedHandler, fromWarehouseId, intermediateWarehouseId,
@@ -357,7 +357,7 @@ public class DistributionAdvisedHandlerHandlerTests
 	}
 
 	private static void adviseDistributionFromToStartDuration(
-			final DistributionAdvisedHandler distributionAdvisedHandler,
+			final DDOrderAdvisedHandler distributionAdvisedHandler,
 			final int fromWarehouseId,
 			final int toWarehouseId,
 			final Date start,
@@ -365,7 +365,7 @@ public class DistributionAdvisedHandlerHandlerTests
 	{
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptor();
 
-		final DistributionAdvisedEvent event1 = DistributionAdvisedEvent.builder()
+		final DDOrderAdvisedOrCreatedEvent event1 = DDOrderAdvisedOrCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.fromWarehouseId(fromWarehouseId)

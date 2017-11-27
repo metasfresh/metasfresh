@@ -3,8 +3,8 @@ package org.eevolution.event;
 import static de.metas.document.engine.IDocument.STATUS_Completed;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
@@ -31,14 +31,15 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Product_BOMLine;
 import org.eevolution.model.validator.PP_Order;
-import org.eevolution.mrp.spi.impl.ddorder.DDOrderProducer;
 import org.eevolution.mrp.spi.impl.pporder.PPOrderProducer;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
 
 /*
  * #%L
@@ -62,7 +63,7 @@ import de.metas.material.event.pporder.PPOrder;
  * #L%
  */
 
-public class MaterialDocumentListenerTests
+public class PPOrderRequestedEventHandlerTests
 {
 	private I_PP_Product_Planning productPlanning;
 
@@ -83,6 +84,8 @@ public class MaterialDocumentListenerTests
 	private PPOrder ppOrderPojo;
 
 	private I_C_OrderLine orderLine;
+
+	private PPOrderRequestedEventHandler ppOrderRequestedEventHandler;
 
 	@Before
 	public void init()
@@ -151,10 +154,10 @@ public class MaterialDocumentListenerTests
 			save(bomComponentLine);
 		}
 
-		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(bomMainProduct.getM_Product_ID(), 
-				"storageAttributesKey", 
+		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(bomMainProduct.getM_Product_ID(),
+				"storageAttributesKey",
 				bomMainProduct.getM_AttributeSetInstance_ID());
-		
+
 		ppOrderPojo = PPOrder.builder()
 				.datePromised(SystemTime.asDate())
 				.dateStartSchedule(SystemTime.asDate())
@@ -167,38 +170,46 @@ public class MaterialDocumentListenerTests
 				.uomId(uom.getC_UOM_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.build();
+
+		ppOrderRequestedEventHandler = new PPOrderRequestedEventHandler(new PPOrderProducer());
 	}
 
 	@Test
 	public void testOnlyPPOrder()
 	{
+		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
+				.eventDescriptor(new EventDescriptor(0, 10))
+				.groupId(33)
+				.ppOrder(ppOrderPojo).build();
 
-		final I_PP_Order ppOrder = new MaterialDocumentListener(new PPOrderProducer(), new DDOrderProducer())
-				.createProductionOrder(ppOrderPojo, SystemTime.asDate());
+		final I_PP_Order ppOrder = ppOrderRequestedEventHandler.createProductionOrder(ppOrderRequestedEvent);
 
 		verifyPPOrder(ppOrder);
 	}
 
 	private void verifyPPOrder(final I_PP_Order ppOrder)
 	{
-		assertThat(ppOrder, notNullValue());
-		assertThat(ppOrder.getAD_Org_ID(), is(org.getAD_Org_ID()));
-		assertThat(ppOrder.getM_Product_ID(), is(productPlanning.getPP_Product_BOM().getM_Product_ID()));
-		assertThat(ppOrder.getPP_Product_BOM_ID(), is(productPlanning.getPP_Product_BOM_ID()));
-		assertThat(ppOrder.getPP_Product_Planning_ID(), is(productPlanning.getPP_Product_Planning_ID()));
-		assertThat(ppOrder.getC_OrderLine_ID(), is(orderLine.getC_OrderLine_ID()));
-		assertThat(ppOrder.getC_BPartner_ID(), is(120));
+		assertThat(ppOrder).isNotNull();
+		assertThat(ppOrder.getAD_Org_ID()).isEqualTo(org.getAD_Org_ID());
+		assertThat(ppOrder.getM_Product_ID()).isEqualTo(productPlanning.getPP_Product_BOM().getM_Product_ID());
+		assertThat(ppOrder.getPP_Product_BOM_ID()).isEqualTo(productPlanning.getPP_Product_BOM_ID());
+		assertThat(ppOrder.getPP_Product_Planning_ID()).isEqualTo(productPlanning.getPP_Product_Planning_ID());
+		assertThat(ppOrder.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
+		assertThat(ppOrder.getC_BPartner_ID()).isEqualTo(120);
 
-		assertThat(ppOrder.getC_UOM_ID(), is(uom.getC_UOM_ID()));
-		assertThat(ppOrder.getM_Product_ID(), is(bomMainProduct.getM_Product_ID()));
-		assertThat(ppOrder.getM_Warehouse_ID(), is(warehouse.getM_Warehouse_ID()));
-		assertThat(ppOrder.getC_DocType_ID(), is(docType.getC_DocType_ID()));
-		assertThat(ppOrder.getAD_Workflow_ID(), is(productPlanning.getAD_Workflow_ID()));
+		assertThat(ppOrder.getC_UOM_ID()).isEqualTo(uom.getC_UOM_ID());
+		assertThat(ppOrder.getM_Product_ID()).isEqualTo(bomMainProduct.getM_Product_ID());
+		assertThat(ppOrder.getM_Warehouse_ID()).isEqualTo(warehouse.getM_Warehouse_ID());
+		assertThat(ppOrder.getC_DocType_ID()).isEqualTo(docType.getC_DocType_ID());
+		assertThat(ppOrder.getAD_Workflow_ID()).isEqualTo(productPlanning.getAD_Workflow_ID());
 
 		if (productPlanning.isDocComplete())
 		{
-			assertThat(ppOrder.getDocStatus(), is(STATUS_Completed));
+			assertThat(ppOrder.getDocStatus()).isEqualTo(STATUS_Completed);
 		}
+
+		final Integer groupId = PPOrderRequestedEventHandler.ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrder);
+		assertThat(groupId).isEqualTo(33);
 	}
 
 	@Test
@@ -206,24 +217,29 @@ public class MaterialDocumentListenerTests
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new PP_Order(), null); // enable the MI supposed to supplement lines
 
-		final I_PP_Order ppOrder = new MaterialDocumentListener(new PPOrderProducer(), new DDOrderProducer())
-				.createProductionOrder(ppOrderPojo, SystemTime.asDate());
+		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
+				.eventDescriptor(new EventDescriptor(0, 10))
+				.groupId(33)
+				.ppOrder(ppOrderPojo).build();
+
+		final I_PP_Order ppOrder = ppOrderRequestedEventHandler
+				.createProductionOrder(ppOrderRequestedEvent);
 
 		verifyPPOrder(ppOrder);
 
 		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);
-		assertThat(orderBOMLines.isEmpty(), is(false));
-		assertThat(orderBOMLines.size(), is(2));
+		assertThat(orderBOMLines.isEmpty()).isFalse();
+		assertThat(orderBOMLines).hasSize(2);
 
 		assertThat(filter(ppOrder, X_PP_Order_BOMLine.COMPONENTTYPE_Component).size(), is(1));
 		final I_PP_Order_BOMLine componentLine = filter(ppOrder, X_PP_Order_BOMLine.COMPONENTTYPE_Component).get(0);
-		assertThat(componentLine.getDescription(), is("supposed to become the component line"));
-		assertThat(componentLine.getM_Product_ID(), is(bomComponentProduct.getM_Product_ID()));
+		assertThat(componentLine.getDescription()).isEqualTo("supposed to become the component line");
+		assertThat(componentLine.getM_Product_ID()).isEqualTo(bomComponentProduct.getM_Product_ID());
 
 		assertThat(filter(ppOrder, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product).size(), is(1));
 		final I_PP_Order_BOMLine coProductLine = filter(ppOrder, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product).get(0);
-		assertThat(coProductLine.getDescription(), is("supposed to become the co-product line"));
-		assertThat(coProductLine.getM_Product_ID(), is(bomCoProduct.getM_Product_ID()));
+		assertThat(coProductLine.getDescription()).isEqualTo("supposed to become the co-product line");
+		assertThat(coProductLine.getM_Product_ID()).isEqualTo(bomCoProduct.getM_Product_ID());
 	}
 
 	private List<I_PP_Order_BOMLine> filter(final I_PP_Order ppOrder, final String componenttypeComponent)
