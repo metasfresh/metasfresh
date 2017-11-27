@@ -64,7 +64,6 @@ public class C_Invoice_Candidate_Builder
 	private int discount;
 	private boolean isManual = false;
 	private Boolean isSOTrx;
-	private Boolean allowConsolidateInvoice;
 	private String orderDocNo;
 	private String orderLineDescription;
 	private I_C_Tax tax;
@@ -103,13 +102,6 @@ public class C_Invoice_Candidate_Builder
 			billPartner = InterfaceWrapperHelper.create(ctx, I_C_BPartner.class, trxName);
 			billPartner.setC_BPartner_ID(billBPartnerId);
 
-			// FIXME: this is actually a fucked up, not intuitive workaround
-			// billPartner.setAllowConsolidateInvoice(false);
-			if (!allowConsolidateInvoice)
-			{
-				billPartner.setPO_Invoice_Aggregation(test.defaultHeaderAggregation_NotConsolidated);
-				billPartner.setSO_Invoice_Aggregation(test.defaultHeaderAggregation_NotConsolidated);
-			}
 			InterfaceWrapperHelper.save(billPartner);
 		}
 
@@ -235,10 +227,6 @@ public class C_Invoice_Candidate_Builder
 		{
 			test.getInvoiceCandidateValidator().invalidateCandidates(ic);
 		}
-
-		//
-		// Make sure values were correctly set:
-		// Assert.assertEquals("Invalid IC's AllowConsolidateInvoice", allowConsolidateInvoice, ic.isAllowConsolidateInvoice());
 
 		//
 		// Return created invoice candidate
