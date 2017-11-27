@@ -19,6 +19,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-app
+  * [#2946](https://github.com/metasfresh/metasfresh/issues/2946) Product: New Field Endcustomer productname and translation
+    * Adding new fields for endcustomer productname for product labels and translation.
 
 # metasfresh 5.37 (2017-48)
 
