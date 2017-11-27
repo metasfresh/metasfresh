@@ -45,6 +45,13 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		<!-- FRESH-397: jasper 6.2.1 uses poi and zxing with theses versions -->
 		<!-- actually, jasper-6.2.1 accidentally uses 2.1.7.js5-SNAPSHOT, but we don't-->
 		<itext.version>2.1.7.js5</itext.version>
+		
+		<!-- This property is set by jacoco and used in the surefire config fourther down
+			Set it to empty to avoid JVM startup error Could not find or load main class @{argLine} when run without jacoco
+			thx to 
+			* https://github.com/metasfresh/metasfresh/issues/3073
+		    * http://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
+		<argLine></argLine>
 	</properties>
 
 	<modules>
