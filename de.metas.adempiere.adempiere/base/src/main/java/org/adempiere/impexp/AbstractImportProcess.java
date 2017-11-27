@@ -190,7 +190,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 
 		//
 		// Update and validate
-		ModelValidationEngine.get().fireImportValidate(this, null, null, IImportValidator.TIMING_BEFORE_VALIDATE);
+		ModelValidationEngine.get().fireImportValidate(this, null, null, IImportInterceptor.TIMING_BEFORE_VALIDATE);
 		trxManager.run(new TrxRunnableAdapter()
 		{
 			@Override
@@ -199,7 +199,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 				updateAndValidateImportRecords();
 			}
 		});
-		ModelValidationEngine.get().fireImportValidate(this, null, null, IImportValidator.TIMING_AFTER_VALIDATE);
+		ModelValidationEngine.get().fireImportValidate(this, null, null, IImportInterceptor.TIMING_AFTER_VALIDATE);
 		if (isValidateOnly())
 		{
 			return importResult;

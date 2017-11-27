@@ -95,6 +95,8 @@
 		<module>../de.metas.rfq</module>
 		
 		<module>../de.metas.purchasecandidate.base</module>
+		
+		<module>../de.metas.vertical.pharma</module>
 	</modules>
 			
 	  <build>

@@ -22,7 +22,7 @@ package de.metas.payment.esr.model;
  * #L%
  */
 
-public interface I_C_BP_BankAccount extends de.metas.interfaces.I_C_BP_BankAccount
+public interface I_C_BP_BankAccount extends de.metas.banking.model.I_C_BP_BankAccount
 {
 	// @formatter:off
 	String COLUMNNAME_ESR_RenderedAccountNo = "ESR_RenderedAccountNo";
