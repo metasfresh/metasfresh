@@ -10,8 +10,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,6 +27,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
@@ -34,7 +37,8 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.ProductionAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
+import lombok.NonNull;
 import mockit.Mocked;
 
 /*
@@ -75,7 +79,7 @@ public class ProductionAdvisedHandlerTests
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private ProductionAdvisedHandler productionAdvisedEventHandler;
+	private PPOrderAdvisedHandler productionAdvisedEventHandler;
 
 	private StockRepository stockRepository;
 
@@ -105,27 +109,23 @@ public class ProductionAdvisedHandlerTests
 				candidateRepository,
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
-		productionAdvisedEventHandler = new ProductionAdvisedHandler(candidateChangeHandler, candidateService);
+		productionAdvisedEventHandler = new PPOrderAdvisedHandler(candidateChangeHandler, candidateService);
 	}
 
 	@Test
 	public void handleProductionAdvisedEvent()
 	{
-		final ProductionAdvisedEvent productionAdvisedEvent = createproductionAdvisedEvent();
-
-		perform_testproductionAdvisedEvent(productionAdvisedEvent);
+		perform_testproductionAdvisedEvent(createPPOrderEventWithPpOrderId(0));
 	}
 
 	@Test
 	public void handleProductionAdvisedEvent_invoke_twice()
 	{
-		final ProductionAdvisedEvent productionAdvisedEvent = createproductionAdvisedEvent();
-
-		perform_testproductionAdvisedEvent(productionAdvisedEvent);
-		perform_testproductionAdvisedEvent(productionAdvisedEvent);
+		perform_testproductionAdvisedEvent(createPPOrderEventWithPpOrderId(0));
+		perform_testproductionAdvisedEvent(createPPOrderEventWithPpOrderId(30));
 	}
 
-	private void perform_testproductionAdvisedEvent(final ProductionAdvisedEvent productionAdvisedEvent)
+	private void perform_testproductionAdvisedEvent(final PPOrderAdvisedOrCreatedEvent productionAdvisedEvent)
 	{
 		productionAdvisedEventHandler.handleProductionAdvisedEvent(productionAdvisedEvent);
 
@@ -177,28 +177,34 @@ public class ProductionAdvisedHandlerTests
 		assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isGreaterThan(0); // stock candidates have their own groupIds too
 		assertThat(t1Product2Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Product2Demand.getMD_Candidate_ID());
 		assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isNotEqualTo(t1Product1Stock.getMD_Candidate_GroupId());  // stock candidates' groupIds are different if they are about different products or warehouses
+
+		final int ppOrderId = productionAdvisedEvent.getPpOrder().getPpOrderId();
+		assertThat(DispoTestUtils.filterExclStock()).allSatisfy(r -> assertCandidateRecordHasPpOorderId(r, ppOrderId));
 	}
 
-	private ProductionAdvisedEvent createproductionAdvisedEvent()
+	private PPOrderAdvisedOrCreatedEvent createPPOrderEventWithPpOrderId(final int ppOrderId)
 	{
-		final PPOrder ppOrder = createPpOrder();
+		final PPOrder ppOrder = createPpOrderWithPpOrderId(ppOrderId);
 
-		final ProductionAdvisedEvent productionAdvisedEvent = ProductionAdvisedEvent.builder()
+		final PPOrderAdvisedOrCreatedEvent productionAdvisedEvent = PPOrderAdvisedOrCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.supplyRequiredDescriptor(null)
 				.ppOrder(ppOrder)
 				.build();
 
 		assertThat(productionAdvisedEvent.getSupplyRequiredDescriptor()).isNull();
+		assertThat(ppOrder.getPpOrderId()).isEqualTo(ppOrderId);
+
 		return productionAdvisedEvent;
 	}
 
-	private PPOrder createPpOrder()
+	private PPOrder createPpOrderWithPpOrderId(final int ppOrderId)
 	{
 		final ProductDescriptor rawProductDescriptor1 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct1Id);
 		final ProductDescriptor rawProductDescriptor2 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct2Id);
 
 		final PPOrder ppOrder = PPOrder.builder()
+				.ppOrderId(ppOrderId)
 				.orgId(ORG_ID)
 				.datePromised(AFTER_NOW)
 				.dateStartSchedule(NOW)
@@ -224,5 +230,19 @@ public class ProductionAdvisedHandlerTests
 						.build())
 				.build();
 		return ppOrder;
+	}
+
+	private void assertCandidateRecordHasPpOorderId(
+			@NonNull final I_MD_Candidate candidate,
+			final int ppOrderId)
+	{
+		final I_MD_Candidate_Prod_Detail productionDetailRecord = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, candidate.getMD_Candidate_ID())
+				.create()
+				.firstOnly(I_MD_Candidate_Prod_Detail.class);
+
+		assertThat(productionDetailRecord).isNotNull();
+		assertThat(productionDetailRecord.getPP_Order_ID()).isEqualTo(ppOrderId);
 	}
 }

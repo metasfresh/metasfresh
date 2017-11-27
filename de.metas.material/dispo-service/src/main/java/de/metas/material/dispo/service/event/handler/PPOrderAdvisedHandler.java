@@ -1,7 +1,5 @@
 package de.metas.material.dispo.service.event.handler;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
@@ -16,8 +14,8 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.ProductionAdvisedEvent;
 import lombok.NonNull;
 
 /*
@@ -42,32 +40,32 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class ProductionAdvisedHandler
+public class PPOrderAdvisedHandler
 {
 	private final CandidateChangeService candidateChangeHandler;
-	private final RequestMaterialOrderService candidateService;
+	private final RequestMaterialOrderService requestMaterialOrderService;
 
 	/**
 	 *
 	 * @param candidateChangeHandler
 	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
 	 */
-	public ProductionAdvisedHandler(
+	public PPOrderAdvisedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final RequestMaterialOrderService candidateService)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
-		this.candidateService = candidateService;
+		this.requestMaterialOrderService = candidateService;
 	}
 
-	public void handleProductionAdvisedEvent(final ProductionAdvisedEvent productionAdvisedEvent)
+	public void handleProductionAdvisedEvent(final PPOrderAdvisedOrCreatedEvent productionAdvisedEvent)
 	{
 		final PPOrder ppOrder = productionAdvisedEvent.getPpOrder();
 
 		final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
 
 		final DemandDetail demandDetailOrNull = DemandDetail.createOrNull(
-				Optional.ofNullable(productionAdvisedEvent.getSupplyRequiredDescriptor()));
+				productionAdvisedEvent.getSupplyRequiredDescriptor());
 
 		final Candidate supplyCandidate = Candidate.builderForEventDescr(productionAdvisedEvent.getEventDescriptor())
 				.type(CandidateType.SUPPLY)
@@ -98,7 +96,7 @@ public class ProductionAdvisedHandler
 
 		if (ppOrder.isAdvisedToCreatePPOrder())
 		{
-			candidateService.requestMaterialOrder(candidateWithGroupId.getGroupId());
+			requestMaterialOrderService.requestMaterialOrder(candidateWithGroupId.getGroupId());
 		}
 	}
 
@@ -141,7 +139,6 @@ public class ProductionAdvisedHandler
 		}
 		return candidateStatus;
 	}
-
 
 	private static ProductionDetail createProductionDetailForPPOrder(@NonNull final PPOrder ppOrder)
 	{

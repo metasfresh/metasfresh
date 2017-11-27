@@ -20,9 +20,9 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DistributionRequestedEvent;
+import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.ProductionRequestedEvent;
+import de.metas.material.event.pporder.PPOrderRequestedEvent;
 
 /*
  * #%L
@@ -96,7 +96,7 @@ public class CandidateServiceTests
 						.productBomLineId(600)
 						.build());
 
-		final ProductionRequestedEvent productionRequestedEvent = requestMaterialOrderService.createProductionRequestedEvent(ImmutableList.of(candidate, candidate2, candidate3));
+		final PPOrderRequestedEvent productionRequestedEvent = requestMaterialOrderService.createProductionRequestedEvent(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(productionRequestedEvent).isNotNull();
 		assertThat(productionRequestedEvent.getEventDescriptor()).isNotNull();
 
@@ -151,7 +151,7 @@ public class CandidateServiceTests
 						.networkDistributionLineId(501)
 						.build());
 
-		final DistributionRequestedEvent distributionOrderEvent = requestMaterialOrderService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
+		final DDOrderRequestedEvent distributionOrderEvent = requestMaterialOrderService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(distributionOrderEvent).isNotNull();
 
 		assertThat(distributionOrderEvent.getEventDescriptor()).isNotNull();
