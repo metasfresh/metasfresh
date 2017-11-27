@@ -1,6 +1,6 @@
 -- View: "de.metas.materialtracking".not_waschproble_pp_orders_that_still_have_ics
 
--- DROP VIEW "de.metas.materialtracking".not_waschproble_pp_orders_that_still_have_ics;
+ DROP VIEW "de.metas.materialtracking".not_waschproble_pp_orders_that_still_have_ics;
 
 CREATE OR REPLACE VIEW "de.metas.materialtracking".not_waschproble_pp_orders_that_still_have_ics AS 
  SELECT mt.lot,
