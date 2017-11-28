@@ -22,7 +22,6 @@ import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
@@ -59,7 +58,6 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	// services
 	private static final transient Logger logger = LogManager.getLogger(OrderLineQuickInputProcessor.class);
 	private final transient IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
-	private final transient IHUPIItemProductBL piPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 
 	public OrderLineQuickInputProcessor()
 	{
@@ -106,7 +104,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 			throw new AdempiereException("Qty shall be greather than zero"); // TODO trl
 		}
 
-		computeAndSetQtysForNewHuPackingAware(huPackingAware, quickInputQty);
+		huPackingAwareBL.computeAndSetQtysForNewHuPackingAware(huPackingAware, quickInputQty);
 
 		return validateNewHuPackingAware(huPackingAware);
 	}
@@ -130,24 +128,6 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		huPackingAware.setM_HU_PI_Item_Product(piItemProduct);
 
 		return huPackingAware;
-	}
-
-	private void computeAndSetQtysForNewHuPackingAware(
-			@NonNull final PlainHUPackingAware huPackingAware,
-			@NonNull final BigDecimal quickInputQty)
-	{
-		final I_M_HU_PI_Item_Product piItemProduct = huPackingAware.getM_HU_PI_Item_Product();
-		if (piItemProduct == null || piPIItemProductBL.isVirtualHUPIItemProduct(piItemProduct) || piItemProduct.isInfiniteCapacity())
-		{
-			huPackingAware.setQty(quickInputQty);
-			huPackingAware.setQtyPacks(BigDecimal.ONE);
-		}
-		else
-		{
-			final BigDecimal qtyTU = quickInputQty;
-			huPackingAware.setQtyPacks(qtyTU);
-			huPackingAwareBL.setQty(huPackingAware, qtyTU.intValue());
-		}
 	}
 
 	private PlainHUPackingAware validateNewHuPackingAware(@NonNull final PlainHUPackingAware huPackingAware)
