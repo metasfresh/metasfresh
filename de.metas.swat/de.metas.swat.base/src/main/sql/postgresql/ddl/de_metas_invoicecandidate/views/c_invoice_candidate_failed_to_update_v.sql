@@ -686,5 +686,3 @@ UNION
   WHERE (ic.c_invoice_candidate_id IN ( SELECT c_invoice_candidate_missing_c_invoice_candidate_agg_id_v.c_invoice_candidate_id
            FROM de_metas_invoicecandidate.c_invoice_candidate_missing_c_invoice_candidate_agg_id_v));
 
-ALTER TABLE de_metas_invoicecandidate.c_invoice_candidate_failed_to_update_v
-  OWNER TO metasfresh;
