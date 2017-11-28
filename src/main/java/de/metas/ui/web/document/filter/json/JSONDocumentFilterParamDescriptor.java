@@ -87,6 +87,10 @@ import lombok.ToString;
 	@JsonProperty("type")
 	private final JSONLayoutType type;
 
+	@JsonProperty("showIncrementDecrementButtons")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean showIncrementDecrementButtons;
+
 	private JSONDocumentFilterParamDescriptor(final DocumentFilterParamDescriptor param, final JSONOptions jsonOpts)
 	{
 		parameterName = param.getParameterName();
@@ -112,6 +116,8 @@ import lombok.ToString;
 		readonly = false;
 
 		type = toJSONLayoutType(widgetType);
+		
+		showIncrementDecrementButtons = param.isShowIncrementDecrementButtons() ? Boolean.TRUE : null;
 	}
 
 	private static final JSONLayoutType toJSONLayoutType(final JSONLayoutWidgetType widgetType)

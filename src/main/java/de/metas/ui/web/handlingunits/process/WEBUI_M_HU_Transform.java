@@ -1,13 +1,19 @@
 package de.metas.ui.web.handlingunits.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -23,6 +29,7 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.handlingunits.process.WebuiHUTransformCommand.ActionType;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -156,7 +163,7 @@ public class WEBUI_M_HU_Transform
 	 *
 	 * @return a list of HU PI items that link the currently selected TU with a TUperLU-qty and a LU packing instruction.
 	 */
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_ID, dependsOn = PARAM_Action , numericKey = true, lookupTableName = I_M_HU_PI_Item.Table_Name)
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_ID, dependsOn = PARAM_Action, numericKey = true, lookupTableName = I_M_HU_PI_Item.Table_Name)
 	private LookupValuesList getM_HU_PI_Item_ID()
 	{
 		return newParametersFiller().getM_HU_PI_Item_IDs();
@@ -190,11 +197,11 @@ public class WEBUI_M_HU_Transform
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if(!isHUEditorView())
+		if (!isHUEditorView())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
-		
+
 		if (!getSelectedDocumentIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
@@ -259,10 +266,44 @@ public class WEBUI_M_HU_Transform
 		{
 			changes = true;
 		}
+		if(removeSelectedRowsIfHUDestoyed())
+		{
+			changes = true;
+		}
 		//
 		if (changes)
 		{
 			view.invalidateAll();
 		}
+	}
+
+	/** @return true if view was changed and needs invalidation */
+	private final boolean removeSelectedRowsIfHUDestoyed()
+	{
+		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
+		if (selectedRowIds.isEmpty())
+		{
+			return false;
+		}
+		else if (selectedRowIds.isAll())
+		{
+			return false;
+		}
+
+		final HUEditorView view = getView();
+		final ImmutableSet<Integer> destroyedHUIds = view.streamByIds(selectedRowIds)
+				.map(row -> row.getM_HU_ID())
+				.distinct()
+				.map(huId -> load(huId, I_M_HU.class))
+				.filter(Services.get(IHandlingUnitsBL.class)::isDestroyed)
+				.map(I_M_HU::getM_HU_ID)
+				.collect(ImmutableSet.toImmutableSet());
+		if(destroyedHUIds.isEmpty())
+		{
+			return false;
+		}
+
+		final boolean changes = view.removeHUIds(destroyedHUIds);
+		return changes;
 	}
 }

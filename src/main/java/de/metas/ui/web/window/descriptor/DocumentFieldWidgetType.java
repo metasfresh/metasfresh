@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.compiere.util.DisplayType;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 import de.metas.ui.web.window.datatypes.DateRangeValue;
@@ -87,7 +86,6 @@ public enum DocumentFieldWidgetType
 
 	private static final Set<DocumentFieldWidgetType> TYPES_Date = Sets.immutableEnumSet(Date, Time, DateTime);
 	private static final Set<DocumentFieldWidgetType> TYPES_Numeric = Sets.immutableEnumSet(Integer, Number, Amount, Quantity, CostPrice);
-	private static final Set<DocumentFieldWidgetType> TYPES_WithRageFilteringSupport = Sets.immutableEnumSet(Iterables.concat(TYPES_Date, TYPES_Numeric));
 
 	private final LayoutAlign gridAlign;
 	private final Class<?> valueClass;
@@ -124,11 +122,6 @@ public enum DocumentFieldWidgetType
 			default:
 				return null;
 		}
-	}
-
-	public final boolean isRangeFilteringSupported()
-	{
-		return TYPES_WithRageFilteringSupport.contains(this);
 	}
 
 	public final boolean isDateOrTime()

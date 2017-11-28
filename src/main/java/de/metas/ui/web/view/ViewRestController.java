@@ -145,6 +145,7 @@ public class ViewRestController
 				// .setStickyFilters(stickyFilters) // none
 				.setFiltersFromJSON(jsonRequest.getFilters())
 				.setFilterOnlyIds(jsonRequest.getFilterOnlyIds())
+				.setUseAutoFilters(true)
 				.build();
 
 		final IView view = viewsRepo.createView(request);
