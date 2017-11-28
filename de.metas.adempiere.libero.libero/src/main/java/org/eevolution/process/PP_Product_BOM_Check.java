@@ -18,20 +18,28 @@
  *****************************************************************************/
 package org.eevolution.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import lombok.NonNull;
 
 /**
  * Title: Check BOM Structure (free of cycles) Description: Tree cannot contain BOMs which are already referenced
@@ -39,35 +47,107 @@ import de.metas.process.RunOutOfTrx;
  * @author Tony Snook (tspc)
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  */
-public class PP_Product_BOM_Check extends JavaProcess
+public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecondition
 {
 	private final transient IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final transient IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
+	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_Category_ID, mandatory = false)
+	private int p_M_Product_Category_ID;
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	{
+		if (!(I_M_Product.Table_Name.equals(context.getTableName()) || I_PP_Product_BOM.Table_Name.equals(context.getTableName())))
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+
+		if (context.getSelectionSize() > 1)
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
 	@Override
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		log.info("Check BOM Structure");
+		if (p_M_Product_Category_ID > 0)
+		{
+			final IQueryBuilder<I_M_Product> queryBuilder = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_M_Product.class)
+					.addEqualsFilter(I_M_Product.COLUMNNAME_IsBOM, true)
+					.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, p_M_Product_Category_ID)
+					.orderBy()
+					.addColumn(I_M_Product.COLUMNNAME_Name)
+					.endOrderBy();
 
+			final AtomicInteger counter = new AtomicInteger(0);
+
+			queryBuilder.create()
+					.stream()
+					.forEach(product -> {
+
+						try
+						{
+							validateProduct(product);
+							counter.incrementAndGet();
+						}
+						catch (Exception ex)
+						{
+							log.warn("Product is not valid: {}", product, ex);
+						}
+					});
+
+			return "#" + counter.get();
+		}
+		else
+		{
+			final I_M_Product product = InterfaceWrapperHelper.load(getM_Product_ID(), I_M_Product.class);
+			validateProduct(product);
+			return MSG_OK;
+		}
+	}
+
+	private int getM_Product_ID()
+	{
+		final String tableName = getTableName();
+		if (I_M_Product.Table_Name.equals(tableName))
+		{
+			return getRecord_ID();
+		}
+		else if (I_PP_Product_BOM.Table_Name.equals(tableName))
+		{
+			final I_PP_Product_BOM bom = getRecord(I_PP_Product_BOM.class);
+			return bom.getM_Product_ID();
+		}
+		else
+		{
+			throw new AdempiereException(StringUtils.formatMessage("Table {} has not yet been implemented to support BOM validation.", tableName));
+		}
+
+	}
+
+	private void validateProduct(@NonNull final I_M_Product product)
+	{
 		try
 		{
-			trxManager.run(() -> checkProductById(getRecord_ID()));
+			trxManager.run(() -> checkProductById(product));
 		}
 		catch (final Exception ex)
 		{
-			final I_M_Product product = getRecord(I_M_Product.class);
 			product.setIsVerified(false);
 			InterfaceWrapperHelper.save(product);
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
-
-		return MSG_OK;
 	}
 
-	private void checkProductById(final int productId)
+	private void checkProductById(@NonNull final I_M_Product product)
 	{
-		final I_M_Product product = load(productId, I_M_Product.class);
 		if (!product.isBOM())
 		{
 			log.info("Product is not a BOM");
