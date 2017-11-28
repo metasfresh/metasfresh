@@ -1,7 +1,7 @@
 /*
  * Class JRViewer.
  */
-package org.compiere.report;
+package org.compiere.report.viewer;
 
 /*
  * #%L
@@ -55,6 +55,8 @@ import org.compiere.apps.EMailDialog;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.PrintInfo;
+import org.compiere.report.IJasperService;
+import org.compiere.report.IJasperServiceRegistry;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.report.email.service.IEmailParameters;
 import org.compiere.report.email.service.IEmailParamsFactory;
@@ -76,7 +78,9 @@ import de.metas.process.ProcessInfoParameter;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.view.JRViewer;
+import net.sf.jasperreports.swing.JRViewer;
+import net.sf.jasperreports.swing.JRViewerController;
+import net.sf.jasperreports.swing.JRViewerToolbar;
 
 /**
  * Jasper Report Viewer Panel
@@ -124,16 +128,14 @@ class JasperReportViewerPanel extends JRViewer
 	private ProcessInfo _processInfo;
 	private JasperPrint _jasperPrint;
 
-	private final JComboBox<OutputType> comboExportFormat;
-	private final CComboBox<KeyNamePair> comboReport = new CComboBox<KeyNamePair>();
+	private final JComboBox<OutputType> comboExportFormat  = new JComboBox<>(new OutputType[] { OutputType.PDF, OutputType.XLS });
+	private final CComboBox<KeyNamePair> comboReport = new CComboBox<>();
 
 	private final ActionListener alternateReportListener = new ActionListener()
 	{
-
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
-
 			final KeyNamePair jasperProcessKNP = comboReport.getSelectedItem();
 			if (jasperProcessKNP == null)
 			{
@@ -172,89 +174,19 @@ class JasperReportViewerPanel extends JRViewer
 			{
 				_jasperPrint = newJasperPrint;
 				_processInfo = newPi;
-				loadReport(newJasperPrint);
-				refreshPage();
+				viewerContext.loadReport(newJasperPrint);
+				viewerContext.refreshPage();
 			}
 		}
 	};
 
-	public JasperReportViewerPanel(final JasperReportViewerFrame jasperViewerFrame, final JasperPrint jasperPrint) throws JRException
+	public JasperReportViewerPanel(
+			final JasperReportViewerFrame jasperViewerFrame,
+			final JasperPrint jasperPrint) throws JRException
 	{
 		super(jasperPrint);
 		this._processInfo = jasperViewerFrame.getProcessInfo();
 		this._jasperPrint = jasperPrint;
-
-		tlbToolBar.add(new JSeparator(SwingConstants.VERTICAL));
-		final JButton btnSendByEmail = new JButton();
-		btnSendByEmail.setToolTipText(msgBL.getMsg(Env.getCtx(), "SendMail"));
-		btnSendByEmail.setText(msgBL.getMsg(Env.getCtx(), "SendMail"));
-		btnSendByEmail.setPreferredSize(new java.awt.Dimension(85, 23));
-		btnSendByEmail.setMaximumSize(new java.awt.Dimension(85, 23));
-		btnSendByEmail.setMinimumSize(new java.awt.Dimension(85, 23));
-		btnSendByEmail.addActionListener(new SendByEmailListener(this));
-		tlbToolBar.add(btnSendByEmail);
-		tlbToolBar.add(new JSeparator(SwingConstants.VERTICAL));
-
-		final JButton btnExport = new JButton();
-		btnExport.setToolTipText(msgBL.getMsg(Env.getCtx(), "Export"));
-		btnExport.setText(msgBL.getMsg(Env.getCtx(), "Export"));
-		btnExport.setPreferredSize(new java.awt.Dimension(85, 23));
-		btnExport.setMaximumSize(new java.awt.Dimension(85, 23));
-		btnExport.setMinimumSize(new java.awt.Dimension(85, 23));
-		btnExport.addActionListener(new ExportListener(this));
-		tlbToolBar.add(btnExport);
-
-		comboExportFormat = new JComboBox<>(new OutputType[] { OutputType.PDF, OutputType.XLS });
-		comboExportFormat.setPreferredSize(new java.awt.Dimension(80, 23));
-		comboExportFormat.setMaximumSize(new java.awt.Dimension(80, 23));
-		comboExportFormat.setMinimumSize(new java.awt.Dimension(80, 23));
-		comboExportFormat.setSelectedItem(OutputType.PDF);
-		tlbToolBar.add(comboExportFormat);
-
-		fillComboReport();
-		comboReport.setPreferredSize(new java.awt.Dimension(240, 23));
-		comboReport.setMaximumSize(new java.awt.Dimension(240, 23));
-		comboReport.setMinimumSize(new java.awt.Dimension(240, 23));
-		tlbToolBar.add(comboReport);
-		comboReport.setToolTipText(msgBL.translate(Env.getCtx(), "AD_PrintFormat_ID"));
-
-		// Set default viewer zoom level
-		btnFitPage.setSelected(true);
-
-		// metas: resetting print button, because we want to handle printing
-		// ourselves
-		tlbToolBar.remove(btnPrint);
-
-		final KeyListener[] keyListerns = btnPrint.getKeyListeners();
-
-		btnPrint = new javax.swing.JButton();
-		btnPrint.setIcon(new javax.swing.ImageIcon(getClass().getResource(
-				"/net/sf/jasperreports/view/images/print.GIF")));
-		btnPrint.setToolTipText(getBundleString("print"));
-		btnPrint.setMargin(new java.awt.Insets(2, 2, 2, 2));
-		btnPrint.setMaximumSize(new java.awt.Dimension(23, 23));
-		btnPrint.setMinimumSize(new java.awt.Dimension(23, 23));
-		btnPrint.setPreferredSize(new java.awt.Dimension(23, 23));
-
-		// for some reason, the following commented out statement doesn'nt work
-		// when building in hudson
-		// btnPrint.addKeyListener(keyNavigationListener);
-		for (final KeyListener keyListener : keyListerns)
-		{
-			btnPrint.addKeyListener(keyListener);
-		}
-
-		tlbToolBar.add(btnPrint, 1);
-		btnPrint.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(final ActionEvent evt)
-			{
-				handleReportPrint();
-			}
-		});
-		// metas end
-		setZooms();
 	}
 
 	final Properties getCtx()
@@ -423,129 +355,213 @@ class JasperReportViewerPanel extends JRViewer
 
 		return archive;
 	}
-}
-
-final class ExportListener implements ActionListener
-{
-	private final JasperReportViewerPanel _viewer;
-
-	public ExportListener(final JasperReportViewerPanel viewer)
-	{
-		super();
-		Check.assumeNotNull(viewer, "viewer not null");
-		this._viewer = viewer;
-	}
-
-	private final JasperPrint getJasperPrint()
-	{
-		return _viewer.getJasperPrint();
-	}
-
-	private final String getReportName()
-	{
-		return getJasperPrint().getName();
-	}
-
-	private final OutputType getExportFormat()
-	{
-		return _viewer.getExportFormat();
-	}
-
-	private final ProcessInfo getProcessInfo()
-	{
-		return _viewer.getProcessInfo();
-	}
 
 	@Override
-	public void actionPerformed(final ActionEvent event)
+	protected JRViewerToolbar createToolbar()
 	{
-		final File file = getFileToExport();
-		if (file == null)
-		{
-			return;
-		}
-
-		try
-		{
-			_viewer.exportToFile(file);
-		}
-		catch (Exception e)
-		{
-			ADialog.error(0, _viewer, e);
-		}
+		return new MetasfreshJasperViewerToobar(viewerContext, this);
 	}
 
-	/**
-	 * @return file or <code>null</code> if user canceled.
-	 */
-	private File getFileToExport()
+	@SuppressWarnings("serial")
+	public class MetasfreshJasperViewerToobar extends JRViewerToolbar
 	{
-		final JFileChooser fileChooser = new JFileChooser();
-
-		final StringBuilder fileName = new StringBuilder();
-		final IEmailParamsFactory factory = new EMailParamsFactory();
-
-		final IEmailParameters emailDialogParams = factory.getInstanceForPI(getProcessInfo());
-
-		fileName.append(emailDialogParams.getAttachmentPrefix(getReportName()));
-		fileName.append('.');
-		fileName.append(getExportFormat().getFileExtension());
-
-		fileChooser.setSelectedFile(new File(fileName.toString()));
-
-		if (fileChooser.showSaveDialog(_viewer) != JFileChooser.APPROVE_OPTION)
+		public MetasfreshJasperViewerToobar(JRViewerController viewerContext, final JasperReportViewerPanel viewer)
 		{
-			return null;
+			super(viewerContext);
+
+			tlbToolBar.add(new JSeparator(SwingConstants.VERTICAL));
+			final JButton btnSendByEmail = new JButton();
+			btnSendByEmail.setToolTipText(msgBL.getMsg(Env.getCtx(), "SendMail"));
+			btnSendByEmail.setText(msgBL.getMsg(Env.getCtx(), "SendMail"));
+			btnSendByEmail.setPreferredSize(new java.awt.Dimension(85, 23));
+			btnSendByEmail.setMaximumSize(new java.awt.Dimension(85, 23));
+			btnSendByEmail.setMinimumSize(new java.awt.Dimension(85, 23));
+			btnSendByEmail.addActionListener(new SendByEmailListener(viewer));
+			tlbToolBar.add(btnSendByEmail);
+			tlbToolBar.add(new JSeparator(SwingConstants.VERTICAL));
+
+			final JButton btnExport = new JButton();
+			btnExport.setToolTipText(msgBL.getMsg(Env.getCtx(), "Export"));
+			btnExport.setText(msgBL.getMsg(Env.getCtx(), "Export"));
+			btnExport.setPreferredSize(new java.awt.Dimension(85, 23));
+			btnExport.setMaximumSize(new java.awt.Dimension(85, 23));
+			btnExport.setMinimumSize(new java.awt.Dimension(85, 23));
+			btnExport.addActionListener(new ExportListener(viewer));
+			tlbToolBar.add(btnExport);
+
+			comboExportFormat.setPreferredSize(new java.awt.Dimension(80, 23));
+			comboExportFormat.setMaximumSize(new java.awt.Dimension(80, 23));
+			comboExportFormat.setMinimumSize(new java.awt.Dimension(80, 23));
+			comboExportFormat.setSelectedItem(OutputType.PDF);
+			tlbToolBar.add(comboExportFormat);
+
+			fillComboReport();
+			comboReport.setPreferredSize(new java.awt.Dimension(240, 23));
+			comboReport.setMaximumSize(new java.awt.Dimension(240, 23));
+			comboReport.setMinimumSize(new java.awt.Dimension(240, 23));
+			tlbToolBar.add(comboReport);
+			comboReport.setToolTipText(msgBL.translate(Env.getCtx(), "AD_PrintFormat_ID"));
+
+			// Set default viewer zoom level
+			btnFitPage.setSelected(true);
+
+			// metas: resetting print button, because we want to handle printing
+			// ourselves
+			tlbToolBar.remove(btnPrint);
+
+			final KeyListener[] keyListerns = btnPrint.getKeyListeners();
+
+			btnPrint = new javax.swing.JButton();
+			btnPrint.setIcon(new javax.swing.ImageIcon(getClass().getResource(
+					"/net/sf/jasperreports/view/images/print.GIF")));
+			btnPrint.setToolTipText(getBundleString("print"));
+			btnPrint.setMargin(new java.awt.Insets(2, 2, 2, 2));
+			btnPrint.setMaximumSize(new java.awt.Dimension(23, 23));
+			btnPrint.setMinimumSize(new java.awt.Dimension(23, 23));
+			btnPrint.setPreferredSize(new java.awt.Dimension(23, 23));
+
+			// for some reason, the following commented out statement doesn'nt work
+			// when building in hudson
+			// btnPrint.addKeyListener(keyNavigationListener);
+			for (final KeyListener keyListener : keyListerns)
+			{
+				btnPrint.addKeyListener(keyListener);
+			}
+
+			tlbToolBar.add(btnPrint, 1);
+			btnPrint.addActionListener(new ActionListener()
+			{
+				@Override
+				public void actionPerformed(final ActionEvent evt)
+				{
+					handleReportPrint();
+				}
+			});
+			// metas end
 		}
 
-		return fileChooser.getSelectedFile();
-	}
-}
-
-final class SendByEmailListener implements ActionListener
-{
-	private final JasperReportViewerPanel viewer;
-
-	public SendByEmailListener(final JasperReportViewerPanel viewer)
-	{
-		super();
-		Check.assumeNotNull(viewer, "viewer not null");
-		this.viewer = viewer;
-	}
-
-	@Override
-	public void actionPerformed(final ActionEvent event)
-	{
-		final ProcessInfo pi = viewer.getProcessInfo();
-		final OutputType exportFormat = viewer.getExportFormat();
-
-		final IEmailParamsFactory factory = new EMailParamsFactory();
-		final IEmailParameters emailParams = factory.getInstanceForPI(pi);
-
-		File attachment = null;
-		I_AD_Archive archive;
-		try
+		final class ExportListener implements ActionListener
 		{
-			attachment = File.createTempFile(emailParams.getAttachmentPrefix("mail") + '_', "." + exportFormat.getFileExtension());
-			archive = viewer.exportToFile(attachment);
-		}
-		catch (final Exception e)
-		{
-			ADialog.error(0, viewer, e);
-			return;
+			private final JasperReportViewerPanel _viewer;
+
+			public ExportListener(final JasperReportViewerPanel viewer)
+			{
+				super();
+				Check.assumeNotNull(viewer, "viewer not null");
+				this._viewer = viewer;
+			}
+
+			private final JasperPrint getJasperPrint()
+			{
+				return _viewer.getJasperPrint();
+			}
+
+			private final String getReportName()
+			{
+				return getJasperPrint().getName();
+			}
+
+			private final OutputType getExportFormat()
+			{
+				return _viewer.getExportFormat();
+			}
+
+			private final ProcessInfo getProcessInfo()
+			{
+				return _viewer.getProcessInfo();
+			}
+
+			@Override
+			public void actionPerformed(final ActionEvent event)
+			{
+				final File file = getFileToExport();
+				if (file == null)
+				{
+					return;
+				}
+
+				try
+				{
+					_viewer.exportToFile(file);
+				}
+				catch (Exception e)
+				{
+					ADialog.error(0, _viewer, e);
+				}
+			}
+
+			/**
+			 * @return file or <code>null</code> if user canceled.
+			 */
+			private File getFileToExport()
+			{
+				final JFileChooser fileChooser = new JFileChooser();
+
+				final StringBuilder fileName = new StringBuilder();
+				final IEmailParamsFactory factory = new EMailParamsFactory();
+
+				final IEmailParameters emailDialogParams = factory.getInstanceForPI(getProcessInfo());
+
+				fileName.append(emailDialogParams.getAttachmentPrefix(getReportName()));
+				fileName.append('.');
+				fileName.append(getExportFormat().getFileExtension());
+
+				fileChooser.setSelectedFile(new File(fileName.toString()));
+
+				if (fileChooser.showSaveDialog(_viewer) != JFileChooser.APPROVE_OPTION)
+				{
+					return null;
+				}
+
+				return fileChooser.getSelectedFile();
+			}
 		}
 
-		//
-		// Start EMail dialog
-		new EMailDialog(
-				Env.getFrame(viewer), // parent frame
-				emailParams.getTitle(),
-				emailParams.getFrom(),
-				emailParams.getTo(),
-				emailParams.getSubject(),
-				emailParams.getMessage(),
-				attachment,
-				emailParams.getDefaultTextPreset(),
-				archive);
-	}
+		final class SendByEmailListener implements ActionListener
+		{
+			private final JasperReportViewerPanel viewer;
+
+			public SendByEmailListener(final JasperReportViewerPanel viewer)
+			{
+				Check.assumeNotNull(viewer, "viewer not null");
+				this.viewer = viewer;
+			}
+
+			@Override
+			public void actionPerformed(final ActionEvent event)
+			{
+				final ProcessInfo pi = viewer.getProcessInfo();
+				final OutputType exportFormat = viewer.getExportFormat();
+
+				final IEmailParamsFactory factory = new EMailParamsFactory();
+				final IEmailParameters emailParams = factory.getInstanceForPI(pi);
+
+				File attachment = null;
+				I_AD_Archive archive;
+				try
+				{
+					attachment = File.createTempFile(emailParams.getAttachmentPrefix("mail") + '_', "." + exportFormat.getFileExtension());
+					archive = viewer.exportToFile(attachment);
+				}
+				catch (final Exception e)
+				{
+					ADialog.error(0, viewer, e);
+					return;
+				}
+
+				//
+				// Start EMail dialog
+				new EMailDialog(
+						Env.getFrame(viewer), // parent frame
+						emailParams.getTitle(),
+						emailParams.getFrom(),
+						emailParams.getTo(),
+						emailParams.getSubject(),
+						emailParams.getMessage(),
+						attachment,
+						emailParams.getDefaultTextPreset(),
+						archive);
+			}
+		}
+	};
 }

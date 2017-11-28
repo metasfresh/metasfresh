@@ -1,4 +1,4 @@
-package org.compiere.report;
+package org.compiere.report.viewer;
 
 /*
  * #%L
@@ -10,12 +10,12 @@ package org.compiere.report;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,7 +36,7 @@ import net.sf.jasperreports.engine.JasperPrint;
 /**
  * Jasper Viewer Frame
  */
-class JasperReportViewerFrame extends javax.swing.JFrame
+public class JasperReportViewerFrame extends javax.swing.JFrame
 {
 
 	private static final long serialVersionUID = 1192807883081180999L;
@@ -58,10 +58,8 @@ class JasperReportViewerFrame extends javax.swing.JFrame
 	 *            address.
 	 * @throws JRException
 	 */
-	protected JasperReportViewerFrame(final JasperPrint jasperPrint, final String frameTitle, final ProcessInfo pi) throws JRException
+	public JasperReportViewerFrame(final JasperPrint jasperPrint, final String frameTitle, final ProcessInfo pi) throws JRException
 	{
-		super();
-
 		this.m_title = frameTitle;
 		this.processInfo = pi;
 
