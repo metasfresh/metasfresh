@@ -42,6 +42,7 @@ import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
 import de.metas.material.dispo.client.repository.AvailableStockService;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.MaterialQuery.MaterialQueryBuilder;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
@@ -476,7 +477,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		final String storageAttributesKeys = sysConfigBL.getValue(
 				SYSCONFIG_PRODUCT_LOOKUP_DESCRIPTOR_STORAGE_ATTRIBUTES_KEYS,
-				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL,
+				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.getAsString(),
 				clientId, orgId);
 
 		final Splitter splitter = Splitter
@@ -485,7 +486,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				.omitEmptyStrings();
 		for (final String storageAttributesKey : splitter.splitToList(storageAttributesKeys))
 		{
-			materialQueryBuilder.storageAttributesKey(storageAttributesKey);
+			materialQueryBuilder.storageAttributesKey(AttributesKey.of(storageAttributesKey));
 		}
 	}
 
