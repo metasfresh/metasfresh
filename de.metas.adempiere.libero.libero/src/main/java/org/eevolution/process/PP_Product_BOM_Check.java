@@ -64,7 +64,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 			return ProcessPreconditionsResolution.reject();
 		}
 
-		if (context.getSelectionSize()>1)
+		if (context.getSelectionSize() > 1)
 		{
 			return ProcessPreconditionsResolution.reject();
 		}
@@ -72,22 +72,17 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 		return ProcessPreconditionsResolution.accept();
 	}
 
-
 	@Override
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		log.info("Check BOM Structure");
-
 		if (p_M_Product_Category_ID > 0)
 		{
 			final IQueryBuilder<I_M_Product> queryBuilder = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_M_Product.class, getCtx(), get_TrxName())
-					.addEqualsFilter(I_M_Product.COLUMNNAME_IsBOM, true);
-
-			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, p_M_Product_Category_ID);
-
-			queryBuilder.orderBy()
+					.createQueryBuilder(I_M_Product.class)
+					.addEqualsFilter(I_M_Product.COLUMNNAME_IsBOM, true)
+					.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, p_M_Product_Category_ID)
+					.orderBy()
 					.addColumn(I_M_Product.COLUMNNAME_Name)
 					.endOrderBy();
 
@@ -97,10 +92,14 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 					.stream()
 					.forEach(product -> {
 
-						final boolean isvalidated = validateProduct(product);
-						if (isvalidated)
+						try
 						{
+							validateProduct(product);
 							counter.incrementAndGet();
+						}
+						catch (Exception ex)
+						{
+							log.warn("Product is not valid: {}", product, ex);
 						}
 					});
 
@@ -108,12 +107,11 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 		}
 		else
 		{
-			final I_M_Product product = InterfaceWrapperHelper.create(getCtx(), getM_Product_ID(), I_M_Product.class, get_TrxName());
+			final I_M_Product product = InterfaceWrapperHelper.load(getM_Product_ID(), I_M_Product.class);
 			validateProduct(product);
 			return MSG_OK;
 		}
 	}
-
 
 	private int getM_Product_ID()
 	{
@@ -134,18 +132,17 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 
 	}
 
-	private boolean validateProduct(@NonNull final I_M_Product product)
+	private void validateProduct(@NonNull final I_M_Product product)
 	{
 		try
 		{
 			trxManager.run(() -> checkProductById(product));
-			return true;
 		}
 		catch (final Exception ex)
 		{
 			product.setIsVerified(false);
 			InterfaceWrapperHelper.save(product);
-			return false;
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
 	}
 
