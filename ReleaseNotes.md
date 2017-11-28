@@ -17,6 +17,10 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
 
+* metasfresh-webui-frontend
+  * [#1354](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1354) DateTimeRangePicker default Time from/to in Filter and Process Parms
+    * Improving the DateRange Picker Filter widget. Now seetting the initial date and time to the whole day of today.
+
 ## Fixes
 * metasfresh-app
   * [#2946](https://github.com/metasfresh/metasfresh/issues/2946) Product: New Field Endcustomer productname and translation
