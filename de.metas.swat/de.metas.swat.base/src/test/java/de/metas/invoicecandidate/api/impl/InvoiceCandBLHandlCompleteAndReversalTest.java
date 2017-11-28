@@ -84,7 +84,6 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 
 		final I_C_Invoice_Candidate ic = new C_Invoice_Candidate_Builder(this)
 				.setSOTrx(true)
-				.setAllowConsolidateInvoiceOnBPartner(false)
 				.build();
 
 		final BigDecimal invoiceQtyInvoiced = new BigDecimal("10");
@@ -207,7 +206,6 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 
 		final I_C_Invoice_Candidate ic = new C_Invoice_Candidate_Builder(this)
 				.setSOTrx(true)
-				.setAllowConsolidateInvoiceOnBPartner(false)
 				.build();
 
 		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> invoiceAndLine = creatInvoiceWithOneLine(contextProvider, INVOICE_QTY_INVOICED_TEN, IDocument.STATUS_Completed, invoiceDocTypeBaseName);
@@ -302,7 +300,6 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 
 		final I_C_Invoice_Candidate ic = new C_Invoice_Candidate_Builder(this)
 				.setSOTrx(true)
-				.setAllowConsolidateInvoiceOnBPartner(false)
 				.build();
 
 		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> invoiceAndLine = creatInvoiceWithOneLine(contextProvider, INVOICE_QTY_INVOICED_TEN, IDocument.STATUS_Completed, invoiceDocTypeBaseName);
@@ -356,6 +353,6 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		invoiceLine.setQtyInvoiced(creditMemoQtyInvoiced);
 		invoiceLine.setLine(10);
 		InterfaceWrapperHelper.save(invoiceLine);
-		return new ImmutablePair<I_C_Invoice, I_C_InvoiceLine>(invoice, invoiceLine);
+		return new ImmutablePair<>(invoice, invoiceLine);
 	}
 }

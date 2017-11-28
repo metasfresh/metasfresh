@@ -21,10 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -54,6 +50,8 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Generate Invoices
@@ -413,8 +411,6 @@ public class InvoiceGenerate extends JavaProcess
 
 	private boolean allowsCons(final boolean isSOTrx)
 	{
-		// final I_C_BPartner bPartner = InterfaceWrapperHelper.create(m_bp, I_C_BPartner.class);
-		// return Services.get(IBPartnerBL.class).isAllowConsolidateInvoiceEffective(bPartner, isSOTrx);
 		return isSOTrx;
 	}
 
@@ -614,8 +610,6 @@ public class InvoiceGenerate extends JavaProcess
 			return false;
 		}
 
-		// final I_C_BPartner bPartner = InterfaceWrapperHelper.create(getCtx(), order.getBill_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-		// return Services.get(IBPartnerBL.class).isAllowConsolidateInvoiceEffective(bPartner, order.isSOTrx());
 		return order.isSOTrx();
 	}
 

@@ -58,7 +58,6 @@ public abstract class AbstractTestQualityDiscountPercentOverride extends Abstrac
 				.setPriceEntered(1)
 				.setQty(100)
 				.setSOTrx(false)
-				.setAllowConsolidateInvoiceOnBPartner(true)
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")
 				// Required because QualityDiscountPercent_Override will be applied to the QtyDelivered, and if we have invoiceRule "immediate", then qtyDelivered make a difference at all.
