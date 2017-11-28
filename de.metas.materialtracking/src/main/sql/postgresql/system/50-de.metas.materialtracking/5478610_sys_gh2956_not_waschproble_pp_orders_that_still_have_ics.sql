@@ -95,5 +95,3 @@ CREATE OR REPLACE VIEW "de.metas.materialtracking".not_waschproble_pp_orders_tha
   WHERE po_dt.name::text <> 'Waschprobe'::text
   ORDER BY po.documentno;
 
-ALTER TABLE "de.metas.materialtracking".not_waschproble_pp_orders_that_still_have_ics
-  OWNER TO metasfresh;
