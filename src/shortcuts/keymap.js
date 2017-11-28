@@ -24,7 +24,7 @@ export default {
     /* Document list context */
     OPEN_SELECTED: `${mod}+B`, // Open document in new tab
     REMOVE_SELECTED: `${mod}+Y`,
-    ADVANCED_EDIT: `${mod}+A`,
+    ADVANCED_EDIT: `${mod}+E`,
 
     /* POS context */
     SELECT_ALL_LEAFS: `${mod}+S`,
