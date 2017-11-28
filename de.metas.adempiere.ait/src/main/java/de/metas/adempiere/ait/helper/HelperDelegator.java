@@ -10,12 +10,12 @@ package de.metas.adempiere.ait.helper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,10 +46,10 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.model.I_M_Product_Category;
+import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -57,7 +57,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 public class HelperDelegator implements IHelper
 {
 	private final IHelper helper;
-	
+
 	protected HelperDelegator(IHelper helper)
 	{
 		this.helper = helper;
@@ -155,7 +155,7 @@ public class HelperDelegator implements IHelper
 
 	/**
 	 * Get/Create a Business Partner
-	 * 
+	 *
 	 * @param bpValue
 	 * @return
 	 * @deprecated use {@link #mkBPartnerHelper()}.getC_BPartner(TestConfig) instead
@@ -263,7 +263,7 @@ public class HelperDelegator implements IHelper
 	{
 		return helper.setProductPrice(pricingSystemValue, currencyCode, countryCode, productValue, price);
 	}
-	
+
 	@Override
 	public I_M_ProductPrice setProductPrice(String pricingSystemValue, String currencyCode, String countryCode, String productValue, BigDecimal price, boolean isSO)
 	{
@@ -287,7 +287,7 @@ public class HelperDelegator implements IHelper
 	{
 		return helper.mkBPartnerHelper();
 	}
-	
+
 	@Override
 	public OrderHelper mkOrderHelper()
 	{
@@ -317,7 +317,7 @@ public class HelperDelegator implements IHelper
 	{
 		helper.runProcess_InvoiceGenerate(orderIds);
 	}
-	
+
 	@Override
 	public void runProcess_InvoiceGenerate(String trxName, int... orderIds)
 	{
@@ -329,7 +329,7 @@ public class HelperDelegator implements IHelper
 	{
 		helper.runProcess_InvoiceGenerateFromCands(cands);
 	}
-	
+
 	@Override
 	public List<I_C_Invoice> retrieveInvoicesForOrders(int[] orderIds, String trxName)
 	{
@@ -353,7 +353,7 @@ public class HelperDelegator implements IHelper
 	{
 		helper.runProcess_UpdateShipmentScheds();
 	}
-	
+
 	@Override
 	public void addInventory(String productValue, int qty)
 	{
@@ -456,7 +456,7 @@ public class HelperDelegator implements IHelper
 	{
 		return helper.getM_PriceList_Version(pricingSystemValue, currencyCode, countryCode);
 	}
-	
+
 	@Override
 	public AcctFactAssert doAccountingAssertions()
 	{
@@ -486,13 +486,13 @@ public class HelperDelegator implements IHelper
 	{
 		return helper.setProductPrice(pl, productValue, price, C_TaxCategory_ID);
 	}
-	
+
 	@Override
 	public ProcessHelper mkDocProcess(Object model, String docAction, String expectedDocStatus)
 	{
 		return helper.mkDocProcess(model, docAction, expectedDocStatus);
 	}
-	
+
 	@Override
 	public TestConfig getConfig()
 	{
@@ -510,7 +510,7 @@ public class HelperDelegator implements IHelper
 	{
 		return helper.getCountryCode();
 	}
-		
+
 	@Override
 	public String getGeneratedBy()
 	{
@@ -520,6 +520,6 @@ public class HelperDelegator implements IHelper
 	@Override
 	public void addChatInfoToPO(Object model, String info)
 	{
-		helper.addChatInfoToPO(model, info);		
+		helper.addChatInfoToPO(model, info);
 	}
 }

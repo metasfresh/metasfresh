@@ -61,6 +61,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.jmx.JMXPOJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -1159,5 +1160,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 	public POJOLookupMapRestorePoint createRestorePoint()
 	{
 		return new POJOLookupMapRestorePoint(this);
+	}
+
+	@Override
+	public void addImportInterceptor(String importTableName, IImportInterceptor listener)
+	{
+		// nothing
 	}
 }

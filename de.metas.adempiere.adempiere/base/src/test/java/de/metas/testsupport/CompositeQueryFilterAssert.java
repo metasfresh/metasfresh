@@ -4,6 +4,7 @@ import static de.metas.testsupport.QueryFilterTestUtil.castOrNull;
 import static org.assertj.core.error.ElementsShouldSatisfy.elementsShouldSatisfyAny;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
@@ -106,6 +107,11 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 		};
 
 		return anyFilterMatches(p);
+	}
+
+	public CompositeQueryFilterAssert hasInArrayFilter(final ModelColumn column, final Object ... values)
+	{
+		return hasInArrayFilter(column, Arrays.asList(values));
 	}
 
 	public CompositeQueryFilterAssert hasInArrayFilter(final ModelColumn column, final Collection<?> values)

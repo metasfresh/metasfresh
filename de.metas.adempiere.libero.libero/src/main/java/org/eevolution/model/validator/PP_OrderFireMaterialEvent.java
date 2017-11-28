@@ -9,6 +9,7 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBOMDAO;
+import org.eevolution.event.PPOrderRequestedEventHandler;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -18,9 +19,10 @@ import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
+import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.ProductionAdvisedEvent;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import lombok.NonNull;
 
 /**
  * A dedicated model interceptor whose job it is to fire events on the {@link MaterialEventService}.<br>
@@ -33,11 +35,10 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 public class PP_OrderFireMaterialEvent
 {
 
-	@ModelChange(timings =
-		{
-				ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE
-		}, ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
-	public void fireMaterialEvent(final I_PP_Order ppOrder, final int timing)
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE
+	}, ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
+	public void fireMaterialEvent(final I_PP_Order ppOrder)
 	{
 		// when going with @DocAction, at this point the ppOrder's docStatus would still be "IP" even if we are invoked on afterComplete..
 		// also, it might still be rolled back
@@ -51,6 +52,42 @@ public class PP_OrderFireMaterialEvent
 			return;
 		}
 
+		final PPOrder ppOrderPojo = createPPOrderPojo(ppOrder);
+		final int groupIdFromPPOrderRequestedEvent = PPOrderRequestedEventHandler.ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrder, 0);
+
+		final PPOrderAdvisedOrCreatedEvent event = PPOrderAdvisedOrCreatedEvent.builder()
+				.eventDescriptor(EventDescriptor.createNew(ppOrder))
+				.ppOrder(ppOrderPojo)
+				.groupId(groupIdFromPPOrderRequestedEvent)
+				.build();
+
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		materialEventService.fireEventAfterNextCommit(event, InterfaceWrapperHelper.getTrxName(ppOrder));
+	}
+
+	private PPOrder createPPOrderPojo(@NonNull final I_PP_Order ppOrder)
+	{
+		final PPOrderBuilder ppOrderPojoBuilder = createPPorderPojoBuilder(ppOrder);
+
+		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
+
+		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);
+		for (final I_PP_Order_BOMLine line : orderBOMLines)
+		{
+			ppOrderPojoBuilder.line(PPOrderLine.builder()
+					.productDescriptor(productDescriptorFactory.createProductDescriptor(line))
+					.description(line.getDescription())
+					.ppOrderLineId(line.getPP_Order_BOMLine_ID())
+					.productBomLineId(line.getPP_Product_BOMLine_ID())
+					.qtyRequired(line.getQtyRequiered())
+					.receipt(PPOrderUtil.isReceipt(line.getComponentType()))
+					.build());
+		}
+		return ppOrderPojoBuilder.build();
+	}
+
+	private PPOrderBuilder createPPorderPojoBuilder(@NonNull final I_PP_Order ppOrder)
+	{
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
@@ -67,28 +104,7 @@ public class PP_OrderFireMaterialEvent
 				.uomId(ppOrder.getC_UOM_ID())
 				.warehouseId(ppOrder.getM_Warehouse_ID())
 				.orderLineId(ppOrder.getC_OrderLine_ID());
-
-		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);
-		for (final I_PP_Order_BOMLine line : orderBOMLines)
-		{
-			ppOrderPojoBuilder.line(PPOrderLine.builder()
-					.productDescriptor(productDescriptorFactory.createProductDescriptor(line))
-					.description(line.getDescription())
-					.ppOrderLineId(line.getPP_Order_BOMLine_ID())
-					.productBomLineId(line.getPP_Product_BOMLine_ID())
-					.qtyRequired(line.getQtyRequiered())
-					.receipt(PPOrderUtil.isReceipt(line.getComponentType()))
-					.build());
-		}
-
-		final ProductionAdvisedEvent event = ProductionAdvisedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(ppOrder))
-				.ppOrder(ppOrderPojoBuilder.build())
-				// .reference(reference) // we don't know the reference here, but we expect that the event-receiver (i.e. material-dispo) will be able to sort out which record(s) to update via date, orderLineId etc
-				.build();
-
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event, InterfaceWrapperHelper.getTrxName(ppOrder));
+		return ppOrderPojoBuilder;
 	}
 
 }

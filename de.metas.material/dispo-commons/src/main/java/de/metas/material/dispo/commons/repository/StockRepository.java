@@ -121,8 +121,7 @@ public class StockRepository
 		return queryBuilder;
 	}
 
-	private IQueryBuilder<I_MD_Candidate_Stock_v> createInitialQueryBuilderForDateAndWarehouse(
-			@NonNull final MaterialQuery query)
+	private IQueryBuilder<I_MD_Candidate_Stock_v> createInitialQueryBuilderForDateAndWarehouse(@NonNull final MaterialQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -130,9 +129,9 @@ public class StockRepository
 				.createQueryBuilder(I_MD_Candidate_Stock_v.class)
 				.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, query.getDate());
 
-		if (query.getWarehouseId() > 0)
+		if (!query.getWarehouseIds().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID, query.getWarehouseId());
+			queryBuilder.addInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID, query.getWarehouseIds());
 		}
 		return queryBuilder;
 	}
