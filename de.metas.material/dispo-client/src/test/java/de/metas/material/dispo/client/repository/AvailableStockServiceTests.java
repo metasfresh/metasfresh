@@ -75,9 +75,7 @@ public class AvailableStockServiceTests
 		final I_M_AttributeValue attributeValue2 = attributesTestHelper.createM_AttributeValue(attr2, "value2");
 
 		// invoke the method under test
-		final AttributesKey storageAttributesKey = AttributesKey.of(attributeValue1.getM_AttributeValue_ID()
-				+ ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER
-				+ attributeValue2.getM_AttributeValue_ID());
+		final AttributesKey storageAttributesKey = AttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());
 		final List<I_M_AttributeValue> result = availableStockService.extractAttributeSetFromStorageAttributesKey(storageAttributesKey);
 
 		assertThat(result).hasSize(2);
@@ -110,7 +108,7 @@ public class AvailableStockServiceTests
 	@Test
 	public void extractType_attributeSet()
 	{
-		final AttributesKey storageAttributesKey = AttributesKey.of("12345");
+		final AttributesKey storageAttributesKey = AttributesKey.ofAttributeValueIds(12345);
 		final Group.Type type = availableStockService.extractType(storageAttributesKey);
 		assertThat(type).isSameAs(Type.ATTRIBUTE_SET);
 	}

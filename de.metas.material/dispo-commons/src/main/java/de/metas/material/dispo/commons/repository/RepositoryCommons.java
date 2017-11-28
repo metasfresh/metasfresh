@@ -166,10 +166,7 @@ public class RepositoryCommons
 			}
 			else
 			{
-				builder.addStringLikeFilter(
-						I_MD_Candidate.COLUMN_StorageAttributesKey,
-						prepareStorageAttributesKeyForLikeExpression(storageAttributesKey),
-						false); // iggnoreCase=false
+				builder.addStringLikeFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, storageAttributesKey.getSqlLikeString(), false); // iggnoreCase=false
 			}
 			atLeastOneFilterAdded = true;
 		}
@@ -177,11 +174,6 @@ public class RepositoryCommons
 		atLeastOneFilterAdded = configureBuilderDateFilters(materialDescriptor, builder) || atLeastOneFilterAdded;
 
 		return atLeastOneFilterAdded;
-	}
-
-	public static String prepareStorageAttributesKeyForLikeExpression(@NonNull final AttributesKey storageAttributesKey)
-	{
-		return storageAttributesKey.getAsString().replaceAll(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER, "%");
 	}
 
 	private boolean configureBuilderDateFilters(

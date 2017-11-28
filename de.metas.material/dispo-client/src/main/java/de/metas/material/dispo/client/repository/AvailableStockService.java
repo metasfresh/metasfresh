@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -12,9 +13,7 @@ import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.material.dispo.client.repository.AvailableStockResult.AvailableStockResultBuilder;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
@@ -142,36 +141,21 @@ public class AvailableStockService
 	{
 		try
 		{
-			final Builder<I_M_AttributeValue> builder = ImmutableList.<I_M_AttributeValue>builder();
-
-			final Iterable<String> singleAttributeValueIds = Splitter
-					.on(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER).split(storageAttributesKey.getAsString());
-			for (final String singleAttributeId : singleAttributeValueIds)
+			final List<Integer> attributeValueIds = storageAttributesKey.getAttributeValueIds();
+			if (attributeValueIds.isEmpty())
 			{
-				final I_M_AttributeValue attributeValue = loadAttributeValueFromStringId(singleAttributeId);
-				builder.add(attributeValue);
+				return ImmutableList.of();
 			}
-			return builder.build();
+			
+			return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeValue.class)
+					.addInArrayFilter(I_M_AttributeValue.COLUMN_M_AttributeValue_ID, attributeValueIds)
+					.create()
+					.list(I_M_AttributeValue.class);
 		}
 		catch (final RuntimeException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
 					.setParameter("storageAttributesKey", storageAttributesKey);
-		}
-	}
-
-	private I_M_AttributeValue loadAttributeValueFromStringId(@NonNull final String attributeValueIdAsString)
-	{
-		try
-		{
-			final int parsedAttributeId = Integer.parseInt(attributeValueIdAsString);
-			final I_M_AttributeValue attributeValue = load(parsedAttributeId, I_M_AttributeValue.class);
-			return attributeValue;
-		}
-		catch (final RuntimeException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
-					.setParameter("attributeValueIdAsString", attributeValueIdAsString);
 		}
 	}
 }

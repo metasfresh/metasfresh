@@ -1,9 +1,19 @@
 package de.metas.material.event.commons;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -35,7 +45,7 @@ import lombok.NonNull;
 public final class AttributesKey
 {
 	@JsonCreator
-	public static final AttributesKey of(final String attributesKeyString)
+	public static final AttributesKey ofString(final String attributesKeyString)
 	{
 		if (attributesKeyString == null)
 		{
@@ -47,18 +57,47 @@ public final class AttributesKey
 			return NONE;
 		}
 
-		return new AttributesKey(attributesKeyStringNorm);
+		final ImmutableList<Integer> attributeValueIdsList = null;
+		return new AttributesKey(attributesKeyStringNorm, attributeValueIdsList);
 	}
 
-	public static final AttributesKey NONE = new AttributesKey("");
+	public static final AttributesKey ofAttributeValueIds(final int... attributeValueIds)
+	{
+		if (attributeValueIds == null || attributeValueIds.length == 0)
+		{
+			return NONE;
+		}
+
+		final ImmutableList<Integer> attributeValueIdsList = IntStream.of(attributeValueIds).boxed().collect(ImmutableList.toImmutableList());
+		if (attributeValueIdsList.isEmpty())
+		{
+			return NONE;
+		}
+
+		final String attributesKeyString = ATTRIBUTEVALUEIDS_JOINER.join(attributeValueIdsList);
+		return new AttributesKey(attributesKeyString, attributeValueIdsList);
+	}
+
+	public static final AttributesKey NONE = new AttributesKey("", ImmutableList.of());
+
+	/** The delimiter should not contain any character that has a "regexp" meaning and would interfere with {@link String#replaceAll(String, String)}. */
+	private static final String ATTRIBUTES_KEY_DELIMITER = "§&§";
+	private static final Joiner ATTRIBUTEVALUEIDS_JOINER = Joiner.on(ATTRIBUTES_KEY_DELIMITER).skipNulls();
+	private static final Splitter ATTRIBUTEVALUEIDS_SPLITTER = Splitter.on(ATTRIBUTES_KEY_DELIMITER).omitEmptyStrings();
 
 	private final String attributesKeyString;
+	@JsonIgnore
+	private transient ImmutableList<Integer> attributeValueIds; // lazy
+	private transient String sqlLikeString; // lazy
 
-	private AttributesKey(@NonNull final String attributesKeyString)
+	private AttributesKey(
+			@NonNull final String attributesKeyString,
+			@Nullable ImmutableList<Integer> attributeValueIds)
 	{
 		// don't allow NULL because within the DB we have an index on this and NULL values are trouble with indexes
 
 		this.attributesKeyString = attributesKeyString;
+		this.attributeValueIds = attributeValueIds;
 	}
 
 	/**
@@ -81,5 +120,30 @@ public final class AttributesKey
 	public boolean isNone()
 	{
 		return this == NONE;
+	}
+
+	public List<Integer> getAttributeValueIds()
+	{
+		if (attributeValueIds == null)
+		{
+			attributeValueIds = ATTRIBUTEVALUEIDS_SPLITTER.splitToList(attributesKeyString)
+					.stream()
+					.map(Integer::parseInt)
+					.collect(ImmutableList.toImmutableList());
+		}
+		return attributeValueIds;
+	}
+
+	public String getSqlLikeString()
+	{
+		if (sqlLikeString == null)
+		{
+			sqlLikeString = getAttributeValueIds()
+					.stream()
+					.map(String::valueOf)
+					.collect(Collectors.joining("%"));
+		}
+
+		return sqlLikeString;
 	}
 }

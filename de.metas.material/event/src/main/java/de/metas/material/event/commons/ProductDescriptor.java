@@ -67,22 +67,12 @@ public class ProductDescriptor
 		return new ProductDescriptor(true, productId, storageAttributesKey, attributeSetInstanceId); // complete == true
 	}
 
-	public static final AttributesKey STORAGE_ATTRIBUTES_KEY_ALL = AttributesKey.of(new String("<ALL_STORAGE_ATTRIBUTES_KEYS>"));
+	public static final AttributesKey STORAGE_ATTRIBUTES_KEY_ALL = AttributesKey.ofString("<ALL_STORAGE_ATTRIBUTES_KEYS>");
+	public static final String MSG_STORAGE_ATTRIBUTES_KEY_ALL = "de.metas.material.dispo.<ALL_STORAGE_ATTRIBUTES_KEYS>";
 
-	public static final String MSG_STORAGE_ATTRIBUTES_KEY_ALL = "de.metas.material.dispo." + STORAGE_ATTRIBUTES_KEY_ALL;
-
-	/**
-	 * This key's meaning depends on the other keys it comes with.
-	 */
-	public static final AttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = AttributesKey.of(new String("<OTHER_STORAGE_ATTRIBUTES_KEYS>"));
-
-	public static final String MSG_STORAGE_ATTRIBUTES_KEY_OTHER = "de.metas.material.dispo." + STORAGE_ATTRIBUTES_KEY_OTHER;
-
-	/**
-	 * The delimiter should not contain any character that has a "regexp" meaning
-	 * and would interfere with {@link String#replaceAll(String, String)}.
-	 */
-	public static final String STORAGE_ATTRIBUTES_KEY_DELIMITER = "§&§";
+	/** This key's meaning depends on the other keys it comes with. */
+	public static final AttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = AttributesKey.ofString("<OTHER_STORAGE_ATTRIBUTES_KEYS>");
+	public static final String MSG_STORAGE_ATTRIBUTES_KEY_OTHER = "de.metas.material.dispo.<OTHER_STORAGE_ATTRIBUTES_KEYS>";
 
 	@JsonProperty
 	boolean productDescriptorComplete;

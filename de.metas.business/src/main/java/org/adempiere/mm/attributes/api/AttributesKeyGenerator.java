@@ -3,9 +3,7 @@ package org.adempiere.mm.attributes.api;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.Comparator;
-import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeInstance;
@@ -16,7 +14,6 @@ import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -40,26 +37,16 @@ import lombok.Value;
  * #L%
  */
 
-@Value
 @Builder
-public class AttributesKeyGenerator
+public final class AttributesKeyGenerator
 {
-	int attributeSetInstanceId;
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+	private final int attributeSetInstanceId;
 
 	@NonNull
 	@Default
-	String valueDelimiter = ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER;
-
-	@NonNull
-	@Default
-	Predicate<I_M_AttributeInstance> attributeInstanceFilter = ai -> true;
-
-	/**
-	 * Default value accessor that works for list and string attributes.
-	 */
-	@NonNull
-	@Default
-	Function<I_M_AttributeInstance, String> valueAccessor = ai -> Integer.toString(ai.getM_AttributeValue_ID());
+	private final Predicate<I_M_AttributeInstance> attributeInstanceFilter = ai -> true;
 
 	public AttributesKey createAttributesKey()
 	{
@@ -69,13 +56,14 @@ public class AttributesKeyGenerator
 		}
 
 		final I_M_AttributeSetInstance attributeSetInstance = load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-		final String storageAttributesKey = attributeDAO.retrieveAttributeInstances(attributeSetInstance).stream()
+		final int[] attributeValueIds = attributeDAO.retrieveAttributeInstances(attributeSetInstance).stream()
+				.filter(ai -> ai.getM_AttributeValue_ID() > 0)
 				.filter(attributeInstanceFilter)
 				.sorted(Comparator.comparing(I_M_AttributeInstance::getM_Attribute_ID))
-				.map(valueAccessor)
-				.collect(Collectors.joining(valueDelimiter));
-		return AttributesKey.of(storageAttributesKey);
+				.mapToInt(I_M_AttributeInstance::getM_AttributeValue_ID)
+				.toArray();
+
+		return AttributesKey.ofAttributeValueIds(attributeValueIds);
 	}
 }

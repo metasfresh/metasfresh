@@ -67,12 +67,11 @@ public class AttributesKeyGeneratorTest
 
 		final AttributesKey result = AttributesKeyGenerator.builder()
 				.attributeSetInstanceId(asi.getM_AttributeSetInstance_ID())
-				.valueDelimiter("-MYDELIM-")
-				.valueAccessor(ai -> Integer.toString(ai.getM_AttributeValue_ID()))
 				.build()
 				.createAttributesKey();
 
-		assertThat(result.getAsString()).isEqualTo(attributeValue1.getM_AttributeValue_ID() + "-MYDELIM-" + attributeValue2.getM_AttributeValue_ID());
+		final AttributesKey expectedResult = AttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());
+		assertThat(result).isEqualTo(expectedResult);
 	}
 
 }

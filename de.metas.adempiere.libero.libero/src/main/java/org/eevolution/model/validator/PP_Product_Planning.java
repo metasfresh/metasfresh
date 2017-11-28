@@ -3,7 +3,6 @@ package org.eevolution.model.validator;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.mm.attributes.api.AttributesKeyGenerator;
-import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_PP_Product_Planning;
 
@@ -45,14 +44,9 @@ public class PP_Product_Planning
 	{
 		final AttributesKey storageAttributesKey = AttributesKeyGenerator.builder()
 				.attributeSetInstanceId(productPlanning.getM_AttributeSetInstance_ID())
-				.attributeInstanceFilter(ai -> attributeInstanceIsStorageRelevant(ai))
+				.attributeInstanceFilter(ai -> ai.getM_Attribute().isStorageRelevant())
 				.build()
 				.createAttributesKey();
 		productPlanning.setStorageAttributesKey(storageAttributesKey.getAsString());
-	}
-
-	private boolean attributeInstanceIsStorageRelevant(@NonNull final I_M_AttributeInstance ai)
-	{
-		return ai.getM_Attribute().isStorageRelevant();
 	}
 }

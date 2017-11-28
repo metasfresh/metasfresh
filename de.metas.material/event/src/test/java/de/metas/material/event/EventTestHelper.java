@@ -58,7 +58,7 @@ public class EventTestHelper
 
 	public static final int ATTRIBUTE_SET_INSTANCE_ID = 28;
 
-	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.of("StorageAttributesKey");
+	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1);
 
 	public static MaterialDescriptor createMaterialDescriptor()
 	{
@@ -80,7 +80,7 @@ public class EventTestHelper
 	{
 		return ProductDescriptor.forProductAndAttributes(
 				PRODUCT_ID + offset,
-				AttributesKey.of(STORAGE_ATTRIBUTES_KEY.getAsString() + offset),
+				AttributesKey.ofAttributeValueIds(STORAGE_ATTRIBUTES_KEY.getAttributeValueIds().get(0) + 1 + offset),
 				ATTRIBUTE_SET_INSTANCE_ID + offset);
 	}
 

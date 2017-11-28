@@ -7,11 +7,9 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -96,14 +94,10 @@ public class AvailableStockResult
 				return false;
 			}
 
-			final Splitter splitter = Splitter
-					.on(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER)
-					.omitEmptyStrings();
+			final List<Integer> attributeValueIdsOfThisInstance = storageAttributesKey.getAttributeValueIds();
+			final List<Integer> attributeValueIdsToMatch = storageAttributesKeyToMatch.getAttributeValueIds();
 
-			final List<String> keyElementsOfThisInstance = splitter.splitToList(storageAttributesKey.getAsString());
-			final List<String> keyElementsToMatch = splitter.splitToList(storageAttributesKeyToMatch.getAsString());
-
-			return keyElementsToMatch.containsAll(keyElementsOfThisInstance);
+			return attributeValueIdsToMatch.containsAll(attributeValueIdsOfThisInstance);
 		}
 
 		public void addQty(BigDecimal qtyToAdd)

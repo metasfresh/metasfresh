@@ -48,7 +48,6 @@ public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory imp
 
 		final AttributesKey storageAttributesKey = AttributesKeyGenerator.builder()
 				.attributeSetInstanceId(asiAware.getM_AttributeSetInstance_ID())
-				.valueDelimiter(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER)
 				.attributeInstanceFilter(ai -> ai.getM_Attribute().isStorageRelevant())
 				.build()
 				.createAttributesKey();

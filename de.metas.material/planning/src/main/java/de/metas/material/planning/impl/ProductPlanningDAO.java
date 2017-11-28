@@ -174,13 +174,13 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final AttributesKey attributesKey = createAttributeLikeExpression(attributeSetInstanceId);
+		final AttributesKey attributesKey = createAttributeKey(attributeSetInstanceId);
 
 		final ICompositeQueryFilter<I_PP_Product_Planning> matchingAsiFilter = queryBL
 				.createCompositeQueryFilter(I_PP_Product_Planning.class)
 				.setJoinAnd()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMN_IsAttributeDependant, true)
-				.addStringLikeFilter(I_PP_Product_Planning.COLUMN_StorageAttributesKey, attributesKey.getAsString(), false);
+				.addStringLikeFilter(I_PP_Product_Planning.COLUMN_StorageAttributesKey, attributesKey.getSqlLikeString(), false);
 
 		final ICompositeQueryFilter<I_PP_Product_Planning> attributesFilter = queryBL
 				.createCompositeQueryFilter(I_PP_Product_Planning.class)
@@ -191,11 +191,10 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		return attributesFilter;
 	}
 
-	private static AttributesKey createAttributeLikeExpression(final int attributeSetInstanceId)
+	private static AttributesKey createAttributeKey(final int attributeSetInstanceId)
 	{
 		return AttributesKeyGenerator.builder()
 				.attributeSetInstanceId(attributeSetInstanceId)
-				.valueDelimiter("%")
 				.build()
 				.createAttributesKey();
 	}

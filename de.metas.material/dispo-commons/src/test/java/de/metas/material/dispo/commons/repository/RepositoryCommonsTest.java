@@ -7,7 +7,6 @@ import static de.metas.testsupport.MetasfreshAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.StringJoiner;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -114,7 +113,7 @@ public class RepositoryCommonsTest
 		final List<IQueryFilter<I_MD_Candidate>> filters = queryBuilder.getCompositeFilter().getFilters();
 
 		assertThat(filters).hasSize(1);
-		assertThat(filters.get(0)).isStringLikeFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, "Key1%Key2%Key3");
+		assertThat(filters.get(0)).isStringLikeFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, "1%2%3");
 	}
 
 	@Test
@@ -129,16 +128,12 @@ public class RepositoryCommonsTest
 		final List<IQueryFilter<I_MD_Candidate>> filters = compositeFilter.getFilters();
 		assertThat(filters).hasSize(1);
 
-		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, "Key1§&§Key2§&§Key3");
+		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, "1§&§2§&§3");
 	}
 
 	private MaterialDescriptor commonSetupFor_addProductionDetailToFilter_with_StorageAttributesKey()
 	{
-		final AttributesKey storageAttributesKey = AttributesKey.of(new StringJoiner(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER)
-				.add("Key1")
-				.add("Key2")
-				.add("Key3")
-				.toString());
+		final AttributesKey storageAttributesKey = AttributesKey.ofAttributeValueIds(1, 2, 3);
 
 		// this descriptor won't occur in real life, but we want only the storage-key-filter
 		final ProductDescriptor productDescriptor = new ProductDescriptor(false, -1, storageAttributesKey, -1);

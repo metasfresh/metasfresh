@@ -60,7 +60,7 @@ import lombok.NonNull;
 @SuppressWarnings({ "rawtypes" })
 public class StockRepositoryTest
 {
-	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.of("Key1" + ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER + "Key2");
+	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
 
 	@Before
 	public void init()
@@ -120,7 +120,7 @@ public class StockRepositoryTest
 		assertThat(includedCompositeOrFilter).isJoinOr();
 
 		assertHasANDFiltersThatAllHaveInArrayForProductIds(includedCompositeOrFilter, ImmutableList.of(PRODUCT_ID));
-		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%Key1%Key2%");
+		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%1%2%");
 	}
 
 	@Test
@@ -143,7 +143,7 @@ public class StockRepositoryTest
 		assertThat(includedCompositeOrFilter).isJoinOr();
 
 		assertHasANDFiltersThatAllHaveInArrayForProductIds(includedCompositeOrFilter, ImmutableList.of(10, 20));
-		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%Key1%Key2%");
+		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%1%2%");
 	}
 
 	@Test
@@ -152,7 +152,7 @@ public class StockRepositoryTest
 		final MaterialQuery query = MaterialQuery.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.storageAttributesKey(AttributesKey.of("Key3"))
+				.storageAttributesKey(AttributesKey.ofAttributeValueIds(3))
 				.date(NOW)
 				.build();
 
@@ -167,8 +167,8 @@ public class StockRepositoryTest
 
 		assertHasANDFiltersThatAllHaveInArrayForProductIds(includedCompositeOrFilter, ImmutableList.of(PRODUCT_ID));
 
-		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%Key3%");
-		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%Key1%Key2%");
+		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%3%");
+		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%1%2%");
 	}
 
 	@Test
@@ -177,7 +177,7 @@ public class StockRepositoryTest
 		final MaterialQuery query = MaterialQuery.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.storageAttributesKey(AttributesKey.of("Key3"))
+				.storageAttributesKey(AttributesKey.ofAttributeValueIds(3))
 				.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER)
 				.date(NOW)
 				.build();
@@ -195,8 +195,8 @@ public class StockRepositoryTest
 
 		assertHasANDFiltersThatAllHaveInArrayForProductIds(includedCompositeOrFilter, ImmutableList.of(PRODUCT_ID));
 
-		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%Key3%");
-		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%Key1%Key2%");
+		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%3%");
+		assertHasOneANDFilterWithLikeExpression(includedCompositeOrFilter, "%1%2%");
 
 		assertThat(includedCompositeOrFilter).hasCompositeAndFilter();
 		final List<ICompositeQueryFilter> includedCompositeAndFilters = extractFilters(includedCompositeOrFilter, ICompositeQueryFilter.class);
@@ -242,10 +242,10 @@ public class StockRepositoryTest
 			assertThat(notQueryFilters).hasSize(2);
 
 			assertThat(notQueryFilters).anySatisfy(notQueryFilter -> {
-				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, "%Key3%");
+				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, "%3%");
 			});
 			assertThat(notQueryFilters).anySatisfy(notQueryFilter -> {
-				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, "%Key1%Key2%");
+				assertThat(notQueryFilter.getFilter()).isStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, "%1%2%");
 			});
 		});
 	}

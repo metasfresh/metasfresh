@@ -188,10 +188,7 @@ public class StockRepository
 
 	private static String createLikeExpression(@NonNull final AttributesKey storageAttributesKey)
 	{
-		final String storageAttributesKeyLikeExpression = RepositoryCommons
-				.prepareStorageAttributesKeyForLikeExpression(
-						storageAttributesKey);
-
+		final String storageAttributesKeyLikeExpression = storageAttributesKey.getSqlLikeString();
 		return "%" + storageAttributesKeyLikeExpression + "%";
 	}
 
@@ -202,7 +199,7 @@ public class StockRepository
 	{
 		for (final I_MD_Candidate_Stock_v stockRecord : stockRecords)
 		{
-			emptyResult.addQtyToMatchedGroups(stockRecord.getQty(), stockRecord.getM_Product_ID(), AttributesKey.of(stockRecord.getStorageAttributesKey()));
+			emptyResult.addQtyToMatchedGroups(stockRecord.getQty(), stockRecord.getM_Product_ID(), AttributesKey.ofString(stockRecord.getStorageAttributesKey()));
 		}
 	}
 

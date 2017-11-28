@@ -198,7 +198,7 @@ public class CandidateRepositoryRetrieval
 		}
 		else
 		{
-			storageAttributesKey = AttributesKey.of(candidateRecord.getStorageAttributesKey());
+			storageAttributesKey = AttributesKey.ofString(candidateRecord.getStorageAttributesKey());
 		}
 		return storageAttributesKey;
 	}
