@@ -4,11 +4,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 
 import java.util.List;
 
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Forecast;
@@ -29,6 +33,16 @@ public class M_Forecast
 
 	private M_Forecast()
 	{
+	}
+
+	@Init
+	public void init(final IModelValidationEngine engine)
+	{
+
+		CopyRecordFactory.enableForTableName(I_M_Forecast.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_M_Forecast.Table_Name, MForecastPOCopyRecordSupport.class);
+
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Product_BOM());
 	}
 
 	/**
