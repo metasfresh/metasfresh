@@ -70,20 +70,27 @@ public class AvailableStockResult
 	@Getter
 	public static class ResultGroup
 	{
+		private final int warehouseId; 
 		private final int productId;
 		private final AttributesKey storageAttributesKey;
+		private final int bpartnerId;
 		private BigDecimal qty;
 
+		// TODO: check and set warehouseId, bpartnerId. Task: https://github.com/metasfresh/metasfresh/issues/3098
 		@Builder
 		public ResultGroup(
+				final int warehouseId,
 				final int productId,
 				@NonNull final AttributesKey storageAttributesKey,
+				final int bpartnerId,
 				@Nullable final BigDecimal qty)
 		{
 			Check.assume(productId > 0, "productId > 0");
 
+			this.warehouseId = warehouseId;
 			this.productId = productId;
 			this.storageAttributesKey = storageAttributesKey;
+			this.bpartnerId = bpartnerId;
 			this.qty = qty == null ? BigDecimal.ZERO : qty;
 		}
 
