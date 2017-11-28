@@ -14,6 +14,8 @@ import org.compiere.model.X_M_Attribute;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.material.event.commons.AttributesKey;
+
 /*
  * #%L
  * de.metas.business
@@ -63,14 +65,14 @@ public class AttributesKeyGeneratorTest
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue1);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue2);
 
-		final String result = AttributesKeyGenerator.builder()
+		final AttributesKey result = AttributesKeyGenerator.builder()
 				.attributeSetInstanceId(asi.getM_AttributeSetInstance_ID())
 				.valueDelimiter("-MYDELIM-")
 				.valueAccessor(ai -> Integer.toString(ai.getM_AttributeValue_ID()))
 				.build()
 				.createAttributesKey();
 
-		assertThat(result).isEqualTo(attributeValue1.getM_AttributeValue_ID() + "-MYDELIM-" + attributeValue2.getM_AttributeValue_ID());
+		assertThat(result.getAsString()).isEqualTo(attributeValue1.getM_AttributeValue_ID() + "-MYDELIM-" + attributeValue2.getM_AttributeValue_ID());
 	}
 
 }

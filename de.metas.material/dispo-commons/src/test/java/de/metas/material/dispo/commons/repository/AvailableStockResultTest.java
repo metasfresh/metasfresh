@@ -12,6 +12,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroup;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 
 /*
@@ -39,7 +40,8 @@ import de.metas.material.event.commons.ProductDescriptor;
 public class AvailableStockResultTest
 {
 	private static final String DELIMITER = ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER;
-	private static final String STORAGE_ATTRIBUTES_KEY = "Key1" + DELIMITER + "Key2";
+	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.of("Key1" + DELIMITER + "Key2");
+	private static final AttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = AttributesKey.of(STORAGE_ATTRIBUTES_KEY.getAsString() + "otherKey");
 
 	@Test
 	public void createEmptyResultForQuery()
@@ -48,7 +50,7 @@ public class AvailableStockResultTest
 				.productId(20)
 				.productId(10)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY + "otherKey")
+				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY_OTHER)
 				.date(NOW)
 				.build();
 
@@ -63,7 +65,7 @@ public class AvailableStockResultTest
 
 		final ResultGroup secondResult = emptyResults.get(1);
 		assertThat(secondResult.getProductId()).isEqualTo(20);
-		assertThat(secondResult.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY + "otherKey");
+		assertThat(secondResult.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY_OTHER);
 		assertThat(secondResult.getQty()).isEqualByComparingTo("0");
 
 		final ResultGroup thirdResult = emptyResults.get(2);
@@ -73,7 +75,7 @@ public class AvailableStockResultTest
 
 		final ResultGroup fourthResult = emptyResults.get(3);
 		assertThat(fourthResult.getProductId()).isEqualTo(10);
-		assertThat(fourthResult.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY + "otherKey");
+		assertThat(fourthResult.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY_OTHER);
 		assertThat(fourthResult.getQty()).isEqualByComparingTo("0");
 	}
 
@@ -82,27 +84,27 @@ public class AvailableStockResultTest
 	{
 		final ResultGroup emptyResult1 = ResultGroup.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKey("Key1")
+				.storageAttributesKey(AttributesKey.of("Key1"))
 				.build();
 		final ResultGroup emptyResult2 = ResultGroup.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKey("Key2")
+				.storageAttributesKey(AttributesKey.of("Key2"))
 				.build();
 		final AvailableStockResult availableStockResult = new AvailableStockResult(ImmutableList.of(emptyResult1, emptyResult2));
 
 		availableStockResult.addQtyToMatchedGroups(BigDecimal.ONE, PRODUCT_ID, STORAGE_ATTRIBUTES_KEY);
 		availableStockResult.addQtyToMatchedGroups(BigDecimal.ONE, PRODUCT_ID, STORAGE_ATTRIBUTES_KEY);
-		availableStockResult.addQtyToMatchedGroups(BigDecimal.ONE, PRODUCT_ID, "Key2");
+		availableStockResult.addQtyToMatchedGroups(BigDecimal.ONE, PRODUCT_ID, AttributesKey.of("Key2"));
 
 		final List<ResultGroup> resultGroups = availableStockResult.getResultGroups();
 		assertThat(resultGroups).hasSize(2);
 
 		assertThat(resultGroups.get(0).getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(resultGroups.get(0).getStorageAttributesKey()).isEqualTo("Key1");
+		assertThat(resultGroups.get(0).getStorageAttributesKey()).isEqualTo(AttributesKey.of("Key1"));
 		assertThat(resultGroups.get(0).getQty()).isEqualByComparingTo("2");
 
 		assertThat(resultGroups.get(1).getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(resultGroups.get(1).getStorageAttributesKey()).isEqualTo("Key2");
+		assertThat(resultGroups.get(1).getStorageAttributesKey()).isEqualTo(AttributesKey.of("Key2"));
 		assertThat(resultGroups.get(1).getQty()).isEqualByComparingTo("3");
 	}
 
@@ -111,11 +113,11 @@ public class AvailableStockResultTest
 	{
 		final ResultGroup group = ResultGroup.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKey("Key1")
+				.storageAttributesKey(AttributesKey.of("Key1"))
 				.build();
 
-		assertThat(group.matches(PRODUCT_ID, "Key1")).isTrue();
-		assertThat(group.matches(PRODUCT_ID, "KEY1")).isFalse();
+		assertThat(group.matches(PRODUCT_ID, AttributesKey.of("Key1"))).isTrue();
+		assertThat(group.matches(PRODUCT_ID, AttributesKey.of("KEY1"))).isFalse();
 
 		assertThat(group.matches(PRODUCT_ID, STORAGE_ATTRIBUTES_KEY))
 				.as("Should match because the ResultGroup's storageAttributesKey <%s> is included in the given storageAttributesKeyToMatch <%s>",
@@ -128,15 +130,15 @@ public class AvailableStockResultTest
 	{
 		final ResultGroup group = ResultGroup.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKey("Key1" + DELIMITER + "Key3")
+				.storageAttributesKey(AttributesKey.of("Key1" + DELIMITER + "Key3"))
 				.build();
 
-		assertThat(group.matches(PRODUCT_ID, "Key1" + DELIMITER + "Key3")).isTrue();
-		assertThat(group.matches(PRODUCT_ID, "Key1")).isFalse();
+		assertThat(group.matches(PRODUCT_ID, AttributesKey.of("Key1" + DELIMITER + "Key3"))).isTrue();
+		assertThat(group.matches(PRODUCT_ID, AttributesKey.of("Key1"))).isFalse();
 
-		assertThat(group.matches(PRODUCT_ID, "Key0" + DELIMITER + "Key1" + DELIMITER + "Key3")).isTrue();
+		assertThat(group.matches(PRODUCT_ID, AttributesKey.of("Key0" + DELIMITER + "Key1" + DELIMITER + "Key3"))).isTrue();
 
-		final String keyWithOtherElementInTheMiddle = "Key1" + DELIMITER + "Key2" + DELIMITER + "Key3";
+		final AttributesKey keyWithOtherElementInTheMiddle = AttributesKey.of("Key1" + DELIMITER + "Key2" + DELIMITER + "Key3");
 		assertThat(group.matches(PRODUCT_ID, keyWithOtherElementInTheMiddle))
 				.as("Shall match because the elements of the ResultGroup's storageAttributesKey <%s> contain every element of the given storageAttributesKeyToMatch <%s>",
 						group.getStorageAttributesKey(), keyWithOtherElementInTheMiddle)

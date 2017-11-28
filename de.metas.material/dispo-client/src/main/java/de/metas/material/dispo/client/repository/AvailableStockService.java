@@ -23,6 +23,7 @@ import de.metas.material.dispo.client.repository.AvailableStockResult.Group.Type
 import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroup;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
@@ -100,7 +101,7 @@ public class AvailableStockService
 				retrieveStockingUOM(commonsResultGroup.getProductId()));
 		groupBuilder.qty(quantity);
 
-		final String storageAttributesKey = commonsResultGroup.getStorageAttributesKey();
+		final AttributesKey storageAttributesKey = commonsResultGroup.getStorageAttributesKey();
 		final Type type = extractType(storageAttributesKey);
 		groupBuilder.type(type);
 
@@ -120,7 +121,7 @@ public class AvailableStockService
 	}
 
 	@VisibleForTesting
-	Type extractType(@NonNull final String storageAttributesKey)
+	Type extractType(@NonNull final AttributesKey storageAttributesKey)
 	{
 		if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.equals(storageAttributesKey))
 		{
@@ -137,15 +138,15 @@ public class AvailableStockService
 	}
 
 	@VisibleForTesting
-	List<I_M_AttributeValue> extractAttributeSetFromStorageAttributesKey(@NonNull final String storageAttributesKey)
+	List<I_M_AttributeValue> extractAttributeSetFromStorageAttributesKey(@NonNull final AttributesKey storageAttributesKey)
 	{
 		try
 		{
 			final Builder<I_M_AttributeValue> builder = ImmutableList.<I_M_AttributeValue>builder();
 
-			final Iterable<String> singleAttributeIds = Splitter
-					.on(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER).split(storageAttributesKey);
-			for (final String singleAttributeId : singleAttributeIds)
+			final Iterable<String> singleAttributeValueIds = Splitter
+					.on(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER).split(storageAttributesKey.getAsString());
+			for (final String singleAttributeId : singleAttributeValueIds)
 			{
 				final I_M_AttributeValue attributeValue = loadAttributeValueFromStringId(singleAttributeId);
 				builder.add(attributeValue);

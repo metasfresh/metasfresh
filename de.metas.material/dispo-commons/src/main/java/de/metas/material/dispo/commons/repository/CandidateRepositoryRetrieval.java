@@ -33,6 +33,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
@@ -188,16 +189,16 @@ public class CandidateRepositoryRetrieval
 		return candidateBuilder;
 	}
 
-	private String getEfferciveStorageAttributesKey(@NonNull final I_MD_Candidate candidateRecord)
+	private AttributesKey getEfferciveStorageAttributesKey(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		final String storageAttributesKey;
+		final AttributesKey storageAttributesKey;
 		if (Check.isEmpty(candidateRecord.getStorageAttributesKey(), true))
 		{
 			storageAttributesKey = ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL;
 		}
 		else
 		{
-			storageAttributesKey = candidateRecord.getStorageAttributesKey();
+			storageAttributesKey = AttributesKey.of(candidateRecord.getStorageAttributesKey());
 		}
 		return storageAttributesKey;
 	}

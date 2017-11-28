@@ -10,6 +10,7 @@ import org.adempiere.util.Check;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -50,7 +51,7 @@ public class AvailableStockResult
 
 		for (final int productId : query.getProductIds())
 		{
-			for (final String storageAttributesKey : query.getStorageAttributesKeys())
+			for (final AttributesKey storageAttributesKey : query.getStorageAttributesKeys())
 			{
 				resultBuilder.add(ResultGroup.builder()
 						.productId(productId)
@@ -72,13 +73,13 @@ public class AvailableStockResult
 	public static class ResultGroup
 	{
 		private final int productId;
-		private final String storageAttributesKey;
+		private final AttributesKey storageAttributesKey;
 		private BigDecimal qty;
 
 		@Builder
 		public ResultGroup(
 				final int productId,
-				@NonNull final String storageAttributesKey,
+				@NonNull final AttributesKey storageAttributesKey,
 				@Nullable final BigDecimal qty)
 		{
 			Check.assume(productId > 0, "productId > 0");
@@ -88,7 +89,7 @@ public class AvailableStockResult
 			this.qty = qty == null ? BigDecimal.ZERO : qty;
 		}
 
-		public boolean matches(int productIdToMatch, String storageAttributesKeyToMatch)
+		public boolean matches(int productIdToMatch, AttributesKey storageAttributesKeyToMatch)
 		{
 			if (productIdToMatch != productId)
 			{
@@ -99,8 +100,8 @@ public class AvailableStockResult
 					.on(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER)
 					.omitEmptyStrings();
 
-			final List<String> keyElementsOfThisInstance = splitter.splitToList(storageAttributesKey);
-			final List<String> keyElementsToMatch = splitter.splitToList(storageAttributesKeyToMatch);
+			final List<String> keyElementsOfThisInstance = splitter.splitToList(storageAttributesKey.getAsString());
+			final List<String> keyElementsToMatch = splitter.splitToList(storageAttributesKeyToMatch.getAsString());
 
 			return keyElementsToMatch.containsAll(keyElementsOfThisInstance);
 		}
@@ -114,7 +115,7 @@ public class AvailableStockResult
 	public void addQtyToMatchedGroups(
 			@NonNull final BigDecimal qty,
 			final int productId,
-			@NonNull final String storageAttributesKey)
+			@NonNull final AttributesKey storageAttributesKey)
 	{
 		for (ResultGroup group : resultGroups)
 		{

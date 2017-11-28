@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 
@@ -45,7 +46,7 @@ public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory imp
 		Preconditions.checkNotNull(asiAware,
 				"The given parameter can't be represented as an IAttributeSetInstanceAware; model=%s", model);
 
-		final String storageAttributesKey = AttributesKeyGenerator.builder()
+		final AttributesKey storageAttributesKey = AttributesKeyGenerator.builder()
 				.attributeSetInstanceId(asiAware.getM_AttributeSetInstance_ID())
 				.valueDelimiter(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER)
 				.attributeInstanceFilter(ai -> ai.getM_Attribute().isStorageRelevant())

@@ -24,6 +24,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -158,10 +159,10 @@ public class RepositoryCommons
 		}
 		if (!Objects.equals(materialDescriptor.getStorageAttributesKey(), ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL))
 		{
-			final String storageAttributesKey = materialDescriptor.getStorageAttributesKey();
+			final AttributesKey storageAttributesKey = materialDescriptor.getStorageAttributesKey();
 			if (matchExactStorageAttributesKey)
 			{
-				builder.addEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, storageAttributesKey);
+				builder.addEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, storageAttributesKey.getAsString());
 			}
 			else
 			{
@@ -178,9 +179,9 @@ public class RepositoryCommons
 		return atLeastOneFilterAdded;
 	}
 
-	public static String prepareStorageAttributesKeyForLikeExpression(@NonNull final String storageAttributesKey)
+	public static String prepareStorageAttributesKeyForLikeExpression(@NonNull final AttributesKey storageAttributesKey)
 	{
-		return storageAttributesKey.replaceAll(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER, "%");
+		return storageAttributesKey.getAsString().replaceAll(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER, "%");
 	}
 
 	private boolean configureBuilderDateFilters(

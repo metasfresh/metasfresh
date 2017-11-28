@@ -275,7 +275,7 @@ public class CandidateChangeHandlerTests
 		stockRecord.setQty(materialDescriptor.getQuantity());
 		stockRecord.setDateProjected(new Timestamp(dateProjected.getTime()));
 		stockRecord.setM_Product_ID(materialDescriptor.getProductId());
-		stockRecord.setStorageAttributesKey(materialDescriptor.getStorageAttributesKey());
+		stockRecord.setStorageAttributesKey(materialDescriptor.getStorageAttributesKey().getAsString());
 		stockRecord.setM_AttributeSetInstance_ID(materialDescriptor.getAttributeSetInstanceId());
 		save(stockRecord);
 

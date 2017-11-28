@@ -7,6 +7,7 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_PP_Product_Planning;
 
+import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 
 /*
@@ -42,12 +43,12 @@ public class PP_Product_Planning
 	)
 	public void updateStorageAttributesKey(@NonNull final I_PP_Product_Planning productPlanning)
 	{
-		final String storageAttributesKey = AttributesKeyGenerator.builder()
+		final AttributesKey storageAttributesKey = AttributesKeyGenerator.builder()
 				.attributeSetInstanceId(productPlanning.getM_AttributeSetInstance_ID())
 				.attributeInstanceFilter(ai -> attributeInstanceIsStorageRelevant(ai))
 				.build()
 				.createAttributesKey();
-		productPlanning.setStorageAttributesKey(storageAttributesKey);
+		productPlanning.setStorageAttributesKey(storageAttributesKey.getAsString());
 	}
 
 	private boolean attributeInstanceIsStorageRelevant(@NonNull final I_M_AttributeInstance ai)

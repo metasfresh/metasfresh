@@ -19,6 +19,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 import lombok.Value;
@@ -113,7 +114,7 @@ public class StockRepository
 				.setJoinOr();
 		queryBuilder.filter(orFilterForDifferentStorageAttributesKeys);
 
-		for (final String storageAttributesKey : query.getStorageAttributesKeys())
+		for (final AttributesKey storageAttributesKey : query.getStorageAttributesKeys())
 		{
 			final ICompositeQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey = createANDFilterForStorageAttributesKey(query, storageAttributesKey);
 			orFilterForDifferentStorageAttributesKeys.addFilter(andFilterForCurrentStorageAttributesKey);
@@ -138,7 +139,7 @@ public class StockRepository
 
 	private ICompositeQueryFilter<I_MD_Candidate_Stock_v> createANDFilterForStorageAttributesKey(
 			@NonNull final MaterialQuery query,
-			@NonNull final String storageAttributesKey)
+			@NonNull final AttributesKey storageAttributesKey)
 	{
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> filterForCurrentStorageAttributesKey = createInitialANDFilterForProductIds(query);
 
@@ -167,9 +168,9 @@ public class StockRepository
 
 	private void addNotLikeFiltersForAttributesKeys(
 			@NonNull final ICompositeQueryFilter<I_MD_Candidate_Stock_v> compositeFilter,
-			@NonNull final List<String> attributesKeys)
+			@NonNull final List<AttributesKey> attributesKeys)
 	{
-		for (final String storageAttributesKeyAgain : attributesKeys)
+		for (final AttributesKey storageAttributesKeyAgain : attributesKeys)
 		{
 			if (!Objects.equals(storageAttributesKeyAgain, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER))
 			{
@@ -179,13 +180,13 @@ public class StockRepository
 		}
 	}
 
-	private void addLikeFilterForAttributesKey(final String storageAttributesKey, final ICompositeQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey)
+	private void addLikeFilterForAttributesKey(final AttributesKey storageAttributesKey, final ICompositeQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey)
 	{
 		final String likeExpression = createLikeExpression(storageAttributesKey);
 		andFilterForCurrentStorageAttributesKey.addStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, likeExpression, false);
 	}
 
-	private static String createLikeExpression(@NonNull final String storageAttributesKey)
+	private static String createLikeExpression(@NonNull final AttributesKey storageAttributesKey)
 	{
 		final String storageAttributesKeyLikeExpression = RepositoryCommons
 				.prepareStorageAttributesKeyForLikeExpression(
@@ -201,7 +202,7 @@ public class StockRepository
 	{
 		for (final I_MD_Candidate_Stock_v stockRecord : stockRecords)
 		{
-			emptyResult.addQtyToMatchedGroups(stockRecord.getQty(), stockRecord.getM_Product_ID(), stockRecord.getStorageAttributesKey());
+			emptyResult.addQtyToMatchedGroups(stockRecord.getQty(), stockRecord.getM_Product_ID(), AttributesKey.of(stockRecord.getStorageAttributesKey()));
 		}
 	}
 

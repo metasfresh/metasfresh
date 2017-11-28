@@ -61,20 +61,20 @@ public class ProductDescriptor
 
 	public static final ProductDescriptor forProductAndAttributes(
 			final int productId,
-			@NonNull final String storageAttributesKey,
+			@NonNull final AttributesKey storageAttributesKey,
 			final int attributeSetInstanceId)
 	{
 		return new ProductDescriptor(true, productId, storageAttributesKey, attributeSetInstanceId); // complete == true
 	}
 
-	public static final String STORAGE_ATTRIBUTES_KEY_ALL = new String("<ALL_STORAGE_ATTRIBUTES_KEYS>");
+	public static final AttributesKey STORAGE_ATTRIBUTES_KEY_ALL = AttributesKey.of(new String("<ALL_STORAGE_ATTRIBUTES_KEYS>"));
 
 	public static final String MSG_STORAGE_ATTRIBUTES_KEY_ALL = "de.metas.material.dispo." + STORAGE_ATTRIBUTES_KEY_ALL;
 
 	/**
 	 * This key's meaning depends on the other keys it comes with.
 	 */
-	public static final String STORAGE_ATTRIBUTES_KEY_OTHER = new String("<OTHER_STORAGE_ATTRIBUTES_KEYS>");
+	public static final AttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = AttributesKey.of(new String("<OTHER_STORAGE_ATTRIBUTES_KEYS>"));
 
 	public static final String MSG_STORAGE_ATTRIBUTES_KEY_OTHER = "de.metas.material.dispo." + STORAGE_ATTRIBUTES_KEY_OTHER;
 
@@ -91,7 +91,7 @@ public class ProductDescriptor
 	int productId;
 
 	@Getter
-	String storageAttributesKey;
+	AttributesKey storageAttributesKey;
 
 	/**
 	 * This ID is only here so that the candidate row's attributes can be displayed properly in the UI.
@@ -103,7 +103,7 @@ public class ProductDescriptor
 	public ProductDescriptor(
 			@JsonProperty("productDescriptorComplete") final boolean complete,
 			@JsonProperty("productId") final int productId,
-			@JsonProperty("storageAttributesKey") @NonNull final String storageAttributesKey,
+			@JsonProperty("storageAttributesKey") @NonNull final AttributesKey storageAttributesKey,
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId)
 	{
 		this.productDescriptorComplete = complete;

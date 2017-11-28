@@ -10,6 +10,7 @@ import org.adempiere.util.time.SystemTime;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -58,21 +59,21 @@ public class MaterialQuery
 
 	List<Integer> productIds;
 
-	List<String> storageAttributesKeys;
+	List<AttributesKey> storageAttributesKeys;
 
 	@Builder
 	private MaterialQuery(
 			@Singular final Set<Integer> warehouseIds,
 			final Date date,
 			@Singular final List<Integer> productIds,
-			@Singular final List<String> storageAttributesKeys)
+			@Singular final List<AttributesKey> storageAttributesKeys)
 	{
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
 		this.warehouseIds = warehouseIds == null || warehouseIds.isEmpty() ? ImmutableSet.of() : ImmutableSet.copyOf(warehouseIds);
 		this.date = date != null ? date : SystemTime.asDate();
 		this.productIds = ImmutableList.copyOf(productIds);
-		this.storageAttributesKeys = storageAttributesKeys;
+		this.storageAttributesKeys = ImmutableList.copyOf(storageAttributesKeys);
 	}
 
 	public MaterialQuery withDate(@NonNull final Date newDate)

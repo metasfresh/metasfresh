@@ -27,6 +27,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
@@ -225,17 +226,16 @@ public class CandidateRepositoryWriteService
 	@NonNull
 	private String computeStorageAttributesKeyToStore(@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		final String storageAttributesKey = materialDescriptor.getStorageAttributesKey();
+		final AttributesKey storageAttributesKey = materialDescriptor.getStorageAttributesKey();
 
 		if (Objects.equals(storageAttributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL)
-				|| Check.isEmpty(storageAttributesKey, true))
+				|| storageAttributesKey.isNone())
 		{
-			// don't store NULL because within the DB we have an index on this and NULL values are trouble with indexes
-			return "";
+			return AttributesKey.NONE.getAsString(); // i.e. "", never NULL
 		}
 		else
 		{
-			return storageAttributesKey;
+			return storageAttributesKey.getAsString();
 		}
 	}
 

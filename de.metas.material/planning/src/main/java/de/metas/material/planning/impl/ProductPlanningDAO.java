@@ -44,6 +44,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import lombok.NonNull;
@@ -173,13 +174,13 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final String attributesKey = createAttributeLikeExpression(attributeSetInstanceId);
+		final AttributesKey attributesKey = createAttributeLikeExpression(attributeSetInstanceId);
 
 		final ICompositeQueryFilter<I_PP_Product_Planning> matchingAsiFilter = queryBL
 				.createCompositeQueryFilter(I_PP_Product_Planning.class)
 				.setJoinAnd()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMN_IsAttributeDependant, true)
-				.addStringLikeFilter(I_PP_Product_Planning.COLUMN_StorageAttributesKey, attributesKey, false);
+				.addStringLikeFilter(I_PP_Product_Planning.COLUMN_StorageAttributesKey, attributesKey.getAsString(), false);
 
 		final ICompositeQueryFilter<I_PP_Product_Planning> attributesFilter = queryBL
 				.createCompositeQueryFilter(I_PP_Product_Planning.class)
@@ -190,7 +191,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		return attributesFilter;
 	}
 
-	private static String createAttributeLikeExpression(final int attributeSetInstanceId)
+	private static AttributesKey createAttributeLikeExpression(final int attributeSetInstanceId)
 	{
 		return AttributesKeyGenerator.builder()
 				.attributeSetInstanceId(attributeSetInstanceId)

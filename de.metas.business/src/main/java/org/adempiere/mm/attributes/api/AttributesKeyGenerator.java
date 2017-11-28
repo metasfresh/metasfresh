@@ -11,6 +11,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -60,7 +61,7 @@ public class AttributesKeyGenerator
 	@Default
 	Function<I_M_AttributeInstance, String> valueAccessor = ai -> Integer.toString(ai.getM_AttributeValue_ID());
 
-	public String createAttributesKey()
+	public AttributesKey createAttributesKey()
 	{
 		if (attributeSetInstanceId == AttributeConstants.M_AttributeSetInstance_ID_None)
 		{
@@ -75,6 +76,6 @@ public class AttributesKeyGenerator
 				.sorted(Comparator.comparing(I_M_AttributeInstance::getM_Attribute_ID))
 				.map(valueAccessor)
 				.collect(Collectors.joining(valueDelimiter));
-		return storageAttributesKey;
+		return AttributesKey.of(storageAttributesKey);
 	}
 }

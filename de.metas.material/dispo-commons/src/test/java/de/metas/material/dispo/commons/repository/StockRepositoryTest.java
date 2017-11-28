@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.EventTestHelper;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
@@ -59,7 +60,7 @@ import lombok.NonNull;
 @SuppressWarnings({ "rawtypes" })
 public class StockRepositoryTest
 {
-	private static final String STORAGE_ATTRIBUTES_KEY = "Key1" + ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER + "Key2";
+	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.of("Key1" + ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER + "Key2");
 
 	@Before
 	public void init()
@@ -86,7 +87,7 @@ public class StockRepositoryTest
 		viewRecord.setM_Product_ID(PRODUCT_ID);
 		viewRecord.setM_Warehouse_ID(warehouseId);
 		viewRecord.setDateProjected(new Timestamp(BEFORE_NOW.getTime()));
-		viewRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY);
+		viewRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
 		viewRecord.setQty(BigDecimal.TEN);
 
 		save(viewRecord);
@@ -151,7 +152,7 @@ public class StockRepositoryTest
 		final MaterialQuery query = MaterialQuery.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.storageAttributesKey("Key3")
+				.storageAttributesKey(AttributesKey.of("Key3"))
 				.date(NOW)
 				.build();
 
@@ -176,7 +177,7 @@ public class StockRepositoryTest
 		final MaterialQuery query = MaterialQuery.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.storageAttributesKey("Key3")
+				.storageAttributesKey(AttributesKey.of("Key3"))
 				.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER)
 				.date(NOW)
 				.build();

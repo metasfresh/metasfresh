@@ -107,7 +107,7 @@ public class CandiateRepositoryRetrievalTests
 		candidateRecord.setM_Warehouse_ID(WAREHOUSE_ID);
 		candidateRecord.setM_Product_ID(PRODUCT_ID);
 		candidateRecord.setM_AttributeSetInstance_ID(ATTRIBUTE_SET_INSTANCE_ID);
-		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY);
+		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
 		candidateRecord.setQty(BigDecimal.TEN);
 		candidateRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		save(candidateRecord);
@@ -554,7 +554,7 @@ public class CandiateRepositoryRetrievalTests
 		candidateRecord.setDateProjected(new Timestamp(NOW.getTime()));
 		candidateRecord.setM_Product_ID(PRODUCT_ID);
 		candidateRecord.setM_AttributeSetInstance_ID(ATTRIBUTE_SET_INSTANCE_ID);
-		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY);
+		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
 		candidateRecord.setM_Warehouse_ID(warehouseId);
 		save(candidateRecord);
 

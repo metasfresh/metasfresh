@@ -293,15 +293,15 @@ public class StockCandidateServiceTests
 
 		final Candidate stockCandidateToPersist = stockCandidateService.createStockCandidate(stockCandidate);
 
-		final Candidate persistedStockCandidateWithDelta = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(stockCandidateToPersist);
+		// final Candidate persistedStockCandidateWithDelta =
+		candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(stockCandidateToPersist);
 
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
 				stockCandidate.getMaterialDescriptor(),
 				stockCandidate.getGroupId(),
-				//new BigDecimal(qty)
+				// new BigDecimal(qty)
 				// we need to use the persisted candidate's delta in case an existing candidate was changed, but not in case a new candidate was created
-				//persistedStockCandidateWithDelta.getQuantity()
-				new BigDecimal(qty)
-				);
+				// persistedStockCandidateWithDelta.getQuantity()
+				new BigDecimal(qty));
 	}
 }
