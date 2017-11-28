@@ -85,10 +85,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 					.createQueryBuilder(I_M_Product.class, getCtx(), get_TrxName())
 					.addEqualsFilter(I_M_Product.COLUMNNAME_IsBOM, true);
 
-			if (p_M_Product_Category_ID > 0)
-			{
-				queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, p_M_Product_Category_ID);
-			}
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, p_M_Product_Category_ID);
 
 			queryBuilder.orderBy()
 					.addColumn(I_M_Product.COLUMNNAME_Name)
