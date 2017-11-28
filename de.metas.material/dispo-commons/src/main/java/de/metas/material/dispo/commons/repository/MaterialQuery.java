@@ -61,12 +61,15 @@ public class MaterialQuery
 
 	List<AttributesKey> storageAttributesKeys;
 
-	@Builder
+	int bpartnerId;
+
+	@Builder(toBuilder = true)
 	private MaterialQuery(
 			@Singular final Set<Integer> warehouseIds,
 			final Date date,
 			@Singular final List<Integer> productIds,
-			@Singular final List<AttributesKey> storageAttributesKeys)
+			@Singular final List<AttributesKey> storageAttributesKeys,
+			final int bpartnerId)
 	{
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
@@ -74,10 +77,11 @@ public class MaterialQuery
 		this.date = date != null ? date : SystemTime.asDate();
 		this.productIds = ImmutableList.copyOf(productIds);
 		this.storageAttributesKeys = ImmutableList.copyOf(storageAttributesKeys);
+		this.bpartnerId = bpartnerId > 0 ? bpartnerId : -1;
 	}
 
 	public MaterialQuery withDate(@NonNull final Date newDate)
 	{
-		return new MaterialQuery(warehouseIds, newDate, productIds, storageAttributesKeys);
+		return toBuilder().date(newDate).build();
 	}
 }

@@ -13,10 +13,12 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.commons.AttributesKey;
@@ -49,6 +51,8 @@ import lombok.Value;
 @Service
 public class StockRepository
 {
+	private static final Logger logger = LogManager.getLogger(StockRepository.class);
+
 	@NonNull
 	public BigDecimal retrieveAvailableStockQtySum(@NonNull final MaterialQuery query)
 	{
@@ -155,6 +159,13 @@ public class StockRepository
 		{
 			addLikeFilterForAttributesKey(storageAttributesKey, filterForCurrentStorageAttributesKey);
 		}
+
+		if (query.getBpartnerId() > 0)
+		{
+			// TODO: implement support for query.getBPartnerId(). see https://github.com/metasfresh/metasfresh/issues/3098
+			logger.warn("Ignoring BPartnerId from query because it's not implemented yet: {}", query);
+		}
+
 		return filterForCurrentStorageAttributesKey;
 	}
 
