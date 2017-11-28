@@ -282,8 +282,6 @@ import lombok.NonNull;
 		// update BPartner data from 'ic'
 		invoiceCandidateHandlerBL.setBPartnerData(ic);
 
-		// update the 'QtyInvoiced', 'NetAmtInvoiced', 'Processed' and 'HeaderAggregationKey' values of 'ic'
-		// task 08512: Note that this call needs to be *after* setBPartnerData() because there we might have updated the AllowConsolidateInvoice flag
 		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, ic);
 
 		// update C_UOM_ID data from 'ic'
@@ -337,7 +335,7 @@ import lombok.NonNull;
 		// Save it
 		invoiceCandDAO.save(ic);
 	}
-	
+
 	/**
 	 * Link all orderLine's inoutLine to our invoice candidate.
 	 *
@@ -541,7 +539,7 @@ import lombok.NonNull;
 			// if we discard all changes in this case, then we will have IsError='Y' and also an error message in the IC,
 			// but the user will probably ignore it, because the IC is still flagged as processed.
 			invoiceCandBL.setError(ic, e);
-			//invoiceCandBL.discardChangesAndSetError(ic, e);
+			// invoiceCandBL.discardChangesAndSetError(ic, e);
 
 			invoiceCandDAO.save(ic);
 		}

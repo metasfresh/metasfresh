@@ -1,0 +1,1 @@
+ALTER TABLE C_Invoice_Candidate DROP COLUMN allowconsolidateinvoice;

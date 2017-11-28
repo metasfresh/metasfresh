@@ -69,7 +69,6 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 				.setQty(50)
 				.setManual(false)
 				.setSOTrx(config_IsSOTrx())
-				.setAllowConsolidateInvoiceOnBPartner(true)
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")
 				.build();

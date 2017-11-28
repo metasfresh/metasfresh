@@ -385,9 +385,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setBill_Location_ID(order.getBill_Location_ID());
 		ic.setBill_User_ID(order.getBill_User_ID());
 
-		// // 05350 : Set the consolidate invoice flag from the BP
-		// final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
-		// aggregationBL.setAllowConsolidateInvoice(ic);
 	}
 
 	@Override
