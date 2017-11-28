@@ -486,7 +486,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				.omitEmptyStrings();
 		for (final String storageAttributesKey : splitter.splitToList(storageAttributesKeys))
 		{
-			materialQueryBuilder.storageAttributesKey(AttributesKey.of(storageAttributesKey));
+			materialQueryBuilder.storageAttributesKey(AttributesKey.ofString(storageAttributesKey));
 		}
 	}
 
