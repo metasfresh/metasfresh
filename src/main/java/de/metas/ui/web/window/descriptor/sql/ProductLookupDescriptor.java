@@ -42,8 +42,8 @@ import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
 import de.metas.material.dispo.client.repository.AvailableStockService;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.MaterialQuery.MaterialQueryBuilder;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -486,7 +486,18 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				.omitEmptyStrings();
 		for (final String storageAttributesKey : splitter.splitToList(storageAttributesKeys))
 		{
-			materialQueryBuilder.storageAttributesKey(AttributesKey.ofString(storageAttributesKey));
+			if ("<ALL_STORAGE_ATTRIBUTES_KEYS>".equals(storageAttributesKey))
+			{
+				materialQueryBuilder.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
+			}
+			else if ("<OTHER_STORAGE_ATTRIBUTES_KEYS>".equals(storageAttributesKey))
+			{
+				materialQueryBuilder.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER);
+			}
+			else
+			{
+				materialQueryBuilder.storageAttributesKey(StorageAttributesKey.ofString(storageAttributesKey));
+			}
 		}
 	}
 
