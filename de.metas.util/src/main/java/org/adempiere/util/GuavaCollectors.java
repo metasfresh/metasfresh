@@ -17,11 +17,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -297,6 +297,11 @@ public final class GuavaCollectors
 	public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableListMultimap<K, V>> toImmutableListMultimap()
 	{
 		return ImmutableListMultimap.<Map.Entry<K, V>, K, V> toImmutableListMultimap(e -> e.getKey(), e -> e.getValue());
+	}
+
+	public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableSetMultimap<K, V>> toImmutableSetMultimap()
+	{
+		return ImmutableSetMultimap.<Map.Entry<K, V>, K, V> toImmutableSetMultimap(e -> e.getKey(), e -> e.getValue());
 	}
 
 	/**
