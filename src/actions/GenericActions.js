@@ -38,6 +38,26 @@ export function getData(
     );
 }
 
+/**
+ * 
+ * @param {*} entity - entity should always be `documentView`
+ * @param {*} windowId 
+ * @param {*} viewId 
+ * @param {*} rowId 
+ */
+export function getAttributes(
+    entity, windowId, viewId, rowId
+) {
+    return axios.get(
+        config.API_URL +
+        '/' + entity +
+        '/' + windowId +
+        (viewId ? '/' + viewId : '') +
+        (rowId ? '/' + rowId : '') +
+        '/attributes'
+    );
+}
+
 export function createInstance(entity, docType, docId, tabId, subentity) {
     return axios.post(
         config.API_URL +

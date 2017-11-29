@@ -4,7 +4,7 @@ import counterpart from 'counterpart';
 
 import {
     initLayout,
-    getData
+    getAttributes
 } from '../../actions/GenericActions';
 
 import RawWidget from '../widget/RawWidget';
@@ -38,11 +38,10 @@ class SelectionAttributes extends Component {
             windowType, viewId, selected, entity, DLWrapperSetData,
             DLWrapperSetLayout
         } = this.props;
-
         initLayout(entity, windowType, selected[0], null, viewId)
             .then(response => {
                 DLWrapperSetLayout(response.data.elements);
-                return getData(entity, windowType, viewId, selected[0]);
+                return getAttributes(entity, windowType, viewId, selected[0]);
             }).then(response => {
                 DLWrapperSetData(response.data.fieldsByName, response.data.id);
             }).catch(() => {});
