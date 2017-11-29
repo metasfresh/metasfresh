@@ -149,7 +149,7 @@ public class ForecastLineHUPackingAware implements IHUPackingAware
 	@Override
 	public BigDecimal getQtyPacks()
 	{
-		return forecastLine.getQty();
+		return forecastLine.getQtyEnteredTU();
 	}
 
 	@Override
