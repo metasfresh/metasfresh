@@ -134,13 +134,17 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1293](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1293) Cannot scroll down in a filter with lots of parameters
+    * Now also possible to scroll down long filter lists.
   * [#1345](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1345) Invalid date was used on dateTime tablecell
+    * Bugfix for DateTiem tablecells, now presenting the content properly.
   * [#1352](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1352) Cannot clear dropdown fields
     * Fix for Dropdown Fields, now allowing to select empty values again.
   * [#1358](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1358) View field editor: number field is behaving weird when using keyboard
+    * Improvement of the behavior of number fields when using keyboard.
   * [#1365](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1365) Error with alt+space for expand
     * Fixes the keyboard Hotkey for expan in Document Windows.
   * [#1366](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1366) Error in Quickentry dropdown List
+    * Fixes the Batch Entry result list, now generating the results properly.
   * [#1374](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1374) Keyboard alt+u in Sales Order
     * Fixes the Document Action Shortcut alt+u for complete action in all Document Windows.
   * [#1376](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1376) Navigation Menu Favorite stars wrong
