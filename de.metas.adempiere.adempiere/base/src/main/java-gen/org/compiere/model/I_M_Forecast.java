@@ -69,6 +69,35 @@ public interface I_M_Forecast
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BPartner_ID();
+
+	public org.compiere.model.I_C_BPartner getC_BPartner();
+
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Forecast, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_Forecast, org.compiere.model.I_C_BPartner>(I_M_Forecast.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
 	 * Set Kalender.
 	 * Accounting Calendar Name
 	 *
@@ -96,6 +125,35 @@ public interface I_M_Forecast
     public static final org.adempiere.model.ModelColumn<I_M_Forecast, org.compiere.model.I_C_Calendar> COLUMN_C_Calendar_ID = new org.adempiere.model.ModelColumn<I_M_Forecast, org.compiere.model.I_C_Calendar>(I_M_Forecast.class, "C_Calendar_ID", org.compiere.model.I_C_Calendar.class);
     /** Column name C_Calendar_ID */
     public static final String COLUMNNAME_C_Calendar_ID = "C_Calendar_ID";
+
+	/**
+	 * Set Periode.
+	 * Periode des Kalenders
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Period_ID (int C_Period_ID);
+
+	/**
+	 * Get Periode.
+	 * Periode des Kalenders
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Period_ID();
+
+	public org.compiere.model.I_C_Period getC_Period();
+
+	public void setC_Period(org.compiere.model.I_C_Period C_Period);
+
+    /** Column definition for C_Period_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Forecast, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new org.adempiere.model.ModelColumn<I_M_Forecast, org.compiere.model.I_C_Period>(I_M_Forecast.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
+    /** Column name C_Period_ID */
+    public static final String COLUMNNAME_C_Period_ID = "C_Period_ID";
 
 	/**
 	 * Set Jahr.
@@ -155,6 +213,31 @@ public interface I_M_Forecast
     public static final org.adempiere.model.ModelColumn<I_M_Forecast, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_Forecast, org.compiere.model.I_AD_User>(I_M_Forecast.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Zugesagter Termin.
+	 * Zugesagter Termin für diesen Auftrag
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDatePromised (java.sql.Timestamp DatePromised);
+
+	/**
+	 * Get Zugesagter Termin.
+	 * Zugesagter Termin für diesen Auftrag
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDatePromised();
+
+    /** Column definition for DatePromised */
+    public static final org.adempiere.model.ModelColumn<I_M_Forecast, Object> COLUMN_DatePromised = new org.adempiere.model.ModelColumn<I_M_Forecast, Object>(I_M_Forecast.class, "DatePromised", null);
+    /** Column name DatePromised */
+    public static final String COLUMNNAME_DatePromised = "DatePromised";
 
 	/**
 	 * Set Beschreibung.
@@ -357,6 +440,35 @@ public interface I_M_Forecast
     public static final org.adempiere.model.ModelColumn<I_M_Forecast, org.compiere.model.I_M_PriceList> COLUMN_M_PriceList_ID = new org.adempiere.model.ModelColumn<I_M_Forecast, org.compiere.model.I_M_PriceList>(I_M_Forecast.class, "M_PriceList_ID", org.compiere.model.I_M_PriceList.class);
     /** Column name M_PriceList_ID */
     public static final String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
+
+	/**
+	 * Set Lager.
+	 * Lager oder Ort für Dienstleistung
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Lager.
+	 * Lager oder Ort für Dienstleistung
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Warehouse_ID();
+
+	public org.compiere.model.I_M_Warehouse getM_Warehouse();
+
+	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
+
+    /** Column definition for M_Warehouse_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Forecast, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_M_Forecast, org.compiere.model.I_M_Warehouse>(I_M_Forecast.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
+    /** Column name M_Warehouse_ID */
+    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Name.

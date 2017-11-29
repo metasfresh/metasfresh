@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_ForecastLine
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 272142698L;
+	private static final long serialVersionUID = -7660434L;
 
     /** Standard Constructor */
     public X_M_ForecastLine (Properties ctx, int M_ForecastLine_ID, String trxName)
@@ -40,15 +23,14 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
       super (ctx, M_ForecastLine_ID, trxName);
       /** if (M_ForecastLine_ID == 0)
         {
-			setC_Period_ID (0);
-			setDatePromised (new Timestamp( System.currentTimeMillis() ));
+			setC_Period_ID (0); // @C_Period_ID@
+			setDatePromised (new Timestamp( System.currentTimeMillis() )); // @DatePromised@
 			setM_Forecast_ID (0);
 			setM_ForecastLine_ID (0);
 			setM_Product_ID (0);
-			setM_Warehouse_ID (0);
-// @M_Warehouse_ID@
-			setQty (Env.ZERO);
-			setQtyCalculated (Env.ZERO);
+			setM_Warehouse_ID (0); // @M_Warehouse_ID@
+			setQty (BigDecimal.ZERO);
+			setQtyCalculated (BigDecimal.ZERO);
         } */
     }
 
@@ -161,9 +143,9 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 	public void setC_Period_ID (int C_Period_ID)
 	{
 		if (C_Period_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Period_ID, null);
+			set_Value (COLUMNNAME_C_Period_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Period_ID, Integer.valueOf(C_Period_ID));
+			set_Value (COLUMNNAME_C_Period_ID, Integer.valueOf(C_Period_ID));
 	}
 
 	/** Get Periode.
@@ -173,6 +155,43 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 	public int getC_Period_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Period_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -209,9 +228,9 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Instanz des Merkmals-Satzes zum Produkt
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -222,8 +241,8 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Instanz des Merkmals-Satzes zum Produkt
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -388,7 +407,7 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -410,14 +429,12 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyCalculated);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Vertriebsbeauftragter.
-		@param SalesRep_ID 
-		Sales Representative or Company Agent
-	  */
+	/** Set Aussendienst.
+		@param SalesRep_ID Aussendienst	  */
 	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
@@ -427,9 +444,8 @@ public class X_M_ForecastLine extends org.compiere.model.PO implements I_M_Forec
 			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
 	}
 
-	/** Get Vertriebsbeauftragter.
-		@return Sales Representative or Company Agent
-	  */
+	/** Get Aussendienst.
+		@return Aussendienst	  */
 	@Override
 	public int getSalesRep_ID () 
 	{
