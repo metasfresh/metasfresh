@@ -1,0 +1,1 @@
+CREATE TABLE backup.C_BPartner_BKP_gh2956_20171127 AS Select C_BPartner_ID, AllowConsolidateInvoice from C_BPartner;
