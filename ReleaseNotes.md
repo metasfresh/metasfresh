@@ -106,20 +106,31 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
   * [#2958](https://github.com/metasfresh/metasfresh/issues/2958) 2nd Discount Break is ignored
+    * Bugfix for the 2nd Discount Break that is not ignored anymore.
   * [#3023](https://github.com/metasfresh/metasfresh/issues/3023) ad_org is ignored when doing quick order entry
-  * [#3034](https://github.com/metasfresh/metasfresh/issues/3034) solve material dispo regressions
-  * [#3043](https://github.com/metasfresh/metasfresh/issues/3043) A contract shall not be created when a completing a quotation
+    * Fixes the Filter criteria for products in batch entry, now only showing the products of the sales order org.
+  * [#3034](https://github.com/metasfresh/metasfresh/issues/3034) Solve material dispo regressions
+    * Fixes various issue in the Material Disposition Prototype.
+  * [#3043](https://github.com/metasfresh/metasfresh/issues/3043) A contract shall not be created when completing a quotation
+    * Fixes the contract creation, now not generating a contract when completing a sales order quotation.
 
 * metasfresh-webui-api
-  * [#669](https://github.com/metasfresh/metasfresh-webui-api/issues/669) CU-TU's built name and +
-  description is wrong
+  * [#669](https://github.com/metasfresh/metasfresh-webui-api/issues/669) CU-TU's built name and description is wrong
+    * Fix for the CU-TU name and description generation when adjusting UOM.
   * [#671](https://github.com/metasfresh/metasfresh-webui-api/issues/671) T_WEBUI_ViewSelection[Line] shall be truncated and not deleted
+    * Internal Housekeeping fix for the temporary WebUI Selection Tables, now using truncate instead of delete.
   * [#679](https://github.com/metasfresh/metasfresh-webui-api/issues/679) HU taken out in Picking Tray Clearing still displayed in the Picking Slot in Picking Terminal
+    * Fixes the removing of Handling Units in Picking Try Clearing.
   * [#692](https://github.com/metasfresh/metasfresh-webui-api/issues/692) Error in Quickentry Sales Order when canceling input
-  * [#694](https://github.com/metasfresh/metasfresh-webui-api/issues/694) purchase view: set modal title as process caption
+    * Fixes a Bug in the Quickentry workflow when canceling.
+  * [#694](https://github.com/metasfresh/metasfresh-webui-api/issues/694) Purchase view: set modal title as process caption
+    * Fix for the modal overview for processes/ actions. now showing process caption as modal title.
   * [#697](https://github.com/metasfresh/metasfresh-webui-api/issues/697) New BPartner is not available as SubProducerBPartner in MaterialReceipt BPartner
+    * Improving the time from recording until a Subproducer is available in Material Receipt Subproducer attribute list.
   * [#700](https://github.com/metasfresh/metasfresh-webui-api/issues/700) Filter error after static filter set
-  * [#701](https://github.com/metasfresh/metasfresh-webui-api/issues/701) webui server is losing session context
+    * Fixes the static Filter visibility. Now only showing 1 active static Filter.
+  * [#701](https://github.com/metasfresh/metasfresh-webui-api/issues/701) WebUI server is losing session context
+    * Fix for the session context after request to server.
 
 * metasfresh-webui-frontend
   * [#1293](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1293) Cannot scroll down in a filter with lots of parameters
