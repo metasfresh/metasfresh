@@ -28,6 +28,10 @@ Here come the actual release notes:
   * [#3087](https://github.com/metasfresh/metasfresh/issues/3087) Get rid of group columns in new window for procurement stock count
     * Adjusting the window Purchase Stock Control and adding Translation for en_US.
 
+* metasfresh-webui-frontend
+  * [#1389](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1389) Alt+a in main Grid View opens Advanced edit mode
+    * Fix for the shortcut of advanced edit in main grid view, that blocked the select-all shortcut from being tiggered.
+
 # metasfresh 5.37 (2017-48)
 
 **release for week 2017-48**
