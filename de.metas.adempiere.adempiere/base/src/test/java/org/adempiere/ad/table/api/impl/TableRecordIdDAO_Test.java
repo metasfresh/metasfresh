@@ -70,7 +70,7 @@ public class TableRecordIdDAO_Test
 		save(referencedField);
 		final int adfieldTableID = adTableDAO.retrieveTableId(I_AD_Field.Table_Name);
 
-		final Plain_I_AD_ChangeLog referencingChangeLog = newInstance(Plain_I_AD_ChangeLog.class);
+		final Mocked_I_AD_ChangeLog referencingChangeLog = newInstance(Mocked_I_AD_ChangeLog.class);
 
 		referencingChangeLog.setAD_Table_ID(adfieldTableID);
 		referencingChangeLog.setRecord_ID(referencedField.getAD_Field_ID());
@@ -80,9 +80,9 @@ public class TableRecordIdDAO_Test
 
 		// for the unit test need to explicitly create AD_Column records for the two AD_Changelog properties
 		{
-			createColumn(adChangeLogTableID, Plain_I_AD_ChangeLog.COLUMNNAME_Record_ID);
+			createColumn(adChangeLogTableID, Mocked_I_AD_ChangeLog.COLUMNNAME_Record_ID);
 
-			createColumn(adChangeLogTableID, Plain_I_AD_ChangeLog.COLUMNNAME_AD_Table_ID);
+			createColumn(adChangeLogTableID, Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Table_ID);
 
 		}
 
@@ -92,7 +92,7 @@ public class TableRecordIdDAO_Test
 
 		assertThat(tableRecordReferences.size()).isEqualTo(1);
 
-		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor = createTableRecordIdDescriptor("AD_ChangeLog", Plain_I_AD_ChangeLog.COLUMNNAME_Record_ID, "AD_Field");
+		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor = createTableRecordIdDescriptor("AD_ChangeLog", Mocked_I_AD_ChangeLog.COLUMNNAME_Record_ID, "AD_Field");
 
 		assertThat(equalsTableRecordIdDescriptor(expectedactualTableRecordIdDescriptor, tableRecordReferences.get(0))).isTrue();
 
@@ -109,7 +109,7 @@ public class TableRecordIdDAO_Test
 		save(referencedField);
 		final int adfieldTableID = adTableDAO.retrieveTableId(I_AD_Field.Table_Name);
 
-		final Plain_I_AD_ChangeLog referencingChangeLog = newInstance(Plain_I_AD_ChangeLog.class);
+		final Mocked_I_AD_ChangeLog referencingChangeLog = newInstance(Mocked_I_AD_ChangeLog.class);
 		referencingChangeLog.setAD_Field_AD_Table_ID(adfieldTableID);
 		referencingChangeLog.setAD_Field_Record_ID(referencedField.getAD_Field_ID());
 		save(referencingChangeLog);
@@ -118,9 +118,9 @@ public class TableRecordIdDAO_Test
 
 		// for the unit test need to explicitly create AD_Column records for the two AD_Changelog properties
 		{
-			createColumn(adChangeLogTableID, Plain_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID);
+			createColumn(adChangeLogTableID, Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID);
 
-			createColumn(adChangeLogTableID, Plain_I_AD_ChangeLog.COLUMNNAME_AD_Field_AD_Table_ID);
+			createColumn(adChangeLogTableID, Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Field_AD_Table_ID);
 
 		}
 
@@ -130,7 +130,7 @@ public class TableRecordIdDAO_Test
 
 		assertThat(tableRecordReferences.size()).isEqualTo(1);
 
-		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor = createTableRecordIdDescriptor("AD_ChangeLog", Plain_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID, "AD_Field");
+		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor = createTableRecordIdDescriptor("AD_ChangeLog", Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID, "AD_Field");
 
 		assertThat(equalsTableRecordIdDescriptor(expectedactualTableRecordIdDescriptor, tableRecordReferences.get(0))).isTrue();
 
@@ -145,34 +145,34 @@ public class TableRecordIdDAO_Test
 		save(referencedField);
 		final int adfieldTableID = adTableDAO.retrieveTableId(I_AD_Field.Table_Name);
 
-		final Plain_I_AD_ChangeLog referencingChangeLog = newInstance(Plain_I_AD_ChangeLog.class);
+		final Mocked_I_AD_ChangeLog originChangeLog = newInstance(Mocked_I_AD_ChangeLog.class);
 
-		referencingChangeLog.setAD_Table_ID(adfieldTableID);
-		referencingChangeLog.setRecord_ID(referencedField.getAD_Field_ID());
-		referencingChangeLog.setAD_Field_AD_Table_ID(adfieldTableID);
-		referencingChangeLog.setAD_Field_Record_ID(referencedField.getAD_Field_ID());
-		save(referencingChangeLog);
+		originChangeLog.setAD_Table_ID(adfieldTableID);
+		originChangeLog.setRecord_ID(referencedField.getAD_Field_ID());
+		originChangeLog.setAD_Field_AD_Table_ID(adfieldTableID);
+		originChangeLog.setAD_Field_Record_ID(referencedField.getAD_Field_ID());
+		save(originChangeLog);
 
 		final int adChangeLogTableID = InterfaceWrapperHelper.getTableId(I_AD_ChangeLog.class);
 
 		// for the unit test need to explicitly create AD_Column records for the two AD_Changelog properties
 		{
-			createColumn(adChangeLogTableID, Plain_I_AD_ChangeLog.COLUMNNAME_Record_ID);
+			createColumn(adChangeLogTableID, Mocked_I_AD_ChangeLog.COLUMNNAME_Record_ID);
 
-			createColumn(adChangeLogTableID, Plain_I_AD_ChangeLog.COLUMNNAME_AD_Table_ID);
+			createColumn(adChangeLogTableID, Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Table_ID);
 
-			createColumn(adChangeLogTableID, Plain_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID);
+			createColumn(adChangeLogTableID, Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID);
 
-			createColumn(adChangeLogTableID, Plain_I_AD_ChangeLog.COLUMNNAME_AD_Field_AD_Table_ID);
+			createColumn(adChangeLogTableID, Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Field_AD_Table_ID);
 
 		}
 
-		final PlainZoomSource zoomSource = new PlainZoomSource(referencingChangeLog);
+		final PlainZoomSource zoomSource = new PlainZoomSource(originChangeLog);
 
 		final List<TableRecordIdDescriptor> tableRecordReferences = tableRecordIdDAO.retrieveTableRecordIdReferences(zoomSource);
 
-		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor_Record_ID = createTableRecordIdDescriptor("AD_ChangeLog", Plain_I_AD_ChangeLog.COLUMNNAME_Record_ID, "AD_Field");
-		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor_Prefix_Record_ID = createTableRecordIdDescriptor("AD_ChangeLog", Plain_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID, "AD_Field");
+		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor_Record_ID = createTableRecordIdDescriptor("AD_ChangeLog", Mocked_I_AD_ChangeLog.COLUMNNAME_Record_ID, "AD_Field");
+		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor_Prefix_Record_ID = createTableRecordIdDescriptor("AD_ChangeLog", Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID, "AD_Field");
 
 		assertThat(tableRecordReferences.size()).isEqualTo(2);
 
@@ -190,7 +190,7 @@ public class TableRecordIdDAO_Test
 		save(referencedField);
 		final int adfieldTableID = adTableDAO.retrieveTableId(I_AD_Field.Table_Name);
 
-		final Plain_I_AD_ChangeLog referencingChangeLog = newInstance(Plain_I_AD_ChangeLog.class);
+		final Mocked_I_AD_ChangeLog referencingChangeLog = newInstance(Mocked_I_AD_ChangeLog.class);
 
 		referencingChangeLog.setAD_Table_ID(adfieldTableID);
 		referencingChangeLog.setRecord_ID(referencedField.getAD_Field_ID());
@@ -202,25 +202,25 @@ public class TableRecordIdDAO_Test
 
 		// for the unit test need to explicitly create AD_Column records for the two AD_Changelog properties
 		{
-			createColumn(adChangeLogTableID, Plain_I_AD_ChangeLog.COLUMNNAME_Record_ID);
+			createColumn(adChangeLogTableID, Mocked_I_AD_ChangeLog.COLUMNNAME_Record_ID);
 
-			createColumn(adChangeLogTableID, Plain_I_AD_ChangeLog.COLUMNNAME_AD_Table_ID);
+			createColumn(adChangeLogTableID, Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Table_ID);
 
-			createColumn(adChangeLogTableID, Plain_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID);
+			createColumn(adChangeLogTableID, Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID);
 
-			createColumn(adChangeLogTableID, Plain_I_AD_ChangeLog.COLUMNNAME_AD_Field_AD_Table_ID);
+			createColumn(adChangeLogTableID, Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Field_AD_Table_ID);
 
 		}
 
-		final List<TableRecordIdDescriptor> tableRecordReferences = tableRecordIdDAO.retrieveAllTableRecordIdReferences();
+		final List<TableRecordIdDescriptor> tableRecordIdDescriptors = tableRecordIdDAO.retrieveAllTableRecordIdReferences();
 
-		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor_Record_ID = createTableRecordIdDescriptor("AD_ChangeLog", Plain_I_AD_ChangeLog.COLUMNNAME_Record_ID, "AD_Field");
-		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor_Prefix_Record_ID = createTableRecordIdDescriptor("AD_ChangeLog", Plain_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID, "AD_Field");
+		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor_Record_ID = createTableRecordIdDescriptor("AD_ChangeLog", Mocked_I_AD_ChangeLog.COLUMNNAME_Record_ID, "AD_Field");
+		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor_Prefix_Record_ID = createTableRecordIdDescriptor("AD_ChangeLog", Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID, "AD_Field");
 
-		assertThat(tableRecordReferences.size()).isEqualTo(2);
+		assertThat(tableRecordIdDescriptors.size()).isEqualTo(2);
 
-		assertThat(containsTableRecordReferences(tableRecordReferences, expectedactualTableRecordIdDescriptor_Record_ID)).isTrue();
-		assertThat(containsTableRecordReferences(tableRecordReferences, expectedactualTableRecordIdDescriptor_Prefix_Record_ID)).isTrue();
+		assertThat(containsTableRecordReferences(tableRecordIdDescriptors, expectedactualTableRecordIdDescriptor_Record_ID)).isTrue();
+		assertThat(containsTableRecordReferences(tableRecordIdDescriptors, expectedactualTableRecordIdDescriptor_Prefix_Record_ID)).isTrue();
 
 	}
 
@@ -235,9 +235,9 @@ public class TableRecordIdDAO_Test
 		return column;
 	}
 
-	public TableRecordIdDescriptor createTableRecordIdDescriptor(final String referencingTableName, final String referencingColumnName, final String referencedTableName)
+	public TableRecordIdDescriptor createTableRecordIdDescriptor(final String originTableName, final String recordIdColumnName, final String targetTableName)
 	{
-		final TableRecordIdDescriptor tableRecordIdDescriptor = TableRecordIdDescriptor.of(referencingTableName, referencingColumnName, referencedTableName);
+		final TableRecordIdDescriptor tableRecordIdDescriptor = TableRecordIdDescriptor.of(originTableName, recordIdColumnName, targetTableName);
 
 		return tableRecordIdDescriptor;
 
@@ -245,15 +245,15 @@ public class TableRecordIdDAO_Test
 
 	public boolean equalsTableRecordIdDescriptor(@NonNull final TableRecordIdDescriptor expectedTableRecordIdDescriptor, @NonNull final TableRecordIdDescriptor actualTableRecordIdDescriptor)
 	{
-		if (!(expectedTableRecordIdDescriptor.getReferencingTableName().equals(actualTableRecordIdDescriptor.getReferencingTableName())))
+		if (!(expectedTableRecordIdDescriptor.getOriginTableName().equals(actualTableRecordIdDescriptor.getOriginTableName())))
 		{
 			return false;
 		}
-		if (!(expectedTableRecordIdDescriptor.getReferencingColumnName().equals(actualTableRecordIdDescriptor.getReferencingColumnName())))
+		if (!(expectedTableRecordIdDescriptor.getRecordIdColumnName().equals(actualTableRecordIdDescriptor.getRecordIdColumnName())))
 		{
 			return false;
 		}
-		if (!(expectedTableRecordIdDescriptor.getReferencedTableName().equals(actualTableRecordIdDescriptor.getReferencedTableName())))
+		if (!(expectedTableRecordIdDescriptor.getTargetTableName().equals(actualTableRecordIdDescriptor.getTargetTableName())))
 		{
 			return false;
 		}
@@ -277,9 +277,9 @@ public class TableRecordIdDAO_Test
 
 	private class PlainZoomSource implements IZoomSource
 	{
-		final Plain_I_AD_ChangeLog changeLog;
+		final Mocked_I_AD_ChangeLog changeLog;
 
-		public PlainZoomSource(@NonNull final Plain_I_AD_ChangeLog changeLog)
+		public PlainZoomSource(@NonNull final Mocked_I_AD_ChangeLog changeLog)
 		{
 			this.changeLog = changeLog;
 		}
@@ -311,19 +311,19 @@ public class TableRecordIdDAO_Test
 		@Override
 		public String getTableName()
 		{
-			return Plain_I_AD_ChangeLog.Table_Name;
+			return Mocked_I_AD_ChangeLog.Table_Name;
 		}
 
 		@Override
 		public int getAD_Table_ID()
 		{
-			return InterfaceWrapperHelper.getTableId(Plain_I_AD_ChangeLog.class);
+			return InterfaceWrapperHelper.getTableId(Mocked_I_AD_ChangeLog.class);
 		}
 
 		@Override
 		public String getKeyColumnName()
 		{
-			return Plain_I_AD_ChangeLog.COLUMNNAME_AD_ChangeLog_ID;
+			return Mocked_I_AD_ChangeLog.COLUMNNAME_AD_ChangeLog_ID;
 		}
 
 		@Override
@@ -352,7 +352,7 @@ public class TableRecordIdDAO_Test
 
 	}
 
-	interface Plain_I_AD_ChangeLog extends org.compiere.model.I_AD_ChangeLog
+	interface Mocked_I_AD_ChangeLog extends org.compiere.model.I_AD_ChangeLog
 	{
 		public void setAD_Field_AD_Table_ID(int AD_Table_ID);
 
