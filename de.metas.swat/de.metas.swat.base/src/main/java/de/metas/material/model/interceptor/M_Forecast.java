@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
 
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -43,8 +42,6 @@ public class M_Forecast
 
 		CopyRecordFactory.enableForTableName(I_M_Forecast.Table_Name);
 		CopyRecordFactory.registerCopyRecordSupport(I_M_Forecast.Table_Name, MForecastPOCopyRecordSupport.class);
-
-		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Product_BOM());
 	}
 
 	/**
