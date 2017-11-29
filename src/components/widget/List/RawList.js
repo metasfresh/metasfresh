@@ -13,6 +13,8 @@ class RawList extends Component {
         }
     }
 
+    considerBlur = false;
+
     componentDidMount = () => {
         const { autofocus, onRequestListData } = this.props;
         if (this.dropdown && autofocus && onRequestListData) {
@@ -255,6 +257,12 @@ class RawList extends Component {
     }
 
     handleBlur = () => {
+        if (!this.considerBlur) {
+            return;
+        }
+
+        this.considerBlur = false;
+
         const { selected, doNotOpenOnFocus } = this.props;
 
         if (!doNotOpenOnFocus && this.dropdown) {
@@ -272,6 +280,8 @@ class RawList extends Component {
      * on focus.
      */
     handleClick = (e) => {
+        this.considerBlur = true;
+
         e.preventDefault();
 
         const { onFocus } = this.props;
