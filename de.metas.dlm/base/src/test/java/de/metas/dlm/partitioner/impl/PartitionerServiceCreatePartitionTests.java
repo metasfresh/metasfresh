@@ -444,8 +444,7 @@ public class PartitionerServiceCreatePartitionTests
 					throw new DLMReferenceException(null,
 							TableRecordIdDescriptor.of(I_C_Invoice.Table_Name,
 									I_C_Invoice.COLUMNNAME_C_Order_ID,
-									I_C_Order.Table_Name,
-									123),
+									I_C_Order.Table_Name),
 							true);
 				}
 			}

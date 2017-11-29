@@ -133,9 +133,9 @@ public class DLMExceptionWrapperTests
 		final TableRecordIdDescriptor tableReferenceDescriptor = dlmException.getTableReferenceDescriptor();
 
 		// the descriptor needs to contain the "real" table and column names, not the lower-case versions that were returned by postgresl.
-		assertThat(tableReferenceDescriptor.getReferencedTableName(), is(I_AD_Window.Table_Name));
-		assertThat(tableReferenceDescriptor.getReferencingTableName(), is(I_AD_Tab.Table_Name));
-		assertThat(tableReferenceDescriptor.getReferencingColumnName(), is(I_AD_Tab.COLUMNNAME_AD_Window_ID));
+		assertThat(tableReferenceDescriptor.getTargetTableName(), is(I_AD_Window.Table_Name));
+		assertThat(tableReferenceDescriptor.getOriginTableName(), is(I_AD_Tab.Table_Name));
+		assertThat(tableReferenceDescriptor.getRecordIdColumnName(), is(I_AD_Tab.COLUMNNAME_AD_Window_ID));
 
 	}
 }

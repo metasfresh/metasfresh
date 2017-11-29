@@ -127,13 +127,15 @@ public class DLMReferenceExceptionWrapper implements IExceptionWrapper<DBExcepti
 		final I_AD_Column referencingColumn = adTableDAO.retrieveColumn(referencingTable.getTableName(), infos[3]);
 		Check.errorIf(referencingTable == null, "Unable to retrieve an AD_Column for referencingTable name={} and referencingColumn name={}", infos[2], infos[3]);
 
-		return new DLMReferenceException(t,
+		final DLMReferenceException ex = new DLMReferenceException(t,
 				TableRecordIdDescriptor.of(
 						referencingTable.getTableName(),
 						referencingColumn.getColumnName(),
-						referencedTable.getTableName(),
-						Integer.parseInt(infos[1])),
+						referencedTable.getTableName()),
 				referencingTableHasDLMLevel);
+		ex.setParameter("referencedRecordId", Integer.parseInt(infos[1]));
+		ex.appendParametersToMessage();
+		return ex;
 	}
 
 	@VisibleForTesting

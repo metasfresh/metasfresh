@@ -82,7 +82,7 @@ public class DLM_Partition_Config_Add_TableRecord_Lines extends JavaProcess
 	/* package */ List<TableRecordIdDescriptor> retainRelevantDescriptors(final PartitionConfig config, final List<TableRecordIdDescriptor> descriptors)
 	{
 		return descriptors.stream()
-				.filter(r -> config.getLine(r.getReferencedTableName()).isPresent())
+				.filter(r -> config.getLine(r.getTargetTableName()).isPresent())
 				.collect(Collectors.toList());
 	}
 

@@ -1,12 +1,9 @@
 package org.adempiere.ad.table;
 
-import javax.annotation.concurrent.Immutable;
-
 import org.adempiere.util.Check;
-import org.adempiere.util.StringUtils;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
 
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -30,7 +27,30 @@ import org.adempiere.util.lang.impl.TableRecordReference;
  * #L%
  */
 /**
- * Describes a table reference.
+ * 
+ * Example of how this could work in the real life:
+ * 
+ * <h1>Case 1 (Ad_Table_ID, Record_ID)</h1>
+ * 
+ * <li>Have a table Origin
+ * <li>Have a table Target
+ * <li>The table Origin has the column AD_Table_ID and Record_ID
+ * <li>The table Origin has entries with values: Origin.AD_Table_ID = Target.Table_ID ; Origin.Record_ID = Target.Record_ID
+ * <li>=>
+ * <li>Origin = originTableName
+ * <li>Origin.Record_ID = recordIdColumnName
+ * <li>Target = targetTableName
+ * 
+ * <h2>Case 2 (Prefix_Ad_Table_ID, Prefix_Record_ID)</h1>>
+ * 
+ * <li>Have a table Origin
+ * <li>Have a table Target
+ * <li>The table Origin has the column Target_AD_Table_ID and Target_Record_ID
+ * <li>The table Origin has entries with values: Origin.Target_AD_Table_ID = Target.Table_ID ; Origin.Target_Record_ID = Target.Record_ID
+ * <li>=>
+ * <li>Origin = originTableName
+ * <li>Origin.Target_Record_ID = recordIdColumnName
+ * <li>Target = targetTableName
  *
  * @see PartitionerServiceOld#augmentPartitionerConfig(PartitionerConfig, java.util.List)
  * @see DLMReferenceException#getTableReferenceDescriptor()
@@ -38,111 +58,42 @@ import org.adempiere.util.lang.impl.TableRecordReference;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Immutable
-public class TableRecordIdDescriptor
+@Value
+public final class TableRecordIdDescriptor
 {
-	private final String referencingTableName;
-
-	private final int referencedRecordId;
-
-	private final String referencingColumnName;
-
-	private final String referencedTableName;
-
-	private TableRecordIdDescriptor(final String referencedTableName,
-			final int referencedRecordId,
-			final String referencingTableName,
-			final String referencingColumnName)
-	{
-		Check.assumeNotEmpty(referencedTableName, "Param 'referencedTableName' is not null; all params={}", buildParameterString(referencedTableName, referencingTableName, referencingColumnName));
-		Check.assumeNotEmpty(referencingTableName, "Param 'referencingTableName' is not null; all params={}", buildParameterString(referencedTableName, referencingTableName, referencingColumnName));
-		Check.assumeNotEmpty(referencingColumnName, "Param 'referencingColumnName' is not null; all params={}", buildParameterString(referencedTableName, referencingTableName, referencingColumnName));
-
-		this.referencedTableName = referencedTableName;
-		this.referencedRecordId = referencedRecordId;
-		this.referencingTableName = referencingTableName;
-		this.referencingColumnName = referencingColumnName;
-
-	}
-
 	/**
 	 * Creates a descriptor for <code>referencingTableName.referencingColumnName => referencedTableName</code>.
-	 *
-	 * @param referencingTableName
-	 * @param referencingColumnName
-	 * @param referencedTableName
-	 * @return
 	 */
 	public static TableRecordIdDescriptor of(
-			final String referencingTableName,
-			final String referencingColumnName,
-			final String referencedTableName)
+			final String originTableName,
+			final String recordIdColumnName,
+			final String targetTableName)
 	{
-		return new TableRecordIdDescriptor(
-				referencedTableName,
-				-1,
-				referencingTableName,
-				referencingColumnName);
+		return builder()
+				.targetTableName(targetTableName)
+				.originTableName(originTableName)
+				.recordIdColumnName(recordIdColumnName)
+				.build();
 	}
 
-	/**
-	 * Creates a descriptor for <code>referencingTableName.referencingColumnName => referencedTableName[referencedRecordId]</code>.
-	 *
-	 * @param referencingTableName
-	 * @param referencingColumnName
-	 * @param referencedTableName
-	 * @param referencedRecordId currently this is not really used, but only for info/debugging
-	 * @return
-	 */
-	public static TableRecordIdDescriptor of(
-			final String referencingTableName,
-			final String referencingColumnName,
-			final String referencedTableName,
-			final int referencedRecordId)
+	private final String originTableName;
+	private final String recordIdColumnName;
+	private final String targetTableName;
+
+	@Builder
+	private TableRecordIdDescriptor(
+			final String targetTableName,
+			final String originTableName,
+			final String recordIdColumnName)
 	{
-		return new TableRecordIdDescriptor(
-				referencedTableName,
-				referencedRecordId,
-				referencingTableName,
-				referencingColumnName);
+		Check.assumeNotEmpty(targetTableName, "Param 'referencedTableName' is not null");
+		Check.assumeNotEmpty(originTableName, "Param 'referencingTableName' is not null");
+		Check.assumeNotEmpty(recordIdColumnName, "Param 'referencingColumnName' is not null");
+
+		this.targetTableName = targetTableName;
+		this.originTableName = originTableName;
+		this.recordIdColumnName = recordIdColumnName;
+
 	}
 
-	public String getReferencingTableName()
-	{
-		return referencingTableName;
-	}
-
-	public String getReferencingColumnName()
-	{
-		return referencingColumnName;
-	}
-
-	public String getReferencedTableName()
-	{
-		return referencedTableName;
-	}
-
-	public int getReferencedRecordId()
-	{
-		return referencedRecordId;
-	}
-
-	public ITableRecordReference getReferencedRecord()
-	{
-		return new TableRecordReference(referencedTableName, referencedRecordId);
-	}
-
-	@Override
-	public String toString()
-	{
-		return StringUtils.formatMessage("TableReferenceDescriptor[{}.{} -> {} (concrete record ID={})]", referencingTableName, referencingColumnName, referencedTableName, referencedRecordId);
-	}
-
-	private static String buildParameterString(
-			final String referencedTableName,
-			final String referencingTableName,
-			final String referencingColumnName)
-	{
-		return "[referencedTableName=" + referencedTableName + ", referencingTableName=" + referencingTableName + ", referencingColumnName=" + referencingColumnName + "]";
-	}
 }

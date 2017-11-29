@@ -176,7 +176,7 @@ public class PartitionConfig
 
 	public boolean isMissing(final TableRecordIdDescriptor descriptor)
 	{
-		final Optional<PartitionerConfigLine> existingLine = getLine(descriptor.getReferencingTableName());
+		final Optional<PartitionerConfigLine> existingLine = getLine(descriptor.getOriginTableName());
 		if (!existingLine.isPresent())
 		{
 			return true; // not even the line exists, so it's missing
@@ -184,7 +184,7 @@ public class PartitionConfig
 
 		final boolean referenceExists = existingLine.get().getReferences()
 				.stream()
-				.anyMatch(ref -> ref.getReferencedTableName().equals(descriptor.getReferencedTableName()) && ref.getReferencingColumnName().equals(descriptor.getReferencingColumnName()));
+				.anyMatch(ref -> ref.getReferencedTableName().equals(descriptor.getTargetTableName()) && ref.getReferencingColumnName().equals(descriptor.getRecordIdColumnName()));
 		return !referenceExists;
 	}
 

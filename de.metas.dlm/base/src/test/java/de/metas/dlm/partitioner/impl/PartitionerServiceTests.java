@@ -60,8 +60,7 @@ public class PartitionerServiceTests
 		final List<TableRecordIdDescriptor> descriptors = ImmutableList.of(
 				TableRecordIdDescriptor.of(I_AD_ChangeLog.Table_Name,
 						I_AD_ChangeLog.COLUMNNAME_Record_ID,
-						I_AD_Field.Table_Name,
-						123));
+						I_AD_Field.Table_Name));
 
 		testAugmentPartitionSimple(config, descriptors);
 	}
@@ -100,12 +99,12 @@ public class PartitionerServiceTests
 		final PartitionConfig config = PartitionConfig.builder().line(I_AD_Field.Table_Name).endLine().build();
 
 		final List<TableRecordIdDescriptor> descriptors = ImmutableList.of(
-				TableRecordIdDescriptor.of(I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Field.Table_Name, 123));
+				TableRecordIdDescriptor.of(I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Field.Table_Name));
 
 		final PartitionConfig augmentedConfig = testAugmentPartitionSimple(config, descriptors);
 
 		final List<TableRecordIdDescriptor> descriptors2 = ImmutableList.of(
-				TableRecordIdDescriptor.of(I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Field.Table_Name, 123));
+				TableRecordIdDescriptor.of(I_AD_ChangeLog.Table_Name, I_AD_ChangeLog.COLUMNNAME_Record_ID, I_AD_Field.Table_Name));
 
 		// make the same call again. there shall be no double lines or references.
 		testAugmentPartitionSimple(augmentedConfig, descriptors2);
@@ -123,8 +122,7 @@ public class PartitionerServiceTests
 		final List<TableRecordIdDescriptor> descriptors = ImmutableList.of(
 				TableRecordIdDescriptor.of(I_AD_ChangeLog.Table_Name,
 						I_AD_ChangeLog.COLUMNNAME_Record_ID,
-						I_AD_Field.Table_Name,
-						123));
+						I_AD_Field.Table_Name));
 
 		testAugmentPartitionSimple(config, descriptors);
 	}

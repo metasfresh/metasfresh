@@ -292,13 +292,13 @@ public class PartitionerService implements IPartitionerService
 			// throw an exception (LATER),
 			// skip the record (LATER)
 			// or add another PartitionerConfigLine, get the additional line's records and retry.
-			Loggables.get().withLogger(logger, Level.INFO).addLog("Caught {}; going to retry with an augmented config that also includes referencingTable={}", e.toString(), descriptor.getReferencingTableName());
+			Loggables.get().withLogger(logger, Level.INFO).addLog("Caught {}; going to retry with an augmented config that also includes referencingTable={}", e.toString(), descriptor.getOriginTableName());
 
 			final PartitionConfig newConfig = augmentPartitionerConfig(config, Collections.singletonList(descriptor));
 			storeOutOfTrx(newConfig); // store the new config so that even if we fail later on, the info is preserved
 
 			// when adding another PartitionerConfigLine but the table is not DLM'ed yet, then DLM it on the fly.
-			checkIfTableIsDLM(descriptor.getReferencingTableName(), request.getOnNotDLMTable());
+			checkIfTableIsDLM(descriptor.getOriginTableName(), request.getOnNotDLMTable());
 
 			// call this method again, i.e. start over with our augmented config
 			final CreatePartitionRequest newRequest = PartitionRequestFactory
@@ -306,7 +306,7 @@ public class PartitionerService implements IPartitionerService
 					.setConfig(newConfig)
 					.build();
 
-			final String referencedTableName = descriptor.getReferencedTableName();
+			final String referencedTableName = descriptor.getTargetTableName();
 
 			// Check.errorUnless(partition.getRecordsWithTable(referencedTableName).isEmpty(),
 			// "partition.getRecordsWithTable({}) should return an empty list because we stored & flushed this before we did the testmigration invokation that lead us into this catch-block; partition={}",
@@ -466,9 +466,9 @@ public class PartitionerService implements IPartitionerService
 
 		descriptors.forEach(descriptor -> {
 
-			final String referencingTableName = descriptor.getReferencingTableName();
-			final String referencingColumnName = descriptor.getReferencingColumnName();
-			final String referencedTableName = descriptor.getReferencedTableName();
+			final String referencingTableName = descriptor.getOriginTableName();
+			final String referencingColumnName = descriptor.getRecordIdColumnName();
+			final String referencedTableName = descriptor.getTargetTableName();
 
 			if (!config.isMissing(descriptor))
 			{
