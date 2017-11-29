@@ -1,6 +1,7 @@
 package de.metas.material.model.interceptor;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
 
@@ -11,6 +12,7 @@ import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.util.Services;
@@ -89,5 +91,29 @@ public class M_Forecast
 				.create()
 				.list();
 		return forecastLines;
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
+			I_M_Forecast.COLUMNNAME_C_BPartner_ID,
+			I_M_Forecast.COLUMNNAME_C_Period_ID,
+			I_M_Forecast.COLUMNNAME_DatePromised,
+			I_M_Forecast.COLUMNNAME_M_Warehouse_ID
+	})
+	public void updateForecastLines(@NonNull final I_M_Forecast forecast)
+	{
+		final List<I_M_ForecastLine> forecastLines = retrieveForecastLines(forecast);
+		if (forecastLines.isEmpty())
+		{
+			return;
+		}
+
+		forecastLines.forEach( forecastLine ->
+		{
+			forecastLine.setC_BPartner(forecast.getC_BPartner());
+			forecastLine.setM_Warehouse(forecast.getM_Warehouse());
+			forecastLine.setC_Period(forecast.getC_Period());
+			forecastLine.setDatePromised(forecast.getDatePromised());
+			save(forecastLine);
+		});
 	}
 }
