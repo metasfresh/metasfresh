@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import counterpart from 'counterpart';
 
+import FiltersDateStepper from './FiltersDateStepper';
 import FiltersItem from './FiltersItem';
 import { TableCell } from '../table/TableCell';
 
@@ -51,11 +52,13 @@ class FiltersFrequent extends Component {
 
                     return (
                         <div className="filter-wrapper" key={index}>
+                            {isActive && <FiltersDateStepper />}
+
                             <button
                                 onClick={() => this.toggleFilter(index, item)}
                                 className={
                                     'btn btn-filter ' +
-                                    'btn-meta-outline-secondary btn-distance ' +
+                                    'btn-meta-outline-secondary ' +
                                     'btn-sm ' +
                                     (openFilterId === index ?
                                         'btn-select ': ''
@@ -75,6 +78,8 @@ class FiltersFrequent extends Component {
                                         )}: ${item.caption}`
                                 }
                             </button>
+
+                            {isActive && <FiltersDateStepper next />}
 
                             {openFilterId === index &&
                                 <FiltersItem
