@@ -1,6 +1,7 @@
 package de.metas.ui.web.quickinput.forecastline;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 
@@ -60,6 +61,7 @@ public class ForecastLineQuickInputProcessor implements IQuickInputProcessor
 		final I_M_ForecastLine forecastLine = InterfaceWrapperHelper.newInstance(I_M_ForecastLine.class, forecast);
 		forecastLine.setM_Forecast(forecast);
 		updateForecastLine(forecastLine, quickInput);
+		save(forecastLine);
 		return DocumentId.of(forecastLine.getM_ForecastLine_ID());
 	}
 
