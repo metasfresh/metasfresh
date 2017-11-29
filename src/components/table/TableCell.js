@@ -167,4 +167,5 @@ class TableCell extends Component {
     }
 }
 
-export default onClickOutside(TableCell)
+export default onClickOutside(TableCell);
+export { TableCell };
