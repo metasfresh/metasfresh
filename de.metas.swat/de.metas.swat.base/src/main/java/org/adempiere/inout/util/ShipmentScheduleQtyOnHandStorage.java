@@ -35,6 +35,8 @@ import org.adempiere.mm.attributes.api.StorageAttributesKeys;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.model.WarehousePickingGroup;
 import org.compiere.Adempiere;
 import org.compiere.util.Util.ArrayKey;
 
@@ -79,6 +81,7 @@ public class ShipmentScheduleQtyOnHandStorage
 
 	// services
 	private final transient IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final transient IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	private final List<ShipmentScheduleAvailableStockDetail> stockDetails;
 	private final Map<ArrayKey, MaterialQuery> cachedMaterialQueries = new HashMap<>();
@@ -116,7 +119,7 @@ public class ShipmentScheduleQtyOnHandStorage
 	private MaterialMultiQuery createMaterialMultiQueryOrNull(final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
 		final Set<MaterialQuery> materialQueries = shipmentSchedules.stream()
-				.map(this::createMaterialQuery)
+				.map(this::getMaterialQuery)
 				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
 		if (materialQueries.isEmpty())
@@ -130,7 +133,7 @@ public class ShipmentScheduleQtyOnHandStorage
 				.build();
 	}
 
-	public MaterialQuery createMaterialQuery(@NonNull final I_M_ShipmentSchedule sched)
+	public MaterialQuery getMaterialQuery(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		// In case the DeliveryRule is Force, there is no point to load the storage, because it's not needed.
 		// FIXME: make sure this works performance wise, then remove the commented code
@@ -139,32 +142,32 @@ public class ShipmentScheduleQtyOnHandStorage
 		// if (!X_M_ShipmentSchedule.DELIVERYRULE_Force.equals(deliveryRule))
 		// return null;
 
-		final TableRecordReference scheduleReference = TableRecordReference.ofReferenced(sched);
-
 		//
 		// Get the storage query from cache if available
+		final TableRecordReference scheduleReference = TableRecordReference.ofReferenced(sched);
 		final ArrayKey materialQueryCacheKey = ArrayKey.of(
 				scheduleReference.getTableName(),
 				scheduleReference.getRecord_ID(),
 				I_M_ShipmentSchedule.Table_Name,
 				sched.getM_ShipmentSchedule_ID());
 
-		final MaterialQuery materialQuery = cachedMaterialQueries.get(materialQueryCacheKey);
-		if (materialQuery != null)
-		{
-			return materialQuery;
-		}
+		return cachedMaterialQueries.computeIfAbsent(materialQueryCacheKey, k -> createMaterialQuery(sched));
+	}
 
-		// Create storage query
+	private MaterialQuery createMaterialQuery(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final int shipmentScheduleWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
+		final WarehousePickingGroup warehousePickingGroup = warehouseDAO.getWarehousePickingGroupContainingWarehouseId(shipmentScheduleWarehouseId);
+		final Set<Integer> warehouseIds = warehousePickingGroup != null ? warehousePickingGroup.getWarehouseIds() : ImmutableSet.of(shipmentScheduleWarehouseId);
+
 		final int productId = sched.getM_Product_ID();
-		final int warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
 		final int bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(sched);
 		final Date date = shipmentScheduleEffectiveBL.getPreparationDate(sched); // TODO: check with Mark if we shall use DeliveryDate.
 		final MaterialQueryBuilder materialQueryBuilder = MaterialQuery.builder()
-				.warehouseId(warehouseId)
+				.warehouseIds(warehouseIds)
 				.productId(productId)
 				.bpartnerId(bpartnerId)
-				.date(date); 
+				.date(date);
 
 		// Add query attributes
 		final int asiId = sched.getM_AttributeSetInstance_ID();
@@ -174,8 +177,7 @@ public class ShipmentScheduleQtyOnHandStorage
 		}
 
 		// Cache the storage query and return it
-		cachedMaterialQueries.put(materialQueryCacheKey, materialQuery);
-		return materialQuery;
+		return materialQueryBuilder.build();
 	}
 
 	private static final List<ShipmentScheduleAvailableStockDetail> createStockDetails(final List<AvailableStockResult> stockResults)
@@ -250,7 +252,7 @@ public class ShipmentScheduleQtyOnHandStorage
 			return Collections.emptyList();
 		}
 
-		final MaterialQuery materialQuery = createMaterialQuery(sched);
+		final MaterialQuery materialQuery = getMaterialQuery(sched);
 		return streamStockDetailsMatching(materialQuery)
 				.collect(ImmutableList.toImmutableList());
 	}
