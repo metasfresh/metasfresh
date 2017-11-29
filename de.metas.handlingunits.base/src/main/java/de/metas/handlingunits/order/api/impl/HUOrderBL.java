@@ -31,6 +31,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
@@ -48,6 +49,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductDAO;
+import lombok.NonNull;
 
 public class HUOrderBL implements IHUOrderBL
 {
@@ -491,6 +493,58 @@ public class HUOrderBL implements IHUOrderBL
 		//
 		// Try fetching best matching PIP
 		final I_M_HU_PI_Item_Product pip = hupiItemProductDAO.retrieveMaterialItemProduct(product, order.getC_BPartner(), order.getDateOrdered(),
+				X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit,
+				true); // allowInfiniteCapacity = true
+
+		if (pip == null)
+		{
+			// nothing to do, product is not included in any Transport Units
+			return;
+		}
+
+		else if (pip.isAllowAnyProduct())
+		{
+			return;
+		}
+		else
+		{
+			pipConsumer.accept(pip);
+		}
+	}
+
+	@Override
+	public void findM_HU_PI_Item_ProductForForecast(@NonNull final I_M_Forecast forecast, final I_M_Product product, final Consumer<I_M_HU_PI_Item_Product> pipConsumer)
+	{
+		final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+
+		if (forecast.getC_BPartner() == null || forecast.getDatePromised() == null)
+		{
+			return;
+		}
+
+		final IHUDocumentHandler handler = huDocumentHandlerFactory.createHandler(I_M_Forecast.Table_Name);
+		if (null != handler && product != null && product.getM_Product_ID() > 0)
+		{
+			final I_M_HU_PI_Item_Product overridePip = handler.getM_HU_PI_ItemProductFor(forecast, product);
+			// If we have a default price and it has an M_HU_PI_Item_Product, suggest it in quick entry.
+			if (null != overridePip && overridePip.getM_HU_PI_Item_Product_ID() > 0)
+			{
+				if (overridePip.isAllowAnyProduct())
+				{
+					pipConsumer.accept(null);
+				}
+				else
+				{
+					pipConsumer.accept(overridePip);
+				}
+				return;
+			}
+		}
+
+		//
+		// Try fetching best matching PIP
+		final I_M_HU_PI_Item_Product pip = hupiItemProductDAO.retrieveMaterialItemProduct(product, forecast.getC_BPartner(), forecast.getDatePromised(),
 				X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit,
 				true); // allowInfiniteCapacity = true
 

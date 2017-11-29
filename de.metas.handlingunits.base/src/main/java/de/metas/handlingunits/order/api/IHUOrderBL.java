@@ -27,6 +27,7 @@ import java.util.Properties;
 import java.util.function.Consumer;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_C_Order;
@@ -111,12 +112,14 @@ public interface IHUOrderBL extends ISingletonService
 
 	/**
 	 * Find best matching {@link I_M_HU_PI_Item_Product} for given <code>product</code> and <code>order</code>.
-	 * 
+	 *
 	 * If an {@link I_M_HU_PI_Item_Product} was found, the consumer fill be called.
-	 * 
+	 *
 	 * @param order
 	 * @param product
 	 * @param pipConsumer {@link I_M_HU_PI_Item_Product} consumer
 	 */
 	void findM_HU_PI_Item_Product(org.compiere.model.I_C_Order order, I_M_Product product, Consumer<I_M_HU_PI_Item_Product> pipConsumer);
+
+	void findM_HU_PI_Item_ProductForForecast(I_M_Forecast forecast, I_M_Product product, Consumer<I_M_HU_PI_Item_Product> pipConsumer);
 }
