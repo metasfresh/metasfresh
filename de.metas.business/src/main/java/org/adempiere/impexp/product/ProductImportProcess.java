@@ -1,4 +1,4 @@
-package org.adempiere.impexp;
+package org.adempiere.impexp.product;
 
 /*
  * #%L
@@ -10,12 +10,12 @@ package org.adempiere.impexp;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,6 +32,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IMutable;
@@ -415,7 +416,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 	@Override
 	protected String getImportOrderBySql()
 	{
-		return null; // nop
+		return I_I_Product.COLUMNNAME_ProductCategory_Value; // nop
 	}
 
 	@Override
