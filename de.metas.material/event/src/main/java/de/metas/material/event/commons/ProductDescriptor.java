@@ -67,11 +67,11 @@ public class ProductDescriptor
 		return new ProductDescriptor(true, productId, storageAttributesKey, attributeSetInstanceId); // complete == true
 	}
 
-	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY_ALL = StorageAttributesKey.ofString("<ALL_STORAGE_ATTRIBUTES_KEYS>");
+	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY_ALL = StorageAttributesKey.ofAttributeValueIds(-1000);
 	public static final String MSG_STORAGE_ATTRIBUTES_KEY_ALL = "de.metas.material.dispo.<ALL_STORAGE_ATTRIBUTES_KEYS>";
 
 	/** This key's meaning depends on the other keys it comes with. */
-	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = StorageAttributesKey.ofString("<OTHER_STORAGE_ATTRIBUTES_KEYS>");
+	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = StorageAttributesKey.ofAttributeValueIds(-1001);
 	public static final String MSG_STORAGE_ATTRIBUTES_KEY_OTHER = "de.metas.material.dispo.<OTHER_STORAGE_ATTRIBUTES_KEYS>";
 
 	@JsonProperty
