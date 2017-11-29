@@ -27,8 +27,8 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
+import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -71,10 +71,10 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 		//
 		// Also show the Storage Query
 		{
-			final MaterialQuery materialQuery = storagesContainer.createMaterialQuery(shipmentSchedule);
+			final MaterialQuery materialQuery = storagesContainer.getMaterialQuery(shipmentSchedule);
 			addLog("------------------------------------------------------------");
 			addLog("Storage Query:");
-			addLog(materialQuery.toString());
+			addLog(String.valueOf(materialQuery));
 		}
 
 		return MSG_OK;
