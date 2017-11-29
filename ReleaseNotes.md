@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#3094}(https://github.com/metasfresh/metasfresh/issues/3094) Activity ID in Purchase Orderline Grid View
+    * New field in purchase orderline, allowing to see and maintain the activity in grid view.
 
 * metasfresh-webui-frontend
   * [#1354](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1354) DateTimeRangePicker default Time from/to in Filter and Process Parms
