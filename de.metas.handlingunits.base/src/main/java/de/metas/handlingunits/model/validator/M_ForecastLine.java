@@ -24,7 +24,6 @@ package de.metas.handlingunits.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 
@@ -33,7 +32,6 @@ import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.ForecastLineHUPackingAware;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
-import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_ForecastLine;
 
 @Validator(I_M_ForecastLine.class)
@@ -43,21 +41,20 @@ public class M_ForecastLine
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
 	}, ifColumnsChanged = {
-			I_M_ForecastLine.COLUMNNAME_C_BPartner_ID, I_M_ForecastLine.COLUMNNAME_M_Product_ID, I_M_ForecastLine.COLUMNNAME_Qty, de.metas.handlingunits.model.I_M_ForecastLine.COLUMNNAME_M_HU_PI_Item_Product_ID
+			I_M_ForecastLine.COLUMNNAME_C_BPartner_ID, I_M_ForecastLine.COLUMNNAME_M_Product_ID, I_M_ForecastLine.COLUMNNAME_Qty, I_M_ForecastLine.COLUMNNAME_M_HU_PI_Item_Product_ID
 	})
-	public void add_M_HU_PI_Item_Product(final I_C_OrderLine olPO)
+	public void add_M_HU_PI_Item_Product(final I_M_ForecastLine forecastLine)
 	{
 			final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
 		final IHUDocumentHandler handler = huDocumentHandlerFactory.createHandler(I_M_ForecastLine.Table_Name);
 		if (null != handler)
 		{
-			final de.metas.handlingunits.model.I_M_ForecastLine olEx = InterfaceWrapperHelper.create(olPO, de.metas.handlingunits.model.I_M_ForecastLine.class);
-			handler.applyChangesFor(olEx);
-			updateQtyPacks(olEx);
+			handler.applyChangesFor(forecastLine);
+			updateQtyPacks(forecastLine);
 		}
 	}
 
-	private void updateQtyPacks(final de.metas.handlingunits.model.I_M_ForecastLine forecastLine)
+	private void updateQtyPacks(final I_M_ForecastLine forecastLine)
 	{
 		final IHUPackingAware packingAware = new ForecastLineHUPackingAware(forecastLine);
 		Services.get(IHUPackingAwareBL.class).setQtyPacks(packingAware);

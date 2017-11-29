@@ -49,7 +49,7 @@ public class ForecastLineHUDocumentHandler implements IHUDocumentHandler
 			return null;
 		}
 
-		final de.metas.handlingunits.model.I_M_ForecastLine forecastLine = getForecastLine(document);
+		final I_M_ForecastLine forecastLine = getForecastLine(document);
 		final I_M_HU_PI_Item_Product piip;
 
 		if (InterfaceWrapperHelper.isNew(forecastLine)
@@ -72,7 +72,7 @@ public class ForecastLineHUDocumentHandler implements IHUDocumentHandler
 	@Override
 	public void applyChangesFor(final Object document)
 	{
-		final de.metas.handlingunits.model.I_M_ForecastLine ddOrderLine = getForecastLine(document);
+		final I_M_ForecastLine ddOrderLine = getForecastLine(document);
 		final I_M_Product product = ddOrderLine.getM_Product();
 		final I_M_HU_PI_Item_Product piip = getM_HU_PI_ItemProductFor(ddOrderLine, product);
 		ddOrderLine.setM_HU_PI_Item_Product(piip);
@@ -82,7 +82,7 @@ public class ForecastLineHUDocumentHandler implements IHUDocumentHandler
 	{
 		Check.assumeInstanceOf(document, I_M_ForecastLine.class, "document");
 
-		final de.metas.handlingunits.model.I_M_ForecastLine forecastLine = InterfaceWrapperHelper.create(document, de.metas.handlingunits.model.I_M_ForecastLine.class);
+		final I_M_ForecastLine forecastLine = InterfaceWrapperHelper.create(document, I_M_ForecastLine.class);
 		return forecastLine;
 	}
 }
