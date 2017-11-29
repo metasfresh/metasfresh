@@ -6,7 +6,9 @@ import static org.junit.Assert.assertThat;
 
 import java.util.List;
 
+import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.ITableRecordIdDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -23,7 +25,6 @@ import de.metas.dlm.model.IDLMAware;
 import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Record_V;
-import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import de.metas.logging.LogManager;
 
 /*
@@ -102,18 +103,18 @@ public class DLMServiceTests
 			InterfaceWrapperHelper.save(tableIDIDColumn);
 		}
 
-		final List<TableReferenceDescriptor> tableRecordReferences = dlmService.retrieveTableRecordReferences();
+		final List<TableRecordIdDescriptor> tableRecordReferences = Services.get(ITableRecordIdDAO.class).retrieveAllTableRecordIdReferences();
 
 		// assert that there are two records, one about AD_Fleid, one about AD_Element
 		assertThat(tableRecordReferences.size(), is(2));
 		assertThat(tableRecordReferences.stream().anyMatch(d -> I_AD_Element.Table_Name.equals(d.getReferencedTableName())), is(true));
 		assertThat(tableRecordReferences.stream().anyMatch(d -> I_AD_Field.Table_Name.equals(d.getReferencedTableName())), is(true));
 
-		final TableReferenceDescriptor adElementReferenceDescriptor = tableRecordReferences.stream().filter(d -> I_AD_Element.Table_Name.equals(d.getReferencedTableName())).findFirst().get();
+		final TableRecordIdDescriptor adElementReferenceDescriptor = tableRecordReferences.stream().filter(d -> I_AD_Element.Table_Name.equals(d.getReferencedTableName())).findFirst().get();
 		assertThat(adElementReferenceDescriptor.getReferencingTableName(), is(I_AD_ChangeLog.Table_Name));
 		assertThat(adElementReferenceDescriptor.getReferencingColumnName(), is(I_AD_ChangeLog.COLUMNNAME_Record_ID));
 
-		final TableReferenceDescriptor adFieldReferenceDescriptor = tableRecordReferences.stream().filter(d -> I_AD_Field.Table_Name.equals(d.getReferencedTableName())).findFirst().get();
+		final TableRecordIdDescriptor adFieldReferenceDescriptor = tableRecordReferences.stream().filter(d -> I_AD_Field.Table_Name.equals(d.getReferencedTableName())).findFirst().get();
 		assertThat(adFieldReferenceDescriptor.getReferencingTableName(), is(I_AD_ChangeLog.Table_Name));
 		assertThat(adFieldReferenceDescriptor.getReferencingColumnName(), is(I_AD_ChangeLog.COLUMNNAME_Record_ID));
 	}
