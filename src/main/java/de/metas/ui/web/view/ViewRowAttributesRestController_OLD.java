@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.json.JSONViewRowAttributes;
 import de.metas.ui.web.view.json.JSONViewRowAttributesLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
@@ -53,6 +54,9 @@ public class ViewRowAttributesRestController_OLD
 	/* package */static final String ENDPOINT = ViewRestController.ENDPOINT + "/{" + PARAM_ViewId + "}/{" + PARAM_RowId + "}";
 
 	@Autowired
+	private UserSession userSession;
+	
+	@Autowired
 	private ViewRowAttributesRestController delegate;
 
 	@GetMapping("/layout")
@@ -62,6 +66,7 @@ public class ViewRowAttributesRestController_OLD
 			, @PathVariable(PARAM_RowId) final String rowIdStr //
 	)
 	{
+		userSession.assertDeprecatedRestAPIAllowed();
 		return delegate.getAttributesLayout(windowIdStr, viewIdStr, rowIdStr);
 	}
 
@@ -72,6 +77,7 @@ public class ViewRowAttributesRestController_OLD
 			, @PathVariable(PARAM_RowId) final String rowIdStr //
 	)
 	{
+		userSession.assertDeprecatedRestAPIAllowed();
 		return delegate.getData(windowIdStr, viewIdStr, rowIdStr);
 	}
 
@@ -83,6 +89,7 @@ public class ViewRowAttributesRestController_OLD
 			, @RequestBody final List<JSONDocumentChangedEvent> events //
 	)
 	{
+		userSession.assertDeprecatedRestAPIAllowed();
 		return delegate.processChanges(windowIdStr, viewIdStr, rowIdStr, events);
 	}
 
@@ -95,6 +102,7 @@ public class ViewRowAttributesRestController_OLD
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
+		userSession.assertDeprecatedRestAPIAllowed();
 		return delegate.getAttributeTypeahead(windowIdStr, viewIdStr, rowIdStr, attributeName, query);
 	}
 
@@ -106,6 +114,7 @@ public class ViewRowAttributesRestController_OLD
 			, @PathVariable("attributeName") final String attributeName //
 	)
 	{
+		userSession.assertDeprecatedRestAPIAllowed();
 		return delegate.getAttributeDropdown(windowIdStr, viewIdStr, rowIdStr, attributeName);
 	}
 }
