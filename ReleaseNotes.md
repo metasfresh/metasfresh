@@ -87,16 +87,21 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#611](https://github.com/metasfresh/metasfresh-webui-api/issues/611) Destroyed HUs in HU Editor
-    * Improving the filtering of Handling Unit Window now not showing destryed HU anymore.
+    * Improving the filtering of Handling Unit Window now not showing destroyed HU anymore.
   * [#683](https://github.com/metasfresh/metasfresh-webui-api/issues/683) Source HU Actions shall only be "Drop Source HU"
+    * Hiding Quickactions in Handling Unit Editor. Now only showing the needed Quickactions for Source Handling Units.
   * [#689](https://github.com/metasfresh/metasfresh-webui-api/issues/689) Picking processed compress to top-level HU
+    * New compression visualisation in Pickign window, now only showing top level HU as soon as processed.
   * [#695](https://github.com/metasfresh/metasfresh-webui-api/issues/695) picking terminal: implement dynamic picking slot allocation/release
+    * New Functionality in Picking window, now allowing the dynamic allocation/ clearing of picking slots.
 
 * metasfresh-webui-frontend
   * [#1347](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1347) Dropdown in Grid view needs two-time click if value in list is more than one
     * Fixes the need of 2 times click in included grid view dropdown widgets.
   * [#1363](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1363) jenkins: run npm test on each build
+    * Internal housekeeping issue, improving build system.
   * [#1380](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1380) Shortcut for new document  
+    * Adjusted shortcut for the creation of new documents.
 
 ## Fixes
 * metasfresh-app
