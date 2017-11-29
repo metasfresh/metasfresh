@@ -83,8 +83,10 @@ final public class DDOrder
 			@JsonProperty("docStatus") final String docStatus)
 	{
 		this.orgId = checkIdGreaterThanZero("orgId", orgId);
-		this.plantId = checkIdGreaterThanZero("plantId", plantId);
-		this.productPlanningId = checkIdGreaterThanZero("productPlanningId", productPlanningId);
+
+		// these two might be zero, if the DDOrder was created manually
+		this.plantId = plantId;
+		this.productPlanningId = productPlanningId;
 
 		this.datePromised = datePromised;
 		this.shipperId = shipperId;
