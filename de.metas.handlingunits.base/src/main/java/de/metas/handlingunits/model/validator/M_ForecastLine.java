@@ -41,7 +41,11 @@ public class M_ForecastLine
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
 	}, ifColumnsChanged = {
-			I_M_ForecastLine.COLUMNNAME_C_BPartner_ID, I_M_ForecastLine.COLUMNNAME_M_Product_ID, I_M_ForecastLine.COLUMNNAME_Qty, I_M_ForecastLine.COLUMNNAME_M_HU_PI_Item_Product_ID
+			I_M_ForecastLine.COLUMNNAME_C_BPartner_ID,
+			I_M_ForecastLine.COLUMNNAME_M_Product_ID,
+			I_M_ForecastLine.COLUMNNAME_Qty,
+			I_M_ForecastLine.COLUMNNAME_QtyEnteredTU,
+			I_M_ForecastLine.COLUMNNAME_M_HU_PI_Item_Product_ID
 	})
 	public void add_M_HU_PI_Item_Product(final I_M_ForecastLine forecastLine)
 	{

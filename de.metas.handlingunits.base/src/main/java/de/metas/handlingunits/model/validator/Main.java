@@ -145,6 +145,7 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_LUTU_Configuration(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_Product(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_ProductPrice(), client);
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_ForecastLine(), client);
 
 		engine.addModelValidator(de.metas.handlingunits.hutransaction.interceptor.M_HU.INSTANCE, client);
 
