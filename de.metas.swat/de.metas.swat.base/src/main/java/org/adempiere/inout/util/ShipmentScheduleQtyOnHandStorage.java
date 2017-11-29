@@ -24,6 +24,7 @@ package org.adempiere.inout.util;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -158,12 +159,12 @@ public class ShipmentScheduleQtyOnHandStorage
 		final int productId = sched.getM_Product_ID();
 		final int warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
 		final int bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(sched);
-
+		final Date date = shipmentScheduleEffectiveBL.getPreparationDate(sched); // TODO: check with Mark if we shall use DeliveryDate.
 		final MaterialQueryBuilder materialQueryBuilder = MaterialQuery.builder()
 				.warehouseId(warehouseId)
 				.productId(productId)
 				.bpartnerId(bpartnerId)
-				.date(shipmentScheduleEffectiveBL.getPreparationDate(sched)); // TODO: check with Mark if we shall use DeliveryDate.
+				.date(date); 
 
 		// Add query attributes
 		final int asiId = sched.getM_AttributeSetInstance_ID();
