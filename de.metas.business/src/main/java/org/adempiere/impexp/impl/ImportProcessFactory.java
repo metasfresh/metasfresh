@@ -10,12 +10,12 @@ package org.adempiere.impexp.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,9 +30,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.ADUserImportProcess;
 import org.adempiere.impexp.IImportProcess;
 import org.adempiere.impexp.IImportProcessFactory;
-import org.adempiere.impexp.ProductImportProcess;
 import org.adempiere.impexp.RequestImportProcess;
 import org.adempiere.impexp.bpartner.BPartnerImportProcess;
+import org.adempiere.impexp.product.ProductImportProcess;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
