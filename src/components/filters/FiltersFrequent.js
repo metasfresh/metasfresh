@@ -48,11 +48,16 @@ class FiltersFrequent extends Component {
         return (
             <div className="filter-wrapper">
                 {data.map((item, index) => {
+                    const filterType = item.parameters[0].widgetType;
                     const isActive = this.isActive(item.filterId);
+                    const dateStepper = (
+                        TableCell.DATE_FIELD_TYPES.includes(filterType) &&
+                        isActive
+                    );
 
                     return (
                         <div className="filter-wrapper" key={index}>
-                            {isActive && <FiltersDateStepper />}
+                            {dateStepper && <FiltersDateStepper />}
 
                             <button
                                 onClick={() => this.toggleFilter(index, item)}
@@ -71,7 +76,7 @@ class FiltersFrequent extends Component {
                                     ? `${item.caption}: ${
                                         TableCell.fieldValueToString(
                                             active[index].parameters[0].value,
-                                            item.parameters[0].widgetType
+                                            filterType
                                         )}`
                                     : `${counterpart.translate(
                                             'window.filters.caption2'
@@ -79,7 +84,7 @@ class FiltersFrequent extends Component {
                                 }
                             </button>
 
-                            {isActive && <FiltersDateStepper next />}
+                            {dateStepper && <FiltersDateStepper next />}
 
                             {openFilterId === index &&
                                 <FiltersItem
