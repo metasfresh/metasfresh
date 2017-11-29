@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -202,35 +202,20 @@ public final class GuavaCollectors
 
 	public static <K, V> Map.Entry<K, V> entry(final K key, final V value)
 	{
-		return new Map.Entry<K, V>()
+		return new ImmutableMapEntry<>(key, value);
+	}
+
+	@lombok.Value
+	private static final class ImmutableMapEntry<K, V> implements Map.Entry<K, V>
+	{
+		private final K key;
+		private final V value;
+
+		@Override
+		public V setValue(V value)
 		{
-			@Override
-			public String toString()
-			{
-				return MoreObjects.toStringHelper("entry")
-						.add("key", key)
-						.add("value", value)
-						.toString();
-			}
-
-			@Override
-			public K getKey()
-			{
-				return key;
-			}
-
-			@Override
-			public V getValue()
-			{
-				return value;
-			}
-
-			@Override
-			public V setValue(final V value)
-			{
-				throw new UnsupportedOperationException();
-			}
-		};
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	public static <K, V> Collector<Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap()
