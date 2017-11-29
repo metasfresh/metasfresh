@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.EqualsBuilder;
 
@@ -173,7 +174,7 @@ public class PartitionConfig
 				.isEqual();
 	}
 
-	public boolean isMissing(final TableReferenceDescriptor descriptor)
+	public boolean isMissing(final TableRecordIdDescriptor descriptor)
 	{
 		final Optional<PartitionerConfigLine> existingLine = getLine(descriptor.getReferencingTableName());
 		if (!existingLine.isPresent())

@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
@@ -15,8 +16,6 @@ import org.postgresql.util.PSQLException;
 import org.postgresql.util.ServerErrorMessage;
 
 import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 
 /*
  * #%L
@@ -129,7 +128,7 @@ public class DLMReferenceExceptionWrapper implements IExceptionWrapper<DBExcepti
 		Check.errorIf(referencingTable == null, "Unable to retrieve an AD_Column for referencingTable name={} and referencingColumn name={}", infos[2], infos[3]);
 
 		return new DLMReferenceException(t,
-				TableReferenceDescriptor.of(
+				TableRecordIdDescriptor.of(
 						referencingTable.getTableName(),
 						referencingColumn.getColumnName(),
 						referencedTable.getTableName(),

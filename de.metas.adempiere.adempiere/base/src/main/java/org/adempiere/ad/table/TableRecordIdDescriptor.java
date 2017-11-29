@@ -1,4 +1,4 @@
-package de.metas.dlm.partitioner.config;
+package org.adempiere.ad.table;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -7,7 +7,6 @@ import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import de.metas.dlm.exception.DLMReferenceException;
 
 /*
  * #%L
@@ -40,7 +39,7 @@ import de.metas.dlm.exception.DLMReferenceException;
  *
  */
 @Immutable
-public class TableReferenceDescriptor
+public class TableRecordIdDescriptor
 {
 	private final String referencingTableName;
 
@@ -50,7 +49,7 @@ public class TableReferenceDescriptor
 
 	private final String referencedTableName;
 
-	private TableReferenceDescriptor(final String referencedTableName,
+	private TableRecordIdDescriptor(final String referencedTableName,
 			final int referencedRecordId,
 			final String referencingTableName,
 			final String referencingColumnName)
@@ -74,12 +73,12 @@ public class TableReferenceDescriptor
 	 * @param referencedTableName
 	 * @return
 	 */
-	public static TableReferenceDescriptor of(
+	public static TableRecordIdDescriptor of(
 			final String referencingTableName,
 			final String referencingColumnName,
 			final String referencedTableName)
 	{
-		return new TableReferenceDescriptor(
+		return new TableRecordIdDescriptor(
 				referencedTableName,
 				-1,
 				referencingTableName,
@@ -95,13 +94,13 @@ public class TableReferenceDescriptor
 	 * @param referencedRecordId currently this is not really used, but only for info/debugging
 	 * @return
 	 */
-	public static TableReferenceDescriptor of(
+	public static TableRecordIdDescriptor of(
 			final String referencingTableName,
 			final String referencingColumnName,
 			final String referencedTableName,
 			final int referencedRecordId)
 	{
-		return new TableReferenceDescriptor(
+		return new TableRecordIdDescriptor(
 				referencedTableName,
 				referencedRecordId,
 				referencingTableName,

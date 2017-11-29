@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
+import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -61,7 +62,6 @@ import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.dlm.partitioner.config.PartitionConfig.Builder;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine;
 import de.metas.dlm.partitioner.config.PartitionerConfigReference;
-import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import de.metas.logging.LogManager;
 
 /*
@@ -286,7 +286,7 @@ public class PartitionerService implements IPartitionerService
 		}
 		catch (final DLMReferenceException e)
 		{
-			final TableReferenceDescriptor descriptor = e.getTableReferenceDescriptor();
+			final TableRecordIdDescriptor descriptor = e.getTableReferenceDescriptor();
 
 			// if there is a DLMException, then depending on our config (LATER),
 			// throw an exception (LATER),
@@ -460,7 +460,7 @@ public class PartitionerService implements IPartitionerService
 
 	@Override
 	public final PartitionConfig augmentPartitionerConfig(final PartitionConfig config,
-			final List<TableReferenceDescriptor> descriptors)
+			final List<TableRecordIdDescriptor> descriptors)
 	{
 		final Builder builder = PartitionConfig.builder(config);
 
