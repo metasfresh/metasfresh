@@ -101,7 +101,7 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 				.disableDefaultTableCallouts()
 				// Defaults:
 				.setDetailId(detailId)
-				.setTableName(I_M_ForecastLine.Table_Name) // TODO: figure out if it's needed
+				.setTableName(I_M_ForecastLine.Table_Name)
 		;
 		return entityDescriptor;
 	}
@@ -158,7 +158,7 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 						.setCtxTableName(null) // ctxTableName
 						.setCtxColumnName(IForecastLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
 						.setDisplayType(DisplayType.TableDir)
-						.setAD_Val_Rule_ID(540199) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DateOrdered"
+						.setAD_Val_Rule_ID(540365) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised"
 						.buildProvider())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
