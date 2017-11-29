@@ -1028,3 +1028,73 @@ UPDATE AD_UI_Element SET IsDisplayed='Y', SeqNo=140,Updated=TO_TIMESTAMP('2017-1
 UPDATE AD_UI_Element SET IsDisplayed='Y', SeqNo=150,Updated=TO_TIMESTAMP('2017-11-29 09:02:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549388
 ;
 
+-- 2017-11-29T09:07:59.086
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-11-29 09:07:59','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=551514 AND AD_Language='en_US'
+;
+
+-- 2017-11-29T09:08:08.015
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-11-29 09:08:08','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=67420 AND AD_Language='en_US'
+;
+
+-- 2017-11-29T09:08:13.254
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-11-29 09:08:13','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=551516 AND AD_Language='en_US'
+;
+
+-- 2017-11-29T09:08:35.488
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-11-29 09:08:35','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Login Incorrect' WHERE AD_Field_ID=551515 AND AD_Language='en_US'
+;
+
+-- 2017-11-29T09:10:38.173
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Remote Adresse',Updated=TO_TIMESTAMP('2017-11-29 09:10:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=6616
+;
+
+-- 2017-11-29T09:10:45.171
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Host Schlüssel',Updated=TO_TIMESTAMP('2017-11-29 09:10:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=551514
+;
+
+-- 2017-11-29T09:10:49.974
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Web Sitzung',Updated=TO_TIMESTAMP('2017-11-29 09:10:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=6620
+;
+
+-- 2017-11-29T09:10:55.457
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Client Information',Updated=TO_TIMESTAMP('2017-11-29 09:10:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=67420
+;
+
+-- 2017-11-29T09:11:04.619
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Login Nutzer Name',Updated=TO_TIMESTAMP('2017-11-29 09:11:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=551516
+;
+
+-- 2017-11-29T09:11:08.963
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Login Datum',Updated=TO_TIMESTAMP('2017-11-29 09:11:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=54394
+;
+
+-- 2017-11-29T09:11:24.161
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Falscher Login Versuch',Updated=TO_TIMESTAMP('2017-11-29 09:11:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=551515
+;
+
+-- 2017-11-29T09:11:37.979
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Datensatz ID',Updated=TO_TIMESTAMP('2017-11-29 09:11:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=6771
+;
+
+-- 2017-11-29T09:11:42.524
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='DB Tabelle',Updated=TO_TIMESTAMP('2017-11-29 09:11:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=6762
+;
+
+-- 2017-11-29T09:12:13.383
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Ereignis Änderungshistorie',Updated=TO_TIMESTAMP('2017-11-29 09:12:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=54396
+;
+
