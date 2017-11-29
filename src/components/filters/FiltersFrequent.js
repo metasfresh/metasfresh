@@ -3,6 +3,7 @@ import onClickOutside from 'react-onclickoutside';
 import counterpart from 'counterpart';
 
 import FiltersItem from './FiltersItem';
+import { TableCell } from '../table/TableCell';
 
 class FiltersFrequent extends Component {
     state = { openFilterId: null };
@@ -63,14 +64,15 @@ class FiltersFrequent extends Component {
                                 }
                             >
                                 <i className="meta-icon-preview" />
-                                { isActive ?
-                                    
-                                    counterpart.translate(
-                                        'window.filters.caption'
-                                    ) + ': ' + item.caption :
-                                    counterpart.translate(
-                                        'window.filters.caption2'
-                                    ) + ': ' + item.caption
+                                {isActive
+                                    ? `${item.caption}: ${
+                                        TableCell.fieldValueToString(
+                                            active[index].parameters[0].value,
+                                            item.parameters[0].widgetType
+                                        )}`
+                                    : `${counterpart.translate(
+                                            'window.filters.caption2'
+                                        )}: ${item.caption}`
                                 }
                             </button>
 
