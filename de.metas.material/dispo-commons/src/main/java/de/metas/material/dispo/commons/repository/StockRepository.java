@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.model.I_MD_Candidate;
@@ -87,6 +89,18 @@ public class StockRepository
 
 		applyStockRecordsToEmptyResult(result, stockRecords);
 		return result;
+	}
+
+	public List<AvailableStockResult> retrieveAvailableStock(@NonNull final Set<MaterialQuery> queries)
+	{
+		if (queries.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queries.stream()
+				.map(this::retrieveAvailableStock)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private Timestamp retrieveMaxDateLessOrEqual(@NonNull final Date date)
