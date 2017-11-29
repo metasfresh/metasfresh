@@ -6,21 +6,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.ITableRecordIdDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ChangeLog;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
-import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -86,9 +81,9 @@ public class TableRecordIdDAO_Test
 
 		}
 
-		final PlainZoomSource zoomSource = new PlainZoomSource(referencingChangeLog);
+		final String tableName = "AD_ChangeLog";
 
-		final List<TableRecordIdDescriptor> tableRecordReferences = tableRecordIdDAO.retrieveTableRecordIdReferences(zoomSource);
+		final List<TableRecordIdDescriptor> tableRecordReferences = tableRecordIdDAO.retrieveTableRecordIdReferences(tableName);
 
 		assertThat(tableRecordReferences.size()).isEqualTo(1);
 
@@ -123,10 +118,9 @@ public class TableRecordIdDAO_Test
 			createColumn(adChangeLogTableID, Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Field_AD_Table_ID);
 
 		}
+		final String tableName = "AD_ChangeLog";
 
-		final PlainZoomSource zoomSource = new PlainZoomSource(referencingChangeLog);
-
-		final List<TableRecordIdDescriptor> tableRecordReferences = tableRecordIdDAO.retrieveTableRecordIdReferences(zoomSource);
+		final List<TableRecordIdDescriptor> tableRecordReferences = tableRecordIdDAO.retrieveTableRecordIdReferences(tableName);
 
 		assertThat(tableRecordReferences.size()).isEqualTo(1);
 
@@ -166,10 +160,9 @@ public class TableRecordIdDAO_Test
 			createColumn(adChangeLogTableID, Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Field_AD_Table_ID);
 
 		}
+		final String tableName = "AD_ChangeLog";
 
-		final PlainZoomSource zoomSource = new PlainZoomSource(originChangeLog);
-
-		final List<TableRecordIdDescriptor> tableRecordReferences = tableRecordIdDAO.retrieveTableRecordIdReferences(zoomSource);
+		final List<TableRecordIdDescriptor> tableRecordReferences = tableRecordIdDAO.retrieveTableRecordIdReferences(tableName);
 
 		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor_Record_ID = createTableRecordIdDescriptor("AD_ChangeLog", Mocked_I_AD_ChangeLog.COLUMNNAME_Record_ID, "AD_Field");
 		final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor_Prefix_Record_ID = createTableRecordIdDescriptor("AD_ChangeLog", Mocked_I_AD_ChangeLog.COLUMNNAME_AD_Field_Record_ID, "AD_Field");
@@ -272,83 +265,6 @@ public class TableRecordIdDAO_Test
 		}
 
 		return false;
-
-	}
-
-	private class PlainZoomSource implements IZoomSource
-	{
-		final Mocked_I_AD_ChangeLog changeLog;
-
-		public PlainZoomSource(@NonNull final Mocked_I_AD_ChangeLog changeLog)
-		{
-			this.changeLog = changeLog;
-		}
-
-		@Override
-		public Properties getCtx()
-		{
-			return Env.getCtx();
-		}
-
-		@Override
-		public Evaluatee createEvaluationContext()
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public String getTrxName()
-		{
-			return ITrx.TRXNAME_None;
-		}
-
-		@Override
-		public int getAD_Window_ID()
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public String getTableName()
-		{
-			return Mocked_I_AD_ChangeLog.Table_Name;
-		}
-
-		@Override
-		public int getAD_Table_ID()
-		{
-			return InterfaceWrapperHelper.getTableId(Mocked_I_AD_ChangeLog.class);
-		}
-
-		@Override
-		public String getKeyColumnName()
-		{
-			return Mocked_I_AD_ChangeLog.COLUMNNAME_AD_ChangeLog_ID;
-		}
-
-		@Override
-		public List<String> getKeyColumnNames()
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public int getRecord_ID()
-		{
-			return changeLog.getAD_ChangeLog_ID();
-		}
-
-		@Override
-		public boolean hasField(String columnName)
-		{
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Object getFieldValue(String columnName)
-		{
-			throw new UnsupportedOperationException();
-		}
 
 	}
 

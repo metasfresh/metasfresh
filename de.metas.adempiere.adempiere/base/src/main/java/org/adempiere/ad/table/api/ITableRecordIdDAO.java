@@ -3,7 +3,6 @@ package org.adempiere.ad.table.api;
 import java.util.List;
 
 import org.adempiere.ad.table.TableRecordIdDescriptor;
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.util.ISingletonService;
 
 /*
@@ -33,9 +32,9 @@ public interface ITableRecordIdDAO extends ISingletonService
 
 	/**
 	 * @param zoomSource
-	 * @return All the TableRecordId references that can be reached form the zoomSource
+	 * @return All the TableRecordId references that can be reached form the table given as tablename
 	 */
-	List<TableRecordIdDescriptor> retrieveTableRecordIdReferences(final IZoomSource zoomSource);
+	List<TableRecordIdDescriptor> retrieveTableRecordIdReferences(final String tableName);
 
 	/**
 	 *

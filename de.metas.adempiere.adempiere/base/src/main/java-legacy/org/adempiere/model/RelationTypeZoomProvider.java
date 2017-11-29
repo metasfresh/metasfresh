@@ -277,7 +277,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		{
 			String recordIdColumnName = null;
 
-			final List<TableRecordIdDescriptor> tableRecordIdDescriptors = tableRecordIdDAO.retrieveTableRecordIdReferences(zoomOrigin);
+			final List<TableRecordIdDescriptor> tableRecordIdDescriptors = tableRecordIdDAO.retrieveTableRecordIdReferences(refTable.getTableName());
 
 			for (final TableRecordIdDescriptor tableRecordIdDescriptor : tableRecordIdDescriptors)
 			{
@@ -298,6 +298,10 @@ public class RelationTypeZoomProvider implements IZoomProvider
 						.append(tableName)
 						.append(".")
 						.append(recordIdColumnName);
+			}
+			else
+			{
+				queryWhereClause.append(" 1=1 ");
 			}
 
 		}

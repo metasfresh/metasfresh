@@ -14,7 +14,6 @@ import org.adempiere.ad.table.api.ITableRecordIdDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.proxy.Cached;
@@ -52,12 +51,12 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 {
 
 	@Override
-	public List<TableRecordIdDescriptor> retrieveTableRecordIdReferences(final IZoomSource zoomOrigin)
+	public List<TableRecordIdDescriptor> retrieveTableRecordIdReferences(final String tableName)
 	{
 
-		final PlainContextAware ctxAware = PlainContextAware.newWithTrxName(zoomOrigin.getCtx(), zoomOrigin.getTrxName());
+		final PlainContextAware ctxAware = PlainContextAware.newWithTrxName(Env.getCtx(), ITrx.TRXNAME_None);
 
-		return retrieveTableRecordIdReferences(ctxAware, zoomOrigin.getAD_Table_ID());
+		return retrieveTableRecordIdReferences(ctxAware, tableName);
 
 	}
 
@@ -66,7 +65,7 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 	{
 		final PlainContextAware ctxAware = PlainContextAware.newWithTrxName(ctx, trxName);
 
-		return retrieveTableRecordIdReferences(ctxAware, -1);
+		return retrieveTableRecordIdReferences(ctxAware, null);
 
 	}
 
@@ -76,7 +75,7 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 		return retrieveTableRecordIdReferences(Env.getCtx(), ITrx.TRXNAME_None);
 	}
 
-	List<TableRecordIdDescriptor> retrieveTableRecordIdReferences(final IContextAware ctxAware, final int tableId)
+	List<TableRecordIdDescriptor> retrieveTableRecordIdReferences(final IContextAware ctxAware, final String tableName)
 	{
 		final IColumnBL columnBL = Services.get(IColumnBL.class);
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -90,10 +89,11 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 		final IQueryBuilder<I_AD_Column> recordIdColumnsQuery = queryBL.createQueryBuilder(I_AD_Column.class, ctxAware)
 				.addOnlyActiveRecordsFilter();
 
-		if (tableId > 0)
+		if(tableName != null)
 		{
-			recordIdColumnsQuery.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, tableId);
+			recordIdColumnsQuery.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, Services.get(IADTableDAO.class).retrieveTableId(tableName));
 		}
+	
 
 		recordIdColumnsQuery.addEndsWithQueryFilter(I_AD_Column.COLUMNNAME_ColumnName, ITableRecordReference.COLUMNNAME_Record_ID)
 				.orderBy().addColumn(I_AD_Column.COLUMN_AD_Column_ID).endOrderBy();
@@ -120,6 +120,7 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 					.createQueryBuilder(Object.class, table.getTableName(), ctxAware)
 					// .addOnlyActiveRecordsFilter() we also want inactive records, because being active doesn't count when it comes to references
 					.addCompareFilter(tableColumnName.get(), Operator.GREATER, 0)
+
 					.create()
 					.listDistinct(tableColumnName.get(), Integer.class)
 					.stream()
