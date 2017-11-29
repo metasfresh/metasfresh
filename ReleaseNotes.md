@@ -82,6 +82,8 @@ Here come the actual release notes:
   * [#695](https://github.com/metasfresh/metasfresh-webui-api/issues/695) picking terminal: implement dynamic picking slot allocation/release
 
 * metasfresh-webui-frontend
+  * [#1347](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1347) Dropdown in Grid view needs two-time click if value in list is more than one
+    * Fixes the need of 2 times click in included grid view dropdown widgets.
   * [#1363](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1363) jenkins: run npm test on each build
   * [#1380](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1380) Shortcut for new document  
 
