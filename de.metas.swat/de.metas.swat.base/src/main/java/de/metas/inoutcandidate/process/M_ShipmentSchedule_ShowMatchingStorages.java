@@ -28,7 +28,7 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
-import org.adempiere.inout.util.ShipmentScheduleStorageRecord;
+import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -57,12 +57,12 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 		}
 
 		final ShipmentScheduleQtyOnHandStorage storagesContainer = ShipmentScheduleQtyOnHandStorage.ofShipmentSchedule(shipmentSchedule);
-		final List<ShipmentScheduleStorageRecord> storageRecords = storagesContainer.getStorageRecordsMatching(shipmentSchedule);
+		final List<ShipmentScheduleAvailableStockDetail> storageRecords = storagesContainer.getStockDetailsMatching(shipmentSchedule);
 
-		final BigDecimal qtyOnHandTotal = ShipmentScheduleStorageRecord.calculateQtyOnHandSum(storageRecords);
+		final BigDecimal qtyOnHandTotal = ShipmentScheduleAvailableStockDetail.calculateQtyOnHandSum(storageRecords);
 		addLog("@QtyOnHand@ (@Total@): " + qtyOnHandTotal);
 
-		for (final ShipmentScheduleStorageRecord storage : storageRecords)
+		for (final ShipmentScheduleAvailableStockDetail storage : storageRecords)
 		{
 			addLog("------------------------------------------------------------");
 			addLog(storage.getSummary());

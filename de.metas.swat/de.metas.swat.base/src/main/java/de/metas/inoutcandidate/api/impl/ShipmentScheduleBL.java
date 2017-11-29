@@ -44,7 +44,7 @@ import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
-import org.adempiere.inout.util.ShipmentScheduleStorageRecord;
+import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.IContextAware;
@@ -484,8 +484,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			//
 			// Get the QtyOnHand storages suitable for our order line
-			final List<ShipmentScheduleStorageRecord> storages = qtyOnHands.getStorageRecordsMatching(sched);
-			final BigDecimal qtyOnHandBeforeAllocation = ShipmentScheduleStorageRecord.calculateQtyOnHandSum(storages);
+			final List<ShipmentScheduleAvailableStockDetail> storages = qtyOnHands.getStockDetailsMatching(sched);
+			final BigDecimal qtyOnHandBeforeAllocation = ShipmentScheduleAvailableStockDetail.calculateQtyOnHandSum(storages);
 			sched.setQtyOnHand(qtyOnHandBeforeAllocation);
 
 			final CompleteStatus completeStatus = mkCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
@@ -615,7 +615,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final Properties ctx,
 			final OlAndSched olAndSched,
 			final BigDecimal qty,
-			final List<ShipmentScheduleStorageRecord> storages,
+			final List<ShipmentScheduleAvailableStockDetail> storages,
 			final boolean force,
 			final CompleteStatus completeStatus,
 			final ShipmentSchedulesDuringUpdate candidates,
@@ -659,7 +659,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				break;
 			}
 
-			final ShipmentScheduleStorageRecord storage = storages.get(i);
+			final ShipmentScheduleAvailableStockDetail storage = storages.get(i);
 			BigDecimal deliver = toDeliver; // initially try to deliver the entire quantity remaining to be delivered
 
 			//

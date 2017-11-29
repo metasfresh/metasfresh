@@ -35,7 +35,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.MoreObjects;
@@ -53,12 +52,11 @@ import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.MaterialQuery.MaterialQueryBuilder;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.event.commons.StorageAttributesKey;
-import de.metas.storage.IStorageRecord;
 import lombok.NonNull;
 
 /**
- * A complex class to load and cache {@link IStorageRecord}s which are relevant to {@link I_M_ShipmentSchedule}s and their {@link I_C_OrderLine}s.
- *
+ * Loads stock details which are relevant to given {@link I_M_ShipmentSchedule}s.
+ * Allows to change (in memory!) the qtyOnHand.
  */
 public class ShipmentScheduleQtyOnHandStorage
 {
@@ -81,24 +79,24 @@ public class ShipmentScheduleQtyOnHandStorage
 	// services
 	private final transient IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-	private final List<ShipmentScheduleStorageRecord> storageRecords;
+	private final List<ShipmentScheduleAvailableStockDetail> stockDetails;
 	private final Map<ArrayKey, MaterialQuery> cachedMaterialQueries = new HashMap<>();
 
 	private ShipmentScheduleQtyOnHandStorage(final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
 		final StockRepository stockRepository = Adempiere.getBean(StockRepository.class);
-		storageRecords = createStockResultsFromShipmentSchedules(shipmentSchedules, stockRepository);
+		stockDetails = createStockDetailsFromShipmentSchedules(shipmentSchedules, stockRepository);
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("storageRecords", storageRecords)
+				.add("storageRecords", stockDetails)
 				.toString();
 	}
 
-	private final List<ShipmentScheduleStorageRecord> createStockResultsFromShipmentSchedules(final List<I_M_ShipmentSchedule> shipmentSchedules, final StockRepository stockRepository)
+	private final List<ShipmentScheduleAvailableStockDetail> createStockDetailsFromShipmentSchedules(final List<I_M_ShipmentSchedule> shipmentSchedules, final StockRepository stockRepository)
 	{
 		if (shipmentSchedules.isEmpty())
 		{
@@ -111,7 +109,7 @@ public class ShipmentScheduleQtyOnHandStorage
 		}
 
 		final List<AvailableStockResult> availableStockResults = stockRepository.retrieveAvailableStock(multiQuery);
-		return createStockResults(availableStockResults);
+		return createStockDetails(availableStockResults);
 	}
 
 	private MaterialMultiQuery createMaterialMultiQueryOrNull(final List<I_M_ShipmentSchedule> shipmentSchedules)
@@ -179,7 +177,7 @@ public class ShipmentScheduleQtyOnHandStorage
 		return materialQuery;
 	}
 
-	private static final List<ShipmentScheduleStorageRecord> createStockResults(final List<AvailableStockResult> stockResults)
+	private static final List<ShipmentScheduleAvailableStockDetail> createStockDetails(final List<AvailableStockResult> stockResults)
 	{
 		if (Check.isEmpty(stockResults))
 		{
@@ -188,39 +186,50 @@ public class ShipmentScheduleQtyOnHandStorage
 
 		return stockResults.stream()
 				.flatMap(stockResult -> stockResult.getResultGroups().stream())
-				.map(ShipmentScheduleStorageRecord::of)
+				.map(ShipmentScheduleQtyOnHandStorage::createStockDetail)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private Stream<ShipmentScheduleStorageRecord> streamStorageRecordsMatching(final MaterialQuery materialQuery)
+	private static ShipmentScheduleAvailableStockDetail createStockDetail(final AvailableStockResult.ResultGroup result)
 	{
-		return storageRecords
-				.stream()
-				.filter(storageRecord -> matching(materialQuery, storageRecord));
+		return ShipmentScheduleAvailableStockDetail.builder()
+				.productId(result.getProductId())
+				.warehouseId(result.getWarehouseId())
+				.bpartnerId(result.getBpartnerId())
+				.storageAttributesKey(result.getStorageAttributesKey())
+				.qtyOnHand(result.getQty())
+				.build();
 	}
 
-	private static boolean matching(final MaterialQuery query, final ShipmentScheduleStorageRecord storageRecord)
+	private Stream<ShipmentScheduleAvailableStockDetail> streamStockDetailsMatching(final MaterialQuery materialQuery)
+	{
+		return stockDetails
+				.stream()
+				.filter(stockDetail -> matching(materialQuery, stockDetail));
+	}
+
+	private static boolean matching(final MaterialQuery query, final ShipmentScheduleAvailableStockDetail stockDetail)
 	{
 		final List<Integer> productIds = query.getProductIds();
-		if (!productIds.isEmpty() && !productIds.contains(storageRecord.getProductId()))
+		if (!productIds.isEmpty() && !productIds.contains(stockDetail.getProductId()))
 		{
 			return false;
 		}
 
 		final Set<Integer> warehouseIds = query.getWarehouseIds();
-		if (!warehouseIds.isEmpty() && !warehouseIds.contains(storageRecord.getWarehouseId()))
+		if (!warehouseIds.isEmpty() && !warehouseIds.contains(stockDetail.getWarehouseId()))
 		{
 			return false;
 		}
 
 		final int bpartnerId = query.getBpartnerId();
-		if (bpartnerId > 0 && bpartnerId != storageRecord.getBpartnerId())
+		if (bpartnerId > 0 && bpartnerId != stockDetail.getBpartnerId())
 		{
 			return false;
 		}
 
 		final List<StorageAttributesKey> storageAttributeKeys = query.getStorageAttributesKeys();
-		if (!storageAttributeKeys.isEmpty() && !storageAttributeKeys.contains(storageRecord.getStorageAttributesKey()))
+		if (!storageAttributeKeys.isEmpty() && !storageAttributeKeys.contains(stockDetail.getStorageAttributesKey()))
 		{
 			return false;
 		}
@@ -228,20 +237,20 @@ public class ShipmentScheduleQtyOnHandStorage
 		return true;
 	}
 
-	private boolean hasStorageRecords()
+	private boolean hasStockDetails()
 	{
-		return !storageRecords.isEmpty();
+		return !stockDetails.isEmpty();
 	}
 
-	public List<ShipmentScheduleStorageRecord> getStorageRecordsMatching(@NonNull final I_M_ShipmentSchedule sched)
+	public List<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		if (!hasStorageRecords())
+		if (!hasStockDetails())
 		{
 			return Collections.emptyList();
 		}
 
 		final MaterialQuery materialQuery = createMaterialQuery(sched);
-		return streamStorageRecordsMatching(materialQuery)
+		return streamStockDetailsMatching(materialQuery)
 				.collect(ImmutableList.toImmutableList());
 	}
 

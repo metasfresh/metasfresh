@@ -32,11 +32,14 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+/**
+ * Stock detail with mutable qtyOnHand.
+ */
 @ToString
 @Getter
-public class ShipmentScheduleStorageRecord
+public class ShipmentScheduleAvailableStockDetail
 {
-	public static ShipmentScheduleStorageRecord of(final AvailableStockResult.ResultGroup result)
+	public static ShipmentScheduleAvailableStockDetail of(final AvailableStockResult.ResultGroup result)
 	{
 		return builder()
 				.productId(result.getProductId())
@@ -47,10 +50,10 @@ public class ShipmentScheduleStorageRecord
 				.build();
 	}
 
-	public static BigDecimal calculateQtyOnHandSum(final Collection<ShipmentScheduleStorageRecord> storageRecords)
+	public static BigDecimal calculateQtyOnHandSum(final Collection<ShipmentScheduleAvailableStockDetail> storageRecords)
 	{
 		return storageRecords.stream()
-				.map(ShipmentScheduleStorageRecord::getQtyOnHand)
+				.map(ShipmentScheduleAvailableStockDetail::getQtyOnHand)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
@@ -61,7 +64,7 @@ public class ShipmentScheduleStorageRecord
 	private BigDecimal qtyOnHand;
 
 	@Builder
-	private ShipmentScheduleStorageRecord(
+	private ShipmentScheduleAvailableStockDetail(
 			final int productId,
 			final int warehouseId,
 			@NonNull final StorageAttributesKey storageAttributesKey,
