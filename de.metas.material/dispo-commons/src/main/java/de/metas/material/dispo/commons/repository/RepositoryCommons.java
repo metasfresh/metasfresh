@@ -24,7 +24,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -159,7 +159,7 @@ public class RepositoryCommons
 		}
 		if (!Objects.equals(materialDescriptor.getStorageAttributesKey(), ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL))
 		{
-			final AttributesKey storageAttributesKey = materialDescriptor.getStorageAttributesKey();
+			final StorageAttributesKey storageAttributesKey = materialDescriptor.getStorageAttributesKey();
 			if (matchExactStorageAttributesKey)
 			{
 				builder.addEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, storageAttributesKey.getAsString());

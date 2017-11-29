@@ -5,7 +5,6 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -23,7 +22,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 import lombok.Value;
@@ -91,14 +90,10 @@ public class StockRepository
 		return result;
 	}
 
-	public List<AvailableStockResult> retrieveAvailableStock(@NonNull final Set<MaterialQuery> queries)
+	public List<AvailableStockResult> retrieveAvailableStock(@NonNull MaterialMultiQuery multiQuery)
 	{
-		if (queries.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		return queries.stream()
+		// TODO: actually implement this method, also consider aggregationLevel. Task https://github.com/metasfresh/metasfresh/issues/3104. 
+		return multiQuery.getQueries().stream()
 				.map(this::retrieveAvailableStock)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -132,7 +127,7 @@ public class StockRepository
 				.setJoinOr();
 		queryBuilder.filter(orFilterForDifferentStorageAttributesKeys);
 
-		for (final AttributesKey storageAttributesKey : query.getStorageAttributesKeys())
+		for (final StorageAttributesKey storageAttributesKey : query.getStorageAttributesKeys())
 		{
 			final ICompositeQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey = createANDFilterForStorageAttributesKey(query, storageAttributesKey);
 			orFilterForDifferentStorageAttributesKeys.addFilter(andFilterForCurrentStorageAttributesKey);
@@ -157,7 +152,7 @@ public class StockRepository
 
 	private ICompositeQueryFilter<I_MD_Candidate_Stock_v> createANDFilterForStorageAttributesKey(
 			@NonNull final MaterialQuery query,
-			@NonNull final AttributesKey storageAttributesKey)
+			@NonNull final StorageAttributesKey storageAttributesKey)
 	{
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> filterForCurrentStorageAttributesKey = createInitialANDFilterForProductIds(query);
 
@@ -193,9 +188,9 @@ public class StockRepository
 
 	private void addNotLikeFiltersForAttributesKeys(
 			@NonNull final ICompositeQueryFilter<I_MD_Candidate_Stock_v> compositeFilter,
-			@NonNull final List<AttributesKey> attributesKeys)
+			@NonNull final List<StorageAttributesKey> attributesKeys)
 	{
-		for (final AttributesKey storageAttributesKeyAgain : attributesKeys)
+		for (final StorageAttributesKey storageAttributesKeyAgain : attributesKeys)
 		{
 			if (!Objects.equals(storageAttributesKeyAgain, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER))
 			{
@@ -205,13 +200,13 @@ public class StockRepository
 		}
 	}
 
-	private void addLikeFilterForAttributesKey(final AttributesKey storageAttributesKey, final ICompositeQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey)
+	private void addLikeFilterForAttributesKey(final StorageAttributesKey storageAttributesKey, final ICompositeQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey)
 	{
 		final String likeExpression = createLikeExpression(storageAttributesKey);
 		andFilterForCurrentStorageAttributesKey.addStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, likeExpression, false);
 	}
 
-	private static String createLikeExpression(@NonNull final AttributesKey storageAttributesKey)
+	private static String createLikeExpression(@NonNull final StorageAttributesKey storageAttributesKey)
 	{
 		final String storageAttributesKeyLikeExpression = storageAttributesKey.getSqlLikeString();
 		return "%" + storageAttributesKeyLikeExpression + "%";
@@ -224,7 +219,7 @@ public class StockRepository
 	{
 		for (final I_MD_Candidate_Stock_v stockRecord : stockRecords)
 		{
-			emptyResult.addQtyToMatchedGroups(stockRecord.getQty(), stockRecord.getM_Product_ID(), AttributesKey.ofString(stockRecord.getStorageAttributesKey()));
+			emptyResult.addQtyToMatchedGroups(stockRecord.getQty(), stockRecord.getM_Product_ID(), StorageAttributesKey.ofString(stockRecord.getStorageAttributesKey()));
 		}
 	}
 

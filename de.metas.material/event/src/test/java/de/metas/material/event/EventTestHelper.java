@@ -8,7 +8,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -58,7 +58,7 @@ public class EventTestHelper
 
 	public static final int ATTRIBUTE_SET_INSTANCE_ID = 28;
 
-	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1);
+	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY = StorageAttributesKey.ofAttributeValueIds(1);
 
 	public static MaterialDescriptor createMaterialDescriptor()
 	{
@@ -80,7 +80,7 @@ public class EventTestHelper
 	{
 		return ProductDescriptor.forProductAndAttributes(
 				PRODUCT_ID + offset,
-				AttributesKey.ofAttributeValueIds(STORAGE_ATTRIBUTES_KEY.getAttributeValueIds().get(0) + 1 + offset),
+				StorageAttributesKey.ofAttributeValueIds(STORAGE_ATTRIBUTES_KEY.getAttributeValueIds().get(0) + 1 + offset),
 				ATTRIBUTE_SET_INSTANCE_ID + offset);
 	}
 

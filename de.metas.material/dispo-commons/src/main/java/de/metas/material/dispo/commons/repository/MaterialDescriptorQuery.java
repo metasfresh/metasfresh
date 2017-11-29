@@ -6,7 +6,7 @@ import org.adempiere.util.time.SystemTime;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.Value;
@@ -39,14 +39,14 @@ public class MaterialDescriptorQuery
 	private final int warehouseId;
 	private final Date date;
 	private final int productId;
-	private final AttributesKey storageAttributesKey;
+	private final StorageAttributesKey storageAttributesKey;
 
 	@Builder
 	private MaterialDescriptorQuery(
 			final int warehouseId,
 			final Date date,
 			final int productId,
-			final AttributesKey storageAttributesKey)
+			final StorageAttributesKey storageAttributesKey)
 	{
 		Preconditions.checkArgument(productId > 0, "productId > 0");
 

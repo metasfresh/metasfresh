@@ -9,7 +9,7 @@ import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -49,7 +49,7 @@ public class AvailableStockResult
 
 		for (final int productId : query.getProductIds())
 		{
-			for (final AttributesKey storageAttributesKey : query.getStorageAttributesKeys())
+			for (final StorageAttributesKey storageAttributesKey : query.getStorageAttributesKeys())
 			{
 				resultBuilder.add(ResultGroup.builder()
 						.productId(productId)
@@ -72,7 +72,7 @@ public class AvailableStockResult
 	{
 		private final int warehouseId; 
 		private final int productId;
-		private final AttributesKey storageAttributesKey;
+		private final StorageAttributesKey storageAttributesKey;
 		private final int bpartnerId;
 		private BigDecimal qty;
 
@@ -81,7 +81,7 @@ public class AvailableStockResult
 		public ResultGroup(
 				final int warehouseId,
 				final int productId,
-				@NonNull final AttributesKey storageAttributesKey,
+				@NonNull final StorageAttributesKey storageAttributesKey,
 				final int bpartnerId,
 				@Nullable final BigDecimal qty)
 		{
@@ -94,7 +94,7 @@ public class AvailableStockResult
 			this.qty = qty == null ? BigDecimal.ZERO : qty;
 		}
 
-		public boolean matches(int productIdToMatch, AttributesKey storageAttributesKeyToMatch)
+		public boolean matches(int productIdToMatch, StorageAttributesKey storageAttributesKeyToMatch)
 		{
 			if (productIdToMatch != productId)
 			{
@@ -116,7 +116,7 @@ public class AvailableStockResult
 	public void addQtyToMatchedGroups(
 			@NonNull final BigDecimal qty,
 			final int productId,
-			@NonNull final AttributesKey storageAttributesKey)
+			@NonNull final StorageAttributesKey storageAttributesKey)
 	{
 		for (ResultGroup group : resultGroups)
 		{

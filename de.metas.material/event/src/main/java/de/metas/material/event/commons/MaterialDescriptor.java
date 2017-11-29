@@ -119,7 +119,7 @@ public class MaterialDescriptor extends ProductDescriptor
 			@JsonProperty("dateOperator") final DateOperator dateOperator,
 			@JsonProperty("productId") final int productId,
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId,
-			@JsonProperty("storageAttributesKey") final AttributesKey storageAttributesKey,
+			@JsonProperty("storageAttributesKey") final StorageAttributesKey storageAttributesKey,
 			@JsonProperty("productDescriptorComplete") final boolean productDescriptorComplete,
 			@JsonProperty("materialDescriptorComplete") final Boolean complete)
 	{

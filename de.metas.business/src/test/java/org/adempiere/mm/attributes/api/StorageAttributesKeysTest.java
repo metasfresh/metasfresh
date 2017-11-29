@@ -14,7 +14,7 @@ import org.compiere.model.X_M_Attribute;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.StorageAttributesKey;
 
 /*
  * #%L
@@ -38,7 +38,7 @@ import de.metas.material.event.commons.AttributesKey;
  * #L%
  */
 
-public class AttributesKeyGeneratorTest
+public class StorageAttributesKeysTest
 {
 	private AttributesTestHelper attributesTestHelper;
 
@@ -50,12 +50,12 @@ public class AttributesKeyGeneratorTest
 	}
 
 	@Test
-	public void updateStorageAttributesKey()
+	public void test_createAttributesKeyFromASI()
 	{
-		final I_M_Attribute attr1 = attributesTestHelper.createM_Attribute("test1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		final I_M_Attribute attr1 = createStorageRelevantAttribute("test1");
 		final I_M_AttributeValue attributeValue1 = attributesTestHelper.createM_AttributeValue(attr1, "testValue1");
 
-		final I_M_Attribute attr2 = attributesTestHelper.createM_Attribute("test2", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		final I_M_Attribute attr2 = createStorageRelevantAttribute("test2");
 		final I_M_AttributeValue attributeValue2 = attributesTestHelper.createM_AttributeValue(attr2, "testValue2");
 
 		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
@@ -65,13 +65,17 @@ public class AttributesKeyGeneratorTest
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue1);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue2);
 
-		final AttributesKey result = AttributesKeyGenerator.builder()
-				.attributeSetInstanceId(asi.getM_AttributeSetInstance_ID())
-				.build()
-				.createAttributesKey();
+		final StorageAttributesKey result = StorageAttributesKeys.createAttributesKeyFromASI(asi.getM_AttributeSetInstance_ID());
 
-		final AttributesKey expectedResult = AttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());
+		final StorageAttributesKey expectedResult = StorageAttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());
 		assertThat(result).isEqualTo(expectedResult);
 	}
 
+	private final I_M_Attribute createStorageRelevantAttribute(final String name)
+	{
+		I_M_Attribute attribute = attributesTestHelper.createM_Attribute(name, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		attribute.setIsStorageRelevant(true);
+		save(attribute);
+		return attribute;
+	}
 }

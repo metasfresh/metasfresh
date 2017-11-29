@@ -49,7 +49,6 @@ import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -90,7 +89,6 @@ import de.metas.inoutcandidate.spi.impl.CompositeShipmentScheduleQtyUpdateListen
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
-import de.metas.storage.IStorageBL;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -393,18 +391,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final IStorageBL storageBL = Services.get(IStorageBL.class);
 
 		// if firstRun is not null, create a new instance, otherwise use firstRun
 		final ShipmentSchedulesDuringUpdate candidates = mkCandidatesToUse(lines, firstRun);
 
-		final ShipmentScheduleQtyOnHandStorage qtyOnHands = new ShipmentScheduleQtyOnHandStorage();
-		qtyOnHands.setContext(PlainContextAware.newWithTrxName(ctx, trxName));
-
 		//
 		// Load QtyOnHand in scope for our lines
 		// i.e. iterate all lines to cache the required storage info and to subtract the quantities that can't be allocated from the storage allocation.
-		qtyOnHands.loadStoragesFor(lines);
+		final ShipmentScheduleQtyOnHandStorage qtyOnHands = ShipmentScheduleQtyOnHandStorage.ofOlAndScheds(lines);
 
 		//
 		// Iterate again and:
@@ -491,7 +485,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			//
 			// Get the QtyOnHand storages suitable for our order line
 			final List<ShipmentScheduleStorageRecord> storages = qtyOnHands.getStorageRecordsMatching(sched);
-			final BigDecimal qtyOnHandBeforeAllocation = storageBL.calculateQtyOnHandSum(storages);
+			final BigDecimal qtyOnHandBeforeAllocation = ShipmentScheduleStorageRecord.calculateQtyOnHandSum(storages);
 			sched.setQtyOnHand(qtyOnHandBeforeAllocation);
 
 			final CompleteStatus completeStatus = mkCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
@@ -840,6 +834,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	 * <p>
 	 * Note: we assume that *if* the value is set, it is as intended by the user
 	 */
+	@Override
 	public void updateBPArtnerAddressOverrideIfNotYetSet(final I_M_ShipmentSchedule sched)
 	{
 		if (!Check.isEmpty(sched.getBPartnerAddress_Override(), true))

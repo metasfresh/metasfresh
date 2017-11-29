@@ -61,17 +61,17 @@ public class ProductDescriptor
 
 	public static final ProductDescriptor forProductAndAttributes(
 			final int productId,
-			@NonNull final AttributesKey storageAttributesKey,
+			@NonNull final StorageAttributesKey storageAttributesKey,
 			final int attributeSetInstanceId)
 	{
 		return new ProductDescriptor(true, productId, storageAttributesKey, attributeSetInstanceId); // complete == true
 	}
 
-	public static final AttributesKey STORAGE_ATTRIBUTES_KEY_ALL = AttributesKey.ofString("<ALL_STORAGE_ATTRIBUTES_KEYS>");
+	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY_ALL = StorageAttributesKey.ofString("<ALL_STORAGE_ATTRIBUTES_KEYS>");
 	public static final String MSG_STORAGE_ATTRIBUTES_KEY_ALL = "de.metas.material.dispo.<ALL_STORAGE_ATTRIBUTES_KEYS>";
 
 	/** This key's meaning depends on the other keys it comes with. */
-	public static final AttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = AttributesKey.ofString("<OTHER_STORAGE_ATTRIBUTES_KEYS>");
+	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = StorageAttributesKey.ofString("<OTHER_STORAGE_ATTRIBUTES_KEYS>");
 	public static final String MSG_STORAGE_ATTRIBUTES_KEY_OTHER = "de.metas.material.dispo.<OTHER_STORAGE_ATTRIBUTES_KEYS>";
 
 	@JsonProperty
@@ -81,7 +81,7 @@ public class ProductDescriptor
 	int productId;
 
 	@Getter
-	AttributesKey storageAttributesKey;
+	StorageAttributesKey storageAttributesKey;
 
 	/**
 	 * This ID is only here so that the candidate row's attributes can be displayed properly in the UI.
@@ -93,7 +93,7 @@ public class ProductDescriptor
 	public ProductDescriptor(
 			@JsonProperty("productDescriptorComplete") final boolean complete,
 			@JsonProperty("productId") final int productId,
-			@JsonProperty("storageAttributesKey") @NonNull final AttributesKey storageAttributesKey,
+			@JsonProperty("storageAttributesKey") @NonNull final StorageAttributesKey storageAttributesKey,
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId)
 	{
 		this.productDescriptorComplete = complete;

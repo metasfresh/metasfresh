@@ -31,14 +31,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * #L%
  */
 
-public class AttributesKeyTest
+public class StorageAttributesKeyTest
 {
 	@Test
 	public void testSerializeDeserialize() throws IOException
 	{
 		ObjectMapper jsonObjectMapper = new ObjectMapper();
 
-		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(1, 2, 3, 4);
+		final StorageAttributesKey attributesKey = StorageAttributesKey.ofAttributeValueIds(1, 2, 3, 4);
 		final String attributesKeyStr = attributesKey.getAsString();
 
 		// serialize
@@ -47,7 +47,7 @@ public class AttributesKeyTest
 		assertThat(json).isEqualTo("\"" + attributesKeyStr + "\"");
 
 		// deserialize
-		final AttributesKey attributesKeyDeserialized = jsonObjectMapper.readValue(json, AttributesKey.class);
+		final StorageAttributesKey attributesKeyDeserialized = jsonObjectMapper.readValue(json, StorageAttributesKey.class);
 		assertThat(attributesKeyDeserialized).isEqualTo(attributesKey);
 		assertThat(attributesKeyDeserialized.getAsString()).isEqualTo(attributesKeyStr);
 		assertThat(attributesKeyDeserialized.getAttributeValueIds()).isEqualTo(Arrays.asList(1, 2, 3, 4));

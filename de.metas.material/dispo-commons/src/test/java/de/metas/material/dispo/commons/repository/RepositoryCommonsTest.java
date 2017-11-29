@@ -18,7 +18,7 @@ import org.junit.Test;
 
 import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -133,7 +133,7 @@ public class RepositoryCommonsTest
 
 	private MaterialDescriptor commonSetupFor_addProductionDetailToFilter_with_StorageAttributesKey()
 	{
-		final AttributesKey storageAttributesKey = AttributesKey.ofAttributeValueIds(1, 2, 3);
+		final StorageAttributesKey storageAttributesKey = StorageAttributesKey.ofAttributeValueIds(1, 2, 3);
 
 		// this descriptor won't occur in real life, but we want only the storage-key-filter
 		final ProductDescriptor productDescriptor = new ProductDescriptor(false, -1, storageAttributesKey, -1);

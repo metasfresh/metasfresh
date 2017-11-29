@@ -26,7 +26,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 
@@ -141,7 +141,7 @@ public class ProductDescriptorFromAttributeSetInstanceFactoryTest
 		assertThat(productDescriptor.getProductId()).isEqualTo(20);
 		assertThat(productDescriptor.getAttributeSetInstanceId()).isEqualTo(asi.getM_AttributeSetInstance_ID());
 
-		final AttributesKey storageAttributesKeyExpected = AttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue3.getM_AttributeValue_ID());
+		final StorageAttributesKey storageAttributesKeyExpected = StorageAttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue3.getM_AttributeValue_ID());
 		assertThat(productDescriptor.getStorageAttributesKey()).isEqualTo(storageAttributesKeyExpected);
 	}
 

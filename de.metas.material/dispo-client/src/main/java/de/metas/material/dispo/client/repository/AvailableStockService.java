@@ -22,7 +22,7 @@ import de.metas.material.dispo.client.repository.AvailableStockResult.Group.Type
 import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroup;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
@@ -100,7 +100,7 @@ public class AvailableStockService
 				retrieveStockingUOM(commonsResultGroup.getProductId()));
 		groupBuilder.qty(quantity);
 
-		final AttributesKey storageAttributesKey = commonsResultGroup.getStorageAttributesKey();
+		final StorageAttributesKey storageAttributesKey = commonsResultGroup.getStorageAttributesKey();
 		final Type type = extractType(storageAttributesKey);
 		groupBuilder.type(type);
 
@@ -120,7 +120,7 @@ public class AvailableStockService
 	}
 
 	@VisibleForTesting
-	Type extractType(@NonNull final AttributesKey storageAttributesKey)
+	Type extractType(@NonNull final StorageAttributesKey storageAttributesKey)
 	{
 		if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.equals(storageAttributesKey))
 		{
@@ -137,7 +137,7 @@ public class AvailableStockService
 	}
 
 	@VisibleForTesting
-	List<I_M_AttributeValue> extractAttributeSetFromStorageAttributesKey(@NonNull final AttributesKey storageAttributesKey)
+	List<I_M_AttributeValue> extractAttributeSetFromStorageAttributesKey(@NonNull final StorageAttributesKey storageAttributesKey)
 	{
 		try
 		{

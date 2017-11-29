@@ -42,10 +42,10 @@ import lombok.NonNull;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @EqualsAndHashCode
-public final class AttributesKey
+public final class StorageAttributesKey
 {
 	@JsonCreator
-	public static final AttributesKey ofString(final String attributesKeyString)
+	public static final StorageAttributesKey ofString(final String attributesKeyString)
 	{
 		if (attributesKeyString == null)
 		{
@@ -58,10 +58,10 @@ public final class AttributesKey
 		}
 
 		final ImmutableList<Integer> attributeValueIdsList = null;
-		return new AttributesKey(attributesKeyStringNorm, attributeValueIdsList);
+		return new StorageAttributesKey(attributesKeyStringNorm, attributeValueIdsList);
 	}
 
-	public static final AttributesKey ofAttributeValueIds(final int... attributeValueIds)
+	public static final StorageAttributesKey ofAttributeValueIds(final int... attributeValueIds)
 	{
 		if (attributeValueIds == null || attributeValueIds.length == 0)
 		{
@@ -75,10 +75,10 @@ public final class AttributesKey
 		}
 
 		final String attributesKeyString = ATTRIBUTEVALUEIDS_JOINER.join(attributeValueIdsList);
-		return new AttributesKey(attributesKeyString, attributeValueIdsList);
+		return new StorageAttributesKey(attributesKeyString, attributeValueIdsList);
 	}
 
-	public static final AttributesKey NONE = new AttributesKey("", ImmutableList.of());
+	public static final StorageAttributesKey NONE = new StorageAttributesKey("", ImmutableList.of());
 
 	/** The delimiter should not contain any character that has a "regexp" meaning and would interfere with {@link String#replaceAll(String, String)}. */
 	private static final String ATTRIBUTES_KEY_DELIMITER = "§&§";
@@ -90,7 +90,7 @@ public final class AttributesKey
 	private transient ImmutableList<Integer> attributeValueIds; // lazy
 	private transient String sqlLikeString; // lazy
 
-	private AttributesKey(
+	private StorageAttributesKey(
 			@NonNull final String attributesKeyString,
 			@Nullable ImmutableList<Integer> attributeValueIds)
 	{

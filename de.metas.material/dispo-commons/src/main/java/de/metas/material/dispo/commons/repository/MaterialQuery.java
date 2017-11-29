@@ -10,7 +10,7 @@ import org.adempiere.util.time.SystemTime;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -59,7 +59,7 @@ public class MaterialQuery
 
 	List<Integer> productIds;
 
-	List<AttributesKey> storageAttributesKeys;
+	List<StorageAttributesKey> storageAttributesKeys;
 
 	int bpartnerId;
 
@@ -68,7 +68,7 @@ public class MaterialQuery
 			@Singular final Set<Integer> warehouseIds,
 			final Date date,
 			@Singular final List<Integer> productIds,
-			@Singular final List<AttributesKey> storageAttributesKeys,
+			@Singular final List<StorageAttributesKey> storageAttributesKeys,
 			final int bpartnerId)
 	{
 		Check.assumeNotEmpty(productIds, "productIds is not empty");

@@ -30,7 +30,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.EventTestHelper;
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
@@ -60,7 +60,7 @@ import lombok.NonNull;
 @SuppressWarnings({ "rawtypes" })
 public class StockRepositoryTest
 {
-	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
+	private static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY = StorageAttributesKey.ofAttributeValueIds(1, 2);
 
 	@Before
 	public void init()
@@ -152,7 +152,7 @@ public class StockRepositoryTest
 		final MaterialQuery query = MaterialQuery.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.storageAttributesKey(AttributesKey.ofAttributeValueIds(3))
+				.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(3))
 				.date(NOW)
 				.build();
 
@@ -177,7 +177,7 @@ public class StockRepositoryTest
 		final MaterialQuery query = MaterialQuery.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-				.storageAttributesKey(AttributesKey.ofAttributeValueIds(3))
+				.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(3))
 				.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER)
 				.date(NOW)
 				.build();
