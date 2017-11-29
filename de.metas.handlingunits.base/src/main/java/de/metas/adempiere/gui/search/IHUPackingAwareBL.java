@@ -10,12 +10,12 @@ package de.metas.adempiere.gui.search;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,6 +26,8 @@ import java.math.BigDecimal;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.apps.search.IInfoSimple;
+
+import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 
 /**
  * Service used for manipulating {@link IHUPackingAware}.
@@ -50,7 +52,7 @@ public interface IHUPackingAwareBL extends ISingletonService
 	 * @return
 	 */
 	IHUPackingAware create(final IInfoSimple infoWindow, final int rowIndexModel);
-	
+
 	default HUPackingAwareCopy prepareCopyFrom(final IHUPackingAware from)
 	{
 		return HUPackingAwareCopy.from(from);
@@ -84,7 +86,7 @@ public interface IHUPackingAwareBL extends ISingletonService
 
 	/**
 	 * Computes the number of TUs required for the given <code>huPackingWare</code>.
-	 * 
+	 *
 	 * @param huPackingWare
 	 * @return
 	 */
@@ -103,10 +105,12 @@ public interface IHUPackingAwareBL extends ISingletonService
 	/**
 	 * This method verifies if the qtyCU given as parameter fits the qtyPacks. If it does, the record will not be updated.
 	 * In case the QtyCU is too big or too small to fit in the QtyPacks, it will be changed to the maximum capacity required by the QtyPacks and the M_HU_PI_Item_Product of the record
-	 * 
+	 *
 	 * @param record
 	 * @param qtyPacks
 	 * @param qtyCU
 	 */
 	void updateQtyIfNeeded(IHUPackingAware record, int qtyPacks, BigDecimal qtyCU);
+
+	void computeAndSetQtysForNewHuPackingAware(final PlainHUPackingAware huPackingAware, final BigDecimal quickInputQty);
 }
