@@ -1,18 +1,11 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 import counterpart from 'counterpart';
 
 import FiltersItem from './FiltersItem';
 
 class FiltersFrequent extends Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            openFilterId: null
-        }
-    }
+    state = { openFilterId: null };
 
     toggleFilter = (index) => {
         this.setState({
@@ -106,6 +99,4 @@ class FiltersFrequent extends Component {
     }
 }
 
-FiltersFrequent = connect()(onClickOutside(FiltersFrequent));
-
-export default FiltersFrequent;
+export default onClickOutside(FiltersFrequent);
