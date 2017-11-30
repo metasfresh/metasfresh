@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -44,6 +43,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
 import de.metas.async.api.IQueueDAO;
@@ -155,8 +156,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 			manualPackingMaterial = false; // use the HUs!
 
 		}
-		
-		final boolean isShipmentDateToday =  getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
+
+		final boolean isShipmentDateToday = getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 		shipmentGenerator.generateInOuts(ctx, candidates.iterator(), shipmentDocDocAction, createPackingLines, manualPackingMaterial, isShipmentDateToday, ITrx.TRXNAME_ThreadInherited);
 
 		return Result.SUCCESS;
@@ -340,9 +341,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 *         <li>either no HU assigned to them, or</li>
 	 *         <li>HUs which are already picked or shipped assigned to them</li>
 	 *         </ul>
-	 * 
+	 *
 	 *         Hint: also take a look at {@link #isPickedOrShippedOrNoHU(I_M_ShipmentSchedule_QtyPicked)}.
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/759
 	 * @task https://github.com/metasfresh/metasfresh/issues/1174
 	 */
@@ -351,7 +352,18 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final List<I_M_ShipmentSchedule_QtyPicked> unshippedHUs = shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class)
 				.stream()
 				.filter(r -> isPickedOrShippedOrNoHU(r))
-				.collect(Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
+
+		// if we have an "undone" picking, i.e. positive and negative values sum up to zero, then return an empty list
+		// this supports the case that something went wrong with picking, and the user needs to get out the shipment asap
+		final BigDecimal qtySumOfUnshippedHUs = unshippedHUs.stream()
+				.map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		if (qtySumOfUnshippedHUs.signum() <= 0)
+		{
+			return ImmutableList.of();
+		}
 
 		return unshippedHUs;
 	}
@@ -359,7 +371,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	/**
 	 * Returns {@code true} if there is either no HU assigned to the given {@code schedQtyPicked} or if that HU is either picked or shipped.
 	 * If you don't see why it could possibly be already shipped, please take a look at issue <a href="https://github.com/metasfresh/metasfresh/issues/1174">#1174</a>.
-	 * 
+	 *
 	 * @param schedQtyPicked
 	 * @return
 	 *
