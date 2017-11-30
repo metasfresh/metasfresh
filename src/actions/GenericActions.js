@@ -39,21 +39,20 @@ export function getData(
 }
 
 /**
- * 
- * @param {*} entity - entity should always be `documentView`
- * @param {*} windowId 
- * @param {*} viewId 
- * @param {*} rowId 
+ *
+ * @param {*} windowId
+ * @param {*} viewId
+ * @param {*} rowId
  */
-export function getAttributes(
-    entity, windowId, viewId, rowId
+export function getViewAttributes (
+    windowId, viewId, rowId
 ) {
     return axios.get(
         config.API_URL +
-        '/' + entity +
+        '/documentView'+
         '/' + windowId +
-        (viewId ? '/' + viewId : '') +
-        (rowId ? '/' + rowId : '') +
+        '/' + viewId +
+        '/' + rowId +
         '/attributes'
     );
 }

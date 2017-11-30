@@ -4,7 +4,7 @@ import counterpart from 'counterpart';
 
 import {
     initLayout,
-    getAttributes
+    getViewAttributes
 } from '../../actions/GenericActions';
 
 import RawWidget from '../widget/RawWidget';
@@ -41,7 +41,7 @@ class SelectionAttributes extends Component {
         initLayout(entity, windowType, selected[0], null, viewId)
             .then(response => {
                 DLWrapperSetLayout(response.data.elements);
-                return getAttributes(entity, windowType, viewId, selected[0]);
+                return getViewAttributes(windowType, viewId, selected[0]);
             }).then(response => {
                 DLWrapperSetData(response.data.fieldsByName, response.data.id);
             }).catch(() => {});
