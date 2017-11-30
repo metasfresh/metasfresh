@@ -13,11 +13,11 @@ package de.metas.invoicecandidate.form;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -404,14 +404,14 @@ public class CreateInvoiceCandidateDialog
 						locationField.getValueAsInt(),
 						I_C_BPartner_Location.class,
 						InterfaceWrapperHelper.getTrxName(product));
-				
+
 				final I_M_PriceList_Version currentVersion = priceListBL.getCurrentPriceListVersionOrNull( //
 						pricingSystem //
 						, location.getC_Location().getC_Country() // country
 						, SystemTime.asDayTimestamp() // date
 						, isSOTrx //
 						, (Boolean)null // processedPLVFiltering
-						);
+				);
 
 				productPrice = ProductPrices.retrieveMainProductPriceOrNull(currentVersion, product.getM_Product_ID());
 			}
@@ -444,20 +444,15 @@ public class CreateInvoiceCandidateDialog
 			final I_M_Warehouse warehouse = null;
 
 			priceTaxId = Services.get(ITaxBL.class).getTax(
-					ctx
-					, null // no model
-					, taxCategoryId
-					, product.getM_Product_ID() // productId
+					ctx, null // no model
+					, taxCategoryId, product.getM_Product_ID() // productId
 					, -1 // chargeId
 					, date // billDate
 					, date // shipDate
 					, product.getAD_Org_ID() // orgId
-					, warehouse
-					, locationField.getValueAsInt() // billC_BPartner_Location_ID
+					, warehouse, locationField.getValueAsInt() // billC_BPartner_Location_ID
 					, locationField.getValueAsInt() // shipC_BPartner_Location_ID
-					, isSOTrx
-					, trxName
-					);
+					, isSOTrx, trxName);
 		}
 		catch (final ProductPriceNotFoundException ppnfe)
 		{
@@ -602,73 +597,6 @@ public class CreateInvoiceCandidateDialog
 				//
 				// Mock (not used, cannot be null)
 				ic.setRecord_ID(0);
-
-				//
-				// Ignored (commented out / ignored)
-				//
-				// ic.setAD_Note(I_AD_Note);
-				// ic.setAD_Note_ID(int);
-				// ic.setAD_Org(I_AD_Org);
-				// ic.setAD_Org_ID(int);
-				// ic.setAD_Table_ID(int);
-				// ic.setAD_User_InCharge(I_AD_User);
-				// ic.setAD_User_InCharge_ID(int);
-				// ic.setAllowConsolidateInvoice(boolean);
-				// ic.setBill_User(I_AD_User);
-				// ic.setBill_User_ID(int);
-				// ic.setC_Charge(I_C_Charge);
-				// ic.setC_Charge_ID(int);
-				// ic.setC_ConversionType(I_C_ConversionType);
-				// ic.setC_ConversionType_ID(int);
-				// ic.setC_Invoice_Candidate_Agg(I_C_Invoice_Candidate_Agg);
-				// ic.setC_Invoice_Candidate_Agg_ID(int);
-				// ic.setC_Invoice_Candidate_ID(int);
-				// ic.setC_InvoiceSchedule(I_C_InvoiceSchedule);
-				// ic.setC_InvoiceSchedule_ID(int);
-				// ic.setC_Order(I_C_Order);
-				// ic.setC_Order_ID(int);
-				// ic.setC_OrderLine(I_C_OrderLine);
-				// ic.setC_OrderLine_ID(int);
-				// ic.setDateInvoiced(Timestamp);
-				// ic.setDateOrdered(Timestamp);
-				// ic.setDateToInvoice(Timestamp);
-				// ic.setDateToInvoice_Effective(Timestamp);
-				// ic.setDateToInvoice_Override(Timestamp);
-				// ic.setDescription(String);
-				// ic.setDescriptionBottom(String);
-				// ic.setDescriptionHeader(String);
-				// ic.setDiscount_Override(BigDecimal);
-				// ic.setErrorMsg(String);
-				// ic.setHeaderAggregationKey(String);
-				// ic.setInvoiceRule_Effective(String);
-				// ic.setInvoiceRule_Override(String);
-				// ic.setInvoiceScheduleAmtStatus(String);
-				// ic.setIsActive(boolean);
-				// ic.setIsError(boolean);
-				// ic.setIsInDispute(boolean);
-				// ic.setIsManual(boolean);
-				// ic.setIsToClear(boolean);
-				// ic.setIsToRecompute(boolean);
-				// ic.setLineAggregationKey(String);
-				// ic.setLineAggregationKey_Suffix(String);
-				// ic.setNetAmtInvoiced(BigDecimal);
-				// ic.setNetAmtToInvoice(BigDecimal);
-				// ic.setPriceActual(BigDecimal);
-				// ic.setPriceActual_Override(BigDecimal);
-				// ic.setPriceEntered_Override(BigDecimal);
-				// ic.setProcessed(boolean);
-				// ic.setQtyDelivered(BigDecimal);
-				// ic.setQtyInvoiced(BigDecimal);
-				// ic.setQtyOrderedOverUnder(BigDecimal);
-				// ic.setQtyToInvoice(BigDecimal);
-				// ic.setQtyToInvoice_Override(BigDecimal);
-				// ic.setQtyToInvoice_OverrideFulfilled(BigDecimal);
-				// ic.setQtyWithIssues(BigDecimal);
-				// ic.setQualityDiscountPercent(BigDecimal);
-				// ic.setQualityDiscountPercent_Override(BigDecimal);
-				// ic.setReasonDiscount(String);
-				// ic.setSchedulerResult(String);
-				// ic.setSplitAmt(BigDecimal);
 
 				//
 				// Try save the invoice candidate
