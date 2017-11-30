@@ -60,12 +60,13 @@ public class HUStatusBL implements IHUStatusBL
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Picked)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Issued)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Destroyed)
-
-			// this transition is used in vendor returns
+			// active => shipped transition is used in vendor returns
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Shipped)
 
 			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Active)
 			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Shipped)
+			// picked => destroyed is used if you distribute one already-picked HU onto other HUs, and the source-HU is then destroyed
+			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Destroyed)
 
 			.put(X_M_HU.HUSTATUS_Issued, X_M_HU.HUSTATUS_Active)
 			.put(X_M_HU.HUSTATUS_Issued, X_M_HU.HUSTATUS_Destroyed)
@@ -73,7 +74,7 @@ public class HUStatusBL implements IHUStatusBL
 			.put(X_M_HU.HUSTATUS_Destroyed, X_M_HU.HUSTATUS_Active)
 			.put(X_M_HU.HUSTATUS_Destroyed, X_M_HU.HUSTATUS_Issued)
 
-			// this transition is used e.g. when reverse-correcting a vendor return https://github.com/metasfresh/metasfresh/issues/2755
+			// shipped => active is used e.g. when reverse-correcting a vendor return https://github.com/metasfresh/metasfresh/issues/2755
 			.put(X_M_HU.HUSTATUS_Shipped, X_M_HU.HUSTATUS_Active)
 
 			.build();
