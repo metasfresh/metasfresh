@@ -18,6 +18,8 @@ Here come the actual release notes:
 * metasfresh-app
   * [#937](https://github.com/metasfresh/metasfresh/issues/937) Increase Performance by disabling statistics info
     * Internal Housekeeping Issue, switching off the statistics creation in System Table.
+  * [#1767](https://github.com/metasfresh/metasfresh/issues/1767) New Window Board in WebUI
+    * New Window for Board Configuration in WebUI, allowing to configure new Kanban Boards and Card Layouts.
   * [#3094}(https://github.com/metasfresh/metasfresh/issues/3094) Activity ID in Purchase Orderline Grid View
     * New field in purchase orderline, allowing to see and maintain the activity in grid view.
   * [#3095](https://github.com/metasfresh/metasfresh/issues/3095) WebUI: new Window for AD_Session in WebUI
