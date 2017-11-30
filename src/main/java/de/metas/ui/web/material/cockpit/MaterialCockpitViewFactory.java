@@ -8,16 +8,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_S_Resource;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilterParam;
-import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -76,7 +71,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 
 
 		final ImmutableList<DocumentFilter> requestFilters = materialCockpitFilters.extractDocumentFilters(request);
-		final ImmutableList<DocumentFilter> filtersToUse = request.isUseAutoFilters() ? createAutoFilters() : requestFilters;
+		final ImmutableList<DocumentFilter> filtersToUse = request.isUseAutoFilters() ? materialCockpitFilters.createAutoFilters() : requestFilters;
 
 		final Supplier<List<MaterialCockpitRow>> rowsSupplier = createRowsSupplier(filtersToUse);
 
@@ -85,20 +80,6 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				ITranslatableString.empty(),
 				rowsSupplier,
 				filtersToUse); // TODO take the filters from the request and append mine
-	}
-
-	private ImmutableList<DocumentFilter> createAutoFilters()
-	{
-		// filter need to be created by the factory and added to this view when it's created
-		final String columnName = I_X_MRP_ProductInfo_V.COLUMNNAME_DateGeneral;
-		final ITranslatableString filterCaption = Services.get(IMsgBL.class).translatable(columnName);
-		final DocumentFilter dateFilter = DocumentFilter.builder()
-				.setFilterId("materialCockpitFilter") // TODO shut the fuck up
-				.setCaption(filterCaption)
-				.addParameter(DocumentFilterParam.ofNameOperatorValue(columnName, Operator.EQUAL, Env.getDate(Env.getCtx())))
-				.build();
-
-		return ImmutableList.of(dateFilter);
 	}
 
 	private void assertWindowIdOfRequestIsCorrect(@NonNull final CreateViewRequest request)
