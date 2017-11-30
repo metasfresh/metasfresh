@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#937](https://github.com/metasfresh/metasfresh/issues/937) Increase Performance by disabling statistics info
+    * Internal Housekeeping Issue, switching off the statistics creation in System Table.
   * [#3094}(https://github.com/metasfresh/metasfresh/issues/3094) Activity ID in Purchase Orderline Grid View
     * New field in purchase orderline, allowing to see and maintain the activity in grid view.
   * [#3095](https://github.com/metasfresh/metasfresh/issues/3095) WebUI: new Window for AD_Session in WebUI
@@ -29,6 +31,8 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2946](https://github.com/metasfresh/metasfresh/issues/2946) Product: New Field Endcustomer productname and translation
     * Adding new fields for endcustomer productname for product labels and translation.
+  * [#2977](https://github.com/metasfresh/metasfresh/issues/2977) Tab Org Access not working in WebUI because of missing primary key
+    * Adding a primary Key to Orgaccess Table, allowing to create records in User Window subtab.
   * [#3087](https://github.com/metasfresh/metasfresh/issues/3087) Get rid of group columns in new window for procurement stock count
     * Adjusting the window Purchase Stock Control and adding Translation for en_US.
 
