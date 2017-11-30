@@ -2,6 +2,7 @@ package de.metas.material.dispo.commons.repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.util.Check;
@@ -10,8 +11,8 @@ import org.adempiere.util.time.SystemTime;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -49,19 +50,18 @@ public class MaterialQuery
 				.date(materialDescriptor.getDate())
 				.productId(materialDescriptor.getProductId())
 				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
+				.bpartnerId(MaterialQuery.BPARTNER_ID_ANY)
 				.build();
 	}
 
-	Set<Integer> warehouseIds;
+	private final ImmutableSet<Integer> warehouseIds;
+	private final Date date;
+	private final ImmutableList<Integer> productIds;
+	private final ImmutableList<StorageAttributesKey> storageAttributesKeys;
 
-	@NonNull
-	Date date;
-
-	List<Integer> productIds;
-
-	List<StorageAttributesKey> storageAttributesKeys;
-
-	int bpartnerId;
+	public static final int BPARTNER_ID_ANY = -1;
+	public static final int BPARTNER_ID_NONE = -2;
+	private final int bpartnerId;
 
 	@Builder(toBuilder = true)
 	private MaterialQuery(
@@ -74,14 +74,48 @@ public class MaterialQuery
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
 		this.warehouseIds = warehouseIds == null || warehouseIds.isEmpty() ? ImmutableSet.of() : ImmutableSet.copyOf(warehouseIds);
-		this.date = date != null ? date : SystemTime.asDate();
+		this.date = date != null ? (Date)date.clone() : SystemTime.asDate();
 		this.productIds = ImmutableList.copyOf(productIds);
 		this.storageAttributesKeys = ImmutableList.copyOf(storageAttributesKeys);
-		this.bpartnerId = bpartnerId > 0 ? bpartnerId : -1;
+
+		if (bpartnerId == BPARTNER_ID_ANY
+				|| bpartnerId == BPARTNER_ID_NONE
+				|| bpartnerId > 0)
+		{
+			this.bpartnerId = bpartnerId;
+		}
+		else // default (bpartnerId was not specified on build time)
+		{
+			this.bpartnerId = BPARTNER_ID_ANY;
+			// throw new AdempiereException("Invalid bpartnerId: " + bpartnerId);
+		}
 	}
 
 	public MaterialQuery withDate(@NonNull final Date newDate)
 	{
+		if (Objects.equals(this.date, newDate))
+		{
+			return this;
+		}
+
 		return toBuilder().date(newDate).build();
 	}
+
+	public Date getDate()
+	{
+		return (Date)date.clone();
+	}
+
+	public boolean isBPartnerMatching(final int bpartnerIdToMatch)
+	{
+		return isBPartnerMatching(bpartnerId, bpartnerIdToMatch);
+	}
+
+	public static boolean isBPartnerMatching(final int bpartnerId, final int bpartnerIdToMatch)
+	{
+		return bpartnerId == MaterialQuery.BPARTNER_ID_ANY
+				|| (bpartnerId == MaterialQuery.BPARTNER_ID_NONE && bpartnerIdToMatch <= 0)
+				|| (bpartnerId == bpartnerIdToMatch);
+	}
+
 }

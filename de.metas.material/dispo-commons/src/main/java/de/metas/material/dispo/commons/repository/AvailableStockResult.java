@@ -1,16 +1,22 @@
 package de.metas.material.dispo.commons.repository;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.Builder;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -39,44 +45,71 @@ import lombok.Value;
  * #L%
  */
 
-@Value
+@Data
 public class AvailableStockResult
 {
+	public static AvailableStockResult createEmpty()
+	{
+		return new AvailableStockResult(new ArrayList<>());
+	}
+
 	@NonNull
-	public static AvailableStockResult createEmptyForQuery(@NonNull final MaterialQuery query)
+	public static AvailableStockResult createEmptyWithPredefinedBuckets(@NonNull final MaterialMultiQuery multiQuery)
 	{
 		final ImmutableList.Builder<ResultGroup> resultBuilder = ImmutableList.builder();
 
-		for (final int productId : query.getProductIds())
+		for (final MaterialQuery query : multiQuery.getQueries())
 		{
-			for (final StorageAttributesKey storageAttributesKey : query.getStorageAttributesKeys())
+			List<StorageAttributesKey> storageAttributesKeys = query.getStorageAttributesKeys();
+			if (storageAttributesKeys.isEmpty())
 			{
-				resultBuilder.add(ResultGroup.builder()
-						.productId(productId)
-						.storageAttributesKey(storageAttributesKey)
-						.qty(BigDecimal.ZERO)
-						.build());
+				storageAttributesKeys = ImmutableList.of(StorageAttributesKey.NONE); // TODO: tobi: StorageAttributesKey.ANY
+			}
+
+			Set<Integer> warehouseIds = query.getWarehouseIds();
+			if (warehouseIds.isEmpty())
+			{
+				warehouseIds = ImmutableSet.of(ResultGroup.WAREHOUSE_ID_ANY);
+			}
+
+			final int bpartnerId = query.getBpartnerId();
+			final List<Integer> productIds = query.getProductIds();
+
+			for (final int warehouseId : warehouseIds)
+			{
+				for (final int productId : productIds)
+				{
+					for (final StorageAttributesKey storageAttributesKey : storageAttributesKeys)
+					{
+						resultBuilder.add(ResultGroup.builder()
+								.productId(productId)
+								.storageAttributesKey(storageAttributesKey)
+								.warehouseId(warehouseId)
+								.bpartnerId(bpartnerId)
+								.build());
+					}
+				}
 			}
 		}
 
 		return new AvailableStockResult(resultBuilder.build());
 	}
 
-	@NonNull
-	List<ResultGroup> resultGroups;
+	private final List<ResultGroup> resultGroups;
 
 	@ToString
 	@EqualsAndHashCode
 	@Getter
-	public static class ResultGroup
+	public static final class ResultGroup
 	{
-		private final int warehouseId; 
+		private static final int WAREHOUSE_ID_ANY = -1;
+
+		private final int warehouseId;
 		private final int productId;
 		private final StorageAttributesKey storageAttributesKey;
 		private final int bpartnerId;
 		private BigDecimal qty;
 
-		// TODO: check and set warehouseId, bpartnerId. Task: https://github.com/metasfresh/metasfresh/issues/3098
 		@Builder
 		public ResultGroup(
 				final int warehouseId,
@@ -87,43 +120,133 @@ public class AvailableStockResult
 		{
 			Check.assume(productId > 0, "productId > 0");
 
-			this.warehouseId = warehouseId;
+			this.warehouseId = warehouseId > 0 ? warehouseId : WAREHOUSE_ID_ANY;
 			this.productId = productId;
 			this.storageAttributesKey = storageAttributesKey;
-			this.bpartnerId = bpartnerId;
 			this.qty = qty == null ? BigDecimal.ZERO : qty;
+
+			if (bpartnerId == MaterialQuery.BPARTNER_ID_ANY
+					|| bpartnerId == MaterialQuery.BPARTNER_ID_NONE
+					|| bpartnerId > 0)
+			{
+				this.bpartnerId = bpartnerId;
+			}
+			else
+			{
+				throw new AdempiereException("Invalid bpartnerId: " + bpartnerId);
+			}
 		}
 
-		public boolean matches(int productIdToMatch, StorageAttributesKey storageAttributesKeyToMatch)
+		@VisibleForTesting
+		boolean matches(final ResultGroupAddRequest request)
 		{
-			if (productIdToMatch != productId)
+			if (productId != request.getProductId())
 			{
 				return false;
 			}
 
-			final List<Integer> attributeValueIdsOfThisInstance = storageAttributesKey.getAttributeValueIds();
-			final List<Integer> attributeValueIdsToMatch = storageAttributesKeyToMatch.getAttributeValueIds();
+			if (!isWarehouseMatching(request.getWarehouseId()))
+			{
+				return false;
+			}
 
-			return attributeValueIdsToMatch.containsAll(attributeValueIdsOfThisInstance);
+			if (!isBPartnerMatching(request.getBpartnerId()))
+			{
+				// OK
+			}
+
+			final StorageAttributesKey storageAttributesKeyToMatch = request.getStorageAttributesKey();
+			if (!storageAttributesKeyToMatch.contains(storageAttributesKey))
+			{
+				return false;
+			}
+
+			return true;
 		}
 
-		public void addQty(BigDecimal qtyToAdd)
+		private void addQty(final BigDecimal qtyToAdd)
 		{
-			this.qty = this.qty.add(qtyToAdd);
+			qty = qty.add(qtyToAdd);
+		}
+
+		private boolean isWarehouseMatching(final int warehouseIdToMatch)
+		{
+			return this.warehouseId == WAREHOUSE_ID_ANY
+					|| this.warehouseId == warehouseIdToMatch;
+		}
+
+		private boolean isBPartnerMatching(final int bpartnerIdToMatch)
+		{
+			return MaterialQuery.isBPartnerMatching(bpartnerId, bpartnerIdToMatch);
 		}
 	}
 
-	public void addQtyToMatchedGroups(
-			@NonNull final BigDecimal qty,
-			final int productId,
-			@NonNull final StorageAttributesKey storageAttributesKey)
+	@Value
+	public static final class ResultGroupAddRequest
 	{
-		for (ResultGroup group : resultGroups)
+		private final int warehouseId;
+		private final int productId;
+		private final StorageAttributesKey storageAttributesKey;
+		private final int bpartnerId;
+		private BigDecimal qty;
+
+		@Builder
+		public ResultGroupAddRequest(
+				final int warehouseId,
+				final int productId,
+				@NonNull final StorageAttributesKey storageAttributesKey,
+				final int bpartnerId,
+				@NonNull final BigDecimal qty)
 		{
-			if (group.matches(productId, storageAttributesKey))
+			Check.assume(productId > 0, "productId > 0");
+			Check.assume(warehouseId > 0, "warehouseId > 0");
+
+			this.warehouseId = warehouseId;
+			this.productId = productId;
+			this.storageAttributesKey = storageAttributesKey;
+			if (bpartnerId > 0 || bpartnerId == MaterialQuery.BPARTNER_ID_NONE)
 			{
-				group.addQty(qty);
+				this.bpartnerId = bpartnerId;
+			}
+			else
+			{
+				// i.e. BPARTNER_ID_ANY shall not be accepted,
+				// because this is actual data and not grouping/aggregation data
+				throw new AdempiereException("Invalid bpartnerId: " + bpartnerId);
+			}
+			this.qty = qty;
+		}
+	}
+
+	public void addQtyToAllMatchingGroups(@NonNull final ResultGroupAddRequest request)
+	{
+		boolean added = false;
+		for (final ResultGroup group : resultGroups)
+		{
+			final boolean matchers = group.matches(request);
+			if (matchers)
+			{
+				group.addQty(request.getQty());
+				added = true;
 			}
 		}
+
+		if (!added)
+		{
+			throw new AdempiereException("No matching group found for " + request + " in " + this);
+		}
+	}
+
+	public void addGroup(@NonNull final ResultGroupAddRequest request)
+	{
+		final ResultGroup group = ResultGroup.builder()
+				.productId(request.getProductId())
+				.storageAttributesKey(request.getStorageAttributesKey())
+				.warehouseId(request.getWarehouseId())
+				.bpartnerId(request.getBpartnerId())
+				.qty(request.getQty())
+				.build();
+
+		resultGroups.add(group);
 	}
 }

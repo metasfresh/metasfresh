@@ -146,4 +146,9 @@ public final class StorageAttributesKey
 
 		return sqlLikeString;
 	}
+	
+	public boolean contains(@NonNull final StorageAttributesKey storageAttributesKey)
+	{
+		return getAttributeValueIds().containsAll(storageAttributesKey.getAttributeValueIds());
+	}
 }

@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.mm.attributes.api.StorageAttributesKeys;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -50,7 +49,6 @@ import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.dispo.commons.repository.AvailableStockResult;
 import de.metas.material.dispo.commons.repository.MaterialMultiQuery;
-import de.metas.material.dispo.commons.repository.MaterialMultiQuery.AggregationLevel;
 import de.metas.material.dispo.commons.repository.MaterialQuery;
 import de.metas.material.dispo.commons.repository.MaterialQuery.MaterialQueryBuilder;
 import de.metas.material.dispo.commons.repository.StockRepository;
@@ -112,8 +110,8 @@ public class ShipmentScheduleQtyOnHandStorage
 			return ImmutableList.of();
 		}
 
-		final List<AvailableStockResult> availableStockResults = stockRepository.retrieveAvailableStock(multiQuery);
-		return createStockDetails(availableStockResults);
+		final AvailableStockResult availableStockResult = stockRepository.retrieveAvailableStock(multiQuery);
+		return createStockDetails(availableStockResult);
 	}
 
 	private MaterialMultiQuery createMaterialMultiQueryOrNull(final List<I_M_ShipmentSchedule> shipmentSchedules)
@@ -129,7 +127,7 @@ public class ShipmentScheduleQtyOnHandStorage
 
 		return MaterialMultiQuery.builder()
 				.queries(materialQueries)
-				.aggregationLevel(AggregationLevel.NONE)
+				.addToPredefinedBuckets(false)
 				.build();
 	}
 
@@ -162,7 +160,7 @@ public class ShipmentScheduleQtyOnHandStorage
 
 		final int productId = sched.getM_Product_ID();
 		final int bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(sched);
-		final Date date = shipmentScheduleEffectiveBL.getPreparationDate(sched); // TODO: check with Mark if we shall use DeliveryDate.
+		final Date date = shipmentScheduleEffectiveBL.getPreparationDate(sched);
 		final MaterialQueryBuilder materialQueryBuilder = MaterialQuery.builder()
 				.warehouseIds(warehouseIds)
 				.productId(productId)
@@ -180,15 +178,11 @@ public class ShipmentScheduleQtyOnHandStorage
 		return materialQueryBuilder.build();
 	}
 
-	private static final List<ShipmentScheduleAvailableStockDetail> createStockDetails(final List<AvailableStockResult> stockResults)
+	private static final List<ShipmentScheduleAvailableStockDetail> createStockDetails(final AvailableStockResult stockResult)
 	{
-		if (Check.isEmpty(stockResults))
-		{
-			return ImmutableList.of();
-		}
-
-		return stockResults.stream()
-				.flatMap(stockResult -> stockResult.getResultGroups().stream())
+		return stockResult
+				.getResultGroups()
+				.stream()
 				.map(ShipmentScheduleQtyOnHandStorage::createStockDetail)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -213,26 +207,38 @@ public class ShipmentScheduleQtyOnHandStorage
 
 	private static boolean matching(final MaterialQuery query, final ShipmentScheduleAvailableStockDetail stockDetail)
 	{
-		final List<Integer> productIds = query.getProductIds();
-		if (!productIds.isEmpty() && !productIds.contains(stockDetail.getProductId()))
+		//
+		// Product
+		final List<Integer> queryProductIds = query.getProductIds();
+		if (!queryProductIds.isEmpty() && !queryProductIds.contains(stockDetail.getProductId()))
 		{
 			return false;
 		}
 
-		final Set<Integer> warehouseIds = query.getWarehouseIds();
-		if (!warehouseIds.isEmpty() && !warehouseIds.contains(stockDetail.getWarehouseId()))
+		//
+		// Warehouse
+		final Set<Integer> queryWarehouseIds = query.getWarehouseIds();
+		if (!queryWarehouseIds.isEmpty() && !queryWarehouseIds.contains(stockDetail.getWarehouseId()))
 		{
 			return false;
 		}
 
-		final int bpartnerId = query.getBpartnerId();
-		if (bpartnerId > 0 && bpartnerId != stockDetail.getBpartnerId())
+		//
+		// Partner
+		final int stockBPartnerId = stockDetail.getBpartnerId();
+		if (stockBPartnerId == MaterialQuery.BPARTNER_ID_NONE)
+		{
+			// always match the available stock which is not allocated to a particular BPartner
+		}
+		else if (!query.isBPartnerMatching(stockBPartnerId))
 		{
 			return false;
 		}
 
-		final List<StorageAttributesKey> storageAttributeKeys = query.getStorageAttributesKeys();
-		if (!storageAttributeKeys.isEmpty() && !storageAttributeKeys.contains(stockDetail.getStorageAttributesKey()))
+		//
+		// Storage Attributes Key
+		final List<StorageAttributesKey> queryStorageAttributeKeys = query.getStorageAttributesKeys();
+		if (!queryStorageAttributeKeys.isEmpty() && !queryStorageAttributeKeys.contains(stockDetail.getStorageAttributesKey()))
 		{
 			return false;
 		}

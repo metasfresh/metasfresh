@@ -2,8 +2,6 @@ package de.metas.material.dispo.commons.repository;
 
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableSet;
@@ -40,25 +38,24 @@ public class MaterialMultiQuery
 {
 	public static final MaterialMultiQuery of(@NonNull final MaterialQuery query)
 	{
-		return builder().query(query).build();
+		return builder()
+				.query(query)
+				.addToPredefinedBuckets(DEFAULT_addToPredefinedBuckets)
+				.build();
 	}
 
 	private final Set<MaterialQuery> queries;
-
-	public static enum AggregationLevel
-	{
-		NONE, ATTRIBUTES_KEY
-	};
-
-	private final AggregationLevel aggregationLevel;
+	
+	private static final boolean DEFAULT_addToPredefinedBuckets = true;
+	private final boolean addToPredefinedBuckets;
 
 	@Builder
 	private MaterialMultiQuery(
 			@NonNull @Singular final ImmutableSet<MaterialQuery> queries,
-			@Nullable final AggregationLevel aggregationLevel)
+			final Boolean addToPredefinedBuckets)
 	{
 		Check.assumeNotEmpty(queries, "queries is not empty");
 		this.queries = queries;
-		this.aggregationLevel = aggregationLevel != null ? aggregationLevel : AggregationLevel.ATTRIBUTES_KEY;
+		this.addToPredefinedBuckets = addToPredefinedBuckets != null ? addToPredefinedBuckets : DEFAULT_addToPredefinedBuckets;
 	}
 }
