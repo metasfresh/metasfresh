@@ -99,15 +99,21 @@ class TableItem extends Component {
     }
 
     listenOnKeysTrue = () => {
+        const { changeListenOnTrue } = this.props;
+
         this.setState({
             listenOnKeys: true
         });
+        changeListenOnTrue();
     }
 
     listenOnKeysFalse = () => {
+        const { changeListenOnFalse } = this.props;
+
         this.setState({
             listenOnKeys: false
         });
+        changeListenOnFalse();
     }
 
     handleKey = (e, property) => {
@@ -128,8 +134,6 @@ class TableItem extends Component {
         this.handleEditProperty(e);
         this.listenOnKeysTrue();
 
-        changeListenOnTrue();
-
         activeCell && activeCell.focus();
     }
 
@@ -142,7 +146,7 @@ class TableItem extends Component {
         const {
             type, docId, rowId, tabId, readonly, mainTable, newRow,
             changeListenOnTrue, tabIndex, entity, getSizeClass,
-            handleRightClick, caption, colspan, onItemChange
+            handleRightClick, caption, colspan, onItemChange, viewId
         } = this.props;
 
         const {
@@ -194,7 +198,7 @@ class TableItem extends Component {
                     <TableCell
                         {...{getSizeClass, entity, type, docId, rowId,
                             tabId, item, readonly, widgetData, tabIndex,
-                            listenOnKeys, caption, mainTable
+                            listenOnKeys, caption, mainTable, viewId
                         }}
                         key={index}
                         isEdited={isEditable || edited === property}
@@ -208,12 +212,14 @@ class TableItem extends Component {
                             changeListenOnTrue();
                         }}
                         disableOnClickOutside={edited !== property}
-                        onKeyDown = {(!mainTable || forceKeysBind) ?
+                        onKeyDown = {(!mainTable || forceKeysBind ||
+                            isEditable) ?
                             (e) => this.handleKey(e, property) : null
                         }
                         onCellChange={onItemChange}
                         updatedRow={updatedRow || newRow}
                         updateRow={this.updateRow}
+                        listenOnKeysTrue={this.listenOnKeysTrue}
                         listenOnKeysFalse={this.listenOnKeysFalse}
                         closeTableField={(e) => this.closeTableField(e)}
                         handleRightClick={(e) => handleRightClick(

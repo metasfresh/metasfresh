@@ -48,7 +48,7 @@ class LookupList extends Component {
 
         return (
             <div
-                key={item.key}
+                key={item.key + item.caption}
                 className={
                     'input-dropdown-list-option ' +
                     (selected === index ?

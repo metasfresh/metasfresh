@@ -842,6 +842,9 @@ td.pulse-off input {
 .filter-widget {
     padding: 8px 13px 12px 13px;
     min-width: 480px;
+    max-height: 80vh;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .filter-menu li {

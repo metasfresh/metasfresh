@@ -54,13 +54,13 @@ class RawWidget extends Component {
     }
 
     handleFocus = (e) => {
-        const {handleFocus} = this.props;
+        const {handleFocus, listenOnKeysFalse} = this.props;
 
         this.setState({
             isEdited: true,
             cachedValue: e.target.value
         });
-
+        listenOnKeysFalse && listenOnKeysFalse();
         handleFocus && handleFocus();
     }
 
@@ -93,13 +93,15 @@ class RawWidget extends Component {
     }
 
     handleBlur = (widgetField, value, id) => {
-        const {handleBlur} = this.props;
+        const {handleBlur, listenOnKeysTrue} = this.props;
 
         handleBlur && handleBlur(this.willPatch(value));
 
         this.setState({
             isEdited: false
         });
+
+        listenOnKeysTrue && listenOnKeysTrue();
 
         this.handlePatch(widgetField, value, id);
     }

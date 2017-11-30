@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import counterpart from 'counterpart';
 import TableQuickInput from './TableQuickInput';
 import Tooltips from '../tooltips/Tooltips';
-import keymap from '../../keymap.js';
+import keymap from '../../shortcuts/keymap';
 
 class TableFilter extends Component {
     constructor(props) {
@@ -49,7 +49,7 @@ class TableFilter extends Component {
                                 onClick={handleBatchEntryToggle}
                                 onMouseEnter={() =>
                                     this.toggleTooltip(
-                                        keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT
+                                        keymap.TOGGLE_QUICK_INPUT
                                     )
                                 }
                                 onMouseLeave={this.toggleTooltip}
@@ -61,10 +61,10 @@ class TableFilter extends Component {
                                 'window.batchEntry.caption'
                             )}
                             {isTooltipShow ===
-                                keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT &&
+                                keymap.TOGGLE_QUICK_INPUT &&
                                 <Tooltips
                                     name={
-                                        keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT
+                                        keymap.TOGGLE_QUICK_INPUT
                                     }
                                     action={
                                         isBatchEntry ?
@@ -95,7 +95,7 @@ class TableFilter extends Component {
                     className="btn-icon btn-meta-outline-secondary pointer"
                     onClick={() => toggleFullScreen(!fullScreen)}
                     onMouseEnter={() =>
-                        this.toggleTooltip(keymap.TABLE_CONTEXT.TOGGLE_EXPAND)
+                        this.toggleTooltip(keymap.TOGGLE_EXPAND)
                     }
                     onMouseLeave={this.toggleTooltip}
                     tabIndex="-1"
@@ -103,9 +103,9 @@ class TableFilter extends Component {
                     {fullScreen ? <i className="meta-icon-collapse"/> :
                         <i className="meta-icon-fullscreen"/>}
 
-                    {isTooltipShow === keymap.TABLE_CONTEXT.TOGGLE_EXPAND &&
+                    {isTooltipShow === keymap.TOGGLE_EXPAND &&
                         <Tooltips
-                            name={keymap.TABLE_CONTEXT.TOGGLE_EXPAND}
+                            name={keymap.TOGGLE_EXPAND}
                             action={fullScreen ?
                                 counterpart.translate(
                                     'window.table.collapse') :
