@@ -34,6 +34,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -136,7 +137,7 @@ public class ContractsDAO implements IContractsDAO
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
 				.create()
-				.aggregate(I_C_SubscriptionProgress.COLUMN_Qty, IQuery.Aggregate.SUM, BigDecimal.class);
+				.aggregate(I_C_SubscriptionProgress.COLUMN_Qty, Aggregate.SUM, BigDecimal.class);
 
 		return qty;
 	}

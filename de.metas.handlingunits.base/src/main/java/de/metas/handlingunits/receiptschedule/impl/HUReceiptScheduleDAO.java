@@ -40,6 +40,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -152,7 +153,7 @@ public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 				.createRsaForRsQueryBuilder(schedule, I_M_ReceiptSchedule_Alloc.class)
 				.addOnlyActiveRecordsFilter() // make sure we are counting only active records
 				.create()
-				.aggregate(I_M_ReceiptSchedule_Alloc.COLUMNNAME_HU_QtyAllocated, IQuery.Aggregate.SUM, BigDecimal.class);
+				.aggregate(I_M_ReceiptSchedule_Alloc.COLUMNNAME_HU_QtyAllocated, Aggregate.SUM, BigDecimal.class);
 
 		return huQtyAllocated;
 	}

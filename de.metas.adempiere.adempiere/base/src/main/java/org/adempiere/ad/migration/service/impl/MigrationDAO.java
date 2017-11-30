@@ -35,7 +35,7 @@ import org.adempiere.ad.migration.model.I_AD_MigrationStep;
 import org.adempiere.ad.migration.service.IMigrationDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.util.DB;
 
 public class MigrationDAO implements IMigrationDAO
@@ -121,7 +121,7 @@ public class MigrationDAO implements IMigrationDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(migration);
 		final String trxName = InterfaceWrapperHelper.getTrxName(migration);
 		final BigDecimal maxSeqNo = new TypedSqlQuery<I_AD_Migration>(ctx, I_AD_Migration.class, null, trxName)
-				.aggregate(I_AD_Migration.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX);
+				.aggregate(I_AD_Migration.COLUMNNAME_SeqNo, Aggregate.MAX);
 
 		return maxSeqNo.intValue();
 	}
@@ -134,7 +134,7 @@ public class MigrationDAO implements IMigrationDAO
 		final String whereClause = I_AD_MigrationStep.COLUMNNAME_AD_Migration_ID + "=?";
 		final BigDecimal maxSeqNo = new TypedSqlQuery<I_AD_MigrationStep>(ctx, I_AD_MigrationStep.class, whereClause, trxName)
 				.setParameters(step.getAD_Migration_ID())
-				.aggregate(I_AD_MigrationStep.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX);
+				.aggregate(I_AD_MigrationStep.COLUMNNAME_SeqNo, Aggregate.MAX);
 		return maxSeqNo.intValue();
 	}
 

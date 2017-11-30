@@ -28,7 +28,7 @@ import java.math.RoundingMode;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MInvoiceLine;
@@ -153,7 +153,7 @@ public class DocLine_Invoice extends DocLine
 			final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
 			BigDecimal qtyReceived = matchInvDAO.retrieveForInvoiceLineQuery(invoiceLine)
 					.create()
-					.aggregate(I_M_MatchInv.COLUMNNAME_Qty, IQuery.Aggregate.SUM, BigDecimal.class);
+					.aggregate(I_M_MatchInv.COLUMNNAME_Qty, Aggregate.SUM, BigDecimal.class);
 			if (qtyReceived == null)
 			{
 				qtyReceived = BigDecimal.ZERO;

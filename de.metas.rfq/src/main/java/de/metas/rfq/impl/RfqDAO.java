@@ -9,7 +9,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.util.TimeUtil;
 
 import de.metas.rfq.IRfqDAO;
@@ -284,7 +284,7 @@ public class RfqDAO implements IRfqDAO
 	{
 		final BigDecimal qtyPromised = retrieveResponseQtysQuery(rfqResponseLine)
 				.create()
-				.aggregate(I_C_RfQResponseLineQty.COLUMNNAME_QtyPromised, IQuery.Aggregate.SUM, BigDecimal.class);
+				.aggregate(I_C_RfQResponseLineQty.COLUMNNAME_QtyPromised, Aggregate.SUM, BigDecimal.class);
 		if(qtyPromised == null)
 		{
 			return BigDecimal.ZERO;

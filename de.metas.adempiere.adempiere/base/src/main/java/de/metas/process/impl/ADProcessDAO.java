@@ -21,7 +21,7 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Process_Stats;
@@ -283,7 +283,7 @@ public class ADProcessDAO implements IADProcessDAO
 				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, process.getAD_Process_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.aggregate(I_AD_Process_Para.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, Integer.class);
+				.aggregate(I_AD_Process_Para.COLUMNNAME_SeqNo, Aggregate.MAX, Integer.class);
 		return lastSeqNo == null ? 0 : lastSeqNo;
 	}
 

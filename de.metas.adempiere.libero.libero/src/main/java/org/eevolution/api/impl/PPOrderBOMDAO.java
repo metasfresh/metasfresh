@@ -37,7 +37,7 @@ import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.Query;
 import org.eevolution.api.IPPOrderBOMDAO;
@@ -213,7 +213,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 
 		Integer maxLine = queryBuilder
 				.create()
-				.aggregate(I_PP_Order_BOMLine.COLUMNNAME_Line, IQuery.Aggregate.MAX, Integer.class);
+				.aggregate(I_PP_Order_BOMLine.COLUMNNAME_Line, Aggregate.MAX, Integer.class);
 
 		if (maxLine == null)
 		{

@@ -38,7 +38,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.util.DB;
@@ -108,7 +108,7 @@ public class GLJournalLineDAO implements IGLJournalLineDAO
 				.createQueryBuilder(I_GL_JournalLine.class, glJournal)
 				.addEqualsFilter(I_GL_JournalLine.COLUMN_GL_Journal_ID, glJournal.getGL_Journal_ID())
 				.create()
-				.aggregate(I_GL_JournalLine.COLUMNNAME_GL_JournalLine_Group, IQuery.Aggregate.MAX, Integer.class);
+				.aggregate(I_GL_JournalLine.COLUMNNAME_GL_JournalLine_Group, Aggregate.MAX, Integer.class);
 
 		if (lastGroupNo == null)
 		{
@@ -146,7 +146,7 @@ public class GLJournalLineDAO implements IGLJournalLineDAO
 				.createQueryBuilder(I_GL_JournalLine.class, glJournal)
 				.addEqualsFilter(I_GL_JournalLine.COLUMN_GL_Journal_ID, glJournal.getGL_Journal_ID())
 				.create()
-				.aggregate(I_GL_JournalLine.COLUMNNAME_Line, IQuery.Aggregate.MAX, Integer.class);
+				.aggregate(I_GL_JournalLine.COLUMNNAME_Line, Aggregate.MAX, Integer.class);
 
 		if (lastLineNo == null)
 		{

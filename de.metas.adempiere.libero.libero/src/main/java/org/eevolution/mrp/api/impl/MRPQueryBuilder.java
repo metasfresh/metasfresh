@@ -45,6 +45,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -378,7 +379,7 @@ import lombok.NonNull;
 				// create query
 				.create()
 				// Sum UP the Qty
-				.aggregate(I_PP_MRP.COLUMNNAME_Qty, IQuery.Aggregate.SUM, BigDecimal.class);
+				.aggregate(I_PP_MRP.COLUMNNAME_Qty, Aggregate.SUM, BigDecimal.class);
 
 		if (qty == null)
 		{
