@@ -50,7 +50,7 @@ public class AD_Table_ScriptValidator
 					.addEqualsFilter(I_AD_Table_ScriptValidator.COLUMN_AD_Table_ID, validator.getAD_Table_ID())
 					.addEqualsFilter(I_AD_Table_ScriptValidator.COLUMN_EventModelValidator, validator.getEventModelValidator())
 					.create()
-					.aggregate(I_AD_Table_ScriptValidator.COLUMN_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
+					.aggregate(I_AD_Table_ScriptValidator.COLUMN_SeqNo, IQuery.Aggregate.MAX, Integer.class);
 
 			final int seqNo = (lastSeqNo == null ? 0 : lastSeqNo) + 10;
 			validator.setSeqNo(seqNo);

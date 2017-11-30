@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
@@ -581,30 +579,24 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	/**
 	 * Aggregate given expression on this criteria
 	 *
-	 * @param sqlExpression
-	 * @param sqlFunction
-	 * @return aggregated value
-	 * @throws DBException
 	 */
-	public BigDecimal aggregate(final String sqlExpression, final String sqlFunction) throws DBException
+	public BigDecimal aggregate(
+			final String sqlExpression,
+			@NonNull final Aggregate aggregateType) throws DBException
 	{
-		return aggregate(sqlExpression, sqlFunction, BigDecimal.class);
+		return aggregate(sqlExpression, aggregateType, BigDecimal.class);
 	}
 
 	/**
 	 * Aggregate given expression on this criteria
-	 *
-	 * @param <AT>
-	 * @param columnName
-	 * @param sqlFunction
-	 * @param returnType
-	 * @return aggregated value
-	 * @throws DBException
 	 */
 	@Override
-	public <AT> AT aggregate(final String columnName, final String sqlFunction, final Class<AT> returnType) throws DBException
+	public <AT> AT aggregate(
+			final String columnName,
+			final Aggregate aggregateType,
+			final Class<AT> returnType) throws DBException
 	{
-		final List<AT> list = aggregateList(columnName, sqlFunction, returnType);
+		final List<AT> list = aggregateList(columnName, aggregateType, returnType);
 
 		if (list.isEmpty())
 		{
@@ -620,11 +612,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	public <AT> List<AT> aggregateList(
 			@NonNull String sqlExpression,
-			@Nullable final String sqlFunction,
+			@NonNull final Aggregate aggregateType,
 			@NonNull final Class<AT> returnType)
 	{
 		// NOTE: it's OK to have the sqlFunction null. Methods like first(columnName, valueClass) are relying on this.
-		// if (Check.isEmpty(sqlFunction, true)) throw new DBException("No Aggregate Function defined");
+		// if (Check.isEmpty(aggregateType.sqlFunction, true)) throw new DBException("No Aggregate Function defined");
 
 		if (postQueryFilter != null)
 		{
@@ -641,32 +633,32 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		if (Check.isEmpty(sqlExpression, true))
 		{
-			if (AGGREGATE_COUNT == sqlFunction)
+			if (Aggregate.COUNT.equals(aggregateType))
 			{
 				sqlExpression = "*";
 			}
 			else
 			{
-				throw new DBException("No Expression defined");
+				throw new DBException("No SQL expression defined");
 			}
 		}
 
 		final List<AT> result = new ArrayList<>();
 
 		final StringBuilder sqlSelect = new StringBuilder("SELECT ");
-		if (sqlFunction == null)
+		if (aggregateType.sqlFunction == null)
 		{
 			sqlSelect.append(sqlExpression);
 		}
 		else
 		{
-			sqlSelect.append(sqlFunction).append("(").append(sqlExpression).append(")");
+			sqlSelect
+			.append(aggregateType.sqlFunction)
+			.append("(").append(sqlExpression).append(")");
 		}
 		sqlSelect.append(" FROM ").append(getSqlFrom());
 
-		// we might or might not need the order-by-clause. E.g. when we do first/distinct etc, we do need ordering.
-		final boolean useOrderByClause = true;
-		final String sql = buildSQL(sqlSelect, useOrderByClause);
+		final String sql = buildSQL(sqlSelect, aggregateType.useOrderByClause);
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -704,14 +696,14 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public final <AT> List<AT> listDistinct(final String columnName, final Class<AT> valueType)
 	{
-		return aggregateList(columnName, AGGREGATE_DISTINCT, valueType);
+		return aggregateList(columnName, Aggregate.DISTINCT, valueType);
 	}
 
 	@Override
 	public <AT> AT first(final String columnName, final Class<AT> valueType)
 	{
 		setLimit(1, 0);
-		final List<AT> result = aggregateList(columnName, null, valueType);
+		final List<AT> result = aggregateList(columnName, Aggregate.FIRST, valueType);
 		if (result == null || result.isEmpty())
 		{
 			return null;
@@ -795,7 +787,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public int count() throws DBException
 	{
-		return aggregate("*", AGGREGATE_COUNT).intValue();
+		return aggregate("*", Aggregate.COUNT).intValue();
 	}
 
 	/**
@@ -806,7 +798,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 */
 	public BigDecimal sum(final String sqlExpression)
 	{
-		return aggregate(sqlExpression, AGGREGATE_SUM);
+		return aggregate(sqlExpression, Aggregate.SUM);
 	}
 
 	@Override

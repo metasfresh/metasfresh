@@ -10,12 +10,12 @@ package de.metas.handlingunits.receiptschedule.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -152,7 +152,7 @@ public class HUReceiptScheduleDAO implements IHUReceiptScheduleDAO
 				.createRsaForRsQueryBuilder(schedule, I_M_ReceiptSchedule_Alloc.class)
 				.addOnlyActiveRecordsFilter() // make sure we are counting only active records
 				.create()
-				.aggregate(I_M_ReceiptSchedule_Alloc.COLUMNNAME_HU_QtyAllocated, IQuery.AGGREGATE_SUM, BigDecimal.class);
+				.aggregate(I_M_ReceiptSchedule_Alloc.COLUMNNAME_HU_QtyAllocated, IQuery.Aggregate.SUM, BigDecimal.class);
 
 		return huQtyAllocated;
 	}

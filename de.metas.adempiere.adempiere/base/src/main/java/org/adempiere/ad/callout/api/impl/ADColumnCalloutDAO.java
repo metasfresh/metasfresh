@@ -98,7 +98,7 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 				.addEqualsFilter(I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID, adColumnId)
 				//
 				.create()
-				.aggregate(I_AD_ColumnCallout.COLUMNNAME_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_AD_ColumnCallout.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, Integer.class);
 
 		if (lastSeqNo == null || lastSeqNo < 0)
 		{

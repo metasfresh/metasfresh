@@ -196,7 +196,7 @@ public class GLDistributionDAO implements IGLDistributionDAO
 				.addEqualsFilter(I_GL_DistributionLine.COLUMN_GL_Distribution_ID, glDistribution.getGL_Distribution_ID())
 				//
 				.create()
-				.aggregate(I_GL_DistributionLine.COLUMNNAME_Line, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_GL_DistributionLine.COLUMNNAME_Line, IQuery.Aggregate.MAX, Integer.class);
 
 		return lastLineNo == null ? 0 : lastLineNo;
 	}

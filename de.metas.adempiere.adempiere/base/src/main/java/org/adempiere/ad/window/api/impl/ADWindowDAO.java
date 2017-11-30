@@ -173,7 +173,7 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		final Integer lastSeqNo = retrieveUIElementGroupsQuery(uiColumn)
 				.create()
-				.aggregate(I_AD_UI_ElementGroup.COLUMN_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_AD_UI_ElementGroup.COLUMN_SeqNo, IQuery.Aggregate.MAX, Integer.class);
 		return nextSeqNo(lastSeqNo);
 	}
 
@@ -204,7 +204,7 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		final Integer lastSeqNo = retrieveUIElementsQuery(uiElementGroup)
 				.create()
-				.aggregate(I_AD_UI_Element.COLUMN_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_AD_UI_Element.COLUMN_SeqNo, IQuery.Aggregate.MAX, Integer.class);
 		return nextSeqNo(lastSeqNo);
 	}
 

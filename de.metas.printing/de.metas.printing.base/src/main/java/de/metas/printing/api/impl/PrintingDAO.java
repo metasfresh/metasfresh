@@ -10,12 +10,12 @@ package de.metas.printing.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,13 +30,12 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
-import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
@@ -113,12 +112,12 @@ public class PrintingDAO extends AbstractPrintingDAO
 
 		if (seqNo == SEQNO_First)
 		{
-			final Integer min = query.aggregate(I_C_Print_Job_Line.COLUMNNAME_SeqNo, Query.AGGREGATE_MIN, Integer.class);
+			final Integer min = query.aggregate(I_C_Print_Job_Line.COLUMNNAME_SeqNo, Aggregate.MIN, Integer.class);
 			return min == null ? -1 : min.intValue();
 		}
 		else if (seqNo == SEQNO_Last)
 		{
-			final Integer max = query.aggregate(I_C_Print_Job_Line.COLUMNNAME_SeqNo, Query.AGGREGATE_MAX, Integer.class);
+			final Integer max = query.aggregate(I_C_Print_Job_Line.COLUMNNAME_SeqNo, Aggregate.MAX, Integer.class);
 			return max == null ? -1 : max.intValue();
 		}
 		else
@@ -226,8 +225,8 @@ public class PrintingDAO extends AbstractPrintingDAO
 	}
 
 	@Override
-	public IQuery<I_C_Printing_Queue> createQuery(final Properties ctx, 
-			final IPrintingQueueQuery queueQuery, 
+	public IQuery<I_C_Printing_Queue> createQuery(final Properties ctx,
+			final IPrintingQueueQuery queueQuery,
 			final String trxName)
 	{
 		final StringBuilder whereClause = new StringBuilder("1=1");

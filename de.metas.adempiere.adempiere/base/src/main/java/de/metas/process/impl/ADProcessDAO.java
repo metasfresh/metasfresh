@@ -283,7 +283,7 @@ public class ADProcessDAO implements IADProcessDAO
 				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, process.getAD_Process_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.aggregate(I_AD_Process_Para.COLUMNNAME_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_AD_Process_Para.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, Integer.class);
 		return lastSeqNo == null ? 0 : lastSeqNo;
 	}
 
@@ -374,7 +374,7 @@ public class ADProcessDAO implements IADProcessDAO
 	 * overwrites existing data
 	 * (including translations)
 	 * and saves
-	 * 
+	 *
 	 * @param sourcePara
 	 */
 	private I_AD_Process_Para copyAD_Process_Para(final I_AD_Process targetProcess, final I_AD_Process_Para sourcePara)

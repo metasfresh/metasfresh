@@ -10,12 +10,12 @@ package org.adempiere.acct.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -108,7 +108,7 @@ public class GLJournalLineDAO implements IGLJournalLineDAO
 				.createQueryBuilder(I_GL_JournalLine.class, glJournal)
 				.addEqualsFilter(I_GL_JournalLine.COLUMN_GL_Journal_ID, glJournal.getGL_Journal_ID())
 				.create()
-				.aggregate(I_GL_JournalLine.COLUMNNAME_GL_JournalLine_Group, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_GL_JournalLine.COLUMNNAME_GL_JournalLine_Group, IQuery.Aggregate.MAX, Integer.class);
 
 		if (lastGroupNo == null)
 		{
@@ -146,13 +146,13 @@ public class GLJournalLineDAO implements IGLJournalLineDAO
 				.createQueryBuilder(I_GL_JournalLine.class, glJournal)
 				.addEqualsFilter(I_GL_JournalLine.COLUMN_GL_Journal_ID, glJournal.getGL_Journal_ID())
 				.create()
-				.aggregate(I_GL_JournalLine.COLUMNNAME_Line, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_GL_JournalLine.COLUMNNAME_Line, IQuery.Aggregate.MAX, Integer.class);
 
 		if (lastLineNo == null)
 		{
 			return 0;
 		}
 		return lastLineNo;
-		
+
 	}
 }
