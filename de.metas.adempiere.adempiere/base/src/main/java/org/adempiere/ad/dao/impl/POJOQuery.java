@@ -23,6 +23,7 @@ package org.adempiere.ad.dao.impl;
  */
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.BiFunction;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -168,7 +170,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public POJOQuery<T> copy()
 	{
-		final POJOQuery<T> queryNew = new POJOQuery<T>(modelClass);
+		final POJOQuery<T> queryNew = new POJOQuery<>(modelClass);
 		queryNew.filters.addFilters(filters.getFilters());
 		queryNew.orderBy = this.orderBy;
 		queryNew.options = this.options == null ? null : new HashMap<>(this.options);
@@ -239,7 +241,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			return Collections.emptyList();
 		}
 
-		final List<ET> resultCasted = new ArrayList<ET>(result.size());
+		final List<ET> resultCasted = new ArrayList<>(result.size());
 		for (final T model : result)
 		{
 			if (limit > 0 && resultCasted.size() >= limit)
@@ -521,7 +523,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		return this;
 	}
-	
+
 	@Override
 	public POJOQuery<T> setNotInSelection(final int AD_PInstance_ID)
 	{
@@ -565,9 +567,10 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	public <AT> AT aggregate(final String columnName, final String sqlFunction, final Class<AT> returnType) throws DBException
 	{
 		AT result = null;
+		final BiFunction<Object, Object, AT> aggregateOperator;
 		if (AGGREGATE_SUM.equals(sqlFunction))
 		{
-			Check.assume(BigDecimal.class.equals(returnType), "Return type shall be {} and not {}", BigDecimal.class, returnType);
+			aggregateOperator = getSumOperator(returnType);
 
 			// Setup initial result
 			@SuppressWarnings("unchecked")
@@ -576,9 +579,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		}
 		else if (AGGREGATE_MAX.equals(sqlFunction))
 		{
-
-			Check.assume(BigDecimal.class.equals(returnType)
-					|| Integer.class.equals(returnType), "Return type shall be {}, {} and not {}", BigDecimal.class, Integer.class, returnType);
+			aggregateOperator = getMaxOperator(returnType);
 
 			// Setup initial result
 			result = null;
@@ -592,68 +593,94 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		for (final T model : models)
 		{
 			final Object valueObj = InterfaceWrapperHelper.getValue(model, columnName).orNull();
-			if (AGGREGATE_SUM.equals(sqlFunction))
+			if (valueObj == null)
 			{
-				Check.assumeInstanceOfOrNull(valueObj, BigDecimal.class, "value");
-				if (valueObj != null)
-				{
-					final BigDecimal valueBD = (BigDecimal)valueObj;
-					final BigDecimal resultBD = (BigDecimal)result;
-
-					@SuppressWarnings("unchecked")
-					final AT resultNew = (AT)resultBD.add(valueBD);
-					result = resultNew;
-				}
+				// skip null values
+				continue;
 			}
-			else if (AGGREGATE_MAX.equals(sqlFunction))
-			{
-				if (valueObj == null)
-				{
-					// skip null values
-					continue;
-				}
 
-				final BigDecimal valueBD;
-				if (valueObj instanceof BigDecimal)
-				{
-					valueBD = (BigDecimal)valueObj;
-				}
-				else if (valueObj instanceof Integer)
-				{
-					final Integer valueInt = (Integer)valueObj;
-					valueBD = BigDecimal.valueOf(valueInt);
-				}
-				else
-				{
-					throw new AdempiereException("Unsupported value '" + valueObj + "' (class=" + valueObj.getClass() + ") on model=" + model);
-				}
-
-				final BigDecimal resultBD = (BigDecimal)result;
-
-				@SuppressWarnings("unchecked")
-				final AT resultNew = (AT)(resultBD == null ? valueBD : resultBD.max(valueBD));
-				result = resultNew;
-			}
-			else
-			{
-				throw new DBException("SQL Function '" + sqlFunction + "' not implemented");
-			}
+			result = aggregateOperator.apply(result, valueObj);
 		}
 
 		if (Integer.class.equals(returnType))
 		{
-			final BigDecimal resultBD = (BigDecimal)result;
-			if (resultBD == null)
+			final Number resultNumber = (Number)result;
+			if (resultNumber == null)
 			{
 				result = (AT)(Integer)0;
 			}
 			else
 			{
-				result = (AT)(Integer)resultBD.intValueExact();
+				result = (AT)(Integer)resultNumber.intValue();
 			}
 		}
 
 		return result;
+	}
+
+	private static final <R> BiFunction<Object, Object, R> getSumOperator(final Class<R> type)
+	{
+		if (BigDecimal.class.equals(type))
+		{
+			return (result, value) -> {
+				final BigDecimal resultBD = (BigDecimal)result;
+				final BigDecimal valueBD = (BigDecimal)value;
+				@SuppressWarnings("unchecked")
+				final R newResult = (R)(resultBD == null ? valueBD : resultBD.add(valueBD));
+				return newResult;
+			};
+		}
+		else
+		{
+			throw new AdempiereException("Unsupported returnType '" + type + "' for SUM aggregation");
+		}
+	}
+
+	private static final <R> BiFunction<Object, Object, R> getMaxOperator(final Class<R> type)
+	{
+		if (BigDecimal.class.equals(type))
+		{
+			return (result, value) -> {
+				final BigDecimal resultBD = (BigDecimal)result;
+				final BigDecimal valueBD = (BigDecimal)value;
+				@SuppressWarnings("unchecked")
+				final R newResult = (R)(resultBD == null ? valueBD : resultBD.max(valueBD));
+				return newResult;
+			};
+		}
+		else if (Integer.class.equals(type))
+		{
+			return (result, value) -> {
+				final Integer resultInt = (Integer)result;
+				final Integer valueInt = (Integer)value;
+				@SuppressWarnings("unchecked")
+				final R newResult = (R)(resultInt == null ? valueInt : (Integer)Math.max(resultInt, valueInt));
+				return newResult;
+			};
+		}
+		else if (Timestamp.class.equals(type))
+		{
+			return (result, value) -> {
+				final Timestamp resultTS = (Timestamp)result;
+				final Timestamp valueTS = (Timestamp)value;
+				if (resultTS == null)
+				{
+					@SuppressWarnings("unchecked")
+					final R newResult = (R)valueTS;
+					return newResult;
+				}
+				else
+				{
+					@SuppressWarnings("unchecked")
+					final R newResult = (R)(resultTS.compareTo(valueTS) >= 0 ? resultTS : valueTS);
+					return newResult;
+				}
+			};
+		}
+		else
+		{
+			throw new AdempiereException("Unsupported returnType '" + type + "' for MAX aggregation");
+		}
 	}
 
 	@Override
@@ -750,7 +777,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	public List<Integer> listIds()
 	{
 		final List<T> records = list();
-		final List<Integer> idsList = new ArrayList<Integer>(records.size());
+		final List<Integer> idsList = new ArrayList<>(records.size());
 		for (final T record : records)
 		{
 			final int id = InterfaceWrapperHelper.getId(record);
@@ -822,16 +849,16 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		return result;
 	}
-	
+
 	@Override
 	public <AT> AT first(final String columnName, final Class<AT> valueType)
 	{
 		final List<T> records = list();
-		if(records.isEmpty())
+		if (records.isEmpty())
 		{
 			return null;
 		}
-		
+
 		final T record = records.get(0);
 
 		final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName).orNull();
@@ -841,11 +868,10 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		return value;
 	}
 
-
 	@Override
 	public void addUnion(final IQuery<T> query, final boolean distinct)
 	{
-		final SqlQueryUnion<T> sqlQueryUnion = new SqlQueryUnion<T>(query, distinct);
+		final SqlQueryUnion<T> sqlQueryUnion = new SqlQueryUnion<>(query, distinct);
 		if (unions == null)
 		{
 			unions = new ArrayList<>();
@@ -881,10 +907,10 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	protected <ToModelType> QueryInsertExecutorResult executeInsert(final QueryInsertExecutor<ToModelType, T> queryInserter)
 	{
 		Check.assume(!queryInserter.isEmpty(), "At least one column to be inserted needs to be specified: {}", queryInserter);
-		
-		if(queryInserter.isCreateSelectionOfInsertedRows())
+
+		if (queryInserter.isCreateSelectionOfInsertedRows())
 		{
-			throw new UnsupportedOperationException("CreateSelectionOfInsertedRows not supported for "+queryInserter);
+			throw new UnsupportedOperationException("CreateSelectionOfInsertedRows not supported for " + queryInserter);
 		}
 		final int insertSelectionId = -1;
 
