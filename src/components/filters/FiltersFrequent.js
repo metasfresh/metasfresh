@@ -48,9 +48,11 @@ class FiltersFrequent extends Component {
         return (
             <div className="filter-wrapper">
                 {data.map((item, index) => {
-                    const filterType = item.parameters[0].widgetType;
+                    const parameter = item.parameters[0];
+                    const filterType = parameter.widgetType;
                     const isActive = this.isActive(item.filterId);
                     const dateStepper = (
+                        parameter.showIncrementDecrementButtons &&
                         isActive &&
                         TableCell.DATE_FIELD_TYPES.includes(filterType) &&
                         !TableCell.TIME_FIELD_TYPES.includes(filterType)
