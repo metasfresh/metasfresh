@@ -217,6 +217,24 @@ class DocumentList extends Component {
             }
 
             if(fullyChanged == true){
+                const { store } = this.context;
+                const {
+                    dispatch, windowType
+                } = this.props;
+                const { viewId } = this.state;
+                const selection = getSelection({
+                    state: store.getState(),
+                    windowType,
+                    viewId,
+                });
+
+                // Reload Attributes after QuickAction is done
+                selection.length && dispatch(selectTableItems({
+                    windowType,
+                    viewId,
+                    ids: selection[0],
+                }));
+
                 this.browseView();
                 this.updateQuickActions();
             }
