@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#937](https://github.com/metasfresh/metasfresh/issues/937) Increase Performance by disabling statistics info
+    * Internal Housekeeping Issue, switching off the statistics creation in System Table.
   * [#3094}(https://github.com/metasfresh/metasfresh/issues/3094) Activity ID in Purchase Orderline Grid View
     * New field in purchase orderline, allowing to see and maintain the activity in grid view.
   * [#3095](https://github.com/metasfresh/metasfresh/issues/3095) WebUI: new Window for AD_Session in WebUI
