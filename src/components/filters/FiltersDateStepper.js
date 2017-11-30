@@ -22,18 +22,28 @@ export default class FiltersDateStepper extends Component {
     handleClick = () => {
         const { active, applyFilters, filter, next } = this.props;
 
+        const step = next ? 1 : -1;
         const activeParameter = active.parameters[0];
         const date = new Date(activeParameter.value);
-        date.setDate(date.getDate() + (next ? 1 : -1));
+        date.setDate(date.getDate() + step);
+
+        const parameter = {
+            ...filter.parameters[0],
+            ...activeParameter,
+            value: Moment(date).format(DATE_FORMAT)
+        };
+
+        const valueTo = activeParameter.valueTo;
+        if (valueTo) {
+            const dateTo = new Date(valueTo);
+            dateTo.setDate(dateTo.getDate() + step);
+            parameter.valueTo = Moment(dateTo).format(DATE_FORMAT);
+        }
 
         applyFilters({
             ...filter,
             ...active,
-            parameters: [{
-                ...filter.parameters[0],
-                ...activeParameter,
-                value: Moment(date).format(DATE_FORMAT)
-            }]
+            parameters: [parameter]
         });
     };
 
