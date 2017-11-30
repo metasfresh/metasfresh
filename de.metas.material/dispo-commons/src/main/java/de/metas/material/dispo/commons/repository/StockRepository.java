@@ -142,7 +142,7 @@ public class StockRepository
 	{
 		return ResultGroupAddRequest.builder()
 				.productId(stockRecord.getM_Product_ID())
-				.bpartnerId(MaterialQuery.BPARTNER_ID_NONE) // TODO: https://github.com/metasfresh/metasfresh/issues/3098
+				.bpartnerId(stockRecord.getC_BPartner_ID())
 				.warehouseId(stockRecord.getM_Warehouse_ID())
 				.storageAttributesKey(StorageAttributesKey.ofString(stockRecord.getStorageAttributesKey()))
 				.qty(stockRecord.getQty())

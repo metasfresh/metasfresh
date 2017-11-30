@@ -9,11 +9,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.logging.LogManager;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.StorageAttributesKey;
@@ -30,12 +28,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,10 +43,8 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 /* package */ final class StockRepositorySqlHelper
 {
-	private static final Logger logger = LogManager.getLogger(StockRepositorySqlHelper.class);
-
 	@VisibleForTesting
-	public static IQueryBuilder<I_MD_Candidate_Stock_v> createDBQueryForMaterialQuery(@NonNull final MaterialQuery query)
+	public IQueryBuilder<I_MD_Candidate_Stock_v> createDBQueryForMaterialQuery(@NonNull final MaterialQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_MD_Candidate_Stock_v> queryBuilder = queryBL.createQueryBuilder(I_MD_Candidate_Stock_v.class);
@@ -75,7 +71,6 @@ import lombok.experimental.UtilityClass;
 
 		//
 		// BPartner
-		// FIXME fix/uncomment the code on https://github.com/metasfresh/metasfresh/issues/3098
 		final int bpartnerId = query.getBpartnerId();
 		if (bpartnerId == MaterialQuery.BPARTNER_ID_ANY)
 		{
@@ -83,19 +78,17 @@ import lombok.experimental.UtilityClass;
 		}
 		else if (bpartnerId == MaterialQuery.BPARTNER_ID_NONE)
 		{
-			// queryBuilder.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_C_BPartner_ID, null);
-			logger.warn("Ignoring BPartnerId from query because it's not implemented yet: {}", query);
+			queryBuilder.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_C_BPartner_ID, null);
 		}
 		else
 		{
-			// queryBuilder.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_C_BPartner_ID, bpartnerId);
-			logger.warn("Ignoring BPartnerId from query because it's not implemented yet: {}", query);
+			queryBuilder.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_C_BPartner_ID, bpartnerId);
 		}
 
 		//
 		// Storage Attributes Key
 		queryBuilder.filter(createANDFilterForStorageAttributesKeys(query));
-		
+
 		//
 		return queryBuilder;
 	}
@@ -112,7 +105,7 @@ import lombok.experimental.UtilityClass;
 			final IQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey = createANDFilterForStorageAttributesKey(query, storageAttributesKey);
 			orFilterForDifferentStorageAttributesKeys.addFilter(andFilterForCurrentStorageAttributesKey);
 		}
-		
+
 		return orFilterForDifferentStorageAttributesKeys;
 	}
 
