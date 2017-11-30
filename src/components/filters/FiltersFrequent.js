@@ -55,6 +55,15 @@ class FiltersFrequent extends Component {
                         TableCell.DATE_FIELD_TYPES.includes(filterType) &&
                         !TableCell.TIME_FIELD_TYPES.includes(filterType)
                     );
+                    const activeParameter = (
+                        isActive && active[index].parameters[0]
+                    );
+                    const caption = isActive && TableCell.fieldValueToString(
+                        activeParameter.valueTo
+                            ? [activeParameter.value, activeParameter.valueTo]
+                            : activeParameter.value,
+                        filterType
+                    );
 
                     return (
                         <div className="filter-wrapper" key={index}>
@@ -80,11 +89,7 @@ class FiltersFrequent extends Component {
                             >
                                 <i className="meta-icon-preview" />
                                 {isActive
-                                    ? `${item.caption}: ${
-                                        TableCell.fieldValueToString(
-                                            active[index].parameters[0].value,
-                                            filterType
-                                        )}`
+                                    ? `${item.caption}: ${caption}`
                                     : `${counterpart.translate(
                                             'window.filters.caption2'
                                         )}: ${item.caption}`

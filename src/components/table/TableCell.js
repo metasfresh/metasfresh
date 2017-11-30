@@ -79,6 +79,12 @@ class TableCell extends Component {
 
         switch (typeof fieldValue) {
             case 'object': {
+                if (Array.isArray(fieldValue)) {
+                    return fieldValue.map(
+                        value => TableCell.fieldValueToString(value, fieldType)
+                    ).join(' - ');
+                }
+
                 return TableCell.DATE_FIELD_TYPES.includes(fieldType)
                     ? TableCell.createDate(fieldValue, fieldType)
                     : fieldValue.caption;
