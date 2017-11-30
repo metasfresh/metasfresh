@@ -57,7 +57,13 @@ class FiltersFrequent extends Component {
 
                     return (
                         <div className="filter-wrapper" key={index}>
-                            {dateStepper && <FiltersDateStepper />}
+                            {dateStepper && (
+                                <FiltersDateStepper
+                                    active={active[index]}
+                                    applyFilters={applyFilters}
+                                    filter={item}
+                                />
+                            )}
 
                             <button
                                 onClick={() => this.toggleFilter(index, item)}
@@ -84,7 +90,14 @@ class FiltersFrequent extends Component {
                                 }
                             </button>
 
-                            {dateStepper && <FiltersDateStepper next />}
+                            {dateStepper && (
+                                <FiltersDateStepper
+                                    active={active[index]}
+                                    applyFilters={applyFilters}
+                                    filter={item}
+                                    next
+                                />
+                            )}
 
                             {openFilterId === index &&
                                 <FiltersItem
