@@ -29,6 +29,8 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2946](https://github.com/metasfresh/metasfresh/issues/2946) Product: New Field Endcustomer productname and translation
     * Adding new fields for endcustomer productname for product labels and translation.
+  * [#2977](https://github.com/metasfresh/metasfresh/issues/2977) Tab Org Access not working in WebUI because of missing primary key
+    * Adding a primary Key to Orgaccess Table, allowing to create records in User Window subtab.
   * [#3087](https://github.com/metasfresh/metasfresh/issues/3087) Get rid of group columns in new window for procurement stock count
     * Adjusting the window Purchase Stock Control and adding Translation for en_US.
 
