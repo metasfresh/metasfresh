@@ -56,6 +56,7 @@ class TableCell extends Component {
         DateTime: 'DD.MM.YYYY HH:mm:ss',
         Time: 'HH:mm:ss'
     };
+    static TIME_FIELD_TYPES = ['Time'];
 
     static getDateFormat = fieldType => (
         TableCell.DATE_FIELD_FORMATS[fieldType] ||

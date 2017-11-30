@@ -51,8 +51,9 @@ class FiltersFrequent extends Component {
                     const filterType = item.parameters[0].widgetType;
                     const isActive = this.isActive(item.filterId);
                     const dateStepper = (
+                        isActive &&
                         TableCell.DATE_FIELD_TYPES.includes(filterType) &&
-                        isActive
+                        !TableCell.TIME_FIELD_TYPES.includes(filterType)
                     );
 
                     return (
