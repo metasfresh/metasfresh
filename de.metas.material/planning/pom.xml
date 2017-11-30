@@ -1,14 +1,16 @@
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>de.metas.material</groupId>
 		<artifactId>metasfresh-material</artifactId>
-		<version>10.0.0</version>
+		<version>[1,10.0.0]</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
+	<version>10.0.0</version>
 	<artifactId>metasfresh-material-planning</artifactId>
 	<packaging>jar</packaging>
 
@@ -17,43 +19,44 @@ Not sure if this shall be a dedicated service..it depends on how well we will be
 
 	<properties>
 		<migration-sql-basedir>75-material-planning</migration-sql-basedir>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
 	<dependencies>
-	
+
 		<!-- metasfresh -->
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
-		
-		<!-- we need to include this now because we need UOM-conversion; 
-		The UOM-conversion logic is coupled with the product logic (because of product specific conversion rates) and i don't want to pull all of this code into base.
-		We will rather extract the stuff into a dedicated product and/or UOM library.
-		-->
+
+		<!-- we need to include this now because we need UOM-conversion; The UOM-conversion 
+			logic is coupled with the product logic (because of product specific conversion 
+			rates) and i don't want to pull all of this code into base. We will rather 
+			extract the stuff into a dedicated product and/or UOM library. -->
 		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -61,15 +64,20 @@ Not sure if this shall be a dedicated service..it depends on how well we will be
 		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-event</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-event</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
 		</dependency>
 
-		<!--
-			Lombok
-			See https://github.com/metasfresh/metasfresh/issues/1125
-			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
-			Also note that the version is managed by spring-boot.
-		 -->
+
+		<!-- Lombok See https://github.com/metasfresh/metasfresh/issues/1125 NOTE: 
+			if you don't need fancy things like @SneakyThrows then scope 'provided' it's 
+			totally fine Also note that the version is managed by spring-boot. -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>

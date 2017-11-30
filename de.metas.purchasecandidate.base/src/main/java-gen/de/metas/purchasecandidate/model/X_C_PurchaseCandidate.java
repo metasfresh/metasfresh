@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1320420482L;
+	private static final long serialVersionUID = 1958824287L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -24,10 +24,12 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
       /** if (C_PurchaseCandidate_ID == 0)
         {
 			setC_OrderLineSO_ID (0);
+			setC_OrderSO_ID (0);
 			setC_PurchaseCandidate_ID (0);
 			setC_UOM_ID (0);
 			setDatePromised (new Timestamp( System.currentTimeMillis() ));
 			setM_Product_ID (0);
+			setM_Warehouse_ID (0);
 			setProcessed (false); // N
 			setProcessing (false); // N
 			setQtyRequiered (BigDecimal.ZERO);
@@ -49,6 +51,40 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLinePO() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLinePO_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLinePO(org.compiere.model.I_C_OrderLine C_OrderLinePO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLinePO_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLinePO);
+	}
+
+	/** Set Bestellposition.
+		@param C_OrderLinePO_ID Bestellposition	  */
+	@Override
+	public void setC_OrderLinePO_ID (int C_OrderLinePO_ID)
+	{
+		if (C_OrderLinePO_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderLinePO_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderLinePO_ID, Integer.valueOf(C_OrderLinePO_ID));
+	}
+
+	/** Get Bestellposition.
+		@return Bestellposition	  */
+	@Override
+	public int getC_OrderLinePO_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLinePO_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_C_OrderLine getC_OrderLineSO() throws RuntimeException
@@ -82,6 +118,43 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public int getC_OrderLineSO_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLineSO_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_OrderSO() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_OrderSO(org.compiere.model.I_C_Order C_OrderSO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class, C_OrderSO);
+	}
+
+	/** Set Auftrag.
+		@param C_OrderSO_ID 
+		Auftrag
+	  */
+	@Override
+	public void setC_OrderSO_ID (int C_OrderSO_ID)
+	{
+		if (C_OrderSO_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderSO_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderSO_ID, Integer.valueOf(C_OrderSO_ID));
+	}
+
+	/** Get Auftrag.
+		@return Auftrag
+	  */
+	@Override
+	public int getC_OrderSO_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderSO_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -197,6 +270,43 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
+	}
+
+	@Override
+	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
+	}
+
+	/** Set Lager.
+		@param M_Warehouse_ID 
+		Lager oder Ort für Dienstleistung
+	  */
+	@Override
+	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+	}
+
+	/** Get Lager.
+		@return Lager oder Ort für Dienstleistung
+	  */
+	@Override
+	public int getM_Warehouse_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

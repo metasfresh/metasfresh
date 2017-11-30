@@ -4,6 +4,7 @@ import org.eevolution.model.I_DD_Order;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,7 +39,9 @@ import lombok.Value;
 @Builder
 public class DistributionAdvisedEvent implements MaterialEvent
 {
-	public static final String TYPE = "DistributionPlanEvent";
+	public static final String TYPE = "DistributionAdvisedEvent";
+
+	SupplyRequiredDescriptor supplyRequiredDescriptor;
 
 	@NonNull
 	EventDescriptor eventDescriptor;
@@ -47,7 +50,8 @@ public class DistributionAdvisedEvent implements MaterialEvent
 	DDOrder ddOrder;
 
 	/**
-	 * Note: this field is a bit redundant because the {@link #getPpOrder()}'s lines contain a network distribution line with this info. However, the material-dispo code doesn't know or care about how to get to that information.
+	 * Note: this field is a bit redundant because the {@link #getPpOrder()}'s lines contain a network distribution line with this info.<br>
+	 * However, the material-dispo code doesn't know or care about how to get to that information.
 	 */
 	@NonNull
 	Integer fromWarehouseId;

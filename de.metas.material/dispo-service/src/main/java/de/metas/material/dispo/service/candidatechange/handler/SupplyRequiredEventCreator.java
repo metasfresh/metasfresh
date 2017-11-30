@@ -6,9 +6,11 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
+import de.metas.material.event.commons.SupplyRequiredDescriptor.SupplyRequiredDescriptorBuilder;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -37,19 +39,17 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class SupplyRequiredEventCreator
 {
-	public SupplyRequiredEvent createMaterialDemandEvent(
+	public SupplyRequiredEvent createSupplyRequiredEvent(
 			@NonNull final Candidate demandCandidate,
 			@NonNull final BigDecimal requiredAdditionalQty)
 	{
 		verifyCandidateType(demandCandidate);
 
-		final int orderLineId = demandCandidate.getDemandDetail() == null ? 0
-				: demandCandidate.getDemandDetail().getOrderLineId();
+		final SupplyRequiredDescriptor descriptor = createdSupplyRequiredDescriptor(demandCandidate, requiredAdditionalQty);
 
-		final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEvent
-				.builder()
-				.materialDemandDescriptor(createMaterialDemandDescr(demandCandidate, requiredAdditionalQty, orderLineId))
-				.build();
+		final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEvent.builder()
+				.supplyRequiredDescriptor(descriptor).build();
+
 		return materialDemandEvent;
 	}
 
@@ -60,17 +60,31 @@ public class SupplyRequiredEventCreator
 				"Given parameter demandCandidate needs to have DEMAND or STOCK_UP as type; demandCandidate=%s", demandCandidate);
 	}
 
-	private SupplyRequiredDescriptor createMaterialDemandDescr(
+	private SupplyRequiredDescriptor createdSupplyRequiredDescriptor(
+			@NonNull final Candidate demandCandidate,
+			@NonNull final BigDecimal requiredAdditionalQty)
+	{
+		final SupplyRequiredDescriptorBuilder descriptorBuilder = createAndInitSupplyRequiredDescriptor(demandCandidate, requiredAdditionalQty);
+
+		if (demandCandidate.getDemandDetail() != null)
+		{
+			final DemandDetail demandDetail = demandCandidate.getDemandDetail();
+			descriptorBuilder
+					.forecastLineId(demandDetail.getForecastLineId())
+					.shipmentScheduleId(demandDetail.getShipmentScheduleId())
+					.orderLineId(demandDetail.getOrderLineId());
+		}
+		return descriptorBuilder.build();
+	}
+
+	private SupplyRequiredDescriptorBuilder createAndInitSupplyRequiredDescriptor(
 			@NonNull final Candidate candidate,
-			@NonNull final BigDecimal qty,
-			final int orderLineId)
+			@NonNull final BigDecimal qty)
 	{
 		return SupplyRequiredDescriptor.builder()
 				.demandCandidateId(candidate.getId())
 				.eventDescr(new EventDescriptor(candidate.getClientId(), candidate.getOrgId()))
-				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty))
-				.orderLineId(orderLineId)
-				.build();
+				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty));
 	}
 
 }

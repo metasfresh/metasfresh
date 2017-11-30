@@ -25,8 +25,8 @@ import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryCommands;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -61,9 +61,9 @@ public class SupplyCandiateCangeHandlerTest
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private SupplyCandiateHandler supplyCandiateCangeHandler;
+	private SupplyCandiateHandler supplyCandiateHandler;
 
-	private StockCandidateService stockCandidateService;
+	private CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	@Before
 	public void init()
@@ -71,11 +71,11 @@ public class SupplyCandiateCangeHandlerTest
 		AdempiereTestHelper.get().init();
 
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
-		final CandidateRepositoryCommands candidateRepositoryCommands = new CandidateRepositoryCommands();
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService();
 
-		stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
+		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryWriteService);
 
-		supplyCandiateCangeHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService);
+		supplyCandiateHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryWriteService, stockCandidateService);
 	}
 
 	@Test
@@ -97,7 +97,7 @@ public class SupplyCandiateCangeHandlerTest
 				.orgId(ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.build();
-		supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
+		supplyCandiateHandler.onCandidateNewOrChange(candidate);
 
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 		assertThat(records).hasSize(2);
@@ -132,7 +132,7 @@ public class SupplyCandiateCangeHandlerTest
 
 		final Consumer<Candidate> doTest = candidate -> {
 
-			supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
+			supplyCandiateHandler.onCandidateNewOrChange(candidate);
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records).hasSize(2);
@@ -151,7 +151,7 @@ public class SupplyCandiateCangeHandlerTest
 	}
 
 	@Test
-	public void testOnSupplyCandidateNewOrChange_noOlderRecords_invokeTwiceWithDifferent()
+	public void onCandidateNewOrChange_noOlderRecords_invokeTwice_withDifferentQuantites()
 	{
 		final BigDecimal qty = new BigDecimal("23");
 
@@ -172,7 +172,7 @@ public class SupplyCandiateCangeHandlerTest
 
 		final BiConsumer<Candidate, BigDecimal> doTest = (candidate, exptectedQty) -> {
 
-			supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
+			supplyCandiateHandler.onCandidateNewOrChange(candidate);
 
 			final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 			assertThat(records).hasSize(2);
@@ -194,7 +194,7 @@ public class SupplyCandiateCangeHandlerTest
 	 * If this test fails, please first verify whether {@link #testOnStockCandidateNewOrChanged()} and {@link #testOnSupplyCandidateNewOrChange_noOlderRecords()} work.
 	 */
 	@Test
-	public void testOnSupplyCandidateNewOrChange()
+	public void onCandidateNewOrChange()
 	{
 		final BigDecimal olderStockQty = new BigDecimal("11");
 
@@ -212,7 +212,7 @@ public class SupplyCandiateCangeHandlerTest
 				.orgId(ORG_ID)
 				.materialDescriptor(olderMaterialDescriptor)
 				.build();
-		stockCandidateService.addOrUpdateStock(olderStockCandidate);
+		candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(olderStockCandidate);
 
 		final BigDecimal supplyQty = new BigDecimal("23");
 
@@ -231,7 +231,7 @@ public class SupplyCandiateCangeHandlerTest
 				.materialDescriptor(materialDescriptoriptor)
 				.subType(CandidateSubType.PRODUCTION)
 				.build();
-		supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
+		supplyCandiateHandler.onCandidateNewOrChange(candidate);
 
 		final List<I_MD_Candidate> records = DispoTestUtils.retrieveAllRecords();
 		assertThat(records).hasSize(3);
@@ -251,7 +251,7 @@ public class SupplyCandiateCangeHandlerTest
 	{
 		final Candidate candidate = createCandidateWithType(CandidateType.UNRELATED_INCREASE);
 
-		supplyCandiateCangeHandler.onCandidateNewOrChange(candidate);
+		supplyCandiateHandler.onCandidateNewOrChange(candidate);
 
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
 		assertThat(allRecords).hasSize(2);

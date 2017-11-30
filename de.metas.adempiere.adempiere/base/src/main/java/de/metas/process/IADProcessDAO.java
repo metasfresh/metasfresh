@@ -26,12 +26,15 @@ import java.util.Collection;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
+
+import de.metas.i18n.ITranslatableString;
 
 public interface IADProcessDAO extends ISingletonService
 {
@@ -120,6 +123,8 @@ public interface IADProcessDAO extends ISingletonService
 	 * @see #retriveProcessIdByClassIfUnique(Properties, Class)
 	 */
 	int retriveProcessIdByClassIfUnique(Properties ctx, String processClassname);
+
+	Optional<ITranslatableString> retrieveProcessNameByClassIfUnique(Class<?> processClass);
 
 	/**
 	 * Retrieves {@link I_AD_Process} by given ID.

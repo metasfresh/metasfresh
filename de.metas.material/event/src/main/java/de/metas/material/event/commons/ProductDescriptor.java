@@ -43,17 +43,20 @@ import lombok.experimental.FieldDefaults;
 		@JsonSubTypes.Type(name = "MaterialDescriptor", value = MaterialDescriptor.class) })
 public class ProductDescriptor
 {
-	public static final ProductDescriptor forProductIdOnly(final int productId)
+	public static final ProductDescriptor incompleteForProductId(final int productId)
 	{
 		return new ProductDescriptor(false, // complete == false
 				productId,
-				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED,
+				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL,
 				-1);
 	}
 
-	public static final ProductDescriptor forProductIdAndEmptyAttribute(final int productId)
+	public static final ProductDescriptor completeForProductIdAndEmptyAttribute(final int productId)
 	{
-		return new ProductDescriptor(true, productId, "", 0); // complete == true
+		return new ProductDescriptor(true, // complete == true
+				productId,
+				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL,
+				0);
 	}
 
 	public static final ProductDescriptor forProductAndAttributes(
@@ -64,7 +67,16 @@ public class ProductDescriptor
 		return new ProductDescriptor(true, productId, storageAttributesKey, attributeSetInstanceId); // complete == true
 	}
 
-	public static final String STORAGE_ATTRIBUTES_KEY_UNSPECIFIED = new String("");
+	public static final String STORAGE_ATTRIBUTES_KEY_ALL = new String("<ALL_STORAGE_ATTRIBUTES_KEYS>");
+
+	public static final String MSG_STORAGE_ATTRIBUTES_KEY_ALL = "de.metas.material.dispo." + STORAGE_ATTRIBUTES_KEY_ALL;
+
+	/**
+	 * This key's meaning depends on the other keys it comes with.
+	 */
+	public static final String STORAGE_ATTRIBUTES_KEY_OTHER = new String("<OTHER_STORAGE_ATTRIBUTES_KEYS>");
+
+	public static final String MSG_STORAGE_ATTRIBUTES_KEY_OTHER = "de.metas.material.dispo." + STORAGE_ATTRIBUTES_KEY_OTHER;
 
 	/**
 	 * The delimiter should not contain any character that has a "regexp" meaning

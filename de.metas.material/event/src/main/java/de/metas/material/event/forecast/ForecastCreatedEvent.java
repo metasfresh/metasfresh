@@ -32,7 +32,7 @@ import lombok.Value;
 @Builder // used by devs to make sure they know with parameter value does into which property
 public class ForecastCreatedEvent implements MaterialEvent
 {
-	public static final String TYPE = "ForecastEvent";
+	public static final String TYPE = "ForecastCreatedEvent";
 	
 	@NonNull
 	Forecast forecast;

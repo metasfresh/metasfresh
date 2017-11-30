@@ -12,14 +12,14 @@ import lombok.Value;
 @Builder
 public class DistributionRequestedEvent implements MaterialEvent
 {
-	public static final String TYPE = "DDOrderRequestedEvent";
+	public static final String TYPE = "DistributionRequestedEvent";
 
 	@NonNull
 	EventDescriptor eventDescriptor;
 
 	@JsonProperty
 	int groupId;
-	
+
 	@NonNull
 	DDOrder ddOrder;
 

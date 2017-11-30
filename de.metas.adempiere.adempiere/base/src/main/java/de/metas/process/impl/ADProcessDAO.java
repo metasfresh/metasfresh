@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,6 +38,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -90,6 +92,22 @@ public class ADProcessDAO implements IADProcessDAO
 			logger.warn("retriveProcessIdByClassIfUnique: More then one AD_Process_ID found for {}: {} => considering {}", processClassname, processIds, adProcessId);
 			return adProcessId;
 		}
+	}
+
+	@Override
+	public Optional<ITranslatableString> retrieveProcessNameByClassIfUnique(final Class<?> processClass)
+	{
+		final Properties ctx = Env.getCtx();
+		final int processId = retriveProcessIdByClassIfUnique(ctx, processClass);
+		if (processId <= 0)
+		{
+			return Optional.empty();
+		}
+
+		final I_AD_Process process = retrieveProcessById(ctx, processId);
+		final ITranslatableString name = InterfaceWrapperHelper.getModelTranslationMap(process)
+				.getColumnTrl(I_AD_Process.COLUMNNAME_Name, process.getName());
+		return Optional.of(name);
 	}
 
 	@Override

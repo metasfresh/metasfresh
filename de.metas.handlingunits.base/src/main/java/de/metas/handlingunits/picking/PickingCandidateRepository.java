@@ -1,7 +1,5 @@
 package de.metas.handlingunits.picking;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
@@ -15,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -51,6 +50,11 @@ import lombok.NonNull;
 public class PickingCandidateRepository
 {
 	private static final Logger logger = LogManager.getLogger(PickingCandidateRepository.class);
+
+	public void save(final I_M_Picking_Candidate candidate)
+	{
+		InterfaceWrapperHelper.save(candidate);
+	}
 
 	public List<I_M_ShipmentSchedule> retrieveShipmentSchedulesViaPickingCandidates(final int huId)
 	{
@@ -109,13 +113,9 @@ public class PickingCandidateRepository
 		return pickingCandidate;
 	}
 
-	public void deletePickingCandidate(final int huId)
+	public void deletePickingCandidates(final Collection<I_M_Picking_Candidate> candidates)
 	{
-		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Picking_Candidate.class)
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
-				.create()
-				.delete();
+		candidates.forEach(InterfaceWrapperHelper::delete);
 	}
 
 	public List<I_M_Picking_Candidate> retrievePickingCandidatesByShipmentScheduleIdsAndStatus(
@@ -131,4 +131,14 @@ public class PickingCandidateRepository
 				.list(I_M_Picking_Candidate.class);
 	}
 
+	public boolean hasNotClosedCandidatesForPickingSlot(final int pickingSlotId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
+				.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, X_M_Picking_Candidate.STATUS_CL)
+				.create()
+				.match();
+	}
 }

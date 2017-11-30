@@ -1,5 +1,7 @@
 package de.metas.material.dispo.commons.repository;
 
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -23,8 +25,8 @@ import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -38,12 +40,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -77,12 +79,17 @@ public class RepositoryCommons
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, query.getId());
 		}
 
+		if (query.getParentId() >= 0)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, query.getParentId());
+		}
+
 		addMaterialDescriptorToQueryBuilderIfNotNull(
 				query.getMaterialDescriptor(),
 				query.isMatchExactStorageAttributesKey(),
 				builder);
 
-		if (query.hasParentMaterialDescriptor())
+		if (query.getParentMaterialDescriptor() != null)
 		{
 			final IQueryBuilder<I_MD_Candidate> parentBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 					.addOnlyActiveRecordsFilter();
@@ -98,8 +105,18 @@ public class RepositoryCommons
 				builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, I_MD_Candidate.COLUMN_MD_Candidate_ID, parentBuilder.create());
 			}
 		}
+		if (query.getParentDemandDetail() != null)
+		{
+			final IQueryBuilder<I_MD_Candidate> parentBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class)
+					.addOnlyActiveRecordsFilter();
+			addDemandDetailToBuilder(query.getParentDemandDetail(), parentBuilder);
+			builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, I_MD_Candidate.COLUMN_MD_Candidate_ID, parentBuilder.create());
+		}
 
-		addDemandDetailToBuilder(query, builder);
+		if (query.getDemandDetail() != null)
+		{
+			addDemandDetailToBuilder(query.getDemandDetail(), builder);
+		}
 
 		addProductionDetailToFilter(query, builder);
 
@@ -133,7 +150,7 @@ public class RepositoryCommons
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, materialDescriptor.getProductId());
 			atLeastOneFilterAdded = true;
 		}
-		if (materialDescriptor.getStorageAttributesKey() != ProductDescriptor.STORAGE_ATTRIBUTES_KEY_UNSPECIFIED)
+		if (!Objects.equals(materialDescriptor.getStorageAttributesKey(), ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL))
 		{
 			final String storageAttributesKey = materialDescriptor.getStorageAttributesKey();
 			if (matchExactStorageAttributesKey)
@@ -172,17 +189,20 @@ public class RepositoryCommons
 				"As the given parameter query spefifies a date, it also needs to have a not-null dateOperator; query=%s", materialDescriptor);
 		switch (dateOperator)
 		{
+			case BEFORE:
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS, materialDescriptor.getDate());
+				break;
 			case BEFORE_OR_AT:
 				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, materialDescriptor.getDate());
+				break;
+			case AT:
+				builder.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, materialDescriptor.getDate());
 				break;
 			case AT_OR_AFTER:
 				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER_OR_EQUAL, materialDescriptor.getDate());
 				break;
 			case AFTER:
 				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER, materialDescriptor.getDate());
-				break;
-			case AT:
-				builder.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, materialDescriptor.getDate());
 				break;
 			default:
 				Check.errorIf(true, "segment has a unexpected dateOperator {}; segment={}", materialDescriptor.getDateOperator(), materialDescriptor);
@@ -198,11 +218,9 @@ public class RepositoryCommons
 	 * @param builder
 	 */
 	private void addDemandDetailToBuilder(
-			final CandidatesQuery candidate,
-			final IQueryBuilder<I_MD_Candidate> builder)
+			@Nullable final DemandDetail demandDetail,
+			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
-
-		final DemandDetail demandDetail = candidate.getDemandDetail();
 		if (demandDetail == null)
 		{
 			return;

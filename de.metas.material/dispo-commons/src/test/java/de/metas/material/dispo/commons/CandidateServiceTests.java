@@ -2,9 +2,7 @@ package de.metas.material.dispo.commons;
 
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
@@ -50,12 +48,12 @@ import de.metas.material.event.pporder.ProductionRequestedEvent;
 
 public class CandidateServiceTests
 {
-	private CandidateService candidateService;
+	private RequestMaterialOrderService requestMaterialOrderService;
 
 	@Before
 	public void init()
 	{
-		candidateService = new CandidateService(
+		requestMaterialOrderService = new RequestMaterialOrderService(
 				new CandidateRepositoryRetrieval(),
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 	}
@@ -79,7 +77,7 @@ public class CandidateServiceTests
 		final Candidate candidate2 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(310))
+						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
 				.withProductionDetail(ProductionDetail.builder()
 						.plantId(210)
@@ -90,7 +88,7 @@ public class CandidateServiceTests
 		final Candidate candidate3 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(320))
+						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
 				.withProductionDetail(ProductionDetail.builder()
 						.plantId(210)
@@ -98,19 +96,19 @@ public class CandidateServiceTests
 						.productBomLineId(600)
 						.build());
 
-		final ProductionRequestedEvent productionOrderEvent = candidateService.createPPOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
-		assertThat(productionOrderEvent, notNullValue());
-		assertThat(productionOrderEvent.getEventDescriptor(), notNullValue());
+		final ProductionRequestedEvent productionRequestedEvent = requestMaterialOrderService.createProductionRequestedEvent(ImmutableList.of(candidate, candidate2, candidate3));
+		assertThat(productionRequestedEvent).isNotNull();
+		assertThat(productionRequestedEvent.getEventDescriptor()).isNotNull();
 
-		assertThat(productionOrderEvent.getEventDescriptor().getClientId(), is(20));
-		assertThat(productionOrderEvent.getEventDescriptor().getOrgId(), is(30));
+		assertThat(productionRequestedEvent.getEventDescriptor().getClientId()).isEqualTo(20);
+		assertThat(productionRequestedEvent.getEventDescriptor().getOrgId()).isEqualTo(30);
 
-		final PPOrder ppOrder = productionOrderEvent.getPpOrder();
-		assertThat(ppOrder, notNullValue());
-		assertThat(ppOrder.getOrgId(), is(30));
-		assertThat(ppOrder.getProductDescriptor().getProductId(), is(PRODUCT_ID));
+		final PPOrder ppOrder = productionRequestedEvent.getPpOrder();
+		assertThat(ppOrder).isNotNull();
+		assertThat(ppOrder.getOrgId()).isEqualTo(30);
+		assertThat(ppOrder.getProductDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
 
-		assertThat(ppOrder.getLines().size(), is(2));
+		assertThat(ppOrder.getLines()).hasSize(2);
 	}
 
 	@Test
@@ -132,7 +130,7 @@ public class CandidateServiceTests
 		final Candidate candidate2 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(310))
+						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
 				.withDistributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)
@@ -144,7 +142,7 @@ public class CandidateServiceTests
 		final Candidate candidate3 = candidate
 				.withType(CandidateType.DEMAND)
 				.withMaterialDescriptor(candidate.getMaterialDescriptor()
-						.withProductDescriptor(ProductDescriptor.forProductIdAndEmptyAttribute(320))
+						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
 				.withDistributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)
@@ -153,20 +151,20 @@ public class CandidateServiceTests
 						.networkDistributionLineId(501)
 						.build());
 
-		final DistributionRequestedEvent distributionOrderEvent = candidateService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
-		assertThat(distributionOrderEvent, notNullValue());
+		final DistributionRequestedEvent distributionOrderEvent = requestMaterialOrderService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
+		assertThat(distributionOrderEvent).isNotNull();
 
-		assertThat(distributionOrderEvent.getEventDescriptor(), notNullValue());
-		assertThat(distributionOrderEvent.getEventDescriptor().getClientId(), is(20));
-		assertThat(distributionOrderEvent.getEventDescriptor().getOrgId(), is(30));
+		assertThat(distributionOrderEvent.getEventDescriptor()).isNotNull();
+		assertThat(distributionOrderEvent.getEventDescriptor().getClientId()).isEqualTo(20);
+		assertThat(distributionOrderEvent.getEventDescriptor().getOrgId()).isEqualTo(30);
 
 		final DDOrder ddOrder = distributionOrderEvent.getDdOrder();
-		assertThat(ddOrder, notNullValue());
-		assertThat(ddOrder.getOrgId(), is(30));
-		assertThat(ddOrder.getProductPlanningId(), is(220));
-		assertThat(ddOrder.getPlantId(), is(230));
-		assertThat(ddOrder.getShipperId(), is(240));
-		assertThat(ddOrder.getLines().isEmpty(), is(false));
+		assertThat(ddOrder).isNotNull();
+		assertThat(ddOrder.getOrgId()).isEqualTo(30);
+		assertThat(ddOrder.getProductPlanningId()).isEqualTo(220);
+		assertThat(ddOrder.getPlantId()).isEqualTo(230);
+		assertThat(ddOrder.getShipperId()).isEqualTo(240);
+		assertThat(ddOrder.getLines().isEmpty()).isFalse();
 
 	}
 

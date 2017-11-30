@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
-import de.metas.material.event.demandWasFound.SupplyRequiredEvent;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 
 /*
@@ -43,9 +43,9 @@ public class SupplyRequiredEventListener implements MaterialEventListener
 {
 	private static final transient Logger logger = LogManager.getLogger(SupplyRequiredEventListener.class);
 
-	private final CommonDemandHandler commonDemandHandler;
+	private final SupplyRequiredHandler commonDemandHandler;
 
-	public SupplyRequiredEventListener(@NonNull final CommonDemandHandler commonDemandHandler)
+	public SupplyRequiredEventListener(@NonNull final SupplyRequiredHandler commonDemandHandler)
 	{
 		this.commonDemandHandler = commonDemandHandler;
 	}
@@ -61,6 +61,6 @@ public class SupplyRequiredEventListener implements MaterialEventListener
 
 		final SupplyRequiredEvent materialDemandEvent = (SupplyRequiredEvent)event;
 
-		commonDemandHandler.handleSupplyRequiredEvent(materialDemandEvent.getMaterialDemandDescriptor());
+		commonDemandHandler.handleSupplyRequiredEvent(materialDemandEvent.getSupplyRequiredDescriptor());
 	}
 }
