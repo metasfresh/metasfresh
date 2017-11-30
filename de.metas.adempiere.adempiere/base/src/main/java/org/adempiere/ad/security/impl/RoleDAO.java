@@ -216,7 +216,7 @@ public class RoleDAO implements IRoleDAO
 				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_User_ID, adUserId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.maxInt(I_AD_User_Roles.COLUMNNAME_AD_Role_ID);
+				.first(I_AD_User_Roles.COLUMNNAME_AD_Role_ID, Integer.class);
 		return firstRoleId == null ? -1 : firstRoleId;
 	}
 

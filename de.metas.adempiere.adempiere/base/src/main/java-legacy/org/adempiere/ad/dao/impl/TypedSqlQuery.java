@@ -646,15 +646,15 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final List<AT> result = new ArrayList<>();
 
 		final StringBuilder sqlSelect = new StringBuilder("SELECT ");
-		if (aggregateType.sqlFunction == null)
+		if (Check.isEmpty(aggregateType.sqlFunction, true))
 		{
 			sqlSelect.append(sqlExpression);
 		}
 		else
 		{
 			sqlSelect
-			.append(aggregateType.sqlFunction)
-			.append("(").append(sqlExpression).append(")");
+					.append(aggregateType.sqlFunction)
+					.append("(").append(sqlExpression).append(")");
 		}
 		sqlSelect.append(" FROM ").append(getSqlFrom());
 
