@@ -87,7 +87,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	private final LayoutType layoutType;
 	private final WidgetSize widgetSize;
 	private final boolean advancedField;
-	
+
 	private final LayoutAlign gridAlign;
 	private final ViewEditorRenderMode viewEditorRenderMode;
 
@@ -99,8 +99,6 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private DocumentLayoutElementDescriptor(final Builder builder)
 	{
-		super();
-
 		internalName = builder.getInternalName();
 		caption = builder.getCaption();
 		description = builder.getDescription();
@@ -112,7 +110,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		layoutType = builder.getLayoutType();
 		widgetSize = builder.getWidgetSize();
-		
+
 		gridAlign = builder.getGridAlign();
 		viewEditorRenderMode = builder.getViewEditorRenderMode();
 
@@ -167,7 +165,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return precision;
 	}
-	
+
 	public boolean isAllowShowPassword()
 	{
 		return allowShowPassword;
@@ -177,7 +175,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return layoutType;
 	}
-	
+
 	public WidgetSize getWidgetSize()
 	{
 		return widgetSize;
@@ -187,7 +185,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return gridAlign;
 	}
-	
+
 	public ViewEditorRenderMode getViewEditorRenderMode()
 	{
 		return viewEditorRenderMode;
@@ -220,17 +218,17 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private String _internalName;
 		private ITranslatableString _caption = null;
 		private ITranslatableString _description = null;
-		
+
 		private DocumentFieldWidgetType _widgetType;
 		private boolean _allowShowPassword = false; // in case widgetType is Password
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
-		
+
 		private LayoutType _layoutType;
 		private WidgetSize _widgetSize;
-		
+
 		private boolean _gridElement = false;
 		private ViewEditorRenderMode viewEditorRenderMode = null;
-		
+
 		private boolean _advancedField = false;
 		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> _fieldsBuilders = new LinkedHashMap<>();
 		private boolean excludeSpecialFields = false;
@@ -382,13 +380,13 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			Check.assumeNotNull(_widgetType, DocumentLayoutBuildException.class, "Parameter widgetType is not null for {}", this);
 			return _widgetType;
 		}
-		
+
 		public Builder setAllowShowPassword(boolean allowShowPassword)
 		{
 			this._allowShowPassword = allowShowPassword;
 			return this;
 		}
-		
+
 		private boolean isAllowShowPassword()
 		{
 			return _allowShowPassword;
@@ -421,7 +419,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			_widgetSize = widgetSize;
 			return this;
 		}
-		
+
 		private WidgetSize getWidgetSize()
 		{
 			return _widgetSize;
@@ -518,7 +516,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		{
 			return _gridElement ? getWidgetType().getGridAlign() : null;
 		}
-		
+
 		public Builder setViewEditorRenderMode(final ViewEditorRenderMode gridEditorRenderMode)
 		{
 			this.viewEditorRenderMode = gridEditorRenderMode;

@@ -57,6 +57,10 @@ public final class DocumentFilterDescriptor
 
 	private final String filterId;
 	private final ITranslatableString displayNameTrls;
+
+	/**
+	 * To be displayed outside of the regular filters dropdown list for quicker access.
+	 */
 	private final boolean frequentUsed;
 
 	private final PanelLayoutType parametersLayoutType;
@@ -68,8 +72,6 @@ public final class DocumentFilterDescriptor
 
 	private DocumentFilterDescriptor(final Builder builder)
 	{
-		super();
-
 		filterId = builder.filterId;
 		Check.assumeNotEmpty(filterId, "filterId is not empty");
 
@@ -141,7 +143,7 @@ public final class DocumentFilterDescriptor
 	{
 		return debugProperties;
 	}
-	
+
 	public boolean isAutoFilter()
 	{
 		return autoFilter;

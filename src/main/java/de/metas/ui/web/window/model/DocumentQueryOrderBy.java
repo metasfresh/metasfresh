@@ -95,7 +95,6 @@ public final class DocumentQueryOrderBy implements Serializable
 
 	private DocumentQueryOrderBy(final String fieldName, final boolean ascending)
 	{
-		super();
 		Check.assumeNotEmpty(fieldName, "fieldName is not empty");
 		this.fieldName = fieldName;
 		this.ascending = ascending;
@@ -162,7 +161,6 @@ public final class DocumentQueryOrderBy implements Serializable
 
 		private ValueComparator()
 		{
-			super();
 		}
 
 		@Override
@@ -187,6 +185,5 @@ public final class DocumentQueryOrderBy implements Serializable
 				return o1.toString().compareTo(o2.toString());
 			}
 		}
-
 	}
 }
