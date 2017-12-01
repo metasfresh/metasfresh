@@ -38,6 +38,25 @@ export function getData(
     );
 }
 
+/**
+ *
+ * @param {*} windowId
+ * @param {*} viewId
+ * @param {*} rowId
+ */
+export function getViewAttributes (
+    windowId, viewId, rowId
+) {
+    return axios.get(
+        config.API_URL +
+        '/documentView'+
+        '/' + windowId +
+        '/' + viewId +
+        '/' + rowId +
+        '/attributes'
+    );
+}
+
 export function createInstance(entity, docType, docId, tabId, subentity) {
     return axios.post(
         config.API_URL +
