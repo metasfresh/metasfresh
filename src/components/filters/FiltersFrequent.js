@@ -52,6 +52,10 @@ class FiltersFrequent extends Component {
                     const filterType = parameter.widgetType;
                     const isActive = this.isActive(item.filterId);
                     const dateStepper = (
+                        // keep implied information (e.g. for refactoring)
+                        item.frequent &&
+
+                        item.parameters.length === 1 &&
                         parameter.showIncrementDecrementButtons &&
                         isActive &&
                         TableCell.DATE_FIELD_TYPES.includes(filterType) &&
