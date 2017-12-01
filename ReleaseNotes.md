@@ -16,7 +16,13 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
-  * [#3094}(https://github.com/metasfresh/metasfresh/issues/3094) Activity ID in Purchase Orderline Grid View
+  * [#937](https://github.com/metasfresh/metasfresh/issues/937) Increase Performance by disabling statistics info
+    * Internal Housekeeping Issue, switching off the statistics creation in System Table.
+  * [#1767](https://github.com/metasfresh/metasfresh/issues/1767) New Window Board in WebUI
+    * New Window for Board Configuration in WebUI, allowing to configure new Kanban Boards and Card Layouts.
+  * [#1809](https://github.com/metasfresh/metasfresh/issues/1809) New User Query Window on WebUI
+    * New Window in WebUI that allows the maintenance of User specific Filter criteria for Windows & Tabs.
+  * [#3094](https://github.com/metasfresh/metasfresh/issues/3094) Activity ID in Purchase Orderline Grid View
     * New field in purchase orderline, allowing to see and maintain the activity in grid view.
   * [#3095](https://github.com/metasfresh/metasfresh/issues/3095) WebUI: new Window for AD_Session in WebUI
     * New window for session audit in webui, allowing to view session and login information.
@@ -24,17 +30,20 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1354](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1354) DateTimeRangePicker default Time from/to in Filter and Process Parms
     * Improving the DateRange Picker Filter widget. Now seetting the initial date and time to the whole day of today.
+  * [#1387](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1387) New widget for date filtering
+    * New Filter widget, that allows to navigate date & date/time filter settings in lower or higher steps.
 
 ## Fixes
 * metasfresh-app
   * [#2946](https://github.com/metasfresh/metasfresh/issues/2946) Product: New Field Endcustomer productname and translation
     * Adding new fields for endcustomer productname for product labels and translation.
+  * [#2977](https://github.com/metasfresh/metasfresh/issues/2977) Tab Org Access not working in WebUI because of missing primary key
+    * Adding a primary Key to Orgaccess Table, allowing to create records in User Window subtab.
   * [#3087](https://github.com/metasfresh/metasfresh/issues/3087) Get rid of group columns in new window for procurement stock count
     * Adjusting the window Purchase Stock Control and adding Translation for en_US.
 
 * metasfresh-webui-frontend
-  * [#1389](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1389) Alt+a in main Grid View opens Advanced edit mode
-    * Fix for the shortcut of advanced edit in main grid view, that blocked the select-all shortcut from being tiggered.
+
 
 # metasfresh 5.37 (2017-48)
 
@@ -61,7 +70,7 @@ Here come the actual release notes:
   * [#3005](https://github.com/metasfresh/metasfresh/issues/3005) Manufacturing Order add Filter for Planstatus
     * Additional, new filter criteria in manufacturing order.
   * [#3010](https://github.com/metasfresh/metasfresh/issues/3010) Inherit c_order_id and orderline_id from flatrate term to invoice candidate
-    * New Referenced document in flatrate terms, now allowing to jump directly to referenced invoice candidates directly from there.
+    * New referenced document in flatrate terms, now allowing to jump directly to referenced invoice candidates directly from there.
   * [#3032](https://github.com/metasfresh/metasfresh/issues/3032) SSCC Product description Field cut off
     * Improvement of the SSCC Label, now allowing to have Product Names that extend the width into more than 1 line.
   * [#3037](https://github.com/metasfresh/metasfresh/issues/3037) WebUI: New Window for Purchase Order Candidates
@@ -75,7 +84,7 @@ Here come the actual release notes:
   * [#3055](https://github.com/metasfresh/metasfresh/issues/3055) Purchase candidates: notify user when the purchase order was generated
     * New user notification as soon as purchase candidates were created for the user.
   * [#3056](https://github.com/metasfresh/metasfresh/issues/3056) Purchase candidates: implement locking mechanism
-    * Locking mechanism implemented for purchase candidates window,
+    * Locking mechanism implemented for purchase candidates window.
   * [#3057](https://github.com/metasfresh/metasfresh/issues/3057) Display order, forecast or shipmentschedule in material dispo main window
     * New fields in material disposition, now showing the Order, Forecast and Shipmentschedule information.
   * [#3061](https://github.com/metasfresh/metasfresh/issues/3061) Adjust OrderBy in Materialdispo
@@ -92,13 +101,13 @@ Here come the actual release notes:
     * Hiding Quickactions in Handling Unit Editor. Now only showing the needed Quickactions for Source Handling Units.
   * [#689](https://github.com/metasfresh/metasfresh-webui-api/issues/689) Picking processed compress to top-level HU
     * New compression visualisation in Pickign window, now only showing top level HU as soon as processed.
-  * [#695](https://github.com/metasfresh/metasfresh-webui-api/issues/695) picking terminal: implement dynamic picking slot allocation/release
+  * [#695](https://github.com/metasfresh/metasfresh-webui-api/issues/695) Picking terminal: implement dynamic picking slot allocation/release
     * New Functionality in Picking window, now allowing the dynamic allocation/ clearing of picking slots.
 
 * metasfresh-webui-frontend
   * [#1347](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1347) Dropdown in Grid view needs two-time click if value in list is more than one
     * Fixes the need of 2 times click in included grid view dropdown widgets.
-  * [#1363](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1363) jenkins: run npm test on each build
+  * [#1363](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1363) Jenkins: run npm test on each build
     * Internal housekeeping issue, improving build system.
   * [#1380](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1380) Shortcut for new document  
     * Adjusted shortcut for the creation of new documents.
@@ -142,13 +151,15 @@ Here come the actual release notes:
   * [#1358](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1358) View field editor: number field is behaving weird when using keyboard
     * Improvement of the behavior of number fields when using keyboard.
   * [#1365](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1365) Error with alt+space for expand
-    * Fixes the keyboard Hotkey for expan in Document Windows.
+    * Fixes the keyboard Hotkey for expand in Document Windows.
   * [#1366](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1366) Error in Quickentry dropdown List
     * Fixes the Batch Entry result list, now generating the results properly.
   * [#1374](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1374) Keyboard alt+u in Sales Order
     * Fixes the Document Action Shortcut alt+u for complete action in all Document Windows.
   * [#1376](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1376) Navigation Menu Favorite stars wrong
     * Fix for the Bookmark Functionality in WebUI Window and Navigation Sitemap.
+  * [#1389](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1389) Alt+a in main Grid View opens Advanced edit mode
+    * Fix for the shortcut of advanced edit in main grid view, that blocked the select-all shortcut from being tiggered.
 
 # metasfresh 5.36 (2017-47)
 
