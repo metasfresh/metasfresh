@@ -30,6 +30,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1354](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1354) DateTimeRangePicker default Time from/to in Filter and Process Parms
     * Improving the DateRange Picker Filter widget. Now seetting the initial date and time to the whole day of today.
+  * [#1387](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1387) New widget for date filtering
+    * New Filter widget, that allows to navigate date & date/time filter settings in lower or higher steps.
 
 ## Fixes
 * metasfresh-app
