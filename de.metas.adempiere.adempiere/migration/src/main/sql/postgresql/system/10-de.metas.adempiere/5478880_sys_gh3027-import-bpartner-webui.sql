@@ -960,3 +960,43 @@ INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_I
 UPDATE AD_UI_ElementGroup SET AD_UI_Column_ID=540730, SeqNo=10,Updated=TO_TIMESTAMP('2017-12-01 12:23:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=541262
 ;
 
+-- 2017-12-01T12:23:01.944
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_ElementGroup SET AD_UI_Column_ID=540730, SeqNo=10,Updated=TO_TIMESTAMP('2017-12-01 12:23:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=541262
+;
+
+-- 2017-12-01T12:42:16.164
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Apotheken Zulassung',Updated=TO_TIMESTAMP('2017-12-01 12:42:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560566
+;
+
+-- 2017-12-01T12:52:11.012
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Arzneimittel Gesetz §52a',Updated=TO_TIMESTAMP('2017-12-01 12:52:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560564
+;
+
+-- 2017-12-01T12:52:21.381
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Kontakt Name',Updated=TO_TIMESTAMP('2017-12-01 12:52:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5956
+;
+
+-- 2017-12-01T12:52:40.839
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='SEPA Unterzeichnung',Updated=TO_TIMESTAMP('2017-12-01 12:52:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560565
+;
+
+-- 2017-12-01T12:52:47.275
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Kunde',Updated=TO_TIMESTAMP('2017-12-01 12:52:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=58038
+;
+
+-- 2017-12-01T12:52:52.235
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Mitarbeiter',Updated=TO_TIMESTAMP('2017-12-01 12:52:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=58039
+;
+
+-- 2017-12-01T12:53:00.116
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Lieferant',Updated=TO_TIMESTAMP('2017-12-01 12:53:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=58040
+;
+
