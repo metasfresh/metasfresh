@@ -22,6 +22,8 @@ Here come the actual release notes:
     * New Window for Board Configuration in WebUI, allowing to configure new Kanban Boards and Card Layouts.
   * [#1809](https://github.com/metasfresh/metasfresh/issues/1809) New User Query Window on WebUI
     * New Window in WebUI that allows the maintenance of User specific Filter criteria for Windows & Tabs.
+  * [#3027](https://github.com/metasfresh/metasfresh/issues/3027) WebUI: New Window for Import BPartner
+    * New Window in WebUI for Import Businesspartner.
   * [#3094](https://github.com/metasfresh/metasfresh/issues/3094) Activity ID in Purchase Orderline Grid View
     * New field in purchase orderline, allowing to see and maintain the activity in grid view.
   * [#3095](https://github.com/metasfresh/metasfresh/issues/3095) WebUI: new Window for AD_Session in WebUI
@@ -41,6 +43,9 @@ Here come the actual release notes:
     * Adding a primary Key to Orgaccess Table, allowing to create records in User Window subtab.
   * [#3087](https://github.com/metasfresh/metasfresh/issues/3087) Get rid of group columns in new window for procurement stock count
     * Adjusting the window Purchase Stock Control and adding Translation for en_US.
+  * [#3100](https://github.com/metasfresh/metasfresh/issues/3100) Move UI Element Action broken
+    * Fix for the UI Element (Element, Group) Movement actions.
+
 
 * metasfresh-webui-frontend
 
