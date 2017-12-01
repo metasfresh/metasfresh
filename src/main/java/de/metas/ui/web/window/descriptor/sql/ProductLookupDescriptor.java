@@ -40,8 +40,8 @@ import de.metas.i18n.NumberTranslatableString;
 import de.metas.material.dispo.client.repository.AvailableStockResult;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
 import de.metas.material.dispo.client.repository.AvailableStockService;
-import de.metas.material.dispo.commons.repository.MaterialQuery;
-import de.metas.material.dispo.commons.repository.MaterialQuery.MaterialQueryBuilder;
+import de.metas.material.dispo.commons.repository.StockQuery;
+import de.metas.material.dispo.commons.repository.StockQuery.StockQueryBuilder;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.product.model.I_M_Product;
@@ -444,13 +444,13 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return productLookupValues;
 		}
 
-		final MaterialQueryBuilder materialQueryBuilder = MaterialQuery.builder();
-		addStorageAttributeKeysToQueryBuilder(materialQueryBuilder);
+		final StockQueryBuilder stockQueryBuilder = StockQuery.builder();
+		addStorageAttributeKeysToQueryBuilder(stockQueryBuilder);
 
-		materialQueryBuilder.productIds(productLookupValues.getKeysAsInt());
+		stockQueryBuilder.productIds(productLookupValues.getKeysAsInt());
 
 		// invoke the query
-		final AvailableStockResult availableStock = availableStockService.retrieveAvailableStock(materialQueryBuilder.build());
+		final AvailableStockResult availableStock = availableStockService.retrieveAvailableStock(stockQueryBuilder.build());
 		final List<Group> availableStockGroups = availableStock.getGroups();
 
 		// process the query's result into those explodedProductValues
@@ -469,7 +469,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		return stockQueryActivated;
 	}
 
-	private void addStorageAttributeKeysToQueryBuilder(@NonNull final MaterialQueryBuilder materialQueryBuilder)
+	private void addStorageAttributeKeysToQueryBuilder(@NonNull final StockQueryBuilder stockQueryBuilder)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());
@@ -488,15 +488,15 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		{
 			if ("<ALL_STORAGE_ATTRIBUTES_KEYS>".equals(storageAttributesKey))
 			{
-				materialQueryBuilder.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
+				stockQueryBuilder.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
 			}
 			else if ("<OTHER_STORAGE_ATTRIBUTES_KEYS>".equals(storageAttributesKey))
 			{
-				materialQueryBuilder.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER);
+				stockQueryBuilder.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER);
 			}
 			else
 			{
-				materialQueryBuilder.storageAttributesKey(StorageAttributesKey.ofString(storageAttributesKey));
+				stockQueryBuilder.storageAttributesKey(StorageAttributesKey.ofString(storageAttributesKey));
 			}
 		}
 	}
