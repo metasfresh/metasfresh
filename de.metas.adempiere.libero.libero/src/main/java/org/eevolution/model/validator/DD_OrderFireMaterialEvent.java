@@ -66,7 +66,6 @@ public class DD_OrderFireMaterialEvent
 
 	private List<DDOrderAdvisedOrCreatedEvent> createEvents(@NonNull final I_DD_Order ddOrder)
 	{
-
 		final DDOrderBuilder ddOrderPojoBuilder = createAndInitPPOrderPojoBuilder(ddOrder);
 
 		final List<DDOrderAdvisedOrCreatedEvent> events = new ArrayList<>();
@@ -74,17 +73,17 @@ public class DD_OrderFireMaterialEvent
 		final int groupIdFromDDOrderRequestedEvent = DDOrderRequestedEventHandler.ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.getValue(ddOrder, 0);
 
 		final List<I_DD_OrderLine> ddOrderLines = Services.get(IDDOrderDAO.class).retrieveLines(ddOrder);
-		for (final I_DD_OrderLine line : ddOrderLines)
+		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
 		{
-			final int durationDays = DDOrderUtil.calculateDurationDays(ddOrder.getPP_Product_Planning(), line.getDD_NetworkDistributionLine());
+			final int durationDays = DDOrderUtil.calculateDurationDays(ddOrder.getPP_Product_Planning(), ddOrderLine.getDD_NetworkDistributionLine());
 
-			ddOrderPojoBuilder.line(createDDOrderLinePojo(line, durationDays));
+			ddOrderPojoBuilder.line(createDDOrderLinePojo(ddOrderLine, ddOrder, durationDays));
 
 			final DDOrderAdvisedOrCreatedEvent event = DDOrderAdvisedOrCreatedEvent.builder()
 					.eventDescriptor(EventDescriptor.createNew(ddOrder))
 					.ddOrder(ddOrderPojoBuilder.build())
-					.fromWarehouseId(line.getM_Locator().getM_Warehouse_ID())
-					.toWarehouseId(line.getM_LocatorTo().getM_Warehouse_ID())
+					.fromWarehouseId(ddOrderLine.getM_Locator().getM_Warehouse_ID())
+					.toWarehouseId(ddOrderLine.getM_LocatorTo().getM_Warehouse_ID())
 					.groupId(groupIdFromDDOrderRequestedEvent)
 					.build();
 
@@ -93,16 +92,22 @@ public class DD_OrderFireMaterialEvent
 		return events;
 	}
 
-	private DDOrderLine createDDOrderLinePojo(@NonNull final I_DD_OrderLine line, final int durationDays)
+	private DDOrderLine createDDOrderLinePojo(
+			@NonNull final I_DD_OrderLine ddOrderLine,
+			@NonNull final I_DD_Order ddOrder,
+			final int durationDays)
 	{
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 
+		final int bPartnerId = ddOrderLine.getC_BPartner_ID() > 0 ? ddOrderLine.getC_BPartner_ID() : ddOrder.getC_BPartner_ID();
+
 		return DDOrderLine.builder()
-				.productDescriptor(productDescriptorFactory.createProductDescriptor(line))
-				.ddOrderLineId(line.getDD_OrderLine_ID())
-				.qty(line.getQtyDelivered())
-				.networkDistributionLineId(line.getDD_NetworkDistributionLine_ID())
-				.salesOrderLineId(line.getC_OrderLineSO_ID())
+				.productDescriptor(productDescriptorFactory.createProductDescriptor(ddOrderLine))
+				.bPartnerId(bPartnerId)
+				.ddOrderLineId(ddOrderLine.getDD_OrderLine_ID())
+				.qty(ddOrderLine.getQtyDelivered())
+				.networkDistributionLineId(ddOrderLine.getDD_NetworkDistributionLine_ID())
+				.salesOrderLineId(ddOrderLine.getC_OrderLineSO_ID())
 				.durationDays(durationDays)
 				.build();
 	}

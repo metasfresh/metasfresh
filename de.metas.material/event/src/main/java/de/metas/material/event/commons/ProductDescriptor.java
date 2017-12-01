@@ -88,11 +88,11 @@ public class ProductDescriptor
 		this.attributeSetInstanceId = attributeSetInstanceId;
 
 		Preconditions.checkArgument(productId > 0,
-				"Given parameter productId=%s needs to be >0, because complete=true", productId);
+				"Given parameter productId=%s needs to be >0", productId);
 		Preconditions.checkArgument(attributeSetInstanceId >= 0,
-				"Given parameter attributeSetInstanceId needs to >=0, because complete=true");
+				"Given parameter attributeSetInstanceId needs to >=0");
 		Preconditions.checkNotNull(storageAttributesKey,
-				"Given storageAttributeKey date needs to not-null, because complete=true");
+				"Given storageAttributeKey date needs to not-null");
 	}
 
 }

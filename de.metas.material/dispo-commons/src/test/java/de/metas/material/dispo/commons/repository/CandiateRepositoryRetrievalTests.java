@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons.repository;
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
 import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
@@ -100,6 +101,7 @@ public class CandiateRepositoryRetrievalTests
 		candidateRecord.setDateProjected(dateProjected);
 		candidateRecord.setM_Warehouse_ID(WAREHOUSE_ID);
 		candidateRecord.setM_Product_ID(PRODUCT_ID);
+		candidateRecord.setC_BPartner_ID(BPARTNER_ID);
 		candidateRecord.setM_AttributeSetInstance_ID(ATTRIBUTE_SET_INSTANCE_ID);
 		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
 		candidateRecord.setQty(BigDecimal.TEN);
@@ -116,6 +118,7 @@ public class CandiateRepositoryRetrievalTests
 		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescriptor();
 
 		assertThat(materialDescriptor.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(materialDescriptor.getBPartnerId()).isEqualTo(BPARTNER_ID);
 		assertThat(materialDescriptor.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
 		assertThat(materialDescriptor.getAttributeSetInstanceId()).isEqualTo(ATTRIBUTE_SET_INSTANCE_ID);
 	}

@@ -1,6 +1,7 @@
 package de.metas.material.dispo.service.event.handler;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.CLIENT_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
@@ -36,8 +37,8 @@ import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
+import de.metas.material.event.pporder.PPOrderLine;
 import lombok.NonNull;
 import mockit.Mocked;
 
@@ -63,7 +64,7 @@ import mockit.Mocked;
  * #L%
  */
 
-public class ProductionAdvisedHandlerTests
+public class PPOrderAdvisedOrCreatedHandlerTests
 {
 	@Rule
 	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
@@ -79,7 +80,7 @@ public class ProductionAdvisedHandlerTests
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private PPOrderAdvisedHandler productionAdvisedEventHandler;
+	private PPOrderAdvisedOrCreatedHandler ppOrderAdvisedOrCreatedHandler;
 
 	private StockRepository stockRepository;
 
@@ -109,25 +110,25 @@ public class ProductionAdvisedHandlerTests
 				candidateRepository,
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
-		productionAdvisedEventHandler = new PPOrderAdvisedHandler(candidateChangeHandler, candidateService);
+		ppOrderAdvisedOrCreatedHandler = new PPOrderAdvisedOrCreatedHandler(candidateChangeHandler, candidateService);
 	}
 
 	@Test
-	public void handleProductionAdvisedEvent()
+	public void handlePPOrderAdvisedOrCreatedEvent()
 	{
-		perform_testproductionAdvisedEvent(createPPOrderEventWithPpOrderId(0));
+		perform_testPPOrderAdvisedOrCreatedEvent(createPPOrderEventWithPpOrderId(0));
 	}
 
 	@Test
-	public void handleProductionAdvisedEvent_invoke_twice()
+	public void handlePPOrderAdvisedOrCreatedEvent_invoke_twice()
 	{
-		perform_testproductionAdvisedEvent(createPPOrderEventWithPpOrderId(0));
-		perform_testproductionAdvisedEvent(createPPOrderEventWithPpOrderId(30));
+		perform_testPPOrderAdvisedOrCreatedEvent(createPPOrderEventWithPpOrderId(0));
+		perform_testPPOrderAdvisedOrCreatedEvent(createPPOrderEventWithPpOrderId(30));
 	}
 
-	private void perform_testproductionAdvisedEvent(final PPOrderAdvisedOrCreatedEvent productionAdvisedEvent)
+	private void perform_testPPOrderAdvisedOrCreatedEvent(final PPOrderAdvisedOrCreatedEvent ppOrderAdvisedOrCreatedEvent)
 	{
-		productionAdvisedEventHandler.handleProductionAdvisedEvent(productionAdvisedEvent);
+		ppOrderAdvisedOrCreatedHandler.handlePPOrderAdvisedOrCreatedEvent(ppOrderAdvisedOrCreatedEvent);
 
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1); //
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // we have two different inputs
@@ -178,8 +179,9 @@ public class ProductionAdvisedHandlerTests
 		assertThat(t1Product2Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Product2Demand.getMD_Candidate_ID());
 		assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isNotEqualTo(t1Product1Stock.getMD_Candidate_GroupId());  // stock candidates' groupIds are different if they are about different products or warehouses
 
-		final int ppOrderId = productionAdvisedEvent.getPpOrder().getPpOrderId();
+		final int ppOrderId = ppOrderAdvisedOrCreatedEvent.getPpOrder().getPpOrderId();
 		assertThat(DispoTestUtils.filterExclStock()).allSatisfy(r -> assertCandidateRecordHasPpOorderId(r, ppOrderId));
+		assertThat(DispoTestUtils.retrieveAllRecords()).allSatisfy(r -> assertThat(r.getC_BPartner_ID()).isEqualTo(BPARTNER_ID));
 	}
 
 	private PPOrderAdvisedOrCreatedEvent createPPOrderEventWithPpOrderId(final int ppOrderId)
@@ -211,6 +213,7 @@ public class ProductionAdvisedHandlerTests
 				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.ONE)
 				.warehouseId(intermediateWarehouseId)
+				.bPartnerId(BPARTNER_ID)
 				.plantId(120)
 				.uomId(130)
 				.productPlanningId(140)

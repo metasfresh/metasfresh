@@ -47,39 +47,44 @@ import lombok.experimental.UtilityClass;
 public class M_ForecastEventCreator
 {
 	public ForecastCreatedEvent createEventWithLinesAndTiming(
-			@NonNull final List<I_M_ForecastLine> forecastLines,
+			@NonNull final List<I_M_ForecastLine> forecastLineRecords,
 			@NonNull final DocTimingType timing)
 	{
-		Preconditions.checkArgument(!forecastLines.isEmpty(), "Param 'forecastLines' may not be empty; timing=%s", timing);
+		Preconditions.checkArgument(!forecastLineRecords.isEmpty(), "Param 'forecastLines' may not be empty; timing=%s", timing);
 
-		final I_M_Forecast forecastModel = forecastLines.get(0).getM_Forecast();
+		final I_M_Forecast forecastRecord = forecastLineRecords.get(0).getM_Forecast();
 
 		final ForecastBuilder forecastBuilder = Forecast.builder()
-				.forecastId(forecastModel.getM_Forecast_ID())
+				.forecastId(forecastRecord.getM_Forecast_ID())
 				.docStatus(timing.getDocStatus());
 
-		for (final I_M_ForecastLine forecastLine : forecastLines)
+		for (final I_M_ForecastLine forecastLineRecord : forecastLineRecords)
 		{
-			forecastBuilder.forecastLine(createForecastLine(forecastLine));
+			forecastBuilder.forecastLine(createForecastLine(forecastLineRecord, forecastRecord));
 		}
 
 		final ForecastCreatedEvent forecastCreatedEvent = ForecastCreatedEvent
 				.builder()
 				.forecast(forecastBuilder.build())
-				.eventDescriptor(EventDescriptor.createNew(forecastModel))
+				.eventDescriptor(EventDescriptor.createNew(forecastRecord))
 				.build();
 
 		return forecastCreatedEvent;
 	}
 
-	private ForecastLine createForecastLine(@NonNull final I_M_ForecastLine forecastLine)
+	private ForecastLine createForecastLine(
+			@NonNull final I_M_ForecastLine forecastLine,
+			@NonNull final I_M_Forecast forecast)
 	{
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(forecastLine);
 
+		final int bPartnerId = forecastLine.getC_BPartner_ID() > 0 ? forecastLine.getC_BPartner_ID() : forecast.getC_BPartner_ID();
+
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(forecastLine.getDatePromised())
 				.productDescriptor(productDescriptor)
+				.bPartnerId(bPartnerId)
 				.warehouseId(forecastLine.getM_Warehouse_ID())
 				.quantity(forecastLine.getQty())
 				.build();

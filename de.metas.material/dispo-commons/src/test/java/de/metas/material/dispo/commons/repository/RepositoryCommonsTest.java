@@ -1,5 +1,6 @@
 package de.metas.material.dispo.commons.repository;
 
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
@@ -61,6 +62,7 @@ public class RepositoryCommonsTest
 	{
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 				.productId(PRODUCT_ID)
+				.bPartnerId(BPARTNER_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.dateOperator(DateOperator.AT)
 				.date(NOW).build();
@@ -75,6 +77,41 @@ public class RepositoryCommonsTest
 		assertThat(compositeFilter).hasActiveRecordQueryFilter();
 		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, PRODUCT_ID);
 		assertThat(compositeFilter).hasCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.EQUAL, NOW);
+	}
+
+	@Test
+	public void mkQueryBuilder_with_bpartner_id()
+	{
+		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = setupAndInvokeWithBPartnerId(BPARTNER_ID);
+		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, BPARTNER_ID);
+	}
+
+	@Test
+	public void mkQueryBuilder_with_any_bpartner_id()
+	{
+		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = setupAndInvokeWithBPartnerId(StockQuery.BPARTNER_ID_ANY);
+		assertThat(compositeFilter).hasNoFilterRegarding(I_MD_Candidate.COLUMN_C_BPartner_ID);
+	}
+
+	@Test
+	public void mkQueryBuilder_with_none_bpartner_id()
+	{
+		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = setupAndInvokeWithBPartnerId(StockQuery.BPARTNER_ID_NONE);
+		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, null);
+	}
+
+	public ICompositeQueryFilter<I_MD_Candidate> setupAndInvokeWithBPartnerId(final int bpartnerId)
+	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
+				.bPartnerId(bpartnerId)
+				.build();
+		final CandidatesQuery query = CandidatesQuery.builder()
+				.materialDescriptorQuery(materialDescriptorQuery)
+				.build();
+
+		final IQueryBuilder<I_MD_Candidate> queryBuilder = RepositoryCommons.mkQueryBuilder(query);
+		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = queryBuilder.getCompositeFilter();
+		return compositeFilter;
 	}
 
 	@Test

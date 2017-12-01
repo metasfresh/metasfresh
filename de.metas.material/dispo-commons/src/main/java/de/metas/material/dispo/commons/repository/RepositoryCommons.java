@@ -155,6 +155,17 @@ public class RepositoryCommons
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, materialDescriptorQuery.getProductId());
 			atLeastOneFilterAdded = true;
 		}
+		if (materialDescriptorQuery.getBPartnerId() > 0)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, materialDescriptorQuery.getBPartnerId());
+			atLeastOneFilterAdded = true;
+		}
+		else if (materialDescriptorQuery.getBPartnerId() == StockQuery.BPARTNER_ID_NONE)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, null);
+			atLeastOneFilterAdded = true;
+		}
+
 		if (!Objects.equals(materialDescriptorQuery.getStorageAttributesKey(), ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL))
 		{
 			final StorageAttributesKey storageAttributesKey = materialDescriptorQuery.getStorageAttributesKey();

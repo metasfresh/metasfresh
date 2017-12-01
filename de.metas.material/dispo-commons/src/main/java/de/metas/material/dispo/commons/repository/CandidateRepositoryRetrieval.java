@@ -166,6 +166,7 @@ public class CandidateRepositoryRetrieval
 				.productDescriptor(productDescriptor)
 				.quantity(candidateRecord.getQty())
 				.warehouseId(candidateRecord.getM_Warehouse_ID())
+				.bPartnerId(candidateRecord.getC_BPartner_ID())
 				// make sure to add a Date and not a Timestamp to avoid confusing Candidate's equals() and hashCode() methods
 				.date(new Date(dateProjected.getTime()))
 				.build();

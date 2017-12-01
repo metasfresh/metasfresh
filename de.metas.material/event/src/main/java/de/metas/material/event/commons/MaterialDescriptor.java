@@ -97,12 +97,10 @@ public class MaterialDescriptor extends ProductDescriptor
 
 	public MaterialDescriptor asssertMaterialDescriptorComplete()
 	{
-		Preconditions.checkArgument(warehouseId > 0,
-				"warehouseId=%s needs to be >0, because complete=true", warehouseId);
-		Preconditions.checkNotNull(quantity,
-				"quantity needs to be not-null, because complete=true");
-		Preconditions.checkNotNull(date,
-				"date needs to not-null, because complete=true");
+		Preconditions.checkArgument(warehouseId > 0, "warehouseId=%s needs to be >0", warehouseId);
+		Preconditions.checkArgument(bPartnerId >= 0, "bPartnerId=%s needs to be >=0", bPartnerId);
+		Preconditions.checkNotNull(quantity, "quantity needs to be not-null");
+		Preconditions.checkNotNull(date, "date needs to not-null");
 
 		return this;
 	}
@@ -114,6 +112,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.date(this.date)
 				.productDescriptor(this)
 				.warehouseId(this.warehouseId)
+				.bPartnerId(this.bPartnerId)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
 	}
@@ -124,6 +123,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.date(date)
 				.productDescriptor(this)
 				.warehouseId(this.warehouseId)
+				.bPartnerId(this.bPartnerId)
 				.quantity(this.quantity)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
@@ -135,6 +135,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.productDescriptor(productDescriptor)
 				.date(this.date)
 				.warehouseId(this.warehouseId)
+				.bPartnerId(this.bPartnerId)
 				.quantity(this.quantity)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
@@ -146,6 +147,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				.warehouseId(warehouseId)
 				.date(this.date)
 				.productDescriptor(this)
+				.bPartnerId(this.bPartnerId)
 				.quantity(this.quantity)
 				.build();
 		return result.asssertMaterialDescriptorComplete();

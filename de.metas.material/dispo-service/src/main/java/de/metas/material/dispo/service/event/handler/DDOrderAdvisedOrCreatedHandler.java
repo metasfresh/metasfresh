@@ -49,7 +49,7 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class DDOrderAdvisedHandler
+public class DDOrderAdvisedOrCreatedHandler
 {
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final CandidateRepositoryWriteService candidateRepositoryWrite;
@@ -57,7 +57,7 @@ public class DDOrderAdvisedHandler
 	private final CandidateChangeService candidateChangeHandler;
 	private final RequestMaterialOrderService requestMaterialOrderService;
 
-	public DDOrderAdvisedHandler(
+	public DDOrderAdvisedOrCreatedHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
 			@NonNull final CandidateChangeService candidateChangeHandler,
@@ -71,7 +71,7 @@ public class DDOrderAdvisedHandler
 		this.supplyProposalEvaluator = supplyProposalEvaluator;
 	}
 
-	public void handleDistributionAdvisedEvent(final DDOrderAdvisedOrCreatedEvent event)
+	public void handleDDOrderAdvisedOrCreatedEvent(final DDOrderAdvisedOrCreatedEvent event)
 	{
 		final DDOrder ddOrder = event.getDdOrder();
 
@@ -86,6 +86,7 @@ public class DDOrderAdvisedHandler
 			final SupplyProposal proposal = SupplyProposal.builder()
 					.date(orderLineStartDate)
 					.productDescriptor(ddOrderLine.getProductDescriptor())
+					// ignoring bpartner for now..not sure if that's good or not..
 					.destWarehouseId(event.getToWarehouseId())
 					.sourceWarehouseId(event.getFromWarehouseId())
 					.build();
@@ -97,6 +98,7 @@ public class DDOrderAdvisedHandler
 			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 					.date(ddOrder.getDatePromised())
 					.productDescriptor(ddOrderLine.getProductDescriptor())
+					.bPartnerId(ddOrderLine.getBPartnerId())
 					.quantity(ddOrderLine.getQty())
 					.warehouseId(event.getToWarehouseId())
 					.build();

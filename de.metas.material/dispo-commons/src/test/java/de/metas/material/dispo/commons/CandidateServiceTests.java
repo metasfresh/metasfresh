@@ -96,7 +96,7 @@ public class CandidateServiceTests
 						.productBomLineId(600)
 						.build());
 
-		final PPOrderRequestedEvent productionRequestedEvent = requestMaterialOrderService.createProductionRequestedEvent(ImmutableList.of(candidate, candidate2, candidate3));
+		final PPOrderRequestedEvent productionRequestedEvent = requestMaterialOrderService.createPPOrderRequestedEvent(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(productionRequestedEvent).isNotNull();
 		assertThat(productionRequestedEvent.getEventDescriptor()).isNotNull();
 

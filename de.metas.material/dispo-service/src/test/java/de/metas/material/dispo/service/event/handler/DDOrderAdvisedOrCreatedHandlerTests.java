@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.event.handler;
 
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.CLIENT_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
@@ -68,7 +69,7 @@ import mockit.Mocked;
  * #L%
  */
 
-public class DistributionAdvisedHandlerHandlerTests
+public class DDOrderAdvisedOrCreatedHandlerTests
 {
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
@@ -104,7 +105,7 @@ public class DistributionAdvisedHandlerHandlerTests
 
 	public static final int shipperId = 95;
 
-	private DDOrderAdvisedHandler distributionAdvisedHandler;
+	private DDOrderAdvisedOrCreatedHandler ddOrderAdvisedOrCreatedHandler;
 
 	@Mocked
 	private MaterialEventService materialEventService;
@@ -134,7 +135,7 @@ public class DistributionAdvisedHandlerHandlerTests
 				demandCandiateHandler,
 				supplyCandiateHandler));
 
-		distributionAdvisedHandler = new DDOrderAdvisedHandler(
+		ddOrderAdvisedOrCreatedHandler = new DDOrderAdvisedOrCreatedHandler(
 				candidateRepository,
 				candidateRepositoryCommands,
 				candidateChangeService,
@@ -164,6 +165,7 @@ public class DistributionAdvisedHandlerHandlerTests
 						.shipperId(shipperId)
 						.line(DDOrderLine.builder()
 								.productDescriptor(createProductDescriptor())
+								.bPartnerId(BPARTNER_ID)
 								.qty(BigDecimal.TEN)
 								.durationDays(1)
 								.networkDistributionLineId(networkDistributionLineId)
@@ -171,7 +173,7 @@ public class DistributionAdvisedHandlerHandlerTests
 						.build())
 				.build();
 
-		distributionAdvisedHandler.handleDistributionAdvisedEvent(event);
+		ddOrderAdvisedOrCreatedHandler.handleDDOrderAdvisedOrCreatedEvent(event);
 
 		final List<I_MD_Candidate> allNonStockRecords = DispoTestUtils.filterExclStock();
 		final int groupIdOfFirstRecord = allNonStockRecords.get(0).getMD_Candidate_GroupId();
@@ -185,6 +187,7 @@ public class DistributionAdvisedHandlerHandlerTests
 		assertThat(allRecords).allSatisfy(r -> {
 			assertThat(r.getAD_Org_ID()).as("all four records shall have the same org").isEqualTo(ORG_ID);
 			assertThat(r.getM_Product_ID()).as("all four records shall have the same product").isEqualTo(PRODUCT_ID);
+			assertThat(r.getC_BPartner_ID()).as("all four records shall have the same bPartner").isEqualTo(BPARTNER_ID);
 		});
 
 		// one parent of the supply in toWarehouseId and one child of the demand in fromWarehouseId
@@ -235,7 +238,7 @@ public class DistributionAdvisedHandlerHandlerTests
 	@Test
 	public void handleDistributionAdvisedEvent_with_two_events_chronological()
 	{
-		handleDistributionAdvisedEvent_with_two_events_chronological(distributionAdvisedHandler);
+		handleDistributionAdvisedEvent_with_two_events_chronological(ddOrderAdvisedOrCreatedHandler);
 	}
 
 	/**
@@ -244,7 +247,7 @@ public class DistributionAdvisedHandlerHandlerTests
 	 *
 	 */
 	public static void handleDistributionAdvisedEvent_with_two_events_chronological(
-			@NonNull final DDOrderAdvisedHandler distributionAdvisedHandler)
+			@NonNull final DDOrderAdvisedOrCreatedHandler distributionAdvisedHandler)
 	{
 		final int durationOneDay = 1; // => t2 minus 1day = t1 (expected date of the demand candidate)
 		adviseDistributionFromToStartDuration(distributionAdvisedHandler, fromWarehouseId, intermediateWarehouseId,
@@ -276,7 +279,7 @@ public class DistributionAdvisedHandlerHandlerTests
 	public void performTestTwoDistibutionPlanEvents()
 	{
 		final int durationTwoDays = 2; // => t3 minus 2days = t2 (expected date of the demand candidate)
-		adviseDistributionFromToStartDuration(distributionAdvisedHandler, intermediateWarehouseId, toWarehouseId,
+		adviseDistributionFromToStartDuration(ddOrderAdvisedOrCreatedHandler, intermediateWarehouseId, toWarehouseId,
 				t3, // => expected date of the supply candidate
 				durationTwoDays);
 		{ // guards
@@ -290,7 +293,7 @@ public class DistributionAdvisedHandlerHandlerTests
 		}
 
 		final int durationOneDay = 1; // => t2 minus 1day = t1 (expected date of the demand candidate)
-		adviseDistributionFromToStartDuration(distributionAdvisedHandler, fromWarehouseId, intermediateWarehouseId,
+		adviseDistributionFromToStartDuration(ddOrderAdvisedOrCreatedHandler, fromWarehouseId, intermediateWarehouseId,
 				t2, // => expected date of the supply candidate
 				durationOneDay);
 
@@ -357,7 +360,7 @@ public class DistributionAdvisedHandlerHandlerTests
 	}
 
 	private static void adviseDistributionFromToStartDuration(
-			final DDOrderAdvisedHandler distributionAdvisedHandler,
+			final DDOrderAdvisedOrCreatedHandler distributionAdvisedHandler,
 			final int fromWarehouseId,
 			final int toWarehouseId,
 			final Date start,
@@ -385,6 +388,6 @@ public class DistributionAdvisedHandlerHandlerTests
 								.build())
 						.build())
 				.build();
-		distributionAdvisedHandler.handleDistributionAdvisedEvent(event1);
+		distributionAdvisedHandler.handleDDOrderAdvisedOrCreatedEvent(event1);
 	}
 }

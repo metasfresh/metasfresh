@@ -2,6 +2,8 @@ package de.metas.material.dispo.commons.repository;
 
 import java.util.Date;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.base.Preconditions;
 
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -86,7 +88,7 @@ public class MaterialDescriptorQuery
 			final int warehouseId,
 			final int productId,
 			final StorageAttributesKey storageAttributesKey,
-			final int bPartnerId,
+			final Integer bPartnerId,
 			final Date date,
 			final DateOperator dateOperator)
 	{
@@ -94,7 +96,23 @@ public class MaterialDescriptorQuery
 
 		this.productId = productId;
 		this.storageAttributesKey = storageAttributesKey != null ? storageAttributesKey : ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL;
-		this.bPartnerId = bPartnerId;
+
+		if (bPartnerId == null)
+		{
+			this.bPartnerId = StockQuery.BPARTNER_ID_ANY;
+		}
+		else if (bPartnerId == 0)
+		{
+			this.bPartnerId = StockQuery.BPARTNER_ID_NONE;
+		}
+		else if (bPartnerId > 0 || bPartnerId == StockQuery.BPARTNER_ID_ANY || bPartnerId == StockQuery.BPARTNER_ID_NONE)
+		{
+			this.bPartnerId = bPartnerId;
+		}
+		else
+		{
+			throw new AdempiereException("Parameter bPartnerId has an invalid value=" + bPartnerId);
+		}
 
 		Preconditions.checkArgument(dateOperator == null || date != null,
 				"Given date parameter may not be null because a not-null dateOperator=%s is given",

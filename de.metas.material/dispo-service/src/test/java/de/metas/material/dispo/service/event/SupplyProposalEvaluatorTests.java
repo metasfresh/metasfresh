@@ -30,8 +30,8 @@ import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
-import de.metas.material.dispo.service.event.handler.DDOrderAdvisedHandler;
-import de.metas.material.dispo.service.event.handler.DistributionAdvisedHandlerHandlerTests;
+import de.metas.material.dispo.service.event.handler.DDOrderAdvisedOrCreatedHandler;
+import de.metas.material.dispo.service.event.handler.DDOrderAdvisedOrCreatedHandlerTests;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import mockit.Mocked;
@@ -76,7 +76,7 @@ public class SupplyProposalEvaluatorTests
 
 	private static final int DEMAND_WAREHOUSE_ID = 6;
 
-	private DDOrderAdvisedHandler distributionAdvisedEventHandler;
+	private DDOrderAdvisedOrCreatedHandler distributionAdvisedEventHandler;
 
 	/**
 	 * This is the code under test
@@ -117,7 +117,7 @@ public class SupplyProposalEvaluatorTests
 						stockCandidateService
 						)));
 
-		distributionAdvisedEventHandler = new DDOrderAdvisedHandler(
+		distributionAdvisedEventHandler = new DDOrderAdvisedOrCreatedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
 				candidateChangeHandler,
@@ -242,7 +242,7 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChain()
 	{
-		DistributionAdvisedHandlerHandlerTests.handleDistributionAdvisedEvent_with_two_events_chronological(distributionAdvisedEventHandler);
+		DDOrderAdvisedOrCreatedHandlerTests.handleDistributionAdvisedEvent_with_two_events_chronological(distributionAdvisedEventHandler);
 
 		// propose what would create an additional demand on A and an additional supply on B. nothing wrong with that
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
@@ -278,7 +278,7 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChainOpposite()
 	{
-		DistributionAdvisedHandlerHandlerTests.handleDistributionAdvisedEvent_with_two_events_chronological(distributionAdvisedEventHandler);
+		DDOrderAdvisedOrCreatedHandlerTests.handleDistributionAdvisedEvent_with_two_events_chronological(distributionAdvisedEventHandler);
 		// we now have an unbalanced demand with a stock of -10 in "fromWarehouseId" (because that's where the "last" demand of the "last" DistibutionPlan is)
 		// and we have a stock of +10 in "toWarehouseId"
 

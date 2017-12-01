@@ -33,7 +33,6 @@ import lombok.Value;
  * #L%
  */
 @Value
-@Builder
 public class DDOrderLine
 {
 	int salesOrderLineId;
@@ -47,28 +46,35 @@ public class DDOrderLine
 	/**
 	 * {@link DDOrder#getDatePromised()} minus this number of days tells us when the distribution for this particular line needs to start
 	 */
-	private final int durationDays;
+	int durationDays;
 
-	private final int networkDistributionLineId;
+	int networkDistributionLineId;
 
-	private final int ddOrderLineId;
+	int ddOrderLineId;
+
+	int bPartnerId;
 
 	@JsonCreator
+	@Builder
 	public DDOrderLine(
 			@JsonProperty("salesOrderLineId") int salesOrderLineId,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
+			@JsonProperty("bPartnerId") int bPartnerId,
 			@JsonProperty("qty") @NonNull final BigDecimal qty,
 			@JsonProperty("durationDays") final int durationDays,
 			@JsonProperty("networkDistributionLineId") final int networkDistributionLineId,
 			@JsonProperty("ddOrderLineId") final int ddOrderLineId)
 	{
 		this.salesOrderLineId = salesOrderLineId;
+
 		this.productDescriptor = productDescriptor;
+		this.bPartnerId = bPartnerId;
 
 		this.qty = qty;
 
 		Preconditions.checkArgument(durationDays >= 0, "The Given parameter durationDays=%s needs to be > 0", "durationDays");
 		this.durationDays = durationDays;
+
 		this.networkDistributionLineId = networkDistributionLineId; // can be <= 0 if the DD_Order was created "manually"
 
 		this.ddOrderLineId = ddOrderLineId;

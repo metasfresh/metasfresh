@@ -73,7 +73,8 @@ public class ForecastCreatedHandler
 			@NonNull final CandidateBuilder candidateBuilder,
 			@NonNull final ForecastLine forecastLine)
 	{
-		candidateBuilder.materialDescriptor(forecastLine.getMaterialDescriptor())
+		candidateBuilder
+				.materialDescriptor(forecastLine.getMaterialDescriptor())
 				.demandDetail(DemandDetail.forForecastLineId(forecastLine.getForecastLineId()));
 	}
 }

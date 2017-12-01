@@ -1,5 +1,6 @@
 package de.metas.material.dispo.commons.repository;
 
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
@@ -54,6 +55,7 @@ public class MaterialDescriptorQueryTest
 				.date(NOW)
 				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)
+				.bPartnerId(BPARTNER_ID)
 				.warehouseId(WAREHOUSE_ID)
 				.build();
 
@@ -61,6 +63,8 @@ public class MaterialDescriptorQueryTest
 
 		assertThat(result.getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(result.getBPartnerId()).isEqualTo(BPARTNER_ID);
+		assertThat(result.getDateOperator()).isEqualTo(DateOperator.AT);
 		assertThat(result.getDate()).isEqualTo(NOW);
 	}
 
@@ -72,5 +76,7 @@ public class MaterialDescriptorQueryTest
 		assertThat(result.getProductId()).isLessThanOrEqualTo(0);
 		assertThat(result.getStorageAttributesKey())
 				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
+		assertThat(result.getBPartnerId()).isSameAs(StockQuery.BPARTNER_ID_ANY);
 	}
+
 }

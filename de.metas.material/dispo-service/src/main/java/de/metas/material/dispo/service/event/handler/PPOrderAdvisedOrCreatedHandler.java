@@ -40,7 +40,7 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class PPOrderAdvisedHandler
+public class PPOrderAdvisedOrCreatedHandler
 {
 	private final CandidateChangeService candidateChangeHandler;
 	private final RequestMaterialOrderService requestMaterialOrderService;
@@ -50,7 +50,7 @@ public class PPOrderAdvisedHandler
 	 * @param candidateChangeHandler
 	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
 	 */
-	public PPOrderAdvisedHandler(
+	public PPOrderAdvisedOrCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final RequestMaterialOrderService candidateService)
 	{
@@ -58,7 +58,7 @@ public class PPOrderAdvisedHandler
 		this.requestMaterialOrderService = candidateService;
 	}
 
-	public void handleProductionAdvisedEvent(final PPOrderAdvisedOrCreatedEvent productionAdvisedEvent)
+	public void handlePPOrderAdvisedOrCreatedEvent(final PPOrderAdvisedOrCreatedEvent productionAdvisedEvent)
 	{
 		final PPOrder ppOrder = productionAdvisedEvent.getPpOrder();
 
@@ -107,6 +107,7 @@ public class PPOrderAdvisedHandler
 				.productDescriptor(ppOrder.getProductDescriptor())
 				.quantity(ppOrder.getQuantity())
 				.warehouseId(ppOrder.getWarehouseId())
+				.bPartnerId(ppOrder.getBPartnerId())
 				.build();
 		return materialDescriptor;
 	}
@@ -118,6 +119,7 @@ public class PPOrderAdvisedHandler
 				.productDescriptor(ppOrderLine.getProductDescriptor())
 				.quantity(ppOrderLine.getQtyRequired())
 				.warehouseId(ppOrder.getWarehouseId())
+				.bPartnerId(ppOrder.getBPartnerId())
 				.build();
 		return materialDescriptor;
 	}

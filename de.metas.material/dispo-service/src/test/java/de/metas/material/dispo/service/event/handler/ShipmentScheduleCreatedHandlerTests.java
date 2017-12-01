@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.event.handler;
 
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.CLIENT_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
@@ -123,6 +124,8 @@ public class ShipmentScheduleCreatedHandlerTests
 
 		assertThat(demandRecord.getQty()).isEqualByComparingTo("10");
 		assertThat(stockRecord.getQty()).isEqualByComparingTo("-10"); // the stock is unbalanced, because there is no existing stock and no supply
+
+		assertThat(allRecords).allSatisfy(r -> assertThat(r.getC_BPartner_ID()).isEqualTo(BPARTNER_ID));
 	}
 
 	public static ShipmentScheduleCreatedEvent createShipmentScheduleTestEvent()
@@ -132,6 +135,7 @@ public class ShipmentScheduleCreatedHandlerTests
 				.materialDescriptor(MaterialDescriptor.builder()
 						.date(NOW)
 						.productDescriptor(createProductDescriptor())
+						.bPartnerId(BPARTNER_ID)
 						.quantity(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
 						.build())

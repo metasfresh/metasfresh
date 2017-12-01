@@ -193,6 +193,7 @@ public class M_Transaction
 				.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
 				.date(transaction.getMovementDate())
 				.productDescriptor(productDescriptor)
+				.bPartnerId(transaction.getC_BPartner_ID())
 				.quantity(quantity)
 				.build();
 	}
