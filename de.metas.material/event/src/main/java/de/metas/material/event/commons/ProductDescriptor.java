@@ -43,18 +43,9 @@ import lombok.experimental.FieldDefaults;
 		@JsonSubTypes.Type(name = "MaterialDescriptor", value = MaterialDescriptor.class) })
 public class ProductDescriptor
 {
-	public static final ProductDescriptor incompleteForProductId(final int productId)
-	{
-		return new ProductDescriptor(false, // complete == false
-				productId,
-				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL,
-				-1);
-	}
-
 	public static final ProductDescriptor completeForProductIdAndEmptyAttribute(final int productId)
 	{
-		return new ProductDescriptor(true, // complete == true
-				productId,
+		return new ProductDescriptor(productId,
 				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL,
 				0);
 	}
@@ -64,7 +55,7 @@ public class ProductDescriptor
 			@NonNull final StorageAttributesKey storageAttributesKey,
 			final int attributeSetInstanceId)
 	{
-		return new ProductDescriptor(true, productId, storageAttributesKey, attributeSetInstanceId); // complete == true
+		return new ProductDescriptor(productId, storageAttributesKey, attributeSetInstanceId);
 	}
 
 	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY_ALL = StorageAttributesKey.ofAttributeValueIds(-1000);
@@ -73,9 +64,6 @@ public class ProductDescriptor
 	/** This key's meaning depends on the other keys it comes with. */
 	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = StorageAttributesKey.ofAttributeValueIds(-1001);
 	public static final String MSG_STORAGE_ATTRIBUTES_KEY_OTHER = "de.metas.material.dispo.<OTHER_STORAGE_ATTRIBUTES_KEYS>";
-
-	@JsonProperty
-	boolean productDescriptorComplete;
 
 	@Getter
 	int productId;
@@ -91,36 +79,20 @@ public class ProductDescriptor
 
 	@JsonCreator
 	public ProductDescriptor(
-			@JsonProperty("productDescriptorComplete") final boolean complete,
 			@JsonProperty("productId") final int productId,
 			@JsonProperty("storageAttributesKey") @NonNull final StorageAttributesKey storageAttributesKey,
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId)
 	{
-		this.productDescriptorComplete = complete;
 		this.productId = productId;
 		this.storageAttributesKey = storageAttributesKey;
 		this.attributeSetInstanceId = attributeSetInstanceId;
 
-		asssertCompleteness();
+		Preconditions.checkArgument(productId > 0,
+				"Given parameter productId=%s needs to be >0, because complete=true", productId);
+		Preconditions.checkArgument(attributeSetInstanceId >= 0,
+				"Given parameter attributeSetInstanceId needs to >=0, because complete=true");
+		Preconditions.checkNotNull(storageAttributesKey,
+				"Given storageAttributeKey date needs to not-null, because complete=true");
 	}
 
-	public ProductDescriptor asssertCompleteness()
-	{
-		if (productDescriptorComplete)
-		{
-			Preconditions.checkArgument(productId > 0,
-					"Given parameter productId=%s needs to be >0, because complete=true", productId);
-			Preconditions.checkArgument(attributeSetInstanceId >= 0,
-					"Given parameter attributeSetInstanceId needs to >=0, because complete=true");
-			Preconditions.checkNotNull(storageAttributesKey,
-					"Given storageAttributeKey date needs to not-null, because complete=true");
-		}
-		return this;
-	}
-
-	@JsonProperty("productDescriptorComplete")
-	public boolean isComplete()
-	{
-		return productDescriptorComplete;
-	}
 }

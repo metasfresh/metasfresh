@@ -169,7 +169,6 @@ public class ForecastCreatedHandlerTest
 		final ForecastLine forecastLine = ForecastLine.builder()
 				.forecastLineId(300)
 				.materialDescriptor(MaterialDescriptor.builder()
-						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(new BigDecimal("8"))

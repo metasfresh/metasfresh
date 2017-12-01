@@ -179,8 +179,6 @@ public class Candidate
 		this.groupId = groupId;
 		this.seqNo = seqNo;
 
-		Preconditions.checkArgument(materialDescriptor.isComplete(),
-				"Given parameter materialDescriptor needs to have iscomplete==true; materialDescriptor=%s", materialDescriptor);
 		this.materialDescriptor = materialDescriptor;
 
 		this.productionDetail = productionDetail;

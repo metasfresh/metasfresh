@@ -87,8 +87,6 @@ public class PPOrderLine
 		this.productBomLineId = checkIdGreaterThanZero("productBomLineId", productBomLineId);
 		this.ppOrderLineId = ppOrderLineId;
 		this.receipt = receipt;
-
-		productDescriptor.asssertCompleteness();
 		this.productDescriptor = productDescriptor;
 
 		this.qtyRequired = qtyRequired;

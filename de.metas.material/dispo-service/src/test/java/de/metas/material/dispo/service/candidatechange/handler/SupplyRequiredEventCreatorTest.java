@@ -52,7 +52,6 @@ public class SupplyRequiredEventCreatorTest
 				.groupId(40)
 				.seqNo(50)
 				.materialDescriptor(MaterialDescriptor.builder()
-						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.date(SystemTime.asTimestamp())
 						.quantity(BigDecimal.TEN)

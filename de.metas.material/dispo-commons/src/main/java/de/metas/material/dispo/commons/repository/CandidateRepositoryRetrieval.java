@@ -162,7 +162,7 @@ public class CandidateRepositoryRetrieval
 				getEfferciveStorageAttributesKey(candidateRecord),
 				candidateRecord.getM_AttributeSetInstance_ID());
 
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builderForCompleteDescriptor()
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(productDescriptor)
 				.quantity(candidateRecord.getQty())
 				.warehouseId(candidateRecord.getM_Warehouse_ID())

@@ -78,7 +78,7 @@ public class M_ShipmentSchedule
 
 		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
-				.materialDescriptor(MaterialDescriptor.builderForCompleteDescriptor()
+				.materialDescriptor(MaterialDescriptor.builder()
 						.date(preparationDate)
 						.productDescriptor(productDescriptor)
 						.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))

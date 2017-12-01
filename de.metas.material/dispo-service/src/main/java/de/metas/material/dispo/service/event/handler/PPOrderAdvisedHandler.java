@@ -103,7 +103,6 @@ public class PPOrderAdvisedHandler
 	private static MaterialDescriptor createMaterialDescriptorFromPpOrder(final PPOrder ppOrder)
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.date(ppOrder.getDatePromised())
 				.productDescriptor(ppOrder.getProductDescriptor())
 				.quantity(ppOrder.getQuantity())
@@ -115,7 +114,6 @@ public class PPOrderAdvisedHandler
 	private static MaterialDescriptor createMaterialDescriptorForPpOrderAndLine(final PPOrder ppOrder, final PPOrderLine ppOrderLine)
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.date(ppOrderLine.isReceipt() ? ppOrder.getDatePromised() : ppOrder.getDateStartSchedule())
 				.productDescriptor(ppOrderLine.getProductDescriptor())
 				.quantity(ppOrderLine.getQtyRequired())

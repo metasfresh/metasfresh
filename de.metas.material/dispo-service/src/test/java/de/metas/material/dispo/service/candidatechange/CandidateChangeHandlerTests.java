@@ -219,7 +219,7 @@ public class CandidateChangeHandlerTests
 		}
 
 		// do the test
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builderForCompleteDescriptor()
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.date(t2)
@@ -264,7 +264,6 @@ public class CandidateChangeHandlerTests
 			@NonNull final Date dateProjected)
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("10"))
@@ -380,7 +379,6 @@ public class CandidateChangeHandlerTests
 			final int shipmentScheduleIdForDemandDetail)
 	{
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
@@ -407,7 +405,6 @@ public class CandidateChangeHandlerTests
 			final int shipmentScheduleIdForDemandDetail)
 	{
 		final MaterialDescriptor supplyMaterialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)

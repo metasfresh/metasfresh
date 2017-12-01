@@ -7,7 +7,6 @@ import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -56,7 +55,7 @@ public class RepositoryTestHelper
 
 	public RepositoryTestHelper(@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands)
 	{
-		materialDescriptorOfStockCandidate = MaterialDescriptor.builderForCompleteDescriptor()
+		materialDescriptorOfStockCandidate = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("11"))
@@ -72,13 +71,12 @@ public class RepositoryTestHelper
 								.materialDescriptor(materialDescriptorOfStockCandidate)
 								.build());
 
-		final MaterialDescriptor laterMaterialDescriptor = MaterialDescriptor.builderForCompleteDescriptor()
+		final MaterialDescriptor laterMaterialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("10"))
 				.date(AFTER_NOW)
 				.build();
-		assertThat(laterMaterialDescriptor.isComplete()).isTrue();
 
 		laterStockCandidate = candidateRepositoryCommands
 				.addOrUpdateOverwriteStoredSeqNo(

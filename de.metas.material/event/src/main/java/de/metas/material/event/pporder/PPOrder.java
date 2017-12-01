@@ -121,8 +121,6 @@ public class PPOrder
 		this.plantId = checkIdGreaterThanZero("plantId", plantId);
 		this.warehouseId = checkIdGreaterThanZero("warehouseId", warehouseId);
 		this.productPlanningId = productPlanningId; // ok to be not set
-
-		productDescriptor.asssertCompleteness();
 		this.productDescriptor = productDescriptor;
 
 		this.uomId = checkIdGreaterThanZero("uomId", uomId);

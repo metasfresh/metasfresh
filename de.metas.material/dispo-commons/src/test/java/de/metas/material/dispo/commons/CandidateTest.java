@@ -36,7 +36,7 @@ public class CandidateTest
 	{
 		Candidate.builder()
 				.type(CandidateType.STOCK)
-				.materialDescriptor(MaterialDescriptor.builderForCompleteDescriptor().build())
+				.materialDescriptor(MaterialDescriptor.builder().build())
 				.build();
 	}
 

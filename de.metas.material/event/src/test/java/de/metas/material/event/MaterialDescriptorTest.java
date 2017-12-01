@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 import org.junit.Test;
 
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 
 /*
  * #%L
@@ -41,37 +40,21 @@ public class MaterialDescriptorTest
 	@Test(expected = RuntimeException.class)
 	public void builderForCandidate_fail()
 	{
-		MaterialDescriptor.builderForCompleteDescriptor().build();
+		MaterialDescriptor.builder().build();
 	}
 
 	@Test
 	public void builderForCandidate_succeed()
 	{
-		final MaterialDescriptor result = MaterialDescriptor.builderForCompleteDescriptor()
+		final MaterialDescriptor result = MaterialDescriptor.builder()
 				.date(NOW)
 				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)
 				.warehouseId(WAREHOUSE_ID)
 				.build();
-		assertThat(result.isComplete()).isTrue();
 		assertThat(result.getQuantity()).isEqualByComparingTo("10");
 		assertThat(result.getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(result.getDate()).isEqualTo(NOW);
-	}
-
-
-	@Test(expected = RuntimeException.class)
-	public void completeMaterialDescriptor_with_incomplete_productdescriptor()
-	{
-		final ProductDescriptor incompleteProductDescriptor = ProductDescriptor.incompleteForProductId(PRODUCT_ID);
-		assertThat(incompleteProductDescriptor.isComplete()).isFalse();
-
-		MaterialDescriptor.builderForCompleteDescriptor()
-				.date(NOW)
-				.productDescriptor(incompleteProductDescriptor)
-				.quantity(BigDecimal.TEN)
-				.warehouseId(WAREHOUSE_ID)
-				.build();
 	}
 }

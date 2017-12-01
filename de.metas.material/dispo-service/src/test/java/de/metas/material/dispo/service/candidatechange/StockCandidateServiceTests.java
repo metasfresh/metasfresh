@@ -80,7 +80,6 @@ public class StockCandidateServiceTests
 	private void createStockRecordAtTimeNOW()
 	{
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("10"))
@@ -102,7 +101,6 @@ public class StockCandidateServiceTests
 		createStockRecordAtTimeNOW();
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.date(BEFORE_NOW)
@@ -126,7 +124,6 @@ public class StockCandidateServiceTests
 		createStockRecordAtTimeNOW();
 
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.date(AFTER_NOW)
@@ -277,7 +274,7 @@ public class StockCandidateServiceTests
 	 */
 	private void invokeAddOrUpdateStock(@NonNull final Date date, @NonNull final String qty)
 	{
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCompleteDescriptor()
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal(qty))

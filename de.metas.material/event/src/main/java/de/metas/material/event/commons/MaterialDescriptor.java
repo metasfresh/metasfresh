@@ -41,16 +41,6 @@ import lombok.experimental.FieldDefaults;
 @ToString(callSuper = true)
 public class MaterialDescriptor extends ProductDescriptor
 {
-	/**
-	 * @return a builder where you need to set all the properties (i.e. with complete=true).
-	 */
-	public static MaterialDescriptorBuilder builderForCompleteDescriptor()
-	{
-		return MaterialDescriptor.builder().complete(true);
-	}
-
-	boolean materialDescriptorComplete;
-
 	@Getter
 	int warehouseId;
 
@@ -66,15 +56,13 @@ public class MaterialDescriptor extends ProductDescriptor
 	@Getter
 	Date date;
 
-
 	@Builder
 	private MaterialDescriptor(
 			final int warehouseId,
 			final int bPartnerId,
 			final Date date,
 			final ProductDescriptor productDescriptor,
-			final BigDecimal quantity,
-			final Boolean complete)
+			final BigDecimal quantity)
 	{
 		this(
 				warehouseId,
@@ -83,9 +71,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				date,
 				productDescriptor == null ? 0 : productDescriptor.getProductId(),
 				productDescriptor == null ? -1 : productDescriptor.getAttributeSetInstanceId(),
-				productDescriptor == null ? STORAGE_ATTRIBUTES_KEY_ALL : productDescriptor.getStorageAttributesKey(),
-				productDescriptor == null ? false : productDescriptor.isComplete(),
-				complete);
+				productDescriptor == null ? STORAGE_ATTRIBUTES_KEY_ALL : productDescriptor.getStorageAttributesKey());
 	}
 
 	@JsonCreator
@@ -96,14 +82,9 @@ public class MaterialDescriptor extends ProductDescriptor
 			@JsonProperty("date") final Date date,
 			@JsonProperty("productId") final int productId,
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId,
-			@JsonProperty("storageAttributesKey") final StorageAttributesKey storageAttributesKey,
-			@JsonProperty("productDescriptorComplete") final boolean productDescriptorComplete,
-			@JsonProperty("materialDescriptorComplete") final Boolean complete)
+			@JsonProperty("storageAttributesKey") final StorageAttributesKey storageAttributesKey)
 	{
-		super(productDescriptorComplete, productId, storageAttributesKey, attributeSetInstanceId);
-
-		Preconditions.checkNotNull(complete, "The given parameter complete may not be null (either true or false)");
-		this.materialDescriptorComplete = complete;
+		super(productId, storageAttributesKey, attributeSetInstanceId);
 
 		this.warehouseId = warehouseId;
 		this.bPartnerId = bPartnerId;
@@ -111,40 +92,25 @@ public class MaterialDescriptor extends ProductDescriptor
 
 		this.date = date;
 
-
 		asssertMaterialDescriptorComplete();
 	}
 
 	public MaterialDescriptor asssertMaterialDescriptorComplete()
 	{
-		if (materialDescriptorComplete)
-		{
-			Preconditions.checkArgument(super.isComplete(),
-					"productDescriptor=%s needs to be complete, because complete=true", this);
-			Preconditions.checkArgument(warehouseId > 0,
-					"warehouseId=%s needs to be >0, because complete=true", warehouseId);
-			Preconditions.checkNotNull(quantity,
-					"quantity needs to be not-null, because complete=true");
-			Preconditions.checkNotNull(date,
-					"date needs to not-null, because complete=true");
+		Preconditions.checkArgument(warehouseId > 0,
+				"warehouseId=%s needs to be >0, because complete=true", warehouseId);
+		Preconditions.checkNotNull(quantity,
+				"quantity needs to be not-null, because complete=true");
+		Preconditions.checkNotNull(date,
+				"date needs to not-null, because complete=true");
 
-			super.asssertCompleteness();
-		}
 		return this;
-	}
-
-	@Override
-	@JsonProperty("materialDescriptorComplete")
-	public boolean isComplete()
-	{
-		return materialDescriptorComplete && super.isComplete();
 	}
 
 	public MaterialDescriptor withQuantity(@NonNull final BigDecimal quantity)
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builder()
 				.quantity(quantity)
-				.complete(this.materialDescriptorComplete)
 				.date(this.date)
 				.productDescriptor(this)
 				.warehouseId(this.warehouseId)
@@ -156,7 +122,6 @@ public class MaterialDescriptor extends ProductDescriptor
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builder()
 				.date(date)
-				.complete(this.materialDescriptorComplete)
 				.productDescriptor(this)
 				.warehouseId(this.warehouseId)
 				.quantity(this.quantity)
@@ -168,7 +133,6 @@ public class MaterialDescriptor extends ProductDescriptor
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builder()
 				.productDescriptor(productDescriptor)
-				.complete(this.materialDescriptorComplete)
 				.date(this.date)
 				.warehouseId(this.warehouseId)
 				.quantity(this.quantity)
@@ -180,7 +144,6 @@ public class MaterialDescriptor extends ProductDescriptor
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builder()
 				.warehouseId(warehouseId)
-				.complete(this.materialDescriptorComplete)
 				.date(this.date)
 				.productDescriptor(this)
 				.quantity(this.quantity)

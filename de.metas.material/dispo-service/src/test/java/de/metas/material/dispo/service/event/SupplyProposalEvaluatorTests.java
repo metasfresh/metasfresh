@@ -22,8 +22,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -203,7 +203,6 @@ public class SupplyProposalEvaluatorTests
 	private void addSimpleSupplyDemand()
 	{
 		final MaterialDescriptor supplyMaterialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.date(t3)
 				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)
@@ -220,7 +219,6 @@ public class SupplyProposalEvaluatorTests
 		final Candidate supplyCandidateWithId = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
 
 		final MaterialDescriptor demandDescr = MaterialDescriptor.builder()
-				.complete(true)
 				.date(t2)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(DEMAND_WAREHOUSE_ID)

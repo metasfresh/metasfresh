@@ -77,7 +77,7 @@ public class M_ForecastEventCreator
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(forecastLine);
 
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builderForCompleteDescriptor()
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(forecastLine.getDatePromised())
 				.productDescriptor(productDescriptor)
 				.warehouseId(forecastLine.getM_Warehouse_ID())

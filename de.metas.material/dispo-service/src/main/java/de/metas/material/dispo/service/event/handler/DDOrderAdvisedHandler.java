@@ -95,7 +95,6 @@ public class DDOrderAdvisedHandler
 			}
 
 			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-					.complete(true)
 					.date(ddOrder.getDatePromised())
 					.productDescriptor(ddOrderLine.getProductDescriptor())
 					.quantity(ddOrderLine.getQty())

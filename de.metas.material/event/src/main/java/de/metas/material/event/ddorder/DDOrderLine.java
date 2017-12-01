@@ -63,8 +63,6 @@ public class DDOrderLine
 			@JsonProperty("ddOrderLineId") final int ddOrderLineId)
 	{
 		this.salesOrderLineId = salesOrderLineId;
-
-		productDescriptor.asssertCompleteness();
 		this.productDescriptor = productDescriptor;
 
 		this.qty = qty;

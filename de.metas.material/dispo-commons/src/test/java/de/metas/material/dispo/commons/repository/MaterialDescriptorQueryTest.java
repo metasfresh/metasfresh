@@ -50,7 +50,7 @@ public class MaterialDescriptorQueryTest
 	@Test
 	public void withoutQuantity()
 	{
-		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCompleteDescriptor()
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
 				.date(NOW)
 				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)

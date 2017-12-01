@@ -175,7 +175,6 @@ public class DemandCandiateCangeHandlerTest
 	private Candidate createDemandCandidateWithQuantity(@NonNull final String quantity)
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal(quantity))
@@ -244,7 +243,6 @@ public class DemandCandiateCangeHandlerTest
 		final Candidate candidate = Candidate.builder()
 				.type(type)
 				.materialDescriptor(MaterialDescriptor.builder()
-						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.date(SystemTime.asTimestamp())
 						.warehouseId(WAREHOUSE_ID)
@@ -264,7 +262,6 @@ public class DemandCandiateCangeHandlerTest
 		final BigDecimal qty = new BigDecimal("23");
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
@@ -313,7 +310,6 @@ public class DemandCandiateCangeHandlerTest
 		final BigDecimal qty = new BigDecimal("23");
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
