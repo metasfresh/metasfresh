@@ -19,8 +19,8 @@ import de.metas.material.dispo.client.repository.AvailableStockResult.AvailableS
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group.GroupBuilder;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group.Type;
-import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroup;
-import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
+import de.metas.material.dispo.commons.repository.StockQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -61,9 +61,9 @@ public class AvailableStockService
 	}
 
 	@NonNull
-	public AvailableStockResult retrieveAvailableStock(@NonNull final MaterialQuery query)
+	public AvailableStockResult retrieveAvailableStock(@NonNull final StockQuery query)
 	{
-		final de.metas.material.dispo.commons.repository.AvailableStockResult commonsAvailableStock = //
+		final de.metas.material.dispo.commons.repository.StockResult commonsAvailableStock = //
 				stockRepository.retrieveAvailableStock(query);
 
 		final AvailableStockResultBuilder clientResultBuilder = AvailableStockResult.builder();

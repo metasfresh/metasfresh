@@ -1,4 +1,4 @@
-package de.metas.material.event;
+package de.metas.material.dispo.commons.repository;
 
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
@@ -10,12 +10,13 @@ import java.math.BigDecimal;
 
 import org.junit.Test;
 
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 
 /*
  * #%L
- * metasfresh-material-event
+ * metasfresh-material-dispo-commons
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -35,43 +36,41 @@ import de.metas.material.event.commons.ProductDescriptor;
  * #L%
  */
 
-public class MaterialDescriptorTest
+public class MaterialDescriptorQueryTest
 {
 
 	@Test(expected = RuntimeException.class)
-	public void builderForCandidate_fail()
+	public void build_when_dateOperatorAndNoDate_then_exception()
 	{
-		MaterialDescriptor.builderForCompleteDescriptor().build();
+		MaterialDescriptorQuery.builder()
+				.dateOperator(DateOperator.AT)
+				.build();
 	}
 
 	@Test
-	public void builderForCandidate_succeed()
+	public void withoutQuantity()
 	{
-		final MaterialDescriptor result = MaterialDescriptor.builderForCompleteDescriptor()
+		final MaterialDescriptor materialDescr = MaterialDescriptor.builderForCompleteDescriptor()
 				.date(NOW)
 				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)
 				.warehouseId(WAREHOUSE_ID)
 				.build();
-		assertThat(result.isComplete()).isTrue();
-		assertThat(result.getQuantity()).isEqualByComparingTo("10");
+
+		final MaterialDescriptorQuery result = MaterialDescriptorQuery.forDescriptor(materialDescr);
+
 		assertThat(result.getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(result.getDate()).isEqualTo(NOW);
 	}
 
-
-	@Test(expected = RuntimeException.class)
-	public void completeMaterialDescriptor_with_incomplete_productdescriptor()
+	@Test
+	public void empty_query()
 	{
-		final ProductDescriptor incompleteProductDescriptor = ProductDescriptor.incompleteForProductId(PRODUCT_ID);
-		assertThat(incompleteProductDescriptor.isComplete()).isFalse();
+		final MaterialDescriptorQuery result = MaterialDescriptorQuery.builder().build();
 
-		MaterialDescriptor.builderForCompleteDescriptor()
-				.date(NOW)
-				.productDescriptor(incompleteProductDescriptor)
-				.quantity(BigDecimal.TEN)
-				.warehouseId(WAREHOUSE_ID)
-				.build();
+		assertThat(result.getProductId()).isLessThanOrEqualTo(0);
+		assertThat(result.getStorageAttributesKey())
+				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
 	}
 }

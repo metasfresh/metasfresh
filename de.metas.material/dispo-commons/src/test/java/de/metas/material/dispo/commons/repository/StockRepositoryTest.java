@@ -71,7 +71,7 @@ public class StockRepositoryTest
 
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor();
 
-		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptor);
+		final StockQuery query = StockQuery.forMaterialDescriptor(materialDescriptor);
 
 		final BigDecimal result = new StockRepository().retrieveAvailableStockQtySum(query);
 		assertThat(result).isEqualByComparingTo("10");

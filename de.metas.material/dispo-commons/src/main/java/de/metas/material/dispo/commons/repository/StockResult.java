@@ -46,19 +46,19 @@ import lombok.Value;
  */
 
 @Data
-public class AvailableStockResult
+public class StockResult
 {
-	public static AvailableStockResult createEmpty()
+	public static StockResult createEmpty()
 	{
-		return new AvailableStockResult(new ArrayList<>());
+		return new StockResult(new ArrayList<>());
 	}
 
 	@NonNull
-	public static AvailableStockResult createEmptyWithPredefinedBuckets(@NonNull final MaterialMultiQuery multiQuery)
+	public static StockResult createEmptyWithPredefinedBuckets(@NonNull final StockMultiQuery multiQuery)
 	{
 		final ImmutableList.Builder<ResultGroup> resultBuilder = ImmutableList.builder();
 
-		for (final MaterialQuery query : multiQuery.getQueries())
+		for (final StockQuery query : multiQuery.getQueries())
 		{
 			List<StorageAttributesKey> storageAttributesKeys = query.getStorageAttributesKeys();
 			if (storageAttributesKeys.isEmpty())
@@ -92,7 +92,7 @@ public class AvailableStockResult
 			}
 		}
 
-		return new AvailableStockResult(resultBuilder.build());
+		return new StockResult(resultBuilder.build());
 	}
 
 	private final List<ResultGroup> resultGroups;
@@ -125,8 +125,8 @@ public class AvailableStockResult
 			this.storageAttributesKey = storageAttributesKey;
 			this.qty = qty == null ? BigDecimal.ZERO : qty;
 
-			if (bpartnerId == MaterialQuery.BPARTNER_ID_ANY
-					|| bpartnerId == MaterialQuery.BPARTNER_ID_NONE
+			if (bpartnerId == StockQuery.BPARTNER_ID_ANY
+					|| bpartnerId == StockQuery.BPARTNER_ID_NONE
 					|| bpartnerId > 0)
 			{
 				this.bpartnerId = bpartnerId;
@@ -138,7 +138,7 @@ public class AvailableStockResult
 		}
 
 		@VisibleForTesting
-		boolean matches(final ResultGroupAddRequest request)
+		boolean matches(final AddToResultGroupRequest request)
 		{
 			if (productId != request.getProductId())
 			{
@@ -177,12 +177,12 @@ public class AvailableStockResult
 
 		private boolean isBPartnerMatching(final int bpartnerIdToMatch)
 		{
-			return MaterialQuery.isBPartnerMatching(bpartnerId, bpartnerIdToMatch);
+			return StockQuery.isBPartnerMatching(bpartnerId, bpartnerIdToMatch);
 		}
 	}
 
 	@Value
-	public static final class ResultGroupAddRequest
+	public static final class AddToResultGroupRequest
 	{
 		private final int warehouseId;
 		private final int productId;
@@ -191,7 +191,7 @@ public class AvailableStockResult
 		private BigDecimal qty;
 
 		@Builder
-		public ResultGroupAddRequest(
+		public AddToResultGroupRequest(
 				final int warehouseId,
 				final int productId,
 				@NonNull final StorageAttributesKey storageAttributesKey,
@@ -204,7 +204,7 @@ public class AvailableStockResult
 			this.warehouseId = warehouseId;
 			this.productId = productId;
 			this.storageAttributesKey = storageAttributesKey;
-			if (bpartnerId > 0 || bpartnerId == MaterialQuery.BPARTNER_ID_NONE)
+			if (bpartnerId > 0 || bpartnerId == StockQuery.BPARTNER_ID_NONE)
 			{
 				this.bpartnerId = bpartnerId;
 			}
@@ -218,7 +218,7 @@ public class AvailableStockResult
 		}
 	}
 
-	public void addQtyToAllMatchingGroups(@NonNull final ResultGroupAddRequest request)
+	public void addQtyToAllMatchingGroups(@NonNull final AddToResultGroupRequest request)
 	{
 		boolean added = false;
 		for (final ResultGroup group : resultGroups)
@@ -237,7 +237,7 @@ public class AvailableStockResult
 		}
 	}
 
-	public void addGroup(@NonNull final ResultGroupAddRequest request)
+	public void addGroup(@NonNull final AddToResultGroupRequest request)
 	{
 		final ResultGroup group = ResultGroup.builder()
 				.productId(request.getProductId())

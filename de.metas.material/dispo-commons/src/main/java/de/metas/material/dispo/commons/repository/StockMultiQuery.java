@@ -34,9 +34,9 @@ import lombok.Value;
  */
 
 @Value
-public class MaterialMultiQuery
+public class StockMultiQuery
 {
-	public static final MaterialMultiQuery of(@NonNull final MaterialQuery query)
+	public static final StockMultiQuery of(@NonNull final StockQuery query)
 	{
 		return builder()
 				.query(query)
@@ -44,14 +44,14 @@ public class MaterialMultiQuery
 				.build();
 	}
 
-	private final Set<MaterialQuery> queries;
+	private final Set<StockQuery> queries;
 	
 	private static final boolean DEFAULT_addToPredefinedBuckets = true;
 	private final boolean addToPredefinedBuckets;
 
 	@Builder
-	private MaterialMultiQuery(
-			@NonNull @Singular final ImmutableSet<MaterialQuery> queries,
+	private StockMultiQuery(
+			@NonNull @Singular final ImmutableSet<StockQuery> queries,
 			final Boolean addToPredefinedBuckets)
 	{
 		Check.assumeNotEmpty(queries, "queries is not empty");

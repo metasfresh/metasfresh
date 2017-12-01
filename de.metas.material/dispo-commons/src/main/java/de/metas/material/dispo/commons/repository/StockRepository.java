@@ -18,7 +18,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroupAddRequest;
+import de.metas.material.dispo.commons.repository.StockResult.AddToResultGroupRequest;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.commons.StorageAttributesKey;
@@ -51,7 +51,7 @@ import lombok.Value;
 public class StockRepository
 {
 	@NonNull
-	public BigDecimal retrieveAvailableStockQtySum(@NonNull final MaterialQuery query)
+	public BigDecimal retrieveAvailableStockQtySum(@NonNull final StockQuery query)
 	{
 		final Timestamp latestDateOrNull = retrieveMaxDateLessOrEqual(query.getDate());
 		if (latestDateOrNull == null)
@@ -67,9 +67,9 @@ public class StockRepository
 	}
 
 	@NonNull
-	public AvailableStockResult retrieveAvailableStock(@NonNull MaterialMultiQuery multiQuery)
+	public StockResult retrieveAvailableStock(@NonNull StockMultiQuery multiQuery)
 	{
-		final AvailableStockResult result = multiQuery.isAddToPredefinedBuckets() ? AvailableStockResult.createEmptyWithPredefinedBuckets(multiQuery) : AvailableStockResult.createEmpty();
+		final StockResult result = multiQuery.isAddToPredefinedBuckets() ? StockResult.createEmptyWithPredefinedBuckets(multiQuery) : StockResult.createEmpty();
 
 		final IQuery<I_MD_Candidate_Stock_v> dbQuery = createDBQueryForMaterialQueryOrNull(multiQuery);
 		if (dbQuery == null)
@@ -77,9 +77,9 @@ public class StockRepository
 			return result;
 		}
 
-		final List<ResultGroupAddRequest> addRequests = dbQuery
+		final List<AddToResultGroupRequest> addRequests = dbQuery
 				.stream()
-				.map(stockRecord -> createResultGroupAddRequest(stockRecord))
+				.map(stockRecord -> createAddToResultGroupRequest(stockRecord))
 				.collect(ImmutableList.toImmutableList());
 
 		if (multiQuery.isAddToPredefinedBuckets())
@@ -93,12 +93,12 @@ public class StockRepository
 		return result;
 	}
 
-	public AvailableStockResult retrieveAvailableStock(@NonNull MaterialQuery query)
+	public StockResult retrieveAvailableStock(@NonNull StockQuery query)
 	{
-		return retrieveAvailableStock(MaterialMultiQuery.of(query));
+		return retrieveAvailableStock(StockMultiQuery.of(query));
 	}
 
-	private IQuery<I_MD_Candidate_Stock_v> createDBQueryForMaterialQueryOrNull(@NonNull final MaterialMultiQuery multiQuery)
+	private IQuery<I_MD_Candidate_Stock_v> createDBQueryForMaterialQueryOrNull(@NonNull final StockMultiQuery multiQuery)
 	{
 		return multiQuery.getQueries()
 				.stream()
@@ -138,11 +138,15 @@ public class StockRepository
 	}
 
 	@VisibleForTesting
-	static ResultGroupAddRequest createResultGroupAddRequest(final I_MD_Candidate_Stock_v stockRecord)
+	static AddToResultGroupRequest createAddToResultGroupRequest(final I_MD_Candidate_Stock_v stockRecord)
 	{
-		return ResultGroupAddRequest.builder()
+		final int bPpartnerIdForRequest = stockRecord.getC_BPartner_ID() > 0
+				? stockRecord.getC_BPartner_ID()
+				: StockQuery.BPARTNER_ID_NONE;
+
+		return AddToResultGroupRequest.builder()
 				.productId(stockRecord.getM_Product_ID())
-				.bpartnerId(stockRecord.getC_BPartner_ID())
+				.bpartnerId(bPpartnerIdForRequest)
 				.warehouseId(stockRecord.getM_Warehouse_ID())
 				.storageAttributesKey(StorageAttributesKey.ofString(stockRecord.getStorageAttributesKey()))
 				.qty(stockRecord.getQty())

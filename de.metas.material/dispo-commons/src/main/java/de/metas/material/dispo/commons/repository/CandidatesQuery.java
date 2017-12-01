@@ -1,4 +1,4 @@
-package de.metas.material.dispo.commons;
+package de.metas.material.dispo.commons.repository;
 
 import java.util.Objects;
 
@@ -12,7 +12,6 @@ import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
-import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -63,7 +62,7 @@ public final class CandidatesQuery
 			final boolean includeParentId)
 	{
 		final CandidatesQueryBuilder builder = CandidatesQuery.builder()
-				.materialDescriptor(candidate.getMaterialDescriptor())
+				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(candidate.getMaterialDescriptor()))
 				.matchExactStorageAttributesKey(true)
 				.demandDetail(candidate.getDemandDetail())
 				.distributionDetail(candidate.getDistributionDetail())
@@ -94,7 +93,7 @@ public final class CandidatesQuery
 	/**
 	 * If set, then this query is about {@link Candidate}s that have a parent candidate which matches the given material descriptor.
 	 */
-	MaterialDescriptor parentMaterialDescriptor;
+	MaterialDescriptorQuery parentMaterialDescriptorQuery;
 
 	DemandDetail parentDemandDetail;
 
@@ -122,7 +121,7 @@ public final class CandidatesQuery
 	 */
 	int groupId;
 
-	MaterialDescriptor materialDescriptor;
+	MaterialDescriptorQuery materialDescriptorQuery;
 
 	boolean matchExactStorageAttributesKey;
 
@@ -145,7 +144,7 @@ public final class CandidatesQuery
 
 	@Builder
 	public CandidatesQuery(
-			final MaterialDescriptor parentMaterialDescriptor,
+			final MaterialDescriptorQuery parentMaterialDescriptorQuery,
 			final DemandDetail parentDemandDetail,
 			final int orgId,
 			final CandidateType type,
@@ -154,14 +153,14 @@ public final class CandidatesQuery
 			final Integer id,
 			final Integer parentId,
 			final int groupId,
-			final MaterialDescriptor materialDescriptor,
+			final MaterialDescriptorQuery materialDescriptorQuery,
 			final boolean matchExactStorageAttributesKey,
 			final ProductionDetail productionDetail,
 			final DistributionDetail distributionDetail,
 			final DemandDetail demandDetail,
 			final TransactionDetail transactionDetail)
 	{
-		this.parentMaterialDescriptor = parentMaterialDescriptor;
+		this.parentMaterialDescriptorQuery = parentMaterialDescriptorQuery;
 		this.parentDemandDetail = parentDemandDetail;
 
 		this.matchExactStorageAttributesKey = matchExactStorageAttributesKey;
@@ -173,7 +172,7 @@ public final class CandidatesQuery
 		this.parentId = parentId == null ? UNSPECIFIED_PARENT_ID : parentId;
 		this.groupId = groupId;
 
-		this.materialDescriptor = materialDescriptor;
+		this.materialDescriptorQuery = materialDescriptorQuery;
 		this.productionDetail = productionDetail;
 		this.distributionDetail = distributionDetail;
 		this.demandDetail = demandDetail;
@@ -189,28 +188,28 @@ public final class CandidatesQuery
 	 */
 	public boolean matches(final Candidate candidate)
 	{
-		if (materialDescriptor != null && materialDescriptor.getDate() != null)
+		if (materialDescriptorQuery != null && materialDescriptorQuery.getDate() != null)
 		{
 			final boolean dateMatches;
-			switch (materialDescriptor.getDateOperator())
+			switch (materialDescriptorQuery.getDateOperator())
 			{
 				case BEFORE:
-					dateMatches = candidate.getDate().getTime() < materialDescriptor.getDate().getTime();
+					dateMatches = candidate.getDate().getTime() < materialDescriptorQuery.getDate().getTime();
 					break;
 				case BEFORE_OR_AT:
-					dateMatches = candidate.getDate().getTime() <= materialDescriptor.getDate().getTime();
+					dateMatches = candidate.getDate().getTime() <= materialDescriptorQuery.getDate().getTime();
 					break;
 				case AT:
-					dateMatches = candidate.getDate().getTime() == materialDescriptor.getDate().getTime();
+					dateMatches = candidate.getDate().getTime() == materialDescriptorQuery.getDate().getTime();
 					break;
 				case AT_OR_AFTER:
-					dateMatches = candidate.getDate().getTime() >= materialDescriptor.getDate().getTime();
+					dateMatches = candidate.getDate().getTime() >= materialDescriptorQuery.getDate().getTime();
 					break;
 				case AFTER:
-					dateMatches = candidate.getDate().getTime() > materialDescriptor.getDate().getTime();
+					dateMatches = candidate.getDate().getTime() > materialDescriptorQuery.getDate().getTime();
 					break;
 				default:
-					Check.errorIf(true, "Unexpected date operator={}; this={}", materialDescriptor.getDateOperator(), this);
+					Check.errorIf(true, "Unexpected date operator={}; this={}", materialDescriptorQuery.getDateOperator(), this);
 					return false; // won't be reached
 			}
 			if (!dateMatches)
@@ -219,7 +218,7 @@ public final class CandidatesQuery
 			}
 		}
 
-		if (isProductIdSpecified() && !Objects.equals(materialDescriptor.getProductId(), candidate.getProductId()))
+		if (isProductIdSpecified() && !Objects.equals(materialDescriptorQuery.getProductId(), candidate.getProductId()))
 		{
 			return false;
 		}
@@ -229,7 +228,7 @@ public final class CandidatesQuery
 			return false;
 		}
 
-		if (isWarehouseIdSpecified() && !Objects.equals(materialDescriptor.getWarehouseId(), candidate.getWarehouseId()))
+		if (isWarehouseIdSpecified() && !Objects.equals(materialDescriptorQuery.getWarehouseId(), candidate.getWarehouseId()))
 		{
 			return false;
 		}
@@ -239,11 +238,11 @@ public final class CandidatesQuery
 
 	private boolean isProductIdSpecified()
 	{
-		return materialDescriptor != null && materialDescriptor.getProductId() > 0;
+		return materialDescriptorQuery != null && materialDescriptorQuery.getProductId() > 0;
 	}
 
 	private boolean isWarehouseIdSpecified()
 	{
-		return materialDescriptor != null && materialDescriptor.getWarehouseId() > 0;
+		return materialDescriptorQuery != null && materialDescriptorQuery.getWarehouseId() > 0;
 	}
 }

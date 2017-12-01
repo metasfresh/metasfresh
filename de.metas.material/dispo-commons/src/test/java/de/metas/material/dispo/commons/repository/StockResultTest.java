@@ -19,9 +19,9 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroup;
-import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroupAddRequest;
-import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroupAddRequest.ResultGroupAddRequestBuilder;
+import de.metas.material.dispo.commons.repository.StockResult.AddToResultGroupRequest;
+import de.metas.material.dispo.commons.repository.StockResult.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
+import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.commons.StorageAttributesKey;
 
@@ -47,7 +47,7 @@ import de.metas.material.event.commons.StorageAttributesKey;
  * #L%
  */
 
-public class AvailableStockResultTest
+public class StockResultTest
 {
 	private static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY = StorageAttributesKey.ofAttributeValueIds(1, 2);
 	private static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = StorageAttributesKey.ofAttributeValueIds(1, 2, 3);
@@ -74,7 +74,7 @@ public class AvailableStockResultTest
 	@Test
 	public void createEmptyResultForQuery()
 	{
-		final MaterialMultiQuery query = MaterialMultiQuery.of(MaterialQuery.builder()
+		final StockMultiQuery query = StockMultiQuery.of(StockQuery.builder()
 				.productId(20)
 				.productId(10)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
@@ -82,7 +82,7 @@ public class AvailableStockResultTest
 				.date(NOW)
 				.build());
 
-		final List<ResultGroup> emptyResults = AvailableStockResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
+		final List<ResultGroup> emptyResults = StockResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
 
 		assertThat(emptyResults).hasSize(4);
 
@@ -110,12 +110,12 @@ public class AvailableStockResultTest
 	@Test
 	public void createEmptyResultForQuery_NoStrorageAttributesKey()
 	{
-		final MaterialMultiQuery query = MaterialMultiQuery.of(MaterialQuery.builder()
+		final StockMultiQuery query = StockMultiQuery.of(StockQuery.builder()
 				.productId(10)
 				.date(NOW)
 				.build());
 
-		final List<ResultGroup> emptyResults = AvailableStockResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
+		final List<ResultGroup> emptyResults = StockResult.createEmptyWithPredefinedBuckets(query).getResultGroups();
 
 		assertThat(emptyResults).hasSize(1);
 
@@ -141,19 +141,19 @@ public class AvailableStockResultTest
 				.warehouseId(100)
 				.bpartnerId(200)
 				.build();
-		final AvailableStockResult availableStockResult = new AvailableStockResult(ImmutableList.of(emptyResult1, emptyResult2));
+		final StockResult stockResult = new StockResult(ImmutableList.of(emptyResult1, emptyResult2));
 
-		final ResultGroupAddRequestBuilder requestBuilder = ResultGroupAddRequest.builder()
+		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
 				.bpartnerId(200)
 				.qty(BigDecimal.ONE);
 
-		availableStockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(1, 2)).build());
-		availableStockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(1, 2)).build());
-		availableStockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(2)).build());
+		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(1, 2)).build());
+		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(1, 2)).build());
+		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(2)).build());
 
-		final List<ResultGroup> resultGroups = availableStockResult.getResultGroups();
+		final List<ResultGroup> resultGroups = stockResult.getResultGroups();
 		assertThat(resultGroups).hasSize(2);
 
 		assertThat(resultGroups.get(0).getProductId()).isEqualTo(PRODUCT_ID);
@@ -175,7 +175,7 @@ public class AvailableStockResultTest
 				.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(1))
 				.build();
 
-		final ResultGroupAddRequestBuilder requestBuilder = ResultGroupAddRequest.builder()
+		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
 				.bpartnerId(200)
@@ -199,7 +199,7 @@ public class AvailableStockResultTest
 				.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(1, 3))
 				.build();
 
-		final ResultGroupAddRequestBuilder requestBuilder = ResultGroupAddRequest.builder()
+		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
 				.bpartnerId(200)
@@ -222,14 +222,14 @@ public class AvailableStockResultTest
 	{
 		final I_MD_Candidate_Stock_v stockRecord = createStockRecord(WAREHOUSE_ID);
 
-		final AvailableStockResult result = new AvailableStockResult(ImmutableList.of(
+		final StockResult result = new StockResult(ImmutableList.of(
 				ResultGroup.builder()
 						.productId(PRODUCT_ID)
 						.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
-						.bpartnerId(MaterialQuery.BPARTNER_ID_ANY)
+						.bpartnerId(StockQuery.BPARTNER_ID_ANY)
 						.build()));
 
-		final ResultGroupAddRequest resultAddRequest = StockRepository.createResultGroupAddRequest(stockRecord);
+		final AddToResultGroupRequest resultAddRequest = StockRepository.createAddToResultGroupRequest(stockRecord);
 		result.addQtyToAllMatchingGroups(resultAddRequest);
 
 		final ResultGroup singleElement = ListUtils.singleElement(result.getResultGroups());

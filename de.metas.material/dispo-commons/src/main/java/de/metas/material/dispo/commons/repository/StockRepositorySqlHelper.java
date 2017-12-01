@@ -44,7 +44,7 @@ import lombok.experimental.UtilityClass;
 /* package */ final class StockRepositorySqlHelper
 {
 	@VisibleForTesting
-	public IQueryBuilder<I_MD_Candidate_Stock_v> createDBQueryForMaterialQuery(@NonNull final MaterialQuery query)
+	public IQueryBuilder<I_MD_Candidate_Stock_v> createDBQueryForMaterialQuery(@NonNull final StockQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_MD_Candidate_Stock_v> queryBuilder = queryBL.createQueryBuilder(I_MD_Candidate_Stock_v.class);
@@ -72,11 +72,11 @@ import lombok.experimental.UtilityClass;
 		//
 		// BPartner
 		final int bpartnerId = query.getBpartnerId();
-		if (bpartnerId == MaterialQuery.BPARTNER_ID_ANY)
+		if (bpartnerId == StockQuery.BPARTNER_ID_ANY)
 		{
 			// nothing to filter
 		}
-		else if (bpartnerId == MaterialQuery.BPARTNER_ID_NONE)
+		else if (bpartnerId == StockQuery.BPARTNER_ID_NONE)
 		{
 			queryBuilder.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_C_BPartner_ID, null);
 		}
@@ -93,7 +93,7 @@ import lombok.experimental.UtilityClass;
 		return queryBuilder;
 	}
 
-	private static ICompositeQueryFilter<I_MD_Candidate_Stock_v> createANDFilterForStorageAttributesKeys(@NonNull final MaterialQuery query)
+	private static ICompositeQueryFilter<I_MD_Candidate_Stock_v> createANDFilterForStorageAttributesKeys(@NonNull final StockQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> orFilterForDifferentStorageAttributesKeys = queryBL
@@ -110,7 +110,7 @@ import lombok.experimental.UtilityClass;
 	}
 
 	private static ICompositeQueryFilter<I_MD_Candidate_Stock_v> createANDFilterForStorageAttributesKey(
-			@NonNull final MaterialQuery query,
+			@NonNull final StockQuery query,
 			@NonNull final StorageAttributesKey storageAttributesKey)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);

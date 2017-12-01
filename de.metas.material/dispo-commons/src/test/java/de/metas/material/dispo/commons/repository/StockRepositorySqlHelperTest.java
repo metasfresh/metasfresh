@@ -73,7 +73,7 @@ public class StockRepositorySqlHelperTest
 	public void createDBQuery_for_simple_stock_query()
 	{
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor();
-		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptor);
+		final StockQuery query = StockQuery.forMaterialDescriptor(materialDescriptor);
 		// MaterialQuery(warehouseIds=[51], date=Thu Nov 30 13:25:21 EET 2017, productIds=[24], storageAttributesKeys=[1§&§2], bpartnerId=-1)
 
 		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = StockRepositorySqlHelper.createDBQueryForMaterialQuery(query);
@@ -91,7 +91,7 @@ public class StockRepositorySqlHelperTest
 	@Test
 	public void createDBQuery_multiple_products()
 	{
-		final MaterialQuery query = MaterialQuery.builder()
+		final StockQuery query = StockQuery.builder()
 				.productId(10)
 				.productId(20)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
@@ -114,7 +114,7 @@ public class StockRepositorySqlHelperTest
 	@Test
 	public void createDBQuery_multiple_storageAttributesKeys()
 	{
-		final MaterialQuery query = MaterialQuery.builder()
+		final StockQuery query = StockQuery.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(3))
@@ -139,7 +139,7 @@ public class StockRepositorySqlHelperTest
 	@Test
 	public void createDBQuery_multiple_storageAttributesKeys_including_OtherKeys()
 	{
-		final MaterialQuery query = MaterialQuery.builder()
+		final StockQuery query = StockQuery.builder()
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(3))

@@ -41,16 +41,16 @@ import lombok.Value;
  */
 
 @Value
-public class MaterialQuery
+public class StockQuery
 {
-	public static MaterialQuery forMaterialDescriptor(@NonNull final MaterialDescriptor materialDescriptor)
+	public static StockQuery forMaterialDescriptor(@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		return MaterialQuery.builder()
+		return StockQuery.builder()
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.date(materialDescriptor.getDate())
 				.productId(materialDescriptor.getProductId())
 				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
-				.bpartnerId(MaterialQuery.BPARTNER_ID_ANY)
+				.bpartnerId(StockQuery.BPARTNER_ID_ANY)
 				.build();
 	}
 
@@ -64,7 +64,7 @@ public class MaterialQuery
 	private final int bpartnerId;
 
 	@Builder(toBuilder = true)
-	private MaterialQuery(
+	private StockQuery(
 			@Singular final Set<Integer> warehouseIds,
 			final Date date,
 			@Singular final List<Integer> productIds,
@@ -78,26 +78,25 @@ public class MaterialQuery
 		this.productIds = ImmutableList.copyOf(productIds);
 		this.storageAttributesKeys = ImmutableList.copyOf(storageAttributesKeys);
 
-		if (bpartnerId == BPARTNER_ID_ANY
+		final boolean bPartnerIdIsSpecified = bpartnerId == BPARTNER_ID_ANY
 				|| bpartnerId == BPARTNER_ID_NONE
-				|| bpartnerId > 0)
+				|| bpartnerId > 0;
+		if (bPartnerIdIsSpecified)
 		{
 			this.bpartnerId = bpartnerId;
 		}
-		else // default (bpartnerId was not specified on build time)
+		else // default, including 0; bpartnerId was not specified on build time
 		{
 			this.bpartnerId = BPARTNER_ID_ANY;
-			// throw new AdempiereException("Invalid bpartnerId: " + bpartnerId);
 		}
 	}
 
-	public MaterialQuery withDate(@NonNull final Date newDate)
+	public StockQuery withDate(@NonNull final Date newDate)
 	{
 		if (Objects.equals(this.date, newDate))
 		{
 			return this;
 		}
-
 		return toBuilder().date(newDate).build();
 	}
 
@@ -113,8 +112,8 @@ public class MaterialQuery
 
 	public static boolean isBPartnerMatching(final int bpartnerId, final int bpartnerIdToMatch)
 	{
-		return bpartnerId == MaterialQuery.BPARTNER_ID_ANY
-				|| (bpartnerId == MaterialQuery.BPARTNER_ID_NONE && bpartnerIdToMatch <= 0)
+		return bpartnerId == StockQuery.BPARTNER_ID_ANY
+				|| (bpartnerId == StockQuery.BPARTNER_ID_NONE && bpartnerIdToMatch <= 0)
 				|| (bpartnerId == bpartnerIdToMatch);
 	}
 

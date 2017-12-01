@@ -22,14 +22,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.StockQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
@@ -151,7 +151,7 @@ public class DemandCandiateCangeHandlerTest
 
 	private void setupRepositoryReturnsQuantityForMaterial(final String quantity, final MaterialDescriptor materialDescriptor)
 	{
-		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptor);
+		final StockQuery query = StockQuery.forMaterialDescriptor(materialDescriptor);
 
 		// @formatter:off
 		new Expectations()

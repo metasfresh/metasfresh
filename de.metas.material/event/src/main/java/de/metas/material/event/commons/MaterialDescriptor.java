@@ -41,27 +41,6 @@ import lombok.experimental.FieldDefaults;
 @ToString(callSuper = true)
 public class MaterialDescriptor extends ProductDescriptor
 {
-	public enum DateOperator
-	{
-		BEFORE,
-
-		BEFORE_OR_AT,
-
-		AT,
-
-		AT_OR_AFTER,
-
-		AFTER
-	}
-
-	/**
-	 * @return a builder where you don't have to set all the properties.
-	 */
-	public static MaterialDescriptorBuilder builderForQuery()
-	{
-		return MaterialDescriptor.builder().complete(false);
-	}
-
 	/**
 	 * @return a builder where you need to set all the properties (i.e. with complete=true).
 	 */
@@ -76,6 +55,9 @@ public class MaterialDescriptor extends ProductDescriptor
 	int warehouseId;
 
 	@Getter
+	int bPartnerId;
+
+	@Getter
 	BigDecimal quantity;
 
 	/**
@@ -84,26 +66,21 @@ public class MaterialDescriptor extends ProductDescriptor
 	@Getter
 	Date date;
 
-	/**
-	 * This property specifies how to interpret the date.
-	 */
-	@Getter
-	DateOperator dateOperator;
 
 	@Builder
 	private MaterialDescriptor(
 			final int warehouseId,
-			final BigDecimal quantity,
+			final int bPartnerId,
 			final Date date,
-			final DateOperator dateOperator,
 			final ProductDescriptor productDescriptor,
+			final BigDecimal quantity,
 			final Boolean complete)
 	{
 		this(
 				warehouseId,
+				bPartnerId,
 				quantity,
 				date,
-				dateOperator,
 				productDescriptor == null ? 0 : productDescriptor.getProductId(),
 				productDescriptor == null ? -1 : productDescriptor.getAttributeSetInstanceId(),
 				productDescriptor == null ? STORAGE_ATTRIBUTES_KEY_ALL : productDescriptor.getStorageAttributesKey(),
@@ -114,9 +91,9 @@ public class MaterialDescriptor extends ProductDescriptor
 	@JsonCreator
 	public MaterialDescriptor(
 			@JsonProperty("warehouseId") final int warehouseId,
+			@JsonProperty("bpartnerId") final int bPartnerId,
 			@JsonProperty("quantity") final BigDecimal quantity,
 			@JsonProperty("date") final Date date,
-			@JsonProperty("dateOperator") final DateOperator dateOperator,
 			@JsonProperty("productId") final int productId,
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId,
 			@JsonProperty("storageAttributesKey") final StorageAttributesKey storageAttributesKey,
@@ -129,13 +106,11 @@ public class MaterialDescriptor extends ProductDescriptor
 		this.materialDescriptorComplete = complete;
 
 		this.warehouseId = warehouseId;
+		this.bPartnerId = bPartnerId;
 		this.quantity = quantity;
 
-		Preconditions.checkArgument(dateOperator == null || date != null,
-				"Given date parameter may not be null because a not-null dateOperator=%s is given",
-				dateOperator);
 		this.date = date;
-		this.dateOperator = dateOperator == null ? DateOperator.AT : dateOperator;
+
 
 		asssertMaterialDescriptorComplete();
 	}
@@ -152,8 +127,7 @@ public class MaterialDescriptor extends ProductDescriptor
 					"quantity needs to be not-null, because complete=true");
 			Preconditions.checkNotNull(date,
 					"date needs to not-null, because complete=true");
-			Preconditions.checkArgument(dateOperator == DateOperator.AT,
-					"dateOperator needs to be 'AT', because complete=true");
+
 			super.asssertCompleteness();
 		}
 		return this;
@@ -166,22 +140,12 @@ public class MaterialDescriptor extends ProductDescriptor
 		return materialDescriptorComplete && super.isComplete();
 	}
 
-	public MaterialDescriptor withoutQuantity()
-	{
-		return MaterialDescriptor.builderForQuery()
-				.date(date)
-				.productDescriptor(this)
-				.warehouseId(warehouseId)
-				.build();
-	}
-
 	public MaterialDescriptor withQuantity(@NonNull final BigDecimal quantity)
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builder()
 				.quantity(quantity)
 				.complete(this.materialDescriptorComplete)
 				.date(this.date)
-				.dateOperator(this.dateOperator)
 				.productDescriptor(this)
 				.warehouseId(this.warehouseId)
 				.build();
@@ -192,7 +156,6 @@ public class MaterialDescriptor extends ProductDescriptor
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builder()
 				.date(date)
-				.dateOperator(this.dateOperator)
 				.complete(this.materialDescriptorComplete)
 				.productDescriptor(this)
 				.warehouseId(this.warehouseId)
@@ -207,7 +170,6 @@ public class MaterialDescriptor extends ProductDescriptor
 				.productDescriptor(productDescriptor)
 				.complete(this.materialDescriptorComplete)
 				.date(this.date)
-				.dateOperator(this.dateOperator)
 				.warehouseId(this.warehouseId)
 				.quantity(this.quantity)
 				.build();
@@ -220,22 +182,8 @@ public class MaterialDescriptor extends ProductDescriptor
 				.warehouseId(warehouseId)
 				.complete(this.materialDescriptorComplete)
 				.date(this.date)
-				.dateOperator(this.dateOperator)
 				.productDescriptor(this)
 				.quantity(this.quantity)
-				.build();
-		return result.asssertMaterialDescriptorComplete();
-	}
-
-	public MaterialDescriptor withDateOperator(DateOperator dateOperator)
-	{
-		final MaterialDescriptor result = MaterialDescriptor.builder()
-				.dateOperator(dateOperator)
-				.warehouseId(warehouseId)
-				.complete(materialDescriptorComplete)
-				.date(date)
-				.productDescriptor(this)
-				.quantity(quantity)
 				.build();
 		return result.asssertMaterialDescriptorComplete();
 	}

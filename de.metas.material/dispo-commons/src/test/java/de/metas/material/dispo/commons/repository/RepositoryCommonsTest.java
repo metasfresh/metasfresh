@@ -2,7 +2,7 @@ package de.metas.material.dispo.commons.repository;
 
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.testsupport.MetasfreshAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,12 +16,9 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
 import org.junit.Test;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.StorageAttributesKey;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
-import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 
 /*
@@ -62,13 +59,14 @@ public class RepositoryCommonsTest
 	@Test
 	public void mkQueryBuilder_with_date_and_product_id()
 	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
+				.productId(PRODUCT_ID)
+				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
+				.dateOperator(DateOperator.AT)
+				.date(NOW).build();
+
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.materialDescriptor(MaterialDescriptor
-						.builderForQuery()
-						.productDescriptor(createProductDescriptor())
-						.dateOperator(DateOperator.AT)
-						.date(NOW)
-						.build())
+				.materialDescriptorQuery(materialDescriptorQuery)
 				.build();
 
 		final IQueryBuilder<I_MD_Candidate> queryBuilder = RepositoryCommons.mkQueryBuilder(query);
@@ -82,13 +80,14 @@ public class RepositoryCommonsTest
 	@Test
 	public void mkQueryBuilder_with_parent_id()
 	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
+				.productId(PRODUCT_ID)
+				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
+				.dateOperator(DateOperator.AT)
+				.date(NOW).build();
+
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.materialDescriptor(MaterialDescriptor
-						.builderForQuery()
-						.productDescriptor(createProductDescriptor())
-						.dateOperator(DateOperator.AT)
-						.date(NOW)
-						.build())
+				.materialDescriptorQuery(materialDescriptorQuery)
 				.parentId(30)
 				.build();
 
@@ -105,10 +104,10 @@ public class RepositoryCommonsTest
 	@Test
 	public void addMaterialDescriptorToQueryBuilderIfNotNull_with_StorageAttributesKey_no_exact_matching()
 	{
-		final MaterialDescriptor materialDescriptor = commonSetupFor_addProductionDetailToFilter_with_StorageAttributesKey();
+		final MaterialDescriptorQuery materialDescriptorQuery = commonSetupFor_addProductionDetailToFilter_with_StorageAttributesKey();
 
 		final IQueryBuilder<I_MD_Candidate> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class);
-		RepositoryCommons.addMaterialDescriptorToQueryBuilderIfNotNull(materialDescriptor, false, queryBuilder);
+		RepositoryCommons.addMaterialDescriptorToQueryBuilderIfNotNull(materialDescriptorQuery, false, queryBuilder);
 
 		final List<IQueryFilter<I_MD_Candidate>> filters = queryBuilder.getCompositeFilter().getFilters();
 
@@ -119,10 +118,10 @@ public class RepositoryCommonsTest
 	@Test
 	public void addMaterialDescriptorToQueryBuilderIfNotNull_with_StorageAttributesKey_exact_matching()
 	{
-		final MaterialDescriptor materialDescriptor = commonSetupFor_addProductionDetailToFilter_with_StorageAttributesKey();
+		final MaterialDescriptorQuery materialDescriptorQuery = commonSetupFor_addProductionDetailToFilter_with_StorageAttributesKey();
 
 		final IQueryBuilder<I_MD_Candidate> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class);
-		RepositoryCommons.addMaterialDescriptorToQueryBuilderIfNotNull(materialDescriptor, true, queryBuilder);
+		RepositoryCommons.addMaterialDescriptorToQueryBuilderIfNotNull(materialDescriptorQuery, true, queryBuilder);
 
 		final ICompositeQueryFilter<I_MD_Candidate> compositeFilter = queryBuilder.getCompositeFilter();
 		final List<IQueryFilter<I_MD_Candidate>> filters = compositeFilter.getFilters();
@@ -131,30 +130,27 @@ public class RepositoryCommonsTest
 		assertThat(compositeFilter).hasEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, "1§&§2§&§3");
 	}
 
-	private MaterialDescriptor commonSetupFor_addProductionDetailToFilter_with_StorageAttributesKey()
+	private MaterialDescriptorQuery commonSetupFor_addProductionDetailToFilter_with_StorageAttributesKey()
 	{
 		final StorageAttributesKey storageAttributesKey = StorageAttributesKey.ofAttributeValueIds(1, 2, 3);
 
-		// this descriptor won't occur in real life, but we want only the storage-key-filter
-		final ProductDescriptor productDescriptor = new ProductDescriptor(false, -1, storageAttributesKey, -1);
-
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor
-				.builderForQuery()
-				.productDescriptor(productDescriptor)
+		// this query won't occur in real life, but we want only the storage-key-filter
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
+				.storageAttributesKey(storageAttributesKey)
 				.build();
-		return materialDescriptor;
+		return materialDescriptorQuery;
 	}
 
 	private static void performDateFilterTest(
 			@NonNull final DateOperator dateOperator,
 			@NonNull final Operator queryOperator)
 	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder().date(NOW)
+				.dateOperator(dateOperator)
+				.build();
+
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.materialDescriptor(MaterialDescriptor
-						.builderForQuery()
-						.dateOperator(dateOperator)
-						.date(NOW)
-						.build())
+				.materialDescriptorQuery(materialDescriptorQuery)
 				.build();
 
 		final IQueryBuilder<I_MD_Candidate> queryBuilder = RepositoryCommons.mkQueryBuilder(query);

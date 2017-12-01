@@ -24,13 +24,13 @@ import org.junit.Test;
  * #L%
  */
 
-public class MaterialQueryTest
+public class StockQueryTest
 {
 
 	@Test(expected = RuntimeException.class)
 	public void builder_throw_ex_if_not_complete()
 	{
-		MaterialQuery.builder().build();
+		StockQuery.builder().build();
 	}
 
 }

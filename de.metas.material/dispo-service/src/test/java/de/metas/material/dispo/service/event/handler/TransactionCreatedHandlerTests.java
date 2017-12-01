@@ -13,12 +13,12 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -270,8 +270,8 @@ public class TransactionCreatedHandlerTests
 	{
 		assertThat(query).isNotNull();
 		assertThat(query.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
-		assertThat(query.getMaterialDescriptor())
-			.as("If we have a demand detail, then only via that demand detail")
+		assertThat(query.getMaterialDescriptorQuery())
+			.as("If we have a demand detail, then only query via that demand detail")
 			.isNull();
 		assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
 	}

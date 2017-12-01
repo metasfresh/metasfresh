@@ -2,13 +2,13 @@ package de.metas.material.dispo.commons.repository;
 
 import java.util.Date;
 
-import org.adempiere.util.time.SystemTime;
-
 import com.google.common.base.Preconditions;
 
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -34,26 +34,68 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public class MaterialDescriptorQuery
 {
-	private final int warehouseId;
-	private final Date date;
-	private final int productId;
-	private final StorageAttributesKey storageAttributesKey;
+	public enum DateOperator
+	{
+		BEFORE, //
+		BEFORE_OR_AT, //
+		AT, //
+		AT_OR_AFTER, //
+		AFTER
+	}
+
+	public static MaterialDescriptorQuery forDescriptor(
+			@NonNull final MaterialDescriptor materialDescriptor)
+	{
+		return new MaterialDescriptorQuery(
+				materialDescriptor.getWarehouseId(),
+				materialDescriptor.getDate(),
+				DateOperator.AT,
+				materialDescriptor.getProductId(),
+				materialDescriptor.getStorageAttributesKey());
+	}
+
+	public static MaterialDescriptorQuery forDescriptor(
+			@NonNull final MaterialDescriptor materialDescriptor,
+			@NonNull final DateOperator dateOperator)
+	{
+		return new MaterialDescriptorQuery(
+				materialDescriptor.getWarehouseId(),
+				materialDescriptor.getDate(),
+				dateOperator,
+				materialDescriptor.getProductId(),
+				materialDescriptor.getStorageAttributesKey());
+	}
+
+	/**
+	 * This property specifies how to interpret the date.
+	 */
+	DateOperator dateOperator;
+
+	int warehouseId;
+	Date date;
+	int productId;
+	StorageAttributesKey storageAttributesKey;
 
 	@Builder
 	private MaterialDescriptorQuery(
 			final int warehouseId,
 			final Date date,
+			final DateOperator dateOperator,
 			final int productId,
 			final StorageAttributesKey storageAttributesKey)
 	{
-		Preconditions.checkArgument(productId > 0, "productId > 0");
-
 		this.warehouseId = warehouseId > 0 ? warehouseId : -1;
-		this.date = date != null ? date : SystemTime.asDate();
+
+		Preconditions.checkArgument(dateOperator == null || date != null,
+				"Given date parameter may not be null because a not-null dateOperator=%s is given",
+				dateOperator);
+		this.date = date;
+		this.dateOperator = dateOperator != null ? dateOperator : DateOperator.AT;
+
 		this.productId = productId;
 		this.storageAttributesKey = storageAttributesKey != null ? storageAttributesKey : ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL;
 	}
-
 }

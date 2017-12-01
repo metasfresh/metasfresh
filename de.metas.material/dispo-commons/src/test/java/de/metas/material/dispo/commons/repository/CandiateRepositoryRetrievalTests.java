@@ -27,7 +27,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
@@ -473,9 +472,7 @@ public class CandiateRepositoryRetrievalTests
 		createCandidateRecordWithWarehouseId(30);
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.materialDescriptor(MaterialDescriptor.builderForQuery()
-						.warehouseId(warehouseId)
-						.build())
+				.materialDescriptorQuery(MaterialDescriptorQuery.builder().warehouseId(warehouseId).build())
 				.build();
 		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 
