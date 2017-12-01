@@ -5,8 +5,8 @@ import java.util.Objects;
 import org.adempiere.util.Check;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
@@ -72,7 +72,7 @@ public final class CandidatesQuery
 				.orgId(candidate.getOrgId())
 				.productionDetail(candidate.getProductionDetail())
 				.status(candidate.getStatus())
-				.subType(candidate.getSubType())
+				.subType(candidate.getBusinessCase())
 				.type(candidate.getType());
 
 		if (includeParentId)
@@ -105,7 +105,7 @@ public final class CandidatesQuery
 	/**
 	 * Should be {@code null} for stock candidates.
 	 */
-	CandidateSubType subType;
+	CandidateBusinessCase subType;
 
 	CandidateStatus status;
 
@@ -127,12 +127,12 @@ public final class CandidatesQuery
 	boolean matchExactStorageAttributesKey;
 
 	/**
-	 * Used for additional infos if this candidate has the sub type {@link CandidateSubType#PRODUCTION}.
+	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#PRODUCTION}.
 	 */
 	ProductionDetail productionDetail;
 
 	/**
-	 * Used for additional infos if this candidate has the sub type {@link CandidateSubType#DISTRIBUTION}.
+	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#DISTRIBUTION}.
 	 */
 	DistributionDetail distributionDetail;
 
@@ -149,7 +149,7 @@ public final class CandidatesQuery
 			final DemandDetail parentDemandDetail,
 			final int orgId,
 			final CandidateType type,
-			final CandidateSubType subType,
+			final CandidateBusinessCase subType,
 			final CandidateStatus status,
 			final Integer id,
 			final Integer parentId,

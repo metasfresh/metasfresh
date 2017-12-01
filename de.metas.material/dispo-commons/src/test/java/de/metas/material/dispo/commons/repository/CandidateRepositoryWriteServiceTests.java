@@ -30,7 +30,7 @@ import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
@@ -201,7 +201,7 @@ public class CandidateRepositoryWriteServiceTests
 	{
 		final Candidate productionCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.subType(CandidateSubType.PRODUCTION)
+				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.materialDescriptor(createMaterialDescriptor())
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
@@ -223,7 +223,7 @@ public class CandidateRepositoryWriteServiceTests
 
 		final I_MD_Candidate record = filtered.get(0);
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
-		assertThat(record.getMD_Candidate_SubType()).isEqualTo(productionCandidate.getSubType().toString());
+		assertThat(record.getMD_Candidate_SubType()).isEqualTo(productionCandidate.getBusinessCase().toString());
 		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
 
 		final I_MD_Candidate_Prod_Detail productionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Prod_Detail.class).create().firstOnly(I_MD_Candidate_Prod_Detail.class);
@@ -301,7 +301,7 @@ public class CandidateRepositoryWriteServiceTests
 	{
 		final Candidate distributionCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.subType(CandidateSubType.DISTRIBUTION)
+				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(createMaterialDescriptor())
@@ -322,7 +322,7 @@ public class CandidateRepositoryWriteServiceTests
 
 		final I_MD_Candidate record = filtered.get(0);
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
-		assertThat(record.getMD_Candidate_SubType()).isEqualTo(distributionCandidate.getSubType().toString());
+		assertThat(record.getMD_Candidate_SubType()).isEqualTo(distributionCandidate.getBusinessCase().toString());
 		assertThat(record.getM_Product_ID()).isEqualTo(distributionCandidate.getMaterialDescriptor().getProductId());
 
 		final I_MD_Candidate_Dist_Detail distributionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Dist_Detail.class).create().firstOnly(I_MD_Candidate_Dist_Detail.class);
@@ -341,7 +341,7 @@ public class CandidateRepositoryWriteServiceTests
 	{
 		final Candidate productionCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.subType(CandidateSubType.SHIPMENT)
+				.businessCase(CandidateBusinessCase.SHIPMENT)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(createMaterialDescriptor())
@@ -354,7 +354,7 @@ public class CandidateRepositoryWriteServiceTests
 
 		final I_MD_Candidate record = filtered.get(0);
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
-		assertThat(record.getMD_Candidate_SubType()).isEqualTo(productionCandidate.getSubType().toString());
+		assertThat(record.getMD_Candidate_SubType()).isEqualTo(productionCandidate.getBusinessCase().toString());
 		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
 
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Demand_Detail.class).create().firstOnly(I_MD_Candidate_Demand_Detail.class);
@@ -368,7 +368,7 @@ public class CandidateRepositoryWriteServiceTests
 		final int productIdOffSet = 10;
 		final Candidate productionCandidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.subType(CandidateSubType.SHIPMENT)
+				.businessCase(CandidateBusinessCase.SHIPMENT)
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(createMaterialDescriptor()
@@ -383,7 +383,7 @@ public class CandidateRepositoryWriteServiceTests
 
 		final I_MD_Candidate record = filtered.get(0);
 		assertThat(record.getMD_Candidate_ID()).isEqualTo(addOrReplaceResult.getId());
-		assertThat(record.getMD_Candidate_SubType()).isEqualTo(productionCandidate.getSubType().toString());
+		assertThat(record.getMD_Candidate_SubType()).isEqualTo(productionCandidate.getBusinessCase().toString());
 		assertThat(record.getM_Product_ID()).isEqualTo(productionCandidate.getMaterialDescriptor().getProductId());
 
 		final I_MD_Candidate_Transaction_Detail transactionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Transaction_Detail.class).create().firstOnly(I_MD_Candidate_Transaction_Detail.class);

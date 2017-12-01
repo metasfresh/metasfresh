@@ -58,7 +58,7 @@ public class Candidate
 	/**
 	 * Should be {@code null} for stock candidates.
 	 */
-	CandidateSubType subType;
+	CandidateBusinessCase businessCase;
 
 	CandidateStatus status;
 
@@ -80,12 +80,12 @@ public class Candidate
 	MaterialDescriptor materialDescriptor;
 
 	/**
-	 * Used for additional infos if this candidate has the sub type {@link CandidateSubType#PRODUCTION}.
+	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#PRODUCTION}.
 	 */
 	ProductionDetail productionDetail;
 
 	/**
-	 * Used for additional infos if this candidate has the sub type {@link CandidateSubType#DISTRIBUTION}.
+	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#DISTRIBUTION}.
 	 */
 	DistributionDetail distributionDetail;
 
@@ -157,7 +157,7 @@ public class Candidate
 
 	private Candidate(final int clientId, final int orgId,
 			@NonNull final CandidateType type,
-			final CandidateSubType subType,
+			final CandidateBusinessCase businessCase,
 			final CandidateStatus status,
 			final int id,
 			final int parentId,
@@ -172,7 +172,7 @@ public class Candidate
 		this.clientId = clientId;
 		this.orgId = orgId;
 		this.type = type;
-		this.subType = subType;
+		this.businessCase = businessCase;
 		this.status = status;
 		this.id = id;
 		this.parentId = parentId;

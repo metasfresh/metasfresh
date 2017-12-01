@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
@@ -69,7 +69,7 @@ public class PPOrderAdvisedHandler
 
 		final Candidate supplyCandidate = Candidate.builderForEventDescr(productionAdvisedEvent.getEventDescriptor())
 				.type(CandidateType.SUPPLY)
-				.subType(CandidateSubType.PRODUCTION)
+				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.status(candidateStatus)
 				.productionDetail(createProductionDetailForPPOrder(ppOrder))
 				.demandDetail(demandDetailOrNull)
@@ -82,7 +82,7 @@ public class PPOrderAdvisedHandler
 		{
 			final CandidateBuilder builder = Candidate.builderForEventDescr(productionAdvisedEvent.getEventDescriptor())
 					.type(ppOrderLine.isReceipt() ? CandidateType.SUPPLY : CandidateType.DEMAND)
-					.subType(CandidateSubType.PRODUCTION)
+					.businessCase(CandidateBusinessCase.PRODUCTION)
 					.status(candidateStatus)
 					.groupId(candidateWithGroupId.getGroupId())
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)

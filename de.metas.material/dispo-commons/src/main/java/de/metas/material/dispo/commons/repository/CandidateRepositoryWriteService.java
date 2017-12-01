@@ -27,9 +27,9 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
-import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.NonNull;
 
 /*
@@ -193,9 +193,9 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setQty(candidate.getQuantity());
 		candidateRecord.setDateProjected(new Timestamp(materialDescriptor.getDate().getTime()));
 
-		if (candidate.getSubType() != null)
+		if (candidate.getBusinessCase() != null)
 		{
-			candidateRecord.setMD_Candidate_SubType(candidate.getSubType().toString());
+			candidateRecord.setMD_Candidate_SubType(candidate.getBusinessCase().toString());
 		}
 
 		if (candidate.getParentId() > 0)

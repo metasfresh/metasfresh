@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
@@ -106,7 +106,7 @@ public class DDOrderAdvisedHandler
 
 			final Candidate supplyCandidate = Candidate.builderForEventDescr(event.getEventDescriptor())
 					.type(CandidateType.SUPPLY)
-					.subType(CandidateSubType.DISTRIBUTION)
+					.businessCase(CandidateBusinessCase.DISTRIBUTION)
 					.groupId(event.getGroupId())
 					.status(candidateStatus)
 					.materialDescriptor(materialDescriptor)

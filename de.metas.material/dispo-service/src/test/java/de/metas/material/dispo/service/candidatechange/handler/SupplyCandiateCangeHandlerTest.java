@@ -23,7 +23,7 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
@@ -229,7 +229,7 @@ public class SupplyCandiateCangeHandlerTest
 				.clientId(CLIENT_ID)
 				.orgId(ORG_ID)
 				.materialDescriptor(materialDescriptoriptor)
-				.subType(CandidateSubType.PRODUCTION)
+				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.build();
 		supplyCandiateHandler.onCandidateNewOrChange(candidate);
 
@@ -239,7 +239,7 @@ public class SupplyCandiateCangeHandlerTest
 		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
 
 		assertThat(supplyRecord.getQty()).isEqualByComparingTo(supplyQty);
-		assertThat(supplyRecord.getMD_Candidate_SubType()).isEqualTo(CandidateSubType.PRODUCTION.toString());
+		assertThat(supplyRecord.getMD_Candidate_SubType()).isEqualTo(CandidateBusinessCase.PRODUCTION.toString());
 		assertThat(stockRecord.getQty()).isEqualByComparingTo(new BigDecimal("34"));
 
 

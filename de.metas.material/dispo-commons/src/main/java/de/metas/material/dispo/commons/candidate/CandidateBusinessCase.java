@@ -28,7 +28,7 @@ import de.metas.material.dispo.model.X_MD_Candidate;
 /**
  * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_SUBTYPE_AD_Reference_ID}
  */
-public enum CandidateSubType
+public enum CandidateBusinessCase
 {
 	DISTRIBUTION, PRODUCTION, RECEIPT, SHIPMENT, FORECAST
 }

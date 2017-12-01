@@ -10,7 +10,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
@@ -71,7 +71,7 @@ public class RequestMaterialOrderService
 			return;
 		}
 
-		switch (group.get(0).getSubType())
+		switch (group.get(0).getBusinessCase())
 		{
 			case PRODUCTION:
 				createAndFireProductionRequestedEvent(group);
@@ -86,7 +86,7 @@ public class RequestMaterialOrderService
 
 	/**
 	 *
-	 * @param group a non-empty list of candidates that all have {@link CandidateSubType#PRODUCTION},
+	 * @param group a non-empty list of candidates that all have {@link CandidateBusinessCase#PRODUCTION},
 	 *            all have the same {@link Candidate#getGroupId()}
 	 *            and all have appropriate not-null {@link Candidate#getProductionDetail()}s.
 	 * @return

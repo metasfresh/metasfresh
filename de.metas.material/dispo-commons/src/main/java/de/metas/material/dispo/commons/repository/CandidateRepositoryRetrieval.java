@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
@@ -33,9 +33,9 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
-import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.NonNull;
 
 /*
@@ -120,14 +120,14 @@ public class CandidateRepositoryRetrieval
 
 		final CandidateBuilder builder = createAndInitializeBuilder(candidateRecordOrNull);
 
-		final CandidateSubType subType = getSubTypeOrNull(candidateRecordOrNull);
-		builder.subType(subType);
+		final CandidateBusinessCase businessCase = getSubTypeOrNull(candidateRecordOrNull);
+		builder.businessCase(businessCase);
 
-		if (subType == CandidateSubType.PRODUCTION)
+		if (businessCase == CandidateBusinessCase.PRODUCTION)
 		{
 			builder.productionDetail(createProductionDetailOrNull(candidateRecordOrNull));
 		}
-		else if (subType == CandidateSubType.DISTRIBUTION)
+		else if (businessCase == CandidateBusinessCase.DISTRIBUTION)
 		{
 			builder.distributionDetail(createDistributionDetailOrNull(candidateRecordOrNull));
 		}
@@ -139,12 +139,12 @@ public class CandidateRepositoryRetrieval
 		return Optional.of(builder.build());
 	}
 
-	private CandidateSubType getSubTypeOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private CandidateBusinessCase getSubTypeOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		CandidateSubType subType = null;
+		CandidateBusinessCase subType = null;
 		if (!Check.isEmpty(candidateRecord.getMD_Candidate_SubType()))
 		{
-			subType = CandidateSubType.valueOf(candidateRecord.getMD_Candidate_SubType());
+			subType = CandidateBusinessCase.valueOf(candidateRecord.getMD_Candidate_SubType());
 		}
 		return subType;
 	}
