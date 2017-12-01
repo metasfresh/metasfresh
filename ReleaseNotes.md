@@ -22,7 +22,7 @@ Here come the actual release notes:
     * New Window for Board Configuration in WebUI, allowing to configure new Kanban Boards and Card Layouts.
   * [#1809](https://github.com/metasfresh/metasfresh/issues/1809) New User Query Window on WebUI
     * New Window in WebUI that allows the maintenance of User specific Filter criteria for Windows & Tabs.
-  * [#3094}(https://github.com/metasfresh/metasfresh/issues/3094) Activity ID in Purchase Orderline Grid View
+  * [#3094](https://github.com/metasfresh/metasfresh/issues/3094) Activity ID in Purchase Orderline Grid View
     * New field in purchase orderline, allowing to see and maintain the activity in grid view.
   * [#3095](https://github.com/metasfresh/metasfresh/issues/3095) WebUI: new Window for AD_Session in WebUI
     * New window for session audit in webui, allowing to view session and login information.
@@ -43,8 +43,7 @@ Here come the actual release notes:
     * Adjusting the window Purchase Stock Control and adding Translation for en_US.
 
 * metasfresh-webui-frontend
-  * [#1389](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1389) Alt+a in main Grid View opens Advanced edit mode
-    * Fix for the shortcut of advanced edit in main grid view, that blocked the select-all shortcut from being tiggered.
+
 
 # metasfresh 5.37 (2017-48)
 
@@ -159,6 +158,8 @@ Here come the actual release notes:
     * Fixes the Document Action Shortcut alt+u for complete action in all Document Windows.
   * [#1376](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1376) Navigation Menu Favorite stars wrong
     * Fix for the Bookmark Functionality in WebUI Window and Navigation Sitemap.
+  * [#1389](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1389) Alt+a in main Grid View opens Advanced edit mode
+    * Fix for the shortcut of advanced edit in main grid view, that blocked the select-all shortcut from being tiggered.
 
 # metasfresh 5.36 (2017-47)
 
