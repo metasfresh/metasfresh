@@ -22,6 +22,8 @@ Here come the actual release notes:
     * New Window for Board Configuration in WebUI, allowing to configure new Kanban Boards and Card Layouts.
   * [#1809](https://github.com/metasfresh/metasfresh/issues/1809) New User Query Window on WebUI
     * New Window in WebUI that allows the maintenance of User specific Filter criteria for Windows & Tabs.
+  * [#2177](https://github.com/metasfresh/metasfresh/issues/2177) New Window for Attribute Search in WebUI
+    * New Window for Attribute Search in WebUI.
   * [#3027](https://github.com/metasfresh/metasfresh/issues/3027) WebUI: New Window for Import BPartner
     * New Window in WebUI for Import Businesspartner.
   * [#3094](https://github.com/metasfresh/metasfresh/issues/3094) Activity ID in Purchase Orderline Grid View
