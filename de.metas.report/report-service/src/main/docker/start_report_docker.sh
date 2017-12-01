@@ -11,7 +11,8 @@ db_user=${DB_USER:-metasfresh}
 db_password=${DB_PASSWORD:-metasfresh}
 app_host=${APP_HOST:-app}
 skip_run_db_update=${SKIP_DB_UPDATE:-false}
-
+debug_port=${DEBUG_PORT:-8791}
+admin_url=${METASFRESH_ADMIN_URL:-NONE}
 
 echo_variable_values()
 {
@@ -24,6 +25,9 @@ echo_variable_values()
  echo "DB_PASSWORD=*******"
  echo "SKIP_DB_UPDATE=${skip_run_db_update}"
  echo "APP_HOST=${app_host}"
+ echo "DEBUG_PORT=${debug_port}"
+ echo "METASFRESH_ADMIN_URL=${admin_url}"
+ 
 }
 
 set_properties()
@@ -81,11 +85,18 @@ run_db_update()
 # Note: the Djava.security.egd param is supposed to let tomcat start quicker, see https://spring.io/guides/gs/spring-boot-docker/
 run_metasfresh()
 {
+ if [ "$admin_url" != "NONE" ]; then
+	metasfresh_admin_params="-Dspring.boot.admin.url=${admin_url} -Dmanagement.security.enabled=false"
+ else
+	metasfresh_admin_params=""
+ fi
+	
+
  cd /opt/metasfresh/metasfresh-report/ && java -Dsun.misc.URLClassPath.disableJarChecking=true \
- -Xmx512M -XX:+HeapDumpOnOutOfMemoryError \
+ -Xmx256M -XX:+HeapDumpOnOutOfMemoryError ${metasfresh_admin_params} \
  -DPropertyFile=/opt/metasfresh/metasfresh-report/metasfresh.properties \
  -Djava.security.egd=file:/dev/./urandom \
- -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8791 \
+ -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${debug_port} \
  -jar metasfresh-report.jar
 }
 
