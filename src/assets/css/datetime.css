@@ -5,7 +5,7 @@
     font-weight:500;
     cursor: pointer;
 }
-.rdt > .form-control {
+.rdt .form-control {
     border-radius:0;
     border:0;
     border-color: $brand-light-color;
@@ -13,11 +13,11 @@
     cursor: inherit;
     line-height: 21px;
 }
-.rdt > .form-control:focus {
+.rdt .form-control:focus {
     background-color: transparent;
 }
 
-.rdt > input[value='(none)']{
+.rdt input[value='(none)']{
     opacity: .7;
     font-weight: normal;
 }
@@ -33,6 +33,11 @@
     border: 1px solid $brand-light-color;
     border-radius: 3px;
 }
+
+.filter-menu .rdtPicker {
+    position: relative;
+}
+
 .rdtOpen .rdtPicker {
     display: block;
 }

@@ -229,33 +229,35 @@ class RawWidget extends Component {
                          />
                     )
                 }else{
-                    return (
-                        <div className={this.getClassNames({ icon: true })}>
-                            <DatePicker
-                                field={fields[0].field}
-                                timeFormat={false}
-                                dateFormat={true}
-                                inputProps={{
-                                    placeholder: fields[0].emptyText,
-                                    disabled:
-                                        widgetData[0].readonly || disabled,
-                                    tabIndex: fullScreen ? -1 : tabIndex
-                                }}
-                                value={widgetValue}
-                                onChange={(date) =>
-                                    handleChange(widgetField, date)}
-                                patch={(date) => this.handlePatch(
-                                    widgetField,
-                                    date ?
-                                        Moment(date).format(DATE_FORMAT) : null
-                                )}
-                                handleBackdropLock={handleBackdropLock}
-                            />
-                            <i
-                                className="meta-icon-calendar input-icon-right"
-                            />
-                        </div>
-                    )
+                    return [
+                        <i
+                            className="meta-icon-calendar input-icon-right"
+                            key={0}
+                        />,
+
+                        <DatePicker
+                            key={1}
+                            field={fields[0].field}
+                            timeFormat={false}
+                            dateFormat={true}
+                            inputProps={{
+                                className: this.getClassNames({ icon: true }),
+                                placeholder: fields[0].emptyText,
+                                disabled:
+                                    widgetData[0].readonly || disabled,
+                                tabIndex: fullScreen ? -1 : tabIndex
+                            }}
+                            value={widgetValue}
+                            onChange={(date) =>
+                                handleChange(widgetField, date)}
+                            patch={(date) => this.handlePatch(
+                                widgetField,
+                                date ?
+                                    Moment(date).format(DATE_FORMAT) : null
+                            )}
+                            handleBackdropLock={handleBackdropLock}
+                        />
+                      ];
                 }
             case 'DateTime':
                 if(range){

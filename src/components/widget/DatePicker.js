@@ -71,14 +71,23 @@ class DatePicker extends Component {
         );
     }
 
+    renderInput = ({ className, ...props }) => (
+        <div className={className}>
+            <input className="form-control" {...props} />
+        </div>
+    );
+
     render() {
-        return (<Datetime
-            closeOnTab={true}
-            renderDay={this.renderDay}
-            onBlur={this.handleBlur}
-            onFocus={this.handleFocus}
-            {...this.props}
-        />)
+        return (
+            <Datetime
+                closeOnTab={true}
+                renderDay={this.renderDay}
+                renderInput={this.renderInput}
+                onBlur={this.handleBlur}
+                onFocus={this.handleFocus}
+                {...this.props}
+            />
+        );
     }
 }
 
