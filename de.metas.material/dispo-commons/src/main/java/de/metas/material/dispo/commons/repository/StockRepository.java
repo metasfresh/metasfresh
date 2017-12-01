@@ -10,6 +10,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
@@ -61,7 +62,7 @@ public class StockRepository
 
 		final BigDecimal qty = StockRepositorySqlHelper.createDBQueryForMaterialQuery(query.withDate(latestDateOrNull))
 				.create()
-				.aggregate(I_MD_Candidate.COLUMNNAME_Qty, IQuery.AGGREGATE_SUM, BigDecimal.class);
+				.aggregate(I_MD_Candidate.COLUMNNAME_Qty, Aggregate.SUM, BigDecimal.class);
 
 		return Util.coalesce(qty, BigDecimal.ZERO);
 	}
@@ -133,8 +134,9 @@ public class StockRepository
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_Candidate_Stock_v.class)
 				.addCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(date))
+				.orderBy().addColumnDescending(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected).endOrderBy()
 				.create()
-				.aggregate(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected, IQuery.AGGREGATE_MAX, Timestamp.class);
+				.first(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected, Timestamp.class);
 	}
 
 	@VisibleForTesting

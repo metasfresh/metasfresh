@@ -20,6 +20,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -192,7 +193,7 @@ public class PriceListDAO implements IPriceListDAO
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, productPrice.getM_Product_ID())
 				.addNotEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID, productPrice.getM_ProductPrice_ID())
 				.create()
-				.aggregate(I_M_ProductPrice.COLUMN_MatchSeqNo, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_M_ProductPrice.COLUMN_MatchSeqNo, Aggregate.MAX, Integer.class);
 
 		if (lastMatchSeqNo == null)
 		{

@@ -56,6 +56,8 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import lombok.NonNull;
+
 public class POJOQuery<T> extends AbstractTypedQuery<T>
 {
 	private final Properties ctx;
@@ -564,11 +566,13 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public <AT> AT aggregate(final String columnName, final String sqlFunction, final Class<AT> returnType) throws DBException
+	public <AT> AT aggregate(final String columnName,
+			@NonNull final Aggregate aggregateType,
+			final Class<AT> returnType) throws DBException
 	{
 		AT result = null;
 		final BiFunction<Object, Object, AT> aggregateOperator;
-		if (AGGREGATE_SUM.equals(sqlFunction))
+		if (Aggregate.SUM.equals(aggregateType))
 		{
 			aggregateOperator = getSumOperator(returnType);
 
@@ -577,7 +581,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			final AT result0 = (AT)BigDecimal.ZERO;
 			result = result0;
 		}
-		else if (AGGREGATE_MAX.equals(sqlFunction))
+		else if (Aggregate.MAX.equals(aggregateType))
 		{
 			aggregateOperator = getMaxOperator(returnType);
 
@@ -586,13 +590,14 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		}
 		else
 		{
-			throw new DBException("SQL Function '" + sqlFunction + "' not implemented");
+			throw new DBException("SQL Function '" + aggregateType + "' not implemented");
 		}
 
 		final List<T> models = list(modelClass);
 		for (final T model : models)
 		{
 			final Object valueObj = InterfaceWrapperHelper.getValue(model, columnName).orNull();
+			if (Aggregate.SUM.equals(aggregateType))
 			if (valueObj == null)
 			{
 				// skip null values
