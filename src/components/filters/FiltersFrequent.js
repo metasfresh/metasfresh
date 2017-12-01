@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import counterpart from 'counterpart';
@@ -5,6 +6,8 @@ import counterpart from 'counterpart';
 import FiltersDateStepper from './FiltersDateStepper';
 import FiltersItem from './FiltersItem';
 import { TableCell } from '../table/TableCell';
+
+const classes = 'btn btn-filter btn-meta-outline-secondary btn-sm';
 
 class FiltersFrequent extends Component {
     state = { openFilterId: null };
@@ -83,15 +86,11 @@ class FiltersFrequent extends Component {
 
                             <button
                                 onClick={() => this.toggleFilter(index, item)}
-                                className={
-                                    'btn btn-filter ' +
-                                    'btn-meta-outline-secondary ' +
-                                    'btn-sm ' +
-                                    (openFilterId === index ?
-                                        'btn-select ': ''
-                                    ) +
-                                    (isActive ? 'btn-active ': '')
-                                }
+                                className={cx(classes, {
+                                    ['btn-select']: openFilterId === index,
+                                    ['btn-active']: isActive,
+                                    ['btn-distance']: !dateStepper
+                                })}
                             >
                                 <i className="meta-icon-preview" />
                                 {isActive
