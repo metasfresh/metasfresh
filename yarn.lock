@@ -6781,9 +6781,9 @@ react-bootstrap-daterangepicker@~3.4.1:
     bootstrap-daterangepicker "^2.1.25"
     object-assign "^4.1.1"
 
-react-datetime@2.10.3:
-  version "2.10.3"
-  resolved "https://registry.yarnpkg.com/react-datetime/-/react-datetime-2.10.3.tgz#9807a7d9be1dd4ee01b3466b0416614e3543378e"
+react-datetime@^2.11.0:
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/react-datetime/-/react-datetime-2.11.0.tgz#6560a8e5b81f7e52986083dc2e8cb94bb74528ea"
   dependencies:
     create-react-class "^15.5.2"
     object-assign "^3.0.0"
