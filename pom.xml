@@ -45,13 +45,6 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		<!-- FRESH-397: jasper 6.2.1 uses poi and zxing with theses versions -->
 		<!-- actually, jasper-6.2.1 accidentally uses 2.1.7.js5-SNAPSHOT, but we don't-->
 		<itext.version>2.1.7.js5</itext.version>
-		
-		<!-- This property is set by jacoco and used in the surefire config fourther down
-			Set it to empty to avoid JVM startup error Could not find or load main class @{argLine} when run without jacoco
-			thx to 
-			* https://github.com/metasfresh/metasfresh/issues/3073
-		    * http://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
-		<argLine></argLine>
 	</properties>
 
 	<modules>
@@ -499,8 +492,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 
 									<findAllDuplicates>true</findAllDuplicates>
 								</banDuplicateClasses>
-
-
 							</rules>
 							<fail>true</fail>
 						</configuration>
@@ -518,6 +509,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 				</plugins>
 			</build>
 		</profile>
+	
 		<profile>
 			<!-- If there is a configs directory, then this profile will activate and zip up the files in that directory -->
 			<id>configs</id>
@@ -563,13 +555,20 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 			See https://github.com/metasfresh/metasfresh/issues/2110 -->
 		<!-- Note that until now i don't see a reason to add a pendant for this to /de.metas.adempiere.adempiere.base/src/main/java-legacy/org/compiere/Adempiere.java ..so i don't.. -->
 		<profile>
-			<id>MF_VERSION-env-missing</id>
+			<id>jenkins-BUILD_NUMBER-not-set</id>
 			<activation>
 				<property>
-					<name>!env.MF_VERSION</name>
+					<name>!env.BUILD_NUMBER</name>
 				</property>
 			</activation>
 			<properties>
+				<!-- This property is set by jacoco and used in the surefire config fourther down
+					Set it to empty to avoid JVM startup error Could not find or load main class @{argLine} when run without jacoco
+					thx to 
+					* https://github.com/metasfresh/metasfresh/issues/3073
+					* http://www.eclemma.org/jacoco/trunk/doc/prepare-agent-mojo.html -->
+				<argLine></argLine>
+
 				<env.MF_VERSION>LOCAL-NO-RELEASE</env.MF_VERSION>
 				<env.MF_RELEASE_VERSION>0.0</env.MF_RELEASE_VERSION> <!-- needs to be like this for the launch4j plugin's sake -->
 				<env.BUILD_TAG>LOCAL-NO-RELEASE</env.BUILD_TAG>
@@ -646,7 +645,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 			Jenkins by default defines a property BUILD_NUMBER which is used to enable the profile. 
 		-->
 		<profile>
-			<id>jenkins</id>
+			<id>jenkins-BUILD_NUMBER-set</id>
 			<activation>
 				<property>
 					<name>env.BUILD_NUMBER</name>
