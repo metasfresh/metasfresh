@@ -33,7 +33,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -146,7 +146,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.filter(createPickedNotDeliveredFilter(shipmentSchedule))
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.aggregate(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyPicked, IQuery.AGGREGATE_SUM, BigDecimal.class);
+				.aggregate(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyPicked, Aggregate.SUM, BigDecimal.class);
 
 		return qty != null ? qty : BigDecimal.ZERO;
 	}
@@ -164,7 +164,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_Processed, true)
 				.create()
-				.aggregate(I_M_InOutLine.COLUMNNAME_MovementQty, IQuery.AGGREGATE_SUM, BigDecimal.class);
+				.aggregate(I_M_InOutLine.COLUMNNAME_MovementQty, Aggregate.SUM, BigDecimal.class);
 
 		return qty != null ? qty : BigDecimal.ZERO;
 	}

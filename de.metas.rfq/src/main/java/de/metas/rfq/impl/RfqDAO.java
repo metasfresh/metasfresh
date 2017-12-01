@@ -9,7 +9,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.util.TimeUtil;
 
 import de.metas.rfq.IRfqDAO;
@@ -165,11 +165,11 @@ public class RfqDAO implements IRfqDAO
 	{
 		return retrieveResponseLines(rfqResponse, I_C_RfQResponseLine.class);
 	}
-	
+
 	@Override
 	public <T extends I_C_RfQResponseLine> List<T> retrieveResponseLines(final I_C_RfQResponse rfqResponse, Class<T> returnType)
 	{
-		final List<T> lines = retrieveResponseLinesQuery(rfqResponse) 
+		final List<T> lines = retrieveResponseLinesQuery(rfqResponse)
 				.create()
 				.list(returnType);
 
@@ -239,7 +239,7 @@ public class RfqDAO implements IRfqDAO
 
 		return rfqResponseLineQtys;
 	}
-	
+
 	@Override
 	public boolean hasResponseQtys(final I_C_RfQResponseLine rfqResponseLine)
 	{
@@ -258,13 +258,13 @@ public class RfqDAO implements IRfqDAO
 				.addEqualsFilter(I_C_RfQResponseLineQty.COLUMN_DatePromised, day)
 				.create()
 				.firstOnly(I_C_RfQResponseLineQty.class);
-		
+
 		// optimization
 		if (rfqResponseLineQty != null)
 		{
 			rfqResponseLineQty.setC_RfQResponseLine(rfqResponseLine);
 		}
-		
+
 		return rfqResponseLineQty;
 	}
 
@@ -284,14 +284,14 @@ public class RfqDAO implements IRfqDAO
 	{
 		final BigDecimal qtyPromised = retrieveResponseQtysQuery(rfqResponseLine)
 				.create()
-				.aggregate(I_C_RfQResponseLineQty.COLUMNNAME_QtyPromised, IQuery.AGGREGATE_SUM, BigDecimal.class);
+				.aggregate(I_C_RfQResponseLineQty.COLUMNNAME_QtyPromised, Aggregate.SUM, BigDecimal.class);
 		if(qtyPromised == null)
 		{
 			return BigDecimal.ZERO;
 		}
 		return NumberUtils.stripTrailingDecimalZeros(qtyPromised);
 	}
-	
+
 	@Override
 	public boolean hasQtyRequiered(final I_C_RfQResponse rfqResponse)
 	{

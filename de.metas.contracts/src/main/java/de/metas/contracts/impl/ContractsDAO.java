@@ -12,12 +12,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,6 +34,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -136,11 +137,11 @@ public class ContractsDAO implements IContractsDAO
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_EventType, X_C_SubscriptionProgress.EVENTTYPE_Delivery)
 				.create()
-				.aggregate(I_C_SubscriptionProgress.COLUMN_Qty, IQuery.AGGREGATE_SUM, BigDecimal.class);
+				.aggregate(I_C_SubscriptionProgress.COLUMN_Qty, Aggregate.SUM, BigDecimal.class);
 
 		return qty;
 	}
-	
+
 	@Override
 	public List<I_C_SubscriptionProgress> getSubscriptionProgress(@NonNull final I_C_Flatrate_Term currentTerm)
 	{
