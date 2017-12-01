@@ -48,6 +48,7 @@
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "bootstrap": "4.0.0-alpha.5",
+    "classnames": "^2.2.5",
     "counterpart": "~0.18.0",
     "d3": "4.10.0",
     "file-loader": "~0.8.5",

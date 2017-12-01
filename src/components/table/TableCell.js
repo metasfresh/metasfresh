@@ -49,68 +49,66 @@ class TableCell extends Component {
         }
     }
 
-    getDateFormat = (type) => {
-        switch(type) {
-            case 'DateTime':
-                return 'DD.MM.YYYY HH:mm:ss';
-            case 'Date':
-                return 'DD.MM.YYYY';
-            case 'Time':
-                return 'HH:mm:ss';
-            default:
-                return 'DD.MM.YYYY';
-        }
-    }
+    static AMOUNT_FIELD_TYPES = ['Amount', 'CostPrice'];
+    static DATE_FIELD_TYPES = ['Date', 'DateTime', 'Time'];
+    static DATE_FIELD_FORMATS = {
+        Date: 'DD.MM.YYYY',
+        DateTime: 'DD.MM.YYYY HH:mm:ss',
+        Time: 'HH:mm:ss'
+    };
+    static TIME_FIELD_TYPES = ['Time'];
 
-    createDate = (field, type) => {
-        return field ?
-            Moment(new Date(field)).format(this.getDateFormat(type)) : '';
-    }
+    static getDateFormat = fieldType => (
+        TableCell.DATE_FIELD_FORMATS[fieldType] ||
+        TableCell.DATE_FIELD_FORMATS.Date
+    );
 
-    createAmount = (field, type) => {
-        let value = numeral(parseFloat(field)).format();
-        return field ? value : '';
-    }
+    static createDate = (fieldValue, fieldType) => fieldValue
+        ? Moment(new Date(fieldValue))
+            .format(TableCell.getDateFormat(fieldType))
+        : '';
 
-    fieldToString = (field, type) => {
-        if(field === null){
+    static createAmount = fieldValue => fieldValue
+        ? numeral(parseFloat(fieldValue)).format()
+        : '';
+
+    static fieldValueToString = (fieldValue, fieldType = 'Text') => {
+        if (fieldValue === null) {
             return '';
-        }else{
-            switch(typeof field){
-                case 'object':
-                    if(
-                        type === 'Date' ||
-                        type === 'DateTime' ||
-                        type === 'Time'
-                    ){
-                        return this.createDate(field, type);
-                    } else {
-                        return field.caption;
-                    }
-                case 'boolean':
-                    return field ?
-                        <i className="meta-icon-checkbox-1" /> :
-                        <i className="meta-icon-checkbox" />;
-                case 'string':
-                    if(
-                        type === 'Date' ||
-                        type === 'DateTime' ||
-                        type === 'Time'
-                    ){
-                        return this.createDate(field, type);
-                    } else if (
-                        type === 'CostPrice' ||
-                        type === 'Amount'
-                    ) {
-                        return this.createAmount(field, type);
-                    } else {
-                        return field;
-                    }
-                default:
-                    return field;
+        }
+
+        switch (typeof fieldValue) {
+            case 'object': {
+                if (Array.isArray(fieldValue)) {
+                    return fieldValue.map(
+                        value => TableCell.fieldValueToString(value, fieldType)
+                    ).join(' - ');
+                }
+
+                return TableCell.DATE_FIELD_TYPES.includes(fieldType)
+                    ? TableCell.createDate(fieldValue, fieldType)
+                    : fieldValue.caption;
+            }
+
+            case 'boolean': {
+                return fieldValue
+                    ? <i className="meta-icon-checkbox-1" />
+                    : <i className="meta-icon-checkbox" />;
+            }
+
+            case 'string': {
+                if (TableCell.DATE_FIELD_TYPES.includes(fieldType)) {
+                    return TableCell.createDate(fieldValue, fieldType);
+                } else if (TableCell.AMOUNT_FIELD_TYPES.includes(fieldType)) {
+                    return TableCell.createAmount(fieldValue);
+                }
+                return fieldValue;
+            }
+
+            default: {
+                return fieldValue;
             }
         }
-
     }
 
     render() {
@@ -121,8 +119,9 @@ class TableCell extends Component {
             getSizeClass, handleRightClick, mainTable, onCellChange, viewId
         } = this.props;
 
-        let tdValue = (!isEdited) ?
-            this.fieldToString(widgetData[0].value, item.widgetType) : null;
+        const tdValue = !isEdited
+            ? TableCell.fieldValueToString(widgetData[0].value, item.widgetType)
+            : null;
 
         return (
             <td
@@ -175,4 +174,5 @@ class TableCell extends Component {
     }
 }
 
-export default onClickOutside(TableCell)
+export default onClickOutside(TableCell);
+export { TableCell };
