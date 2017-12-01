@@ -34,7 +34,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class MaterialDescriptorQuery
 {
 	public enum DateOperator
@@ -51,10 +50,11 @@ public class MaterialDescriptorQuery
 	{
 		return new MaterialDescriptorQuery(
 				materialDescriptor.getWarehouseId(),
-				materialDescriptor.getDate(),
-				DateOperator.AT,
 				materialDescriptor.getProductId(),
-				materialDescriptor.getStorageAttributesKey());
+				materialDescriptor.getStorageAttributesKey(),
+				materialDescriptor.getBPartnerId(),
+				materialDescriptor.getDate(),
+				DateOperator.AT);
 	}
 
 	public static MaterialDescriptorQuery forDescriptor(
@@ -63,10 +63,11 @@ public class MaterialDescriptorQuery
 	{
 		return new MaterialDescriptorQuery(
 				materialDescriptor.getWarehouseId(),
-				materialDescriptor.getDate(),
-				dateOperator,
 				materialDescriptor.getProductId(),
-				materialDescriptor.getStorageAttributesKey());
+				materialDescriptor.getStorageAttributesKey(),
+				materialDescriptor.getBPartnerId(),
+				materialDescriptor.getDate(),
+				dateOperator);
 	}
 
 	/**
@@ -75,27 +76,30 @@ public class MaterialDescriptorQuery
 	DateOperator dateOperator;
 
 	int warehouseId;
-	Date date;
 	int productId;
 	StorageAttributesKey storageAttributesKey;
+	int bPartnerId;
+	Date date;
 
 	@Builder
 	private MaterialDescriptorQuery(
 			final int warehouseId,
-			final Date date,
-			final DateOperator dateOperator,
 			final int productId,
-			final StorageAttributesKey storageAttributesKey)
+			final StorageAttributesKey storageAttributesKey,
+			final int bPartnerId,
+			final Date date,
+			final DateOperator dateOperator)
 	{
 		this.warehouseId = warehouseId > 0 ? warehouseId : -1;
+
+		this.productId = productId;
+		this.storageAttributesKey = storageAttributesKey != null ? storageAttributesKey : ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL;
+		this.bPartnerId = bPartnerId;
 
 		Preconditions.checkArgument(dateOperator == null || date != null,
 				"Given date parameter may not be null because a not-null dateOperator=%s is given",
 				dateOperator);
 		this.date = date;
 		this.dateOperator = dateOperator != null ? dateOperator : DateOperator.AT;
-
-		this.productId = productId;
-		this.storageAttributesKey = storageAttributesKey != null ? storageAttributesKey : ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL;
 	}
 }
