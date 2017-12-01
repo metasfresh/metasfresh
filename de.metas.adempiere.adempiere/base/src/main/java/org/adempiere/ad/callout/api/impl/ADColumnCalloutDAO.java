@@ -12,7 +12,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_ColumnCallout;
 import org.compiere.model.I_AD_Table;
@@ -98,7 +98,7 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 				.addEqualsFilter(I_AD_ColumnCallout.COLUMNNAME_AD_Column_ID, adColumnId)
 				//
 				.create()
-				.aggregate(I_AD_ColumnCallout.COLUMNNAME_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_AD_ColumnCallout.COLUMNNAME_SeqNo, Aggregate.MAX, Integer.class);
 
 		if (lastSeqNo == null || lastSeqNo < 0)
 		{
