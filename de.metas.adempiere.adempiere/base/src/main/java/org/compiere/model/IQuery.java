@@ -49,6 +49,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 
+import lombok.Getter;
+
 public interface IQuery<T>
 {
 
@@ -252,8 +254,11 @@ public interface IQuery<T>
 		DISTINCT("DISTINCT", true), //
 		FIRST(null, true);
 
-		public final String sqlFunction;
-		public final boolean useOrderByClause;
+		@Getter
+		private final String sqlFunction;
+
+		@Getter
+		private final boolean useOrderByClause;
 
 		private Aggregate(final String sqlFunction, final boolean useOrderByClause)
 		{

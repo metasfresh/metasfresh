@@ -646,19 +646,19 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final List<AT> result = new ArrayList<>();
 
 		final StringBuilder sqlSelect = new StringBuilder("SELECT ");
-		if (Check.isEmpty(aggregateType.sqlFunction, true))
+		if (Check.isEmpty(aggregateType.getSqlFunction(), true))
 		{
 			sqlSelect.append(sqlExpression);
 		}
 		else
 		{
 			sqlSelect
-					.append(aggregateType.sqlFunction)
+					.append(aggregateType.getSqlFunction())
 					.append("(").append(sqlExpression).append(")");
 		}
 		sqlSelect.append(" FROM ").append(getSqlFrom());
 
-		final String sql = buildSQL(sqlSelect, aggregateType.useOrderByClause);
+		final String sql = buildSQL(sqlSelect, aggregateType.isUseOrderByClause());
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -669,13 +669,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			while (rs.next())
 			{
 				final AT value = DB.retrieveValueOrDefault(rs, 1, returnType);
-
-				// Skip null values
 				if (value == null)
 				{
-					continue;
+					continue; // Skip null values
 				}
-
 				result.add(value);
 			}
 		}
