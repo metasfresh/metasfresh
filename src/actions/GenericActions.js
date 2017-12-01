@@ -19,6 +19,17 @@ export function initLayout(
     );
 }
 
+export function getViewAttributesLayout(windowId, viewId, rowId) {
+    return axios.get(
+        config.API_URL +
+        '/documentView'+
+        '/' + windowId +
+        '/' + viewId +
+        '/' + rowId +
+        '/attributes/layout'
+    );
+}
+
 export function getData(
     entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced,
     orderBy, viewId
