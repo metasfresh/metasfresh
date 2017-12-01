@@ -10,6 +10,10 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.39 (2017-50)
+
+**release for week 2017-50**
+
 # metasfresh 5.38 (2017-49)
 
 **release for week 2017-49**
@@ -22,16 +26,33 @@ Here come the actual release notes:
     * New Window for Board Configuration in WebUI, allowing to configure new Kanban Boards and Card Layouts.
   * [#1809](https://github.com/metasfresh/metasfresh/issues/1809) New User Query Window on WebUI
     * New Window in WebUI that allows the maintenance of User specific Filter criteria for Windows & Tabs.
+  * [#2177](https://github.com/metasfresh/metasfresh/issues/2177) New Window for Attribute Search in WebUI
+  * [#2868](https://github.com/metasfresh/metasfresh/issues/2868) Make BOMValidate process to work correctly in webui
+  * [#2956](https://github.com/metasfresh/metasfresh/issues/2956) drop allowconsolidateinvoice from database
   * [#3027](https://github.com/metasfresh/metasfresh/issues/3027) WebUI: New Window for Import BPartner
     * New Window in WebUI for Import Businesspartner.
+  * [#3040](https://github.com/metasfresh/metasfresh/issues/3040) Implement Clone/ Copy for Forecast Window WebUI
+  * [#3041](https://github.com/metasfresh/metasfresh/issues/3041) Forecast Window copy Field content from header to lines when creation
+  * [#3042](https://github.com/metasfresh/metasfresh/issues/3042) C_Bpartner: new Additional fields
+  * [#3054](https://github.com/metasfresh/metasfresh/issues/3054) purchase candidates: document references
+  * [#3064](https://github.com/metasfresh/metasfresh/issues/3064) Multiple PP Order generation for a materialdispo line
+  * [#3072](https://github.com/metasfresh/metasfresh/issues/3072) de_metas_purchasecandidate schema containing some diagnosis views
+  * [#3086](https://github.com/metasfresh/metasfresh/issues/3086) HU planned after Purchase Order, destroyed after material receipt
   * [#3094](https://github.com/metasfresh/metasfresh/issues/3094) Activity ID in Purchase Orderline Grid View
     * New field in purchase orderline, allowing to see and maintain the activity in grid view.
   * [#3095](https://github.com/metasfresh/metasfresh/issues/3095) WebUI: new Window for AD_Session in WebUI
     * New window for session audit in webui, allowing to view session and login information.
+  * [#3117](https://github.com/metasfresh/metasfresh/issues/3117) Disable MStorage.add
+
+* metasfresh-webui-api
+  * [#699](https://github.com/metasfresh/metasfresh-webui-api/issues/699) Implement Batch entry in Forecast Window
+  * [#705](https://github.com/metasfresh/metasfresh-webui-api/issues/705) Backend Logic for new Date Filter Widget
 
 * metasfresh-webui-frontend
   * [#1354](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1354) DateTimeRangePicker default Time from/to in Filter and Process Parms
     * Improving the DateRange Picker Filter widget. Now seetting the initial date and time to the whole day of today.
+  * [#1357](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1357) Don't use the legacy view attributes API
+  * [#1360](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1360) View field editor: override viewEditorRenderMode on row level
   * [#1387](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1387) New widget for date filtering
     * New Filter widget, that allows to navigate date & date/time filter settings in lower or higher steps.
 
@@ -41,13 +62,18 @@ Here come the actual release notes:
     * Adding new fields for endcustomer productname for product labels and translation.
   * [#2977](https://github.com/metasfresh/metasfresh/issues/2977) Tab Org Access not working in WebUI because of missing primary key
     * Adding a primary Key to Orgaccess Table, allowing to create records in User Window subtab.
+  * [#3065](https://github.com/metasfresh/metasfresh/issues/3065) PP Order not shown in materialdispo although automatically generated
   * [#3087](https://github.com/metasfresh/metasfresh/issues/3087) Get rid of group columns in new window for procurement stock count
     * Adjusting the window Purchase Stock Control and adding Translation for en_US.
+  * [#3060](https://github.com/metasfresh/metasfresh/issues/3060) TypedSqlQuery Bugs because aggregateList method ignores order
+  * [#3073](https://github.com/metasfresh/metasfresh/issues/3073) Error: Could not find or load main class ${argLine}
+  * [#3088](https://github.com/metasfresh/metasfresh/issues/3088) Transform in material receipt left destroyed HU behind
+  * [#3089](https://github.com/metasfresh/metasfresh/issues/3089) Not able to start report service with ReportServiceMain.launch
   * [#3100](https://github.com/metasfresh/metasfresh/issues/3100) Move UI Element Action broken
     * Fix for the UI Element (Element, Group) Movement actions.
 
-
 * metasfresh-webui-frontend
+  * [#1367](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1367) view attributes shall be refreshed when the current selected row is refreshed
 
 
 # metasfresh 5.37 (2017-48)
