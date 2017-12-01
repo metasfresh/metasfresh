@@ -5,7 +5,8 @@ import React, { Component } from 'react';
 
 import { DATE_FORMAT }  from '../../constants/Constants';
 
-const classes = 'btn btn-filter btn-meta-outline-secondary btn-sm btn-active';
+const classes =
+    'btn btn-filter btn-meta-outline-secondary btn-sm btn-empty btn-active';
 
 export default class FiltersDateStepper extends Component {
     static propTypes = {
@@ -55,7 +56,7 @@ export default class FiltersDateStepper extends Component {
                 onClick={this.handleClick}
                 className={cx(classes, { ['btn-distance']: next })}
             >
-                {next ? '>' : '<'}
+                <i className={next ? 'meta-icon-right' : 'meta-icon-left'} />
             </button>
         );
     }

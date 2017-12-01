@@ -465,9 +465,9 @@ input:checked + .input-slider:before {
     right:0;
     bottom: 100%;
     margin-bottom: .3rem;
-    
+
     padding: .2rem .5rem;
-    
+
     font-size: .7rem;
     color: $brand-danger-color;
     background-color: #fff;
@@ -911,10 +911,12 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
 }
 
 .btn i {
-    padding-right: 4px;
     vertical-align: middle;
 }
 
+.btn:not(.btn-empty) i {
+    padding-right: 4px;
+}
 
 
 .input-table .input-field {
