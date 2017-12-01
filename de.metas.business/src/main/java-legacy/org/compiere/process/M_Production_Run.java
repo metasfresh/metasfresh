@@ -31,7 +31,6 @@ import org.compiere.model.X_M_ProductionLine;
 import org.compiere.model.X_M_ProductionPlan;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.MPPProductBOM;
@@ -41,6 +40,7 @@ import de.metas.logging.MetasfreshLastError;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductBL;
+import de.metas.product.IStorageBL;
 
 /**
  * Production of BOMs
@@ -160,13 +160,13 @@ public class M_Production_Run extends JavaProcess {
 								MovementType = MTransaction.MOVEMENTTYPE_Production_;
 							}
 
-							if (!MStorage.add(getCtx(), locator.getM_Warehouse_ID(),
+							if (!Services.get(IStorageBL.class).add(getCtx(), locator.getM_Warehouse_ID(),
 								locator.getM_Locator_ID(),
 								pline.getM_Product_ID(),
 								pline.getM_AttributeSetInstance_ID(), 0 ,
 								MovementQty,
-								Env.ZERO,
-								Env.ZERO,
+								BigDecimal.ZERO,
+								BigDecimal.ZERO,
 								get_TrxName()))
 							{
 								raiseError("Cannot correct Inventory", "");
