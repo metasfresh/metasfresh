@@ -41,6 +41,9 @@ Here come the actual release notes:
     * Adding a primary Key to Orgaccess Table, allowing to create records in User Window subtab.
   * [#3087](https://github.com/metasfresh/metasfresh/issues/3087) Get rid of group columns in new window for procurement stock count
     * Adjusting the window Purchase Stock Control and adding Translation for en_US.
+  * [#3100](https://github.com/metasfresh/metasfresh/issues/3100) Move UI Element Action broken
+    * Fix for the UI Element (Element, Group) Movement actions.
+
 
 * metasfresh-webui-frontend
 
