@@ -70,7 +70,7 @@ Here come the actual release notes:
   * [#3005](https://github.com/metasfresh/metasfresh/issues/3005) Manufacturing Order add Filter for Planstatus
     * Additional, new filter criteria in manufacturing order.
   * [#3010](https://github.com/metasfresh/metasfresh/issues/3010) Inherit c_order_id and orderline_id from flatrate term to invoice candidate
-    * New Referenced document in flatrate terms, now allowing to jump directly to referenced invoice candidates directly from there.
+    * New referenced document in flatrate terms, now allowing to jump directly to referenced invoice candidates directly from there.
   * [#3032](https://github.com/metasfresh/metasfresh/issues/3032) SSCC Product description Field cut off
     * Improvement of the SSCC Label, now allowing to have Product Names that extend the width into more than 1 line.
   * [#3037](https://github.com/metasfresh/metasfresh/issues/3037) WebUI: New Window for Purchase Order Candidates
@@ -84,7 +84,7 @@ Here come the actual release notes:
   * [#3055](https://github.com/metasfresh/metasfresh/issues/3055) Purchase candidates: notify user when the purchase order was generated
     * New user notification as soon as purchase candidates were created for the user.
   * [#3056](https://github.com/metasfresh/metasfresh/issues/3056) Purchase candidates: implement locking mechanism
-    * Locking mechanism implemented for purchase candidates window,
+    * Locking mechanism implemented for purchase candidates window.
   * [#3057](https://github.com/metasfresh/metasfresh/issues/3057) Display order, forecast or shipmentschedule in material dispo main window
     * New fields in material disposition, now showing the Order, Forecast and Shipmentschedule information.
   * [#3061](https://github.com/metasfresh/metasfresh/issues/3061) Adjust OrderBy in Materialdispo
@@ -101,13 +101,13 @@ Here come the actual release notes:
     * Hiding Quickactions in Handling Unit Editor. Now only showing the needed Quickactions for Source Handling Units.
   * [#689](https://github.com/metasfresh/metasfresh-webui-api/issues/689) Picking processed compress to top-level HU
     * New compression visualisation in Pickign window, now only showing top level HU as soon as processed.
-  * [#695](https://github.com/metasfresh/metasfresh-webui-api/issues/695) picking terminal: implement dynamic picking slot allocation/release
+  * [#695](https://github.com/metasfresh/metasfresh-webui-api/issues/695) Picking terminal: implement dynamic picking slot allocation/release
     * New Functionality in Picking window, now allowing the dynamic allocation/ clearing of picking slots.
 
 * metasfresh-webui-frontend
   * [#1347](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1347) Dropdown in Grid view needs two-time click if value in list is more than one
     * Fixes the need of 2 times click in included grid view dropdown widgets.
-  * [#1363](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1363) jenkins: run npm test on each build
+  * [#1363](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1363) Jenkins: run npm test on each build
     * Internal housekeeping issue, improving build system.
   * [#1380](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1380) Shortcut for new document  
     * Adjusted shortcut for the creation of new documents.
