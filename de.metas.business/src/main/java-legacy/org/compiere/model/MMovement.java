@@ -38,6 +38,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.product.IProductBL;
+import de.metas.product.IStorageBL;
 
 /**
  *	Inventory Movement Model
@@ -402,6 +403,7 @@ public class MMovement extends X_M_Movement implements IDocument
 					checkMaterialPolicy(line);
 				}
 
+				final IStorageBL storageBL = Services.get(IStorageBL.class);
 				if (line.getM_AttributeSetInstance_ID() == 0)
 				{
 					MMovementLineMA mas[] = MMovementLineMA.get(getCtx(), line.getM_MovementLine_ID(), get_TrxName());
@@ -411,7 +413,7 @@ public class MMovement extends X_M_Movement implements IDocument
 						//
 						MLocator locator = new MLocator (getCtx(), line.getM_Locator_ID(), get_TrxName());
 						//Update Storage
-						if (!MStorage.add(getCtx(),locator.getM_Warehouse_ID(),
+						if (!storageBL.add(getCtx(),locator.getM_Warehouse_ID(),
 								line.getM_Locator_ID(),
 								line.getM_Product_ID(),
 								ma.getM_AttributeSetInstance_ID(), 0,
@@ -428,7 +430,7 @@ public class MMovement extends X_M_Movement implements IDocument
 							M_AttributeSetInstanceTo_ID = ma.getM_AttributeSetInstance_ID();
 						}
 						//Update Storage
-						if (!MStorage.add(getCtx(),locator.getM_Warehouse_ID(),
+						if (!storageBL.add(getCtx(),locator.getM_Warehouse_ID(),
 								line.getM_LocatorTo_ID(),
 								line.getM_Product_ID(),
 								M_AttributeSetInstanceTo_ID, 0,
@@ -484,7 +486,7 @@ public class MMovement extends X_M_Movement implements IDocument
 				{
 					MLocator locator = new MLocator (getCtx(), line.getM_Locator_ID(), get_TrxName());
 					//Update Storage
-					if (!MStorage.add(getCtx(),locator.getM_Warehouse_ID(),
+					if (!storageBL.add(getCtx(),locator.getM_Warehouse_ID(),
 							line.getM_Locator_ID(),
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstance_ID(), 0,
@@ -495,7 +497,7 @@ public class MMovement extends X_M_Movement implements IDocument
 					}
 
 					//Update Storage
-					if (!MStorage.add(getCtx(),locator.getM_Warehouse_ID(),
+					if (!storageBL.add(getCtx(),locator.getM_Warehouse_ID(),
 							line.getM_LocatorTo_ID(),
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstanceTo_ID(), 0,
@@ -602,7 +604,7 @@ public class MMovement extends X_M_Movement implements IDocument
 			InterfaceWrapperHelper.save(line);
 		}
 	}	//	checkMaterialPolicy
-	
+
 	/**
 	 * 	Void Document.
 	 * 	@return true if success
