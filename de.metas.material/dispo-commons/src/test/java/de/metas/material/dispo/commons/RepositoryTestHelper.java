@@ -18,7 +18,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteServic
 import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
-import de.metas.material.dispo.commons.repository.StockQuery;
+import de.metas.material.dispo.commons.repository.StockMultiQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
@@ -126,7 +126,8 @@ public class RepositoryTestHelper
 		// @formatter:off
 		new Expectations(CandidateRepositoryRetrieval.class)
 		{{
-			stockRepository.retrieveAvailableStockQtySum(StockQuery.forMaterialDescriptor(materialDescriptor));
+			final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
+			stockRepository.retrieveAvailableStockQtySum(query);
 			minTimes = 0;
 			result = new BigDecimal(quantity);
 		}}; // @formatter:on

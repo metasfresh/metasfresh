@@ -10,9 +10,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.model.IQuery.Aggregate;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -20,7 +18,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.repository.StockResult.AddToResultGroupRequest;
-import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.NonNull;
@@ -52,25 +50,19 @@ import lombok.Value;
 public class StockRepository
 {
 	@NonNull
-	public BigDecimal retrieveAvailableStockQtySum(@NonNull final StockQuery query)
+	public BigDecimal retrieveAvailableStockQtySum(@NonNull final StockMultiQuery multiQuery)
 	{
-		final Timestamp latestDateOrNull = retrieveMaxDateLessOrEqual(query.getDate());
-		if (latestDateOrNull == null)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		final BigDecimal qty = StockRepositorySqlHelper.createDBQueryForMaterialQuery(query.withDate(latestDateOrNull))
-				.create()
-				.aggregate(I_MD_Candidate.COLUMNNAME_Qty, Aggregate.SUM, BigDecimal.class);
-
-		return Util.coalesce(qty, BigDecimal.ZERO);
+		return retrieveAvailableStock(multiQuery)
+				.getResultGroups()
+				.stream().map(ResultGroup::getQty).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	@NonNull
 	public StockResult retrieveAvailableStock(@NonNull StockMultiQuery multiQuery)
 	{
-		final StockResult result = multiQuery.isAddToPredefinedBuckets() ? StockResult.createEmptyWithPredefinedBuckets(multiQuery) : StockResult.createEmpty();
+		final StockResult result = multiQuery.isAddToPredefinedBuckets()
+				? StockResult.createEmptyWithPredefinedBuckets(multiQuery)
+				: StockResult.createEmpty();
 
 		final IQuery<I_MD_Candidate_Stock_v> dbQuery = createDBQueryForMaterialQueryOrNull(multiQuery);
 		if (dbQuery == null)
@@ -103,16 +95,16 @@ public class StockRepository
 	{
 		return multiQuery.getQueries()
 				.stream()
-				.map(query -> {
-					final Timestamp latestDateOrNull = retrieveMaxDateLessOrEqual(query.getDate());
+				.map(stockQuery -> {
+					final Timestamp latestDateOrNull = retrieveMaxDateLessOrEqual(stockQuery.getDate());
 					if (latestDateOrNull == null)
 					{
 						return null;
 					}
-					return query.withDate(latestDateOrNull);
+					return stockQuery.withDate(latestDateOrNull);
 				})
 				.filter(Predicates.notNull())
-				.map(query -> StockRepositorySqlHelper.createDBQueryForMaterialQuery(query)
+				.map(stockQuery -> StockRepositorySqlHelper.createDBQueryForStockQuery(stockQuery)
 						.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
 						.create())
 				.reduce((previousDBQuery, dbQuery) -> {

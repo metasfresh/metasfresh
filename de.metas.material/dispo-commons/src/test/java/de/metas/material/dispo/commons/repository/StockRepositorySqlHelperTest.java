@@ -76,7 +76,7 @@ public class StockRepositorySqlHelperTest
 		final StockQuery query = StockQuery.forMaterialDescriptor(materialDescriptor);
 		// MaterialQuery(warehouseIds=[51], date=Thu Nov 30 13:25:21 EET 2017, productIds=[24], storageAttributesKeys=[1§&§2], bpartnerId=-1)
 
-		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = StockRepositorySqlHelper.createDBQueryForMaterialQuery(query);
+		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = StockRepositorySqlHelper.createDBQueryForStockQuery(query);
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID, WAREHOUSE_ID);
@@ -98,7 +98,7 @@ public class StockRepositorySqlHelperTest
 				.date(NOW)
 				.build();
 
-		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = StockRepositorySqlHelper.createDBQueryForMaterialQuery(query);
+		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = StockRepositorySqlHelper.createDBQueryForStockQuery(query);
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
@@ -121,7 +121,7 @@ public class StockRepositorySqlHelperTest
 				.date(NOW)
 				.build();
 
-		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = StockRepositorySqlHelper.createDBQueryForMaterialQuery(query);
+		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = StockRepositorySqlHelper.createDBQueryForStockQuery(query);
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);
@@ -148,7 +148,7 @@ public class StockRepositorySqlHelperTest
 				.build();
 
 		// invoke the method under test
-		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = StockRepositorySqlHelper.createDBQueryForMaterialQuery(query);
+		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = StockRepositorySqlHelper.createDBQueryForStockQuery(query);
 
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> dbFilter = dbQuery.getCompositeFilter();
 		assertThat(dbFilter).hasNoFilterRegarding(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID);

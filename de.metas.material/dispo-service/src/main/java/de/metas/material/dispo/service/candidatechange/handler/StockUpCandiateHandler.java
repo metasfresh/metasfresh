@@ -10,9 +10,9 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.StockQuery;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.StockMultiQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
@@ -91,7 +91,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 			return candidateWithQtyDeltaAndId; // this candidate didn't change anything
 		}
 
-		final StockQuery query = StockQuery.forMaterialDescriptor(candidate.getMaterialDescriptor());
+		final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(candidate.getMaterialDescriptor());
 		final BigDecimal projectedQty = stockRepository.retrieveAvailableStockQtySum(query);
 
 		final BigDecimal requiredAdditionalQty = candidateWithQtyDeltaAndId

@@ -44,7 +44,7 @@ import lombok.experimental.UtilityClass;
 /* package */ final class StockRepositorySqlHelper
 {
 	@VisibleForTesting
-	public IQueryBuilder<I_MD_Candidate_Stock_v> createDBQueryForMaterialQuery(@NonNull final StockQuery query)
+	public IQueryBuilder<I_MD_Candidate_Stock_v> createDBQueryForStockQuery(@NonNull final StockQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_MD_Candidate_Stock_v> queryBuilder = queryBL.createQueryBuilder(I_MD_Candidate_Stock_v.class);

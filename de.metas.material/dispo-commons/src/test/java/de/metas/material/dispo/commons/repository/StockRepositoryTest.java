@@ -2,6 +2,7 @@ package de.metas.material.dispo.commons.repository;
 
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
 import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -67,21 +68,24 @@ public class StockRepositoryTest
 	@Test
 	public void retrieveAvailableStock_for_material_descriptor()
 	{
-		createStockRecord(WAREHOUSE_ID);
+		createStockRecord(BPARTNER_ID);
+		createStockRecord(0); // belongs to "any" bpartner
+		createStockRecord(BPARTNER_ID + 10); // belongs to an unrelated bPartner
 
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor();
 
-		final StockQuery query = StockQuery.forMaterialDescriptor(materialDescriptor);
+		final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
 
 		final BigDecimal result = new StockRepository().retrieveAvailableStockQtySum(query);
-		assertThat(result).isEqualByComparingTo("10");
+		assertThat(result).isEqualByComparingTo("20");
 	}
 
-	private I_MD_Candidate_Stock_v createStockRecord(int warehouseId)
+	private I_MD_Candidate_Stock_v createStockRecord(int bPartnerId)
 	{
 		final I_MD_Candidate_Stock_v viewRecord = newInstance(I_MD_Candidate_Stock_v.class);
 		viewRecord.setM_Product_ID(PRODUCT_ID);
-		viewRecord.setM_Warehouse_ID(warehouseId);
+		viewRecord.setM_Warehouse_ID(WAREHOUSE_ID);
+		viewRecord.setC_BPartner_ID(bPartnerId);
 		viewRecord.setDateProjected(new Timestamp(BEFORE_NOW.getTime()));
 		viewRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
 		viewRecord.setQty(BigDecimal.TEN);

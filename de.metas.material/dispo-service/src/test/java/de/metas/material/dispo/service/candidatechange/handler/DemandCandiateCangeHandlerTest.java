@@ -29,7 +29,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.StockQuery;
+import de.metas.material.dispo.commons.repository.StockMultiQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
@@ -149,9 +149,11 @@ public class DemandCandiateCangeHandlerTest
 	}
 
 
-	private void setupRepositoryReturnsQuantityForMaterial(final String quantity, final MaterialDescriptor materialDescriptor)
+	private void setupRepositoryReturnsQuantityForMaterial(
+			@NonNull final String quantity,
+			@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		final StockQuery query = StockQuery.forMaterialDescriptor(materialDescriptor);
+		final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
 
 		// @formatter:off
 		new Expectations()

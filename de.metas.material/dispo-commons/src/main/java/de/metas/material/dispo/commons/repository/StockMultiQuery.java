@@ -6,6 +6,7 @@ import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -36,6 +37,23 @@ import lombok.Value;
 @Value
 public class StockMultiQuery
 {
+	public static StockMultiQuery forDescriptorAndAllPossibleBPartnerIds(@NonNull final MaterialDescriptor materialDescriptor)
+	{
+		final StockQuery bPartnerQuery = StockQuery.forMaterialDescriptor(materialDescriptor);
+
+		final StockMultiQueryBuilder multiQueryBuilder = StockMultiQuery.builder()
+				.addToPredefinedBuckets(false)
+				.query(bPartnerQuery);
+
+		if (bPartnerQuery.getBpartnerId() != StockQuery.BPARTNER_ID_ANY
+				&& bPartnerQuery.getBpartnerId() != StockQuery.BPARTNER_ID_NONE)
+		{
+			final StockQuery noPartnerQuery = bPartnerQuery.toBuilder().bpartnerId(StockQuery.BPARTNER_ID_NONE).build();
+			multiQueryBuilder.query(noPartnerQuery);
+		}
+		return multiQueryBuilder.build();
+	}
+
 	public static final StockMultiQuery of(@NonNull final StockQuery query)
 	{
 		return builder()
@@ -45,7 +63,7 @@ public class StockMultiQuery
 	}
 
 	private final Set<StockQuery> queries;
-	
+
 	private static final boolean DEFAULT_addToPredefinedBuckets = true;
 	private final boolean addToPredefinedBuckets;
 

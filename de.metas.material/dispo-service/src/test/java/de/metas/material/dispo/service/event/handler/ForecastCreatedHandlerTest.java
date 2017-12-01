@@ -24,7 +24,7 @@ import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.StockQuery;
+import de.metas.material.dispo.commons.repository.StockMultiQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -108,7 +108,8 @@ public class ForecastCreatedHandlerTest
 				.get(0)
 				.getMaterialDescriptor();
 
-		final StockQuery query = StockQuery.forMaterialDescriptor(materialDescriptorOfFirstAndOnlyForecastLine);
+		final StockMultiQuery query = StockMultiQuery
+				.forDescriptorAndAllPossibleBPartnerIds(materialDescriptorOfFirstAndOnlyForecastLine);
 
 		// @formatter:off
 		new Expectations()
@@ -145,7 +146,8 @@ public class ForecastCreatedHandlerTest
 				.get(0)
 				.getMaterialDescriptor();
 
-		final StockQuery query = StockQuery.forMaterialDescriptor(materialDescriptorOfFirstAndOnlyForecastLine);
+		final StockMultiQuery query = StockMultiQuery
+				.forDescriptorAndAllPossibleBPartnerIds(materialDescriptorOfFirstAndOnlyForecastLine);
 
 		// @formatter:off
 		new Expectations()

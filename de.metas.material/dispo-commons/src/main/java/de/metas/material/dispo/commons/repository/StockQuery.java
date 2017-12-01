@@ -50,7 +50,7 @@ public class StockQuery
 				.date(materialDescriptor.getDate())
 				.productId(materialDescriptor.getProductId())
 				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
-				.bpartnerId(StockQuery.BPARTNER_ID_ANY)
+				.bpartnerId(materialDescriptor.getBPartnerId())
 				.build();
 	}
 
