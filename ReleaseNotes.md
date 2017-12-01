@@ -151,7 +151,7 @@ Here come the actual release notes:
   * [#1358](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1358) View field editor: number field is behaving weird when using keyboard
     * Improvement of the behavior of number fields when using keyboard.
   * [#1365](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1365) Error with alt+space for expand
-    * Fixes the keyboard Hotkey for expan in Document Windows.
+    * Fixes the keyboard Hotkey for expand in Document Windows.
   * [#1366](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1366) Error in Quickentry dropdown List
     * Fixes the Batch Entry result list, now generating the results properly.
   * [#1374](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1374) Keyboard alt+u in Sales Order
