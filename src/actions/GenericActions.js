@@ -49,6 +49,17 @@ export function getData(
     );
 }
 
+export function getViewAttributeDropdown(windowId, viewId, rowId, attribute) {
+    return axios.get(
+        config.API_URL +
+        '/documentView'+
+        '/' + windowId +
+        '/' + viewId +
+        '/' + rowId +
+        '/attributes/attribute/' + attribute +
+        '/dropdown'
+    );
+}
 /**
  *
  * @param {*} windowId
@@ -94,11 +105,6 @@ export function patchViewAttributes(
     property,
     value
 ) {
-    console.log(windowId,
-        viewId,
-        rowId,
-        property,
-        value);
     const payload = getPathRequestPayload(property, value);
 
     return axios.patch(
