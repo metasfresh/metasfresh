@@ -79,7 +79,7 @@ export function getViewAttributes (
     );
 }
 
-function getPathRequestPayload(property, value) {
+function getPatchRequestPayload(property, value) {
     let payload = [];
     if (Array.isArray(property) && value !== undefined) {
         payload = property.map(item => ({
@@ -105,7 +105,7 @@ export function patchViewAttributes(
     property,
     value
 ) {
-    const payload = getPathRequestPayload(property, value);
+    const payload = getPatchRequestPayload(property, value);
 
     return axios.patch(
         config.API_URL +
