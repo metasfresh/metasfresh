@@ -137,7 +137,7 @@ class DocumentList extends Component {
         const nextIncluded = nextIncludedView && nextIncludedView.windowType &&
             nextIncludedView.viewId;
 
-        this.getSupportAttribute(nextProps);
+        this.loadSupportAttributeFlag(nextProps);
 
         /*
          * If we browse list of docs, changing type of Document
@@ -252,9 +252,9 @@ class DocumentList extends Component {
     }
 
     /**
-     * get supportAttribute of the selected row from the table
+     * load supportAttribute of the selected row from the table
      */
-    getSupportAttribute = (props) => {
+    loadSupportAttributeFlag = (props) => {
         const {selected} = props;
         const {data} = this.state;
         if (!data) {
@@ -262,11 +262,8 @@ class DocumentList extends Component {
         }
         const rows = getRowsData(data.result);
         if (selected.length === 1) {
-            rows.map(row => {
-                if (row.id === selected[0]) {
-                    this.supportAttribute = row.supportAttributes;
-                }
-            });
+            const selectedRow = rows.find(row => row.id === selected[0]);
+            this.supportAttribute = selectedRow.supportAttributes;
         } else  {
             this.supportAttribute = false;
         }
@@ -727,6 +724,9 @@ class DocumentList extends Component {
                                         {...{windowType, viewId}}
                                     >
                                         <SelectionAttributes
+                                            supportAttribute={
+                                                this.supportAttribute
+                                            }
                                             setClickOutsideLock={
                                                 this.setClickOutsideLock
                                             }
@@ -735,9 +735,6 @@ class DocumentList extends Component {
                                             }
                                             shouldNotUpdate={
                                                 inBackground
-                                            }
-                                            supportAttribute={
-                                                this.supportAttribute
                                             }
                                         />
                                     </DataLayoutWrapper>
