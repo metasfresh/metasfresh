@@ -13,6 +13,9 @@ Here come the actual release notes:
 # metasfresh 5.39 (2017-50)
 
 **release for week 2017-50**
+* metasfresh-app
+  * [#3120](https://github.com/metasfresh/metasfresh/issues/3120) Add Netsum to Customer Invoice Document Grid View
+    * Improvement of Customer Invoice Grid View, adding Net Sum.
 
 # metasfresh 5.38 (2017-49)
 
