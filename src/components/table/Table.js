@@ -12,6 +12,7 @@ import {
     mapIncluded,
     collapsedMap,
     getZoomIntoWindow,
+    getRowsData
 } from '../../actions/WindowActions';
 import { deleteRequest } from '../../actions/GenericActions';
 
@@ -171,11 +172,7 @@ class Table extends Component {
         } = this.props;
 
         if(indentSupported && rowData[tabid]){
-            let rowsData = [];
-
-            rowData[tabid].map(item => {
-                rowsData = rowsData.concat(mapIncluded(item));
-            })
+            let rowsData = getRowsData(rowData[tabid]);
 
             this.setState({
                 rows: rowsData,
@@ -550,7 +547,8 @@ class Table extends Component {
         })
     }
 
-    handleClick = (e, id) => {
+    handleClick = (e, keyProperty, item) => {
+        const id = item[keyProperty];
         if(e.button === 0){
             const {selected} = this.state;
             const selectMore = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
@@ -924,7 +922,7 @@ class Table extends Component {
                         }
                         onClick={(e) => {
                             const selected = this.handleClick(
-                                e, item[keyProperty]
+                                e, keyProperty, item
                             );
 
                             if (openIncludedViewOnSelect) {

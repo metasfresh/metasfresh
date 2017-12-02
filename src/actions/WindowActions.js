@@ -989,6 +989,17 @@ export function getItemsByProperty(arr, prop, value) {
 
     return ret;
 }
+/**
+ * flatten array with 1 level deep max(with fieldByName)
+ * from includedDocuments data
+ */
+export function getRowsData(rowData) {
+    let data = [];
+    rowData.map(item => {
+        data = data.concat(mapIncluded(item));
+    })
+    return data;
+}
 
 export function mapIncluded(
     node, indent, isParentLastChild = false

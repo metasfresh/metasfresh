@@ -28,7 +28,8 @@ import {
     indicatorState,
     connectWS,
     disconnectWS,
-    parseToDisplay
+    parseToDisplay,
+    getRowsData
 } from '../../actions/WindowActions';
 import { getSelection } from '../../reducers/windowHandler';
 
@@ -65,6 +66,7 @@ class DocumentList extends Component {
         const { defaultViewId, defaultPage, defaultSort } = props;
 
         this.pageLength = 20;
+        this.supportAttribute = false;
 
         this.state = {
             data: null,
@@ -134,6 +136,8 @@ class DocumentList extends Component {
             includedView.viewId;
         const nextIncluded = nextIncludedView && nextIncludedView.windowType &&
             nextIncludedView.viewId;
+
+        this.getSupportAttribute(nextProps);
 
         /*
          * If we browse list of docs, changing type of Document
@@ -244,6 +248,27 @@ class DocumentList extends Component {
     updateQuickActions = () => {
         if (this.quickActionsComponent) {
             this.quickActionsComponent.updateActions();
+        }
+    }
+
+    /**
+     * get supportAttribute of the selected row from the table
+     */
+    getSupportAttribute = (props) => {
+        const {selected} = props;
+        const {data} = this.state;
+        if (!data) {
+            return;
+        }
+        const rows = getRowsData(data.result);
+        if (selected.length === 1) {
+            rows.map(row => {
+                if (row.id === selected[0]) {
+                    this.supportAttribute = row.supportAttributes;
+                }
+            });
+        } else  {
+            this.supportAttribute = false;
         }
     }
 
@@ -710,6 +735,9 @@ class DocumentList extends Component {
                                             }
                                             shouldNotUpdate={
                                                 inBackground
+                                            }
+                                            supportAttribute={
+                                                this.supportAttribute
                                             }
                                         />
                                     </DataLayoutWrapper>
