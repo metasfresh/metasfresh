@@ -34,14 +34,21 @@ Here come the actual release notes:
   * [#2177](https://github.com/metasfresh/metasfresh/issues/2177) New Window for Attribute Search in WebUI
     * New Window for Attribute Search in WebUI.
   * [#2868](https://github.com/metasfresh/metasfresh/issues/2868) Make BOMValidate process to work correctly in webui
+    * Improvement of the BOM Validation Action in WebUI.
   * [#2956](https://github.com/metasfresh/metasfresh/issues/2956) drop allowconsolidateinvoice from database
+    * Removing column allowconsolidateinvoice thats not needed in Business Partner anymore.
   * [#3027](https://github.com/metasfresh/metasfresh/issues/3027) WebUI: New Window for Import BPartner
     * New Window in WebUI for Import Businesspartner.
   * [#3040](https://github.com/metasfresh/metasfresh/issues/3040) Implement Clone/ Copy for Forecast Window WebUI
+    * New Copy Action for Forecast records.
   * [#3041](https://github.com/metasfresh/metasfresh/issues/3041) Forecast Window copy Field content from header to lines when creation
+    * Improvement of Forecast creation, now allowing the user to record data on header and automatically copy that to line level.
   * [#3042](https://github.com/metasfresh/metasfresh/issues/3042) C_Bpartner: new Additional fields
-  * [#3054](https://github.com/metasfresh/metasfresh/issues/3054) purchase candidates: document references
+    * New pharmacy specific Fields in Business Partner Window.
+  * [#3054](https://github.com/metasfresh/metasfresh/issues/3054) Purchase candidates: document references
+    * Improvement of navigation in Purchase candidates, now having document references to sales and purchase order.
   * [#3064](https://github.com/metasfresh/metasfresh/issues/3064) Multiple PP Order generation for a materialdispo line
+    * Improvement od the generation of Manufacturing Orders via Materialdispo lines.
   * [#3072](https://github.com/metasfresh/metasfresh/issues/3072) de_metas_purchasecandidate schema containing some diagnosis views
   * [#3086](https://github.com/metasfresh/metasfresh/issues/3086) HU planned after Purchase Order, destroyed after material receipt
   * [#3094](https://github.com/metasfresh/metasfresh/issues/3094) Activity ID in Purchase Orderline Grid View
