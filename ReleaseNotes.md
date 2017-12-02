@@ -50,7 +50,9 @@ Here come the actual release notes:
   * [#3064](https://github.com/metasfresh/metasfresh/issues/3064) Multiple PP Order generation for a materialdispo line
     * Improvement od the generation of Manufacturing Orders via Materialdispo lines.
   * [#3072](https://github.com/metasfresh/metasfresh/issues/3072) de_metas_purchasecandidate schema containing some diagnosis views
+    * Adding diagnosis views to purchase candidates DB Schema.
   * [#3086](https://github.com/metasfresh/metasfresh/issues/3086) HU planned after Purchase Order, destroyed after material receipt
+    * Improvement of Handling Unit behavior after Purchase Order before Material Receipt. Now not preparing Handling Units anymore.
   * [#3094](https://github.com/metasfresh/metasfresh/issues/3094) Activity ID in Purchase Orderline Grid View
     * New field in purchase orderline, allowing to see and maintain the activity in grid view.
   * [#3095](https://github.com/metasfresh/metasfresh/issues/3095) WebUI: new Window for AD_Session in WebUI
@@ -59,7 +61,9 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#699](https://github.com/metasfresh/metasfresh-webui-api/issues/699) Implement Batch entry in Forecast Window
+    * New Batch entry functionality in Forecast Window, allowing the rcording of Forecasts much faster.
   * [#705](https://github.com/metasfresh/metasfresh-webui-api/issues/705) Backend Logic for new Date Filter Widget
+    * Implementation of the Backend Logic for the new Date Filter Widget.
 
 * metasfresh-webui-frontend
   * [#1354](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1354) DateTimeRangePicker default Time from/to in Filter and Process Parms
