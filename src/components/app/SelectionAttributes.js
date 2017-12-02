@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import counterpart from 'counterpart';
 
 import {
-    initLayout,
+    getViewAttributesLayout,
     getViewAttributes
 } from '../../actions/GenericActions';
 
@@ -36,10 +36,10 @@ class SelectionAttributes extends Component {
 
     fetchActions = () => {
         const {
-            windowType, viewId, selected, entity, DLWrapperSetData,
+            windowType, viewId, selected, DLWrapperSetData,
             DLWrapperSetLayout
         } = this.props;
-        initLayout(entity, windowType, selected[0], null, viewId)
+        getViewAttributesLayout(windowType, viewId, selected[0])
             .then(response => {
                 DLWrapperSetLayout(response.data.elements);
                 return getViewAttributes(windowType, viewId, selected[0]);
