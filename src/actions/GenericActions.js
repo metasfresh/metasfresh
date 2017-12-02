@@ -68,6 +68,43 @@ export function getViewAttributes (
     );
 }
 
+function getPatchRequestPayload(property, value) {
+    let payload = [];
+    if (Array.isArray(property) && value !== undefined) {
+        payload = property.map(item => ({
+            op: 'replace',
+            path: item.field,
+            value
+        }));
+    } else if (property && value !== undefined) {
+        payload = [{
+            op: 'replace',
+            path: property,
+            value
+        }];
+    }
+
+    return payload;
+}
+
+export function patchViewAttributes(
+    windowId,
+    viewId,
+    rowId,
+    property,
+    value
+) {
+    const payload = getPatchRequestPayload(property, value);
+
+    return axios.patch(
+        config.API_URL +
+        '/documentView'+
+        '/' + windowId +
+        '/' + viewId +
+        '/' + rowId +
+        '/attributes', payload);
+}
+
 export function createInstance(entity, docType, docId, tabId, subentity) {
     return axios.post(
         config.API_URL +
