@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import counterpart from 'counterpart';
 
 import {
-    initLayout,
+    getViewAttributesLayout,
     getViewAttributes
 } from '../../actions/GenericActions';
 
@@ -13,6 +13,7 @@ class SelectionAttributes extends Component {
     componentDidUpdate = (prevProps) => {
         const {
             selected, DLWrapperSetData, DLWrapperSetLayout, shouldNotUpdate,
+            supportAttribute
         } = this.props;
 
         if (shouldNotUpdate) {
@@ -22,7 +23,7 @@ class SelectionAttributes extends Component {
         if (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) {
             DLWrapperSetData([], null, () => {
                 DLWrapperSetLayout([], () => {
-                    if(selected && selected.length === 1){
+                    if(supportAttribute && selected && selected.length === 1){
                         if(selected[0] == 0){
                             return;
                         }
@@ -35,10 +36,10 @@ class SelectionAttributes extends Component {
 
     fetchActions = () => {
         const {
-            windowType, viewId, selected, entity, DLWrapperSetData,
+            windowType, viewId, selected, DLWrapperSetData,
             DLWrapperSetLayout
         } = this.props;
-        initLayout(entity, windowType, selected[0], null, viewId)
+        getViewAttributesLayout(windowType, viewId, selected[0])
             .then(response => {
                 DLWrapperSetLayout(response.data.elements);
                 return getViewAttributes(windowType, viewId, selected[0]);
