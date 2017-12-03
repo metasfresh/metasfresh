@@ -19,17 +19,6 @@ export function initLayout(
     );
 }
 
-export function getViewAttributesLayout(windowId, viewId, rowId) {
-    return axios.get(
-        config.API_URL +
-        '/documentView'+
-        '/' + windowId +
-        '/' + viewId +
-        '/' + rowId +
-        '/attributes/layout'
-    );
-}
-
 export function getData(
     entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced,
     orderBy, viewId
@@ -49,25 +38,6 @@ export function getData(
     );
 }
 
-/**
- *
- * @param {*} windowId
- * @param {*} viewId
- * @param {*} rowId
- */
-export function getViewAttributes (
-    windowId, viewId, rowId
-) {
-    return axios.get(
-        config.API_URL +
-        '/documentView'+
-        '/' + windowId +
-        '/' + viewId +
-        '/' + rowId +
-        '/attributes'
-    );
-}
-
 export function createInstance(entity, docType, docId, tabId, subentity) {
     return axios.post(
         config.API_URL +
@@ -77,6 +47,28 @@ export function createInstance(entity, docType, docId, tabId, subentity) {
         (tabId ? '/' + tabId : '') +
         (subentity ? '/' + subentity : '')
     );
+}
+
+export function createPatchRequestPayload(property, value) {
+    if (Array.isArray(property) && Array.isArray(value)) {
+        return property.map((item, index) => ({
+                op: 'replace',
+                path: item,
+                value: value[index]
+        }));
+    } else if (Array.isArray(property) && value !== undefined) {
+        return property.map(item => ({
+            op: 'replace',
+            path: item.field,
+            value
+        }));
+    } else if (property && value !== undefined) {
+        return [{
+            op: 'replace',
+            path: property,
+            value
+        }];
+    }
 }
 
 export function patchRequest({
@@ -96,29 +88,7 @@ export function patchRequest({
     viewId,
     isEdit
 }) {
-    let payload = [];
-
-    if (docId !== 'NEW') {
-        if (Array.isArray(property) && Array.isArray(value)) {
-            payload = property.map((item, index) => ({
-                    op: 'replace',
-                    path: item,
-                    value: value[index]
-            }));
-        } else if (Array.isArray(property) && value !== undefined) {
-            payload = property.map(item => ({
-                op: 'replace',
-                path: item.field,
-                value
-            }));
-        } else if (property && value !== undefined) {
-            payload = [{
-                op: 'replace',
-                path: property,
-                value
-            }];
-        }
-    }
+    let payload = docId !== 'NEW' ? createPatchRequestPayload(property, value) : [];
 
     return axios.patch(
         config.API_URL +

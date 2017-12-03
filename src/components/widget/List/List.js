@@ -8,6 +8,10 @@ import {
     dropdownRequest
 } from '../../../actions/GenericActions';
 
+import {
+    getViewAttributeDropdown
+} from '../../../actions/ViewAttributesActions';
+
 class List extends Component {
     constructor(props) {
         super(props);
@@ -56,20 +60,28 @@ class List extends Component {
             loading: true
         });
 
-        dropdownRequest({
+        const propertyName = (filterWidget ?
+            properties[0].parameterName : properties[0].field
+        );
+
+        const request = attribute ? getViewAttributeDropdown(
+            windowType,
+            viewId,
+            dataId,
+            propertyName) : dropdownRequest({
             attribute,
             docId: dataId,
             docType: windowType,
             entity,
-            propertyName: (filterWidget ?
-                properties[0].parameterName : properties[0].field
-            ),
+            propertyName,
             rowId,
             subentity,
             subentityId,
             tabId,
             viewId
-        }).then(res => {
+        });
+
+        request.then(res => {
             let values = res.data.values || [];
             let singleOption = values && (values.length === 1);
 

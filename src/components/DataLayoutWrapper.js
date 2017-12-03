@@ -2,8 +2,8 @@ import React, { Component, cloneElement } from 'react';
 import {connect} from 'react-redux';
 
 import {
-    patchRequest
-} from '../actions/GenericActions';
+    patchViewAttributes
+} from '../actions/ViewAttributesActions';
 
 import {
     parseToDisplay
@@ -39,17 +39,16 @@ class DataLayoutWrapper extends Component {
     }
 
     handlePatch = (prop, value, cb) => {
-        const {entity, windowType, viewId} = this.props;
-        const {dataId} = this.state;
+        const {windowType : windowId, viewId} = this.props;
+        const {dataId : rowId} = this.state;
 
-        patchRequest({
-            entity,
-            docType: windowType,
-            docId: dataId,
-            property: prop,
-            value,
-            viewId
-        }).then(response => {
+        patchViewAttributes(
+            windowId,
+            viewId,
+            rowId,
+            prop,
+            value
+        ).then(response => {
             const preparedData = parseToDisplay(response.data[0].fieldsByName);
             preparedData && Object.keys(preparedData).map(key => {
                 this.setState(prevState => ({
