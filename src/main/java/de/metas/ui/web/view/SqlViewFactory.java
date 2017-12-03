@@ -3,7 +3,6 @@ package de.metas.ui.web.view;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,13 +104,14 @@ public class SqlViewFactory implements IViewFactory
 
 	private final ImmutableListMultimap<WindowId, ViewProfile> viewProfiles;
 	private final ImmutableMap<WindowId, ImmutableMap<ViewProfileId, SqlViewCustomizer>> viewCustomizers;
-	private final HashMap<WindowId, ViewProfileId> defaultProfileIdByWindowId;
+	private final CompositeDefaultViewProfileIdProvider defaultProfileIdProvider;
 
 	public SqlViewFactory(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final DocumentReferencesService documentReferencesService,
-			@NonNull final Collection<SqlViewCustomizer> viewCustomizers,
-			@NonNull final Collection<SqlDocumentFilterConverterDecorator> converterDecorators)
+			@NonNull final List<SqlViewCustomizer> viewCustomizers,
+			@NonNull final List<DefaultViewProfileIdProvider> defaultViewProfileIdProviders,
+			@NonNull final List<SqlDocumentFilterConverterDecorator> converterDecorators)
 	{
 		this.documentDescriptorFactory = documentDescriptorFactory;
 		this.documentReferencesService = documentReferencesService;
@@ -120,7 +120,7 @@ public class SqlViewFactory implements IViewFactory
 
 		this.viewProfiles = makeViewProfilesMap(viewCustomizers);
 		this.viewCustomizers = makeViewCustomizersMap(viewCustomizers);
-		this.defaultProfileIdByWindowId = makeInitialDefaultProfileIdByWindowId(viewCustomizers);
+		this.defaultProfileIdProvider = makeDefaultProfileIdProvider(defaultViewProfileIdProviders, viewCustomizers);
 	}
 
 	private static ImmutableListMultimap<WindowId, ViewProfile> makeViewProfilesMap(Collection<SqlViewCustomizer> viewCustomizers)
@@ -134,19 +134,24 @@ public class SqlViewFactory implements IViewFactory
 	{
 		final Map<WindowId, ImmutableMap<ViewProfileId, SqlViewCustomizer>> map = viewCustomizers
 				.stream()
+				.sorted(SqlViewCustomizerUtils.ORDERED_COMPARATOR)
 				.collect(Collectors.groupingBy(
 						SqlViewCustomizer::getWindowId,
 						ImmutableMap.toImmutableMap(viewCustomizer -> viewCustomizer.getProfile().getProfileId(), viewCustomizer -> viewCustomizer)));
 		return ImmutableMap.copyOf(map);
 	}
 
-	private static HashMap<WindowId, ViewProfileId> makeInitialDefaultProfileIdByWindowId(Collection<SqlViewCustomizer> viewCustomizers)
+	private CompositeDefaultViewProfileIdProvider makeDefaultProfileIdProvider(
+			final List<DefaultViewProfileIdProvider> providers,
+			final List<SqlViewCustomizer> viewCustomizersToExtractFallbacks)
 	{
-		final HashMap<WindowId, ViewProfileId> map = new HashMap<>();
-		viewCustomizers.stream()
+		final CompositeDefaultViewProfileIdProvider result = CompositeDefaultViewProfileIdProvider.of(providers);
+
+		viewCustomizersToExtractFallbacks.stream()
 				.sorted(SqlViewCustomizerUtils.ORDERED_COMPARATOR)
-				.forEach(viewCustomizer -> map.putIfAbsent(viewCustomizer.getWindowId(), viewCustomizer.getProfile().getProfileId()));
-		return map;
+				.forEach(viewCustomizer -> result.setDefaultProfileIdFallbackIfAbsent(viewCustomizer.getWindowId(), viewCustomizer.getProfile().getProfileId()));
+
+		return result;
 	}
 
 	private static ImmutableMap<WindowId, SqlDocumentFilterConverterDecorator> makeDecoratorsMapAndHandleDuplicates(
@@ -173,12 +178,12 @@ public class SqlViewFactory implements IViewFactory
 
 	private ViewProfileId getDefaultProfileIdByWindowId(final WindowId windowId)
 	{
-		return defaultProfileIdByWindowId.getOrDefault(windowId, ViewProfileId.NULL);
+		return defaultProfileIdProvider.getDefaultProfileIdByWindowId(windowId);
 	}
 
 	public void setDefaultProfileId(@NonNull final WindowId windowId, final ViewProfileId profileId)
 	{
-		defaultProfileIdByWindowId.put(windowId, profileId);
+		defaultProfileIdProvider.setDefaultProfileIdOverride(windowId, profileId);
 	}
 
 	private SqlViewCustomizer getSqlViewCustomizer(@NonNull final WindowId windowId, final ViewProfileId profileId)
