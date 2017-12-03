@@ -46,6 +46,7 @@ import de.metas.ui.web.view.json.JSONCreateViewRequest;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewLayout;
+import de.metas.ui.web.view.json.JSONViewProfilesList;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
 import de.metas.ui.web.window.controller.WindowRestController;
@@ -253,6 +254,16 @@ public class ViewRestController
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.jsonOptions(() -> newJSONOptions())
 				.toJson(JSONViewLayout::of);
+	}
+
+	@GetMapping("/availableProfiles")
+	public JSONViewProfilesList getAvailableViewProfiles(
+			@PathVariable(PARAM_WindowId) final String windowIdStr,
+			@RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final List<ViewProfile> availableProfiles = viewsRepo.getAvailableProfiles(windowId, viewDataType);
+		return JSONViewProfilesList.of(availableProfiles, userSession.getAD_Language());
 	}
 
 	@GetMapping("/{viewId}/byIds")

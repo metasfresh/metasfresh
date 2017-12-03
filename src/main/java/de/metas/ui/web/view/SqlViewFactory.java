@@ -7,17 +7,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -102,6 +103,7 @@ public class SqlViewFactory implements IViewFactory
 	private final transient CCache<SqlViewBindingKey, ViewLayout> viewLayouts = CCache.newCache("SqlViewLayouts", 20, 0);
 	private final transient CCache<SqlViewBindingKey, SqlViewBinding> viewBindings = CCache.newCache("SqlViewBindings", 20, 0);
 
+	private final ImmutableListMultimap<WindowId, ViewProfile> viewProfiles;
 	private final ImmutableMap<WindowId, ImmutableMap<ViewProfileId, SqlViewCustomizer>> viewCustomizers;
 	private final HashMap<WindowId, ViewProfileId> defaultProfileIdByWindowId;
 
@@ -115,29 +117,27 @@ public class SqlViewFactory implements IViewFactory
 		this.documentReferencesService = documentReferencesService;
 
 		this.windowId2SqlDocumentFilterConverterDecorator = makeDecoratorsMapAndHandleDuplicates(converterDecorators);
+
+		this.viewProfiles = makeViewProfilesMap(viewCustomizers);
 		this.viewCustomizers = makeViewCustomizersMap(viewCustomizers);
 		this.defaultProfileIdByWindowId = makeInitialDefaultProfileIdByWindowId(viewCustomizers);
 	}
 
+	private static ImmutableListMultimap<WindowId, ViewProfile> makeViewProfilesMap(Collection<SqlViewCustomizer> viewCustomizers)
+	{
+		return viewCustomizers
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(viewCustomizer -> viewCustomizer.getWindowId(), viewCustomizer -> viewCustomizer.getProfile()));
+	}
+
 	private static ImmutableMap<WindowId, ImmutableMap<ViewProfileId, SqlViewCustomizer>> makeViewCustomizersMap(Collection<SqlViewCustomizer> viewCustomizers)
 	{
-		if (viewCustomizers.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		final Map<WindowId, ImmutableMap.Builder<ViewProfileId, SqlViewCustomizer>> map = new HashMap<>();
-
-		for (SqlViewCustomizer viewCustomizer : viewCustomizers)
-		{
-			map.computeIfAbsent(viewCustomizer.getWindowId(), k -> ImmutableMap.builder())
-					.put(viewCustomizer.getProfileId(), viewCustomizer);
-		}
-
-		return map.entrySet()
+		final Map<WindowId, ImmutableMap<ViewProfileId, SqlViewCustomizer>> map = viewCustomizers
 				.stream()
-				.map(e -> GuavaCollectors.entry(e.getKey(), e.getValue().build()))
-				.collect(GuavaCollectors.toImmutableMap());
+				.collect(Collectors.groupingBy(
+						SqlViewCustomizer::getWindowId,
+						ImmutableMap.toImmutableMap(viewCustomizer -> viewCustomizer.getProfile().getProfileId(), viewCustomizer -> viewCustomizer)));
+		return ImmutableMap.copyOf(map);
 	}
 
 	private static HashMap<WindowId, ViewProfileId> makeInitialDefaultProfileIdByWindowId(Collection<SqlViewCustomizer> viewCustomizers)
@@ -145,7 +145,7 @@ public class SqlViewFactory implements IViewFactory
 		final HashMap<WindowId, ViewProfileId> map = new HashMap<>();
 		viewCustomizers.stream()
 				.sorted(SqlViewCustomizerUtils.ORDERED_COMPARATOR)
-				.forEach(viewCustomizer -> map.putIfAbsent(viewCustomizer.getWindowId(), viewCustomizer.getProfileId()));
+				.forEach(viewCustomizer -> map.putIfAbsent(viewCustomizer.getWindowId(), viewCustomizer.getProfile().getProfileId()));
 		return map;
 	}
 
@@ -163,6 +163,12 @@ public class SqlViewFactory implements IViewFactory
 					.setParameter("sqlDocumentFilterConverterDecoratorProviders", providers)
 					.appendParametersToMessage();
 		}
+	}
+
+	@Override
+	public List<ViewProfile> getAvailableProfiles(final WindowId windowId)
+	{
+		return viewProfiles.get(windowId);
 	}
 
 	private ViewProfileId getDefaultProfileIdByWindowId(final WindowId windowId)

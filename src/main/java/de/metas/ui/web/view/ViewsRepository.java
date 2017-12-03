@@ -223,6 +223,13 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
+	public List<ViewProfile> getAvailableProfiles(final WindowId windowId, final JSONViewDataType viewDataType)
+	{
+		final IViewFactory factory = getFactory(windowId, viewDataType);
+		return factory.getAvailableProfiles(windowId);
+	}
+
+	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
 	{
 		final String viewId = null; // N/A

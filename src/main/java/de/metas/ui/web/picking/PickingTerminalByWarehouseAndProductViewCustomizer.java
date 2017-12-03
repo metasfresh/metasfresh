@@ -1,11 +1,15 @@
 package de.metas.ui.web.picking;
 
+import org.adempiere.util.Services;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.view.SqlViewCustomizer;
+import de.metas.ui.web.view.ViewProfile;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewRow;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
@@ -46,8 +50,15 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlViewCustomizer
 {
 	private static final ViewProfileId PROFILE_ID = ViewProfileId.fromJson("groupByWarehouseAndProduct");
+	private final ViewProfile PROFILE;
 
 	private static final String FIELDNAME_ProductOrBPartner = "ProductOrBPartner";
+
+	public PickingTerminalByWarehouseAndProductViewCustomizer()
+	{
+		final ITranslatableString caption = Services.get(IMsgBL.class).getTranslatableMsgText("webui.view.pickingTerminal.profile.groupByWarehouseAndProduct.caption");
+		PROFILE = ViewProfile.of(PROFILE_ID, caption);
+	}
 
 	@Override
 	public WindowId getWindowId()
@@ -56,9 +67,9 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 	}
 
 	@Override
-	public ViewProfileId getProfileId()
+	public ViewProfile getProfile()
 	{
-		return PROFILE_ID;
+		return PROFILE;
 	}
 
 	@Override

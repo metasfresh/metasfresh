@@ -1,9 +1,13 @@
 package de.metas.ui.web.picking;
 
+import org.adempiere.util.Services;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.view.SqlViewCustomizer;
+import de.metas.ui.web.view.ViewProfile;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewRow;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
@@ -43,8 +47,15 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 {
 	private static final ViewProfileId PROFILE_ID = ViewProfileId.fromJson("groupByOrder");
+	private final ViewProfile PROFILE;
 
 	private static final String FIELDNAME_OrderOrBPLocation = "OrderOrBPLocation";
+
+	public PickingTerminalByOrderViewCustomizer()
+	{
+		final ITranslatableString caption = Services.get(IMsgBL.class).getTranslatableMsgText("webui.view.pickingTerminal.profile.groupByOrder.caption");
+		PROFILE = ViewProfile.of(PROFILE_ID, caption);
+	}
 
 	@Override
 	public WindowId getWindowId()
@@ -53,9 +64,9 @@ public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 	}
 
 	@Override
-	public ViewProfileId getProfileId()
+	public ViewProfile getProfile()
 	{
-		return PROFILE_ID;
+		return PROFILE;
 	}
 
 	@Override
