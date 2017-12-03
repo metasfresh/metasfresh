@@ -1,4 +1,7 @@
 import axios from 'axios';
+import {
+    createPatchRequestPayload
+} from './GenericActions';
 
 //
 // Handles view attributes (the panel which is displayed on the right side of a view, if view supports attributes)
@@ -34,9 +37,7 @@ export function getViewAttributeDropdown(windowId, viewId, rowId, attribute) {
  * @param {*} viewId
  * @param {*} rowId
  */
-export function getViewAttributes (
-    windowId, viewId, rowId
-) {
+export function getViewAttributes (windowId, viewId, rowId) {
     return axios.get(
         config.API_URL +
         '/documentView'+
@@ -45,25 +46,6 @@ export function getViewAttributes (
         '/' + rowId +
         '/attributes'
     );
-}
-
-function createPatchRequestPayload(property, value) {
-    let payload = [];
-    if (Array.isArray(property) && value !== undefined) {
-        payload = property.map(item => ({
-            op: 'replace',
-            path: item.field,
-            value
-        }));
-    } else if (property && value !== undefined) {
-        payload = [{
-            op: 'replace',
-            path: property,
-            value
-        }];
-    }
-
-    return payload;
 }
 
 export function patchViewAttributes(
