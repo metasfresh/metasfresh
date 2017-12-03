@@ -1017,7 +1017,7 @@ export function getItemsByProperty(arr, prop, value) {
  */
 export function getRowsData(rowData) {
     let data = [];
-    rowData.map(item => {
+    rowData && rowData.map(item => {
         data = data.concat(mapIncluded(item));
     })
     return data;
