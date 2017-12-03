@@ -5,9 +5,12 @@ import { connect } from 'react-redux';
 import RawList from './RawList';
 
 import {
-    dropdownRequest,
-    getViewAttributeDropdown
+    dropdownRequest
 } from '../../../actions/GenericActions';
+
+import {
+    getViewAttributeDropdown
+} from '../../../actions/ViewAttributesActions';
 
 class List extends Component {
     constructor(props) {
