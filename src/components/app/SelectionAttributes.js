@@ -5,7 +5,7 @@ import counterpart from 'counterpart';
 import {
     getViewAttributesLayout,
     getViewAttributes
-} from '../../actions/GenericActions';
+} from '../../actions/ViewAttributesActions';
 
 import RawWidget from '../widget/RawWidget';
 

@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 
 import {
     patchViewAttributes
-} from '../actions/GenericActions';
+} from '../actions/ViewAttributesActions';
 
 import {
     parseToDisplay

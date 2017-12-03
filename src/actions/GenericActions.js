@@ -19,17 +19,6 @@ export function initLayout(
     );
 }
 
-export function getViewAttributesLayout(windowId, viewId, rowId) {
-    return axios.get(
-        config.API_URL +
-        '/documentView'+
-        '/' + windowId +
-        '/' + viewId +
-        '/' + rowId +
-        '/attributes/layout'
-    );
-}
-
 export function getData(
     entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced,
     orderBy, viewId
@@ -47,62 +36,6 @@ export function getData(
         (isAdvanced ? '?advanced=true' : '') +
         (orderBy ? '?orderBy=' + orderBy : '')
     );
-}
-
-/**
- *
- * @param {*} windowId
- * @param {*} viewId
- * @param {*} rowId
- */
-export function getViewAttributes (
-    windowId, viewId, rowId
-) {
-    return axios.get(
-        config.API_URL +
-        '/documentView'+
-        '/' + windowId +
-        '/' + viewId +
-        '/' + rowId +
-        '/attributes'
-    );
-}
-
-function getPatchRequestPayload(property, value) {
-    let payload = [];
-    if (Array.isArray(property) && value !== undefined) {
-        payload = property.map(item => ({
-            op: 'replace',
-            path: item.field,
-            value
-        }));
-    } else if (property && value !== undefined) {
-        payload = [{
-            op: 'replace',
-            path: property,
-            value
-        }];
-    }
-
-    return payload;
-}
-
-export function patchViewAttributes(
-    windowId,
-    viewId,
-    rowId,
-    property,
-    value
-) {
-    const payload = getPatchRequestPayload(property, value);
-
-    return axios.patch(
-        config.API_URL +
-        '/documentView'+
-        '/' + windowId +
-        '/' + viewId +
-        '/' + rowId +
-        '/attributes', payload);
 }
 
 export function createInstance(entity, docType, docId, tabId, subentity) {

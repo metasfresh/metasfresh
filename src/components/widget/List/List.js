@@ -8,6 +8,10 @@ import {
     dropdownRequest
 } from '../../../actions/GenericActions';
 
+import {
+    getViewAttributeDropdown
+} from '../../../actions/ViewAttributesActions';
+
 class List extends Component {
     constructor(props) {
         super(props);
