@@ -1,11 +1,12 @@
 package de.metas.ui.web.picking;
 
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Component;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.picking.model.X_M_Picking_Config;
 import de.metas.ui.web.view.SqlViewCustomizer;
 import de.metas.ui.web.view.ViewProfile;
 import de.metas.ui.web.view.ViewProfileId;
@@ -46,14 +47,15 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 @Component
 public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 {
-	private static final ViewProfileId PROFILE_ID = ViewProfileId.fromJson("groupByOrder");
+	private static final ViewProfileId PROFILE_ID = ViewProfileId.fromJson(X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_GroupByOrder);
 	private final ViewProfile PROFILE;
 
 	private static final String FIELDNAME_OrderOrBPLocation = "OrderOrBPLocation";
 
 	public PickingTerminalByOrderViewCustomizer()
 	{
-		final ITranslatableString caption = Services.get(IMsgBL.class).getTranslatableMsgText("webui.view.pickingTerminal.profile.groupByOrder.caption");
+		final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
+		final ITranslatableString caption = referenceDAO.retrieveListNameTranslatableString(X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_AD_Reference_ID, X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_GroupByOrder);
 		PROFILE = ViewProfile.of(PROFILE_ID, caption);
 	}
 
