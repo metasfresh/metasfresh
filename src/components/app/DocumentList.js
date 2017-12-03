@@ -66,6 +66,7 @@ class DocumentList extends Component {
         const { defaultViewId, defaultPage, defaultSort } = props;
 
         this.pageLength = 20;
+        this.table = null;
         this.supportAttribute = false;
 
         this.state = {
@@ -80,7 +81,7 @@ class DocumentList extends Component {
             clickOutsideLock: false,
 
             isShowIncluded: false,
-            hasShowIncluded: false
+            hasShowIncluded: false,
         };
 
         this.fetchLayoutAndData();
@@ -570,6 +571,10 @@ class DocumentList extends Component {
         }
     }
 
+    handlePatchAllEditFields = () => {
+        this.table && this.table.patchAllEditFields();
+    }
+
     render() {
         const {
             windowType, open, closeOverlays, selected, inBackground,
@@ -579,7 +584,7 @@ class DocumentList extends Component {
         } = this.props;
         const {
             layout, data, viewId, clickOutsideLock, page, filters,
-            isShowIncluded, hasShowIncluded, refreshSelection,
+            isShowIncluded, hasShowIncluded, refreshSelection
         } = this.state;
 
         const hasIncluded = layout && layout.includedView && includedView &&
@@ -674,7 +679,7 @@ class DocumentList extends Component {
                                 entity="documentView"
                                 ref={c => this.table =
                                     c && c.getWrappedInstance()
-                                    && c.getWrappedInstance().refs.instance
+                                    && c.getWrappedInstance().instanceRef
                                 }
                                 rowData={{1: data.result}}
                                 cols={layout.elements}
