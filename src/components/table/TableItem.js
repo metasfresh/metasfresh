@@ -2,12 +2,10 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import TableCell from './TableCell';
-
-const VIEW_EDITOR_RENDER_MODES = [
-    'never',
-    'on-demand',
-    'always'
-]
+import {
+    VIEW_EDITOR_RENDER_MODES_ON_DEMAND,
+    VIEW_EDITOR_RENDER_MODES_ALWAYS
+ }  from '../../constants/Constants';
 
 class TableItem extends Component {
     constructor(props) {
@@ -138,7 +136,7 @@ class TableItem extends Component {
 
     isAllowedFieldEdit = (item) => {
         return item.viewEditorRenderMode ===
-            VIEW_EDITOR_RENDER_MODES[1];
+            VIEW_EDITOR_RENDER_MODES_ON_DEMAND;
     }
 
     renderCells = (cols, cells) => {
@@ -169,7 +167,7 @@ class TableItem extends Component {
                 let isEditable = ((cells && cells[property] &&
                     cells[property].viewEditorRenderMode
                 ) || item.viewEditorRenderMode
-                    ) === VIEW_EDITOR_RENDER_MODES[2];
+                    ) === VIEW_EDITOR_RENDER_MODES_ALWAYS;
 
                 let widgetData = item.fields.map(
                     (prop) => {

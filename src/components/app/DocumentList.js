@@ -28,7 +28,8 @@ import {
     indicatorState,
     connectWS,
     disconnectWS,
-    parseToDisplay
+    parseToDisplay,
+    getRowsData
 } from '../../actions/WindowActions';
 import { getSelection } from '../../reducers/windowHandler';
 
@@ -65,6 +66,8 @@ class DocumentList extends Component {
         const { defaultViewId, defaultPage, defaultSort } = props;
 
         this.pageLength = 20;
+        this.table = null;
+        this.supportAttribute = false;
 
         this.state = {
             data: null,
@@ -78,7 +81,7 @@ class DocumentList extends Component {
             clickOutsideLock: false,
 
             isShowIncluded: false,
-            hasShowIncluded: false
+            hasShowIncluded: false,
         };
 
         this.fetchLayoutAndData();
@@ -134,6 +137,8 @@ class DocumentList extends Component {
             includedView.viewId;
         const nextIncluded = nextIncludedView && nextIncludedView.windowType &&
             nextIncludedView.viewId;
+
+        this.loadSupportAttributeFlag(nextProps);
 
         /*
          * If we browse list of docs, changing type of Document
@@ -244,6 +249,24 @@ class DocumentList extends Component {
     updateQuickActions = () => {
         if (this.quickActionsComponent) {
             this.quickActionsComponent.updateActions();
+        }
+    }
+
+    /**
+     * load supportAttribute of the selected row from the table
+     */
+    loadSupportAttributeFlag = (props) => {
+        const {selected} = props;
+        const {data} = this.state;
+        if (!data) {
+            return;
+        }
+        const rows = getRowsData(data.result);
+        if (selected.length === 1) {
+            const selectedRow = rows.find(row => row.id === selected[0]);
+            this.supportAttribute = selectedRow.supportAttributes;
+        } else  {
+            this.supportAttribute = false;
         }
     }
 
@@ -548,6 +571,10 @@ class DocumentList extends Component {
         }
     }
 
+    handlePatchAllEditFields = () => {
+        this.table && this.table.patchAllEditFields();
+    }
+
     render() {
         const {
             windowType, open, closeOverlays, selected, inBackground,
@@ -557,7 +584,7 @@ class DocumentList extends Component {
         } = this.props;
         const {
             layout, data, viewId, clickOutsideLock, page, filters,
-            isShowIncluded, hasShowIncluded, refreshSelection,
+            isShowIncluded, hasShowIncluded, refreshSelection
         } = this.state;
 
         const hasIncluded = layout && layout.includedView && includedView &&
@@ -652,7 +679,7 @@ class DocumentList extends Component {
                                 entity="documentView"
                                 ref={c => this.table =
                                     c && c.getWrappedInstance()
-                                    && c.getWrappedInstance().refs.instance
+                                    && c.getWrappedInstance().instanceRef
                                 }
                                 rowData={{1: data.result}}
                                 cols={layout.elements}
@@ -702,6 +729,9 @@ class DocumentList extends Component {
                                         {...{windowType, viewId}}
                                     >
                                         <SelectionAttributes
+                                            supportAttribute={
+                                                this.supportAttribute
+                                            }
                                             setClickOutsideLock={
                                                 this.setClickOutsideLock
                                             }

@@ -12,6 +12,8 @@ import {
     mapIncluded,
     collapsedMap,
     getZoomIntoWindow,
+    patchAll,
+    getRowsData
 } from '../../actions/WindowActions';
 import { deleteRequest } from '../../actions/GenericActions';
 
@@ -25,6 +27,7 @@ import TableItem from './TableItem';
 import TablePagination from './TablePagination';
 import TableHeader from './TableHeader';
 import TableContextMenu from './TableContextMenu';
+import { VIEW_EDITOR_RENDER_MODES_NEVER }  from '../../constants/Constants';
 
 class Table extends Component {
     constructor(props) {
@@ -66,7 +69,7 @@ class Table extends Component {
         const {
             dispatch, mainTable, open, rowData, defaultSelected,
             disconnectFromState, type, refreshSelection,
-            openIncludedViewOnSelect, viewId, isModal, hasIncluded,
+            openIncludedViewOnSelect, viewId, isModal, hasIncluded
         } = this.props;
 
         const {
@@ -164,6 +167,31 @@ class Table extends Component {
         }
     }
 
+    patchAllEditFields = () => {
+        const {dispatch, cols, entity, windowType, viewId} = this.props;
+        const {rows} = this.state;
+        let editableRows = [];
+        rows.map((row) => {
+            cols.map(col => {
+                const property = col.fields[0].field;
+                const field = row.fieldsByName[property];
+                const value = field ? field.value : '';
+                const viewEditorRenderMode =
+                    (field && field.viewEditorRenderMode) ||
+                    col.viewEditorRenderMode;
+                if (viewEditorRenderMode !== VIEW_EDITOR_RENDER_MODES_NEVER) {
+                    editableRows.push({
+                        rowId: row.id,
+                        property,
+                        value
+                    });
+                }
+            })
+        });
+
+        dispatch(patchAll(entity, windowType, viewId, editableRows));
+    }
+
     getIndentData = (selectFirst) => {
         const {
             rowData, tabid, indentSupported, collapsible, expandedDepth,
@@ -171,11 +199,7 @@ class Table extends Component {
         } = this.props;
 
         if(indentSupported && rowData[tabid]){
-            let rowsData = [];
-
-            rowData[tabid].map(item => {
-                rowsData = rowsData.concat(mapIncluded(item));
-            })
+            let rowsData = getRowsData(rowData[tabid]);
 
             this.setState({
                 rows: rowsData,
@@ -550,7 +574,8 @@ class Table extends Component {
         })
     }
 
-    handleClick = (e, id) => {
+    handleClick = (e, keyProperty, item) => {
+        const id = item[keyProperty];
         if(e.button === 0){
             const {selected} = this.state;
             const selectMore = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
@@ -924,7 +949,7 @@ class Table extends Component {
                         }
                         onClick={(e) => {
                             const selected = this.handleClick(
-                                e, item[keyProperty]
+                                e, keyProperty, item
                             );
 
                             if (openIncludedViewOnSelect) {

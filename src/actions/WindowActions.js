@@ -449,6 +449,28 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
     }
 }
 
+export function patchAll(entity, windowType, viewId, rows) {
+    return dispatch => {
+        dispatch(indicatorState('pending'));
+        let patchRequests = [];
+        const isEdit = true;
+
+        rows.map(row => {
+            patchRequests.push(patchRequest({
+                entity,
+                docType: windowType,
+                viewId,
+                isEdit,
+                ...row
+            }));
+        });
+
+        axios.all(patchRequests).then(() => {
+            dispatch(indicatorState('saved'));
+        })
+    }
+}
+
 /*
  *  Wrapper for patch request of widget elements
  *  when responses should merge store
@@ -988,6 +1010,17 @@ export function getItemsByProperty(arr, prop, value) {
     });
 
     return ret;
+}
+/**
+ * flatten array with 1 level deep max(with fieldByName)
+ * from includedDocuments data
+ */
+export function getRowsData(rowData) {
+    let data = [];
+    rowData && rowData.map(item => {
+        data = data.concat(mapIncluded(item));
+    })
+    return data;
 }
 
 export function mapIncluded(

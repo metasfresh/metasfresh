@@ -25,6 +25,7 @@ class RawModal extends Component {
     state = {
         scrolled: false,
         isTooltipShow: false,
+        closeModal: false
     }
 
     componentDidMount() {
@@ -46,6 +47,16 @@ class RawModal extends Component {
         }
 
         this.removeEventListeners();
+    }
+
+    componentDidUpdate() {
+        if (this.state.closeModal) {
+            const {closeCallback, viewId, windowType} = this.props;
+            const {isNew} = this.state;
+            closeCallback && closeCallback(isNew);
+            deleteView(windowType, viewId);
+            this.removeModal();
+        }
     }
 
     toggleTooltip = (visible) => {
@@ -79,12 +90,11 @@ class RawModal extends Component {
     }
 
     handleClose = () => {
-        const {closeCallback, viewId, windowType} = this.props;
-        const {isNew} = this.state;
-
-        closeCallback && closeCallback(isNew);
-        deleteView(windowType, viewId);
-        this.removeModal();
+        const { childRef } = this.props;
+        childRef && childRef.handlePatchAllEditFields();
+        this.setState({
+            closeModal: true
+        });
     }
 
     removeModal = () => {
@@ -144,7 +154,8 @@ class RawModal extends Component {
                             {isTooltipShow &&
                                 <Tooltips
                                     name={keymap.APPLY}
-                                    action={counterpart.translate('modal.actions.done')}
+                                    action={counterpart
+                                        .translate('modal.actions.done')}
                                     type={''}
                                 />
                             }

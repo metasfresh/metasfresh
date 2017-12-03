@@ -13,6 +13,7 @@ class SelectionAttributes extends Component {
     componentDidUpdate = (prevProps) => {
         const {
             selected, DLWrapperSetData, DLWrapperSetLayout, shouldNotUpdate,
+            supportAttribute
         } = this.props;
 
         if (shouldNotUpdate) {
@@ -22,7 +23,7 @@ class SelectionAttributes extends Component {
         if (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) {
             DLWrapperSetData([], null, () => {
                 DLWrapperSetLayout([], () => {
-                    if(selected && selected.length === 1){
+                    if(supportAttribute && selected && selected.length === 1){
                         if(selected[0] == 0){
                             return;
                         }
