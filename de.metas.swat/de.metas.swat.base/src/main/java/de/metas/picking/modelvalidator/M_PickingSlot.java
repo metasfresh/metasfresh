@@ -1,5 +1,7 @@
 package de.metas.picking.modelvalidator;
 
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -24,15 +26,16 @@ package de.metas.picking.modelvalidator;
 
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.picking.model.I_M_PickingSlot;
 
 /**
  * @author al
  */
-@Validator(I_M_PickingSlot.class)
+@Interceptor(I_M_PickingSlot.class)
+@Component
 public class M_PickingSlot
 {
 	/**

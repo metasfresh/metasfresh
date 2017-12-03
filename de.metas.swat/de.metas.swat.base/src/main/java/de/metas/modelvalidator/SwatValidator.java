@@ -214,8 +214,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new de.metas.activity.model.validator.C_OrderLine(), client); // 06788
 		engine.addModelValidator(new de.metas.activity.model.validator.C_InvoiceLine(), client); // 06788
 
-		engine.addModelValidator(new de.metas.picking.modelvalidator.M_PickingSlot(), client); // 06178
-
 		engine.addModelValidator(new M_ShipperTransportation(), client); // 06899
 
 		// task #1064
