@@ -44,7 +44,7 @@ public final class SqlViewGroupingBinding
 	@NonNull
 	@Default
 	@Getter
-	private final SqlViewRowIdsConverter rowIdsConverter = DefaultSqlViewRowIdsConverter.instance;
+	private final SqlViewRowIdsConverter rowIdsConverter = SqlViewRowIdsConverters.TO_INT_STRICT;
 
 	public ImmutableSet<String> getGroupByFieldNames()
 	{

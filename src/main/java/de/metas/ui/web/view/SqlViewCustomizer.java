@@ -1,8 +1,8 @@
-package de.metas.ui.web.view.descriptor;
+package de.metas.ui.web.view;
 
-import java.util.Set;
-
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -14,29 +14,37 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public final class DefaultSqlViewRowIdsConverter implements SqlViewRowIdsConverter
+public interface SqlViewCustomizer extends ViewRowCustomizer
 {
-	public static final transient DefaultSqlViewRowIdsConverter instance = new DefaultSqlViewRowIdsConverter();
+	WindowId getWindowId();
 
-	private DefaultSqlViewRowIdsConverter()
+	ViewProfileId getProfileId();
+
+	default void customizeSqlViewBinding(final SqlViewBinding.Builder sqlViewBindingBuilder)
 	{
+		// nothing
+	}
+
+	default void customizeViewLayout(final ViewLayout.ChangeBuilder viewLayoutBuilder)
+	{
+		// nothing
 	}
 
 	@Override
-	public Set<Integer> convertToRecordIds(DocumentIdsSelection rowIds)
+	default void customizeViewRow(final ViewRow.Builder rowBuilder)
 	{
-		return rowIds.toIntSet();
+		// nothing
 	}
 }

@@ -10,6 +10,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -61,6 +62,10 @@ public final class JSONViewLayout
 	@JsonProperty("windowId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final WindowId windowId;
+
+	@JsonProperty("profileId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final ViewProfileId profileId;
 
 	@JsonProperty("caption")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -123,6 +128,8 @@ public final class JSONViewLayout
 		windowId = layout.getWindowId();
 		type = windowId;
 
+		profileId = layout.getProfileId();
+
 		final String adLanguage = jsonOpts.getAD_Language();
 		caption = layout.getCaption(adLanguage);
 		description = layout.getDescription(adLanguage);
@@ -149,7 +156,7 @@ public final class JSONViewLayout
 		//
 		// Included view
 		includedView = JSONIncludedViewSupport.fromNullable(layout.getIncludedViewLayout());
-		if(includedView != null)
+		if (includedView != null)
 		{
 			supportIncludedView = true;
 			supportIncludedViewOnSelect = includedView.isOpenOnSelect() ? Boolean.TRUE : null;

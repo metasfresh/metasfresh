@@ -77,6 +77,7 @@ public final class ViewResult
 	//
 	// View info
 	private final ViewId viewId;
+	private final ViewProfileId profileId;
 	private final ViewId parentViewId;
 	private final ITranslatableString viewDescription;
 	private final long size;
@@ -107,8 +108,8 @@ public final class ViewResult
 			final List<DocumentId> rowIds,
 			final List<? extends IViewRow> page)
 	{
-		super();
 		this.viewId = view.getViewId();
+		this.profileId = view.getProfileId();
 		this.parentViewId = view.getParentViewId();
 		this.viewDescription = view.getDescription();
 		this.size = view.size();
@@ -134,8 +135,8 @@ public final class ViewResult
 	/** View (WITHOUT loaded page) constructor */
 	private ViewResult(final IView view)
 	{
-		super();
 		this.viewId = view.getViewId();
+		this.profileId = view.getProfileId();
 		this.parentViewId = view.getParentViewId();
 		this.viewDescription = view.getDescription();
 		this.size = view.size();
@@ -162,6 +163,7 @@ public final class ViewResult
 				//
 				// View info
 				.add("viewId", viewId)
+				.add("profileId", profileId)
 				.add("filters", filters)
 				.add("orderBys", orderBys)
 				//
@@ -176,6 +178,11 @@ public final class ViewResult
 	public ViewId getViewId()
 	{
 		return viewId;
+	}
+	
+	public ViewProfileId getProfileId()
+	{
+		return profileId;
 	}
 
 	public ViewId getParentViewId()

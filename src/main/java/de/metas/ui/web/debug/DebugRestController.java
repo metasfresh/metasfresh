@@ -50,6 +50,8 @@ import de.metas.ui.web.notification.UserNotificationRepository;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewProfileId;
+import de.metas.ui.web.view.SqlViewFactory;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -103,6 +105,9 @@ public class DebugRestController
 	@Autowired
 	@Lazy
 	private IViewsRepository viewsRepo;
+	@Autowired
+	@Lazy
+	private SqlViewFactory sqlViewFactory;
 
 	@Autowired
 	@Lazy
@@ -178,6 +183,12 @@ public class DebugRestController
 				.map(ViewResult::ofView)
 				.map(viewResult -> JSONViewResult.of(viewResult, ViewRowOverridesHelper.NULL, adLanguage))
 				.collect(GuavaCollectors.toImmutableList());
+	}
+	
+	@PostMapping("/viewDefaultProfile/{windowId}")
+	public void setDefaultViewProfile(@PathVariable("windowId") final String windowIdStr, @RequestBody final String profileIdStr)
+	{
+		sqlViewFactory.setDefaultProfileId(WindowId.fromJson(windowIdStr), ViewProfileId.fromJson(profileIdStr));
 	}
 
 	@RequestMapping(value = "/lookups/cacheStats", method = RequestMethod.GET)

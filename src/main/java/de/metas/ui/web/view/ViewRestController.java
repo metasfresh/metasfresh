@@ -141,6 +141,7 @@ public class ViewRestController
 
 		final WindowId windowId = extractWindowId(windowIdStr, jsonRequest.getWindowId());
 		final CreateViewRequest request = CreateViewRequest.builder(windowId, jsonRequest.getViewType())
+				.setProfileId(jsonRequest.getProfileId())
 				.setReferencingDocumentPaths(jsonRequest.getReferencingDocumentPaths())
 				// .setStickyFilters(stickyFilters) // none
 				.setFiltersFromJSON(jsonRequest.getFilters())
@@ -239,12 +240,13 @@ public class ViewRestController
 	public ResponseEntity<JSONViewLayout> getViewLayout(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
 			@RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType,
+			@RequestParam(name = "profileId", required = false) final String profileIdStr,
 			final WebRequest request)
 	{
 		userSession.assertLoggedIn();
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final ViewLayout viewLayout = viewsRepo.getViewLayout(windowId, viewDataType);
+		final ViewLayout viewLayout = viewsRepo.getViewLayout(windowId, viewDataType, ViewProfileId.fromJson(profileIdStr));
 
 		return ETagResponseEntityBuilder.ofETagAware(request, viewLayout)
 				.includeLanguageInETag()
@@ -263,7 +265,7 @@ public class ViewRestController
 		userSession.assertLoggedIn();
 
 		final DocumentIdsSelection rowIds = DocumentIdsSelection.ofCommaSeparatedString(idsListStr);
-		if(rowIds.isAll())
+		if (rowIds.isAll())
 		{
 			throw new AdempiereException("retrieving ALL rows is not allowed here");
 		}
@@ -376,7 +378,7 @@ public class ViewRestController
 		final ViewExcelExporter viewExporter = ViewExcelExporter.builder()
 				.view(viewsRepo.getView(viewId))
 				.rowIds(DocumentIdsSelection.ofCommaSeparatedString(selectedIdsListStr))
-				.layout(viewsRepo.getViewLayout(viewId.getWindowId(), JSONViewDataType.grid))
+				.layout(viewsRepo.getViewLayout(viewId.getWindowId(), JSONViewDataType.grid, ViewProfileId.NULL))
 				.adLanguage(userSession.getAD_Language())
 				.build();
 

@@ -1,8 +1,5 @@
 package de.metas.ui.web.view;
 
-import java.util.Collection;
-
-import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -34,12 +31,7 @@ public interface IViewFactory
 {
 	IView createView(CreateViewRequest request);
 	
-	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType);
-
-	default Collection<DocumentFilterDescriptor> getViewFilterDescriptors(final WindowId windowId, final JSONViewDataType viewDataType)
-	{
-		return getViewLayout(windowId, viewDataType).getFilters();
-	}
+	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, ViewProfileId profileId);
 
 	default IView filterView(final IView view, final JSONFilterViewRequest filterViewRequest)
 	{

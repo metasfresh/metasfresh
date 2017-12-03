@@ -223,13 +223,13 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
 	{
 		final String viewId = null; // N/A
 		DocumentPermissionsHelper.assertViewAccess(windowId, viewId, UserSession.getCurrentPermissions());
 
 		final IViewFactory factory = getFactory(windowId, viewDataType);
-		return factory.getViewLayout(windowId, viewDataType)
+		return factory.getViewLayout(windowId, viewDataType, profileId)
 				// Enable AllowNew if we have a menu node to create new records
 				.withAllowNewRecordIfPresent(menuTreeRepo.getUserSessionMenuTree()
 						.getNewRecordNodeForWindowId(windowId)

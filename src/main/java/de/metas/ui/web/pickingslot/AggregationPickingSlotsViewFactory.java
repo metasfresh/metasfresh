@@ -3,6 +3,8 @@ package de.metas.ui.web.pickingslot;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
@@ -17,6 +19,7 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotViewRepository;
 import de.metas.ui.web.pickingslot.process.WEBUI_PickingSlot_TakeOutHU;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.IncludedViewLayout;
@@ -62,7 +65,7 @@ public class AggregationPickingSlotsViewFactory implements IViewFactory
 	private PickingSlotViewRepository pickingSlotRepo;
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, @Nullable final ViewProfileId profileId)
 	{
 		// TODO: cache it
 
