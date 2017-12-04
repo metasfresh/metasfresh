@@ -1,6 +1,7 @@
 package de.metas.ui.web.document.filter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,16 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 		}
 		return new ImmutableDocumentFilterDescriptorsProvider(ImmutableList.of(descriptor));
 	}
+	
+	public static final ImmutableDocumentFilterDescriptorsProvider of(final DocumentFilterDescriptor... descriptors)
+	{
+		if (descriptors == null || descriptors.length == 0)
+		{
+			return EMPTY;
+		}
+		return new ImmutableDocumentFilterDescriptorsProvider(Arrays.asList(descriptors));
+	}
+
 
 	public static final Builder builder()
 	{
@@ -113,7 +124,7 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 
 		public ImmutableDocumentFilterDescriptorsProvider build()
 		{
-			if(descriptors.isEmpty())
+			if (descriptors.isEmpty())
 			{
 				return EMPTY;
 			}
