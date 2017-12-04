@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -12,6 +14,7 @@ import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.IncludedViewLayout;
@@ -73,7 +76,8 @@ public class PackageableViewFactory implements IViewFactory
 	@Override
 	public ViewLayout getViewLayout(
 			@NonNull final WindowId windowId,
-			@NonNull final JSONViewDataType viewDataType)
+			@NonNull final JSONViewDataType viewDataType,
+			@Nullable final ViewProfileId profileId)
 	{
 		// TODO: cache it
 

@@ -29,6 +29,7 @@ import de.metas.ui.web.picking.process.WEBUI_Picking_RemoveHUFromPickingSlot;
 import de.metas.ui.web.picking.process.WEBUI_Picking_ReturnQtyToSourceHU;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -72,7 +73,7 @@ public class PickingSlotViewFactory implements IViewFactory
 	private PickingSlotViewRepository pickingSlotRepo;
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, @Nullable final ViewProfileId profileId)
 	{
 		if (!PickingConstants.WINDOWID_PickingSlotView.equals(windowId))
 		{

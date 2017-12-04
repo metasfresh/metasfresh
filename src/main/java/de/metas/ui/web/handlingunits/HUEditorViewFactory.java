@@ -41,6 +41,7 @@ import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.SqlViewFactory;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -152,10 +153,10 @@ public class HUEditorViewFactory implements IViewFactory
 		final List<String> displayFieldNames = ImmutableList.of(I_M_HU.COLUMNNAME_M_HU_ID);
 
 		final SqlViewBinding.Builder sqlViewBinding = SqlViewBinding.builder()
-				.setTableName(I_M_HU.Table_Name)
-				.setDisplayFieldNames(displayFieldNames)
-				.setSqlWhereClause(sqlWhereClause.toString())
-				.setRowIdsConverter(HUSqlViewRowIdsConverter.instance);
+				.tableName(I_M_HU.Table_Name)
+				.displayFieldNames(displayFieldNames)
+				.sqlWhereClause(sqlWhereClause.toString())
+				.rowIdsConverter(HUSqlViewRowIdsConverter.instance);
 
 		//
 		// View Fields
@@ -165,7 +166,7 @@ public class HUEditorViewFactory implements IViewFactory
 			huEntityBindings.getFields()
 					.stream()
 					.map(huField -> SqlViewFactory.createViewFieldBindingBuilder(huField, displayFieldNames).build())
-					.forEach(sqlViewBinding::addField);
+					.forEach(sqlViewBinding::field);
 		}
 
 		//
@@ -173,12 +174,12 @@ public class HUEditorViewFactory implements IViewFactory
 		{
 			final Collection<DocumentFilterDescriptor> huStandardFilters = huEntityDescriptor.getFilterDescriptors().getAll();
 			sqlViewBinding
-					.setFilterDescriptors(ImmutableDocumentFilterDescriptorsProvider.builder()
+					.filterDescriptors(ImmutableDocumentFilterDescriptorsProvider.builder()
 							.addDescriptors(huStandardFilters)
 							.addDescriptor(HUBarcodeSqlDocumentFilterConverter.createDocumentFilterDescriptor())
 							.build())
-					.addFilterConverter(HUBarcodeSqlDocumentFilterConverter.FILTER_ID, HUBarcodeSqlDocumentFilterConverter.instance)
-					.addFilterConverter(HUIdsFilterHelper.FILTER_ID, HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER);
+					.filterConverter(HUBarcodeSqlDocumentFilterConverter.FILTER_ID, HUBarcodeSqlDocumentFilterConverter.instance)
+					.filterConverter(HUIdsFilterHelper.FILTER_ID, HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER);
 		}
 
 		//
@@ -186,16 +187,10 @@ public class HUEditorViewFactory implements IViewFactory
 	}
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
 	{
 		final ArrayKey key = ArrayKey.of(windowId, viewDataType);
 		return layouts.getOrLoad(key, () -> createHUViewLayout(windowId, viewDataType));
-	}
-
-	@Override
-	public Collection<DocumentFilterDescriptor> getViewFilterDescriptors(final WindowId windowId, final JSONViewDataType viewType)
-	{
-		return getSqlViewBinding().getViewFilterDescriptors().getAll();
 	}
 
 	private final ViewLayout createHUViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)

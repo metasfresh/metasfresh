@@ -1,6 +1,5 @@
 package de.metas.ui.web.view.json;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
@@ -16,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -43,16 +43,19 @@ import de.metas.ui.web.window.descriptor.DetailId;
  * #L%
  */
 
-@SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @lombok.Data
-public final class JSONCreateViewRequest implements Serializable
+public final class JSONCreateViewRequest
 {
 	@JsonProperty("documentType")
 	private final WindowId windowId;
 
 	@JsonProperty("viewType")
 	private final JSONViewDataType viewType;
+	
+	@JsonProperty("profileId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final ViewProfileId profileId;
 
 	@JsonProperty("referencing")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -74,17 +77,19 @@ public final class JSONCreateViewRequest implements Serializable
 
 	@JsonCreator
 	private JSONCreateViewRequest(
-			@JsonProperty("documentType") final WindowId windowId //
-			, @JsonProperty("viewType") final JSONViewDataType viewType //
-			, @JsonProperty("referencing") final JSONReferencing referencing //
-			, @JsonProperty("filters") final List<JSONDocumentFilter> filters //
-			, @JsonProperty("filterOnlyIds") final List<Integer> filterOnlyIds //
-			, @JsonProperty("queryFirstRow") final int queryFirstRow //
-			, @JsonProperty("queryPageLength") final int queryPageLength //
+			@JsonProperty("documentType") final WindowId windowId,
+			@JsonProperty("viewType") final JSONViewDataType viewType,
+			@JsonProperty("profileId") final ViewProfileId profileId,
+			@JsonProperty("referencing") final JSONReferencing referencing,
+			@JsonProperty("filters") final List<JSONDocumentFilter> filters,
+			@JsonProperty("filterOnlyIds") final List<Integer> filterOnlyIds,
+			@JsonProperty("queryFirstRow") final int queryFirstRow,
+			@JsonProperty("queryPageLength") final int queryPageLength
 	)
 	{
 		this.windowId = windowId;
 		this.viewType = viewType;
+		this.profileId = profileId;
 
 		this.referencing = referencing;
 		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
@@ -130,7 +135,7 @@ public final class JSONCreateViewRequest implements Serializable
 
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	@lombok.Data
-	public static final class JSONReferencing implements Serializable
+	public static final class JSONReferencing
 	{
 		@JsonProperty("documentType")
 		private final String documentType;
@@ -152,7 +157,6 @@ public final class JSONCreateViewRequest implements Serializable
 				@JsonProperty("tabId") final String tabId,
 				@JsonProperty("rowIds") final Set<String> rowIds)
 		{
-			super();
 			Preconditions.checkNotNull(documentType, "documentType is missing");
 			this.documentType = documentType;
 

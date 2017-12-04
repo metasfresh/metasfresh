@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
@@ -136,6 +137,23 @@ public final class JSONLookupValue
 	public static JSONLookupValue unknown(final int id)
 	{
 		return of(id, "<" + id + ">");
+	}
+
+	public static final JSONLookupValue concat(final JSONLookupValue lookupValue1, final JSONLookupValue lookupValue2)
+	{
+		if (lookupValue1 == null)
+		{
+			return lookupValue2;
+		}
+		if (lookupValue2 == null)
+		{
+			return lookupValue1;
+		}
+
+		final String key = Joiner.on("_").skipNulls().join(lookupValue1.getKey(), lookupValue2.getKey());
+		final String caption = Joiner.on(" ").skipNulls().join(lookupValue1.getCaption(), lookupValue2.getCaption());
+		return JSONLookupValue.of(key, caption);
+
 	}
 
 	// IMPORTANT: when changing this property name, pls also check/change de.metas.handlingunits.attribute.impl.AbstractAttributeValue.extractKey(Map<String, String>, I_M_Attribute)

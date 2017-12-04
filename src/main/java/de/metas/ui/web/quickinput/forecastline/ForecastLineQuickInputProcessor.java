@@ -1,29 +1,26 @@
-package de.metas.ui.web.quickinput.orderline;
+package de.metas.ui.web.quickinput.forecastline;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
-import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Forecast;
+import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.I_M_Product;
-import org.slf4j.Logger;
 
-import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.HUPackingAwareCopy.ASICopyMode;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
-import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
+import de.metas.adempiere.gui.search.impl.ForecastLineHUPackingAware;
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.logging.LogManager;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -35,7 +32,7 @@ import lombok.NonNull;
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -53,36 +50,28 @@ import lombok.NonNull;
  * #L%
  */
 
-public class OrderLineQuickInputProcessor implements IQuickInputProcessor
+public class ForecastLineQuickInputProcessor implements IQuickInputProcessor
 {
-	// services
-	private static final transient Logger logger = LogManager.getLogger(OrderLineQuickInputProcessor.class);
 	private final transient IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
-
-	public OrderLineQuickInputProcessor()
-	{
-		super();
-	}
 
 	@Override
 	public DocumentId process(final QuickInput quickInput)
 	{
-		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-
-		final I_C_OrderLine newOrderLine = OrderFastInput.addOrderLine(ctx, order, orderLineObj -> updateOrderLine(orderLineObj, quickInput));
-		final int newOrderLineId = newOrderLine.getC_OrderLine_ID();
-		return DocumentId.of(newOrderLineId);
+		final I_M_Forecast forecast= quickInput.getRootDocumentAs(I_M_Forecast.class);
+		final I_M_ForecastLine forecastLine = InterfaceWrapperHelper.newInstance(I_M_ForecastLine.class, forecast);
+		forecastLine.setM_Forecast(forecast);
+		updateForecastLine(forecastLine, quickInput);
+		save(forecastLine);
+		return DocumentId.of(forecastLine.getM_ForecastLine_ID());
 	}
 
-	private final void updateOrderLine(final Object orderLineObj, final QuickInput fromQuickInput)
+	private final void updateForecastLine(final I_M_ForecastLine forecastLine, final QuickInput fromQuickInput)
 	{
-		final I_C_Order order = fromQuickInput.getRootDocumentAs(I_C_Order.class);
-		final IOrderLineQuickInput fromOrderLineQuickInput = fromQuickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
-		final IHUPackingAware quickInputPackingAware = createQuickInputPackingAware(order, fromOrderLineQuickInput);
+		final I_M_Forecast forecast = fromQuickInput.getRootDocumentAs(I_M_Forecast.class);
+		final IForecastLineQuickInput fromForecastLineQuickInput = fromQuickInput.getQuickInputDocumentAs(IForecastLineQuickInput.class);
+		final IHUPackingAware quickInputPackingAware = createQuickInputPackingAware(forecast, fromForecastLineQuickInput);
 
-		final I_C_OrderLine orderLineToUpdate = InterfaceWrapperHelper.create(orderLineObj, I_C_OrderLine.class);
-		final IHUPackingAware orderLinePackingAware = OrderLineHUPackingAware.of(orderLineToUpdate);
+		final IHUPackingAware orderLinePackingAware = ForecastLineHUPackingAware.of(forecastLine);
 
 		huPackingAwareBL.prepareCopyFrom(quickInputPackingAware)
 				.overridePartner(false)
@@ -91,17 +80,15 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	}
 
 	private IHUPackingAware createQuickInputPackingAware(
-			@NonNull final I_C_Order order,
-			@NonNull final IOrderLineQuickInput quickInput)
+			@NonNull final I_M_Forecast forecast,
+			@NonNull final IForecastLineQuickInput quickInput)
 	{
-		final PlainHUPackingAware huPackingAware = createAndInitHuPackingAware(order, quickInput);
+		final PlainHUPackingAware huPackingAware = createAndInitHuPackingAware(forecast, quickInput);
 
-		// Get quickInput's Qty
 		final BigDecimal quickInputQty = quickInput.getQty();
 		if (quickInputQty == null || quickInputQty.signum() <= 0)
 		{
-			logger.warn("Invalid Qty={} for {}", quickInputQty, quickInput);
-			throw new AdempiereException("Qty shall be greather than zero"); // TODO trl
+			throw new AdempiereException("Qty shall be greather than zero");
 		}
 
 		huPackingAwareBL.computeAndSetQtysForNewHuPackingAware(huPackingAware, quickInputQty);
@@ -110,12 +97,12 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	}
 
 	private PlainHUPackingAware createAndInitHuPackingAware(
-			@NonNull final I_C_Order order,
-			@NonNull final IOrderLineQuickInput quickInput)
+			@NonNull final I_M_Forecast forecast,
+			@NonNull final IForecastLineQuickInput quickInput)
 	{
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
-		huPackingAware.setC_BPartner(order.getC_BPartner());
-		huPackingAware.setDateOrdered(order.getDateOrdered());
+		huPackingAware.setC_BPartner(forecast.getC_BPartner());
+		huPackingAware.setDateOrdered(forecast.getDatePromised());
 		huPackingAware.setInDispute(false);
 
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(quickInput.getM_Product_ID());
@@ -134,13 +121,11 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	{
 		if (huPackingAware.getQty() == null || huPackingAware.getQty().signum() <= 0)
 		{
-			logger.warn("Invalid Qty={} for {}", huPackingAware.getQty(), huPackingAware);
-			throw new AdempiereException("Qty shall be greather than zero"); // TODO trl
+			throw new AdempiereException("Qty shall be greather than zero");
 		}
 		if (huPackingAware.getQtyPacks() == null || huPackingAware.getQtyPacks().signum() <= 0)
 		{
-			logger.warn("Invalid QtyTU={} for {}", huPackingAware.getQtyPacks(), huPackingAware);
-			throw new AdempiereException("QtyTU shall be greather than zero"); // TODO trl
+			throw new AdempiereException("QtyTU shall be greather than zero");
 		}
 		return huPackingAware;
 	}

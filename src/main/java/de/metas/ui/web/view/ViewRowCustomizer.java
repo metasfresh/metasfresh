@@ -1,8 +1,4 @@
-package de.metas.ui.web.view.descriptor;
-
-import java.util.Set;
-
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+package de.metas.ui.web.view;
 
 /*
  * #%L
@@ -26,17 +22,8 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * #L%
  */
 
-public final class DefaultSqlViewRowIdsConverter implements SqlViewRowIdsConverter
+@FunctionalInterface
+public interface ViewRowCustomizer
 {
-	public static final transient DefaultSqlViewRowIdsConverter instance = new DefaultSqlViewRowIdsConverter();
-
-	private DefaultSqlViewRowIdsConverter()
-	{
-	}
-
-	@Override
-	public Set<Integer> convertToRecordIds(DocumentIdsSelection rowIds)
-	{
-		return rowIds.toIntSet();
-	}
+	void customizeViewRow(ViewRow.Builder rowBuilder);
 }

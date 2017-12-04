@@ -78,6 +78,7 @@ public final class CreateViewRequest
 		final List<JSONDocumentFilter> jsonFilters = filterViewRequest.getFilters();
 
 		return builder(view.getViewId().getWindowId(), view.getViewType())
+				.setProfileId(view.getProfileId())
 				.setParentViewId(view.getParentViewId())
 				.setParentRowId(view.getParentRowId())
 				.setReferencingDocumentPaths(view.getReferencingDocumentPaths())
@@ -103,6 +104,7 @@ public final class CreateViewRequest
 		final Set<DocumentPath> referencingDocumentPaths = ImmutableSet.of(); // view.getReferencingDocumentPaths();
 
 		return builder(view.getViewId().getWindowId(), view.getViewType())
+				.setProfileId(view.getProfileId())
 				.setParentViewId(view.getParentViewId())
 				.setParentRowId(view.getParentRowId())
 				.setReferencingDocumentPaths(referencingDocumentPaths)
@@ -116,6 +118,7 @@ public final class CreateViewRequest
 
 	ViewId viewId;
 	JSONViewDataType viewType;
+	ViewProfileId profileId;
 
 	ViewId parentViewId;
 	DocumentId parentRowId;
@@ -155,6 +158,7 @@ public final class CreateViewRequest
 	{
 		viewId = builder.getViewId();
 		viewType = builder.getViewType();
+		profileId = builder.getProfileId();
 
 		parentViewId = builder.getParentViewId();
 		parentRowId = builder.getParentRowId();
@@ -220,6 +224,7 @@ public final class CreateViewRequest
 	{
 		private final ViewId viewId;
 		private final JSONViewDataType viewType;
+		private ViewProfileId profileId = ViewProfileId.NULL;
 
 		private ViewId parentViewId;
 		private DocumentId parentRowId;
@@ -260,6 +265,17 @@ public final class CreateViewRequest
 		private JSONViewDataType getViewType()
 		{
 			return viewType;
+		}
+		
+		public Builder setProfileId(ViewProfileId profileId)
+		{
+			this.profileId = profileId;
+			return this;
+		}
+		
+		private ViewProfileId getProfileId()
+		{
+			return profileId;
 		}
 
 		public Builder setParentViewId(final ViewId parentViewId)
