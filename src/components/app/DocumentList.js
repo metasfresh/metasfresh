@@ -264,7 +264,7 @@ class DocumentList extends Component {
         const rows = getRowsData(data.result);
         if (selected.length === 1) {
             const selectedRow = rows.find(row => row.id === selected[0]);
-            this.supportAttribute = selectedRow.supportAttributes;
+            this.supportAttribute = selectedRow && selectedRow.supportAttributes;
         } else  {
             this.supportAttribute = false;
         }
