@@ -18,6 +18,8 @@ Here come the actual release notes:
     * Improvement of Customer Invoice Grid View, adding Net Sum.
   * [#3122](https://github.com/metasfresh/metasfresh/issues/3122) Add Netsum to Vendor Invoice Document Grid View
     * Improvement of Vendor Invoice Grid View, adding Net Sum.
+  * [#3124](https://github.com/metasfresh/metasfresh/issues/3124) Picking terminal: pimp Picking Configuration window
+    * New Window for Picking Profile Configuration. Allowing to switch the used Picking Profile between Product and Sales Order oriented Picking.
 
 # metasfresh 5.38 (2017-49)
 
