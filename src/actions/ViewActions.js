@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 export function getViewLayout(windowId, viewType) {
-    console.log(new Error().stack);
     return axios.get(
         config.API_URL +
         '/documentView/' + windowId +
