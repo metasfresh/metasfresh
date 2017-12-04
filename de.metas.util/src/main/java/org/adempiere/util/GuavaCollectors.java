@@ -283,23 +283,23 @@ public final class GuavaCollectors
 		return ImmutableMap.toImmutableMap(keyMapper, value -> value, (valuePrev, valueNow) -> valuePrev);
 	}
 
-	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toMap(final Supplier<Map<K, V>> mapSupplier)
+	public static <K, V, M extends Map<K, V>> Collector<Entry<K, V>, ?, M> toMap(final Supplier<M> mapSupplier)
 	{
-		final BiConsumer<Map<K, V>, Entry<K, V>> accumulator = (map, entry) -> map.put(entry.getKey(), entry.getValue());
-		final BinaryOperator<Map<K, V>> combiner = (map1, map2) -> {
+		final BiConsumer<M, Map.Entry<K, V>> accumulator = (map, entry) -> map.put(entry.getKey(), entry.getValue());
+		final BinaryOperator<M> combiner = (map1, map2) -> {
 			map1.putAll(map2);
 			return map1;
 		};
-		final Function<Map<K, V>, Map<K, V>> finisher = (map) -> map;
+		final Function<M, M> finisher = (map) -> map;
 		return Collector.of(mapSupplier, accumulator, combiner, finisher);
 	}
 
-	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toHashMap()
+	public static <K, V> Collector<Entry<K, V>, ?, HashMap<K, V>> toHashMap()
 	{
 		return toMap(HashMap::new);
 	}
 
-	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toLinkedHashMap()
+	public static <K, V> Collector<Entry<K, V>, ?, LinkedHashMap<K, V>> toLinkedHashMap()
 	{
 		return toMap(LinkedHashMap::new);
 	}
