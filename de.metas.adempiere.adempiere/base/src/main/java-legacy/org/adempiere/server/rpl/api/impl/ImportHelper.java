@@ -858,7 +858,7 @@ public class ImportHelper implements IImportHelper
 			{
 				clazz = Boolean.class;
 			}
-			else if (Services.get(IColumnBL.class).isRecordColumnName(columnName))
+			else if (Services.get(IColumnBL.class).isRecordIdColumnName(columnName))
 			{
 				clazz = Integer.class;
 			}

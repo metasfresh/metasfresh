@@ -142,7 +142,7 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 		}
 
 		// TODO: refactor with org.compiere.grid.ed.VButton.setField(GridField)
-		if (mField.getColumnName().endsWith("_ID") && ! Services.get(IColumnBL.class).isRecordColumnName(mField.getColumnName()))
+		if (mField.getColumnName().endsWith("_ID") && ! Services.get(IColumnBL.class).isRecordIdColumnName(mField.getColumnName()))
 		{
 			lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
 					mField.getAD_Column_ID(), DisplayType.Search);

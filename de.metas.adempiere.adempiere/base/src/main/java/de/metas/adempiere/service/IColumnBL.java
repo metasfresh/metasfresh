@@ -49,7 +49,7 @@ public interface IColumnBL extends ISingletonService
 	 * @param columnName
 	 * @return true if record_ID form, false otherwise
 	 */
-	boolean isRecordColumnName(String columnName);
+	boolean isRecordIdColumnName(String columnName);
 
 	/**
 	 * Get the primary key column for the given <code>tableName</code>.

@@ -556,7 +556,7 @@ public class ModelInterfaceGenerator
 		}
 		// Record_ID
 		// TODO: hardcoded
-		else if (Services.get(IColumnBL.class).isRecordColumnName(columnName))
+		else if (Services.get(IColumnBL.class).isRecordIdColumnName(columnName))
 		{
 			return Integer.class;
 		}
