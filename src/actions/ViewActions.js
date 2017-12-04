@@ -20,13 +20,17 @@ export function getViewRowsByIds(windowId, viewId, docIds) {
     );
 }
 
-export function browseViewRequest(
-    viewId, page, pageLength, orderBy, windowType
-){
+export function browseViewRequest({
+    windowId,
+    viewId,
+    page,
+    pageLength,
+    orderBy
+}){
     return axios.get(
         config.API_URL +
         '/documentView/' +
-        windowType + '/' +
+        windowId + '/' +
         viewId +
         '?firstRow=' + pageLength * (page - 1) +
         '&pageLength=' + pageLength +
@@ -45,10 +49,12 @@ export function deleteView(
     );
 }
 
-export function createViewRequest(
-    windowType, viewType, pageLength, filters, refDocType = null,
-    refDocId = null, refTabId = null, refRowIds = null
-){
+export function createViewRequest({
+    windowId, viewType,
+    pageLength,
+    filters,
+    refDocType = null, refDocId = null, refTabId = null, refRowIds = null
+}){
     let referencing = null;
 
     if (refDocType && refDocId) {
@@ -63,17 +69,19 @@ export function createViewRequest(
         }
     }
 
-    return axios.post(config.API_URL + '/documentView/' + windowType, {
-        'documentType': windowType,
+    return axios.post(config.API_URL + '/documentView/' + windowId, {
+        'documentType': windowId,
         'viewType': viewType,
         'referencing': referencing,
         'filters': filters
     });
 }
 
-export function filterViewRequest(windowType, viewId, filters){
-    return axios.post(config.API_URL + '/documentView/' + windowType +
-    '/'+viewId+'/filter', {
+export function filterViewRequest(windowId, viewId, filters){
+    return axios.post(config.API_URL +
+      '/documentView/' + windowId +
+      '/' + viewId +
+      '/filter', {
         'filters': filters
     });
 }

@@ -376,10 +376,16 @@ class DocumentList extends Component {
 
         const {page, sort, filters} = this.state;
 
-        createViewRequest(
-            windowType, type, this.pageLength, filters, refType, refId,
-            refTabId, refRowIds,
-        ).then(response => {
+        createViewRequest({
+            windowId : windowType,
+            viewType : type,
+            pageLength : this.pageLength,
+            filters : filters,
+            refDocType : refType,
+            refDocId : refId,
+            refTabId : refTabId,
+            refRowIds : refRowIds,
+        }).then(response => {
             this.mounted && this.setState({
                 data: response.data,
                 viewId: response.data.viewId
@@ -426,9 +432,13 @@ class DocumentList extends Component {
             sortingQuery && updateUri('sort', sortingQuery);
         }
 
-        return browseViewRequest(
-            id, page, this.pageLength, sortingQuery, windowType
-        ).then( (response) => {
+        return browseViewRequest({
+            windowId : windowType,
+            viewId : id,
+            page : page,
+            pageLength : this.pageLength,
+            orderBy : sortingQuery
+        }).then( (response) => {
             const selection = getSelection({
                 state: store.getState(),
                 windowType,
