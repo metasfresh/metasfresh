@@ -112,7 +112,7 @@ public final class VButton extends CButton
 		{
 			setIcon(Images.getImageIcon2("Copy16"));       // 16*16
 		}
-		else if (Services.get(IColumnBL.class).isRecordColumnName(columnName))
+		else if (Services.get(IColumnBL.class).isRecordIdColumnName(columnName))
 		{
 			setIcon(Images.getImageIcon2("Zoom16"));       // 16*16
 			this.setText(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "ZoomDocument"));
@@ -178,7 +178,7 @@ public final class VButton extends CButton
 		String text = m_text;
 
 		// Nothing to show or Record_ID
-		if (value == null || Services.get(IColumnBL.class).isRecordColumnName(m_columnName))
+		if (value == null || Services.get(IColumnBL.class).isRecordIdColumnName(m_columnName))
 		{
 			;
 		}
@@ -377,7 +377,7 @@ public final class VButton extends CButton
 	@Override
 	public void setField (GridField mField)
 	{
-		if (mField.getColumnName().endsWith("_ID") && ! Services.get(IColumnBL.class).isRecordColumnName(mField.getColumnName()))
+		if (mField.getColumnName().endsWith("_ID") && ! Services.get(IColumnBL.class).isRecordIdColumnName(mField.getColumnName()))
 		{
 			m_lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
 				mField.getAD_Column_ID(), DisplayType.Search);

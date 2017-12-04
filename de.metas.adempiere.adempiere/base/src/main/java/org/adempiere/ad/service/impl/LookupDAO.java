@@ -70,6 +70,7 @@ import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
@@ -140,7 +141,8 @@ public class LookupDAO implements ILookupDAO
 	}
 
 	@Immutable
-	/* package */static final class TableRefInfo implements ITableRefInfo
+	@VisibleForTesting
+	public static final class TableRefInfo implements ITableRefInfo
 	{
 		public static TableRefInfoBuilder builder()
 		{
@@ -164,7 +166,7 @@ public class LookupDAO implements ILookupDAO
 		private final String displayColumnSQL;
 		private final int zoomAD_Window_ID_Override;
 		private final boolean autoComplete;
-
+	
 		private TableRefInfo(final TableRefInfoBuilder builder)
 		{
 			super();
@@ -221,6 +223,7 @@ public class LookupDAO implements ILookupDAO
 			zoomAD_Window_ID_Override = builder.zoomAD_Window_ID_Override <= 0 ? -1 : builder.zoomAD_Window_ID_Override;
 
 			autoComplete = builder.autoComplete;
+
 		}
 
 		@Override
@@ -241,6 +244,7 @@ public class LookupDAO implements ILookupDAO
 					.add("zoomWindowPO", zoomPO_Window_ID)
 					.add("overrideZoomWindow", zoomAD_Window_ID_Override)
 					.add("autoComplete", autoComplete)
+					
 					.toString();
 		}
 
@@ -260,6 +264,7 @@ public class LookupDAO implements ILookupDAO
 					.append(zoomPO_Window_ID)
 					.append(zoomAD_Window_ID_Override)
 					.append(autoComplete)
+					
 					.toHashcode();
 		}
 
@@ -292,7 +297,7 @@ public class LookupDAO implements ILookupDAO
 					.append(autoComplete, other.autoComplete)
 					.isEqual();
 		}
-		
+
 		@Override
 		public String getName()
 		{
@@ -358,13 +363,12 @@ public class LookupDAO implements ILookupDAO
 		{
 			return zoomAD_Window_ID_Override;
 		}
-		
+
 		@Override
 		public String getDisplayColumnSQL()
 		{
 			return displayColumnSQL;
 		}
-
 
 		@Override
 		public boolean isAutoComplete()
@@ -380,9 +384,13 @@ public class LookupDAO implements ILookupDAO
 			return isNumeric;
 
 		}
+
+		
+
 	}
 
-	static final class TableRefInfoBuilder
+	@VisibleForTesting
+	public static final class TableRefInfoBuilder
 	{
 		private String name; // used only for debugging
 		private String tableName;
@@ -467,7 +475,7 @@ public class LookupDAO implements ILookupDAO
 			this.zoomPO_Window_ID = zoomPO_Window_ID;
 			return this;
 		}
-		
+
 		public TableRefInfoBuilder setZoomAD_Window_ID_Override(final int zoomAD_Window_ID_Override)
 		{
 			this.zoomAD_Window_ID_Override = zoomAD_Window_ID_Override;
@@ -480,12 +488,14 @@ public class LookupDAO implements ILookupDAO
 			return this;
 		}
 
-
 		public TableRefInfoBuilder setAutoComplete(final boolean autoComplete)
 		{
 			this.autoComplete = autoComplete;
 			return this;
 		}
+
+		
+
 	}
 
 	/* package */class LookupDisplayInfo implements ILookupDisplayInfo
@@ -618,7 +628,7 @@ public class LookupDAO implements ILookupDAO
 	{
 		// NOTE: this method is called when we are loading POInfoColumn,
 		// so it's very important to not use POs here but just plain SQL!
-		
+
 		if (AD_Reference_ID <= 0)
 		{
 			logger.warn("retrieveTableRefInfoOrNull: Invalid AD_Reference_ID={}. Returning null", AD_Reference_ID);
@@ -632,6 +642,7 @@ public class LookupDAO implements ILookupDAO
 				+ "rt.AD_Window_ID as RT_AD_Window_ID, " // 12
 				+ "t." + I_AD_Table.COLUMNNAME_IsAutocomplete // 13
 				+ ", r.Name as ReferenceName" // 14
+				// #2340 Also collect information about the ref table being a reference target
 				+ " FROM AD_Ref_Table rt"
 				+ " INNER JOIN AD_Reference r on (r.AD_Reference_ID=rt.AD_Reference_ID)"
 				+ " INNER JOIN AD_Table t ON (rt.AD_Table_ID=t.AD_Table_ID)"
@@ -934,7 +945,7 @@ public class LookupDAO implements ILookupDAO
 		return isOrderByValue;
 	}
 
-	public static class SQLNamePairIterator extends AbstractPreparedStatementBlindIterator<NamePair>implements INamePairIterator
+	public static class SQLNamePairIterator extends AbstractPreparedStatementBlindIterator<NamePair> implements INamePairIterator
 	{
 		private final String sql;
 		private final boolean numericKey;
@@ -1177,8 +1188,8 @@ public class LookupDAO implements ILookupDAO
 
 	@Override
 	@Cached(
-	// NOTE: short term caching because we are caching mutable values
-	expireMinutes = 1)
+			// NOTE: short term caching because we are caching mutable values
+			expireMinutes = 1)
 	public NamePair retrieveLookupValue(
 			@CacheAllowMutable final IValidationContext validationCtx,
 			@CacheAllowMutable final MLookupInfo lookupInfo,

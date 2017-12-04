@@ -357,7 +357,7 @@ public final class VCellRenderer extends DefaultTableCellRenderer
 			// Button
 			else if (m_displayType == DisplayType.Button)
 			{
-				if (Services.get(IColumnBL.class).isRecordColumnName(m_columnName))
+				if (Services.get(IColumnBL.class).isRecordIdColumnName(m_columnName))
 					retValue = "#" + value + "#";
 				else
 					retValue = null;
