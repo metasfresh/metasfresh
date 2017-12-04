@@ -26,6 +26,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -37,6 +38,9 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
+
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.util.CacheCtx;
@@ -81,13 +85,32 @@ public class PickingSlotDAO implements IPickingSlotDAO
 		final int bpartnerLocationId = request.getBpartnerLocationId();
 
 		final Predicate<I_M_PickingSlot> warehouseFilter = ps -> request.getWarehouseId() <= 0 || request.getWarehouseId() == ps.getM_Warehouse_ID();
-		final Predicate<I_M_PickingSlot> partnerFilter = ps -> Services.get(IPickingSlotBL.class).isAvailableForBPartnerAndLocation(ps, bpartnerId, bpartnerLocationId);
-
+		
+		final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
+		final Predicate<I_M_PickingSlot> partnerFilter = ps -> pickingSlotBL.isAvailableForBPartnerAndLocation(ps, bpartnerId, bpartnerLocationId);
+		
 		final List<I_M_PickingSlot> result = pickingSlotsAll.stream()
 				.filter(warehouseFilter)
 				.filter(partnerFilter)
+				.filter(isPickingSlotMatchingBarcode(request.getBarcode()))
 				.collect(Collectors.toList());
 		return result;
+	}
+	
+	private static final Predicate<I_M_PickingSlot> isPickingSlotMatchingBarcode(final String barcode)
+	{
+		if(barcode == null)
+		{
+			return Predicates.alwaysTrue();
+		}
+		
+		final String barcodeNorm = barcode.trim();
+		if(barcodeNorm.isEmpty())
+		{
+			return Predicates.alwaysTrue();
+		}
+		
+		return pickingSlot -> Objects.equals(pickingSlot.getPickingSlot(), barcode);
 	}
 
 	private void assertResultNotEmpty(

@@ -35,7 +35,7 @@ public interface IPickingSlotDAO extends ISingletonService
 	public static class PickingSlotQuery
 	{
 		public static final PickingSlotQuery ALL = builder().build();
-		
+
 		/**
 		 * {@code -1} means "no restriction".
 		 */
@@ -53,6 +53,7 @@ public interface IPickingSlotDAO extends ISingletonService
 		 */
 		@Default
 		int warehouseId = -1;
-	}
 
+		String barcode;
+	}
 }
