@@ -68,7 +68,7 @@ public class PickingSlotDAO implements IPickingSlotDAO
 	}
 
 	@Override
-	public List<I_M_PickingSlot> retrivePickingSlots(@NonNull final PickingSlotQuery query)
+	public List<I_M_PickingSlot> retrievePickingSlots(@NonNull final PickingSlotQuery query)
 	{
 		final List<I_M_PickingSlot> pickingSlotsAll = retrievePickingSlots(Env.getCtx(), ITrx.TRXNAME_None);
 
@@ -82,7 +82,7 @@ public class PickingSlotDAO implements IPickingSlotDAO
 	@Override
 	public List<Integer> retrievePickingSlotIds(@NonNull final PickingSlotQuery query)
 	{
-		return retrivePickingSlots(query)
+		return retrievePickingSlots(query)
 				.stream()
 				.map(I_M_PickingSlot::getM_PickingSlot_ID)
 				.collect(ImmutableList.toImmutableList());

@@ -28,7 +28,7 @@ public interface IPickingSlotDAO extends ISingletonService
 	 * @param query
 	 * @return
 	 */
-	List<I_M_PickingSlot> retrivePickingSlots(PickingSlotQuery query);
+	List<I_M_PickingSlot> retrievePickingSlots(PickingSlotQuery query);
 
 	List<Integer> retrievePickingSlotIds(PickingSlotQuery query);
 
