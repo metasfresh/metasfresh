@@ -6,7 +6,7 @@ import counterpart from 'counterpart';
 
 import {
     quickActionsRequest
-} from '../../actions/ListActions';
+} from '../../actions/ViewActions';
 
 import {
     openModal

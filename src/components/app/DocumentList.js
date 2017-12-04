@@ -5,15 +5,13 @@ import { push } from 'react-router-redux';
 import { connect } from 'react-redux';
 
 import {
+    getViewLayout,
+    getViewRowsByIds,
     createViewRequest,
     browseViewRequest,
     filterViewRequest,
-    deleteStaticFilter,
-} from '../../actions/AppActions';
-import {
-    initLayout,
-    getDataByIds,
-} from '../../actions/GenericActions';
+    deleteStaticFilter
+  } from '../../actions/ViewActions';
 import {
     closeListIncludedView,
     setSorting,
@@ -204,8 +202,8 @@ class DocumentList extends Component {
         connectWS.call(this, '/view/' + viewId, (msg) => {
             const {fullyChanged, changedIds} = msg;
             if(changedIds){
-                getDataByIds(
-                    'documentView', windowType, viewId, changedIds.join()
+                getViewRowsByIds(
+                    windowType, viewId, changedIds.join()
                 ).then(response => {
                     response.data.map(row => {
                         this.setState({
@@ -329,8 +327,8 @@ class DocumentList extends Component {
             viewId
         } = this.state;
 
-        initLayout(
-            'documentView', windowType, null, null, null, null, type, true
+        getViewLayout(
+            windowType, type
         ).then(response => {
             this.mounted && this.setState({
                 layout: response.data
