@@ -81,6 +81,7 @@ public class PickingSlotView implements IView
 	private final int currentShipmentScheduleId;
 	private final PickingSlotRowsCollection rows;
 	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
+	private final List<DocumentFilter> filters;
 
 	@Builder
 	private PickingSlotView(
@@ -90,7 +91,8 @@ public class PickingSlotView implements IView
 			@Nullable final ITranslatableString description,
 			@Nullable final int currentShipmentScheduleId,
 			@NonNull final Supplier<List<PickingSlotRow>> rowsSupplier,
-			@Nullable final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
+			@Nullable final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors,
+			@Nullable final List<DocumentFilter> filters)
 	{
 		Preconditions.checkArgument(currentShipmentScheduleId > 0, "shipmentScheduleId > 0");
 
@@ -101,6 +103,7 @@ public class PickingSlotView implements IView
 		this.currentShipmentScheduleId = currentShipmentScheduleId;
 		this.rows = PickingSlotRowsCollection.ofSupplier(rowsSupplier);
 		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
+		this.filters = filters != null ? ImmutableList.copyOf(filters) : ImmutableList.of();
 	}
 
 	@Override
@@ -200,7 +203,7 @@ public class PickingSlotView implements IView
 	@Override
 	public List<DocumentFilter> getFilters()
 	{
-		return ImmutableList.of();
+		return filters;
 	}
 
 	@Override
