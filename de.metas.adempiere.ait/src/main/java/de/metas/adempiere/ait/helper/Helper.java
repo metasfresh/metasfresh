@@ -70,7 +70,6 @@ import org.compiere.model.MChatEntry;
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
 import org.compiere.model.MProduct;
-import org.compiere.model.MStorage;
 import org.compiere.model.MTable;
 import org.compiere.model.MWarehouse;
 import org.compiere.model.PO;
@@ -112,6 +111,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.process.C_Invoice_Candidate_GenerateInvoice;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
+import de.metas.product.IStorageBL;
 
 public class Helper implements IHelper
 {
@@ -1615,15 +1615,15 @@ public class Helper implements IHelper
 		final I_M_Locator loc = Services.get(IWarehouseBL.class).getDefaultLocator(wh);
 		final I_M_Product product = getM_Product(productValue);
 
-		boolean ok = MStorage.add(ctx,
+		boolean ok = Services.get(IStorageBL.class).add(ctx,
 				wh.getM_Warehouse_ID(),
 				loc.getM_Locator_ID(),
 				product.getM_Product_ID(),
 				0, // M_AttributeSetInstance_ID,
 				0, // reservationAttributeSetInstance_ID,
 				new BigDecimal(qty), // diffQtyOnHand,
-				Env.ZERO, // diffQtyReserved,
-				Env.ZERO, // diffQtyOrdered,
+				BigDecimal.ZERO, // diffQtyReserved,
+				BigDecimal.ZERO, // diffQtyOrdered,
 				trxName);
 		if (!ok)
 		{

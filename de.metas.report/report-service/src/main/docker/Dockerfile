@@ -19,7 +19,6 @@ RUN apt update \
     && apt -y autoclean
 
 COPY ./configs/logback.xml /opt/metasfresh/metasfresh-report/
-COPY ./configs/metasfresh-report.conf /opt/metasfresh/metasfresh-report/
 COPY ./configs/metasfresh.properties /opt/metasfresh/metasfresh-report/
 
 COPY ./start_report_docker.sh /opt/metasfresh/metasfresh-report/
