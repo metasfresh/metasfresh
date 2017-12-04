@@ -61,7 +61,7 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 	}
 
 	@Cached(cacheName = I_AD_Table.Table_Name + "#and#" + I_AD_Column.Table_Name + "#referencedTableId2TableRecordTableIDs")
-	List<TableRecordIdDescriptor> retrieveTableRecordIdReferences(@CacheCtx final Properties ctx, @CacheTrx final String trxName)
+	public List<TableRecordIdDescriptor> retrieveTableRecordIdReferences(@CacheCtx final Properties ctx, @CacheTrx final String trxName)
 	{
 		final PlainContextAware ctxAware = PlainContextAware.newWithTrxName(ctx, trxName);
 
@@ -75,7 +75,7 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 		return retrieveTableRecordIdReferences(Env.getCtx(), ITrx.TRXNAME_None);
 	}
 
-	List<TableRecordIdDescriptor> retrieveTableRecordIdReferences(final IContextAware ctxAware, final String tableName)
+	private List<TableRecordIdDescriptor> retrieveTableRecordIdReferences(final IContextAware ctxAware, final String tableName)
 	{
 		final IColumnBL columnBL = Services.get(IColumnBL.class);
 		final IQueryBL queryBL = Services.get(IQueryBL.class);

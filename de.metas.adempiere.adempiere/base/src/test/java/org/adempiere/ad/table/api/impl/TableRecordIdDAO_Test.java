@@ -10,7 +10,6 @@ import java.util.List;
 import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.ITableRecordIdDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_ChangeLog;
@@ -46,12 +45,11 @@ import lombok.NonNull;
 public class TableRecordIdDAO_Test
 {
 
-	final ITableRecordIdDAO tableRecordIdDAO = Services.get(ITableRecordIdDAO.class);
+	private static final ITableRecordIdDAO tableRecordIdDAO = Services.get(ITableRecordIdDAO.class);
 
 	@Before
 	public void init()
 	{
-
 		AdempiereTestHelper.get().init();
 
 	}
@@ -71,7 +69,7 @@ public class TableRecordIdDAO_Test
 		referencingChangeLog.setRecord_ID(referencedField.getAD_Field_ID());
 		save(referencingChangeLog);
 
-		final int adChangeLogTableID = InterfaceWrapperHelper.getTableId(I_AD_ChangeLog.class);
+		final int adChangeLogTableID = getTableId(I_AD_ChangeLog.class);
 
 		// for the unit test need to explicitly create AD_Column records for the two AD_Changelog properties
 		{
@@ -147,7 +145,7 @@ public class TableRecordIdDAO_Test
 		originChangeLog.setAD_Field_Record_ID(referencedField.getAD_Field_ID());
 		save(originChangeLog);
 
-		final int adChangeLogTableID = InterfaceWrapperHelper.getTableId(I_AD_ChangeLog.class);
+		final int adChangeLogTableID = getTableId(I_AD_ChangeLog.class);
 
 		// for the unit test need to explicitly create AD_Column records for the two AD_Changelog properties
 		{
@@ -191,7 +189,7 @@ public class TableRecordIdDAO_Test
 		referencingChangeLog.setAD_Field_Record_ID(referencedField.getAD_Field_ID());
 		save(referencingChangeLog);
 
-		final int adChangeLogTableID = InterfaceWrapperHelper.getTableId(I_AD_ChangeLog.class);
+		final int adChangeLogTableID = getTableId(I_AD_ChangeLog.class);
 
 		// for the unit test need to explicitly create AD_Column records for the two AD_Changelog properties
 		{
@@ -268,7 +266,7 @@ public class TableRecordIdDAO_Test
 
 	}
 
-	interface Mocked_I_AD_ChangeLog extends org.compiere.model.I_AD_ChangeLog
+	interface Mocked_I_AD_ChangeLog extends I_AD_ChangeLog
 	{
 		public void setAD_Field_AD_Table_ID(int AD_Table_ID);
 
