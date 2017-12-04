@@ -95,10 +95,7 @@ class LoginForm extends Component {
                     if(response.data.loginComplete){
                         return this.handleSuccess();
                     }
-                    const roles = response.data.roles.map(role => ({
-                      ...role,
-                      key: role.roleId
-                    }));
+                    const roles = response.data.roles;
 
                     this.setState({
                         roleSelect: true,
