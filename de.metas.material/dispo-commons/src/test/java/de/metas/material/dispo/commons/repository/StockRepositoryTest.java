@@ -16,7 +16,9 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
+import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -82,6 +84,13 @@ public class StockRepositoryTest
 
 	private I_MD_Candidate_Stock_v createStockRecord(int bPartnerId)
 	{
+		// set only the values we need
+		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
+		candidateRecord.setDateProjected(new Timestamp(BEFORE_NOW.getTime()));
+		candidateRecord.setIsActive(true);
+		candidateRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK);
+		save(candidateRecord);
+
 		final I_MD_Candidate_Stock_v viewRecord = newInstance(I_MD_Candidate_Stock_v.class);
 		viewRecord.setM_Product_ID(PRODUCT_ID);
 		viewRecord.setM_Warehouse_ID(WAREHOUSE_ID);
@@ -89,8 +98,8 @@ public class StockRepositoryTest
 		viewRecord.setDateProjected(new Timestamp(BEFORE_NOW.getTime()));
 		viewRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
 		viewRecord.setQty(BigDecimal.TEN);
-
 		save(viewRecord);
+
 		return viewRecord;
 	}
 }
