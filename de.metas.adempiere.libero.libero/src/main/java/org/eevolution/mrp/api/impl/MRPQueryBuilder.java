@@ -10,12 +10,12 @@ package org.eevolution.mrp.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,6 +45,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -85,7 +86,7 @@ import lombok.NonNull;
 	private Integer _warehouseId = null;
 	/**
 	 * M_Product_ID
-	 * 
+	 *
 	 * Default: -1 i.e. don't filter by product, don't take it from MRPContext
 	 */
 	private Integer _productId = -1;
@@ -107,7 +108,7 @@ import lombok.NonNull;
 
 	/**
 	 * Filter only active records
-	 * 
+	 *
 	 * Default: Yes
 	 */
 	private boolean _onlyActiveRecords = true;
@@ -308,7 +309,7 @@ import lombok.NonNull;
 
 	/**
 	 * Called by {@link #createQueryFilter()} to create the MRP_Exclude filter.
-	 * 
+	 *
 	 * @return MRP_Exclude filter
 	 */
 	private IQueryFilter<I_PP_MRP> createQueryFilter_MRP_Exclude()
@@ -378,7 +379,7 @@ import lombok.NonNull;
 				// create query
 				.create()
 				// Sum UP the Qty
-				.aggregate(I_PP_MRP.COLUMNNAME_Qty, IQuery.AGGREGATE_SUM, BigDecimal.class);
+				.aggregate(I_PP_MRP.COLUMNNAME_Qty, Aggregate.SUM, BigDecimal.class);
 
 		if (qty == null)
 		{
@@ -496,7 +497,7 @@ import lombok.NonNull;
 		{
 			return _mrpContext;
 		}
-		
+
 		return PlainContextAware.newWithThreadInheritedTrx();
 	}
 

@@ -10,12 +10,12 @@ package de.metas.invoice.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,7 +32,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -105,7 +105,7 @@ public class MatchInvDAO implements IMatchInvDAO
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_InOutLine_ID, iol.getM_InOutLine_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.aggregate(I_M_MatchInv.COLUMNNAME_Qty, IQuery.AGGREGATE_SUM, BigDecimal.class);
+				.aggregate(I_M_MatchInv.COLUMNNAME_Qty, Aggregate.SUM, BigDecimal.class);
 	}
 
 	@Override
@@ -115,7 +115,7 @@ public class MatchInvDAO implements IMatchInvDAO
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID, invoiceLine.getC_InvoiceLine_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.aggregate(I_M_MatchInv.COLUMNNAME_Qty, IQuery.AGGREGATE_SUM, BigDecimal.class);
+				.aggregate(I_M_MatchInv.COLUMNNAME_Qty, Aggregate.SUM, BigDecimal.class);
 	}
 
 	@Override

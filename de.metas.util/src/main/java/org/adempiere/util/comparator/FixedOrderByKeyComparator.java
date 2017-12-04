@@ -7,6 +7,11 @@ import org.adempiere.util.Check;
 
 import com.google.common.base.Function;
 
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.ToString;
+
 /*
  * #%L
  * de.metas.util
@@ -37,6 +42,7 @@ import com.google.common.base.Function;
  * @param <V> comparing value type
  * @param <K> key type
  */
+@ToString
 public class FixedOrderByKeyComparator<V, K> implements Comparator<V>
 {
 	public static final <V, K> FixedOrderByKeyComparator<V, K> of(final K notMatchedMarker, final List<K> fixedOrderList, final Function<V, K> keyMapper)
@@ -52,17 +58,19 @@ public class FixedOrderByKeyComparator<V, K> implements Comparator<V>
 		return new FixedOrderByKeyComparator<>(fixedOrderList, notMatchedMarkerIndex, keyMapper);
 	}
 
-	private final List<K> fixedOrderList;
+	private final List<K> fixedOrderKeys;
 	private final int notMatchedMarkerIndex;
 	private final Function<V, K> keyMapper;
 
-	private FixedOrderByKeyComparator(final List<K> fixedOrderList, final int notMatchedMarkerIndex, final Function<V, K> keyMapper)
+	@Builder
+	private FixedOrderByKeyComparator(
+			@NonNull @Singular final List<K> fixedOrderKeys,
+			final int notMatchedMarkerIndex,
+			@NonNull final Function<V, K> keyMapper)
 	{
-		Check.assumeNotNull(fixedOrderList, "fixedOrderList not null");
-		// Check.assume(!fixedOrderList.isEmpty(), "fixedOrderList not empty"); // empty list shall be OK
-		Check.assumeNotNull(keyMapper, "Parameter keyMapper is not null");
+		// Check.assume(!fixedOrderKeys.isEmpty(), "fixedOrderList not empty"); // empty list shall be OK
 
-		this.fixedOrderList = fixedOrderList;
+		this.fixedOrderKeys = fixedOrderKeys;
 		this.notMatchedMarkerIndex = notMatchedMarkerIndex;
 		this.keyMapper = keyMapper;
 	}
@@ -70,27 +78,19 @@ public class FixedOrderByKeyComparator<V, K> implements Comparator<V>
 	@Override
 	public int compare(final V o1, final V o2)
 	{
-		final K key1 = keyMapper.apply(o1);
-		int idx1 = fixedOrderList.indexOf(key1);
-		if (idx1 < 0)
-		{
-			idx1 = notMatchedMarkerIndex;
-		}
-
-		final K key2 = keyMapper.apply(o2);
-		int idx2 = fixedOrderList.indexOf(key2);
-		if (idx2 < 0)
-		{
-			idx2 = notMatchedMarkerIndex;
-		}
-
+		final int idx1 = getIndexOf(o1);
+		final int idx2 = getIndexOf(o2);
 		return idx1 - idx2;
 	}
 
-	@Override
-	public String toString()
+	private int getIndexOf(final V obj)
 	{
-		return "FixedOrderComparator [fixedOrderList=" + fixedOrderList + ", notMatchedMarkerIndex=" + notMatchedMarkerIndex + "]";
+		final K key = keyMapper.apply(obj);
+		int idx = fixedOrderKeys.indexOf(key);
+		if (idx < 0)
+		{
+			idx = notMatchedMarkerIndex;
+		}
+		return idx;
 	}
-
 }
