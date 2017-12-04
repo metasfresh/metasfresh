@@ -1,11 +1,12 @@
 import axios from 'axios';
 
-export function getViewLayout(windowId, viewType) {
+export function getViewLayout(windowId, viewType, viewProfileId = null) {
     return axios.get(
         config.API_URL +
         '/documentView/' + windowId +
         '/layout' +
-        '?viewType=' + viewType
+        '?viewType=' + viewType +
+        (viewProfileId ? '&profileId=' + viewProfileId : '')
     );
 }
 

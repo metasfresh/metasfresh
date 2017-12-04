@@ -150,6 +150,7 @@ class Container extends Component {
                                         type="includedView"
                                         windowType={includedView.windowType}
                                         defaultViewId={includedView.viewId}
+                                        viewProfileId={includedView.viewProfileId}
                                         fetchQuickActionsOnInit
                                         isModal
                                         isIncluded

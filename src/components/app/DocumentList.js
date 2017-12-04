@@ -320,7 +320,7 @@ class DocumentList extends Component {
 
     fetchLayoutAndData = (isNewFilter) => {
         const {
-            windowType, type, setModalTitle, setNotFound
+            windowType, type, viewProfileId, setModalTitle, setNotFound
         } = this.props;
 
         const {
@@ -328,7 +328,7 @@ class DocumentList extends Component {
         } = this.state;
 
         getViewLayout(
-            windowType, type
+            windowType, type, viewProfileId
         ).then(response => {
             this.mounted && this.setState({
                 layout: response.data

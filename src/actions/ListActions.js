@@ -33,10 +33,10 @@ export function setPagination(page, windowType){
     }
 }
 
-export function setListIncludedView({ windowType, viewId } = {}) {
+export function setListIncludedView({ windowType, viewId, viewProfileId = null } = {}) {
     return {
         type: types.SET_LIST_INCLUDED_VIEW,
-        payload: { windowType, viewId },
+        payload: { windowType, viewId, viewProfileId },
     };
 }
 
