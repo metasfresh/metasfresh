@@ -53,7 +53,7 @@ public class TableRecordIdDAO_Test
 		AdempiereTestHelper.get().init();
 
 	}
-	
+
 	@Test
 	public void recordDescriptor_ChangeLog_Record_ID()
 	{
@@ -90,8 +90,6 @@ public class TableRecordIdDAO_Test
 		assertThat(equalsTableRecordIdDescriptor(expectedactualTableRecordIdDescriptor, tableRecordReferences.get(0))).isTrue();
 
 	}
-
-	
 
 	@Test
 	public void recordDescriptor_ChangeLog_PrefixRecordId()
@@ -215,7 +213,6 @@ public class TableRecordIdDAO_Test
 
 	}
 
-	
 	private I_AD_Column createColumn(final int tableId, final String columnName)
 	{
 		final I_AD_Column column = newInstance(I_AD_Column.class);
@@ -236,20 +233,10 @@ public class TableRecordIdDAO_Test
 
 	public boolean equalsTableRecordIdDescriptor(@NonNull final TableRecordIdDescriptor expectedTableRecordIdDescriptor, @NonNull final TableRecordIdDescriptor actualTableRecordIdDescriptor)
 	{
-		if (!(expectedTableRecordIdDescriptor.getOriginTableName().equals(actualTableRecordIdDescriptor.getOriginTableName())))
-		{
-			return false;
-		}
-		if (!(expectedTableRecordIdDescriptor.getRecordIdColumnName().equals(actualTableRecordIdDescriptor.getRecordIdColumnName())))
-		{
-			return false;
-		}
-		if (!(expectedTableRecordIdDescriptor.getTargetTableName().equals(actualTableRecordIdDescriptor.getTargetTableName())))
-		{
-			return false;
-		}
+		return expectedTableRecordIdDescriptor.getOriginTableName().equals(actualTableRecordIdDescriptor.getOriginTableName())
+				&& expectedTableRecordIdDescriptor.getRecordIdColumnName().equals(actualTableRecordIdDescriptor.getRecordIdColumnName())
+				&& expectedTableRecordIdDescriptor.getTargetTableName().equals(actualTableRecordIdDescriptor.getTargetTableName());
 
-		return true;
 	}
 
 	private boolean containsTableRecordReferences(final List<TableRecordIdDescriptor> tableRecordIdDescriptors, final TableRecordIdDescriptor expectedactualTableRecordIdDescriptor)

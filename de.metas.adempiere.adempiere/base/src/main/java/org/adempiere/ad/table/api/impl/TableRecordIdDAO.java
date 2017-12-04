@@ -104,7 +104,7 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 
 		for (final I_AD_Column recordIdColumn : recordIdColumns)
 		{
-			final org.compiere.model.I_AD_Table table = recordIdColumn.getAD_Table();
+			final I_AD_Table table = recordIdColumn.getAD_Table();
 			if (table.isView())
 			{
 				continue;
