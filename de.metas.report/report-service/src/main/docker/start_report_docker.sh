@@ -85,8 +85,10 @@ run_db_update()
 # Note: the Djava.security.egd param is supposed to let tomcat start quicker, see https://spring.io/guides/gs/spring-boot-docker/
 run_metasfresh()
 {
- if [ "$admin_url" != "NONE" ]; then
-	metasfresh_admin_params="-Dspring.boot.admin.url=${admin_url} -Dmanagement.security.enabled=false"
+ if [ "$admin_url" != "NONE" ]; 
+ then
+	#see https://codecentric.github.io/spring-boot-admin/1.5.0/#spring-boot-admin-client
+	metasfresh_admin_params="-Dspring.boot.admin.url=${admin_url} -Dmanagement.security.enabled=false -Dspring.boot.admin.client.prefer-ip=true"
  else
 	metasfresh_admin_params=""
  fi
