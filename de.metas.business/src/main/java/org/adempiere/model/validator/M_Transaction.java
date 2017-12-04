@@ -10,12 +10,12 @@ package org.adempiere.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,10 +30,12 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Transaction;
-import org.compiere.model.MStorage;
 import org.compiere.model.ModelValidator;
+
+import de.metas.product.IStorageBL;
 
 @Interceptor(I_M_Transaction.class)
 public class M_Transaction
@@ -49,7 +51,7 @@ public class M_Transaction
 		final BigDecimal diffQtyOrdered = BigDecimal.ZERO;
 
 		// FIXME: consider to do it async, after commit to make sure we are consistent!
-		final boolean updated = MStorage.add(ctx,
+		final boolean updated = Services.get(IStorageBL.class).add(ctx,
 				locator.getM_Warehouse_ID(),
 				locator.getM_Locator_ID(),
 				mtrx.getM_Product_ID(),

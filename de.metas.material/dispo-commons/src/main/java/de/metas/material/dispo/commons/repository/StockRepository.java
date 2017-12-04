@@ -11,7 +11,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
@@ -58,7 +58,7 @@ public class StockRepository
 		}
 		final BigDecimal qty = createDBQueryForMaterialQuery(query.withDate(latestDateOrNull))
 				.create()
-				.aggregate(I_MD_Candidate.COLUMNNAME_Qty, IQuery.AGGREGATE_SUM, BigDecimal.class);
+				.aggregate(I_MD_Candidate.COLUMNNAME_Qty, Aggregate.SUM, BigDecimal.class);
 
 		return Util.coalesce(qty, BigDecimal.ZERO);
 	}
@@ -86,20 +86,14 @@ public class StockRepository
 
 	private Timestamp retrieveMaxDateLessOrEqual(@NonNull final Date date)
 	{
-		// final Timestamp latestDateOrNull = Services.get(IQueryBL.class)
-		// .createQueryBuilder(I_MD_Candidate_Stock_v.class)
-		// .addCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, new Timestamp(date.getTime()))
-		// .orderBy().addColumnDescending(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected).endOrderBy()
-		// .create()
-		// TODO: this first implementation ignores Ordering!
-		// .first(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected, Timestamp.class);
-		final I_MD_Candidate_Stock_v stockRecordOrNull = Services.get(IQueryBL.class)
+		final Timestamp latestDateOrNull = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_Candidate_Stock_v.class)
 				.addCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, new Timestamp(date.getTime()))
 				.orderBy().addColumnDescending(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected).endOrderBy()
 				.create()
-				.first();
-		return stockRecordOrNull == null ? null : stockRecordOrNull.getDateProjected();
+				.first(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected, Timestamp.class);
+
+		return latestDateOrNull;
 	}
 
 	@VisibleForTesting

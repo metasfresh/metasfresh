@@ -15,8 +15,8 @@ DELETE FROM AD_Field WHERE AD_Field_ID=555187
 
 -- 2017-11-27T15:20:43.456
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE M_ReceiptSchedule DROP COLUMN IF EXISTS IsHUPrepared
-;
+-- ALTER TABLE M_ReceiptSchedule DROP COLUMN IF EXISTS IsHUPrepared;
+select public.db_alter_table('M_ReceiptSchedule','ALTER TABLE M_ReceiptSchedule DROP COLUMN IF EXISTS IsHUPrepared;');
 
 -- 2017-11-27T15:20:45.289
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
