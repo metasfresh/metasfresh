@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.service.IColumnBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -270,38 +271,47 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		final ITableRefInfo refTable = getTarget().getTableRefInfo();
 
-		final String tableName = refTable.getTableName();
-		Check.assumeNotEmpty(tableName, " The reference Table {}  doesn't have a tablename", refTable);
-
+		final String targetTableName = zoomOrigin.getTableName();
+		final String originTableName = refTable.getTableName();
+		
 		if (isTableRecordIdTarget)
 		{
-			String recordIdColumnName = null;
+			String originRecordIdName = null;
 
-			final List<TableRecordIdDescriptor> tableRecordIdDescriptors = tableRecordIdDAO.retrieveTableRecordIdReferences(refTable.getTableName());
+			final List<TableRecordIdDescriptor> tableRecordIdDescriptors = tableRecordIdDAO.retrieveTableRecordIdReferences(originTableName);
 
 			for (final TableRecordIdDescriptor tableRecordIdDescriptor : tableRecordIdDescriptors)
 			{
-				if (tableName.equals(tableRecordIdDescriptor.getTargetTableName()))
+				if (targetTableName.equals(tableRecordIdDescriptor.getTargetTableName()))
 				{
-					recordIdColumnName = tableRecordIdDescriptor.getRecordIdColumnName();
+					originRecordIdName = tableRecordIdDescriptor.getRecordIdColumnName();
 
 					break;
 				}
 			}
 
-			if (recordIdColumnName != null)
+			if (originRecordIdName != null)
 			{
+				final String tableIdColumnName = Services.get(IColumnBL.class).getTableIdColumnName(originTableName, originRecordIdName).orElse(null);
+				Check.assumeNotEmpty(tableIdColumnName, "The table {} must have an AD_Table_ID column", originTableName );
+
 				queryWhereClause
 
+						.append(zoomOrigin.getAD_Table_ID())
+						.append(" = ")
+						.append(originTableName)
+						.append(".")
+						.append(tableIdColumnName)
+						.append(" AND ")
 						.append(zoomOrigin.getRecord_ID())
 						.append(" = ")
-						.append(tableName)
+						.append(originTableName)
 						.append(".")
-						.append(recordIdColumnName);
+						.append(originRecordIdName);
 			}
 			else
 			{
-				queryWhereClause.append(" 1=1 ");
+				queryWhereClause.append(" 1=2 ");
 			}
 
 		}
