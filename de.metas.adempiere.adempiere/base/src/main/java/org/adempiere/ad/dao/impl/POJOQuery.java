@@ -54,6 +54,8 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import lombok.NonNull;
+
 public class POJOQuery<T> extends AbstractTypedQuery<T>
 {
 	private final Properties ctx;
@@ -521,7 +523,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		return this;
 	}
-	
+
 	@Override
 	public POJOQuery<T> setNotInSelection(final int AD_PInstance_ID)
 	{
@@ -562,10 +564,12 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public <AT> AT aggregate(final String columnName, final String sqlFunction, final Class<AT> returnType) throws DBException
+	public <AT> AT aggregate(final String columnName,
+			@NonNull final Aggregate aggregateType,
+			final Class<AT> returnType) throws DBException
 	{
 		AT result = null;
-		if (AGGREGATE_SUM.equals(sqlFunction))
+		if (Aggregate.SUM.equals(aggregateType))
 		{
 			Check.assume(BigDecimal.class.equals(returnType), "Return type shall be {} and not {}", BigDecimal.class, returnType);
 
@@ -574,7 +578,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			final AT result0 = (AT)BigDecimal.ZERO;
 			result = result0;
 		}
-		else if (AGGREGATE_MAX.equals(sqlFunction))
+		else if (Aggregate.MAX.equals(aggregateType))
 		{
 
 			Check.assume(BigDecimal.class.equals(returnType)
@@ -585,14 +589,14 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		}
 		else
 		{
-			throw new DBException("SQL Function '" + sqlFunction + "' not implemented");
+			throw new DBException("SQL Function '" + aggregateType + "' not implemented");
 		}
 
 		final List<T> models = list(modelClass);
 		for (final T model : models)
 		{
 			final Object valueObj = InterfaceWrapperHelper.getValue(model, columnName).orNull();
-			if (AGGREGATE_SUM.equals(sqlFunction))
+			if (Aggregate.SUM.equals(aggregateType))
 			{
 				Check.assumeInstanceOfOrNull(valueObj, BigDecimal.class, "value");
 				if (valueObj != null)
@@ -605,7 +609,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 					result = resultNew;
 				}
 			}
-			else if (AGGREGATE_MAX.equals(sqlFunction))
+			else if (Aggregate.MAX.equals(aggregateType))
 			{
 				if (valueObj == null)
 				{
@@ -636,7 +640,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			}
 			else
 			{
-				throw new DBException("SQL Function '" + sqlFunction + "' not implemented");
+				throw new DBException("Aggregate type '" + aggregateType + "' not implemented");
 			}
 		}
 
@@ -822,7 +826,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		return result;
 	}
-	
+
 	@Override
 	public <AT> AT first(final String columnName, final Class<AT> valueType)
 	{
@@ -831,7 +835,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		{
 			return null;
 		}
-		
+
 		final T record = records.get(0);
 
 		final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName).orNull();
@@ -881,7 +885,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	protected <ToModelType> QueryInsertExecutorResult executeInsert(final QueryInsertExecutor<ToModelType, T> queryInserter)
 	{
 		Check.assume(!queryInserter.isEmpty(), "At least one column to be inserted needs to be specified: {}", queryInserter);
-		
+
 		if(queryInserter.isCreateSelectionOfInsertedRows())
 		{
 			throw new UnsupportedOperationException("CreateSelectionOfInsertedRows not supported for "+queryInserter);

@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,6 +43,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_Cost;
@@ -285,37 +286,37 @@ public class QueryTest
 		// Test COUNT:
 		assertEquals("COUNT not match",
 				DB.getSQLValueBDEx(getTrxName(), "SELECT COUNT(*) " + sqlFrom),
-				query.aggregate(null, Query.AGGREGATE_COUNT));
+				query.aggregate(null, Aggregate.COUNT));
 		//
 		// Test SUM:
 		assertEquals("SUM not match",
 				DB.getSQLValueBDEx(getTrxName(), "SELECT COALESCE(SUM(LineNetAmt+TaxAmt),0) " + sqlFrom),
-				query.aggregate("LineNetAmt+TaxAmt", Query.AGGREGATE_SUM));
+				query.aggregate("LineNetAmt+TaxAmt", Query.Aggregate.SUM));
 		//
 		// Test MIN:
 		assertEquals("MIN not match",
 				DB.getSQLValueBDEx(getTrxName(), "SELECT MIN(LineNetAmt) " + sqlFrom),
-				query.aggregate("LineNetAmt", Query.AGGREGATE_MIN));
+				query.aggregate("LineNetAmt", Aggregate.MIN));
 		//
 		// Test MAX:
 		assertEquals("MAX not match",
 				DB.getSQLValueBDEx(getTrxName(), "SELECT MAX(LineNetAmt) " + sqlFrom),
-				query.aggregate("LineNetAmt", Query.AGGREGATE_MAX));
+				query.aggregate("LineNetAmt", Aggregate.MAX));
 		//
 		// Test aggregate (String) - FR [ 2726447 ]
 		assertEquals("MAX not match (String)",
 				DB.getSQLValueStringEx(getTrxName(), "SELECT MAX(Description) " + sqlFrom),
-				query.aggregate("Description", Query.AGGREGATE_MAX, String.class));
+				query.aggregate("Description", Aggregate.MAX, String.class));
 		//
 		// Test aggregate (Timestamp) - FR [ 2726447 ]
 		assertEquals("MAX not match (Timestamp)",
 				DB.getSQLValueTSEx(getTrxName(), "SELECT MAX(Updated) " + sqlFrom),
-				query.aggregate("Updated", Query.AGGREGATE_MAX, Timestamp.class));
+				query.aggregate("Updated", Aggregate.MAX, Timestamp.class));
 	}
 
 	/**
 	 * Test Exception : No Aggregate Function defined
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test(expected = DBException.class)
@@ -329,7 +330,7 @@ public class QueryTest
 
 	/**
 	 * Test Exception : No Expression defined
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test(expected = DBException.class)
@@ -338,7 +339,7 @@ public class QueryTest
 		new Query(getCtx(), "C_InvoiceLine", null, getTrxName())
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
-				.aggregate(null, Query.AGGREGATE_SUM);
+				.aggregate(null, Query.Aggregate.SUM);
 	}
 
 	@Test
