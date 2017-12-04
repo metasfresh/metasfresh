@@ -30,3 +30,11 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,C
 UPDATE AD_Table_Process SET WEBUI_QuickAction='Y',Updated=TO_TIMESTAMP('2017-12-04 15:44:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540461 AND AD_Table_ID=426
 ;
 
+--
+-- deactivate C_PaySelection_ReActivate AD_Table_Process record
+--
+-- 2017-12-04T16:04:59.613
+-- URL zum Konzept
+UPDATE AD_Table_Process SET IsActive='N',Updated=TO_TIMESTAMP('2017-12-04 16:04:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540650 AND AD_Table_ID=426
+;
+
