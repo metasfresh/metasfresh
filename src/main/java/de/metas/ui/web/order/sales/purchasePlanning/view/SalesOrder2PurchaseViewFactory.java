@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -32,6 +34,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
@@ -91,7 +94,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	}
 
 	@Override
-	public ViewLayout getViewLayout(@NonNull final WindowId windowId, @NonNull final JSONViewDataType viewDataType)
+	public ViewLayout getViewLayout(@NonNull final WindowId windowId, @NonNull final JSONViewDataType viewDataType, @Nullable final ViewProfileId profileId)
 	{
 		final ArrayKey key = ArrayKey.of(windowId, viewDataType);
 		return viewLayoutCache.getOrLoad(key, () -> createViewLayout(windowId, viewDataType));

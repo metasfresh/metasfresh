@@ -334,6 +334,11 @@ public final class ViewRow implements IViewRow
 		{
 			return values;
 		}
+		
+		public Object getFieldValue(final String fieldName)
+		{
+			return values.get(fieldName);
+		}
 
 		public Builder addIncludedRow(final IViewRow includedRow)
 		{

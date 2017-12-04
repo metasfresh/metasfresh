@@ -10,6 +10,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -33,6 +34,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Value
 public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 {
 	/**
@@ -89,65 +91,5 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 
 		this.sqlOrderBy = sqlOrderBy != null ? sqlOrderBy : ConstantStringExpression.of(this.columnSql);
 		this.fieldLoader = fieldLoader;
-	}
-
-	public String getFieldName()
-	{
-		return fieldName;
-	}
-
-	@Override
-	public String getColumnName()
-	{
-		return columnName;
-	}
-
-	public boolean isKeyColumn()
-	{
-		return keyColumn;
-	}
-
-	@Override
-	public String getColumnSql()
-	{
-		return columnSql;
-	}
-
-	@Override
-	public DocumentFieldWidgetType getWidgetType()
-	{
-		return widgetType;
-	}
-
-	@Override
-	public Class<?> getSqlValueClass()
-	{
-		return sqlValueClass;
-	}
-
-	public String getSqlSelectValue()
-	{
-		return sqlSelectValue;
-	}
-
-	public boolean isUsingDisplayColumn()
-	{
-		return usingDisplayColumn;
-	}
-
-	public IStringExpression getSqlSelectDisplayValue()
-	{
-		return sqlSelectDisplayValue;
-	}
-
-	public SqlViewRowFieldLoader getFieldLoader()
-	{
-		return fieldLoader;
-	}
-
-	@Override
-	public IStringExpression getSqlOrderBy()
-	{
-		return sqlOrderBy;
 	}
 }
