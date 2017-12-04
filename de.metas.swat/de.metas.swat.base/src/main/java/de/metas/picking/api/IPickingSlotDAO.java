@@ -30,6 +30,8 @@ public interface IPickingSlotDAO extends ISingletonService
 	 */
 	List<I_M_PickingSlot> retrivePickingSlots(PickingSlotQuery query);
 
+	List<Integer> retrievePickingSlotIds(PickingSlotQuery query);
+
 	@Builder
 	@Value
 	public static class PickingSlotQuery

@@ -68,15 +68,24 @@ public class PickingSlotDAO implements IPickingSlotDAO
 	}
 
 	@Override
-	public List<I_M_PickingSlot> retrivePickingSlots(@NonNull final PickingSlotQuery request)
+	public List<I_M_PickingSlot> retrivePickingSlots(@NonNull final PickingSlotQuery query)
 	{
 		final List<I_M_PickingSlot> pickingSlotsAll = retrievePickingSlots(Env.getCtx(), ITrx.TRXNAME_None);
 
-		final List<I_M_PickingSlot> result = filter(pickingSlotsAll, request);
+		final List<I_M_PickingSlot> result = filter(pickingSlotsAll, query);
 
-		assertResultNotEmpty(result, request);
+		assertResultNotEmpty(result, query);
 
 		return result;
+	}
+
+	@Override
+	public List<Integer> retrievePickingSlotIds(@NonNull final PickingSlotQuery query)
+	{
+		return retrivePickingSlots(query)
+				.stream()
+				.map(I_M_PickingSlot::getM_PickingSlot_ID)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private List<I_M_PickingSlot> filter(final List<I_M_PickingSlot> pickingSlotsAll, final PickingSlotQuery request)
