@@ -69,6 +69,11 @@ export function createPatchRequestPayload(property, value) {
             value
         }];
     }
+    else
+    {
+        // never return undefined; backend does not support it
+        return [];
+    }
 }
 
 export function patchRequest({
