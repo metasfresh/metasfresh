@@ -48,9 +48,9 @@ public class SqlViewBindingTest
 	public void createSqlViewBinding_With_Custom_FilterConverterDecoratorProvider()
 	{
 		final CustomSqlDocumentFilterConverterDecoratorProvider customDecoratorProvider = new CustomSqlDocumentFilterConverterDecoratorProvider();
-		
+
 		final SqlViewBinding sqlViewBinding = createMinimalBuilder()
-				.setFilterConverterDecorator(customDecoratorProvider)
+				.filterConverterDecorator(customDecoratorProvider)
 				.build();
 
 		assertThat(sqlViewBinding).isNotNull();
@@ -68,8 +68,8 @@ public class SqlViewBindingTest
 				.build();
 
 		final Builder builder = SqlViewBinding.builder()
-				.addField(field)
-				.setDisplayFieldNames("displayFieldName");
+				.field(field)
+				.displayFieldNames("displayFieldName");
 
 		return builder;
 	}

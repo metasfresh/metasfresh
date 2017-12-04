@@ -18,11 +18,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -41,6 +41,9 @@ public class JSONLoginRole implements Serializable
 		return new JSONLoginRole(caption, roleId, tenantId, orgId);
 	}
 
+	@JsonProperty("key")
+	private final String key;
+
 	@JsonProperty("caption")
 	private final String caption;
 
@@ -55,28 +58,28 @@ public class JSONLoginRole implements Serializable
 
 	private JSONLoginRole(final String caption, final int roleId, final int tenantId, int orgId)
 	{
-		super();
 		this.caption = caption;
 		this.roleId = roleId;
 		this.tenantId = tenantId;
 		this.orgId = orgId;
+		this.key = roleId + "_" + tenantId + "_" + orgId;
 	}
-	
+
 	public String getCaption()
 	{
 		return caption;
 	}
-	
+
 	public int getRoleId()
 	{
 		return roleId;
 	}
-	
+
 	public int getTenantId()
 	{
 		return tenantId;
 	}
-	
+
 	public int getOrgId()
 	{
 		return orgId;

@@ -207,6 +207,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return !fields.isEmpty();
 	}
+	
+	public String getFirstFieldName()
+	{
+		return fields.iterator().next().getField();
+	}
 
 	public ButtonFieldActionDescriptor getButtonActionDescriptor()
 	{

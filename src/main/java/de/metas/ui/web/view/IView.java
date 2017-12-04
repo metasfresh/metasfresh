@@ -51,12 +51,17 @@ public interface IView
 {
 	ViewId getViewId();
 
+	JSONViewDataType getViewType();
+	
+	default ViewProfileId getProfileId()
+	{
+		return ViewProfileId.NULL;
+	}
+
 	default ITranslatableString getDescription()
 	{
 		return ITranslatableString.empty();
 	}
-
-	JSONViewDataType getViewType();
 
 	Set<DocumentPath> getReferencingDocumentPaths();
 

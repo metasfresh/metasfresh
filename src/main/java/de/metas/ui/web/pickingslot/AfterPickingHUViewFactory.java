@@ -2,6 +2,8 @@ package de.metas.ui.web.pickingslot;
 
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -15,6 +17,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -53,9 +56,9 @@ public class AfterPickingHUViewFactory implements IViewFactory, IViewsIndexStora
 	private HUEditorViewFactory huEditorViewFactory;
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, @Nullable final ViewProfileId profileId)
 	{
-		return huEditorViewFactory.getViewLayout(windowId, viewDataType);
+		return huEditorViewFactory.getViewLayout(windowId, viewDataType, profileId);
 	}
 
 	@Override

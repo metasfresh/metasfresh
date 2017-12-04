@@ -79,8 +79,10 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	private final String keyFieldName;
 	private final ImmutableMap<String, SqlViewRowFieldLoader> rowFieldLoaders;
+	private final ViewRowCustomizer rowCustomizer;
 
 	private final SqlDocumentFilterConverter filterConverters;
+
 
 	SqlViewDataRepository(@NonNull final SqlViewBinding sqlBindings)
 	{
@@ -105,6 +107,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 		this.keyFieldName = keyFieldName;
 		this.rowFieldLoaders = rowFieldLoaders.build();
+		this.rowCustomizer = sqlBindings.getRowCustomizer();
 
 		this.filterConverters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlBindings);
 	}
@@ -298,6 +301,11 @@ class SqlViewDataRepository implements IViewDataRepository
 			}
 
 			viewRowBuilder.putFieldValue(fieldName, value);
+		}
+		
+		if(rowCustomizer != null)
+		{
+			rowCustomizer.customizeViewRow(viewRowBuilder);
 		}
 
 		return viewRowBuilder;
