@@ -5,6 +5,7 @@ import static de.metas.material.event.EventTestHelper.CLIENT_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.testsupport.MetasfreshAssertions.assertThatModel;
@@ -32,7 +33,6 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -40,6 +40,9 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
@@ -47,7 +50,6 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 import lombok.NonNull;
 import mockit.Mocked;
 
@@ -217,10 +219,11 @@ public class CandidateChangeHandlerTests
 		}
 
 		// do the test
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builderForQuery()
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.date(t2)
+				.quantity(BigDecimal.ZERO) // doesn't matter
 				.build();
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
 				materialDescriptor,
@@ -261,7 +264,6 @@ public class CandidateChangeHandlerTests
 			@NonNull final Date dateProjected)
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal("10"))
@@ -275,7 +277,7 @@ public class CandidateChangeHandlerTests
 		stockRecord.setQty(materialDescriptor.getQuantity());
 		stockRecord.setDateProjected(new Timestamp(dateProjected.getTime()));
 		stockRecord.setM_Product_ID(materialDescriptor.getProductId());
-		stockRecord.setStorageAttributesKey(materialDescriptor.getStorageAttributesKey());
+		stockRecord.setStorageAttributesKey(materialDescriptor.getStorageAttributesKey().getAsString());
 		stockRecord.setM_AttributeSetInstance_ID(materialDescriptor.getAttributeSetInstanceId());
 		save(stockRecord);
 
@@ -287,14 +289,16 @@ public class CandidateChangeHandlerTests
 
 	private CandidatesQuery mkQueryForStockUntilDate(@NonNull final Date timestamp, final int warehouseId)
 	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
+				.productId(PRODUCT_ID)
+				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
+				.warehouseId(warehouseId)
+				.date(timestamp)
+				.dateOperator(DateOperator.BEFORE_OR_AT)
+				.build();
 		return CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
-				.materialDescriptor(MaterialDescriptor.builderForQuery()
-						.productDescriptor(createProductDescriptor())
-						.warehouseId(warehouseId)
-						.date(timestamp)
-						.dateOperator(DateOperator.BEFORE_OR_AT)
-						.build())
+				.materialDescriptorQuery(materialDescriptorQuery)
 				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
 				.build();
 	}
@@ -375,7 +379,6 @@ public class CandidateChangeHandlerTests
 			final int shipmentScheduleIdForDemandDetail)
 	{
 		final MaterialDescriptor materialDescr = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
@@ -402,7 +405,6 @@ public class CandidateChangeHandlerTests
 			final int shipmentScheduleIdForDemandDetail)
 	{
 		final MaterialDescriptor supplyMaterialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)

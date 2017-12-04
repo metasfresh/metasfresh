@@ -66,13 +66,13 @@ public class DDOrderRequestedEventHandler
 	}
 
 	@VisibleForTesting
-	I_DD_Order createDDOrder(@NonNull final DDOrderRequestedEvent distributionOrderEvent)
+	I_DD_Order createDDOrder(@NonNull final DDOrderRequestedEvent ddOrderRequestedEvent)
 	{
-		final DDOrder ddOrder= distributionOrderEvent.getDdOrder();
-		final Date dateOrdered= Date.from(distributionOrderEvent.getEventDescriptor().getWhen());
+		final DDOrder ddOrder= ddOrderRequestedEvent.getDdOrder();
+		final Date dateOrdered= Date.from(ddOrderRequestedEvent.getEventDescriptor().getWhen());
 
 		final I_DD_Order ddOrderRecord = ddOrderProducer.createDDOrder(ddOrder, dateOrdered);
-		ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.setValue(ddOrderRecord, distributionOrderEvent.getGroupId());
+		ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.setValue(ddOrderRecord, ddOrderRequestedEvent.getGroupId());
 
 		if (ddOrderRecord.getPP_Product_Planning().isDocComplete())
 		{

@@ -33,9 +33,9 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
-import de.metas.material.dispo.service.event.handler.DDOrderAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.DDOrderAdvisedOrCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
-import de.metas.material.dispo.service.event.handler.PPOrderAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.PPOrderAdvisedOrCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.dispo.service.event.handler.TransactionCreatedHandler;
@@ -122,14 +122,14 @@ public class MaterialDispoEventListenerFacadeTests
 				candidateRepositoryRetrieval,
 				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
-		final DDOrderAdvisedHandler distributionAdvisedEventHandler = new DDOrderAdvisedHandler(
+		final DDOrderAdvisedOrCreatedHandler distributionAdvisedEventHandler = new DDOrderAdvisedOrCreatedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
 				new RequestMaterialOrderService(candidateRepositoryRetrieval, materialEventService));
 
-		final PPOrderAdvisedHandler productionAdvisedEventHandler = new PPOrderAdvisedHandler(candidateChangeHandler, candidateService);
+		final PPOrderAdvisedOrCreatedHandler productionAdvisedEventHandler = new PPOrderAdvisedOrCreatedHandler(candidateChangeHandler, candidateService);
 
 		final ForecastCreatedHandler forecastCreatedEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
 
@@ -171,6 +171,7 @@ public class MaterialDispoEventListenerFacadeTests
 						.datePromised(shipmentScheduleEventTime)
 						.line(DDOrderLine.builder()
 								.productDescriptor(createProductDescriptor())
+								.bPartnerId(shipmentScheduleEvent.getMaterialDescriptor().getBPartnerId())
 								.qty(BigDecimal.TEN)
 								.durationDays(0)
 								.networkDistributionLineId(900)

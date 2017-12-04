@@ -42,14 +42,13 @@ import lombok.NonNull;
  */
 
 @Service
-public class DistributionAdvisedEventCreator
+public class DDOrderAdvisedOrCreatedEventCreator
 {
-
 	private final DDOrderDemandMatcher ddOrderDemandMatcher;
 
 	private final DDOrderPojoSupplier ddOrderPojoSupplier;
 
-	public DistributionAdvisedEventCreator(
+	public DDOrderAdvisedOrCreatedEventCreator(
 			@NonNull final DDOrderDemandMatcher ddOrderDemandMatcher,
 			@NonNull final DDOrderPojoSupplier ddOrderPojoSupplier)
 	{

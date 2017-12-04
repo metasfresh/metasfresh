@@ -136,6 +136,7 @@ public class PPOrderPojoSupplier
 				.quantity(qtyToSupply)
 
 				.orderLineId(request.getMrpDemandOrderLineSOId())
+				.bPartnerId(request.getMrpDemandBPartnerId())
 
 				// offer further advise :-)
 				.advisedToCreatePPOrder(productPlanningData.isCreatePlan());

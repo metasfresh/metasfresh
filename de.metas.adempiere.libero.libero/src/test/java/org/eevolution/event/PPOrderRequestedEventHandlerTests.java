@@ -36,6 +36,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
@@ -155,7 +156,7 @@ public class PPOrderRequestedEventHandlerTests
 		}
 
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(bomMainProduct.getM_Product_ID(),
-				"storageAttributesKey",
+				StorageAttributesKey.ofAttributeValueIds(12345),
 				bomMainProduct.getM_AttributeSetInstance_ID());
 
 		ppOrderPojo = PPOrder.builder()
