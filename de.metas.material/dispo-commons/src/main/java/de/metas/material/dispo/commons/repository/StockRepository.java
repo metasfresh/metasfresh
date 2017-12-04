@@ -7,7 +7,10 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.util.Functions;
+import org.adempiere.util.Functions.MemoizingFunction;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
@@ -19,7 +22,9 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.repository.StockResult.AddToResultGroupRequest;
 import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
+import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
+import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.NonNull;
 import lombok.Value;
@@ -93,10 +98,13 @@ public class StockRepository
 
 	private IQuery<I_MD_Candidate_Stock_v> createDBQueryForMaterialQueryOrNull(@NonNull final StockMultiQuery multiQuery)
 	{
+		final MemoizingFunction<Date, Timestamp> maxDateLessOrEqualFunction //
+				= Functions.memoizing(date -> retrieveMaxDateLessOrEqual(date));
+
 		return multiQuery.getQueries()
 				.stream()
 				.map(stockQuery -> {
-					final Timestamp latestDateOrNull = retrieveMaxDateLessOrEqual(stockQuery.getDate());
+					final Timestamp latestDateOrNull = maxDateLessOrEqualFunction.apply(stockQuery.getDate());
 					if (latestDateOrNull == null)
 					{
 						return null;
@@ -124,11 +132,21 @@ public class StockRepository
 	private Timestamp retrieveMaxDateLessOrEqual(@NonNull final Date date)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_MD_Candidate_Stock_v.class)
-				.addCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(date))
-				.orderBy().addColumnDescending(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected).endOrderBy()
+
+				// select from MD_Candidate, because the performance is much worse with MD_Candidate_Stock_v
+				// also note that this method is supported by the DB index md_candidate_stock_latest_date_perf
+				.createQueryBuilder(I_MD_Candidate.class)
+
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
+				.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(date))
+
+				.orderBy()
+				.addColumn(I_MD_Candidate.COLUMN_DateProjected, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
+				.endOrderBy()
+
 				.create()
-				.first(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected, Timestamp.class);
+				.first(I_MD_Candidate.COLUMNNAME_DateProjected, Timestamp.class);
 	}
 
 	@VisibleForTesting

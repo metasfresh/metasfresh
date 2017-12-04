@@ -82,14 +82,25 @@ if they were not yet superseeded by more recent values';
 
 
 DROP INDEX IF EXISTS public.md_candidate_stock_perf;
+DROP INDEX IF EXISTS public.md_candidate_stock_v_perf;
 
-CREATE INDEX md_candidate_stock_perf
+CREATE INDEX md_candidate_stock_v_perf
   ON public.md_candidate
   USING btree
-  (M_Product_ID, M_Warehouse_ID, C_BPartner_ID, DateProjected, StorageAttributesKey, DateProjected, Qty)
-  WHERE IsActive = 'Y' AND MD_Candidate_Type = 'Stock';
-COMMENT ON INDEX public.md_candidate_stock_perf
+  (M_Product_ID, M_Warehouse_ID, C_BPartner_ID, DateProjected DESC, StorageAttributesKey, Qty)
+  WHERE IsActive = 'Y' AND MD_Candidate_Type = 'STOCK';
+COMMENT ON INDEX public.md_candidate_stock_v_perf
   IS 'This index has the purpose of supporting the view MD_Candidate_Stock_v 
 in finding the latest DateProjected for a given product-id, warehouse-id, partner-id and StorageAttributesKey-(like-)expression.
 
 Note: the Qty column is in so that hopefully MD_Candidate_Stock_v can be done by the DBMS using index-only-scans.';
+
+
+DROP INDEX IF EXISTS public.md_candidate_stock_latest_date_perf;
+CREATE INDEX md_candidate_stock_latest_date_perf
+  ON public.md_candidate
+  USING btree
+  (DateProjected DESC NULLS LAST)
+  WHERE IsActive = 'Y' AND MD_Candidate_Type = 'STOCK';
+COMMENT ON INDEX public.md_candidate_stock_latest_date_perf 
+  IS 'this index supports finding the latest M_Candidate with a data less or equal than a given date';
