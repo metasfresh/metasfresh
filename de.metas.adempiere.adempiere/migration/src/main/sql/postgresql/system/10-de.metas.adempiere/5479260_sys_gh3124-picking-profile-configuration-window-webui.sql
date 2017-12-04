@@ -313,3 +313,33 @@ UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=30,Updated=TO_
 UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=40,Updated=TO_TIMESTAMP('2017-12-04 14:33:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549590
 ;
 
+-- 2017-12-04T14:37:24.953
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Kommissionierung Profil',Updated=TO_TIMESTAMP('2017-12-04 14:37:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560674
+;
+
+-- 2017-12-04T14:37:33.756
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-04 14:37:33','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=560674 AND AD_Language='en_US'
+;
+
+-- 2017-12-04T14:38:05.801
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Kommissionierung Profil ID',Updated=TO_TIMESTAMP('2017-12-04 14:38:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560674
+;
+
+-- 2017-12-04T14:38:18.636
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Profil',Updated=TO_TIMESTAMP('2017-12-04 14:38:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560675
+;
+
+-- 2017-12-04T14:38:25.812
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-04 14:38:25','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Profile' WHERE AD_Field_ID=560675 AND AD_Language='en_US'
+;
+
+-- 2017-12-04T14:39:36.507
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsIdentifier='Y',Updated=TO_TIMESTAMP('2017-12-04 14:39:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558028
+;
+
