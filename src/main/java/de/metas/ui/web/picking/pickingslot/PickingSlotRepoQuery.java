@@ -84,4 +84,6 @@ public class PickingSlotRepoQuery
 	 */
 	@Default
 	PickingCandidate pickingCandidates = PickingCandidate.ONLY_NOT_CLOSED_OR_NOT_RACK_SYSTEM;
+	
+	String pickingSlotBarcode;
 }

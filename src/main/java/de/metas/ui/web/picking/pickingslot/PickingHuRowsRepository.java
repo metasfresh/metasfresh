@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableListMultimap.Builder;
 import com.google.common.collect.ListMultimap;
@@ -32,6 +33,8 @@ import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery.MatchingSourceHusQueryBuilder;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.picking.api.IPickingSlotDAO;
+import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -182,6 +185,23 @@ import lombok.NonNull;
 				break;
 			default:
 				Check.errorIf(true, "Query has unexpected pickingCandidates={}; query={}", pickingSlotRowQuery.getPickingCandidates(), pickingSlotRowQuery);
+		}
+
+		//
+		// Picking slot Barcode filter
+		final String pickingSlotBarcode = pickingSlotRowQuery.getPickingSlotBarcode();
+		if (!Check.isEmpty(pickingSlotBarcode, true))
+		{
+			final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
+			final List<Integer> pickingSlotIds = pickingSlotDAO.retrievePickingSlotIds(PickingSlotQuery.builder()
+					.barcode(pickingSlotBarcode)
+					.build());
+			if (pickingSlotIds.isEmpty())
+			{
+				return ImmutableList.of();
+			}
+
+			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotIds);
 		}
 
 		//

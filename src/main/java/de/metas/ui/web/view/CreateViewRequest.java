@@ -148,7 +148,7 @@ public final class CreateViewRequest
 	 */
 	@Deprecated
 	Set<Integer> filterOnlyIds;
-	
+
 	boolean useAutoFilters;
 
 	ViewActionDescriptorsList actions;
@@ -171,6 +171,25 @@ public final class CreateViewRequest
 
 		actions = builder.getActions();
 		additionalRelatedProcessDescriptors = ImmutableList.copyOf(builder.getAdditionalRelatedProcessDescriptors());
+	}
+
+	private CreateViewRequest(@NonNull final CreateViewRequest from, @NonNull final DocumentFiltersList filters)
+	{
+		viewId = from.viewId;
+		viewType = from.viewType;
+		profileId = from.profileId;
+
+		parentViewId = from.parentViewId;
+		parentRowId = from.parentRowId;
+
+		referencingDocumentPaths = from.referencingDocumentPaths;
+		filterOnlyIds = from.filterOnlyIds;
+		this.filters = filters;
+		stickyFilters = from.stickyFilters;
+		useAutoFilters = from.useAutoFilters;
+
+		actions = from.actions;
+		additionalRelatedProcessDescriptors = from.additionalRelatedProcessDescriptors;
 	}
 
 	public Characteristic getViewTypeRequiredFieldCharacteristic()
@@ -201,6 +220,18 @@ public final class CreateViewRequest
 	public List<DocumentFilter> getOrUnwrapFilters(final DocumentFilterDescriptorsProvider descriptors)
 	{
 		return getFilters().getOrUnwrapFilters(descriptors);
+	}
+
+	public CreateViewRequest unwrapFiltersAndCopy(final DocumentFilterDescriptorsProvider descriptors)
+	{
+		final DocumentFiltersList filters = getFilters();
+		final DocumentFiltersList filtersNew = filters.unwrapAndCopy(descriptors);
+		if (Objects.equals(filters, filtersNew))
+		{
+			return this;
+		}
+
+		return new CreateViewRequest(this, filtersNew);
 	}
 
 	public void assertNoParentViewOrRow()
@@ -266,13 +297,13 @@ public final class CreateViewRequest
 		{
 			return viewType;
 		}
-		
+
 		public Builder setProfileId(ViewProfileId profileId)
 		{
 			this.profileId = profileId;
 			return this;
 		}
-		
+
 		private ViewProfileId getProfileId()
 		{
 			return profileId;
@@ -437,8 +468,8 @@ public final class CreateViewRequest
 				return EMPTY;
 			}
 
-			final List<JSONDocumentFilter> jsonFiltersEffective = null;
-			final List<DocumentFilter> filtersEffective = ImmutableList.copyOf(filters);
+			final ImmutableList<JSONDocumentFilter> jsonFiltersEffective = null;
+			final ImmutableList<DocumentFilter> filtersEffective = ImmutableList.copyOf(filters);
 			return new DocumentFiltersList(jsonFiltersEffective, filtersEffective);
 		}
 
@@ -449,17 +480,17 @@ public final class CreateViewRequest
 				return EMPTY;
 			}
 
-			final List<JSONDocumentFilter> jsonFiltersEffective = ImmutableList.copyOf(jsonFilters);
-			final List<DocumentFilter> filtersEffective = null;
+			final ImmutableList<JSONDocumentFilter> jsonFiltersEffective = ImmutableList.copyOf(jsonFilters);
+			final ImmutableList<DocumentFilter> filtersEffective = null;
 			return new DocumentFiltersList(jsonFiltersEffective, filtersEffective);
 		}
 
 		private static final DocumentFiltersList EMPTY = new DocumentFiltersList();
 
-		private final List<JSONDocumentFilter> jsonFilters;
-		private final List<DocumentFilter> filters;
+		private final ImmutableList<JSONDocumentFilter> jsonFilters;
+		private final ImmutableList<DocumentFilter> filters;
 
-		private DocumentFiltersList(final List<JSONDocumentFilter> jsonFilters, final List<DocumentFilter> filters)
+		private DocumentFiltersList(final ImmutableList<JSONDocumentFilter> jsonFilters, final ImmutableList<DocumentFilter> filters)
 		{
 			this.jsonFilters = jsonFilters;
 			this.filters = filters;
@@ -494,11 +525,26 @@ public final class CreateViewRequest
 
 		public List<DocumentFilter> getFilters()
 		{
-			if (filters == null)
+			if (jsonFilters != null && !jsonFilters.isEmpty())
 			{
-				throw new AdempiereException("Filters are not available for " + this);
+				throw new AdempiereException("Filters are not available because they were not unwrapped from JSON: " + this);
 			}
-			return filters;
+			else if (filters == null)
+			{
+				return ImmutableList.of();
+			}
+			else
+			{
+				return filters;
+			}
+		}
+
+		public DocumentFilter getFilterByIdOrNull(final String filterId)
+		{
+			return getFilters().stream()
+					.filter(filter -> Objects.equals(filter.getFilterId(), filterId))
+					.findFirst()
+					.orElse(null);
 		}
 
 		private List<DocumentFilter> getOrUnwrapFilters(final DocumentFilterDescriptorsProvider descriptors)
@@ -514,6 +560,28 @@ public final class CreateViewRequest
 			}
 
 			return JSONDocumentFilter.unwrapList(jsonFilters, descriptors);
+		}
+
+		private DocumentFiltersList unwrapAndCopy(final DocumentFilterDescriptorsProvider descriptors)
+		{
+			if (filters != null)
+			{
+				return this;
+			}
+
+			if (jsonFilters == null || jsonFilters.isEmpty())
+			{
+				return this;
+			}
+
+			final ImmutableList<DocumentFilter> filtersNew = JSONDocumentFilter.unwrapList(jsonFilters, descriptors);
+			if(filtersNew.isEmpty())
+			{
+				return EMPTY;
+			}
+			
+			final ImmutableList<JSONDocumentFilter> jsonFiltersNew = null;
+			return new DocumentFiltersList(jsonFiltersNew, filtersNew);
 		}
 	}
 }

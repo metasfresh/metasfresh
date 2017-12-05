@@ -73,7 +73,7 @@ public final class DocumentFilterDescriptor
 		filterId = builder.filterId;
 		Check.assumeNotEmpty(filterId, "filterId is not empty");
 
-		displayNameTrls = builder.displayNameTrls;
+		displayNameTrls = builder.getDisplayNameTrls();
 		Check.assumeNotNull(displayNameTrls, "Parameter displayNameTrls is not null");
 
 		frequentUsed = builder.frequentUsed;
@@ -141,7 +141,7 @@ public final class DocumentFilterDescriptor
 	{
 		return debugProperties;
 	}
-	
+
 	public boolean isAutoFilter()
 	{
 		return autoFilter;
@@ -217,6 +217,21 @@ public final class DocumentFilterDescriptor
 		{
 			displayNameTrls = ImmutableTranslatableString.constant(displayName);
 			return this;
+		}
+
+		public ITranslatableString getDisplayNameTrls()
+		{
+			if (displayNameTrls != null)
+			{
+				return displayNameTrls;
+			}
+
+			if (parameters.size() == 1)
+			{
+				return parameters.get(0).getDisplayName();
+			}
+
+			return null;
 		}
 
 		public Builder setFrequentUsed(final boolean frequentUsed)
