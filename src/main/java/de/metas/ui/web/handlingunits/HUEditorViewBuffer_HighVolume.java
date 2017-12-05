@@ -64,13 +64,14 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			final ViewId viewId,
 			final HUEditorViewRepository huEditorRepo,
 			final List<DocumentFilter> stickyFilters,
-			final List<DocumentFilter> filters)
+			final List<DocumentFilter> filters,
+			final List<DocumentQueryOrderBy> orderBys)
 	{
 		this.huEditorRepo = huEditorRepo;
 		this.stickyFilters = ImmutableList.copyOf(stickyFilters);
 
 		final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFilters, filters));
-		final ViewRowIdsOrderedSelection defaultSelection = huEditorRepo.createDefaultSelection(viewId, filtersAll);
+		final ViewRowIdsOrderedSelection defaultSelection = huEditorRepo.createSelection(viewId, filtersAll, orderBys);
 		defaultSelectionRef = new AtomicReference<>(defaultSelection);
 	}
 

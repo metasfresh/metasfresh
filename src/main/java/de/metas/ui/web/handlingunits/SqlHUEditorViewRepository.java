@@ -6,9 +6,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -17,6 +20,7 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.PagedIterator.Page;
@@ -34,6 +38,8 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -55,9 +61,11 @@ import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
 import de.metas.ui.web.view.descriptor.SqlViewSelectData;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
@@ -92,22 +100,29 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 	private final HUEditorRowAttributesProvider attributesProvider;
 	private final HUEditorRowIsProcessedPredicate rowProcessedPredicate;
+	private final boolean showBestBeforeDate;
+	private final boolean showLocator;
 
 	private final SqlViewBinding sqlViewBinding;
 	private final ViewRowIdsOrderedSelectionFactory viewSelectionFactory;
 	private final SqlViewSelectData sqlViewSelect;
 
+
 	@Builder
 	private SqlHUEditorViewRepository(
 			@NonNull final WindowId windowId,
+			@NonNull final SqlViewBinding sqlViewBinding,
 			@Nullable final HUEditorRowAttributesProvider attributesProvider,
 			@Nullable final HUEditorRowIsProcessedPredicate rowProcessedPredicate,
-			@NonNull final SqlViewBinding sqlViewBinding)
+			final boolean showBestBeforeDate,
+			final boolean showLocator)
 	{
 		this.windowId = windowId;
 
 		this.attributesProvider = attributesProvider;
 		this.rowProcessedPredicate = rowProcessedPredicate != null ? rowProcessedPredicate : HUEditorRowIsProcessedPredicates.NEVER;
+		this.showBestBeforeDate = showBestBeforeDate;
+		this.showLocator = showLocator;
 
 		this.sqlViewBinding = sqlViewBinding;
 		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlViewBinding);
@@ -198,9 +213,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final JSONLookupValue huStatus = createHUStatusLookupValue(hu);
 		final boolean processed = rowProcessedPredicate.isProcessed(hu);
 		final int huId = hu.getM_HU_ID();
+		final HUEditorRowId rowId = HUEditorRowId.ofHU(huId, topLevelHUId);
 
 		final HUEditorRow.Builder huEditorRow = HUEditorRow.builder(windowId)
-				.setRowId(HUEditorRowId.ofHU(huId, topLevelHUId))
+				.setRowId(rowId)
 				.setType(huRecordType)
 				.setTopLevel(topLevelHUId <= 0)
 				.setProcessed(processed)
@@ -210,6 +226,20 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setHUUnitType(huUnitTypeLookupValue)
 				.setHUStatus(huStatus)
 				.setPackingInfo(extractPackingInfo(hu, huRecordType));
+
+		//
+		// Acquire Best Before Date if required
+		if (showBestBeforeDate)
+		{
+			huEditorRow.setBestBeforeDate(extractBestBeforeDate(attributesProvider, rowId));
+		}
+
+		//
+		// Locator
+		if (showLocator)
+		{
+			huEditorRow.setLocator(createLocatorLookupValue(hu.getM_Locator_ID()));
+		}
 
 		//
 		// Product/UOM/Qty if there is only one product stored
@@ -364,6 +394,41 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		return JSONLookupValue.of(uom.getC_UOM_ID(), uom.getUOMSymbol());
 	}
 
+	private static Date extractBestBeforeDate(final HUEditorRowAttributesProvider attributesProvider, final HUEditorRowId rowId)
+	{
+		if (attributesProvider == null)
+		{
+			return null;
+		}
+
+		final DocumentId attributesKey = attributesProvider.createAttributeKey(rowId.getHuId());
+		final HUEditorRowAttributes attributes = attributesProvider.getAttributes(rowId.toDocumentId(), attributesKey);
+		return attributes.getBestBeforeDate().orElse(null);
+	}
+
+	private static JSONLookupValue createLocatorLookupValue(final int locatorId)
+	{
+		if (locatorId <= 0)
+		{
+			return null;
+		}
+
+		final I_M_Locator locator = loadOutOfTrx(locatorId, I_M_Locator.class);
+		if (locator == null)
+		{
+			return JSONLookupValue.unknown(locatorId);
+		}
+
+		final I_M_Warehouse warehouse = loadOutOfTrx(locator.getM_Warehouse_ID(), I_M_Warehouse.class);
+
+		final String caption = Stream.of(warehouse.getName(), locator.getValue(), locator.getX(), locator.getX1(), locator.getY(), locator.getZ())
+				.filter(part -> !Check.isEmpty(part, true))
+				.map(String::trim)
+				.collect(Collectors.joining("_"));
+
+		return JSONLookupValue.of(locatorId, caption);
+	}
+
 	@Override
 	public List<Integer> retrieveHUIdsEffective(
 			@NonNull final HUIdsFilterData huIdsFilter,
@@ -487,10 +552,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection createDefaultSelection(final ViewId viewId, final List<DocumentFilter> filters)
+	public ViewRowIdsOrderedSelection createSelection(final ViewId viewId, final List<DocumentFilter> filters, final List<DocumentQueryOrderBy> orderBys)
 	{
 		final ViewEvaluationCtx viewEvalCtx = ViewEvaluationCtx.of(Env.getCtx());
-		return viewSelectionFactory.createOrderedSelection(viewEvalCtx, viewId, filters, sqlViewBinding.getDefaultOrderBys());
+		return viewSelectionFactory.createOrderedSelection(viewEvalCtx, viewId, filters, orderBys);
 	}
 
 	@Override

@@ -69,12 +69,15 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	private final HUIdsFilterData huIdsFilterData;
 	private final Supplier<Set<Integer>> huIdsSupplier;
 	private final ExtendedMemorizingSupplier<IndexedHUEditorRows> rowsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveHUEditorRows());
+	
+	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
 
 	HUEditorViewBuffer_FullyCached(
 			@NonNull final ViewId viewId,
 			@NonNull final HUEditorViewRepository huEditorRepo,
 			final List<DocumentFilter> stickyFilters,
-			final List<DocumentFilter> filters)
+			final List<DocumentFilter> filters,
+			final List<DocumentQueryOrderBy> orderBys)
 	{
 		this.viewId = viewId;
 		this.huEditorRepo = huEditorRepo;
@@ -97,6 +100,8 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 		final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFiltersWithoutHUIdsFilter, filters));
 
 		huIdsSupplier = Suppliers.memoize(() -> new CopyOnWriteArraySet<>(huEditorRepo.retrieveHUIdsEffective(this.huIdsFilterData, filtersAll)));
+		
+		this.defaultOrderBys = orderBys != null ? ImmutableList.copyOf(orderBys) : ImmutableList.of();
 	}
 
 	@Override
@@ -150,12 +155,13 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	@Override
 	public Stream<HUEditorRow> streamPage(final int firstRow, final int pageLength, @NonNull final HUEditorRowFilter filter, final List<DocumentQueryOrderBy> orderBys)
 	{
+		final List<DocumentQueryOrderBy> orderBysEffective = !orderBys.isEmpty() ? orderBys : defaultOrderBys;
 		Stream<HUEditorRow> stream = getRows().stream()
 				.skip(firstRow)
 				.limit(pageLength)
 				.filter(HUEditorRowFilters.toPredicate(filter));
 
-		final Comparator<HUEditorRow> comparator = createComparatorOrNull(orderBys);
+		final Comparator<HUEditorRow> comparator = createComparatorOrNull(orderBysEffective);
 		if (comparator != null)
 		{
 			stream = stream.sorted(comparator);
