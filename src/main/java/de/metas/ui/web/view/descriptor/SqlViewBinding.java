@@ -239,7 +239,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		return rowIdsConverter;
 	}
 
-	public List<DocumentQueryOrderBy> getDefaultOrderBys()
+	public ImmutableList<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
 		return defaultOrderBys;
 	}
@@ -384,7 +384,7 @@ public class SqlViewBinding implements SqlEntityBinding
 			return this;
 		}
 
-		private String getTableAlias()
+		public String getTableAlias()
 		{
 			if (_tableAlias == null)
 			{
