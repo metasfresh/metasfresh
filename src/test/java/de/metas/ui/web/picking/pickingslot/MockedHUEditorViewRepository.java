@@ -98,6 +98,12 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
+	public ViewRowIdsOrderedSelection createSelectionFromSelection(final ViewRowIdsOrderedSelection fromSelection, final List<DocumentQueryOrderBy> orderBys)
+	{
+		throw new UnsupportedOperationException("not implemented");
+	}
+
+	@Override
 	public ViewRowIdsOrderedSelection removeRowIdsFromSelection(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIdsToRemove)
 	{
 		throw new UnsupportedOperationException("not implemented");
@@ -126,5 +132,4 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}
-
 }
