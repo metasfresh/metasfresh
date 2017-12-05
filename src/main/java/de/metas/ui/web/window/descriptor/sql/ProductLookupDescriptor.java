@@ -40,9 +40,10 @@ import de.metas.i18n.NumberTranslatableString;
 import de.metas.material.dispo.client.repository.AvailableStockResult;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
 import de.metas.material.dispo.client.repository.AvailableStockService;
-import de.metas.material.dispo.commons.repository.MaterialQuery;
-import de.metas.material.dispo.commons.repository.MaterialQuery.MaterialQueryBuilder;
+import de.metas.material.dispo.commons.repository.StockQuery;
+import de.metas.material.dispo.commons.repository.StockQuery.StockQueryBuilder;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -443,13 +444,13 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return productLookupValues;
 		}
 
-		final MaterialQueryBuilder materialQueryBuilder = MaterialQuery.builder();
-		addStorageAttributeKeysToQueryBuilder(materialQueryBuilder);
+		final StockQueryBuilder stockQueryBuilder = StockQuery.builder();
+		addStorageAttributeKeysToQueryBuilder(stockQueryBuilder);
 
-		materialQueryBuilder.productIds(productLookupValues.getKeysAsInt());
+		stockQueryBuilder.productIds(productLookupValues.getKeysAsInt());
 
 		// invoke the query
-		final AvailableStockResult availableStock = availableStockService.retrieveAvailableStock(materialQueryBuilder.build());
+		final AvailableStockResult availableStock = availableStockService.retrieveAvailableStock(stockQueryBuilder.build());
 		final List<Group> availableStockGroups = availableStock.getGroups();
 
 		// process the query's result into those explodedProductValues
@@ -468,7 +469,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		return stockQueryActivated;
 	}
 
-	private void addStorageAttributeKeysToQueryBuilder(@NonNull final MaterialQueryBuilder materialQueryBuilder)
+	private void addStorageAttributeKeysToQueryBuilder(@NonNull final StockQueryBuilder stockQueryBuilder)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());
@@ -476,7 +477,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		final String storageAttributesKeys = sysConfigBL.getValue(
 				SYSCONFIG_PRODUCT_LOOKUP_DESCRIPTOR_STORAGE_ATTRIBUTES_KEYS,
-				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL,
+				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.getAsString(),
 				clientId, orgId);
 
 		final Splitter splitter = Splitter
@@ -485,7 +486,18 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				.omitEmptyStrings();
 		for (final String storageAttributesKey : splitter.splitToList(storageAttributesKeys))
 		{
-			materialQueryBuilder.storageAttributesKey(storageAttributesKey);
+			if ("<ALL_STORAGE_ATTRIBUTES_KEYS>".equals(storageAttributesKey))
+			{
+				stockQueryBuilder.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
+			}
+			else if ("<OTHER_STORAGE_ATTRIBUTES_KEYS>".equals(storageAttributesKey))
+			{
+				stockQueryBuilder.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER);
+			}
+			else
+			{
+				stockQueryBuilder.storageAttributesKey(StorageAttributesKey.ofString(storageAttributesKey));
+			}
 		}
 	}
 
