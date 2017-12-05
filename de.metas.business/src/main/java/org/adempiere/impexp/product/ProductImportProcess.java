@@ -96,7 +96,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 	@Override
 	protected String getImportOrderBySql()
 	{
-		return I_I_Product.COLUMNNAME_ProductCategory_Value; // nop
+		return I_I_Product.COLUMNNAME_ProductCategory_Value;
 	}
 
 	@Override
@@ -119,7 +119,6 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		if (newProduct)			// Insert new Product
 		{
 			final MProduct product = new MProduct(importRecord);
-			// product.setC_TaxCategory_ID(C_TaxCategory_ID); // metas 05129
 			InterfaceWrapperHelper.save(product);
 			M_Product_ID = product.getM_Product_ID();
 			importRecord.setM_Product_ID(M_Product_ID);
