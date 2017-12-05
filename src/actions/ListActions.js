@@ -1,5 +1,4 @@
 import * as types from '../constants/ListTypes'
-import axios from 'axios';
 
 export function setListId(viewId, windowType) {
     return {
