@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -57,7 +58,10 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 
 	private final HUEditorViewRepository huEditorRepo;
 	private final ImmutableList<DocumentFilter> stickyFilters;
+	
 	private final AtomicReference<ViewRowIdsOrderedSelection> defaultSelectionRef;
+	private final transient ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, ViewRowIdsOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
+	
 	private final CCache<DocumentId, HUEditorRow> cache_huRowsById = CCache.newLRUCache(I_M_HU.Table_Name + "#HUEditorRows#by#Id", 100, 2);
 
 	HUEditorViewBuffer_HighVolume(
@@ -85,12 +89,32 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	{
 		return defaultSelectionRef.get();
 	}
+	
+	private ViewRowIdsOrderedSelection getSelection(final List<DocumentQueryOrderBy> orderBys)
+	{
+		final ViewRowIdsOrderedSelection defaultSelection = getDefaultSelection();
+		
+		if (orderBys == null || orderBys.isEmpty())
+		{
+			return defaultSelection;
+		}
+
+		if (Objects.equals(defaultSelection.getOrderBys(), orderBys))
+		{
+			return defaultSelection;
+		}
+
+		return selectionsByOrderBys.computeIfAbsent(ImmutableList.copyOf(orderBys), orderBysImmutable -> huEditorRepo.createSelectionFromSelection(defaultSelection, orderBysImmutable));
+	}
+
 
 	/** @return true if selection was really changed */
-	private boolean changeDefaultSelection(final UnaryOperator<ViewRowIdsOrderedSelection> mapper)
+	private boolean changeSelection(final UnaryOperator<ViewRowIdsOrderedSelection> mapper)
 	{
 		final ViewRowIdsOrderedSelection defaultSelectionOld = defaultSelectionRef.get();
 		final ViewRowIdsOrderedSelection defaultSelectionNew = defaultSelectionRef.updateAndGet(mapper);
+		selectionsByOrderBys.clear(); // invalidate all the other selections, let it recompute when needed
+		
 		return !Objects.equals(defaultSelectionOld, defaultSelectionNew);
 	}
 
@@ -127,7 +151,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			return false;
 		}
 
-		return changeDefaultSelection(defaultSelection -> huEditorRepo.addRowIdsToSelection(defaultSelection, rowIdsToAdd));
+		return changeSelection(defaultSelection -> huEditorRepo.addRowIdsToSelection(defaultSelection, rowIdsToAdd));
 	}
 
 	@Override
@@ -142,7 +166,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 
 		rowIdsToRemove.forEach(rowId -> cache_huRowsById.remove(rowId));
 
-		return changeDefaultSelection(defaultSelection -> huEditorRepo.removeRowIdsFromSelection(defaultSelection, rowIdsToRemove));
+		return changeSelection(defaultSelection -> huEditorRepo.removeRowIdsFromSelection(defaultSelection, rowIdsToRemove));
 	}
 
 	@Override
@@ -213,23 +237,6 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 				.filter(filter)
 				.build()
 				.stream();
-	}
-
-	private ViewRowIdsOrderedSelection getSelection(final List<DocumentQueryOrderBy> orderBys)
-	{
-		final ViewRowIdsOrderedSelection defaultSelection = getDefaultSelection();
-
-		if (orderBys == null || orderBys.isEmpty())
-		{
-			return defaultSelection;
-		}
-
-		if (!Objects.equals(orderBys, defaultSelection.getOrderBys()))
-		{
-			throw new UnsupportedOperationException("Sorting is not supported");
-		}
-
-		return defaultSelection;
 	}
 
 	private PageFetcher<Integer> huIdsPageFetcher(final List<DocumentQueryOrderBy> orderBys)

@@ -38,6 +38,10 @@ public interface HUEditorViewRepository
 {
 	void invalidateCache();
 
+	ViewRowIdsOrderedSelection createSelection(ViewId viewId, List<DocumentFilter> filters, List<DocumentQueryOrderBy> orderBys);
+
+	ViewRowIdsOrderedSelection createSelectionFromSelection(ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
+
 	List<HUEditorRow> retrieveHUEditorRows(Set<Integer> huIds, HUEditorRowFilter filter);
 
 	/**
@@ -51,8 +55,6 @@ public interface HUEditorViewRepository
 	List<Integer> retrieveHUIdsEffective(HUIdsFilterData huIdsFilter, List<DocumentFilter> filters);
 
 	Page<Integer> retrieveHUIdsPage(ViewRowIdsOrderedSelection selection, int firstRow, int maxRows);
-
-	ViewRowIdsOrderedSelection createSelection(ViewId viewId, List<DocumentFilter> filters, List<DocumentQueryOrderBy> orderBys);
 
 	ViewRowIdsOrderedSelection addRowIdsToSelection(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIdsToAdd);
 

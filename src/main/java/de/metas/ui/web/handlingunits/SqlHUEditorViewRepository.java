@@ -107,7 +107,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final ViewRowIdsOrderedSelectionFactory viewSelectionFactory;
 	private final SqlViewSelectData sqlViewSelect;
 
-
 	@Builder
 	private SqlHUEditorViewRepository(
 			@NonNull final WindowId windowId,
@@ -556,6 +555,13 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	{
 		final ViewEvaluationCtx viewEvalCtx = ViewEvaluationCtx.of(Env.getCtx());
 		return viewSelectionFactory.createOrderedSelection(viewEvalCtx, viewId, filters, orderBys);
+	}
+
+	@Override
+	public ViewRowIdsOrderedSelection createSelectionFromSelection(final ViewRowIdsOrderedSelection fromSelection, final List<DocumentQueryOrderBy> orderBys)
+	{
+		final ViewEvaluationCtx viewEvalCtx = ViewEvaluationCtx.of(Env.getCtx());
+		return viewSelectionFactory.createOrderedSelectionFromSelection(viewEvalCtx, fromSelection, orderBys);
 	}
 
 	@Override
