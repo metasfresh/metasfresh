@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
@@ -104,6 +103,17 @@ public final class ViewColumnHelper
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClassAndFieldNames(@NonNull final Class<?> dataType, @NonNull final String... fieldNames)
+	{
+		Check.assumeNotEmpty(fieldNames, "fieldNames is not empty");
+
+		final ClassViewDescriptor descriptor = getDescriptor(dataType);
+		return Stream.of(fieldNames)
+				.map(descriptor::getColumnByName)
+				.map(column -> createLayoutElement(column))
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	private static ClassViewDescriptor createClassViewDescriptor(final Class<?> dataType)
 	{
 		@SuppressWarnings("unchecked")
@@ -133,6 +143,7 @@ public final class ViewColumnHelper
 		final ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType = Stream.of(viewColumnAnn.layouts())
 				.map(layoutAnn -> ClassViewColumnLayoutDescriptor.builder()
 						.viewType(layoutAnn.when())
+						.displayed(layoutAnn.displayed())
 						.seqNo(layoutAnn.seqNo())
 						.build())
 				.collect(GuavaCollectors.toImmutableMapByKey(ClassViewColumnLayoutDescriptor::getViewType));
@@ -160,7 +171,7 @@ public final class ViewColumnHelper
 	public static <T extends IViewRow> ImmutableMap<String, Object> extractJsonMap(final T row)
 	{
 		final Class<? extends IViewRow> rowClass = row.getClass();
-		final Map<String, Object> result = new LinkedHashMap<>();
+		final LinkedHashMap<String, Object> result = new LinkedHashMap<>();
 		getDescriptor(rowClass)
 				.getColumns()
 				.forEach(column -> {
@@ -215,6 +226,14 @@ public final class ViewColumnHelper
 			this.widgetTypesByFieldName = columns.stream()
 					.collect(ImmutableMap.toImmutableMap(ClassViewColumnDescriptor::getFieldName, ClassViewColumnDescriptor::getWidgetType));
 		}
+
+		public ClassViewColumnDescriptor getColumnByName(@NonNull final String fieldName)
+		{
+			return columns.stream()
+					.filter(column -> fieldName.equals(column.getFieldName()))
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("No column found for " + fieldName + " in " + this));
+		}
 	}
 
 	@Value
@@ -238,7 +257,7 @@ public final class ViewColumnHelper
 		public boolean isDisplayed(final JSONViewDataType viewType)
 		{
 			final ClassViewColumnLayoutDescriptor layout = layoutsByViewType.get(viewType);
-			return layout != null;
+			return layout != null && layout.isDisplayed();
 		}
 
 		public int getSeqNo(final JSONViewDataType viewType)
@@ -260,6 +279,7 @@ public final class ViewColumnHelper
 	{
 		@NonNull
 		private JSONViewDataType viewType;
+		private final boolean displayed;
 		private final int seqNo;
 	}
 }
