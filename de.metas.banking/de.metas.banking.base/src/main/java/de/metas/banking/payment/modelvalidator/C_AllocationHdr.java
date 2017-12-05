@@ -125,11 +125,7 @@ public class C_AllocationHdr
 			logger.info("Skip updating lines because pay selection was already processed: {}", paySelection);
 			return;
 		}
-		if (paySelection.isProcessing())
-		{
-			logger.info("Skip updating lines because pay selection was locked: {}", paySelection);
-		}
-
+		
 		//
 		// Update all pay selection lines
 		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
