@@ -97,48 +97,48 @@ public final class HUEditorRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
 	private final int huId;
 
-	public static final String FIELDNAME_HUCode = "HUCode";
-	@ViewColumn(fieldName = FIELDNAME_HUCode, widgetType = DocumentFieldWidgetType.Text, layouts = {
+	public static final String FIELDNAME_HUCode = I_M_HU.COLUMNNAME_Value;
+	@ViewColumn(fieldName = FIELDNAME_HUCode, captionKey = "HUCode", widgetType = DocumentFieldWidgetType.Text, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
 	})
 	private final String code;
 
-	public static final String FIELDNAME_Product = "M_Product_ID";
-	@ViewColumn(fieldName = FIELDNAME_Product, widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+	public static final String FIELDNAME_Product = I_M_HU.COLUMNNAME_M_Product_ID;
+	@ViewColumn(fieldName = FIELDNAME_Product, widgetType = DocumentFieldWidgetType.Lookup, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 20)
 	})
 	private final JSONLookupValue product;
 
 	public static final String FIELDNAME_HU_UnitType = "HU_UnitType";
-	@ViewColumn(fieldName = FIELDNAME_HU_UnitType, widgetType = DocumentFieldWidgetType.Text, layouts = {
+	@ViewColumn(fieldName = FIELDNAME_HU_UnitType, widgetType = DocumentFieldWidgetType.Text, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
 	})
 	private final JSONLookupValue huUnitType;
 
-	public static final String FIELDNAME_PackingInfo = "M_HU_PI_Item_Product_ID";
-	@ViewColumn(fieldName = FIELDNAME_PackingInfo, widgetType = DocumentFieldWidgetType.Text, layouts = {
+	public static final String FIELDNAME_PackingInfo = I_M_HU.COLUMNNAME_M_HU_PI_Item_Product_ID;
+	@ViewColumn(fieldName = FIELDNAME_PackingInfo, widgetType = DocumentFieldWidgetType.Text, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
 	})
 	private final String packingInfo;
 
 	public static final String FIELDNAME_QtyCU = "QtyCU";
-	@ViewColumn(fieldName = FIELDNAME_QtyCU, widgetType = DocumentFieldWidgetType.Quantity, layouts = {
+	@ViewColumn(fieldName = FIELDNAME_QtyCU, widgetType = DocumentFieldWidgetType.Quantity, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
 	})
 	private final BigDecimal qtyCU;
 
 	public static final String FIELDNAME_UOM = "C_UOM_ID";
-	@ViewColumn(fieldName = FIELDNAME_UOM, widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+	@ViewColumn(fieldName = FIELDNAME_UOM, widgetType = DocumentFieldWidgetType.Lookup, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60),
 	})
 	private final JSONLookupValue uom;
 
-	public static final String FIELDNAME_HUStatus = "HUStatus";
-	@ViewColumn(fieldName = FIELDNAME_HUStatus, widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+	public static final String FIELDNAME_HUStatus = I_M_HU.COLUMNNAME_HUStatus;
+	@ViewColumn(fieldName = FIELDNAME_HUStatus, widgetType = DocumentFieldWidgetType.Lookup, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
 	})
 	private final JSONLookupValue huStatus;
@@ -150,8 +150,8 @@ public final class HUEditorRow implements IViewRow
 	})
 	private final Date bestBeforeDate;
 
-	public static final String FIELDNAME_Locator = "M_Locator_ID";
-	@ViewColumn(fieldName = FIELDNAME_Locator, widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+	public static final String FIELDNAME_Locator = I_M_HU.COLUMNNAME_M_Locator_ID;
+	@ViewColumn(fieldName = FIELDNAME_Locator, widgetType = DocumentFieldWidgetType.Lookup, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90, displayed = false),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 90, displayed = false)
 	})
