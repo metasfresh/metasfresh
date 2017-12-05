@@ -61,6 +61,9 @@ import de.metas.material.event.forecast.ForecastLine;
 		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class M_ForecastEventCreatorTest
 {
+	private static final int BPARTNER_ID_OF_FORECAST = 50;
+	private static final int BPARTNER_ID_OF_FIRST_FORECAST_LINE = 51;
+
 	@Rule
 	public final AdempiereTestWatcher watcher = new AdempiereTestWatcher();
 
@@ -75,6 +78,7 @@ public class M_ForecastEventCreatorTest
 	{
 		final I_M_Forecast forecastModel = newInstance(I_M_Forecast.class);
 		forecastModel.setDocStatus(IDocument.STATUS_NotApproved); //
+		forecastModel.setC_BPartner_ID(BPARTNER_ID_OF_FORECAST);
 		save(forecastModel);
 
 		final I_M_ForecastLine forecastLine1;
@@ -83,8 +87,10 @@ public class M_ForecastEventCreatorTest
 			save(warehouse1);
 			final I_M_Product product1 = newInstance(I_M_Product.class);
 			save(product1);
+
 			forecastLine1 = newInstance(I_M_ForecastLine.class);
 			forecastLine1.setM_Forecast(forecastModel);
+			forecastLine1.setC_BPartner_ID(BPARTNER_ID_OF_FIRST_FORECAST_LINE);
 			forecastLine1.setDatePromised(TimeUtil.parseTimestamp("2017-10-21"));
 			forecastLine1.setQty(new BigDecimal("21"));
 			forecastLine1.setM_Product(product1);
@@ -122,10 +128,14 @@ public class M_ForecastEventCreatorTest
 
 		assertThat(forecastLines).anySatisfy(forecastLine -> {
 			verifyEventPojoIsInSyncWithRecord(forecastLine, forecastLine1);
+			assertThat(forecastLine.getMaterialDescriptor().getBPartnerId()).isEqualTo(BPARTNER_ID_OF_FIRST_FORECAST_LINE);
 		});
 
 		assertThat(forecastLines).anySatisfy(forecastLine -> {
 			verifyEventPojoIsInSyncWithRecord(forecastLine, forecastLine2);
+			assertThat(forecastLine.getMaterialDescriptor().getBPartnerId())
+					.as("The 2nd focrecastLine has no own C_BPartner_ID, the header's ID shall be inherited")
+					.isEqualTo(BPARTNER_ID_OF_FORECAST);
 		});
 
 	}

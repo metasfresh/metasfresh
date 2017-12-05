@@ -1,6 +1,6 @@
-package de.metas.material.dispo.commons.repository;
+package de.metas.material.dispo.commons.candidate;
 
-import org.junit.Test;
+import de.metas.material.dispo.model.X_MD_Candidate;
 
 /*
  * #%L
@@ -12,25 +12,23 @@ import org.junit.Test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class MaterialQueryTest
+
+/**
+ * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_SUBTYPE_AD_Reference_ID}
+ */
+public enum CandidateBusinessCase
 {
-
-	@Test(expected = RuntimeException.class)
-	public void builder_throw_ex_if_not_complete()
-	{
-		MaterialQuery.builder().build();
-	}
-
+	DISTRIBUTION, PRODUCTION, RECEIPT, SHIPMENT, FORECAST
 }

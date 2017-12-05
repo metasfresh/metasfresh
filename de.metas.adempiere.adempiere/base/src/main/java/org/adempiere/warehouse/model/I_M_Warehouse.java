@@ -28,7 +28,7 @@ public interface I_M_Warehouse extends org.compiere.model.I_M_Warehouse
 {
 	//@formatter:off
 	public static final String COLUMNNAME_isPickingWarehouse = "isPickingWarehouse";
-	public void setisPickingWarehouse(boolean isPickingWarehouse);
+	//public void setIsPickingWarehouse(boolean isPickingWarehouse);
 	public boolean isPickingWarehouse();
 	//@formatter:on
 
@@ -40,7 +40,7 @@ public interface I_M_Warehouse extends org.compiere.model.I_M_Warehouse
 
 	//@formatter:off
 	public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
-	public void setAD_User_ID(int _AD_User_ID);
+	//public void setAD_User_ID(int _AD_User_ID);
 	public void setAD_User(I_AD_User AD_User_ID);
 	public I_AD_User getAD_User();
 	public int getAD_User_ID();

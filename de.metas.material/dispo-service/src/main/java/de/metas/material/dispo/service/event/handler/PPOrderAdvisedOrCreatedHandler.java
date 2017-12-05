@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
@@ -40,7 +40,7 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class PPOrderAdvisedHandler
+public class PPOrderAdvisedOrCreatedHandler
 {
 	private final CandidateChangeService candidateChangeHandler;
 	private final RequestMaterialOrderService requestMaterialOrderService;
@@ -50,7 +50,7 @@ public class PPOrderAdvisedHandler
 	 * @param candidateChangeHandler
 	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
 	 */
-	public PPOrderAdvisedHandler(
+	public PPOrderAdvisedOrCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final RequestMaterialOrderService candidateService)
 	{
@@ -58,7 +58,7 @@ public class PPOrderAdvisedHandler
 		this.requestMaterialOrderService = candidateService;
 	}
 
-	public void handleProductionAdvisedEvent(final PPOrderAdvisedOrCreatedEvent productionAdvisedEvent)
+	public void handlePPOrderAdvisedOrCreatedEvent(final PPOrderAdvisedOrCreatedEvent productionAdvisedEvent)
 	{
 		final PPOrder ppOrder = productionAdvisedEvent.getPpOrder();
 
@@ -69,7 +69,7 @@ public class PPOrderAdvisedHandler
 
 		final Candidate supplyCandidate = Candidate.builderForEventDescr(productionAdvisedEvent.getEventDescriptor())
 				.type(CandidateType.SUPPLY)
-				.subType(CandidateSubType.PRODUCTION)
+				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.status(candidateStatus)
 				.productionDetail(createProductionDetailForPPOrder(ppOrder))
 				.demandDetail(demandDetailOrNull)
@@ -82,7 +82,7 @@ public class PPOrderAdvisedHandler
 		{
 			final CandidateBuilder builder = Candidate.builderForEventDescr(productionAdvisedEvent.getEventDescriptor())
 					.type(ppOrderLine.isReceipt() ? CandidateType.SUPPLY : CandidateType.DEMAND)
-					.subType(CandidateSubType.PRODUCTION)
+					.businessCase(CandidateBusinessCase.PRODUCTION)
 					.status(candidateStatus)
 					.groupId(candidateWithGroupId.getGroupId())
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)
@@ -103,11 +103,11 @@ public class PPOrderAdvisedHandler
 	private static MaterialDescriptor createMaterialDescriptorFromPpOrder(final PPOrder ppOrder)
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.date(ppOrder.getDatePromised())
 				.productDescriptor(ppOrder.getProductDescriptor())
 				.quantity(ppOrder.getQuantity())
 				.warehouseId(ppOrder.getWarehouseId())
+				.bPartnerId(ppOrder.getBPartnerId())
 				.build();
 		return materialDescriptor;
 	}
@@ -115,11 +115,11 @@ public class PPOrderAdvisedHandler
 	private static MaterialDescriptor createMaterialDescriptorForPpOrderAndLine(final PPOrder ppOrder, final PPOrderLine ppOrderLine)
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.date(ppOrderLine.isReceipt() ? ppOrder.getDatePromised() : ppOrder.getDateStartSchedule())
 				.productDescriptor(ppOrderLine.getProductDescriptor())
 				.quantity(ppOrderLine.getQtyRequired())
 				.warehouseId(ppOrder.getWarehouseId())
+				.bPartnerId(ppOrder.getBPartnerId())
 				.build();
 		return materialDescriptor;
 	}

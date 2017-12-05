@@ -10,13 +10,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
 import de.metas.material.event.ddorder.DDOrderLine;
@@ -71,7 +72,7 @@ public class RequestMaterialOrderService
 			return;
 		}
 
-		switch (group.get(0).getSubType())
+		switch (group.get(0).getBusinessCase())
 		{
 			case PRODUCTION:
 				createAndFireProductionRequestedEvent(group);
@@ -86,7 +87,7 @@ public class RequestMaterialOrderService
 
 	/**
 	 *
-	 * @param group a non-empty list of candidates that all have {@link CandidateSubType#PRODUCTION},
+	 * @param group a non-empty list of candidates that all have {@link CandidateBusinessCase#PRODUCTION},
 	 *            all have the same {@link Candidate#getGroupId()}
 	 *            and all have appropriate not-null {@link Candidate#getProductionDetail()}s.
 	 * @return
@@ -94,12 +95,12 @@ public class RequestMaterialOrderService
 
 	private void createAndFireProductionRequestedEvent(@NonNull final List<Candidate> group)
 	{
-		final PPOrderRequestedEvent ppOrderRequestEvent = createProductionRequestedEvent(group);
+		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestedEvent(group);
 		materialEventService.fireEvent(ppOrderRequestEvent);
 	}
 
 	@VisibleForTesting
-	PPOrderRequestedEvent createProductionRequestedEvent(final List<Candidate> group)
+	PPOrderRequestedEvent createPPOrderRequestedEvent(final List<Candidate> group)
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
@@ -113,6 +114,7 @@ public class RequestMaterialOrderService
 			}
 
 			final ProductionDetail prodDetail = groupMember.getProductionDetail();
+			final MaterialDescriptor materialDescriptor = groupMember.getMaterialDescriptor();
 			if (prodDetail.getProductBomLineId() <= 0)
 			{
 				// we talk about a ppOrder (header)
@@ -121,7 +123,8 @@ public class RequestMaterialOrderService
 						.datePromised(groupMember.getDate())
 						.orgId(groupMember.getOrgId())
 						.plantId(prodDetail.getPlantId())
-						.productDescriptor(groupMember.getMaterialDescriptor())
+						.productDescriptor(materialDescriptor)
+						.bPartnerId(materialDescriptor.getBPartnerId())
 						.quantity(groupMember.getQuantity())
 						.uomId(prodDetail.getUomId())
 						.warehouseId(groupMember.getWarehouseId());
@@ -142,7 +145,7 @@ public class RequestMaterialOrderService
 						PPOrderLine.builder()
 								.description(prodDetail.getDescription())
 								.productBomLineId(prodDetail.getProductBomLineId())
-								.productDescriptor(groupMember.getMaterialDescriptor())
+								.productDescriptor(materialDescriptor)
 								.qtyRequired(groupMember.getQuantity())
 								.productBomLineId(prodDetail.getProductBomLineId())
 								.receipt(receipt)
@@ -189,8 +192,10 @@ public class RequestMaterialOrderService
 				startDate = groupMember.getDate();
 			}
 
+			final MaterialDescriptor materialDescriptor = groupMember.getMaterialDescriptor();
 			ddOrderLineBuilder
-					.productDescriptor(groupMember.getMaterialDescriptor())
+					.productDescriptor(materialDescriptor)
+					.bPartnerId(materialDescriptor.getBPartnerId())
 					.qty(groupMember.getQuantity());
 
 			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)

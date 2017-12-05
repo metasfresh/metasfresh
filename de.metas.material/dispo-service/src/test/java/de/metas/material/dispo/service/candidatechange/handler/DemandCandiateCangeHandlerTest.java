@@ -22,14 +22,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.StockMultiQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
@@ -139,19 +139,21 @@ public class DemandCandiateCangeHandlerTest
 		final I_MD_Candidate demandRecord = DispoTestUtils.filter(CandidateType.DEMAND).get(0);
 
 		assertThat(demandRecord.getQty()).isEqualByComparingTo("23");
-		assertThat(demandRecord.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
+		assertThat(demandRecord.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY.getAsString());
 
 		assertThat(stockRecord.getQty()).isEqualByComparingTo("-23");
-		assertThat(stockRecord.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
+		assertThat(stockRecord.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY.getAsString());
 		assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
 
 		assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() + 1); // when we sort by SeqNo, the demand needs to be first and thus have the smaller value
 	}
 
 
-	private void setupRepositoryReturnsQuantityForMaterial(final String quantity, final MaterialDescriptor materialDescriptor)
+	private void setupRepositoryReturnsQuantityForMaterial(
+			@NonNull final String quantity,
+			@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptor);
+		final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
 
 		// @formatter:off
 		new Expectations()
@@ -175,7 +177,6 @@ public class DemandCandiateCangeHandlerTest
 	private Candidate createDemandCandidateWithQuantity(@NonNull final String quantity)
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(new BigDecimal(quantity))
@@ -244,7 +245,6 @@ public class DemandCandiateCangeHandlerTest
 		final Candidate candidate = Candidate.builder()
 				.type(type)
 				.materialDescriptor(MaterialDescriptor.builder()
-						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.date(SystemTime.asTimestamp())
 						.warehouseId(WAREHOUSE_ID)
@@ -264,7 +264,6 @@ public class DemandCandiateCangeHandlerTest
 		final BigDecimal qty = new BigDecimal("23");
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)
@@ -313,7 +312,6 @@ public class DemandCandiateCangeHandlerTest
 		final BigDecimal qty = new BigDecimal("23");
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.complete(true)
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
 				.quantity(qty)

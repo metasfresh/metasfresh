@@ -14,7 +14,7 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1367326991L;
+	private static final long serialVersionUID = 1999088769L;
 
     /** Standard Constructor */
     public X_M_Warehouse (Properties ctx, int M_Warehouse_ID, String trxName)
@@ -26,8 +26,7 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 			setC_Location_ID (0);
 			setM_Warehouse_ID (0);
 			setName (null);
-			setSeparator (null);
-// *
+			setSeparator (null); // *
 			setValue (null);
         } */
     }
@@ -263,6 +262,40 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	}
 
 	@Override
+	public org.compiere.model.I_M_Warehouse_PickingGroup getM_Warehouse_PickingGroup() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Warehouse_PickingGroup_ID, org.compiere.model.I_M_Warehouse_PickingGroup.class);
+	}
+
+	@Override
+	public void setM_Warehouse_PickingGroup(org.compiere.model.I_M_Warehouse_PickingGroup M_Warehouse_PickingGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Warehouse_PickingGroup_ID, org.compiere.model.I_M_Warehouse_PickingGroup.class, M_Warehouse_PickingGroup);
+	}
+
+	/** Set Warehouse Picking Group.
+		@param M_Warehouse_PickingGroup_ID Warehouse Picking Group	  */
+	@Override
+	public void setM_Warehouse_PickingGroup_ID (int M_Warehouse_PickingGroup_ID)
+	{
+		if (M_Warehouse_PickingGroup_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_PickingGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_PickingGroup_ID, Integer.valueOf(M_Warehouse_PickingGroup_ID));
+	}
+
+	/** Get Warehouse Picking Group.
+		@return Warehouse Picking Group	  */
+	@Override
+	public int getM_Warehouse_PickingGroup_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_PickingGroup_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_Warehouse getM_WarehouseSource() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_WarehouseSource_ID, org.compiere.model.I_M_Warehouse.class);
@@ -308,10 +341,8 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	public static final String MRP_EXCLUDE_Yes = "Y";
 	/** No = N */
 	public static final String MRP_EXCLUDE_No = "N";
-	/** Set Exclude from MRP.
-		@param MRP_Exclude 
-		Exclude from MRP calculation
-	  */
+	/** Set MRP ausschliessen.
+		@param MRP_Exclude MRP ausschliessen	  */
 	@Override
 	public void setMRP_Exclude (java.lang.String MRP_Exclude)
 	{
@@ -319,9 +350,8 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
 	}
 
-	/** Get Exclude from MRP.
-		@return Exclude from MRP calculation
-	  */
+	/** Get MRP ausschliessen.
+		@return MRP ausschliessen	  */
 	@Override
 	public java.lang.String getMRP_Exclude () 
 	{

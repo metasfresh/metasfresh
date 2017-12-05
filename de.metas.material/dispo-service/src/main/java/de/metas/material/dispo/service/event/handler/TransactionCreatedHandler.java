@@ -8,15 +8,15 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
-import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import lombok.NonNull;
 
@@ -66,7 +66,7 @@ public class TransactionCreatedHandler
 	{
 		final TransactionDetail transactionDetailOfEvent = TransactionDetail
 				.forCandidateOrQuery(
-						event.getMaterialDescriptor().getQuantity(), 
+						event.getMaterialDescriptor().getQuantity(),
 						event.getTransactionId());
 
 		final Candidate candidate;
@@ -95,10 +95,9 @@ public class TransactionCreatedHandler
 		}
 		else
 		{
+
 			final CandidatesQuery query = CandidatesQuery.builder()
-					.materialDescriptor(event.getMaterialDescriptor()
-							.withoutQuantity()
-							.withDateOperator(DateOperator.AT)							)
+					.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor()))
 					.transactionDetail(TransactionDetail.forQuery(event.getTransactionId()))
 					.build();
 			final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);

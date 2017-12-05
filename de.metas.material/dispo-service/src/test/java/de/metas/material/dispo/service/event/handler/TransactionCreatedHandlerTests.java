@@ -13,12 +13,12 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -134,8 +134,7 @@ public class TransactionCreatedHandlerTests
 		final Candidate exisitingCandidate = Candidate.builder()
 				.type(CandidateType.UNRELATED_INCREASE)
 				.id(11)
-				.materialDescriptor(MaterialDescriptor.builderForCompleteDescriptor()
-						.complete(true)
+				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(BigDecimal.ONE)
@@ -219,8 +218,7 @@ public class TransactionCreatedHandlerTests
 		final Candidate exisitingCandidate = Candidate.builder()
 				.id(11)
 				.type(CandidateType.DEMAND)
-				.materialDescriptor(MaterialDescriptor.builderForCompleteDescriptor()
-						.complete(true)
+				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(new BigDecimal("63"))
@@ -270,8 +268,8 @@ public class TransactionCreatedHandlerTests
 	{
 		assertThat(query).isNotNull();
 		assertThat(query.getDemandDetail().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
-		assertThat(query.getMaterialDescriptor())
-			.as("If we have a demand detail, then only via that demand detail")
+		assertThat(query.getMaterialDescriptorQuery())
+			.as("If we have a demand detail, then only query via that demand detail")
 			.isNull();
 		assertThat(query.getTransactionDetail()).as("only search via the demand detail, if we have one").isNull();
 	}
@@ -282,7 +280,6 @@ public class TransactionCreatedHandlerTests
 				.eventDescriptor(new EventDescriptor(10, 20))
 				.transactionId(TRANSACTION_ID)
 				.materialDescriptor(MaterialDescriptor.builder()
-						.complete(true)
 						.date(TimeUtil.parseTimestamp("2017-10-15"))
 						.productDescriptor(createProductDescriptor())
 						.quantity(quantity)

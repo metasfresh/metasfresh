@@ -3,19 +3,14 @@ package org.adempiere.mm.attributes.api;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.Comparator;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.material.event.commons.ProductDescriptor;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.material.event.commons.StorageAttributesKey;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -39,28 +34,10 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class AttributesKeyGenerator
+@UtilityClass
+public final class StorageAttributesKeys
 {
-	int attributeSetInstanceId;
-
-	@NonNull
-	@Default
-	String valueDelimiter = ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER;
-
-	@NonNull
-	@Default
-	Predicate<I_M_AttributeInstance> attributeInstanceFilter = ai -> true;
-
-	/**
-	 * Default value accessor that works for list and string attributes.
-	 */
-	@NonNull
-	@Default
-	Function<I_M_AttributeInstance, String> valueAccessor = ai -> Integer.toString(ai.getM_AttributeValue_ID());
-
-	public String createAttributesKey()
+	public static StorageAttributesKey createAttributesKeyFromASI(final int attributeSetInstanceId)
 	{
 		if (attributeSetInstanceId == AttributeConstants.M_AttributeSetInstance_ID_None)
 		{
@@ -68,13 +45,15 @@ public class AttributesKeyGenerator
 		}
 
 		final I_M_AttributeSetInstance attributeSetInstance = load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-		final String storageAttributesKey = attributeDAO.retrieveAttributeInstances(attributeSetInstance).stream()
-				.filter(attributeInstanceFilter)
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final int[] attributeValueIds = attributeDAO.retrieveAttributeInstances(attributeSetInstance).stream()
+				.filter(ai -> ai.getM_AttributeValue_ID() > 0)
+				.filter(ai -> ai.getM_Attribute().isStorageRelevant())
 				.sorted(Comparator.comparing(I_M_AttributeInstance::getM_Attribute_ID))
-				.map(valueAccessor)
-				.collect(Collectors.joining(valueDelimiter));
-		return storageAttributesKey;
+				.mapToInt(I_M_AttributeInstance::getM_AttributeValue_ID)
+				.toArray();
+
+		return StorageAttributesKey.ofAttributeValueIds(attributeValueIds);
 	}
 }

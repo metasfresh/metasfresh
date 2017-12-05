@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons.repository;
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
 import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
@@ -22,13 +23,11 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.util.DB;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
@@ -40,7 +39,6 @@ import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -74,9 +72,6 @@ public class CandiateRepositoryRetrievalTests
 
 	private RepositoryTestHelper repositoryTestHelper;
 
-	@Mocked
-	private DB db;
-
 	@Before
 	public void init()
 	{
@@ -106,8 +101,9 @@ public class CandiateRepositoryRetrievalTests
 		candidateRecord.setDateProjected(dateProjected);
 		candidateRecord.setM_Warehouse_ID(WAREHOUSE_ID);
 		candidateRecord.setM_Product_ID(PRODUCT_ID);
+		candidateRecord.setC_BPartner_ID(BPARTNER_ID);
 		candidateRecord.setM_AttributeSetInstance_ID(ATTRIBUTE_SET_INSTANCE_ID);
-		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY);
+		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
 		candidateRecord.setQty(BigDecimal.TEN);
 		candidateRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		save(candidateRecord);
@@ -122,6 +118,7 @@ public class CandiateRepositoryRetrievalTests
 		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescriptor();
 
 		assertThat(materialDescriptor.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(materialDescriptor.getBPartnerId()).isEqualTo(BPARTNER_ID);
 		assertThat(materialDescriptor.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
 		assertThat(materialDescriptor.getAttributeSetInstanceId()).isEqualTo(ATTRIBUTE_SET_INSTANCE_ID);
 	}
@@ -478,9 +475,7 @@ public class CandiateRepositoryRetrievalTests
 		createCandidateRecordWithWarehouseId(30);
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.materialDescriptor(MaterialDescriptor.builderForQuery()
-						.warehouseId(warehouseId)
-						.build())
+				.materialDescriptorQuery(MaterialDescriptorQuery.builder().warehouseId(warehouseId).build())
 				.build();
 		final List<Candidate> result = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
 
@@ -554,7 +549,7 @@ public class CandiateRepositoryRetrievalTests
 		candidateRecord.setDateProjected(new Timestamp(NOW.getTime()));
 		candidateRecord.setM_Product_ID(PRODUCT_ID);
 		candidateRecord.setM_AttributeSetInstance_ID(ATTRIBUTE_SET_INSTANCE_ID);
-		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY);
+		candidateRecord.setStorageAttributesKey(STORAGE_ATTRIBUTES_KEY.getAsString());
 		candidateRecord.setM_Warehouse_ID(warehouseId);
 		save(candidateRecord);
 

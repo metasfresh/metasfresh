@@ -3,7 +3,7 @@ package de.metas.material.dispo.service.event.handler;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -46,7 +46,7 @@ public class ShipmentScheduleCreatedHandler
 		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescriptor())
 				.materialDescriptor(event.getMaterialDescriptor())
 				.type(CandidateType.DEMAND)
-				.subType(CandidateSubType.SHIPMENT)
+				.businessCase(CandidateBusinessCase.SHIPMENT)
 				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), event.getOrderLineId()))
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);

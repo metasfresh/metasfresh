@@ -120,7 +120,11 @@ public class PPOrderProducer
 		//
 		// Inherit values from MRP demand
 		ppOrder.setC_OrderLine_ID(pojo.getOrderLineId());
-		if (pojo.getOrderLineId() > 0)
+		if (pojo.getBPartnerId() > 0)
+		{
+			ppOrder.setC_BPartner_ID(pojo.getBPartnerId());
+		}
+		else if (pojo.getOrderLineId() > 0)
 		{
 			ppOrder.setC_BPartner_ID(ppOrder.getC_OrderLine().getC_BPartner_ID());
 		}

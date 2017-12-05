@@ -14,19 +14,18 @@ import org.compiere.model.IQuery;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -90,17 +89,17 @@ public class RepositoryCommons
 		}
 
 		addMaterialDescriptorToQueryBuilderIfNotNull(
-				query.getMaterialDescriptor(),
+				query.getMaterialDescriptorQuery(),
 				query.isMatchExactStorageAttributesKey(),
 				builder);
 
-		if (query.getParentMaterialDescriptor() != null)
+		if (query.getParentMaterialDescriptorQuery() != null)
 		{
 			final IQueryBuilder<I_MD_Candidate> parentBuilder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 					.addOnlyActiveRecordsFilter();
 
 			final boolean atLeastOneFilterAdded = addMaterialDescriptorToQueryBuilderIfNotNull(
-					query.getParentMaterialDescriptor(),
+					query.getParentMaterialDescriptorQuery(),
 					query.isMatchExactStorageAttributesKey(),
 					parentBuilder);
 
@@ -135,83 +134,86 @@ public class RepositoryCommons
 
 	@VisibleForTesting
 	boolean addMaterialDescriptorToQueryBuilderIfNotNull(
-			@Nullable final MaterialDescriptor materialDescriptor,
+			@Nullable final MaterialDescriptorQuery materialDescriptorQuery,
 			final boolean matchExactStorageAttributesKey,
 			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
 		boolean atLeastOneFilterAdded = false;
 
-		if (materialDescriptor == null)
+		if (materialDescriptorQuery == null)
 		{
 			return atLeastOneFilterAdded;
 		}
 
-		if (materialDescriptor.getWarehouseId() > 0)
+		if (materialDescriptorQuery.getWarehouseId() > 0)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, materialDescriptor.getWarehouseId());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Warehouse_ID, materialDescriptorQuery.getWarehouseId());
 			atLeastOneFilterAdded = true;
 		}
-		if (materialDescriptor.getProductId() > 0)
+		if (materialDescriptorQuery.getProductId() > 0)
 		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, materialDescriptor.getProductId());
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_M_Product_ID, materialDescriptorQuery.getProductId());
 			atLeastOneFilterAdded = true;
 		}
-		if (!Objects.equals(materialDescriptor.getStorageAttributesKey(), ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL))
+		if (materialDescriptorQuery.getBPartnerId() > 0)
 		{
-			final String storageAttributesKey = materialDescriptor.getStorageAttributesKey();
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, materialDescriptorQuery.getBPartnerId());
+			atLeastOneFilterAdded = true;
+		}
+		else if (materialDescriptorQuery.getBPartnerId() == StockQuery.BPARTNER_ID_NONE)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_C_BPartner_ID, null);
+			atLeastOneFilterAdded = true;
+		}
+
+		if (!Objects.equals(materialDescriptorQuery.getStorageAttributesKey(), ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL))
+		{
+			final StorageAttributesKey storageAttributesKey = materialDescriptorQuery.getStorageAttributesKey();
 			if (matchExactStorageAttributesKey)
 			{
-				builder.addEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, storageAttributesKey);
+				builder.addEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, storageAttributesKey.getAsString());
 			}
 			else
 			{
-				builder.addStringLikeFilter(
-						I_MD_Candidate.COLUMN_StorageAttributesKey,
-						prepareStorageAttributesKeyForLikeExpression(storageAttributesKey),
-						false); // iggnoreCase=false
+				builder.addStringLikeFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, storageAttributesKey.getSqlLikeString(), false); // iggnoreCase=false
 			}
 			atLeastOneFilterAdded = true;
 		}
 
-		atLeastOneFilterAdded = configureBuilderDateFilters(materialDescriptor, builder) || atLeastOneFilterAdded;
+		atLeastOneFilterAdded = configureBuilderDateFilters(materialDescriptorQuery, builder) || atLeastOneFilterAdded;
 
 		return atLeastOneFilterAdded;
 	}
 
-	public static String prepareStorageAttributesKeyForLikeExpression(@NonNull final String storageAttributesKey)
-	{
-		return storageAttributesKey.replaceAll(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER, "%");
-	}
-
 	private boolean configureBuilderDateFilters(
-			@NonNull final MaterialDescriptor materialDescriptor,
+			@NonNull final MaterialDescriptorQuery materialDescriptorQuery,
 			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		if (materialDescriptor.getDate() == null)
+		if (materialDescriptorQuery.getDate() == null)
 		{
 			return false;
 		}
-		final DateOperator dateOperator = Preconditions.checkNotNull(materialDescriptor.getDateOperator(),
-				"As the given parameter query spefifies a date, it also needs to have a not-null dateOperator; query=%s", materialDescriptor);
+		final DateOperator dateOperator = Preconditions.checkNotNull(materialDescriptorQuery.getDateOperator(),
+				"As the given parameter query spefifies a date, it also needs to have a not-null dateOperator; query=%s", materialDescriptorQuery);
 		switch (dateOperator)
 		{
 			case BEFORE:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS, materialDescriptor.getDate());
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS, materialDescriptorQuery.getDate());
 				break;
 			case BEFORE_OR_AT:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, materialDescriptor.getDate());
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, materialDescriptorQuery.getDate());
 				break;
 			case AT:
-				builder.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, materialDescriptor.getDate());
+				builder.addEqualsFilter(I_MD_Candidate.COLUMN_DateProjected, materialDescriptorQuery.getDate());
 				break;
 			case AT_OR_AFTER:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER_OR_EQUAL, materialDescriptor.getDate());
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER_OR_EQUAL, materialDescriptorQuery.getDate());
 				break;
 			case AFTER:
-				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER, materialDescriptor.getDate());
+				builder.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.GREATER, materialDescriptorQuery.getDate());
 				break;
 			default:
-				Check.errorIf(true, "segment has a unexpected dateOperator {}; segment={}", materialDescriptor.getDateOperator(), materialDescriptor);
+				Check.errorIf(true, "segment has a unexpected dateOperator {}; segment={}", materialDescriptorQuery.getDateOperator(), materialDescriptorQuery);
 				break;
 		}
 		return true;

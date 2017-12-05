@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -12,17 +13,16 @@ import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.material.dispo.client.repository.AvailableStockResult.AvailableStockResultBuilder;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group.GroupBuilder;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group.Type;
-import de.metas.material.dispo.commons.repository.AvailableStockResult.ResultGroup;
-import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
+import de.metas.material.dispo.commons.repository.StockQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
@@ -61,9 +61,9 @@ public class AvailableStockService
 	}
 
 	@NonNull
-	public AvailableStockResult retrieveAvailableStock(@NonNull final MaterialQuery query)
+	public AvailableStockResult retrieveAvailableStock(@NonNull final StockQuery query)
 	{
-		final de.metas.material.dispo.commons.repository.AvailableStockResult commonsAvailableStock = //
+		final de.metas.material.dispo.commons.repository.StockResult commonsAvailableStock = //
 				stockRepository.retrieveAvailableStock(query);
 
 		final AvailableStockResultBuilder clientResultBuilder = AvailableStockResult.builder();
@@ -100,7 +100,7 @@ public class AvailableStockService
 				retrieveStockingUOM(commonsResultGroup.getProductId()));
 		groupBuilder.qty(quantity);
 
-		final String storageAttributesKey = commonsResultGroup.getStorageAttributesKey();
+		final StorageAttributesKey storageAttributesKey = commonsResultGroup.getStorageAttributesKey();
 		final Type type = extractType(storageAttributesKey);
 		groupBuilder.type(type);
 
@@ -120,7 +120,7 @@ public class AvailableStockService
 	}
 
 	@VisibleForTesting
-	Type extractType(@NonNull final String storageAttributesKey)
+	Type extractType(@NonNull final StorageAttributesKey storageAttributesKey)
 	{
 		if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.equals(storageAttributesKey))
 		{
@@ -137,40 +137,25 @@ public class AvailableStockService
 	}
 
 	@VisibleForTesting
-	List<I_M_AttributeValue> extractAttributeSetFromStorageAttributesKey(@NonNull final String storageAttributesKey)
+	List<I_M_AttributeValue> extractAttributeSetFromStorageAttributesKey(@NonNull final StorageAttributesKey storageAttributesKey)
 	{
 		try
 		{
-			final Builder<I_M_AttributeValue> builder = ImmutableList.<I_M_AttributeValue>builder();
-
-			final Iterable<String> singleAttributeIds = Splitter
-					.on(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER).split(storageAttributesKey);
-			for (final String singleAttributeId : singleAttributeIds)
+			final List<Integer> attributeValueIds = storageAttributesKey.getAttributeValueIds();
+			if (attributeValueIds.isEmpty())
 			{
-				final I_M_AttributeValue attributeValue = loadAttributeValueFromStringId(singleAttributeId);
-				builder.add(attributeValue);
+				return ImmutableList.of();
 			}
-			return builder.build();
+			
+			return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeValue.class)
+					.addInArrayFilter(I_M_AttributeValue.COLUMN_M_AttributeValue_ID, attributeValueIds)
+					.create()
+					.list(I_M_AttributeValue.class);
 		}
 		catch (final RuntimeException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
 					.setParameter("storageAttributesKey", storageAttributesKey);
-		}
-	}
-
-	private I_M_AttributeValue loadAttributeValueFromStringId(@NonNull final String attributeValueIdAsString)
-	{
-		try
-		{
-			final int parsedAttributeId = Integer.parseInt(attributeValueIdAsString);
-			final I_M_AttributeValue attributeValue = load(parsedAttributeId, I_M_AttributeValue.class);
-			return attributeValue;
-		}
-		catch (final RuntimeException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
-					.setParameter("attributeValueIdAsString", attributeValueIdAsString);
 		}
 	}
 }

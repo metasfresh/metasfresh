@@ -66,8 +66,8 @@ public class ProductionAdvisedEventCreatorTest
 
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptor();
 
-		final ProductionAdvisedEventCreator productionAdvisedEventCreator = new ProductionAdvisedEventCreator(ppOrderDemandMatcher, ppOrderPojoSupplier);
-		final List<PPOrderAdvisedOrCreatedEvent> events = productionAdvisedEventCreator.createProductionAdvisedEvents(supplyRequiredDescriptor, mrpContext);
+		final PPOrderAdvisedOrCreatedEventCreator pPOrderAdvisedOrCreatedEventCreator = new PPOrderAdvisedOrCreatedEventCreator(ppOrderDemandMatcher, ppOrderPojoSupplier);
+		final List<PPOrderAdvisedOrCreatedEvent> events = pPOrderAdvisedOrCreatedEventCreator.createProductionAdvisedEvents(supplyRequiredDescriptor, mrpContext);
 		assertThat(events).hasSize(1);
 		assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
 	}
