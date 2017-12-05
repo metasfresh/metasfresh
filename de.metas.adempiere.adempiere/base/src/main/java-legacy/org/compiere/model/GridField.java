@@ -457,7 +457,7 @@ public class GridField
 		// Fields always enabled (are usually not updateable and are usually buttons),
 		// even if the parent tab is processed/not active
 		if (m_vo.getColumnName().equals("Posted")
-				|| (columnBL.isRecordColumnName(m_vo.getColumnName()) && getDisplayType() == DisplayType.Button))	// Zoom
+				|| (columnBL.isRecordIdColumnName(m_vo.getColumnName()) && getDisplayType() == DisplayType.Button))	// Zoom
 		{
 			return true;
 		}

@@ -3195,7 +3195,7 @@ public class GridTable extends AbstractTableModel
 						&& (columnName.endsWith("_ID") || columnName.endsWith("_Acct") 
 							|| columnName.equals("AD_Key") || columnName.equals("AD_Display"))) 
 					|| columnName.endsWith("atedBy")
-					|| (Services.get(IColumnBL.class).isRecordColumnName(columnName) && DisplayType.Button == displayType) // metas: Record_ID buttons are Integer IDs
+					|| (Services.get(IColumnBL.class).isRecordIdColumnName(columnName) && DisplayType.Button == displayType) // metas: Record_ID buttons are Integer IDs
 					)
 				{
 					rowData[j] = new Integer(rs.getInt(j+1));	//	Integer

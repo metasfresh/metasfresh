@@ -80,7 +80,7 @@ public class PickingSlotKeyBuilder
 				.bpartnerLocationId(bpartnerLocationId)
 				.build();
 
-		final List<I_M_PickingSlot> bpPickingSlots = Services.get(IPickingSlotDAO.class).retrivePickingSlots(pickingSlotRequest);
+		final List<I_M_PickingSlot> bpPickingSlots = Services.get(IPickingSlotDAO.class).retrievePickingSlots(pickingSlotRequest);
 
 		for (final I_M_PickingSlot pickingSlot : bpPickingSlots)
 		{

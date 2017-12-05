@@ -18,6 +18,8 @@ Here come the actual release notes:
     * Improvement of Customer Invoice Grid View, adding Net Sum.
   * [#3122](https://github.com/metasfresh/metasfresh/issues/3122) Add Netsum to Vendor Invoice Document Grid View
     * Improvement of Vendor Invoice Grid View, adding Net Sum.
+  * [#3124](https://github.com/metasfresh/metasfresh/issues/3124) Picking terminal: pimp Picking Configuration window
+    * New Window for Picking Profile Configuration. Allowing to switch the used Picking Profile between Product and Sales Order oriented Picking.
 
 # metasfresh 5.38 (2017-49)
 
@@ -88,10 +90,11 @@ Here come the actual release notes:
   * [#3089](https://github.com/metasfresh/metasfresh/issues/3089) Not able to start report service with ReportServiceMain.launch
   * [#3100](https://github.com/metasfresh/metasfresh/issues/3100) Move UI Element Action broken
     * Fix for the UI Element (Element, Group) Movement actions.
+  * [#3128](https://github.com/metasfresh/metasfresh/issues/3128) Qtydelivered in PMM_Balance gets doubled
 
 * metasfresh-webui-frontend
   * [#1367](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1367) view attributes shall be refreshed when the current selected row is refreshed
-
+  * [#1405](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1405) Lookup dropdown not Closing after selection w/ [enter/CR]
 
 # metasfresh 5.37 (2017-48)
 

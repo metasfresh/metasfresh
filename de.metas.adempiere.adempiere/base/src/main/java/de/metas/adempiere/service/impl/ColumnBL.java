@@ -42,7 +42,7 @@ public class ColumnBL implements IColumnBL
 {
 
 	@Override
-	public boolean isRecordColumnName(final String columnName)
+	public boolean isRecordIdColumnName(final String columnName)
 	{
 		if (columnName == null)
 		{
@@ -80,7 +80,7 @@ public class ColumnBL implements IColumnBL
 			return 0;
 		}
 
-		if (!isRecordColumnName(columnName))
+		if (!isRecordIdColumnName(columnName))
 		{
 			return 0;
 		}
@@ -192,4 +192,5 @@ public class ColumnBL implements IColumnBL
 		}
 		return false;
 	}
+	
 }
