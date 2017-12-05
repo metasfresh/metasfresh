@@ -3,6 +3,8 @@ package de.metas.ui.web.material.cockpit;
 import java.util.List;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -18,6 +20,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout.Builder;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -101,7 +104,10 @@ public class MaterialCockpitViewFactory implements IViewFactory
 	}
 
 	@Override
-	public ViewLayout getViewLayout(@NonNull final WindowId windowId, @NonNull final JSONViewDataType viewDataType)
+	public ViewLayout getViewLayout(
+			@NonNull final WindowId windowId,
+			@NonNull final JSONViewDataType viewDataType,
+			@Nullable final ViewProfileId profileId)
 	{
 		Check.errorUnless(MaterialCockpitConstants.WINDOWID_MaterialCockpitView.equals(windowId),
 				"The parameter windowId needs to be {}, but is {} instead; viewDataType={}; ",
@@ -147,5 +153,4 @@ public class MaterialCockpitViewFactory implements IViewFactory
 	{
 		return "Fresh_QtyOnHand_OnDate_" + plant.getValue();
 	}
-
 }

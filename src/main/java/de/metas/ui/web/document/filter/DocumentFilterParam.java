@@ -174,6 +174,11 @@ public class DocumentFilterParam
 		return value;
 	}
 
+	public String getValueAsString()
+	{
+		return value != null ? value.toString() : null;
+	}
+
 	public Collection<?> getValueAsCollection()
 	{
 		if (value == null)

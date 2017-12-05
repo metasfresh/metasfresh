@@ -29,9 +29,9 @@ import de.metas.ui.web.picking.process.WEBUI_Picking_RemoveHUFromPickingSlot;
 import de.metas.ui.web.picking.process.WEBUI_Picking_ReturnQtyToSourceHU;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
-import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -62,7 +62,7 @@ import lombok.NonNull;
 
 /**
  * Factory to create {@link PickingSlotView}s instances. This includes assigning a number of picking related processed to the view.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -101,7 +101,7 @@ public class PickingSlotViewFactory implements IViewFactory
 
 	/**
 	 * This method is called once for each shipment schedule (left-hand side) and creates the respective picking view (right-hand side)
-	 * 
+	 *
 	 * @param request
 	 * @param allShipmentScheduleIds the shipment schedule IDs to display picking slots for; <br>
 	 *            may be {@code null} or empty, in this case we assume that only the given {@code request}'s {@code shipmentScheduleId} is available.
@@ -115,7 +115,7 @@ public class PickingSlotViewFactory implements IViewFactory
 		final DocumentId pickingRowId = request.getParentRowId();
 		final ViewId pickingSlotViewId = PickingSlotViewsIndexStorage.createViewId(pickingViewId, pickingRowId);
 		final int shipmentScheduleId = extractCurrentShipmentScheduleId(request);
-		
+
 		final PickingSlotRepoQuery query = createPickingSlotRowsQuery(request, allShipmentScheduleIds);
 		final Supplier<List<PickingSlotRow>> rowsSupplier = () -> pickingSlotRepo.retrieveRows(query);
 
@@ -128,11 +128,11 @@ public class PickingSlotViewFactory implements IViewFactory
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.build();
 	}
-	
+
 	private static final PickingSlotRepoQuery createPickingSlotRowsQuery(final CreateViewRequest request, final List<Integer> allShipmentScheduleIds)
 	{
 		final int currentShipmentScheduleId = extractCurrentShipmentScheduleId(request);
-		
+
 		//
 		// setup the picking slot query and the rowsSupplier which uses the query to retrieve the PickingSlotView's rows.
 		final PickingSlotRepoQueryBuilder queryBuilder = PickingSlotRepoQuery.builder()
@@ -149,10 +149,10 @@ public class PickingSlotViewFactory implements IViewFactory
 
 			queryBuilder.shipmentScheduleIds(allShipmentScheduleIds);
 		}
-		
+
 		return queryBuilder.build();
 	}
-	
+
 	private static final int extractCurrentShipmentScheduleId(final CreateViewRequest request)
 	{
 		final DocumentId pickingRowId = request.getParentRowId();

@@ -25,6 +25,7 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor.Builder;
 import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
@@ -66,13 +67,16 @@ public class MaterialCockpitFilters
 
 	private ImmutableList<DocumentFilterDescriptor> createFilterDescriptors()
 	{
-		final de.metas.ui.web.document.filter.DocumentFilterParamDescriptor.Builder dateParameter = DocumentFilterParamDescriptor.builder()
-				.setFieldName(I_X_MRP_ProductInfo_V.COLUMNNAME_DateGeneral)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_X_MRP_ProductInfo_Detail_MV.COLUMNNAME_DateGeneral))
-				.setWidgetType(DocumentFieldWidgetType.Date)
-				.setOperator(Operator.EQUAL)
-				.setShowIncrementDecrementButtons(true)
-				.setMandatory(true);
+		final Builder standaloneParamDescriptor = createFilterParamDescriptorForDate()
+				.setShowIncrementDecrementButtons(true);
+
+		final de.metas.ui.web.document.filter.DocumentFilterDescriptor dateOnlyfilterDescriptor = DocumentFilterDescriptor.builder()
+				.addParameter(standaloneParamDescriptor)
+				.setFrequentUsed(true);
+
+
+
+		final de.metas.ui.web.document.filter.DocumentFilterParamDescriptor.Builder dateParameter = createFilterParamDescriptorForDate();
 
 		final de.metas.ui.web.document.filter.DocumentFilterParamDescriptor.Builder productNameParameter = DocumentFilterParamDescriptor.builder()
 				.setFieldName(I_X_MRP_ProductInfo_V.COLUMNNAME_ProductName)
@@ -87,7 +91,7 @@ public class MaterialCockpitFilters
 				.setOperator(Operator.LIKE_I);
 
 		final de.metas.ui.web.document.filter.DocumentFilterDescriptor filterDescriptor = DocumentFilterDescriptor.builder()
-				.setFrequentUsed(true)
+				.setFrequentUsed(false)
 				.setFilterId(MATERIAL_COCKPIT_FILTER) // TODO => constant
 				.setDisplayName(ITranslatableString.constant("Filter"))
 				.addParameter(dateParameter)
@@ -97,6 +101,16 @@ public class MaterialCockpitFilters
 
 		final ImmutableList<DocumentFilterDescriptor> filterDescriptors = ImmutableList.of(filterDescriptor);
 		return filterDescriptors;
+	}
+
+	public Builder createFilterParamDescriptorForDate()
+	{
+		return DocumentFilterParamDescriptor.builder()
+				.setFieldName(I_X_MRP_ProductInfo_V.COLUMNNAME_DateGeneral)
+				.setDisplayName(Services.get(IMsgBL.class).translatable(I_X_MRP_ProductInfo_Detail_MV.COLUMNNAME_DateGeneral))
+				.setWidgetType(DocumentFieldWidgetType.Date)
+				.setOperator(Operator.EQUAL)
+				.setMandatory(true);
 	}
 
 	public Collection<DocumentFilterDescriptor> getFilterDescriptors()

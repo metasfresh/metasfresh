@@ -624,6 +624,16 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
+		public Builder addFilter(@NonNull final DocumentFilterDescriptor filter)
+		{
+			if (filters == null)
+			{
+				filters = new ArrayList<>();
+			}
+			filters.add(filter);
+			return this;
+		}
+
 		private List<DocumentQueryOrderBy> getDefaultOrderBys()
 		{
 			return defaultOrderBys != null ? defaultOrderBys : ImmutableList.of();
