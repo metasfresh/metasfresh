@@ -1,0 +1,1 @@
+ALTER TABLE C_PaySelectionLine DROP COLUMN Processed;
