@@ -72,7 +72,6 @@ public class MaterialCockpitViewFactory implements IViewFactory
 	{
 		assertWindowIdOfRequestIsCorrect(request);
 
-
 		final ImmutableList<DocumentFilter> requestFilters = materialCockpitFilters.extractDocumentFilters(request);
 		final ImmutableList<DocumentFilter> filtersToUse = request.isUseAutoFilters() ? materialCockpitFilters.createAutoFilters() : requestFilters;
 
@@ -82,7 +81,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				request.getViewId(),
 				ITranslatableString.empty(),
 				rowsSupplier,
-				filtersToUse); // TODO take the filters from the request and append mine
+				filtersToUse);
 	}
 
 	private void assertWindowIdOfRequestIsCorrect(@NonNull final CreateViewRequest request)

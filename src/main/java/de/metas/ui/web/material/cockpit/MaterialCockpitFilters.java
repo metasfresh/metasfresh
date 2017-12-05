@@ -1,7 +1,6 @@
 package de.metas.ui.web.material.cockpit;
 
 import java.sql.Timestamp;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -57,7 +56,12 @@ import lombok.NonNull;
 @Service
 public class MaterialCockpitFilters
 {
-	private static final String MATERIAL_COCKPIT_FILTER = "materialCockpitFilter";
+	private static final String MSG_FILTER = "Filter";
+	private static final String MATERIAL_COCKPIT_ALL_PARAMS_FILTER = "materialCockpitAllParamsFilter";
+
+	private static final String MSG_DATE = "Date";
+	private static final String MATERIAL_COCKPIT_DATE_ONLY_FILTER = "materialCockpitDateOnlyFilter";
+
 	private final ImmutableList<DocumentFilterDescriptor> filterDescriptors;
 
 	public MaterialCockpitFilters()
@@ -67,17 +71,36 @@ public class MaterialCockpitFilters
 
 	private ImmutableList<DocumentFilterDescriptor> createFilterDescriptors()
 	{
-		final Builder standaloneParamDescriptor = createFilterParamDescriptorForDate()
+		final de.metas.ui.web.document.filter.DocumentFilterDescriptor dateOnlyfilter = createDateOnlyFilter();
+		final de.metas.ui.web.document.filter.DocumentFilterDescriptor nonParamsFilter = createAllParamsFilter();
+
+		final ImmutableList<DocumentFilterDescriptor> filterDescriptors = ImmutableList.of(
+				dateOnlyfilter,
+				nonParamsFilter);
+		return filterDescriptors;
+	}
+
+	private de.metas.ui.web.document.filter.DocumentFilterDescriptor createDateOnlyFilter()
+	{
+		final Builder standaloneParamDescriptor = DocumentFilterParamDescriptor.builder()
+				.setFieldName(I_X_MRP_ProductInfo_V.COLUMNNAME_DateGeneral)
+				.setDisplayName(Services.get(IMsgBL.class).translatable(I_X_MRP_ProductInfo_Detail_MV.COLUMNNAME_DateGeneral))
+				.setWidgetType(DocumentFieldWidgetType.Date)
+				.setOperator(Operator.EQUAL)
+				.setMandatory(true)
 				.setShowIncrementDecrementButtons(true);
 
 		final de.metas.ui.web.document.filter.DocumentFilterDescriptor dateOnlyfilterDescriptor = DocumentFilterDescriptor.builder()
+				.setFrequentUsed(true)
+				.setFilterId(MATERIAL_COCKPIT_DATE_ONLY_FILTER)
+				.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_DATE))
 				.addParameter(standaloneParamDescriptor)
-				.setFrequentUsed(true);
+				.build();
+		return dateOnlyfilterDescriptor;
+	}
 
-
-
-		final de.metas.ui.web.document.filter.DocumentFilterParamDescriptor.Builder dateParameter = createFilterParamDescriptorForDate();
-
+	private de.metas.ui.web.document.filter.DocumentFilterDescriptor createAllParamsFilter()
+	{
 		final de.metas.ui.web.document.filter.DocumentFilterParamDescriptor.Builder productNameParameter = DocumentFilterParamDescriptor.builder()
 				.setFieldName(I_X_MRP_ProductInfo_V.COLUMNNAME_ProductName)
 				.setDisplayName(Services.get(IMsgBL.class).translatable(I_X_MRP_ProductInfo_V.COLUMNNAME_ProductName))
@@ -91,29 +114,16 @@ public class MaterialCockpitFilters
 				.setOperator(Operator.LIKE_I);
 
 		final de.metas.ui.web.document.filter.DocumentFilterDescriptor filterDescriptor = DocumentFilterDescriptor.builder()
-				.setFrequentUsed(false)
-				.setFilterId(MATERIAL_COCKPIT_FILTER) // TODO => constant
-				.setDisplayName(ITranslatableString.constant("Filter"))
-				.addParameter(dateParameter)
+				.setFrequentUsed(true)
+				.setFilterId(MATERIAL_COCKPIT_ALL_PARAMS_FILTER)
+				.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_FILTER))
 				.addParameter(productNameParameter)
 				.addParameter(productValueParameter)
 				.build();
-
-		final ImmutableList<DocumentFilterDescriptor> filterDescriptors = ImmutableList.of(filterDescriptor);
-		return filterDescriptors;
+		return filterDescriptor;
 	}
 
-	public Builder createFilterParamDescriptorForDate()
-	{
-		return DocumentFilterParamDescriptor.builder()
-				.setFieldName(I_X_MRP_ProductInfo_V.COLUMNNAME_DateGeneral)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_X_MRP_ProductInfo_Detail_MV.COLUMNNAME_DateGeneral))
-				.setWidgetType(DocumentFieldWidgetType.Date)
-				.setOperator(Operator.EQUAL)
-				.setMandatory(true);
-	}
-
-	public Collection<DocumentFilterDescriptor> getFilterDescriptors()
+	public List<DocumentFilterDescriptor> getFilterDescriptors()
 	{
 		return filterDescriptors;
 	}
@@ -123,7 +133,7 @@ public class MaterialCockpitFilters
 		final String columnName = I_X_MRP_ProductInfo_V.COLUMNNAME_DateGeneral;
 		final ITranslatableString filterCaption = Services.get(IMsgBL.class).translatable(columnName);
 		final DocumentFilter dateFilter = DocumentFilter.builder()
-				.setFilterId(MATERIAL_COCKPIT_FILTER)
+				.setFilterId(MATERIAL_COCKPIT_DATE_ONLY_FILTER)
 				.setCaption(filterCaption)
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(columnName, Operator.EQUAL, Env.getDate(Env.getCtx())))
 				.build();
@@ -133,11 +143,10 @@ public class MaterialCockpitFilters
 
 	public ImmutableList<DocumentFilter> extractDocumentFilters(@NonNull final CreateViewRequest request)
 	{
-		final ImmutableDocumentFilterDescriptorsProvider provider = ImmutableDocumentFilterDescriptorsProvider.of(filterDescriptors);
+		final ImmutableDocumentFilterDescriptorsProvider provider = ImmutableDocumentFilterDescriptorsProvider.of(getFilterDescriptors());
 		final List<DocumentFilter> filters = request.getOrUnwrapFilters(provider);
 		return ImmutableList.copyOf(filters);
 	}
-
 
 	public IQuery<I_X_MRP_ProductInfo_Detail_MV> createQuery(@NonNull final List<DocumentFilter> filters)
 	{
@@ -153,11 +162,10 @@ public class MaterialCockpitFilters
 		}
 
 		final IQuery<I_X_MRP_ProductInfo_Detail_MV> query = augmentqueryBuildWithOrderBy(queryBuilder).create();
-
 		return query;
 	}
 
-	public IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> createInitialQueryBuilder()
+	private IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> createInitialQueryBuilder()
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -203,7 +211,8 @@ public class MaterialCockpitFilters
 		}
 	}
 
-	public IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> augmentqueryBuildWithOrderBy(final IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> queryBuilder)
+	private IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> augmentqueryBuildWithOrderBy(
+			@NonNull final IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> queryBuilder)
 	{
 		return queryBuilder
 				.orderBy()
