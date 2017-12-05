@@ -41,7 +41,7 @@ import lombok.Value;
  * <li>Origin.Record_ID = recordIdColumnName
  * <li>Target = targetTableName
  * 
- * <h2>Case 2 (Prefix_Ad_Table_ID, Prefix_Record_ID)</h1>>
+ * <h1>Case 2 (Prefix_Ad_Table_ID, Prefix_Record_ID)</h1>>
  * 
  * <li>Have a table Origin
  * <li>Have a table Target
