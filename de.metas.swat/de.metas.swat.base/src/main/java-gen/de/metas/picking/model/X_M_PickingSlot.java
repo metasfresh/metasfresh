@@ -14,7 +14,7 @@ public class X_M_PickingSlot extends org.compiere.model.PO implements I_M_Pickin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 360225690L;
+	private static final long serialVersionUID = 1196498328L;
 
     /** Standard Constructor */
     public X_M_PickingSlot (Properties ctx, int M_PickingSlot_ID, String trxName)
@@ -164,6 +164,28 @@ public class X_M_PickingSlot extends org.compiere.model.PO implements I_M_Pickin
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Handling Units.
+		@param M_HU_ID Handling Units	  */
+	@Override
+	public void setM_HU_ID (int M_HU_ID)
+	{
+		if (M_HU_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
+	}
+
+	/** Get Handling Units.
+		@return Handling Units	  */
+	@Override
+	public int getM_HU_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override

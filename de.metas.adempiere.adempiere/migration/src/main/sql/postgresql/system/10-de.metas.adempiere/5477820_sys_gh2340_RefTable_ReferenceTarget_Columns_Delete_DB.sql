@@ -1,0 +1,3 @@
+ALTER TABLE AD_Ref_Table DROP COLUMN IF EXISTS IsReferenceTarget;
+
+ALTER TABLE AD_Ref_Table DROP COLUMN IF EXISTS AD_Column_ReferenceTarget_ID;

@@ -105,6 +105,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	int getVirtual_HU_PI_ID();
 
+	int getVirtual_HU_PI_Version_ID();
+
 	int getVirtual_HU_PI_Item_ID();
 
 	/**

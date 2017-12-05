@@ -123,7 +123,7 @@ public final class POInfoColumn implements Serializable
 		{
 			ColumnClass = Boolean.class;
 		}
-		else if (Services.get(IColumnBL.class).isRecordColumnName(columnName))
+		else if (Services.get(IColumnBL.class).isRecordIdColumnName(columnName))
 
 		{
 			displayTypeToSet = org.compiere.util.DisplayType.ID;

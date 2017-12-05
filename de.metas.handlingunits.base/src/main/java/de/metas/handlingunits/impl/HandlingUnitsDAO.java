@@ -189,6 +189,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		return VIRTUAL_HU_PI_ID;
 	}
+	
+	@Override
+	public int getVirtual_HU_PI_Version_ID()
+	{
+		return VIRTUAL_HU_PI_Version_ID;
+	}
 
 	@Override
 	public int getVirtual_HU_PI_Item_ID()
@@ -251,7 +257,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		Check.assumeNotNull(hu, "hu not null");
 
-		final List<I_M_HU> result = new ArrayList<I_M_HU>();
+		final List<I_M_HU> result = new ArrayList<>();
 
 		final Set<Integer> seenHUIds = new HashSet<>();
 		for (final I_M_HU_Item huItem : retrieveItems(hu))
@@ -377,7 +383,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final List<I_M_HU_PI_Item> piItemsAll = retrieveAllPIItems(ctx, huPIVersionId, trxName);
 
 		final int bpartnerId = partner == null ? -1 : partner.getC_BPartner_ID();
-		final List<I_M_HU_PI_Item> piItems = new ArrayList<I_M_HU_PI_Item>();
+		final List<I_M_HU_PI_Item> piItems = new ArrayList<>();
 		for (final I_M_HU_PI_Item piItem : piItemsAll)
 		{
 			// Skip inactive lines
@@ -664,8 +670,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.create()
 				.list(I_M_HU_PI_Item.class);
 
-		final List<I_M_HU_PI_Item> parentPIItems = new ArrayList<I_M_HU_PI_Item>();
-		final Set<ArrayKey> seen = new HashSet<ArrayKey>();
+		final List<I_M_HU_PI_Item> parentPIItems = new ArrayList<>();
+		final Set<ArrayKey> seen = new HashSet<>();
 		for (final I_M_HU_PI_Item parentItem : parentItems)
 		{
 			// Make sure we are not evaluating again this PI version
