@@ -72,7 +72,7 @@ public interface IColumnBL extends ISingletonService
 	 * @param recordColumnName
 	 * @return
 	 */
-	Optional<String> getTableColumnName(String tableName, String recordColumnName);
+	Optional<String> getTableIdColumnName(String tableName, String recordColumnName);
 
 	boolean getDefaultAllowLoggingByColumnName(String columnName);
 
