@@ -77,6 +77,12 @@ class RawWidget extends Component {
         );
     }
 
+    handleKeyDown = (e, property, value) => {
+        if (e.key === 'Enter') {
+            this.handlePatch(property, value);
+        }
+    }
+
     handlePatch = (property, value, id, valueTo) => {
         const {handlePatch} = this.props;
 
@@ -193,7 +199,8 @@ class RawWidget extends Component {
             tabIndex: fullScreen ? -1 : tabIndex,
             onChange: e => handleChange &&
                 handleChange(widgetField, e.target.value),
-            onBlur: e => this.handleBlur(widgetField, e.target.value, id)
+            onBlur: e => this.handleBlur(widgetField, e.target.value, id),
+            onKeyDown: e => this.handleKeyDown(e, widgetField, e.target.value)
         }
 
         switch(widgetType){

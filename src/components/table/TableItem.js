@@ -41,7 +41,6 @@ class TableItem extends Component {
 
     initPropertyEditor = (fieldName) => {
         const { cols, fieldsByName } = this.props;
-
         if (cols && fieldsByName) {
             cols.map((item) => {
                 const property = item.fields[0].field;
@@ -49,13 +48,9 @@ class TableItem extends Component {
                     const widgetData = this.prepareWidgetData(item);
 
                     if (widgetData) {
-                        this.setState({
-                            forceKeysBind: true
-                        }, () => {
-                            this.handleEditProperty(
-                                null, property, true, widgetData[0]
-                            );
-                        });
+                        this.handleEditProperty(
+                            null, property, true, widgetData[0]
+                        );
                     }
                 }
             });
@@ -114,17 +109,6 @@ class TableItem extends Component {
         changeListenOnFalse();
     }
 
-    handleKey = (e, property) => {
-        const { edited, listenOnKeys} = this.state;
-        if(listenOnKeys){
-            if(e.key === 'Enter' && !edited) {
-                this.handleEditProperty(e, property, true);
-            } else if (e.key === 'Enter' && edited) {
-                this.closeTableField(e);
-            }
-        }
-    }
-
     closeTableField = (e) => {
         const {activeCell} = this.state;
 
@@ -147,7 +131,7 @@ class TableItem extends Component {
         } = this.props;
 
         const {
-            edited, updatedRow, listenOnKeys, forceKeysBind
+            edited, updatedRow, listenOnKeys
         } = this.state;
 
         // Iterate over layout settings
@@ -211,10 +195,6 @@ class TableItem extends Component {
                             changeListenOnTrue();
                         }}
                         disableOnClickOutside={edited !== property}
-                        onKeyDown = {(!mainTable || forceKeysBind ||
-                            isEditable) ?
-                            (e) => this.handleKey(e, property) : null
-                        }
                         onCellChange={onItemChange}
                         updatedRow={updatedRow || newRow}
                         updateRow={this.updateRow}
