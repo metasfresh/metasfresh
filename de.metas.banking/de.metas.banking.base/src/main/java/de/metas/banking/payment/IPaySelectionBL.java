@@ -106,11 +106,4 @@ public interface IPaySelectionBL extends ISingletonService
 	 */
 	void updateFromInvoice(I_C_PaySelectionLine psl);
 
-	/**
-	 * ReActivate (open) given pay selection.
-	 *
-	 * @param paySelection
-	 */
-	void reActivate(I_C_PaySelection paySelection);
-
 }

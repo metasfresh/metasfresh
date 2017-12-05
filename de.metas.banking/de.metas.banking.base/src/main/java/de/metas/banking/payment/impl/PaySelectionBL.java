@@ -412,40 +412,4 @@ public class PaySelectionBL implements IPaySelectionBL
 			unlinkBankStatementLine(paySelectionLine);
 		}
 	}
-
-	@Override
-	public void reActivate(final I_C_PaySelection paySelection)
-	{
-		if (!paySelection.isProcessed())
-		{
-			// already re-activated, nothing to do
-			return;
-		}
-
-		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
-		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class))
-		{
-			paySelectionLine.setC_PaySelection(paySelection); // for optimizations
-			reActivate(paySelectionLine);
-		}
-
-		paySelection.setProcessed(false);
-		InterfaceWrapperHelper.save(paySelection);
-	}
-
-	private final void reActivate(final I_C_PaySelectionLine psl)
-	{
-		if (!psl.isProcessed())
-		{
-			return;
-		}
-
-		if (isInBankStatement(psl))
-		{
-			throw new AdempiereException(MSG_CannotReactivate_PaySelectionLineInBankStatement_2P, new Object[] { psl.getLine(), psl.getC_BankStatementLine().getC_BankStatement().getDocumentNo() });
-		}
-
-		psl.setProcessed(false);
-		InterfaceWrapperHelper.save(psl);
-	}
 }
