@@ -26,6 +26,8 @@ import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
@@ -166,6 +168,8 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * @return matching HUs
 	 */
 	List<I_M_HU> retrieveAvailableHUsToPick(PickingHUsQuery request);
+
+	List<Integer> retrieveAvailableHUIdsToPick(PickingHUsQuery request);
 
 	/**
 	 * Search for available fine picking source HUs.<br>
