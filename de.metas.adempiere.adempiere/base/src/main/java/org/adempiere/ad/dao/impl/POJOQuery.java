@@ -594,11 +594,11 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		{
 			final Object valueObj = InterfaceWrapperHelper.getValue(model, columnName).orNull();
 			if (Aggregate.SUM.equals(aggregateType))
-			if (valueObj == null)
-			{
-				// skip null values
-				continue;
-			}
+				if (valueObj == null)
+				{
+					// skip null values
+					continue;
+				}
 
 			result = aggregateOperator.apply(result, valueObj);
 		}
@@ -624,8 +624,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		if (BigDecimal.class.equals(type))
 		{
 			return (result, value) -> {
-				final BigDecimal resultBD = (BigDecimal)result;
-				final BigDecimal valueBD = (BigDecimal)value;
+				final BigDecimal resultBD = toBigDecimal(result);
+				final BigDecimal valueBD = toBigDecimal(value);
 				@SuppressWarnings("unchecked")
 				final R newResult = (R)(resultBD == null ? valueBD : resultBD.add(valueBD));
 				return newResult;
@@ -642,8 +642,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		if (BigDecimal.class.equals(type))
 		{
 			return (result, value) -> {
-				final BigDecimal resultBD = (BigDecimal)result;
-				final BigDecimal valueBD = (BigDecimal)value;
+				final BigDecimal resultBD = toBigDecimal(result);
+				final BigDecimal valueBD = toBigDecimal(value);
 				@SuppressWarnings("unchecked")
 				final R newResult = (R)(resultBD == null ? valueBD : resultBD.max(valueBD));
 				return newResult;
@@ -681,6 +681,26 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		else
 		{
 			throw new AdempiereException("Unsupported returnType '" + type + "' for MAX aggregation");
+		}
+	}
+
+	private static final BigDecimal toBigDecimal(final Object value)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+		else if (value instanceof BigDecimal)
+		{
+			return (BigDecimal)value;
+		}
+		else if (value instanceof Integer)
+		{
+			return BigDecimal.valueOf((Integer)value);
+		}
+		else
+		{
+			return new BigDecimal(value.toString());
 		}
 	}
 
