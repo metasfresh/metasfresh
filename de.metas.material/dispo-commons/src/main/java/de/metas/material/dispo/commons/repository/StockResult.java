@@ -113,16 +113,18 @@ public class StockResult
 		}
 		else
 		{
-			final List<StorageAttributesKey> storageAttributesKeysWithoutOthers = storageAttributesKeys.stream()
+			final Predicate<StorageAttributesKey> othersMatcher = storageAttributesKeys.stream()
+					.filter(storageAttributesKey -> !ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.equals(storageAttributesKey))
 					.filter(storageAttributesKey -> !ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER.equals(storageAttributesKey))
-					.collect(ImmutableList.toImmutableList());
+					.map(storageAttributesKey -> createStorageAttributesKeyMatcher(storageAttributesKey).negate())
+					.reduce(Predicate::and)
+					.orElse(Predicates.alwaysTrue());
 
 			return storageAttributesKeys.stream()
 					.map(storageAttributesKey -> {
 						if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER.equals(storageAttributesKey))
 						{
-							final Predicate<StorageAttributesKey> matcher = Predicates.in(storageAttributesKeysWithoutOthers).negate();
-							return ImmutablePair.of(storageAttributesKey, matcher);
+							return ImmutablePair.of(storageAttributesKey, othersMatcher);
 						}
 						else
 						{
@@ -135,17 +137,17 @@ public class StockResult
 
 	private static Predicate<StorageAttributesKey> createStorageAttributesKeyMatcher(@NonNull final StorageAttributesKey storageAttributesKey)
 	{
-		if(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.equals(storageAttributesKey))
+		if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.equals(storageAttributesKey))
 		{
 			return Predicates.alwaysTrue();
 		}
-		else if(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER.equals(storageAttributesKey))
+		else if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER.equals(storageAttributesKey))
 		{
 			throw new AdempiereException("Creating a matcher for 'OTHERS' storage attributes key is not supported at this level");
 		}
 		else
 		{
-			return Predicates.equalTo(storageAttributesKey);
+			return storageAttributesKeyToMatch -> storageAttributesKeyToMatch.contains(storageAttributesKey);
 		}
 	}
 
