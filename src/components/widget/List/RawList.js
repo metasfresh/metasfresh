@@ -358,6 +358,7 @@ class RawList extends Component {
                     }
 
                     if (selected) {
+                        this.considerBlur = true;
                         this.handleSelect(selected);
                     } else {
                         onSelect(null);
