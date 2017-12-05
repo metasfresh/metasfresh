@@ -15,7 +15,8 @@ const initialState = {
     },
     includedView: {
         viewId: '',
-        windowType: null
+        windowType: null,
+        viewProfileId : null
     }
 }
 
@@ -52,12 +53,13 @@ export default function listHandler(state = initialState, action) {
             });
 
         case types.SET_LIST_INCLUDED_VIEW: {
-            const { windowType, viewId } = action.payload;
+            const { windowType, viewId, viewProfileId } = action.payload;
 
             return Object.assign({}, state, {
                 includedView: Object.assign({}, state.includedView, {
                     viewId,
                     windowType,
+                    viewProfileId,
                 }),
             });
         }
@@ -77,7 +79,8 @@ export default function listHandler(state = initialState, action) {
                 return Object.assign({}, state, {
                     includedView: Object.assign({}, state.includedView, {
                         viewId: '',
-                        windowType: null
+                        windowType: null,
+                        viewProfileId: null
                     }),
                 });
             } else {
