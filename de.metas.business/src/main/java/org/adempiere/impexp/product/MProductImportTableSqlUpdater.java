@@ -275,18 +275,10 @@ public class MProductImportTableSqlUpdater
 	{
 		StringBuilder sql;
 		int no;
-		// Set UOM (System/own)
-		sql = new StringBuilder("UPDATE I_Product i "
-				+ "SET Package_UOM_Name = "
-				+ "(SELECT MAX(X12DE355) FROM C_UOM u WHERE u.IsDefault='Y' AND u.AD_Client_ID IN (0,i.AD_Client_ID)) "
-				+ "WHERE Package_UOM_Name IS NULL AND Package_UOM_ID IS NULL"
-				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.debug("Set UOM Default=" + no);
-		//
+
 		sql = new StringBuilder(
 				"UPDATE I_Product i "
-						+ "SET C_UOM_ID = (SELECT C_UOM_ID FROM C_UOM u WHERE u.X12DE355=i.Package_UOM_Name AND u.AD_Client_ID IN (0,i.AD_Client_ID) AND u.IsActive='Y' ORDER BY u.AD_Client_ID DESC, u.C_UOM_ID ASC LIMIT 1) "
+						+ "SET Package_UOM_ID = (SELECT C_UOM_ID FROM C_UOM u WHERE u.X12DE355=i.Package_UOM_Name AND u.AD_Client_ID IN (0,i.AD_Client_ID) AND u.IsActive='Y' ORDER BY u.AD_Client_ID DESC, u.C_UOM_ID ASC LIMIT 1) "
 						+ "WHERE Package_UOM_ID IS NULL"
 						+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -390,7 +382,7 @@ public class MProductImportTableSqlUpdater
 	private void dbDosageForm(@NonNull final String whereClause)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE I_Product i "
-				+ "SET M_DosageForm_ID =(SELECT Name FROM M_DosageForm d"
+				+ "SET M_DosageForm_ID =(SELECT M_DosageForm_ID FROM M_DosageForm d"
 				+ " WHERE d.AD_Client_ID=i.AD_Client_ID AND i.M_DosageForm_Name = d.Name) "
 				+ "WHERE M_DosageForm_ID IS NULL AND M_DosageForm_Name IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
@@ -400,7 +392,7 @@ public class MProductImportTableSqlUpdater
 	private void dbIndication(@NonNull final String whereClause)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE I_Product i "
-				+ "SET M_Indication_ID =(SELECT Name FROM M_Indication ind"
+				+ "SET M_Indication_ID =(SELECT M_Indication_ID FROM M_Indication ind"
 				+ " WHERE ind.AD_Client_ID=i.AD_Client_ID AND i.M_Indication_Name = ind.Name) "
 				+ "WHERE M_Indication_ID IS NULL AND M_Indication_Name IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);

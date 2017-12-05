@@ -121,6 +121,10 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		if (newProduct)			// Insert new Product
 		{
 			final MProduct product = new MProduct(importRecord);
+			if (Check.isEmpty(product.getName()))
+			{
+				product.setName(product.getValue());
+			}
 			InterfaceWrapperHelper.save(product);
 			M_Product_ID = product.getM_Product_ID();
 			importRecord.setM_Product_ID(M_Product_ID);
@@ -135,7 +139,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 					+ "UPC,SKU,C_UOM_ID,M_Product_Category_ID,Classification,ProductType,"
 					+ "Volume,Weight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
 					+ "Discontinued,DiscontinuedBy,Updated,UpdatedBy)= "
-					+ "(SELECT Value,Name,Description,DocumentNote,Help,"
+					+ "(SELECT Value,coalesce(Name, Value),Description,DocumentNote,Help,"
 					+ "Package_UOM_ID, PackageSize, IsSold, IsStocked, "
 					+ "UPC,SKU,C_UOM_ID,M_Product_Category_ID,Classification,ProductType,"
 					+ "Volume,Weight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
