@@ -56,6 +56,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -137,13 +138,14 @@ public class ShipmentScheduleQtyOnHandStorage
 			// Create query
 			// In case the DeliveryRule is Force, there is no point to load the storage, because it's not needed.
 			// FIXME: make sure this works performance wise, then remove the commented code
-//			final I_M_ShipmentSchedule shipmentSchedule = olAndSched.getSched();
-//			final String deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(shipmentSchedule);
-//			if (!X_M_ShipmentSchedule.DELIVERYRULE_Force.equals(deliveryRule))
-//			{
+			final I_M_ShipmentSchedule shipmentSchedule = olAndSched.getSched();
+			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
+			final String deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(shipmentSchedule);
+			if (!X_M_ShipmentSchedule.DELIVERYRULE_Force.equals(deliveryRule))
+			{
 				final IStorageQuery storageQuery = createStorageQuery(olAndSched.getSched());
 				storageQueries.add(storageQuery);
-//			}
+			}
 
 			// Collect product IDs
 			final int productId = olAndSched.getSched().getM_Product_ID();
