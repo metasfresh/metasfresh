@@ -195,7 +195,8 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		 * ShipmentSchedules for which the HUs shall be picked. Needed to filter by the HUs' product and location and may therefore not be {@code null}.
 		 */
 		@NonNull
-		List<I_M_ShipmentSchedule> shipmentSchedules;
+		@lombok.Singular
+		ImmutableList<I_M_ShipmentSchedule> shipmentSchedules;
 
 		/**
 		 * {@code true} by default, for backwards compatibility.
