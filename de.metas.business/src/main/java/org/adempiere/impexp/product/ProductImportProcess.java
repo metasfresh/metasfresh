@@ -171,7 +171,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		// Price List
 		createUpdateProductPrice(importRecord);
 
-		ModelValidationEngine.get().fireImportValidate(this, importRecord, newProduct, IImportInterceptor.TIMING_AFTER_IMPORT);
+		ModelValidationEngine.get().fireImportValidate(this, importRecord, importRecord.getM_Product(), IImportInterceptor.TIMING_AFTER_IMPORT);
 
 		return newProduct ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}

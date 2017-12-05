@@ -26,11 +26,11 @@ import de.metas.vertical.pharma.model.I_M_Product;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -51,6 +51,11 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 	@Override
 	public void onImport(IImportProcess<?> process, Object importModel, Object targetModel, int timing)
 	{
+		if (timing != IImportInterceptor.TIMING_AFTER_IMPORT)
+		{
+			return;
+		}
+
 		final I_I_Product iproduct = InterfaceWrapperHelper.create(importModel, I_I_Product.class);
 		final I_M_Product product = InterfaceWrapperHelper.create(targetModel, I_M_Product.class);
 		product.setIsPrescription(iproduct.isPrescription());
@@ -58,7 +63,7 @@ public class PharmaImportProductInterceptor implements IImportInterceptor
 		product.setIsColdChain(iproduct.isColdChain());
 		product.setIsTFG(iproduct.isTFG());
 
-		if (!Check.isEmpty(iproduct.getFAM_ZUB(),true))
+		if (!Check.isEmpty(iproduct.getFAM_ZUB(), true))
 		{
 			product.setFAM_ZUB(iproduct.getFAM_ZUB());
 		}
