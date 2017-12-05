@@ -2,10 +2,12 @@ package de.metas.vertical.pharma;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.impexp.impl.PharmaImportInterceptor;
+import org.adempiere.impexp.impl.PharmaImportPartnerInterceptor;
+import org.adempiere.impexp.impl.PharmaImportProductInterceptor;
 import org.compiere.model.I_AD_Client;
 
 import de.metas.vertical.pharma.model.I_C_BPartner;
+import de.metas.vertical.pharma.model.I_M_Product;
 
 /*
  * #%L
@@ -40,6 +42,7 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		engine.addImportInterceptor(I_C_BPartner.Table_Name, PharmaImportInterceptor.instance);
+		engine.addImportInterceptor(I_C_BPartner.Table_Name, PharmaImportPartnerInterceptor.instance);
+		engine.addImportInterceptor(I_M_Product.Table_Name, PharmaImportProductInterceptor.instance);
 	}
 }
