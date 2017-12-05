@@ -127,6 +127,8 @@ public class ProcessExecutionResult
 	/** Included viewId to be opened (WEBUI) after this process was successfully executed */
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String webuiIncludedViewIdToOpen = null;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String webuiViewProfileId = null;
 
 	public ProcessExecutionResult()
 	{
@@ -408,7 +410,7 @@ public class ProcessExecutionResult
 	 * 
 	 * @param webuiIncludedViewIdToOpen
 	 */
-	public void setWebuiIncludedViewIdToOpen(String webuiIncludedViewIdToOpen)
+	public void setWebuiIncludedViewIdToOpen(final String webuiIncludedViewIdToOpen)
 	{
 		this.webuiIncludedViewIdToOpen = webuiIncludedViewIdToOpen;
 	}
@@ -416,6 +418,16 @@ public class ProcessExecutionResult
 	public String getWebuiIncludedViewIdToOpen()
 	{
 		return webuiIncludedViewIdToOpen;
+	}
+
+	public void setWebuiViewProfileId(final String webuiViewProfileId)
+	{
+		this.webuiViewProfileId = webuiViewProfileId;
+	}
+	
+	public String getWebuiViewProfileId()
+	{
+		return webuiViewProfileId;
 	}
 
 	public void setPrintFormat(final MPrintFormat printFormat)
