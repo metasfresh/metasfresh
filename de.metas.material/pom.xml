@@ -5,16 +5,18 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>10.0.0</version>
+		<version>[1,10.0.0]</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
+	<version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
 	<groupId>de.metas.material</groupId>
 	<artifactId>metasfresh-material</artifactId>
 	<packaging>pom</packaging>
 
 	<modules>
 		<module>dispo-commons</module>
+		<module>dispo-client</module>
 		<module>dispo-service</module>
 		<module>event</module>
 		<module>planning</module>

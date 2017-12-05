@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.equalTo;
@@ -119,7 +118,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 	@SuppressWarnings("unused")
 	private void test_2StepShipment_WithDifferentInvoicesOverall(final String invoiceRuleOverride)
 	{
-		final I_C_Invoice_Candidate ic = test_2StepShipment_CommonSetup_Step01(false, false, null).get(0); // isSOTrx, allowConsolidateInvoice, priceEntered_Override
+		final I_C_Invoice_Candidate ic = test_2StepShipment_CommonSetup_Step01(false, null).get(0); // isSOTrx, priceEntered_Override
 
 		//
 		// Partially invoice both at the same time
@@ -213,7 +212,6 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 				.setPriceEntered(1)
 				.setQty(qtyOrdered)
 				.setSOTrx(false)
-				.setAllowConsolidateInvoiceOnBPartner(false)
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")
 				.build();

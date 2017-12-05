@@ -70,11 +70,13 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	 *
 	 * NOTE: we use a static cache for optimization purposes
 	 */
-	private static final CCache<Integer, List<KeyNamePair>> bpartnerId2subProducers = new CCache<>(
+	private static final CCache<Integer, List<KeyNamePair>> bpartnerId2subProducers = new CCache<Integer, List<KeyNamePair>>(
 			CACHE_PREFIX + "#by#" + I_C_BP_Relation.COLUMNNAME_C_BPartner_ID + "#" + I_C_BP_Relation.COLUMNNAME_IsMainProducer,      // name
 			10,      // initial capacity
 			0 // expires 0min => never
-	);
+	)
+			.addResetForTableName(I_C_BPartner.Table_Name)
+			.addResetForTableName(I_C_BP_Relation.Table_Name);
 
 	private static final ITranslatableString DISPLAYNAME_None = Services.get(IMsgBL.class).translatable("NoneOrEmpty");
 	private static final ConcurrentHashMap<String, KeyNamePair> adLanguage2keyNamePairNone = new ConcurrentHashMap<>();
@@ -92,10 +94,12 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	 *
 	 * Used for short term purposes.
 	 */
-	private final CCache<ArrayKey, List<KeyNamePair>> hu2subProducers = new CCache<>(bpartnerId2subProducers.getName() + "#AndHU",
+	private final CCache<ArrayKey, List<KeyNamePair>> hu2subProducers = new CCache<ArrayKey, List<KeyNamePair>>(bpartnerId2subProducers.getName() + "#AndHU",
 			100,     // initial capacity
 			10  // expires in 10min
-	);
+	)
+			.addResetForTableName(I_C_BPartner.Table_Name)
+			.addResetForTableName(I_C_BP_Relation.Table_Name);
 
 	public HUSubProducerBPartnerAttributeValuesProvider(final I_M_Attribute attribute)
 	{
@@ -211,7 +215,7 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 
 	private static final String normalizeValueKey(final Object valueKey)
 	{
-		if(valueKey == null)
+		if (valueKey == null)
 		{
 			return null;
 		}
@@ -230,14 +234,14 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	public NamePair getAttributeValueOrNull(final Evaluatee evalCtx, final Object valueKey)
 	{
 		final List<? extends NamePair> availableValues = getAvailableValues(evalCtx);
-		if(availableValues.isEmpty())
+		if (availableValues.isEmpty())
 		{
 			return null;
 		}
-		
+
 		// Normalize the valueKey
 		final String valueKeyNormalized = normalizeValueKey(valueKey);
-		
+
 		for (final NamePair vnp : availableValues)
 		{
 			if (Objects.equals(vnp.getID(), valueKeyNormalized))

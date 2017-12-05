@@ -55,6 +55,7 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -68,6 +69,7 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class,
+		ShutdownListener.class,
 		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class,
 		OrderGroupRepository.class
 })

@@ -46,13 +46,17 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocTypeCounter;
 import org.compiere.model.I_C_DocType_Sequence;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSet;
+import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_PriceList;
@@ -178,10 +182,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		// #2913
 		engine.addModelValidator(org.adempiere.ad.column.model.interceptor.AD_Column.instance, client);
-	
-
-		engine.addModelValidator(org.adempiere.mm.attributes.interceptor.M_AttributeValue.INSTANCE, client);	}
-
+	}
 
 	@Override
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
@@ -311,5 +312,11 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_InfoWindow.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_InfoColumn.Table_Name);
+		
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_BPartner.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_BP_Relation.Table_Name);
+
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Attribute.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_AttributeValue.Table_Name);
 	}
 }

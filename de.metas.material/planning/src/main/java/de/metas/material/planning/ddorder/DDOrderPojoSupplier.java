@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -28,7 +29,8 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.event.ProductDescriptor;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.ErrorCodes;
@@ -62,6 +64,13 @@ import lombok.NonNull;
 @Service
 public class DDOrderPojoSupplier
 {
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
+
+	public DDOrderPojoSupplier(@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
+	{
+		this.productDescriptorFactory = productDescriptorFactory;
+	}
+
 	/**
 	 *
 	 * @param request
@@ -200,7 +209,7 @@ public class DDOrderPojoSupplier
 						.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 						.datePromised(supplyDateFinishSchedule)
 						.shipperId(networkLine.getM_Shipper_ID())
-						.createDDrder(productPlanningData.isCreatePlan());
+						.advisedToCreateDDrder(productPlanningData.isCreatePlan());
 
 				builders.add(orderBuilder);
 
@@ -267,11 +276,13 @@ public class DDOrderPojoSupplier
 	{
 		final IMaterialPlanningContext mrpContext = request.getMrpContext();
 
-		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);
+		final PlainAttributeSetInstanceAware asiAware = PlainAttributeSetInstanceAware
+				.forProductIdAndAttributeSetInstanceId(
+						mrpContext.getM_Product_ID(),
+						mrpContext.getM_AttributeSetInstance_ID());
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(asiAware);
 
-		final ProductDescriptor productDescriptor = ProductDescriptor.forProductIdAndAttributeSetInstanceId(
-				mrpContext.getM_Product_ID(),
-				mrpContext.getM_AttributeSetInstance_ID());
+		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);
 
 		final DDOrderLine ddOrderline = DDOrderLine.builder()
 				.salesOrderLineId(request.getMrpDemandOrderLineSOId())

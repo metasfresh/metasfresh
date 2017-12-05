@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.contracts.impl.AbstractFlatrateTermTest;
 import de.metas.contracts.impl.FlatrateTermDataFactory;
@@ -34,7 +35,6 @@ import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /*
@@ -60,19 +60,21 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, InOutLinesWithMissingInvoiceCandidate.class, ShipmentScheduleOrderDocForSubscriptionLine.class })
+@SpringBootTest(classes = { StartupListener.class,
+		ShutdownListener.class,
+		InOutLinesWithMissingInvoiceCandidate.class,
+		ShipmentScheduleOrderDocForSubscriptionLine.class })
 public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateTermTest
 {
 	private final transient IInvoiceCandDAO iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	private final transient IInvoiceCandidateHandlerBL iinvoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final transient IShipmentScheduleHandlerBL inOutCandHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
-	
+
 	@Before
 	public void before()
 	{
 		helper.setupModuleInterceptors_Contracts_Full();
 	}
-	
+
 	@Test
 	public void testImportActiveFlatrateTerms()
 	{
@@ -89,7 +91,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.isTaxInclcuded(false)
 				.validFrom(startDate)
 				.build();
-		
+
 		final I_M_Product product = productAndPricingSystem.getProduct();
 
 		FlatrateTermDataFactory.productAcctNew()
@@ -135,10 +137,10 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		assertThat(flatrateTerm.isCloseInvoiceCandidate()).isFalse();
 
 		assertInvoiceCandidate(flatrateTerm);
-		
+
 		assertShipmentSchedules(flatrateTerm, true);
 	}
-	
+
 	@Test
 	public void testImportActiveFlatrateTermsWithTaxIncluded()
 	{
@@ -155,7 +157,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.isTaxInclcuded(true)
 				.validFrom(startDate)
 				.build();
-		
+
 		final I_M_Product product = productAndPricingSystem.getProduct();
 
 		FlatrateTermDataFactory.productAcctNew()
@@ -201,7 +203,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		assertThat(flatrateTerm.isCloseInvoiceCandidate()).isFalse();
 
 		assertInvoiceCandidate(flatrateTerm);
-		
+
 		assertShipmentSchedules(flatrateTerm, true);
 	}
 
@@ -221,9 +223,9 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.isTaxInclcuded(false)
 				.validFrom(startDate)
 				.build();
-		
+
 		final I_M_Product product = productAndPricingSystem.getProduct();
-		
+
 		final I_C_Flatrate_Conditions conditions = FlatrateTermDataFactory.flatrateConditionsNew()
 				.name("Abo")
 				.calendar(getCalendar())
@@ -262,10 +264,10 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		assertThat(flatrateTerm.getMasterEndDate()).isEqualTo(masterEndDate);
 		assertThat(flatrateTerm.getDocAction()).isEqualTo(X_C_Flatrate_Term.DOCACTION_None);
 		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
-		
+
 		final List<I_C_Invoice_Candidate> candidates = createInvoiceCandidates(flatrateTerm);
 		assertThat(candidates).hasSize(0);
-		
+
 		assertShipmentSchedules(flatrateTerm, false);
 	}
 
@@ -299,12 +301,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		assertThat(candsForTerm.size(), equalTo(1));
 	}
 
-	private List<I_C_Invoice_Candidate> createInvoiceCandidates(final I_C_Flatrate_Term flatrateTerm)
-	{
-		return iinvoiceCandidateHandlerBL.createMissingCandidatesFor(flatrateTerm);
-	}
-	
-	private void assertShipmentSchedules(final I_C_Flatrate_Term flatrateTerm, final boolean isActiveFT)	
+	private void assertShipmentSchedules(final I_C_Flatrate_Term flatrateTerm, final boolean isActiveFT)
 	{
 		List<I_M_ShipmentSchedule> createdShipmentCands = createMissingShipmentSchedules(flatrateTerm);
 		if (isActiveFT)
@@ -315,7 +312,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		{
 			assertThat(createdShipmentCands).hasSize(0);
 		}
-		
+
 	}
 
 	private List<I_M_ShipmentSchedule> createMissingShipmentSchedules(final I_C_Flatrate_Term flatrateTerm)
@@ -323,5 +320,5 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		final Properties ctx = InterfaceWrapperHelper.getCtx(flatrateTerm);
 		return inOutCandHandlerBL.createMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited);
 	}
-	
+
 }

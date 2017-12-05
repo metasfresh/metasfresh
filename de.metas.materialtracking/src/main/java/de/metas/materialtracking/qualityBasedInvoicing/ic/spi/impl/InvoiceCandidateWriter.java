@@ -41,7 +41,7 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
@@ -120,7 +120,7 @@ public class InvoiceCandidateWriter
 
 		_maxInvoiceCandidateToDeleteID = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, context)
 				.create()
-				.aggregate(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, Aggregate.MAX, Integer.class);
 	}
 
 	public InvoiceCandidateWriter setC_ILCandHandler(final I_C_ILCandHandler invoiceCandidateHandler)

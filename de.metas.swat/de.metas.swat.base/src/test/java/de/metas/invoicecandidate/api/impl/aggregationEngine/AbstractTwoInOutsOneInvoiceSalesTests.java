@@ -42,7 +42,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  * <ul>
  * <li>two shipments, the first one with one line, the second one with two lines..each line has the same product etc
  * <li>both iols belong to the same order line and thus are associated to the same invoice candidate
- * <li>the invoice candidate has <code>allowConsolidateInvoice=Y</code>
  * </ul>
  * 
  * => Expectation: one invoice, but two lines, because only iols that belong to the same inOut can be aggregated into one invoice line.
@@ -53,12 +52,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  */
 public abstract class AbstractTwoInOutsOneInvoiceSalesTests extends AbstractTwoInOutsTests
 {
-	@Override
-	protected final boolean config_IsAllowConsolidateInvoice()
-	{
-		return true;
-	}
-
 	@Override
 	protected void step_validate_after_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines, final List<IInvoiceHeader> invoices)
 	{

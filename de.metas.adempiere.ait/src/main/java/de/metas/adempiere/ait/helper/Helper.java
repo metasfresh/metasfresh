@@ -10,12 +10,12 @@ package de.metas.adempiere.ait.helper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -70,7 +70,6 @@ import org.compiere.model.MChatEntry;
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
 import org.compiere.model.MProduct;
-import org.compiere.model.MStorage;
 import org.compiere.model.MTable;
 import org.compiere.model.MWarehouse;
 import org.compiere.model.PO;
@@ -97,6 +96,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.model.I_M_Product_Category;
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.IDocument;
@@ -105,13 +105,13 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.process.UpdateShipmentScheds;
-import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.process.C_Invoice_Candidate_GenerateInvoice;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderPA;
+import de.metas.product.IStorageBL;
 
 public class Helper implements IHelper
 {
@@ -141,7 +141,9 @@ public class Helper implements IHelper
 	public void init()
 	{
 		if (this.initialized)
+		{
 			return;
+		}
 
 		//
 		// Set SERVER_EMBEDDED=true
@@ -179,7 +181,9 @@ public class Helper implements IHelper
 	public TestConfig getConfig()
 	{
 		if (_config == null)
+		{
 			initConfig();
+		}
 		return _config;
 	}
 
@@ -245,7 +249,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#createAndSetTrxName(java.lang.String)
 	 */
 	@Override
@@ -258,7 +262,7 @@ public class Helper implements IHelper
 
 	/**
 	 * Sets the trxName to be used during tests.
-	 * 
+	 *
 	 * Note that the old trxName will be removed from the set of allowed trxName prefices and the new trxName will be added.
 	 */
 	@Override
@@ -274,7 +278,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#commitTrx(boolean)
 	 */
 	@Override
@@ -301,7 +305,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#rollbackTrx()
 	 */
 	@Override
@@ -326,7 +330,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#finish()
 	 */
 	@Override
@@ -337,7 +341,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getCtx()
 	 */
 	@Override
@@ -348,7 +352,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getTrxName()
 	 */
 	@Override
@@ -359,7 +363,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getTrx()
 	 */
 	@Override
@@ -370,7 +374,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getClientUI()
 	 */
 	@Override
@@ -381,7 +385,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getNow()
 	 */
 	@Override
@@ -392,7 +396,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getToday()
 	 */
 	@Override
@@ -403,7 +407,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#parseItemName(java.lang.String)
 	 */
 	@Override
@@ -415,7 +419,9 @@ public class Helper implements IHelper
 	public static String parseName(String name)
 	{
 		if (name == null)
+		{
 			return name;
+		}
 		return name.replace("(*)", NOW_String).replace("(n)", Integer.toString(staticCount++));
 	}
 
@@ -520,7 +526,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#processComplete(org.compiere.process.DocAction)
 	 */
 	@Override
@@ -548,7 +554,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getM_Product()
 	 */
 	@Override
@@ -574,7 +580,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getC_BankAccount_ID(java.lang.String, java.lang.String, java.lang.String, boolean)
 	 */
 	@Override
@@ -585,7 +591,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getC_BankAccount(java.lang.String, java.lang.String, java.lang.String, boolean)
 	 */
 	@Override
@@ -607,7 +613,7 @@ public class Helper implements IHelper
 			bank.setRoutingNo(routingNo);
 			bank.setIsCashBank(isCashBank);
 			bank.setIsOwnBank(true);
-			bank.setDescription("Created on " + new Date() + " by " + this.getInfo());
+			bank.setDescription("Created on " + new Date() + " by " + getInfo());
 			InterfaceWrapperHelper.save(bank);
 			logger.info("Created bank: " + bank.getName() + "-" + bank);
 		}
@@ -629,7 +635,7 @@ public class Helper implements IHelper
 			bankAcct.setC_Bank_ID(bank.getC_Bank_ID());
 			bankAcct.setC_Currency_ID(getC_Currency_ID(getCurrencyCode()));
 			bankAcct.setBankAccountType(X_C_BankAccount.BANKACCOUNTTYPE_Savings);
-			bankAcct.setDescription("Created on " + new Date() + " by " + this.getInfo());
+			bankAcct.setDescription("Created on " + new Date() + " by " + getInfo());
 			InterfaceWrapperHelper.save(bankAcct);
 			logger.info("Created bank account: " + bankAcct.getAccountNo() + "-" + bankAcct);
 		}
@@ -639,7 +645,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getM_Product(java.lang.String)
 	 */
 	@Override
@@ -683,7 +689,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getM_Product_Category()
 	 */
 	@Override
@@ -694,7 +700,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getM_Product_Category(java.lang.String)
 	 */
 	@Override
@@ -731,7 +737,9 @@ public class Helper implements IHelper
 				.setOrderBy(I_C_TaxCategory.COLUMNNAME_IsDefault + " DESC")
 				.first(I_C_TaxCategory.class);
 		if (tc == null)
+		{
 			throw new AdempiereException("No tax category found");
+		}
 		return tc;
 	}
 
@@ -752,7 +760,7 @@ public class Helper implements IHelper
 		{
 			tc = InterfaceWrapperHelper.create(ctx, I_C_TaxCategory.class, null);
 			tc.setName(finalName);
-			tc.setDescription("Created by " + this.getInfo() + " on " + new Date());
+			tc.setDescription("Created by " + getInfo() + " on " + new Date());
 			InterfaceWrapperHelper.save(tc);
 		}
 		return tc;
@@ -779,7 +787,7 @@ public class Helper implements IHelper
 		{
 			tc = InterfaceWrapperHelper.create(ctx, I_C_Tax.class, null);
 			tc.setName(finalName);
-			tc.setDescription("Created by " + this.getInfo() + " on " + new Date());
+			tc.setDescription("Created by " + getInfo() + " on " + new Date());
 			tc.setValidFrom(TODAY);
 			tc.setIsDocumentLevel(true);
 			tc.setSOPOType(X_C_Tax.SOPOTYPE_Both);
@@ -794,7 +802,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getM_Product_FreightCost(java.lang.String)
 	 */
 	@Override
@@ -832,7 +840,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#setAutomaticPeriodControl()
 	 */
 	@Override
@@ -892,7 +900,9 @@ public class Helper implements IHelper
 	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm()
 	{
 		if (defaultPaymentTerm == null)
+		{
 			defaultPaymentTerm = getC_PaymentTerm(defaultPaymentTermValue);
+		}
 		return defaultPaymentTerm;
 	}
 
@@ -908,12 +918,14 @@ public class Helper implements IHelper
 				.setClient_ID()
 				.first(I_C_PaymentTerm.class);
 		if (pt != null)
+		{
 			return pt;
+		}
 
 		pt = InterfaceWrapperHelper.create(ctx, I_C_PaymentTerm.class, null);
 		pt.setValue(paymentTermValue);
 		pt.setName(paymentTermValue);
-		pt.setDescription("Created by " + this.getInfo() + " on " + new Date());
+		pt.setDescription("Created by " + getInfo() + " on " + new Date());
 		pt.setAD_Org_ID(0);
 		InterfaceWrapperHelper.save(pt);
 
@@ -924,7 +936,9 @@ public class Helper implements IHelper
 	public org.compiere.model.I_C_Charge getC_Charge()
 	{
 		if (defaultCharge == null)
+		{
 			defaultCharge = getC_Charge(defaultChargeValue, null);
+		}
 		return defaultCharge;
 	}
 
@@ -940,11 +954,13 @@ public class Helper implements IHelper
 				.setClient_ID()
 				.firstOnly(I_C_Charge.class); // we have a DB unique idx on C_Charge.Name
 		if (ch != null)
+		{
 			return ch;
+		}
 
 		ch = InterfaceWrapperHelper.create(ctx, I_C_Charge.class, null);
 		ch.setName(chargeName);
-		ch.setDescription("Created by " + this.getInfo() + " on " + new Date());
+		ch.setDescription("Created by " + getInfo() + " on " + new Date());
 
 		final I_C_TaxCategory taxCategory =
 				taxCategoryName == null
@@ -989,7 +1005,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getM_PricingSystem(java.lang.String)
 	 */
 	@Override
@@ -1028,14 +1044,16 @@ public class Helper implements IHelper
 		for (I_C_Country c : Services.get(ICountryDAO.class).getCountries(ctx))
 		{
 			if (c.getCountryCode().equals(countryCode))
+			{
 				return c;
+			}
 		}
 		return null;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getC_Currency_ID(java.lang.String)
 	 */
 	@Override
@@ -1050,7 +1068,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getM_PriceList(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
@@ -1067,7 +1085,7 @@ public class Helper implements IHelper
 		Assert.assertNotNull("currencyCode should not be null", currencyCode);
 		Assert.assertNotNull("countryCode should not be null", countryCode);
 
-		// not yet ported from 
+		// not yet ported from
 		// final boolean isPOPriceList = !isSOPriceList;
 
 		final Properties ctx = getCtx();
@@ -1100,7 +1118,7 @@ public class Helper implements IHelper
 			pl.setC_Country_ID(countryId);
 			pl.setC_Currency_ID(currencyId);
 			pl.setIsSOPriceList(isSOPriceList);
-			// pl.setIsPOPriceList(isPOPriceList); not yet ported from 
+			// pl.setIsPOPriceList(isPOPriceList); not yet ported from
 			pl.setPricePrecision(2);
 			pl.setIsTaxIncluded(true);
 			pl.setEnforcePriceLimit(false);
@@ -1113,7 +1131,7 @@ public class Helper implements IHelper
 		{
 			Assert.assertEquals("PriceList does not have expected settings: PriceList=" + pl.getName() + ", ColumnName=IsSOPriceList",
 					isSOPriceList, pl.isSOPriceList());
-			// not yet ported from 
+			// not yet ported from
 			// Assert.assertEquals("PriceList does not have expected settings: PriceList=" + pl.getName() + ", ColumnName=IsPOPriceList",
 			// isPOPriceList, pl.isPOPriceList());
 			Assert.assertEquals("PriceList does not have expected settings: PriceList=" + pl.getName() + ", ColumnName=C_Currency_ID",
@@ -1153,7 +1171,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#setProductPrice(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.math.BigDecimal)
 	 */
 	@Override
@@ -1168,11 +1186,11 @@ public class Helper implements IHelper
 
 	@Override
 	public I_M_ProductPrice setProductPrice(
-			final String pricingSystemValue, 
-			final String currencyCode, 
+			final String pricingSystemValue,
+			final String currencyCode,
 			final String countryCode,
 			final String productValue,
-			final BigDecimal price, 
+			final BigDecimal price,
 			final boolean IsSO)
 	{
 		final int C_TaxCategory_ID = -1;
@@ -1202,7 +1220,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#setProductPrice(org.compiere.model.I_M_PriceList, java.lang.String, java.math.BigDecimal)
 	 */
 	@Override
@@ -1227,9 +1245,11 @@ public class Helper implements IHelper
 		final boolean emptyTaxCateg = C_TaxCategory_ID <= 0;
 
 		if (!emptyTaxCateg)
+		{
 			whereClause += " AND " + I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "=?";
+		}
 
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 		params.add(plv.getM_PriceList_Version_ID());
 		params.add(product.getM_Product_ID());
 		if (!emptyTaxCateg)
@@ -1269,7 +1289,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#getM_Warehouse()
 	 */
 	@Override
@@ -1280,7 +1300,9 @@ public class Helper implements IHelper
 		final int AD_Org_ID = Env.getAD_Org_ID(ctx);
 		MWarehouse[] whs = MWarehouse.getForOrg(ctx, AD_Org_ID);
 		if (whs == null || whs.length == 0)
+		{
 			throw new AdempiereException("No warehouse found for AD_Org_ID=" + AD_Org_ID);
+		}
 		return whs[0];
 	}
 
@@ -1289,7 +1311,7 @@ public class Helper implements IHelper
 	/**
 	 * Returns the currency code used when creating the order and making sure that there is also pricing data. If no value has been set using {@link #setCurrencyCode(String)}, then the code of the
 	 * AD_Client configured in the <code>helper</code>'s <code>ctx</code> is used.
-	 * 
+	 *
 	 * @return
 	 */
 	@Override
@@ -1307,7 +1329,7 @@ public class Helper implements IHelper
 	/**
 	 * Returns the country code used when creating the order and making sure that there is also pricing data. If no value has been set using {@link #setCountryCode(String)}, then the code of the
 	 * AD_Client configured in the <code>helper</code>'s <code>ctx</code> is used.
-	 * 
+	 *
 	 * @return
 	 */
 	@Override
@@ -1323,7 +1345,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#mkOrderHelper()
 	 */
 	@Override
@@ -1334,7 +1356,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#mkInvoiceHelper()
 	 */
 	@Override
@@ -1345,7 +1367,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#createInvoice(org.compiere.model.I_C_Order)
 	 */
 	@Override
@@ -1371,21 +1393,25 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#createT_Selection(int, int)
 	 */
 	@Override
 	public void createT_Selection(int AD_PInstance_ID, int... ids)
 	{
 		if (ids == null || ids.length == 0)
+		{
 			return;
+		}
 
 		StringBuffer insert = new StringBuffer();
 		insert.append("INSERT INTO T_SELECTION(AD_PINSTANCE_ID, T_SELECTION_ID) ");
 		for (int i = 0; i < ids.length; i++)
 		{
 			if (i > 0)
+			{
 				insert.append(" UNION ");
+			}
 			insert.append("SELECT ").append(AD_PInstance_ID).append(",").append(ids[i]).append(" FROM DUAL");
 		}
 		DB.executeUpdateEx(insert.toString(), null);
@@ -1393,7 +1419,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#runProcess_InvoiceGenerate(int)
 	 */
 	@Override
@@ -1433,7 +1459,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#retrieveInvoicesForOrders(int[], java.lang.String)
 	 */
 	@Override
@@ -1441,12 +1467,14 @@ public class Helper implements IHelper
 	{
 		final Properties ctx = getCtx();
 
-		List<Object> params = new ArrayList<Object>();
+		List<Object> params = new ArrayList<>();
 		StringBuffer sqlParams = new StringBuffer();
 		for (int i = 0; i < orderIds.length; i++)
 		{
 			if (i > 0)
+			{
 				sqlParams.append(",");
+			}
 			sqlParams.append("?");
 			params.add(orderIds[i]);
 		}
@@ -1464,7 +1492,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#retrieveInOutsForOrders(int[], java.lang.String)
 	 */
 	@Override
@@ -1472,12 +1500,14 @@ public class Helper implements IHelper
 	{
 		final Properties ctx = getCtx();
 
-		List<Object> params = new ArrayList<Object>();
+		List<Object> params = new ArrayList<>();
 		StringBuffer sqlParams = new StringBuffer();
 		for (int i = 0; i < orderIds.length; i++)
 		{
 			if (i > 0)
+			{
 				sqlParams.append(",");
+			}
 			sqlParams.append("?");
 			params.add(orderIds[i]);
 		}
@@ -1495,7 +1525,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#retrieveShipmentSchedulesForOrders(int)
 	 */
 	@Override
@@ -1504,12 +1534,14 @@ public class Helper implements IHelper
 		final Properties ctx = getCtx();
 		final String trxName = getTrxName();
 
-		List<Object> params = new ArrayList<Object>();
+		List<Object> params = new ArrayList<>();
 		StringBuffer sqlParams = new StringBuffer();
 		for (int i = 0; i < orderIds.length; i++)
 		{
 			if (i > 0)
+			{
 				sqlParams.append(",");
+			}
 			sqlParams.append("?");
 			params.add(orderIds[i]);
 		}
@@ -1570,7 +1602,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#addInventory(java.lang.String, int)
 	 */
 	@Override
@@ -1583,23 +1615,25 @@ public class Helper implements IHelper
 		final I_M_Locator loc = Services.get(IWarehouseBL.class).getDefaultLocator(wh);
 		final I_M_Product product = getM_Product(productValue);
 
-		boolean ok = MStorage.add(ctx,
+		boolean ok = Services.get(IStorageBL.class).add(ctx,
 				wh.getM_Warehouse_ID(),
 				loc.getM_Locator_ID(),
 				product.getM_Product_ID(),
 				0, // M_AttributeSetInstance_ID,
 				0, // reservationAttributeSetInstance_ID,
 				new BigDecimal(qty), // diffQtyOnHand,
-				Env.ZERO, // diffQtyReserved,
-				Env.ZERO, // diffQtyOrdered,
+				BigDecimal.ZERO, // diffQtyReserved,
+				BigDecimal.ZERO, // diffQtyOrdered,
 				trxName);
 		if (!ok)
+		{
 			throw new AdempiereException();
+		}
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#retrieveLines(org.compiere.model.I_C_Invoice)
 	 */
 	@Override
@@ -1622,7 +1656,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#assertInvoiced(org.compiere.model.I_C_Order)
 	 */
 	@Override
@@ -1642,7 +1676,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#mkPaymentHelper()
 	 */
 	@Override
@@ -1653,7 +1687,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#mkGridWindowHelper()
 	 */
 	@Override
@@ -1664,7 +1698,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#mkProcessHelper()
 	 */
 	@Override
@@ -1675,7 +1709,7 @@ public class Helper implements IHelper
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see test.integration.common.helper.IHelper#createPO(java.lang.Class)
 	 */
 	@Override
@@ -1685,7 +1719,7 @@ public class Helper implements IHelper
 		PO po = InterfaceWrapperHelper.getPO(model);
 		if (po.get_ColumnIndex("Description") >= 0)
 		{
-			po.set_ValueOfColumn("Description", "Created on " + new Date() + " by " + this.getInfo());
+			po.set_ValueOfColumn("Description", "Created on " + new Date() + " by " + getInfo());
 		}
 		return model;
 	}
@@ -1725,7 +1759,7 @@ public class Helper implements IHelper
 	@Override
 	public String getGeneratedBy()
 	{
-		return "Generated by " + this.getInfo() + " on " + (new Date());
+		return "Generated by " + getInfo() + " on " + (new Date());
 	}
 
 	@Override
@@ -1739,7 +1773,7 @@ public class Helper implements IHelper
 		entry.saveEx();
 	}
 
-	// not yet ported from 
+	// not yet ported from
 	// @Override
 	// public BOMBuilder mkBOMBuilder()
 	// {

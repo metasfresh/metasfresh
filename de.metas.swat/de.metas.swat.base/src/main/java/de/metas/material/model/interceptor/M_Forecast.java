@@ -1,14 +1,20 @@
 package de.metas.material.model.interceptor;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
 
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Forecast;
@@ -18,7 +24,7 @@ import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.forecast.ForecastEvent;
+import de.metas.material.event.forecast.ForecastCreatedEvent;
 import lombok.NonNull;
 
 @Interceptor(I_M_Forecast.class)
@@ -31,8 +37,18 @@ public class M_Forecast
 	{
 	}
 
+	@Init
+	public void init(final IModelValidationEngine engine)
+	{
+
+		CopyRecordFactory.enableForTableName(I_M_Forecast.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_M_Forecast.Table_Name, MForecastPOCopyRecordSupport.class);
+
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(new org.eevolution.callout.PP_Product_BOM());
+	}
+
 	/**
-	 * 
+	 *
 	 * @param forecast
 	 * @param timing
 	 */
@@ -51,7 +67,7 @@ public class M_Forecast
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void fireForecastEventOnComplete(@NonNull final I_M_Forecast forecast, @NonNull final DocTimingType timing)
+	public void fireForecastCreatedEventOnComplete(@NonNull final I_M_Forecast forecast, @NonNull final DocTimingType timing)
 	{
 		final List<I_M_ForecastLine> forecastLines = retrieveForecastLines(forecast);
 		if (forecastLines.isEmpty())
@@ -59,12 +75,12 @@ public class M_Forecast
 			return;
 		}
 
-		final ForecastEvent forecastEvent = M_ForecastEventCreator.createEventWithLinesAndTiming(
+		final ForecastCreatedEvent forecastCreatedEvent = M_ForecastEventCreator.createEventWithLinesAndTiming(
 				forecastLines,
 				timing);
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(forecastEvent, getTrxName(forecast));
+		materialEventService.fireEventAfterNextCommit(forecastCreatedEvent, getTrxName(forecast));
 	}
 
 	private List<I_M_ForecastLine> retrieveForecastLines(@NonNull final I_M_Forecast forecast)
@@ -75,5 +91,29 @@ public class M_Forecast
 				.create()
 				.list();
 		return forecastLines;
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
+			I_M_Forecast.COLUMNNAME_C_BPartner_ID,
+			I_M_Forecast.COLUMNNAME_C_Period_ID,
+			I_M_Forecast.COLUMNNAME_DatePromised,
+			I_M_Forecast.COLUMNNAME_M_Warehouse_ID
+	})
+	public void updateForecastLines(@NonNull final I_M_Forecast forecast)
+	{
+		final List<I_M_ForecastLine> forecastLines = retrieveForecastLines(forecast);
+		if (forecastLines.isEmpty())
+		{
+			return;
+		}
+
+		forecastLines.forEach( forecastLine ->
+		{
+			forecastLine.setC_BPartner(forecast.getC_BPartner());
+			forecastLine.setM_Warehouse(forecast.getM_Warehouse());
+			forecastLine.setC_Period(forecast.getC_Period());
+			forecastLine.setDatePromised(forecast.getDatePromised());
+			save(forecastLine);
+		});
 	}
 }

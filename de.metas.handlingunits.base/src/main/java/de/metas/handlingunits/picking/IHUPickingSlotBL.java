@@ -129,7 +129,9 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * @param bpartnerId
 	 * @param bpartnerLocationId
 	 */
-	void allocatePickingSlot(I_M_PickingSlot pickingSlot, int bpartnerId, int bpartnerLocationId);
+	void allocatePickingSlotIfPossible(I_M_PickingSlot pickingSlot, int bpartnerId, int bpartnerLocationId);
+
+	void allocatePickingSlotIfPossible(int pickingSlotId, int bpartnerId, int bpartnerLocationId);
 
 	/**
 	 * Release the given dynamic picking slot.<br>
@@ -138,7 +140,9 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 *
 	 * @param pickingSlot
 	 */
-	void releasePickingSlot(I_M_PickingSlot pickingSlot);
+	void releasePickingSlotIfPossible(I_M_PickingSlot pickingSlot);
+
+	void releasePickingSlotIfPossible(int pickingSlotId);
 
 	/**
 	 * Ad-Hoc and simple return type for above methods

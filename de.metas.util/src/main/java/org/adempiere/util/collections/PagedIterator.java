@@ -2,6 +2,7 @@ package org.adempiere.util.collections;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
@@ -99,15 +100,22 @@ public class PagedIterator<E> implements Iterator<E>
 			return null;
 		}
 
-		nextPageFirstRow = computeNextPageFirstRow(pageFirstRow, pageSize);
-
-		final Collection<E> currentPage = pageFetcher.getPage(pageFirstRow, pageSize);
-		if (currentPage == null || currentPage.isEmpty())
+		final Page<E> currentPage = pageFetcher.getPage(pageFirstRow, pageSize);
+		if (currentPage == null)
 		{
 			return null;
 		}
 
-		return currentPage;
+		if (currentPage.getLastRowZeroBased() != null)
+		{
+			nextPageFirstRow = currentPage.getLastRowZeroBased() + 1;
+		}
+		else
+		{
+			nextPageFirstRow = computeNextPageFirstRow(pageFirstRow, pageSize);
+		}
+
+		return currentPage.getRows();
 	}
 
 	private int computePageSize(final int firstRow)
@@ -141,6 +149,33 @@ public class PagedIterator<E> implements Iterator<E>
 		return IteratorUtils.stream(this);
 	}
 
+	@lombok.Value
+	public static final class Page<E>
+	{
+		public static final <E> Page<E> ofRows(final List<E> rows)
+		{
+			final Integer lastRow = null;
+			return new Page<>(rows, lastRow);
+		}
+
+		public static final <E> Page<E> ofRowsAndLastRowIndex(final List<E> rows, final int lastRowZeroBased)
+		{
+			return new Page<>(rows, lastRowZeroBased);
+		}
+
+		private final List<E> rows;
+		private final Integer lastRowZeroBased;
+
+		private Page(final List<E> rows, final Integer lastRowZeroBased)
+		{
+			Check.assumeNotEmpty(rows, "rows is not empty");
+			Check.assume(lastRowZeroBased == null || lastRowZeroBased >= 0, "lastRow shall be null, positive or zero");
+
+			this.rows = rows;
+			this.lastRowZeroBased = lastRowZeroBased;
+		}
+	}
+
 	/** Loads and provides the requested page */
 	@FunctionalInterface
 	public interface PageFetcher<E>
@@ -148,8 +183,8 @@ public class PagedIterator<E> implements Iterator<E>
 		/**
 		 * @param firstRow (first page is ZERO)
 		 * @param pageSize max rows to return
-		 * @return page or empty/null in case there is no page
+		 * @return page or null in case there is no page
 		 */
-		Collection<E> getPage(int firstRow, int pageSize);
+		Page<E> getPage(int firstRow, int pageSize);
 	}
 }

@@ -12,12 +12,12 @@ import java.util.Collection;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -60,12 +60,13 @@ public class HUStatusBL implements IHUStatusBL
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Picked)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Issued)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Destroyed)
-			
-			// this transition is used in vendor returns
+			// active => shipped transition is used in vendor returns
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Shipped)
 
 			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Active)
 			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Shipped)
+			// picked => destroyed is used if you distribute one already-picked HU onto other HUs, and the source-HU is then destroyed
+			.put(X_M_HU.HUSTATUS_Picked, X_M_HU.HUSTATUS_Destroyed)
 
 			.put(X_M_HU.HUSTATUS_Issued, X_M_HU.HUSTATUS_Active)
 			.put(X_M_HU.HUSTATUS_Issued, X_M_HU.HUSTATUS_Destroyed)
@@ -73,14 +74,15 @@ public class HUStatusBL implements IHUStatusBL
 			.put(X_M_HU.HUSTATUS_Destroyed, X_M_HU.HUSTATUS_Active)
 			.put(X_M_HU.HUSTATUS_Destroyed, X_M_HU.HUSTATUS_Issued)
 
-			// this transition is used e.g. when reverse-correcting a vendor return https://github.com/metasfresh/metasfresh/issues/2755
+			// shipped => active is used e.g. when reverse-correcting a vendor return https://github.com/metasfresh/metasfresh/issues/2755
 			.put(X_M_HU.HUSTATUS_Shipped, X_M_HU.HUSTATUS_Active)
-			
+
 			.build();
 
 	private final static List<String> ALLOWED_STATUSES_FOR_LOCATOR_CHANGE = ImmutableList.of(
 			X_M_HU.HUSTATUS_Planning,
-			X_M_HU.HUSTATUS_Picked, // a HU can be commissioned/picked anywhere, and it still needs to be moved and afterwards
+			X_M_HU.HUSTATUS_Picked, // a HU can be commissioned/picked anywhere, and it still needs to be moved around afterwards
+			X_M_HU.HUSTATUS_Shipped, // when restoring a snapshot HU for a customer return, the locator is set on a HU with status E..
 			X_M_HU.HUSTATUS_Active);
 
 	@Override

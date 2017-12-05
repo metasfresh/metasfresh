@@ -39,7 +39,6 @@ import org.compiere.model.MLocator;
 import org.compiere.model.MMovement;
 import org.compiere.model.MPeriod;
 import org.compiere.model.MProject;
-import org.compiere.model.MStorage;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
@@ -53,6 +52,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.product.IProductBL;
+import de.metas.product.IStorageBL;
 
 /**
  * Order Distribution Model. Please do not set DocStatus and C_DocType_ID directly. They are set in the process() method. Use DocAction and C_DocTypeTarget_ID instead.
@@ -63,13 +63,13 @@ import de.metas.product.IProductBL;
 public class MDDOrder extends X_DD_Order implements IDocument
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2407222565384020843L;
 
 	/**
 	 * Create new Order by copying
-	 * 
+	 *
 	 * @param from order
 	 * @param dateDoc date of the document date
 	 * @param C_DocTypeTarget_ID target document type
@@ -124,7 +124,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**************************************************************************
 	 * Default Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param DD_Order_ID order to load, (0 create new order)
 	 * @param trxName trx name
@@ -167,7 +167,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**************************************************************************
 	 * Project Constructor
-	 * 
+	 *
 	 * @param project Project to create Order from
 	 * @param IsSOTrx sales order
 	 * @param DocSubType if SO DocType Target (default DocSubType_OnCredit)
@@ -200,7 +200,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set record
 	 * @param trxName transaction
@@ -262,7 +262,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**
 	 * Set Business Partner Defaults & Details. SOTrx should be set.
-	 * 
+	 *
 	 * @param bp business partner
 	 */
 	public void setBPartner(MBPartner bp)
@@ -434,7 +434,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**************************************************************************
 	 * Get Lines of Order
-	 * 
+	 *
 	 * @param whereClause where clause or null (starting with AND)
 	 * @param orderClause order clause
 	 * @return lines
@@ -454,7 +454,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**
 	 * Get Lines of Order
-	 * 
+	 *
 	 * @param requery requery
 	 * @param orderBy optional order by column
 	 * @return lines
@@ -507,12 +507,12 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**
 	 * Get Shipments of Order
-	 * 
+	 *
 	 * @return shipments
 	 */
 	public MMovement[] getMovement()
 	{
-		ArrayList<MMovement> list = new ArrayList<MMovement>();
+		ArrayList<MMovement> list = new ArrayList<>();
 		String sql = "SELECT DISTINCT io.* FROM M_MovementLine ml " +
 				"INNER JOIN M_Movement m ON (m.M_Movement_ID = ml.M_Movement_ID) " +
 				"INNER JOIN DD_ORDERLINE ol ON (ol.DD_ORDERLINE_ID=ml.DD_ORDERLINE_ID) " +
@@ -722,7 +722,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**
 	 * Unlock Document.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -735,7 +735,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**
 	 * Invalidate Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -748,7 +748,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**************************************************************************
 	 * Prepare Document
-	 * 
+	 *
 	 * @return new status (In Progress or Invalid)
 	 */
 	@Override
@@ -817,7 +817,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**
 	 * Reserve Inventory. Counterpart: MMovement.completeIt()
-	 * 
+	 *
 	 * @param lines distribution order lines (ordered by M_Product_ID for deadlock prevention)
 	 * @return true if (un) reserved
 	 */
@@ -857,18 +857,19 @@ public class MDDOrder extends X_DD_Order implements IDocument
 				if (Services.get(IProductBL.class).isStocked(product))
 				{
 					// Update Storage
-					if (!MStorage.add(getCtx(), locator_from.getM_Warehouse_ID(), locator_from.getM_Locator_ID(),
+					final IStorageBL storageBL = Services.get(IStorageBL.class);
+					if (!storageBL.add(getCtx(), locator_from.getM_Warehouse_ID(), locator_from.getM_Locator_ID(),
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstance_ID(), line.getM_AttributeSetInstance_ID(),
-							Env.ZERO, reserved_ordered, Env.ZERO, get_TrxName()))
+							BigDecimal.ZERO, reserved_ordered, BigDecimal.ZERO, get_TrxName()))
 					{
 						throw new AdempiereException();
 					}
 
-					if (!MStorage.add(getCtx(), locator_to.getM_Warehouse_ID(), locator_to.getM_Locator_ID(),
+					if (!storageBL.add(getCtx(), locator_to.getM_Warehouse_ID(), locator_to.getM_Locator_ID(),
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstanceTo_ID(), line.getM_AttributeSetInstance_ID(),
-							Env.ZERO, Env.ZERO, reserved_ordered, get_TrxName()))
+							BigDecimal.ZERO, BigDecimal.ZERO, reserved_ordered, get_TrxName()))
 					{
 						throw new AdempiereException();
 					}
@@ -889,7 +890,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**
 	 * Approve Document
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -902,7 +903,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**
 	 * Reject Approval
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -915,7 +916,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**************************************************************************
 	 * Complete Document
-	 * 
+	 *
 	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
 	@Override
@@ -982,7 +983,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**
 	 * Void Document. Set Qtys to 0 - Sales: reverse all documents
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1028,36 +1029,36 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**
 	 * Create Shipment/Invoice Reversals
-	 * 
+	 *
 	 * @return true if success
 	 */
 	/*
 	 * private boolean createReversals() { // Cancel only Sales if (!isSOTrx()) return true;
-	 * 
+	 *
 	 * log.info("createReversals"); StringBuffer info = new StringBuffer();
-	 * 
+	 *
 	 * // Reverse All *Shipments* info.append("@M_InOut_ID@:"); MInOut[] shipments = getShipments(); for (int i = 0; i < shipments.length; i++) { MInOut ship = shipments[i]; // if closed - ignore if
 	 * (MInOut.DOCSTATUS_Closed.equals(ship.getDocStatus()) || MInOut.DOCSTATUS_Reversed.equals(ship.getDocStatus()) || MInOut.DOCSTATUS_Voided.equals(ship.getDocStatus()) ) continue;
 	 * ship.set_TrxName(get_TrxName());
-	 * 
+	 *
 	 * // If not completed - void - otherwise reverse it if (!MInOut.DOCSTATUS_Completed.equals(ship.getDocStatus())) { if (ship.voidIt()) ship.setDocStatus(MInOut.DOCSTATUS_Voided); } else if
 	 * (ship.reverseCorrectIt()) // completed shipment { ship.setDocStatus(MInOut.DOCSTATUS_Reversed); info.append(" ").append(ship.getDocumentNo()); } else { m_processMsg =
 	 * "Could not reverse Shipment " + ship; return false; } ship.setDocAction(MInOut.DOCACTION_None); ship.save(get_TrxName()); } // for all shipments
-	 * 
+	 *
 	 * // Reverse All *Invoices* info.append(" - @C_Invoice_ID@:"); MInvoice[] invoices = getInvoices(); for (int i = 0; i < invoices.length; i++) { MInvoice invoice = invoices[i]; // if closed -
 	 * ignore if (MInvoice.DOCSTATUS_Closed.equals(invoice.getDocStatus()) || MInvoice.DOCSTATUS_Reversed.equals(invoice.getDocStatus()) || MInvoice.DOCSTATUS_Voided.equals(invoice.getDocStatus()) )
 	 * continue; invoice.set_TrxName(get_TrxName());
-	 * 
+	 *
 	 * // If not completed - void - otherwise reverse it if (!MInvoice.DOCSTATUS_Completed.equals(invoice.getDocStatus())) { if (invoice.voidIt()) invoice.setDocStatus(MInvoice.DOCSTATUS_Voided); }
 	 * else if (invoice.reverseCorrectIt()) // completed invoice { invoice.setDocStatus(MInvoice.DOCSTATUS_Reversed); info.append(" ").append(invoice.getDocumentNo()); } else { m_processMsg =
 	 * "Could not reverse Invoice " + invoice; return false; } invoice.setDocAction(MInvoice.DOCACTION_None); invoice.save(get_TrxName()); } // for all shipments
-	 * 
+	 *
 	 * m_processMsg = info.toString(); return true; } // createReversals
 	 */
 
 	/**
 	 * Close Document. Cancel not delivered Qunatities
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1100,7 +1101,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**
 	 * Reverse Correction - same void
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override
@@ -1122,7 +1123,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**
 	 * Reverse Accrual - none
-	 * 
+	 *
 	 * @return false
 	 */
 	@Override
@@ -1144,7 +1145,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	/**
 	 * Re-activate.
-	 * 
+	 *
 	 * @return true if success
 	 */
 	@Override

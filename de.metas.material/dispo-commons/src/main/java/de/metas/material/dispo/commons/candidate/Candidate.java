@@ -6,10 +6,8 @@ import java.util.List;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
-import de.metas.material.event.EventDescriptor;
-import de.metas.material.event.MaterialDescriptor;
-import de.metas.material.event.MaterialDescriptor.DateOperator;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -99,13 +97,14 @@ public class Candidate
 	@Singular
 	List<TransactionDetail> transactionDetails;
 
-	public CandidatesQuery.CandidatesQueryBuilder createStockQueryBuilder()
+	public Candidate withAddedQuantity(@NonNull final BigDecimal addedQuantity)
 	{
-		return CandidatesQuery.builder()
-				.materialDescriptor(materialDescriptor
-						.withoutQuantity()
-						.withDateOperator(DateOperator.BEFORE_OR_AT))
-				.type(CandidateType.STOCK);
+		return withQuantity(getQuantity().add(addedQuantity));
+	}
+
+	public Candidate withNegatedQuantity()
+	{
+		return withQuantity(getQuantity().negate());
 	}
 
 	public BigDecimal getQuantity()

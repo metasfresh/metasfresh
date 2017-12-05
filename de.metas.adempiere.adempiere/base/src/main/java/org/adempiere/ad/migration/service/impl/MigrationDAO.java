@@ -10,12 +10,12 @@ package org.adempiere.ad.migration.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,7 +35,7 @@ import org.adempiere.ad.migration.model.I_AD_MigrationStep;
 import org.adempiere.ad.migration.service.IMigrationDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.util.DB;
 
 public class MigrationDAO implements IMigrationDAO
@@ -121,7 +121,7 @@ public class MigrationDAO implements IMigrationDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(migration);
 		final String trxName = InterfaceWrapperHelper.getTrxName(migration);
 		final BigDecimal maxSeqNo = new TypedSqlQuery<I_AD_Migration>(ctx, I_AD_Migration.class, null, trxName)
-				.aggregate(I_AD_Migration.COLUMNNAME_SeqNo, IQuery.AGGREGATE_MAX);
+				.aggregate(I_AD_Migration.COLUMNNAME_SeqNo, Aggregate.MAX);
 
 		return maxSeqNo.intValue();
 	}
@@ -134,7 +134,7 @@ public class MigrationDAO implements IMigrationDAO
 		final String whereClause = I_AD_MigrationStep.COLUMNNAME_AD_Migration_ID + "=?";
 		final BigDecimal maxSeqNo = new TypedSqlQuery<I_AD_MigrationStep>(ctx, I_AD_MigrationStep.class, whereClause, trxName)
 				.setParameters(step.getAD_Migration_ID())
-				.aggregate(I_AD_MigrationStep.COLUMNNAME_SeqNo, IQuery.AGGREGATE_MAX);
+				.aggregate(I_AD_MigrationStep.COLUMNNAME_SeqNo, Aggregate.MAX);
 		return maxSeqNo.intValue();
 	}
 

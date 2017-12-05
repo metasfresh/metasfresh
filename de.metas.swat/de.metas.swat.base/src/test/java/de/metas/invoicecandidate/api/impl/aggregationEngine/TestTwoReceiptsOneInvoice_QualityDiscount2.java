@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -102,9 +101,8 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount2 extends AbstractNewAggre
 	@Override
 	protected List<I_C_Invoice_Candidate> step_createInvoiceCandidates()
 	{
-		final List<I_C_Invoice_Candidate> ics = test_2StepShipment_CommonSetup_Step01(false, true, null);// isSOTrx, allowConsolidateInvoice, priceEtnered_Override
+		final List<I_C_Invoice_Candidate> ics = test_2StepShipment_CommonSetup_Step01(false, null);// isSOTrx, priceEtnered_Override
 		final I_C_Invoice_Candidate ic = ics.get(0);
-		// ic.setQtyDelivered(new BigDecimal("30")); QtyDelviered will be updated in createInvoiceCandidateInOutLine()
 		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_NachLieferung);
 		ic.setInvoiceRule_Override(null);
 		InterfaceWrapperHelper.save(ic);

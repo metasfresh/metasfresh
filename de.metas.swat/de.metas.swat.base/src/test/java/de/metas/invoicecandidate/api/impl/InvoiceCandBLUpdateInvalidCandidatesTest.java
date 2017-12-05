@@ -47,7 +47,6 @@ public class InvoiceCandBLUpdateInvalidCandidatesTest extends AbstractICTestSupp
 				.setPriceEntered(1)
 				.setQty(3)
 				.setSOTrx(false)
-				.setAllowConsolidateInvoiceOnBPartner(false)
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")
 				.build();

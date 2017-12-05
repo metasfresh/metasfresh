@@ -77,7 +77,7 @@ public class OrderLineBL implements IOrderLineBL
 	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
 	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
 
-	private final Set<Integer> ignoredOlIds = new HashSet<Integer>();
+	private final Set<Integer> ignoredOlIds = new HashSet<>();
 
 	public static final String CTX_EnforcePriceLimit = "EnforcePriceLimit";
 	public static final String CTX_DiscountSchema = "DiscountSchema";
@@ -157,10 +157,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount
-		if (orderLine.getPriceActual().signum() == 0)
-		{
-			calculatePriceActual(orderLine, pricingResult.getPrecision());
-		}
+		calculatePriceActual(orderLine, pricingResult.getPrecision());
 
 		//
 		// C_Currency_ID, Price_UOM_ID(again?), M_PriceList_Version_ID

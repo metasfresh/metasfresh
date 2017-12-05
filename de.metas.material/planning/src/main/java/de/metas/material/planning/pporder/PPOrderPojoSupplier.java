@@ -25,8 +25,8 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import de.metas.logging.LogManager;
-import de.metas.material.event.ProductDescriptor;
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -118,28 +118,27 @@ public class PPOrderPojoSupplier
 
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
 				.orgId(mrpContext.getAD_Org_ID())
-				//
+
 				// Planning dimension
 				.plantId(mrpContext.getPlant_ID())
 				.warehouseId(mrpContext.getM_Warehouse_ID())
 				.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
-				//
+
 				// Product, UOM, ASI
 				.productDescriptor(productDescriptor)
 				.uomId(uom.getC_UOM_ID())
 
-				//
 				// Dates
 				.datePromised(dateFinishSchedule)
 				.dateStartSchedule(dateStartSchedule)
-				//
+
 				// Qtys
 				.quantity(qtyToSupply)
 
 				.orderLineId(request.getMrpDemandOrderLineSOId())
-				//
+
 				// offer further advise :-)
-				.createPPOrder(productPlanningData.isCreatePlan());
+				.advisedToCreatePPOrder(productPlanningData.isCreatePlan());
 
 		return ppOrderPojoBuilder.build();
 	}

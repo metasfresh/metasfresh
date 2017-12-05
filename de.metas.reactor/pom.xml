@@ -32,9 +32,7 @@
 		
 		<module>../de.metas.jax.rs</module>
 		
-		<module>../de.metas.report.jasper.client</module>
-		<module>../de.metas.report.jasper.commons</module>
-		<module>../de.metas.report.jasper.server</module>
+		<module>../de.metas.report</module>
 
 		<module>../de.metas.adempiere.libero.libero</module>
 		<module>../de.metas.adempiere.libero.liberoHR</module>
@@ -95,6 +93,10 @@
 		<module>../de.metas.procurement.base</module>
 		
 		<module>../de.metas.rfq</module>
+		
+		<module>../de.metas.purchasecandidate.base</module>
+		
+		<module>../de.metas.vertical.pharma</module>
 	</modules>
 			
 	  <build>

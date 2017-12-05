@@ -13,11 +13,11 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,10 +35,12 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
+import org.compiere.util.TimeUtil;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -57,6 +59,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import lombok.NonNull;
 
 /**
  * Create Shipments from {@link IShipmentScheduleWithHU} records.
@@ -102,6 +105,8 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 
 	private boolean createPackingLines = false;
 	private boolean manualPackingMaterial = false;
+	private boolean shipmentDateToday = false;
+
 	/**
 	 * A list of TUs which are assigned to different shipment lines.
 	 *
@@ -158,27 +163,51 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 
-		final Timestamp movementDate = SystemTime.asTimestamp();
+		final Timestamp shipmentDate = calculateShipmentDate(shipmentSchedule, shipmentDateToday);
 
 		//
 		// Search for existing shipment to consolidate on
 		I_M_InOut shipment = null;
 		if (shipmentScheduleBL.isSchedAllowsConsolidate(shipmentSchedule))
 		{
-			shipment = huShipmentScheduleBL.getOpenShipmentScheduleOrNull(candidate, movementDate);
+			shipment = huShipmentScheduleBL.getOpenShipmentOrNull(candidate, shipmentDate);
 		}
-
 		//
 		// If there was no shipment found, create a new one now
 		if (shipment == null)
 		{
-			shipment = createShipmentHeader(candidate, movementDate);
+			shipment = createShipmentHeader(candidate, shipmentDate);
 		}
 		return shipment;
 	}
 
+	@VisibleForTesting
+	static Timestamp calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, final boolean isShipmentDateToday)
+	{
+		final Timestamp now = TimeUtil.getNow();
+
+		if (isShipmentDateToday)
+		{
+			return now;
+		}
+
+		final Timestamp deliveryDateEffective = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(schedule);
+
+		if (deliveryDateEffective == null)
+		{
+			return now;
+		}
+
+		if (deliveryDateEffective.before(now))
+		{
+			return now;
+		}
+
+		return deliveryDateEffective;
+	}
+
 	/**
-	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL#getOpenShipmentScheduleOrNull(IShipmentScheduleWithHU)}
+	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL#getOpenShipmentOrNull(IShipmentScheduleWithHU)}
 	 *
 	 * @param candidate
 	 * @param movementDate
@@ -256,32 +285,6 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		InterfaceWrapperHelper.save(shipment);
 
 		return shipment;
-	}
-
-	private void createUpdateShipmentLine(final IShipmentScheduleWithHU candidate)
-	{
-		//
-		// If we cannot add this "candidate" to current shipment line builder
-		// then create shipment line (if any) and reset the builder
-		if (currentShipmentLineBuilder != null && !currentShipmentLineBuilder.canAdd(candidate))
-		{
-			createShipmentLineIfAny();
-			// => currentShipmentLineBuilder = null;
-		}
-
-		//
-		// If we don't have an active shipment line builder
-		// then create one
-		if (currentShipmentLineBuilder == null)
-		{
-			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
-			currentShipmentLineBuilder.setManualPackingMaterial(manualPackingMaterial);
-			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
-		}
-
-		//
-		// Add current "candidate"
-		currentShipmentLineBuilder.add(candidate);
 	}
 
 	/**
@@ -414,8 +417,79 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	@Override
 	public void process(final IShipmentScheduleWithHU item) throws Exception
 	{
+		updateShipmentDate(currentShipment, item);
 		createUpdateShipmentLine(item);
 		lastItem = item;
+	}
+
+	private void updateShipmentDate(@NonNull final I_M_InOut shipment, @NonNull final IShipmentScheduleWithHU candidate)
+	{
+		final I_M_ShipmentSchedule schedule = candidate.getM_ShipmentSchedule();
+		final Timestamp candidateShipmentDate = calculateShipmentDate(schedule, shipmentDateToday);
+
+		// the shipment was created before but wasn't yet completed;
+		if (isShipmentDeliveryDateBetterThanMovementDate(shipment, candidateShipmentDate))
+		{
+			shipment.setMovementDate(candidateShipmentDate);
+			shipment.setDateAcct(candidateShipmentDate);
+
+			InterfaceWrapperHelper.save(shipment);
+		}
+	}
+
+	@VisibleForTesting
+	static boolean isShipmentDeliveryDateBetterThanMovementDate(final @NonNull I_M_InOut shipment, final @NonNull Timestamp shipmentDeliveryDate)
+	{
+		final Timestamp today = TimeUtil.getNow();
+		final Timestamp movementDate = shipment.getMovementDate();
+		
+		final boolean isCandidateInThePast = shipmentDeliveryDate.before(today);
+		final boolean isMovementDateInThePast = movementDate.before(today);
+		final boolean isCandidateSoonerThanMovementDate = movementDate.after(shipmentDeliveryDate);
+
+		if(isCandidateInThePast)
+		{
+			return false;
+		}
+		
+		if (isMovementDateInThePast)
+		{
+			return true;
+		}
+
+		else if (isCandidateSoonerThanMovementDate)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	private void createUpdateShipmentLine(final IShipmentScheduleWithHU candidate)
+	{
+		//
+		// If we cannot add this "candidate" to current shipment line builder
+		// then create shipment line (if any) and reset the builder
+		if (currentShipmentLineBuilder != null && !currentShipmentLineBuilder.canAdd(candidate))
+		{
+			createShipmentLineIfAny();
+			// => currentShipmentLineBuilder = null;
+		}
+
+		//
+		// If we don't have an active shipment line builder
+		// then create one
+		if (currentShipmentLineBuilder == null)
+		{
+			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
+			currentShipmentLineBuilder.setManualPackingMaterial(manualPackingMaterial);
+			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
+
+		}
+
+		//
+		// Add current "candidate"
+		currentShipmentLineBuilder.add(candidate);
 	}
 
 	@Override
@@ -446,6 +520,13 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	@Override
+	public IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(boolean forceDateToday)
+	{
+		this.shipmentDateToday = forceDateToday;
+		return this;
+	}
+
+	@Override
 	public String toString()
 	{
 		return "InOutProducerFromShipmentSchedule [result=" + result
@@ -454,4 +535,5 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 				+ ", currentShipmentLineBuilder=" + currentShipmentLineBuilder + ", currentCandidates=" + currentCandidates
 				+ ", lastItem=" + lastItem + "]";
 	}
+
 }

@@ -42,6 +42,13 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 @Interceptor(I_M_ShipmentSchedule.class)
 public class M_ShipmentSchedule
 {
+	public static M_ShipmentSchedule INSTANCE = new M_ShipmentSchedule();
+
+	private M_ShipmentSchedule()
+	{
+	}
+
+
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
 			ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
