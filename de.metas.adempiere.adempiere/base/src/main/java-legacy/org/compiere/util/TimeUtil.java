@@ -1413,8 +1413,8 @@ public class TimeUtil
 		return dayOfWeek - 1;
 	}
 
-	public static Timestamp getNow()
+	public static Timestamp getTodayAsTimestamp()
 	{
-		return SystemTime.asTimestamp();
+		return SystemTime.asDayTimestamp();
 	}
 }	// TimeUtil
