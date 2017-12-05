@@ -2934,7 +2934,14 @@ public abstract class PO
 		// Reset model cache
 		if(p_info.isSingleKeyColumnName())
 		{
-			Services.get(IModelCacheInvalidationService.class).invalidateForModel(this, newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
+			try
+			{
+				Services.get(IModelCacheInvalidationService.class).invalidateForModel(this, newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
+			}
+			catch (final Exception ex)
+			{
+				log.warn("Cache invalidation on new/change failed for {}. Ignored.", this, ex);
+			}
 		}
 
 		//
@@ -3990,7 +3997,14 @@ public abstract class PO
 		// Fire cache invalidation event, as last thing
 		if(cacheInvalidateRequest != null)
 		{
-			cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.DELETE);
+			try
+			{
+				cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.DELETE);
+			}
+			catch (final Exception ex)
+			{
+				log.warn("Cache invalidation on delete failed for {}. Ignored.", cacheInvalidateRequest, ex);
+			}
 		}
 	}
 
