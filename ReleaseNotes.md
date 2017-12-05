@@ -93,7 +93,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1367](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1367) view attributes shall be refreshed when the current selected row is refreshed
-
+  * [#1405](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1405) Lookup dropdown not Closing after selection w/ [enter/CR]
 
 # metasfresh 5.37 (2017-48)
 
