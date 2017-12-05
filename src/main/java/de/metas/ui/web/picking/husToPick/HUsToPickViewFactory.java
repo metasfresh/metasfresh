@@ -11,6 +11,7 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
  * #%L
@@ -84,10 +85,9 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	@Override
 	protected void customizeHUEditorView(HUEditorViewBuilder huViewBuilder)
 	{
-		// TODO: check if this is working...
-		// huViewBuilder
-		// .clearOrderBys()
-		// .orderBy(DocumentQueryOrderBy.byFieldName(HUEditorRow.FIELDNAME_BestBeforeDate))
-		// .orderBy(DocumentQueryOrderBy.byFieldName(HUEditorRow.FIELDNAME_M_HU_ID));
+		huViewBuilder
+				.clearOrderBys()
+				.orderBy(DocumentQueryOrderBy.builder().fieldName(HUEditorRow.FIELDNAME_BestBeforeDate).ascending(true).nullsLast(true).build())
+				.orderBy(DocumentQueryOrderBy.byFieldName(HUEditorRow.FIELDNAME_M_HU_ID));
 	}
 }
