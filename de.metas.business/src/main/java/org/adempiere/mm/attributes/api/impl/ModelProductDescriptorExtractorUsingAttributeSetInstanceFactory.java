@@ -1,6 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import org.adempiere.mm.attributes.api.AttributesKeyGenerator;
+import org.adempiere.mm.attributes.api.StorageAttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.util.Services;
@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 
@@ -45,12 +46,7 @@ public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory imp
 		Preconditions.checkNotNull(asiAware,
 				"The given parameter can't be represented as an IAttributeSetInstanceAware; model=%s", model);
 
-		final String storageAttributesKey = AttributesKeyGenerator.builder()
-				.attributeSetInstanceId(asiAware.getM_AttributeSetInstance_ID())
-				.valueDelimiter(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_DELIMITER)
-				.attributeInstanceFilter(ai -> ai.getM_Attribute().isStorageRelevant())
-				.build()
-				.createAttributesKey();
+		final StorageAttributesKey storageAttributesKey = StorageAttributesKeys.createAttributesKeyFromASI(asiAware.getM_AttributeSetInstance_ID());
 
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				asiAware.getM_Product_ID(),

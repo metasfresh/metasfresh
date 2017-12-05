@@ -12,7 +12,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
@@ -65,7 +65,7 @@ public class CandidateServiceTests
 				.clientId(20)
 				.orgId(30)
 				.type(CandidateType.SUPPLY)
-				.subType(CandidateSubType.PRODUCTION)
+				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.materialDescriptor(createMaterialDescriptor())
 				.productionDetail(ProductionDetail.builder()
 						.plantId(210)
@@ -96,7 +96,7 @@ public class CandidateServiceTests
 						.productBomLineId(600)
 						.build());
 
-		final PPOrderRequestedEvent productionRequestedEvent = requestMaterialOrderService.createProductionRequestedEvent(ImmutableList.of(candidate, candidate2, candidate3));
+		final PPOrderRequestedEvent productionRequestedEvent = requestMaterialOrderService.createPPOrderRequestedEvent(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(productionRequestedEvent).isNotNull();
 		assertThat(productionRequestedEvent.getEventDescriptor()).isNotNull();
 
@@ -118,7 +118,7 @@ public class CandidateServiceTests
 				.clientId(20)
 				.orgId(30)
 				.type(CandidateType.SUPPLY)
-				.subType(CandidateSubType.DISTRIBUTION)
+				.businessCase(CandidateBusinessCase.DISTRIBUTION)
 				.materialDescriptor(createMaterialDescriptor())
 				.distributionDetail(DistributionDetail.builder()
 						.productPlanningId(220)

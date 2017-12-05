@@ -3,9 +3,9 @@ package de.metas.material.dispo.service.event;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.service.event.handler.DDOrderAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.DDOrderAdvisedOrCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
-import de.metas.material.dispo.service.event.handler.PPOrderAdvisedHandler;
+import de.metas.material.dispo.service.event.handler.PPOrderAdvisedOrCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.TransactionCreatedHandler;
 import de.metas.material.event.MaterialEvent;
@@ -43,9 +43,9 @@ import lombok.NonNull;
 public class MaterialDispoEventListenerFacade implements MaterialEventListener
 {
 
-	private final PPOrderAdvisedHandler productionAdvisedHandler;
+	private final PPOrderAdvisedOrCreatedHandler productionAdvisedHandler;
 
-	private final DDOrderAdvisedHandler distributionAdvisedHandler;
+	private final DDOrderAdvisedOrCreatedHandler distributionAdvisedHandler;
 
 	private final ForecastCreatedHandler forecastCreatedHandler;
 
@@ -54,8 +54,8 @@ public class MaterialDispoEventListenerFacade implements MaterialEventListener
 	private final ShipmentScheduleCreatedHandler shipmentScheduleCreatedHandler;
 
 	public MaterialDispoEventListenerFacade(
-			@NonNull final DDOrderAdvisedHandler distributionAdvisedHandler,
-			@NonNull final PPOrderAdvisedHandler productionAdvisedHandler,
+			@NonNull final DDOrderAdvisedOrCreatedHandler distributionAdvisedHandler,
+			@NonNull final PPOrderAdvisedOrCreatedHandler productionAdvisedHandler,
 			@NonNull final ForecastCreatedHandler forecastCreatedHandler,
 			@NonNull final TransactionCreatedHandler transactionEventHandler,
 			@NonNull final ShipmentScheduleCreatedHandler shipmentScheduleCreatedHandler)
@@ -84,11 +84,11 @@ public class MaterialDispoEventListenerFacade implements MaterialEventListener
 		}
 		else if (event instanceof DDOrderAdvisedOrCreatedEvent)
 		{
-			distributionAdvisedHandler.handleDistributionAdvisedEvent((DDOrderAdvisedOrCreatedEvent)event);
+			distributionAdvisedHandler.handleDDOrderAdvisedOrCreatedEvent((DDOrderAdvisedOrCreatedEvent)event);
 		}
 		else if (event instanceof PPOrderAdvisedOrCreatedEvent)
 		{
-			productionAdvisedHandler.handleProductionAdvisedEvent((PPOrderAdvisedOrCreatedEvent)event);
+			productionAdvisedHandler.handlePPOrderAdvisedOrCreatedEvent((PPOrderAdvisedOrCreatedEvent)event);
 		}
 	}
 }

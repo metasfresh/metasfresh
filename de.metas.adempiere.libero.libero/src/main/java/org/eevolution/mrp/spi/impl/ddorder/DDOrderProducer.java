@@ -85,7 +85,7 @@ public class DDOrderProducer
 	}
 
 	/**
-	 * 
+	 *
 	 * @param pojo
 	 * @param request may be {@code null}. If not-null, then the method also does some {@link I_PP_MRP} related stuff that is likely to become obsolete soon.
 	 * @return
@@ -130,12 +130,13 @@ public class DDOrderProducer
 
 		for (final DDOrderLine linePojo : pojo.getLines())
 		{
-			//
 			// Create DD Order Line
 			final I_DD_OrderLine ddOrderline = InterfaceWrapperHelper.newInstance(I_DD_OrderLine.class, ddOrder);
 			ddOrderline.setAD_Org_ID(pojo.getOrgId());
 			ddOrderline.setDD_Order(ddOrder);
 			ddOrderline.setC_OrderLineSO_ID(linePojo.getSalesOrderLineId());
+			ddOrderline.setC_BPartner_ID(linePojo.getBPartnerId());
+
 			if (linePojo.getSalesOrderLineId() > 0)
 			{
 				ddOrderline.setC_BPartner_ID(ddOrderline.getC_OrderLineSO().getC_BPartner_ID());

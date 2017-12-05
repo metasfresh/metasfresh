@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
@@ -29,6 +28,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.NonNull;
 
 /*
@@ -184,6 +184,8 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setMD_Candidate_Type(candidate.getType().toString());
 		candidateRecord.setM_Warehouse_ID(materialDescriptor.getWarehouseId());
 
+		candidateRecord.setC_BPartner_ID(materialDescriptor.getBPartnerId());
+
 		candidateRecord.setM_Product_ID(materialDescriptor.getProductId());
 		candidateRecord.setM_AttributeSetInstance_ID(materialDescriptor.getAttributeSetInstanceId());
 
@@ -192,9 +194,9 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setQty(candidate.getQuantity());
 		candidateRecord.setDateProjected(new Timestamp(materialDescriptor.getDate().getTime()));
 
-		if (candidate.getSubType() != null)
+		if (candidate.getBusinessCase() != null)
 		{
-			candidateRecord.setMD_Candidate_SubType(candidate.getSubType().toString());
+			candidateRecord.setMD_Candidate_SubType(candidate.getBusinessCase().toString());
 		}
 
 		if (candidate.getParentId() > 0)
@@ -225,17 +227,16 @@ public class CandidateRepositoryWriteService
 	@NonNull
 	private String computeStorageAttributesKeyToStore(@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		final String storageAttributesKey = materialDescriptor.getStorageAttributesKey();
+		final StorageAttributesKey storageAttributesKey = materialDescriptor.getStorageAttributesKey();
 
 		if (Objects.equals(storageAttributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL)
-				|| Check.isEmpty(storageAttributesKey, true))
+				|| storageAttributesKey.isNone())
 		{
-			// don't store NULL because within the DB we have an index on this and NULL values are trouble with indexes
-			return "";
+			return StorageAttributesKey.NONE.getAsString(); // i.e. "", never NULL
 		}
 		else
 		{
-			return storageAttributesKey;
+			return storageAttributesKey.getAsString();
 		}
 	}
 
