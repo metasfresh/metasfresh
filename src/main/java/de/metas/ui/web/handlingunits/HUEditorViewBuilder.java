@@ -18,6 +18,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.NonNull;
 
 /*
@@ -44,7 +45,6 @@ import lombok.NonNull;
 
 public final class HUEditorViewBuilder
 {
-	// private final SqlViewBinding sqlViewBinding;
 	private ViewId parentViewId;
 	private DocumentId parentRowId;
 	private ViewId viewId;
@@ -59,6 +59,8 @@ public final class HUEditorViewBuilder
 	private List<DocumentFilter> stickyFilters;
 	private List<DocumentFilter> filters;
 	private DocumentFilterDescriptorsProvider filterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
+	
+	private List<DocumentQueryOrderBy> orderBys = null;
 
 	private LinkedHashMap<String, Object> parameters;
 	private HUEditorViewRepository huEditorViewRepository;
@@ -207,6 +209,33 @@ public final class HUEditorViewBuilder
 	{
 		return filters != null ? filters : ImmutableList.of();
 	}
+	
+	public HUEditorViewBuilder orderBy(@NonNull final DocumentQueryOrderBy orderBy)
+	{
+		if(orderBys == null)
+		{
+			orderBys = new ArrayList<>();
+		}
+		orderBys.add(orderBy);
+		return this;
+	}
+	
+	public HUEditorViewBuilder orderBys(@NonNull final List<DocumentQueryOrderBy> orderBys)
+	{
+		this.orderBys = new ArrayList<>(orderBys);
+		return this;
+	}
+	
+	public HUEditorViewBuilder clearOrderBys()
+	{
+		this.orderBys = null;
+		return this;
+	}
+	
+	private ImmutableList<DocumentQueryOrderBy> getOrderBys()
+	{
+		return orderBys != null ? ImmutableList.copyOf(orderBys) : ImmutableList.of();
+	}
 
 	public HUEditorViewBuilder setParameter(final String name, final Object value)
 	{
@@ -248,11 +277,11 @@ public final class HUEditorViewBuilder
 
 		if (HUEditorViewBuffer_HighVolume.isHighVolume(stickyFilters))
 		{
-			return new HUEditorViewBuffer_HighVolume(viewId, huEditorViewRepository, stickyFilters, filters);
+			return new HUEditorViewBuffer_HighVolume(viewId, huEditorViewRepository, stickyFilters, filters, getOrderBys());
 		}
 		else
 		{
-			return new HUEditorViewBuffer_FullyCached(viewId, huEditorViewRepository, stickyFilters, filters);
+			return new HUEditorViewBuffer_FullyCached(viewId, huEditorViewRepository, stickyFilters, filters, getOrderBys());
 		}
 	}
 }

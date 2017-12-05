@@ -40,6 +40,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowOverridesHelper;
@@ -262,7 +263,7 @@ public class BoardRestController
 
 		final BoardDescriptor boardDescriptor = boardsRepo.getBoardDescriptor(boardId);
 
-		final ViewLayout documentsViewLayout = viewsRepo.getViewLayout(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list);
+		final ViewLayout documentsViewLayout = viewsRepo.getViewLayout(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list, ViewProfileId.NULL);
 
 		final JSONOptions jsonOpts = newJSONOptions();
 		final String adLanguage = jsonOpts.getAD_Language();

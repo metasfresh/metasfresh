@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -116,6 +117,11 @@ public final class SqlViewSelectionQueryBuilder
 	private IStringExpression getFieldOrderBy(final String fieldName)
 	{
 		return _viewBinding.getFieldOrderBy(fieldName);
+	}
+
+	private Stream<DocumentQueryOrderBy> flatMapEffectiveFieldNames(final DocumentQueryOrderBy orderBy)
+	{
+		return _viewBinding.flatMapEffectiveFieldNames(orderBy);
 	}
 
 	private SqlDocumentFilterConverter getSqlDocumentFilterConverter()
@@ -375,6 +381,7 @@ public final class SqlViewSelectionQueryBuilder
 		};
 
 		final List<DocumentQueryOrderBy> orderBysEffective = orderBys.stream()
+				.flatMap(this::flatMapEffectiveFieldNames)
 				.filter(orderBy -> isKeyFieldName(orderBy.getFieldName()) || isGroupBy(orderBy.getFieldName()) || isAggregated(orderBy.getFieldName()))
 				.collect(ImmutableList.toImmutableList());
 
@@ -466,7 +473,9 @@ public final class SqlViewSelectionQueryBuilder
 		final String keyColumnNameFQ = sqlTableAlias + "." + keyColumnName;
 
 		final String sqlOrderBys = SqlDocumentOrderByBuilder.newInstance(this::getFieldOrderBy)
-				.buildSqlOrderBy(orderBys)
+				.buildSqlOrderBy(orderBys.stream()
+						.flatMap(this::flatMapEffectiveFieldNames)
+						.collect(ImmutableList.toImmutableList()))
 				.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
 
 		//

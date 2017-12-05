@@ -1,7 +1,8 @@
 package de.metas.ui.web.pporder;
 
-import java.util.Collection;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -14,8 +15,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
-import de.metas.ui.web.handlingunits.HUEditorViewFactory;
+import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
 import de.metas.ui.web.pattribute.ASIRepository;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -23,6 +23,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
@@ -59,7 +60,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	@Autowired
 	private ASIRepository asiRepository;
 	@Autowired
-	private HUEditorViewFactory huEditorViewFactory;
+	private DefaultHUEditorViewFactory huEditorViewFactory;
 
 	private final transient CCache<WindowId, ViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
 
@@ -105,15 +106,9 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	}
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType_NOTUSED)
+	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType_NOTUSED, @Nullable final ViewProfileId profileId_NOTUSED)
 	{
 		return layouts.getOrLoad(windowId, () -> createViewLayout(windowId));
-	}
-
-	@Override
-	public Collection<DocumentFilterDescriptor> getViewFilterDescriptors(final WindowId windowId, final JSONViewDataType viewType)
-	{
-		return null; // not supported
 	}
 
 	private final ViewLayout createViewLayout(final WindowId windowId)

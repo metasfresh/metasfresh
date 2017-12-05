@@ -164,9 +164,7 @@ public class PickingSlotViewRepository
 	@VisibleForTesting
 	ImmutableList<PickingSlotRow> retrievePickingSlotRows(@NonNull final PickingSlotRepoQuery query)
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = loadOutOfTrx(query.getShipmentScheduleIds().get(0), I_M_ShipmentSchedule.class);
-
-		final List<I_M_PickingSlot> pickingSlots = retrievePickingSlotsForShipmentSchedule(shipmentSchedule);
+		final List<I_M_PickingSlot> pickingSlots = retrievePickingSlotsForShipmentSchedule(query);
 
 		// retrieve picked HU rows (if any) to be displayed below there respective picking slots
 		final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query);
@@ -184,18 +182,21 @@ public class PickingSlotViewRepository
 	 * @param shipmentSchedule
 	 * @return
 	 */
-	private static List<I_M_PickingSlot> retrievePickingSlotsForShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private static List<I_M_PickingSlot> retrievePickingSlotsForShipmentSchedule(@NonNull final PickingSlotRepoQuery repoQuery)
 	{
+		final I_M_ShipmentSchedule shipmentSchedule = loadOutOfTrx(repoQuery.getShipmentScheduleIds().get(0), I_M_ShipmentSchedule.class);
+
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final PickingSlotQuery pickingSlotquery = PickingSlotQuery.builder()
+		final PickingSlotQuery pickingSlotQuery = PickingSlotQuery.builder()
 				.bpartnerId(shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule))
 				.bpartnerLocationId(shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule))
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
+				.barcode(repoQuery.getPickingSlotBarcode())
 				.build();
 
 		final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
-		final List<I_M_PickingSlot> pickingSlots = pickingSlotDAO.retrivePickingSlots(pickingSlotquery);
+		final List<I_M_PickingSlot> pickingSlots = pickingSlotDAO.retrievePickingSlots(pickingSlotQuery);
 		return pickingSlots;
 	}
 
@@ -293,7 +294,7 @@ public class PickingSlotViewRepository
 
 	public List<PickingSlotRow> retrieveAllPickingSlotsRows()
 	{
-		final List<I_M_PickingSlot> pickingSlots = Services.get(IPickingSlotDAO.class).retrivePickingSlots(PickingSlotQuery.ALL);
+		final List<I_M_PickingSlot> pickingSlots = Services.get(IPickingSlotDAO.class).retrievePickingSlots(PickingSlotQuery.ALL);
 
 		final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrieveAllPickedHUsIndexedByPickingSlotId(pickingSlots);
 

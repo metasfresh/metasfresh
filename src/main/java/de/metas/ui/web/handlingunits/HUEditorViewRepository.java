@@ -10,6 +10,7 @@ import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
  * #%L
@@ -51,7 +52,7 @@ public interface HUEditorViewRepository
 
 	Page<Integer> retrieveHUIdsPage(ViewRowIdsOrderedSelection selection, int firstRow, int maxRows);
 
-	ViewRowIdsOrderedSelection createDefaultSelection(ViewId viewId, List<DocumentFilter> filters);
+	ViewRowIdsOrderedSelection createSelection(ViewId viewId, List<DocumentFilter> filters, List<DocumentQueryOrderBy> orderBys);
 
 	ViewRowIdsOrderedSelection addRowIdsToSelection(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIdsToAdd);
 

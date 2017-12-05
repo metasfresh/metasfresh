@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -36,12 +37,14 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
+import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.SqlViewFactory;
-import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -77,10 +80,9 @@ import lombok.NonNull;
  * #L%
  */
 
-@ViewFactory(windowId = WEBUI_HU_Constants.WEBUI_HU_Window_ID_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
-public class HUEditorViewFactory implements IViewFactory
+public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 {
-	private static final transient Logger logger = LogManager.getLogger(HUEditorViewFactory.class);
+	private static final transient Logger logger = LogManager.getLogger(HUEditorViewFactoryTemplate.class);
 
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
@@ -91,21 +93,19 @@ public class HUEditorViewFactory implements IViewFactory
 	private final transient CCache<Integer, SqlViewBinding> sqlViewBindingCache = CCache.newCache("SqlViewBinding", 1, 0);
 	private final transient CCache<ArrayKey, ViewLayout> layouts = CCache.newLRUCache("HUEditorViewFactory#Layouts", 10, 0);
 
-
-	@Autowired
-	private HUEditorViewFactory(final List<HUEditorViewCustomizer> viewCustomizers)
+	protected HUEditorViewFactoryTemplate(final List<HUEditorViewCustomizer> viewCustomizers)
 	{
 		viewCustomizersByReferencingTableName = viewCustomizers.stream()
 				.collect(GuavaCollectors.toImmutableListMultimap(HUEditorViewCustomizer::getReferencingTableNameToMatch));
 		logger.info("Initialized view customizers: {}", viewCustomizersByReferencingTableName);
 
-		this.rowProcessedPredicateByReferencingTableName = viewCustomizers.stream()
+		rowProcessedPredicateByReferencingTableName = viewCustomizers.stream()
 				.filter(viewCustomizer -> viewCustomizer.getHUEditorRowIsProcessedPredicate() != null)
 				.distinct()
 				.collect(ImmutableMap.toImmutableMap(HUEditorViewCustomizer::getReferencingTableNameToMatch, HUEditorViewCustomizer::getHUEditorRowIsProcessedPredicate));
 		logger.info("Initialized row processed predicates: {}", rowProcessedPredicateByReferencingTableName);
-		
-		this.rowAttributesAlwaysReadonlyByReferencingTableName = viewCustomizers.stream()
+
+		rowAttributesAlwaysReadonlyByReferencingTableName = viewCustomizers.stream()
 				.filter(viewCustomizer -> viewCustomizer.isAttributesAlwaysReadonly() != null)
 				.distinct()
 				.collect(ImmutableMap.toImmutableMap(HUEditorViewCustomizer::getReferencingTableNameToMatch, HUEditorViewCustomizer::isAttributesAlwaysReadonly));
@@ -122,7 +122,7 @@ public class HUEditorViewFactory implements IViewFactory
 		return rowProcessedPredicateByReferencingTableName.getOrDefault(referencingTableName, HUEditorRowIsProcessedPredicates.NEVER);
 	}
 
-	public SqlViewBinding getSqlViewBinding()
+	public final SqlViewBinding getSqlViewBinding()
 	{
 		final int key = 0; // not important
 		return sqlViewBindingCache.getOrLoad(key, this::createSqlViewBinding);
@@ -152,20 +152,31 @@ public class HUEditorViewFactory implements IViewFactory
 		final List<String> displayFieldNames = ImmutableList.of(I_M_HU.COLUMNNAME_M_HU_ID);
 
 		final SqlViewBinding.Builder sqlViewBinding = SqlViewBinding.builder()
-				.setTableName(I_M_HU.Table_Name)
-				.setDisplayFieldNames(displayFieldNames)
-				.setSqlWhereClause(sqlWhereClause.toString())
-				.setRowIdsConverter(HUSqlViewRowIdsConverter.instance);
+				.tableName(I_M_HU.Table_Name)
+				.displayFieldNames(displayFieldNames)
+				.sqlWhereClause(sqlWhereClause.toString())
+				.rowIdsConverter(HUSqlViewRowIdsConverter.instance);
 
 		//
-		// View Fields
+		// View fields: from M_HU's entity descriptor
 		{
 			// NOTE: we need to add all HU's standard fields because those might be needed for some of the standard filters defined
 			final SqlDocumentEntityDataBindingDescriptor huEntityBindings = SqlDocumentEntityDataBindingDescriptor.cast(huEntityDescriptor.getDataBinding());
 			huEntityBindings.getFields()
 					.stream()
 					.map(huField -> SqlViewFactory.createViewFieldBindingBuilder(huField, displayFieldNames).build())
-					.forEach(sqlViewBinding::addField);
+					.forEach(sqlViewBinding::field);
+		}
+
+		//
+		// View field: BestBeforeDate
+		{
+			sqlViewBinding.field(SqlViewRowFieldBinding.builder()
+					.fieldName(HUEditorRow.FIELDNAME_BestBeforeDate)
+					.widgetType(DocumentFieldWidgetType.Date)
+					.columnSql(Constants.sqlBestBeforeDate(sqlViewBinding.getTableAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID))
+					.fieldLoader((rs, adLanguage) -> rs.getTimestamp(HUEditorRow.FIELDNAME_BestBeforeDate))
+					.build());
 		}
 
 		//
@@ -173,12 +184,12 @@ public class HUEditorViewFactory implements IViewFactory
 		{
 			final Collection<DocumentFilterDescriptor> huStandardFilters = huEntityDescriptor.getFilterDescriptors().getAll();
 			sqlViewBinding
-					.setFilterDescriptors(ImmutableDocumentFilterDescriptorsProvider.builder()
+					.filterDescriptors(ImmutableDocumentFilterDescriptorsProvider.builder()
 							.addDescriptors(huStandardFilters)
 							.addDescriptor(HUBarcodeSqlDocumentFilterConverter.createDocumentFilterDescriptor())
 							.build())
-					.addFilterConverter(HUBarcodeSqlDocumentFilterConverter.FILTER_ID, HUBarcodeSqlDocumentFilterConverter.instance)
-					.addFilterConverter(HUIdsFilterHelper.FILTER_ID, HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER);
+					.filterConverter(HUBarcodeSqlDocumentFilterConverter.FILTER_ID, HUBarcodeSqlDocumentFilterConverter.instance)
+					.filterConverter(HUIdsFilterHelper.FILTER_ID, HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER);
 		}
 
 		//
@@ -186,73 +197,34 @@ public class HUEditorViewFactory implements IViewFactory
 	}
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	public final ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
 	{
 		final ArrayKey key = ArrayKey.of(windowId, viewDataType);
 		return layouts.getOrLoad(key, () -> createHUViewLayout(windowId, viewDataType));
 	}
 
-	@Override
-	public Collection<DocumentFilterDescriptor> getViewFilterDescriptors(final WindowId windowId, final JSONViewDataType viewType)
-	{
-		return getSqlViewBinding().getViewFilterDescriptors().getAll();
-	}
-
-	private final ViewLayout createHUViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
-	{
-		if (viewDataType == JSONViewDataType.includedView)
-		{
-			return createHUViewLayout_IncludedView(windowId);
-		}
-		else
-		{
-			return createHUViewLayout_Grid(windowId);
-		}
-	}
-
-	private final ViewLayout createHUViewLayout_IncludedView(final WindowId windowId)
+	protected ViewLayout createHUViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
 	{
 		return ViewLayout.builder()
 				.setWindowId(windowId)
 				.setCaption("HU Editor")
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.setIdFieldName(HUEditorRow.COLUMNNAME_M_HU_ID)
+				.setIdFieldName(HUEditorRow.FIELDNAME_M_HU_ID)
 				.setFilters(getSqlViewBinding().getViewFilterDescriptors().getAll())
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
 				//
-				.addElementsFromViewRowClass(HUEditorRow.class, JSONViewDataType.includedView)
-				//
-				.build();
-	}
-
-	private final ViewLayout createHUViewLayout_Grid(final WindowId windowId)
-	{
-		return ViewLayout.builder()
-				.setWindowId(windowId)
-				.setCaption("HU Editor")
-				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.setIdFieldName(HUEditorRow.COLUMNNAME_M_HU_ID)
-				.setFilters(getSqlViewBinding().getViewFilterDescriptors().getAll())
-				//
-				.setHasAttributesSupport(true)
-				.setHasTreeSupport(true)
-				//
-				.addElementsFromViewRowClass(HUEditorRow.class, JSONViewDataType.grid)
+				.addElementsFromViewRowClass(HUEditorRow.class, viewDataType)
 				//
 				.build();
 	}
 
 	@Override
-	public HUEditorView createView(final CreateViewRequest request)
+	public final HUEditorView createView(final CreateViewRequest request)
 	{
 		final ViewId viewId = request.getViewId();
-
-		// NOTE: we shall allow any windowId because in some cases we want to use it as an included view mapped to some other window
-		// if (!WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(viewId.getWindowId())) throw new IllegalArgumentException("Invalid request's windowId: " + request);
 
 		//
 		// Referencing documentPaths and tableName (i.e. from where are we coming, e.g. receipt schedule)
@@ -261,40 +233,64 @@ public class HUEditorViewFactory implements IViewFactory
 
 		final SqlViewBinding sqlViewBinding = getSqlViewBinding();
 
-		@SuppressWarnings("deprecation") // as long as the deprecated getFilterOnlyIds() is around we can't ignore it
-		final List<DocumentFilter> stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds());
-		final DocumentFilterDescriptorsProvider filterDescriptors = sqlViewBinding.getViewFilterDescriptors();
-		final List<DocumentFilter> filters = request.getOrUnwrapFilters(filterDescriptors);
-
-		final WindowId windowId = viewId.getWindowId();
-		final boolean attributesAlwaysReadonly = rowAttributesAlwaysReadonlyByReferencingTableName.getOrDefault(referencingTableName, Boolean.TRUE);
-		final HUEditorViewRepository huEditorViewRepository = SqlHUEditorViewRepository.builder()
-				.windowId(windowId)
-				.rowProcessedPredicate(getRowProcessedPredicate(referencingTableName))
-				.attributesProvider(HUEditorRowAttributesProvider.builder()
-						.readonly(attributesAlwaysReadonly)
-						.build())
-				.sqlViewBinding(sqlViewBinding)
-				.build();
-
-		final HUEditorViewBuilder huViewBuilder = HUEditorView.builder()
-				.setParentViewId(request.getParentViewId())
-				.setParentRowId(request.getParentRowId())
-				.setViewId(viewId)
-				.setViewType(request.getViewType())
-				.setStickyFilters(stickyFilters)
-				.setFilters(filters)
-				.setFilterDescriptors(filterDescriptors)
-				.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
-				.setActions(request.getActions())
-				.setAdditionalRelatedProcessDescriptors(request.getAdditionalRelatedProcessDescriptors())
-				.setHUEditorViewRepository(huEditorViewRepository);
+		//
+		// HUEditorView rows repository
+		final HUEditorViewRepository huEditorViewRepository;
+		{
+			final WindowId windowId = viewId.getWindowId();
+			final boolean attributesAlwaysReadonly = rowAttributesAlwaysReadonlyByReferencingTableName.getOrDefault(referencingTableName, Boolean.TRUE);
+			final SqlHUEditorViewRepositoryBuilder huEditorViewRepositoryBuilder = SqlHUEditorViewRepository.builder()
+					.windowId(windowId)
+					.rowProcessedPredicate(getRowProcessedPredicate(referencingTableName))
+					.attributesProvider(HUEditorRowAttributesProvider.builder()
+							.readonly(attributesAlwaysReadonly)
+							.build())
+					.sqlViewBinding(sqlViewBinding);
+			customizeHUEditorViewRepository(huEditorViewRepositoryBuilder);
+			huEditorViewRepository = huEditorViewRepositoryBuilder.build();
+		}
 
 		//
-		// Call view customizers
-		getViewCustomizers(referencingTableName).forEach(viewCustomizer -> viewCustomizer.beforeCreate(huViewBuilder));
+		// HUEditorView
+		{
+			// Filters
+			@SuppressWarnings("deprecation") // as long as the deprecated getFilterOnlyIds() is around we can't ignore it
+			final List<DocumentFilter> stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds());
+			final DocumentFilterDescriptorsProvider filterDescriptors = sqlViewBinding.getViewFilterDescriptors();
+			final List<DocumentFilter> filters = request.getOrUnwrapFilters(filterDescriptors);
 
-		return huViewBuilder.build();
+			// Start building the HUEditorView
+			final HUEditorViewBuilder huViewBuilder = HUEditorView.builder()
+					.setParentViewId(request.getParentViewId())
+					.setParentRowId(request.getParentRowId())
+					.setViewId(viewId)
+					.setViewType(request.getViewType())
+					.setStickyFilters(stickyFilters)
+					.setFilters(filters)
+					.setFilterDescriptors(filterDescriptors)
+					.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
+					.orderBys(sqlViewBinding.getDefaultOrderBys())
+					.setActions(request.getActions())
+					.setAdditionalRelatedProcessDescriptors(request.getAdditionalRelatedProcessDescriptors())
+					.setHUEditorViewRepository(huEditorViewRepository);
+
+			//
+			// Call view customizers
+			getViewCustomizers(referencingTableName).forEach(viewCustomizer -> viewCustomizer.beforeCreate(huViewBuilder));
+			customizeHUEditorView(huViewBuilder);
+
+			return huViewBuilder.build();
+		}
+	}
+
+	protected void customizeHUEditorViewRepository(final SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder huEditorViewRepositoryBuilder)
+	{
+		// nothing on this level
+	}
+
+	protected void customizeHUEditorView(final HUEditorViewBuilder huViewBuilder)
+	{
+		// nothing on this level
 	}
 
 	private String extractReferencingTablename(final Set<DocumentPath> referencingDocumentPaths)

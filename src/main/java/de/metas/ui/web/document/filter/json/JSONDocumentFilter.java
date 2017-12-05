@@ -47,7 +47,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 @lombok.Data
 public final class JSONDocumentFilter
 {
-	public static List<DocumentFilter> unwrapList(final List<JSONDocumentFilter> jsonFilters, final DocumentFilterDescriptorsProvider filterDescriptorProvider)
+	public static ImmutableList<DocumentFilter> unwrapList(final List<JSONDocumentFilter> jsonFilters, final DocumentFilterDescriptorsProvider filterDescriptorProvider)
 	{
 		if (jsonFilters == null || jsonFilters.isEmpty())
 		{

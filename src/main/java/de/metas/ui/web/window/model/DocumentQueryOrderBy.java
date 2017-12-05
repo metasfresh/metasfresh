@@ -1,22 +1,18 @@
 package de.metas.ui.web.window.model;
 
-import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import javax.annotation.concurrent.Immutable;
-
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
-import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -40,12 +36,23 @@ import lombok.NonNull;
  * #L%
  */
 
-@Immutable
-@SuppressWarnings("serial")
-public final class DocumentQueryOrderBy implements Serializable
+@Value
+public final class DocumentQueryOrderBy
 {
 	public static final DocumentQueryOrderBy byFieldName(final String fieldName, final boolean ascending)
 	{
+		return new DocumentQueryOrderBy(fieldName, ascending);
+	}
+
+	public static final DocumentQueryOrderBy byFieldName(final String fieldName)
+	{
+		final boolean ascending = true;
+		return new DocumentQueryOrderBy(fieldName, ascending);
+	}
+
+	public static final DocumentQueryOrderBy byFieldNameDescending(final String fieldName)
+	{
+		final boolean ascending = false;
 		return new DocumentQueryOrderBy(fieldName, ascending);
 	}
 
@@ -95,52 +102,18 @@ public final class DocumentQueryOrderBy implements Serializable
 
 	private DocumentQueryOrderBy(final String fieldName, final boolean ascending)
 	{
-		super();
 		Check.assumeNotEmpty(fieldName, "fieldName is not empty");
 		this.fieldName = fieldName;
 		this.ascending = ascending;
 	}
 
-	@Override
-	public String toString()
+	public DocumentQueryOrderBy copyOverridingFieldName(final String fieldName)
 	{
-		return MoreObjects.toStringHelper(this)
-				.add("fieldName", fieldName)
-				.add("ascending", ascending)
-				.toString();
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return Objects.hash(fieldName, ascending);
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
+		if (Objects.equals(this.fieldName, fieldName))
 		{
-			return true;
+			return this;
 		}
-		if (obj instanceof DocumentQueryOrderBy)
-		{
-			final DocumentQueryOrderBy other = (DocumentQueryOrderBy)obj;
-			return Objects.equals(fieldName, other.fieldName)
-					&& ascending == other.ascending;
-		}
-		return false;
-	}
-
-	@NonNull
-	public String getFieldName()
-	{
-		return fieldName;
-	}
-
-	public boolean isAscending()
-	{
-		return ascending;
+		return new DocumentQueryOrderBy(fieldName, ascending);
 	}
 
 	public <T> Comparator<T> asComparator(final BiFunction<T, String, Object> fieldValueExtractor)

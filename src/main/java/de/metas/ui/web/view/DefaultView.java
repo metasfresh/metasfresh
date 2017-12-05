@@ -91,6 +91,7 @@ public class DefaultView implements IEditableView
 	private final ViewId parentViewId;
 	private final DocumentId parentRowId;
 	private final JSONViewDataType viewType;
+	private final ViewProfileId profileId;
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
 	private final transient ViewRowIdsOrderedSelection defaultSelection;
@@ -119,6 +120,7 @@ public class DefaultView implements IEditableView
 		parentViewId = builder.getParentViewId();
 		parentRowId = builder.getParentRowId();
 		viewType = builder.getViewType();
+		profileId = builder.getProfileId();
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 
 		//
@@ -189,6 +191,12 @@ public class DefaultView implements IEditableView
 	public JSONViewDataType getViewType()
 	{
 		return viewType;
+	}
+
+	@Override
+	public ViewProfileId getProfileId()
+	{
+		return profileId;
 	}
 
 	@Override
@@ -514,6 +522,7 @@ public class DefaultView implements IEditableView
 	{
 		private ViewId viewId;
 		private JSONViewDataType viewType;
+		private ViewProfileId profileId;
 		private Set<DocumentPath> referencingDocumentPaths;
 		private ViewId parentViewId;
 		private DocumentId parentRowId;
@@ -570,6 +579,17 @@ public class DefaultView implements IEditableView
 		public JSONViewDataType getViewType()
 		{
 			return viewType;
+		}
+
+		public Builder setProfileId(ViewProfileId profileId)
+		{
+			this.profileId = profileId;
+			return this;
+		}
+
+		public ViewProfileId getProfileId()
+		{
+			return profileId;
 		}
 
 		public Builder setReferencingDocumentPaths(final Set<DocumentPath> referencingDocumentPaths)

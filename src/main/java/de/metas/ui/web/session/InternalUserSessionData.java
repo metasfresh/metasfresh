@@ -111,33 +111,7 @@ import de.metas.ui.web.base.session.UserPreference;
 		ctx = new Properties();
 		Env.setContext(ctx, CTXNAME_IsServerContext, false);
 
-		// Set initial language
-		try
-		{
-			final Language language = findInitialLanguage();
-			verifyLanguageAndSet(language);
-		}
-		catch (final Exception e)
-		{
-			UserSession.logger.warn("Failed setting the language, but moving on", e);
-		}
-
 		UserSession.logger.trace("User session created: {}", this);
-	}
-	
-	private static final Language findInitialLanguage()
-	{
-		final Locale locale = LocaleContextHolder.getLocale();
-		if(locale != null)
-		{
-			final Language language = Language.findLanguageByLocale(locale);
-			if(language != null)
-			{
-				return language;
-			}
-		}
-		
-		return Language.getBaseLanguage();
 	}
 
 	@Override
@@ -149,6 +123,33 @@ import de.metas.ui.web.base.session.UserPreference;
 		setAllowDeprecatedRestAPI(defaultAllowDeprecatedRestAPI);
 		setHttpCacheMaxAge(defaultHttpCacheMaxAge);
 		setUseHttpAcceptLanguage(defaultUseHttpAcceptLanguage);
+
+		//
+		// Set initial language
+		try
+		{
+			final Language language = findInitialLanguage();
+			verifyLanguageAndSet(language);
+		}
+		catch (final Throwable ex)
+		{
+			UserSession.logger.warn("Failed setting the language, but moving on", ex);
+		}
+	}
+
+	private static final Language findInitialLanguage()
+	{
+		final Locale locale = LocaleContextHolder.getLocale();
+		if (locale != null)
+		{
+			final Language language = Language.findLanguageByLocale(locale);
+			if (language != null)
+			{
+				return language;
+			}
+		}
+
+		return Language.getBaseLanguage();
 	}
 
 	@Override

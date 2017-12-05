@@ -174,7 +174,7 @@ public final class DocumentFilterParamDescriptor
 			return fieldName;
 		}
 
-		public Builder setParameterName(final String parameterName)
+		Builder setParameterName(final String parameterName)
 		{
 			this.parameterName = parameterName;
 			return this;

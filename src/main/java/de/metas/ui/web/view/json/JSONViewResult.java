@@ -14,6 +14,7 @@ import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.document.filter.json.JSONStickyDocumentFilter;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowOverrides;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -73,6 +74,10 @@ public final class JSONViewResult
 	//
 	@JsonProperty("viewId")
 	private final String viewId;
+
+	@JsonProperty("profileId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final ViewProfileId profileId;
 
 	@JsonProperty("parentWindowId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -139,6 +144,7 @@ public final class JSONViewResult
 		this.viewId = viewId.getViewId();
 		windowId = viewId.getWindowId();
 		type = windowId;
+		profileId = viewResult.getProfileId();
 
 		final ViewId parentViewId = viewResult.getParentViewId();
 		parentWindowId = parentViewId == null ? null : parentViewId.getWindowId();
@@ -179,6 +185,7 @@ public final class JSONViewResult
 	private JSONViewResult( //
 			@JsonProperty("windowId") final WindowId windowId,
 			@JsonProperty("viewId") final String viewId,
+			@JsonProperty("profileId") final ViewProfileId profileId,
 			//
 			@JsonProperty("parentWindowId") final WindowId parentWindowId,
 			@JsonProperty("parentViewId") final String parentViewId,
@@ -204,6 +211,7 @@ public final class JSONViewResult
 		this.viewId = viewId;
 		type = windowId;
 		this.windowId = windowId;
+		this.profileId = profileId;
 		//
 		this.parentWindowId = parentWindowId;
 		this.parentViewId = parentViewId;

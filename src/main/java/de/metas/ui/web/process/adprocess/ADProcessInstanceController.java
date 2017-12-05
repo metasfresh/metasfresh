@@ -51,6 +51,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -362,6 +363,7 @@ import lombok.NonNull;
 				{
 					resultBuilder.setAction(OpenIncludedViewAction.builder()
 							.viewId(ViewId.ofViewIdString(processExecutionResult.getWebuiIncludedViewIdToOpen()))
+							.profileId(ViewProfileId.fromJson(processExecutionResult.getWebuiViewProfileId()))
 							.build());
 				}
 				//
