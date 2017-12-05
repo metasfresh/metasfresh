@@ -1286,3 +1286,22 @@ UPDATE AD_PrintFormatItem pi SET PrintName='Package UOM Name', Name='Package UOM
 ALTER TABLE public.I_Product DROP COLUMN Package_UOM;
 
 
+
+
+
+-- 2017-12-05T19:04:04.419
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2017-12-05 19:04:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549594
+;
+
+-- 2017-12-05T19:05:01.889
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2017-12-05 19:05:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549595
+;
+
+-- 2017-12-05T19:05:09.671
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2017-12-05 19:05:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549596
+;
+
+
