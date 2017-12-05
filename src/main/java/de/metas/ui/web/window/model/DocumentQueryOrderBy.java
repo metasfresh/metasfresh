@@ -44,6 +44,18 @@ public final class DocumentQueryOrderBy
 		return new DocumentQueryOrderBy(fieldName, ascending);
 	}
 
+	public static final DocumentQueryOrderBy byFieldName(final String fieldName)
+	{
+		final boolean ascending = true;
+		return new DocumentQueryOrderBy(fieldName, ascending);
+	}
+
+	public static final DocumentQueryOrderBy byFieldNameDescending(final String fieldName)
+	{
+		final boolean ascending = false;
+		return new DocumentQueryOrderBy(fieldName, ascending);
+	}
+
 	/**
 	 * @param orderBysListStr Command separated field names. Use +/- prefix for ascending/descending. e.g. +C_BPartner_ID,-DateOrdered
 	 */
