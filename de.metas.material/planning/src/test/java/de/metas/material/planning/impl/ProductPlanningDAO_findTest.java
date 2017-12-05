@@ -63,7 +63,7 @@ public class ProductPlanningDAO_findTest
 	private I_M_AttributeValue organicAttributeValue;
 
 	private I_M_Attribute madeInCologneAttribute;
-	private I_M_AttributeValue  madeInCologneAttributeValue;
+	private I_M_AttributeValue madeInCologneAttributeValue;
 
 	@Before
 	public void init()
@@ -79,10 +79,10 @@ public class ProductPlanningDAO_findTest
 
 		attributesTestHelper = new AttributesTestHelper();
 
-		organicAttribute = attributesTestHelper.createM_Attribute("MadeInCologneAttributeValue", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		organicAttribute = createStorageRelevantListAttribute("MadeInCologneAttributeValue");
 		organicAttributeValue = attributesTestHelper.createM_AttributeValue(organicAttribute, "MadeInCologneAttributeValue");
 
-		madeInCologneAttribute = attributesTestHelper.createM_Attribute("OrganicAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		madeInCologneAttribute = createStorageRelevantListAttribute("OrganicAttribute");
 		madeInCologneAttributeValue = attributesTestHelper.createM_AttributeValue(organicAttribute, "OrganicAttributeValue");
 	}
 
@@ -160,6 +160,15 @@ public class ProductPlanningDAO_findTest
 		final I_PP_Product_Planning result = invokeFindMethodWithASI(organicAndMadeInCologneASI.getM_AttributeSetInstance_ID());
 
 		assertThat(result.getPP_Product_Planning_ID()).isEqualTo(productPlanningWithoutAsi.getPP_Product_Planning_ID());
+	}
+
+	private I_M_Attribute createStorageRelevantListAttribute(final String name)
+	{
+		final I_M_Attribute attribute = attributesTestHelper.createM_Attribute(name, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		attribute.setIsStorageRelevant(true);
+		save(attribute);
+
+		return attribute;
 	}
 
 	private I_M_AttributeSetInstance createOrganicAndMadeInCologneASI()

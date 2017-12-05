@@ -63,6 +63,8 @@ public class M_ShipmentScheduleTest
 		shipmentSchedule.setQtyOrdered_Calculated(BigDecimal.TEN); // note that setQtyOrdered is just for display!, QtyOrdered_Calculated one or QtyOrdered_Override is where the qty is!
 		shipmentSchedule.setM_Product_ID(20);
 		shipmentSchedule.setM_Warehouse_ID(30);
+		shipmentSchedule.setC_BPartner_ID(40);
+		shipmentSchedule.setC_BPartner_Override_ID(45);
 		save(shipmentSchedule);
 
 		final ShipmentScheduleCreatedEvent result = M_ShipmentSchedule.INSTANCE
@@ -71,6 +73,7 @@ public class M_ShipmentScheduleTest
 		assertThat(result).isNotNull();
 		assertThat(result.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
 		assertThat(result.getOrderLineId()).isLessThanOrEqualTo(0);
+		assertThat(result.getMaterialDescriptor().getBPartnerId()).isEqualTo(45);
 		assertThat(result.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("10");
 		assertThat(result.getMaterialDescriptor().getProductId()).isEqualTo(20);
 		assertThat(result.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);

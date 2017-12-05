@@ -128,7 +128,7 @@ public class DDOrderPojoSupplier
 
 		int M_Shipper_ID = -1;
 		// I_DD_Order order = null;
-		DDOrder.DDOrderBuilder orderBuilder = null;
+		DDOrder.DDOrderBuilder ddOrderBuilder = null;
 
 		BigDecimal qtyToSupplyRemaining = request.getQtyToSupply();
 		for (final I_DD_NetworkDistributionLine networkLine : networkLines)
@@ -156,7 +156,6 @@ public class DDOrderPojoSupplier
 						.addParameter(I_DD_NetworkDistributionLine.COLUMNNAME_M_Warehouse_ID, warehouseTo.getName())
 						.setComment("No locators found for source or target warehouse")
 						.collect();
-				//
 				continue;
 			}
 
@@ -203,7 +202,7 @@ public class DDOrderPojoSupplier
 				//
 				// Try to find some DD_Order with Shipper , Business Partner and Doc Status = Draft
 				// Consolidate the demand in a single order for each Shipper , Business Partner , DemandDateStartSchedule
-				orderBuilder = DDOrder.builder()
+				ddOrderBuilder = DDOrder.builder()
 						.orgId(warehouseTo.getAD_Org_ID())
 						.plantId(plant.getS_Resource_ID())
 						.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
@@ -211,7 +210,7 @@ public class DDOrderPojoSupplier
 						.shipperId(networkLine.getM_Shipper_ID())
 						.advisedToCreateDDrder(productPlanningData.isCreatePlan());
 
-				builders.add(orderBuilder);
+				builders.add(ddOrderBuilder);
 
 				M_Shipper_ID = networkLine.getM_Shipper_ID();
 			}
@@ -220,7 +219,7 @@ public class DDOrderPojoSupplier
 			// Crate DD order line
 			final BigDecimal qtyToMove = calculateQtyToMove(qtyToSupplyRemaining, networkLine.getPercent());
 			final DDOrderLine ddOrderLine = createDD_OrderLine(networkLine, qtyToMove, supplyDateFinishSchedule, request);
-			orderBuilder.line(ddOrderLine);
+			ddOrderBuilder.line(ddOrderLine);
 
 			qtyToSupplyRemaining = qtyToSupplyRemaining.subtract(qtyToMove);
 		} // end of the for-loop over networkLines
@@ -286,6 +285,7 @@ public class DDOrderPojoSupplier
 
 		final DDOrderLine ddOrderline = DDOrderLine.builder()
 				.salesOrderLineId(request.getMrpDemandOrderLineSOId())
+				.bPartnerId(request.getMrpDemandBPartnerId())
 				.productDescriptor(productDescriptor)
 				.qty(qtyToMove)
 				.networkDistributionLineId(networkLine.getDD_NetworkDistributionLine_ID())

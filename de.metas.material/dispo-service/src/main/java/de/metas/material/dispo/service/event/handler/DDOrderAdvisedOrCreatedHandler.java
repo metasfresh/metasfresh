@@ -7,16 +7,16 @@ import java.util.Set;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
-import de.metas.material.dispo.commons.candidate.CandidateSubType;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
@@ -49,7 +49,7 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class DDOrderAdvisedHandler
+public class DDOrderAdvisedOrCreatedHandler
 {
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final CandidateRepositoryWriteService candidateRepositoryWrite;
@@ -57,7 +57,7 @@ public class DDOrderAdvisedHandler
 	private final CandidateChangeService candidateChangeHandler;
 	private final RequestMaterialOrderService requestMaterialOrderService;
 
-	public DDOrderAdvisedHandler(
+	public DDOrderAdvisedOrCreatedHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
 			@NonNull final CandidateChangeService candidateChangeHandler,
@@ -71,7 +71,7 @@ public class DDOrderAdvisedHandler
 		this.supplyProposalEvaluator = supplyProposalEvaluator;
 	}
 
-	public void handleDistributionAdvisedEvent(final DDOrderAdvisedOrCreatedEvent event)
+	public void handleDDOrderAdvisedOrCreatedEvent(final DDOrderAdvisedOrCreatedEvent event)
 	{
 		final DDOrder ddOrder = event.getDdOrder();
 
@@ -86,6 +86,7 @@ public class DDOrderAdvisedHandler
 			final SupplyProposal proposal = SupplyProposal.builder()
 					.date(orderLineStartDate)
 					.productDescriptor(ddOrderLine.getProductDescriptor())
+					// ignoring bpartner for now..not sure if that's good or not..
 					.destWarehouseId(event.getToWarehouseId())
 					.sourceWarehouseId(event.getFromWarehouseId())
 					.build();
@@ -95,9 +96,9 @@ public class DDOrderAdvisedHandler
 			}
 
 			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-					.complete(true)
 					.date(ddOrder.getDatePromised())
 					.productDescriptor(ddOrderLine.getProductDescriptor())
+					.bPartnerId(ddOrderLine.getBPartnerId())
 					.quantity(ddOrderLine.getQty())
 					.warehouseId(event.getToWarehouseId())
 					.build();
@@ -106,7 +107,7 @@ public class DDOrderAdvisedHandler
 
 			final Candidate supplyCandidate = Candidate.builderForEventDescr(event.getEventDescriptor())
 					.type(CandidateType.SUPPLY)
-					.subType(CandidateSubType.DISTRIBUTION)
+					.businessCase(CandidateBusinessCase.DISTRIBUTION)
 					.groupId(event.getGroupId())
 					.status(candidateStatus)
 					.materialDescriptor(materialDescriptor)

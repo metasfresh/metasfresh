@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.event.handler;
 
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.CLIENT_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
@@ -21,8 +22,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -123,6 +124,8 @@ public class ShipmentScheduleCreatedHandlerTests
 
 		assertThat(demandRecord.getQty()).isEqualByComparingTo("10");
 		assertThat(stockRecord.getQty()).isEqualByComparingTo("-10"); // the stock is unbalanced, because there is no existing stock and no supply
+
+		assertThat(allRecords).allSatisfy(r -> assertThat(r.getC_BPartner_ID()).isEqualTo(BPARTNER_ID));
 	}
 
 	public static ShipmentScheduleCreatedEvent createShipmentScheduleTestEvent()
@@ -130,9 +133,9 @@ public class ShipmentScheduleCreatedHandlerTests
 		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.materialDescriptor(MaterialDescriptor.builder()
-						.complete(true)
 						.date(NOW)
 						.productDescriptor(createProductDescriptor())
+						.bPartnerId(BPARTNER_ID)
 						.quantity(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
 						.build())

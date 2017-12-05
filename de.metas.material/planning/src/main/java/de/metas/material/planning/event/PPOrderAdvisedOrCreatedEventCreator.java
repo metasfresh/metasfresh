@@ -37,13 +37,13 @@ import lombok.NonNull;
  */
 
 @Service
-public class ProductionAdvisedEventCreator
+public class PPOrderAdvisedOrCreatedEventCreator
 {
 	private final PPOrderDemandMatcher ppOrderDemandMatcher;
 
 	private final PPOrderPojoSupplier ppOrderPojoSupplier;
 
-	public ProductionAdvisedEventCreator(
+	public PPOrderAdvisedOrCreatedEventCreator(
 			@NonNull final PPOrderDemandMatcher ppOrderDemandMatcher,
 			@NonNull final PPOrderPojoSupplier ppOrderPojoSupplier)
 	{

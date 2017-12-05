@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1397586411L;
+	private static final long serialVersionUID = -585226192L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -48,6 +48,76 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order(org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	/** Set Auftrag.
+		@param C_Order_ID 
+		Auftrag
+	  */
+	@Override
+	public void setC_Order_ID (int C_Order_ID)
+	{
+		throw new IllegalArgumentException ("C_Order_ID is virtual column");	}
+
+	/** Get Auftrag.
+		@return Auftrag
+	  */
+	@Override
+	public int getC_Order_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set Plandatum.
 		@param DateProjected Plandatum	  */
@@ -274,6 +344,39 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
+	public org.compiere.model.I_M_Forecast getM_Forecast() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Forecast_ID, org.compiere.model.I_M_Forecast.class);
+	}
+
+	@Override
+	public void setM_Forecast(org.compiere.model.I_M_Forecast M_Forecast)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Forecast_ID, org.compiere.model.I_M_Forecast.class, M_Forecast);
+	}
+
+	/** Set Prognose.
+		@param M_Forecast_ID 
+		Vorhersagen zu Material-/Produkt-/Artikelentwicklung
+	  */
+	@Override
+	public void setM_Forecast_ID (int M_Forecast_ID)
+	{
+		throw new IllegalArgumentException ("M_Forecast_ID is virtual column");	}
+
+	/** Get Prognose.
+		@return Vorhersagen zu Material-/Produkt-/Artikelentwicklung
+	  */
+	@Override
+	public int getM_Forecast_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Forecast_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
@@ -305,6 +408,24 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Lieferdisposition.
+		@param M_ShipmentSchedule_ID Lieferdisposition	  */
+	@Override
+	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
+	{
+		throw new IllegalArgumentException ("M_ShipmentSchedule_ID is virtual column");	}
+
+	/** Get Lieferdisposition.
+		@return Lieferdisposition	  */
+	@Override
+	public int getM_ShipmentSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

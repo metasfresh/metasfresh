@@ -11,6 +11,7 @@ import org.compiere.util.TimeUtil;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 
 /*
@@ -55,16 +56,18 @@ public class EventTestHelper
 
 	public static final int PRODUCT_ID = 24;
 
+	public static final int BPARTNER_ID= 25;
+
 	public static final int ATTRIBUTE_SET_INSTANCE_ID = 28;
 
-	public static final String STORAGE_ATTRIBUTES_KEY = "StorageAttributesKey";
+	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY = StorageAttributesKey.ofAttributeValueIds(1);
 
 	public static MaterialDescriptor createMaterialDescriptor()
 	{
-		return MaterialDescriptor
-				.builderForCompleteDescriptor()
+		return MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
+				.bPartnerId(BPARTNER_ID)
 				.quantity(BigDecimal.TEN)
 				.date(NOW)
 				.build();
@@ -79,7 +82,7 @@ public class EventTestHelper
 	{
 		return ProductDescriptor.forProductAndAttributes(
 				PRODUCT_ID + offset,
-				STORAGE_ATTRIBUTES_KEY + offset,
+				StorageAttributesKey.ofAttributeValueIds(STORAGE_ATTRIBUTES_KEY.getAttributeValueIds().get(0) + 1 + offset),
 				ATTRIBUTE_SET_INSTANCE_ID + offset);
 	}
 

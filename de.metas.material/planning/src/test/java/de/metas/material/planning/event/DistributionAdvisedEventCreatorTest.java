@@ -89,7 +89,7 @@ public class DistributionAdvisedEventCreatorTest
 		}};	// @formatter:on
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptor();
 
-		final DistributionAdvisedEventCreator productionAdvisedEventCreator = new DistributionAdvisedEventCreator(ddOrderDemandMatcher, ddOrderPojoSupplier);
+		final DDOrderAdvisedOrCreatedEventCreator productionAdvisedEventCreator = new DDOrderAdvisedOrCreatedEventCreator(ddOrderDemandMatcher, ddOrderPojoSupplier);
 		final List<DDOrderAdvisedOrCreatedEvent> events = productionAdvisedEventCreator.createDistributionAdvisedEvents(supplyRequiredDescriptor, mrpContext);
 
 		assertThat(events).hasSize(1);
