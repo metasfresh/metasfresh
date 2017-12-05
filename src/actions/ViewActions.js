@@ -51,7 +51,6 @@ export function deleteView(
 
 export function createViewRequest({
     windowId, viewType,
-    pageLength,
     filters,
     refDocType = null, refDocId = null, refTabId = null, refRowIds = null
 }){

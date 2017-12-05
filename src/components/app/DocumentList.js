@@ -379,7 +379,6 @@ class DocumentList extends Component {
         createViewRequest({
             windowId : windowType,
             viewType : type,
-            pageLength : this.pageLength,
             filters : filters,
             refDocType : refType,
             refDocId : refId,
