@@ -115,7 +115,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 		//
 		// Operand 2
-		sb.append(" ").append(operand2);
+		sb.append(" '").append(operand2).append("'");
 		if (!NullQueryFilterModifier.isNull(operand2Modifier))
 		{
 			sb.append("(M:").append(operand2Modifier).append(")");
@@ -276,7 +276,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		final String operand1ColumnSql = operand1Modifier.getColumnSql(operand1ColumnName);
 		final String operatorSql = operator.getSql();
 
-		sqlParams = new ArrayList<Object>();
+		sqlParams = new ArrayList<>();
 		final String operand2Sql = operand2 == null ? null : operand2Modifier.getValueSql(operand2, sqlParams);
 
 		if (operand2 == null && Operator.EQUAL == operator)
