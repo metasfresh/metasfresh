@@ -39,11 +39,11 @@ import de.metas.vertical.pharma.model.I_I_BPartner;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class PharmaImportInterceptor implements IImportInterceptor
+public class PharmaImportPartnerInterceptor implements IImportInterceptor
 {
-	public static final PharmaImportInterceptor instance = new PharmaImportInterceptor();
+	public static final PharmaImportPartnerInterceptor instance = new PharmaImportPartnerInterceptor();
 
-	private PharmaImportInterceptor()
+	private PharmaImportPartnerInterceptor()
 	{
 
 	}

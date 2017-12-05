@@ -990,6 +990,31 @@ public interface I_M_Product
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Hersteller.
+	 * Hersteller des Produktes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setManufacturer (java.lang.String Manufacturer);
+
+	/**
+	 * Get Hersteller.
+	 * Hersteller des Produktes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getManufacturer();
+
+    /** Column definition for Manufacturer */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Manufacturer = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Manufacturer", null);
+    /** Column name Manufacturer */
+    public static final String COLUMNNAME_Manufacturer = "Manufacturer";
+
+	/**
 	 * Set MRP ausschliessen.
 	 *
 	 * <br>Type: List
@@ -1036,6 +1061,60 @@ public interface I_M_Product
     public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Package UOM.
+	 * UOM of the package
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPackage_UOM_ID (int Package_UOM_ID);
+
+	/**
+	 * Get Package UOM.
+	 * UOM of the package
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPackage_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getPackage_UOM();
+
+	public void setPackage_UOM(org.compiere.model.I_C_UOM Package_UOM);
+
+    /** Column definition for Package_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_C_UOM> COLUMN_Package_UOM_ID = new org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_C_UOM>(I_M_Product.class, "Package_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name Package_UOM_ID */
+    public static final String COLUMNNAME_Package_UOM_ID = "Package_UOM_ID";
+
+	/**
+	 * Set Package Size.
+	 * Size of a package
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPackageSize (java.math.BigDecimal PackageSize);
+
+	/**
+	 * Get Package Size.
+	 * Size of a package
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPackageSize();
+
+    /** Column definition for PackageSize */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_PackageSize = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "PackageSize", null);
+    /** Column name PackageSize */
+    public static final String COLUMNNAME_PackageSize = "PackageSize";
 
 	/**
 	 * Set Verarbeiten.
