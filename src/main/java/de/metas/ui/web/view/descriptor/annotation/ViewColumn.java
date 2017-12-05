@@ -47,6 +47,9 @@ public @interface ViewColumn
 	 */
 	String captionKey() default "";
 
+	/** true if user is allowed to sort by this column */
+	boolean sorting() default true;
+
 	/**
 	 * Column layout profiles.
 	 *

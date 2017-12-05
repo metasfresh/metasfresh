@@ -114,6 +114,10 @@ public final class JSONDocumentLayoutElement
 	@JsonProperty("viewEditorRenderMode")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String viewEditorRenderMode;
+	@JsonProperty("sortable")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean viewAllowSorting;
+
 
 	@JsonProperty("fields")
 	@JsonInclude(Include.NON_EMPTY)
@@ -155,6 +159,7 @@ public final class JSONDocumentLayoutElement
 
 		gridAlign = JSONLayoutAlign.fromNullable(element.getGridAlign());
 		viewEditorRenderMode = element.getViewEditorRenderMode() != null ? element.getViewEditorRenderMode().toJson() : null;
+		viewAllowSorting = element.isGridElement() ? element.isViewAllowSorting() : null;
 
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), jsonOpts);
 	}
@@ -174,6 +179,7 @@ public final class JSONDocumentLayoutElement
 		size = null;
 		gridAlign = JSONLayoutAlign.right;
 		viewEditorRenderMode = null;
+		viewAllowSorting = null;
 
 		fields = ImmutableSet.of(new JSONDocumentLayoutElementField( //
 				fieldName, (JSONFieldType)null // type

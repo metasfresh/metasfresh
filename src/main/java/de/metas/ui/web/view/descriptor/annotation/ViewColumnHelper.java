@@ -153,6 +153,7 @@ public final class ViewColumnHelper
 				.caption(Services.get(IMsgBL.class).translatable(captionKey))
 				.widgetType(viewColumnAnn.widgetType())
 				.editorRenderMode(viewColumnAnn.editor())
+				.allowSorting(viewColumnAnn.sorting())
 				.fieldReference(FieldReference.of(field))
 				.layoutsByViewType(layoutsByViewType)
 				.build();
@@ -161,10 +162,11 @@ public final class ViewColumnHelper
 	private static DocumentLayoutElementDescriptor.Builder createLayoutElement(final ClassViewColumnDescriptor column)
 	{
 		return DocumentLayoutElementDescriptor.builder()
+				.setGridElement()
 				.setCaption(column.getCaption())
 				.setWidgetType(column.getWidgetType())
-				.setGridElement()
 				.setViewEditorRenderMode(column.getEditorRenderMode())
+				.setViewAllowSorting(column.isAllowSorting())
 				.addField(DocumentLayoutElementFieldDescriptor.builder(column.getFieldName()));
 	}
 
@@ -249,6 +251,7 @@ public final class ViewColumnHelper
 		private final DocumentFieldWidgetType widgetType;
 		@NonNull
 		private final ViewEditorRenderMode editorRenderMode;
+		private final boolean allowSorting;
 		@NonNull
 		private final FieldReference fieldReference;
 		@NonNull
