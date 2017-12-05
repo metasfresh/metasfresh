@@ -65,6 +65,8 @@ public class MProductImportTableSqlUpdater
 
 		dbUpdateUOM(whereClause);
 
+		dbUpdatePackageUOM(whereClause);
+
 		dbUpdateCurrency(whereClause);
 
 		dbUpdateVendorProductNo(whereClause);
@@ -72,6 +74,10 @@ public class MProductImportTableSqlUpdater
 		dbUpdateTaxCategories(whereClause, ctx);
 
 		dbUpdatePriceListVersion(whereClause, ctx);
+
+		dbDosageForm(whereClause);
+
+		dbIndication(whereClause);
 
 		dbUpdateErrorMessages(whereClause);
 	}
@@ -265,6 +271,35 @@ public class MProductImportTableSqlUpdater
 		logger.warn("Invalid UOM=" + no);
 	}
 
+	private void dbUpdatePackageUOM(@NonNull final String whereClause)
+	{
+		StringBuilder sql;
+		int no;
+		// Set UOM (System/own)
+		sql = new StringBuilder("UPDATE I_Product i "
+				+ "SET Package_UOM_Name = "
+				+ "(SELECT MAX(X12DE355) FROM C_UOM u WHERE u.IsDefault='Y' AND u.AD_Client_ID IN (0,i.AD_Client_ID)) "
+				+ "WHERE Package_UOM_Name IS NULL AND Package_UOM_ID IS NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Set UOM Default=" + no);
+		//
+		sql = new StringBuilder(
+				"UPDATE I_Product i "
+						+ "SET C_UOM_ID = (SELECT C_UOM_ID FROM C_UOM u WHERE u.X12DE355=i.Package_UOM_Name AND u.AD_Client_ID IN (0,i.AD_Client_ID) AND u.IsActive='Y' ORDER BY u.AD_Client_ID DESC, u.C_UOM_ID ASC LIMIT 1) "
+						+ "WHERE Package_UOM_ID IS NULL"
+						+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Set Package_UOM =" + no);
+		//
+		sql = new StringBuilder("UPDATE I_Product "
+				+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Package_UOM , ' "
+				+ "WHERE Package_UOM_ID IS NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.warn("Invalid UOM=" + no);
+	}
+
 	private void dbUpdateCurrency(@NonNull final String whereClause)
 	{
 		StringBuilder sql;
@@ -349,6 +384,26 @@ public class MProductImportTableSqlUpdater
 				.append(" and " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(" and i.M_PriceList_Version_Name is not null")
 				.append(whereClause);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private void dbDosageForm(@NonNull final String whereClause)
+	{
+		final StringBuilder sql = new StringBuilder("UPDATE I_Product i "
+				+ "SET M_DosageForm_ID =(SELECT Name FROM M_DosageForm d"
+				+ " WHERE d.AD_Client_ID=i.AD_Client_ID AND i.M_DosageForm_Name = d.Name) "
+				+ "WHERE M_DosageForm_ID IS NULL AND M_DosageForm_Name IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private void dbIndication(@NonNull final String whereClause)
+	{
+		final StringBuilder sql = new StringBuilder("UPDATE I_Product i "
+				+ "SET M_Indication_ID =(SELECT Name FROM M_Indication ind"
+				+ " WHERE ind.AD_Client_ID=i.AD_Client_ID AND i.M_Indication_Name = ind.Name) "
+				+ "WHERE M_Indication_ID IS NULL AND M_Indication_Name IS NOT NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 

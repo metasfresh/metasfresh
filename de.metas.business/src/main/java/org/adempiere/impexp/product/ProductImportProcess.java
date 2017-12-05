@@ -33,6 +33,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.impexp.AbstractImportProcess;
+import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IMutable;
@@ -40,6 +41,7 @@ import org.compiere.model.I_I_Product;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MProduct;
+import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
 import org.compiere.util.DB;
 
@@ -129,10 +131,12 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		{
 			final String sqlt = DB.convertSqlToNative("UPDATE M_PRODUCT "
 					+ "SET (Value,Name,Description,DocumentNote,Help,"
+					+ "Package_UOM_ID, PackageSize, IsSold, IsStocked, "
 					+ "UPC,SKU,C_UOM_ID,M_Product_Category_ID,Classification,ProductType,"
 					+ "Volume,Weight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
 					+ "Discontinued,DiscontinuedBy,Updated,UpdatedBy)= "
 					+ "(SELECT Value,Name,Description,DocumentNote,Help,"
+					+ "Package_UOM_ID, PackageSize, IsSold, IsStocked, "
 					+ "UPC,SKU,C_UOM_ID,M_Product_Category_ID,Classification,ProductType,"
 					+ "Volume,Weight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
 					+ "Discontinued,DiscontinuedBy,now(),UpdatedBy"
@@ -162,6 +166,8 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		//
 		// Price List
 		createUpdateProductPrice(importRecord);
+
+		ModelValidationEngine.get().fireImportValidate(this, importRecord, newProduct, IImportInterceptor.TIMING_AFTER_IMPORT);
 
 		return newProduct ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
