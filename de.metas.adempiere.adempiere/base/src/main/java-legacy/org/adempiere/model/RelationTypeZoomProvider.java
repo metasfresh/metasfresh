@@ -9,7 +9,8 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
-import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.TableRecordIdDescriptor;
+import org.adempiere.ad.table.api.ITableRecordIdDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -20,9 +21,7 @@ import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.I_AD_Column;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
@@ -33,6 +32,7 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.service.IColumnBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -68,8 +68,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return new Builder();
 	}
 
-	
-
 	private static final Logger logger = LogManager.getLogger(RelationTypeZoomProvider.class);
 
 	private final boolean directed;
@@ -96,16 +94,15 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				.roleDisplayName(builder.getTargetRoleDisplayName())
 				.tableRecordIdTarget(isTableRecordIdTarget)
 				.build();
-			
-		target = 
-				
-				ZoomProviderDestination.builder()
-				.adReferenceId(builder.getTarget_Reference_ID())
-				.tableRefInfo(builder.getTargetTableRefInfoOrNull())
-				.roleDisplayName(builder.getTargetRoleDisplayName())
-				.tableRecordIdTarget(isTableRecordIdTarget)
-				.build();
 
+		target =
+
+				ZoomProviderDestination.builder()
+						.adReferenceId(builder.getTarget_Reference_ID())
+						.tableRefInfo(builder.getTargetTableRefInfoOrNull())
+						.roleDisplayName(builder.getTargetRoleDisplayName())
+						.tableRecordIdTarget(isTableRecordIdTarget)
+						.build();
 
 	}
 
@@ -268,37 +265,54 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	private String createZoomOriginQueryWhereClause(final IZoomSource zoomOrigin)
 	{
 		// services
-		final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+		final ITableRecordIdDAO tableRecordIdDAO = Services.get(ITableRecordIdDAO.class);
 
 		final StringBuilder queryWhereClause = new StringBuilder();
 
 		final ITableRefInfo refTable = getTarget().getTableRefInfo();
 
-		final String tableName = refTable.getTableName();
-
+		final String targetTableName = zoomOrigin.getTableName();
+		final String originTableName = refTable.getTableName();
+		
 		if (isTableRecordIdTarget)
 		{
-			// TODO: Here we will implement the support for Prefix_Table_ID and Prefix_Record_ID (https://github.com/metasfresh/metasfresh/issues/3058)
-			final I_AD_Column recordIdColumn = tableDAO.retrieveColumnOrNull(tableName, ITableRecordReference.COLUMNNAME_Record_ID);
+			String originRecordIdName = null;
 
-			Check.assumeNotNull(recordIdColumn, "The table {} must have and AD_Table_ID and a Record_ID column to be used in a TableRecordIdTarget relation type", tableName);
+			final List<TableRecordIdDescriptor> tableRecordIdDescriptors = tableRecordIdDAO.retrieveTableRecordIdReferences(originTableName);
 
-			final I_AD_Column adTableIdColumn = tableDAO.retrieveColumnOrNull(tableName, ITableRecordReference.COLUMNNAME_AD_Table_ID);
+			for (final TableRecordIdDescriptor tableRecordIdDescriptor : tableRecordIdDescriptors)
+			{
+				if (targetTableName.equals(tableRecordIdDescriptor.getTargetTableName()))
+				{
+					originRecordIdName = tableRecordIdDescriptor.getRecordIdColumnName();
 
-			Check.assumeNotNull(adTableIdColumn, "The table {} must have and AD_Table_ID and a Record_ID column to be used in a TableRecordIdTarget relation type", tableName);
+					break;
+				}
+			}
 
-			queryWhereClause
-					.append(zoomOrigin.getAD_Table_ID())
-					.append(" = ")
-					.append(tableName)
-					.append(".")
-					.append(adTableIdColumn.getColumnName())
-					.append(" AND ")
-					.append(zoomOrigin.getRecord_ID())
-					.append(" = ")
-					.append(tableName)
-					.append(".")
-					.append(recordIdColumn.getColumnName());
+			if (originRecordIdName != null)
+			{
+				final String tableIdColumnName = Services.get(IColumnBL.class).getTableIdColumnName(originTableName, originRecordIdName).orElse(null);
+				Check.assumeNotEmpty(tableIdColumnName, "The table {} must have an AD_Table_ID column", originTableName );
+
+				queryWhereClause
+
+						.append(zoomOrigin.getAD_Table_ID())
+						.append(" = ")
+						.append(originTableName)
+						.append(".")
+						.append(tableIdColumnName)
+						.append(" AND ")
+						.append(zoomOrigin.getRecord_ID())
+						.append(" = ")
+						.append(originTableName)
+						.append(".")
+						.append(originRecordIdName);
+			}
+			else
+			{
+				queryWhereClause.append(" 1=2 ");
+			}
 
 		}
 		else

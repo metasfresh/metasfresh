@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.List;
 
+import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -34,7 +35,6 @@ import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.partitioner.PartitionRequestFactory;
 import de.metas.dlm.partitioner.PartitionRequestFactory.CreatePartitionRequest;
 import de.metas.dlm.partitioner.config.PartitionConfig;
-import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import de.metas.logging.LogManager;
 
 /*
@@ -442,10 +442,9 @@ public class PartitionerServiceCreatePartitionTests
 				if (partitionHasOrder && !partitionHasInvoice)
 				{
 					throw new DLMReferenceException(null,
-							TableReferenceDescriptor.of(I_C_Invoice.Table_Name,
+							TableRecordIdDescriptor.of(I_C_Invoice.Table_Name,
 									I_C_Invoice.COLUMNNAME_C_Order_ID,
-									I_C_Order.Table_Name,
-									123),
+									I_C_Order.Table_Name),
 							true);
 				}
 			}

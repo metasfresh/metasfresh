@@ -1,6 +1,5 @@
 package de.metas.dlm;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -15,7 +14,6 @@ import de.metas.dlm.model.I_AD_Table;
 import de.metas.dlm.model.I_DLM_Partition;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.config.PartitionConfig;
-import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 
 /*
  * #%L
@@ -128,15 +126,7 @@ public interface IDLMService extends ISingletonService {
 	 */
 	int directUpdateDLMColumn(IContextAware ctxAware, int dlmPartitionId, String columnName, int targetValue);
 
-	/**
-	 *
-	 * @return a map of AD_Table_ID => List-of-AD_Table_ID where the
-	 *         key-<code>AD_Table_ID</code>'s DB-records are referenced by
-	 *         records from the <code>*Table_ID</code> and
-	 *         <code>*Record_ID</code> columns of the tables from
-	 *         value-<code>List<AD_Table_ID></code>.
-	 */
-	List<TableReferenceDescriptor> retrieveTableRecordReferences();
+	
 
 	Stream<IQueryBuilder<IDLMAware>> retrieveDLMTableNames(IContextAware ctxAware, int dlmPartitionId);
 

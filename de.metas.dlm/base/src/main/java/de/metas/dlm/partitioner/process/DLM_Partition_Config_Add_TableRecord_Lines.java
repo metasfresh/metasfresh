@@ -3,6 +3,8 @@ package de.metas.dlm.partitioner.process;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.adempiere.ad.table.TableRecordIdDescriptor;
+import org.adempiere.ad.table.api.ITableRecordIdDAO;
 import org.adempiere.util.Services;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -11,7 +13,6 @@ import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.IPartitionerService;
 import de.metas.dlm.partitioner.config.PartitionConfig;
-import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 
@@ -58,10 +59,10 @@ public class DLM_Partition_Config_Add_TableRecord_Lines extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final PartitionConfig config = dlmService.loadPartitionConfig(configDB);
-		final List<TableReferenceDescriptor> tableRecordReferences = dlmService.retrieveTableRecordReferences();
+		final List<TableRecordIdDescriptor> tableRecordReferences =  Services.get(ITableRecordIdDAO.class).retrieveAllTableRecordIdReferences();
 
 		// get those descriptors whose referencedTableName is the table name of at least one line
-		final List<TableReferenceDescriptor> descriptors = retainRelevantDescriptors(config, tableRecordReferences);
+		final List<TableRecordIdDescriptor> descriptors = retainRelevantDescriptors(config, tableRecordReferences);
 
 		final PartitionConfig augmentedConfig = partitionerService.augmentPartitionerConfig(config, descriptors);
 
@@ -78,10 +79,10 @@ public class DLM_Partition_Config_Add_TableRecord_Lines extends JavaProcess
 	 * @return
 	 */
 	@VisibleForTesting
-	/* package */ List<TableReferenceDescriptor> retainRelevantDescriptors(final PartitionConfig config, final List<TableReferenceDescriptor> descriptors)
+	/* package */ List<TableRecordIdDescriptor> retainRelevantDescriptors(final PartitionConfig config, final List<TableRecordIdDescriptor> descriptors)
 	{
 		return descriptors.stream()
-				.filter(r -> config.getLine(r.getReferencedTableName()).isPresent())
+				.filter(r -> config.getLine(r.getTargetTableName()).isPresent())
 				.collect(Collectors.toList());
 	}
 
