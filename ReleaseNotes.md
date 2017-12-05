@@ -90,6 +90,7 @@ Here come the actual release notes:
   * [#3089](https://github.com/metasfresh/metasfresh/issues/3089) Not able to start report service with ReportServiceMain.launch
   * [#3100](https://github.com/metasfresh/metasfresh/issues/3100) Move UI Element Action broken
     * Fix for the UI Element (Element, Group) Movement actions.
+  * [#3128](https://github.com/metasfresh/metasfresh/issues/3128) Qtydelivered in PMM_Balance gets doubled
 
 * metasfresh-webui-frontend
   * [#1367](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1367) view attributes shall be refreshed when the current selected row is refreshed
