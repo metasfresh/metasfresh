@@ -23,6 +23,7 @@ package org.adempiere.ad.trx.spi;
  */
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager;
 
 /**
  * Transaction listener.
@@ -45,11 +46,13 @@ public interface ITrxListener
 	void beforeCommit(ITrx trx);
 
 	/**
-	 * Method called after a transaction was successfully committed.
+	 * Method called <b>each time</b> after a transaction was successfully committed.
 	 *
 	 * If an exception is thrown from this method, the exception will be JUST logged but it will not fail or stop the execution.
 	 *
 	 * @param trx the transaction that was committed. <b>This transaction is already closed</b>
+	 *
+	 * @see ITrxListenerManager#onAfterNextCommit(Runnable)
 	 */
 	void afterCommit(ITrx trx);
 
