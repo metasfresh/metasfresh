@@ -1243,3 +1243,46 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 
 
+
+
+
+
+
+-- 2017-12-05T15:45:37.734
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET ColumnName='Package_UOM_Name', Name='Package UOM Name', PrintName='Package UOM Name',Updated=TO_TIMESTAMP('2017-12-05 15:45:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543512
+;
+
+-- 2017-12-05T15:45:37.739
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='Package_UOM_Name', Name='Package UOM Name', Description='UOM of the package', Help='' WHERE AD_Element_ID=543512
+;
+
+-- 2017-12-05T15:45:37.759
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Package_UOM_Name', Name='Package UOM Name', Description='UOM of the package', Help='', AD_Element_ID=543512 WHERE UPPER(ColumnName)='PACKAGE_UOM_NAME' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-12-05T15:45:37.760
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='Package_UOM_Name', Name='Package UOM Name', Description='UOM of the package', Help='' WHERE AD_Element_ID=543512 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-12-05T15:45:37.761
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Package UOM Name', Description='UOM of the package', Help='' WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=543512) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-12-05T15:45:37.771
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Package UOM Name', Name='Package UOM Name' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=543512)
+;
+
+-- 2017-12-05T15:45:51.208
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('I_Product','ALTER TABLE public.I_Product ADD COLUMN Package_UOM_Name VARCHAR(55)')
+;
+
+ALTER TABLE public.I_Product DROP COLUMN Package_UOM;
+
+

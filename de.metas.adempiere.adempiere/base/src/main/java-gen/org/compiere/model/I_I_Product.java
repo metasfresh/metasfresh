@@ -901,31 +901,6 @@ public interface I_I_Product
 	 * Set Package UOM.
 	 * UOM of the package
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPackage_UOM (java.lang.String Package_UOM);
-
-	/**
-	 * Get Package UOM.
-	 * UOM of the package
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getPackage_UOM();
-
-    /** Column definition for Package_UOM */
-    public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_Package_UOM = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "Package_UOM", null);
-    /** Column name Package_UOM */
-    public static final String COLUMNNAME_Package_UOM = "Package_UOM";
-
-	/**
-	 * Set Package UOM.
-	 * UOM of the package
-	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
@@ -950,6 +925,31 @@ public interface I_I_Product
     public static final org.adempiere.model.ModelColumn<I_I_Product, org.compiere.model.I_C_UOM> COLUMN_Package_UOM_ID = new org.adempiere.model.ModelColumn<I_I_Product, org.compiere.model.I_C_UOM>(I_I_Product.class, "Package_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name Package_UOM_ID */
     public static final String COLUMNNAME_Package_UOM_ID = "Package_UOM_ID";
+
+	/**
+	 * Set Package UOM Name.
+	 * UOM of the package
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPackage_UOM_Name (java.lang.String Package_UOM_Name);
+
+	/**
+	 * Get Package UOM Name.
+	 * UOM of the package
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPackage_UOM_Name();
+
+    /** Column definition for Package_UOM_Name */
+    public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_Package_UOM_Name = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "Package_UOM_Name", null);
+    /** Column name Package_UOM_Name */
+    public static final String COLUMNNAME_Package_UOM_Name = "Package_UOM_Name";
 
 	/**
 	 * Set Package Size.
