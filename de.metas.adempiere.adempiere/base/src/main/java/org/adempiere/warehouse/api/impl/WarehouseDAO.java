@@ -32,6 +32,7 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Check;
@@ -283,5 +284,25 @@ public class WarehouseDAO implements IWarehouseDAO
 				.stream()
 				.filter(warehousePickingGroup -> warehousePickingGroup.containsWarehouseId(warehouseId))
 				.findFirst().orElse(null);
+	}
+
+	@Override
+	public int retrieveLocatorIdByBarcode(final String barcode)
+	{
+		if (Check.isEmpty(barcode, true))
+		{
+			throw new AdempiereException("Invalid locator barcode: " + barcode);
+		}
+
+		try
+		{
+			final int locatorId = Integer.parseInt(barcode);
+			Check.assume(locatorId > 0, "locatorId > 0");
+			return locatorId;
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Invalid locator barcode: " + barcode, ex);
+		}
 	}
 }
