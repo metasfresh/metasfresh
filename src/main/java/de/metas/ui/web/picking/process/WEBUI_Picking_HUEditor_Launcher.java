@@ -3,15 +3,11 @@ package de.metas.ui.web.picking.process;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -19,7 +15,7 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
-import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
+import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -80,11 +76,12 @@ public class WEBUI_Picking_HUEditor_Launcher extends ViewBasedProcessTemplate
 	@Override
 	protected String doIt()
 	{
-		final List<Integer> availableHUsToPickIDs = retrieveAvailableHuIdsForCurrentShipmentScheduleId();
+		final List<Integer> availableHUIdsToPick = retrieveAvailableHuIdsForCurrentShipmentScheduleId();
 
-		final IView husToPickView = createHuEditorView(availableHUsToPickIDs);
+		final IView husToPickView = createHUEditorView(availableHUIdsToPick);
 
 		getResult().setWebuiIncludedViewIdToOpen(husToPickView.getViewId().getViewId());
+		getResult().setWebuiViewProfileId("husToPick");
 
 		return MSG_OK;
 	}
@@ -94,25 +91,24 @@ public class WEBUI_Picking_HUEditor_Launcher extends ViewBasedProcessTemplate
 		final int shipmentScheduleId = getView().getCurrentShipmentScheduleId();
 
 		final PickingHUsQuery query = PickingHUsQuery.builder()
-				.shipmentSchedules(ImmutableList.of(loadOutOfTrx(shipmentScheduleId, I_M_ShipmentSchedule.class)))
+				.shipmentSchedule(loadOutOfTrx(shipmentScheduleId, I_M_ShipmentSchedule.class))
 				.onlyTopLevelHUs(false)
 				.onlyIfAttributesMatchWithShipmentSchedules(true)
 				.build();
-		final List<I_M_HU> availableHUsToPick = huPickingSlotBL.retrieveAvailableHUsToPick(query);
-		final List<Integer> availableHUsToPickIDs = availableHUsToPick.stream().map(hu -> hu.getM_HU_ID()).collect(Collectors.toList());
-		return availableHUsToPickIDs;
+		final List<Integer> availableHUIdsToPick = huPickingSlotBL.retrieveAvailableHUIdsToPick(query);
+		return availableHUIdsToPick;
 	}
 
-	private IView createHuEditorView(@NonNull final List<Integer> availableHUsToPickIDs)
+	private IView createHUEditorView(@NonNull final List<Integer> availableHUIdsToPick)
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		final ViewId pickingSlotViewId = getView().getViewId();
 
 		final IView husToPickView = viewsRepo.createView(
-				CreateViewRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
+				CreateViewRequest.builder(HUsToPickViewFactory.WINDOW_ID, JSONViewDataType.includedView)
 						.setParentViewId(pickingSlotViewId)
 						.setParentRowId(pickingSlotRow.getId())
-						.addStickyFilters(HUIdsFilterHelper.createFilter(availableHUsToPickIDs))
+						.addStickyFilters(HUIdsFilterHelper.createFilter(availableHUIdsToPick))
 						.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_Picking_HUEditor_PickHU.class))
 						.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_Picking_HUEditor_Create_M_Source_HUs.class))
 						.build());
@@ -121,11 +117,10 @@ public class WEBUI_Picking_HUEditor_Launcher extends ViewBasedProcessTemplate
 
 	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
-		final RelatedProcessDescriptor flagSelectedHUsAsSourceHUs = RelatedProcessDescriptor.builder()
+		return RelatedProcessDescriptor.builder()
 				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass))
 				.webuiQuickAction(true)
 				.build();
-		return flagSelectedHUsAsSourceHUs;
 	}
 
 	@Override

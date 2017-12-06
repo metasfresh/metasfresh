@@ -47,13 +47,16 @@ public @interface ViewColumn
 	 */
 	String captionKey() default "";
 
+	/** true if user is allowed to sort by this column */
+	boolean sorting() default true;
+
 	/**
 	 * Column layout profiles.
 	 *
 	 * If empty, the column won't be displayed in any of {@link JSONViewDataType} profiles.
 	 */
 	ViewColumnLayout[] layouts() default {};
-	
+
 	ViewEditorRenderMode editor() default ViewEditorRenderMode.NEVER;
 
 	@Target({ ElementType.FIELD })
@@ -61,6 +64,12 @@ public @interface ViewColumn
 	public static @interface ViewColumnLayout
 	{
 		JSONViewDataType when();
+
+		/**
+		 * If <code>true</code> if the column shall be displayed by default.
+		 * If <code>false</code> the column will be displayed only on demand, when it was explicitly specified.
+		 */
+		boolean displayed() default true;
 
 		/** Display sequence number */
 		int seqNo();

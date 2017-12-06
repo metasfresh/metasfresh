@@ -98,7 +98,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 	{
 		// TODO: get the row ids for the request's filters AND our date-filter, if we added it
 
-		final Supplier<List<MaterialCockpitRow>> rowsSupplier = () -> materialCockpitRowRepository.retrieveRowsByIds(filtersToUse);
+		final Supplier<List<MaterialCockpitRow>> rowsSupplier = () -> materialCockpitRowRepository.retrieveRows(filtersToUse);
 		return rowsSupplier;
 	}
 

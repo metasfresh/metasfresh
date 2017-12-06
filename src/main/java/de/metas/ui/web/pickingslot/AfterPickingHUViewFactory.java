@@ -9,17 +9,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorView;
-import de.metas.ui.web.handlingunits.HUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -53,7 +53,7 @@ public class AfterPickingHUViewFactory implements IViewFactory, IViewsIndexStora
 	static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
 	@Autowired
-	private HUEditorViewFactory huEditorViewFactory;
+	private DefaultHUEditorViewFactory huEditorViewFactory;
 
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, @Nullable final ViewProfileId profileId)

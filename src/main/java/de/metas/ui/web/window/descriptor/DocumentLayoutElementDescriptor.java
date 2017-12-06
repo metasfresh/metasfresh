@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.Set;
@@ -43,8 +42,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public final class DocumentLayoutElementDescriptor implements Serializable
+public final class DocumentLayoutElementDescriptor
 {
 	public static final Builder builder()
 	{
@@ -75,6 +73,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	}
 
 	private final String internalName;
+	private final boolean gridElement;
 
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
@@ -90,6 +89,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private final LayoutAlign gridAlign;
 	private final ViewEditorRenderMode viewEditorRenderMode;
+	private final boolean viewAllowSorting;
 
 	private final Set<DocumentLayoutElementFieldDescriptor> fields;
 
@@ -99,7 +99,6 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private DocumentLayoutElementDescriptor(final Builder builder)
 	{
-		internalName = builder.getInternalName();
 		caption = builder.getCaption();
 		description = builder.getDescription();
 
@@ -113,6 +112,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		gridAlign = builder.getGridAlign();
 		viewEditorRenderMode = builder.getViewEditorRenderMode();
+		viewAllowSorting = builder.isViewAllowSorting();
 
 		advancedField = builder.isAdvancedField();
 
@@ -131,6 +131,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 				.add("advancedField", advancedField)
 				.add("fields", fields.isEmpty() ? null : fields)
 				.toString();
+	}
+
+	public boolean isGridElement()
+	{
+		return gridElement;
 	}
 
 	public String getCaption(final String adLanguage)
@@ -191,6 +196,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		return viewEditorRenderMode;
 	}
 
+	public boolean isViewAllowSorting()
+	{
+		return viewAllowSorting;
+	}
+	
 	public boolean isAdvancedField()
 	{
 		return advancedField;
@@ -233,6 +243,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		private boolean _gridElement = false;
 		private ViewEditorRenderMode viewEditorRenderMode = null;
+		private boolean viewAllowSorting = true;
 
 		private boolean _advancedField = false;
 		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> _fieldsBuilders = new LinkedHashMap<>();
@@ -495,6 +506,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			return consumed;
 		}
 
+		public boolean isGridElement()
+		{
+			return _gridElement;
+		}
+
 		/**
 		 * Flags this element as a "grid element".
 		 */
@@ -519,7 +535,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		private LayoutAlign getGridAlign()
 		{
-			return _gridElement ? getWidgetType().getGridAlign() : null;
+			return isGridElement() ? getWidgetType().getGridAlign() : null;
 		}
 
 		public Builder setViewEditorRenderMode(final ViewEditorRenderMode gridEditorRenderMode)
@@ -531,6 +547,17 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private ViewEditorRenderMode getViewEditorRenderMode()
 		{
 			return viewEditorRenderMode;
+		}
+
+		public Builder setViewAllowSorting(boolean viewAllowSorting)
+		{
+			this.viewAllowSorting = viewAllowSorting;
+			return this;
+		}
+		
+		private boolean isViewAllowSorting()
+		{
+			return viewAllowSorting;
 		}
 
 		public Builder setButtonActionDescriptor(final ButtonFieldActionDescriptor buttonActionDescriptor)

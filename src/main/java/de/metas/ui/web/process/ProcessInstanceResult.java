@@ -11,6 +11,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -164,7 +165,9 @@ public final class ProcessInstanceResult implements Serializable
 	@lombok.Builder
 	public static class OpenIncludedViewAction implements ResultAction
 	{
+		@NonNull
 		private final ViewId viewId;
+		private final ViewProfileId profileId;
 	}
 
 	@lombok.Value

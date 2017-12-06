@@ -6,12 +6,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.Multimap;
 
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -43,6 +45,8 @@ import lombok.Value;
 @Repository
 public class MaterialCockpitRowRepository
 {
+	public static final String DIM_SPEC_INTERNAL_NAME = "MRP_Product_Info_ASI_Values";
+
 	private final MaterialCockpitFilters materialCockpitFilters;
 
 	public MaterialCockpitRowRepository(@NonNull final MaterialCockpitFilters materialCockpitFilters)
@@ -51,21 +55,29 @@ public class MaterialCockpitRowRepository
 	}
 
 	@Value
-	private static class ProductIdAndDate
+	@VisibleForTesting
+	static class ProductIdAndDate
 	{
 		int productId;
 		Timestamp date;
 	}
 
-	public List<MaterialCockpitRow> retrieveRowsByIds(@NonNull final List<DocumentFilter> filtersToUse)
+	public List<MaterialCockpitRow> retrieveRows(@NonNull final List<DocumentFilter> filtersToUse)
 	{
-		final IQuery<I_X_MRP_ProductInfo_Detail_MV> query = materialCockpitFilters.createQuery(filtersToUse);
+		final Stream<I_X_MRP_ProductInfo_Detail_MV> stream = materialCockpitFilters
+				.createQuery(filtersToUse)
+				.stream();
 
+		return loadRowsFromStream(stream);
+	}
+
+	@VisibleForTesting
+	List<MaterialCockpitRow> loadRowsFromStream(@NonNull final Stream<I_X_MRP_ProductInfo_Detail_MV> stream)
+	{
 		final Function<I_X_MRP_ProductInfo_Detail_MV, ProductIdAndDate> classifier = //
 				record -> new ProductIdAndDate(record.getM_Product_ID(), record.getDateGeneral());
 
-		final Map<ProductIdAndDate, List<I_X_MRP_ProductInfo_Detail_MV>> groups = query
-				.stream()
+		final Map<ProductIdAndDate, List<I_X_MRP_ProductInfo_Detail_MV>> groups = stream
 				.collect(Collectors.groupingBy(classifier));
 
 		final Builder<MaterialCockpitRow> mainRows = ImmutableList.builder();
@@ -96,6 +108,12 @@ public class MaterialCockpitRowRepository
 			mainRows.add(mainRow);
 		}
 		return mainRows.build();
+	}
+
+	public Multimap<ProductIdAndDate, MaterialCockpitRow> createEmptySubRows(@NonNull final Timestamp asTimestamp)
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

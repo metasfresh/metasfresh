@@ -19,6 +19,7 @@ import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
  * #%L
@@ -91,7 +92,13 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection createDefaultSelection(final ViewId viewId, final List<DocumentFilter> filters)
+	public ViewRowIdsOrderedSelection createSelection(final ViewId viewId, final List<DocumentFilter> filters, final List<DocumentQueryOrderBy> orderBys)
+	{
+		throw new UnsupportedOperationException("not implemented");
+	}
+
+	@Override
+	public ViewRowIdsOrderedSelection createSelectionFromSelection(final ViewRowIdsOrderedSelection fromSelection, final List<DocumentQueryOrderBy> orderBys)
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}
@@ -125,5 +132,4 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}
-
 }

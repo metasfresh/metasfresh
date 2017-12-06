@@ -1,11 +1,13 @@
 package de.metas.ui.web.handlingunits;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.util.Check;
@@ -19,6 +21,7 @@ import org.compiere.util.Env;
 import com.google.common.base.MoreObjects;
 
 import de.metas.handlingunits.IHUAware;
+import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
@@ -73,7 +76,7 @@ import lombok.NonNull;
 	{
 		return (HUEditorRowAttributes)attributes;
 	}
-	
+
 	private final DocumentPath documentPath;
 	private final IAttributeStorage attributesStorage;
 
@@ -85,7 +88,7 @@ import lombok.NonNull;
 	{
 		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
-		
+
 		this.layoutSupplier = ExtendedMemorizingSupplier.of(() -> HUEditorRowAttributesHelper.createLayout(attributesStorage));
 
 		//
@@ -134,7 +137,7 @@ import lombok.NonNull;
 				.add("attributesStorage", attributesStorage)
 				.toString();
 	}
-	
+
 	@Override
 	public ViewRowAttributesLayout getLayout()
 	{
@@ -171,8 +174,7 @@ import lombok.NonNull;
 				.setDisplayed(true)
 				.setMandatory(false)
 				.setReadonly(isReadonly(fieldName))
-				.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetType))
-				;
+				.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetType));
 	}
 
 	private boolean isReadonly(final String attributeName)
@@ -254,7 +256,7 @@ import lombok.NonNull;
 				.map(itemNP -> LookupValue.fromNamePair(itemNP))
 				.collect(LookupValuesList.collect());
 	}
-	
+
 	public Optional<String> getSSCC18()
 	{
 		final I_M_Attribute sscc18Attribute = Services.get(ISSCC18CodeDAO.class).retrieveSSCC18Attribute(Env.getCtx());
@@ -263,12 +265,24 @@ import lombok.NonNull;
 			return Optional.empty();
 		}
 		final String sscc18 = attributesStorage.getValueAsString(sscc18Attribute);
-		if(Check.isEmpty(sscc18, true))
+		if (Check.isEmpty(sscc18, true))
 		{
 			return Optional.empty();
 		}
-		
+
 		return Optional.of(sscc18.trim());
+	}
+
+	public Optional<Date> getBestBeforeDate()
+	{
+		final I_M_Attribute bestBeforeDateAttribute = Services.get(IAttributeDAO.class).retrieveAttributeByValue(Constants.ATTR_BestBeforeDate);
+		if (!attributesStorage.hasAttribute(bestBeforeDateAttribute))
+		{
+			return Optional.empty();
+		}
+
+		Date bestBeforeDate = attributesStorage.getValueAsDate(bestBeforeDateAttribute);
+		return Optional.ofNullable(bestBeforeDate);
 	}
 
 	/**

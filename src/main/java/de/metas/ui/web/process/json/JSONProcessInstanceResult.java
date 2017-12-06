@@ -20,6 +20,7 @@ import de.metas.ui.web.process.ProcessInstanceResult.OpenViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.ResultAction;
 import de.metas.ui.web.process.ProcessInstanceResult.SelectViewRowsAction;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -102,7 +103,7 @@ public final class JSONProcessInstanceResult implements Serializable
 		else if (resultAction instanceof OpenIncludedViewAction)
 		{
 			final OpenIncludedViewAction openIncludedViewAction = (OpenIncludedViewAction)resultAction;
-			return new JSONOpenIncludedViewAction(openIncludedViewAction.getViewId());
+			return new JSONOpenIncludedViewAction(openIncludedViewAction.getViewId(), openIncludedViewAction.getProfileId());
 		}
 		else if (resultAction instanceof OpenSingleDocument)
 		{
@@ -178,12 +179,15 @@ public final class JSONProcessInstanceResult implements Serializable
 		private final WindowId windowId;
 		private final String viewId;
 		private final JSONViewDataType viewType = JSONViewDataType.includedView;
+		@JsonInclude(JsonInclude.Include.NON_EMPTY)
+		private final String profileId;
 
-		public JSONOpenIncludedViewAction(final ViewId viewId)
+		public JSONOpenIncludedViewAction(final ViewId viewId, final ViewProfileId profileId)
 		{
 			super("openIncludedView");
 			this.windowId = viewId.getWindowId();
 			this.viewId = viewId.getViewId();
+			this.profileId = profileId != null ? profileId.toJson() : null;
 		}
 	}
 

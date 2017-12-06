@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Services;
@@ -56,7 +57,7 @@ import lombok.NonNull;
 @Service
 public class MaterialCockpitFilters
 {
-	private static final String MSG_FILTER = "Filter";
+	private static final String MSG_PRODUCT = "Product";
 	private static final String MATERIAL_COCKPIT_ALL_PARAMS_FILTER = "materialCockpitAllParamsFilter";
 
 	private static final String MSG_DATE = "Date";
@@ -116,7 +117,7 @@ public class MaterialCockpitFilters
 		final de.metas.ui.web.document.filter.DocumentFilterDescriptor filterDescriptor = DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)
 				.setFilterId(MATERIAL_COCKPIT_ALL_PARAMS_FILTER)
-				.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_FILTER))
+				.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_PRODUCT))
 				.addParameter(productNameParameter)
 				.addParameter(productValueParameter)
 				.build();
@@ -152,17 +153,25 @@ public class MaterialCockpitFilters
 	{
 		final IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> queryBuilder = createInitialQueryBuilder();
 
+		boolean anyRestrictionAdded = false;
 		for (final DocumentFilter filter : filters)
 		{
 			final List<DocumentFilterParam> filterParameters = filter.getParameters();
 			for (final DocumentFilterParam filterParameter : filterParameters)
 			{
 				augmentQueryBuilderWithFilterParam(queryBuilder, filterParameter);
+				anyRestrictionAdded = true;
 			}
 		}
 
-		final IQuery<I_X_MRP_ProductInfo_Detail_MV> query = augmentqueryBuildWithOrderBy(queryBuilder).create();
-		return query;
+		if (anyRestrictionAdded)
+		{
+			final IQuery<I_X_MRP_ProductInfo_Detail_MV> query = augmentqueryBuildWithOrderBy(queryBuilder).create();
+			return query;
+		}
+
+		// avoid memory problems in case the filters are accidentally empty
+		return queryBuilder.filter(ConstantQueryFilter.of(false)).create();
 	}
 
 	private IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> createInitialQueryBuilder()

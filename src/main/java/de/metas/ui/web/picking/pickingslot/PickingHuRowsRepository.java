@@ -37,10 +37,10 @@ import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
-import de.metas.ui.web.handlingunits.HUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository;
 import de.metas.ui.web.picking.PickingConstants;
@@ -81,12 +81,12 @@ import lombok.NonNull;
 
 	/** Default constructor */
 	@Autowired
-	public PickingHURowsRepository(final HUEditorViewFactory huEditorViewFactory)
+	public PickingHURowsRepository(final DefaultHUEditorViewFactory huEditorViewFactory)
 	{
 		this(createDefaultHUEditorViewRepository(huEditorViewFactory));
 	}
 
-	private static SqlHUEditorViewRepository createDefaultHUEditorViewRepository(final HUEditorViewFactory huEditorViewFactory)
+	private static SqlHUEditorViewRepository createDefaultHUEditorViewRepository(final DefaultHUEditorViewFactory huEditorViewFactory)
 	{
 		return SqlHUEditorViewRepository.builder()
 				.windowId(PickingConstants.WINDOWID_PickingSlotView)
