@@ -53,14 +53,10 @@ public class C_PaySelection
 
 		for (final I_C_PaySelectionLine paySelectionLine : Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class))
 		{
-			if (hasESRBankAccount(paySelectionLine))
+			if (hasESRBankAccount(paySelectionLine) && (!isValidESRReference(paySelectionLine)))
 			{
-				if (!isValidESRReference(paySelectionLine))
-				{
-					joiner.add(String.valueOf(paySelectionLine.getLine()));
-				}
+				joiner.add(String.valueOf(paySelectionLine.getLine()));
 			}
-
 		}
 
 		if (joiner.length() != 0)
@@ -79,7 +75,7 @@ public class C_PaySelection
 			return false;
 		}
 
-		reference = reference.replaceAll("\\s+","");
+		reference = reference.replaceAll("\\s+", "");
 
 		return reference.length() == 27;
 
@@ -88,7 +84,7 @@ public class C_PaySelection
 	private boolean hasESRBankAccount(final I_C_PaySelectionLine paySelectionLine)
 	{
 		final org.compiere.model.I_C_BP_BankAccount bpBankAccount = paySelectionLine.getC_BP_BankAccount();
-		
+
 		Check.assumeNotNull(bpBankAccount, "The paySelectionLine {} cannot have a null bankAccount", paySelectionLine);
 
 		final de.metas.payment.esr.model.I_C_BP_BankAccount esrBankAccount = create(bpBankAccount, de.metas.payment.esr.model.I_C_BP_BankAccount.class);
