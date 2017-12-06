@@ -409,12 +409,22 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@Override
-	public void completePaySelection(I_C_PaySelection paySelection)
+	public void completePaySelection(final I_C_PaySelection paySelection)
+	{
+		validateBankAccounts(paySelection); 
+
+		paySelection.setProcessed(true);
+		paySelection.setDocAction(IDocument.ACTION_ReActivate);
+
+	}
+
+	@Override
+	public void validateBankAccounts(final I_C_PaySelection paySelection)
 	{
 		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
-
+		
 		StringJoiner joiner = new StringJoiner(",");
-
+		
 		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class))
 		{
 			if (paySelectionLine.getC_BP_BankAccount_ID() <= 0)
@@ -427,10 +437,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		{
 			throw new AdempiereException(MSG_PaySelectionLines_No_BankAccount , new Object []{joiner.toString()} );
 		}
-
-		paySelection.setProcessed(true);
-		paySelection.setDocAction(IDocument.ACTION_ReActivate);
-
+		
 	}
 
 	@Override
@@ -451,5 +458,5 @@ public class PaySelectionBL implements IPaySelectionBL
 		paySelection.setDocAction(IDocument.ACTION_Complete);
 
 	}
-
+	
 }

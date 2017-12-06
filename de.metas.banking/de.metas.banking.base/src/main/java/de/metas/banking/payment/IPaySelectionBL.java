@@ -114,10 +114,18 @@ public interface IPaySelectionBL extends ISingletonService
 	void reactivatePaySelection(I_C_PaySelection paySelection);
 
 	/**
-	 * Make sure all its lines have a C_BP_BankAccount and set the paySelection as processed 
+	 * Make sure all its lines have a C_BP_BankAccount and set the paySelection as processed
 	 * 
 	 * @param paySelection
 	 */
 	void completePaySelection(I_C_PaySelection paySelection);
+
+	/**
+	 * Verify if the pay selection lines of the given pay selection have C_BP_BankAccount values set.
+	 * Throw an exception if they don't.
+	 * 
+	 * @param paySelection
+	 */
+	void validateBankAccounts(I_C_PaySelection paySelection);
 
 }
