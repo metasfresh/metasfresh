@@ -59,7 +59,7 @@ public final class HUEditorViewBuilder
 	private List<DocumentFilter> stickyFilters;
 	private List<DocumentFilter> filters;
 	private DocumentFilterDescriptorsProvider filterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
-	
+
 	private List<DocumentQueryOrderBy> orderBys = null;
 
 	private LinkedHashMap<String, Object> parameters;
@@ -172,6 +172,17 @@ public final class HUEditorViewBuilder
 		return this;
 	}
 
+	public HUEditorViewBuilder addAdditionalRelatedProcessDescriptors(@NonNull final List<RelatedProcessDescriptor> descriptors)
+	{
+		if (additionalRelatedProcessDescriptors == null)
+		{
+			additionalRelatedProcessDescriptors = new ArrayList<>();
+		}
+		additionalRelatedProcessDescriptors.addAll(descriptors);
+
+		return this;
+	}
+
 	ImmutableList<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
 	{
 		return additionalRelatedProcessDescriptors != null && !additionalRelatedProcessDescriptors.isEmpty() ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
@@ -209,29 +220,29 @@ public final class HUEditorViewBuilder
 	{
 		return filters != null ? filters : ImmutableList.of();
 	}
-	
+
 	public HUEditorViewBuilder orderBy(@NonNull final DocumentQueryOrderBy orderBy)
 	{
-		if(orderBys == null)
+		if (orderBys == null)
 		{
 			orderBys = new ArrayList<>();
 		}
 		orderBys.add(orderBy);
 		return this;
 	}
-	
+
 	public HUEditorViewBuilder orderBys(@NonNull final List<DocumentQueryOrderBy> orderBys)
 	{
 		this.orderBys = new ArrayList<>(orderBys);
 		return this;
 	}
-	
+
 	public HUEditorViewBuilder clearOrderBys()
 	{
 		this.orderBys = null;
 		return this;
 	}
-	
+
 	private ImmutableList<DocumentQueryOrderBy> getOrderBys()
 	{
 		return orderBys != null ? ImmutableList.copyOf(orderBys) : ImmutableList.of();
