@@ -475,7 +475,7 @@ public interface IQuery<T>
 	<K, ET extends T> Collection<List<ET>> listAndSplit(Class<ET> modelClass, Function<ET, K> keyFunction);
 
 	/**
-	 * Adds SQL query to be joined as UNION ALL/DISTINCT.
+	 * "Appends" the given {@code query} to {@code this} query be joined as UNION ALL/DISTINCT.
 	 *
 	 * WARNING: atm, the implementation is minimal and was tested only with {@link #list()} methods.
 	 *

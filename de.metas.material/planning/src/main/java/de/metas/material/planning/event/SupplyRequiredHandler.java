@@ -56,19 +56,19 @@ import lombok.NonNull;
 @Service
 public class SupplyRequiredHandler
 {
-	private final DistributionAdvisedEventCreator distributionAdvisedEventCreator;
+	private final DDOrderAdvisedOrCreatedEventCreator dDOrderAdvisedOrCreatedEventCreator;
 
-	private final ProductionAdvisedEventCreator productionAdvisedEventCreator;
+	private final PPOrderAdvisedOrCreatedEventCreator pPOrderAdvisedOrCreatedEventCreator;
 
 	private final MaterialEventService materialEventService;
 
 	public SupplyRequiredHandler(
-			@NonNull final DistributionAdvisedEventCreator distributionAdvisedEventCreator,
-			@NonNull final ProductionAdvisedEventCreator productionAdvisedEventCreator,
+			@NonNull final DDOrderAdvisedOrCreatedEventCreator dDOrderAdvisedOrCreatedEventCreator,
+			@NonNull final PPOrderAdvisedOrCreatedEventCreator pPOrderAdvisedOrCreatedEventCreator,
 			@NonNull final MaterialEventService materialEventService)
 	{
-		this.distributionAdvisedEventCreator = distributionAdvisedEventCreator;
-		this.productionAdvisedEventCreator = productionAdvisedEventCreator;
+		this.dDOrderAdvisedOrCreatedEventCreator = dDOrderAdvisedOrCreatedEventCreator;
+		this.pPOrderAdvisedOrCreatedEventCreator = pPOrderAdvisedOrCreatedEventCreator;
 		this.materialEventService = materialEventService;
 	}
 
@@ -105,8 +105,8 @@ public class SupplyRequiredHandler
 		final IMutableMRPContext mrpContext = mkMRPContext(supplyRequiredDescriptor);
 
 		final List<MaterialEvent> events = new ArrayList<>();
-		events.addAll(distributionAdvisedEventCreator.createDistributionAdvisedEvents(supplyRequiredDescriptor, mrpContext));
-		events.addAll(productionAdvisedEventCreator.createProductionAdvisedEvents(supplyRequiredDescriptor, mrpContext));
+		events.addAll(dDOrderAdvisedOrCreatedEventCreator.createDistributionAdvisedEvents(supplyRequiredDescriptor, mrpContext));
+		events.addAll(pPOrderAdvisedOrCreatedEventCreator.createProductionAdvisedEvents(supplyRequiredDescriptor, mrpContext));
 
 		events.forEach(e -> materialEventService.fireEvent(e));
 	}

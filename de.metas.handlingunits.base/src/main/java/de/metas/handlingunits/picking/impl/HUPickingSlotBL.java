@@ -46,6 +46,8 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TrxRunnable;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -600,4 +602,14 @@ public class HUPickingSlotBL
 
 		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(request, vhuToEndResultFunction);
 	}
+
+	@Override
+	public List<Integer> retrieveAvailableHUIdsToPick(@NonNull final PickingHUsQuery request)
+	{
+		return retrieveAvailableHUsToPick(request)
+				.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 }

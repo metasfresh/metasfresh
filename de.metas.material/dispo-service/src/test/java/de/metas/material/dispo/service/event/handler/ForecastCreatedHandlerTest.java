@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.event.handler;
 
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
@@ -23,7 +24,7 @@ import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.StockMultiQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -107,7 +108,8 @@ public class ForecastCreatedHandlerTest
 				.get(0)
 				.getMaterialDescriptor();
 
-		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptorOfFirstAndOnlyForecastLine);
+		final StockMultiQuery query = StockMultiQuery
+				.forDescriptorAndAllPossibleBPartnerIds(materialDescriptorOfFirstAndOnlyForecastLine);
 
 		// @formatter:off
 		new Expectations()
@@ -127,6 +129,7 @@ public class ForecastCreatedHandlerTest
 		final I_MD_Candidate demandCandidate = result.get(0);
 		assertThat(demandCandidate.getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
 		assertThat(demandCandidate.getQty()).isEqualByComparingTo("8");
+		assertThat(result).allSatisfy(r -> assertThat(r.getC_BPartner_ID()).isEqualTo(BPARTNER_ID));
 	}
 
 	/**
@@ -143,7 +146,8 @@ public class ForecastCreatedHandlerTest
 				.get(0)
 				.getMaterialDescriptor();
 
-		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(materialDescriptorOfFirstAndOnlyForecastLine);
+		final StockMultiQuery query = StockMultiQuery
+				.forDescriptorAndAllPossibleBPartnerIds(materialDescriptorOfFirstAndOnlyForecastLine);
 
 		// @formatter:off
 		new Expectations()
@@ -162,6 +166,7 @@ public class ForecastCreatedHandlerTest
 
 		assertThat(result.get(0).getMD_Candidate_Type()).isEqualTo(CandidateType.STOCK_UP.toString());
 		assertThat(result.get(0).getQty()).isEqualByComparingTo("8");
+		assertThat(result).allSatisfy(r -> assertThat(r.getC_BPartner_ID()).isEqualTo(BPARTNER_ID));
 	}
 
 	private ForecastCreatedEvent createForecastWithQtyOfEight()
@@ -169,9 +174,9 @@ public class ForecastCreatedHandlerTest
 		final ForecastLine forecastLine = ForecastLine.builder()
 				.forecastLineId(300)
 				.materialDescriptor(MaterialDescriptor.builder()
-						.complete(true)
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
+						.bPartnerId(BPARTNER_ID)
 						.quantity(new BigDecimal("8"))
 						.date(NOW)
 						.build())

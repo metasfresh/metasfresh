@@ -265,6 +265,8 @@ public final class TableRecordReference implements ITableRecordReference
 		this.adTableId = adTableId;
 		this.tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 
+		// NOTE: not validating with org.adempiere.model.InterfaceWrapperHelper.getFirstValidIdByColumnName(String) just for performances,
+		// but we might consider it since it's not a big deal.
 		Check.assume(recordId >= 0, "recordId >= 0");
 		this.recordId = recordId;
 	}
@@ -284,7 +286,9 @@ public final class TableRecordReference implements ITableRecordReference
 		this.tableName = tableName;
 		this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
-		Check.assume(recordId > 0, "recordId > 0");
+		// NOTE: not validating with org.adempiere.model.InterfaceWrapperHelper.getFirstValidIdByColumnName(String) just for performances,
+		// but we might consider it since it's not a big deal.
+		Check.assume(recordId >= 0, "recordId >= 0");
 		this.recordId = recordId;
 	}
 

@@ -226,10 +226,15 @@ public class MProduct extends X_M_Product
 		setUPC(impP.getUPC());
 		setSKU(impP.getSKU());
 		setC_UOM_ID(impP.getC_UOM_ID());
+		setPackage_UOM_ID(impP.getPackage_UOM_ID());
+		setPackageSize(impP.getPackageSize());
+		setManufacturer(impP.getProductManufacturer());
 		setM_Product_Category_ID(impP.getM_Product_Category_ID());
 		setProductType(impP.getProductType());
 		setImageURL(impP.getImageURL());
 		setDescriptionURL(impP.getDescriptionURL());
+		setIsSold(impP.isSold());
+		setIsStocked(impP.isStocked());
 	}	// MProduct
 
 	/** Additional Downloads */
@@ -307,7 +312,9 @@ public class MProduct extends X_M_Product
 		{
 			int C_UOM_ID = getC_UOM_ID();
 			if (C_UOM_ID == 0)
+			 {
 				return 0;	// EA
+			}
 			m_precision = MUOM.getPrecision(getCtx(), C_UOM_ID);
 		}
 		return m_precision.intValue();
@@ -372,7 +379,9 @@ public class MProduct extends X_M_Product
 	{
 		MProductCategory pc = MProductCategory.get(getCtx(), getM_Product_Category_ID());
 		if (pc.getA_Asset_Group_ID() == 0)
+		{
 			return false;
+		}
 		MAssetGroup ag = MAssetGroup.get(getCtx(), pc.getA_Asset_Group_ID());
 		return ag.isOneAssetPerUOM();
 	}	// isOneAssetPerUOM
@@ -386,7 +395,9 @@ public class MProduct extends X_M_Product
 	{
 		int C_UOM_ID = getC_UOM_ID();
 		if (C_UOM_ID == 0)
+		{
 			return "";
+		}
 		return MUOM.get(getCtx(), C_UOM_ID).getUOMSymbol();
 	}	// getUOMSymbol
 
@@ -399,7 +410,9 @@ public class MProduct extends X_M_Product
 	public MProductDownload[] getProductDownloads(boolean requery)
 	{
 		if (m_downloads != null && !requery)
+		{
 			return m_downloads;
+		}
 		//
 		List<MProductDownload> list = new Query(getCtx(), MProductDownload.Table_Name, "M_Product_ID=?", get_TrxName())
 				.setOnlyActiveRecords(true)
@@ -451,11 +464,17 @@ public class MProduct extends X_M_Product
 			}
 			String errMsg = "";
 			if (OnHand.signum() != 0)
+			{
 				errMsg = "@QtyOnHand@ = " + OnHand;
+			}
 			if (Ordered.signum() != 0)
+			{
 				errMsg += " - @QtyOrdered@ = " + Ordered;
+			}
 			if (Reserved.signum() != 0)
+			{
 				errMsg += " - @QtyReserved@" + Reserved;
+			}
 			if (errMsg.length() > 0)
 			{
 				throw new AdempiereException(errMsg);
@@ -472,11 +491,15 @@ public class MProduct extends X_M_Product
 		// AZ Goodwill: Bug Fix isStocked always return false
 		// if (isStocked() && !PRODUCTTYPE_Item.equals(getProductType()))
 		if (!PRODUCTTYPE_Item.equals(getProductType()))
+		{
 			setIsStocked(false);
+		}
 
 		// UOM reset
 		if (m_precision != null && is_ValueChanged("C_UOM_ID"))
+		{
 			m_precision = null;
+		}
 
 		return true;
 	}	// beforeSave
@@ -517,11 +540,15 @@ public class MProduct extends X_M_Product
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
 		if (!success)
+		{
 			return success;
+		}
 
 		// Value/Name change in Account
 		if (!newRecord && (is_ValueChanged("Value") || is_ValueChanged("Name")))
+		{
 			MAccount.updateValueDescription(getCtx(), "M_Product_ID=" + getM_Product_ID(), get_TrxName());
+		}
 
 		// Name/Description Change in Asset MAsset.setValueNameDescription
 		if (!newRecord && (is_ValueChanged("Name") || is_ValueChanged("Description")))
@@ -556,7 +583,9 @@ public class MProduct extends X_M_Product
 
 		// New Costing
 		if (newRecord || is_ValueChanged("M_Product_Category_ID"))
+		{
 			MCost.create(this);
+		}
 
 		return success;
 	}	// afterSave
@@ -583,11 +612,17 @@ public class MProduct extends X_M_Product
 			}
 			String errMsg = "";
 			if (OnHand.signum() != 0)
+			{
 				errMsg = "@QtyOnHand@ = " + OnHand;
+			}
 			if (Ordered.signum() != 0)
+			{
 				errMsg += " - @QtyOrdered@ = " + Ordered;
+			}
 			if (Reserved.signum() != 0)
+			{
 				errMsg += " - @QtyReserved@" + Reserved;
+			}
 			if (errMsg.length() > 0)
 			{
 				throw new AdempiereException(errMsg);
@@ -597,7 +632,9 @@ public class MProduct extends X_M_Product
 		// delete costing
 		MProductCosting[] costings = MProductCosting.getOfProduct(getCtx(), get_ID(), get_TrxName());
 		for (int i = 0; i < costings.length; i++)
+		{
 			costings[i].delete(true, get_TrxName());
+		}
 
 		MCost.delete(this);
 

@@ -8,11 +8,12 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import lombok.NonNull;
 
@@ -104,7 +105,7 @@ public class SupplyCandiateHandler implements CandidateHandler
 			final CandidatesQuery queryForExistingDemandChild = CandidatesQuery.builder()
 					.type(CandidateType.STOCK)
 					.parentDemandDetail(supplyCandidateWithIdAndParentId.getDemandDetail())
-					.materialDescriptor(supplyCandidateWithIdAndParentId.getMaterialDescriptor().withoutQuantity())
+					.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(supplyCandidate.getMaterialDescriptor()))
 					.build();
 
 			final Candidate existingDemandChildStock = candidateRepository.retrieveLatestMatchOrNull(queryForExistingDemandChild);
