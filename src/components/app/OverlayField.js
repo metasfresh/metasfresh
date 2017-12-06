@@ -44,12 +44,14 @@ class OverlayField extends Component {
 
     renderParameters = (layout) => {
         const {
-            windowType, viewId, onShow, onHide, handlePatch, handleChange
+            windowType, viewId, onShow, onHide, handlePatch, handleChange,
+            captionValue
         } = this.props;
         const parameters = layout.parameters;
         return parameters.map((item, index) => {
             return (
                 <RawWidget
+                    defaultValue={captionValue}
                     entity="documentView"
                     subentity="filter"
                     subentityId={layout.filterId}
