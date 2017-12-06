@@ -1,11 +1,14 @@
 package de.metas.zoom.process;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.GenericPO;
 import org.adempiere.model.ZoomInfoFactory;
 import org.adempiere.model.ZoomInfoFactory.POZoomSource;
 import org.adempiere.util.ILoggable;
+import org.adempiere.util.Services;
 
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 
 /*
  * #%L
@@ -39,16 +42,23 @@ import de.metas.process.JavaProcess;
  */
 public class ZoomInfoFactoryExecute extends JavaProcess
 {
+	@Param(mandatory = true, parameterName = "AD_Window_ID")
+	private int windowId;
+
+	@Param(mandatory = true, parameterName = "Record_ID")
+	private int recordId;
+
+	@Param(mandatory = true, parameterName = "AD_Table_ID")
+	private int tableId;
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final String tableName = getTableName();
-		final GenericPO po = new GenericPO(tableName, getCtx(), getRecord_ID());
+		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableId);
+		final GenericPO po = new GenericPO(tableName, getCtx(), recordId);
 
-		ZoomInfoFactory.get().retrieveZoomInfos(POZoomSource.of(po));
+		ZoomInfoFactory.get().retrieveZoomInfos(POZoomSource.of(po, windowId));
 
 		return MSG_OK;
 	}
-
 }
