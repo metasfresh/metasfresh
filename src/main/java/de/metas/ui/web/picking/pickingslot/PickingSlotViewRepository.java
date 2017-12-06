@@ -258,7 +258,8 @@ public class PickingSlotViewRepository
 
 		return PickingSlotRow.fromPickedHUBuilder()
 				.pickingSlotId(pickingSlotId)
-				.huId(huEditorRow.getM_HU_ID())
+				.huId(huEditorRow.getHURowId().getHuId())
+				.huStorageProductId(huEditorRow.getHURowId().getStorageProductId())
 
 				.huEditorRowType(huEditorRow.getType())
 
