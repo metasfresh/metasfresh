@@ -41,6 +41,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@FunctionalInterface
 public interface SqlDocumentFilterConverter
 {
 	/**
