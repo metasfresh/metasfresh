@@ -173,29 +173,6 @@ public class Util
 	}
 	
 	/**
-	 * @param text
-	 * @return true if the text only contains digits, false otherwise
-	 */
-	public static boolean isDigitsOnly(final String text)
-	{
-		if (text == null)
-		{
-			return false;
-		}
-		char[] inArray = text.toCharArray();	
-		for (int i = 0; i < inArray.length; i++)
-		{
-			char c = inArray[i];
-			if ( !Character.isDigit(c))
-			{
-				return false;
-			}
-		}
-		
-		return true;
-	}
-
-	/**
 	 * Clean - Remove all white spaces
 	 *
 	 * @param in in
