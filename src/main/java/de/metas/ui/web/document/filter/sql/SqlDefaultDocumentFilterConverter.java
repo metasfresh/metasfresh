@@ -110,7 +110,7 @@ import lombok.NonNull;
 			String sqlWhereClause = filterParam.getSqlWhereClause();
 			if (sqlOpts.isUseTableAlias())
 			{
-				sqlWhereClause = replaceTableNameWithTableAlias(sqlWhereClause);
+				sqlWhereClause = replaceTableNameWithTableAlias(sqlWhereClause, sqlOpts.getTableAlias());
 			}
 
 			final List<Object> sqlWhereClauseParams = filterParam.getSqlWhereClauseParams();
@@ -209,7 +209,7 @@ import lombok.NonNull;
 	{
 		if (sqlOpts.isUseTableAlias())
 		{
-			return replaceTableNameWithTableAlias(fieldBinding.getColumnSql());
+			return replaceTableNameWithTableAlias(fieldBinding.getColumnSql(), sqlOpts.getTableAlias());
 		}
 
 		return fieldBinding.getColumnSql();
@@ -328,7 +328,7 @@ import lombok.NonNull;
 				.toString();
 	}
 
-	private String replaceTableNameWithTableAlias(final String sql)
+	private String replaceTableNameWithTableAlias(final String sql, @NonNull final String tableAlias)
 	{
 		if (sql == null || sql.isEmpty())
 		{
@@ -336,7 +336,7 @@ import lombok.NonNull;
 		}
 
 		final String matchTableNameIgnoringCase = "(?i)" + Pattern.quote(entityBinding.getTableName() + ".");
-		final String sqlFixed = sql.replaceAll(matchTableNameIgnoringCase, entityBinding.getTableAlias() + ".");
+		final String sqlFixed = sql.replaceAll(matchTableNameIgnoringCase, tableAlias + ".");
 		return sqlFixed;
 	}
 

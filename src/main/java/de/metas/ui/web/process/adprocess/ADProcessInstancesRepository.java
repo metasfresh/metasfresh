@@ -237,7 +237,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			}
 			else
 			{
-				sqlWhereClause = view.getSqlWhereClause(viewDocumentIds, SqlOptions.usingTableName());
+				sqlWhereClause = view.getSqlWhereClause(viewDocumentIds, SqlOptions.usingTableName(tableName));
 			}
 		}
 		//

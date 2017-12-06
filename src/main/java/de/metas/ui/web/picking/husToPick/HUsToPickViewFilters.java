@@ -91,7 +91,7 @@ import lombok.experimental.UtilityClass;
 		final String barcode = filter.getParameterValueAsString(PARAM_Barcode);
 		final int locatorId = Services.get(IWarehouseDAO.class).retrieveLocatorIdByBarcode(barcode);
 
-		final String sql = I_M_HU.COLUMNNAME_M_Locator_ID + "=" + sqlParamsOut.placeholder(locatorId);
+		final String sql = sqlOpts.getTableNameOrAlias() + "." + I_M_HU.COLUMNNAME_M_Locator_ID + "=" + sqlParamsOut.placeholder(locatorId);
 		return sql;
 	}
 

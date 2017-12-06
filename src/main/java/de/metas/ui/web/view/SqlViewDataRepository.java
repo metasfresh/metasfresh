@@ -72,6 +72,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	private static final Logger logger = LogManager.getLogger(SqlViewDataRepository.class);
 
 	private final String tableName;
+	private final String tableAlias;
 	private final SqlViewSelectData sqlViewSelect;
 	private final ViewRowIdsOrderedSelectionFactory viewRowIdsOrderedSelectionFactory;
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
@@ -87,6 +88,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	SqlViewDataRepository(@NonNull final SqlViewBinding sqlBindings)
 	{
 		tableName = sqlBindings.getTableName();
+		tableAlias = sqlBindings.getTableAlias();
 		sqlViewSelect = sqlBindings.getSqlViewSelect();
 		viewFilterDescriptors = sqlBindings.getViewFilterDescriptors();
 		viewRowIdsOrderedSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlBindings);
@@ -124,6 +126,11 @@ class SqlViewDataRepository implements IViewDataRepository
 	public String getTableName()
 	{
 		return tableName;
+	}
+	
+	private String getTableAlias()
+	{
+		return tableAlias;
 	}
 
 	@Override
@@ -454,7 +461,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 
 		final List<DocumentFilter> filters = ImmutableList.of();
-		final String sqlWhereClause = getSqlWhereClause(viewId, filters, rowIds, SqlOptions.defaults());
+		final String sqlWhereClause = getSqlWhereClause(viewId, filters, rowIds, SqlOptions.usingTableAlias(getTableAlias()));
 		if (Check.isEmpty(sqlWhereClause, true))
 		{
 			logger.warn("Could get the SQL where clause for {}/{}. Returning empty", viewId, rowIds);

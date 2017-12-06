@@ -464,7 +464,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		if (!filters.isEmpty())
 		{
 			final SqlDocumentFilterConverter sqlFilterConverter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlViewBinding);
-			huQuery.addFilter(sqlFilterConverter.createQueryFilter(filters, SqlOptions.defaults()));
+			huQuery.addFilter(sqlFilterConverter.createQueryFilter(filters, SqlOptions.usingTableAlias(sqlViewBinding.getTableAlias())));
 		}
 
 		return huQuery.createQuery().listIds();

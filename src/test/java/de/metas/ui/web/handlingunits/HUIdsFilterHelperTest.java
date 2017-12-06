@@ -43,7 +43,7 @@ public class HUIdsFilterHelperTest
 	public void testEmptyHUIdsCollection()
 	{
 		final DocumentFilter noHusFilter = HUIdsFilterHelper.createFilter(ImmutableList.of());
-		final String sql = HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER.getSql(SqlParamsCollector.newInstance(), noHusFilter, SqlOptions.defaults());
+		final String sql = HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER.getSql(SqlParamsCollector.newInstance(), noHusFilter, SqlOptions.usingTableAlias("dummyTableAlias"));
 
 		assertThat(sql).doesNotContain(HUIdsSqlDocumentFilterConverter.SQL_TRUE);
 	}

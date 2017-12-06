@@ -245,7 +245,7 @@ public final class SqlViewSelectionQueryBuilder
 		// WHERE clause (from query)
 		{
 			final SqlParamsCollector sqlWhereClauseParams = SqlParamsCollector.newInstance();
-			final IStringExpression sqlWhereClause = buildSqlWhereClause(sqlWhereClauseParams, filters);
+			final IStringExpression sqlWhereClause = buildSqlWhereClause(sqlWhereClauseParams, filters, SqlOptions.usingTableAlias(sqlTableAlias));
 
 			if (sqlWhereClause != null && !sqlWhereClause.isNullExpression())
 			{
@@ -319,7 +319,7 @@ public final class SqlViewSelectionQueryBuilder
 		// WHERE clause (from query)
 		{
 			final SqlParamsCollector sqlWhereClauseParams = SqlParamsCollector.newInstance();
-			final IStringExpression sqlWhereClause = buildSqlWhereClause(sqlWhereClauseParams, filters);
+			final IStringExpression sqlWhereClause = buildSqlWhereClause(sqlWhereClauseParams, filters, SqlOptions.usingTableAlias(sqlTableAlias));
 
 			if (sqlWhereClause != null && !sqlWhereClause.isNullExpression())
 			{
@@ -424,7 +424,7 @@ public final class SqlViewSelectionQueryBuilder
 		return new SqlAndParams(sqlCreateSelectionFromLines, sqlCreateSelectionFromLinesParams);
 	}
 
-	private final IStringExpression buildSqlWhereClause(final SqlParamsCollector sqlParams, @Nullable final List<DocumentFilter> filters)
+	private final IStringExpression buildSqlWhereClause(final SqlParamsCollector sqlParams, @Nullable final List<DocumentFilter> filters, final SqlOptions sqlOpts)
 	{
 		final CompositeStringExpression.Builder sqlWhereClauseBuilder = IStringExpression.composer();
 
@@ -443,7 +443,7 @@ public final class SqlViewSelectionQueryBuilder
 		// Document filters
 		if (filters != null && !filters.isEmpty())
 		{
-			final String sqlFilters = getSqlDocumentFilterConverter().getSql(sqlParams, filters, SqlOptions.defaults());
+			final String sqlFilters = getSqlDocumentFilterConverter().getSql(sqlParams, filters, sqlOpts);
 			if (!Check.isEmpty(sqlFilters, true))
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
