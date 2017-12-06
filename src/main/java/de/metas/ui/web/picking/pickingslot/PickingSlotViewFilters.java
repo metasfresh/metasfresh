@@ -3,10 +3,10 @@ package de.metas.ui.web.picking.pickingslot;
 import org.adempiere.util.Services;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilterParam;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
+import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.CreateViewRequest.DocumentFiltersList;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -40,7 +40,12 @@ public class PickingSlotViewFilters
 	private static final String PickingSlotBarcodeFilter_FilterId = "PickingSlotBarcodeFilter";
 	private static final String PARAM_Barcode = "Barcode";
 
-	public static final DocumentFilterDescriptor createPickingSlotBarcodeFilters()
+	public static DocumentFilterDescriptorsProvider createFilterDescriptorsProvider()
+	{
+		return ImmutableDocumentFilterDescriptorsProvider.of(createPickingSlotBarcodeFilters());
+	}
+
+	private static final DocumentFilterDescriptor createPickingSlotBarcodeFilters()
 	{
 		return DocumentFilterDescriptor.builder()
 				.setFilterId(PickingSlotBarcodeFilter_FilterId)
@@ -56,24 +61,6 @@ public class PickingSlotViewFilters
 
 	public static String getPickingSlotBarcode(final DocumentFiltersList filters)
 	{
-		return getFilterParamValueAsString(filters, PickingSlotBarcodeFilter_FilterId, PARAM_Barcode);
+		return filters.getParamValueAsString(PickingSlotBarcodeFilter_FilterId, PARAM_Barcode);
 	}
-
-	private static String getFilterParamValueAsString(final DocumentFiltersList filters, final String filterId, final String parameterName)
-	{
-		final DocumentFilter filter = filters.getFilterByIdOrNull(filterId);
-		if (filter == null)
-		{
-			return null;
-		}
-
-		DocumentFilterParam barcodeParam = filter.getParameter(parameterName);
-		if (barcodeParam == null)
-		{
-			return null;
-		}
-
-		return barcodeParam.getValueAsString();
-	}
-
 }

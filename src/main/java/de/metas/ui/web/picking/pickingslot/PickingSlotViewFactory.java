@@ -19,7 +19,6 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingCandidate;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingSlotRepoQueryBuilder;
@@ -106,12 +105,7 @@ public class PickingSlotViewFactory implements IViewFactory
 
 	private DocumentFilterDescriptorsProvider getFilterDescriptorsProvider()
 	{
-		return filterDescriptorsProviderCache.getOrLoad(0, () -> createFilterDescriptorsProvider());
-	}
-
-	private DocumentFilterDescriptorsProvider createFilterDescriptorsProvider()
-	{
-		return ImmutableDocumentFilterDescriptorsProvider.of(PickingSlotViewFilters.createPickingSlotBarcodeFilters());
+		return filterDescriptorsProviderCache.getOrLoad(0, () -> PickingSlotViewFilters.createFilterDescriptorsProvider());
 	}
 
 	/**
