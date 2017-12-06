@@ -547,6 +547,17 @@ public final class CreateViewRequest
 					.orElse(null);
 		}
 
+		public String getParamValueAsString(final String filterId, final String parameterName)
+		{
+			final DocumentFilter filter = getFilterByIdOrNull(filterId);
+			if (filter == null)
+			{
+				return null;
+			}
+
+			return filter.getParameterValueAsString(parameterName);
+		}
+
 		private List<DocumentFilter> getOrUnwrapFilters(final DocumentFilterDescriptorsProvider descriptors)
 		{
 			if (filters != null)
@@ -575,11 +586,11 @@ public final class CreateViewRequest
 			}
 
 			final ImmutableList<DocumentFilter> filtersNew = JSONDocumentFilter.unwrapList(jsonFilters, descriptors);
-			if(filtersNew.isEmpty())
+			if (filtersNew.isEmpty())
 			{
 				return EMPTY;
 			}
-			
+
 			final ImmutableList<JSONDocumentFilter> jsonFiltersNew = null;
 			return new DocumentFiltersList(jsonFiltersNew, filtersNew);
 		}
