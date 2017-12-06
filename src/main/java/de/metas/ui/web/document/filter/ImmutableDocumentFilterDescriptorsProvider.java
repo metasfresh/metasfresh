@@ -62,7 +62,7 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 		}
 		return new ImmutableDocumentFilterDescriptorsProvider(ImmutableList.of(descriptor));
 	}
-	
+
 	public static final ImmutableDocumentFilterDescriptorsProvider of(final DocumentFilterDescriptor... descriptors)
 	{
 		if (descriptors == null || descriptors.length == 0)
@@ -71,7 +71,6 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 		}
 		return new ImmutableDocumentFilterDescriptorsProvider(Arrays.asList(descriptors));
 	}
-
 
 	public static final Builder builder()
 	{
@@ -145,6 +144,12 @@ public final class ImmutableDocumentFilterDescriptorsProvider implements Documen
 			}
 
 			this.descriptors.addAll(descriptors);
+			return this;
+		}
+
+		public Builder addDescriptors(@NonNull final DocumentFilterDescriptorsProvider provider)
+		{
+			addDescriptors(provider.getAll());
 			return this;
 		}
 
