@@ -1,7 +1,10 @@
-package de.metas.ui.web.picking.process;
+package de.metas.ui.web.picking.husToPick.process;
 
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.process.IProcessPrecondition;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_HUEditor_Launcher;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_PickQtyToExistingHU;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_PickQtyToNewHU;
 
 /*
  * #%L

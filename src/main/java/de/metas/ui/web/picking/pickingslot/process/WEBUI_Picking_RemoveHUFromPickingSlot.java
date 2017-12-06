@@ -1,16 +1,10 @@
-package de.metas.ui.web.picking.process;
+package de.metas.ui.web.picking.pickingslot.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_PICK_SOMETHING;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
-
-import java.util.OptionalInt;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -41,12 +35,7 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  */
 
 /**
- * Processes the unprocessed {@link I_M_Picking_Candidate} of the currently selected TU.<br>
- * Processing means that
- * <ul>
- * <li>the HU is associated with its shipment schedule (changes QtyPicked and QtyToDeliver)</li>
- * <li>The HU is added to its picking slot's picking-slot-queue</li>
- * </ul>
+ * Unassigns the currently selected HU from its picking slot so that it could be picked again.
  * 
  * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
  * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
@@ -54,11 +43,10 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_M_Picking_Candidate_Process
+public class WEBUI_Picking_RemoveHUFromPickingSlot
 		extends ViewBasedProcessTemplate
 		implements IProcessPrecondition
 {
-
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
 
@@ -75,17 +63,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
-		if (pickingSlotRow.getIncludedRows().isEmpty())
-		{
-			// we want a toplevel HU..this is kindof dirty, but should work in this context
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
-		}
-
-		if (pickingSlotRow.getHuQtyCU().signum() <= 0)
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_PICK_SOMETHING));
-		}
-
+		
 		if (pickingSlotRow.isProcessed())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
@@ -95,14 +73,12 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final PickingSlotRow rowToProcess = getSingleSelectedRow();
-
-		pickingCandidateService.processForHUIds(ImmutableList.of(rowToProcess.getHuId()), rowToProcess.getPickingSlotId(), OptionalInt.empty());
+		final PickingSlotRow huRow = getSingleSelectedRow();
+		pickingCandidateService.removeHUFromPickingSlot(huRow.getHuId());
 
 		invalidateView();
-		invalidateParentView();
 
 		return MSG_OK;
 	}
@@ -112,5 +88,4 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 	{
 		return PickingSlotRow.cast(super.getSingleSelectedRow());
 	}
-
 }

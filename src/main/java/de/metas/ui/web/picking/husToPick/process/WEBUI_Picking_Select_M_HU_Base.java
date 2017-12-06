@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking.process;
+package de.metas.ui.web.picking.husToPick.process;
 
 import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
 
@@ -23,7 +23,7 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
-public abstract class WEBUI_Picking_Select_M_HU_Base extends ViewBasedProcessTemplate
+/* package */abstract class WEBUI_Picking_Select_M_HU_Base extends ViewBasedProcessTemplate
 {
 	@Autowired
 	private IViewsRepository viewsRepo;
