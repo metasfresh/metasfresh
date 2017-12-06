@@ -134,11 +134,11 @@ public final class CacheInvalidateRequest
 
 	public TableRecordReference getRecordEffective()
 	{
-		if (childTableName != null && childRecordId > 0)
+		if (childTableName != null && childRecordId >= 0)
 		{
 			return TableRecordReference.of(childTableName, childRecordId);
 		}
-		else if (rootTableName != null && rootRecordId > 0)
+		else if (rootTableName != null && rootRecordId >= 0)
 		{
 			return TableRecordReference.of(rootTableName, rootRecordId);
 		}
