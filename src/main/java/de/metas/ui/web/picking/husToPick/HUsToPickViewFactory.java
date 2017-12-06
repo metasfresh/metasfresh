@@ -1,7 +1,13 @@
 package de.metas.ui.web.picking.husToPick;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
@@ -47,6 +53,24 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	}
 
 	@Override
+	protected DocumentFilterDescriptorsProvider createFilterDescriptorsProvider()
+	{
+		return ImmutableDocumentFilterDescriptorsProvider.builder()
+				.addDescriptors(HUsToPickViewFilters.createFilterDescriptors())
+				.addDescriptors(super.createFilterDescriptorsProvider())
+				.build();
+	}
+
+	@Override
+	protected Map<String, SqlDocumentFilterConverter> createFilterConvertersIndexedByFilterId()
+	{
+		final Map<String, SqlDocumentFilterConverter> converters = new HashMap<>();
+		converters.putAll(super.createFilterConvertersIndexedByFilterId());
+		converters.putAll(HUsToPickViewFilters.createFilterConvertersIndexedByFilterId());
+		return converters;
+	}
+
+	@Override
 	protected ViewLayout createHUViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
 	{
 		return ViewLayout.builder()
@@ -55,7 +79,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.setIdFieldName(HUEditorRow.FIELDNAME_M_HU_ID)
-				.setFilters(getSqlViewBinding().getViewFilterDescriptors().getAll())
+				.setFilters(getViewFilterDescriptors().getAll())
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
