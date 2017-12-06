@@ -67,8 +67,8 @@ class FiltersFrequent extends Component {
                     const activeParameter = (
                         isActive && active[index].parameters[0]
                     );
-                    const captionValue = (
-                        isActive && TableCell.fieldValueToString(
+                    const captionValue = isActive
+                        ? TableCell.fieldValueToString(
                             activeParameter.valueTo
                                 ? [
                                     activeParameter.value,
@@ -77,7 +77,7 @@ class FiltersFrequent extends Component {
                                 : activeParameter.value,
                             filterType
                         )
-                    );
+                        : '';
 
                     return (
                         <div className="filter-wrapper" key={index}>
