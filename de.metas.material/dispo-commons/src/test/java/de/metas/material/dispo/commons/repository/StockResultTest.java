@@ -23,6 +23,7 @@ import de.metas.material.dispo.commons.repository.StockResult.AddToResultGroupRe
 import de.metas.material.dispo.commons.repository.StockResult.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
 import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.StorageAttributesKey;
 
 /*
@@ -121,7 +122,7 @@ public class StockResultTest
 
 		final ResultGroup firstResult = emptyResults.get(0);
 		assertThat(firstResult.getProductId()).isEqualTo(10);
-		assertThat(firstResult.getStorageAttributesKey()).isSameAs(StorageAttributesKey.NONE);
+		assertThat(firstResult.getStorageAttributesKey()).isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
 		assertThat(firstResult.getQty()).isEqualByComparingTo("0");
 
 	}

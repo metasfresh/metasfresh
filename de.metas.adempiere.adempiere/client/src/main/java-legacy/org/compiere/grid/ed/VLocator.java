@@ -54,10 +54,8 @@ import org.compiere.swing.CTextField;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -503,7 +501,7 @@ public class VLocator extends JComponent
 	@Override
 	public void actionZoom()
 	{
-		int AD_Window_ID = MTable.get(Env.getCtx(), MLocator.Table_ID).getAD_Window_ID();
+		int AD_Window_ID = MTable.get(Env.getCtx(), MLocator.Table_Name).getAD_Window_ID();
 		if (AD_Window_ID <= 0)
 			AD_Window_ID = 139;	//	hardcoded window Warehouse & Locators
 		log.info("");

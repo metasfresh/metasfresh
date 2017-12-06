@@ -15,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 571530876L;
+	private static final long serialVersionUID = -365151717L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -938,6 +938,25 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return ii.intValue();
 	}
 
+	/** Set Hersteller.
+		@param Manufacturer 
+		Hersteller des Produktes
+	  */
+	@Override
+	public void setManufacturer (java.lang.String Manufacturer)
+	{
+		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
+	}
+
+	/** Get Hersteller.
+		@return Hersteller des Produktes
+	  */
+	@Override
+	public java.lang.String getManufacturer () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Manufacturer);
+	}
+
 	/** 
 	 * MRP_Exclude AD_Reference_ID=319
 	 * Reference name: _YesNo
@@ -981,6 +1000,65 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_C_UOM getPackage_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Package_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setPackage_UOM(org.compiere.model.I_C_UOM Package_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_Package_UOM_ID, org.compiere.model.I_C_UOM.class, Package_UOM);
+	}
+
+	/** Set Package UOM.
+		@param Package_UOM_ID 
+		UOM of the package
+	  */
+	@Override
+	public void setPackage_UOM_ID (int Package_UOM_ID)
+	{
+		if (Package_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Package_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Package_UOM_ID, Integer.valueOf(Package_UOM_ID));
+	}
+
+	/** Get Package UOM.
+		@return UOM of the package
+	  */
+	@Override
+	public int getPackage_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Package_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Package Size.
+		@param PackageSize 
+		Size of a package
+	  */
+	@Override
+	public void setPackageSize (java.math.BigDecimal PackageSize)
+	{
+		set_Value (COLUMNNAME_PackageSize, PackageSize);
+	}
+
+	/** Get Package Size.
+		@return Size of a package
+	  */
+	@Override
+	public java.math.BigDecimal getPackageSize () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PackageSize);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Verarbeiten.

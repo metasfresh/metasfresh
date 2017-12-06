@@ -33,6 +33,7 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
+import org.compiere.util.Env;
 
 /**
  * Material Attributes DAO
@@ -152,6 +153,15 @@ public interface IAttributeDAO extends ISingletonService
 	 * @return attribute; never return null
 	 */
 	<T extends I_M_Attribute> T retrieveAttributeByValue(Properties ctx, String value, Class<T> clazz);
+
+	/**
+	 * @return attribute; never return null
+	 */
+	default I_M_Attribute retrieveAttributeByValue(final String value)
+	{
+		return retrieveAttributeByValue(Env.getCtx(), value, I_M_Attribute.class);
+	}
+
 
 	/**
 	 * Creates a new {@link I_M_AttributeInstance}.
