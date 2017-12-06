@@ -1,14 +1,4 @@
 import * as types from '../constants/ListTypes'
-import axios from 'axios';
-
-export function quickActionsRequest(windowId, viewId, selectedIds) {
-    return axios.get(
-        config.API_URL + '/documentView/' +
-        windowId + '/' + viewId +
-        '/quickActions' +
-        (selectedIds && selectedIds.length ? '?selectedIds=' + selectedIds : '')
-    );
-}
 
 export function setListId(viewId, windowType) {
     return {
@@ -42,10 +32,10 @@ export function setPagination(page, windowType){
     }
 }
 
-export function setListIncludedView({ windowType, viewId } = {}) {
+export function setListIncludedView({ windowType, viewId, viewProfileId = null } = {}) {
     return {
         type: types.SET_LIST_INCLUDED_VIEW,
-        payload: { windowType, viewId },
+        payload: { windowType, viewId, viewProfileId },
     };
 }
 

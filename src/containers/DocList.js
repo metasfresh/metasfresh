@@ -154,6 +154,7 @@ class DocList extends Component {
                             type="includedView"
                             windowType={includedView.windowType}
                             defaultViewId={includedView.viewId}
+                            viewProfileId={includedView.viewProfileId}
                             fetchQuickActionsOnInit
                             processStatus={processStatus}
                             isIncluded

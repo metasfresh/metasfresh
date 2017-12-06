@@ -856,6 +856,7 @@ export function handleProcessResponse(response, type, id) {
                         await dispatch(setListIncludedView({
                             windowType: action.windowId,
                             viewId: action.viewId,
+                            viewProfileId: action.profileId
                         }));
 
                         break;

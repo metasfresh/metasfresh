@@ -5,15 +5,13 @@ import { push } from 'react-router-redux';
 import { connect } from 'react-redux';
 
 import {
+    getViewLayout,
+    getViewRowsByIds,
     createViewRequest,
     browseViewRequest,
     filterViewRequest,
-    deleteStaticFilter,
-} from '../../actions/AppActions';
-import {
-    initLayout,
-    getDataByIds,
-} from '../../actions/GenericActions';
+    deleteStaticFilter
+  } from '../../actions/ViewActions';
 import {
     closeListIncludedView,
     setSorting,
@@ -204,8 +202,8 @@ class DocumentList extends Component {
         connectWS.call(this, '/view/' + viewId, (msg) => {
             const {fullyChanged, changedIds} = msg;
             if(changedIds){
-                getDataByIds(
-                    'documentView', windowType, viewId, changedIds.join()
+                getViewRowsByIds(
+                    windowType, viewId, changedIds.join()
                 ).then(response => {
                     response.data.map(row => {
                         this.setState({
@@ -322,15 +320,15 @@ class DocumentList extends Component {
 
     fetchLayoutAndData = (isNewFilter) => {
         const {
-            windowType, type, setModalTitle, setNotFound
+            windowType, type, viewProfileId, setModalTitle, setNotFound
         } = this.props;
 
         const {
             viewId
         } = this.state;
 
-        initLayout(
-            'documentView', windowType, null, null, null, null, type, true
+        getViewLayout(
+            windowType, type, viewProfileId
         ).then(response => {
             this.mounted && this.setState({
                 layout: response.data
@@ -378,10 +376,15 @@ class DocumentList extends Component {
 
         const {page, sort, filters} = this.state;
 
-        createViewRequest(
-            windowType, type, this.pageLength, filters, refType, refId,
-            refTabId, refRowIds,
-        ).then(response => {
+        createViewRequest({
+            windowId : windowType,
+            viewType : type,
+            filters : filters,
+            refDocType : refType,
+            refDocId : refId,
+            refTabId : refTabId,
+            refRowIds : refRowIds,
+        }).then(response => {
             this.mounted && this.setState({
                 data: response.data,
                 viewId: response.data.viewId
@@ -428,9 +431,13 @@ class DocumentList extends Component {
             sortingQuery && updateUri('sort', sortingQuery);
         }
 
-        return browseViewRequest(
-            id, page, this.pageLength, sortingQuery, windowType
-        ).then( (response) => {
+        return browseViewRequest({
+            windowId : windowType,
+            viewId : id,
+            page : page,
+            pageLength : this.pageLength,
+            orderBy : sortingQuery
+        }).then( (response) => {
             const selection = getSelection({
                 state: store.getState(),
                 windowType,

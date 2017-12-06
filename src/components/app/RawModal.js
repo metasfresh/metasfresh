@@ -11,7 +11,7 @@ import {
 
 import {
     deleteView
-} from '../../actions/AppActions';
+} from '../../actions/ViewActions';
 
 import {
     closeListIncludedView
