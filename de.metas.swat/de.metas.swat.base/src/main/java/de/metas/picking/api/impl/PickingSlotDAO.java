@@ -94,10 +94,10 @@ public class PickingSlotDAO implements IPickingSlotDAO
 		final int bpartnerLocationId = request.getBpartnerLocationId();
 
 		final Predicate<I_M_PickingSlot> warehouseFilter = ps -> request.getWarehouseId() <= 0 || request.getWarehouseId() == ps.getM_Warehouse_ID();
-		
+
 		final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
 		final Predicate<I_M_PickingSlot> partnerFilter = ps -> pickingSlotBL.isAvailableForBPartnerAndLocation(ps, bpartnerId, bpartnerLocationId);
-		
+
 		final List<I_M_PickingSlot> result = pickingSlotsAll.stream()
 				.filter(warehouseFilter)
 				.filter(partnerFilter)
@@ -105,34 +105,34 @@ public class PickingSlotDAO implements IPickingSlotDAO
 				.collect(Collectors.toList());
 		return result;
 	}
-	
+
 	private static final Predicate<I_M_PickingSlot> isPickingSlotMatchingBarcode(final String barcode)
 	{
-		if(barcode == null)
+		if (barcode == null)
 		{
 			return Predicates.alwaysTrue();
 		}
-		
+
 		final String barcodeNorm = barcode.trim();
-		if(barcodeNorm.isEmpty())
+		if (barcodeNorm.isEmpty())
 		{
 			return Predicates.alwaysTrue();
 		}
-		
+
 		return pickingSlot -> Objects.equals(pickingSlot.getPickingSlot(), barcode);
 	}
 
 	private void assertResultNotEmpty(
 			@NonNull final List<I_M_PickingSlot> result,
-			@NonNull final PickingSlotQuery request)
+			@NonNull final PickingSlotQuery query)
 	{
 		if (!result.isEmpty())
 		{
 			return;
 		}
 
-		final int bpartnerId = request.getBpartnerId();
-		final int bpartnerLocationId = request.getBpartnerLocationId();
+		final int bpartnerId = query.getBpartnerId();
+		final int bpartnerLocationId = query.getBpartnerLocationId();
 
 		final I_C_BPartner bpartner = bpartnerId <= 0 ? null : loadOutOfTrx(bpartnerId, I_C_BPartner.class);
 		final String bpartnerStr = bpartner == null ? "<" + bpartnerId + ">" : bpartner.getValue();
@@ -143,7 +143,8 @@ public class PickingSlotDAO implements IPickingSlotDAO
 		final String translatedErrMsgWithParams = Services.get(IMsgBL.class).parseTranslation(Env.getCtx(), "@PickingSlot_NotFoundFor_PartnerAndLocation@");
 
 		final String exceptionMessage = MessageFormat.format(translatedErrMsgWithParams, bpartnerStr, bpartnerLocationStr);
-		throw new AdempiereException(exceptionMessage);
+		throw new AdempiereException(exceptionMessage)
+				.setParameter("query", query);
 	}
 
 }

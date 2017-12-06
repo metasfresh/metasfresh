@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableList;
  */
 
 /**
- * Enables copy-with-details from PP_Product_BOMs
+ * Enables copy-with-details from M_Forecast
  *
  * @author metas-dev <dev@metasfresh.com>
  *

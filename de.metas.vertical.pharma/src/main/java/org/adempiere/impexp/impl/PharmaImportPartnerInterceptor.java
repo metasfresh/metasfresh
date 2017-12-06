@@ -39,11 +39,11 @@ import de.metas.vertical.pharma.model.I_I_BPartner;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class PharmaImportInterceptor implements IImportInterceptor
+public class PharmaImportPartnerInterceptor implements IImportInterceptor
 {
-	public static final PharmaImportInterceptor instance = new PharmaImportInterceptor();
+	public static final PharmaImportPartnerInterceptor instance = new PharmaImportPartnerInterceptor();
 
-	private PharmaImportInterceptor()
+	private PharmaImportPartnerInterceptor()
 	{
 
 	}
@@ -51,6 +51,11 @@ public class PharmaImportInterceptor implements IImportInterceptor
 	@Override
 	public void onImport(IImportProcess<?> process, Object importModel, Object targetModel, int timing)
 	{
+		if (timing != IImportInterceptor.TIMING_AFTER_IMPORT || !(targetModel instanceof org.compiere.model.I_C_BPartner))
+		{
+			return;
+		}
+
 		final I_I_BPartner ibpartner = InterfaceWrapperHelper.create(importModel, I_I_BPartner.class);
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(targetModel, I_C_BPartner.class);
 		bpartner.setIsPharmaciePermission(ibpartner.isPharmaciePermission());
