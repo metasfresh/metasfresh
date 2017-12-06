@@ -51,6 +51,11 @@ public class PharmaImportPartnerInterceptor implements IImportInterceptor
 	@Override
 	public void onImport(IImportProcess<?> process, Object importModel, Object targetModel, int timing)
 	{
+		if (timing != IImportInterceptor.TIMING_AFTER_IMPORT || !(targetModel instanceof org.compiere.model.I_C_BPartner))
+		{
+			return;
+		}
+
 		final I_I_BPartner ibpartner = InterfaceWrapperHelper.create(importModel, I_I_BPartner.class);
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(targetModel, I_C_BPartner.class);
 		bpartner.setIsPharmaciePermission(ibpartner.isPharmaciePermission());
