@@ -20,12 +20,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.I_M_RMA;
@@ -38,6 +40,7 @@ import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
@@ -306,6 +309,8 @@ import de.metas.logging.LogManager;
 
 	private void updateRecordCount(final MQuery query, final GenericZoomInfoDescriptor zoomInfoDescriptor, final String sourceTableName)
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		final String sqlCount = "SELECT COUNT(*) FROM " + query.getTableName() + " WHERE " + query.getWhereClause(false);
 
 		Boolean isSO = zoomInfoDescriptor.getIsSOTrx();
@@ -333,6 +338,9 @@ import de.metas.logging.LogManager;
 			count = DB.getSQLValue(ITrx.TRXNAME_None, sqlCount);
 		}
 		query.setRecordCount(count);
+
+		final long elapsedTimeMillis = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
+		Loggables.get().addLog("GenericZoomInfoDescriptor {} took {}ms", zoomInfoDescriptor, elapsedTimeMillis);
 	}
 
 	private static final class GenericZoomInfoDescriptor
