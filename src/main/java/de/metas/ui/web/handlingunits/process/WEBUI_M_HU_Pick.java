@@ -19,6 +19,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -71,6 +72,11 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
+		if (HUsToPickViewFactory.WINDOW_ID.equals(getWindowId()))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not needed in HUsToPick view");
+		}
+
 		final ImmutableList<HURow> firstRows = streamHURows().limit(2).collect(ImmutableList.toImmutableList());
 		if (firstRows.isEmpty())
 		{
