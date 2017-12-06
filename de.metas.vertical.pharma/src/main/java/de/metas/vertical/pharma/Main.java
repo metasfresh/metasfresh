@@ -6,7 +6,7 @@ import org.adempiere.impexp.impl.PharmaImportPartnerInterceptor;
 import org.adempiere.impexp.impl.PharmaImportProductInterceptor;
 import org.compiere.model.I_AD_Client;
 
-import de.metas.vertical.pharma.model.I_C_BPartner;
+import de.metas.vertical.pharma.model.I_I_BPartner;
 import de.metas.vertical.pharma.model.I_I_Product;
 
 /*
@@ -42,7 +42,7 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		engine.addImportInterceptor(I_C_BPartner.Table_Name, PharmaImportPartnerInterceptor.instance);
+		engine.addImportInterceptor(I_I_BPartner.Table_Name, PharmaImportPartnerInterceptor.instance);
 		engine.addImportInterceptor(I_I_Product.Table_Name, PharmaImportProductInterceptor.instance);
 	}
 }
