@@ -171,6 +171,29 @@ public class Util
 		}
 		return out.toString();
 	}
+	
+	/**
+	 * @param text
+	 * @return true if the text only contains digits, false otherwise
+	 */
+	public static boolean isDigitsOnly(final String text)
+	{
+		if (text == null)
+		{
+			return false;
+		}
+		char[] inArray = text.toCharArray();	
+		for (int i = 0; i < inArray.length; i++)
+		{
+			char c = inArray[i];
+			if ( !Character.isDigit(c))
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
 
 	/**
 	 * Clean - Remove all white spaces
@@ -559,7 +582,7 @@ public class Util
 		if (set.size() == 0)
 			return iter;
 		// Check, if there are unwanted attributes
-		Set<AttributedCharacterIterator.Attribute> unwanted = new HashSet<AttributedCharacterIterator.Attribute>(iter.getAllAttributeKeys());
+		Set<AttributedCharacterIterator.Attribute> unwanted = new HashSet<>(iter.getAllAttributeKeys());
 		for (int i = 0; i < relevantAttributes.length; i++)
 			unwanted.remove(relevantAttributes[i]);
 		if (unwanted.size() == 0)
@@ -1280,7 +1303,7 @@ public class Util
 	@Deprecated
 	static public void insertSelection(final int[] selection, final int AD_PInstance_ID, final String trxName)
 	{
-		final ArrayList<Integer> results = new ArrayList<Integer>(selection.length);
+		final ArrayList<Integer> results = new ArrayList<>(selection.length);
 
 		for (int i = 0; i < selection.length; i++)
 		{
