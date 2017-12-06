@@ -118,8 +118,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		setView(view, selectedDocumentIds);
 	}
 
-	@OverridingMethodsMustInvokeSuper
-	protected void setView(final IView view, final DocumentIdsSelection selectedDocumentIds)
+	private final void setView(final IView view, final DocumentIdsSelection selectedDocumentIds)
 	{
 		_view = view;
 		_selectedDocumentIds = selectedDocumentIds;
