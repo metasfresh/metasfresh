@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_System;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -55,8 +56,8 @@ public class MetasInfoContributor implements InfoContributor
 		final Map<String, String> adSystemInfo = new HashMap<>();
 		try
 		{
+			adSystemInfo.put("implementationVersion", Adempiere.getImplementationVersion());
 			final I_AD_System adSystem = Services.get(ISystemBL.class).get(Env.getCtx());
-			adSystemInfo.put("lastBuildInfo", adSystem.getLastBuildInfo());
 			adSystemInfo.put("dbVersion", adSystem.getDBVersion());
 		}
 		catch (final Exception ex)
