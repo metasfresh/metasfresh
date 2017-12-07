@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import cx from 'classnames';
 
 class TableHeader extends Component {
     constructor(props) {
@@ -25,13 +26,15 @@ class TableHeader extends Component {
                 sorting.asc = item.ascending;
             }
         })
-
         return (
             <div
-                className="sort-menu"
+                className={cx('sort-menu', {['sort-menu--sortable']: sortable})}
                 onClick={() => this.handleClick(field, sorting, sortable)}
             >
-                <span title={caption} className="th-caption">{caption}</span>
+                <span
+                    title={caption}
+                    className={cx({ ['th-caption']: sortable })}
+                >{caption}</span>
                 <span
                     className={sorting.name && sorting.asc ?
                         'sort rotate-90 sort-ico' :
