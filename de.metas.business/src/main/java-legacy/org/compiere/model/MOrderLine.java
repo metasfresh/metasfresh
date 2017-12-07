@@ -780,24 +780,6 @@ public class MOrderLine extends X_C_OrderLine
 	}	// setC_Charge_ID
 
 	/**
-	 * Set Discount
-	 */
-	public void setDiscount()
-	{
-		BigDecimal list = getPriceList();
-		// No List Price
-		if (BigDecimal.ZERO.compareTo(list) == 0)
-			return;
-		// final int precision = getPrecision();
-		final int precision = 1; // metas
-		// TODO: metas: why we are using precision=1 instead of getPrecision()?
-		BigDecimal discount = list.subtract(getPriceActual())
-				.multiply(new BigDecimal(100))
-				.divide(list, precision, BigDecimal.ROUND_HALF_UP);
-		setDiscount(discount);
-	}	// setDiscount
-
-	/**
 	 * Set Qty Entered/Ordered. Use this Method if the Line UOM is the Product UOM
 	 *
 	 * @param Qty QtyOrdered/Entered
