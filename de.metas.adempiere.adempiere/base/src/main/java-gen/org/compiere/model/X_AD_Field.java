@@ -4,7 +4,6 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for AD_Field
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 599136979L;
+	private static final long serialVersionUID = 1728706183L;
 
     /** Standard Constructor */
     public X_AD_Field (Properties ctx, int AD_Field_ID, String trxName)
@@ -27,24 +26,18 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 			setAD_Column_ID (0);
 			setAD_Field_ID (0);
 			setAD_Tab_ID (0);
-			setEntityType (null);
-// U
-			setIsCentrallyMaintained (true);
-// Y
-			setIsDisplayed (true);
-// Y
-			setIsDisplayedGrid (true);
-// Y
+			setEntityType (null); // U
+			setIsCentrallyMaintained (true); // Y
+			setIsDisplayed (true); // Y
+			setIsDisplayedGrid (true); // Y
 			setIsEncrypted (false);
 			setIsFieldOnly (false);
 			setIsHeading (false);
 			setIsReadOnly (false);
 			setIsSameLine (false);
 			setName (null);
-			setSpanX (0);
-// 1
-			setSpanY (0);
-// 1
+			setSpanX (0); // 1
+			setSpanY (0); // 1
         } */
     }
 
@@ -157,6 +150,40 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public int getAD_FieldGroup_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_FieldGroup_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Element getAD_Name() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Name_ID, org.compiere.model.I_AD_Element.class);
+	}
+
+	@Override
+	public void setAD_Name(org.compiere.model.I_AD_Element AD_Name)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Name_ID, org.compiere.model.I_AD_Element.class, AD_Name);
+	}
+
+	/** Set AD_Name_ID.
+		@param AD_Name_ID AD_Name_ID	  */
+	@Override
+	public void setAD_Name_ID (int AD_Name_ID)
+	{
+		if (AD_Name_ID < 1) 
+			set_Value (COLUMNNAME_AD_Name_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Name_ID, Integer.valueOf(AD_Name_ID));
+	}
+
+	/** Get AD_Name_ID.
+		@return AD_Name_ID	  */
+	@Override
+	public int getAD_Name_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Name_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -897,7 +924,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SortNo);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

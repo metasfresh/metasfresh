@@ -123,6 +123,33 @@ public interface I_AD_Field
     public static final String COLUMNNAME_AD_FieldGroup_ID = "AD_FieldGroup_ID";
 
 	/**
+	 * Set AD_Name_ID.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Name_ID (int AD_Name_ID);
+
+	/**
+	 * Get AD_Name_ID.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Name_ID();
+
+	public org.compiere.model.I_AD_Element getAD_Name();
+
+	public void setAD_Name(org.compiere.model.I_AD_Element AD_Name);
+
+    /** Column definition for AD_Name_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Field, org.compiere.model.I_AD_Element> COLUMN_AD_Name_ID = new org.adempiere.model.ModelColumn<I_AD_Field, org.compiere.model.I_AD_Element>(I_AD_Field.class, "AD_Name_ID", org.compiere.model.I_AD_Element.class);
+    /** Column name AD_Name_ID */
+    public static final String COLUMNNAME_AD_Name_ID = "AD_Name_ID";
+
+	/**
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
