@@ -5,8 +5,19 @@ class TableHeader extends Component {
         super(props);
     }
 
-    renderSorting = (field, caption) => {
-        const {sort, orderBy, deselect, page, tabid} = this.props;
+    handleClick = (field, sorting, sortable) => {
+        if (!sortable) {
+            return;
+        }
+
+        const {sort, deselect, page, tabid} = this.props;
+
+        sort(!sorting.asc, field, true, page, tabid);
+        deselect();
+    }
+
+    renderSorting = (field, caption, sortable) => {
+        const { orderBy } = this.props;
         let sorting = {};
         orderBy && orderBy.map((item) => {
             if(field == item.fieldName){
@@ -18,10 +29,7 @@ class TableHeader extends Component {
         return (
             <div
                 className="sort-menu"
-                onClick={() => {
-                    sort(!sorting.asc, field, true, page, tabid);
-                    deselect();
-                }}
+                onClick={() => this.handleClick(field, sorting, sortable)}
             >
                 <span title={caption} className="th-caption">{caption}</span>
                 <span
@@ -47,8 +55,8 @@ class TableHeader extends Component {
                 className={getSizeClass(item)}
             >
                 {sort ?
-                    this.renderSorting(item.fields[0].field, item.caption):
-                    item.caption
+                    this.renderSorting(item.fields[0].field, item.caption,
+                        item.sortable) : item.caption
                 }
             </th>
         );
