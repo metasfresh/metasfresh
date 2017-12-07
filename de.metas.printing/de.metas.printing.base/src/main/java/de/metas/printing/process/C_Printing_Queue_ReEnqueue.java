@@ -23,7 +23,7 @@ import de.metas.process.ProcessInfoParameter;
 
 /**
  * Re-enqueue {@link I_C_Printing_Queue} items.
- * 
+ *
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/04468_Belege_erneut_in_Druckerwarteschlange_%282013062710000119%29
  */
@@ -183,7 +183,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 		final IQueryFilter<I_C_Printing_Queue> processQueryFilter = getProcessInfo().getQueryFilter();
 
 		final IQuery<I_C_Printing_Queue> query = queryBL
-				.createQueryBuilder(I_C_Printing_Queue.class, getCtx(), getTrxName())
+				.createQueryBuilder(I_C_Printing_Queue.class, getCtx(), ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.filter(processQueryFilter)
 				.create()
