@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.util.Check;
+import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import com.google.common.base.Joiner;
@@ -16,6 +17,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.dimension.DimensionSpec.DimensionSpecGroup;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
@@ -131,6 +133,8 @@ public class MaterialCockpitRow implements IViewRow
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
 
+	private final DimensionSpecGroup dimensionGroup;
+
 	@lombok.Builder(builderClassName = "MainRowBuilder", builderMethodName = "mainRowBuilder")
 	private MaterialCockpitRow(
 			@Singular final List<PerPlantQuantity> perPlantQuantities,
@@ -141,6 +145,8 @@ public class MaterialCockpitRow implements IViewRow
 				perPlantQuantities);
 
 		this.rowType = DefaultRowType.Line;
+
+		this.dimensionGroup = null;
 
 		this.date = extractDate(includedRows);
 		this.productId = extractProductId(includedRows);
@@ -209,7 +215,7 @@ public class MaterialCockpitRow implements IViewRow
 	private MaterialCockpitRow(
 			final int productId,
 			final Timestamp date,
-			final String dimensionGroupName,
+			final DimensionSpecGroup dimensionGroup,
 			final BigDecimal pmmQtyPromised,
 			final BigDecimal qtyReserved,
 			final BigDecimal qtyOrdered,
@@ -219,6 +225,9 @@ public class MaterialCockpitRow implements IViewRow
 			final BigDecimal qtyPromised)
 	{
 		this.rowType = DefaultRowType.Row;
+
+		this.dimensionGroup = dimensionGroup;
+		final String dimensionGroupName = dimensionGroup.getGroupName().translate(Env.getAD_Language());
 
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
 				date,

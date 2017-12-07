@@ -8,6 +8,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.Services;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -16,8 +19,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Multimap;
 
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.dimension.DimensionSpec;
+import de.metas.dimension.DimensionSpec.DimensionSpecGroup;
+import de.metas.dimension.IDimensionspecDAO;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRow.SubRowBuilder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -91,7 +99,7 @@ public class MaterialCockpitRowRepository
 				final MaterialCockpitRow subRow = MaterialCockpitRow.subRowBuilder()
 						.date(dbRow.getDateGeneral())
 						.productId(dbRow.getM_Product_ID())
-						.dimensionGroupName(dbRow.getASIKey())
+						//.dimensionGroupName(dbRow.getASIKey())
 						.pmmQtyPromised(dbRow.getPMM_QtyPromised_OnDate())
 						.qtyMaterialentnahme(dbRow.getQtyMaterialentnahme())
 						.qtyMrp(dbRow.getFresh_QtyMRP())
@@ -113,9 +121,35 @@ public class MaterialCockpitRowRepository
 
 	public Multimap<ProductIdAndDate, MaterialCockpitRow.SubRowBuilder> createEmptySubRows(@NonNull final Timestamp asTimestamp)
 	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final ICompositeQueryFilter<I_M_Product> relevantProductFilter = queryBL.createCompositeQueryFilter(I_M_Product.class)
+				.setJoinOr()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_IsSold, true)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_IsPurchased, true)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, true);
+		final List<I_M_Product> products = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(relevantProductFilter)
+				.create()
+				.list();
+
+		final DimensionSpec dimensionSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalName(DIM_SPEC_INTERNAL_NAME);
+
+		final List<DimensionSpecGroup> groups = dimensionSpec.getGroups();
+
 		final ArrayListMultimap<ProductIdAndDate, MaterialCockpitRow.SubRowBuilder> result = ArrayListMultimap.create();
-		// TODO Auto-generated method stub
+		for (final I_M_Product product : products)
+		{
+			final ProductIdAndDate key = new ProductIdAndDate(product.getM_Product_ID(), asTimestamp);
+			for(final DimensionSpecGroup group : groups)
+			{
+				final SubRowBuilder builder = MaterialCockpitRow.subRowBuilder()
+						.date(asTimestamp)
+						.productId(product.getM_Product_ID())
+						.dimensionGroup(group);
+				result.put(key, builder);
+			}
+		}
 		return result;
 	}
-
 }
