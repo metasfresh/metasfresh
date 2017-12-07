@@ -3,16 +3,12 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Movement;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -109,15 +105,11 @@ public class MovementsAnyWarehouseModel extends AbstractMovementsWarehouseModel
 		final int orgId = firstHU.getAD_Org_ID();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(firstHU);
 
-		final Set<Integer> huWarehouseIds = handlingUnitsDAO.retrieveWarehousesForHUs(hus)
-				.stream()
-				.map(org.compiere.model.I_M_Warehouse::getM_Warehouse_ID)
-				.collect(ImmutableSet.toImmutableSet());
-		
-		 List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId)
-				 .stream()
-				 .filter(warehouse -> !huWarehouseIds.contains(warehouse.getM_Warehouse_ID()))
-				 .collect(ImmutableList.toImmutableList());
+		final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId);
+
+		final List<org.compiere.model.I_M_Warehouse> huWarehouses = handlingUnitsDAO.retrieveWarehousesForHUs(hus);
+
+		warehouses.removeAll(huWarehouses);
 
 		return warehouses;
 	}
