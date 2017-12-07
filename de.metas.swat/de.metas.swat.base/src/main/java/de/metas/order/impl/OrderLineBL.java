@@ -400,6 +400,8 @@ public class OrderLineBL implements IOrderLineBL
 		final int countryId = getCountryIdOrZero(orderLine);
 		pricingCtx.setC_Country_ID(countryId);
 
+		//
+		// Don't calculate the discount in case we are dealing with a percentage discount compensation group line (task 3149)
 		if(orderLine.isGroupCompensationLine()
 				&& X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount.equals(orderLine.getGroupCompensationType())
 				&& X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent.equals(orderLine.getGroupCompensationAmtType()))
