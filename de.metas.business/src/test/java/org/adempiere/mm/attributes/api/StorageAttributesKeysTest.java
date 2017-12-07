@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.event.commons.StorageAttributesKey;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -71,9 +72,9 @@ public class StorageAttributesKeysTest
 		assertThat(result).isEqualTo(expectedResult);
 	}
 
-	private final I_M_Attribute createStorageRelevantAttribute(final String name)
+	private final I_M_Attribute createStorageRelevantAttribute(@NonNull final String name)
 	{
-		I_M_Attribute attribute = attributesTestHelper.createM_Attribute(name, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		final I_M_Attribute attribute = attributesTestHelper.createM_Attribute(name, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		attribute.setIsStorageRelevant(true);
 		save(attribute);
 		return attribute;
