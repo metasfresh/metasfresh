@@ -138,7 +138,9 @@ public class OrderGroupRepository implements GroupRepository
 
 		final GroupBuilder groupBuilder = Group.builder()
 				.groupId(groupId)
-				.precision(precision);
+				.precision(precision)
+				.bpartnerId(order.getC_BPartner_ID())
+				.isSOTrx(order.isSOTrx());
 
 		for (final I_C_OrderLine groupOrderLine : groupOrderLines)
 		{
@@ -420,11 +422,14 @@ public class OrderGroupRepository implements GroupRepository
 				.build();
 
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		final int precision = orderBL.getPrecision(compensationLinePO.getC_Order());
+		final I_C_Order order = compensationLinePO.getC_Order();
+		final int precision = orderBL.getPrecision(order);
 
 		return Group.builder()
 				.groupId(extractGroupId(compensationLinePO))
 				.precision(precision)
+				.bpartnerId(order.getC_BPartner_ID())
+				.isSOTrx(order.isSOTrx())
 				.regularLine(aggregatedRegularLine)
 				.compensationLine(compensationLine)
 				.build();

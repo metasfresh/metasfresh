@@ -47,6 +47,11 @@ public class Group
 	@Getter
 	private final GroupId groupId;
 	private final int precision;
+	@Getter
+	private final int bpartnerId;
+	@Getter
+	private final boolean isSOTrx;
+	
 	private final ImmutableList<GroupRegularLine> regularLines;
 	private final ArrayList<GroupCompensationLine> compensationLines;
 
@@ -56,11 +61,15 @@ public class Group
 	private Group(
 			@NonNull final GroupId groupId,
 			final int precision,
+			final int bpartnerId,
+			@NonNull final Boolean isSOTrx,
 			@NonNull @Singular final List<GroupRegularLine> regularLines,
 			@NonNull @Singular final List<GroupCompensationLine> compensationLines)
 	{
 		this.groupId = groupId;
 		this.precision = precision;
+		this.bpartnerId = bpartnerId > 0 ? bpartnerId : -1;
+		this.isSOTrx = isSOTrx;
 
 		if (regularLines.isEmpty())
 		{
