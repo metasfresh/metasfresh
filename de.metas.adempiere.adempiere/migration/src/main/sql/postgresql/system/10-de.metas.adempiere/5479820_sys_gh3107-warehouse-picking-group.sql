@@ -163,3 +163,43 @@ UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=30,Updated=TO_
 UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=40,Updated=TO_TIMESTAMP('2017-12-07 14:59:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549697
 ;
 
+-- 2017-12-07T15:02:07.406
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-07 15:02:07','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=560642 AND AD_Language='de_CH'
+;
+
+-- 2017-12-07T15:02:22.551
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-07 15:02:22','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Description' WHERE AD_Field_ID=560643 AND AD_Language='en_US'
+;
+
+-- 2017-12-07T15:02:29.953
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-07 15:02:29','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=560642 AND AD_Language='en_US'
+;
+
+-- 2017-12-07T15:02:32.813
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-07 15:02:32','YYYY-MM-DD HH24:MI:SS'),IsTranslated='N' WHERE AD_Field_ID=560642 AND AD_Language='de_CH'
+;
+
+-- 2017-12-07T15:02:49.133
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-07 15:02:49','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Client',Description='',Help='' WHERE AD_Field_ID=560638 AND AD_Language='en_US'
+;
+
+-- 2017-12-07T15:03:07.617
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-07 15:03:07','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Organisation',Description='',Help='' WHERE AD_Field_ID=560639 AND AD_Language='en_US'
+;
+
+-- 2017-12-07T15:03:19.270
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-07 15:03:19','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Aktive',Description='',Help='' WHERE AD_Field_ID=560640 AND AD_Language='en_US'
+;
+
+-- 2017-12-07T15:03:25.529
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-07 15:03:25','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=560641 AND AD_Language='en_US'
+;
+
