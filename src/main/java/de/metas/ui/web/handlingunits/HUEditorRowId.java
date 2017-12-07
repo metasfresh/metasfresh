@@ -293,4 +293,9 @@ public final class HUEditorRowId
 
 		return huId;
 	}
+	
+	public int getStorageProductId()
+	{
+		return storageProductId;
+	}
 }

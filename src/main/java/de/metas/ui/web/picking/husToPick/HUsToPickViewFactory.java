@@ -1,17 +1,31 @@
 package de.metas.ui.web.picking.husToPick;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.adempiere.util.Services;
+import org.compiere.util.Env;
+
 import com.google.common.collect.ImmutableList;
 
+import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
+import de.metas.ui.web.picking.husToPick.process.WEBUI_Picking_HUEditor_Create_M_Source_HUs;
+import de.metas.ui.web.picking.husToPick.process.WEBUI_Picking_HUEditor_PickHU;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -41,9 +55,29 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	public static final String WINDOW_ID_STRING = "husToPick";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
+	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+
 	public HUsToPickViewFactory()
 	{
 		super(ImmutableList.of());
+	}
+
+	@Override
+	protected DocumentFilterDescriptorsProvider createFilterDescriptorsProvider()
+	{
+		return ImmutableDocumentFilterDescriptorsProvider.builder()
+				.addDescriptors(HUsToPickViewFilters.createFilterDescriptors())
+				.addDescriptors(super.createFilterDescriptorsProvider())
+				.build();
+	}
+
+	@Override
+	protected Map<String, SqlDocumentFilterConverter> createFilterConvertersIndexedByFilterId()
+	{
+		final Map<String, SqlDocumentFilterConverter> converters = new HashMap<>();
+		converters.putAll(super.createFilterConvertersIndexedByFilterId());
+		converters.putAll(HUsToPickViewFilters.createFilterConvertersIndexedByFilterId());
+		return converters;
 	}
 
 	@Override
@@ -55,7 +89,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.setIdFieldName(HUEditorRow.FIELDNAME_M_HU_ID)
-				.setFilters(getSqlViewBinding().getViewFilterDescriptors().getAll())
+				.setFilters(getViewFilterDescriptors().getAll())
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
@@ -86,8 +120,19 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	protected void customizeHUEditorView(HUEditorViewBuilder huViewBuilder)
 	{
 		huViewBuilder
+				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_Picking_HUEditor_PickHU.class))
+				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_Picking_HUEditor_Create_M_Source_HUs.class))
+				//
 				.clearOrderBys()
 				.orderBy(DocumentQueryOrderBy.builder().fieldName(HUEditorRow.FIELDNAME_BestBeforeDate).ascending(true).nullsLast(true).build())
 				.orderBy(DocumentQueryOrderBy.byFieldName(HUEditorRow.FIELDNAME_M_HU_ID));
+	}
+
+	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	{
+		return RelatedProcessDescriptor.builder()
+				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass))
+				.webuiQuickAction(true)
+				.build();
 	}
 }

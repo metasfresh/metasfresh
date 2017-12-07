@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Multimap;
@@ -110,10 +111,11 @@ public class MaterialCockpitRowRepository
 		return mainRows.build();
 	}
 
-	public Multimap<ProductIdAndDate, MaterialCockpitRow> createEmptySubRows(@NonNull final Timestamp asTimestamp)
+	public Multimap<ProductIdAndDate, MaterialCockpitRow.SubRowBuilder> createEmptySubRows(@NonNull final Timestamp asTimestamp)
 	{
+		final ArrayListMultimap<ProductIdAndDate, MaterialCockpitRow.SubRowBuilder> result = ArrayListMultimap.create();
 		// TODO Auto-generated method stub
-		return null;
+		return result;
 	}
 
 }

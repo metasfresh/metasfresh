@@ -21,6 +21,7 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 
 /*
@@ -117,9 +118,13 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		final DocumentIdsSelection selectedDocumentIds = DocumentIdsSelection.ofCommaSeparatedString(p_WebuiViewSelectedIdsStr);
 		setView(view, selectedDocumentIds);
 	}
+	
+	protected final WindowId getWindowId()
+	{
+		return getView().getViewId().getWindowId();
+	}
 
-	@OverridingMethodsMustInvokeSuper
-	protected void setView(final IView view, final DocumentIdsSelection selectedDocumentIds)
+	private final void setView(final IView view, final DocumentIdsSelection selectedDocumentIds)
 	{
 		_view = view;
 		_selectedDocumentIds = selectedDocumentIds;

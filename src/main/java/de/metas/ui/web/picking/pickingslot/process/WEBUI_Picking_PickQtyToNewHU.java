@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking.process;
+package de.metas.ui.web.picking.pickingslot.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKING_SLOT;

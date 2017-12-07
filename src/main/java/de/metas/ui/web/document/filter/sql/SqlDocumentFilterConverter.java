@@ -41,6 +41,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@FunctionalInterface
 public interface SqlDocumentFilterConverter
 {
 	/**
@@ -86,7 +87,7 @@ public interface SqlDocumentFilterConverter
 	default <T> IQueryFilter<T> createQueryFilter(@NonNull final List<DocumentFilter> filters, @NonNull final SqlOptions sqlOpts)
 	{
 		final SqlParamsCollector sqlFilterParams = SqlParamsCollector.newInstance();
-		final String sqlFilter = getSql(sqlFilterParams, filters, SqlOptions.defaults());
+		final String sqlFilter = getSql(sqlFilterParams, filters, sqlOpts);
 		return TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams.toList());
 	}
 }

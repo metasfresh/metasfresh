@@ -1,21 +1,19 @@
-package de.metas.ui.web.picking.process;
+package de.metas.ui.web.picking.pickingslot.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.List;
 
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
+import de.metas.ui.web.picking.husToPick.process.WEBUI_Picking_HUEditor_PickHU;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -58,8 +56,6 @@ public class WEBUI_Picking_HUEditor_Launcher extends ViewBasedProcessTemplate
 {
 	@Autowired
 	private IViewsRepository viewsRepo;
-
-	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
@@ -109,18 +105,8 @@ public class WEBUI_Picking_HUEditor_Launcher extends ViewBasedProcessTemplate
 						.setParentViewId(pickingSlotViewId)
 						.setParentRowId(pickingSlotRow.getId())
 						.addStickyFilters(HUIdsFilterHelper.createFilter(availableHUIdsToPick))
-						.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_Picking_HUEditor_PickHU.class))
-						.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_Picking_HUEditor_Create_M_Source_HUs.class))
 						.build());
 		return husToPickView;
-	}
-
-	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
-	{
-		return RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass))
-				.webuiQuickAction(true)
-				.build();
 	}
 
 	@Override
@@ -134,5 +120,4 @@ public class WEBUI_Picking_HUEditor_Launcher extends ViewBasedProcessTemplate
 	{
 		return PickingSlotRow.cast(super.getSingleSelectedRow());
 	}
-
 }

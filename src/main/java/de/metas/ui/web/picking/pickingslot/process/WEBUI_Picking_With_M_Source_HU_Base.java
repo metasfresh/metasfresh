@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking.process;
+package de.metas.ui.web.picking.pickingslot.process;
 
 import java.util.List;
 
@@ -42,7 +42,7 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public abstract class WEBUI_Picking_With_M_Source_HU_Base
+/* package */abstract class WEBUI_Picking_With_M_Source_HU_Base
 		extends ViewBasedProcessTemplate
 {
 	protected final boolean checkSourceHuPrecondition()

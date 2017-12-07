@@ -3,9 +3,11 @@ package de.metas.ui.web.handlingunits;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
@@ -128,10 +130,16 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return sqlViewBindingCache.getOrLoad(key, this::createSqlViewBinding);
 	}
 
+	/** @return HU's standard entity descriptor */
+	private DocumentEntityDescriptor getHUEntityDescriptor()
+	{
+		return documentDescriptorFactory.getDocumentEntityDescriptor(WEBUI_HU_Constants.WEBUI_HU_Window_ID);
+	}
+
 	private SqlViewBinding createSqlViewBinding()
 	{
 		// Get HU's standard entity descriptor. We will needed all over.
-		final DocumentEntityDescriptor huEntityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(WEBUI_HU_Constants.WEBUI_HU_Window_ID);
+		final DocumentEntityDescriptor huEntityDescriptor = getHUEntityDescriptor();
 
 		//
 		// Static where clause
@@ -182,18 +190,37 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		//
 		// View filters and converters
 		{
-			final Collection<DocumentFilterDescriptor> huStandardFilters = huEntityDescriptor.getFilterDescriptors().getAll();
 			sqlViewBinding
-					.filterDescriptors(ImmutableDocumentFilterDescriptorsProvider.builder()
-							.addDescriptors(huStandardFilters)
-							.addDescriptor(HUBarcodeSqlDocumentFilterConverter.createDocumentFilterDescriptor())
-							.build())
+					.filterDescriptors(createFilterDescriptorsProvider())
 					.filterConverter(HUBarcodeSqlDocumentFilterConverter.FILTER_ID, HUBarcodeSqlDocumentFilterConverter.instance)
 					.filterConverter(HUIdsFilterHelper.FILTER_ID, HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER);
+
+			createFilterConvertersIndexedByFilterId().forEach(sqlViewBinding::filterConverter);
 		}
 
 		//
 		return sqlViewBinding.build();
+	}
+
+	protected final DocumentFilterDescriptorsProvider getViewFilterDescriptors()
+	{
+		return getSqlViewBinding().getViewFilterDescriptors();
+	}
+
+	@OverridingMethodsMustInvokeSuper
+	protected DocumentFilterDescriptorsProvider createFilterDescriptorsProvider()
+	{
+		final DocumentEntityDescriptor huEntityDescriptor = getHUEntityDescriptor();
+		final Collection<DocumentFilterDescriptor> huStandardFilters = huEntityDescriptor.getFilterDescriptors().getAll();
+		return ImmutableDocumentFilterDescriptorsProvider.builder()
+				.addDescriptors(huStandardFilters)
+				.addDescriptor(HUBarcodeSqlDocumentFilterConverter.createDocumentFilterDescriptor())
+				.build();
+	}
+
+	protected Map<String, SqlDocumentFilterConverter> createFilterConvertersIndexedByFilterId()
+	{
+		return ImmutableMap.of();
 	}
 
 	@Override
@@ -211,7 +238,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.setIdFieldName(HUEditorRow.FIELDNAME_M_HU_ID)
-				.setFilters(getSqlViewBinding().getViewFilterDescriptors().getAll())
+				.setFilters(getViewFilterDescriptors().getAll())
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
@@ -256,7 +283,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			// Filters
 			@SuppressWarnings("deprecation") // as long as the deprecated getFilterOnlyIds() is around we can't ignore it
 			final List<DocumentFilter> stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds());
-			final DocumentFilterDescriptorsProvider filterDescriptors = sqlViewBinding.getViewFilterDescriptors();
+			final DocumentFilterDescriptorsProvider filterDescriptors = getViewFilterDescriptors();
 			final List<DocumentFilter> filters = request.getOrUnwrapFilters(filterDescriptors);
 
 			// Start building the HUEditorView
@@ -349,6 +376,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setFilterId(FILTER_ID)
 					.setDisplayName(barcodeCaption)
 					.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
+					.setFrequentUsed(false)
 					.addParameter(DocumentFilterParamDescriptor.builder()
 							.setFieldName(PARAM_Barcode)
 							.setDisplayName(barcodeCaption)

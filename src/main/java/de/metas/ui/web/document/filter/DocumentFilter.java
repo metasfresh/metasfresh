@@ -120,13 +120,24 @@ public final class DocumentFilter
 		return parameters;
 	}
 
-	public DocumentFilterParam getParameter(@NonNull final String fieldName)
+	public DocumentFilterParam getParameter(@NonNull final String parameterName)
 	{
 		return parameters
 				.stream()
-				.filter(param -> fieldName.equals(param.getFieldName()))
+				.filter(param -> parameterName.equals(param.getFieldName()))
 				.findFirst()
-				.orElseThrow(() -> new IllegalArgumentException("Parameter " + fieldName + " not found in " + this));
+				.orElseThrow(() -> new IllegalArgumentException("Parameter " + parameterName + " not found in " + this));
+	}
+
+	public String getParameterValueAsString(@NonNull final String parameterName)
+	{
+		DocumentFilterParam barcodeParam = getParameter(parameterName);
+		if (barcodeParam == null)
+		{
+			return null;
+		}
+
+		return barcodeParam.getValueAsString();
 	}
 
 	public static final class Builder

@@ -1,23 +1,24 @@
-package de.metas.ui.web.picking.process;
+package de.metas.ui.web.picking.pickingslot.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_CU;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -41,15 +42,20 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
  * #L%
  */
 
-public class WEBUI_Picking_ReturnQtyToSourceHU
+/**
+ * 
+ * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
+ * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class WEBUI_Picking_PickQtyToExistingHU
 		extends WEBUI_Picking_With_M_Source_HU_Base
-		implements IProcessPrecondition
+		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
-
-	@Autowired
-	private HuId2SourceHUsService sourceHUsRepository;
 
 	private static final String PARAM_QTY_CU = "QtyCU";
 	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
@@ -69,14 +75,12 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
 
-		final String rowType = pickingSlotRow.getType().getName();
-		final boolean cuRow = Objects.equals(rowType, HUEditorRowType.VHU.getName()) || Objects.equals(rowType, HUEditorRowType.HUStorage.getName());
-		if (cuRow)
+		if (pickingSlotRow.isProcessed())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_CU));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
 		}
 
-		if (!checkSourceHuPreconditionIncludingEmptyHUs())
+		if (!checkSourceHuPrecondition())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_MISSING_SOURCE_HU));
 		}
@@ -89,12 +93,13 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 
-		pickingCandidateService.removeQtyFromHU()
+		pickingCandidateService.addQtyToHU()
 				.qtyCU(qtyCU)
-				.huId(pickingSlotRow.getHuId())
-				.productId(pickingSlotRow.getHuProductId())
+				.targetHUId(pickingSlotRow.getHuId())
+				.pickingSlotId(pickingSlotRow.getPickingSlotId())
+				.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
 				.build()
-				.perform();
+				.performAndGetQtyPicked();
 
 		invalidateView();
 		invalidateParentView();
@@ -102,9 +107,19 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 		return MSG_OK;
 	}
 
-	private boolean checkSourceHuPreconditionIncludingEmptyHUs()
+	/**
+	 * Returns the {@code qtyToDeliver} value of the currently selected shipment schedule, or {@code null}.
+	 */
+	@Override
+	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
-		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveMatchingSourceHUs(getSingleSelectedRow().getHuId());
-		return !sourceHUs.isEmpty();
+		if (!Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
+		{
+			return DEFAULT_VALUE_NOTAVAILABLE;
+		}
+
+		final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
+		return shipmentSchedule.getQtyToDeliver();
 	}
+
 }

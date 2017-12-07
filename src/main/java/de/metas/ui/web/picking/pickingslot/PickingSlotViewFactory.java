@@ -16,17 +16,18 @@ import com.google.common.collect.ImmutableList;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingCandidate;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingSlotRepoQueryBuilder;
-import de.metas.ui.web.picking.process.WEBUI_Picking_HUEditor_Launcher;
-import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Process;
-import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Unprocess;
-import de.metas.ui.web.picking.process.WEBUI_Picking_M_Source_HU_Delete;
-import de.metas.ui.web.picking.process.WEBUI_Picking_PickQtyToExistingHU;
-import de.metas.ui.web.picking.process.WEBUI_Picking_PickQtyToNewHU;
-import de.metas.ui.web.picking.process.WEBUI_Picking_RemoveHUFromPickingSlot;
-import de.metas.ui.web.picking.process.WEBUI_Picking_ReturnQtyToSourceHU;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_HUEditor_Launcher;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Picking_Candidate_Process;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Picking_Candidate_Unprocess;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_M_Source_HU_Delete;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_PickQtyToExistingHU;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_PickQtyToNewHU;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_RemoveHUFromPickingSlot;
+import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_ReturnQtyToSourceHU;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
@@ -88,6 +89,11 @@ public class PickingSlotViewFactory implements IViewFactory
 				.setTreeCollapsible(true)
 				.setTreeExpandedDepth(ViewLayout.TreeExpandedDepth_ExpandedFirstLevel)
 				.build();
+	}
+
+	private DocumentFilterDescriptorsProvider getFilterDescriptorsProvider()
+	{
+		return filterDescriptorsProviderCache.getOrLoad(0, () -> PickingSlotViewFilters.createFilterDescriptorsProvider());
 	}
 
 	/**
