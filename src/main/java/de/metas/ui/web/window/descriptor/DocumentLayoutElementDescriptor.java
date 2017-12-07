@@ -99,6 +99,9 @@ public final class DocumentLayoutElementDescriptor
 
 	private DocumentLayoutElementDescriptor(final Builder builder)
 	{
+		internalName = builder.getInternalName();
+		gridElement = builder.isGridElement();
+		
 		caption = builder.getCaption();
 		description = builder.getDescription();
 

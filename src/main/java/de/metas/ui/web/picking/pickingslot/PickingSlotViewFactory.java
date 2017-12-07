@@ -7,7 +7,9 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.compiere.util.CCache;
 import org.compiere.util.Env;
+import org.compiere.util.Util.ArrayKey;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Preconditions;
@@ -73,8 +75,17 @@ public class PickingSlotViewFactory implements IViewFactory
 	@Autowired
 	private PickingSlotViewRepository pickingSlotRepo;
 
+	private CCache<ArrayKey, ViewLayout> viewLayoutCache = CCache.newCache("PickingSlotViewLayout", 1, CCache.EXPIREMINUTES_Never);
+	private CCache<Integer, DocumentFilterDescriptorsProvider> filterDescriptorsProviderCache = CCache.newCache("PickingSlotView.FilterDescriptorsProvider", 1, CCache.EXPIREMINUTES_Never);
+
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, @Nullable final ViewProfileId profileId)
+	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, @Nullable final ViewProfileId profileId_NOTUSED)
+	{
+		final ArrayKey cacheKey = ArrayKey.of(windowId, viewDataType);
+		return viewLayoutCache.getOrLoad(cacheKey, () -> createViewLayout(windowId, viewDataType));
+	}
+
+	private ViewLayout createViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
 	{
 		if (!PickingConstants.WINDOWID_PickingSlotView.equals(windowId))
 		{
@@ -88,6 +99,7 @@ public class PickingSlotViewFactory implements IViewFactory
 				.setHasTreeSupport(true)
 				.setTreeCollapsible(true)
 				.setTreeExpandedDepth(ViewLayout.TreeExpandedDepth_ExpandedFirstLevel)
+				.setFilters(getFilterDescriptorsProvider().getAll())
 				.build();
 	}
 
@@ -117,12 +129,14 @@ public class PickingSlotViewFactory implements IViewFactory
 			@NonNull final CreateViewRequest request,
 			@Nullable final List<Integer> allShipmentScheduleIds)
 	{
-		final ViewId pickingViewId = request.getParentViewId();
-		final DocumentId pickingRowId = request.getParentRowId();
-		final ViewId pickingSlotViewId = PickingSlotViewsIndexStorage.createViewId(pickingViewId, pickingRowId);
-		final int shipmentScheduleId = extractCurrentShipmentScheduleId(request);
+		final CreateViewRequest requestEffective = request.unwrapFiltersAndCopy(getFilterDescriptorsProvider());
 
-		final PickingSlotRepoQuery query = createPickingSlotRowsQuery(request, allShipmentScheduleIds);
+		final ViewId pickingViewId = requestEffective.getParentViewId();
+		final DocumentId pickingRowId = requestEffective.getParentRowId();
+		final ViewId pickingSlotViewId = PickingSlotViewsIndexStorage.createViewId(pickingViewId, pickingRowId);
+		final int shipmentScheduleId = extractCurrentShipmentScheduleId(requestEffective);
+
+		final PickingSlotRepoQuery query = createPickingSlotRowsQuery(requestEffective, allShipmentScheduleIds);
 		final Supplier<List<PickingSlotRow>> rowsSupplier = () -> pickingSlotRepo.retrieveRows(query);
 
 		return PickingSlotView.builder()
@@ -132,6 +146,7 @@ public class PickingSlotViewFactory implements IViewFactory
 				.currentShipmentScheduleId(shipmentScheduleId)
 				.rowsSupplier(rowsSupplier)
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
+				.filters(requestEffective.getFilters().getFilters())
 				.build();
 	}
 
@@ -154,6 +169,12 @@ public class PickingSlotViewFactory implements IViewFactory
 					currentShipmentScheduleId, allShipmentScheduleIds, request);
 
 			queryBuilder.shipmentScheduleIds(allShipmentScheduleIds);
+		}
+
+		final String barcode = PickingSlotViewFilters.getPickingSlotBarcode(request.getFilters());
+		if (!Check.isEmpty(barcode, true))
+		{
+			queryBuilder.pickingSlotBarcode(barcode);
 		}
 
 		return queryBuilder.build();

@@ -2,9 +2,9 @@ package de.metas.ui.web.window.model;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.BiFunction;
 
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy.FieldValueExtractor;
 import lombok.NonNull;
 
 /*
@@ -33,7 +33,7 @@ public class DocumentQueryOrderBys
 {
 	public static Comparator<IViewRow> asComparator(@NonNull final List<DocumentQueryOrderBy> orderBys)
 	{
-		final BiFunction<IViewRow, String, Object> fieldValueExtractor = (row, fieldName) -> row
+		final FieldValueExtractor<IViewRow> fieldValueExtractor = (row, fieldName) -> row
 				.getFieldNameAndJsonValues()
 				.get(fieldName);
 
