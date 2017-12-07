@@ -56,6 +56,18 @@ export function closeRawModal() {
     }
 }
 
+export function allowShortcut() {
+    return {
+        type: types.ALLOW_SHORTCUT
+    }
+}
+
+export function disableShortcut() {
+    return {
+        type: types.DISABLE_SHORTCUT
+    }
+}
+
 export function activateTab(scope, tabId) {
     return {
         type: types.ACTIVATE_TAB,
