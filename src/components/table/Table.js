@@ -1033,7 +1033,7 @@ class Table extends Component {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
             pageLength, page, mainTable, updateDocList, sort, orderBy,
             toggleFullScreen, fullScreen, tabIndex, indentSupported, isModal,
-            queryLimitHit, supportQuickInput, tabInfo,
+            queryLimitHit, supportQuickInput, tabInfo, allowShortcut,
             disablePaginationShortcuts, hasIncluded, blurOnIncludedView
         } = this.props;
 
@@ -1168,7 +1168,7 @@ class Table extends Component {
                     />
                 }
 
-                <DocumentListContextShortcuts
+                { allowShortcut && <DocumentListContextShortcuts
                     handleAdvancedEdit={selected.length > 0 ?
                         () => this.handleAdvancedEdit(type, tabid, selected) :
                         ''
@@ -1183,8 +1183,9 @@ class Table extends Component {
 
                     handleIndent = {this.handleShortcutIndent}
                 />
+                }
 
-                {!readonly &&
+                { allowShortcut && !readonly &&
                     <TableContextShortcuts
                         handleToggleQuickInput={this.handleBatchEntryToggle}
                         handleToggleExpand={() => toggleFullScreen(!fullScreen)}
@@ -1199,6 +1200,11 @@ Table.propTypes = {
     dispatch: PropTypes.func.isRequired
 }
 
-Table = connect(false, false, false, { withRef: true })(onClickOutside(Table))
+const mapStateToProps = state => ({
+    allowShortcut: state.windowHandler.allowShortcut
+})
+
+Table = connect(mapStateToProps, false, false,
+    { withRef: true })(onClickOutside(Table))
 
 export default Table
