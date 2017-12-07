@@ -13,12 +13,6 @@ import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 
-/**
- *
- * @author ts
- * @see "<a href='http://dewiki908/mediawiki/index.php/Abonnement_Auftragsverwaltung_(2009_0015_G36)'>(2009_0015_G36)</a>"
- */
-// code used to be located in /sw01_swat_it/src/java/org/adempiere/order/subscription/modelvalidator/OrderValidator.java
 @Interceptor(I_C_OrderLine.class)
 public class C_OrderLine
 {
