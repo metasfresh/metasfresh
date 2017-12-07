@@ -1,14 +1,12 @@
 package de.metas.materialtracking.impl;
 
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import de.metas.dimension.IDimensionSpecAttributeBL;
+import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.IDimensionspecDAO;
-import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.materialtracking.IMaterialTrackingReportBL;
 import de.metas.materialtracking.MaterialTrackingConstants;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
@@ -64,15 +62,12 @@ public class MaterialTrackingReportBL implements IMaterialTrackingReportBL
 	{
 		final IDimensionspecDAO dimSpecDAO = Services.get(IDimensionspecDAO.class);
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final IDimensionSpecAttributeBL dimensionSpecAttributeBL = Services.get(IDimensionSpecAttributeBL.class);
-
-		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(iol);
 
 		final String internalName = sysConfigBL.getValue(MaterialTrackingConstants.SYSCONFIG_M_Material_Tracking_Report_Dimension);
 
-		final I_DIM_Dimension_Spec dimensionSpec = dimSpecDAO.retrieveForInternalName(internalName, ctxAware);
+		final DimensionSpec dimensionSpec = dimSpecDAO.retrieveForInternalName(internalName);
 
-		final I_M_AttributeSetInstance resultASI = dimensionSpecAttributeBL.createASIForDimensionSpec(iol.getM_AttributeSetInstance(), dimensionSpec);
+		final I_M_AttributeSetInstance resultASI = dimensionSpec.createASIForDimensionSpec(iol.getM_AttributeSetInstance());
 
 		return resultASI;
 	}
