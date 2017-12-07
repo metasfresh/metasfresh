@@ -24,6 +24,9 @@ Here come the actual release notes:
     * New Window for Picking Profile Configuration. Allowing to switch the used Picking Profile between Product and Sales Order oriented Picking.
 
 #Fixes
+* metasfresh-app
+  * [#3159](https://github.com/metasfresh/metasfresh/issues/3159) Translation Tab content missing for Product_Trl
+    * Fix for the Product Translation Tab. Now showing the Translations again.
 * metasfresh-webui-frontend
   * [#1415](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1415) View: singleOverlayField filters are half broken
     * Fix for the Overlay when using Barcode Filter.
