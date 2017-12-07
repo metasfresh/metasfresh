@@ -40,6 +40,7 @@ const initialState = {
         websocket: null
     },
     indicator: 'saved',
+    allowShortcut: true,
     latestNewDocument: null,
     viewId: null,
     selections: {},
@@ -403,6 +404,18 @@ export default function windowHandler(state = initialState, action) {
                     viewId: action.viewId
                 })
             });
+
+        case types.ALLOW_SHORTCUT:
+            return {
+                ...state,
+                allowShortcut: true
+            };
+
+        case types.DISABLE_SHORTCUT:
+            return {
+                ...state,
+                allowShortcut: false
+            };
 
         default:
             return state;
