@@ -69,9 +69,9 @@ class PricingResult implements IPricingResult
 
 	private boolean calculated = false;
 
-	private final List<IPricingRule> rulesApplied = new ArrayList<IPricingRule>();
+	private final List<IPricingRule> rulesApplied = new ArrayList<>();
 
-	private final List<IPricingAttribute> pricingAttributes = new ArrayList<IPricingAttribute>();
+	private final List<IPricingAttribute> pricingAttributes = new ArrayList<>();
 
 	@Override
 	public int getM_PricingSystem_ID()
@@ -211,7 +211,7 @@ class PricingResult implements IPricingResult
 	@Override
 	public BigDecimal getDiscount()
 	{
-		return discount;
+		return discount != null ? discount : BigDecimal.ZERO;
 	}
 
 	/**
