@@ -90,7 +90,7 @@ public class Group
 		return _regularLinesNetAmt;
 	}
 
-	private BigDecimal getTotalNetAmt()
+	public BigDecimal getTotalNetAmt()
 	{
 		final BigDecimal regularLinesNetAmt = getRegularLinesNetAmt();
 		final BigDecimal compensationLinesNetAmt = compensationLines.stream().map(GroupCompensationLine::getLineNetAmt).reduce(BigDecimal.ZERO, BigDecimal::add);
