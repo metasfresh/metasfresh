@@ -52,7 +52,7 @@ import de.metas.order.IOrderDAO;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
-	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
+	private static final Logger logger = LogManager.getLogger(C_Order.class);
 
 	private static final String MSG_ORDER_DATE_ORDERED_CHANGE_FORBIDDEN_1P = "Order_DateOrdered_Change_Forbidden";
 
