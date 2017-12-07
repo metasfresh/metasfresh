@@ -9,6 +9,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
@@ -153,9 +154,12 @@ class TablePrimaryKeyGenerator
 		columnPK.setEntityType(table.getEntityType());
 
 		final I_AD_Element adElement = getCreateAD_Element(table);
+		final String elementColumnName = adElement.getColumnName ();
+		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", adElement);
+		
 		columnPK.setAD_Element(adElement);
 		columnPK.setColumnName(adElement.getColumnName());
-		columnPK.setName(adElement.getName());
+		columnPK.setName(elementColumnName);
 		columnPK.setDescription(adElement.getDescription());
 		columnPK.setHelp(adElement.getHelp());
 

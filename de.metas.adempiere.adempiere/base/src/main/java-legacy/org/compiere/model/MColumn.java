@@ -302,7 +302,11 @@ public class MColumn extends X_AD_Column
 				&& getAD_Element_ID() != 0)
 		{
 			M_Element element = new M_Element(getCtx(), getAD_Element_ID(), get_TrxName());
-			setColumnName(element.getColumnName());
+			
+			final String elementColumnName = element.getColumnName ();
+			Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", element);
+			
+			setColumnName(elementColumnName);
 			setName(element.getName());
 			setDescription(element.getDescription());
 			setHelp(element.getHelp());
