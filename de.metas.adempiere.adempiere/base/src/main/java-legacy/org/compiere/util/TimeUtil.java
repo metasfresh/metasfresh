@@ -1413,8 +1413,4 @@ public class TimeUtil
 		return dayOfWeek - 1;
 	}
 
-	public static Timestamp getNow()
-	{
-		return SystemTime.asTimestamp();
-	}
 }	// TimeUtil
