@@ -1,7 +1,10 @@
 package de.metas.contracts.interceptor;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 
 /*
  * #%L
@@ -26,10 +29,13 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
  */
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 
 import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.order.compensationGroup.GroupId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 
 /**
  *
@@ -40,17 +46,50 @@ import de.metas.contracts.subscription.model.I_C_OrderLine;
 @Interceptor(I_C_OrderLine.class)
 public class C_OrderLine
 {
+	private static final ModelDynAttributeAccessor<I_C_OrderLine, Boolean> DYNATTR_SkipUpdatingGroupFlatrateConditions = new ModelDynAttributeAccessor<>("SkipUpdatingGroupFlatrateConditions", Boolean.class);
+
+	/**
+	 * In case the flatrate conditions for an order line is updated and that line is part of an compensation group,
+	 * then set the same flatrate conditions to all other lines from the same compensation group.
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/3150
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID)
+	public void setSameFlatrateConditionsForWholeCompensationGroup(final I_C_OrderLine orderLine)
+	{
+		if (DYNATTR_SkipUpdatingGroupFlatrateConditions.getValue(orderLine, Boolean.FALSE))
+		{
+			return;
+		}
+
+		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(orderLine);
+		if (groupId == null)
+		{
+			return;
+		}
+
+		final int flatrateConditionsId = orderLine.getC_Flatrate_Conditions_ID();
+
+		final OrderGroupRepository orderGroupsRepo = Adempiere.getBean(OrderGroupRepository.class);
+		orderGroupsRepo.retrieveGroupOrderLinesQuery(groupId)
+				.addNotEqualsFilter(I_C_OrderLine.COLUMN_C_OrderLine_ID, orderLine.getC_OrderLine_ID()) // skip this line
+				.create()
+				.list(I_C_OrderLine.class)
+				.forEach(otherOrderLine -> {
+					otherOrderLine.setC_Flatrate_Conditions_ID(flatrateConditionsId);
+					DYNATTR_SkipUpdatingGroupFlatrateConditions.setValue(otherOrderLine, Boolean.TRUE);
+					save(otherOrderLine);
+				});
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void updateDataEntry(final I_C_OrderLine ol)
 	{
-			if (ol.isProcessed())
+		if (ol.isProcessed())
 		{
 			final I_C_Order order = ol.getC_Order();
-
-			final Integer subscriptionId = ol.getC_Flatrate_Conditions_ID();
-
-			if (subscriptionId == null || subscriptionId <= 0)
+			final int subscriptionId = ol.getC_Flatrate_Conditions_ID();
+			if (subscriptionId <= 0)
 			{
 				// TODO figure out wtf this check and this error message mean
 				throw new AdempiereException("OrderLine " + ol.getLine()
@@ -59,5 +98,4 @@ public class C_OrderLine
 			}
 		}
 	}
-
 }
