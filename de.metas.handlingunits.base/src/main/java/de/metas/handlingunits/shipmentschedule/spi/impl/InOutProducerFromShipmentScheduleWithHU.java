@@ -39,7 +39,6 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -441,7 +440,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	@VisibleForTesting
 	static boolean isShipmentDeliveryDateBetterThanMovementDate(final @NonNull I_M_InOut shipment, final @NonNull Timestamp shipmentDeliveryDate)
 	{
-		final Timestamp today = TimeUtil.getTodayAsTimestamp();
+		final Timestamp today = SystemTime.asDayTimestamp();
 		final Timestamp movementDate = shipment.getMovementDate();
 		
 		final boolean isCandidateInThePast = shipmentDeliveryDate.before(today);

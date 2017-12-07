@@ -84,7 +84,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 		final Timestamp yesterday = TimeUtil.getDay(2017, 11, 9);
 
-		final Timestamp today = TimeUtil.getTodayAsTimestamp();
+		final Timestamp today = SystemTime.asDayTimestamp();
 
 		final I_M_InOut shipment = createShipment(yesterday);
 
@@ -101,7 +101,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 		final Timestamp tomorrow = TimeUtil.getDay(2017, 11, 12);
 
-		final Timestamp today = TimeUtil.getTodayAsTimestamp();
+		final Timestamp today = SystemTime.asDayTimestamp();
 
 		final I_M_InOut shipment = createShipment(today);
 
@@ -157,7 +157,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 10, 15, 0));
 
-		final Timestamp today = TimeUtil.getTodayAsTimestamp();
+		final Timestamp today = SystemTime.asDayTimestamp();
 
 		final I_M_ShipmentSchedule schedule = createSchedule(today);
 
@@ -171,7 +171,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 19, 17, 16));
 
-		final Timestamp today = TimeUtil.getTodayAsTimestamp();
+		final Timestamp today = SystemTime.asDayTimestamp();
 
 		final I_M_ShipmentSchedule schedule = createSchedule(today);
 
@@ -185,7 +185,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 13, 13, 13));
 
-		final Timestamp today = TimeUtil.getTodayAsTimestamp();
+		final Timestamp today = SystemTime.asDayTimestamp();
 
 		final Timestamp anotherDate = TimeUtil.getDay(2017, 11, 17);
 
@@ -215,7 +215,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2017, 11, 10, 1, 2, 30));
 
-		final Timestamp today = TimeUtil.getTodayAsTimestamp();
+		final Timestamp today = SystemTime.asDayTimestamp();
 		final Timestamp dateInPast = TimeUtil.getDay(2017, 11, 3);
 
 		final I_M_ShipmentSchedule schedule = createSchedule(dateInPast);
