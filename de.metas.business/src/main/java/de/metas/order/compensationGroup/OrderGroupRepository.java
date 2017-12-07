@@ -64,13 +64,13 @@ public class OrderGroupRepository implements GroupRepository
 	// private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public GroupId extractGroupId(final I_C_OrderLine orderLine)
+	public static GroupId extractGroupId(final I_C_OrderLine orderLine)
 	{
 		OrderGroupCompensationUtils.assertInGroup(orderLine);
 		return extractGroupIdOrNull(orderLine);
 	}
 
-	private GroupId extractGroupIdOrNull(final I_C_OrderLine orderLine)
+	public static GroupId extractGroupIdOrNull(final I_C_OrderLine orderLine)
 	{
 		if (OrderGroupCompensationUtils.isInGroup(orderLine))
 		{
@@ -86,7 +86,7 @@ public class OrderGroupRepository implements GroupRepository
 	{
 		Check.assumeNotEmpty(orderLines, "orderLines is not empty");
 		return orderLines.stream()
-				.map(this::extractGroupId)
+				.map(OrderGroupRepository::extractGroupId)
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Order lines are not part of the same group: " + orderLines)));
 	}
@@ -167,7 +167,7 @@ public class OrderGroupRepository implements GroupRepository
 		return groupOrderLines;
 	}
 
-	private IQueryBuilder<I_C_OrderLine> retrieveGroupOrderLinesQuery(@NonNull final GroupId groupId)
+	public IQueryBuilder<I_C_OrderLine> retrieveGroupOrderLinesQuery(@NonNull final GroupId groupId)
 	{
 		final int orderId = groupId.getDocumentIdAssumingTableName(I_C_Order.Table_Name);
 		return queryBL
@@ -304,7 +304,7 @@ public class OrderGroupRepository implements GroupRepository
 		Check.assumeNotEmpty(orderLines, "orderLines is not empty");
 
 		final List<GroupId> groupIds = orderLines.stream()
-				.map(this::extractGroupIdOrNull)
+				.map(OrderGroupRepository::extractGroupIdOrNull)
 				.distinct()
 				.collect(Collectors.toList());
 

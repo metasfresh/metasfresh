@@ -16,12 +16,16 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#3107](https://github.com/metasfresh/metasfresh/issues/3107) Warehouse picking group window
+    * New Warehouse Picking Group window in WebUi, allowing the user to define groups of Warehouses that shall be considered as warehouses to be picking sources
   * [#3120](https://github.com/metasfresh/metasfresh/issues/3120) Add Netsum to Customer Invoice Document Grid View
     * Improvement of Customer Invoice Grid View, adding Net Sum.
   * [#3122](https://github.com/metasfresh/metasfresh/issues/3122) Add Netsum to Vendor Invoice Document Grid View
     * Improvement of Vendor Invoice Grid View, adding Net Sum.
   * [#3124](https://github.com/metasfresh/metasfresh/issues/3124) Picking terminal: pimp Picking Configuration window
     * New Window for Picking Profile Configuration. Allowing to switch the used Picking Profile between Product and Sales Order oriented Picking.
+  * [#3166](https://github.com/metasfresh/metasfresh/issues/3166) Businesspartner Window shows Fields that should be in Advanced edit mode
+    * Improved Business Partner window, moved Fields to andvanced edit that are not mainly in user focus.
 
 #Fixes
 * metasfresh-app
@@ -70,6 +74,7 @@ Here come the actual release notes:
   * [#3095](https://github.com/metasfresh/metasfresh/issues/3095) WebUI: new Window for AD_Session in WebUI
     * New window for session audit in webui, allowing to view session and login information.
   * [#3117](https://github.com/metasfresh/metasfresh/issues/3117) Disable MStorage.add
+    * Switching off Legacy M_Storage.
 
 * metasfresh-webui-api
   * [#699](https://github.com/metasfresh/metasfresh-webui-api/issues/699) Implement Batch entry in Forecast Window
@@ -81,7 +86,9 @@ Here come the actual release notes:
   * [#1354](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1354) DateTimeRangePicker default Time from/to in Filter and Process Parms
     * Improving the DateRange Picker Filter widget. Now seetting the initial date and time to the whole day of today.
   * [#1357](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1357) Don't use the legacy view attributes API
+    * Frontend Improvement, now not using the lagacy API view for attributes anymore.
   * [#1360](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1360) View field editor: override viewEditorRenderMode on row level
+    * New functionality that allows to overwrite the editor render mode on row level.
   * [#1387](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1387) New widget for date filtering
     * New Filter widget, that allows to navigate date & date/time filter settings in lower or higher steps.
 
@@ -92,19 +99,27 @@ Here come the actual release notes:
   * [#2977](https://github.com/metasfresh/metasfresh/issues/2977) Tab Org Access not working in WebUI because of missing primary key
     * Adding a primary Key to Orgaccess Table, allowing to create records in User Window subtab.
   * [#3065](https://github.com/metasfresh/metasfresh/issues/3065) PP Order not shown in materialdispo although automatically generated
+    * Fix for PP Orders, now shown in materialdispo too when automatically generated.
   * [#3087](https://github.com/metasfresh/metasfresh/issues/3087) Get rid of group columns in new window for procurement stock count
     * Adjusting the window Purchase Stock Control and adding Translation for en_US.
   * [#3060](https://github.com/metasfresh/metasfresh/issues/3060) TypedSqlQuery Bugs because aggregateList method ignores order
+    * Now allowinf to use OrderBy in TypedSQLQuery.
   * [#3073](https://github.com/metasfresh/metasfresh/issues/3073) Error: Could not find or load main class ${argLine}
+    * Internal housekeeping issue, fixing the local build of metasfresh from command line.
   * [#3088](https://github.com/metasfresh/metasfresh/issues/3088) Transform in material receipt left destroyed HU behind
+    * Fix for the Transformation action in handling unit Editor, now undisplaying the destroyed HU after Transformation.
   * [#3089](https://github.com/metasfresh/metasfresh/issues/3089) Not able to start report service with ReportServiceMain.launch
+    * Internal Housekeeping Task allowing to start the report service now with ReportServiceMain.launch.
   * [#3100](https://github.com/metasfresh/metasfresh/issues/3100) Move UI Element Action broken
     * Fix for the UI Element (Element, Group) Movement actions.
   * [#3128](https://github.com/metasfresh/metasfresh/issues/3128) Qtydelivered in PMM_Balance gets doubled
+    * Fix for the Procurement disposition, now not doubleing the PMM Balance anymore.
 
 * metasfresh-webui-frontend
   * [#1367](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1367) view attributes shall be refreshed when the current selected row is refreshed
+    * Fixed the Frontend refresh of the attributes view.
   * [#1405](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1405) Lookup dropdown not Closing after selection w/ [enter/CR]
+    * Fix for dropdown lists in Lookupds when confirming a selection with enter/ cr.
 
 # metasfresh 5.37 (2017-48)
 
