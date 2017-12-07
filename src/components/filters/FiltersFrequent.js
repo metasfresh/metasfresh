@@ -28,18 +28,6 @@ class FiltersFrequent extends Component {
         dropdownToggled();
     }
 
-    isActive(filterId) {
-        const { active } = this.props;
-        let result = false;
-
-        if (active) {
-            let activeFilter = active.find( (item) => item.filterId === filterId );
-            result = (typeof activeFilter !== 'undefined') && activeFilter;
-        }
-
-        return result;
-    }
-
     render() {
         const {
             data, windowType, notValidFields, viewId, handleShow,
@@ -53,31 +41,16 @@ class FiltersFrequent extends Component {
                 {data.map((item, index) => {
                     const parameter = item.parameters[0];
                     const filterType = parameter.widgetType;
-                    const isActive = this.isActive(item.filterId);
                     const dateStepper = (
                         // keep implied information (e.g. for refactoring)
                         item.frequent &&
 
                         item.parameters.length === 1 &&
                         parameter.showIncrementDecrementButtons &&
-                        isActive &&
+                        item.isActive &&
                         TableCell.DATE_FIELD_TYPES.includes(filterType) &&
                         !TableCell.TIME_FIELD_TYPES.includes(filterType)
                     );
-                    const activeParameter = (
-                        isActive && active[index].parameters[0]
-                    );
-                    const captionValue = isActive
-                        ? TableCell.fieldValueToString(
-                            activeParameter.valueTo
-                                ? [
-                                    activeParameter.value,
-                                    activeParameter.valueTo
-                                ]
-                                : activeParameter.value,
-                            filterType
-                        )
-                        : '';
 
                     return (
                         <div className="filter-wrapper" key={index}>
@@ -93,13 +66,13 @@ class FiltersFrequent extends Component {
                                 onClick={() => this.toggleFilter(index, item)}
                                 className={cx(classes, {
                                     ['btn-select']: openFilterId === index,
-                                    ['btn-active']: isActive,
+                                    ['btn-active']: item.isActive,
                                     ['btn-distance']: !dateStepper
                                 })}
                             >
                                 <i className="meta-icon-preview" />
-                                {isActive
-                                    ? `${item.caption}: ${captionValue}`
+                                {item.isActive
+                                    ? `${item.caption}: ${item.captionValue}`
                                     : `${counterpart.translate(
                                             'window.filters.caption2'
                                         )}: ${item.caption}`
@@ -117,7 +90,7 @@ class FiltersFrequent extends Component {
 
                             {openFilterId === index &&
                                 <FiltersItem
-                                    captionValue={captionValue}
+                                    captionValue={item.captionValue}
                                     key={index}
                                     windowType={windowType}
                                     data={item}
@@ -125,7 +98,7 @@ class FiltersFrequent extends Component {
                                     clearFilters={clearFilters}
                                     applyFilters={applyFilters}
                                     notValidFields={notValidFields}
-                                    isActive={isActive}
+                                    isActive={item.isActive}
                                     active={active}
                                     onShow={() => handleShow(true)}
                                     onHide={() => handleShow(false)}

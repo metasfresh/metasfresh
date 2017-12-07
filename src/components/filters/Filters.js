@@ -1,20 +1,18 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import {push} from 'react-router-redux';
 import counterpart from 'counterpart';
+
+import { TableCell } from '../table/TableCell';
+
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
 
 class Filters extends Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            filter: null,
-            notValidFields: null,
-            widgetShown: false
-        }
-    }
+    state = {
+        filter: null,
+        notValidFields: null,
+        widgetShown: false
+    };
 
     componentWillReceiveProps(props) {
         const {filtersActive} = props;
@@ -108,16 +106,51 @@ class Filters extends Component {
         })
     }
 
+    annotateFilters = unannotatedFilters => {
+        const { filter } = this.state;
+
+        return unannotatedFilters.map(unannotatedFilter => {
+            const parameter = unannotatedFilter.parameters[0];
+            const filterType = parameter.widgetType;
+            const isActive = this.isFilterActive(unannotatedFilter.filterId);
+            const activeParameter = (
+                isActive && filter[0] && filter[0].parameters[0]
+            );
+            const captionValue = activeParameter
+                ? TableCell.fieldValueToString(
+                    activeParameter.valueTo
+                        ? [
+                            activeParameter.value,
+                            activeParameter.valueTo
+                        ]
+                        : activeParameter.value,
+                    filterType
+                )
+                : '';
+
+            return {
+                ...unannotatedFilter,
+                captionValue,
+                isActive
+            };
+        });
+    };
+
     // PARSING FILTERS ---------------------------------------------------------
 
-    sortFilters = (data) => {
+    sortFilters = data => {
         return {
-            frequentFilters: data.filter(filter => filter.frequent),
-            notFrequentFilters: data.filter(filter =>
-                !filter.frequent && !filter.static),
-            staticFilters: data.filter(filter => filter.static)
+            frequentFilters: this.annotateFilters(
+                data.filter(filter => filter.frequent)
+            ),
+            notFrequentFilters: this.annotateFilters(
+                data.filter(filter => !filter.frequent && !filter.static)
+            ),
+            staticFilters: this.annotateFilters(
+                data.filter(filter => filter.static)
+            )
         }
-    }
+    };
 
     isFilterValid = (filters) => {
         if (filters.parameters) {
@@ -128,6 +161,19 @@ class Filters extends Component {
 
         return true;
     }
+
+    isFilterActive = filterId => {
+        const { filter } = this.state;
+
+        if (filter) {
+            const activeFilter = filter.find(
+                item => item.filterId === filterId
+            );
+            return typeof activeFilter !== 'undefined' && activeFilter;
+        }
+
+        return false;
+    };
 
     parseToPatch = (params) => {
         return params.map(param =>
@@ -142,7 +188,7 @@ class Filters extends Component {
     render() {
         const {filterData, windowType, viewId} = this.props;
         const {
-            frequentFilters, notFrequentFilters, staticFilters
+            frequentFilters, notFrequentFilters
         } = this.sortFilters(filterData);
         const {notValidFields, widgetShown, filter} = this.state;
 
