@@ -180,7 +180,7 @@ class RawWidget extends Component {
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
             entity, onShow, disabled, caption, viewId, data : widgetValue,
             listenOnKeys, listenOnKeysFalse, closeTableField, handleZoomInto,
-            attribute, allowShowPassword, onBlurWidget
+            attribute, allowShowPassword, onBlurWidget, defaultValue
         } = this.props;
 
         const {isEdited} = this.state;
@@ -193,6 +193,7 @@ class RawWidget extends Component {
             ref: c => this.rawWidget = c,
             className: 'input-field js-input-field',
             value: widgetValue,
+            defaultValue,
             placeholder: fields[0].emptyText,
             disabled: widgetData[0].readonly || disabled,
             onFocus: this.handleFocus,

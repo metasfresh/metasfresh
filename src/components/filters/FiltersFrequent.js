@@ -67,12 +67,17 @@ class FiltersFrequent extends Component {
                     const activeParameter = (
                         isActive && active[index].parameters[0]
                     );
-                    const caption = isActive && TableCell.fieldValueToString(
-                        activeParameter.valueTo
-                            ? [activeParameter.value, activeParameter.valueTo]
-                            : activeParameter.value,
-                        filterType
-                    );
+                    const captionValue = isActive
+                        ? TableCell.fieldValueToString(
+                            activeParameter.valueTo
+                                ? [
+                                    activeParameter.value,
+                                    activeParameter.valueTo
+                                ]
+                                : activeParameter.value,
+                            filterType
+                        )
+                        : '';
 
                     return (
                         <div className="filter-wrapper" key={index}>
@@ -94,7 +99,7 @@ class FiltersFrequent extends Component {
                             >
                                 <i className="meta-icon-preview" />
                                 {isActive
-                                    ? `${item.caption}: ${caption}`
+                                    ? `${item.caption}: ${captionValue}`
                                     : `${counterpart.translate(
                                             'window.filters.caption2'
                                         )}: ${item.caption}`
@@ -112,6 +117,7 @@ class FiltersFrequent extends Component {
 
                             {openFilterId === index &&
                                 <FiltersItem
+                                    captionValue={captionValue}
                                     key={index}
                                     windowType={windowType}
                                     data={item}

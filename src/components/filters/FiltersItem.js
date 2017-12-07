@@ -135,7 +135,7 @@ class FiltersItem extends Component {
     render() {
         const {
             data, notValidFields, isActive, windowType, onShow, onHide, viewId,
-            outsideClick
+            outsideClick, captionValue
         } = this.props;
 
         const {
@@ -148,7 +148,8 @@ class FiltersItem extends Component {
                     data.parametersLayoutType === 'singleOverlayField' ?
                     <OverlayField
                         type={windowType}
-                        filter={true}
+                        filter
+                        captionValue={captionValue}
                         layout={filter}
                         handlePatch={this.setValue}
                         handleChange={this.setValue}
