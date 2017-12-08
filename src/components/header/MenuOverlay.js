@@ -297,6 +297,7 @@ class MenuOverlay extends Component {
 
         switch(e.key){
             case 'ArrowDown':
+                e.preventDefault();
                 if(document.activeElement === input) {
                     firstQueryItem && firstQueryItem.focus();
                 } else if(overlay) {
