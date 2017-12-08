@@ -122,7 +122,7 @@ public class CreateColumnsProducer
 	{
 		final int length;
 		final String name;
-		final String type;
+		final int type;
 	}
 
 	private List<ColumnSource> createSourceColumns()
@@ -161,7 +161,7 @@ public class CreateColumnsProducer
 		final String[] fields = esrImportLineText.split(",");
 		return ColumnSource.builder()
 				.name(fields[0])
-				.type(fields[1])
+				.type(Integer.valueOf(fields[1]))
 				.length(Integer.valueOf(fields[2]))
 				.build();
 	}
@@ -200,8 +200,7 @@ public class CreateColumnsProducer
 		colTarget.setIsAllowLogging(false);
 
 		colTarget.setFieldLength(sourceColumn.getLength());
-//		colTarget.setAD_Reference_ID(sourceColumn.getAD_Reference_ID());
-//		colTarget.setAD_Reference_Value_ID(sourceColumn.getAD_Reference_Value_ID());
+		colTarget.setAD_Reference_ID(sourceColumn.getType());
 		colTarget.setIsActive(true);
 		colTarget.setIsUpdateable(true);
 		InterfaceWrapperHelper.save(colTarget);
