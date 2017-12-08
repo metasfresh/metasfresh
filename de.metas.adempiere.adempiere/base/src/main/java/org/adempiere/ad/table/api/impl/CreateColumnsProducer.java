@@ -28,9 +28,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Producer class used to given {@link I_AD_Column}s (see {@link #setSourceColumns(List)}) to another table (see {@link #setTargetTable(I_AD_Table)}).
- *
- * @author tsa
+ * Producer class used to create table and columns from agiven input stream).
  *
  */
 public class CreateColumnsProducer
