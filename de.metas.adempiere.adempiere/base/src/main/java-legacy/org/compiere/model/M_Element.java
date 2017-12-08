@@ -287,9 +287,16 @@ public class M_Element extends X_AD_Element
 						.append(DB.TO_STRING(getName()))
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=")
+						.append(" WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=")
 						.append(get_ID())
-						.append(") AND IsCentrallyMaintained='Y'");
+						.append(")")
+						.append(" AND ")
+						.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" IS NULL ")
+						.append( ")")
+						.append(" OR ")
+						.append("(")
+						.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" = ").append(get_ID())
+						.append(")");
 				no = DB.executeUpdate(sql.toString(), get_TrxName());
 				log.debug("Fields updated #" + no);
 
