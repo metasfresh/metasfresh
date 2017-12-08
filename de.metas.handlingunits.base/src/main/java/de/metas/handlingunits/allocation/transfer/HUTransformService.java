@@ -97,17 +97,6 @@ import lombok.Singular;
  */
 public class HUTransformService
 {
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final transient IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
-	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-	//
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-
-	private final IHUContext huContext;
-
-	private final List<TableRecordReference> referencedObjects;
-
 	public static HUTransformService get()
 	{
 		return builder().build();
@@ -117,6 +106,16 @@ public class HUTransformService
 	{
 		return builderForHUcontext().huContext(huContext).build();
 	}
+	
+	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
+	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	//
+	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	private final IHUContext huContext;
+	private final ImmutableList<TableRecordReference> referencedObjects;
 
 	/**
 	 * Uses {@link IHUContextFactory#createMutableHUContext(Properties, String)} with the given {@code ctx} and {@code trxName} and returns a new {@link HUTransformService} instance with that huContext.
@@ -135,7 +134,7 @@ public class HUTransformService
 			@Nullable final EmptyHUListener emptyHUListener,
 			@Nullable final List<TableRecordReference> referencedObjects)
 	{
-		this.referencedObjects = Util.coalesce(referencedObjects, ImmutableList.of());
+		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
 
 		final Properties effectiveCtx = Util.coalesce(ctx, Env.getCtx());
 		final String effectiveTrxName = Util.coalesce(trxName, ITrx.TRXNAME_ThreadInherited);
@@ -157,7 +156,7 @@ public class HUTransformService
 	private HUTransformService(@NonNull final IHUContext huContext,
 			@Nullable final List<TableRecordReference> referencedObjects)
 	{
-		this.referencedObjects = Util.coalesce(referencedObjects, ImmutableList.of());
+		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
 		this.huContext = huContext;
 	}
 
