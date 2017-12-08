@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
-import onClickOutside from 'react-onclickoutside';
+import React, { Component } from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
 
 class LookupList extends Component {
     constructor(props) {

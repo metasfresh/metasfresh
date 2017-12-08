@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
-import Tooltips from '../tooltips/Tooltips';
-import Avatar from '../app/Avatar';
 import counterpart from 'counterpart';
-
+import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
+
+import Avatar from '../app/Avatar';
+import Tooltips from '../tooltips/Tooltips';
 
 class UserDropdown extends Component {
     constructor(props) {

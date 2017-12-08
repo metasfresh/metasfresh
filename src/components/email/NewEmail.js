@@ -1,26 +1,13 @@
-import React, { Component } from 'react';
-import {connect} from 'react-redux';
 import counterpart from 'counterpart';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
+import { addNotification } from '../../actions/AppActions';
+import { createEmail, getEmail, getTemplates, sendEmail } from '../../actions/EmailActions';
+import { patchRequest } from '../../actions/GenericActions';
+import RawList from '../widget/List/RawList';
 import Attachments from './Attachments';
 import AutocompleteTo from './AutocompleteTo';
-
-import {
-    addNotification
-} from '../../actions/AppActions';
-
-import {
-    patchRequest
-} from '../../actions/GenericActions';
-
-import {
-    createEmail,
-    sendEmail,
-    getEmail,
-    getTemplates
-} from '../../actions/EmailActions';
-
-import RawList from '../widget/List/RawList'
 
 class NewEmail extends Component {
     constructor(props){

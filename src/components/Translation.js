@@ -1,10 +1,8 @@
+import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import deepForceUpdate from 'react-deep-force-update';
-import counterpart from 'counterpart';
 
-import {
-    getMessages
-} from '../actions/AppActions';
+import { getMessages } from '../actions/AppActions';
 
 class Translation extends Component {
     constructor(props) {

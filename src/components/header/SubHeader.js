@@ -4,13 +4,9 @@ import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
-import {
-  elementPathRequest,
-  updateBreadcrumb,
-} from '../../actions/MenuActions';
+import { elementPathRequest, updateBreadcrumb } from '../../actions/MenuActions';
 import { getSelection } from '../../reducers/windowHandler';
 import keymap from '../../shortcuts/keymap';
-
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';
 

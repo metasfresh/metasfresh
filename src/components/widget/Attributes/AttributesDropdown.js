@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
 
 import RawWidget from '../RawWidget';
 

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+
 import MasterWidget from '../widget/MasterWidget';
 import RawWidget from '../widget/RawWidget';
 

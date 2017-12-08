@@ -1,15 +1,12 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
 import { updateUri } from '../actions/AppActions';
 import { getWindowBreadcrumb } from '../actions/MenuActions';
-import {
-    selectTableItems,
-    setLatestNewDocument,
-} from '../actions/WindowActions';
-import DocumentList from '../components/app/DocumentList';
+import { selectTableItems, setLatestNewDocument } from '../actions/WindowActions';
 import Container from '../components/Container';
+import DocumentList from '../components/app/DocumentList';
 
 const mapStateToProps = state => ({
     modal: state.windowHandler.modal,

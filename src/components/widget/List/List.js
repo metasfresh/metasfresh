@@ -1,16 +1,10 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
+import { dropdownRequest } from '../../../actions/GenericActions';
+import { getViewAttributeDropdown } from '../../../actions/ViewAttributesActions';
 import RawList from './RawList';
-
-import {
-    dropdownRequest
-} from '../../../actions/GenericActions';
-
-import {
-    getViewAttributeDropdown
-} from '../../../actions/ViewAttributesActions';
 
 class List extends Component {
     constructor(props) {

@@ -1,5 +1,6 @@
-import * as types from '../constants/ActionTypes';
 import update from 'immutability-helper';
+
+import * as types from '../constants/ActionTypes';
 
 const initialState = {
 	notifications: {},

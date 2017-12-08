@@ -1,25 +1,15 @@
-import React, { Component } from 'react';
+import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
+import DebounceInput from 'react-debounce-input';
 import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
+
+import { breadcrumbRequest, flattenLastElem, getRootBreadcrumb, getWindowBreadcrumb, pathRequest, queryPathsRequest } from '../../actions/MenuActions';
+import { clearMasterData, closeModal } from '../../actions/WindowActions';
 import MenuOverlayContainer from './MenuOverlayContainer';
 import MenuOverlayItem from './MenuOverlayItem';
-import {push} from 'react-router-redux';
-import DebounceInput from 'react-debounce-input';
-import counterpart from 'counterpart';
-import {
-    queryPathsRequest,
-    pathRequest,
-    getWindowBreadcrumb,
-    flattenLastElem,
-    getRootBreadcrumb,
-    breadcrumbRequest
-} from '../../actions/MenuActions';
-
-import {
-    closeModal,
-    clearMasterData
-} from '../../actions/WindowActions';
 
 class MenuOverlay extends Component {
     constructor(props) {

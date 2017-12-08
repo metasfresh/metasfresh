@@ -1,42 +1,18 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { push } from 'react-router-redux';
 import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 
-import {
-    getViewLayout,
-    getViewRowsByIds,
-    createViewRequest,
-    browseViewRequest,
-    filterViewRequest,
-    deleteStaticFilter
-  } from '../../actions/ViewActions';
-import {
-    closeListIncludedView,
-    setSorting,
-    setPagination,
-    setListId,
-    setListIncludedView,
-} from '../../actions/ListActions';
-import {
-    selectTableItems,
-    getItemsByProperty,
-    mapIncluded,
-    indicatorState,
-    connectWS,
-    disconnectWS,
-    parseToDisplay,
-    getRowsData
-} from '../../actions/WindowActions';
+import { closeListIncludedView, setListId, setListIncludedView, setPagination, setSorting } from '../../actions/ListActions';
+import { browseViewRequest, createViewRequest, deleteStaticFilter, filterViewRequest, getViewLayout, getViewRowsByIds } from '../../actions/ViewActions';
+import { connectWS, disconnectWS, getItemsByProperty, getRowsData, indicatorState, mapIncluded, parseToDisplay, selectTableItems } from '../../actions/WindowActions';
 import { getSelection } from '../../reducers/windowHandler';
-
 import BlankPage from '../BlankPage';
 import DataLayoutWrapper from '../DataLayoutWrapper';
 import Filters from '../filters/Filters';
 import FiltersStatic from '../filters/FiltersStatic';
 import Table from '../table/Table';
-
 import QuickActions from './QuickActions';
 import SelectionAttributes from './SelectionAttributes';
 

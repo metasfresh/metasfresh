@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+
 import { Shortcut } from '../Shortcuts';
 
 export default class ModalContextShortcuts extends Component {

@@ -1,26 +1,15 @@
-import { Steps, Hints } from 'intro.js-react';
+import { Hints, Steps } from 'intro.js-react';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 
 import { addNotification } from '../actions/AppActions';
-import {
-    attachFileAction,
-    clearMasterData,
-    getTab,
-    discardNewDocument,
-    discardNewRow,
-    addRowData,
-    sortTab,
-    connectWS,
-    disconnectWS,
-    fireUpdateData,
-} from '../actions/WindowActions';
-import { introSteps, introHints } from '../components/intro/intro';
+import { addRowData, attachFileAction, clearMasterData, connectWS, discardNewDocument, discardNewRow, disconnectWS, fireUpdateData, getTab, sortTab } from '../actions/WindowActions';
 import BlankPage from '../components/BlankPage';
 import Container from '../components/Container';
 import Window from '../components/Window';
+import { introHints, introSteps } from '../components/intro/intro';
 
 const mapStateToProps = state => ({
     master: state.windowHandler.master,

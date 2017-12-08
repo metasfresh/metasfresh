@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+
 import Loader from '../app/Loader';
 
 class Indicator extends Component {

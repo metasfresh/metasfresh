@@ -1,14 +1,9 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import {
-    referencesRequest
-} from '../../actions/GenericActions';
 
-import {
-    setFilter
-} from '../../actions/ListActions';
-
+import { referencesRequest } from '../../actions/GenericActions';
+import { setFilter } from '../../actions/ListActions';
 import keymap from '../../shortcuts/keymap';
 
 class TableContextMenu extends Component {

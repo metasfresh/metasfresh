@@ -1,11 +1,11 @@
 import cx from 'classnames';
+import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
-import counterpart from 'counterpart';
 
+import { TableCell } from '../table/TableCell';
 import FiltersDateStepper from './FiltersDateStepper';
 import FiltersItem from './FiltersItem';
-import { TableCell } from '../table/TableCell';
 
 const classes = 'btn btn-filter btn-meta-outline-secondary btn-sm';
 

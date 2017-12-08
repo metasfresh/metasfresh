@@ -1,10 +1,8 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import {
-    dropdownRequest,
-    autocompleteRequest
-} from '../../../actions/GenericActions';
+
+import { autocompleteRequest, dropdownRequest } from '../../../actions/GenericActions';
 import Label from './Label';
 import Suggestion from './Suggestion';
 

@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
 import counterpart from 'counterpart';
+import React, { Component } from 'react';
 
 const OFFLINE_MESSAGE_LINE1 = 'Connection lost.';
 const OFFLINE_MESSAGE_LINE2 = 'There are some connection issues. ' +

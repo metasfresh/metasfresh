@@ -1,22 +1,11 @@
-import React, { Component } from 'react';
-import {connect} from 'react-redux';
 import counterpart from 'counterpart';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import {
-    addNotification
-} from '../../actions/AppActions';
-
-import {
-    patchRequest
-} from '../../actions/GenericActions';
-
-import {
-    createLetter,
-    completeLetter,
-    getTemplates
-} from '../../actions/LetterActions';
-
-import RawList from '../widget/List/RawList'
+import { addNotification } from '../../actions/AppActions';
+import { patchRequest } from '../../actions/GenericActions';
+import { completeLetter, createLetter, getTemplates } from '../../actions/LetterActions';
+import RawList from '../widget/List/RawList';
 
 class NewLetter extends Component {
     constructor(props){

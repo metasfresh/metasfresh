@@ -1,38 +1,22 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
 import update from 'immutability-helper';
-import ChartWidget from './ChartWidget';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
+import { connect } from 'react-redux';
+
+import { changeKPIItem, changeTargetIndicatorsItem, getKPIsDashboard, getTargetIndicatorsDashboard } from '../../actions/AppActions';
+import { addDashboardWidget, removeDashboardWidget } from '../../actions/BoardActions';
+import { patchRequest } from '../../actions/GenericActions';
+import { connectWS, disconnectWS } from '../../actions/WindowActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
-import RawChart from '../charts/RawChart';
-import DndWidget from './DndWidget';
-import Sidenav from './Sidenav';
-import Placeholder from './Placeholder';
 import Indicator from '../charts/Indicator';
+import RawChart from '../charts/RawChart';
 import RawList from '../widget/List/RawList';
-
-import {
-    getKPIsDashboard,
-    getTargetIndicatorsDashboard,
-    changeKPIItem,
-    changeTargetIndicatorsItem
-} from '../../actions/AppActions';
-
-import {
-    addDashboardWidget,
-    removeDashboardWidget
-} from '../../actions/BoardActions';
-
-import {
-    connectWS,
-    disconnectWS
-} from '../../actions/WindowActions';
-
-import {
-    patchRequest
-} from '../../actions/GenericActions';
+import ChartWidget from './ChartWidget';
+import DndWidget from './DndWidget';
+import Placeholder from './Placeholder';
+import Sidenav from './Sidenav';
 
 export class DraggableWrapper extends Component {
     constructor(props) {

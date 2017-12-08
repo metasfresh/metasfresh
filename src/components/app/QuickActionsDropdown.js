@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import {connect} from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
 
 class QuickActionsDropdown extends Component {
     constructor(props){

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import Avatar from '../app/Avatar';
 import { DragSource, DropTarget } from 'react-dnd';
+
 import ItemTypes from '../../constants/ItemTypes';
+import Avatar from '../app/Avatar';
 
 const cardTarget = {
     drop(props, monitor) {

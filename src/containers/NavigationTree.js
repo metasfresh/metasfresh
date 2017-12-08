@@ -1,21 +1,14 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
-import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
-import {push} from 'react-router-redux';
-import DebounceInput from 'react-debounce-input';
-import Container from '../components/Container';
 import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import DebounceInput from 'react-debounce-input';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 
-import {
-    rootRequest,
-    nodePathsRequest,
-    queryPathsRequest
- } from '../actions/MenuActions';
-
-import {
-    openModal
-} from '../actions/WindowActions';
+import { nodePathsRequest, queryPathsRequest, rootRequest } from '../actions/MenuActions';
+import { openModal } from '../actions/WindowActions';
+import Container from '../components/Container';
+import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
 
 class NavigationTree extends Component {
     constructor(props){

@@ -1,21 +1,13 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import {push, goBack} from 'react-router-redux';
 import counterpart from 'counterpart';
-
-import {connect} from 'react-redux';
-import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
-
-import RawList from '../widget/List/RawList';
 import Moment from 'moment';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { goBack, push } from 'react-router-redux';
 
-import {
-    loginRequest,
-    loginSuccess,
-    localLoginRequest,
-    loginCompletionRequest,
-    getUserLang
-} from '../../actions/AppActions';
+import { getUserLang, localLoginRequest, loginCompletionRequest, loginRequest, loginSuccess } from '../../actions/AppActions';
+import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
+import RawList from '../widget/List/RawList';
 
 class LoginForm extends Component {
     constructor(props){

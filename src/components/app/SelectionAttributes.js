@@ -1,12 +1,8 @@
-import React, { Component } from 'react';
-import {connect} from 'react-redux';
 import counterpart from 'counterpart';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import {
-    getViewAttributesLayout,
-    getViewAttributes
-} from '../../actions/ViewAttributesActions';
-
+import { getViewAttributes, getViewAttributesLayout } from '../../actions/ViewAttributesActions';
 import RawWidget from '../widget/RawWidget';
 
 class SelectionAttributes extends Component {

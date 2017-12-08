@@ -1,13 +1,13 @@
+import counterpart from 'counterpart';
 import React, { Component } from 'react';
-import {connect} from 'react-redux';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
 
+import keymap from '../../shortcuts/keymap';
+import DocumentList from '../app/DocumentList';
+import Tooltips from '../tooltips/Tooltips';
 import Attachments from './Attachments';
 import Referenced from './Referenced';
-import DocumentList from '../app/DocumentList';
-import onClickOutside from 'react-onclickoutside';
-import Tooltips from '../tooltips/Tooltips';
-import keymap from '../../shortcuts/keymap';
-import counterpart from 'counterpart';
 
 class SideList extends Component {
     constructor(props) {

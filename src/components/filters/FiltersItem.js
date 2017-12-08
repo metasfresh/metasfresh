@@ -1,10 +1,11 @@
-import React, { Component } from 'react';
-import RawWidget from '../widget/RawWidget';
-import OverlayField from '../app/OverlayField';
 import counterpart from 'counterpart';
+import React, { Component } from 'react';
+
 import keymap from '../../shortcuts/keymap';
+import OverlayField from '../app/OverlayField';
 import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
+import RawWidget from '../widget/RawWidget';
 
 class FiltersItem extends Component {
     constructor(props) {

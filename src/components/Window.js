@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
+import Table from '../components/table/Table';
+import Tabs from '../components/tabs/Tabs';
+import MasterWidget from '../components/widget/MasterWidget';
 import Dropzone from './Dropzone';
 import Separator from './Separator';
-
-import MasterWidget from '../components/widget/MasterWidget';
-import Tabs from '../components/tabs/Tabs';
-import Table from '../components/table/Table';
 
 class Window extends Component {
     constructor(props){

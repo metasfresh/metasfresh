@@ -1,18 +1,12 @@
-import React, { Component } from 'react';
-import {connect} from 'react-redux';
-import PropTypes from 'prop-types';
-import {push} from 'react-router-redux';
 import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 
+import { referencesRequest } from '../../actions/GenericActions';
+import { setFilter } from '../../actions/ListActions';
 import Loader from '../app/Loader';
-
-import {
-    referencesRequest
-} from '../../actions/GenericActions';
-
-import {
-    setFilter
-} from '../../actions/ListActions';
 
 class Referenced extends Component {
     constructor(props) {

@@ -1,38 +1,22 @@
-import React, { Component } from 'react';
-import { Provider } from 'react-redux';
 import axios from 'axios';
 import counterpart from 'counterpart';
+import React, { Component } from 'react';
+import { Provider } from 'react-redux';
+import { browserHistory, Router } from 'react-router';
+import { push, syncHistoryWithStore } from 'react-router-redux';
 
-import configureStore from '../store/configureStore';
-import { getRoutes } from '../routes.js';
-import {LOCAL_LANG}  from '../constants/Constants';
-
-import { syncHistoryWithStore, push } from 'react-router-redux';
-import { Router, browserHistory } from 'react-router';
-
-import Auth from '../services/Auth';
-import Translation from '../components/Translation';
-
-import NotificationHandler
-    from '../components/notifications/NotificationHandler';
-
-import {
-    noConnection
-} from '../actions/WindowActions';
-
-import {
-    addNotification,
-    logoutSuccess,
-    getAvailableLang,
-    setProcessSaved,
-    languageSuccess
-} from '../actions/AppActions';
-
+import { addNotification, getAvailableLang, languageSuccess, logoutSuccess, setProcessSaved } from '../actions/AppActions';
+import { noConnection } from '../actions/WindowActions';
 import '../assets/css/styles.css';
-
-import { ShortcutProvider, generateHotkeys } from '../components/Shortcuts';
-import keymap from '../shortcuts/keymap';
+import { generateHotkeys, ShortcutProvider } from '../components/Shortcuts';
+import Translation from '../components/Translation';
+import NotificationHandler from '../components/notifications/NotificationHandler';
+import { LOCAL_LANG } from '../constants/Constants';
+import { getRoutes } from '../routes.js';
+import Auth from '../services/Auth';
 import blacklist from '../shortcuts/blacklist';
+import keymap from '../shortcuts/keymap';
+import configureStore from '../store/configureStore';
 
 const hotkeys = generateHotkeys({ keymap, blacklist });
 

@@ -1,14 +1,8 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import {
-    patch,
-    updatePropertyValue,
-    openModal,
-    getZoomIntoWindow
-} from '../../actions/WindowActions';
-
+import { getZoomIntoWindow, openModal, patch, updatePropertyValue } from '../../actions/WindowActions';
 import RawWidget from './RawWidget';
 
 class MasterWidget extends Component {

@@ -1,22 +1,11 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
+import { getAttributesInstance } from '../../../actions/AppActions';
+import { completeRequest, initLayout, patchRequest } from '../../../actions/GenericActions';
+import { parseToDisplay } from '../../../actions/WindowActions';
 import AttributesDropdown from './AttributesDropdown';
-
-import {
-    getAttributesInstance
-} from '../../../actions/AppActions';
-
-import {
-    parseToDisplay
-} from '../../../actions/WindowActions';
-
-import {
-    patchRequest,
-    completeRequest,
-    initLayout
-} from '../../../actions/GenericActions';
 
 class Attributes extends Component {
     constructor(props) {

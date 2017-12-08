@@ -1,14 +1,10 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
 import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
+import { actionsRequest, rowActionsRequest } from '../../actions/GenericActions';
 import Loader from '../app/Loader';
-
-import {
-    actionsRequest,
-    rowActionsRequest
-} from '../../actions/GenericActions';
 
 class Actions extends Component {
     state = {

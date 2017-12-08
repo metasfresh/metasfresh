@@ -1,30 +1,15 @@
-import * as types from '../constants/ActionTypes'
 import axios from 'axios';
-import { push, replace } from 'react-router-redux';
 import counterpart from 'counterpart';
-
+import { push, replace } from 'react-router-redux';
 import SockJs from 'sockjs-client';
+
 import Stomp from 'stompjs/lib/stomp.min.js';
 
-import {
-    getWindowBreadcrumb
-} from './MenuActions';
-
-import {
-    initLayout,
-    getData,
-    patchRequest,
-    openFile
-} from './GenericActions';
-
-import {
-    addNotification,
-    setNotificationProgress,
-    setProcessSaved,
-    setProcessPending
-} from './AppActions';
-
+import * as types from '../constants/ActionTypes';
+import { addNotification, setNotificationProgress, setProcessPending, setProcessSaved } from './AppActions';
+import { getData, initLayout, openFile, patchRequest } from './GenericActions';
 import { setListIncludedView } from './ListActions';
+import { getWindowBreadcrumb } from './MenuActions';
 
 export function setLatestNewDocument(id) {
     return {

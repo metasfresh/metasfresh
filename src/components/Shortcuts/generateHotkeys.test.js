@@ -3,9 +3,9 @@ import chai, { expect } from 'chai';
 import { stub } from 'sinon';
 import sinonChai from 'sinon-chai';
 
-chai.use(sinonChai);
-
 import generateHotkeys from './generateHotkeys';
+
+chai.use(sinonChai);
 
 describe('generateHotkeys', () => {
     it('should return an object', () => {

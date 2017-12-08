@@ -1,5 +1,6 @@
-import * as types from '../constants/ActionTypes';
 import update from 'react-addons-update';
+
+import * as types from '../constants/ActionTypes';
 
 const initialState = {
     connectionError: false,

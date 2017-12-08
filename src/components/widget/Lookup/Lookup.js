@@ -1,14 +1,10 @@
 import React, { Component } from 'react';
-import {connect} from 'react-redux';
-
 import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
 
-import {
-    getItemsByProperty
-} from '../../../actions/WindowActions';
-
-import RawLookup from './RawLookup';
+import { getItemsByProperty } from '../../../actions/WindowActions';
 import List from '../List/List';
+import RawLookup from './RawLookup';
 
 class Lookup extends Component {
     constructor(props) {

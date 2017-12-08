@@ -1,23 +1,17 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
 import update from 'immutability-helper';
-import {push} from 'react-router-redux';
-
-import {
-    getData, patchRequest, deleteRequest, getRequest
-} from '../actions/GenericActions';
-import {
-    getElementBreadcrumb
-} from '../actions/MenuActions';
-import {connectWS, disconnectWS} from '../actions/WindowActions';
-import {addCard} from '../actions/BoardActions';
-
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 
-import Container from '../components/Container';
+import { addCard } from '../actions/BoardActions';
+import { deleteRequest, getData, getRequest, patchRequest } from '../actions/GenericActions';
+import { getElementBreadcrumb } from '../actions/MenuActions';
+import { connectWS, disconnectWS } from '../actions/WindowActions';
 import BlankPage from '../components/BlankPage';
+import Container from '../components/Container';
 import Lanes from '../components/board/Lanes';
 import Sidenav from '../components/board/Sidenav';
 

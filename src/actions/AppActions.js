@@ -1,9 +1,10 @@
-import * as types from '../constants/ActionTypes'
 import axios from 'axios';
-import {replace} from 'react-router-redux';
 import Moment from 'moment';
 import numeral from 'numeral';
-import {LOCAL_LANG}  from '../constants/Constants';
+import { replace } from 'react-router-redux';
+
+import * as types from '../constants/ActionTypes';
+import { LOCAL_LANG } from '../constants/Constants';
 
 // REQUESTS
 

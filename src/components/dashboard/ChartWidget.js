@@ -1,8 +1,9 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ItemTypes from '../../constants/ItemTypes';
+import React, { Component } from 'react';
 import { DragSource, DropTarget } from 'react-dnd';
 import onClickOutside from 'react-onclickoutside';
+
+import ItemTypes from '../../constants/ItemTypes';
 import RawChart from '../charts/RawChart';
 
 export class ChartWidget extends Component {

@@ -1,5 +1,6 @@
-import * as types from '../constants/MenuTypes'
 import axios from 'axios';
+
+import * as types from '../constants/MenuTypes';
 
 // REQUESTS
 

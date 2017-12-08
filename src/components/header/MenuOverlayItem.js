@@ -1,11 +1,8 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import {
-    getElementBreadcrumb
-} from '../../actions/MenuActions';
-
+import { getElementBreadcrumb } from '../../actions/MenuActions';
 import BookmarkButton from './BookmarkButton';
 
 class MenuOverlayItem extends Component {

@@ -1,10 +1,8 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import {
-    deleteNotification
-} from '../../actions/AppActions';
+import { deleteNotification } from '../../actions/AppActions';
 
 class Notification extends Component {
     constructor(props) {

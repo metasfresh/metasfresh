@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
-import TagsInput from 'react-tagsinput';
-import 'react-tagsinput/react-tagsinput.css';
 import Autosuggest from 'react-autosuggest';
+import TagsInput from 'react-tagsinput';
 
-import {
-    autocompleteRequest
-} from '../../actions/GenericActions';
+import 'react-tagsinput/react-tagsinput.css';
+
+import { autocompleteRequest } from '../../actions/GenericActions';
 
 class AutocompleteTo extends Component {
     constructor(props) {

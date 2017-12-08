@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
-import MenuOverlayItem from './MenuOverlayItem';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-import {
-    getWindowBreadcrumb
-} from '../../actions/MenuActions';
+import { getWindowBreadcrumb } from '../../actions/MenuActions';
+import MenuOverlayItem from './MenuOverlayItem';
 
 class MenuOverlayContainer extends Component {
     constructor(props){

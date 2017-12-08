@@ -1,6 +1,6 @@
+import Moment from 'moment';
 import React, { Component } from 'react';
 import DateRangePicker from 'react-bootstrap-daterangepicker';
-import Moment from 'moment';
 
 class DatetimeRange extends Component {
     constructor(props) {

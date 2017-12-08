@@ -1,15 +1,10 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+
+import { autocompleteRequest } from '../../../actions/GenericActions';
+import { openModal } from '../../../actions/WindowActions';
 import LookupList from './LookupList';
-
-import {
-    autocompleteRequest
-} from '../../../actions/GenericActions';
-
-import {
-    openModal
-} from '../../../actions/WindowActions';
 
 class RawLookup extends Component {
     constructor(props) {

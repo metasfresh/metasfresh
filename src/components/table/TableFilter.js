@@ -1,10 +1,11 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import counterpart from 'counterpart';
-import TableQuickInput from './TableQuickInput';
-import Tooltips from '../tooltips/Tooltips';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+
 import keymap from '../../shortcuts/keymap';
+import Tooltips from '../tooltips/Tooltips';
+import TableQuickInput from './TableQuickInput';
 
 class TableFilter extends Component {
     constructor(props) {

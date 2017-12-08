@@ -1,20 +1,12 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
-import {push} from 'react-router-redux';
 import counterpart from 'counterpart';
-
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 
+import { deleteUserNotification, getNotifications, getNotificationsSuccess, markAllAsRead, markAsRead } from '../../actions/AppActions';
 import InboxItem from './InboxItem';
-
-import {
-    markAllAsRead,
-    markAsRead,
-    getNotifications,
-    getNotificationsSuccess,
-    deleteUserNotification
-} from '../../actions/AppActions';
 
 class Inbox extends Component {
     constructor(props){

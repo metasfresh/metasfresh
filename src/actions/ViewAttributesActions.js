@@ -1,7 +1,6 @@
 import axios from 'axios';
-import {
-    createPatchRequestPayload
-} from './GenericActions';
+
+import { createPatchRequestPayload } from './GenericActions';
 
 //
 // Handles view attributes (the panel which is displayed on the right side of a view, if view supports attributes)

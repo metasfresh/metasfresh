@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
 import counterpart from 'counterpart';
-import PaginationContextShortcuts from
-    '../shortcuts/PaginationContextShortcuts';
+import React, { Component } from 'react';
+
+import PaginationContextShortcuts from '../shortcuts/PaginationContextShortcuts';
 
 class TablePagination extends Component {
     constructor(props){

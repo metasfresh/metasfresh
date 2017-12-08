@@ -1,13 +1,8 @@
-import React, { Component, cloneElement } from 'react';
-import {connect} from 'react-redux';
+import React, { cloneElement, Component } from 'react';
+import { connect } from 'react-redux';
 
-import {
-    patchViewAttributes
-} from '../actions/ViewAttributesActions';
-
-import {
-    parseToDisplay
-} from '../actions/WindowActions';
+import { patchViewAttributes } from '../actions/ViewAttributesActions';
+import { parseToDisplay } from '../actions/WindowActions';
 
 class DataLayoutWrapper extends Component {
     constructor(props){

@@ -1,12 +1,12 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import {push} from 'react-router-redux';
 import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 
-import MenuOverlay from './MenuOverlay';
-import Tooltips from '../tooltips/Tooltips';
 import keymap from '../../shortcuts/keymap';
+import Tooltips from '../tooltips/Tooltips';
+import MenuOverlay from './MenuOverlay';
 
 class Breadcrumb extends Component {
     constructor(props) {

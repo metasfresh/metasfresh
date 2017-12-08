@@ -1,13 +1,12 @@
-import React, { Component }from 'react';
 import * as d3 from 'd3';
+import React, { Component } from 'react';
 
-import { getX0Range, getX1Range, getYRange, getZRange } from './ranges';
-import { populateXAxis, populateYAxis, moveXAxis, getXAxisLabelsHeight }
-    from './axes';
-import { getSvg, sizeSvg } from './svg';
-import { getHorizontalDimensions, getVerticalDimensions } from './dimensions';
+import { getXAxisLabelsHeight, moveXAxis, populateXAxis, populateYAxis } from './axes';
 import { drawData } from './data';
+import { getHorizontalDimensions, getVerticalDimensions } from './dimensions';
 import { drawLegend } from './legend';
+import { getX0Range, getX1Range, getYRange, getZRange } from './ranges';
+import { getSvg, sizeSvg } from './svg';
 
 class BarChartComponent extends Component {
     svg;

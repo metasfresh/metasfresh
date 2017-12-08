@@ -1,25 +1,15 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
 import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import Indicator from './Indicator';
-import {
-    closeRawModal,
-    closeModal
-} from '../../actions/WindowActions';
-
-import {
-    deleteView
-} from '../../actions/ViewActions';
-
-import {
-    closeListIncludedView
-} from '../../actions/ListActions';
-
+import { closeListIncludedView } from '../../actions/ListActions';
+import { deleteView } from '../../actions/ViewActions';
+import { closeModal, closeRawModal } from '../../actions/WindowActions';
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
+import Indicator from './Indicator';
 
 class RawModal extends Component {
     state = {

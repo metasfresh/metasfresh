@@ -5,29 +5,17 @@ import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
-import {
-    openModal,
-    selectTableItems,
-    deleteLocal,
-    mapIncluded,
-    collapsedMap,
-    getZoomIntoWindow,
-    patchAll,
-    getRowsData
-} from '../../actions/WindowActions';
 import { deleteRequest } from '../../actions/GenericActions';
-
+import { collapsedMap, deleteLocal, getRowsData, getZoomIntoWindow, mapIncluded, openModal, patchAll, selectTableItems } from '../../actions/WindowActions';
+import { VIEW_EDITOR_RENDER_MODES_NEVER } from '../../constants/Constants';
 import Prompt from '../app/Prompt';
-import DocumentListContextShortcuts
-    from '../shortcuts/DocumentListContextShortcuts';
+import DocumentListContextShortcuts from '../shortcuts/DocumentListContextShortcuts';
 import TableContextShortcuts from '../shortcuts/TableContextShortcuts';
-
+import TableContextMenu from './TableContextMenu';
 import TableFilter from './TableFilter';
+import TableHeader from './TableHeader';
 import TableItem from './TableItem';
 import TablePagination from './TablePagination';
-import TableHeader from './TableHeader';
-import TableContextMenu from './TableContextMenu';
-import { VIEW_EDITOR_RENDER_MODES_NEVER }  from '../../constants/Constants';
 
 class Table extends Component {
     constructor(props) {

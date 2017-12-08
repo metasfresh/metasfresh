@@ -3,7 +3,7 @@ import Moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
-import { DATE_FORMAT }  from '../../constants/Constants';
+import { DATE_FORMAT } from '../../constants/Constants';
 
 const classes =
     'btn btn-filter btn-meta-outline-secondary btn-sm btn-empty btn-active';

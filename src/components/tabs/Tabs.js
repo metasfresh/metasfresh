@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
-import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import Tab from './Tab';
 import { activateTab, unselectTab } from '../../actions/WindowActions';
+import Tab from './Tab';
 
 class Tabs extends Component {
     constructor(props) {

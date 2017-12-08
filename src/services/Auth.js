@@ -1,4 +1,5 @@
 import SockJs from 'sockjs-client';
+
 import Stomp from 'stompjs/lib/stomp.min.js';
 
 class Auth {

@@ -1,12 +1,9 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
 
+import { getItemsByProperty } from '../../actions/WindowActions';
 import FiltersItem from './FiltersItem';
-
-import {
-    getItemsByProperty
-} from '../../actions/WindowActions';
 
 class FiltersNotFrequent extends Component {
     constructor(props) {

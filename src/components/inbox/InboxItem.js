@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
-import Moment from 'moment';
 import counterpart from 'counterpart';
+import Moment from 'moment';
+import React, { Component } from 'react';
 
 class InboxItem extends Component {
     constructor(props){

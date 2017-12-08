@@ -1,7 +1,8 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import {push} from 'react-router-redux';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
+
 import LoginForm from '../components/app/LoginForm';
 
 class Login extends Component {

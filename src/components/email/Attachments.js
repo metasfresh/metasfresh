@@ -1,10 +1,8 @@
-import React, { Component } from 'react';
 import counterpart from 'counterpart';
-import FileInput from '../FileInput';
+import React, { Component } from 'react';
 
-import {
-    addAttachment
-} from '../../actions/EmailActions';
+import { addAttachment } from '../../actions/EmailActions';
+import FileInput from '../FileInput';
 
 class Attachments extends Component {
     constructor(props) {

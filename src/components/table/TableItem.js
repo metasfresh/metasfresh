@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
+
+import { VIEW_EDITOR_RENDER_MODES_ALWAYS, VIEW_EDITOR_RENDER_MODES_ON_DEMAND } from '../../constants/Constants';
 import TableCell from './TableCell';
-import {
-    VIEW_EDITOR_RENDER_MODES_ON_DEMAND,
-    VIEW_EDITOR_RENDER_MODES_ALWAYS
- }  from '../../constants/Constants';
 
 class TableItem extends Component {
     constructor(props) {

@@ -1,27 +1,16 @@
 import React from 'react';
-import {Route, IndexRoute, NoMatch} from 'react-router';
-import {push} from 'react-router-redux';
+import { IndexRoute, NoMatch, Route } from 'react-router';
+import { push } from 'react-router-redux';
 
-import Login from './containers/Login.js';
+import { clearNotifications, enableTutorial, localLoginRequest, loginSuccess, logoutRequest, logoutSuccess } from './actions/AppActions';
+import { createWindow } from './actions/WindowActions';
 import Board from './containers/Board.js';
 import Dashboard from './containers/Dashboard.js';
-import MasterWindow from './containers/MasterWindow.js';
 import DocList from './containers/DocList.js';
 import InboxAll from './containers/InboxAll.js';
+import Login from './containers/Login.js';
+import MasterWindow from './containers/MasterWindow.js';
 import NavigationTree from './containers/NavigationTree.js';
-
-import {
-    logoutRequest,
-    logoutSuccess,
-    loginSuccess,
-    localLoginRequest,
-    clearNotifications,
-    enableTutorial
-} from './actions/AppActions';
-
-import {
-    createWindow
-} from './actions/WindowActions';
 
 let hasTutorial = false;
 

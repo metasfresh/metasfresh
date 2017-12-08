@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
-import Loader from '../app/Loader';
-import ChartWidget from './ChartWidget';
-import Indicator from '../charts/Indicator';
-import DndWidget from './DndWidget';
 
-import {
-    getRequest
-} from '../../actions/GenericActions';
+import { getRequest } from '../../actions/GenericActions';
+import Loader from '../app/Loader';
+import Indicator from '../charts/Indicator';
+import ChartWidget from './ChartWidget';
+import DndWidget from './DndWidget';
 
 class Sidenav extends Component {
     constructor(props) {

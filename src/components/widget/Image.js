@@ -1,7 +1,8 @@
+import counterpart from 'counterpart';
 import React, { Component } from 'react';
+
 import { getImageAction, postImageAction } from '../../actions/AppActions';
 import Loader from '../app/Loader';
-import counterpart from 'counterpart';
 
 const Placeholder = (props) => (
     <div className="image-placeholder">

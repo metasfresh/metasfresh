@@ -1,15 +1,11 @@
 import React, { Component } from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
-import BarChart from './BarChartComponent';
-import PieChart from './PieChartComponent';
-import Indicator from './Indicator';
+import { getKPIData, getTargetIndicatorsData } from '../../actions/AppActions';
 import Loader from '../app/Loader';
-
-import {
-    getKPIData,
-    getTargetIndicatorsData
-} from '../../actions/AppActions';
+import BarChart from './BarChartComponent';
+import Indicator from './Indicator';
+import PieChart from './PieChartComponent';
 
 class RawChart extends Component {
     constructor(props){

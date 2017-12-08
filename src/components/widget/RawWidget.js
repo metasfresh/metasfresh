@@ -1,24 +1,22 @@
-import React, { Component } from 'react';
-import {connect} from 'react-redux';
-import PropTypes from 'prop-types';
 import Moment from 'moment';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-import DatePicker from './DatePicker';
-import Attributes from './Attributes/Attributes';
-import Lookup from './Lookup/Lookup';
-import DatetimeRange from './DatetimeRange';
-import List from './List/List';
+import { connect } from 'react-redux';
+
+import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
+import { DATE_FORMAT } from '../../constants/Constants';
 import ActionButton from './ActionButton';
+import Attributes from './Attributes/Attributes';
 import Checkbox from './Checkbox';
-import Image from './Image';
-import Link from './Link';
-import Labels from './Labels';
+import DatePicker from './DatePicker';
+import DatetimeRange from './DatetimeRange';
 import DevicesWidget from './Devices/DevicesWidget';
-import {
-    allowShortcut,
-    disableShortcut
-} from '../../actions/WindowActions';
-import { DATE_FORMAT }  from '../../constants/Constants';
+import Image from './Image';
+import Labels from './Labels';
+import Link from './Link';
+import List from './List/List';
+import Lookup from './Lookup/Lookup';
 
 class RawWidget extends Component {
     static propTypes = {

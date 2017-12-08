@@ -1,5 +1,6 @@
-import boxSize from './boxSize';
 import * as d3 from 'd3';
+
+import boxSize from './boxSize';
 
 const size = {
     width: 20,

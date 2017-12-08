@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
-import onClickOutside from 'react-onclickoutside';
-import InfiniteScroll from 'react-infinite-scroller';
-import Card from './Card';
-import Loader from '../app/Loader';
 import update from 'immutability-helper';
+import React, { Component } from 'react';
+import InfiniteScroll from 'react-infinite-scroller';
+import onClickOutside from 'react-onclickoutside';
 
-import {getView, createView, getLayout} from '../../actions/BoardActions';
+import { createView, getLayout, getView } from '../../actions/BoardActions';
+import Loader from '../app/Loader';
+import Card from './Card';
 
 class Sidenav extends Component {
     constructor(props) {

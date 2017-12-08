@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
+import React, { Component } from 'react';
 import Datetime from 'react-datetime';
+import { connect } from 'react-redux';
 
-import {
-    addNotification
-} from '../../actions/AppActions';
+import { addNotification } from '../../actions/AppActions';
 
 class DatePicker extends Component {
     constructor(props) {

@@ -1,23 +1,14 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
-
 import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import {
-    quickActionsRequest
-} from '../../actions/ViewActions';
-
-import {
-    openModal
-} from '../../actions/WindowActions';
-
-import QuickActionsDropdown from './QuickActionsDropdown';
-
+import { quickActionsRequest } from '../../actions/ViewActions';
+import { openModal } from '../../actions/WindowActions';
 import keymap from '../../shortcuts/keymap';
-import QuickActionsContextShortcuts
-    from '../shortcuts/QuickActionsContextShortcuts';
-import Tooltips from '../tooltips/Tooltips.js'
+import QuickActionsContextShortcuts from '../shortcuts/QuickActionsContextShortcuts';
+import Tooltips from '../tooltips/Tooltips.js';
+import QuickActionsDropdown from './QuickActionsDropdown';
 
 class QuickActions extends Component {
     constructor(props){

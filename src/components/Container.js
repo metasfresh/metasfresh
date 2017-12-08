@@ -1,11 +1,12 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
-import Header from './header/Header';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+
+import DocumentList from './app/DocumentList';
 import ErrorScreen from './app/ErrorScreen';
 import Modal from './app/Modal';
 import RawModal from './app/RawModal';
-import DocumentList from './app/DocumentList';
+import Header from './header/Header';
 
 const mapStateToProps = state => ({
     connectionError: state.windowHandler.connectionError || false,

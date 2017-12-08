@@ -1,25 +1,16 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
 import { processNewRecord } from '../../actions/GenericActions';
-import {
-    closeModal,
-    createWindow,
-    createProcess,
-    startProcess,
-    handleProcessResponse,
-    patch,
-} from '../../actions/WindowActions';
+import { closeModal, createProcess, createWindow, handleProcessResponse, patch, startProcess } from '../../actions/WindowActions';
 import { getSelection } from '../../reducers/windowHandler';
 import keymap from '../../shortcuts/keymap';
-
 import Process from '../Process';
-import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
-import Tooltips from '../tooltips/Tooltips.js'
 import Window from '../Window';
-
+import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
+import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 import OverlayField from './OverlayField';
 

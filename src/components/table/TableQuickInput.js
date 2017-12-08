@@ -1,24 +1,11 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
+import { addNotification } from '../../actions/AppActions';
+import { completeRequest, createInstance, initLayout, patchRequest } from '../../actions/GenericActions';
+import { addNewRow, parseToDisplay } from '../../actions/WindowActions';
 import RawWidget from '../widget/RawWidget';
-
-import {
-    parseToDisplay,
-    addNewRow
-} from '../../actions/WindowActions';
-
-import {
-    initLayout,
-    patchRequest,
-    createInstance,
-    completeRequest
-} from '../../actions/GenericActions';
-
-import {
-    addNotification
-} from '../../actions/AppActions';
 
 class TableQuickInput extends Component {
     // promise with patching for queuing form submission after patch is done

@@ -1,8 +1,10 @@
 /* eslint-env mocha */
+import { Component } from 'react';
+
 import chai, { expect } from 'chai';
 import { spy } from 'sinon';
 import sinonChai from 'sinon-chai';
-import { Component } from 'react';
+
 import Shortcut from './Shortcut';
 
 chai.use(sinonChai);
