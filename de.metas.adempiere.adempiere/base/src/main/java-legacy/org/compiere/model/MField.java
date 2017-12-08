@@ -115,26 +115,4 @@ public class MField extends X_AD_Field
 		setEntityType(column.getEntityType());
 	}	// setColumn
 
-	/**
-	 * beforeSave
-	 * 
-	 * @see org.compiere.model.PO#beforeSave(boolean)
-	 * @param newRecord
-	 * @return
-	 */
-	@Override
-	protected boolean beforeSave(boolean newRecord)
-	{
-		// Sync Terminology
-		if (newRecord || is_ValueChanged("AD_Column_ID"))
-		{
-			M_Element element = M_Element.getOfColumn(getCtx(), getAD_Column_ID(), get_TrxName());
-			setName(element.getName());
-			setDescription(element.getDescription());
-			setHelp(element.getHelp());
-		}
-
-		return true;
-	}	// beforeSave
-
 }	// MField

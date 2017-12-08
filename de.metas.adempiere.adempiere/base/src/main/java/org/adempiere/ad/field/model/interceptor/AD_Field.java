@@ -38,6 +38,14 @@ public class AD_Field
 		{
 			// the AD_Name_ID was set to null. Get back to the values from the AD_Column
 			final I_AD_Column fieldColumn = field.getAD_Column();
+			
+			final I_AD_Element columnElement = fieldColumn.getAD_Element();
+			
+			if(columnElement == null)
+			{
+				// not yet saved. Do nothing
+				return;
+			}
 			field.setName(fieldColumn.getName());
 			field.setDescription(fieldColumn.getDescription());
 			field.setHelp(fieldColumn.getHelp());
@@ -45,6 +53,12 @@ public class AD_Field
 		}
 		
 		final I_AD_Element fieldElement = field.getAD_Name();
+		
+		if(fieldElement == null)
+		{
+			// not yet saved; do nothing
+			return;
+		}
 		
 		field.setName(fieldElement.getName());
 		field.setDescription(fieldElement.getDescription());
