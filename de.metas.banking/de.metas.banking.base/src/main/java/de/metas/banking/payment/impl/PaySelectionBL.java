@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+import java.util.StringJoiner;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -48,20 +49,14 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.document.engine.IDocument;
 import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
 import de.metas.payment.api.IPaymentBL;
 
 public class PaySelectionBL implements IPaySelectionBL
 {
 	private static final String MSG_CannotReactivate_PaySelectionLineInBankStatement_2P = "CannotReactivate_PaySelectionLineInBankStatement";
-
-	/**
-	 * @return true if given pay selection line is imported in a bank statement
-	 */
-	private boolean isInBankStatement(final I_C_PaySelectionLine psl)
-	{
-		return psl.getC_BankStatementLine_ID() > 0 || psl.getC_BankStatementLine_Ref_ID() > 0;
-	}
+	private static final String MSG_PaySelectionLines_No_BankAccount = "C_PaySelection_PaySelectionLines_No_BankAccount";
 
 	@Override
 	public void createBankStatementLines(
@@ -180,6 +175,11 @@ public class PaySelectionBL implements IPaySelectionBL
 
 	}
 
+	private boolean isInBankStatement(final I_C_PaySelectionLine psl)
+	{
+		return psl.getC_BankStatementLine_ID() > 0 || psl.getC_BankStatementLine_Ref_ID() > 0;
+	}
+
 	@Override
 	public void updateFromInvoice(final org.compiere.model.I_C_PaySelectionLine psl)
 	{
@@ -217,18 +217,18 @@ public class PaySelectionBL implements IPaySelectionBL
 		if ((isSalesInvoice && !isCreditMemo) ||
 				(!isSalesInvoice && isCreditMemo))
 		{
-			// allow a direct debit account if there is an invoice with SOTrx='Y', and not a credit memo 
-			// OR it is a Credit memo with isSoTrx = 'N' 
+			// allow a direct debit account if there is an invoice with SOTrx='Y', and not a credit memo
+			// OR it is a Credit memo with isSoTrx = 'N'
 			accteptedBankAccountUsage = X_C_BP_BankAccount.BPBANKACCTUSE_DirectDebit;
 		}
 
-		else 
+		else
 		{
 			// allow a direct deposit account if there is an invoice with SOTrx='N', and not a credit memo
-			// OR it is a Credit memo with isSoTrx = 'Y' 
+			// OR it is a Credit memo with isSoTrx = 'Y'
 			accteptedBankAccountUsage = X_C_BP_BankAccount.BPBANKACCTUSE_DirectDeposit;
 		}
-	
+
 		final List<I_C_BP_BankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(ctx, partnerID, currencyID);
 
 		if (!bankAccts.isEmpty())
@@ -382,24 +382,12 @@ public class PaySelectionBL implements IPaySelectionBL
 		InterfaceWrapperHelper.save(psl);
 	}
 
-	/**
-	 * Unlink any bank statement line from given pay selection line.
-	 *
-	 * @param psl
-	 */
-	private void unlinkBankStatementLine(final I_C_PaySelectionLine psl)
-	{
-		psl.setC_BankStatementLine(null);
-		psl.setC_BankStatementLine_Ref(null);
-		InterfaceWrapperHelper.save(psl);
-	}
-
 	@Override
 	public void unlinkPaySelectionLineForBankStatement(final I_C_BankStatementLine bankStatementLine)
 	{
 		for (final I_C_PaySelectionLine paySelectionLine : Services.get(IPaySelectionDAO.class).retrievePaySelectionLines(bankStatementLine))
 		{
-			unlinkBankStatementLine(paySelectionLine);
+			unlinkBankStatementFromLine(paySelectionLine);
 		}
 	}
 
@@ -409,43 +397,66 @@ public class PaySelectionBL implements IPaySelectionBL
 		final I_C_PaySelectionLine paySelectionLine = Services.get(IPaySelectionDAO.class).retrievePaySelectionLine(bankStatementLineRef);
 		if (paySelectionLine != null)
 		{
-			unlinkBankStatementLine(paySelectionLine);
+			unlinkBankStatementFromLine(paySelectionLine);
 		}
+	}
+
+	private void unlinkBankStatementFromLine(final I_C_PaySelectionLine psl)
+	{
+		psl.setC_BankStatementLine(null);
+		psl.setC_BankStatementLine_Ref(null);
+		InterfaceWrapperHelper.save(psl);
 	}
 
 	@Override
-	public void reActivate(final I_C_PaySelection paySelection)
+	public void completePaySelection(final I_C_PaySelection paySelection)
 	{
-		if (!paySelection.isProcessed())
-		{
-			// already re-activated, nothing to do
-			return;
-		}
+		validateBankAccounts(paySelection); 
 
+		paySelection.setProcessed(true);
+		paySelection.setDocAction(IDocument.ACTION_ReActivate);
+
+	}
+
+	@Override
+	public void validateBankAccounts(final I_C_PaySelection paySelection)
+	{
 		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+		
+		StringJoiner joiner = new StringJoiner(",");
+		
 		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class))
 		{
-			paySelectionLine.setC_PaySelection(paySelection); // for optimizations
-			reActivate(paySelectionLine);
+			if (paySelectionLine.getC_BP_BankAccount_ID() <= 0)
+			{
+				joiner.add(String.valueOf(paySelectionLine.getLine()));
+			}
+		}
+
+		if (joiner.length() != 0)
+		{
+			throw new AdempiereException(MSG_PaySelectionLines_No_BankAccount , new Object []{joiner.toString()} );
+		}
+		
+	}
+
+	@Override
+	public void reactivatePaySelection(final I_C_PaySelection paySelection)
+	{
+
+		final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+
+		for (final I_C_PaySelectionLine paySelectionLine : paySelectionDAO.retrievePaySelectionLines(paySelection, I_C_PaySelectionLine.class))
+		{
+			if (isInBankStatement(paySelectionLine))
+			{
+				throw new AdempiereException(MSG_CannotReactivate_PaySelectionLineInBankStatement_2P, new Object[] { paySelectionLine.getLine(), paySelectionLine.getC_BankStatementLine().getC_BankStatement().getDocumentNo() });
+			}
 		}
 
 		paySelection.setProcessed(false);
-		InterfaceWrapperHelper.save(paySelection);
+		paySelection.setDocAction(IDocument.ACTION_Complete);
+
 	}
-
-	private final void reActivate(final I_C_PaySelectionLine psl)
-	{
-		if (!psl.isProcessed())
-		{
-			return;
-		}
-
-		if (isInBankStatement(psl))
-		{
-			throw new AdempiereException(MSG_CannotReactivate_PaySelectionLineInBankStatement_2P, new Object[] { psl.getLine(), psl.getC_BankStatementLine().getC_BankStatement().getDocumentNo() });
-		}
-
-		psl.setProcessed(false);
-		InterfaceWrapperHelper.save(psl);
-	}
+	
 }

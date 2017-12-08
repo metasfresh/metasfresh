@@ -143,7 +143,7 @@ public class HUTransformTestsBase
 
 		// invoke the method under test
 		final List<I_M_HU> newCUs = HUTransformService
-				.get(data.helper.getHUContext())
+				.newInstance(data.helper.getHUContext())
 				.cuToNewCU(cuToSplit, BigDecimal.ONE);
 
 		assertThat(newCUs.size(), is(1));
@@ -173,7 +173,7 @@ public class HUTransformTestsBase
 		assertThat(cuToSplit.getM_HU_Item_Parent(), nullValue()); // this test makes no sense if the given CU has a parent
 
 		// invoke the method under test
-		final List<I_M_HU> newCUs = HUTransformService.get(data.helper.getHUContext())
+		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext())
 				.cuToNewCU(cuToSplit, new BigDecimal("3"));
 		assertThat(newCUs.size(), is(0));
 
@@ -186,7 +186,7 @@ public class HUTransformTestsBase
 		final I_M_HU parentTU = cuToSplit.getM_HU_Item_Parent().getM_HU();
 
 		// invoke the method under test
-		final List<I_M_HU> newCUs = HUTransformService.get(data.helper.getHUContext())
+		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext())
 				.cuToNewCU(cuToSplit, new BigDecimal("3"));
 
 		assertThat(newCUs.size(), is(1));
@@ -204,7 +204,7 @@ public class HUTransformTestsBase
 		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU().getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
 		// invoke the method under test
-		final List<I_M_HU> newTUs = HUTransformService.get(data.helper.getHUContext())
+		final List<I_M_HU> newTUs = HUTransformService.newInstance(data.helper.getHUContext())
 				.cuToNewTUs(cuToSplit, BigDecimal.ONE, data.piTU_Item_Product_Bag_8KgTomatoes, isOwnPackingMaterials);
 
 		assertThat(newTUs.size(), is(1));
