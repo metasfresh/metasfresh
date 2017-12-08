@@ -106,7 +106,7 @@ public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate
 		final I_M_HU topLevelHU = getRecord(I_M_HU.class);
 
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(topLevelHU, p_QtyTU);
-		final List<I_M_HU> tus = HUTransformService.get().husToNewTUs(request);
+		final List<I_M_HU> tus = HUTransformService.newInstance().husToNewTUs(request);
 		if (tus.size() != p_QtyTU)
 		{
 			throw new AdempiereException(WEBUI_HU_Constants.MSG_NotEnoughTUsFound, new Object[] { p_QtyTU, tus.size() });
