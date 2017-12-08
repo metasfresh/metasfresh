@@ -21,7 +21,8 @@
             }
         ],
         "react/prop-types": "warn",
-        "react/jsx-filename-extension": "off"
+        "react/jsx-filename-extension": "off",
+        "react/prefer-stateless-function": "off"
     },
     "plugins": ["prettier", "react"],
     "globals": {
