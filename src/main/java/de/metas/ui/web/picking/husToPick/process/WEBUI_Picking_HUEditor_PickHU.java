@@ -50,11 +50,7 @@ public class WEBUI_Picking_HUEditor_PickHU
 	@Override
 	protected String doIt() throws Exception
 	{
-		retrieveEligibleHUEditorRows().forEach(
-				huEditorRow -> {
-
-					pickHuRow(huEditorRow);
-				});
+		retrieveEligibleHUEditorRows().forEach(this::pickHuRow);
 
 		invalidateViewsAndPrepareReturn();
 		return MSG_OK;
