@@ -19,17 +19,6 @@ export function initLayout(
     );
 }
 
-export function getViewAttributesLayout(windowId, viewId, rowId) {
-    return axios.get(
-        config.API_URL +
-        '/documentView'+
-        '/' + windowId +
-        '/' + viewId +
-        '/' + rowId +
-        '/attributes/layout'
-    );
-}
-
 export function getData(
     entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced,
     orderBy, viewId
@@ -49,35 +38,7 @@ export function getData(
     );
 }
 
-export function getViewAttributeDropdown(windowId, viewId, rowId, attribute) {
-    return axios.get(
-        config.API_URL +
-        '/documentView'+
-        '/' + windowId +
-        '/' + viewId +
-        '/' + rowId +
-        '/attributes/attribute/' + attribute +
-        '/dropdown'
-    );
-}
-/**
- *
- * @param {*} windowId
- * @param {*} viewId
- * @param {*} rowId
- */
-export function getViewAttributes (
-    windowId, viewId, rowId
-) {
-    return axios.get(
-        config.API_URL +
-        '/documentView'+
-        '/' + windowId +
-        '/' + viewId +
-        '/' + rowId +
-        '/attributes'
-    );
-}
+
 
 function getPathRequestPayload(property, value) {
     let payload = [];
@@ -96,24 +57,6 @@ function getPathRequestPayload(property, value) {
     }
 
     return payload;
-}
-
-export function patchViewAttributes(
-    windowId,
-    viewId,
-    rowId,
-    property,
-    value
-) {
-    const payload = getPathRequestPayload(property, value);
-
-    return axios.patch(
-        config.API_URL +
-        '/documentView'+
-        '/' + windowId +
-        '/' + viewId +
-        '/' + rowId +
-        '/attributes', payload);
 }
 
 export function createInstance(entity, docType, docId, tabId, subentity) {
