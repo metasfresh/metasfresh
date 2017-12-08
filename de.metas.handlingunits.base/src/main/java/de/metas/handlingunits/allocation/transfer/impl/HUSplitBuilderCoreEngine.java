@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -12,6 +14,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -66,12 +69,12 @@ public class HUSplitBuilderCoreEngine
 	 */
 	@Builder
 	private HUSplitBuilderCoreEngine(
-			@NonNull final IHUContext huContextInitital,
+			@Nullable final IHUContext huContextInitital,
 			@NonNull final I_M_HU huToSplit,
 			@NonNull final Function<IHUContext, IAllocationRequest> requestProvider,
 			@NonNull final IAllocationDestination destination)
 	{
-		this.huContextInitital = huContextInitital;
+		this.huContextInitital = huContextInitital != null ? huContextInitital : Services.get(IHUContextFactory.class).createMutableHUContext();
 		this.huToSplit = huToSplit;
 		this.requestProvider = requestProvider;
 		this.destination = destination;
