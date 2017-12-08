@@ -40,8 +40,9 @@ import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -344,8 +345,7 @@ public final class CacheMgt
 	public int reset(final String tableName)
 	{
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, RECORD_ID_ALL);
-		final boolean broadcast = true;
-		return reset(request, broadcast);
+		return reset(request, ResetMode.LOCAL_AND_BROADCAST);
 	}	// reset
 
 	/**
@@ -359,8 +359,7 @@ public final class CacheMgt
 	public int resetLocal(final String tableName)
 	{
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, RECORD_ID_ALL);
-		final boolean broadcast = false;
-		return reset(request, broadcast);
+		return reset(request, ResetMode.LOCAL);
 	}	// reset
 
 	/**
@@ -373,14 +372,12 @@ public final class CacheMgt
 	public int reset(final String tableName, final int recordId)
 	{
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, recordId);
-		final boolean broadcast = true;
-		return reset(request, broadcast);
+		return reset(request, ResetMode.LOCAL_AND_BROADCAST);
 	}
 
 	public int reset(final CacheInvalidateRequest request)
 	{
-		final boolean broadcast = true;
-		return reset(CacheInvalidateMultiRequest.of(request), broadcast);
+		return reset(CacheInvalidateMultiRequest.of(request), ResetMode.LOCAL_AND_BROADCAST);
 	}
 
 	/**
@@ -392,7 +389,7 @@ public final class CacheMgt
 	 * @param tableName
 	 * @param recordId
 	 */
-	public void resetOnTrxCommit(final String trxName, final CacheInvalidateRequest request)
+	public void resetLocalNowAndBroadcastOnTrxCommit(final String trxName, final CacheInvalidateRequest request)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
@@ -401,8 +398,26 @@ public final class CacheMgt
 			reset(request);
 			return;
 		}
+		else
+		{
+			reset(CacheInvalidateMultiRequest.of(request), ResetMode.LOCAL);
+			RecordsToResetOnTrxCommitCollector.getCreate(trx).addRecord(request, ResetMode.JUST_BROADCAST);
+		}
+	}
 
-		RecordsToResetOnTrxCommitCollector.getCreate(trx).addRecord(request);
+	static enum ResetMode
+	{
+		LOCAL, LOCAL_AND_BROADCAST, JUST_BROADCAST;
+
+		public boolean isResetLocal()
+		{
+			return this == LOCAL || this == LOCAL_AND_BROADCAST;
+		}
+
+		public boolean isBroadcast()
+		{
+			return this == LOCAL_AND_BROADCAST || this == JUST_BROADCAST;
+		}
 	}
 
 	/**
@@ -411,19 +426,27 @@ public final class CacheMgt
 	 * @param tableName
 	 * @param recordId
 	 * @param broadcast true if we shall also broadcast this remotely.
-	 * @return how many cache entries were invalidated
+	 * @return how many cache entries were invalidated (estimated!)
 	 */
-	final int reset(@NonNull final CacheInvalidateMultiRequest multiRequest, final boolean broadcast)
+	final int reset(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode mode)
 	{
-		final int resetCount = resetCacheInstances(multiRequest);
+		final int resetCount;
+		if (mode.isResetLocal())
+		{
+			resetCount = resetCacheInstances(multiRequest);
 
-		//
-		fireGlobalCacheResetListeners(multiRequest);
+			//
+			fireGlobalCacheResetListeners(multiRequest);
+		}
+		else
+		{
+			resetCount = 0;
+		}
 
 		//
 		// Broadcast cache invalidation.
 		// We do this, even if we don't have any cache interface registered locally, because there might be remotely.
-		if (broadcast)
+		if (mode.isBroadcast())
 		{
 			CacheInvalidationRemoteHandler.instance.postEvent(multiRequest);
 		}
@@ -729,30 +752,51 @@ public final class CacheMgt
 			}
 		};
 
-		private final Set<CacheInvalidateRequest> requests = Sets.newConcurrentHashSet();
+		private final Map<CacheInvalidateRequest, ResetMode> request2resetMode = Maps.newConcurrentMap();
 
 		/** Enqueues a record */
-		public final void addRecord(@NonNull final CacheInvalidateRequest request)
+		public final void addRecord(@NonNull final CacheInvalidateRequest request, @NonNull ResetMode resetMode)
 		{
-			requests.add(request);
-			log.debug("Scheduled cache invalidation on transaction commit: {}", request);
+			request2resetMode.put(request, resetMode);
+			log.debug("Scheduled cache invalidation on transaction commit: {} ({})", request, resetMode);
 		}
 
 		/** Reset the cache for all enqueued records */
 		private void sendRequestsAndClear()
 		{
-			if (requests.isEmpty())
+			if (request2resetMode.isEmpty())
 			{
 				return;
 			}
 
 			final CacheMgt cacheMgt = CacheMgt.get();
 
-			final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.of(requests);
-			final boolean broadcast = true;
-			cacheMgt.reset(multiRequest, broadcast);
+			final ImmutableList.Builder<CacheInvalidateRequest> resetLocalRequestsBuilder = ImmutableList.builder();
+			final ImmutableList.Builder<CacheInvalidateRequest> broadcastRequestsBuilder = ImmutableList.builder();
+			request2resetMode.forEach((request, resetMode) -> {
+				if (resetMode.isResetLocal())
+				{
+					resetLocalRequestsBuilder.add(request);
+				}
+				if (resetMode.isBroadcast())
+				{
+					broadcastRequestsBuilder.add(request);
+				}
+			});
 
-			requests.clear();
+			final ImmutableList<CacheInvalidateRequest> resetLocalRequests = resetLocalRequestsBuilder.build();
+			if (!resetLocalRequests.isEmpty())
+			{
+				cacheMgt.reset(CacheInvalidateMultiRequest.of(resetLocalRequests), ResetMode.LOCAL);
+			}
+
+			final ImmutableList<CacheInvalidateRequest> broadcastRequests = broadcastRequestsBuilder.build();
+			if (!broadcastRequests.isEmpty())
+			{
+				cacheMgt.reset(CacheInvalidateMultiRequest.of(broadcastRequests), ResetMode.JUST_BROADCAST);
+			}
+
+			request2resetMode.clear();
 		}
 	}
 }
