@@ -51,7 +51,7 @@ Here come the actual release notes:
     * New Window for Attribute Search in WebUI.
   * [#2868](https://github.com/metasfresh/metasfresh/issues/2868) Make BOMValidate process to work correctly in webui
     * Improvement of the BOM Validation Action in WebUI.
-  * [#2956](https://github.com/metasfresh/metasfresh/issues/2956) drop allowconsolidateinvoice from database
+  * [#2956](https://github.com/metasfresh/metasfresh/issues/2956) Drop allowconsolidateinvoice from database
     * Removing column allowconsolidateinvoice thats not needed in Business Partner anymore.
   * [#3027](https://github.com/metasfresh/metasfresh/issues/3027) WebUI: New Window for Import BPartner
     * New Window in WebUI for Import Businesspartner.
@@ -103,7 +103,7 @@ Here come the actual release notes:
   * [#3087](https://github.com/metasfresh/metasfresh/issues/3087) Get rid of group columns in new window for procurement stock count
     * Adjusting the window Purchase Stock Control and adding Translation for en_US.
   * [#3060](https://github.com/metasfresh/metasfresh/issues/3060) TypedSqlQuery Bugs because aggregateList method ignores order
-    * Now allowinf to use OrderBy in TypedSQLQuery.
+    * Now allowing to use OrderBy in TypedSQLQuery.
   * [#3073](https://github.com/metasfresh/metasfresh/issues/3073) Error: Could not find or load main class ${argLine}
     * Internal housekeeping issue, fixing the local build of metasfresh from command line.
   * [#3088](https://github.com/metasfresh/metasfresh/issues/3088) Transform in material receipt left destroyed HU behind
