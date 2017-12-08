@@ -89,7 +89,7 @@ import lombok.Singular;
 
 /**
  * This class contains business logic run by clients when they transform HUs.
- * Use {@link #get(Properties)} or {@link #get(IHUContext)} to obtain an instance.
+ * Use {@link #newInstance(Properties)} or {@link #newInstance(IHUContext)} to obtain an instance.
  * 
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh-webui/issues/181
@@ -97,12 +97,12 @@ import lombok.Singular;
  */
 public class HUTransformService
 {
-	public static HUTransformService get()
+	public static HUTransformService newInstance()
 	{
 		return builder().build();
 	}
 
-	public static HUTransformService get(@NonNull final IMutableHUContext huContext)
+	public static HUTransformService newInstance(@NonNull final IMutableHUContext huContext)
 	{
 		return builderForHUcontext().huContext(huContext).build();
 	}

@@ -210,7 +210,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(false)); // guard; make sure it's "real"
 
 		// invoke the method under test
-		final List<I_M_HU> newLUs = HUTransformService.get(data.helper.getHUContext())
+		final List<I_M_HU> newLUs = HUTransformService.newInstance(data.helper.getHUContext())
 				.tuToNewLUs(tuToSplit,
 						new BigDecimal("4"), // tuQty=4; we only have 1 TU in the source which only holds 20kg, so we will expect the TU to be moved
 						data.piLU_Item_IFCO,
@@ -479,7 +479,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		verifyQuantities(new BigDecimal("40"), new BigDecimal("10"), aggregateTU);
 
 		// "Split off 5 CU on their own, without new TU"
-		final List<I_M_HU> newCUs = HUTransformService.get(data.helper.getHUContext())
+		final List<I_M_HU> newCUs = HUTransformService.newInstance(data.helper.getHUContext())
 				.cuToNewCU(aggregateTU, new BigDecimal("5"));
 		assertThat(newCUs.size(), is(1));
 		final I_M_HU newCU = newCUs.get(0);
@@ -492,7 +492,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		verifyQuantities(new BigDecimal("32"), new BigDecimal("8"), aggregateTU);
 
 		// "Split off 2 TUs on new LU" (from the screenshot we know that the new LU has the same PI as the existing one)
-		final List<I_M_HU> secondLUs = HUTransformService.get(data.helper.getHUContext())
+		final List<I_M_HU> secondLUs = HUTransformService.newInstance(data.helper.getHUContext())
 				.tuToNewLUs(aggregateTU, new BigDecimal("2"), piLU_Item_10_IFCOs, false);
 		assertThat(secondLUs.size(), is(1));
 		final I_M_HU secondLU = secondLUs.get(0);
@@ -505,7 +505,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		verifyQuantities(new BigDecimal("40"), new BigDecimal("9"), firstLU, aggregateTU, newCU, secondLU);
 
 		// "Split off 1 TU on its own, without new LU"
-		final List<I_M_HU> singleNewTUs = HUTransformService.get(data.helper.getHUContext()).tuToNewTUs(aggregateTU, BigDecimal.ONE);
+		final List<I_M_HU> singleNewTUs = HUTransformService.newInstance(data.helper.getHUContext()).tuToNewTUs(aggregateTU, BigDecimal.ONE);
 		assertThat(singleNewTUs.size(), is(1));
 		final I_M_HU singleNewTU = singleNewTUs.get(0);
 		verifyQuantities(new BigDecimal("4"), new BigDecimal("1"), singleNewTU);
@@ -516,7 +516,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		verifyQuantities(new BigDecimal("40"), new BigDecimal("9"), firstLU, aggregateTU, newCU, secondLU, singleNewTU);
 
 		// "Select the 5 CUs, Transform and put 1 CU on the free TU without LU"
-		HUTransformService.get(data.helper.getHUContext()).cuToExistingTU(newCU, BigDecimal.ONE, singleNewTU);
+		HUTransformService.newInstance(data.helper.getHUContext()).cuToExistingTU(newCU, BigDecimal.ONE, singleNewTU);
 		// ..but all in all the qtys are unchanged
 		verifyQuantities(new BigDecimal("40"), new BigDecimal("9"), firstLU, aggregateTU, newCU, secondLU, singleNewTU);
 	}
