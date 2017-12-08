@@ -252,15 +252,18 @@ public class HUTransformService
 
 		final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
 		final IHUProductStorage singleProductStorage = getSingleProductStorage(cuHU);
-		HUSplitBuilderCoreEngine.of(huContext, cuHU,
-				// forceAllocation = false; no need, because destination has no capacity constraints
-				huContext -> createCUAllocationRequest(
+		HUSplitBuilderCoreEngine.builder()
+				.huContextInitital(huContext)
+				.huToSplit(cuHU)
+				.requestProvider(huContext -> createCUAllocationRequest(
 						huContext,
 						singleProductStorage.getM_Product(),
 						singleProductStorage.getC_UOM(),
 						qtyCU,
-						false),
-				destination)
+						false) // forceAllocation = false; no need, because destination has no capacity constraints
+				)
+				.destination(destination)
+				.build()
 				.withPropagateHUValues()
 				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 				.performSplit();
@@ -316,17 +319,16 @@ public class HUTransformService
 
 		if (destination != null)
 		{
-			HUSplitBuilderCoreEngine
-					.of(
-							huContext,
-							sourceCuHU,
-							// forceAllocation = true; we don't want to get bothered by capacity constraint, even if the destination *probably* doesn't have any to start with
-							huContext -> createCUAllocationRequest(huContext,
-									singleProductStorage.getM_Product(),
-									singleProductStorage.getC_UOM(),
-									qtyCU,
-									true),
-							destination)
+			HUSplitBuilderCoreEngine.builder()
+					.huContextInitital(huContext)
+					.huToSplit(sourceCuHU)
+					.requestProvider(huContext -> createCUAllocationRequest(huContext,
+							singleProductStorage.getM_Product(),
+							singleProductStorage.getC_UOM(),
+							qtyCU,
+							true /* forceAllocation */))
+					.destination(destination)
+					.build()
 					.withPropagateHUValues()
 					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 					.performSplit();
@@ -537,12 +539,13 @@ public class HUTransformService
 
 		final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
 		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cuHU);
-		HUSplitBuilderCoreEngine
-				.of(huContext,
-						cuHU,
-						// forceAllocation = false; we want to create as many new TUs as are implied by the cuQty and the TUs' capacity
-						huContext -> createCUAllocationRequest(huContext, storages.get(0).getM_Product(), storages.get(0).getC_UOM(), qtyCU, false),
-						destination)
+		HUSplitBuilderCoreEngine.builder()
+				.huContextInitital(huContext)
+				.huToSplit(cuHU)
+				// forceAllocation = false; we want to create as many new TUs as are implied by the cuQty and the TUs' capacity
+				.requestProvider(huContext -> createCUAllocationRequest(huContext, storages.get(0).getM_Product(), storages.get(0).getC_UOM(), qtyCU, false))
+				.destination(destination)
+				.build()
 				.withPropagateHUValues()
 				.withTuPIItem(tuPIItemProduct.getM_HU_PI_Item())
 				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
@@ -642,7 +645,7 @@ public class HUTransformService
 
 		return result.build();
 	}
-	
+
 	private List<I_M_HU> huToNewTUs(@NonNull final I_M_HU sourceHU, final int qtyTU)
 	{
 		if (handlingUnitsBL.isLoadingUnit(sourceHU))
@@ -918,12 +921,13 @@ public class HUTransformService
 
 			destination.addTUCapacity(cuProduct, sourceQtyCUperTU, cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
 
-			HUSplitBuilderCoreEngine
-					.of(huContext,
-							sourceTuHU,
-							// forceAllocation = false; we want to create as many new top level HUs as are implied by the cuQty and the HUs' capacity
-							huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyTU.multiply(sourceQtyCUperTU), false),
-							destination)
+			HUSplitBuilderCoreEngine.builder()
+					.huContextInitital(huContext)
+					.huToSplit(sourceTuHU)
+					// forceAllocation = false; we want to create as many new top level HUs as are implied by the cuQty and the HUs' capacity
+					.requestProvider(huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyTU.multiply(sourceQtyCUperTU), false))
+					.destination(destination)
+					.build()
 					.withPropagateHUValues()
 					.withTuPIItem(materialItem)
 					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
