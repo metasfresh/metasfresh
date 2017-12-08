@@ -335,8 +335,7 @@ public class MColumn extends X_AD_Column
 						.append(DB.TO_STRING(getName()))
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE AD_Column_ID=").append(get_ID())
-						.append(" AND IsCentrallyMaintained='Y'");
+						.append(" WHERE AD_Column_ID=").append(get_ID());
 				int no = DB.executeUpdate(sql.toString(), get_TrxName());
 				log.debug("afterSave - Fields updated #" + no);
 			}
