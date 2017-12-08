@@ -2,6 +2,7 @@ package org.adempiere.model;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
@@ -19,6 +20,7 @@ import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.POZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
@@ -30,6 +32,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.service.IColumnBL;
@@ -88,12 +91,13 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		isTableRecordIdTarget = builder.isTableRecordIdTarget();
 
-		source = isTableRecordIdTarget ? null : ZoomProviderDestination.builder()
-				.adReferenceId(builder.getSource_Reference_ID())
-				.tableRefInfo(builder.getSourceTableRefInfoOrNull())
-				.roleDisplayName(builder.getTargetRoleDisplayName())
-				.tableRecordIdTarget(isTableRecordIdTarget)
-				.build();
+		source = isTableRecordIdTarget ? null
+				: ZoomProviderDestination.builder()
+						.adReferenceId(builder.getSource_Reference_ID())
+						.tableRefInfo(builder.getSourceTableRefInfoOrNull())
+						.roleDisplayName(builder.getTargetRoleDisplayName())
+						.tableRecordIdTarget(isTableRecordIdTarget)
+						.build();
 
 		target =
 
@@ -273,7 +277,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		final String targetTableName = zoomOrigin.getTableName();
 		final String originTableName = refTable.getTableName();
-		
+
 		if (isTableRecordIdTarget)
 		{
 			String originRecordIdName = null;
@@ -293,7 +297,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			if (originRecordIdName != null)
 			{
 				final String tableIdColumnName = Services.get(IColumnBL.class).getTableIdColumnName(originTableName, originRecordIdName).orElse(null);
-				Check.assumeNotEmpty(tableIdColumnName, "The table {} must have an AD_Table_ID column", originTableName );
+				Check.assumeNotEmpty(tableIdColumnName, "The table {} must have an AD_Table_ID column", originTableName);
 
 				queryWhereClause
 
@@ -366,8 +370,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return whereParsed;
 	}
 
-	private static void updateRecordsCountAndZoomValue(final MQuery query)
+	private void updateRecordsCountAndZoomValue(final MQuery query)
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final String sqlCommon = " FROM " + query.getZoomTableName() + " WHERE " + query.getWhereClause(false);
 
 		final String sqlCount = "SELECT COUNT(*) " + sqlCommon;
@@ -381,6 +386,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			final int firstKey = DB.getSQLValueEx(ITrx.TRXNAME_None, sqlFirstKey);
 			query.setZoomValue(firstKey);
 		}
+
+		final long elapsedTimeMillis = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
+		Loggables.get().addLog("RelationTypeZoomProvider {} took {}ms", this, elapsedTimeMillis);
 	}
 
 	/**
