@@ -240,10 +240,11 @@ public class M_Element extends X_AD_Element
 			StringBuffer sql = new StringBuffer();
 			int no = 0;
 
-			if (is_ValueChanged(M_Element.COLUMNNAME_Name)
+			if ((is_ValueChanged(M_Element.COLUMNNAME_Name)
 					|| is_ValueChanged(M_Element.COLUMNNAME_Description)
 					|| is_ValueChanged(M_Element.COLUMNNAME_Help)
 					|| is_ValueChanged(M_Element.COLUMNNAME_ColumnName))
+					&& getColumnName() != null)
 			{
 				// Column
 				sql = new StringBuffer("UPDATE AD_Column SET ColumnName=")
