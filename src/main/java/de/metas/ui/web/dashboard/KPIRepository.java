@@ -182,7 +182,12 @@ public class KPIRepository
 	private static final KPIField createKPIField(final I_WEBUI_KPI_Field kpiFieldDef, final boolean isComputeOffset)
 	{
 		final I_AD_Element adElement = kpiFieldDef.getAD_Element();
-		final String fieldName = adElement.getColumnName();
+		
+		final String elementColumnName = adElement.getColumnName ();
+		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", adElement);
+		
+		
+		final String fieldName = elementColumnName;
 
 		//
 		// Extract field caption and description
