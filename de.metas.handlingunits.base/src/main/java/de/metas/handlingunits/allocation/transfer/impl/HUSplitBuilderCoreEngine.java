@@ -11,8 +11,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Product;
 
-import com.google.common.base.Preconditions;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -31,6 +29,8 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import lombok.Builder;
+import lombok.NonNull;
 
 /**
  * This class is used by {@link HUSplitBuilder} but can also be called from others. It does the "generic" splitting work while HUSplitBuilder has a lot of setters that can help callers in setting up a particular {@link IHUProducerAllocationDestination} which is then passed to this class.
@@ -58,36 +58,23 @@ public class HUSplitBuilderCoreEngine
 	private IHUDocumentLine documentLine;
 	private boolean allowPartialUnloads;
 
-	private HUSplitBuilderCoreEngine(final IHUContext huContextInitital,
-			final I_M_HU huToSplit,
-			final Function<IHUContext, IAllocationRequest> requestProvider,
-			final IAllocationDestination destination)
+	/**
+	 * @param huContextInitital an initial HU context. the {@link #performSplit()} method will create and run a {@link IHUContextProcessor} which will internally work with a mutable copy of the given context.
+	 * @param huToSplit
+	 * @param requestProvider a function which will be applied from within the {@link #performSplit()} method to get the actual request, using the "inner" mutable copy of {@code huContextInitital}.
+	 * @param destination
+	 */
+	@Builder
+	private HUSplitBuilderCoreEngine(
+			@NonNull final IHUContext huContextInitital,
+			@NonNull final I_M_HU huToSplit,
+			@NonNull final Function<IHUContext, IAllocationRequest> requestProvider,
+			@NonNull final IAllocationDestination destination)
 	{
 		this.huContextInitital = huContextInitital;
 		this.huToSplit = huToSplit;
 		this.requestProvider = requestProvider;
 		this.destination = destination;
-	}
-
-	/**
-	 * Creates and returns a new instance. Note that all four parameters are mandatory.
-	 * 
-	 * @param huContextInitital an initial HU context. the {@link #performSplit()} method will create and run a {@link IHUContextProcessor} which will internally work with a mutable copy of the given context.
-	 * @param huToSplit
-	 * @param requestProvider a function which will be applied from within the {@link #performSplit()} method to get the actual request, using the "inner" mutable copy of {@code huContextInitital}.
-	 * @param destination
-	 * @return
-	 */
-	public static HUSplitBuilderCoreEngine of(final IHUContext huContextInitital,
-			final I_M_HU huToSplit,
-			final Function<IHUContext, IAllocationRequest> requestProvider,
-			final IAllocationDestination destination)
-	{
-		return new HUSplitBuilderCoreEngine(
-				Preconditions.checkNotNull(huContextInitital, "Param 'huContextInitital' may not be null"),
-				Preconditions.checkNotNull(huToSplit, "Param 'huToSplit' may not be null"),
-				Preconditions.checkNotNull(requestProvider, "Param 'requestProvider' may not be null"),
-				Preconditions.checkNotNull(destination, "Param 'destination' may not be null"));
 	}
 
 	/**
@@ -170,7 +157,7 @@ public class HUSplitBuilderCoreEngine
 	 */
 	public List<I_M_HU> performSplit()
 	{
-		final List<I_M_HU> splitHUs = new ArrayList<I_M_HU>();
+		final List<I_M_HU> splitHUs = new ArrayList<>();
 
 		huTrxBL.createHUContextProcessorExecutor(huContextInitital)
 				.run(new IHUContextProcessor()

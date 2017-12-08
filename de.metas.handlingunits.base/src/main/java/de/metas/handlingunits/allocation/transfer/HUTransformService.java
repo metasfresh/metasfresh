@@ -89,7 +89,7 @@ import lombok.Singular;
 
 /**
  * This class contains business logic run by clients when they transform HUs.
- * Use {@link #get(Properties)} or {@link #get(IHUContext)} to obtain an instance.
+ * Use {@link #newInstance(Properties)} or {@link #newInstance(IHUContext)} to obtain an instance.
  * 
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh-webui/issues/181
@@ -97,6 +97,16 @@ import lombok.Singular;
  */
 public class HUTransformService
 {
+	public static HUTransformService newInstance()
+	{
+		return builder().build();
+	}
+
+	public static HUTransformService newInstance(@NonNull final IMutableHUContext huContext)
+	{
+		return builderForHUcontext().huContext(huContext).build();
+	}
+	
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
@@ -105,18 +115,7 @@ public class HUTransformService
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final IHUContext huContext;
-
-	private final List<TableRecordReference> referencedObjects;
-
-	public static HUTransformService get()
-	{
-		return builder().build();
-	}
-
-	public static HUTransformService get(@NonNull final IMutableHUContext huContext)
-	{
-		return builderForHUcontext().huContext(huContext).build();
-	}
+	private final ImmutableList<TableRecordReference> referencedObjects;
 
 	/**
 	 * Uses {@link IHUContextFactory#createMutableHUContext(Properties, String)} with the given {@code ctx} and {@code trxName} and returns a new {@link HUTransformService} instance with that huContext.
@@ -135,7 +134,7 @@ public class HUTransformService
 			@Nullable final EmptyHUListener emptyHUListener,
 			@Nullable final List<TableRecordReference> referencedObjects)
 	{
-		this.referencedObjects = Util.coalesce(referencedObjects, ImmutableList.of());
+		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
 
 		final Properties effectiveCtx = Util.coalesce(ctx, Env.getCtx());
 		final String effectiveTrxName = Util.coalesce(trxName, ITrx.TRXNAME_ThreadInherited);
@@ -157,7 +156,7 @@ public class HUTransformService
 	private HUTransformService(@NonNull final IHUContext huContext,
 			@Nullable final List<TableRecordReference> referencedObjects)
 	{
-		this.referencedObjects = Util.coalesce(referencedObjects, ImmutableList.of());
+		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
 		this.huContext = huContext;
 	}
 
@@ -252,15 +251,18 @@ public class HUTransformService
 
 		final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
 		final IHUProductStorage singleProductStorage = getSingleProductStorage(cuHU);
-		HUSplitBuilderCoreEngine.of(huContext, cuHU,
-				// forceAllocation = false; no need, because destination has no capacity constraints
-				huContext -> createCUAllocationRequest(
+		HUSplitBuilderCoreEngine.builder()
+				.huContextInitital(huContext)
+				.huToSplit(cuHU)
+				.requestProvider(huContext -> createCUAllocationRequest(
 						huContext,
 						singleProductStorage.getM_Product(),
 						singleProductStorage.getC_UOM(),
 						qtyCU,
-						false),
-				destination)
+						false) // forceAllocation = false; no need, because destination has no capacity constraints
+				)
+				.destination(destination)
+				.build()
 				.withPropagateHUValues()
 				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 				.performSplit();
@@ -316,17 +318,16 @@ public class HUTransformService
 
 		if (destination != null)
 		{
-			HUSplitBuilderCoreEngine
-					.of(
-							huContext,
-							sourceCuHU,
-							// forceAllocation = true; we don't want to get bothered by capacity constraint, even if the destination *probably* doesn't have any to start with
-							huContext -> createCUAllocationRequest(huContext,
-									singleProductStorage.getM_Product(),
-									singleProductStorage.getC_UOM(),
-									qtyCU,
-									true),
-							destination)
+			HUSplitBuilderCoreEngine.builder()
+					.huContextInitital(huContext)
+					.huToSplit(sourceCuHU)
+					.requestProvider(huContext -> createCUAllocationRequest(huContext,
+							singleProductStorage.getM_Product(),
+							singleProductStorage.getC_UOM(),
+							qtyCU,
+							true /* forceAllocation */))
+					.destination(destination)
+					.build()
 					.withPropagateHUValues()
 					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
 					.performSplit();
@@ -537,12 +538,13 @@ public class HUTransformService
 
 		final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
 		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cuHU);
-		HUSplitBuilderCoreEngine
-				.of(huContext,
-						cuHU,
-						// forceAllocation = false; we want to create as many new TUs as are implied by the cuQty and the TUs' capacity
-						huContext -> createCUAllocationRequest(huContext, storages.get(0).getM_Product(), storages.get(0).getC_UOM(), qtyCU, false),
-						destination)
+		HUSplitBuilderCoreEngine.builder()
+				.huContextInitital(huContext)
+				.huToSplit(cuHU)
+				// forceAllocation = false; we want to create as many new TUs as are implied by the cuQty and the TUs' capacity
+				.requestProvider(huContext -> createCUAllocationRequest(huContext, storages.get(0).getM_Product(), storages.get(0).getC_UOM(), qtyCU, false))
+				.destination(destination)
+				.build()
 				.withPropagateHUValues()
 				.withTuPIItem(tuPIItemProduct.getM_HU_PI_Item())
 				.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error
@@ -642,7 +644,7 @@ public class HUTransformService
 
 		return result.build();
 	}
-	
+
 	private List<I_M_HU> huToNewTUs(@NonNull final I_M_HU sourceHU, final int qtyTU)
 	{
 		if (handlingUnitsBL.isLoadingUnit(sourceHU))
@@ -918,12 +920,13 @@ public class HUTransformService
 
 			destination.addTUCapacity(cuProduct, sourceQtyCUperTU, cuUOM); // explicitly declaring capacity to make sure that all aggregate HUs have it
 
-			HUSplitBuilderCoreEngine
-					.of(huContext,
-							sourceTuHU,
-							// forceAllocation = false; we want to create as many new top level HUs as are implied by the cuQty and the HUs' capacity
-							huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyTU.multiply(sourceQtyCUperTU), false),
-							destination)
+			HUSplitBuilderCoreEngine.builder()
+					.huContextInitital(huContext)
+					.huToSplit(sourceTuHU)
+					// forceAllocation = false; we want to create as many new top level HUs as are implied by the cuQty and the HUs' capacity
+					.requestProvider(huContext -> createCUAllocationRequest(huContext, cuProduct, cuUOM, qtyTU.multiply(sourceQtyCUperTU), false))
+					.destination(destination)
+					.build()
 					.withPropagateHUValues()
 					.withTuPIItem(materialItem)
 					.withAllowPartialUnloads(true) // we allow partial loads and unloads so if a user enters a very large number, then that will just account to "all of it" and there will be no error

@@ -70,12 +70,13 @@ public class C_OrderLine
 
 	private int retrieveFirstFlatrateConditionsIdForCompensationGroup(final GroupId groupId)
 	{
-		return orderGroupsRepo.retrieveGroupOrderLinesQuery(groupId)
+		final Integer flatrateConditionsId = orderGroupsRepo.retrieveGroupOrderLinesQuery(groupId)
 				.addNotNull(I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID)
 				.orderBy(I_C_OrderLine.COLUMNNAME_Line)
 				.orderBy(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
 				.create()
 				.first(I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, Integer.class);
+		return flatrateConditionsId != null && flatrateConditionsId > 0 ? flatrateConditionsId : -1;
 	}
 
 	private void setFlatrateConditionsIdToCompensationGroup(final int flatrateConditionsId, final GroupId groupId, final int excludeOrderLineId)
