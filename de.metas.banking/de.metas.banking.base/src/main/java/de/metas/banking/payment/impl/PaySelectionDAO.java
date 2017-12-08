@@ -6,6 +6,8 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -29,8 +31,8 @@ public class PaySelectionDAO implements IPaySelectionDAO
 			final Class<T> clazz)
 	{
 		final IQueryBuilder<I_C_PaySelectionLine> queryBuilder = createQueryBuilder(paySelection);
-		return queryBuilder.create()
-				.list(clazz);
+		queryBuilder.orderBy().addColumn(I_C_PaySelectionLine.COLUMNNAME_Line, Direction.Ascending, Nulls.Last).endOrderBy();
+		return queryBuilder.create().list(clazz);
 	}
 
 	@Override

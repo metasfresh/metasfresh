@@ -36,6 +36,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 
 /*
  * #%L
@@ -63,7 +64,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 @SpringBootTest(classes = { StartupListener.class,
 		ShutdownListener.class,
 		InOutLinesWithMissingInvoiceCandidate.class,
-		ShipmentScheduleOrderDocForSubscriptionLine.class })
+		ShipmentScheduleOrderDocForSubscriptionLine.class,
+		OrderGroupRepository.class })
 public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateTermTest
 {
 	private final transient IInvoiceCandDAO iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);

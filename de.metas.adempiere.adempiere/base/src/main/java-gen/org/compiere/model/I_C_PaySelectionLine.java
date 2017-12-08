@@ -492,31 +492,6 @@ public interface I_C_PaySelectionLine
     public static final String COLUMNNAME_PaymentRule = "PaymentRule";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setProcessed (boolean Processed);
-
-	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isProcessed();
-
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_C_PaySelectionLine, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_PaySelectionLine, Object>(I_C_PaySelectionLine.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
-
-	/**
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
