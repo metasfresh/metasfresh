@@ -15,7 +15,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1728706183L;
+	private static final long serialVersionUID = 244841217L;
 
     /** Standard Constructor */
     public X_AD_Field (Properties ctx, int AD_Field_ID, String trxName)
@@ -27,7 +27,6 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 			setAD_Field_ID (0);
 			setAD_Tab_ID (0);
 			setEntityType (null); // U
-			setIsCentrallyMaintained (true); // Y
 			setIsDisplayed (true); // Y
 			setIsDisplayedGrid (true); // Y
 			setIsEncrypted (false);
@@ -571,32 +570,6 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public java.lang.String getInfoFactoryClass () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_InfoFactoryClass);
-	}
-
-	/** Set Zentral verwaltet.
-		@param IsCentrallyMaintained 
-		Information maintained in System Element table
-	  */
-	@Override
-	public void setIsCentrallyMaintained (boolean IsCentrallyMaintained)
-	{
-		set_Value (COLUMNNAME_IsCentrallyMaintained, Boolean.valueOf(IsCentrallyMaintained));
-	}
-
-	/** Get Zentral verwaltet.
-		@return Information maintained in System Element table
-	  */
-	@Override
-	public boolean isCentrallyMaintained () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsCentrallyMaintained);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	/** Set Displayed.

@@ -629,31 +629,6 @@ public interface I_AD_Field
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Zentral verwaltet.
-	 * Information maintained in System Element table
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsCentrallyMaintained (boolean IsCentrallyMaintained);
-
-	/**
-	 * Get Zentral verwaltet.
-	 * Information maintained in System Element table
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isCentrallyMaintained();
-
-    /** Column definition for IsCentrallyMaintained */
-    public static final org.adempiere.model.ModelColumn<I_AD_Field, Object> COLUMN_IsCentrallyMaintained = new org.adempiere.model.ModelColumn<I_AD_Field, Object>(I_AD_Field.class, "IsCentrallyMaintained", null);
-    /** Column name IsCentrallyMaintained */
-    public static final String COLUMNNAME_IsCentrallyMaintained = "IsCentrallyMaintained";
-
-	/**
 	 * Set Displayed.
 	 * Determines, if this field is displayed
 	 *
