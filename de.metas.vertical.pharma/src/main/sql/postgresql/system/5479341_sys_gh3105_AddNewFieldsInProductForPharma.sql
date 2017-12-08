@@ -934,7 +934,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2017-12-05T15:22:50.961
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('I_Product','ALTER TABLE public.I_Product ADD COLUMN IsPrescription CHAR(1) CHECK (IsPrescription IN (''Y'',''N'')) NOT NULL')
+/* DDL */ SELECT public.db_alter_table('I_Product','ALTER TABLE public.I_Product ADD COLUMN IsPrescription CHAR(1)   DEFAULT ''N'' CHECK (IsPrescription IN (''Y'',''N'')) NOT NULL')
 ;
 
 -- 2017-12-05T15:23:03.540

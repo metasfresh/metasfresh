@@ -61,11 +61,6 @@ public class C_PaySelectionLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID)
 	public void updateFromPaymentRequestOrInvoice(final I_C_PaySelectionLine paySelectionLine)
 	{
-		if (paySelectionLine.isProcessed())
-		{
-			return; // don't touch processed lines, nothing to do
-		}
-
 		final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
 
