@@ -171,7 +171,7 @@ public class Util
 		}
 		return out.toString();
 	}
-
+	
 	/**
 	 * Clean - Remove all white spaces
 	 *
@@ -559,7 +559,7 @@ public class Util
 		if (set.size() == 0)
 			return iter;
 		// Check, if there are unwanted attributes
-		Set<AttributedCharacterIterator.Attribute> unwanted = new HashSet<AttributedCharacterIterator.Attribute>(iter.getAllAttributeKeys());
+		Set<AttributedCharacterIterator.Attribute> unwanted = new HashSet<>(iter.getAllAttributeKeys());
 		for (int i = 0; i < relevantAttributes.length; i++)
 			unwanted.remove(relevantAttributes[i]);
 		if (unwanted.size() == 0)
@@ -1280,7 +1280,7 @@ public class Util
 	@Deprecated
 	static public void insertSelection(final int[] selection, final int AD_PInstance_ID, final String trxName)
 	{
-		final ArrayList<Integer> results = new ArrayList<Integer>(selection.length);
+		final ArrayList<Integer> results = new ArrayList<>(selection.length);
 
 		for (int i = 0; i < selection.length; i++)
 		{
