@@ -27,6 +27,7 @@ import org.adempiere.ad.column.callout.AD_Column;
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.dao.cache.ITableCacheConfig;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
+import org.adempiere.ad.element.model.interceptor.AD_Element;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
@@ -185,6 +186,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		
 		// #1752
 		engine.addModelValidator(new org.adempiere.ad.field.model.interceptor.AD_Field(), client);
+		engine.addModelValidator(new AD_Element(), client);
 	}
 
 	@Override
