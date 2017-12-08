@@ -124,7 +124,7 @@ public class WEBUI_M_HU_ReturnTUsToVendor extends HUEditorProcessTemplate implem
 		//
 		// Split out the TUs we need to return
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(topLevelHU, p_QtyTU);
-		tusToReturn = HUTransformService.get().husToNewTUs(request);
+		tusToReturn = HUTransformService.newInstance().husToNewTUs(request);
 		if (tusToReturn.size() != p_QtyTU)
 		{
 			throw new AdempiereException(WEBUI_HU_Constants.MSG_NotEnoughTUsFound, new Object[] { p_QtyTU, tusToReturn.size() });
