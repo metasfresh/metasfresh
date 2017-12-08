@@ -15,3 +15,6 @@ dist
 # Coverage report
 .nyc_output
 coverage
+
+package-lock.json
+/package-lock.json
