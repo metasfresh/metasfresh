@@ -27,6 +27,10 @@ Here come the actual release notes:
   * [#3166](https://github.com/metasfresh/metasfresh/issues/3166) Businesspartner Window shows Fields that should be in Advanced edit mode
     * Improved Business Partner window, moved Fields to andvanced edit that are not mainly in user focus.
 
+* metasfresh-webui-frontend
+  * [#1375](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1375) Navigation Menu arrow down directly scrolls menu
+    * Improving the behavior of scrolling in Navigation Menu with a lot of bookmarks.
+
 #Fixes
 * metasfresh-app
   * [#3159](https://github.com/metasfresh/metasfresh/issues/3159) Translation Tab content missing for Product_Trl
