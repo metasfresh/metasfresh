@@ -27,6 +27,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2715](https://github.com/metasfresh/metasfresh/issues/2715) Create webui window for C_Invoice_Candidate_Agg
+    * New WIndow in WebUI for the maintenance of Invoice Candidate Aggregation rules.
   * [#3107](https://github.com/metasfresh/metasfresh/issues/3107) Warehouse picking group window
     * New Warehouse Picking Group window in WebUi, allowing the user to define groups of Warehouses that shall be considered as warehouses to be picking sources
   * [#3120](https://github.com/metasfresh/metasfresh/issues/3120) Add Netsum to Customer Invoice Document Grid View
