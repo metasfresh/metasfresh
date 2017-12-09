@@ -648,3 +648,38 @@ UPDATE AD_Field SET Name='Terminplan Rechnung Name',Updated=TO_TIMESTAMP('2017-1
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-09 12:50:31','YYYY-MM-DD HH24:MI:SS'),Name='Invoice Schedule Name' WHERE AD_Field_ID=560580 AND AD_Language='en_US'
 ;
 
+-- 2017-12-09T13:05:35.224
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-09 13:05:35','YYYY-MM-DD HH24:MI:SS'),Name='Invoice Contact' WHERE AD_Field_ID=559903 AND AD_Language='en_US'
+;
+
+-- 2017-12-09T13:07:58.104
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Kurzbeschreibung',Updated=TO_TIMESTAMP('2017-12-09 13:07:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=560604
+;
+
+-- 2017-12-09T13:08:01.766
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Steuer ID',Updated=TO_TIMESTAMP('2017-12-09 13:08:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5953
+;
+
+-- 2017-12-09T13:08:05.318
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Gruppen Schlüssel',Updated=TO_TIMESTAMP('2017-12-09 13:08:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=6050
+;
+
+-- 2017-12-09T13:08:17.601
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Kontakt Beschreibung',Updated=TO_TIMESTAMP('2017-12-09 13:08:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5946
+;
+
+-- 2017-12-09T13:08:21.215
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Standard Ansprechpartner',Updated=TO_TIMESTAMP('2017-12-09 13:08:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=559884
+;
+
+-- 2017-12-09T13:08:29.176
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Kontakt Anrede',Updated=TO_TIMESTAMP('2017-12-09 13:08:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5919
+;
+
