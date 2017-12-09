@@ -245,9 +245,10 @@ class MenuOverlay extends Component {
           handleMenuOverlay={handleMenuOverlay}
           openModal={openModal}
           subNavigation={true}
-          children={nodeData}
           type={nodeData.type}
-        />
+        >
+          {nodeData}
+        </MenuOverlayContainer>
       </div>
     );
   };
