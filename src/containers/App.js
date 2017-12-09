@@ -75,6 +75,7 @@ export default class App extends Component {
 
             const errorTitle = errorMessenger(status);
 
+            // eslint-disable-next-line no-console
             console.error(data.message);
 
             // Chart disabled notifications

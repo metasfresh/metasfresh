@@ -38,6 +38,7 @@ class NewLetter extends Component {
       try {
         await this.getTemplates();
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(error);
       }
     } catch (error) {

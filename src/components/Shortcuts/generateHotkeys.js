@@ -6,18 +6,18 @@ export default ({ keymap = {}, blacklist = {} } = {}) => {
 
     if (hotkey in blacklist) {
       const reason = blacklist[hotkey];
+      const reasonFormatted = reason ? ` (${reason})` : "";
 
-      // eslint-disable-next-line max-len
+      // eslint-disable-next-line no-console
       console.warn(
-        `Key combination "${hotkey}" used by "${name}" is blacklisted since it overrides browser behaviour${reason &&
-          ` (${reason})`}.`
+        `Key combination "${hotkey}" used by "${name}" is blackliste since it overrides browser behaviour${reasonFormatted}.`
       );
 
       continue;
     }
 
     if (hotkeys[hotkey]) {
-      // eslint-disable-next-line max-len
+      // eslint-disable-next-line no-console
       console.warn(
         `"${name}" uses already existing key combination "${hotkey}"`
       );

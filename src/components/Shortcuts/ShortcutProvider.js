@@ -132,7 +132,7 @@ export default class ShortcutProvider extends Component {
       return handler(event);
     }
 
-    // eslint-disable-next-line max-len
+    // eslint-disable-next-line no-console
     console.warn(
       `Handler defined for key sequence "${serializedSequence}" is not a function.`,
       handler
@@ -161,6 +161,7 @@ export default class ShortcutProvider extends Component {
     const { hotkeys, keymap } = this.props;
 
     if (!(name in this.props.keymap)) {
+      // eslint-disable-next-line no-console
       console.warn(`There are no hotkeys defined for "${name}".`);
 
       return;
@@ -176,6 +177,7 @@ export default class ShortcutProvider extends Component {
     const { hotkeys, keymap } = this.props;
 
     if (!(name in this.props.keymap)) {
+      // eslint-disable-next-line no-console
       console.warn(`There are no hotkeys defined for "${name}".`);
 
       return;
@@ -196,7 +198,7 @@ export default class ShortcutProvider extends Component {
     });
 
     if (!found) {
-      // eslint-disable-next-line max-len
+      // eslint-disable-next-line no-console
       console.warn(
         `The handler you are trying to unsubscribe from "${name}" has not been subscribed yet.`,
         handler

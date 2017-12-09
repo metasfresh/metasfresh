@@ -810,6 +810,7 @@ class RawWidget extends Component {
 
     // Unsupported widget type
     if (!widgetBody) {
+      // eslint-disable-next-line no-console
       console.warn(
         "The %c" + widgetType,
         "font-weight:bold;",

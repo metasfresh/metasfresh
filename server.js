@@ -10,8 +10,10 @@ new WebpackDevServer(webpack(config), {
   historyApiFallback: true
 }).listen(3000, listenHost, function(err) {
   if (err) {
+    // eslint-disable-next-line no-console
     return console.error(err);
   }
 
+  // eslint-disable-next-line no-console
   return console.warn("Listening at http://" + listenHost + ":3000/");
 });
