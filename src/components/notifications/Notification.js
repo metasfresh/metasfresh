@@ -148,6 +148,4 @@ Notification.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-Notification = connect()(Notification);
-
-export default Notification;
+export default connect()(Notification);

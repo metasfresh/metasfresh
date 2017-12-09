@@ -141,6 +141,4 @@ class AttachUrl extends Component {
   }
 }
 
-AttachUrl = connect()(AttachUrl);
-
-export default AttachUrl;
+export default connect()(AttachUrl);

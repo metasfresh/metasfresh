@@ -132,6 +132,4 @@ class SelectionAttributes extends Component {
   }
 }
 
-SelectionAttributes = connect()(SelectionAttributes);
-
-export default SelectionAttributes;
+export default connect()(SelectionAttributes);

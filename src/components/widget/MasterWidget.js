@@ -284,6 +284,4 @@ MasterWidget.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-MasterWidget = connect(false, false, false, { withRef: true })(MasterWidget);
-
-export default MasterWidget;
+export default connect(false, false, false, { withRef: true })(MasterWidget);

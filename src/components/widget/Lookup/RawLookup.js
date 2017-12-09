@@ -430,6 +430,4 @@ RawLookup.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-RawLookup = connect()(RawLookup);
-
-export default RawLookup;
+export default connect()(RawLookup);

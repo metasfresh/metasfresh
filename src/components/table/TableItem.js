@@ -401,6 +401,4 @@ TableItem.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-TableItem = connect(false, false, false, { withRef: true })(TableItem);
-
-export default TableItem;
+export default connect(false, false, false, { withRef: true })(TableItem);

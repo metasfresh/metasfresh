@@ -422,6 +422,4 @@ DraggableWrapper.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-DraggableWrapper = connect()(DragDropContext(HTML5Backend)(DraggableWrapper));
-
-export default DraggableWrapper;
+export default connect()(DragDropContext(HTML5Backend)(DraggableWrapper));

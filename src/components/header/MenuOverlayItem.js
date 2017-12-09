@@ -239,6 +239,4 @@ MenuOverlayItem.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-MenuOverlayItem = connect()(MenuOverlayItem);
-
-export default MenuOverlayItem;
+export default connect()(MenuOverlayItem);

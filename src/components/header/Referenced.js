@@ -125,6 +125,4 @@ Referenced.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-Referenced = connect()(Referenced);
-
-export default Referenced;
+export default connect()(Referenced);

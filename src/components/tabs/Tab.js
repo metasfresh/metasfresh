@@ -39,6 +39,4 @@ Tab.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-Tab = connect()(Tab);
-
-export default Tab;
+export default connect()(Tab);

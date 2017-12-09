@@ -105,6 +105,4 @@ class DataLayoutWrapper extends Component {
   }
 }
 
-DataLayoutWrapper = connect()(DataLayoutWrapper);
-
-export default DataLayoutWrapper;
+export default connect()(DataLayoutWrapper);

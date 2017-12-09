@@ -175,6 +175,4 @@ class NewLetter extends Component {
   }
 }
 
-NewLetter = connect()(NewLetter);
-
-export default NewLetter;
+export default connect()(NewLetter);

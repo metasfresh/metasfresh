@@ -285,6 +285,4 @@ function mapStateToProps(state) {
   };
 }
 
-Board = connect(mapStateToProps)(DragDropContext(HTML5Backend)(Board));
-
-export default Board;
+export default connect(mapStateToProps)(DragDropContext(HTML5Backend)(Board));

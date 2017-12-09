@@ -79,6 +79,4 @@ class QuickActionsDropdown extends Component {
   }
 }
 
-QuickActionsDropdown = connect()(onClickOutside(QuickActionsDropdown));
-
-export default QuickActionsDropdown;
+export default connect()(onClickOutside(QuickActionsDropdown));

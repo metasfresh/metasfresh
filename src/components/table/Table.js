@@ -1134,7 +1134,13 @@ class Table extends Component {
           {contextMenu.open && (
             <TableContextMenu
               {...contextMenu}
-              {...{ docId, type, selected, mainTable, updateDocList }}
+              {...{
+                docId,
+                type,
+                selected,
+                mainTable,
+                updateDocList
+              }}
               blur={() => this.closeContextMenu()}
               tabId={tabid}
               deselect={() => this.deselectAllProducts()}
@@ -1298,8 +1304,6 @@ const mapStateToProps = state => ({
   allowShortcut: state.windowHandler.allowShortcut
 });
 
-Table = connect(mapStateToProps, false, false, { withRef: true })(
+export default connect(mapStateToProps, false, false, { withRef: true })(
   onClickOutside(Table)
 );
-
-export default Table;

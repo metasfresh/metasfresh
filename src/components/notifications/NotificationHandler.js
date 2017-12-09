@@ -40,6 +40,4 @@ function mapStateToProps(state) {
   };
 }
 
-NotificationHandler = connect(mapStateToProps)(NotificationHandler);
-
-export default NotificationHandler;
+export default connect(mapStateToProps)(NotificationHandler);

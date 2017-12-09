@@ -181,6 +181,4 @@ ActionButton.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-ActionButton = connect()(ActionButton);
-
-export default ActionButton;
+export default connect()(ActionButton);

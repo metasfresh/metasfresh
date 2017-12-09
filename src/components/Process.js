@@ -44,6 +44,4 @@ Process.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-Process = connect()(Process);
-
-export default Process;
+export default connect()(Process);

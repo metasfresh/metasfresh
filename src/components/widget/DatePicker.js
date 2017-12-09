@@ -91,6 +91,4 @@ DatePicker.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-DatePicker = connect()(DatePicker);
-
-export default DatePicker;
+export default connect()(DatePicker);

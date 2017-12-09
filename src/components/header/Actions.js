@@ -224,6 +224,4 @@ Actions.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-Actions = connect()(Actions);
-
-export default Actions;
+export default connect()(Actions);

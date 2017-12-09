@@ -132,6 +132,4 @@ LookupList.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-LookupList = connect()(onClickOutside(LookupList));
-
-export default LookupList;
+export default connect()(onClickOutside(LookupList));

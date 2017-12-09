@@ -250,6 +250,4 @@ class RawChart extends Component {
   }
 }
 
-RawChart = connect()(RawChart);
-
-export default RawChart;
+export default connect()(RawChart);

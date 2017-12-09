@@ -354,6 +354,4 @@ class Lookup extends Component {
   }
 }
 
-Lookup = connect()(onClickOutside(Lookup));
-
-export default Lookup;
+export default connect()(onClickOutside(Lookup));

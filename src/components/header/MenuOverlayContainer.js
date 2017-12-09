@@ -124,6 +124,4 @@ class MenuOverlayContainer extends Component {
   }
 }
 
-MenuOverlayContainer = connect()(MenuOverlayContainer);
-
-export default MenuOverlayContainer;
+export default connect()(MenuOverlayContainer);

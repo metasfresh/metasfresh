@@ -49,6 +49,4 @@ Indicator.propTypes = {
   indicator: PropTypes.string.isRequired
 };
 
-Indicator = connect(mapStateToProps)(Indicator);
-
-export default Indicator;
+export default connect(mapStateToProps)(Indicator);

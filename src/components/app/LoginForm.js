@@ -213,6 +213,4 @@ LoginForm.contextTypes = {
   router: PropTypes.object.isRequired
 };
 
-LoginForm = connect()(LoginForm);
-
-export default LoginForm;
+export default connect()(LoginForm);

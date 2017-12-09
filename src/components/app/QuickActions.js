@@ -234,6 +234,4 @@ QuickActions.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-QuickActions = connect(false, false, false, { withRef: true })(QuickActions);
-
-export default QuickActions;
+export default connect(false, false, false, { withRef: true })(QuickActions);

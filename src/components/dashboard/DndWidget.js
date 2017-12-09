@@ -92,8 +92,6 @@ export class DndWidget extends Component {
   }
 }
 
-DndWidget = DragSource(props => props.entity, cardSource, collect)(
+export default DragSource(props => props.entity, cardSource, collect)(
   DropTarget(props => props.entity, cardTarget, connect)(DndWidget)
 );
-
-export default DndWidget;

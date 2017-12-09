@@ -200,6 +200,4 @@ class NewEmail extends Component {
   }
 }
 
-NewEmail = connect()(NewEmail);
-
-export default NewEmail;
+export default connect()(NewEmail);

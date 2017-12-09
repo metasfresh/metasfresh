@@ -905,6 +905,4 @@ RawWidget.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-RawWidget = connect()(RawWidget);
-
-export default RawWidget;
+export default connect()(RawWidget);

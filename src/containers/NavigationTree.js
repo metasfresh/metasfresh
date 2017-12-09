@@ -378,6 +378,4 @@ NavigationTree.propTypes = {
   rawModal: PropTypes.object.isRequired
 };
 
-NavigationTree = connect(mapStateToProps)(NavigationTree);
-
-export default NavigationTree;
+export default connect(mapStateToProps)(NavigationTree);
