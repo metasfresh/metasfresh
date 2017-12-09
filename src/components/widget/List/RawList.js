@@ -124,7 +124,7 @@ class RawList extends Component {
       return;
     }
 
-    const { listScroll, items } = this.refs;
+    const { listScroll, items } = this;
 
     const listElHeight = this.optionElement.offsetHeight;
     const listVisible = Math.floor(listScroll.offsetHeight / listElHeight);
@@ -423,7 +423,11 @@ class RawList extends Component {
     }
 
     return (
-      <div ref="items">
+      <div
+        ref={ref => {
+          this.items = ref;
+        }}
+      >
         {/* if field is not mandatory add extra empty row */}
         {emptyRow}
         {list.map(this.getRow)}
@@ -528,7 +532,12 @@ class RawList extends Component {
           </div>
         </div>
         {isOpen && (
-          <div className="input-dropdown-list" ref="listScroll">
+          <div
+            className="input-dropdown-list"
+            ref={ref => {
+              this.listScroll = ref;
+            }}
+          >
             {isListEmpty &&
               loading === false && (
                 <div className="input-dropdown-list-header">
