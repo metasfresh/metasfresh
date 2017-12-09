@@ -37,6 +37,8 @@ Here come the actual release notes:
     * Improvement of Vendor Invoice Grid View, adding Net Sum.
   * [#3124](https://github.com/metasfresh/metasfresh/issues/3124) Picking terminal: pimp Picking Configuration window
     * New Window for Picking Profile Configuration. Allowing to switch the used Picking Profile between Product and Sales Order oriented Picking.
+  * [#3140](https://github.com/metasfresh/metasfresh/issues/3140) WebUI: Translate Picking Configuration window to en_US
+    * Improvement od the Translation to en_US of Picking Configuration Window.
   * [#3164](https://github.com/metasfresh/metasfresh/issues/3164) WebUI: Import BPartner Translations
     * Translating the Import Business Partner window to en_US and improving advanced edit view.
   * [#3166](https://github.com/metasfresh/metasfresh/issues/3166) Businesspartner Window shows Fields that should be in Advanced edit mode
