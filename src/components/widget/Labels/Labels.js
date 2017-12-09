@@ -192,9 +192,8 @@ class Labels extends Component {
       return;
     }
 
-    const charAlphaNumeric = /^[\w|\p{L}]$/;
-
-    if (charAlphaNumeric.test(event.key)) {
+    // Exclude any single key stroke
+    if (event.key.length === 1) {
       return;
     }
 
