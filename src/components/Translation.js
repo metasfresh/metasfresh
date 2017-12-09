@@ -1,5 +1,5 @@
 import counterpart from "counterpart";
-import React, { Component } from "react";
+import { Component } from "react";
 import deepForceUpdate from "react-deep-force-update";
 
 import { getMessages } from "../actions/AppActions";

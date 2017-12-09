@@ -18,7 +18,6 @@ import {
 import { patchRequest } from "../../actions/GenericActions";
 import { connectWS, disconnectWS } from "../../actions/WindowActions";
 import logo from "../../assets/images/metasfresh_logo_green_thumb.png";
-import Indicator from "../charts/Indicator";
 import RawChart from "../charts/RawChart";
 import RawList from "../widget/List/RawList";
 import ChartWidget from "./ChartWidget";
@@ -174,7 +173,7 @@ export class DraggableWrapper extends Component {
   };
 
   renderIndicators = () => {
-    const { indicators, idMaximized } = this.state;
+    const { indicators } = this.state;
     const { editmode } = this.props;
 
     if (!indicators.length && editmode)
@@ -337,7 +336,10 @@ export class DraggableWrapper extends Component {
                     onSelect={option => this.handleOptionSelect("when", option)}
                     list={[
                       { caption: "now", value: "now" },
-                      { caption: "last week", value: "lastWeek" }
+                      {
+                        caption: "last week",
+                        value: "lastWeek"
+                      }
                     ]}
                     selected={when}
                   />
@@ -410,7 +412,7 @@ export class DraggableWrapper extends Component {
   };
 
   render() {
-    const { editmode, toggleEditMode } = this.props;
+    const { editmode } = this.props;
 
     return (
       <div className="dashboard-cards-wrapper">

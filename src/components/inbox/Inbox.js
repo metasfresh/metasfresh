@@ -7,8 +7,6 @@ import { push } from "react-router-redux";
 
 import {
   deleteUserNotification,
-  getNotifications,
-  getNotificationsSuccess,
   markAllAsRead,
   markAsRead
 } from "../../actions/AppActions";
@@ -62,8 +60,6 @@ class Inbox extends Component {
   };
 
   handleDelete = (e, item) => {
-    const { dispatch } = this.props;
-
     e.preventDefault();
     e.stopPropagation();
 

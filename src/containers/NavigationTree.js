@@ -145,7 +145,7 @@ class NavigationTree extends Component {
   handleKeyDown = e => {
     const input = document.getElementById("search-input");
     const firstMenuItem = document.getElementsByClassName("js-menu-item")[0];
-    let prevSiblings = document.activeElement.previousSibling;
+    let prevParentSibling = document.activeElement.previousSibling;
 
     switch (e.key) {
       case "ArrowDown":

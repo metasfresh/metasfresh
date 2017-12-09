@@ -1,8 +1,5 @@
-import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { DragSource, DropTarget } from "react-dnd";
-
-import ItemTypes from "../../constants/ItemTypes";
 
 const cardSource = {
   beginDrag(props) {

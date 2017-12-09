@@ -44,7 +44,7 @@ class RawChart extends Component {
   }
 
   componentDidMount() {
-    const { pollInterval, noData } = this.props;
+    const { noData } = this.props;
     this.mounted = true;
 
     if (noData) return;

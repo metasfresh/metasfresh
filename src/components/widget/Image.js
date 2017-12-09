@@ -229,7 +229,7 @@ class Image extends Component {
 
   render() {
     const { imageSrc, usingCamera } = this.state;
-    const { fields, readonly } = this.props;
+    const { readonly } = this.props;
 
     return (
       <div

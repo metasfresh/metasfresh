@@ -11,9 +11,7 @@ export const LOCAL_NUMERAL_FORMATS = {
       billion: "b",
       trillion: "t"
     },
-    ordinal: function(number) {
-      return ".";
-    },
+    ordinal: () => ".",
     currency: {
       symbol: "$"
     }
@@ -31,9 +29,7 @@ export const LOCAL_NUMERAL_FORMATS = {
       billion: "b",
       trillion: "t"
     },
-    ordinal: function(number) {
-      return ".";
-    },
+    ordinal: () => ".",
     currency: {
       symbol: "CHF"
     }
@@ -51,9 +47,7 @@ export const LOCAL_NUMERAL_FORMATS = {
       billion: "b",
       trillion: "t"
     },
-    ordinal: function(number) {
-      return ".";
-    },
+    ordinal: () => ".",
     currency: {
       symbol: "€"
     }
