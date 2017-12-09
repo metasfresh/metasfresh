@@ -191,6 +191,7 @@ class Window extends Component {
           currentWidgetIndex + 1
         );
 
+        // eslint-disable-next-line react/no-find-dom-node
         let element = ReactDOM.findDOMNode(this.widgets[nextWidgetIndex]);
         if (element) {
           let tabElement = element.querySelector("[tabindex]");
