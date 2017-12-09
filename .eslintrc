@@ -12,7 +12,7 @@
   "extends": "eslint:recommended",
   "rules": {
     "max-len": [2, {
-        "code": 120,
+        "code": 80,
         "ignorePattern": "^\\s*className=\"([\\s\\w-]*)\""
     }],
     "quotes": [2, "single"],
