@@ -8,18 +8,10 @@
     "extends": [
         "eslint:recommended",
         "plugin:react/recommended",
-        "./.eslint/airbnb.js",
         "prettier"
     ],
     "rules": {
-        "prettier/prettier": [
-            "error",
-            {
-                "tabWidth": 2,
-                "singleQuote": true,
-                "trailingComma": "all"
-            }
-        ],
+        "prettier/prettier": "error",
         "react/prop-types": "warn",
         "react/jsx-filename-extension": "off",
         "react/prefer-stateless-function": "off"
