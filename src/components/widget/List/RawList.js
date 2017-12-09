@@ -3,6 +3,8 @@ import React, { Component } from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 class RawList extends Component {
+    isFocused = false;
+
     constructor(props) {
         super(props);
 
@@ -12,8 +14,6 @@ class RawList extends Component {
             isOpen: false
         }
     }
-
-    considerBlur = false;
 
     componentDidMount = () => {
         const { autofocus, onRequestListData } = this.props;
@@ -92,7 +92,6 @@ class RawList extends Component {
                 }
 
                 let dropdownList = dropdown.concat(list);
-
                 this.setState(
                     Object.assign(
                         {
@@ -113,8 +112,13 @@ class RawList extends Component {
 
         const { isOpen } = this.state;
 
+        // trigger handleBlur action if dropdown is still opened
+        // after focus is lost
+        if (!this.isFocused && isOpen) {
+            this.handleBlur();
+        }
         // no need for updating scroll
-        if (!isOpen || !list.length) {
+        if (!this.isFocused || !isOpen || !list.length) {
             return;
         }
 
@@ -207,7 +211,6 @@ class RawList extends Component {
     navigateToAlphanumeric = (char) => {
         const { list } = this.props;
         const { isOpen, selected } = this.state;
-
         if (!isOpen) {
             this.setState({
                 isOpen: true
@@ -232,7 +235,6 @@ class RawList extends Component {
 
     navigate = (up) => {
         const { selected, dropdownList, isOpen } = this.state;
-
         if (!isOpen) {
             this.setState({
                 isOpen: true
@@ -257,18 +259,12 @@ class RawList extends Component {
     }
 
     handleBlur = () => {
-        if (!this.considerBlur) {
-            return;
-        }
-
-        this.considerBlur = false;
-
         const { selected, doNotOpenOnFocus } = this.props;
+        this.isFocused = false;
 
         if (!doNotOpenOnFocus && this.dropdown) {
             this.dropdown.blur();
         }
-
         this.setState({
             isOpen: false,
             selected: selected || 0
@@ -280,20 +276,19 @@ class RawList extends Component {
      * on focus.
      */
     handleClick = (e) => {
-        this.considerBlur = true;
-
         e.preventDefault();
 
         const { onFocus } = this.props;
 
         onFocus && onFocus();
-
         this.setState({
             isOpen: true
         });
     }
 
     handleFocus = (e) => {
+        this.isFocused = true;
+
         if (e) {
             e.preventDefault();
         }
@@ -321,7 +316,6 @@ class RawList extends Component {
         } else {
             onSelect(option);
         }
-
         this.setState({
             selected: (option || 0)
         }, () => this.handleBlur());
@@ -358,7 +352,7 @@ class RawList extends Component {
                     }
 
                     if (selected) {
-                        this.considerBlur = true;
+                        this.isFocused = true;
                         this.handleSelect(selected);
                     } else {
                         onSelect(null);
@@ -509,7 +503,7 @@ class RawList extends Component {
                         <i className="meta-icon-down-1 input-icon-sm"/>
                     </div>
                 </div>
-                {isOpen && (
+                {this.isFocused && isOpen && (
                     <div
                         className="input-dropdown-list"
                         ref="listScroll"
