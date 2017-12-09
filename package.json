@@ -3,7 +3,7 @@
   "scripts": {
     "build-storybook": "build-storybook",
     "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test > /dev/null",
-    "lint": "eslint . --fix",
+    "lint": "eslint .",
     "start": "node server.js",
     "storybook": "node .storybook/findStories && start-storybook -p 6006",
     "stylelint": "stylelint 'src/assets/**/*.css'",
