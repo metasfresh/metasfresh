@@ -683,3 +683,13 @@ UPDATE AD_Field SET Name='Standard Ansprechpartner',Updated=TO_TIMESTAMP('2017-1
 UPDATE AD_Field SET Name='Kontakt Anrede',Updated=TO_TIMESTAMP('2017-12-09 13:08:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5919
 ;
 
+-- 2017-12-09T13:11:28.829
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Import Fehlermeldung',Updated=TO_TIMESTAMP('2017-12-09 13:11:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5938
+;
+
+-- 2017-12-09T13:13:09.832
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=549492
+;
+
