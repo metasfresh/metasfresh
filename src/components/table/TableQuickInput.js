@@ -255,7 +255,7 @@ class TableQuickInput extends Component {
         ref={c => (this.form = c)}
       >
         {this.renderFields(layout, data, docId, "window", id)}
-        <div className="hint">(Press 'Enter' to add)</div>
+        <div className="hint">{"(Press 'Enter' to add)"}</div>
         <button type="submit" className="hidden-xs-up" />
       </form>
     );
