@@ -1,236 +1,233 @@
-import counterpart from 'counterpart';
-import React, { Component } from 'react';
+import counterpart from "counterpart";
+import React, { Component } from "react";
 
-import keymap from '../../shortcuts/keymap';
-import OverlayField from '../app/OverlayField';
-import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
-import Tooltips from '../tooltips/Tooltips.js';
-import RawWidget from '../widget/RawWidget';
+import keymap from "../../shortcuts/keymap";
+import OverlayField from "../app/OverlayField";
+import ModalContextShortcuts from "../shortcuts/ModalContextShortcuts";
+import Tooltips from "../tooltips/Tooltips.js";
+import RawWidget from "../widget/RawWidget";
 
 class FiltersItem extends Component {
-    constructor(props) {
-        super(props);
+  constructor(props) {
+    super(props);
 
-        this.state = {
-            filter: props.data,
-            isTooltipShow: false
-        }
+    this.state = {
+      filter: props.data,
+      isTooltipShow: false
+    };
+  }
+
+  componentWillMount() {
+    this.init();
+  }
+
+  componentWillReceiveProps(props) {
+    const { active } = this.props;
+
+    if (JSON.stringify(active) !== JSON.stringify(props.active)) {
+      this.init();
+    }
+  }
+
+  init = () => {
+    const { active, data } = this.props;
+    const { filter } = this.state;
+    let activeFilter;
+
+    if (active) {
+      activeFilter = active.find(item => item.filterId === data.filterId);
     }
 
-    componentWillMount() {
-        this.init();
+    if (
+      filter.parameters &&
+      activeFilter &&
+      activeFilter.parameters &&
+      activeFilter.filterId === filter.filterId
+    ) {
+      activeFilter.parameters.map(item => {
+        this.mergeData(
+          item.parameterName,
+          item.value != null ? item.value : "",
+          item.valueTo != null ? item.valueTo : ""
+        );
+      });
+    } else if (filter.parameters) {
+      filter.parameters.map(item => {
+        this.mergeData(item.parameterName, "");
+      });
+    }
+  };
+
+  setValue = (property, value, id, valueTo) => {
+    //TODO: LOOKUPS GENERATE DIFFERENT TYPE OF PROPERTY parameters
+    // IT HAS TO BE UNIFIED
+    //
+    // OVERWORKED WORKAROUND
+    if (Array.isArray(property)) {
+      property.map(item => {
+        this.mergeData(item.parameterName, value, valueTo);
+      });
+    } else {
+      this.mergeData(property, value, valueTo);
+    }
+  };
+
+  mergeData = (property, value, valueTo) => {
+    this.setState(prevState => ({
+      filter: Object.assign({}, prevState.filter, {
+        parameters: prevState.filter.parameters.map(param => {
+          if (param.parameterName === property) {
+            return Object.assign(
+              {},
+              param,
+              valueTo
+                ? {
+                    value,
+                    valueTo
+                  }
+                : {
+                    value
+                  }
+            );
+          } else {
+            return param;
+          }
+        })
+      })
+    }));
+  };
+
+  handleApply = () => {
+    const { applyFilters, closeFilterMenu } = this.props;
+    const { filter } = this.state;
+
+    if (
+      filter &&
+      filter.parametersLayoutType === "singleOverlayField" &&
+      !filter.parameters[0].value
+    ) {
+      return this.handleClear();
     }
 
-    componentWillReceiveProps(props) {
-        const {active} = this.props;
+    applyFilters(filter, () => {
+      closeFilterMenu();
+    });
+  };
 
-        if(
-            JSON.stringify(active) !==
-            JSON.stringify(props.active)
-        ){
-            this.init();
-        }
-    }
+  handleClear = () => {
+    const { clearFilters, closeFilterMenu, returnBackToDropdown } = this.props;
+    const { filter } = this.state;
 
-    init = () => {
-        const { active, data } = this.props;
-        const { filter } = this.state;
-        let activeFilter;
+    clearFilters(filter);
+    closeFilterMenu();
+    returnBackToDropdown && returnBackToDropdown();
+  };
 
-        if (active) {
-            activeFilter = active.find( (item) => item.filterId === data.filterId );
-        }
+  toggleTooltip = visible => {
+    this.setState({
+      isTooltipShow: visible
+    });
+  };
 
-        if(
-            filter.parameters && activeFilter && activeFilter.parameters &&
-            (activeFilter.filterId === filter.filterId)
-        ){
-            activeFilter.parameters.map(item => {
-                this.mergeData(
-                    item.parameterName,
-                    item.value != null ? item.value : '',
-                    item.valueTo != null ? item.valueTo : ''
-                );
-            })
-        }else if(filter.parameters){
-            filter.parameters.map(item => {
-                this.mergeData(
-                    item.parameterName,
-                    ''
-                );
-            })
-        }
-    }
+  render() {
+    const {
+      data,
+      notValidFields,
+      isActive,
+      windowType,
+      onShow,
+      onHide,
+      viewId,
+      outsideClick,
+      captionValue
+    } = this.props;
 
-    setValue = (property, value, id, valueTo) => {
-        //TODO: LOOKUPS GENERATE DIFFERENT TYPE OF PROPERTY parameters
-        // IT HAS TO BE UNIFIED
-        //
-        // OVERWORKED WORKAROUND
-        if(Array.isArray(property)){
-            property.map(item => {
-                this.mergeData(item.parameterName, value, valueTo);
-            })
-        }else{
-            this.mergeData(property, value, valueTo);
-        }
-    }
+    const { filter, isTooltipShow } = this.state;
 
-    mergeData = (property, value, valueTo) => {
-        this.setState(prevState => ({
-            filter: Object.assign({}, prevState.filter, {
-                parameters: prevState.filter.parameters.map(param => {
-                    if(param.parameterName === property){
-                        return Object.assign({}, param,
-                            valueTo ? {
-                                value,
-                                valueTo
-                            } : {
-                                value
-                            }
-                        )
-                    }else{
-                        return param;
-                    }
-                })
-            })
-        }))
-    }
-
-    handleApply = () => {
-        const {applyFilters, closeFilterMenu} = this.props;
-        const {filter} = this.state;
-
-        if(
-            filter &&
-            filter.parametersLayoutType === 'singleOverlayField' &&
-            !filter.parameters[0].value
-        ){
-            return this.handleClear();
-        }
-
-        applyFilters(filter, () => {
-            closeFilterMenu();
-        });
-    }
-
-    handleClear = () => {
-        const {
-            clearFilters, closeFilterMenu, returnBackToDropdown
-        } = this.props;
-        const {
+    return (
+      <div>
+        {data.parametersLayoutType === "singleOverlayField" ? (
+          <OverlayField
+            type={windowType}
             filter
-        } = this.state;
-
-        clearFilters(filter);
-        closeFilterMenu();
-        returnBackToDropdown && returnBackToDropdown();
-    }
-
-    toggleTooltip = (visible) => {
-        this.setState({
-            isTooltipShow: visible
-        });
-    }
-
-    render() {
-        const {
-            data, notValidFields, isActive, windowType, onShow, onHide, viewId,
-            outsideClick, captionValue
-        } = this.props;
-
-        const {
-            filter, isTooltipShow
-        } = this.state;
-
-        return (
+            captionValue={captionValue}
+            layout={filter}
+            handlePatch={this.setValue}
+            handleChange={this.setValue}
+            closeOverlay={outsideClick}
+            handleSubmit={this.handleApply}
+            {...{ windowType, onShow, onHide, viewId }}
+          />
+        ) : (
+          <div className="filter-menu filter-widget">
             <div>
-                {
-                    data.parametersLayoutType === 'singleOverlayField' ?
-                    <OverlayField
-                        type={windowType}
-                        filter
-                        captionValue={captionValue}
-                        layout={filter}
-                        handlePatch={this.setValue}
-                        handleChange={this.setValue}
-                        closeOverlay={outsideClick}
-                        handleSubmit={this.handleApply}
-                        {...{windowType, onShow, onHide, viewId}}
-                    /> :
-                    <div className="filter-menu filter-widget">
-                        <div>{counterpart.translate('window.activeFilter.caption')}:
-                            <span className="filter-active">
-                                {data.caption}
-                            </span>
-                            {isActive &&
-                                <span
-                                    className="filter-clear"
-                                    onClick={() => this.handleClear()}
-                                >
-                                    {counterpart.translate('window.clearFilter.caption')}
-                                    <i className="meta-icon-trash" />
-                            </span>
-                        }
-                    </div>
-                    <div className="form-group row filter-content">
-                        <div className="col-sm-12">
-                            {filter.parameters &&
-                            filter.parameters.map((item, index) =>
-                                <RawWidget
-                                    entity="documentView"
-                                    subentity="filter"
-                                    subentityId={filter.filterId}
-                                    handlePatch={this.setValue}
-                                    handleChange={this.setValue}
-                                    widgetType={item.widgetType}
-                                    fields={[item]}
-                                    type={item.type}
-                                    widgetData={[item]}
-                                    key={index}
-                                    id={index}
-                                    range={item.range}
-                                    caption={item.caption}
-                                    noLabel={false}
-                                    filterWidget={true}
-                                    {...{viewId, windowType, onShow, onHide}}
-                                />
-                            )}
-                        </div>
-                        <div className="col-sm-12 text-xs-right">
-                            {notValidFields &&
-                                <div className="input-error">
-                                    {counterpart.translate('window.noMandatory.caption')}
-                                </div>
-                            }
-                        </div>
-                    </div>
-                    <div className="filter-btn-wrapper">
-                        <button
-                            className="applyBtn btn btn-sm btn-success"
-                            onClick={this.handleApply}
-                            onMouseEnter={() =>
-                                this.toggleTooltip(true)
-                            }
-                            onMouseLeave={() => this.toggleTooltip(false)}
-                        >
-                            {counterpart.translate('window.apply.caption')}
-                            {isTooltipShow &&
-                                <Tooltips
-                                    name={keymap.APPLY}
-                                    action={counterpart.translate('window.apply.caption')}
-                                    type={''}
-                                />
-                            }
-                        </button>
-                    </div>
-                </div>
-                }
-                <ModalContextShortcuts
-                    apply={this.handleApply}
-                />
+              {counterpart.translate("window.activeFilter.caption")}:
+              <span className="filter-active">{data.caption}</span>
+              {isActive && (
+                <span
+                  className="filter-clear"
+                  onClick={() => this.handleClear()}
+                >
+                  {counterpart.translate("window.clearFilter.caption")}
+                  <i className="meta-icon-trash" />
+                </span>
+              )}
             </div>
-    )}
+            <div className="form-group row filter-content">
+              <div className="col-sm-12">
+                {filter.parameters &&
+                  filter.parameters.map((item, index) => (
+                    <RawWidget
+                      entity="documentView"
+                      subentity="filter"
+                      subentityId={filter.filterId}
+                      handlePatch={this.setValue}
+                      handleChange={this.setValue}
+                      widgetType={item.widgetType}
+                      fields={[item]}
+                      type={item.type}
+                      widgetData={[item]}
+                      key={index}
+                      id={index}
+                      range={item.range}
+                      caption={item.caption}
+                      noLabel={false}
+                      filterWidget={true}
+                      {...{ viewId, windowType, onShow, onHide }}
+                    />
+                  ))}
+              </div>
+              <div className="col-sm-12 text-xs-right">
+                {notValidFields && (
+                  <div className="input-error">
+                    {counterpart.translate("window.noMandatory.caption")}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="filter-btn-wrapper">
+              <button
+                className="applyBtn btn btn-sm btn-success"
+                onClick={this.handleApply}
+                onMouseEnter={() => this.toggleTooltip(true)}
+                onMouseLeave={() => this.toggleTooltip(false)}
+              >
+                {counterpart.translate("window.apply.caption")}
+                {isTooltipShow && (
+                  <Tooltips
+                    name={keymap.APPLY}
+                    action={counterpart.translate("window.apply.caption")}
+                    type={""}
+                  />
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+        <ModalContextShortcuts apply={this.handleApply} />
+      </div>
+    );
+  }
 }
 
-export default FiltersItem
+export default FiltersItem;

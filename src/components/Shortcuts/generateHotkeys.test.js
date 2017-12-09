@@ -1,71 +1,71 @@
 /* eslint-env mocha */
-import chai, { expect } from 'chai';
-import { stub } from 'sinon';
-import sinonChai from 'sinon-chai';
+import chai, { expect } from "chai";
+import { stub } from "sinon";
+import sinonChai from "sinon-chai";
 
-import generateHotkeys from './generateHotkeys';
+import generateHotkeys from "./generateHotkeys";
 
 chai.use(sinonChai);
 
-describe('generateHotkeys', () => {
-    it('should return an object', () => {
-        const hotkeys = generateHotkeys({});
+describe("generateHotkeys", () => {
+  it("should return an object", () => {
+    const hotkeys = generateHotkeys({});
 
-        expect(hotkeys).to.be.an('object');
+    expect(hotkeys).to.be.an("object");
+  });
+
+  it("should transform a key map to a map of hotkeys", () => {
+    const keymap = {
+      COMBO_A: "CONTROL+A",
+      COMBO_B: "CONTROL+B"
+    };
+
+    const hotkeys = generateHotkeys({ keymap });
+
+    expect(hotkeys).to.deep.equal({
+      "CONTROL+A": [],
+      "CONTROL+B": []
     });
+  });
 
-    it('should transform a key map to a map of hotkeys', () => {
-        const keymap = {
-            COMBO_A: 'CONTROL+A',
-            COMBO_B: 'CONTROL+B'
-        };
+  it("should warn about duplicate keys", () => {
+    const warn = stub(console, "warn");
 
-        const hotkeys = generateHotkeys({ keymap });
+    try {
+      const keymap = {
+        COMBO_1: "CONTROL+A",
+        COMBO_2: "CONTROL+A"
+      };
 
-        expect(hotkeys).to.deep.equal({
-            'CONTROL+A': [],
-            'CONTROL+B': []
-        });
-    });
+      generateHotkeys({ keymap });
 
-    it('should warn about duplicate keys', () => {
-        const warn = stub(console, 'warn');
+      expect(warn).to.have.been.called;
+    } catch (error) {
+      throw error;
+    } finally {
+      warn.restore();
+    }
+  });
 
-        try {
-            const keymap = {
-                COMBO_1: 'CONTROL+A',
-                COMBO_2: 'CONTROL+A'
-            };
+  it("should warn about blacklisted hotkeys", () => {
+    const warn = stub(console, "warn");
 
-            generateHotkeys({ keymap });
+    try {
+      const blacklist = {
+        "CONTROL+W": "Close tab"
+      };
 
-            expect(warn).to.have.been.called;
-        } catch (error) {
-            throw error;
-        } finally {
-            warn.restore();
-        }
-    });
+      const keymap = {
+        COMBO_1: "CONTROL+W"
+      };
 
-    it('should warn about blacklisted hotkeys', () => {
-        const warn = stub(console, 'warn');
+      generateHotkeys({ keymap, blacklist });
 
-        try {
-            const blacklist = {
-                'CONTROL+W': 'Close tab'
-            };
-
-            const keymap = {
-                COMBO_1: 'CONTROL+W'
-            };
-
-            generateHotkeys({ keymap, blacklist });
-
-            expect(warn).to.have.been.called;
-        } catch (error) {
-            throw error;
-        } finally {
-            warn.restore();
-        }
-    });
+      expect(warn).to.have.been.called;
+    } catch (error) {
+      throw error;
+    } finally {
+      warn.restore();
+    }
+  });
 });

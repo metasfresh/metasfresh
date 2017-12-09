@@ -1,23 +1,20 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 
 class Placeholder extends Component {
-    constructor(props) {
-        super(props);
-    }
+  constructor(props) {
+    super(props);
+  }
 
-    render() {
-        const {description, entity} = this.props;
-        const height = entity === 'cards' ? '300px' : '100px';
+  render() {
+    const { description, entity } = this.props;
+    const height = entity === "cards" ? "300px" : "100px";
 
-        return (
-            <div
-                style={{height}}
-                className="dnd-placeholder-filling"
-            >
-                {description}
-            </div>
-        );
-    }
+    return (
+      <div style={{ height }} className="dnd-placeholder-filling">
+        {description}
+      </div>
+    );
+  }
 }
 
 export default Placeholder;

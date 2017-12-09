@@ -1,31 +1,32 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 
-import Device from './Device';
+import Device from "./Device";
 
 class DevicesWidget extends Component {
-    constructor(props) {
-        super(props);
-    }
+  constructor(props) {
+    super(props);
+  }
 
-    render() {
-        const {devices, handleChange, tabIndex} = this.props;
-        const isMore = devices.length > 1;
+  render() {
+    const { devices, handleChange, tabIndex } = this.props;
+    const isMore = devices.length > 1;
 
-        return (
-            <div className="form-group-flex-item">
-                {devices && devices.map((item, index) =>
-                    <Device
-                        device={item}
-                        key={index}
-                        index={index}
-                        handleChange={handleChange}
-                        isMore={isMore}
-                        tabIndex={tabIndex}
-                    />
-                )}
-            </div>
-        )
-    }
+    return (
+      <div className="form-group-flex-item">
+        {devices &&
+          devices.map((item, index) => (
+            <Device
+              device={item}
+              key={index}
+              index={index}
+              handleChange={handleChange}
+              isMore={isMore}
+              tabIndex={tabIndex}
+            />
+          ))}
+      </div>
+    );
+  }
 }
 
 export default DevicesWidget;
