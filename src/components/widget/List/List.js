@@ -7,13 +7,13 @@ import { getViewAttributeDropdown } from "../../../actions/ViewAttributesActions
 import RawList from "./RawList";
 
 class List extends Component {
-  constructor(props) {
-    super(props);
+  state = {
+    list: null,
+    loading: false,
+    selectedItem: ""
+  };
 
-    this.clearComponentState();
-
-    this.previousValue = "";
-  }
+  previousValue = "";
 
   componentDidMount() {
     const { defaultValue } = this.props;
@@ -30,18 +30,6 @@ class List extends Component {
       this.previousValue = "";
     }
   }
-
-  componentWillUnmount() {
-    this.clearComponentState();
-  }
-
-  clearComponentState = () => {
-    this.state = {
-      list: null,
-      loading: false,
-      selectedItem: ""
-    };
-  };
 
   requestListData = (forceSelection = false, forceFocus = false) => {
     const {

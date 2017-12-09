@@ -19,10 +19,13 @@ import MenuOverlayContainer from "./MenuOverlayContainer";
 import MenuOverlayItem from "./MenuOverlayItem";
 
 class MenuOverlay extends Component {
-  constructor(props) {
-    super(props);
-    this.clearComponentState();
-  }
+  state = {
+    queriedResults: [],
+    query: "",
+    deepSubNode: null,
+    path: "",
+    data: {}
+  };
 
   componentDidMount = () => {
     const { nodeId } = this.props;
@@ -46,20 +49,6 @@ class MenuOverlay extends Component {
         });
       }
     }
-  };
-
-  componentWillUnmount = () => {
-    this.clearComponentState();
-  };
-
-  clearComponentState = () => {
-    this.state = {
-      queriedResults: [],
-      query: "",
-      deepSubNode: null,
-      path: "",
-      data: {}
-    };
   };
 
   handleClickOutside = e => this.props.onClickOutside(e);

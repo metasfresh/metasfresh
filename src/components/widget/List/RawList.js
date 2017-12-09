@@ -2,17 +2,17 @@ import React, { Component } from "react";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
 class RawList extends Component {
+  considerBlur = false;
+
   constructor(props) {
     super(props);
 
     this.state = {
       selected: props.selected || 0,
-      dropdownList: this.props.list || [],
+      dropdownList: props.list || [],
       isOpen: false
     };
   }
-
-  considerBlur = false;
 
   componentDidMount = () => {
     const { autofocus, onRequestListData } = this.props;
@@ -20,10 +20,6 @@ class RawList extends Component {
       onRequestListData();
     }
   };
-
-  componentWillUnmount() {
-    this.clearComponentState();
-  }
 
   componentDidUpdate = (prevProps, prevState) => {
     const {
@@ -162,14 +158,6 @@ class RawList extends Component {
     ) {
       listScroll.scrollTop = scrollFromDown;
     }
-  };
-
-  clearComponentState = () => {
-    this.state = {
-      selected: 0,
-      dropdownList: [],
-      isOpen: false
-    };
   };
 
   focus = () => {

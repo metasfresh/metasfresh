@@ -11,11 +11,11 @@ import {
 import RawWidget from "./RawWidget";
 
 class MasterWidget extends Component {
-  constructor(props) {
-    super(props);
-
-    this.clearComponentState();
-  }
+  state = {
+    updated: false,
+    edited: false,
+    data: ""
+  };
 
   componentDidMount() {
     const { widgetData } = this.props;
@@ -59,17 +59,7 @@ class MasterWidget extends Component {
 
   componentWillUnmount() {
     clearTimeout(this.timeout);
-
-    this.clearComponentState();
   }
-
-  clearComponentState = () => {
-    this.state = {
-      updated: false,
-      edited: false,
-      data: ""
-    };
-  };
 
   handlePatch = (property, value) => {
     const {

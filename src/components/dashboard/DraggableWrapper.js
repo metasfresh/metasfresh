@@ -26,11 +26,18 @@ import Placeholder from "./Placeholder";
 import Sidenav from "./Sidenav";
 
 export class DraggableWrapper extends Component {
-  constructor(props) {
-    super(props);
-
-    this.clearComponentState();
-  }
+  state = {
+    cards: [],
+    indicators: [],
+    idMaximized: null,
+    websocketEndpoint: null,
+    chartOptions: false,
+    captionHandler: "",
+    when: "",
+    interval: "",
+    currentId: "",
+    isIndicator: ""
+  };
 
   componentDidMount = () => {
     this.getDashboard();
@@ -59,23 +66,7 @@ export class DraggableWrapper extends Component {
   };
 
   componentWillUnmount = () => {
-    this.clearComponentState();
     disconnectWS.call(this);
-  };
-
-  clearComponentState = () => {
-    this.state = {
-      cards: [],
-      indicators: [],
-      idMaximized: null,
-      websocketEndpoint: null,
-      chartOptions: false,
-      captionHandler: "",
-      when: "",
-      interval: "",
-      currentId: "",
-      isIndicator: ""
-    };
   };
 
   getType = entity => (entity === "cards" ? "kpis" : "targetIndicators");

@@ -10,22 +10,27 @@ import QuickActionsContextShortcuts from "../shortcuts/QuickActionsContextShortc
 import Tooltips from "../tooltips/Tooltips.js";
 import QuickActionsDropdown from "./QuickActionsDropdown";
 
+const initialState = {
+  actions: [],
+  isDropdownOpen: false,
+  isTooltip: false,
+  loading: false
+};
+
 class QuickActions extends Component {
   constructor(props) {
     super(props);
 
-    this.clearComponentState();
-
-    const { fetchOnInit } = this.props;
+    const { fetchOnInit, selected, windowType, viewId } = props;
+    this.state = initialState;
 
     if (fetchOnInit) {
-      this.fetchActions(props.windowType, props.viewId, props.selected);
+      this.fetchActions(windowType, viewId, selected);
     }
   }
 
   componentDidMount = () => {
-    this.clearComponentState();
-
+    this.setState(initialState);
     this.mounted = true;
   };
 
@@ -75,15 +80,6 @@ class QuickActions extends Component {
         loading: false
       });
     }
-  };
-
-  clearComponentState = () => {
-    this.state = {
-      actions: [],
-      isDropdownOpen: false,
-      isTooltip: false,
-      loading: false
-    };
   };
 
   handleClickOutside = () => {
