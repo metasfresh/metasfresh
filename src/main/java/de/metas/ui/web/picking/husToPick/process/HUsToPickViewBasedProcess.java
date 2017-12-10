@@ -5,10 +5,12 @@ import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -23,8 +25,11 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
-/* package */abstract class WEBUI_Picking_Select_M_HU_Base extends ViewBasedProcessTemplate
+/* package */abstract class HUsToPickViewBasedProcess extends ViewBasedProcessTemplate
 {
+	@Autowired
+	private PickingCandidateService pickingCandidateService;
+
 	@Autowired
 	private IViewsRepository viewsRepo;
 
@@ -76,22 +81,41 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 		return PickingSlotView.cast(parentView);
 	}
 
+	protected PickingSlotView getPickingSlotView()
+	{
+		PickingSlotView pickingSlotsView = getPickingSlotViewOrNull();
+		if (pickingSlotsView == null)
+		{
+			throw new AdempiereException("PickingSlots view is not available");
+		}
+		return pickingSlotsView;
+	}
+
 	protected PickingSlotRow getPickingSlotRow()
 	{
 		final HUEditorView huView = getView();
 		final DocumentId pickingSlotRowId = huView.getParentRowId();
 
-		final PickingSlotView pickingSlotView = getPickingSlotViewOrNull();
+		final PickingSlotView pickingSlotView = getPickingSlotView();
 		return pickingSlotView.getById(pickingSlotRowId);
 	}
 
-	protected final void invalidateViewsAndPrepareReturn()
+	protected final void invalidateViewsAndGoBackToPickingSlotsView()
 	{
 		invalidateView(); // picking slots view
 		invalidateParentView();  // picking view
 
 		// After this process finished successfully go back to picking slots view
-		getResult().setWebuiIncludedViewIdToOpen(getPickingSlotViewOrNull().getViewId().getViewId());
+		getResult().setWebuiIncludedViewIdToOpen(getPickingSlotView().getViewId().getViewId());
 	}
 
+	protected final void addHUIdToCurrentPickingSlot(final int huId)
+	{
+		final PickingSlotView pickingSlotsView = getPickingSlotView();
+		final PickingSlotRow pickingSlotRow = getPickingSlotRow();
+		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
+		final int shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
+
+		pickingCandidateService.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
+	}
 }

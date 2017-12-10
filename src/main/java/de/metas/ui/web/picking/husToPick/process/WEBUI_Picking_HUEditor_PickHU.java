@@ -1,13 +1,9 @@
 package de.metas.ui.web.picking.husToPick.process;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_HUEditor_Launcher;
 
 /*
@@ -41,18 +37,15 @@ import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_HUEditor_Launch
  *
  */
 public class WEBUI_Picking_HUEditor_PickHU
-		extends WEBUI_Picking_Select_M_HU_Base
+		extends HUsToPickViewBasedProcess
 		implements IProcessPrecondition
 {
-	@Autowired
-	private PickingCandidateService pickingCandidateService;
-
 	@Override
 	protected String doIt() throws Exception
 	{
 		retrieveEligibleHUEditorRows().forEach(this::pickHuRow);
 
-		invalidateViewsAndPrepareReturn();
+		invalidateViewsAndGoBackToPickingSlotsView();
 		return MSG_OK;
 	}
 
@@ -64,12 +57,7 @@ public class WEBUI_Picking_HUEditor_PickHU
 			// TODO: extract as top level
 			throw new AdempiereException("Not a top level HU");
 		}
-
-		final PickingSlotView pickingSlotsView = getPickingSlotViewOrNull();
-		final PickingSlotRow pickingSlotRow = getPickingSlotRow();
-		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
-		final int shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
-
-		pickingCandidateService.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
+		
+		addHUIdToCurrentPickingSlot(huId);
 	}
 }
