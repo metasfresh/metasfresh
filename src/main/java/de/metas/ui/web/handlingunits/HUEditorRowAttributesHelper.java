@@ -147,7 +147,15 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 	{
 		if (attributeValue.isList())
 		{
-			return DocumentFieldWidgetType.List;
+			final I_M_Attribute attribute = attributeValue.getM_Attribute();
+			if (attribute.isHighVolume())
+			{
+				return DocumentFieldWidgetType.Lookup;
+			}
+			else
+			{
+				return DocumentFieldWidgetType.List;
+			}
 		}
 		else if (attributeValue.isStringValue())
 		{
