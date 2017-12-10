@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 import Moment from 'moment';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
@@ -13,8 +14,11 @@ import Image from './Image';
 import Link from './Link';
 import Labels from './Labels';
 import DevicesWidget from './Devices/DevicesWidget';
-
-import {DATE_FORMAT}  from '../../constants/Constants';
+import {
+    allowShortcut,
+    disableShortcut
+} from '../../actions/WindowActions';
+import { DATE_FORMAT }  from '../../constants/Constants';
 
 class RawWidget extends Component {
     static propTypes = {
@@ -54,7 +58,9 @@ class RawWidget extends Component {
     }
 
     handleFocus = (e) => {
-        const {handleFocus, listenOnKeysFalse} = this.props;
+        const {dispatch, handleFocus, listenOnKeysFalse} = this.props;
+
+        dispatch(disableShortcut());
 
         this.setState({
             isEdited: true,
@@ -99,7 +105,9 @@ class RawWidget extends Component {
     }
 
     handleBlur = (widgetField, value, id) => {
-        const {handleBlur, listenOnKeysTrue} = this.props;
+        const {dispatch, handleBlur, listenOnKeysTrue} = this.props;
+
+        dispatch(allowShortcut());
 
         handleBlur && handleBlur(this.willPatch(value));
 
@@ -180,7 +188,7 @@ class RawWidget extends Component {
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
             entity, onShow, disabled, caption, viewId, data : widgetValue,
             listenOnKeys, listenOnKeysFalse, closeTableField, handleZoomInto,
-            attribute, allowShowPassword, onBlurWidget
+            attribute, allowShowPassword, onBlurWidget, defaultValue
         } = this.props;
 
         const {isEdited} = this.state;
@@ -193,6 +201,7 @@ class RawWidget extends Component {
             ref: c => this.rawWidget = c,
             className: 'input-field js-input-field',
             value: widgetValue,
+            defaultValue,
             placeholder: fields[0].emptyText,
             disabled: widgetData[0].readonly || disabled,
             onFocus: this.handleFocus,
@@ -865,5 +874,11 @@ class RawWidget extends Component {
         )
     }
 }
+
+RawWidget.propTypes = {
+    dispatch: PropTypes.func.isRequired
+};
+
+RawWidget = connect()(RawWidget);
 
 export default RawWidget;

@@ -751,13 +751,15 @@ body {
 }
 
 .sort-menu {
-    cursor: pointer;
     width: 100%;
     line-height: 22px;
     vertical-align: middle;
     position: relative;
 }
 
+.sort-menu--sortable {
+    cursor: pointer;
+}
 .sort-menu .sort-ico {
     position: absolute;
     right: -12px;

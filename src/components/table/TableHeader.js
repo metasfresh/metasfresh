@@ -1,12 +1,24 @@
 import React, { Component } from 'react';
+import cx from 'classnames';
 
 class TableHeader extends Component {
     constructor(props) {
         super(props);
     }
 
-    renderSorting = (field, caption) => {
-        const {sort, orderBy, deselect, page, tabid} = this.props;
+    handleClick = (field, sorting, sortable) => {
+        if (!sortable) {
+            return;
+        }
+
+        const {sort, deselect, page, tabid} = this.props;
+
+        sort(!sorting.asc, field, true, page, tabid);
+        deselect();
+    }
+
+    renderSorting = (field, caption, sortable) => {
+        const { orderBy } = this.props;
         let sorting = {};
         orderBy && orderBy.map((item) => {
             if(field == item.fieldName){
@@ -14,16 +26,15 @@ class TableHeader extends Component {
                 sorting.asc = item.ascending;
             }
         })
-
         return (
             <div
-                className="sort-menu"
-                onClick={() => {
-                    sort(!sorting.asc, field, true, page, tabid);
-                    deselect();
-                }}
+                className={cx('sort-menu', {['sort-menu--sortable']: sortable})}
+                onClick={() => this.handleClick(field, sorting, sortable)}
             >
-                <span title={caption} className="th-caption">{caption}</span>
+                <span
+                    title={caption}
+                    className={cx({ ['th-caption']: sortable })}
+                >{caption}</span>
                 <span
                     className={sorting.name && sorting.asc ?
                         'sort rotate-90 sort-ico' :
@@ -47,8 +58,8 @@ class TableHeader extends Component {
                 className={getSizeClass(item)}
             >
                 {sort ?
-                    this.renderSorting(item.fields[0].field, item.caption):
-                    item.caption
+                    this.renderSorting(item.fields[0].field, item.caption,
+                        item.sortable) : item.caption
                 }
             </th>
         );

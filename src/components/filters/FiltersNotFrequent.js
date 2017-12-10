@@ -54,21 +54,7 @@ class FiltersNotFrequent extends Component {
         const openFilter =
             getItemsByProperty(data, 'filterId', openFilterId)[0];
 
-        let activeFilter, activeFilterModel;
-        let activeFilterCaption = openFilter && openFilter.caption;
-        if (active && data) {
-            activeFilter = active.find( (item) => {
-                return data.find( (dataItem) => {
-                    if (dataItem.filterId === item.filterId) {
-                        activeFilterModel = dataItem;
-                        activeFilterCaption = dataItem.caption;
-                    }
-
-                    return (dataItem.filterId === item.filterId);
-                });
-            });
-        }
-        const isActive = !!activeFilter;
+        const activeFilter = data.filter(filter => filter.isActive)[0] || {};
 
         return (
             <div className="filter-wrapper">
@@ -78,16 +64,21 @@ class FiltersNotFrequent extends Component {
                         'btn btn-filter btn-meta-outline-secondary ' +
                         'btn-distance btn-sm' +
                         (isOpenDropdown ? ' btn-select': '') +
-                        (isActive ? ' btn-active' : '')
+                        (activeFilter.isActive ? ' btn-active' : '')
                     }
                 >
                     <i className="meta-icon-preview" />
-                    { activeFilter ? 'Filter: ' + activeFilterCaption : 'Filter'}
+                        {activeFilter.isActive
+                            ? `${activeFilter.caption}: ${
+                                activeFilter.captionValue
+                            }`
+                            : 'Filter'
+                          }
                 </button>
 
                 { isOpenDropdown &&
                     <div className="filters-overlay">
-                        { (!openFilterId && !isActive) ?
+                        { (!openFilterId && !activeFilter.isActive) ?
                             <ul className="filter-menu">
                                 {data.map((item, index) =>
                                     <li
@@ -102,8 +93,12 @@ class FiltersNotFrequent extends Component {
                             </ul>
                             :
                             <FiltersItem
+                                captionValue={activeFilter.captionValue}
                                 windowType={windowType}
-                                data={activeFilterModel || openFilter}
+                                data={activeFilter.isActive
+                                    ? activeFilter
+                                    : openFilter
+                                }
                                 closeFilterMenu={() =>
                                     this.toggleDropdown(false)
                                 }
@@ -113,7 +108,7 @@ class FiltersNotFrequent extends Component {
                                 clearFilters={clearFilters}
                                 applyFilters={applyFilters}
                                 notValidFields={notValidFields}
-                                isActive={isActive}
+                                isActive={activeFilter.isActive}
                                 active={active}
                                 onShow={() => handleShow(true)}
                                 onHide={() => handleShow(false)}
