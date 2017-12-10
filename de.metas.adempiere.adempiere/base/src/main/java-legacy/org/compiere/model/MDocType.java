@@ -117,7 +117,7 @@ public class MDocType extends X_C_DocType
 	public MDocType(Properties ctx, int C_DocType_ID, String trxName)
 	{
 		super(ctx, C_DocType_ID, trxName);
-		if (C_DocType_ID == 0)
+		if (C_DocType_ID < 0)
 		{
 		//	setName (null);
 		//	setPrintName (null);
@@ -252,19 +252,6 @@ public class MDocType extends X_C_DocType
 			return super.getPrintName();
 		return get_Translation (COLUMNNAME_PrintName, AD_Language);
 	}	//	getPrintName
-	
-	/**
-	 * 	Before Save
-	 *	@param newRecord new
-	 *	@return true
-	 */
-	@Override
-	protected boolean beforeSave (boolean newRecord)
-	{
-		/*if (getAD_Org_ID() != 0)
-			setAD_Org_ID(0);*/
-		return true;
-	}	//	beforeSave
 	
 	/**
 	 * 	After Save
