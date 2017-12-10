@@ -21,6 +21,7 @@ import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.product.IProductBL;
@@ -37,30 +38,32 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotView;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements IProcessPrecondition
+public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements IProcessPrecondition, IProcessParametersCallout
 {
+
 	private static final String MSG_InvalidProduct = "de.metas.ui.web.picking.husToPick.process.WEBUI_HUsToPick_PickCU.InvalidProduct";
 
 	// services
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
+	private static final String PARAM_M_Product_ID = "M_Product_ID";
 	/**
 	 * Scanned product, used to validate it against shipment schedule's product.
 	 * This parameter is not mandatory because we want to allow the SysAdm to just hide the field in case we don't need this validation.
 	 */
-	@Param(parameterName = "M_Product_ID", mandatory = false)
+	@Param(parameterName = PARAM_M_Product_ID, mandatory = false)
 	private int scannedProductId;
 
 	/**
@@ -68,6 +71,18 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	 */
 	@Param(parameterName = "QtyCU", mandatory = true)
 	private BigDecimal qtyCU;
+
+	private transient I_M_Product _shipmentScheduleProduct; // lazy
+
+	@Override
+	public void onParameterChanged(final String parameterName)
+	{
+		if (PARAM_M_Product_ID.equals(parameterName))
+		{
+			// Make sure user scanned the right product
+			getProduct();
+		}
+	}
 
 	@Override
 	protected String doIt() throws Exception
@@ -85,14 +100,12 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 
 	private I_M_Product getProduct()
 	{
-		final PickingSlotView pickingSlotsView = getPickingSlotView();
-		final I_M_ShipmentSchedule currentShipmentSchedule = pickingSlotsView.getCurrentShipmentSchedule();
-		final int shipmentScheduleProductId = currentShipmentSchedule.getM_Product_ID();
-		final I_M_Product shipmentScheduleProduct = loadOutOfTrx(shipmentScheduleProductId, I_M_Product.class);
+		final I_M_Product shipmentScheduleProduct = getShipmentScheduleProduct();
 
 		//
 		// Assert scanned product is matching the shipment schedule product.
-		if (scannedProductId > 0 && scannedProductId != shipmentScheduleProductId)
+		// NOTE: scannedProductId might be not set, in case we deactivate the process parameter.
+		if (scannedProductId > 0 && scannedProductId != shipmentScheduleProduct.getM_Product_ID())
 		{
 			final I_M_Product scannedProduct = loadOutOfTrx(scannedProductId, I_M_Product.class);
 			final String scannedProductStr = scannedProduct != null ? scannedProduct.getName() : "?";
@@ -101,6 +114,18 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 		}
 
 		return shipmentScheduleProduct;
+	}
+
+	private I_M_Product getShipmentScheduleProduct()
+	{
+		if (_shipmentScheduleProduct == null)
+		{
+			final PickingSlotView pickingSlotsView = getPickingSlotView();
+			final I_M_ShipmentSchedule currentShipmentSchedule = pickingSlotsView.getCurrentShipmentSchedule();
+			final int shipmentScheduleProductId = currentShipmentSchedule.getM_Product_ID();
+			_shipmentScheduleProduct = loadOutOfTrx(shipmentScheduleProductId, I_M_Product.class);
+		}
+		return _shipmentScheduleProduct;
 	}
 
 	private void pickCUs()
