@@ -510,7 +510,7 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-09 12:41:34'
 
 -- 2017-12-09T12:41:55.982
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-09 12:41:55','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Pharma Product Permission §52' WHERE AD_Field_ID=560564 AND AD_Language='en_US'
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-09 12:41:55','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Pharma Product Permission Â§52' WHERE AD_Field_ID=560564 AND AD_Language='en_US'
 ;
 
 -- 2017-12-09T12:42:01.854
@@ -665,7 +665,7 @@ UPDATE AD_Field SET Name='Steuer ID',Updated=TO_TIMESTAMP('2017-12-09 13:08:01',
 
 -- 2017-12-09T13:08:05.318
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET Name='Gruppen Schlüssel',Updated=TO_TIMESTAMP('2017-12-09 13:08:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=6050
+UPDATE AD_Field SET Name='Gruppen SchlÃ¼ssel',Updated=TO_TIMESTAMP('2017-12-09 13:08:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=6050
 ;
 
 -- 2017-12-09T13:08:17.601
