@@ -35,10 +35,10 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -184,23 +184,23 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	@VisibleForTesting
 	static Timestamp calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, final boolean isShipmentDateToday)
 	{
-		final Timestamp now = TimeUtil.getNow();
+		final Timestamp today = SystemTime.asDayTimestamp();
 
 		if (isShipmentDateToday)
 		{
-			return now;
+			return today;
 		}
 
 		final Timestamp deliveryDateEffective = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(schedule);
 
 		if (deliveryDateEffective == null)
 		{
-			return now;
+			return today;
 		}
 
-		if (deliveryDateEffective.before(now))
+		if (deliveryDateEffective.before(today))
 		{
-			return now;
+			return today;
 		}
 
 		return deliveryDateEffective;
@@ -440,7 +440,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	@VisibleForTesting
 	static boolean isShipmentDeliveryDateBetterThanMovementDate(final @NonNull I_M_InOut shipment, final @NonNull Timestamp shipmentDeliveryDate)
 	{
-		final Timestamp today = TimeUtil.getNow();
+		final Timestamp today = SystemTime.asDayTimestamp();
 		final Timestamp movementDate = shipment.getMovementDate();
 		
 		final boolean isCandidateInThePast = shipmentDeliveryDate.before(today);

@@ -189,10 +189,11 @@ public class M_Transaction
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(transaction);
 
-		return MaterialDescriptor.builderForCompleteDescriptor()
+		return MaterialDescriptor.builder()
 				.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
 				.date(transaction.getMovementDate())
 				.productDescriptor(productDescriptor)
+				.bPartnerId(transaction.getC_BPartner_ID())
 				.quantity(quantity)
 				.build();
 	}

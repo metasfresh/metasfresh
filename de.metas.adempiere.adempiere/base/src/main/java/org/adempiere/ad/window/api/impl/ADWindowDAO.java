@@ -34,7 +34,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Column;
 import org.compiere.model.I_AD_UI_Element;
@@ -173,7 +173,7 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		final Integer lastSeqNo = retrieveUIElementGroupsQuery(uiColumn)
 				.create()
-				.aggregate(I_AD_UI_ElementGroup.COLUMN_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_AD_UI_ElementGroup.COLUMN_SeqNo, Aggregate.MAX, Integer.class);
 		return nextSeqNo(lastSeqNo);
 	}
 
@@ -204,7 +204,7 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		final Integer lastSeqNo = retrieveUIElementsQuery(uiElementGroup)
 				.create()
-				.aggregate(I_AD_UI_Element.COLUMN_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_AD_UI_Element.COLUMN_SeqNo, Aggregate.MAX, Integer.class);
 		return nextSeqNo(lastSeqNo);
 	}
 

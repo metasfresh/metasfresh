@@ -4,22 +4,28 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.util.Functions;
+import org.adempiere.util.Functions.MemoizingFunction;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.util.Util;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 
+import de.metas.material.dispo.commons.repository.StockResult.AddToResultGroupRequest;
+import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
-import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -49,160 +55,114 @@ import lombok.Value;
 public class StockRepository
 {
 	@NonNull
-	public BigDecimal retrieveAvailableStockQtySum(@NonNull final MaterialQuery query)
+	public BigDecimal retrieveAvailableStockQtySum(@NonNull final StockMultiQuery multiQuery)
 	{
-		final Timestamp latestDateOrNull = retrieveMaxDateLessOrEqual(query.getDate());
-		if (latestDateOrNull == null)
-		{
-			return BigDecimal.ZERO;
-		}
-		final BigDecimal qty = createDBQueryForMaterialQuery(query.withDate(latestDateOrNull))
-				.create()
-				.aggregate(I_MD_Candidate.COLUMNNAME_Qty, IQuery.AGGREGATE_SUM, BigDecimal.class);
-
-		return Util.coalesce(qty, BigDecimal.ZERO);
+		return retrieveAvailableStock(multiQuery)
+				.getResultGroups()
+				.stream().map(ResultGroup::getQty).reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	@NonNull
-	public AvailableStockResult retrieveAvailableStock(@NonNull final MaterialQuery query)
+	public StockResult retrieveAvailableStock(@NonNull StockMultiQuery multiQuery)
 	{
-		final AvailableStockResult result = AvailableStockResult.createEmptyForQuery(query);
+		final StockResult result = multiQuery.isAddToPredefinedBuckets()
+				? StockResult.createEmptyWithPredefinedBuckets(multiQuery)
+				: StockResult.createEmpty();
 
-		final Timestamp latestDateOrNull = retrieveMaxDateLessOrEqual(query.getDate());
-		if (latestDateOrNull == null)
+		final IQuery<I_MD_Candidate_Stock_v> dbQuery = createDBQueryForMaterialQueryOrNull(multiQuery);
+		if (dbQuery == null)
 		{
 			return result;
 		}
 
-		final IQueryBuilder<I_MD_Candidate_Stock_v> dbQuery = createDBQueryForMaterialQuery(query.withDate(latestDateOrNull));
-		final List<I_MD_Candidate_Stock_v> stockRecords = dbQuery
-				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
-				.create()
-				.list();
+		final List<AddToResultGroupRequest> addRequests = dbQuery
+				.stream()
+				.map(stockRecord -> createAddToResultGroupRequest(stockRecord))
+				.collect(ImmutableList.toImmutableList());
 
-		applyStockRecordsToEmptyResult(result, stockRecords);
+		if (multiQuery.isAddToPredefinedBuckets())
+		{
+			addRequests.forEach(result::addQtyToAllMatchingGroups);
+		}
+		else
+		{
+			addRequests.forEach(result::addGroup);
+		}
 		return result;
+	}
+
+	public StockResult retrieveAvailableStock(@NonNull StockQuery query)
+	{
+		return retrieveAvailableStock(StockMultiQuery.of(query));
+	}
+
+	private IQuery<I_MD_Candidate_Stock_v> createDBQueryForMaterialQueryOrNull(@NonNull final StockMultiQuery multiQuery)
+	{
+		final MemoizingFunction<Date, Timestamp> maxDateLessOrEqualFunction //
+				= Functions.memoizing(date -> retrieveMaxDateLessOrEqual(date));
+
+		return multiQuery.getQueries()
+				.stream()
+				.map(stockQuery -> {
+					final Timestamp latestDateOrNull = maxDateLessOrEqualFunction.apply(stockQuery.getDate());
+					if (latestDateOrNull == null)
+					{
+						return null;
+					}
+					return stockQuery.withDate(latestDateOrNull);
+				})
+				.filter(Predicates.notNull())
+				.map(stockQuery -> StockRepositorySqlHelper.createDBQueryForStockQuery(stockQuery)
+						.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
+						.create())
+				.reduce((previousDBQuery, dbQuery) -> {
+					if (previousDBQuery == null)
+					{
+						return dbQuery;
+					}
+					else
+					{
+						previousDBQuery.addUnion(dbQuery, true);
+						return previousDBQuery;
+					}
+				})
+				.orElse(null);
 	}
 
 	private Timestamp retrieveMaxDateLessOrEqual(@NonNull final Date date)
 	{
-		// final Timestamp latestDateOrNull = Services.get(IQueryBL.class)
-		// .createQueryBuilder(I_MD_Candidate_Stock_v.class)
-		// .addCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, new Timestamp(date.getTime()))
-		// .orderBy().addColumnDescending(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected).endOrderBy()
-		// .create()
-		// TODO: this first implementation ignores Ordering!
-		// .first(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected, Timestamp.class);
-		final I_MD_Candidate_Stock_v stockRecordOrNull = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_MD_Candidate_Stock_v.class)
-				.addCompareFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, new Timestamp(date.getTime()))
-				.orderBy().addColumnDescending(I_MD_Candidate_Stock_v.COLUMNNAME_DateProjected).endOrderBy()
+		return Services.get(IQueryBL.class)
+
+				// select from MD_Candidate, because the performance is much worse with MD_Candidate_Stock_v
+				// also note that this method is supported by the DB index md_candidate_stock_latest_date_perf
+				.createQueryBuilder(I_MD_Candidate.class)
+
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
+				.addCompareFilter(I_MD_Candidate.COLUMN_DateProjected, Operator.LESS_OR_EQUAL, TimeUtil.asTimestamp(date))
+
+				.orderBy()
+				.addColumn(I_MD_Candidate.COLUMN_DateProjected, IQueryOrderBy.Direction.Descending, IQueryOrderBy.Nulls.Last)
+				.endOrderBy()
+
 				.create()
-				.first();
-		return stockRecordOrNull == null ? null : stockRecordOrNull.getDateProjected();
+				.first(I_MD_Candidate.COLUMNNAME_DateProjected, Timestamp.class);
 	}
 
 	@VisibleForTesting
-	IQueryBuilder<I_MD_Candidate_Stock_v> createDBQueryForMaterialQuery(@NonNull final MaterialQuery query)
+	static AddToResultGroupRequest createAddToResultGroupRequest(final I_MD_Candidate_Stock_v stockRecord)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQueryBuilder<I_MD_Candidate_Stock_v> queryBuilder = createInitialQueryBuilderForDateAndWarehouse(query);
+		final int bPpartnerIdForRequest = stockRecord.getC_BPartner_ID() > 0
+				? stockRecord.getC_BPartner_ID()
+				: StockQuery.BPARTNER_ID_NONE;
 
-		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> orFilterForDifferentStorageAttributesKeys = queryBL
-				.createCompositeQueryFilter(I_MD_Candidate_Stock_v.class)
-				.setJoinOr();
-		queryBuilder.filter(orFilterForDifferentStorageAttributesKeys);
-
-		for (final String storageAttributesKey : query.getStorageAttributesKeys())
-		{
-			final ICompositeQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey = createANDFilterForStorageAttributesKey(query, storageAttributesKey);
-			orFilterForDifferentStorageAttributesKeys.addFilter(andFilterForCurrentStorageAttributesKey);
-		}
-		return queryBuilder;
-	}
-
-	private IQueryBuilder<I_MD_Candidate_Stock_v> createInitialQueryBuilderForDateAndWarehouse(@NonNull final MaterialQuery query)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQueryBuilder<I_MD_Candidate_Stock_v> queryBuilder = queryBL
-				.createQueryBuilder(I_MD_Candidate_Stock_v.class)
-				.addEqualsFilter(I_MD_Candidate_Stock_v.COLUMN_DateProjected, query.getDate());
-
-		if (!query.getWarehouseIds().isEmpty())
-		{
-			queryBuilder.addInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Warehouse_ID, query.getWarehouseIds());
-		}
-		return queryBuilder;
-	}
-
-	private ICompositeQueryFilter<I_MD_Candidate_Stock_v> createANDFilterForStorageAttributesKey(
-			@NonNull final MaterialQuery query,
-			@NonNull final String storageAttributesKey)
-	{
-		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> filterForCurrentStorageAttributesKey = createInitialANDFilterForProductIds(query);
-
-		if (Objects.equals(storageAttributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER))
-		{
-			addNotLikeFiltersForAttributesKeys(filterForCurrentStorageAttributesKey, query.getStorageAttributesKeys());
-		}
-		else if (Objects.equals(storageAttributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL))
-		{
-			// nothing to add to the initial productIds filters
-		}
-		else
-		{
-			addLikeFilterForAttributesKey(storageAttributesKey, filterForCurrentStorageAttributesKey);
-		}
-		return filterForCurrentStorageAttributesKey;
-	}
-
-	private ICompositeQueryFilter<I_MD_Candidate_Stock_v> createInitialANDFilterForProductIds(@NonNull final MaterialQuery query)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createCompositeQueryFilter(I_MD_Candidate_Stock_v.class)
-				.setJoinAnd()
-				.addInArrayFilter(I_MD_Candidate_Stock_v.COLUMN_M_Product_ID, query.getProductIds());
-	}
-
-	private void addNotLikeFiltersForAttributesKeys(
-			@NonNull final ICompositeQueryFilter<I_MD_Candidate_Stock_v> compositeFilter,
-			@NonNull final List<String> attributesKeys)
-	{
-		for (final String storageAttributesKeyAgain : attributesKeys)
-		{
-			if (!Objects.equals(storageAttributesKeyAgain, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER))
-			{
-				final String likeExpression = createLikeExpression(storageAttributesKeyAgain);
-				compositeFilter.addStringNotLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, likeExpression, false);
-			}
-		}
-	}
-
-	private void addLikeFilterForAttributesKey(final String storageAttributesKey, final ICompositeQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey)
-	{
-		final String likeExpression = createLikeExpression(storageAttributesKey);
-		andFilterForCurrentStorageAttributesKey.addStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, likeExpression, false);
-	}
-
-	private static String createLikeExpression(@NonNull final String storageAttributesKey)
-	{
-		final String storageAttributesKeyLikeExpression = RepositoryCommons
-				.prepareStorageAttributesKeyForLikeExpression(
-						storageAttributesKey);
-
-		return "%" + storageAttributesKeyLikeExpression + "%";
-	}
-
-	@VisibleForTesting
-	void applyStockRecordsToEmptyResult(
-			@NonNull final AvailableStockResult emptyResult,
-			@NonNull final List<I_MD_Candidate_Stock_v> stockRecords)
-	{
-		for (final I_MD_Candidate_Stock_v stockRecord : stockRecords)
-		{
-			emptyResult.addQtyToMatchedGroups(stockRecord.getQty(), stockRecord.getM_Product_ID(), stockRecord.getStorageAttributesKey());
-		}
+		return AddToResultGroupRequest.builder()
+				.productId(stockRecord.getM_Product_ID())
+				.bpartnerId(bPpartnerIdForRequest)
+				.warehouseId(stockRecord.getM_Warehouse_ID())
+				.storageAttributesKey(StorageAttributesKey.ofString(stockRecord.getStorageAttributesKey()))
+				.qty(stockRecord.getQty())
+				.build();
 	}
 
 	@Value

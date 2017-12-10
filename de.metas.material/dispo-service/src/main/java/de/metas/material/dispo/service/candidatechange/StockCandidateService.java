@@ -10,14 +10,15 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor.DateOperator;
 import lombok.NonNull;
 
 /*
@@ -122,10 +123,11 @@ public class StockCandidateService
 			@NonNull final Candidate candidate,
 			@NonNull final DateOperator dateOperator)
 	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery
+				.forDescriptor(candidate.getMaterialDescriptor(), dateOperator);
+
 		return CandidatesQuery.builder()
-				.materialDescriptor(candidate.getMaterialDescriptor()
-						.withoutQuantity()
-						.withDateOperator(dateOperator))
+				.materialDescriptorQuery(materialDescriptorQuery)
 				.type(CandidateType.STOCK)
 				.matchExactStorageAttributesKey(true)
 				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
@@ -177,14 +179,12 @@ public class StockCandidateService
 			@NonNull final Integer groupId,
 			@NonNull final BigDecimal delta)
 	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery
+				.forDescriptor(materialDescriptor, DateOperator.AFTER);
+
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(CandidateType.STOCK)
-				.materialDescriptor(MaterialDescriptor.builderForQuery()
-						.date(materialDescriptor.getDate())
-						.productDescriptor(materialDescriptor)
-						.warehouseId(materialDescriptor.getWarehouseId())
-						.dateOperator(DateOperator.AFTER)
-						.build())
+				.materialDescriptorQuery(materialDescriptorQuery)
 				.parentId(CandidatesQuery.UNSPECIFIED_PARENT_ID)
 				.matchExactStorageAttributesKey(true)
 				.build();

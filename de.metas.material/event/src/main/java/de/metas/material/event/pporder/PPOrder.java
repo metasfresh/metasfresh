@@ -54,6 +54,8 @@ public class PPOrder
 
 	int warehouseId;
 
+	int bPartnerId;
+
 	int productPlanningId;
 
 	@NonNull
@@ -105,6 +107,7 @@ public class PPOrder
 			@JsonProperty("orgId") final int orgId,
 			@JsonProperty("plantId") final int plantId,
 			@JsonProperty("warehouseId") final int warehouseId,
+			@JsonProperty("bPartnerId") final int bPartnerId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
 			@JsonProperty("uomId") final int uomId,
@@ -120,9 +123,9 @@ public class PPOrder
 		this.orgId = checkIdGreaterThanZero("orgId", orgId);
 		this.plantId = checkIdGreaterThanZero("plantId", plantId);
 		this.warehouseId = checkIdGreaterThanZero("warehouseId", warehouseId);
-		this.productPlanningId = productPlanningId; // ok to be not set
 
-		productDescriptor.asssertCompleteness();
+		this.bPartnerId = bPartnerId;
+		this.productPlanningId = productPlanningId; // ok to be not set
 		this.productDescriptor = productDescriptor;
 
 		this.uomId = checkIdGreaterThanZero("uomId", uomId);

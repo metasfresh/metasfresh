@@ -33,7 +33,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.AttributesKeyGenerator;
+import org.adempiere.mm.attributes.api.StorageAttributesKeys;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Org;
@@ -44,6 +44,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.material.event.commons.StorageAttributesKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import lombok.NonNull;
@@ -173,13 +174,13 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final String attributesKey = createAttributeLikeExpression(attributeSetInstanceId);
+		final StorageAttributesKey attributesKey = StorageAttributesKeys.createAttributesKeyFromASI(attributeSetInstanceId);
 
 		final ICompositeQueryFilter<I_PP_Product_Planning> matchingAsiFilter = queryBL
 				.createCompositeQueryFilter(I_PP_Product_Planning.class)
 				.setJoinAnd()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMN_IsAttributeDependant, true)
-				.addStringLikeFilter(I_PP_Product_Planning.COLUMN_StorageAttributesKey, attributesKey, false);
+				.addStringLikeFilter(I_PP_Product_Planning.COLUMN_StorageAttributesKey, attributesKey.getSqlLikeString(), false);
 
 		final ICompositeQueryFilter<I_PP_Product_Planning> attributesFilter = queryBL
 				.createCompositeQueryFilter(I_PP_Product_Planning.class)
@@ -188,15 +189,6 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.addFilter(matchingAsiFilter);
 
 		return attributesFilter;
-	}
-
-	private static String createAttributeLikeExpression(final int attributeSetInstanceId)
-	{
-		return AttributesKeyGenerator.builder()
-				.attributeSetInstanceId(attributeSetInstanceId)
-				.valueDelimiter("%")
-				.build()
-				.createAttributesKey();
 	}
 
 	@Override

@@ -16,7 +16,7 @@
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.adempiere.util.GenerateModel"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="./src/main/java-gen/de/metas/vertical/pharma/model/&#13;&#10;de.metas.vertical.pharma.model&#13;&#10;'de.metas.vertical.pharma'"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="de.metas.purchasecandidate.base"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="metasfresh-pharma"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=${project_loc:metasfresh-dist}/metasfresh.properties"/>
 </launchConfiguration>

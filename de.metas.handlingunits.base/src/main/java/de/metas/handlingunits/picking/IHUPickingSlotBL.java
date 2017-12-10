@@ -26,6 +26,8 @@ import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
@@ -167,6 +169,8 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 */
 	List<I_M_HU> retrieveAvailableHUsToPick(PickingHUsQuery request);
 
+	List<Integer> retrieveAvailableHUIdsToPick(PickingHUsQuery request);
+
 	/**
 	 * Search for available fine picking source HUs.<br>
 	 * Those HUs are referenced by {@link I_M_Source_HU} records and are available<br>
@@ -191,7 +195,8 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		 * ShipmentSchedules for which the HUs shall be picked. Needed to filter by the HUs' product and location and may therefore not be {@code null}.
 		 */
 		@NonNull
-		List<I_M_ShipmentSchedule> shipmentSchedules;
+		@lombok.Singular
+		ImmutableList<I_M_ShipmentSchedule> shipmentSchedules;
 
 		/**
 		 * {@code true} by default, for backwards compatibility.

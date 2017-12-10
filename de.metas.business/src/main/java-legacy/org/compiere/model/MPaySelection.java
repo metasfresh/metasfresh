@@ -46,7 +46,6 @@ public class MPaySelection extends X_C_PaySelection
 			setTotalAmt(BigDecimal.ZERO);
 			setIsApproved(false);
 			setProcessed(false);
-			setProcessing(false);
 		}
 	}
 
@@ -73,7 +72,7 @@ public class MPaySelection extends X_C_PaySelection
 			set_TrxName(m_lines, get_TrxName());
 			return m_lines;
 		}
-		ArrayList<MPaySelectionLine> list = new ArrayList<MPaySelectionLine>();
+		ArrayList<MPaySelectionLine> list = new ArrayList<>();
 		String sql = "SELECT * FROM C_PaySelectionLine WHERE C_PaySelection_ID=? ORDER BY Line";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;

@@ -77,7 +77,7 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
-	public void ddOrderAdvisedEvent()
+	public void ddOrderAdvisedOrCreatedEvent()
 	{
 		final DDOrderAdvisedOrCreatedEvent event = DDOrderAdvisedOrCreatedEvent.builder()
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
@@ -149,7 +149,7 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
-	public void ppOrderAdvisedEvent()
+	public void ppOrderAdvisedOrCreatedEvent()
 	{
 		final PPOrderAdvisedOrCreatedEvent event = PPOrderAdvisedOrCreatedEvent.builder()
 				.eventDescriptor(createEventDescriptor())

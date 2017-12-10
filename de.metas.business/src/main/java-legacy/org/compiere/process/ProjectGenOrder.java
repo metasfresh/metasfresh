@@ -16,11 +16,8 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import java.math.BigDecimal;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -28,12 +25,18 @@ import org.compiere.model.MProject;
 import org.compiere.model.MProjectLine;
 import org.compiere.util.Env;
 
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+
 /**
  *  Generate Sales Order from Project.
  *
  *	@author Jorg Janke
  *	@version $Id: ProjectGenOrder.java,v 1.3 2006/07/30 00:51:01 jjanke Exp $
+ *
+ * @deprecated To be deleted.
  */
+@Deprecated
 public class ProjectGenOrder extends JavaProcess
 {
 	/**	Project ID from project directly		*/
@@ -42,6 +45,7 @@ public class ProjectGenOrder extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -61,6 +65,7 @@ public class ProjectGenOrder extends JavaProcess
 	 *  @return Message (clear text)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("C_Project_ID=" + m_C_Project_ID);
@@ -99,7 +104,7 @@ public class ProjectGenOrder extends JavaProcess
 				ol.setPrice();
 				if (lines[i].getPlannedPrice() != null && lines[i].getPlannedPrice().compareTo(Env.ZERO) != 0)
 					ol.setPrice(lines[i].getPlannedPrice());
-				ol.setDiscount();
+				updateDiscount(ol);
 				ol.setTax();
 				if (ol.save())
 					count++;
@@ -110,6 +115,21 @@ public class ProjectGenOrder extends JavaProcess
 
 		return "@C_Order_ID@ " + order.getDocumentNo() + " (" + count + ")";
 	}	//	doIt
+
+	public void updateDiscount(final MOrderLine ol)
+	{
+		BigDecimal list = ol.getPriceList();
+		// No List Price
+		if (BigDecimal.ZERO.compareTo(list) == 0)
+			return;
+		// final int precision = getPrecision();
+		final int precision = 1; // metas
+		// TODO: metas: why we are using precision=1 instead of getPrecision()?
+		BigDecimal discount = list.subtract(ol.getPriceActual())
+				.multiply(new BigDecimal(100))
+				.divide(list, precision, BigDecimal.ROUND_HALF_UP);
+		ol.setDiscount(discount);
+	}	// setDiscount
 
 	/**
 	 * 	Get and validate Project

@@ -10,12 +10,12 @@ package de.metas.adempiere.gui.search.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,9 +33,11 @@ import org.compiere.model.I_M_Product;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.handlingunits.IHUCapacityBL;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
+import lombok.NonNull;
 
 public class HUPackingAwareBL implements IHUPackingAwareBL
 {
@@ -200,4 +202,25 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 
 		return BigDecimal.valueOf(qtyPacks);
 	}
+
+	@Override
+	public void computeAndSetQtysForNewHuPackingAware(
+			@NonNull final PlainHUPackingAware huPackingAware,
+			@NonNull final BigDecimal quickInputQty)
+	{
+		final I_M_HU_PI_Item_Product piItemProduct = huPackingAware.getM_HU_PI_Item_Product();
+		final IHUPIItemProductBL piPIItemProductBL = Services.get(IHUPIItemProductBL.class);
+		if (piItemProduct == null || piPIItemProductBL.isVirtualHUPIItemProduct(piItemProduct) || piItemProduct.isInfiniteCapacity())
+		{
+			huPackingAware.setQty(quickInputQty);
+			huPackingAware.setQtyPacks(BigDecimal.ONE);
+		}
+		else
+		{
+			final BigDecimal qtyTU = quickInputQty;
+			huPackingAware.setQtyPacks(qtyTU);
+			setQty(huPackingAware, qtyTU.intValue());
+		}
+	}
+
 }

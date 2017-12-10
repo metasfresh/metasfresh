@@ -95,7 +95,7 @@ public class AttributesTestHelper
 	public I_M_Attribute createM_Attribute(final I_AD_JavaClass javaClass)
 	{
 		final I_M_Attribute attribute = InterfaceWrapperHelper.create(ctx, I_M_Attribute.class, ITrx.TRXNAME_None);
-		attribute.setAD_JavaClass(javaClass);
+		attribute.setAD_JavaClass_ID(javaClass != null ? javaClass.getAD_JavaClass_ID() : -1);
 		save(attribute);
 		return attribute;
 	}
@@ -231,7 +231,7 @@ public class AttributesTestHelper
 
 		//
 		// Configure JC
-		attr.setAD_JavaClass(javaClassDef);
+		attr.setAD_JavaClass_ID(javaClassDef != null ? javaClassDef.getAD_JavaClass_ID() : -1);
 
 		//
 		// Configure UOM

@@ -325,42 +325,43 @@ public class ZoomInfoFactory
 	}
 
 	/**
-	 * @param source the source we need zoom targets for
+	 * @param zoomOrigin the source we need zoom targets for
 	 * @return a list of zoom targets. The {@link ZoomInfo#getRecordCount()} of the ZoomInfo's query member might be zero.
 	 */
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source)
+	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource zoomOrigin)
 	{
-		return streamZoomInfos(source).collect(ImmutableList.toImmutableList());
+		return streamZoomInfos(zoomOrigin).collect(ImmutableList.toImmutableList());
 	}
 
 	/**
 	 * Stream all {@link ZoomInfo}s for given {@link IZoomSource}.
 	 */
-	public Stream<ZoomInfo> streamZoomInfos(final IZoomSource source)
+	public Stream<ZoomInfo> streamZoomInfos(final IZoomSource zoomOrigin)
 	{
 		final int targetAD_Window_ID = -1;
 		final boolean checkRecordsCount = true;
-		return streamZoomInfos(source, targetAD_Window_ID, checkRecordsCount);
+		return streamZoomInfos(zoomOrigin, targetAD_Window_ID, checkRecordsCount);
 	}
 
-	private Stream<ZoomInfo> streamZoomInfos(final IZoomSource source, final int targetAD_Window_ID, final boolean checkRecordsCount)
+	private Stream<ZoomInfo> streamZoomInfos(final IZoomSource zoomOrigin, final int targetAD_Window_ID, final boolean checkRecordsCount)
 	{
-		logger.debug("source={}", source);
-		
+		logger.debug("source={}", zoomOrigin);
+
 		final IUserRolePermissions rolePermissions = Env.getUserRolePermissions();
 		final Set<Integer> alreadySeenWindowIds = new HashSet<>();
 
-		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(source.getTableName());
+		final String tableName = zoomOrigin.getTableName();
+		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(tableName);
 
 		return zoomProviders.stream()
 				.flatMap(zoomProvider -> {
 					try
 					{
-						return zoomProvider.retrieveZoomInfos(source, targetAD_Window_ID, checkRecordsCount).stream();
+						return zoomProvider.retrieveZoomInfos(zoomOrigin, targetAD_Window_ID, checkRecordsCount).stream();
 					}
 					catch (Exception ex)
 					{
-						logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, source, ex);
+						logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, zoomOrigin, ex);
 						return Stream.empty();
 					}
 				})
@@ -389,7 +390,7 @@ public class ZoomInfoFactory
 								+ "\n zoomInfo: " + zoomInfo
 						// + "\n zoomProvider: " + zoomProvider
 								+ "\n targetAD_Window_ID: " + targetAD_Window_ID
-								+ "\n source: " + source
+								+ "\n source: " + zoomOrigin
 								+ "\n checkRecordsCount: " + checkRecordsCount)
 										.throwIfDeveloperModeOrLogWarningElse(logger);
 						return false; // reject
@@ -435,20 +436,20 @@ public class ZoomInfoFactory
 	 *
 	 * NOTE: Records count is not checked
 	 *
-	 * @param source
+	 * @param zoomSource
 	 * @param targetWindowId target AD_Window_ID (must be provided)
 	 * @return ZoomInfo; never returns <code>null</code>
 	 */
-	public ZoomInfo retrieveZoomInfo(final IZoomSource source, final int targetWindowId)
+	public ZoomInfo retrieveZoomInfo(final IZoomSource zoomSource, final int targetWindowId)
 	{
 		Check.assume(targetWindowId > 0, "targetWindowId > 0");
 
 		// NOTE: we need to check the records count because in case there are multiple ZoomInfos for the same targetWindowId,
 		// we shall pick the one which actually has some data. Usually there would be only one (see #1808)
 		final boolean checkRecordsCount = true;
-		return streamZoomInfos(source, targetWindowId, checkRecordsCount)
+		return streamZoomInfos(zoomSource, targetWindowId, checkRecordsCount)
 				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No zoomInfo found for source=" + source + ", targetWindowId=" + targetWindowId));
+				.orElseThrow(() -> new AdempiereException("No zoomInfo found for source=" + zoomSource + ", targetWindowId=" + targetWindowId));
 	}
 
 	private List<IZoomProvider> retrieveZoomProviders(final String tableName)
@@ -457,7 +458,7 @@ public class ZoomInfoFactory
 
 		// NOTE: Zoom providers order matter because in case it finds some duplicates (i.e. same window),
 		// it will pick only the first one (i.e. the one from the first provider).
-		zoomProviders.addAll(RelationTypeZoomProvidersFactory.instance.getZoomProvidersBySourceTableName(tableName));
+		zoomProviders.addAll(RelationTypeZoomProvidersFactory.instance.getZoomProvidersByZoomOriginTableName(tableName));
 		zoomProviders.add(GenericZoomProvider.instance);
 		if (factAcctZoomProviderEnabled)
 		{

@@ -9,12 +9,13 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.commons.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.MaterialQuery;
+import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.StockMultiQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialEventService;
@@ -173,7 +174,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		final CandidatesQuery queryForExistingSupply = CandidatesQuery.builder()
 				.type(CandidateType.SUPPLY)
 				.demandDetail(demandCandidateWithId.getDemandDetail())
-				.materialDescriptor(demandCandidateWithId.getMaterialDescriptor().withoutQuantity())
+				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(demandCandidateWithId.getMaterialDescriptor()))
 				.build();
 
 		final Candidate existingSupplyParentStockWithoutOwnParentId;
@@ -200,7 +201,7 @@ public class DemandCandiateHandler implements CandidateHandler
 
 	private void fireSupplyRequiredEventIfQtyBelowZero(@NonNull final Candidate demandCandidateWithId)
 	{
-		final MaterialQuery query = MaterialQuery.forMaterialDescriptor(demandCandidateWithId.getMaterialDescriptor());
+		final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(demandCandidateWithId.getMaterialDescriptor());
 		final BigDecimal availableQuantityAfterDemandWasApplied = stockRepository.retrieveAvailableStockQtySum(query);
 
 		if (availableQuantityAfterDemandWasApplied.signum() < 0)

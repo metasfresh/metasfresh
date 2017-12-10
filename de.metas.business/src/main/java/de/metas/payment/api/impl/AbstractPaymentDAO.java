@@ -69,7 +69,6 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PaySelectionLine.class, paySelection)
 				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, paySelection.getC_PaySelection_ID())
-				.addEqualsFilter(I_C_PaySelectionLine.COLUMNNAME_Processed, true)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_C_PaySelectionLine.class);

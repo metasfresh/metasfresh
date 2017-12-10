@@ -605,7 +605,7 @@ public class MPrintFormatItem extends X_AD_PrintFormatItem
 		}
 		
 		// metas-tsa: we need to reset the cache if an item value is changed
-		CacheMgt.get().resetOnTrxCommit(get_TrxName(), CacheInvalidateRequest.rootRecord(I_AD_PrintFormat.Table_Name, getAD_PrintFormat_ID()));
+		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(get_TrxName(), CacheInvalidateRequest.rootRecord(I_AD_PrintFormat.Table_Name, getAD_PrintFormat_ID()));
 
 		return success;
 	}	//	afterSave

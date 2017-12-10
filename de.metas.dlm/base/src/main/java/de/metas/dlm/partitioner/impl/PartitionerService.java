@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
+import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -61,7 +62,6 @@ import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.dlm.partitioner.config.PartitionConfig.Builder;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine;
 import de.metas.dlm.partitioner.config.PartitionerConfigReference;
-import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import de.metas.logging.LogManager;
 
 /*
@@ -286,19 +286,19 @@ public class PartitionerService implements IPartitionerService
 		}
 		catch (final DLMReferenceException e)
 		{
-			final TableReferenceDescriptor descriptor = e.getTableReferenceDescriptor();
+			final TableRecordIdDescriptor descriptor = e.getTableReferenceDescriptor();
 
 			// if there is a DLMException, then depending on our config (LATER),
 			// throw an exception (LATER),
 			// skip the record (LATER)
 			// or add another PartitionerConfigLine, get the additional line's records and retry.
-			Loggables.get().withLogger(logger, Level.INFO).addLog("Caught {}; going to retry with an augmented config that also includes referencingTable={}", e.toString(), descriptor.getReferencingTableName());
+			Loggables.get().withLogger(logger, Level.INFO).addLog("Caught {}; going to retry with an augmented config that also includes referencingTable={}", e.toString(), descriptor.getOriginTableName());
 
 			final PartitionConfig newConfig = augmentPartitionerConfig(config, Collections.singletonList(descriptor));
 			storeOutOfTrx(newConfig); // store the new config so that even if we fail later on, the info is preserved
 
 			// when adding another PartitionerConfigLine but the table is not DLM'ed yet, then DLM it on the fly.
-			checkIfTableIsDLM(descriptor.getReferencingTableName(), request.getOnNotDLMTable());
+			checkIfTableIsDLM(descriptor.getOriginTableName(), request.getOnNotDLMTable());
 
 			// call this method again, i.e. start over with our augmented config
 			final CreatePartitionRequest newRequest = PartitionRequestFactory
@@ -306,7 +306,7 @@ public class PartitionerService implements IPartitionerService
 					.setConfig(newConfig)
 					.build();
 
-			final String referencedTableName = descriptor.getReferencedTableName();
+			final String referencedTableName = descriptor.getTargetTableName();
 
 			// Check.errorUnless(partition.getRecordsWithTable(referencedTableName).isEmpty(),
 			// "partition.getRecordsWithTable({}) should return an empty list because we stored & flushed this before we did the testmigration invokation that lead us into this catch-block; partition={}",
@@ -460,15 +460,15 @@ public class PartitionerService implements IPartitionerService
 
 	@Override
 	public final PartitionConfig augmentPartitionerConfig(final PartitionConfig config,
-			final List<TableReferenceDescriptor> descriptors)
+			final List<TableRecordIdDescriptor> descriptors)
 	{
 		final Builder builder = PartitionConfig.builder(config);
 
 		descriptors.forEach(descriptor -> {
 
-			final String referencingTableName = descriptor.getReferencingTableName();
-			final String referencingColumnName = descriptor.getReferencingColumnName();
-			final String referencedTableName = descriptor.getReferencedTableName();
+			final String referencingTableName = descriptor.getOriginTableName();
+			final String referencingColumnName = descriptor.getRecordIdColumnName();
+			final String referencedTableName = descriptor.getTargetTableName();
 
 			if (!config.isMissing(descriptor))
 			{

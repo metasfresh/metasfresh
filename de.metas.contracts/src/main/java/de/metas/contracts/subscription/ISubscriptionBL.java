@@ -34,7 +34,6 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
@@ -87,20 +86,6 @@ public interface ISubscriptionBL extends ISingletonService
 	 * @param currentDate
 	 */
 	void evalCurrentSPs(I_C_Flatrate_Term sc, Timestamp currentDate);
-
-	/**
-	 * Uses the given <code>subscription</code> to set the given <code>ol</code>'s
-	 * <ul>
-	 * <li><code>QtyOrdered</code>: this will be the absolute number of all delivered goods during the subscription
-	 * term.
-	 * <li>price: if <code>subscription</code> has no <code>M_PricingSystem_ID</code> set, then it will use the pricing
-	 * system of <code>ol</code>'s C_Order.
-	 * </ul>
-	 * 
-	 * @param ol
-	 * @param subscription
-	 */
-	void setSubscription(I_C_OrderLine ol, I_C_Flatrate_Conditions subscription);
 
 	I_C_Flatrate_Matching retrieveMatching(Properties ctx, int flatrateConditionsId, I_M_Product product, String trxName);
 

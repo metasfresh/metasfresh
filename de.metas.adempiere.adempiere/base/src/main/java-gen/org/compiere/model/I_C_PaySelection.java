@@ -399,29 +399,6 @@ public interface I_C_PaySelection
     public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Verarbeiten.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setProcessing (boolean Processing);
-
-	/**
-	 * Get Verarbeiten.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isProcessing();
-
-    /** Column definition for Processing */
-    public static final org.adempiere.model.ModelColumn<I_C_PaySelection, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_C_PaySelection, Object>(I_C_PaySelection.class, "Processing", null);
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
-
-	/**
 	 * Set Gesamtbetrag.
 	 *
 	 * <br>Type: Amount

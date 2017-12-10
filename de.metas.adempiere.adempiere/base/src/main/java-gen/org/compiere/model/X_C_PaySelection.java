@@ -15,7 +15,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1574508528L;
+	private static final long serialVersionUID = -1213257420L;
 
     /** Standard Constructor */
     public X_C_PaySelection (Properties ctx, int C_PaySelection_ID, String trxName)
@@ -31,7 +31,6 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 			setName (null); // @#Date@
 			setPayDate (new Timestamp( System.currentTimeMillis() )); // @#Date@
 			setProcessed (false);
-			setProcessing (false);
 			setTotalAmt (BigDecimal.ZERO);
         } */
     }
@@ -349,29 +348,6 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	public boolean isProcessed () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Verarbeiten.
-		@param Processing Verarbeiten	  */
-	@Override
-	public void setProcessing (boolean Processing)
-	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
-	}
-
-	/** Get Verarbeiten.
-		@return Verarbeiten	  */
-	@Override
-	public boolean isProcessing () 
-	{
-		Object oo = get_Value(COLUMNNAME_Processing);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

@@ -24,11 +24,11 @@ import lombok.experimental.UtilityClass;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,15 +38,17 @@ public class SupplyRequiredHandlerUtils
 {
 
 	public IMaterialRequest mkRequest(
-			@NonNull final SupplyRequiredDescriptor materialDemandEvent,
+			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMaterialPlanningContext mrpContext)
 	{
+		final int descriptorBPartnerId = supplyRequiredDescriptor.getMaterialDescriptor().getBPartnerId();
+
 		return MaterialRequest.builder()
-				.qtyToSupply(materialDemandEvent.getMaterialDescriptor().getQuantity())
+				.qtyToSupply(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
 				.mrpContext(mrpContext)
-				.mrpDemandBPartnerId(-1)
-				.mrpDemandOrderLineSOId(materialDemandEvent.getOrderLineId())
-				.demandDate(materialDemandEvent.getMaterialDescriptor().getDate())
+				.mrpDemandBPartnerId(descriptorBPartnerId > 0 ? descriptorBPartnerId : -1)
+				.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())
+				.demandDate(supplyRequiredDescriptor.getMaterialDescriptor().getDate())
 				.build();
 	}
 
