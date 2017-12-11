@@ -84,6 +84,7 @@ Here come the actual release notes:
     * Fix for the Product Translation Tab. Now showing the Translations again.
   * [#3160](https://github.com/metasfresh/metasfresh/issues/3160) C_Printing_Queue_ReEnqueue with IsSelected doesn't work
   * [#3174](https://github.com/metasfresh/metasfresh/issues/3174) Material Receipt Candidates not generates when using Purchase Order from Sales Order action
+  * [#3183](https://github.com/metasfresh/metasfresh/issues/3183) Jenkins misinterprets positive downstream build result
 
 * metasfresh-webui-api
   * [#713](https://github.com/metasfresh/metasfresh-webui-api/issues/713) Error creating bean with name 'scopedTarget.internalUserSessionData'
