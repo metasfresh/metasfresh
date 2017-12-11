@@ -1,5 +1,6 @@
 package de.metas.ui.web.picking.husToPick.process;
 
+import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -21,12 +22,16 @@ import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.IProductBL;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
  * #%L
@@ -73,6 +78,29 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	private BigDecimal qtyCU;
 
 	private transient I_M_Product _shipmentScheduleProduct; // lazy
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable()
+	{
+		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
+		if (selectedRowIds.isEmpty())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+		else if (selectedRowIds.isMoreThanOneDocumentId())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		final HUEditorRow huRow = getSingleSelectedRow();
+		if (!isEligible(huRow))
+		{
+			final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU);
+			return ProcessPreconditionsResolution.reject(reason);
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	public void onParameterChanged(final String parameterName)
