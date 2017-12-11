@@ -46,6 +46,7 @@ import java.util.Calendar;
 
 import javax.sql.RowSet;
 
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.adempiere.util.Check;
@@ -125,6 +126,7 @@ import org.compiere.util.DB;
 	@Override
 	public final int executeUpdate() throws SQLException
 	{
+		MigrationScriptFileLoggerHolder.logMigrationScript(getSql());
 		return getStatementImpl().executeUpdate();
 	}
 
@@ -252,6 +254,7 @@ import org.compiere.util.DB;
 	@Override
 	public final boolean execute() throws SQLException
 	{
+		MigrationScriptFileLoggerHolder.logMigrationScript(getSql());
 		return getStatementImpl().execute();
 	}
 
