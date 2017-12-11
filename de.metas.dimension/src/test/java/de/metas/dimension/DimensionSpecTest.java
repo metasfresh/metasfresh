@@ -71,27 +71,27 @@ public class DimensionSpecTest
 	{
 		final I_DIM_Dimension_Spec record = createDimensionSpecRecord_with_two_dimSpecAttrs_one_with_isIncludeAllAttributeValue();
 		final DimensionSpec dimensionSpec = DimensionSpec.ofRecord(record);
-		final List<DimensionSpecGroup> groups = dimensionSpec.getGroups();
+		final List<DimensionSpecGroup> groups = dimensionSpec.retrieveGroups();
 
 		// one "empty", one for dimSpecAttr1 and two for dimSpecAttr2 with includeAllAttributeValues=true and it's two attribute-values
 		assertThat(groups).hasSize(4);
 		assertThat(groups.get(0).isEmptyGroup()).isTrue();
 		assertThat(groups.get(0).getGroupName().getDefaultValue()).isEqualTo(DimensionSpec.MSG_NoneOrEmpty);
-		assertThat(groups.get(0).getM_AttributeValue_IDs()).isEmpty();
+		assertThat(groups.get(0).getAttributesKey().getAttributeValueIds()).isEmpty();
 
 		// attr1 has two values, but just one of them is "explicitly" added to dimSpecAttr1 which has isIncludeAllAttributeValues=false
 		assertThat(groups.get(1).isEmptyGroup()).isFalse();
 		assertThat(groups.get(1).getGroupName().getDefaultValue()).isEqualTo("Name_test1_value1");
-		assertThat(groups.get(1).getM_AttributeValue_IDs()).containsExactly(attr1_value1.getM_AttributeValue_ID());
+		assertThat(groups.get(1).getAttributesKey().getAttributeValueIds()).containsExactly(attr1_value1.getM_AttributeValue_ID());
 
 		// attr2 has two values, and dimSpecAttr2 which has isIncludeAllAttributeValues=true
 		assertThat(groups.get(2).isEmptyGroup()).isFalse();
 		assertThat(groups.get(2).getGroupName().getDefaultValue()).isEqualTo("Name_test2_value1");
-		assertThat(groups.get(2).getM_AttributeValue_IDs()).containsExactly(attr2_value1.getM_AttributeValue_ID());
+		assertThat(groups.get(2).getAttributesKey().getAttributeValueIds()).containsExactly(attr2_value1.getM_AttributeValue_ID());
 
 		assertThat(groups.get(3).isEmptyGroup()).isFalse();
 		assertThat(groups.get(3).getGroupName().getDefaultValue()).isEqualTo("Name_test2_value2");
-		assertThat(groups.get(3).getM_AttributeValue_IDs()).containsExactly(attr2_value2.getM_AttributeValue_ID());
+		assertThat(groups.get(3).getAttributesKey().getAttributeValueIds()).containsExactly(attr2_value2.getM_AttributeValue_ID());
 	}
 
 	private I_DIM_Dimension_Spec createDimensionSpecRecord_with_two_dimSpecAttrs_one_with_isIncludeAllAttributeValue()
@@ -125,23 +125,23 @@ public class DimensionSpecTest
 	{
 		final I_DIM_Dimension_Spec record = createDimensionSpecRecord_with_two_dimSpecAttrs_one_with_aggregate_group_name();
 		final DimensionSpec dimensionSpec = DimensionSpec.ofRecord(record);
-		final List<DimensionSpecGroup> groups = dimensionSpec.getGroups();
+		final List<DimensionSpecGroup> groups = dimensionSpec.retrieveGroups();
 
 		// one "empty", one for dimSpecAttr1 and one for dimSpecAttr2 with its isValueAggregate=true
 		assertThat(groups).hasSize(3);
 		assertThat(groups.get(0).isEmptyGroup()).isTrue();
 		assertThat(groups.get(0).getGroupName().getDefaultValue()).isEqualTo(DimensionSpec.MSG_NoneOrEmpty);
-		assertThat(groups.get(0).getM_AttributeValue_IDs()).isEmpty();
+		assertThat(groups.get(0).getAttributesKey().getAttributeValueIds()).isEmpty();
 
 		// attr1 has two values, but just one of them is "explicitly" added to dimSpecAttr1 which has isIncludeAllAttributeValues=false
 		assertThat(groups.get(1).isEmptyGroup()).isFalse();
 		assertThat(groups.get(1).getGroupName().getDefaultValue()).isEqualTo("Name_test1_value1");
-		assertThat(groups.get(1).getM_AttributeValue_IDs()).containsExactly(attr1_value1.getM_AttributeValue_ID());
+		assertThat(groups.get(1).getAttributesKey().getAttributeValueIds()).containsExactly(attr1_value1.getM_AttributeValue_ID());
 
 		// attr2 has two values, and dimSpecAttr2 which has isIncludeAllAttributeValues=true
 		assertThat(groups.get(2).isEmptyGroup()).isFalse();
 		assertThat(groups.get(2).getGroupName().getDefaultValue()).isEqualTo("dimSpecAttr2_ValueAggregateName");
-		assertThat(groups.get(2).getM_AttributeValue_IDs()).containsOnly(
+		assertThat(groups.get(2).getAttributesKey().getAttributeValueIds()).containsOnly(
 				attr2_value1.getM_AttributeValue_ID(),
 				attr2_value2.getM_AttributeValue_ID());
 	}

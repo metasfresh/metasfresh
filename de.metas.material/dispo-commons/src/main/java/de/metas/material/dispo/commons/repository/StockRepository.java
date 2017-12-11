@@ -25,7 +25,7 @@ import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.dispo.model.X_MD_Candidate;
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -160,7 +160,7 @@ public class StockRepository
 				.productId(stockRecord.getM_Product_ID())
 				.bpartnerId(bPpartnerIdForRequest)
 				.warehouseId(stockRecord.getM_Warehouse_ID())
-				.storageAttributesKey(StorageAttributesKey.ofString(stockRecord.getStorageAttributesKey()))
+				.storageAttributesKey(AttributesKey.ofString(stockRecord.getStorageAttributesKey()))
 				.qty(stockRecord.getQty())
 				.build();
 	}

@@ -57,7 +57,7 @@ public interface IDimensionspecDAO extends ISingletonService
 
 	/**
 	 *
-	 * @param internalName not empty or <code>null</code>
+	 * @param internalName {@link I_DIM_Dimension_Spec#COLUMN_InternalName} of the record to retrieve.
 	 */
 	DimensionSpec retrieveForInternalName(String internalName);
 

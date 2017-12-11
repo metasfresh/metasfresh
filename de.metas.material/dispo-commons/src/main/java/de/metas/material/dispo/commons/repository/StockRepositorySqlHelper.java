@@ -14,7 +14,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -100,9 +100,9 @@ import lombok.experimental.UtilityClass;
 				.createCompositeQueryFilter(I_MD_Candidate_Stock_v.class)
 				.setJoinOr();
 
-		for (final StorageAttributesKey storageAttributesKey : query.getStorageAttributesKeys())
+		for (final AttributesKey attributesKey : query.getStorageAttributesKeys())
 		{
-			final IQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey = createANDFilterForStorageAttributesKey(query, storageAttributesKey);
+			final IQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey = createANDFilterForStorageAttributesKey(query, attributesKey);
 			orFilterForDifferentStorageAttributesKeys.addFilter(andFilterForCurrentStorageAttributesKey);
 		}
 
@@ -111,23 +111,23 @@ import lombok.experimental.UtilityClass;
 
 	private static ICompositeQueryFilter<I_MD_Candidate_Stock_v> createANDFilterForStorageAttributesKey(
 			@NonNull final StockQuery query,
-			@NonNull final StorageAttributesKey storageAttributesKey)
+			@NonNull final AttributesKey attributesKey)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> filterForCurrentStorageAttributesKey = queryBL.createCompositeQueryFilter(I_MD_Candidate_Stock_v.class)
 				.setJoinAnd();
 
-		if (Objects.equals(storageAttributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER))
+		if (Objects.equals(attributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER))
 		{
 			addNotLikeFiltersForAttributesKeys(filterForCurrentStorageAttributesKey, query.getStorageAttributesKeys());
 		}
-		else if (Objects.equals(storageAttributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL))
+		else if (Objects.equals(attributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL))
 		{
 			// nothing to add to the initial productIds filters
 		}
 		else
 		{
-			addLikeFilterForAttributesKey(storageAttributesKey, filterForCurrentStorageAttributesKey);
+			addLikeFilterForAttributesKey(attributesKey, filterForCurrentStorageAttributesKey);
 		}
 
 		return filterForCurrentStorageAttributesKey;
@@ -135,9 +135,9 @@ import lombok.experimental.UtilityClass;
 
 	private static void addNotLikeFiltersForAttributesKeys(
 			@NonNull final ICompositeQueryFilter<I_MD_Candidate_Stock_v> compositeFilter,
-			@NonNull final List<StorageAttributesKey> attributesKeys)
+			@NonNull final List<AttributesKey> attributesKeys)
 	{
-		for (final StorageAttributesKey storageAttributesKeyAgain : attributesKeys)
+		for (final AttributesKey storageAttributesKeyAgain : attributesKeys)
 		{
 			if (!Objects.equals(storageAttributesKeyAgain, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER))
 			{
@@ -147,15 +147,15 @@ import lombok.experimental.UtilityClass;
 		}
 	}
 
-	private static void addLikeFilterForAttributesKey(final StorageAttributesKey storageAttributesKey, final ICompositeQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey)
+	private static void addLikeFilterForAttributesKey(final AttributesKey attributesKey, final ICompositeQueryFilter<I_MD_Candidate_Stock_v> andFilterForCurrentStorageAttributesKey)
 	{
-		final String likeExpression = createLikeExpression(storageAttributesKey);
+		final String likeExpression = createLikeExpression(attributesKey);
 		andFilterForCurrentStorageAttributesKey.addStringLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, likeExpression, false);
 	}
 
-	private static String createLikeExpression(@NonNull final StorageAttributesKey storageAttributesKey)
+	private static String createLikeExpression(@NonNull final AttributesKey attributesKey)
 	{
-		final String storageAttributesKeyLikeExpression = storageAttributesKey.getSqlLikeString();
+		final String storageAttributesKeyLikeExpression = attributesKey.getSqlLikeString();
 		return "%" + storageAttributesKeyLikeExpression + "%";
 	}
 

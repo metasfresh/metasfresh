@@ -26,9 +26,9 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.NonNull;
 
 /*
@@ -227,16 +227,16 @@ public class CandidateRepositoryWriteService
 	@NonNull
 	private String computeStorageAttributesKeyToStore(@NonNull final MaterialDescriptor materialDescriptor)
 	{
-		final StorageAttributesKey storageAttributesKey = materialDescriptor.getStorageAttributesKey();
+		final AttributesKey attributesKey = materialDescriptor.getStorageAttributesKey();
 
-		if (Objects.equals(storageAttributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL)
-				|| storageAttributesKey.isNone())
+		if (Objects.equals(attributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL)
+				|| attributesKey.isNone())
 		{
-			return StorageAttributesKey.NONE.getAsString(); // i.e. "", never NULL
+			return AttributesKey.NONE.getAsString(); // i.e. "", never NULL
 		}
 		else
 		{
-			return storageAttributesKey.getAsString();
+			return attributesKey.getAsString();
 		}
 	}
 

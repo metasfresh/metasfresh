@@ -60,7 +60,7 @@ public class CreateMaterialTrackingReportLineFromMaterialTrackingRefKeyBuilder i
 
 		keyBuilder.append(productID);
 
-		final List<KeyNamePair> attrToValues = dimensionSpec.createAttrToValue(asi);
+		final List<KeyNamePair> attrToValues = dimensionSpec.retrieveAttritbuteIdToDisplayValue(asi);
 
 		for (final KeyNamePair attrToValue : attrToValues)
 		{

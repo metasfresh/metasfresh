@@ -1087,7 +1087,7 @@ import lombok.NonNull;
 			return;
 		}
 
-		final List<I_M_Attribute> barcodeAttributes = barcodeDimSpec.retrieveAttributesForDimensionSpec();
+		final List<I_M_Attribute> barcodeAttributes = barcodeDimSpec.retrieveAttributes();
 
 		for (final I_M_Attribute attribute : barcodeAttributes)
 		{

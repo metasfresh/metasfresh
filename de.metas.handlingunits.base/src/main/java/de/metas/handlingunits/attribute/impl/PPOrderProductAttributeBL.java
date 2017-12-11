@@ -160,7 +160,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 	{
 		final DimensionSpec dimPPOrderProductAttributesToTransfer = Services.get(IDimensionspecDAO.class).retrieveForInternalName(HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer);
 
-		final Set<Integer> attributeIdsToBeTransferred = dimPPOrderProductAttributesToTransfer.retrieveAttributesForDimensionSpec()
+		final Set<Integer> attributeIdsToBeTransferred = dimPPOrderProductAttributesToTransfer.retrieveAttributes()
 				.stream()
 				.map(I_M_Attribute::getM_Attribute_ID)
 				.collect(ImmutableSet.toImmutableSet());

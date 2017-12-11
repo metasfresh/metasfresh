@@ -19,7 +19,7 @@ import org.junit.rules.TestWatcher;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group.Type;
 import de.metas.material.dispo.commons.repository.StockRepository;
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 
 /*
@@ -75,8 +75,8 @@ public class AvailableStockServiceTests
 		final I_M_AttributeValue attributeValue2 = attributesTestHelper.createM_AttributeValue(attr2, "value2");
 
 		// invoke the method under test
-		final StorageAttributesKey storageAttributesKey = StorageAttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());
-		final List<I_M_AttributeValue> result = availableStockService.extractAttributeSetFromStorageAttributesKey(storageAttributesKey);
+		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());
+		final List<I_M_AttributeValue> result = availableStockService.extractAttributeSetFromStorageAttributesKey(attributesKey);
 
 		assertThat(result).hasSize(2);
 
@@ -108,8 +108,8 @@ public class AvailableStockServiceTests
 	@Test
 	public void extractType_attributeSet()
 	{
-		final StorageAttributesKey storageAttributesKey = StorageAttributesKey.ofAttributeValueIds(12345);
-		final Group.Type type = availableStockService.extractType(storageAttributesKey);
+		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(12345);
+		final Group.Type type = availableStockService.extractType(attributesKey);
 		assertThat(type).isSameAs(Type.ATTRIBUTE_SET);
 	}
 

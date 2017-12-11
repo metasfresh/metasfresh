@@ -11,11 +11,13 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
+import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
@@ -29,6 +31,7 @@ import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -56,10 +59,33 @@ import lombok.Value;
 
 public class DimensionSpec
 {
-	public static DimensionSpec ofRecord(final I_DIM_Dimension_Spec dimensionSpec)
+	public static DimensionSpec ofRecord(@NonNull final I_DIM_Dimension_Spec dimensionSpecRecord)
 	{
-		return new DimensionSpec(dimensionSpec);
+		Check.errorIf(dimensionSpecRecord.getDIM_Dimension_Spec_ID() <= 0,
+				"Parameter dimensionSpecRecord needs to have ID > 0, i.e. it needs to be already stored in DB; dimensionSpecRecord={}",
+				dimensionSpecRecord);
+		return new DimensionSpec(dimensionSpecRecord);
 	}
+
+	private static final String GROUPS_CACHE_NAME = "DimensionSpec#retrieveGroups"
+			+ "#" + I_DIM_Dimension_Spec.Table_Name
+			+ "#" + I_DIM_Dimension_Spec_Attribute.Table_Name
+			+ "#" + I_DIM_Dimension_Spec_AttributeValue.Table_Name
+			+ "#" + I_M_AttributeValue.Table_Name;
+
+	private static final transient CCache<Integer, List<DimensionSpecGroup>> dimentsionSpecIdToGroups = CCache.newCache(
+			GROUPS_CACHE_NAME,
+			10,
+			CCache.EXPIREMINUTES_Never);
+
+	private static final String ATTRIBUTES_CACHE_NAME = "DimensionSpec#retrieveAttributes"
+			+ "#" + I_DIM_Dimension_Spec.Table_Name
+			+ "#" + I_DIM_Dimension_Spec_Attribute.Table_Name;
+
+	private static final transient CCache<Integer, List<I_M_Attribute>> dimentsionSpecIdToAttributes = CCache.newCache(
+			ATTRIBUTES_CACHE_NAME,
+			10,
+			CCache.EXPIREMINUTES_Never);
 
 	private final I_DIM_Dimension_Spec dimensionSpecRecord;
 
@@ -85,7 +111,7 @@ public class DimensionSpec
 	{
 		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
-		final List<KeyNamePair> attrToValues = createAttrToValue(asi);
+		final List<KeyNamePair> attrToValues = retrieveAttritbuteIdToDisplayValue(asi);
 
 		if (attrToValues.isEmpty())
 		{
@@ -121,15 +147,15 @@ public class DimensionSpec
 	 * @param dimensionSpec
 	 * @return
 	 */
-	public List<KeyNamePair> createAttrToValue(final I_M_AttributeSetInstance asi)
+	public List<KeyNamePair> retrieveAttritbuteIdToDisplayValue(final I_M_AttributeSetInstance asi)
 	{
 		final IDimensionspecDAO dimSpecDAO = Services.get(IDimensionspecDAO.class);
 
 		final PlainContextAware ctxAware = PlainContextAware.newOutOfTrx();
 
-		final List<I_M_Attribute> dimAttrs = retrieveAttributesForDimensionSpec();
+		final List<I_M_Attribute> dimAttrs = retrieveAttributes();
 
-		final List<KeyNamePair> attrToValues = new ArrayList<>();
+		final List<KeyNamePair> attributeIdToValues = new ArrayList<>();
 
 		for (final I_M_Attribute attribute : dimAttrs)
 		{
@@ -144,17 +170,17 @@ public class DimensionSpec
 
 			if (!valueForGroup.isEmpty())
 			{
-				attrToValues.add(new KeyNamePair(attribute.getM_Attribute_ID(), valueForGroup.get(0)));
+				attributeIdToValues.add(new KeyNamePair(attribute.getM_Attribute_ID(), valueForGroup.get(0)));
 			}
 
 			// fallback, in case the groupname was not found
 			else if (dimensionSpecRecord.isIncludeEmpty())
 			{
-				attrToValues.add(new KeyNamePair(attribute.getM_Attribute_ID(), DimensionConstants.DIM_EMPTY));
+				attributeIdToValues.add(new KeyNamePair(attribute.getM_Attribute_ID(), DimensionConstants.DIM_EMPTY));
 			}
 		}
 
-		return attrToValues;
+		return attributeIdToValues;
 	}
 
 	private static String getAttrValueFromASI(final I_M_Attribute attribute, final I_M_AttributeSetInstance asi)
@@ -185,11 +211,9 @@ public class DimensionSpec
 			{
 				return value;
 			}
-
 		}
 
 		final String value = attributeInstance.getValue();
-
 		if (value != null)
 		{
 			return value;
@@ -205,19 +229,35 @@ public class DimensionSpec
 		return DimensionConstants.DIM_EMPTY;
 	}
 
-	public List<I_M_Attribute> retrieveAttributesForDimensionSpec()
+	public List<I_M_Attribute> retrieveAttributes()
+	{
+		return dimentsionSpecIdToAttributes
+				.getOrLoad(dimensionSpecRecord.getDIM_Dimension_Spec_ID(), () -> retrieveAttributesForDimensionSpec(dimensionSpecRecord));
+	}
+
+	private static List<I_M_Attribute> retrieveAttributesForDimensionSpec(@NonNull final I_DIM_Dimension_Spec dimensionSpecRecord)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		return queryBL.createQueryBuilder(I_DIM_Dimension_Spec_Attribute.class)
-				.addEqualsFilter(I_DIM_Dimension_Spec_Attribute.COLUMNNAME_DIM_Dimension_Spec_ID, dimensionSpecRecord.getDIM_Dimension_Spec_ID())
+				.addEqualsFilter(I_DIM_Dimension_Spec_Attribute.COLUMNNAME_DIM_Dimension_Spec_ID,
+						dimensionSpecRecord.getDIM_Dimension_Spec_ID())
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_DIM_Dimension_Spec_Attribute.COLUMN_M_Attribute_ID, I_M_Attribute.class)
+
+				// important to get a correct AttributesKey *if* we used these attributes for that purpose
+				.orderBy().addColumn(I_M_Attribute.COLUMN_M_Attribute_ID).endOrderBy()
 				.create()
 				.list(I_M_Attribute.class);
 	}
 
-	public List<DimensionSpecGroup> getGroups()
+	public List<DimensionSpecGroup> retrieveGroups()
+	{
+		return dimentsionSpecIdToGroups
+				.getOrLoad(dimensionSpecRecord.getDIM_Dimension_Spec_ID(), () -> retrieveGroups(dimensionSpecRecord));
+	}
+
+	private static List<DimensionSpecGroup> retrieveGroups(@NonNull final I_DIM_Dimension_Spec dimensionSpecRecord)
 	{
 		final Builder<DimensionSpecGroup> builder = ImmutableList.builder();
 		if (dimensionSpecRecord.isIncludeEmpty())
@@ -228,6 +268,7 @@ public class DimensionSpec
 		final List<I_DIM_Dimension_Spec_Attribute> attrs = Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec_Attribute.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DIM_Dimension_Spec_Attribute.COLUMN_DIM_Dimension_Spec_ID, dimensionSpecRecord.getDIM_Dimension_Spec_ID())
+				.orderBy().addColumn(I_DIM_Dimension_Spec_Attribute.COLUMN_M_Attribute_ID).endOrderBy() // important to get a correct AttributesKey
 				.create()
 				.list();
 
@@ -237,7 +278,8 @@ public class DimensionSpec
 		{
 			if (dsa.isIncludeAllAttributeValues())
 			{
-				final List<I_M_AttributeValue> attributeValues = Services.get(IAttributeDAO.class).retrieveAttributeValues(dsa.getM_Attribute());
+				final List<I_M_AttributeValue> attributeValues = Services.get(IAttributeDAO.class)
+						.retrieveAttributeValues(dsa.getM_Attribute());
 				for (final I_M_AttributeValue attributeValue : attributeValues)
 				{
 					final String groupName = dsa.isValueAggregate() ? dsa.getValueAggregateName() : attributeValue.getName();
@@ -246,7 +288,8 @@ public class DimensionSpec
 			}
 			else
 			{
-				final List<I_DIM_Dimension_Spec_AttributeValue> attrValues = Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec_AttributeValue.class)
+				final List<I_DIM_Dimension_Spec_AttributeValue> attrValues = Services.get(IQueryBL.class)
+						.createQueryBuilder(I_DIM_Dimension_Spec_AttributeValue.class)
 						.addOnlyActiveRecordsFilter()
 						.addEqualsFilter(I_DIM_Dimension_Spec_AttributeValue.COLUMN_DIM_Dimension_Spec_Attribute_ID, dsa.getDIM_Dimension_Spec_Attribute_ID())
 						.create()
@@ -266,10 +309,12 @@ public class DimensionSpec
 				.forEach(entry -> {
 
 					final ITranslatableString groupName = msgBL.getTranslatableMsgText(entry.getKey());
-					final ImmutableList<Integer> attributeValueIds = ImmutableList.copyOf(entry.getValue());
 					final boolean emptyGroup = false;
 
-					builder.add(new DimensionSpecGroup(groupName, attributeValueIds, emptyGroup));
+					builder.add(new DimensionSpecGroup(
+							groupName,
+							AttributesKey.ofAttributeValueIds(entry.getValue()),
+							emptyGroup));
 				});
 
 		return builder.build();
@@ -280,14 +325,18 @@ public class DimensionSpec
 	{
 		public static DimensionSpecGroup EMPTY_GROUP = new DimensionSpecGroup(
 				Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NoneOrEmpty),
-				ImmutableList.of(),
+				AttributesKey.NONE,
 				true);
 
 		@NonNull
 		ITranslatableString groupName;
 
+		/**
+		 * These {@code M_AttributeValue_ID}s belong to this group. Maybe empty, often has just one element.<br>
+		 * Might later be abstracted away so that other kind of data (e.g. "BPartners") could also be mapped to a dimension group.
+		 */
 		@NonNull
-		List<Integer> M_AttributeValue_IDs;
+		AttributesKey attributesKey;
 
 		boolean emptyGroup;
 	}

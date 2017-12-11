@@ -23,8 +23,8 @@ import de.metas.material.dispo.commons.repository.StockResult.AddToResultGroupRe
 import de.metas.material.dispo.commons.repository.StockResult.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
 import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.StorageAttributesKey;
 
 /*
  * #%L
@@ -50,8 +50,8 @@ import de.metas.material.event.commons.StorageAttributesKey;
 
 public class StockResultTest
 {
-	private static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY = StorageAttributesKey.ofAttributeValueIds(1, 2);
-	private static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = StorageAttributesKey.ofAttributeValueIds(1, 2, 3);
+	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
+	private static final AttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = AttributesKey.ofAttributeValueIds(1, 2, 3);
 
 	@Before
 	public void init()
@@ -132,13 +132,13 @@ public class StockResultTest
 	{
 		final ResultGroup emptyResult1 = ResultGroup.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(1))
+				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1))
 				.warehouseId(100)
 				.bpartnerId(200)
 				.build();
 		final ResultGroup emptyResult2 = ResultGroup.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(2))
+				.storageAttributesKey(AttributesKey.ofAttributeValueIds(2))
 				.warehouseId(100)
 				.bpartnerId(200)
 				.build();
@@ -150,19 +150,19 @@ public class StockResultTest
 				.bpartnerId(200)
 				.qty(BigDecimal.ONE);
 
-		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(1, 2)).build());
-		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(1, 2)).build());
-		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(2)).build());
+		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 2)).build());
+		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 2)).build());
+		stockResult.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(2)).build());
 
 		final List<ResultGroup> resultGroups = stockResult.getResultGroups();
 		assertThat(resultGroups).hasSize(2);
 
 		assertThat(resultGroups.get(0).getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(resultGroups.get(0).getStorageAttributesKey()).isEqualTo(StorageAttributesKey.ofAttributeValueIds(1));
+		assertThat(resultGroups.get(0).getStorageAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(1));
 		assertThat(resultGroups.get(0).getQty()).isEqualByComparingTo("2");
 
 		assertThat(resultGroups.get(1).getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(resultGroups.get(1).getStorageAttributesKey()).isEqualTo(StorageAttributesKey.ofAttributeValueIds(2));
+		assertThat(resultGroups.get(1).getStorageAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(2));
 		assertThat(resultGroups.get(1).getQty()).isEqualByComparingTo("3");
 	}
 
@@ -173,7 +173,7 @@ public class StockResultTest
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
 				.bpartnerId(200)
-				.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(1))
+				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1))
 				.build();
 
 		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
@@ -182,11 +182,13 @@ public class StockResultTest
 				.bpartnerId(200)
 				.qty(BigDecimal.ONE);
 
-		assertThat(group.matches(requestBuilder.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(1)).build())).isTrue();
-		assertThat(group.matches(requestBuilder.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(11)).build())).isFalse();
+		assertThat(group.matches(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1)).build())).isTrue();
+		assertThat(group.matches(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(11)).build())).isFalse();
 
 		assertThat(group.matches(requestBuilder.storageAttributesKey(STORAGE_ATTRIBUTES_KEY).build()))
-				.as("Should match because the ResultGroup's storageAttributesKey <%s> is included in the given storageAttributesKeyToMatch <%s>", group.getStorageAttributesKey(), STORAGE_ATTRIBUTES_KEY)
+				.as("Should match because the ResultGroup's storageAttributesKey <%s> is included in the given storageAttributesKeyToMatch <%s>",
+						group.getStorageAttributesKey(),
+						STORAGE_ATTRIBUTES_KEY)
 				.isTrue();
 	}
 
@@ -197,7 +199,7 @@ public class StockResultTest
 				.productId(PRODUCT_ID)
 				.warehouseId(100)
 				.bpartnerId(200)
-				.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(1, 3))
+				.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 3))
 				.build();
 
 		final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
@@ -206,12 +208,12 @@ public class StockResultTest
 				.bpartnerId(200)
 				.qty(BigDecimal.ONE);
 
-		assertThat(group.matches(requestBuilder.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(1, 3)).build())).isTrue();
-		assertThat(group.matches(requestBuilder.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(1)).build())).isFalse();
+		assertThat(group.matches(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1, 3)).build())).isTrue();
+		assertThat(group.matches(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(1)).build())).isFalse();
 
-		assertThat(group.matches(requestBuilder.storageAttributesKey(StorageAttributesKey.ofAttributeValueIds(10, 1, 3)).build())).isTrue();
+		assertThat(group.matches(requestBuilder.storageAttributesKey(AttributesKey.ofAttributeValueIds(10, 1, 3)).build())).isTrue();
 
-		final StorageAttributesKey keyWithOtherElementInTheMiddle = StorageAttributesKey.ofAttributeValueIds(1, 2, 3);
+		final AttributesKey keyWithOtherElementInTheMiddle = AttributesKey.ofAttributeValueIds(1, 2, 3);
 		assertThat(group.matches(requestBuilder.storageAttributesKey(keyWithOtherElementInTheMiddle).build()))
 				.as("Shall match because the elements of the ResultGroup's storageAttributesKey <%s> contain every element of the given storageAttributesKeyToMatch <%s>",
 						group.getStorageAttributesKey(), keyWithOtherElementInTheMiddle)

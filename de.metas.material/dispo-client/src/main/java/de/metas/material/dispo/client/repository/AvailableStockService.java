@@ -19,10 +19,10 @@ import de.metas.material.dispo.client.repository.AvailableStockResult.AvailableS
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group.GroupBuilder;
 import de.metas.material.dispo.client.repository.AvailableStockResult.Group.Type;
-import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
 import de.metas.material.dispo.commons.repository.StockQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
@@ -100,13 +100,13 @@ public class AvailableStockService
 				retrieveStockingUOM(commonsResultGroup.getProductId()));
 		groupBuilder.qty(quantity);
 
-		final StorageAttributesKey storageAttributesKey = commonsResultGroup.getStorageAttributesKey();
-		final Type type = extractType(storageAttributesKey);
+		final AttributesKey attributesKey = commonsResultGroup.getStorageAttributesKey();
+		final Type type = extractType(attributesKey);
 		groupBuilder.type(type);
 
 		if (type == Type.ATTRIBUTE_SET)
 		{
-			final List<I_M_AttributeValue> attributevalues = extractAttributeSetFromStorageAttributesKey(storageAttributesKey);
+			final List<I_M_AttributeValue> attributevalues = extractAttributeSetFromStorageAttributesKey(attributesKey);
 			groupBuilder.attributeValues(attributevalues);
 		}
 
@@ -120,13 +120,13 @@ public class AvailableStockService
 	}
 
 	@VisibleForTesting
-	Type extractType(@NonNull final StorageAttributesKey storageAttributesKey)
+	Type extractType(@NonNull final AttributesKey attributesKey)
 	{
-		if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.equals(storageAttributesKey))
+		if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.equals(attributesKey))
 		{
 			return Type.ALL_STORAGE_KEYS;
 		}
-		else if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER.equals(storageAttributesKey))
+		else if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER.equals(attributesKey))
 		{
 			return Type.OTHER_STORAGE_KEYS;
 		}
@@ -137,16 +137,16 @@ public class AvailableStockService
 	}
 
 	@VisibleForTesting
-	List<I_M_AttributeValue> extractAttributeSetFromStorageAttributesKey(@NonNull final StorageAttributesKey storageAttributesKey)
+	List<I_M_AttributeValue> extractAttributeSetFromStorageAttributesKey(@NonNull final AttributesKey attributesKey)
 	{
 		try
 		{
-			final List<Integer> attributeValueIds = storageAttributesKey.getAttributeValueIds();
+			final List<Integer> attributeValueIds = attributesKey.getAttributeValueIds();
 			if (attributeValueIds.isEmpty())
 			{
 				return ImmutableList.of();
 			}
-			
+
 			return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeValue.class)
 					.addInArrayFilter(I_M_AttributeValue.COLUMN_M_AttributeValue_ID, attributeValueIds)
 					.create()
@@ -155,7 +155,7 @@ public class AvailableStockService
 		catch (final RuntimeException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
-					.setParameter("storageAttributesKey", storageAttributesKey);
+					.setParameter("storageAttributesKey", attributesKey);
 		}
 	}
 }

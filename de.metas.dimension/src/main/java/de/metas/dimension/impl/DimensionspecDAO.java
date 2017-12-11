@@ -28,6 +28,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.IContextAware;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column;
@@ -111,10 +112,7 @@ public class DimensionspecDAO implements IDimensionspecDAO
 				.addEqualsFilter(I_DIM_Dimension_Spec.COLUMN_InternalName, internalName)
 				.create()
 				.firstOnly(I_DIM_Dimension_Spec.class);
-		if (record == null)
-		{
-			return null;
-		}
+		Check.errorIf(record == null, "Unable to load DIM_Dimension_Spec record with InternalName={}", internalName);
 		return DimensionSpec.ofRecord(record);
 	}
 
