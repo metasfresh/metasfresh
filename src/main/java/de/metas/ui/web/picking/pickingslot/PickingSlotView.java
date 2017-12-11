@@ -9,10 +9,10 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -94,7 +94,7 @@ public class PickingSlotView implements IView
 			@Nullable final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors,
 			@Nullable final List<DocumentFilter> filters)
 	{
-		Preconditions.checkArgument(currentShipmentScheduleId > 0, "shipmentScheduleId > 0");
+		Check.assume(currentShipmentScheduleId > 0, "shipmentScheduleId > 0");
 
 		this.viewId = viewId;
 		this.parentViewId = parentViewId;
