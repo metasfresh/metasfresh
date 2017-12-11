@@ -5,11 +5,7 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.model.I_S_Resource;
-import org.compiere.model.X_S_Resource;
 
 import com.google.common.collect.ImmutableList;
 
@@ -25,10 +21,6 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout.Builder;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
-import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.NonNull;
 
 /*
@@ -96,9 +88,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 
 	private Supplier<List<MaterialCockpitRow>> createRowsSupplier(@NonNull final List<DocumentFilter> filtersToUse)
 	{
-		// TODO: get the row ids for the request's filters AND our date-filter, if we added it
-
-		final Supplier<List<MaterialCockpitRow>> rowsSupplier = () -> materialCockpitRowRepository.retrieveRows(filtersToUse);
+			final Supplier<List<MaterialCockpitRow>> rowsSupplier = () -> materialCockpitRowRepository.retrieveRows(filtersToUse);
 		return rowsSupplier;
 	}
 
@@ -120,36 +110,8 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				.addElementsFromViewRowClass(MaterialCockpitRow.class, viewDataType)
 				.setFilters(materialCockpitFilters.getFilterDescriptors());
 
-		addProductionPlantColumns(viewlayOutBuilder);
-
 		return viewlayOutBuilder.build();
 	}
 
-	private void addProductionPlantColumns(final Builder viewlayOutBuilder)
-	{
-		final List<I_S_Resource> plants = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_S_Resource.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant)
-				.orderBy().addColumn(I_S_Resource.COLUMNNAME_Name).endOrderBy()
-				.create()
-				.list();
 
-		for (final I_S_Resource plant : plants)
-		{
-			final DocumentLayoutElementDescriptor.Builder elementBuilder = DocumentLayoutElementDescriptor.builder()
-					.setCaption(ITranslatableString.constant(plant.getName()))
-					.setWidgetType(DocumentFieldWidgetType.Text)
-					.setGridElement()
-					.setViewEditorRenderMode(ViewEditorRenderMode.NEVER)
-					.addField(DocumentLayoutElementFieldDescriptor.builder(createFieldNameForPlant(plant)));
-
-			viewlayOutBuilder.addElement(elementBuilder);
-		}
-	}
-
-	public static String createFieldNameForPlant(@NonNull final I_S_Resource plant)
-	{
-		return "Fresh_QtyOnHand_OnDate_" + plant.getValue();
-	}
 }

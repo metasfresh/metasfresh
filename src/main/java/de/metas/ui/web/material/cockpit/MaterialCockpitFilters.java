@@ -7,6 +7,7 @@ import java.util.List;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.StringLikeFilter;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
@@ -163,7 +164,6 @@ public class MaterialCockpitFilters
 				anyRestrictionAdded = true;
 			}
 		}
-
 		if (anyRestrictionAdded)
 		{
 			final IQuery<I_X_MRP_ProductInfo_Detail_MV> query = augmentqueryBuildWithOrderBy(queryBuilder).create();
@@ -172,6 +172,77 @@ public class MaterialCockpitFilters
 
 		// avoid memory problems in case the filters are accidentally empty
 		return queryBuilder.filter(ConstantQueryFilter.of(false)).create();
+	}
+
+	public boolean isProductMatchesFilters(
+			@NonNull final I_M_Product product,
+			@NonNull final List<DocumentFilter> filters)
+	{
+		for (final DocumentFilter filter : filters)
+		{
+			if (MATERIAL_COCKPIT_DATE_ONLY_FILTER.equals(filter.getFilterId()))
+			{
+				continue;
+			}
+
+			final List<DocumentFilterParam> filterParameters = filter.getParameters();
+			for (final DocumentFilterParam filterParameter : filterParameters)
+			{
+				if (!doesProductMatchFilterParam(product, filterParameter))
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	private boolean doesProductMatchFilterParam(
+			@NonNull final I_M_Product product,
+			@NonNull final DocumentFilterParam filterParameter)
+	{
+		final boolean ignoreCase = true;
+		if (I_X_MRP_ProductInfo_V.COLUMNNAME_ProductName.equals(filterParameter.getFieldName()))
+		{
+			final StringLikeFilter<I_M_Product> likeFilter = new StringLikeFilter<>(I_M_Product.COLUMNNAME_Name, filterParameter.getValueAsString(), ignoreCase);
+			if (!likeFilter.accept(product))
+			{
+				return false;
+			}
+		}
+		else if (I_X_MRP_ProductInfo_V.COLUMNNAME_Value.equals(filterParameter.getFieldName()))
+		{
+			final StringLikeFilter<I_M_Product> likeFilter = new StringLikeFilter<>(I_M_Product.COLUMNNAME_Value, filterParameter.getValueAsString(), ignoreCase);
+			if (!likeFilter.accept(product))
+			{
+				return false;
+			}
+		}
+		return ignoreCase;
+	}
+
+	public Timestamp extractDateOrNull(@NonNull final List<DocumentFilter> filters)
+	{
+		for (final DocumentFilter filter : filters)
+		{
+			if (!MATERIAL_COCKPIT_DATE_ONLY_FILTER.equals(filter.getFilterId()))
+			{
+				continue;
+			}
+
+			final List<DocumentFilterParam> dateFilterParameters = filter.getParameters();
+			for (final DocumentFilterParam dateFilterParameter : dateFilterParameters)
+			{
+				if (!I_X_MRP_ProductInfo_V.COLUMNNAME_DateGeneral.equals(dateFilterParameter.getFieldName()))
+				{
+					continue;
+				}
+				final Object value = dateFilterParameter.getValue();
+				final Date date = JSONDate.fromObject(value, DocumentFieldWidgetType.Date);
+				return new Timestamp(date.getTime());
+			}
+		}
+		return null;
 	}
 
 	private IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> createInitialQueryBuilder()
@@ -196,7 +267,8 @@ public class MaterialCockpitFilters
 		{
 			final Date date = JSONDate.fromObject(value, DocumentFieldWidgetType.Date);
 			final Timestamp dayTimestamp = TimeUtil.getDay(date);
-			queryBuilder.addBetweenFilter(I_X_MRP_ProductInfo_Detail_MV.COLUMNNAME_DateGeneral, dayTimestamp, TimeUtil.addDays(dayTimestamp, 1));
+			queryBuilder.addCompareFilter(I_X_MRP_ProductInfo_Detail_MV.COLUMN_DateGeneral, org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.GREATER_OR_EQUAL, dayTimestamp);
+			queryBuilder.addCompareFilter(I_X_MRP_ProductInfo_Detail_MV.COLUMN_DateGeneral, org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS, TimeUtil.addDays(dayTimestamp, 1));
 		}
 		else if (I_X_MRP_ProductInfo_V.COLUMNNAME_ProductName.equals(fieldName))
 		{

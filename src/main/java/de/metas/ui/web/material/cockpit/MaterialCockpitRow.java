@@ -1,6 +1,7 @@
 package de.metas.ui.web.material.cockpit;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -8,13 +9,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.util.Check;
+import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.dimension.DimensionSpec.DimensionSpecGroup;
@@ -28,7 +29,6 @@ import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Singular;
 
@@ -104,9 +104,10 @@ public class MaterialCockpitRow implements IViewRow
 	private final BigDecimal qtyMaterialentnahme;
 
 	// MRP MEnge
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
-			captionKey = I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyMRP, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
+	// TODO also fill this column
+	// @ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
+	// captionKey = I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyMRP, //
+	// layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
 	private final BigDecimal qtyMrp;
 
 	// Zaehlbestand
@@ -125,28 +126,19 @@ public class MaterialCockpitRow implements IViewRow
 
 	private final DocumentPath documentPath;
 
-	private final List<PerPlantQuantity> perPlantQuantities;
-
 	private final List<MaterialCockpitRow> includedRows;
 
 	private final IViewRowType rowType;
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
 
-	private final DimensionSpecGroup dimensionGroup;
-
 	@lombok.Builder(builderClassName = "MainRowBuilder", builderMethodName = "mainRowBuilder")
 	private MaterialCockpitRow(
-			@Singular final List<PerPlantQuantity> perPlantQuantities,
 			@Singular final List<MaterialCockpitRow> includedRows)
 	{
-		Check.errorIf(includedRows.isEmpty(),
-				"The given includedRows may not be empty; productId={}; perPlantQuantities={}",
-				perPlantQuantities);
+		Check.errorIf(includedRows.isEmpty(), "The given includedRows may not be empty");
 
-		this.rowType = DefaultRowType.Line;
-
-		this.dimensionGroup = null;
+		this.rowType = DefaultRowType.Row;
 
 		this.date = extractDate(includedRows);
 		this.productId = extractProductId(includedRows);
@@ -164,27 +156,26 @@ public class MaterialCockpitRow implements IViewRow
 		this.productName = product.getName();
 		this.productCategoryOrAttributeGroupName = product.getM_Product_Category().getName();
 
-		this.perPlantQuantities = perPlantQuantities;
 		this.includedRows = includedRows;
 
 		// the qtys and also "date" is actually aggregated from our includedRows
-		BigDecimal temporaryPmmQtyPromised = BigDecimal.ZERO;
-		BigDecimal temporaryQtyReserved = BigDecimal.ZERO;
-		BigDecimal temporaryQtyOrdered = BigDecimal.ZERO;
-		BigDecimal temporaryQtyMaterialentnahme = BigDecimal.ZERO;
-		BigDecimal temporaryQtyMrp = BigDecimal.ZERO;
-		BigDecimal temporaryQtyOnHand = BigDecimal.ZERO;
-		BigDecimal temporaryQtyPromised = BigDecimal.ZERO;
+		BigDecimal temporaryPmmQtyPromised = null;
+		BigDecimal temporaryQtyReserved = null;
+		BigDecimal temporaryQtyOrdered = null;
+		BigDecimal temporaryQtyMaterialentnahme = null;
+		BigDecimal temporaryQtyMrp = null;
+		BigDecimal temporaryQtyOnHand = null;
+		BigDecimal temporaryQtyPromised = null;
 
 		for (final MaterialCockpitRow subRow : includedRows)
 		{
-			temporaryPmmQtyPromised = temporaryPmmQtyPromised.add(subRow.pmmQtyPromised);
-			temporaryQtyReserved = temporaryQtyReserved.add(subRow.qtyReserved);
-			temporaryQtyOrdered = temporaryQtyOrdered.add(subRow.qtyOrdered);
-			temporaryQtyMaterialentnahme = temporaryQtyMaterialentnahme.add(subRow.qtyMaterialentnahme);
-			temporaryQtyMrp = temporaryQtyMrp.add(subRow.qtyMrp);
-			temporaryQtyOnHand = temporaryQtyOnHand.add(subRow.qtyOnHand);
-			temporaryQtyPromised = temporaryQtyPromised.add(subRow.qtyPromised);
+			temporaryPmmQtyPromised = addNumberOrNull(temporaryPmmQtyPromised, subRow.pmmQtyPromised);
+			temporaryQtyReserved = addNumberOrNull(temporaryQtyReserved, subRow.qtyReserved);
+			temporaryQtyOrdered = addNumberOrNull(temporaryQtyOrdered, subRow.qtyOrdered);
+			temporaryQtyMaterialentnahme = addNumberOrNull(temporaryQtyMaterialentnahme, subRow.qtyMaterialentnahme);
+			temporaryQtyMrp = addNumberOrNull(temporaryQtyMrp, subRow.qtyMrp);
+			temporaryQtyOnHand = addNumberOrNull(temporaryQtyOnHand, subRow.qtyOnHand);
+			temporaryQtyPromised = addNumberOrNull(temporaryQtyPromised, subRow.qtyPromised);
 		}
 		this.pmmQtyPromised = temporaryPmmQtyPromised;
 		this.qtyReserved = temporaryQtyReserved;
@@ -193,6 +184,16 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyMrp = temporaryQtyMrp;
 		this.qtyOnHand = temporaryQtyOnHand;
 		this.qtyPromised = temporaryQtyPromised;
+	}
+
+	private static BigDecimal addNumberOrNull(BigDecimal numberOrNull, BigDecimal augentOrNull)
+	{
+		if (numberOrNull == null && augentOrNull == null)
+		{
+			return null;
+		}
+
+		return Util.coalesce(numberOrNull, BigDecimal.ZERO).add(Util.coalesce(augentOrNull, BigDecimal.ZERO));
 	}
 
 	private static Timestamp extractDate(final List<MaterialCockpitRow> includedRows)
@@ -211,7 +212,7 @@ public class MaterialCockpitRow implements IViewRow
 		return productIds.get(0);
 	}
 
-	@lombok.Builder(builderClassName = "SubRowBuilder", builderMethodName = "subRowBuilder")
+	@lombok.Builder(builderClassName = "AttributeSubRowBuilder", builderMethodName = "attributeSubRowBuilder")
 	private MaterialCockpitRow(
 			final int productId,
 			final Timestamp date,
@@ -221,12 +222,10 @@ public class MaterialCockpitRow implements IViewRow
 			final BigDecimal qtyOrdered,
 			final BigDecimal qtyMaterialentnahme,
 			final BigDecimal qtyMrp,
-			final BigDecimal qtyOnHand,
 			final BigDecimal qtyPromised)
 	{
-		this.rowType = DefaultRowType.Row;
+		this.rowType = DefaultRowType.Line;
 
-		this.dimensionGroup = dimensionGroup;
 		final String dimensionGroupName = dimensionGroup.getGroupName().translate(Env.getAD_Language());
 
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
@@ -246,7 +245,6 @@ public class MaterialCockpitRow implements IViewRow
 		this.productId = productId;
 		this.date = date;
 
-		this.perPlantQuantities = ImmutableList.of();
 		this.includedRows = ImmutableList.of();
 
 		this.pmmQtyPromised = Util.coalesce(pmmQtyPromised, BigDecimal.ZERO);
@@ -254,8 +252,48 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyOrdered = Util.coalesce(qtyOrdered, BigDecimal.ZERO);
 		this.qtyMaterialentnahme = Util.coalesce(qtyMaterialentnahme, BigDecimal.ZERO);
 		this.qtyMrp = Util.coalesce(qtyMrp, BigDecimal.ZERO);
-		this.qtyOnHand = Util.coalesce(qtyOnHand, BigDecimal.ZERO);
+		this.qtyOnHand = null;
 		this.qtyPromised = Util.coalesce(qtyPromised, BigDecimal.ZERO);
+	}
+
+	@lombok.Builder(builderClassName = "CountingSubRowBuilder", builderMethodName = "countingSubRowBuilder")
+	private MaterialCockpitRow(
+			final int productId,
+			final Timestamp date,
+			final int plantId,
+			final BigDecimal qtyOnHand)
+	{
+		this.rowType = DefaultRowType.Line;
+
+		final I_S_Resource plant = loadOutOfTrx(plantId, I_S_Resource.class);
+		final String plantName = plant.getName();
+
+		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
+				date,
+				productId,
+				plantName));
+
+		this.documentPath = DocumentPath.rootDocumentPath(
+				MaterialCockpitConstants.WINDOWID_MaterialCockpitView,
+				documentId);
+
+		final I_M_Product product = load(productId, I_M_Product.class);
+		this.productValue = product.getValue();
+		this.productName = product.getName();
+		this.productCategoryOrAttributeGroupName = plantName;
+
+		this.productId = productId;
+		this.date = date;
+
+		this.includedRows = ImmutableList.of();
+
+		this.pmmQtyPromised = null;
+		this.qtyReserved = null;
+		this.qtyOrdered = null;
+		this.qtyMaterialentnahme = null;
+		this.qtyMrp = null;
+		this.qtyOnHand = Util.coalesce(qtyOnHand, BigDecimal.ZERO);
+		this.qtyPromised = null;
 	}
 
 	@Override
@@ -282,6 +320,9 @@ public class MaterialCockpitRow implements IViewRow
 		return documentPath;
 	}
 
+	/**
+	 * Return false, because with true, all rows are "grayed" out. This does not mean that the rows are editable.
+	 */
 	@Override
 	public boolean isProcessed()
 	{
@@ -293,25 +334,9 @@ public class MaterialCockpitRow implements IViewRow
 	{
 		if (_fieldNameAndJsonValues == null)
 		{
-			final Builder<String, Object> mapBuilder = ImmutableMap.<String, Object> builder();
-			final ImmutableMap<String, Object> jsonMapFromAnnotatedFields = ViewColumnHelper.extractJsonMap(this);
-			mapBuilder.putAll(jsonMapFromAnnotatedFields);
-
-			mapBuilder.putAll(getAdditionalFieldNameAndJsonValues());
-
-			_fieldNameAndJsonValues = mapBuilder.build();
+			_fieldNameAndJsonValues = ViewColumnHelper.extractJsonMap(this);
 		}
 		return _fieldNameAndJsonValues;
 	}
 
-	private Map<String, Object> getAdditionalFieldNameAndJsonValues()
-	{
-		final Builder<String, Object> builder = ImmutableMap.builder();
-		for (final PerPlantQuantity perPlantQuantity : perPlantQuantities)
-		{
-			final Object jsonValue = Values.valueToJsonObject(perPlantQuantity.getQty());
-			builder.put(perPlantQuantity.getFieldName(), jsonValue);
-		}
-		return builder.build();
-	}
 }

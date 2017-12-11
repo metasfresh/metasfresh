@@ -43,7 +43,7 @@ import de.metas.material.dispo.client.repository.AvailableStockService;
 import de.metas.material.dispo.commons.repository.StockQuery;
 import de.metas.material.dispo.commons.repository.StockQuery.StockQueryBuilder;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
@@ -496,7 +496,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			}
 			else
 			{
-				stockQueryBuilder.storageAttributesKey(StorageAttributesKey.ofString(storageAttributesKey));
+				stockQueryBuilder.storageAttributesKey(AttributesKey.ofString(storageAttributesKey));
 			}
 		}
 	}
