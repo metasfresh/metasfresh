@@ -29,12 +29,13 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 {
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
-
 	@Autowired
 	private IViewsRepository viewsRepo;
+	private final SourceHUsService sourceHuService = SourceHUsService.get();
+	private final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 
 	@Override
-	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
+	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		final Optional<HUEditorRow> anyHU = retrieveEligibleHUEditorRows().findAny();
 		if (anyHU.isPresent())
@@ -48,14 +49,34 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 
 	protected final Stream<HUEditorRow> retrieveEligibleHUEditorRows()
 	{
-		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-		final SourceHUsService sourceHuService = SourceHUsService.get();
+		return getView()
+				.streamByIds(getSelectedDocumentIds())
+				.filter(this::isEligible);
+	}
 
-		return getView().streamByIds(getSelectedDocumentIds())
-				.filter(huRow -> huRow.isTopLevel())
-				.filter(huRow -> huRow.isHUStatusActive())
-				.filter(huRow -> !sourceHuService.isSourceHu(huRow.getM_HU_ID())) // may not yet be a source-HU
-				.filter(huRow -> !huPickingSlotDAO.isHuIdPicked(huRow.getM_HU_ID()));
+	protected final boolean isEligible(final HUEditorRow huRow)
+	{
+		if (!huRow.isTopLevel())
+		{
+			return false;
+		}
+		if (!huRow.isHUStatusActive())
+		{
+			return false;
+		}
+
+		// may not yet be a source-HU
+		if (sourceHuService.isSourceHu(huRow.getM_HU_ID()))
+		{
+			return false;
+		}
+
+		if (huPickingSlotDAO.isHuIdPicked(huRow.getM_HU_ID()))
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override
