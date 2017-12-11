@@ -381,15 +381,21 @@ void invokeZapier(
     final def hook = registerWebhook()
     echo "Waiting for POST to ${hook.getURL()}"
 
-		final String zapierUrl = createZapierUrl()
-		final String jsonPayload = createZapierJsonPayLoad()
+		final jsonPayload = """{
+				\"MF_UPSTREAM_BUILDNO\":\"${upstreamBuildNo}\",
+				\"MF_UPSTREAM_BRANCH\":\"${upstreamBranch}\",
+				\"MF_METASFRESH_VERSION\":\"${metasfreshVersion}\",
+				\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${metasfreshProcurementWebuiVersion}\",
+				\"MF_METASFRESH_WEBUI_API_VERSION\":\"${metasfreshWebuiApiVersion}\",
+				\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${metasfreshWebuiFrontendVersion}\",
+				\"MF_WEBHOOK_CALLBACK_URL\":\"${hook.getURL()}\"
+		}"""
 
 		// invoke zapier to trigger external jobs
   	nodeIfNeeded('linux')
   	{
-  			sh "curl -X POST -d \'${jsonPayload}\' ${zapierUrl}";
+  			sh "curl -X POST -d \'${jsonPayload}\' ${createZapierUrl()}";
   	}
-
 		waitForWebhookCall(hook);
 }
 
@@ -397,24 +403,9 @@ String createZapierUrl()
 {
 	  withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'zapier_WEBHOOK_SECRET')])
 	  {
-	    // the zapier secret contains a trailing slash and one that is somewhere in the middle.
+	    // the zapier secret contains a trailing slash and another slash that is somewhere in the middle.
 	  	return "https://hooks.zapier.com/hooks/catch/${zapier_WEBHOOK_SECRET}"
 		}
-}
-
-String createZapierJsonPayLoad()
-{
-	  	/* we need to make sure we know "our own" MF_METASFRESH_VERSION, also if we were called by e.g. metasfresh-webui-api or metasfresh-webui--frontend */
-	  	final jsonPayload = """{
-	  			\"MF_UPSTREAM_BUILDNO\":\"${upstreamBuildNo}\",
-	  			\"MF_UPSTREAM_BRANCH\":\"${upstreamBranch}\",
-	  			\"MF_METASFRESH_VERSION\":\"${metasfreshVersion}\",
-	  			\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${metasfreshProcurementWebuiVersion}\",
-	  			\"MF_METASFRESH_WEBUI_API_VERSION\":\"${metasfreshWebuiApiVersion}\",
-	  			\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${metasfreshWebuiFrontendVersion}\",
-	  			\"MF_WEBHOOK_CALLBACK_URL\":\"${hook.getURL()}\"
-	  	}"""
-			return jsonPayload;
 }
 
 void waitForWebhookCall(final def hook)
