@@ -53,6 +53,7 @@ import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -63,6 +64,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -948,5 +950,35 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.distinct()
 				.map(id -> InterfaceWrapperHelper.load(id, I_M_Warehouse.class))
 				.collect(ImmutableList.toImmutableList());
+	}
+	
+	@Override
+	public List<org.compiere.model.I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(final List<I_M_HU> hus)
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		if (hus.isEmpty())
+		{
+			// should never happen
+			return Collections.emptyList();
+		}
+
+		// used for deciding the org and context
+		final I_M_HU firstHU = hus.get(0);
+
+		final int orgId = firstHU.getAD_Org_ID();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(firstHU);
+
+		final Set<Integer> huWarehouseIds = handlingUnitsDAO.retrieveWarehousesForHUs(hus)
+				.stream()
+				.map(org.compiere.model.I_M_Warehouse::getM_Warehouse_ID)
+				.collect(ImmutableSet.toImmutableSet());
+		
+		 final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId)
+				 .stream()
+				 .filter(warehouse -> !huWarehouseIds.contains(warehouse.getM_Warehouse_ID()))
+				 .collect(ImmutableList.toImmutableList());
+
+		return warehouses;
 	}
 }
