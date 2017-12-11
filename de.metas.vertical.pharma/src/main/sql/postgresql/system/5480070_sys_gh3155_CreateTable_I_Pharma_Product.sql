@@ -5,11 +5,6 @@
 
 
 
-
-
-
-
-
 -- 2017-12-08T20:11:57.493
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Table (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsChangeLog,IsDeleteable,IsHighVolume,IsSecurityEnabled,IsView,Name,ReplicationType,TableName,Updated,UpdatedBy) VALUES ('4',0,0,540880,TO_TIMESTAMP('2017-12-08 20:11:57','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.vertical.pharma','Y','N','N','N','N','N','I_Pharma_Product','L','I_Pharma_Product',TO_TIMESTAMP('2017-12-08 20:11:57','YYYY-MM-DD HH24:MI:SS'),100)
@@ -2514,4 +2509,99 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */ CREATE TABLE public.I_Pharma_Product (A00ANBNR4 NUMERIC(10), A00ARTNR VARCHAR(18), A00ATYP VARCHAR(2), A00DARFO VARCHAR(3), A00GDAT TIMESTAMP WITHOUT TIME ZONE, A00GTIN NUMERIC(10), A00HMNR NUMERIC(10), A00LKZ VARCHAR(1), A00PBEZ VARCHAR(26), A00PGEINH VARCHAR(2), A00PGMENG VARCHAR(7), A00PNAM VARCHAR(50), A00PPN NUMERIC(10), A00PZN NUMERIC(10), A00SSATZ VARCHAR(1), A00WGA VARCHAR(2), A01AB130A2 NUMERIC(10), A01AEP NUMERIC(10), A01AEPPPU NUMERIC(10), A01AMPVAMG VARCHAR(2), A01AMPVSGB VARCHAR(2), A01APU NUMERIC(10), A01APU783A NUMERIC(10), A01AVP NUMERIC(10), A01AVPPPU NUMERIC(10), A01DPPUAPU VARCHAR(11), A01GDAT TIMESTAMP WITHOUT TIME ZONE, A01KAEP NUMERIC(10), A01MWST VARCHAR(2), A01PPU NUMERIC(10), A01RESERV1 NUMERIC(10), A01RESERV2 NUMERIC(10), A01RESERV3 NUMERIC(10), A01SAB130A VARCHAR(1), A01SAEP VARCHAR(1), A01SAPU VARCHAR(1), A01SAVP VARCHAR(1), A01SKAEP VARCHAR(1), A01SUVP VARCHAR(1), A01SZBV VARCHAR(1), A01UVP NUMERIC(10), A01ZBV NUMERIC(10), A02130A18 VARCHAR(2), A02130A1A8 VARCHAR(2), A0247AMG VARCHAR(2), A0252B VARCHAR(2), A02AM VARCHAR(2), A02ANTHRO VARCHAR(2), A02APPFL VARCHAR(2), A02AUSNREI VARCHAR(2), A02BATTG VARCHAR(2), A02BIOSIEG VARCHAR(2), A02BIOTECH VARCHAR(2), A02BIOZID VARCHAR(2), A02BOPST NUMERIC(10), A02BTM VARCHAR(2), A02DIAET VARCHAR(2), A02DROCH VARCHAR(2), A02EB130B VARCHAR(2), A02ELEKEAR VARCHAR(2), A02ELEKTRO VARCHAR(2), A02EXPLOS VARCHAR(2), A02GDAT TIMESTAMP WITHOUT TIME ZONE, A02GENER VARCHAR(2), A02HMZV VARCHAR(2), A02HOMOEO VARCHAR(2), A02KOSMET VARCHAR(2), A02LEBENSM VARCHAR(2), A02LIFSTYL VARCHAR(2), A02MELDENR NUMERIC(10), A02MP VARCHAR(2), A02NEGLIS VARCHAR(2), A02NEM VARCHAR(2), A02PHYTO VARCHAR(2), A02PSM VARCHAR(2), A02RESERV1 VARCHAR(2), A02RESERV2 VARCHAR(2), A02RESERV3 VARCHAR(2), A02SDB VARCHAR(2), A02STERIL VARCHAR(2), A02TFG VARCHAR(2), A02TIERAM VARCHAR(2), A02TREZEP VARCHAR(2), A02VSPFL VARCHAR(2), A02WEEEREG NUMERIC(10), A02WIRKSTO VARCHAR(2), A02ZULREG VARCHAR(30), A03GDAT TIMESTAMP WITHOUT TIME ZONE, A03VKSTAT VARCHAR(2), A03VTSTAT VARCHAR(2), A03VWGAPO VARCHAR(2), A03VWGGH VARCHAR(2), A03VWGKAP VARCHAR(2), A03VWGSEH VARCHAR(2), A04BREITE VARCHAR(6), A04GDAT TIMESTAMP WITHOUT TIME ZONE, A04GWCHT VARCHAR(8), A04HOEHE VARCHAR(6), A04LAENGE VARCHAR(6), A04MBEST VARCHAR(6), A04VPART VARCHAR(2), A05EICH VARCHAR(2), A05FEUCHT VARCHAR(2), A05GDAT TIMESTAMP WITHOUT TIME ZONE, A05KKETTE VARCHAR(2), A05LAGE VARCHAR(2), A05LICHT VARCHAR(2), A05LZEICH NUMERIC(10), A05LZEIT NUMERIC(10), A05TMAX VARCHAR(4), A05TMIN VARCHAR(4), A05VFDAT VARCHAR(2), A05ZERBR VARCHAR(2), A06GDAT TIMESTAMP WITHOUT TIME ZONE, A06PZNNF NUMERIC(10), A06PZNORIG NUMERIC(10), A09GDAT TIMESTAMP WITHOUT TIME ZONE, A09THGP VARCHAR(2), A11GDAT TIMESTAMP WITHOUT TIME ZONE, A11VERIFIZ VARCHAR(2), A11VERIPFL NUMERIC(10), A11VERIREA NUMERIC(10), A11VERITES NUMERIC(10), I_Pharma_Product_ID NUMERIC(10), CONSTRAINT I_Pharma_Product_Key PRIMARY KEY (I_Pharma_Product_ID))
 ;
+
+
+
+
+-- 2017-12-11T13:36:30.638
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,AD_Element_ID,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AllowZoomTo,Help,ColumnName,IsGenericZoomOrigin,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,Description,SelectionColumnSeqNo,AD_Org_ID,Name,IsRangeFilter,IsShowFilterIncrementButtons,EntityType) VALUES (19,10,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2017-12-11 13:36:30','YYYY-MM-DD HH24:MI:SS'),100,102,'N','N','N','N','N','N','Y','N',TO_TIMESTAMP('2017-12-11 13:36:30','YYYY-MM-DD HH24:MI:SS'),100,'N','N',540880,'N','N','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','AD_Client_ID','N',558271,'N','N','N','N','N','N','Mandant für diese Installation.',0,0,'Mandant','N','N','de.metas.vertical.pharma')
+;
+
+-- 2017-12-11T13:36:30.642
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558271 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2017-12-11T13:36:33.880
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('I_Pharma_Product','ALTER TABLE public.I_Pharma_Product ADD COLUMN AD_Client_ID NUMERIC(10)')
+;
+
+-- 2017-12-11T13:36:41.967
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,AD_Element_ID,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AllowZoomTo,Help,ColumnName,IsGenericZoomOrigin,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,Description,SelectionColumnSeqNo,AD_Org_ID,Name,IsRangeFilter,IsShowFilterIncrementButtons,EntityType) VALUES (19,10,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2017-12-11 13:36:41','YYYY-MM-DD HH24:MI:SS'),100,113,'N','N','N','N','N','N','Y','N',TO_TIMESTAMP('2017-12-11 13:36:41','YYYY-MM-DD HH24:MI:SS'),100,'N','N',540880,'N','N','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','AD_Org_ID','N',558272,'N','N','N','N','N','N','Organisatorische Einheit des Mandanten',0,0,'Sektion','N','N','de.metas.vertical.pharma')
+;
+
+-- 2017-12-11T13:36:41.968
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558272 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2017-12-11T13:36:43.802
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('I_Pharma_Product','ALTER TABLE public.I_Pharma_Product ADD COLUMN AD_Org_ID NUMERIC(10)')
+;
+
+-- 2017-12-11T13:36:51.749
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,AD_Element_ID,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AllowZoomTo,Help,ColumnName,IsGenericZoomOrigin,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,Description,SelectionColumnSeqNo,AD_Org_ID,Name,IsRangeFilter,IsShowFilterIncrementButtons,EntityType) VALUES (16,7,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2017-12-11 13:36:51','YYYY-MM-DD HH24:MI:SS'),100,245,'N','N','N','N','N','N','N','N',TO_TIMESTAMP('2017-12-11 13:36:51','YYYY-MM-DD HH24:MI:SS'),100,'N','N',540880,'N','N','Das Feld Erstellt zeigt an, zu welchem Datum dieser Eintrag erstellt wurde.','Created','N',558273,'N','N','N','N','N','N','Datum, an dem dieser Eintrag erstellt wurde',0,0,'Erstellt','N','N','de.metas.vertical.pharma')
+;
+
+-- 2017-12-11T13:36:51.753
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558273 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2017-12-11T13:36:53.207
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('I_Pharma_Product','ALTER TABLE public.I_Pharma_Product ADD COLUMN Created TIMESTAMP WITH TIME ZONE')
+;
+
+-- 2017-12-11T13:37:00.599
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,AD_Element_ID,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AllowZoomTo,Help,AD_Reference_Value_ID,ColumnName,IsGenericZoomOrigin,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,Description,SelectionColumnSeqNo,AD_Org_ID,Name,IsRangeFilter,IsShowFilterIncrementButtons,EntityType) VALUES (18,10,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2017-12-11 13:37:00','YYYY-MM-DD HH24:MI:SS'),100,246,'N','N','N','N','N','N','N','N',TO_TIMESTAMP('2017-12-11 13:37:00','YYYY-MM-DD HH24:MI:SS'),100,'N','N',540880,'N','N','Das Feld Erstellt durch zeigt an, welcher Nutzer diesen Eintrag erstellt hat.',110,'CreatedBy','N',558274,'N','N','N','N','N','N','Nutzer, der diesen Eintrag erstellt hat',0,0,'Erstellt durch','N','N','de.metas.vertical.pharma')
+;
+
+-- 2017-12-11T13:37:00.602
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558274 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2017-12-11T13:37:02.045
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('I_Pharma_Product','ALTER TABLE public.I_Pharma_Product ADD COLUMN CreatedBy NUMERIC(10)')
+;
+
+-- 2017-12-11T13:37:08.262
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,AD_Element_ID,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AllowZoomTo,Help,ColumnName,IsGenericZoomOrigin,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,Description,SelectionColumnSeqNo,AD_Org_ID,Name,IsRangeFilter,IsShowFilterIncrementButtons,EntityType) VALUES (16,7,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2017-12-11 13:37:08','YYYY-MM-DD HH24:MI:SS'),100,607,'N','N','N','N','N','N','N','N',TO_TIMESTAMP('2017-12-11 13:37:08','YYYY-MM-DD HH24:MI:SS'),100,'N','N',540880,'N','N','Aktualisiert zeigt an, wann dieser Eintrag aktualisiert wurde.','Updated','N',558275,'N','N','N','N','N','N','Datum, an dem dieser Eintrag aktualisiert wurde',0,0,'Aktualisiert','N','N','de.metas.vertical.pharma')
+;
+
+-- 2017-12-11T13:37:08.264
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558275 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2017-12-11T13:37:09.621
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('I_Pharma_Product','ALTER TABLE public.I_Pharma_Product ADD COLUMN Updated TIMESTAMP WITH TIME ZONE')
+;
+
+-- 2017-12-11T13:37:16.384
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,AD_Element_ID,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AllowZoomTo,Help,AD_Reference_Value_ID,ColumnName,IsGenericZoomOrigin,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,Description,SelectionColumnSeqNo,AD_Org_ID,Name,IsRangeFilter,IsShowFilterIncrementButtons,EntityType) VALUES (18,10,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2017-12-11 13:37:16','YYYY-MM-DD HH24:MI:SS'),100,608,'N','N','N','N','N','N','N','N',TO_TIMESTAMP('2017-12-11 13:37:16','YYYY-MM-DD HH24:MI:SS'),100,'N','N',540880,'N','N','Aktualisiert durch zeigt an, welcher Nutzer diesen Eintrag aktualisiert hat.',110,'UpdatedBy','N',558276,'N','N','N','N','N','N','Nutzer, der diesen Eintrag aktualisiert hat',0,0,'Aktualisiert durch','N','N','de.metas.vertical.pharma')
+;
+
+-- 2017-12-11T13:37:16.388
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558276 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2017-12-11T13:37:19.058
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('I_Pharma_Product','ALTER TABLE public.I_Pharma_Product ADD COLUMN UpdatedBy NUMERIC(10)')
+;
+
+
 
