@@ -2,8 +2,8 @@ package de.metas.translation.api.impl;
 
 import java.sql.SQLException;
 
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.dbPort.Convert;
 import org.compiere.util.DB;
 
 import de.metas.translation.api.IElementTranslationBL;
@@ -49,6 +49,6 @@ public class ElementTranslationBL implements IElementTranslationBL
 		// #1044
 		// Add the prefix DDL so the statement will appear in the migration script
 		// Usually, the select statements are not migrated ( see org.compiere.dbPort.Convert.logMigrationScript(String, String).dontLog())
-		return Convert.DDL_PREFIX + " select " + functionCall + "(" + elementId + "," + DB.TO_STRING(adLanguage) + ") ";
+		return MigrationScriptFileLoggerHolder.DDL_PREFIX + " select " + functionCall + "(" + elementId + "," + DB.TO_STRING(adLanguage) + ") ";
 	}
 }
