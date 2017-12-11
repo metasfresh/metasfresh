@@ -82,6 +82,8 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	private Properties _ctx;
 	private ProcessInfo _processInfo;
 
+	private final IProcessParametersCallout parametersCallout;
+
 	//
 	// Transaction management
 	/** Process Main transaction */
@@ -108,8 +110,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 	protected JavaProcess()
 	{
-		super();
-
+		parametersCallout = this instanceof IProcessParametersCallout ? (IProcessParametersCallout)this : null;
 		_fieldsIndexedByFieldKey = ProcessClassInfo.retrieveParameterFieldsIndexedByFieldKey(getClass());
 	}
 
@@ -423,6 +424,12 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 			paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
 		});
 
+		//
+		// Fire parameters callout if any
+		if (parametersCallout != null)
+		{
+			parametersCallout.onParameterChanged(parameterName);
+		}
 	}
 
 	private Collection<ProcessClassParamInfo> getParameterInfos(final String parameterName)
@@ -847,7 +854,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 		return getProcessInfo().getRecord(modelClass, trxName);
 	}
-	
+
 	/** @return selected included row IDs of current single selected document */
 	protected final <T> Set<Integer> getSelectedIncludedRecordIds(final Class<T> modelClass)
 	{

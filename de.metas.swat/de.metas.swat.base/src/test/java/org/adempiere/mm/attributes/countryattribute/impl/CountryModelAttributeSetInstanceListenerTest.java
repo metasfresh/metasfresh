@@ -67,7 +67,7 @@ public class CountryModelAttributeSetInstanceListenerTest
 		// Create Country attribute
 		{
 			attr_Country = helper.createM_Attribute_TypeList("Country");
-			attr_Country.setAD_JavaClass(helper.createAD_JavaClass(CountryAttributeGenerator.class));
+			attr_Country.setAD_JavaClass_ID(helper.createAD_JavaClass(CountryAttributeGenerator.class).getAD_JavaClass_ID());
 			InterfaceWrapperHelper.save(attr_Country);
 
 			helper.createM_AttributeUse(helper.product_attributeSet, attr_Country);
