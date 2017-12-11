@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
 class RawList extends Component {
-  considerBlur = false;
+  isFocused = false;
 
   constructor(props) {
     super(props);
@@ -119,8 +119,14 @@ class RawList extends Component {
 
     const { isOpen } = this.state;
 
+    // trigger handleBlur action if dropdown is still opened
+    // after focus is lost
+    if (!this.isFocused && isOpen) {
+      this.handleBlur();
+    }
+
     // no need for updating scroll
-    if (!isOpen || !list.length) {
+    if (!this.isFocused || !isOpen || !list.length) {
       return;
     }
 
@@ -259,13 +265,9 @@ class RawList extends Component {
   };
 
   handleBlur = () => {
-    if (!this.considerBlur) {
-      return;
-    }
-
-    this.considerBlur = false;
-
     const { selected, doNotOpenOnFocus } = this.props;
+
+    this.isFocused = false;
 
     if (!doNotOpenOnFocus && this.dropdown) {
       this.dropdown.blur();
@@ -282,8 +284,6 @@ class RawList extends Component {
      * on focus.
      */
   handleClick = e => {
-    this.considerBlur = true;
-
     e.preventDefault();
 
     const { onFocus } = this.props;
@@ -296,6 +296,8 @@ class RawList extends Component {
   };
 
   handleFocus = e => {
+    this.isFocused = true;
+
     if (e) {
       e.preventDefault();
     }
@@ -363,7 +365,7 @@ class RawList extends Component {
           }
 
           if (selected) {
-            this.considerBlur = true;
+            this.isFocused = true;
             this.handleSelect(selected);
           } else {
             onSelect(null);
@@ -531,36 +533,37 @@ class RawList extends Component {
             <i className="meta-icon-down-1 input-icon-sm" />
           </div>
         </div>
-        {isOpen && (
-          <div
-            className="input-dropdown-list"
-            ref={ref => {
-              this.listScroll = ref;
-            }}
-          >
-            {isListEmpty &&
-              loading === false && (
-                <div className="input-dropdown-list-header">
-                  There is no choice available
-                </div>
-              )}
-            {loading &&
-              isListEmpty && (
-                <div className="input-dropdown-list-header">
-                  <ReactCSSTransitionGroup
-                    transitionName="rotate"
-                    transitionEnterTimeout={1000}
-                    transitionLeaveTimeout={1000}
-                  >
-                    <div className="rotate icon-rotate">
-                      <i className="meta-icon-settings" />
-                    </div>
-                  </ReactCSSTransitionGroup>
-                </div>
-              )}
-            {this.renderOptions()}
-          </div>
-        )}
+        {this.isFocused &&
+          isOpen && (
+            <div
+              className="input-dropdown-list"
+              ref={ref => {
+                this.listScroll = ref;
+              }}
+            >
+              {isListEmpty &&
+                loading === false && (
+                  <div className="input-dropdown-list-header">
+                    There is no choice available
+                  </div>
+                )}
+              {loading &&
+                isListEmpty && (
+                  <div className="input-dropdown-list-header">
+                    <ReactCSSTransitionGroup
+                      transitionName="rotate"
+                      transitionEnterTimeout={1000}
+                      transitionLeaveTimeout={1000}
+                    >
+                      <div className="rotate icon-rotate">
+                        <i className="meta-icon-settings" />
+                      </div>
+                    </ReactCSSTransitionGroup>
+                  </div>
+                )}
+              {this.renderOptions()}
+            </div>
+          )}
       </div>
     );
   }
