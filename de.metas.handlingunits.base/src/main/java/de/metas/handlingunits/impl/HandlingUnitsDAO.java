@@ -974,7 +974,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.map(org.compiere.model.I_M_Warehouse::getM_Warehouse_ID)
 				.collect(ImmutableSet.toImmutableSet());
 		
-		 List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId)
+		 final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId)
 				 .stream()
 				 .filter(warehouse -> !huWarehouseIds.contains(warehouse.getM_Warehouse_ID()))
 				 .collect(ImmutableList.toImmutableList());
