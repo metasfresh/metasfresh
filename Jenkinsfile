@@ -377,39 +377,51 @@ void invokeZapier(
   // note: even with "skiptodist=true we do this, because we still want to make the notifcations
 
   echo "Going to notify external systems via zapier webhook"
-  withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'zapier_WEBHOOK_SECRET')])
-  {
-    // the zapier secret contains a trailing slash and one that is somewhere in the middle.
-  	final zapierUrl = "https://hooks.zapier.com/hooks/catch/${zapier_WEBHOOK_SECRET}"
 
-    //input id: 'Zapier-input-ok', message: 'Were the external donstream builds OK?'
     final def hook = registerWebhook()
     echo "Waiting for POST to ${hook.getURL()}"
 
-  	/* we need to make sure we know "our own" MF_METASFRESH_VERSION, also if we were called by e.g. metasfresh-webui-api or metasfresh-webui--frontend */
-  	final jsonPayload = """{
-  			\"MF_UPSTREAM_BUILDNO\":\"${upstreamBuildNo}\",
-  			\"MF_UPSTREAM_BRANCH\":\"${upstreamBranch}\",
-  			\"MF_METASFRESH_VERSION\":\"${metasfreshVersion}\",
-  			\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${metasfreshProcurementWebuiVersion}\",
-  			\"MF_METASFRESH_WEBUI_API_VERSION\":\"${metasfreshWebuiApiVersion}\",
-  			\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${metasfreshWebuiFrontendVersion}\",
-  			\"MF_WEBHOOK_CALLBACK_URL\":\"${hook.getURL()}\"
-  	}"""
+		final jsonPayload = """{
+				\"MF_UPSTREAM_BUILDNO\":\"${upstreamBuildNo}\",
+				\"MF_UPSTREAM_BRANCH\":\"${upstreamBranch}\",
+				\"MF_METASFRESH_VERSION\":\"${metasfreshVersion}\",
+				\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${metasfreshProcurementWebuiVersion}\",
+				\"MF_METASFRESH_WEBUI_API_VERSION\":\"${metasfreshWebuiApiVersion}\",
+				\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${metasfreshWebuiFrontendVersion}\",
+				\"MF_WEBHOOK_CALLBACK_URL\":\"${hook.getURL()}\"
+		}"""
 
+		// invoke zapier to trigger external jobs
   	nodeIfNeeded('linux')
   	{
-  			sh "curl -X POST -d \'${jsonPayload}\' ${zapierUrl}";
+  			sh "curl -X POST -d \'${jsonPayload}\' ${createZapierUrl()}";
   	}
+		waitForWebhookCall(hook);
+}
 
-    echo "Wait 30 minutes for the zapier-triggered downstream jobs to succeed or fail"
-    timeout(time: 30, unit: 'MINUTES')
-    {
-      final def message = waitForWebhook hook // to stop and wait, for someone to do e.g. curl -X POST -d 'OK' <hook-URL>
-      if(message != 'OK')
-      {
-        error "An external job that was invoked by zapier failed; message=${message}; hook-URL=${hook.getURL()}"
-      }
-    }
-  } // withCredentials
+String createZapierUrl()
+{
+	  withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'zapier_WEBHOOK_SECRET')])
+	  {
+	    // the zapier secret contains a trailing slash and another slash that is somewhere in the middle.
+	  	return "https://hooks.zapier.com/hooks/catch/${zapier_WEBHOOK_SECRET}"
+		}
+}
+
+void waitForWebhookCall(final def hook)
+{
+	    echo "Wait 30 minutes for the zapier-triggered downstream jobs to succeed or fail"
+	    timeout(time: 30, unit: 'MINUTES')
+	    {
+				// stop and wait, for someone to do e.g. curl -X POST -d 'OK' <hook-URL>
+	      final def message = waitForWebhook hook ?: '<webhook returned NULL>'
+	      if(message.trim() == 'OK')
+	      {
+					echo "The external jobs that were invoked by zapier succeeeded; message='${message}'; hook-URL=${hook.getURL()}"
+	      }
+				else
+				{
+					error "An external job that was invoked by zapier failed; message='${message}'; hook-URL=${hook.getURL()}"
+				}
+	    }
 }

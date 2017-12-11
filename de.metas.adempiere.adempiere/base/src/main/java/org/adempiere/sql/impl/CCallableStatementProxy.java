@@ -53,9 +53,9 @@ import org.compiere.util.CStatementVO;
 		super(vo);
 	}
 
-	public CCallableStatementProxy(final int resultSetType, final int resultSetConcurrency, final String sql0, final String trxName)
+	public CCallableStatementProxy(final int resultSetType, final int resultSetConcurrency, final String sql, final String trxName)
 	{
-		super(resultSetType, resultSetConcurrency, sql0, trxName);
+		super(resultSetType, resultSetConcurrency, sql, trxName);
 	}
 
 	@Override

@@ -20,14 +20,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
-import org.adempiere.util.Services;
-import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -57,9 +52,6 @@ public abstract class Convert
 	/**	Logger	*/
 	private static final transient Logger log = LogManager.getLogger(Convert.class);
 	
-	private static final MigrationScriptFileLogger pgMigrationScriptWriter = MigrationScriptFileLogger.of("postgresql");
-	
-	public static final String DDL_PREFIX = "/* DDL */ ";
 
 	/**
 	 *  Convert SQL Statement (stops at first error).
@@ -278,97 +270,6 @@ public abstract class Convert
 	 *  @return converted statement
 	 */
 	protected abstract List<String> convertStatement (String sqlStatement);
-
-	/**
-	 * task it_FRESH_47 : Log only Postgresql migration scripts
-	 * 
-	 * @param oraStatement
-	 * @param pgStatement
-	 */
-	public static void logMigrationScript(String oraStatement, String pgStatement)
-	{
-		// Check AdempiereSys
-		// check property Log migration script
-		final boolean logMigrationScript = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
-		if (logMigrationScript)
-		{
-			if (dontLog(oraStatement))
-			{
-				return;
-			}
-			
-			// task it_FRESH_47 : we only need scripts for Postgresql database
-			// Log postgres migration scripts in temp directory
-			// migration_script_postgresql.sql
-
-			if (pgStatement == null)
-			{
-				// if oracle call convert for postgres before logging
-				final Convert_PostgreSQL convert = new Convert_PostgreSQL();
-				final List<String> r = convert.convert(oraStatement);
-				pgStatement = r.get(0);
-			}
-			
-			pgMigrationScriptWriter.appendSqlStatement(pgStatement);
-		}
-	}
-	
-	public static final void closeMigrationScriptFiles()
-	{
-		pgMigrationScriptWriter.close();
-	}
-	
-	private static boolean dontLog(String statement)
-	{
-		// Always log DDL (flagged) commands
-		if(statement.startsWith(DDL_PREFIX))
-		{
-			return false;
-		}
-		
-		// metas: teo_sarca: end
-		final String uppStmt = statement.toUpperCase().trim();
-		
-		//
-		// Don't log selects
-		if (uppStmt.startsWith("SELECT "))
-		{
-			return true;
-		}
-		
-		//
-		// FIXME: don't log update to statistic process hardcoded
-		if (uppStmt.startsWith("UPDATE AD_PROCESS SET STATISTIC_"))
-		{
-			return true;
-		}
-		
-		//
-		// Don't log DELETE FROM Some_Table WHERE AD_Table_ID=? AND Record_ID=?
-		if (uppStmt.startsWith("DELETE FROM ") && uppStmt.endsWith(" WHERE AD_TABLE_ID=? AND RECORD_ID=?"))
-		{
-			return true;
-		}
-
-		//
-		// Check that INSERT/UPDATE/DELETE statements are about our ignored tables
-		final Set<String> exceptionTablesUC = Services.get(IMigrationLogger.class).getTablesToIgnoreUC();
-		for (final String tableNameUC : exceptionTablesUC)
-		{
-			if (uppStmt.startsWith("INSERT INTO " + tableNameUC + " "))
-				return true;
-			if (uppStmt.startsWith("DELETE FROM " + tableNameUC + " "))
-				return true;
-			if (uppStmt.startsWith("DELETE " + tableNameUC + " "))
-				return true;
-			if (uppStmt.startsWith("UPDATE " + tableNameUC + " "))
-				return true;
-			if (uppStmt.startsWith("INSERT INTO " + tableNameUC + "("))
-				return true;
-		}
-		
-		return false;
-	}
 
 	/**
 	 * Mark given keyword as native.

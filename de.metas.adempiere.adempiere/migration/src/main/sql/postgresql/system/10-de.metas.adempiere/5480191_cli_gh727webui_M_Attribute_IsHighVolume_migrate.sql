@@ -1,0 +1,1 @@
+update M_Attribute set IsHighVolume='Y' where AD_Val_Rule_ID > 0;
