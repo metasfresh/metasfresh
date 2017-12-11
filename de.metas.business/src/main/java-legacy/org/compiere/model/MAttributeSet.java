@@ -65,7 +65,7 @@ public class MAttributeSet extends X_M_AttributeSet
 	}	//	get
 
 	/**	Cache						*/
-	private static CCache<Integer,MAttributeSet> s_cache = new CCache<Integer,MAttributeSet> ("M_AttributeSet", 20);
+	private static CCache<Integer,MAttributeSet> s_cache = new CCache<> ("M_AttributeSet", 20);
 	
 	
 	/**
@@ -77,7 +77,7 @@ public class MAttributeSet extends X_M_AttributeSet
 	public MAttributeSet (Properties ctx, int M_AttributeSet_ID, String trxName)
 	{
 		super (ctx, M_AttributeSet_ID, trxName);
-		if (M_AttributeSet_ID == 0)
+		if (is_new())
 		{
 		//	setName (null);
 			setIsGuaranteeDate (false);
@@ -130,7 +130,7 @@ public class MAttributeSet extends X_M_AttributeSet
 				+ "WHERE mau.IsActive='Y' AND ma.IsActive='Y'"
 				+ " AND mau.M_AttributeSet_ID=? AND ma.IsInstanceAttribute=? "	//	#1,2
 				+ "ORDER BY mau.SeqNo";
-			final List<MAttribute> list = new ArrayList<MAttribute>();
+			final List<MAttribute> list = new ArrayList<>();
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			try
