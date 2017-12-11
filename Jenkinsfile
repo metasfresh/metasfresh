@@ -19,10 +19,6 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			name: 'MF_UPSTREAM_BRANCH'),
 
 		string(defaultValue: '',
-			description: 'Build number of the upstream job that called us, if any.',
-			name: 'MF_UPSTREAM_BUILDNO'),
-
-		string(defaultValue: '',
 			description: 'Version of the metasfresh "main" code we shall use when resolving dependencies. Leave empty and this build will use the latest.',
 			name: 'MF_UPSTREAM_VERSION'),
 
