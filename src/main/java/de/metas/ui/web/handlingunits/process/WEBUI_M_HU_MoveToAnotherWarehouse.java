@@ -81,9 +81,9 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse extends HUEditorProcessTemplate i
 	@ProcessParamLookupValuesProvider(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, numericKey = true, lookupSource = LookupSource.lookup)
 	public LookupValuesList getM_Warehouse()
 	{
-		final List<org.compiere.model.I_M_Warehouse> retrieveWarehousesWhichContainNoneOf = handlingUnitsDAO.retrieveWarehousesWhichContainNoneOf(streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList()));
+		final List<org.compiere.model.I_M_Warehouse> warehousesToLoad = handlingUnitsDAO.retrieveWarehousesWhichContainNoneOf(streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList()));
 
-		return retrieveWarehousesWhichContainNoneOf.stream()
+		return warehousesToLoad.stream()
 				.sorted(Comparator.comparing(org.compiere.model.I_M_Warehouse::getName))
 				.map(warehouse -> IntegerLookupValue.of(warehouse.getM_Warehouse_ID(), warehouse.getName()))
 				.collect(LookupValuesList.collect());
