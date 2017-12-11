@@ -76,7 +76,7 @@ class FiltersFrequent extends Component {
               >
                 <i className="meta-icon-preview" />
                 {item.isActive
-                  ? `${item.caption}: ${item.captionValue}`
+                  ? [`${item.caption}: `, item.captionValue]
                   : `${counterpart.translate("window.filters.caption2")}: ${
                       item.caption
                     }`}

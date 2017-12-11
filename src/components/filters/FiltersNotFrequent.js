@@ -71,7 +71,7 @@ class FiltersNotFrequent extends Component {
         >
           <i className="meta-icon-preview" />
           {activeFilter.isActive
-            ? `${activeFilter.caption}: ${activeFilter.captionValue}`
+            ? [`${activeFilter.caption}: `, activeFilter.captionValue]
             : "Filter"}
         </button>
 
