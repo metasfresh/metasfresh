@@ -1619,7 +1619,7 @@ public abstract class PO
 	 */
 	protected final void load(final int ID, final String trxName)
 	{
-		if (ID >= p_info.getFirstValidId())
+		if (p_info.isSingleKeyColumnName() && ID >= p_info.getFirstValidId())
 		{
 			Check.assume(m_KeyColumns != null && m_KeyColumns.length == 1, "PO {} shall have one single primary key but it has: {}", this, m_KeyColumns);
 			m_IDs = new Object[] { ID };
