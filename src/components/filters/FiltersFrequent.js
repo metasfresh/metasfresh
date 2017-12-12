@@ -75,7 +75,7 @@ class FiltersFrequent extends Component {
                 })}
               >
                 <i className="meta-icon-preview" />
-                {item.isActive ? (
+                {item.isActive && item.parameters.length === 1 ? (
                   <Fragment>
                     {`${item.caption}: `}
                     {item.captionValue}
