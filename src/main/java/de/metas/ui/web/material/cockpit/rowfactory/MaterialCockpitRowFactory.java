@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
@@ -73,7 +74,8 @@ public class MaterialCockpitRowFactory
 				request.getRelevantProducts(),
 				request.getDate());
 
-		final DimensionSpec dimensionSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalName(DIM_SPEC_INTERNAL_NAME);
+		final DimensionSpec dimensionSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalNameOrNull(DIM_SPEC_INTERNAL_NAME);
+		Check.errorIf(dimensionSpec == null, "Unable to load DIM_Dimension_Spec record with InternalName={}", DIM_SPEC_INTERNAL_NAME);
 
 		final Map<MaterialCockpitMainRowId, MaterialCockpitMainRowBucket> result = new HashMap<>(emptyRowBuckets);
 
@@ -104,7 +106,8 @@ public class MaterialCockpitRowFactory
 			@NonNull final List<I_M_Product> products,
 			@NonNull final Timestamp timestamp)
 	{
-		final DimensionSpec dimensionSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalName(DIM_SPEC_INTERNAL_NAME);
+		final DimensionSpec dimensionSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalNameOrNull(DIM_SPEC_INTERNAL_NAME);
+		Check.errorIf(dimensionSpec == null, "Unable to load DIM_Dimension_Spec record with InternalName={}", DIM_SPEC_INTERNAL_NAME);
 
 		final List<DimensionSpecGroup> groups = dimensionSpec.retrieveGroups();
 		final List<I_S_Resource> plants = retrieveCountingPlants();
