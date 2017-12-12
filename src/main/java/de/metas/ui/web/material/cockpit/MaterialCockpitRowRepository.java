@@ -99,7 +99,7 @@ public class MaterialCockpitRowRepository
 				.getOrLoad(orgId, () -> retrieveAllProducts(orgId));
 
 		return allProducts.stream()
-				.filter(product -> materialCockpitFilters.isProductMatchesFilters(product, filters))
+				.filter(product -> materialCockpitFilters.doesProductMatchFilters(product, filters))
 				.collect(ImmutableList.toImmutableList());
 	}
 
