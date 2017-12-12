@@ -28,7 +28,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.IContextAware;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column;
@@ -105,14 +104,17 @@ public class DimensionspecDAO implements IDimensionspecDAO
 	}
 
 	@Override
-	public DimensionSpec retrieveForInternalName(final String internalName)
+	public DimensionSpec retrieveForInternalNameOrNull(final String internalName)
 	{
 		final I_DIM_Dimension_Spec record = Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DIM_Dimension_Spec.COLUMN_InternalName, internalName)
 				.create()
 				.firstOnly(I_DIM_Dimension_Spec.class);
-		Check.errorIf(record == null, "Unable to load DIM_Dimension_Spec record with InternalName={}", internalName);
+		if(record == null)
+		{
+			return null;
+		}
 		return DimensionSpec.ofRecord(record);
 	}
 

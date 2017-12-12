@@ -58,8 +58,9 @@ public interface IDimensionspecDAO extends ISingletonService
 	/**
 	 *
 	 * @param internalName {@link I_DIM_Dimension_Spec#COLUMN_InternalName} of the record to retrieve.
+	 * @return {@code null} if there is not matching record.
 	 */
-	DimensionSpec retrieveForInternalName(String internalName);
+	DimensionSpec retrieveForInternalNameOrNull(String internalName);
 
 	/**
 	 * Retrieves a list with all attribute values' <code>ValueName</code>s that are defined by the {@link I_DIM_Dimension_Spec} with the given internal name and groupName (a.k.a. ValueAggregateName).

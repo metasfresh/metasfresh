@@ -35,6 +35,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -80,7 +81,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			return;
 		}
 
-		logger.trace("updateHUAttributes: fromPPOrderId={}, husToUpdate={}", fromPPOrderId, husToUpdate );
+		logger.trace("updateHUAttributes: fromPPOrderId={}, husToUpdate={}", fromPPOrderId, husToUpdate);
 
 		//
 		// Fetch PP_Order's attributes that shall be propagated to HUs
@@ -158,7 +159,9 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 	/** @return M_Attribute_IDs to be transferred from PP_Order to HUs */
 	private static Set<Integer> getAttributeIdsToBeTransferred()
 	{
-		final DimensionSpec dimPPOrderProductAttributesToTransfer = Services.get(IDimensionspecDAO.class).retrieveForInternalName(HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer);
+		final DimensionSpec dimPPOrderProductAttributesToTransfer = Services.get(IDimensionspecDAO.class).retrieveForInternalNameOrNull(HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer);
+		Check.errorIf(dimPPOrderProductAttributesToTransfer == null,
+				"Unable to load DIM_Dimension_Spec record with InternalName={}", HUConstants.DIM_PP_Order_ProductAttribute_To_Transfer);
 
 		final Set<Integer> attributeIdsToBeTransferred = dimPPOrderProductAttributesToTransfer.retrieveAttributes()
 				.stream()
@@ -342,7 +345,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 				final int attributeId, final boolean transferWhenNull //
 				, final boolean stickWithNullValue //
 				, final String valueString, final BigDecimal valueNumber //
-				)
+		)
 		{
 			this.attributeId = attributeId;
 			this.transferWhenNull = transferWhenNull;

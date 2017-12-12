@@ -55,6 +55,7 @@ public class DimensionSpecTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
 		attributesTestHelper = new AttributesTestHelper();
 
 		attr1 = attributesTestHelper.createM_Attribute("test1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
@@ -84,7 +85,7 @@ public class DimensionSpecTest
 		assertThat(groups.get(1).getGroupName().getDefaultValue()).isEqualTo("Name_test1_value1");
 		assertThat(groups.get(1).getAttributesKey().getAttributeValueIds()).containsExactly(attr1_value1.getM_AttributeValue_ID());
 
-		// attr2 has two values, and dimSpecAttr2 which has isIncludeAllAttributeValues=true
+		// attr2 has two values, and dimSpecAttr2 has isIncludeAllAttributeValues=true and isValueAggregate=false
 		assertThat(groups.get(2).isEmptyGroup()).isFalse();
 		assertThat(groups.get(2).getGroupName().getDefaultValue()).isEqualTo("Name_test2_value1");
 		assertThat(groups.get(2).getAttributesKey().getAttributeValueIds()).containsExactly(attr2_value1.getM_AttributeValue_ID());
@@ -114,6 +115,7 @@ public class DimensionSpecTest
 		final I_DIM_Dimension_Spec_Attribute dimSpecAttr2 = newInstance(I_DIM_Dimension_Spec_Attribute.class);
 		dimSpecAttr2.setDIM_Dimension_Spec(dimSpec);
 		dimSpecAttr2.setIsIncludeAllAttributeValues(true);
+		dimSpecAttr2.setIsValueAggregate(false);
 		dimSpecAttr2.setM_Attribute(attr2);
 		save(dimSpecAttr2);
 

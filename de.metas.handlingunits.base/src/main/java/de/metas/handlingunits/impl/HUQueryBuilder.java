@@ -1079,12 +1079,10 @@ import lombok.NonNull;
 	{
 		final String dimBarcodeAttributesInternalName = HUConstants.DIM_Barcode_Attributes;
 
-		final DimensionSpec barcodeDimSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalName(dimBarcodeAttributesInternalName);
-
+		final DimensionSpec barcodeDimSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalNameOrNull(dimBarcodeAttributesInternalName);
 		if (barcodeDimSpec == null)
 		{
-			// no barcode dimension spec. Nothing to do
-			return;
+			return; // no barcode dimension spec. Nothing to do
 		}
 
 		final List<I_M_Attribute> barcodeAttributes = barcodeDimSpec.retrieveAttributes();

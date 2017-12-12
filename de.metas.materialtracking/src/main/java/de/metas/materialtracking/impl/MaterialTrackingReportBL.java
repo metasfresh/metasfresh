@@ -2,6 +2,7 @@ package de.metas.materialtracking.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeSetInstance;
 
@@ -28,11 +29,11 @@ import de.metas.materialtracking.process.MaterialTrackingReportAgregationItem;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -65,7 +66,8 @@ public class MaterialTrackingReportBL implements IMaterialTrackingReportBL
 
 		final String internalName = sysConfigBL.getValue(MaterialTrackingConstants.SYSCONFIG_M_Material_Tracking_Report_Dimension);
 
-		final DimensionSpec dimensionSpec = dimSpecDAO.retrieveForInternalName(internalName);
+		final DimensionSpec dimensionSpec = dimSpecDAO.retrieveForInternalNameOrNull(internalName);
+		Check.errorIf(dimensionSpec == null, "Unable to load DIM_Dimension_Spec record with InternalName={}", internalName);
 
 		final I_M_AttributeSetInstance resultASI = dimensionSpec.createASIForDimensionSpec(iol.getM_AttributeSetInstance());
 
@@ -94,5 +96,4 @@ public class MaterialTrackingReportBL implements IMaterialTrackingReportBL
 		InterfaceWrapperHelper.save(alloc);
 
 	}
-
 }

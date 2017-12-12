@@ -3,6 +3,7 @@ package de.metas.materialtracking.process;
 import java.util.List;
 
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -50,7 +51,6 @@ public class CreateMaterialTrackingReportLineFromMaterialTrackingRefKeyBuilder i
 
 		final String internalName = Services.get(ISysConfigBL.class).getValue(MaterialTrackingConstants.SYSCONFIG_M_Material_Tracking_Report_Dimension);
 
-		final DimensionSpec dimensionSpec = dimSpecDAO.retrieveForInternalName(internalName);
 
 		final int productID = iol.getM_Product_ID();
 
@@ -60,6 +60,8 @@ public class CreateMaterialTrackingReportLineFromMaterialTrackingRefKeyBuilder i
 
 		keyBuilder.append(productID);
 
+		final DimensionSpec dimensionSpec = dimSpecDAO.retrieveForInternalNameOrNull(internalName);
+		Check.errorIf(dimensionSpec == null, "Unable to load DIM_Dimension_Spec record with InternalName={}", internalName);
 		final List<KeyNamePair> attrToValues = dimensionSpec.retrieveAttritbuteIdToDisplayValue(asi);
 
 		for (final KeyNamePair attrToValue : attrToValues)
