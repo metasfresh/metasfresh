@@ -43,8 +43,6 @@ import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
 
 public class DimensionSpecTest
 {
-
-	private AttributesTestHelper attributesTestHelper;
 	private I_M_AttributeValue attr1_value1;
 	private I_M_AttributeValue attr2_value1;
 	private I_M_AttributeValue attr2_value2;
@@ -56,7 +54,7 @@ public class DimensionSpecTest
 	{
 		AdempiereTestHelper.get().init();
 
-		attributesTestHelper = new AttributesTestHelper();
+		final AttributesTestHelper attributesTestHelper = new AttributesTestHelper();
 
 		attr1 = attributesTestHelper.createM_Attribute("test1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		attr1_value1 = attributesTestHelper.createM_AttributeValue(attr1, "test1_value1");
