@@ -49,7 +49,7 @@ class LoginForm extends Component {
 
     getUserLang().then(response => {
       //GET language shall always return a result
-      Moment.locale(Object.keys(response.data)[0]);
+      Moment.locale(response.data["key"]);
 
       if (redirect) {
         dispatch(goBack());

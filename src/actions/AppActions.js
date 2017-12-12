@@ -186,17 +186,14 @@ export function loginSuccess(auth) {
 
     getUserSession().then(session => {
       dispatch(userSessionInit(session.data));
-      languageSuccess(Object.keys(session.data.language)[0]);
-      initNumeralLocales(
-        Object.keys(session.data.language)[0],
-        session.data.locale
-      );
+      languageSuccess(session.data.language["key"]);
+      initNumeralLocales(session.data.language["key"], session.data.locale);
 
       auth.initSessionClient(session.data.websocketEndpoint, msg => {
         const me = JSON.parse(msg.body);
         dispatch(userSessionUpdate(me));
-        me.language && languageSuccess(Object.keys(me.language)[0]);
-        me.locale && initNumeralLocales(Object.keys(me.language)[0], me.locale);
+        me.language && languageSuccess(me.language["key"]);
+        me.locale && initNumeralLocales(me.language["key"], me.locale);
 
         getNotifications().then(response => {
           dispatch(
