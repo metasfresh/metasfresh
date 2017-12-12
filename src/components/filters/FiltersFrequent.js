@@ -1,6 +1,6 @@
 import cx from "classnames";
 import counterpart from "counterpart";
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import onClickOutside from "react-onclickoutside";
 
 import { TableCell } from "../table/TableCell";
@@ -75,11 +75,16 @@ class FiltersFrequent extends Component {
                 })}
               >
                 <i className="meta-icon-preview" />
-                {item.isActive
-                  ? [`${item.caption}: `, item.captionValue]
-                  : `${counterpart.translate("window.filters.caption2")}: ${
-                      item.caption
-                    }`}
+                {item.isActive ? (
+                  <Fragment>
+                    {`${item.caption}: `}
+                    {item.captionValue}
+                  </Fragment>
+                ) : (
+                  `${counterpart.translate("window.filters.caption2")}: ${
+                    item.caption
+                  }`
+                )}
               </button>
 
               {dateStepper && (

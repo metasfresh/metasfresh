@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import onClickOutside from "react-onclickoutside";
 import { connect } from "react-redux";
 
@@ -70,9 +70,14 @@ class FiltersNotFrequent extends Component {
           }
         >
           <i className="meta-icon-preview" />
-          {activeFilter.isActive
-            ? [`${activeFilter.caption}: `, activeFilter.captionValue]
-            : "Filter"}
+          {activeFilter.isActive ? (
+            <Fragment>
+              {`${activeFilter.caption}: `}
+              {activeFilter.captionValue}
+            </Fragment>
+          ) : (
+            "Filter"
+          )}
         </button>
 
         {isOpenDropdown && (
