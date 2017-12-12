@@ -216,7 +216,7 @@ class RawWidget extends Component {
       disabled,
       caption,
       viewId,
-      data: widgetValue,
+      data,
       listenOnKeys,
       listenOnKeysFalse,
       closeTableField,
@@ -226,7 +226,7 @@ class RawWidget extends Component {
       onBlurWidget,
       defaultValue
     } = this.props;
-
+    const widgetValue = data || widgetData[0].value;
     const { isEdited } = this.state;
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
