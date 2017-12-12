@@ -71,6 +71,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				env.PATH = "${nodeHome}/bin:${env.PATH}"
 
 				sh "npm install"
+				sh "npm run lint"
 				sh "npm test"
 				sh "webpack --config webpack.prod.js --bail --display-error-details"
 

@@ -1,238 +1,242 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import PropTypes from "prop-types";
+import React, { Component } from "react";
+import { connect } from "react-redux";
 
-import RawList from './RawList';
-
-import {
-    dropdownRequest
-} from '../../../actions/GenericActions';
-
-import {
-    getViewAttributeDropdown
-} from '../../../actions/ViewAttributesActions';
+import { dropdownRequest } from "../../../actions/GenericActions";
+import { getViewAttributeDropdown } from "../../../actions/ViewAttributesActions";
+import RawList from "./RawList";
 
 class List extends Component {
-    constructor(props) {
-        super(props);
+  state = {
+    list: null,
+    loading: false,
+    selectedItem: ""
+  };
 
-        this.clearComponentState();
+  previousValue = "";
 
-        this.previousValue = '';
+  componentDidMount() {
+    const { defaultValue } = this.props;
+
+    if (defaultValue) {
+      this.previousValue = defaultValue.caption;
     }
+  }
 
-    componentDidMount() {
-        const { defaultValue } = this.props;
+  componentDidUpdate(prevProps) {
+    const { isInputEmpty } = this.props;
 
-        if (defaultValue) {
-            this.previousValue = defaultValue.caption;
-        }
+    if (isInputEmpty && prevProps.isInputEmpty !== isInputEmpty) {
+      this.previousValue = "";
     }
+  }
 
-    componentDidUpdate(prevProps){
-        const { isInputEmpty } = this.props;
+  requestListData = (forceSelection = false, forceFocus = false) => {
+    const {
+      properties,
+      dataId,
+      rowId,
+      tabId,
+      windowType,
+      filterWidget,
+      entity,
+      subentity,
+      subentityId,
+      viewId,
+      attribute
+    } = this.props;
 
-        if (isInputEmpty && (prevProps.isInputEmpty !== isInputEmpty)) {
-            this.previousValue = '';
-        }
-    }
+    this.setState({
+      list: [],
+      loading: true
+    });
 
-    componentWillUnmount() {
-        this.clearComponentState();
-    }
+    const propertyName = filterWidget
+      ? properties[0].parameterName
+      : properties[0].field;
 
-    clearComponentState = () => {
-        this.state = {
-            list: null,
-            loading: false,
-            selectedItem: ''
-        }
-    }
+    const request = attribute
+      ? getViewAttributeDropdown(windowType, viewId, dataId, propertyName)
+      : dropdownRequest({
+          attribute,
+          docId: dataId,
+          docType: windowType,
+          entity,
+          propertyName,
+          rowId,
+          subentity,
+          subentityId,
+          tabId,
+          viewId
+        });
 
-    requestListData = (forceSelection = false, forceFocus = false) => {
-        const {
-            properties, dataId, rowId, tabId, windowType,
-            filterWidget, entity, subentity, subentityId, viewId, attribute
-        } = this.props;
+    request.then(res => {
+      let values = res.data.values || [];
+      let singleOption = values && values.length === 1;
+
+      if (forceSelection && singleOption) {
+        this.previousValue = "";
 
         this.setState({
-            list: [],
-            loading: true
+          list: values,
+          loading: false
         });
 
-        const propertyName = (filterWidget ?
-            properties[0].parameterName : properties[0].field
-        );
-
-        const request = attribute ? getViewAttributeDropdown(
-            windowType,
-            viewId,
-            dataId,
-            propertyName) : dropdownRequest({
-            attribute,
-            docId: dataId,
-            docType: windowType,
-            entity,
-            propertyName,
-            rowId,
-            subentity,
-            subentityId,
-            tabId,
-            viewId
+        let firstListValue = values[0];
+        if (firstListValue) {
+          this.handleSelect(firstListValue);
+        }
+      } else {
+        this.setState({
+          list: values,
+          loading: false
         });
+      }
 
-        request.then(res => {
-            let values = res.data.values || [];
-            let singleOption = values && (values.length === 1);
+      if (forceFocus && values && values.length > 0) {
+        this.focus();
+      }
+    });
+  };
 
-            if (forceSelection && singleOption) {
-                this.previousValue = '';
+  handleFocus = () => {
+    if (this.state && !this.state.list && !this.state.loading) {
+      this.requestListData();
+    }
+  };
 
-                this.setState({
-                    list: values,
-                    loading: false
-                });
+  focus = () => {
+    if (this.rawList) {
+      this.rawList.focus();
+    }
+  };
 
-                let firstListValue = values[0];
-                if (firstListValue) {
-                    this.handleSelect(firstListValue);
-                }
-            } else {
-                this.setState({
-                    list: values,
-                    loading: false
-                });
-            }
+  closeDropdownList = () => {
+    if (this.rawList) {
+      this.rawList.closeDropdownList();
+    }
+  };
+
+  activate = () => {
+    const { list } = this.state;
+
+    if (list && list.length > 1) {
+      if (this.rawList) {
+        this.rawList.openDropdownList();
+        this.rawList.focus();
+      }
+    }
+  };
+
+  handleSelect = option => {
+    const {
+      onChange,
+      lookupList,
+      properties,
+      setNextProperty,
+      mainProperty,
+      enableAutofocus
+    } = this.props;
+
+    if (enableAutofocus) {
+      enableAutofocus();
+    }
+
+    if (this.previousValue !== (option && option.caption)) {
+      if (lookupList) {
+        const promise = onChange(properties[0].field, option);
+        const mainPropertyField = mainProperty[0].field;
+
+        if (option) {
+          this.setState({
+            selectedItem: option
+          });
+
+          this.previousValue = option.caption;
+        }
+
+        if (promise) {
+          promise.then(patchResult => {
+            setNextProperty(mainPropertyField);
 
             if (
-                forceFocus && values &&
-                (values.length > 0)
+              patchResult &&
+              Array.isArray(patchResult) &&
+              patchResult[0] &&
+              patchResult[0].fieldsByName
             ) {
-                this.focus();
+              let patchFields = patchResult[0].fieldsByName;
+              if (patchFields.lookupValuesStale === true) {
+                this.setState({
+                  list: null
+                });
+              }
             }
-        });
-    }
-
-    handleFocus = () => {
-        if (this.state && !this.state.list && !this.state.loading) {
-            this.requestListData();
+          });
+        } else {
+          setNextProperty(mainPropertyField);
         }
+      } else {
+        onChange(option);
+      }
     }
+  };
 
-    focus = () => {
-        if (this.rawList) {
-            this.rawList.focus();
-        }
-    }
+  render() {
+    const {
+      rank,
+      readonly,
+      defaultValue,
+      selected,
+      align,
+      updated,
+      rowId,
+      emptyText,
+      tabIndex,
+      mandatory,
+      validStatus,
+      lookupList,
+      autofocus,
+      blur,
+      initialFocus,
+      lastProperty,
+      disableAutofocus
+    } = this.props;
 
-    closeDropdownList = () => {
-        if (this.rawList) {
-            this.rawList.closeDropdownList();
-        }
-    }
+    const { list, loading, selectedItem } = this.state;
 
-    activate = () => {
-        const { list } = this.state;
-
-        if (list && (list.length > 1)) {
-            if (this.rawList) {
-                this.rawList.openDropdownList();
-                this.rawList.focus();
-            }
-        }
-    }
-
-    handleSelect = (option) => {
-        const {
-            onChange, lookupList, properties, setNextProperty, mainProperty,
-            enableAutofocus
-        } = this.props;
-
-        if (enableAutofocus) {
-            enableAutofocus();
-        }
-
-        if (this.previousValue !== (option && option.caption)) {
-             if (lookupList) {
-                const promise = onChange(properties[0].field, option);
-                const mainPropertyField = mainProperty[0].field;
-
-                if (option) {
-                    this.setState({
-                        selectedItem: option
-                    });
-
-                    this.previousValue = option.caption;
-                }
-
-                if (promise) {
-                    promise.then( (patchResult)=> {
-                        setNextProperty(mainPropertyField);
-
-                        if (
-                            patchResult && Array.isArray(patchResult) &&
-                            patchResult[0] && patchResult[0].fieldsByName
-                        ) {
-                            let patchFields = patchResult[0].fieldsByName;
-                            if (patchFields.lookupValuesStale === true) {
-                                this.setState({
-                                    list: null
-                                });
-                            }
-                        }
-                    })
-                } else {
-                    setNextProperty(mainPropertyField);
-                }
-            } else {
-                 onChange(option);
-            }
-         }
-    }
-
-    render() {
-        const {
-            rank, readonly, defaultValue, selected, align, updated, rowId,
-            emptyText, tabIndex, mandatory, validStatus, lookupList, autofocus,
-            blur, initialFocus, lastProperty, disableAutofocus
-        } = this.props;
-
-        const { list, loading, selectedItem } = this.state;
-
-        return (
-            <RawList
-                ref={ (c) => this.rawList = c }
-                loading={loading}
-                list={list || []}
-                lookupList={lookupList}
-                rank={rank}
-                readonly={readonly}
-                defaultValue={defaultValue}
-                selected={lookupList ? selectedItem : selected}
-                align={align}
-                updated={updated}
-                rowId={rowId}
-                emptyText={emptyText}
-                mandatory={mandatory}
-                validStatus={validStatus}
-                tabIndex={tabIndex}
-                autofocus={autofocus}
-                initialFocus={initialFocus}
-                lastProperty={lastProperty}
-                disableAutofocus={disableAutofocus}
-                blur={blur}
-                onRequestListData={this.requestListData}
-                onFocus={this.handleFocus}
-                onSelect={option => this.handleSelect(option)}
-            />
-        )
-    }
+    return (
+      <RawList
+        ref={c => (this.rawList = c)}
+        loading={loading}
+        list={list || []}
+        lookupList={lookupList}
+        rank={rank}
+        readonly={readonly}
+        defaultValue={defaultValue}
+        selected={lookupList ? selectedItem : selected}
+        align={align}
+        updated={updated}
+        rowId={rowId}
+        emptyText={emptyText}
+        mandatory={mandatory}
+        validStatus={validStatus}
+        tabIndex={tabIndex}
+        autofocus={autofocus}
+        initialFocus={initialFocus}
+        lastProperty={lastProperty}
+        disableAutofocus={disableAutofocus}
+        blur={blur}
+        onRequestListData={this.requestListData}
+        onFocus={this.handleFocus}
+        onSelect={option => this.handleSelect(option)}
+      />
+    );
+  }
 }
 
 List.propTypes = {
-    dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired
 };
 
-List = connect(false, false, false, { withRef: true })(List);
-
-export default List
+export default connect(false, false, false, { withRef: true })(List);

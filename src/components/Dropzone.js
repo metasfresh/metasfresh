@@ -1,74 +1,74 @@
-import React, { Component } from 'react';
-
-import Dropzone from 'react-dropzone';
+import React, { Component } from "react";
+import Dropzone from "react-dropzone";
 
 class DropzoneWrapper extends Component {
-    constructor(props){
-        super(props);
+  constructor(props) {
+    super(props);
 
-        this.state = {
-            dragActive: false
-        };
+    this.state = {
+      dragActive: false
+    };
+  }
+
+  handleDropFile(accepted, rejected) {
+    const { handleDropFile, handleRejectDropped } = this.props;
+
+    this.handleDragEnd();
+
+    if (accepted.length) {
+      handleDropFile(accepted);
     }
 
-    handleDropFile(accepted, rejected){
-        const { handleDropFile, handleRejectDropped } = this.props;
+    if (rejected.length) {
+      handleRejectDropped(rejected);
+    }
+  }
 
-        this.handleDragEnd();
+  handleDragStart = () => {
+    const { handleDragStart } = this.props;
+    const { dragActive } = this.state;
 
-        if (accepted.length){
-            handleDropFile(accepted);
+    this.setState(
+      {
+        dragActive: true
+      },
+      () => {
+        dragActive && handleDragStart();
+      }
+    );
+  };
+
+  handleDragEnd() {
+    this.setState({
+      dragActive: false
+    });
+  }
+
+  render() {
+    const { dragActive } = this.state;
+
+    return (
+      <Dropzone
+        className={
+          "document-file-dropzone" +
+          (dragActive ? " document-file-dropzone-active" : "")
         }
-
-        if (rejected.length){
-            handleRejectDropped(rejected);
-        }
-    }
-
-    handleDragStart = () => {
-        const { handleDragStart } = this.props;
-        const { dragActive } = this.state;
-
-        this.setState({
-            dragActive: true
-        }, () => {
-            dragActive && handleDragStart();
-        })
-    }
-
-    handleDragEnd(){
-        this.setState({
-            dragActive: false
-        })
-    }
-
-    render() {
-        const {dragActive} = this.state;
-
-        return (
-            <Dropzone
-                className={
-                    'document-file-dropzone' +
-                    (dragActive ? ' document-file-dropzone-active' : '')
-                }
-                disablePreview={true}
-                multiple={false}
-                disableClick={true}
-                onDragEnter={() => this.handleDragStart()}
-                onDragLeave={() => this.handleDragEnd()}
-                onDrop={(accepted, rejected) =>
-                    this.handleDropFile(accepted, rejected)
-                }
-            >
-                {this.props.children}
-                <div className="document-file-dropzone-backdrop">
-                    <span className="document-file-dropzone-info">
-                        <i className="meta-icon-upload-1" /> Drop files here
-                    </span>
-                </div>
-            </Dropzone>
-        );
-    }
+        disablePreview={true}
+        multiple={false}
+        disableClick={true}
+        onDragEnter={() => this.handleDragStart()}
+        onDragLeave={() => this.handleDragEnd()}
+        onDrop={(accepted, rejected) => this.handleDropFile(accepted, rejected)}
+      >
+        {this.props.children}
+        <div className="document-file-dropzone-backdrop">
+          <span className="document-file-dropzone-info">
+            <i className="meta-icon-upload-1" /> Drop files here
+          </span>
+        </div>
+      </Dropzone>
+    );
+  }
 }
 
 export default DropzoneWrapper;

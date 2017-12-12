@@ -1,423 +1,420 @@
-import * as types from '../constants/ActionTypes';
-import update from 'react-addons-update';
+import update from "react-addons-update";
+
+import * as types from "../constants/ActionTypes";
 
 const initialState = {
-    connectionError: false,
-    modal: {
-        visible: false,
-        type: '',
-        dataId: null,
-        tabId: null,
-        rowId: null,
-        viewId: null,
-        layout: {},
-        data: {},
-        rowData: {},
-        modalTitle: '',
-        modalType: '',
-        isAdvanced: false,
-        viewDocumentIds: null,
-        triggerField: null,
-        saveStatus: {},
-        validStatus: {},
-        includedTabsInfo: {}
-    },
-    rawModal: {
-        visible: false,
-        windowType: null,
-        viewId: null
-    },
-    master: {
-        layout: {
-            activeTab: null
-        },
-        data: [],
-        rowData: {},
-        saveStatus: {},
-        validStatus: {},
-        includedTabsInfo: {},
-        docId: undefined,
-        websocket: null
-    },
-    indicator: 'saved',
-    allowShortcut: true,
-    latestNewDocument: null,
+  connectionError: false,
+  modal: {
+    visible: false,
+    type: "",
+    dataId: null,
+    tabId: null,
+    rowId: null,
     viewId: null,
-    selections: {},
+    layout: {},
+    data: {},
+    rowData: {},
+    modalTitle: "",
+    modalType: "",
+    isAdvanced: false,
+    viewDocumentIds: null,
+    triggerField: null,
+    saveStatus: {},
+    validStatus: {},
+    includedTabsInfo: {}
+  },
+  rawModal: {
+    visible: false,
+    windowType: null,
+    viewId: null
+  },
+  master: {
+    layout: {
+      activeTab: null
+    },
+    data: [],
+    rowData: {},
+    saveStatus: {},
+    validStatus: {},
+    includedTabsInfo: {},
+    docId: undefined,
+    websocket: null
+  },
+  indicator: "saved",
+  allowShortcut: true,
+  latestNewDocument: null,
+  viewId: null,
+  selections: {}
 };
 
 export const NO_SELECTION = [];
 export const getSelection = ({ state, windowType, viewId }) => {
-    const windowTypeSelections = state.windowHandler.selections[windowType];
+  const windowTypeSelections = state.windowHandler.selections[windowType];
 
-    return (
-        windowTypeSelections && windowTypeSelections[viewId]
-    ) || NO_SELECTION;
+  return (windowTypeSelections && windowTypeSelections[viewId]) || NO_SELECTION;
 };
 
 export default function windowHandler(state = initialState, action) {
+  switch (action.type) {
+    case types.NO_CONNECTION:
+      return Object.assign({}, state, {
+        connectionError: action.status
+      });
 
-    switch(action.type){
+    case types.OPEN_MODAL:
+      return Object.assign({}, state, {
+        modal: Object.assign({}, state.modal, {
+          visible: true,
+          type: action.windowType,
+          dataId: action.dataId,
+          tabId: action.tabId,
+          rowId: action.rowId,
+          viewId: action.viewId,
+          title: action.title,
+          modalType: action.modalType,
+          isAdvanced: action.isAdvanced,
+          viewDocumentIds: action.viewDocumentIds,
+          triggerField: action.triggerField
+        })
+      });
 
-        case types.NO_CONNECTION:
-            return Object.assign({}, state, {
-                connectionError: action.status
-            });
+    case types.UPDATE_MODAL:
+      return Object.assign({}, state, {
+        modal: Object.assign({}, state.modal, {
+          rowId: action.rowId,
+          dataId: action.dataId
+        })
+      });
 
-        case types.OPEN_MODAL:
-            return Object.assign({}, state, {
-                modal: Object.assign({}, state.modal, {
-                    visible: true,
-                    type: action.windowType,
-                    dataId: action.dataId,
-                    tabId: action.tabId,
-                    rowId: action.rowId,
-                    viewId: action.viewId,
-                    title: action.title,
-                    modalType: action.modalType,
-                    isAdvanced: action.isAdvanced,
-                    viewDocumentIds: action.viewDocumentIds,
-                    triggerField: action.triggerField
-                })
-            });
+    case types.CLOSE_PROCESS_MODAL:
+      if (state.modal.modalType === "process") {
+        return Object.assign({}, state, {
+          modal: Object.assign({}, state.modal, initialState.modal)
+        });
+      }
+      return state;
 
-        case types.UPDATE_MODAL:
-            return Object.assign({}, state, {
-                modal: Object.assign({}, state.modal, {
-                    rowId: action.rowId,
-                    dataId: action.dataId
-                })
-            });
+    case types.CLOSE_MODAL:
+      return Object.assign({}, state, {
+        modal: Object.assign({}, state.modal, initialState.modal)
+      });
 
-        case types.CLOSE_PROCESS_MODAL:
-            if (state.modal.modalType === 'process') {
-                return Object.assign({}, state, {
-                    modal: Object.assign({}, state.modal, initialState.modal),
-                });
-            }
-            return state;
+    // SCOPED ACTIONS
 
-        case types.CLOSE_MODAL:
-            return Object.assign({}, state, {
-                modal: Object.assign({}, state.modal, initialState.modal),
-            });
+    case types.INIT_LAYOUT_SUCCESS:
+      return Object.assign({}, state, {
+        [action.scope]: Object.assign({}, state[action.scope], {
+          layout: action.layout
+        })
+      });
 
-        // SCOPED ACTIONS
+    case types.INIT_DATA_SUCCESS:
+      return Object.assign({}, state, {
+        [action.scope]: Object.assign({}, state[action.scope], {
+          data: action.data,
+          docId: action.docId,
+          layout: {},
+          rowData: {},
+          saveStatus: action.saveStatus,
+          standardActions: new Set(action.standardActions),
+          validStatus: action.validStatus,
+          includedTabsInfo: action.includedTabsInfo,
+          websocket: action.websocket
+        })
+      });
 
-        case types.INIT_LAYOUT_SUCCESS:
-            return Object.assign({}, state, {
-                [action.scope]: Object.assign({}, state[action.scope], {
-                    layout: action.layout
-                })
-            });
+    case types.CLEAR_MASTER_DATA:
+      return Object.assign({}, state, {
+        master: Object.assign({}, state.master, {
+          data: {},
+          rowData: {},
+          docId: undefined
+        })
+      });
 
-        case types.INIT_DATA_SUCCESS:
-            return Object.assign({}, state, {
-                [action.scope]: Object.assign({}, state[action.scope], {
-                    data: action.data,
-                    docId: action.docId,
-                    layout: {},
-                    rowData: {},
-                    saveStatus: action.saveStatus,
-                    standardActions: new Set(action.standardActions),
-                    validStatus: action.validStatus,
-                    includedTabsInfo: action.includedTabsInfo,
-                    websocket: action.websocket
-                })
-            });
-
-        case types.CLEAR_MASTER_DATA:
-            return Object.assign({}, state, {
-                master: Object.assign({}, state.master, {
-                    data: {},
-                    rowData: {},
-                    docId: undefined
-                })
-            });
-
-        case types.SORT_TAB:
-            return Object.assign({}, state, {
-                [action.scope]: Object.assign({}, state[action.scope], {
-                    layout: Object.assign({}, state[action.scope].layout, {
-                        tabs: state[action.scope].layout.tabs.map(tab =>
-                            tab.tabId === action.tabId ?
-                            Object.assign({}, tab, {
-                                orderBy: [{
-                                    fieldName: action.field,
-                                    ascending: action.asc
-                                }]
-                            }) : tab
-                        )
+    case types.SORT_TAB:
+      return Object.assign({}, state, {
+        [action.scope]: Object.assign({}, state[action.scope], {
+          layout: Object.assign({}, state[action.scope].layout, {
+            tabs: state[action.scope].layout.tabs.map(
+              tab =>
+                tab.tabId === action.tabId
+                  ? Object.assign({}, tab, {
+                      orderBy: [
+                        {
+                          fieldName: action.field,
+                          ascending: action.asc
+                        }
+                      ]
                     })
-                })
-            })
+                  : tab
+            )
+          })
+        })
+      });
 
-        case types.ACTIVATE_TAB:
-            return update(state, {
-                [action.scope]: {
-                    layout: {
-                        activeTab: {$set: action.tabId}
-                    }
-                }
-            })
-
-        case types.UNSELECT_TAB:
-            return update(state, {
-                [action.scope]: {
-                    layout: {
-                        activeTab: { $set: null }
-                    }
-                }
-            })
-
-        case types.ADD_ROW_DATA:
-            return Object.assign({}, state, {
-                [action.scope]: Object.assign({}, state[action.scope], {
-                    rowData: Object.assign(
-                        {}, state[action.scope].rowData, action.data
-                    )
-                })
-            });
-
-        case types.ADD_NEW_ROW:
-            return update(state, {
-                [action.scope]: {
-                    rowData: {
-                        [action.tabid]: {
-                            $push: [action.item]
-                        }
-                    }
-                }
-            });
-
-        case types.DELETE_ROW:
-            return update(state, {
-                [action.scope]: {
-                    rowData: {
-                        [action.tabid]: {
-                            $set: state[action.scope].rowData[action.tabid]
-                                .filter((item) => item.rowId !== action.rowid)
-                        }
-                    }
-                }
-            });
-
-        case types.UPDATE_DATA_FIELD_PROPERTY:
-            return update(state, {
-                [action.scope]: {
-                    data: {
-                        [action.property]: {$set:
-                            Object.assign({},
-                                state[action.scope].data[action.property],
-                                action.item
-                            )
-                        }
-                    }
-                }
-            });
-
-        case types.UPDATE_DATA_PROPERTY: {
-            let value;
-
-            if (typeof action.value === 'string') {
-               value = action.value;
-
-            } else if (action.property === 'standardActions') {
-                // TODO: Evaluate if standardActions of type Set
-                // is worth this extra check
-                value = new Set(action.value);
-
-            } else {
-                value = Object.assign(
-                    {},
-                    state[action.scope] ?
-                        state[action.scope][action.property] : {},
-                    action.value,
-                );
-            }
-
-            return update(state, {
-                [action.scope]: {
-                    [action.property]: {
-                        $set: value,
-                    },
-                },
-            });
+    case types.ACTIVATE_TAB:
+      return update(state, {
+        [action.scope]: {
+          layout: {
+            activeTab: { $set: action.tabId }
+          }
         }
+      });
 
-        case types.UPDATE_ROW_FIELD_PROPERTY: {
-            const scope = action.scope;
-            const tabid = action.tabid;
-            const rowid = action.rowid;
-            const property = action.property;
-            const scState = state[scope];
+    case types.UNSELECT_TAB:
+      return update(state, {
+        [action.scope]: {
+          layout: {
+            activeTab: { $set: null }
+          }
+        }
+      });
 
-            if (
-                scState && scState.rowData && scState.rowData[tabid]
-            ) {
-                const scRowData = scState.rowData[tabid];
+    case types.ADD_ROW_DATA:
+      return Object.assign({}, state, {
+        [action.scope]: Object.assign({}, state[action.scope], {
+          rowData: Object.assign({}, state[action.scope].rowData, action.data)
+        })
+      });
 
-                return update(state, {
-                    [action.scope]: {
-                        rowData: {
-                            [tabid]: {
-                                $set: scRowData
-                                    .map((item, index) =>
-                                        item.rowId === rowid ? {
-                                            ...scRowData[index],
-
-                                            fieldsByName: {
-                                                ...scRowData[index]
-                                                    .fieldsByName,
-
-                                                [property]: {
-                                                    ...scRowData[index]
-                                                        .fieldsByName[property],
-                                                    ...action.item
-                                                }
-                                            }
-                                        } : item
-                                    )
-                            }
-                        }
-                    }
-                });
-            }
-            else {
-                return state;
+    case types.ADD_NEW_ROW:
+      return update(state, {
+        [action.scope]: {
+          rowData: {
+            [action.tabid]: {
+              $push: [action.item]
             }
           }
-
-         case types.UPDATE_ROW_PROPERTY:
-            return update(state, {
-                [action.scope]: {
-                    rowData: {
-                        [action.tabid]: {
-                            $set: state[action.scope].rowData[action.tabid]
-                                .map((item, index) =>
-                                    item.rowId === action.rowid ? {
-                                        ...state[action.scope]
-                                            .rowData[action.tabid][index],
-                                        [action.property]: action.item
-                                    } : item
-                                )
-                        }
-                    }
-                }
-            });
-
-        case types.UPDATE_ROW_STATUS:
-            return update(state, {
-                [action.scope]: {
-                    rowData: {
-                        [action.tabid]: {
-                             $set: state[action.scope].rowData[action.tabid]
-                             .map(item =>
-                                item.rowId === action.rowid ?
-                                {$set : action.saveStatus}
-                                : item
-                            )
-                        }
-                    }
-                }
-            });
-
-        case types.UPDATE_DATA_VALID_STATUS:
-            return Object.assign({}, state, {
-                [action.scope]: Object.assign({}, state[action.scope], {
-                    validStatus: action.validStatus
-                })
-            });
-
-        case types.UPDATE_DATA_SAVE_STATUS:
-            return Object.assign({}, state, {
-                [action.scope]: Object.assign({}, state[action.scope], {
-                    saveStatus: action.saveStatus
-                })
-            });
-
-        case types.UPDATE_DATA_INCLUDED_TABS_INFO:
-            return Object.assign({}, state, {
-                [action.scope]: Object.assign({}, state[action.scope], {
-                    includedTabsInfo:
-                        Object.keys(state[action.scope].includedTabsInfo)
-                            .reduce((result, current) => {
-                                result[current] = Object.assign({},
-                                    state[action.scope]
-                                        .includedTabsInfo[current],
-                                    action.includedTabsInfo[current] ?
-                                        action.includedTabsInfo[current] : {}
-                                );
-                                return result;
-                            }, {})
-                })
-            });
-        // END OF SCOPED ACTIONS
-
-        // INDICATOR ACTIONS
-        case types.CHANGE_INDICATOR_STATE:
-            return Object.assign({}, state, {
-                indicator: action.state
-            });
-
-        // END OF INDICATOR ACTIONS
-
-        case types.SELECT_TABLE_ITEMS: {
-            const { windowType, viewId, ids } = action.payload;
-
-            return {
-                ...state,
-
-                selections: {
-                    ...state.selections,
-
-                    [windowType]: {
-                        ...state.selections[windowType],
-
-                        [viewId]: ids,
-                    },
-                },
-            };
         }
+      });
 
-        // LATEST NEW DOCUMENT CACHE
-        case types.SET_LATEST_NEW_DOCUMENT:
-            return Object.assign({}, state, {
-                latestNewDocument: action.id
-            });
+    case types.DELETE_ROW:
+      return update(state, {
+        [action.scope]: {
+          rowData: {
+            [action.tabid]: {
+              $set: state[action.scope].rowData[action.tabid].filter(
+                item => item.rowId !== action.rowid
+              )
+            }
+          }
+        }
+      });
 
-        // RAW Modal
-        case types.CLOSE_RAW_MODAL:
-            return Object.assign({}, state, {
-                rawModal: Object.assign({}, state.rawModal, {
-                    visible: false,
-                    type: null,
-                    viewId: null
-                })
-            });
+    case types.UPDATE_DATA_FIELD_PROPERTY:
+      return update(state, {
+        [action.scope]: {
+          data: {
+            [action.property]: {
+              $set: Object.assign(
+                {},
+                state[action.scope].data[action.property],
+                action.item
+              )
+            }
+          }
+        }
+      });
 
-        case types.OPEN_RAW_MODAL:
-            return Object.assign({}, state, {
-                rawModal: Object.assign({}, state.rawModal, {
-                    visible: true,
-                    type: action.windowType,
-                    viewId: action.viewId
-                })
-            });
+    case types.UPDATE_DATA_PROPERTY: {
+      let value;
 
-        case types.ALLOW_SHORTCUT:
-            return {
-                ...state,
-                allowShortcut: true
-            };
+      if (typeof action.value === "string") {
+        value = action.value;
+      } else if (action.property === "standardActions") {
+        // TODO: Evaluate if standardActions of type Set
+        // is worth this extra check
+        value = new Set(action.value);
+      } else {
+        value = Object.assign(
+          {},
+          state[action.scope] ? state[action.scope][action.property] : {},
+          action.value
+        );
+      }
 
-        case types.DISABLE_SHORTCUT:
-            return {
-                ...state,
-                allowShortcut: false
-            };
-
-        default:
-            return state;
+      return update(state, {
+        [action.scope]: {
+          [action.property]: {
+            $set: value
+          }
+        }
+      });
     }
+
+    case types.UPDATE_ROW_FIELD_PROPERTY: {
+      const scope = action.scope;
+      const tabid = action.tabid;
+      const rowid = action.rowid;
+      const property = action.property;
+      const scState = state[scope];
+
+      if (scState && scState.rowData && scState.rowData[tabid]) {
+        const scRowData = scState.rowData[tabid];
+
+        return update(state, {
+          [action.scope]: {
+            rowData: {
+              [tabid]: {
+                $set: scRowData.map(
+                  (item, index) =>
+                    item.rowId === rowid
+                      ? {
+                          ...scRowData[index],
+
+                          fieldsByName: {
+                            ...scRowData[index].fieldsByName,
+
+                            [property]: {
+                              ...scRowData[index].fieldsByName[property],
+                              ...action.item
+                            }
+                          }
+                        }
+                      : item
+                )
+              }
+            }
+          }
+        });
+      } else {
+        return state;
+      }
+    }
+
+    case types.UPDATE_ROW_PROPERTY:
+      return update(state, {
+        [action.scope]: {
+          rowData: {
+            [action.tabid]: {
+              $set: state[action.scope].rowData[action.tabid].map(
+                (item, index) =>
+                  item.rowId === action.rowid
+                    ? {
+                        ...state[action.scope].rowData[action.tabid][index],
+                        [action.property]: action.item
+                      }
+                    : item
+              )
+            }
+          }
+        }
+      });
+
+    case types.UPDATE_ROW_STATUS:
+      return update(state, {
+        [action.scope]: {
+          rowData: {
+            [action.tabid]: {
+              $set: state[action.scope].rowData[action.tabid].map(
+                item =>
+                  item.rowId === action.rowid
+                    ? { $set: action.saveStatus }
+                    : item
+              )
+            }
+          }
+        }
+      });
+
+    case types.UPDATE_DATA_VALID_STATUS:
+      return Object.assign({}, state, {
+        [action.scope]: Object.assign({}, state[action.scope], {
+          validStatus: action.validStatus
+        })
+      });
+
+    case types.UPDATE_DATA_SAVE_STATUS:
+      return Object.assign({}, state, {
+        [action.scope]: Object.assign({}, state[action.scope], {
+          saveStatus: action.saveStatus
+        })
+      });
+
+    case types.UPDATE_DATA_INCLUDED_TABS_INFO:
+      return Object.assign({}, state, {
+        [action.scope]: Object.assign({}, state[action.scope], {
+          includedTabsInfo: Object.keys(
+            state[action.scope].includedTabsInfo
+          ).reduce((result, current) => {
+            result[current] = Object.assign(
+              {},
+              state[action.scope].includedTabsInfo[current],
+              action.includedTabsInfo[current]
+                ? action.includedTabsInfo[current]
+                : {}
+            );
+            return result;
+          }, {})
+        })
+      });
+    // END OF SCOPED ACTIONS
+
+    // INDICATOR ACTIONS
+    case types.CHANGE_INDICATOR_STATE:
+      return Object.assign({}, state, {
+        indicator: action.state
+      });
+
+    // END OF INDICATOR ACTIONS
+
+    case types.SELECT_TABLE_ITEMS: {
+      const { windowType, viewId, ids } = action.payload;
+
+      return {
+        ...state,
+
+        selections: {
+          ...state.selections,
+
+          [windowType]: {
+            ...state.selections[windowType],
+
+            [viewId]: ids
+          }
+        }
+      };
+    }
+
+    // LATEST NEW DOCUMENT CACHE
+    case types.SET_LATEST_NEW_DOCUMENT:
+      return Object.assign({}, state, {
+        latestNewDocument: action.id
+      });
+
+    // RAW Modal
+    case types.CLOSE_RAW_MODAL:
+      return Object.assign({}, state, {
+        rawModal: Object.assign({}, state.rawModal, {
+          visible: false,
+          type: null,
+          viewId: null
+        })
+      });
+
+    case types.OPEN_RAW_MODAL:
+      return Object.assign({}, state, {
+        rawModal: Object.assign({}, state.rawModal, {
+          visible: true,
+          type: action.windowType,
+          viewId: action.viewId
+        })
+      });
+
+    case types.ALLOW_SHORTCUT:
+      return {
+        ...state,
+        allowShortcut: true
+      };
+
+    case types.DISABLE_SHORTCUT:
+      return {
+        ...state,
+        allowShortcut: false
+      };
+
+    default:
+      return state;
+  }
 }
