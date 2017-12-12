@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { connect } from "react-redux";
 
-import { autocompleteRequest } from "../../../actions/GenericActions";
+import { getViewAttributeTypeahead } from "../../../actions/ViewAttributesActions";
 import { openModal } from "../../../actions/WindowActions";
 import LookupList from "./LookupList";
 
@@ -227,13 +227,6 @@ class RawLookup extends Component {
       recent,
       windowType,
       dataId,
-      filterWidget,
-      parameterName,
-      tabId,
-      rowId,
-      entity,
-      subentity,
-      subentityId,
       viewId,
       mainProperty,
       handleInputEmptyStatus,
@@ -252,17 +245,13 @@ class RawLookup extends Component {
         isOpen: true
       });
 
-      autocompleteRequest({
-        docId: filterWidget ? viewId : dataId,
-        docType: windowType,
-        entity,
-        propertyName: filterWidget ? parameterName : mainProperty[0].field,
-        query: this.inputSearch.value,
-        rowId,
-        subentity,
-        subentityId,
-        tabId
-      }).then(response => {
+      getViewAttributeTypeahead(
+        windowType,
+        viewId,
+        dataId,
+        mainProperty[0].field,
+        this.inputSearch.value
+      ).then(response => {
         let values = response.data.values || [];
 
         this.setState({

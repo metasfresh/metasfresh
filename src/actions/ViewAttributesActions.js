@@ -37,6 +37,29 @@ export function getViewAttributeDropdown(windowId, viewId, rowId, attribute) {
   );
 }
 
+export function getViewAttributeTypeahead(
+  windowId,
+  viewId,
+  rowId,
+  attribute,
+  query
+) {
+  return axios.get(
+    config.API_URL +
+      "/documentView" +
+      "/" +
+      windowId +
+      "/" +
+      viewId +
+      "/" +
+      rowId +
+      "/attributes/attribute/" +
+      attribute +
+      "/typeahead?query=" +
+      encodeURIComponent(query)
+  );
+}
+
 /**
  *
  * @param {*} windowId
