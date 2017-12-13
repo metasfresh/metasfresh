@@ -216,7 +216,7 @@ class RawWidget extends Component {
       disabled,
       caption,
       viewId,
-      data: widgetValue,
+      data,
       listenOnKeys,
       listenOnKeysFalse,
       closeTableField,
@@ -226,7 +226,7 @@ class RawWidget extends Component {
       onBlurWidget,
       defaultValue
     } = this.props;
-
+    const widgetValue = data || widgetData[0].value;
     const { isEdited } = this.state;
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
@@ -902,7 +902,53 @@ class RawWidget extends Component {
 }
 
 RawWidget.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
+  autoFocus: PropTypes.bool,
+  textSelected: PropTypes.bool,
+  listenOnKeys: PropTypes.bool,
+  listenOnKeysFalse: PropTypes.func,
+  listenOnKeysTrue: PropTypes.func,
+  widgetData: PropTypes.array,
+  handleFocus: PropTypes.func,
+  handlePatch: PropTypes.func,
+  handleBlur: PropTypes.func,
+  handleProcess: PropTypes.func,
+  handleChange: PropTypes.func,
+  handleBackdropLock: PropTypes.func,
+  tabId: PropTypes.string,
+  viewId: PropTypes.string,
+  rowId: PropTypes.string,
+  dataId: PropTypes.string,
+  windowType: PropTypes.string,
+  caption: PropTypes.string,
+  disabled: PropTypes.bool,
+  gridAlign: PropTypes.string,
+  type: PropTypes.string,
+  updated: PropTypes.bool,
+  isModal: PropTypes.bool,
+  filterWidget: PropTypes.bool,
+  filterId: PropTypes.string,
+  id: PropTypes.string,
+  range: PropTypes.bool,
+  onShow: PropTypes.func,
+  onHide: PropTypes.func,
+  subentity: PropTypes.string,
+  subentityId: PropTypes.string,
+  tabIndex: PropTypes.number,
+  dropdownOpenCallback: PropTypes.func,
+  fullScreen: PropTypes.string,
+  widgetType: PropTypes.string,
+  fields: PropTypes.array,
+  icon: PropTypes.string,
+  entity: PropTypes.string,
+  data: PropTypes.string,
+  closeTableField: PropTypes.func,
+  attribute: PropTypes.bool,
+  allowShowPassword: PropTypes.bool, // NOTE: looks like this wasn't used
+  buttonProcessId: PropTypes.string, // NOTE: looks like this wasn't used
+  onBlurWidget: PropTypes.func,
+  defaultValue: PropTypes.array,
+  noLabel: PropTypes.bool
 };
 
 export default connect()(RawWidget);
