@@ -121,10 +121,12 @@ class Filters extends Component {
     const { filter } = this.state;
 
     return unannotatedFilters.map(unannotatedFilter => {
-      const parameter = unannotatedFilter.parameters[0];
-      const filterType = parameter.widgetType;
+      const parameter =
+        unannotatedFilter.parameters && unannotatedFilter.parameters[0];
+      const filterType = parameter && parameter.widgetType;
       const isActive = this.isFilterActive(unannotatedFilter.filterId);
-      const activeParameter = isActive && filter[0] && filter[0].parameters[0];
+      const activeParameter =
+        parameter && isActive && filter[0] && filter[0].parameters[0];
       const captionValue = activeParameter
         ? TableCell.fieldValueToString(
             activeParameter.valueTo

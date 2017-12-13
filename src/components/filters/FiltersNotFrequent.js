@@ -73,7 +73,9 @@ class FiltersNotFrequent extends Component {
         >
           <i className="meta-icon-preview" />
           {activeFilter ? (
-            activeFilter.parameters.length === 1 ? (
+            activeFilter.parameters &&
+            activeFilter.parameters.length === 1 &&
+            activeFilter.captionValue ? (
               <Fragment>
                 {`${activeFilter.caption}: `}
                 {activeFilter.captionValue}
