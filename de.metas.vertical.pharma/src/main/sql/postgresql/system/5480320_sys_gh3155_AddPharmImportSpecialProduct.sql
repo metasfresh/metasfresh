@@ -821,4 +821,106 @@ UPDATE AD_ImpFormat_Row SET StartNo = 123 WHERE Name = 'A09THGP';
 
 UPDATE AD_ImpFormat_Row SET SeqNo = StartNo*10 WHERE AD_ImpFormat_ID = 540018;
 
+UPDATE AD_ImpFormat_Row SET StartNo = StartNo+1 WHERE AD_ImpFormat_ID = 540018;
+
+-- 2017-12-11T14:57:35.780
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-MM-dd',Updated=TO_TIMESTAMP('2017-12-11 14:57:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540404
+;
+
+
+
+-- 2017-12-11T14:58:32.710
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-MM-dd',Updated=TO_TIMESTAMP('2017-12-11 14:58:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540413
+;
+
+-- 2017-12-11T14:58:33.689
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-MM-dd',Updated=TO_TIMESTAMP('2017-12-11 14:58:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540426
+;
+
+-- 2017-12-11T14:58:34.484
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-MM-dd',Updated=TO_TIMESTAMP('2017-12-11 14:58:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540438
+;
+
+-- 2017-12-11T14:58:35.237
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-MM-dd',Updated=TO_TIMESTAMP('2017-12-11 14:58:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540464
+;
+
+-- 2017-12-11T14:58:36.164
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-MM-dd',Updated=TO_TIMESTAMP('2017-12-11 14:58:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540509
+;
+
+-- 2017-12-11T14:58:36.855
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-MM-dd',Updated=TO_TIMESTAMP('2017-12-11 14:58:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540508
+;
+
+-- 2017-12-11T14:58:37.565
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-MM-dd',Updated=TO_TIMESTAMP('2017-12-11 14:58:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540524
+;
+
+-- 2017-12-11T14:58:38.837
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyy-MM-dd',Updated=TO_TIMESTAMP('2017-12-11 14:58:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540520
+;
+
+
+
+
+
+
+-- 2017-12-11T15:41:04.801
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyyMMdd',Updated=TO_TIMESTAMP('2017-12-11 15:41:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540404
+;
+
+-- 2017-12-11T15:41:07.148
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyyMMdd',Updated=TO_TIMESTAMP('2017-12-11 15:41:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540413
+;
+
+-- 2017-12-11T15:41:09.156
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyyMMdd',Updated=TO_TIMESTAMP('2017-12-11 15:41:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540426
+;
+
+-- 2017-12-11T15:41:11.894
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyyMMdd',Updated=TO_TIMESTAMP('2017-12-11 15:41:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540438
+;
+
+-- 2017-12-11T15:41:14.226
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyyMMdd',Updated=TO_TIMESTAMP('2017-12-11 15:41:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540464
+;
+
+-- 2017-12-11T15:41:15.980
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyyMMdd',Updated=TO_TIMESTAMP('2017-12-11 15:41:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540509
+;
+
+-- 2017-12-11T15:41:18.306
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyyMMdd',Updated=TO_TIMESTAMP('2017-12-11 15:41:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540508
+;
+
+-- 2017-12-11T15:41:20.272
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyyMMdd',Updated=TO_TIMESTAMP('2017-12-11 15:41:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540524
+;
+
+-- 2017-12-11T15:41:22.360
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET DataFormat='yyyyMMdd',Updated=TO_TIMESTAMP('2017-12-11 15:41:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540520
+;
+
+
+
+
 
