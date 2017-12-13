@@ -70,9 +70,9 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				def nodeHome = tool name: "$NODEJS_TOOL_NAME"
 				env.PATH = "${nodeHome}/bin:${env.PATH}"
 
-				sh "npm install"
-				sh "npm run lint"
-				sh "npm test"
+				sh "yarn install"
+				sh "yarn lint --quiet"
+				sh "yarn test"
 				sh "webpack --config webpack.prod.js --bail --display-error-details"
 
 				def misc = new de.metas.jenkins.Misc();

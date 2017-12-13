@@ -1,4 +1,5 @@
-import React, { Component } from "react";
+import counterpart from "counterpart";
+import React, { Component, Fragment } from "react";
 import onClickOutside from "react-onclickoutside";
 import { connect } from "react-redux";
 
@@ -56,7 +57,8 @@ class FiltersNotFrequent extends Component {
 
     const openFilter = getItemsByProperty(data, "filterId", openFilterId)[0];
 
-    const activeFilter = data.filter(filter => filter.isActive)[0] || {};
+    const activeFilters = data.filter(filter => filter.isActive);
+    const activeFilter = activeFilters.length === 1 && activeFilters[0];
 
     return (
       <div className="filter-wrapper">
@@ -66,18 +68,29 @@ class FiltersNotFrequent extends Component {
             "btn btn-filter btn-meta-outline-secondary " +
             "btn-distance btn-sm" +
             (isOpenDropdown ? " btn-select" : "") +
-            (activeFilter.isActive ? " btn-active" : "")
+            (activeFilters.length > 0 ? " btn-active" : "")
           }
         >
           <i className="meta-icon-preview" />
-          {activeFilter.isActive
-            ? `${activeFilter.caption}: ${activeFilter.captionValue}`
-            : "Filter"}
+          {activeFilter ? (
+            activeFilter.parameters.length === 1 ? (
+              <Fragment>
+                {`${activeFilter.caption}: `}
+                {activeFilter.captionValue}
+              </Fragment>
+            ) : (
+              `${counterpart.translate("window.filters.caption2")}: ${
+                activeFilter.caption
+              }`
+            )
+          ) : (
+            "Filter"
+          )}
         </button>
 
         {isOpenDropdown && (
           <div className="filters-overlay">
-            {!openFilterId && !activeFilter.isActive ? (
+            {!openFilterId && !activeFilter ? (
               <ul className="filter-menu">
                 {data.map((item, index) => (
                   <li

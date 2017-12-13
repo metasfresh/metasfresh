@@ -288,7 +288,7 @@ class RawWidget extends Component {
                 disabled: widgetData[0].readonly || disabled,
                 tabIndex: fullScreen ? -1 : tabIndex
               }}
-              value={widgetValue}
+              value={widgetValue || widgetData[0].value}
               onChange={date => handleChange(widgetField, date)}
               patch={date =>
                 this.handlePatch(

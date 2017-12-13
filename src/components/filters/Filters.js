@@ -35,7 +35,8 @@ class Filters extends Component {
   /*
      *   This method should update docList
      */
-  applyFilters = (filter, cb) => {
+  // eslint-disable-next-line no-unused-vars
+  applyFilters = ({ isActive, captionValue, ...filter }, cb) => {
     const valid = this.isFilterValid(filter);
 
     this.setState(
@@ -169,7 +170,7 @@ class Filters extends Component {
 
     if (filter) {
       const activeFilter = filter.find(item => item.filterId === filterId);
-      return typeof activeFilter !== "undefined" && activeFilter;
+      return typeof activeFilter !== "undefined";
     }
 
     return false;
