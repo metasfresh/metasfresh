@@ -57,6 +57,7 @@ class Lookup extends Component {
         ) {
           let nextProp = properties[nextIndex];
 
+          // TODO: Looks like this code was never used
           if (nextProp.source === "list") {
             this.linkedList.map(listComponent => {
               if (listComponent && listComponent.props) {
@@ -239,7 +240,7 @@ class Lookup extends Component {
               item.field
             )[0];
 
-            if (item.source === "lookup" || item.widgetType === "Lookup") {
+            if (itemByProperty.widgetType === "Lookup") {
               return (
                 <RawLookup
                   key={index}
@@ -284,7 +285,7 @@ class Lookup extends Component {
                   }}
                 />
               );
-            } else if (item.source === "list") {
+            } else if (itemByProperty.widgetType === "List") {
               const isFirstProperty = index === 0;
               const isCurrentProperty =
                 item.field === property && !autofocusDisabled;
