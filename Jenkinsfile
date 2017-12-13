@@ -71,7 +71,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				env.PATH = "${nodeHome}/bin:${env.PATH}"
 
 				sh "yarn install"
-				sh "yarn lint"
+				sh "yarn lint --quiet"
 				sh "yarn test"
 				sh "webpack --config webpack.prod.js --bail --display-error-details"
 
