@@ -2,7 +2,7 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 
 import java.math.BigDecimal;
 
-import de.metas.dimension.DimensionSpec.DimensionSpecGroup;
+import de.metas.dimension.DimensionSpecGroup;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import lombok.Data;
@@ -75,9 +75,9 @@ public class AttributeSubRowBucket
 		qtyReserved = qtyReserved.add(dataRecord.getQtyReserved_OnDate());
 	}
 
-	public MaterialCockpitRow createIncludedRow(@NonNull final MaterialCockpitMainRowBucket materialCockpitMainRowBucket)
+	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowBucket mainRowBucket)
 	{
-		final MaterialCockpitMainRowId productIdAndDate = materialCockpitMainRowBucket.getProductIdAndDate();
+		final MainRowBucketId productIdAndDate = mainRowBucket.getProductIdAndDate();
 
 		return MaterialCockpitRow.attributeSubRowBuilder()
 				.date(productIdAndDate.getDate())

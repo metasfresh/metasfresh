@@ -60,9 +60,9 @@ public class CountingSubRowBucket
 		qtyOnHand = qtyOnHand.add(dataRecord.getQtyCount());
 	}
 
-	public MaterialCockpitRow createIncludedRow(@NonNull final MaterialCockpitMainRowBucket materialCockpitMainRowBucket)
+	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowBucket mainRowBucket)
 	{
-		final MaterialCockpitMainRowId productIdAndDate = materialCockpitMainRowBucket.getProductIdAndDate();
+		final MainRowBucketId productIdAndDate = mainRowBucket.getProductIdAndDate();
 
 		return MaterialCockpitRow.countingSubRowBuilder()
 				.date(productIdAndDate.getDate())

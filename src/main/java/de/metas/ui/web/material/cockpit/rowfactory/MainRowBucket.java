@@ -9,7 +9,7 @@ import org.adempiere.mm.attributes.api.AttributesKeys;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dimension.DimensionSpec;
-import de.metas.dimension.DimensionSpec.DimensionSpecGroup;
+import de.metas.dimension.DimensionSpecGroup;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.material.event.commons.AttributesKey;
@@ -44,20 +44,20 @@ import lombok.NonNull;
 
 @Data
 @EqualsAndHashCode(of = "productIdAndDate")
-public class MaterialCockpitMainRowBucket
+public class MainRowBucket
 {
-	public static MaterialCockpitMainRowBucket create(@NonNull final MaterialCockpitMainRowId productIdAndDate)
+	public static MainRowBucket create(@NonNull final MainRowBucketId productIdAndDate)
 	{
-		return new MaterialCockpitMainRowBucket(productIdAndDate);
+		return new MainRowBucket(productIdAndDate);
 	}
 
-	private final MaterialCockpitMainRowId productIdAndDate;
+	private final MainRowBucketId productIdAndDate;
 
 	private final Map<DimensionSpecGroup, AttributeSubRowBucket> attributeSubRows = new LinkedHashMap<>();
 
 	private final Map<Integer, CountingSubRowBucket> countingSubRows = new LinkedHashMap<>();
 
-	private MaterialCockpitMainRowBucket(@NonNull final MaterialCockpitMainRowId productIdAndDate)
+	private MainRowBucket(@NonNull final MainRowBucketId productIdAndDate)
 	{
 		this.productIdAndDate = productIdAndDate;
 	}
@@ -85,7 +85,7 @@ public class MaterialCockpitMainRowBucket
 
 	private void assertProductIdAndDateOfDataRecord(@NonNull final I_X_MRP_ProductInfo_Detail_MV dataRecord)
 	{
-		final MaterialCockpitMainRowId key = MaterialCockpitMainRowId.createInstanceForDataRecord(dataRecord);
+		final MainRowBucketId key = MainRowBucketId.createInstanceForDataRecord(dataRecord);
 
 		Check.errorUnless(
 				productIdAndDate.equals(key),

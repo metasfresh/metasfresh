@@ -27,7 +27,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dimension.DimensionSpec;
-import de.metas.dimension.DimensionSpec.DimensionSpecGroup;
+import de.metas.dimension.DimensionSpecGroup;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
@@ -132,17 +132,17 @@ public class MaterialCockpitRowFactoryTest
 	{
 		final Timestamp today = TimeUtil.getDay(SystemTime.asTimestamp());
 
-		final Map<MaterialCockpitMainRowId, MaterialCockpitMainRowBucket> result = materialCockpitRowFactory.createEmptyRowBuckets(
+		final Map<MainRowBucketId, MainRowBucket> result = materialCockpitRowFactory.createEmptyRowBuckets(
 				ImmutableList.of(product),
 				today);
 		assertThat(result).hasSize(1);
 
-		final MaterialCockpitMainRowId productIdAndDate = MaterialCockpitMainRowId.createPlainInstance(product.getM_Product_ID(), today);
+		final MainRowBucketId productIdAndDate = MainRowBucketId.createPlainInstance(product.getM_Product_ID(), today);
 		assertThat(result).containsKey(productIdAndDate);
-		final MaterialCockpitMainRowBucket materialCockpitMainRowBucket = result.get(productIdAndDate);
-		assertThat(materialCockpitMainRowBucket.getProductIdAndDate()).isEqualTo(productIdAndDate);
+		final MainRowBucket mainRowBucket = result.get(productIdAndDate);
+		assertThat(mainRowBucket.getProductIdAndDate()).isEqualTo(productIdAndDate);
 
-		final Map<DimensionSpecGroup, AttributeSubRowBucket> subRowBuckets = materialCockpitMainRowBucket.getAttributeSubRows();
+		final Map<DimensionSpecGroup, AttributeSubRowBucket> subRowBuckets = mainRowBucket.getAttributeSubRows();
 		assertThat(subRowBuckets).hasSize(dimensionSpec.retrieveGroups().size());
 		assertThat(subRowBuckets.keySet()).containsOnlyElementsOf(dimensionSpec.retrieveGroups());
 	}

@@ -18,7 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.dimension.DimensionSpec.DimensionSpecGroup;
+import de.metas.dimension.DimensionSpecGroup;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
@@ -80,7 +80,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
 			captionKey = I_X_MRP_ProductInfo_V.COLUMNNAME_M_Product_Category_ID, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30) })
-	private final String productCategoryOrAttributeGroupName;
+	private final String productCategoryOrSubRowName;
 
 	// Zusage Lieferant
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
@@ -154,7 +154,7 @@ public class MaterialCockpitRow implements IViewRow
 		final I_M_Product product = load(productId, I_M_Product.class);
 		this.productValue = product.getValue();
 		this.productName = product.getName();
-		this.productCategoryOrAttributeGroupName = product.getM_Product_Category().getName();
+		this.productCategoryOrSubRowName = product.getM_Product_Category().getName();
 
 		this.includedRows = includedRows;
 
@@ -240,7 +240,7 @@ public class MaterialCockpitRow implements IViewRow
 		final I_M_Product product = load(productId, I_M_Product.class);
 		this.productValue = product.getValue();
 		this.productName = product.getName();
-		this.productCategoryOrAttributeGroupName = dimensionGroupName;
+		this.productCategoryOrSubRowName = dimensionGroupName;
 
 		this.productId = productId;
 		this.date = date;
@@ -280,7 +280,7 @@ public class MaterialCockpitRow implements IViewRow
 		final I_M_Product product = load(productId, I_M_Product.class);
 		this.productValue = product.getValue();
 		this.productName = product.getName();
-		this.productCategoryOrAttributeGroupName = plantName;
+		this.productCategoryOrSubRowName = plantName;
 
 		this.productId = productId;
 		this.date = date;

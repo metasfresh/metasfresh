@@ -31,25 +31,24 @@ import lombok.Value;
  */
 
 @Value
-public class MaterialCockpitMainRowId
+public class MainRowBucketId
 {
-
-	public static MaterialCockpitMainRowId createInstanceForDataRecord(@NonNull final I_X_MRP_ProductInfo_Detail_MV dataRecord)
+	public static MainRowBucketId createInstanceForDataRecord(@NonNull final I_X_MRP_ProductInfo_Detail_MV dataRecord)
 	{
-		return new MaterialCockpitMainRowId(
+		return new MainRowBucketId(
 				dataRecord.getM_Product_ID(),
 				TimeUtil.getDay(dataRecord.getDateGeneral()));
 	}
 
-	public static MaterialCockpitMainRowId createPlainInstance(final int productId, @NonNull final Timestamp date)
+	public static MainRowBucketId createPlainInstance(final int productId, @NonNull final Timestamp date)
 	{
-		return new MaterialCockpitMainRowId(productId, date);
+		return new MainRowBucketId(productId, date);
 	}
 
 	int productId;
 	Timestamp date;
 
-	private MaterialCockpitMainRowId(final int productId, @NonNull final Timestamp date)
+	private MainRowBucketId(final int productId, @NonNull final Timestamp date)
 	{
 		this.productId = productId;
 		this.date = date;
