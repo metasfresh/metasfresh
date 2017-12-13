@@ -943,7 +943,7 @@ RawWidget.propTypes = {
   entity: PropTypes.string,
   data: PropTypes.string,
   closeTableField: PropTypes.func,
-  attribute: PropTypes.string, // NOTE: looks like this wasn't used
+  attribute: PropTypes.bool,
   allowShowPassword: PropTypes.bool, // NOTE: looks like this wasn't used
   buttonProcessId: PropTypes.string, // NOTE: looks like this wasn't used
   onBlurWidget: PropTypes.func,
