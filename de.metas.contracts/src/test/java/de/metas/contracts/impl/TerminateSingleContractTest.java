@@ -30,14 +30,21 @@ import java.math.BigDecimal;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.aggregation.api.IAggregationFactory;
+import de.metas.aggregation.model.C_Aggregation_Builder;
+import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.aggregation.model.X_C_AggregationItem;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IContractsDAO;
@@ -49,8 +56,15 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
+import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
+import de.metas.invoicecandidate.api.IAggregationDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import lombok.NonNull;
 
 public class TerminateSingleContractTest extends AbstractFlatrateTermTest
@@ -66,6 +80,29 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	public void before()
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
+
+		final IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
+		aggregationFactory.setDefaultAggregationKeyBuilder(I_C_Invoice_Candidate.class, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header, ICHeaderAggregationKeyBuilder_OLD.instance);
+
+
+		//
+		// Setup Header & Line aggregation
+		{
+			// Header
+			config_InvoiceCand_HeaderAggregation();
+			Services.get(IAggregationFactory.class).setDefaultAggregationKeyBuilder(
+					I_C_Invoice_Candidate.class,
+					X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header,
+					ICHeaderAggregationKeyBuilder_OLD.instance);
+
+			// Line
+			config_InvoiceCand_LineAggregation(helper.getCtx(), helper.getTrxName());
+			Services.get(IAggregationFactory.class).setDefaultAggregationKeyBuilder(
+					I_C_Invoice_Candidate.class,
+					X_C_Aggregation.AGGREGATIONUSAGELEVEL_Line,
+					ICLineAggregationKeyBuilder_OLD.instance);
+		}
+
 		SystemTime.setTimeSource(today);
 	}
 
@@ -103,6 +140,12 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 
 		createInvoiceCandidates(extendedContract);
 
+		// update invalids
+		Services.get(IInvoiceCandBL.class).updateInvalid()
+				.setContext(helper.getCtx(), helper.getTrxName())
+				.setTaggedWithAnyTag()
+				.update();
+
 		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
 				.changeDate(SystemTime.asDayTimestamp())
 				.isCloseInvoiceCandidate(true)
@@ -113,6 +156,60 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		assertVoidedFlatrateTerm(extendedContract);
 		assertInvoiceCandidate(extendedContract);
 		assertSubscriptionProgress(extendedContract, 0);
+	}
+
+
+	protected void config_InvoiceCand_HeaderAggregation()
+	{
+		//@formatter:off
+		final I_C_Aggregation defaultHeaderAggregation = new C_Aggregation_Builder()
+			.setAD_Table_ID(I_C_Invoice_Candidate.Table_Name)
+			.setIsDefault(true)
+			.setAggregationUsageLevel(X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header)
+			.setName("Default")
+			.newItem()
+				.setType(X_C_AggregationItem.TYPE_Column)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMN_Bill_BPartner_ID)
+				.end()
+			.newItem()
+				.setType(X_C_AggregationItem.TYPE_Column)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMN_Bill_Location_ID)
+				.end()
+			.newItem()
+				.setType(X_C_AggregationItem.TYPE_Column)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMN_C_Currency_ID)
+				.end()
+			.newItem()
+				.setType(X_C_AggregationItem.TYPE_Column)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMN_AD_Org_ID)
+				.end()
+			.newItem()
+				.setType(X_C_AggregationItem.TYPE_Column)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMN_IsSOTrx)
+				.end()
+			.newItem()
+				.setType(X_C_AggregationItem.TYPE_Column)
+				.setAD_Column(I_C_Invoice_Candidate.COLUMN_IsTaxIncluded)
+				.end()
+			.build();
+		//@formatter:on
+	}
+
+
+	protected void config_InvoiceCand_LineAggregation(final Properties ctx, final String trxName)
+	{
+		final I_C_Invoice_Candidate_Agg defaultLineAgg = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate_Agg.class, trxName);
+		defaultLineAgg.setAD_Org_ID(0);
+		defaultLineAgg.setSeqNo(0);
+		defaultLineAgg.setName("Default");
+		defaultLineAgg.setClassname(DefaultAggregator.class.getName());
+		defaultLineAgg.setIsActive(true);
+		defaultLineAgg.setC_BPartner(null);
+		defaultLineAgg.setM_ProductGroup(null);
+		InterfaceWrapperHelper.save(defaultLineAgg);
+
+		final PlainAggregationDAO aggregationDAO = (PlainAggregationDAO)Services.get(IAggregationDAO.class);
+		aggregationDAO.setDefaultAgg(defaultLineAgg);
 	}
 
 	private void assertVoidedFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm)
@@ -150,5 +247,6 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 				.filter(progress -> progress.getEventDate().after(flatrateTerm.getMasterEndDate()))
 				.peek(progress -> assertThat(progress.getContractStatus()).isEqualTo(X_C_SubscriptionProgress.CONTRACTSTATUS_Running));
 	}
+
 
 }
