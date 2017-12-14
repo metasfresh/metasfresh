@@ -234,6 +234,7 @@ public abstract class PO
 
 		if (ID == ID_NewInstanceNoInit)
 		{
+			// IMPORTANT: m_createNew is false at this point! 
 			return;
 		}
 
