@@ -55,7 +55,6 @@ Here come the actual release notes:
   * [#3171](https://github.com/metasfresh/metasfresh/issues/3171) Add view to keep track of unprocessed async work packages
   * [#3176](https://github.com/metasfresh/metasfresh/issues/3176) Translate Sales Order Actions
     * Improvement of translations in sales order action menu.
-  * [#3206](https://github.com/metasfresh/metasfresh/issues/3206) Relation sales order - flatrate term is missing
 
 * metasfresh-webui-api
   * [#711](https://github.com/metasfresh/metasfresh-webui-api/issues/711) picking terminal: additional shall support grouping lines by order
@@ -86,6 +85,9 @@ Here come the actual release notes:
   * [#3160](https://github.com/metasfresh/metasfresh/issues/3160) C_Printing_Queue_ReEnqueue with IsSelected doesn't work
   * [#3174](https://github.com/metasfresh/metasfresh/issues/3174) Material Receipt Candidates not generates when using Purchase Order from Sales Order action
   * [#3183](https://github.com/metasfresh/metasfresh/issues/3183) Jenkins misinterprets positive downstream build result
+  * [#3206](https://github.com/metasfresh/metasfresh/issues/3206) Relation sales order - flatrate term is missing
+  * [#3207](https://github.com/metasfresh/metasfresh/issues/3207) Cannot save an attribute in orderline
+  * [#3208](https://github.com/metasfresh/metasfresh/issues/3208) console error when copying MDocType
 
 * metasfresh-webui-api
   * [#713](https://github.com/metasfresh/metasfresh-webui-api/issues/713) Error creating bean with name 'scopedTarget.internalUserSessionData'
