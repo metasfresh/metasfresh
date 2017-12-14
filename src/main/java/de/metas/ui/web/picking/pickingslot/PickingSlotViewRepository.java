@@ -286,6 +286,7 @@ public class PickingSlotViewRepository
 				//
 				.pickingSlotName(pickingSlot.getPickingSlot())
 				.pickingSlotWarehouse(warehouseLookup.get().findById(pickingSlot.getM_Warehouse_ID()))
+				.pickingSlotLocatorId(pickingSlot.getM_Locator_ID())
 				.pickingSlotBPartner(bpartnerLookup.get().findById(pickingSlot.getC_BPartner_ID()))
 				.pickingSlotBPLocation(bpartnerLocationLookup.get().findById(pickingSlot.getC_BPartner_Location_ID()))
 				.includedHURows(pickedHuRows)

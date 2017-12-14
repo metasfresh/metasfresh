@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -314,6 +315,12 @@ public class HUEditorView implements IView
 	public void addHUsAndInvalidate(final Collection<I_M_HU> husToAdd)
 	{
 		addHUIdsAndInvalidate(extractHUIds(husToAdd));
+	}
+
+	public void addHUIdAndInvalidate(final int huId)
+	{
+		Check.assume(huId > 0, "huId > 0");
+		addHUIdsAndInvalidate(ImmutableSet.of(huId));
 	}
 
 	public void addHUIdsAndInvalidate(final Collection<Integer> huIdsToAdd)

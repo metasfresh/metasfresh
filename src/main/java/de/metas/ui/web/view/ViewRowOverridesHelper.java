@@ -43,20 +43,20 @@ public final class ViewRowOverridesHelper
 	{
 		if (rowOverrides != null)
 		{
-			if(rowOverrides.getIncludedViewId() != null)
+			if(rowOverrides.getIncludedViewId(row) != null)
 			{
 				return true;
 			}
 		}
 		
-		return row.hasIncludedView();
+		return row.getIncludedViewId() != null;
 	}
 
 	public static final ViewId extractIncludedViewId(final IViewRow row, final IViewRowOverrides rowOverrides)
 	{
 		if (rowOverrides != null)
 		{
-			final ViewId includedViewId = rowOverrides.getIncludedViewId();
+			final ViewId includedViewId = rowOverrides.getIncludedViewId(row);
 			if (includedViewId != null)
 			{
 				return includedViewId;

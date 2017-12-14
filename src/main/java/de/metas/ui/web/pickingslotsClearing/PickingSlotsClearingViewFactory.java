@@ -1,4 +1,4 @@
-package de.metas.ui.web.pickingslot;
+package de.metas.ui.web.pickingslotsClearing;
 
 import java.util.List;
 import java.util.Properties;
@@ -16,7 +16,7 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewRepository;
-import de.metas.ui.web.pickingslot.process.WEBUI_PickingSlot_TakeOutHU;
+import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutHU;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewProfileId;
@@ -55,8 +55,8 @@ import de.metas.ui.web.window.datatypes.WindowId;
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh/issues/518
  */
-@ViewFactory(windowId = AggregationPickingSlotsViewFactory.WINDOW_ID_STRING)
-public class AggregationPickingSlotsViewFactory implements IViewFactory
+@ViewFactory(windowId = PickingSlotsClearingViewFactory.WINDOW_ID_STRING)
+public class PickingSlotsClearingViewFactory implements IViewFactory
 {
 	static final String WINDOW_ID_STRING = "540371"; // Picking Tray Clearing
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
@@ -83,13 +83,13 @@ public class AggregationPickingSlotsViewFactory implements IViewFactory
 	}
 
 	@Override
-	public AggregationPickingSlotView createView(final CreateViewRequest request)
+	public PickingSlotsClearingView createView(final CreateViewRequest request)
 	{
 		request.assertNoParentViewOrRow();
 
-		final ViewId viewId = ViewId.random(AggregationPickingSlotsViewFactory.WINDOW_ID);
+		final ViewId viewId = ViewId.random(PickingSlotsClearingViewFactory.WINDOW_ID);
 
-		return AggregationPickingSlotView.builder()
+		return PickingSlotsClearingView.builder()
 				.viewId(viewId)
 				.rows(() -> pickingSlotRepo.retrieveAllPickingSlotsRows())
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
@@ -106,7 +106,7 @@ public class AggregationPickingSlotsViewFactory implements IViewFactory
 		return ImmutableList.of(
 				// allow to open the HU-editor for various picking related purposes
 				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_PickingSlot_TakeOutHU.class))
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_PickingSlotsClearingView_TakeOutHU.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build());

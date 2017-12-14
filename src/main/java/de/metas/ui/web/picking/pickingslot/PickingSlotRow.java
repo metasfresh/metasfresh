@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -15,6 +16,7 @@ import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -70,15 +72,20 @@ public final class PickingSlotRow implements IViewRow
 	private final ImmutableMap<PickingSlotRowId, PickingSlotRow> includedHURows;
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 
+	private final ViewId includedViewId;
+
 	//
 	// Picking slot
-	private final ITranslatableString pickingSlotCaption;
+	private final LookupValue pickingSlotBPartner;
+	private final LookupValue pickingSlotBPLocation;
 	private final LookupValue pickingSlotWarehouse;
+	private final int pickingSlotLocatorId;
+	private final ITranslatableString pickingSlotCaption;
 
 	//
 	// HU
 	private final boolean huTopLevel;
-	
+
 	@ViewColumn(captionKey = "HUCode", widgetType = DocumentFieldWidgetType.Text, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
@@ -129,12 +136,17 @@ public final class PickingSlotRow implements IViewRow
 
 		//
 		// Picking slot info
-		pickingSlotCaption = null;
 		pickingSlotWarehouse = null;
+		pickingSlotLocatorId = -1;
+		pickingSlotBPartner = null;
+		pickingSlotBPLocation = null;
+		pickingSlotCaption = null;
 
 		//
 		// Included rows - we don't show any
 		this.includedHURows = ImmutableMap.of();
+
+		this.includedViewId = null;
 	}
 
 	/**
@@ -153,10 +165,12 @@ public final class PickingSlotRow implements IViewRow
 			//
 			final String pickingSlotName,
 			final LookupValue pickingSlotWarehouse,
+			final int pickingSlotLocatorId,
 			final LookupValue pickingSlotBPartner,
 			final LookupValue pickingSlotBPLocation,
 			//
-			final List<PickingSlotRow> includedHURows)
+			final List<PickingSlotRow> includedHURows,
+			final ViewId includedViewId)
 	{
 		pickingSlotRowId = PickingSlotRowId.ofPickingSlotId(pickingSlotId);
 
@@ -172,11 +186,17 @@ public final class PickingSlotRow implements IViewRow
 		huTopLevel = false;
 
 		// Picking slot info
-		pickingSlotCaption = buildPickingSlotCaption(pickingSlotName, pickingSlotBPartner, pickingSlotBPLocation);
 		this.pickingSlotWarehouse = pickingSlotWarehouse;
+		this.pickingSlotLocatorId = pickingSlotLocatorId;
+		this.pickingSlotBPartner = pickingSlotBPartner;
+		this.pickingSlotBPLocation = pickingSlotBPLocation;
+
+		pickingSlotCaption = buildPickingSlotCaption(pickingSlotName, pickingSlotBPartner, pickingSlotBPLocation);
 
 		// Included rows
 		this.includedHURows = includedHURows == null ? ImmutableMap.of() : Maps.uniqueIndex(includedHURows, PickingSlotRow::getPickingSlotRowId);
+
+		this.includedViewId = includedViewId;
 	}
 
 	/**
@@ -228,11 +248,16 @@ public final class PickingSlotRow implements IViewRow
 		huTopLevel = topLevelHU;
 
 		// Picking slot info
-		pickingSlotCaption = null;
 		pickingSlotWarehouse = null;
+		pickingSlotLocatorId = -1;
+		pickingSlotBPartner = null;
+		pickingSlotBPLocation = null;
+		pickingSlotCaption = null;
 
 		// Included rows
 		this.includedHURows = includedHURows == null ? ImmutableMap.of() : Maps.uniqueIndex(includedHURows, PickingSlotRow::getPickingSlotRowId);
+
+		this.includedViewId = null;
 	}
 
 	private static final ITranslatableString buildPickingSlotCaption(final String pickingSlotName, final LookupValue pickingSlotBPartner, final LookupValue pickingSlotBPLocation)
@@ -286,6 +311,20 @@ public final class PickingSlotRow implements IViewRow
 	public List<PickingSlotRow> getIncludedRows()
 	{
 		return ImmutableList.copyOf(includedHURows.values());
+	}
+
+	public Stream<PickingSlotRow> streamIncludedRowsRecursivelly()
+	{
+		return includedHURows.values()
+				.stream()
+				.flatMap(PickingSlotRow::streamThisRowAndIncludedRowsRecursivelly);
+	}
+
+	public Stream<PickingSlotRow> streamThisRowAndIncludedRowsRecursivelly()
+	{
+		final Stream<PickingSlotRow> thisRowStream = Stream.of(this);
+		final Stream<PickingSlotRow> includedRowsStream = streamIncludedRowsRecursivelly();
+		return Stream.concat(thisRowStream, includedRowsStream);
 	}
 
 	public Optional<PickingSlotRow> findIncludedRowById(final PickingSlotRowId includedRowId)
@@ -350,7 +389,7 @@ public final class PickingSlotRow implements IViewRow
 	{
 		return pickingSlotRowId.isPickedHURow();
 	}
-	
+
 	public boolean isTopLevelHU()
 	{
 		return huTopLevel;
@@ -378,5 +417,26 @@ public final class PickingSlotRow implements IViewRow
 	public int getHuProductId()
 	{
 		return huProduct != null ? huProduct.getKeyAsInt() : 0;
+	}
+
+	@Override
+	public ViewId getIncludedViewId()
+	{
+		return includedViewId;
+	}
+
+	public int getPickingSlotLocatorId()
+	{
+		return pickingSlotLocatorId;
+	}
+
+	public int getBPartnerId()
+	{
+		return pickingSlotBPartner != null ? pickingSlotBPartner.getIdAsInt() : -1;
+	}
+
+	public int getBPartnerLocationId()
+	{
+		return pickingSlotBPLocation != null ? pickingSlotBPLocation.getIdAsInt() : -1;
 	}
 }
