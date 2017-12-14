@@ -928,7 +928,7 @@ RawWidget.propTypes = {
   isModal: PropTypes.bool,
   filterWidget: PropTypes.bool,
   filterId: PropTypes.string,
-  id: PropTypes.string,
+  id: PropTypes.number,
   range: PropTypes.bool,
   onShow: PropTypes.func,
   onHide: PropTypes.func,
@@ -941,7 +941,7 @@ RawWidget.propTypes = {
   fields: PropTypes.array,
   icon: PropTypes.string,
   entity: PropTypes.string,
-  data: PropTypes.string,
+  data: PropTypes.any,
   closeTableField: PropTypes.func,
   attribute: PropTypes.bool,
   allowShowPassword: PropTypes.bool, // NOTE: looks like this wasn't used
