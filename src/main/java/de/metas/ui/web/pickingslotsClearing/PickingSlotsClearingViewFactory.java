@@ -6,22 +6,28 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
+import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery.PickingSlotQueryBuilder;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotViewFilters;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewRepository;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutHU;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
-import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -64,6 +70,8 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 	@Autowired
 	private PickingSlotViewRepository pickingSlotRepo;
 
+	private CCache<Integer, DocumentFilterDescriptorsProvider> filterDescriptorsProviderCache = CCache.newCache("PickingSlotsClearingViewFactory.FilterDescriptorsProvider", 1, CCache.EXPIREMINUTES_Never);
+
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, @Nullable final ViewProfileId profileId)
 	{
@@ -74,12 +82,17 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 				.setCaption(Services.get(IADWindowDAO.class).retrieveWindowName(WINDOW_ID.toInt()))
 				.addElementsFromViewRowClass(PickingSlotRow.class, viewDataType)
 				.setHasTreeSupport(true)
+				.setFilters(getFilterDescriptorsProvider().getAll())
 				.setIncludedViewLayout(IncludedViewLayout.builder()
 						.openOnSelect(true)
 						.blurWhenOpen(false)
 						.build())
 				.build();
+	}
 
+	private DocumentFilterDescriptorsProvider getFilterDescriptorsProvider()
+	{
+		return filterDescriptorsProviderCache.getOrLoad(0, () -> PickingSlotViewFilters.createFilterDescriptorsProvider());
 	}
 
 	@Override
@@ -87,13 +100,31 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 	{
 		request.assertNoParentViewOrRow();
 
+		final CreateViewRequest requestEffective = request.unwrapFiltersAndCopy(getFilterDescriptorsProvider());
+
 		final ViewId viewId = ViewId.random(PickingSlotsClearingViewFactory.WINDOW_ID);
+
+		final PickingSlotQuery query = createPickingSlotQuery(requestEffective);
 
 		return PickingSlotsClearingView.builder()
 				.viewId(viewId)
-				.rows(() -> pickingSlotRepo.retrieveAllPickingSlotsRows())
+				.rows(() -> pickingSlotRepo.retrievePickingSlotsRows(query))
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
+				.filters(requestEffective.getFilters().getFilters())
 				.build();
+	}
+
+	private static final PickingSlotQuery createPickingSlotQuery(final CreateViewRequest request)
+	{
+		final PickingSlotQueryBuilder queryBuilder = PickingSlotQuery.builder();
+
+		String barcode = PickingSlotViewFilters.getPickingSlotBarcode(request.getFilters());
+		if (!Check.isEmpty(barcode, true))
+		{
+			queryBuilder.barcode(barcode);
+		}
+
+		return queryBuilder.build();
 	}
 
 	private List<RelatedProcessDescriptor> createAdditionalRelatedProcessDescriptors()

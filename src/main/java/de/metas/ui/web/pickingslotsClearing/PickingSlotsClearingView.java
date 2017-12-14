@@ -41,6 +41,7 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 
 /*
  * #%L
@@ -73,19 +74,22 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 	private final PickingSlotRowsCollection rows;
 
 	private final PackingHUsViewsCollection packingHUsViewsCollection = new PackingHUsViewsCollection();
+	private final ImmutableList<DocumentFilter> filters;
 
 	@Builder
 	private PickingSlotsClearingView(
 			@NonNull final ViewId viewId,
 			@Nullable final ITranslatableString description,
 			@NonNull final Supplier<List<PickingSlotRow>> rows,
-			@Nullable final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
+			@Nullable final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors,
+			@NonNull @Singular final ImmutableList<DocumentFilter> filters)
 	{
 		this.viewId = viewId;
 		this.description = ITranslatableString.nullToEmpty(description);
 		this.rows = PickingSlotRowsCollection.ofSupplier(rows);
 
 		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
+		this.filters = filters;
 	}
 
 	@Override
@@ -174,7 +178,7 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 	{
 		return rows.getById(rowId);
 	}
-	
+
 	public PickingSlotRow getRootRowWhichIncludesRowId(final PickingSlotRowId rowId)
 	{
 		return rows.getRootRowWhichIncludes(rowId);
@@ -201,7 +205,7 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 	@Override
 	public List<DocumentFilter> getFilters()
 	{
-		return ImmutableList.of();
+		return filters;
 	}
 
 	@Override
@@ -277,7 +281,7 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 		packingHUsViewsCollection.removeIfExists(key)
 				.ifPresent(packingHUsView -> packingHUsView.close(ViewCloseReason.USER_REQUEST));
 	}
-	
+
 	public void handleEvent(final HUExtractedFromPickingSlotEvent event)
 	{
 		packingHUsViewsCollection.handleEvent(event);
