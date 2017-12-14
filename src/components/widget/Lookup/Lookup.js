@@ -239,8 +239,7 @@ class Lookup extends Component {
               "field",
               item.field
             )[0];
-
-            if (itemByProperty.widgetType === "Lookup") {
+            if (item.source === "lookup" || item.widgetType === "Lookup") {
               return (
                 <RawLookup
                   key={index}
@@ -285,7 +284,7 @@ class Lookup extends Component {
                   }}
                 />
               );
-            } else if (itemByProperty.widgetType === "List") {
+            } else if (item.source === "list") {
               const isFirstProperty = index === 0;
               const isCurrentProperty =
                 item.field === property && !autofocusDisabled;
