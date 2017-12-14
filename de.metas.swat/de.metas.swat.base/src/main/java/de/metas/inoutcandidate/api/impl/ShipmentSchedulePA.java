@@ -382,7 +382,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		final int orderLineId = orderLine.getC_OrderLine_ID();
 		return retrieveForOrderLine(ctx, orderLineId, trxName);
 	}
-	
+
 	@Override
 	public I_M_ShipmentSchedule retrieveForOrderLine(final int orderLineId)
 	{
@@ -1509,7 +1509,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public Set<I_M_ShipmentSchedule> retrieveForInvoiceCandidate(@NonNull final I_C_Invoice_Candidate candidate)
 	{
-		final Set<I_M_ShipmentSchedule> schedules;
+		Set<I_M_ShipmentSchedule> schedules = ImmutableSet.of();
 
 		final int tableID = candidate.getAD_Table_ID();
 
@@ -1530,12 +1530,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 			schedules = ImmutableSet.copyOf(retrieveForInOutLine(inoutLine));
 		}
-		else
-		{
-			// No other tables are supported yet; please add implementation if required
-			Check.errorIf(true, "given candidate has ansupported table_id={}; candidate={}", tableID, candidate);
-			schedules = ImmutableSet.of();
-		}
+
 		return schedules;
 	}
 
