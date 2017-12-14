@@ -239,7 +239,11 @@ class Lookup extends Component {
               "field",
               item.field
             )[0];
-            if (item.source === "lookup" || item.widgetType === "Lookup") {
+            if (
+              item.source === "lookup" ||
+              item.widgetType === "Lookup" ||
+              (itemByProperty && itemByProperty.widgetType === "Lookup")
+            ) {
               return (
                 <RawLookup
                   key={index}
@@ -284,7 +288,11 @@ class Lookup extends Component {
                   }}
                 />
               );
-            } else if (item.source === "list") {
+            } else if (
+              item.source === "list" ||
+              item.widgetType === "List" ||
+              (itemByProperty && itemByProperty.source === "List")
+            ) {
               const isFirstProperty = index === 0;
               const isCurrentProperty =
                 item.field === property && !autofocusDisabled;
