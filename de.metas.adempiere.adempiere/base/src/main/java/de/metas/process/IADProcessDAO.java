@@ -33,6 +33,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
+import org.compiere.util.Env;
 
 import de.metas.i18n.ITranslatableString;
 
@@ -118,6 +119,11 @@ public interface IADProcessDAO extends ISingletonService
 	 * @return the <code>AD_Process_ID</code> of the matching process, or <code>-1</code> if there is no matching process or more than one of them
 	 */
 	int retriveProcessIdByClassIfUnique(Properties ctx, Class<?> processClass);
+
+	default int retriveProcessIdByClassIfUnique(final Class<?> processClass)
+	{
+		return retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
+	}
 
 	/**
 	 * @see #retriveProcessIdByClassIfUnique(Properties, Class)
