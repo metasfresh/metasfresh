@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -50,6 +52,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -126,7 +129,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private final List<MAttribute> _availableAttributes;
 	private final boolean _allowSelectExistingASI;
 
-	private MAttributeSetInstance asiEdited = null;
+	private I_M_AttributeSetInstance asiEdited = null;
 	private int _locatorId;
 	private final int _productId;
 	private final int _callerColumnId;
@@ -211,7 +214,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private void jbInit() throws Exception
 	{
 		final ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
-		
+
 		this.getContentPane().setLayout(new BorderLayout());
 		this.getContentPane().add(centerPanel, BorderLayout.CENTER);
 		this.getContentPane().add(confirmPanel, BorderLayout.SOUTH);
@@ -597,7 +600,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	 * @param asi
 	 * @param M_Locator_ID
 	 */
-	private final void setResultAndDispose(final MAttributeSetInstance asi, int M_Locator_ID)
+	private final void setResultAndDispose(final I_M_AttributeSetInstance asi, int M_Locator_ID)
 	{
 		this.asiEdited = asi;
 		this._locatorId = M_Locator_ID;
@@ -681,7 +684,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		// OK
 		else if (event.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
-			final MAttributeSetInstance asi = saveSelection();
+			final I_M_AttributeSetInstance asi = saveSelection();
 			final int M_Locator_ID = -1; // N/A
 			setResultAndDispose(asi, M_Locator_ID);
 			return;
@@ -850,15 +853,15 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	 *
 	 * @return true if saved
 	 */
-	private MAttributeSetInstance saveSelection()
+	private I_M_AttributeSetInstance saveSelection()
 	{
-		final IMutable<MAttributeSetInstance> asiRef = new Mutable<>();
+		final IMutable<I_M_AttributeSetInstance> asiRef = new Mutable<>();
 		trxManager.run(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(String localTrxName) throws Exception
 			{
-				final MAttributeSetInstance asi = saveSelection0();
+				final I_M_AttributeSetInstance asi = saveSelection0();
 				asiRef.setValue(asi);
 			}
 		});
@@ -866,7 +869,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		return asiRef.getValue();
 	}
 
-	private MAttributeSetInstance saveSelection0()
+	private I_M_AttributeSetInstance saveSelection0()
 	{
 		log.info("");
 
@@ -874,7 +877,8 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		final MAttributeSetInstance asiTemplate2 = getASITemplate();
 
 		// Create a new ASI which is copying the existing one
-		final MAttributeSetInstance asi = new MAttributeSetInstance(getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
+
+		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class, PlainContextAware.newWithThreadInheritedTrx(getCtx()));
 		if (asiTemplate2 != null)
 		{
 			InterfaceWrapperHelper.copyValues(asiTemplate2, asi, false); // honorIsCalculated=false => copy everything
@@ -1018,7 +1022,8 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		// Save Model
 		if (changed)
 		{
-			asi.setMAttributeSet(attributeSet); // NOTE: this is workaround for the case when M_AttributeSet_ID=0
+			final MAttributeSetInstance asiPO = LegacyAdapters.convertToPO(asi);
+			asiPO.setMAttributeSet(attributeSet); // NOTE: this is workaround for the case when M_AttributeSet_ID=0
 			attributeSetInstanceBL.setDescription(asi);
 			InterfaceWrapperHelper.save(asi);
 		}
