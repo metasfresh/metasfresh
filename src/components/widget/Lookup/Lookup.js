@@ -248,7 +248,8 @@ class Lookup extends Component {
                 <RawLookup
                   key={index}
                   defaultValue={itemByProperty.value}
-                  initialFocus={index === 0 ? initialFocus : false}
+                  autoFocus={index === 0 && autoFocus}
+                  initialFocus={index === 0 && initialFocus}
                   mainProperty={[item]}
                   resetLocalClearing={this.resetLocalClearing}
                   setNextProperty={this.setNextProperty}
@@ -279,7 +280,6 @@ class Lookup extends Component {
                     viewId,
                     subentity,
                     subentityId,
-                    autoFocus,
                     tabId,
                     rowId,
                     newRecordCaption,
