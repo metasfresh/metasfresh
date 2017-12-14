@@ -393,7 +393,7 @@ class RawList extends Component {
 
     const classes = ["input-dropdown-list-option"];
 
-    if (selected !== 0) {
+    if (selected != null && selected !== 0) {
       if (
         selected.key === option.key ||
         (!selected && (value === option.caption || (!value && index === 0)))
