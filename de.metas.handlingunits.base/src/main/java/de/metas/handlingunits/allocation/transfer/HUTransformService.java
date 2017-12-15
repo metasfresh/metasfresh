@@ -288,7 +288,7 @@ public class HUTransformService
 	 * @param qtyCU the CU-quantity to join or split
 	 * @param targetTuHU the target TU
 	 */
-	public void cuToExistingTU(
+	public List<I_M_HU> cuToExistingTU(
 			@NonNull final I_M_HU sourceCuHU,
 			@NonNull final BigDecimal qtyCU,
 			@NonNull final I_M_HU targetTuHU)
@@ -333,10 +333,7 @@ public class HUTransformService
 					.performSplit();
 		}
 
-		if (handlingUnitsBL.isAggregateHU(targetTuHU))
-		{
-			return; // we are done; no attaching
-		}
+
 
 		// we attach the
 		final List<I_M_HU> childCUs;
@@ -348,6 +345,11 @@ public class HUTransformService
 		{
 			// destination must be the HUProducerDestination we created further up, otherwise we would already have returned
 			childCUs = ((HUProducerDestination)destination).getCreatedHUs(); // i think there will be just one, but no need to bother
+		}
+		
+		if (handlingUnitsBL.isAggregateHU(targetTuHU))
+		{
+			return childCUs; // we are done; no attaching
 		}
 
 		// get *the* MI HU_Item of 'tuHU'. There must be exactly one, otherwise, tuHU wouldn't exist here in the first place.
@@ -378,6 +380,8 @@ public class HUTransformService
 						updateAllocation(newParentLU, newParentTU, newChildCU, qtyCU, false, localHuContext);
 					});
 		});
+		
+		return childCUs;
 	}
 
 	/**
