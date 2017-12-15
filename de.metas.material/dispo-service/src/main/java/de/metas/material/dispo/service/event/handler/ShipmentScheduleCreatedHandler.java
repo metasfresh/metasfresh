@@ -44,7 +44,7 @@ public class ShipmentScheduleCreatedHandler
 	public void handleShipmentScheduleCreatedEvent(@NonNull final ShipmentScheduleCreatedEvent event)
 	{
 		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescriptor())
-				.materialDescriptor(event.getMaterialDescriptor())
+				.materialDescriptor(event.getOrderedMaterial())
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.SHIPMENT)
 				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), event.getOrderLineId()))

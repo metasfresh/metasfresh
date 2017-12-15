@@ -22,7 +22,7 @@ import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.AttributesKey;
 
 /*
  * #%L
@@ -48,7 +48,7 @@ import de.metas.material.event.commons.StorageAttributesKey;
 
 public class StockRepositoryTest
 {
-	private static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY = StorageAttributesKey.ofAttributeValueIds(1, 2);
+	private static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1, 2);
 
 	@Before
 	public void init()

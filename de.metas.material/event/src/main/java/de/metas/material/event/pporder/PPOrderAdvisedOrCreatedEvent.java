@@ -1,16 +1,13 @@
 package de.metas.material.event.pporder;
 
-import org.eevolution.model.I_PP_Order;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /*
  * #%L
@@ -25,41 +22,29 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-/**
- * Send by the material planner when it came up with a brilliant production plan that could be turned into an {@link I_PP_Order} <b>or</or> if a ppOrder was actually created or changed.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-@Value // this implies @AllArgsConstructor which is needed by jackson
-@Builder
-final public class PPOrderAdvisedOrCreatedEvent implements MaterialEvent
+
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class PPOrderAdvisedOrCreatedEvent extends AbstractPPOrderEvent
 {
 	public static final String TYPE = "PPOrderAdvisedOrCreatedEvent";
 
-	@NonNull
-	EventDescriptor eventDescriptor;
-
-	@NonNull
-	PPOrder ppOrder;
-
-	/**
-	 * Set to > 0 if this event is about a "real" PPOrder that was created due to a {@link PPOrderRequestedEvent}.
-	 */
-	@JsonProperty
-	int groupId;
-
-	/**
-	 * Set to not-null mainly if this event is about and "advise" that was created due to a {@link SupplyRequiredEvent}, but also<br>
-	 * if this event is about a "wild" PPOrder that was somehow created and has a sale order line ID
-	 */
-	SupplyRequiredDescriptor supplyRequiredDescriptor;
+	@JsonCreator
+	@Builder
+	public PPOrderAdvisedOrCreatedEvent(
+			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
+			@JsonProperty("ppOrder") final PPOrder ppOrder,
+			@JsonProperty("groupId") final int groupId,
+			@JsonProperty("supplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	{
+		super(eventDescriptor, ppOrder, groupId, supplyRequiredDescriptor);
+	}
 }

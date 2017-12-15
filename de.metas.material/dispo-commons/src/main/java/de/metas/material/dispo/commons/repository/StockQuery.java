@@ -11,8 +11,8 @@ import org.adempiere.util.time.SystemTime;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -57,7 +57,7 @@ public class StockQuery
 	private final ImmutableSet<Integer> warehouseIds;
 	private final Date date;
 	private final ImmutableList<Integer> productIds;
-	private final ImmutableList<StorageAttributesKey> storageAttributesKeys;
+	private final ImmutableList<AttributesKey> storageAttributesKeys;
 
 	public static final int BPARTNER_ID_ANY = -1;
 	public static final int BPARTNER_ID_NONE = -2;
@@ -68,7 +68,7 @@ public class StockQuery
 			@Singular final Set<Integer> warehouseIds,
 			final Date date,
 			@Singular final List<Integer> productIds,
-			@Singular final List<StorageAttributesKey> storageAttributesKeys,
+			@Singular final List<AttributesKey> storageAttributesKeys,
 			final int bpartnerId)
 	{
 		Check.assumeNotEmpty(productIds, "productIds is not empty");

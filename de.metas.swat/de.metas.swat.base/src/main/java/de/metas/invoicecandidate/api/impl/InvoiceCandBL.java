@@ -2066,7 +2066,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.onBeforeClosed(candidate);
-
 		candidate.setProcessed_Override("Y");
 
 		Services.get(IInvoiceCandDAO.class).invalidateCand(candidate);

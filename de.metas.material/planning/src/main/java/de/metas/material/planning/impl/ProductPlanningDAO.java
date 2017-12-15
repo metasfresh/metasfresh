@@ -33,7 +33,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.StorageAttributesKeys;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Org;
@@ -44,7 +44,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.util.CacheCtx;
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import lombok.NonNull;
@@ -174,7 +174,8 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final StorageAttributesKey attributesKey = StorageAttributesKeys.createAttributesKeyFromASI(attributeSetInstanceId);
+		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(attributeSetInstanceId)
+				.orElse(AttributesKey.ALL);
 
 		final ICompositeQueryFilter<I_PP_Product_Planning> matchingAsiFilter = queryBL
 				.createCompositeQueryFilter(I_PP_Product_Planning.class)

@@ -139,7 +139,7 @@ public class M_Material_Tracking_Report_Line_Create
 		report.setProcessed(true);
 		InterfaceWrapperHelper.save(report);
 
-		return "Success";
+		return MSG_OK;
 	}
 
 	private boolean isValid(
