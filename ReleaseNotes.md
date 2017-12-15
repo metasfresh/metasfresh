@@ -71,19 +71,29 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#711](https://github.com/metasfresh/metasfresh-webui-api/issues/711) Picking terminal: additional shall support grouping lines by order
+    * Introducing new Picking Terminal Workflow Pattern. Now allowing to group the Picking Lines by Sales Order instead of Product.
   * [#714](https://github.com/metasfresh/metasfresh-webui-api/issues/714) Login authenticate: provide an unique key for each JSONLoginRole
+    * Improvement of JSON endpoint for the Login authentication. Now haviung a unique key for each Login Roles.
   * [#716](https://github.com/metasfresh/metasfresh-webui-api/issues/716) Picking terminal: scan picking slot by barcode
+    * New Feature in Picking Terminal allowing to scan and identify the Picking Tray.
   * [#721](https://github.com/metasfresh/metasfresh-webui-api/issues/721) Picking terminal: HUs to pick: scan/filter by Locator
+    * New Filter Feature in Picking Terminla window, allowing to scan Locators and filter by them in Handlign Unit selection view.
   * [#723](https://github.com/metasfresh/metasfresh-webui-api/issues/723) Picking terminal: HUs to pick: Pick CUs process
+    * New Action in Picking terminal allowing to pick CU by quantity.
   * [#727](https://github.com/metasfresh/metasfresh-webui-api/issues/727) Allow search of Subproducer
-  * [#731](https://github.com/metasfresh/metasfresh-webui-api/issues/731) Intoduce process parameters callout minimal functionality
+    * Improved Subproducer Search in Attributes view of Material Receipt Handling Unit Editor. Now the Subproducer Attribute is a Lookup widget.
+  * [#731](https://github.com/metasfresh/metasfresh-webui-api/issues/731) Introduce process parameters callout minimal functionality
+    * New functionality that allows to trigger callouts for action parms in webui.
 
 * metasfresh-webui-frontend
   * [#1375](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1375) Navigation Menu arrow down directly scrolls menu
     * Improving the behavior of scrolling in Navigation Menu with a lot of bookmarks.
-  * [#1407](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1407) process result: open included view: handle profileId property
-  * [#1414](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1414) view: don't allow user to sort by a given column if layout says so
+  * [#1407](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1407) Process result: open included view: handle profileId property
+    * New functionality that allows to open a window and view after a process/ an action is done.
+  * [#1414](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1414) View: don't allow user to sort by a given column if layout says so
+    * Disabling the sorting feature for columns which are marked as not-sortable.
   * [#1425](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1425) eslint: increase line max-len from 80 to 120.
+    * Internal House Keeping issie that shall improve the Code Quality.
 
 #Fixes
 * metasfresh-app
