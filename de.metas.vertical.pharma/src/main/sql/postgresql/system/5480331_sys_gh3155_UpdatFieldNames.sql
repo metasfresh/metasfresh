@@ -81,36 +81,29 @@ UPDATE AD_Field SET Name = 'A02ANTHRO - Kennzeichen Anthroposophikum'  WHERE Nam
 UPDATE AD_Field SET Name = 'A02PHYTO - Kennzeichen Phytopharmakon'  WHERE Name= 'A02PHYTO';
 UPDATE AD_Field SET Name = 'A02AUSNREI - Kennzeichen Ausnahmeregelung nach § 51 AMG'  WHERE Name= 'A02AUSNREI';
 UPDATE AD_Field SET Name = 'A02GENER - Kennzeichen bezugnehmende Zulassung als Generikum'  WHERE Name= 'A02GENER';
-
-
-
-
-
------------------------
-
-
-
-UPDATE AD_Field SET Name = 'A02SDB - Kennzeichen Sicherheitsdatenblatt für Gefahrstoffe erforderlich'  WHERE Name= 'A02SDB';
-
+UPDATE AD_Field SET Name = 'A02SDB - Sicherheitsdatenblatt für Gefahrstoffe erforderlich'  WHERE Name= 'A02SDB';
 UPDATE AD_Field SET Name = 'A02ZULREG - Zulassungs- oder Registrierungsnummer'  WHERE Name= 'A02ZULREG';
-UPDATE AD_Field SET Name = 'A02LEBENSM - Kennzeichen Lebensmittel im Sinne von NEM oder Diätetika'  WHERE Name= 'A02LEBENSM';
+UPDATE AD_Field SET Name = 'A02LEBENSM - Lebensmittel im Sinne von NEM oder Diätetika'  WHERE Name= 'A02LEBENSM';
+
 UPDATE AD_Field SET Name = 'A02NEM - Kennzeichen Nahrungsergänzungsmittel nach § 1 NemV'  WHERE Name= 'A02NEM';
 UPDATE AD_Field SET Name = 'A02DIAET - Kennzeichen Diätetikum gemäß § 31 SGB V'  WHERE Name= 'A02DIAET';
 UPDATE AD_Field SET Name = 'A02BIOZID - Kennzeichen Biozid'  WHERE Name= 'A02BIOZID';
 UPDATE AD_Field SET Name = 'A02PSM - Kennzeichen Pflanzenschutzmittel'  WHERE Name= 'A02PSM';
 UPDATE AD_Field SET Name = 'A02TREZEP - Kennzeichen T-Rezept Arzneimittel'  WHERE Name= 'A02TREZEP';
 UPDATE AD_Field SET Name = 'A0247AMG - Kennzeichen § 47 (1c) AMG'  WHERE Name= 'A0247AMG';
-UPDATE AD_Field SET Name = 'A02130A18 - Kennzeichen Ablösung des Abschlags nach § 130a 1 / 8 SGB V'  WHERE Name= 'A02130A18';
-UPDATE AD_Field SET Name = 'A02130A1A8 - Kennzeichen Ablösung des Abschlags nach § 130a 1a / 8 SGB V'  WHERE Name= 'A02130A1A8';
-UPDATE AD_Field SET Name = 'A0252B - Kennzeichen Ausnahme nach § 52b Absatz 2 Satz 3 AMG'  WHERE Name= 'A0252B';
-UPDATE AD_Field SET Name = 'A02BIOSIEG - Kennzeichen 'EU-Bio-Siegel' nach ÖkoBasisVO'  WHERE Name= 'A02BIOSIEG';
-UPDATE AD_Field SET Name = 'A02KOSMET - Kennzeichen Kosmetikum im Sinne der EG-Kosmetik-Verordnung Nr. 1223/2009'  WHERE Name= 'A02KOSMET';
+UPDATE AD_Field SET Name = 'A02130A18 - Kennzeichen Ablösung des Abschlags nach § 130a 1'  WHERE Name= 'A02130A18';
+UPDATE AD_Field SET Name = 'A02130A1A8 - Ablösung des Abschlags nach § 130a 1a'  WHERE Name= 'A02130A1A8';
+UPDATE AD_Field SET Name = 'A0252B - Ausnahme nach § 52b Absatz 2 Satz 3 AMG'  WHERE Name= 'A0252B';
+UPDATE AD_Field SET Name = 'A02BIOSIEG - Kennzeichen EU-Bio-Siegel nach ÖkoBasisVO'  WHERE Name= 'A02BIOSIEG';
+UPDATE AD_Field SET Name = 'A02KOSMET - Kosmetikum im Sinne der EG-Kosmetik-Verordnung'  WHERE Name= 'A02KOSMET';
 UPDATE AD_Field SET Name = 'A02STERIL - Kennzeichen steril'  WHERE Name= 'A02STERIL';
-UPDATE AD_Field SET Name = 'A02EB130B - Kennzeichen Arzneimittel mit Erstattungsbetrag nach § 130b SGB V'  WHERE Name= 'A02EB130B';
+UPDATE AD_Field SET Name = 'A02EB130B - Arzneimittel mit Erstattungsbetrag '  WHERE Name= 'A02EB130B';
 UPDATE AD_Field SET Name = 'A02WIRKSTO - Kennzeichen Wirkstoff'  WHERE Name= 'A02WIRKSTO';
-UPDATE AD_Field SET Name = 'A02ELEKTRO - Kennzeichen Elektro- und Elektronikgeräte-Stoff-Verordnung (ElektroStoffV)'  WHERE Name= 'A02ELEKTRO';
+UPDATE AD_Field SET Name = 'A02ELEKTRO - Elektro- und Elektronikgeräte-Stoff-Verordnung'  WHERE Name= 'A02ELEKTRO';
 UPDATE AD_Field SET Name = 'A02EXPLOS - Kennzeichen Explosiv-grundstoff'  WHERE Name= 'A02EXPLOS';
-UPDATE AD_Field SET Name = 'A02BIOTECH - Kennzeichen biotechno-logisch hergestelltes Arzneimittel'  WHERE Name= 'A02BIOTECH';
+UPDATE AD_Field SET Name = 'A02BIOTECH - biotechno-logisch hergestelltes Arzneimittel'  WHERE Name= 'A02BIOTECH';
+
+
 UPDATE AD_Field SET Name = 'A02ELEKEAR - Kennzeichen Elektro- und Elektronikgerätegesetz'  WHERE Name= 'A02ELEKEAR';
 UPDATE AD_Field SET Name = 'A02WEEEREG - WEEE-Reg.-Nr. DE'  WHERE Name= 'A02WEEEREG';
 UPDATE AD_Field SET Name = 'A02BATTG - Kennzeichen Batteriegesetz / Umweltbundesamt'  WHERE Name= 'A02BATTG';
@@ -135,5 +128,3 @@ UPDATE AD_Field SET Name = 'A06PZNNF - PZN Nachfolger'  WHERE Name= 'A06PZNNF';
 UPDATE AD_Field SET Name = 'A06PZNORIG - PZN des Originals'  WHERE Name= 'A06PZNORIG';
 UPDATE AD_Field SET Name = 'A09GDAT - Gültigkeit Packungsgrößen'  WHERE Name= 'A09GDAT';
 UPDATE AD_Field SET Name = 'A09THGP - Kennzeichen Packungsgrößen'  WHERE Name= 'A09THGP';
-
-
