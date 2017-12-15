@@ -10,6 +10,8 @@ export const getSvg = className => {
 
   container.append("g").classed("x-axis", true);
 
+  container.append("g").classed("y0-axis", true);
+
   container.append("g").classed("y-axis", true);
 
   container.append("g").classed("datasets", true);

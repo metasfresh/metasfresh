@@ -23,7 +23,11 @@ export const getYRange = (height, data, fields) => {
     .scaleLinear()
     .range([height, 0])
     .domain([
-      0,
+      d3.min(data, d => {
+        return d3.min(keys, key => {
+          return d[key];
+        });
+      }),
       d3.max(data, d => {
         return d3.max(keys, key => {
           return d[key];

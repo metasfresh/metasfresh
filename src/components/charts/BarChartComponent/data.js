@@ -100,7 +100,6 @@ export const drawData = (
     .merge(bars)
     .attr("x", d => ranges.x1(d.key))
     .attr("width", ranges.x1.bandwidth())
-
     .attr("y", d => {
       if (yChanged || reRender) {
         return dimensions.height;
@@ -118,6 +117,6 @@ export const drawData = (
     .transition()
     .duration(1000)
     .attr("y", d => ranges.y(d.value))
-    .attr("height", d => dimensions.height - ranges.y(d.value))
+    .attr("height", d => Math.abs(ranges.y(d.value) - ranges.y(0)))
     .attr("fill", d => ranges.z(d.key));
 };
