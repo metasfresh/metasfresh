@@ -6,14 +6,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.DB;
 
 import com.google.common.base.Predicates;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -67,7 +65,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	private final ImmutableList<DocumentFilter> stickyFiltersWithoutHUIdsFilter;
 
 	private final HUIdsFilterData huIdsFilterData;
-	private final Supplier<Set<Integer>> huIdsSupplier;
+	private final ExtendedMemorizingSupplier<CopyOnWriteArraySet<Integer>> huIdsSupplier;
 	private final ExtendedMemorizingSupplier<IndexedHUEditorRows> rowsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveHUEditorRows());
 	
 	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
@@ -99,7 +97,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 		final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFiltersWithoutHUIdsFilter, filters));
 
-		huIdsSupplier = Suppliers.memoize(() -> new CopyOnWriteArraySet<>(huEditorRepo.retrieveHUIdsEffective(this.huIdsFilterData, filtersAll)));
+		huIdsSupplier = ExtendedMemorizingSupplier.of(() -> new CopyOnWriteArraySet<>(huEditorRepo.retrieveHUIdsEffective(this.huIdsFilterData, filtersAll)));
 		
 		this.defaultOrderBys = orderBys != null ? ImmutableList.copyOf(orderBys) : ImmutableList.of();
 	}
@@ -119,7 +117,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 				.build();
 	}
 
-	private Set<Integer> getHUIds()
+	private CopyOnWriteArraySet<Integer> getHUIds()
 	{
 		return huIdsSupplier.get();
 	}
@@ -198,6 +196,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	@Override
 	public void invalidateAll()
 	{
+		huIdsSupplier.forget();
 		huEditorRepo.invalidateCache();
 		rowsSupplier.forget();
 	}
