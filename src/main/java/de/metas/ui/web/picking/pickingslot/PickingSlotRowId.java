@@ -61,10 +61,15 @@ public final class PickingSlotRowId
 	public static final PickingSlotRowId fromDocumentId(final DocumentId documentId)
 	{
 		final List<String> parts = DOCUMENT_ID_SPLITTER.splitToList(documentId.toJson());
+		return fromStringPartsList(parts);
+	}
+
+	public static final PickingSlotRowId fromStringPartsList(final List<String> parts)
+	{
 		final int partsCount = parts.size();
 		if (partsCount < 1)
 		{
-			throw new IllegalArgumentException("Invalid id: " + documentId);
+			throw new IllegalArgumentException("Invalid id: " + parts);
 		}
 
 		final int pickingSlotId = !Check.isEmpty(parts.get(0), true) ? Integer.parseInt(parts.get(0)) : 0;
@@ -132,5 +137,30 @@ public final class PickingSlotRowId
 	public boolean isPickingSourceHURow()
 	{
 		return getHuId() > 0 && getPickingSlotId() <= 0;
+	}
+
+	public String[] toPartsArray()
+	{
+		if (huStorageProductId > 0)
+		{
+			return new String[] {
+					String.valueOf(pickingSlotId),
+					String.valueOf(huId),
+					String.valueOf(huStorageProductId)
+			};
+		}
+		else if (huId > 0)
+		{
+			return new String[] {
+					String.valueOf(pickingSlotId),
+					String.valueOf(huStorageProductId)
+			};
+		}
+		else
+		{
+			return new String[] {
+					String.valueOf(pickingSlotId),
+			};
+		}
 	}
 }

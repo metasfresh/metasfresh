@@ -1,4 +1,9 @@
-package de.metas.ui.web.view;
+package de.metas.ui.web.pickingslotsClearing.process;
+
+import org.adempiere.util.Check;
+
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -10,28 +15,32 @@ package de.metas.ui.web.view;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/**
- * To be implemented by {@link IView}s which want to also override {@link IViewRow} properties.
- * 
- * @author metas-dev <dev@metasfresh.com>
- * @see ViewRowOverridesHelper
- */
-public interface IViewRowOverrides
+@Value
+public class HUExtractedFromPickingSlotEvent
 {
-	default ViewId getIncludedViewId(final IViewRow row)
+	private final int huId;
+	private final int bpartnerId;
+	private final int bpartnerLocationId;
+
+	@Builder
+	private HUExtractedFromPickingSlotEvent(final int huId, final int bpartnerId, final int bpartnerLocationId)
 	{
-		return row.getIncludedViewId();
+		Check.assume(huId > 0, "huId > 0");
+		this.huId = huId;
+		this.bpartnerId = bpartnerId > 0 ? bpartnerId : 0;
+		this.bpartnerLocationId = bpartnerLocationId > 0 ? bpartnerLocationId : 0;
 	}
+
 }

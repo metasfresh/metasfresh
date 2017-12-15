@@ -1,4 +1,11 @@
-package de.metas.ui.web.view;
+package de.metas.ui.web.session;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.session.ExpiringSession;
+import org.springframework.session.MapSessionRepository;
+import org.springframework.session.SessionRepository;
+import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
 
 /*
  * #%L
@@ -22,16 +29,13 @@ package de.metas.ui.web.view;
  * #L%
  */
 
-/**
- * To be implemented by {@link IView}s which want to also override {@link IViewRow} properties.
- * 
- * @author metas-dev <dev@metasfresh.com>
- * @see ViewRowOverridesHelper
- */
-public interface IViewRowOverrides
+@Configuration
+@EnableSpringHttpSession
+public class SessionConfig
 {
-	default ViewId getIncludedViewId(final IViewRow row)
+	@Bean
+	SessionRepository<ExpiringSession> inMemorySessionRepository()
 	{
-		return row.getIncludedViewId();
+		return new MapSessionRepository();
 	}
 }

@@ -286,6 +286,7 @@ public class PickingSlotViewRepository
 				//
 				.pickingSlotName(pickingSlot.getPickingSlot())
 				.pickingSlotWarehouse(warehouseLookup.get().findById(pickingSlot.getM_Warehouse_ID()))
+				.pickingSlotLocatorId(pickingSlot.getM_Locator_ID())
 				.pickingSlotBPartner(bpartnerLookup.get().findById(pickingSlot.getC_BPartner_ID()))
 				.pickingSlotBPLocation(bpartnerLocationLookup.get().findById(pickingSlot.getC_BPartner_Location_ID()))
 				.includedHURows(pickedHuRows)
@@ -293,9 +294,9 @@ public class PickingSlotViewRepository
 				.build();
 	}
 
-	public List<PickingSlotRow> retrieveAllPickingSlotsRows()
+	public List<PickingSlotRow> retrievePickingSlotsRows(@NonNull final PickingSlotQuery query)
 	{
-		final List<I_M_PickingSlot> pickingSlots = Services.get(IPickingSlotDAO.class).retrievePickingSlots(PickingSlotQuery.ALL);
+		final List<I_M_PickingSlot> pickingSlots = Services.get(IPickingSlotDAO.class).retrievePickingSlots(query);
 
 		final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrieveAllPickedHUsIndexedByPickingSlotId(pickingSlots);
 
