@@ -9,7 +9,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Cockpit;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.view.AbstractCustomView;
@@ -58,7 +57,7 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 	@Override
 	public String getTableNameOrNull(DocumentId documentId)
 	{
-		return I_MD_Candidate.Table_Name;
+		return I_MD_Cockpit.Table_Name;
 	}
 
 	@Override

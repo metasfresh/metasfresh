@@ -74,10 +74,10 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 			@NonNull final Supplier<List<T>> rowsSupplier)
 	{
 		this.viewId = viewId;
-		this.description =  description;
+		this.description = description;
 
-		final Supplier<Map<DocumentId, T>> map = () -> Maps.uniqueIndex(rowsSupplier.get(), row->row.getId());
-		this.rowsSupplier =  ExtendedMemorizingSupplier.of(map);
+		final Supplier<Map<DocumentId, T>> map = () -> Maps.uniqueIndex(rowsSupplier.get(), row -> row.getId());
+		this.rowsSupplier = ExtendedMemorizingSupplier.of(map);
 	}
 
 	@Override

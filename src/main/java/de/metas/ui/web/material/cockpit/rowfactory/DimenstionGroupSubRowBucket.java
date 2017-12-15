@@ -1,9 +1,9 @@
-package de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory;
+package de.metas.ui.web.material.cockpit.rowfactory;
 
 import java.math.BigDecimal;
 
 import de.metas.dimension.DimensionSpecGroup;
-import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
+import de.metas.material.dispo.model.I_MD_Cockpit;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import lombok.Data;
 import lombok.NonNull;
@@ -37,11 +37,11 @@ import lombok.NonNull;
  *
  */
 @Data
-public class AttributeSubRowBucket
+public class DimenstionGroupSubRowBucket
 {
-	public static AttributeSubRowBucket create(@NonNull final DimensionSpecGroup dimensionSpecGroup)
+	public static DimenstionGroupSubRowBucket create(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
-		return new AttributeSubRowBucket(dimensionSpecGroup);
+		return new DimenstionGroupSubRowBucket(dimensionSpecGroup);
 	}
 
 	private final DimensionSpecGroup dimensionSpecGroup;
@@ -61,21 +61,22 @@ public class AttributeSubRowBucket
 	// zusagbar Zaehlbestand
 	private BigDecimal qtyPromised = BigDecimal.ZERO;
 
-	public AttributeSubRowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
+	public DimenstionGroupSubRowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
 		this.dimensionSpecGroup = dimensionSpecGroup;
 	}
 
-	public void addDataRecord(@NonNull final I_X_MRP_ProductInfo_Detail_MV dataRecord)
+	public void addDataRecord(@NonNull final I_MD_Cockpit dataRecord)
 	{
 		pmmQtyPromised = pmmQtyPromised.add(dataRecord.getPMM_QtyPromised_OnDate());
 		qtyMaterialentnahme = qtyMaterialentnahme.add(dataRecord.getQtyMaterialentnahme());
-		qtyMrp = qtyMrp.add(dataRecord.getFresh_QtyMRP());
-		qtyOrdered = qtyOrdered.add(dataRecord.getQtyOrdered_OnDate());
-		qtyReserved = qtyReserved.add(dataRecord.getQtyReserved_OnDate());
+		qtyMrp = qtyMrp.add(dataRecord.getQtyRequiredForProduction());
+		qtyOrdered = qtyOrdered.add(dataRecord.getQtyReserved_Purchase());
+		qtyReserved = qtyReserved.add(dataRecord.getQtyReserved_Sale());
+		qtyPromised = qtyPromised.add(dataRecord.getQtyAvailableToPromise());
 	}
 
-	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowBucket mainRowBucket)
+	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowWithSubRows mainRowBucket)
 	{
 		final MainRowBucketId productIdAndDate = mainRowBucket.getProductIdAndDate();
 

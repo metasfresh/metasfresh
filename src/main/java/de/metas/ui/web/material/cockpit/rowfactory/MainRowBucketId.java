@@ -1,5 +1,6 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.compiere.util.TimeUtil;
@@ -47,6 +48,21 @@ public class MainRowBucketId
 
 	int productId;
 	Timestamp date;
+
+
+	private BigDecimal pmmQtyPromised = BigDecimal.ZERO;
+
+	private BigDecimal qtyReserved = BigDecimal.ZERO;
+
+	private BigDecimal qtyOrdered = BigDecimal.ZERO;
+
+	private BigDecimal qtyMaterialentnahme = BigDecimal.ZERO;
+
+	private BigDecimal qtyMrp = BigDecimal.ZERO;
+
+	private BigDecimal qtyPromised = BigDecimal.ZERO;
+
+	private BigDecimal qtyOnHand = BigDecimal.ZERO;
 
 	private MainRowBucketId(final int productId, @NonNull final Timestamp date)
 	{

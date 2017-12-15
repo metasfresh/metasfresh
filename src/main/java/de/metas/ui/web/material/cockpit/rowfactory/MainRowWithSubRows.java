@@ -1,17 +1,14 @@
-package de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory;
+package de.metas.ui.web.material.cockpit.rowfactory;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.mm.attributes.api.AttributesKeys;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
-import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
-import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
+import de.metas.material.dispo.model.I_MD_Cockpit;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
@@ -44,27 +41,29 @@ import lombok.NonNull;
 
 @Data
 @EqualsAndHashCode(of = "productIdAndDate")
-public class MainRowBucket
+public class MainRowWithSubRows
 {
-	public static MainRowBucket create(@NonNull final MainRowBucketId productIdAndDate)
+	public static MainRowWithSubRows create(@NonNull final MainRowBucketId productIdAndDate)
 	{
-		return new MainRowBucket(productIdAndDate);
+		return new MainRowWithSubRows(productIdAndDate);
 	}
 
 	private final MainRowBucketId productIdAndDate;
 
-	private final Map<DimensionSpecGroup, AttributeSubRowBucket> attributeSubRows = new LinkedHashMap<>();
+	private final MainRowBucket mainRow = new MainRowBucket();
+
+	private final Map<DimensionSpecGroup, DimenstionGroupSubRowBucket> dimensionGroupSubRows = new LinkedHashMap<>();
 
 	private final Map<Integer, CountingSubRowBucket> countingSubRows = new LinkedHashMap<>();
 
-	private MainRowBucket(@NonNull final MainRowBucketId productIdAndDate)
+	private MainRowWithSubRows(@NonNull final MainRowBucketId productIdAndDate)
 	{
 		this.productIdAndDate = productIdAndDate;
 	}
 
 	public void addEmptyAttributesSubrowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
-		attributeSubRows.computeIfAbsent(dimensionSpecGroup, AttributeSubRowBucket::create);
+		dimensionGroupSubRows.computeIfAbsent(dimensionSpecGroup, DimenstionGroupSubRowBucket::create);
 	}
 
 	public void addEmptyCountingSubrowBucket(int plantId)
@@ -74,16 +73,31 @@ public class MainRowBucket
 	}
 
 	public void addDataRecord(
-			@NonNull final I_X_MRP_ProductInfo_Detail_MV dataRecord,
+			@NonNull final I_MD_Cockpit dataRecord,
+			@NonNull final DimensionSpec dimensionSpec)
+	{
+		if (dataRecord.getQtyOnHandEstimate().signum() != 0 || dataRecord.getPP_Plant_ID() > 0)
+		{
+			addDataRecordToStockEstimates(dataRecord);
+		}
+		else
+		{
+			addDataRecordToDimensionGroups(dataRecord, dimensionSpec);
+		}
+		mainRow.addDataRecord(dataRecord);
+	}
+
+	private void addDataRecordToDimensionGroups(
+			@NonNull final I_MD_Cockpit dataRecord,
 			@NonNull final DimensionSpec dimensionSpec)
 	{
 		assertProductIdAndDateOfDataRecord(dataRecord);
 
-		final List<AttributeSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(dataRecord, dimensionSpec);
+		final List<DimenstionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(dataRecord, dimensionSpec);
 		subRowBuckets.forEach(bucket -> bucket.addDataRecord(dataRecord));
 	}
 
-	private void assertProductIdAndDateOfDataRecord(@NonNull final I_X_MRP_ProductInfo_Detail_MV dataRecord)
+	private void assertProductIdAndDateOfDataRecord(@NonNull final I_MD_Cockpit dataRecord)
 	{
 		final MainRowBucketId key = MainRowBucketId.createInstanceForDataRecord(dataRecord);
 
@@ -93,34 +107,41 @@ public class MainRowBucket
 				productIdAndDate, key, dataRecord);
 	}
 
-	private List<AttributeSubRowBucket> findOrCreateSubRowBucket(
-			@NonNull final I_X_MRP_ProductInfo_Detail_MV dataRecord,
+	private List<DimenstionGroupSubRowBucket> findOrCreateSubRowBucket(
+			@NonNull final I_MD_Cockpit dataRecord,
 			@NonNull final DimensionSpec dimensionSpec)
 	{
-		final ImmutableList.Builder<AttributeSubRowBucket> result = ImmutableList.builder();
+		final ImmutableList.Builder<DimenstionGroupSubRowBucket> result = ImmutableList.builder();
 
-		final AttributesKey dataRecordAttributesKey = AttributesKeys.createAttributesKeyFromASIAllAttributeValues(dataRecord.getM_AttributeSetInstance_ID());
+		final AttributesKey dataRecordAttributesKey = AttributesKey.ofString(dataRecord.getAttributesKey());
 
 		for (final DimensionSpecGroup group : dimensionSpec.retrieveGroups())
 		{
 			final AttributesKey dimensionAttributesKey = group.getAttributesKey();
-			if (dataRecordAttributesKey.contains(dimensionAttributesKey))
+			if (dataRecordAttributesKey.intersects(dimensionAttributesKey))
 			{
-				result.add(attributeSubRows.computeIfAbsent(group, AttributeSubRowBucket::create));
+				result.add(dimensionGroupSubRows.computeIfAbsent(group, DimenstionGroupSubRowBucket::create));
 			}
 		}
 		return result.build();
 	}
 
-	public void addCounting(@NonNull final I_Fresh_QtyOnHand_Line counting)
+	private void addDataRecordToStockEstimates(@NonNull final I_MD_Cockpit stockEstimate)
 	{
-		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(counting.getPP_Plant_ID(), CountingSubRowBucket::create);
-		countingSubRow.addDataRecord(counting);
+		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(stockEstimate.getPP_Plant_ID(), CountingSubRowBucket::create);
+		countingSubRow.addDataRecord(stockEstimate);
 	}
 
 	public MaterialCockpitRow createMainRowWithSubRows()
 	{
-		final MainRowBuilder mainRowBuilder = MaterialCockpitRow.mainRowBuilder();
+		final MainRowBuilder mainRowBuilder = MaterialCockpitRow.mainRowBuilder()
+				.qtyMaterialentnahme(mainRow.getQtyMaterialentnahme())
+				.qtyMrp(mainRow.getQtyMrp())
+				.qtyOnHand(mainRow.getQtyOnHand())
+				.qtyOrdered(mainRow.getQtyOrdered())
+				.qtyPromised(mainRow.getQtyPromised())
+				.qtyReserved(mainRow.getQtyReserved())
+				.pmmQtyPromised(mainRow.getPmmQtyPromised());
 
 		for (final CountingSubRowBucket subRowBucket : countingSubRows.values())
 		{
@@ -128,7 +149,7 @@ public class MainRowBucket
 			mainRowBuilder.includedRow(subRow);
 		}
 
-		for (final AttributeSubRowBucket subRowBucket : attributeSubRows.values())
+		for (final DimenstionGroupSubRowBucket subRowBucket : dimensionGroupSubRows.values())
 		{
 			final MaterialCockpitRow subRow = subRowBucket.createIncludedRow(this);
 			mainRowBuilder.includedRow(subRow);

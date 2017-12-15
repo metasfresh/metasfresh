@@ -1,4 +1,4 @@
-package de.metas.ui.web.material.cockpit.legacydatamodel;
+package de.metas.ui.web.material.cockpit;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -13,8 +13,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
-import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
-import de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory.MaterialCockpitRowFactory;
+import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 
 /*
  * #%L

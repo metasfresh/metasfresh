@@ -1,4 +1,4 @@
-package de.metas.ui.web.material.cockpit.legacydatamodel;
+package de.metas.ui.web.material.cockpit;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -12,6 +12,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
+import de.metas.material.dispo.model.I_MD_Cockpit;
 
 /*
  * #%L
@@ -50,7 +51,7 @@ public class MaterialCockpitFiltersTest
 		final I_X_MRP_ProductInfo_Detail_MV record = newInstance(I_X_MRP_ProductInfo_Detail_MV.class);
 		save(record);
 
-		final IQuery<I_X_MRP_ProductInfo_Detail_MV> query = new MaterialCockpitFilters().createQuery(ImmutableList.of());
+		final IQuery<I_MD_Cockpit> query = new MaterialCockpitFilters().createQuery(ImmutableList.of());
 		assertThat(query).isNotNull();
 		assertThat(query.list()).isEmpty();
 	}

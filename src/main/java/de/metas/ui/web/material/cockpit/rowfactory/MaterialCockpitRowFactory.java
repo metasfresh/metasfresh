@@ -59,46 +59,40 @@ public class MaterialCockpitRowFactory
 	{
 		@NonNull
 		Timestamp date;
+
 		@NonNull
-		List<I_M_Product> relevantProducts;
+		List<I_M_Product> productsToListEvenIfEmpty;
 		@NonNull
 		List<I_MD_Cockpit> dataRecords;
 	}
 
 	public List<MaterialCockpitRow> createRows(@NonNull final CreateRowsRequest request)
 	{
-		final Map<MainRowBucketId, MainRowBucket> emptyRowBuckets = createEmptyRowBuckets(
-				request.getRelevantProducts(),
+		final Map<MainRowBucketId, MainRowWithSubRows> emptyRowBuckets = createEmptyRowBuckets(
+				request.getProductsToListEvenIfEmpty(),
 				request.getDate());
 
 		final DimensionSpec dimensionSpec = Services.get(IDimensionspecDAO.class).retrieveForInternalNameOrNull(DIM_SPEC_INTERNAL_NAME);
 		Check.errorIf(dimensionSpec == null, "Unable to load DIM_Dimension_Spec record with InternalName={}", DIM_SPEC_INTERNAL_NAME);
 
-		final Map<MainRowBucketId, MainRowBucket> result = new HashMap<>(emptyRowBuckets);
+		final Map<MainRowBucketId, MainRowWithSubRows> result = new HashMap<>(emptyRowBuckets);
 
 		for (final I_MD_Cockpit dbRow : request.getDataRecords())
 		{
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForDataRecord(dbRow);
-			final MainRowBucket mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowBucket.create(key));
 
-			if (dbRow.getQtyOnHandEstimate().signum() != 0 || dbRow.getPP_Plant_ID() > 0)
-			{
-				mainRowBucket.addCounting(dbRow);
-			}
-			else
-			{
-				mainRowBucket.addDataRecord(dbRow, dimensionSpec);
-			}
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowWithSubRows.create(key));
+			mainRowBucket.addDataRecord(dbRow, dimensionSpec);
 		}
 
 		return result.values()
 				.stream()
-				.map(MainRowBucket::createMainRowWithSubRows)
+				.map(MainRowWithSubRows::createMainRowWithSubRows)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@VisibleForTesting
-	Map<MainRowBucketId, MainRowBucket> createEmptyRowBuckets(
+	Map<MainRowBucketId, MainRowWithSubRows> createEmptyRowBuckets(
 			@NonNull final List<I_M_Product> products,
 			@NonNull final Timestamp timestamp)
 	{
@@ -108,11 +102,11 @@ public class MaterialCockpitRowFactory
 		final List<DimensionSpecGroup> groups = dimensionSpec.retrieveGroups();
 		final List<I_S_Resource> plants = retrieveCountingPlants();
 
-		final Builder<MainRowBucketId, MainRowBucket> result = ImmutableMap.builder();
+		final Builder<MainRowBucketId, MainRowWithSubRows> result = ImmutableMap.builder();
 		for (final I_M_Product product : products)
 		{
 			final MainRowBucketId key = MainRowBucketId.createPlainInstance(product.getM_Product_ID(), timestamp);
-			final MainRowBucket mainRowBucket = MainRowBucket.create(key);
+			final MainRowWithSubRows mainRowBucket = MainRowWithSubRows.create(key);
 
 			for (final I_S_Resource plant : plants)
 			{

@@ -1,20 +1,9 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.dimension.DimensionSpec;
-import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.dispo.model.I_MD_Cockpit;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.printing.esb.base.util.Check;
-import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
-import de.metas.ui.web.material.cockpit.MaterialCockpitRow.MainRowBuilder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -30,108 +19,44 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Data
-@EqualsAndHashCode(of = "productIdAndDate")
+@Getter
 public class MainRowBucket
 {
-	public static MainRowBucket create(@NonNull final MainRowBucketId productIdAndDate)
+	private BigDecimal qtyOnHand = BigDecimal.ZERO;
+
+	// Zusage Lieferant
+	private BigDecimal pmmQtyPromised = BigDecimal.ZERO;
+
+	private BigDecimal qtyReserved = BigDecimal.ZERO;
+
+	private BigDecimal qtyOrdered = BigDecimal.ZERO;
+
+	private BigDecimal qtyMaterialentnahme = BigDecimal.ZERO;
+
+	// MRP MEnge
+	private BigDecimal qtyMrp = BigDecimal.ZERO;
+
+	// zusagbar Zaehlbestand
+	private BigDecimal qtyPromised = BigDecimal.ZERO;
+
+	public void addDataRecord(@NonNull final I_MD_Cockpit dataRecord)
 	{
-		return new MainRowBucket(productIdAndDate);
+		pmmQtyPromised = pmmQtyPromised.add(dataRecord.getPMM_QtyPromised_OnDate());
+		qtyMaterialentnahme = qtyMaterialentnahme.add(dataRecord.getQtyMaterialentnahme());
+		qtyMrp = qtyMrp.add(dataRecord.getQtyRequiredForProduction());
+		qtyOrdered = qtyOrdered.add(dataRecord.getQtyReserved_Purchase());
+		qtyReserved = qtyReserved.add(dataRecord.getQtyReserved_Sale());
+		qtyPromised = qtyPromised.add(dataRecord.getQtyAvailableToPromise());
+
+		qtyOnHand = qtyOnHand.add(dataRecord.getQtyOnHandEstimate());
 	}
-
-	private final MainRowBucketId productIdAndDate;
-
-	private final Map<DimensionSpecGroup, AttributeSubRowBucket> attributeSubRows = new LinkedHashMap<>();
-
-	private final Map<Integer, CountingSubRowBucket> countingSubRows = new LinkedHashMap<>();
-
-	private MainRowBucket(@NonNull final MainRowBucketId productIdAndDate)
-	{
-		this.productIdAndDate = productIdAndDate;
-	}
-
-	public void addEmptyAttributesSubrowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
-	{
-		attributeSubRows.computeIfAbsent(dimensionSpecGroup, AttributeSubRowBucket::create);
-	}
-
-	public void addEmptyCountingSubrowBucket(int plantId)
-	{
-		countingSubRows.computeIfAbsent(plantId, CountingSubRowBucket::create);
-
-	}
-
-	public void addDataRecord(
-			@NonNull final I_MD_Cockpit dataRecord,
-			@NonNull final DimensionSpec dimensionSpec)
-	{
-		assertProductIdAndDateOfDataRecord(dataRecord);
-
-		final List<AttributeSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(dataRecord, dimensionSpec);
-		subRowBuckets.forEach(bucket -> bucket.addDataRecord(dataRecord));
-	}
-
-	private void assertProductIdAndDateOfDataRecord(@NonNull final I_MD_Cockpit dataRecord)
-	{
-		final MainRowBucketId key = MainRowBucketId.createInstanceForDataRecord(dataRecord);
-
-		Check.errorUnless(
-				productIdAndDate.equals(key),
-				"The given parameter 'dataRecord' does not fit into this bucket; our productIdAndDate={}; dataRecord's productIdAndDate={}; fdataRecord={}",
-				productIdAndDate, key, dataRecord);
-	}
-
-	private List<AttributeSubRowBucket> findOrCreateSubRowBucket(
-			@NonNull final I_MD_Cockpit dataRecord,
-			@NonNull final DimensionSpec dimensionSpec)
-	{
-		final ImmutableList.Builder<AttributeSubRowBucket> result = ImmutableList.builder();
-
-		final AttributesKey dataRecordAttributesKey = AttributesKey.ofString(dataRecord.getAttributesKey());
-
-		for (final DimensionSpecGroup group : dimensionSpec.retrieveGroups())
-		{
-			final AttributesKey dimensionAttributesKey = group.getAttributesKey();
-			if (dataRecordAttributesKey.contains(dimensionAttributesKey))
-			{
-				result.add(attributeSubRows.computeIfAbsent(group, AttributeSubRowBucket::create));
-			}
-		}
-		return result.build();
-	}
-
-	public void addCounting(@NonNull final I_MD_Cockpit counting)
-	{
-		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(counting.getPP_Plant_ID(), CountingSubRowBucket::create);
-		countingSubRow.addDataRecord(counting);
-	}
-
-	public MaterialCockpitRow createMainRowWithSubRows()
-	{
-		final MainRowBuilder mainRowBuilder = MaterialCockpitRow.mainRowBuilder();
-
-		for (final CountingSubRowBucket subRowBucket : countingSubRows.values())
-		{
-			final MaterialCockpitRow subRow = subRowBucket.createIncludedRow(this);
-			mainRowBuilder.includedRow(subRow);
-		}
-
-		for (final AttributeSubRowBucket subRowBucket : attributeSubRows.values())
-		{
-			final MaterialCockpitRow subRow = subRowBucket.createIncludedRow(this);
-			mainRowBuilder.includedRow(subRow);
-		}
-		return mainRowBuilder.build();
-
-	}
-
 }

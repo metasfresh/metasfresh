@@ -74,7 +74,7 @@ public class MaterialCockpitRowRepository
 
 		final CreateRowsRequest request = CreateRowsRequest.builder()
 				.date(date)
-				.relevantProducts(retrieveRelevantProducts(filters))
+				.productsToListEvenIfEmpty(retrieveRelevantProducts(filters))
 				.dataRecords(productInfoDetailRecords)
 				.build();
 		return materialCockpitRowFactory.createRows(request);
@@ -94,18 +94,20 @@ public class MaterialCockpitRowRepository
 	private List<I_M_Product> retrieveAllProducts(final int adOrgId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final ICompositeQueryFilter<I_M_Product> relevantProductFilter = queryBL.createCompositeQueryFilter(I_M_Product.class)
-				.setJoinOr()
-				.addEqualsFilter(I_M_Product.COLUMN_IsSold, true)
-				.addEqualsFilter(I_M_Product.COLUMN_IsPurchased, true)
-				.addEqualsFilter(I_M_Product.COLUMN_IsStocked, true);
+		final ICompositeQueryFilter<I_M_Product> relevantProductFilter = //
+				queryBL.createCompositeQueryFilter(I_M_Product.class)
+						.setJoinOr()
+						.addEqualsFilter(I_M_Product.COLUMN_IsSold, true)
+						.addEqualsFilter(I_M_Product.COLUMN_IsPurchased, true)
+						.addEqualsFilter(I_M_Product.COLUMN_IsStocked, true);
 
-		final List<I_M_Product> products = queryBL.createQueryBuilder(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_Product.COLUMN_AD_Org_ID, adOrgId, 0)
-				.filter(relevantProductFilter)
-				.create()
-				.list();
+		final List<I_M_Product> products = //
+				queryBL.createQueryBuilder(I_M_Product.class)
+						.addOnlyActiveRecordsFilter()
+						.addInArrayFilter(I_M_Product.COLUMN_AD_Org_ID, adOrgId, 0)
+						.filter(relevantProductFilter)
+						.create()
+						.list();
 		return products;
 	}
 }

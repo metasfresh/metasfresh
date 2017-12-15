@@ -85,41 +85,40 @@ public class MaterialCockpitRow implements IViewRow
 	// Zusage Lieferant
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_PMM_QtyPromised_OnDate, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100) })
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40) })
 	private final BigDecimal pmmQtyPromised;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_QtyReserved_Sale, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50) })
 	private final BigDecimal qtyReserved;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_QtyReserved_Purchase, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60) })
 	private final BigDecimal qtyOrdered;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_QtyMaterialentnahme, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70) })
 	private final BigDecimal qtyMaterialentnahme;
 
 	// MRP MEnge
-	// TODO also fill this column
-	// @ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
-	// captionKey = I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyMRP, //
-	// layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_QtyRequiredForProduction, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80) })
 	private final BigDecimal qtyMrp;
 
 	// Zaehlbestand
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_QtyOnHandEstimate, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90) })
 	private final BigDecimal qtyOnHand;
 
 	// zusagbar Zaehlbestand
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_QtyAvailableToPromise, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100) })
 	private final BigDecimal qtyPromised;
 
 	private final DocumentId documentId;
@@ -134,6 +133,13 @@ public class MaterialCockpitRow implements IViewRow
 
 	@lombok.Builder(builderClassName = "MainRowBuilder", builderMethodName = "mainRowBuilder")
 	private MaterialCockpitRow(
+			final BigDecimal pmmQtyPromised,
+			final BigDecimal qtyReserved,
+			final BigDecimal qtyOrdered,
+			final BigDecimal qtyMaterialentnahme,
+			final BigDecimal qtyMrp,
+			final BigDecimal qtyPromised,
+			final BigDecimal qtyOnHand,
 			@Singular final List<MaterialCockpitRow> includedRows)
 	{
 		Check.errorIf(includedRows.isEmpty(), "The given includedRows may not be empty");
@@ -158,42 +164,13 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.includedRows = includedRows;
 
-		// the qtys and also "date" is actually aggregated from our includedRows
-		BigDecimal temporaryPmmQtyPromised = null;
-		BigDecimal temporaryQtyReserved = null;
-		BigDecimal temporaryQtyOrdered = null;
-		BigDecimal temporaryQtyMaterialentnahme = null;
-		BigDecimal temporaryQtyMrp = null;
-		BigDecimal temporaryQtyOnHand = null;
-		BigDecimal temporaryQtyPromised = null;
-
-		for (final MaterialCockpitRow subRow : includedRows)
-		{
-			temporaryPmmQtyPromised = addNumberOrNull(temporaryPmmQtyPromised, subRow.pmmQtyPromised);
-			temporaryQtyReserved = addNumberOrNull(temporaryQtyReserved, subRow.qtyReserved);
-			temporaryQtyOrdered = addNumberOrNull(temporaryQtyOrdered, subRow.qtyOrdered);
-			temporaryQtyMaterialentnahme = addNumberOrNull(temporaryQtyMaterialentnahme, subRow.qtyMaterialentnahme);
-			temporaryQtyMrp = addNumberOrNull(temporaryQtyMrp, subRow.qtyMrp);
-			temporaryQtyOnHand = addNumberOrNull(temporaryQtyOnHand, subRow.qtyOnHand);
-			temporaryQtyPromised = addNumberOrNull(temporaryQtyPromised, subRow.qtyPromised);
-		}
-		this.pmmQtyPromised = temporaryPmmQtyPromised;
-		this.qtyReserved = temporaryQtyReserved;
-		this.qtyOrdered = temporaryQtyOrdered;
-		this.qtyMaterialentnahme = temporaryQtyMaterialentnahme;
-		this.qtyMrp = temporaryQtyMrp;
-		this.qtyOnHand = temporaryQtyOnHand;
-		this.qtyPromised = temporaryQtyPromised;
-	}
-
-	private static BigDecimal addNumberOrNull(BigDecimal numberOrNull, BigDecimal augentOrNull)
-	{
-		if (numberOrNull == null && augentOrNull == null)
-		{
-			return null;
-		}
-
-		return Util.coalesce(numberOrNull, BigDecimal.ZERO).add(Util.coalesce(augentOrNull, BigDecimal.ZERO));
+		this.pmmQtyPromised = pmmQtyPromised;
+		this.qtyReserved = qtyReserved;
+		this.qtyOrdered = qtyOrdered;
+		this.qtyMaterialentnahme = qtyMaterialentnahme;
+		this.qtyMrp = qtyMrp;
+		this.qtyOnHand = qtyOnHand;
+		this.qtyPromised = qtyPromised;
 	}
 
 	private static Timestamp extractDate(final List<MaterialCockpitRow> includedRows)
@@ -265,9 +242,16 @@ public class MaterialCockpitRow implements IViewRow
 	{
 		this.rowType = DefaultRowType.Line;
 
-		final I_S_Resource plant = loadOutOfTrx(plantId, I_S_Resource.class);
-		final String plantName = plant.getName();
-
+		final String plantName;
+		if (plantId > 0)
+		{
+			final I_S_Resource plant = loadOutOfTrx(plantId, I_S_Resource.class);
+			plantName = plant.getName();
+		}
+		else
+		{
+			plantName = "";
+		}
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
 				date,
 				productId,

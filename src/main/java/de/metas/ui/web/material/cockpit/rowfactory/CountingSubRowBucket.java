@@ -60,7 +60,7 @@ public class CountingSubRowBucket
 		qtyOnHand = qtyOnHand.add(dataRecord.getQtyOnHandEstimate());
 	}
 
-	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowBucket mainRowBucket)
+	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowWithSubRows mainRowBucket)
 	{
 		final MainRowBucketId productIdAndDate = mainRowBucket.getProductIdAndDate();
 

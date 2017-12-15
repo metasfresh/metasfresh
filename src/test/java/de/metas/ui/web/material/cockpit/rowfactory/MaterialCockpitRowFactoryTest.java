@@ -1,4 +1,4 @@
-package de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory;
+package de.metas.ui.web.material.cockpit.rowfactory;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -31,13 +32,10 @@ import de.metas.dimension.DimensionSpecGroup;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
-import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
+import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
-import de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory.AttributeSubRowBucket;
-import de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory.MainRowBucket;
-import de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory.MainRowBucketId;
-import de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory.MaterialCockpitRowFactory;
-import de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
+import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
 
 /*
  * #%L
@@ -102,59 +100,77 @@ public class MaterialCockpitRowFactoryTest
 	}
 
 	@Test
-	public void loadRowsFromStream_contains_attribute_groups()
+	public void createRows_contains_attribute_groups()
 	{
-		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
-		save(asi);
+		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
+		save(asi1);
 
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, attr1_value1);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi, attr2_value1);
+		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr1_value1);
+		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr2_value1);
 
-		final I_X_MRP_ProductInfo_Detail_MV record = newInstance(I_X_MRP_ProductInfo_Detail_MV.class);
-		record.setM_Product(product);
-		record.setDateGeneral(SystemTime.asTimestamp());
-		record.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
-		record.setQtyOnHand(BigDecimal.TEN);
-		save(record);
+		final AttributesKey attributesKey1 = AttributesKeys.createAttributesKeyFromASIAllAttributeValues(asi1.getM_AttributeSetInstance_ID());
+
+		final I_MD_Cockpit record1 = newInstance(I_MD_Cockpit.class);
+		record1.setM_Product(product);
+		record1.setDateGeneral(SystemTime.asTimestamp());
+		record1.setAttributesKey(attributesKey1.getAsString());
+		record1.setQtyReserved_Purchase(BigDecimal.TEN);
+		save(record1);
+
+		final AttributesKey attributesKey2 = AttributesKey.NONE;
+
+		final I_MD_Cockpit record2 = newInstance(I_MD_Cockpit.class);
+		record2.setM_Product(product);
+		record2.setDateGeneral(SystemTime.asTimestamp());
+		record2.setAttributesKey(attributesKey2.getAsString());
+		record2.setQtyReserved_Purchase(BigDecimal.ONE);
+		save(record2);
 
 		final Timestamp today = TimeUtil.getDay(SystemTime.asTimestamp());
 
 		final CreateRowsRequest request = CreateRowsRequest.builder()
 				.date(today)
-				.relevantProducts(ImmutableList.of())
-				.dataRecords(ImmutableList.of(record))
-				.countings(ImmutableList.of())
+				.productsToListEvenIfEmpty(ImmutableList.of())
+				.dataRecords(ImmutableList.of(record1, record2))
 				.build();
 
+		// invoke method under test
 		final List<MaterialCockpitRow> result = materialCockpitRowFactory.createRows(request);
+
 		assertThat(result).hasSize(1);
+		assertThat(result.get(0).getIncludedRows()).hasSize(3); // record1 is added to both non-empty groups of the dimension spec; record2 is added to the emtpy one
 	}
 
 	@Test
-	public void createEmptyBuckets()
+	public void createEmptyRowBuckets()
 	{
 		final Timestamp today = TimeUtil.getDay(SystemTime.asTimestamp());
 
-		final Map<MainRowBucketId, MainRowBucket> result = materialCockpitRowFactory.createEmptyRowBuckets(
+		// invoke method under test
+		final Map<MainRowBucketId, MainRowWithSubRows> result = materialCockpitRowFactory.createEmptyRowBuckets(
 				ImmutableList.of(product),
 				today);
-		assertThat(result).hasSize(1);
 
+		assertThat(result).hasSize(1);
 		final MainRowBucketId productIdAndDate = MainRowBucketId.createPlainInstance(product.getM_Product_ID(), today);
 		assertThat(result).containsKey(productIdAndDate);
-		final MainRowBucket mainRowBucket = result.get(productIdAndDate);
+		final MainRowWithSubRows mainRowBucket = result.get(productIdAndDate);
 		assertThat(mainRowBucket.getProductIdAndDate()).isEqualTo(productIdAndDate);
 
-		final Map<DimensionSpecGroup, AttributeSubRowBucket> subRowBuckets = mainRowBucket.getAttributeSubRows();
+		final Map<DimensionSpecGroup, DimenstionGroupSubRowBucket> subRowBuckets = mainRowBucket.getDimensionGroupSubRows();
 		assertThat(subRowBuckets).hasSize(dimensionSpec.retrieveGroups().size());
 		assertThat(subRowBuckets.keySet()).containsOnlyElementsOf(dimensionSpec.retrieveGroups());
 	}
 
-	private DimensionSpec createDimensionSpec(final I_M_Attribute attr1, final I_M_AttributeValue attr1_value1, final I_M_Attribute attr2)
+	private DimensionSpec createDimensionSpec(
+			final I_M_Attribute attr1,
+			final I_M_AttributeValue attr1_value1,
+			final I_M_Attribute attr2)
 	{
 		final I_DIM_Dimension_Spec dimSpec = newInstance(I_DIM_Dimension_Spec.class);
 		dimSpec.setInternalName(MaterialCockpitRowFactory.DIM_SPEC_INTERNAL_NAME);
+		dimSpec.setIsIncludeEmpty(true);
 		save(dimSpec);
 
 		final I_DIM_Dimension_Spec_Attribute dimSpecAttr1 = newInstance(I_DIM_Dimension_Spec_Attribute.class);
