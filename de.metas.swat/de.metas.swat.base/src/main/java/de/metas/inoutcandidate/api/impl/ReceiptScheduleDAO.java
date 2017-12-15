@@ -200,21 +200,30 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	@Override
 	public Set<I_M_ReceiptSchedule> retrieveForInvoiceCandidate(final I_C_Invoice_Candidate candidate)
 	{
-		Set<I_M_ReceiptSchedule> schedules = ImmutableSet.of();
+		final Set<I_M_ReceiptSchedule> schedules;
 
 		final int tableID = candidate.getAD_Table_ID();
 
 		// invoice candidate references an orderline
 		if (tableID == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
 		{
-			final org.compiere.model.I_C_OrderLine orderLine = candidate.getC_OrderLine();
-			if (orderLine != null)
+			
+			if (candidate.getC_OrderLine_ID() > 0)
 			{
+				final org.compiere.model.I_C_OrderLine orderLine = candidate.getC_OrderLine();
 				final I_M_ReceiptSchedule schedForOrderLine = retrieveForRecord(orderLine);
-				if (schedForOrderLine != null)
+				if (schedForOrderLine == null)
+				{
+					schedules = ImmutableSet.of();
+				}
+				else
 				{
 					schedules = ImmutableSet.of(schedForOrderLine);
 				}
+			}
+			else
+			{
+				schedules = ImmutableSet.of();
 			}
 		}
 
@@ -225,10 +234,18 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 			final String trxName = InterfaceWrapperHelper.getTrxName(candidate);
 
 			final I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(ctx, candidate.getRecord_ID(), I_M_InOutLine.class, trxName);
-			if (inoutLine != null)
+			if (inoutLine == null)
+			{
+				schedules = ImmutableSet.of();
+			}
+			else
 			{
 				schedules = ImmutableSet.copyOf(retrieveRsForInOutLine(inoutLine));
 			}
+		}
+		else
+		{
+			schedules = ImmutableSet.of();
 		}
 
 		return schedules;

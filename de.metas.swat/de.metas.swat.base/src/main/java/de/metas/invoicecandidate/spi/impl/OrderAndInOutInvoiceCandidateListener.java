@@ -25,14 +25,13 @@ public class OrderAndInOutInvoiceCandidateListener extends InvoiceCandidateListe
 	@Override
 	public void onBeforeClosed(I_C_Invoice_Candidate candidate)
 	{
-
 		if (candidate.isSOTrx())
 		{
 			final Set<I_M_ShipmentSchedule> shipmentSchedules = Services.get(IShipmentSchedulePA.class).retrieveForInvoiceCandidate(candidate);
-			shipmentSchedules.forEach(shipmentSchedule -> Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(shipmentSchedule));
-		}
+			final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
-		// Purchase invoice candidates
+			shipmentSchedules.forEach(shipmentSchedule -> shipmentScheduleBL.closeShipmentSchedule(shipmentSchedule));
+		}
 		else
 		{
 			final Set<I_M_ReceiptSchedule> receiptSchedules = Services.get(IReceiptScheduleDAO.class).retrieveForInvoiceCandidate(candidate);

@@ -41,12 +41,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 public abstract class InvoiceCandidateListenerAdapter implements IInvoiceCandidateListener
 {
 
-	@Override
-	public void onBeforeClosed(I_C_Invoice_Candidate candidate)
-	{
-		// nothing
-	}
-
 	/** does nothing */
 	@Override
 	public void onBeforeInvoiceLineCreated(I_C_InvoiceLine invoiceLine, IInvoiceLineRW fromInvoiceLine, List<I_C_Invoice_Candidate> fromCandidates)
@@ -56,6 +50,12 @@ public abstract class InvoiceCandidateListenerAdapter implements IInvoiceCandida
 
 	@Override
 	public void onBeforeInvoiceComplete(I_C_Invoice invoice, List<I_C_Invoice_Candidate> fromCandidates)
+	{
+		// nothing
+	}
+
+	@Override
+	public void onBeforeClosed(I_C_Invoice_Candidate candidate)
 	{
 		// nothing
 	}

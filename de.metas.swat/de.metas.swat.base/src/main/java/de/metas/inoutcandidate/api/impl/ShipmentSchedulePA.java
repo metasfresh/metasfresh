@@ -1509,7 +1509,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public Set<I_M_ShipmentSchedule> retrieveForInvoiceCandidate(@NonNull final I_C_Invoice_Candidate candidate)
 	{
-		Set<I_M_ShipmentSchedule> schedules = ImmutableSet.of();
+		final Set<I_M_ShipmentSchedule> schedules;
 
 		final int tableID = candidate.getAD_Table_ID();
 
@@ -1529,6 +1529,10 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 					.getModel(PlainContextAware.newWithThreadInheritedTrx(), I_M_InOutLine.class);
 
 			schedules = ImmutableSet.copyOf(retrieveForInOutLine(inoutLine));
+		}
+		else
+		{
+			schedules = ImmutableSet.of();
 		}
 
 		return schedules;
