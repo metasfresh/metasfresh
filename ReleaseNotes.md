@@ -20,6 +20,10 @@ Here come the actual release notes:
 #Fixes
 * metasfresh-app
 
+* metasfresh-webui-frontend
+  * [#1451](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1451) Batch entry: cursor jumps directly to HU
+    * Fix for the Batch entry focus after opening via alt+q or alt++. Now focussing on Product field again.
+
 # metasfresh 5.39 (2017-50)
 
 **release for week 2017-50**
@@ -27,12 +31,17 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#2338](https://github.com/metasfresh/metasfresh/issues/2338) Relation Type: fact_accounts
+    * New Relation Type that allows to show the Fact accounts quickly for a given document.
   * [#2340](https://github.com/metasfresh/metasfresh/issues/2340) Relation Type: changelog
+    * New Relation Type that allows to show the Changelog quickly for a given record.
   * [#2715](https://github.com/metasfresh/metasfresh/issues/2715) Create webui window for C_Invoice_Candidate_Agg
     * New WIndow in WebUI for the maintenance of Invoice Candidate Aggregation rules.
   * [#3058](https://github.com/metasfresh/metasfresh/issues/3058) TableRecordId relation types to support Prefix_AD_Table_ID and Prefix_Record_ID
-  * [#3079](https://github.com/metasfresh/metasfresh/issues/3079) Warehouse picking group
-  * [#3105](https://github.com/metasfresh/metasfresh/issues/3105) Improve Product import process
+    * New Functionality that supports the usage of Prefix_Table_ID and Prefix_Record_ID in relations.
+  * [#3079](https://github.com/metasfresh/metasfresh/issues/3079) Warehouse Picking Group
+    * New Functionality that allows to define a group of Warehouses that shall be used as Picking Warehouses.
+  * [#3105](https://github.com/metasfresh/metasfresh/issues/3105) Improve Product Import process
+    * Improvement of Import action for Product data.
   * [#3107](https://github.com/metasfresh/metasfresh/issues/3107) Warehouse picking group window
     * New Warehouse Picking Group window in WebUi, allowing the user to define groups of Warehouses that shall be considered as warehouses to be picking sources
   * [#3120](https://github.com/metasfresh/metasfresh/issues/3120) Add Netsum to Customer Invoice Document Grid View
@@ -44,24 +53,28 @@ Here come the actual release notes:
   * [#3134](https://github.com/metasfresh/metasfresh/issues/3134) Purchase disposition window shall be readonly
     * Setting Fields Readonly to Puchase Disposition Window.
   * [#3137](https://github.com/metasfresh/metasfresh/issues/3137) Clean C_PaySelection
+    * Improvement of the Pay selection window. Removing legacy functionality.
   * [#3140](https://github.com/metasfresh/metasfresh/issues/3140) WebUI: Translate Picking Configuration window to en_US
     * Improvement od the Translation to en_US of Picking Configuration Window.
   * [#3149](https://github.com/metasfresh/metasfresh/issues/3149) Automatic Discount for Group Products
+    * New Functionality added to the Group Product lines in sales order, allowing to define and use a discount schema for the group products functionality.
   * [#3150](https://github.com/metasfresh/metasfresh/issues/3150) Always keep Terms & Conditions equal per Compensation Group
+    * Improved Compensation group feature in sales orderlines, allowing to keep the Terms and conditions equal in a compensation group.
   * [#3164](https://github.com/metasfresh/metasfresh/issues/3164) WebUI: Import BPartner Translations
     * Translating the Import Business Partner window to en_US and improving advanced edit view.
   * [#3166](https://github.com/metasfresh/metasfresh/issues/3166) Businesspartner Window shows Fields that should be in Advanced edit mode
     * Improved Business Partner window, moved Fields to andvanced edit that are not mainly in user focus.
   * [#3171](https://github.com/metasfresh/metasfresh/issues/3171) Add view to keep track of unprocessed async work packages
+    * New view to keep tracking the qty of unprocessed
   * [#3176](https://github.com/metasfresh/metasfresh/issues/3176) Translate Sales Order Actions
     * Improvement of translations in sales order action menu.
 
 * metasfresh-webui-api
-  * [#711](https://github.com/metasfresh/metasfresh-webui-api/issues/711) picking terminal: additional shall support grouping lines by order
-  * [#714](https://github.com/metasfresh/metasfresh-webui-api/issues/714) login authenticate: provide an unique key for each JSONLoginRole
-  * [#716](https://github.com/metasfresh/metasfresh-webui-api/issues/716) picking terminal: scan picking slot by barcode
-  * [#721](https://github.com/metasfresh/metasfresh-webui-api/issues/721) picking terminal: HUs to pick: scan/filter by Locator
-  * [#723](https://github.com/metasfresh/metasfresh-webui-api/issues/723) picking terminal: HUs to pick: Pick CUs process
+  * [#711](https://github.com/metasfresh/metasfresh-webui-api/issues/711) Picking terminal: additional shall support grouping lines by order
+  * [#714](https://github.com/metasfresh/metasfresh-webui-api/issues/714) Login authenticate: provide an unique key for each JSONLoginRole
+  * [#716](https://github.com/metasfresh/metasfresh-webui-api/issues/716) Picking terminal: scan picking slot by barcode
+  * [#721](https://github.com/metasfresh/metasfresh-webui-api/issues/721) Picking terminal: HUs to pick: scan/filter by Locator
+  * [#723](https://github.com/metasfresh/metasfresh-webui-api/issues/723) Picking terminal: HUs to pick: Pick CUs process
   * [#727](https://github.com/metasfresh/metasfresh-webui-api/issues/727) Allow search of Subproducer
   * [#731](https://github.com/metasfresh/metasfresh-webui-api/issues/731) Intoduce process parameters callout minimal functionality
 
