@@ -558,6 +558,17 @@ public final class CreateViewRequest
 			return filter.getParameterValueAsString(parameterName);
 		}
 
+		public int getParamValueAsInt(final String filterId, final String parameterName, final int defaultValue)
+		{
+			final DocumentFilter filter = getFilterByIdOrNull(filterId);
+			if (filter == null)
+			{
+				return defaultValue;
+			}
+
+			return filter.getParameterValueAsInt(parameterName, defaultValue);
+		}
+
 		private List<DocumentFilter> getOrUnwrapFilters(final DocumentFilterDescriptorsProvider descriptors)
 		{
 			if (filters != null)

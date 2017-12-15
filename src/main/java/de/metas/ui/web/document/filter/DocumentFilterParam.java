@@ -11,6 +11,7 @@ import org.adempiere.util.Check;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.datatypes.LookupValue;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -179,6 +180,12 @@ public class DocumentFilterParam
 		return value != null ? value.toString() : null;
 	}
 
+	public int getValueAsInt(final int defaultValue)
+	{
+		final Integer valueInt = convertToInt(value);
+		return valueInt != null ? valueInt : defaultValue;
+	}
+
 	public Collection<?> getValueAsCollection()
 	{
 		if (value == null)
@@ -211,26 +218,33 @@ public class DocumentFilterParam
 		return valueAsCollection.stream()
 				.map(itemConverter)
 				.collect(ImmutableList.toImmutableList());
-
 	}
 
 	public List<Integer> getValueAsIntList()
 	{
-		return getValueAsList(itemObj -> {
-			if (itemObj == null)
-			{
-				// pass-through, even though it will produce an exception when the list will be converted to immutable list
-				return null;
-			}
-			else if (itemObj instanceof Number)
-			{
-				return ((Number)itemObj).intValue();
-			}
-			else
-			{
-				return Integer.parseInt(itemObj.toString());
-			}
-		});
+		return getValueAsList(itemObj -> convertToInt(itemObj));
+	}
+
+	private static final Integer convertToInt(final Object itemObj)
+	{
+		if (itemObj == null)
+		{
+			// pass-through, even though it will produce an exception when the list will be converted to immutable list
+			return null;
+		}
+		else if (itemObj instanceof Number)
+		{
+			return ((Number)itemObj).intValue();
+		}
+		else if (itemObj instanceof LookupValue)
+		{
+			return ((LookupValue)itemObj).getIdAsInt();
+		}
+		else
+		{
+			final String itemStr = itemObj.toString();
+			return Integer.parseInt(itemStr);
+		}
 	}
 
 	public Object getValueTo()
