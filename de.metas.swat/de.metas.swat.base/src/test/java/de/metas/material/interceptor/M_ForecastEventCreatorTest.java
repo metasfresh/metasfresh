@@ -1,4 +1,4 @@
-package de.metas.material.model.interceptor;
+package de.metas.material.interceptor;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -33,6 +33,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
+import de.metas.material.interceptor.M_ForecastEventCreator;
 
 /*
  * #%L

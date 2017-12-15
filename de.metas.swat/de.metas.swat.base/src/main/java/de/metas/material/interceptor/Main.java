@@ -1,4 +1,4 @@
-package de.metas.material.model.interceptor;
+package de.metas.material.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -33,10 +33,11 @@ public class Main extends AbstractModuleInterceptor
 {
 	@Override
 	protected void registerInterceptors(
-			final IModelValidationEngine engine, 
+			final IModelValidationEngine engine,
 			final I_AD_Client client)
 	{
 		engine.addModelValidator(M_ShipmentSchedule.INSTANCE, client);
+		engine.addModelValidator(M_ReceiptSchedule.INSTANCE, client);
 		engine.addModelValidator(M_Transaction.INSTANCE, client);
 		engine.addModelValidator(M_Forecast.INSTANCE, client);
 	}

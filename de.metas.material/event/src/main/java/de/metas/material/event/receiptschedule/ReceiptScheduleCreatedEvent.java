@@ -1,13 +1,15 @@
-package de.metas.material.event.transactions;
+package de.metas.material.event.receiptschedule;
 
 import java.math.BigDecimal;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 /*
  * #%L
@@ -31,24 +33,41 @@ import lombok.Builder;
  * #L%
  */
 
-public class TransactionCreatedEvent extends AbstractTransactionEvent
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+@Getter
+public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 {
-	public static final String TYPE = "TransactionCreatedEvent";
+	public static final String TYPE = "ReceiptScheduleCreatedEvent";
 
-	@JsonCreator
+	private final int orderLineId;
+
 	@Builder
-	public TransactionCreatedEvent(
+	public ReceiptScheduleCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
-			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
-			@JsonProperty("transactionId") final int transactionId)
+			@JsonProperty("orderedMaterial") final MaterialDescriptor orderedMaterial,
+			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
+			@JsonProperty("receiptScheduleId") int receiptScheduleId,
+			@JsonProperty("orderLineId") int orderLineId)
 	{
-		super(eventDescriptor, materialDescriptor, shipmentScheduleId, transactionId);
+		super(
+				eventDescriptor,
+				orderedMaterial,
+				reservedQuantity,
+				receiptScheduleId);
+
+		this.orderLineId = orderLineId;
 	}
 
 	@Override
-	public BigDecimal getQuantityDelta()
+	public BigDecimal getOrderedQuantityDelta()
 	{
-		return getMaterialDescriptor().getQuantity();
+		return getOrderedMaterial().getQuantity();
+	}
+
+	@Override
+	public BigDecimal getReservedQuantityDelta()
+	{
+		return getReservedQuantity();
 	}
 }

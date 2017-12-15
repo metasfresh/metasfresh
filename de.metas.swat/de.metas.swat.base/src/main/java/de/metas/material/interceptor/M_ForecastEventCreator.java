@@ -1,4 +1,4 @@
-package de.metas.material.model.interceptor;
+package de.metas.material.interceptor;
 
 import java.util.List;
 

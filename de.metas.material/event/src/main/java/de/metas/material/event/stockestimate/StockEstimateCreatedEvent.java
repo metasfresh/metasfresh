@@ -1,13 +1,16 @@
-package de.metas.material.event.transactions;
+package de.metas.material.event.stockestimate;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /*
  * #%L
@@ -31,24 +34,27 @@ import lombok.Builder;
  * #L%
  */
 
-public class TransactionCreatedEvent extends AbstractTransactionEvent
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class StockEstimateCreatedEvent extends AbstractStockCountEvent
 {
-	public static final String TYPE = "TransactionCreatedEvent";
+	public static final String TYPE = "StockCountCreatedEvent";
 
 	@JsonCreator
 	@Builder
-	public TransactionCreatedEvent(
+	public StockEstimateCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
-			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
-			@JsonProperty("transactionId") final int transactionId)
+			@JsonProperty("productDescriptor") final ProductDescriptor productDescriptor,
+			@JsonProperty("date") final Date date,
+			@JsonProperty("plantId") final int plantId,
+			@JsonProperty("quantity") final BigDecimal quantity)
 	{
-		super(eventDescriptor, materialDescriptor, shipmentScheduleId, transactionId);
+		super(eventDescriptor, productDescriptor, date, plantId, quantity);
 	}
 
 	@Override
 	public BigDecimal getQuantityDelta()
 	{
-		return getMaterialDescriptor().getQuantity();
+		return getQuantity();
 	}
 }

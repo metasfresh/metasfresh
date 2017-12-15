@@ -1,7 +1,8 @@
-package de.metas.material.event.shipmentschedule;
+package de.metas.material.event.receiptschedule;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
@@ -37,38 +38,32 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Getter
-public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
+public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 {
-	public static final String TYPE = "ShipmentScheduleCreatedEvent";
+	public static final String TYPE = "ReceiptScheduleUpdatedEvent";
 
-	private final int orderLineId;
+	// TODO: fire this event for shipment schedules, all with deltas etc
+	private final BigDecimal orderedQuantityDelta;
 
+	private final BigDecimal reservedQuantityDelta;
+
+	@JsonCreator
 	@Builder
-	public ShipmentScheduleCreatedEvent(
+	public ReceiptScheduleUpdatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("orderedMaterial") final MaterialDescriptor orderedMaterial,
-			@JsonProperty("reservedQuantity") @NonNull final BigDecimal reservedQuantity,
-			@JsonProperty("shipmentScheduleId") int shipmentScheduleId,
-			@JsonProperty("orderLineId") int orderLineId)
+			@JsonProperty("orderedQuantityDelta") @NonNull final BigDecimal orderedQuantityDelta,
+			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
+			@JsonProperty("reservedQuantityDelta") @NonNull final BigDecimal reservedQuantityDelta,
+			@JsonProperty("receiptScheduleId") final int receiptScheduleId)
 	{
 		super(
 				eventDescriptor,
 				orderedMaterial,
 				reservedQuantity,
-				shipmentScheduleId);
+				receiptScheduleId);
 
-		this.orderLineId = orderLineId;
-	}
-
-	@Override
-	public BigDecimal getOrderedQuantityDelta()
-	{
-		return getOrderedMaterial().getQuantity();
-	}
-
-	@Override
-	public BigDecimal getReservedQuantityDelta()
-	{
-		return getReservedQuantity();
+		this.orderedQuantityDelta = orderedQuantityDelta;
+		this.reservedQuantityDelta = reservedQuantityDelta;
 	}
 }

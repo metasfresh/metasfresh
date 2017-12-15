@@ -32,9 +32,9 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 
 /*
@@ -141,9 +141,9 @@ public class CandidateRepositoryRetrieval
 	private CandidateBusinessCase getSubTypeOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		CandidateBusinessCase subType = null;
-		if (!Check.isEmpty(candidateRecord.getMD_Candidate_SubType()))
+		if (!Check.isEmpty(candidateRecord.getMD_Candidate_BusinessCase()))
 		{
-			subType = CandidateBusinessCase.valueOf(candidateRecord.getMD_Candidate_SubType());
+			subType = CandidateBusinessCase.valueOf(candidateRecord.getMD_Candidate_BusinessCase());
 		}
 		return subType;
 	}

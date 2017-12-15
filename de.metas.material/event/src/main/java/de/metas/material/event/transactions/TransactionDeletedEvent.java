@@ -31,13 +31,13 @@ import lombok.Builder;
  * #L%
  */
 
-public class TransactionCreatedEvent extends AbstractTransactionEvent
+public class TransactionDeletedEvent extends AbstractTransactionEvent
 {
-	public static final String TYPE = "TransactionCreatedEvent";
+	public static final String TYPE = "TransactionDeletedEvent";
 
 	@JsonCreator
 	@Builder
-	public TransactionCreatedEvent(
+	public TransactionDeletedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
@@ -49,6 +49,6 @@ public class TransactionCreatedEvent extends AbstractTransactionEvent
 	@Override
 	public BigDecimal getQuantityDelta()
 	{
-		return getMaterialDescriptor().getQuantity();
+		return getMaterialDescriptor().getQuantity().negate();
 	}
 }

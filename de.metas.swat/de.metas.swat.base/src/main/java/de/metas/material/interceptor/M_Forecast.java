@@ -1,4 +1,4 @@
-package de.metas.material.model.interceptor;
+package de.metas.material.interceptor;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -39,7 +39,6 @@ public class M_Forecast
 	@Init
 	public void init(final IModelValidationEngine engine)
 	{
-
 		CopyRecordFactory.enableForTableName(I_M_Forecast.Table_Name);
 		CopyRecordFactory.registerCopyRecordSupport(I_M_Forecast.Table_Name, MForecastPOCopyRecordSupport.class);
 	}

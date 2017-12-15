@@ -1,13 +1,18 @@
-package de.metas.material.event.transactions;
+package de.metas.material.event.procurement;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -31,24 +36,26 @@ import lombok.Builder;
  * #L%
  */
 
-public class TransactionCreatedEvent extends AbstractTransactionEvent
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+@Getter
+public class PurchaseOfferUpdatedEvent extends AbstractPurchaseOfferEvent
 {
-	public static final String TYPE = "TransactionCreatedEvent";
+	public static final String TYPE = "PurchaseOfferUpdatedEvent";
+
+	private final BigDecimal qtyDelta;
 
 	@JsonCreator
 	@Builder
-	public TransactionCreatedEvent(
+	public PurchaseOfferUpdatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
-			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
-			@JsonProperty("transactionId") final int transactionId)
+			@JsonProperty("productDescriptor") final ProductDescriptor productDescriptor,
+			@JsonProperty("date") final Date date,
+			@JsonProperty("qty") final BigDecimal qty,
+			@JsonProperty("qtyDelta") final @NonNull BigDecimal qtyDelta,
+			@JsonProperty("procurementCandidateId") final int procurementCandidateId)
 	{
-		super(eventDescriptor, materialDescriptor, shipmentScheduleId, transactionId);
-	}
-
-	@Override
-	public BigDecimal getQuantityDelta()
-	{
-		return getMaterialDescriptor().getQuantity();
+		super(eventDescriptor, productDescriptor, date, qty, procurementCandidateId);
+		this.qtyDelta = qtyDelta;
 	}
 }

@@ -10,12 +10,12 @@ package de.metas.fresh.freshQtyOnHand.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +39,13 @@ public class Fresh_QtyOnHand_Line
 		// Make sure that we always keep DateDoc in sync with the document header
 		final I_Fresh_QtyOnHand header = line.getFresh_QtyOnHand();
 		line.setDateDoc(header.getDateDoc());
-		
+
 		// NOTE: ASIKey will be set automatically by Fresh_QtyOnHand_Line_OnUpdate_Trigger
+	}
+
+	@ModelChange(timings={ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE})
+	public void fireStouckEstimatedEvent(final I_Fresh_QtyOnHand_Line line)
+	{
+
 	}
 }

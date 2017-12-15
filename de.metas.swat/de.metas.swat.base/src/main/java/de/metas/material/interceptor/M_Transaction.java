@@ -1,4 +1,4 @@
-package de.metas.material.model.interceptor;
+package de.metas.material.interceptor;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.InterceptorUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -27,7 +28,9 @@ import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
+import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.materialtransaction.MTransactionUtil;
 import lombok.NonNull;
 
@@ -85,35 +88,62 @@ public class M_Transaction
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
 
-		final Collection<TransactionCreatedEvent> events = createTransactionEvents(transaction, type);
-		for (final TransactionCreatedEvent event : events)
+		final Collection<AbstractTransactionEvent> events = createTransactionEvents(transaction, type);
+		for (final AbstractTransactionEvent event : events)
 		{
 			materialEventService.fireEvent(event);
 		}
 	}
 
 	@VisibleForTesting
-	static List<TransactionCreatedEvent> createTransactionEvents(
+	static List<AbstractTransactionEvent> createTransactionEvents(
 			@NonNull final I_M_Transaction transaction,
 			@NonNull final ModelChangeType type)
 	{
-		final Builder<TransactionCreatedEvent> result = ImmutableList.builder();
 
 		final Map<Integer, BigDecimal> shipmentScheduleId2qty = retrieveShipmentScheduleId(transaction);
 
-		for (final Entry<Integer, BigDecimal> entries : shipmentScheduleId2qty.entrySet())
-		{
-			final BigDecimal quantity = type.isDelete() ? BigDecimal.ZERO : entries.getValue();
+		final boolean deleted = type.isDelete() || InterceptorUtil.isJustDeactivated(transaction);
 
-			final TransactionCreatedEvent event = TransactionCreatedEvent.builder()
-					.eventDescriptor(EventDescriptor.createNew(transaction))
-					.transactionId(transaction.getM_Transaction_ID())
-					.materialDescriptor(createMaterialDescriptor(transaction, quantity))
-					.shipmentScheduleId(entries.getKey())
-					.build();
+		final Builder<AbstractTransactionEvent> result = ImmutableList.builder();
+		for (final Entry<Integer, BigDecimal> entry : shipmentScheduleId2qty.entrySet())
+		{
+			final AbstractTransactionEvent event = createEventForShipmentScheduleToQtyMapping(transaction, entry, deleted);
 			result.add(event);
 		}
 		return result.build();
+	}
+
+	private static AbstractTransactionEvent createEventForShipmentScheduleToQtyMapping(
+			@NonNull final I_M_Transaction transaction,
+			@NonNull final Entry<Integer, BigDecimal> entry,
+			final boolean deleted
+			)
+	{
+		final BigDecimal quantity = entry.getValue();
+		final EventDescriptor eventDescriptor = EventDescriptor.createNew(transaction);
+		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(transaction, quantity);
+
+		final AbstractTransactionEvent event;
+		if (deleted)
+		{
+			event = TransactionDeletedEvent.builder()
+					.eventDescriptor(eventDescriptor)
+					.transactionId(transaction.getM_Transaction_ID())
+					.materialDescriptor(materialDescriptor)
+					.shipmentScheduleId(entry.getKey())
+					.build();
+		}
+		else
+		{
+			event = TransactionCreatedEvent.builder()
+					.eventDescriptor(eventDescriptor)
+					.transactionId(transaction.getM_Transaction_ID())
+					.materialDescriptor(materialDescriptor)
+					.shipmentScheduleId(entry.getKey())
+					.build();
+		}
+		return event;
 	}
 
 	@VisibleForTesting

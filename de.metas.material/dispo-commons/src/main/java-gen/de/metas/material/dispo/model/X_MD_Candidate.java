@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -585226192L;
+	private static final long serialVersionUID = -123747904L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -172,6 +172,38 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 		return ii.intValue();
 	}
 
+	/** 
+	 * MD_Candidate_BusinessCase AD_Reference_ID=540709
+	 * Reference name: MD_Candidate_BusinessCase
+	 */
+	public static final int MD_CANDIDATE_BUSINESSCASE_AD_Reference_ID=540709;
+	/** DISTRIBUTION = DISTRIBUTION */
+	public static final String MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION = "DISTRIBUTION";
+	/** PRODUCTION = PRODUCTION */
+	public static final String MD_CANDIDATE_BUSINESSCASE_PRODUCTION = "PRODUCTION";
+	/** RECEIPT = RECEIPT */
+	public static final String MD_CANDIDATE_BUSINESSCASE_RECEIPT = "RECEIPT";
+	/** SHIPMENT = SHIPMENT */
+	public static final String MD_CANDIDATE_BUSINESSCASE_SHIPMENT = "SHIPMENT";
+	/** FORECAST = FORECAST */
+	public static final String MD_CANDIDATE_BUSINESSCASE_FORECAST = "FORECAST";
+	/** Set Geschäftsvorfall.
+		@param MD_Candidate_BusinessCase Geschäftsvorfall	  */
+	@Override
+	public void setMD_Candidate_BusinessCase (java.lang.String MD_Candidate_BusinessCase)
+	{
+
+		set_Value (COLUMNNAME_MD_Candidate_BusinessCase, MD_Candidate_BusinessCase);
+	}
+
+	/** Get Geschäftsvorfall.
+		@return Geschäftsvorfall	  */
+	@Override
+	public java.lang.String getMD_Candidate_BusinessCase () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MD_Candidate_BusinessCase);
+	}
+
 	/** Set Gruppen-ID.
 		@param MD_Candidate_GroupId Gruppen-ID	  */
 	@Override
@@ -275,38 +307,6 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public java.lang.String getMD_Candidate_Status () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_MD_Candidate_Status);
-	}
-
-	/** 
-	 * MD_Candidate_SubType AD_Reference_ID=540709
-	 * Reference name: MD_Candidate_SubType
-	 */
-	public static final int MD_CANDIDATE_SUBTYPE_AD_Reference_ID=540709;
-	/** DISTRIBUTION = DISTRIBUTION */
-	public static final String MD_CANDIDATE_SUBTYPE_DISTRIBUTION = "DISTRIBUTION";
-	/** PRODUCTION = PRODUCTION */
-	public static final String MD_CANDIDATE_SUBTYPE_PRODUCTION = "PRODUCTION";
-	/** RECEIPT = RECEIPT */
-	public static final String MD_CANDIDATE_SUBTYPE_RECEIPT = "RECEIPT";
-	/** SHIPMENT = SHIPMENT */
-	public static final String MD_CANDIDATE_SUBTYPE_SHIPMENT = "SHIPMENT";
-	/** FORECAST = FORECAST */
-	public static final String MD_CANDIDATE_SUBTYPE_FORECAST = "FORECAST";
-	/** Set Untertyp.
-		@param MD_Candidate_SubType Untertyp	  */
-	@Override
-	public void setMD_Candidate_SubType (java.lang.String MD_Candidate_SubType)
-	{
-
-		set_Value (COLUMNNAME_MD_Candidate_SubType, MD_Candidate_SubType);
-	}
-
-	/** Get Untertyp.
-		@return Untertyp	  */
-	@Override
-	public java.lang.String getMD_Candidate_SubType () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_MD_Candidate_SubType);
 	}
 
 	/** 

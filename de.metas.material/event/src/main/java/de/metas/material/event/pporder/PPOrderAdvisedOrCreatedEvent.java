@@ -39,7 +39,7 @@ import lombok.Value;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Value // this implies @AllArgsConstructor which is needed by jackson
+@Value
 @Builder
 final public class PPOrderAdvisedOrCreatedEvent implements MaterialEvent
 {
@@ -59,7 +59,7 @@ final public class PPOrderAdvisedOrCreatedEvent implements MaterialEvent
 
 	/**
 	 * Set to not-null mainly if this event is about and "advise" that was created due to a {@link SupplyRequiredEvent}, but also<br>
-	 * if this event is about a "wild" PPOrder that was somehow created and has a sale order line ID
+	 * if this event is about a "wild" PPOrder that was somehow created and has a sales order line ID
 	 */
 	SupplyRequiredDescriptor supplyRequiredDescriptor;
 }

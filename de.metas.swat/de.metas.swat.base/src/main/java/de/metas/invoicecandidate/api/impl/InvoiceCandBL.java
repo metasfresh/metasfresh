@@ -697,7 +697,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final BigDecimal factor)
 	{
 		BigDecimal qtyInvoicable;
-		
+
 		final BigDecimal qtyOverride = getQtyToInvoice_OverrideOrNull(ic);
 		if (qtyOverride == null || qtyOverride.multiply(factor).compareTo(maxQtyToInvoicable.multiply(factor)) > 0)
 		{
@@ -709,7 +709,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// subtract the qty that has already been invoiced.
 			qtyInvoicable = qtyOverride.subtract(ic.getQtyToInvoice_OverrideFulfilled()).multiply(factor);
 		}
-		
+
 		if(ic.isInDispute()
 				&& ic.getAD_Table_ID() == InterfaceWrapperHelper.getTableId(I_M_InventoryLine.class) // TODO HARDCODED, see ...
 				)
@@ -1281,7 +1281,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final boolean creditMemo = Services.get(IInvoiceBL.class).isCreditMemo(invoice);
 		final boolean creditedInvoiceReinvoicable = invoiceExt.isCreditedInvoiceReinvoicable(); // task 08927: this is only relevant if isCreditMemo, see below
 		final boolean creditedInvoiceIsReversed;
-		
+
 		final Iterator<I_C_Invoice> creditMemosForInvoice = invoiceDAO.retrieveCreditMemosForInvoice(invoiceExt);
 		if (creditMemo && creditMemosForInvoice.hasNext())
 		{
@@ -1373,7 +1373,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * Set the qtyToInvoice_Override and Price_Entered_Override in the invoice candidate given by its ID
-	 * 
+	 *
 	 * @param invoiceCandidateId
 	 * @param qtyToInvoiceOverride
 	 * @param priceEnteredOverride
@@ -1745,7 +1745,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	// package-visible for testing
 	/* package */BigDecimal getQtyDelivered_Effective(final I_C_Invoice_Candidate ic)
 	{
-		
+
 		final BigDecimal factor;
 		if (ic.getQtyOrdered().signum() < 0)
 		{
@@ -1755,7 +1755,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			factor = BigDecimal.ONE;
 		}
-		
+
 		return ic.getQtyDelivered().subtract((ic.getQtyWithIssues_Effective()).multiply(factor));
 	}
 
@@ -2073,7 +2073,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// Sales invoice candidates
 		if (candidate.isSOTrx())
 		{
-
 			// close all the linked shipment schedules (the ones the candidate was based on)
 			final Set<I_M_ShipmentSchedule> shipmentSchedules = Services.get(IShipmentSchedulePA.class).retrieveForInvoiceCandidate(candidate);
 

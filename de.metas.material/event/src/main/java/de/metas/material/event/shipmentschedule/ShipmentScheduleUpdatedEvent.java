@@ -1,4 +1,4 @@
-package de.metas.material.event.transactions;
+package de.metas.material.event.shipmentschedule;
 
 import java.math.BigDecimal;
 
@@ -8,6 +8,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -31,24 +35,34 @@ import lombok.Builder;
  * #L%
  */
 
-public class TransactionCreatedEvent extends AbstractTransactionEvent
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+@Getter
+public class ShipmentScheduleUpdatedEvent extends AbstractShipmentScheduleEvent
 {
-	public static final String TYPE = "TransactionCreatedEvent";
+	public static final String TYPE = "ShipmentScheduleUpdatedEvent";
+
+	private final BigDecimal orderedQuantityDelta;
+
+	private final BigDecimal reservedQuantityDelta;
 
 	@JsonCreator
 	@Builder
-	public TransactionCreatedEvent(
+	public ShipmentScheduleUpdatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
-			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
-			@JsonProperty("transactionId") final int transactionId)
+			@JsonProperty("orderedMaterial") final MaterialDescriptor orderedMaterial,
+			@JsonProperty("orderedQuantityDelta") @NonNull final BigDecimal orderedQuantityDelta,
+			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
+			@JsonProperty("reservedQuantityDelta") @NonNull final BigDecimal reservedQuantityDelta,
+			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId)
 	{
-		super(eventDescriptor, materialDescriptor, shipmentScheduleId, transactionId);
-	}
+		super(
+				eventDescriptor,
+				orderedMaterial,
+				reservedQuantity,
+				shipmentScheduleId);
 
-	@Override
-	public BigDecimal getQuantityDelta()
-	{
-		return getMaterialDescriptor().getQuantity();
+		this.orderedQuantityDelta = orderedQuantityDelta;
+		this.reservedQuantityDelta = reservedQuantityDelta;
 	}
 }
