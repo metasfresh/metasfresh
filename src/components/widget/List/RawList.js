@@ -3,6 +3,7 @@ import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
 class RawList extends Component {
   isFocused = false;
+  considerBlur = false;
 
   constructor(props) {
     super(props);
@@ -265,6 +266,12 @@ class RawList extends Component {
   };
 
   handleBlur = () => {
+    if (!this.considerBlur) {
+      return;
+    }
+
+    this.considerBlur = false;
+
     const { selected, doNotOpenOnFocus } = this.props;
 
     this.isFocused = false;
@@ -284,6 +291,8 @@ class RawList extends Component {
      * on focus.
      */
   handleClick = e => {
+    this.considerBlur = true;
+
     e.preventDefault();
 
     const { onFocus } = this.props;
