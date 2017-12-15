@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -28,8 +30,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -56,16 +58,11 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	private static final LockOwner transportationLockOwner = LockOwner.forOwnerName(HUShipperTransportationBL.class.getName());
 
 	@Override
-	public void addHUsToShipperTransportation(final IContextAware contextProvider, final int shipperTransportationId, final Collection<I_M_HU> hus)
+	public void addHUsToShipperTransportation(final int shipperTransportationId, final Collection<I_M_HU> hus)
 	{
-		Check.assumeNotNull(contextProvider, "contextProvider not null");
-
 		//
 		// Load Shipper transportation document and validate it
-		final I_M_ShipperTransportation shipperTransportation = InterfaceWrapperHelper.create(contextProvider.getCtx(),
-				shipperTransportationId,
-				I_M_ShipperTransportation.class,
-				contextProvider.getTrxName());
+		final I_M_ShipperTransportation shipperTransportation = load(shipperTransportationId, I_M_ShipperTransportation.class);
 		if (shipperTransportation == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_ShipperTransportation_ID@");
@@ -98,7 +95,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 			//
 			// Create M_Package
-			final I_M_Package mpackage = huPackageBL.createM_Package(contextProvider, hu, shipper);
+			final I_M_Package mpackage = huPackageBL.createM_Package(hu, shipper);
 
 			//
 			// Add M_Package to Shipper Transportation document
@@ -110,7 +107,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			final String huTrxNameOld = InterfaceWrapperHelper.getTrxName(hu);
 			try
 			{
-				InterfaceWrapperHelper.setTrxName(hu, contextProvider.getTrxName());
+				InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
 
 				//
 				// Mark the top level HU as Locked & save it

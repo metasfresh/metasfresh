@@ -35,7 +35,7 @@ Here come the actual release notes:
   * [#2340](https://github.com/metasfresh/metasfresh/issues/2340) Relation Type: changelog
     * New Relation Type that allows to show the Changelog quickly for a given record.
   * [#2715](https://github.com/metasfresh/metasfresh/issues/2715) Create webui window for C_Invoice_Candidate_Agg
-    * New WIndow in WebUI for the maintenance of Invoice Candidate Aggregation rules.
+    * New Window in WebUI for the maintenance of Invoice Candidate Aggregation rules.
   * [#3058](https://github.com/metasfresh/metasfresh/issues/3058) TableRecordId relation types to support Prefix_AD_Table_ID and Prefix_Record_ID
     * New Functionality that supports the usage of Prefix_Table_ID and Prefix_Record_ID in relations.
   * [#3079](https://github.com/metasfresh/metasfresh/issues/3079) Warehouse Picking Group
@@ -43,7 +43,7 @@ Here come the actual release notes:
   * [#3105](https://github.com/metasfresh/metasfresh/issues/3105) Improve Product Import process
     * Improvement of Import action for Product data.
   * [#3107](https://github.com/metasfresh/metasfresh/issues/3107) Warehouse picking group window
-    * New Warehouse Picking Group window in WebUi, allowing the user to define groups of Warehouses that shall be considered as warehouses to be picking sources
+    * New Warehouse Picking Group window in WebUi, allowing the user to define groups of Warehouses that shall be considered as warehouses to be picking sources.
   * [#3120](https://github.com/metasfresh/metasfresh/issues/3120) Add Netsum to Customer Invoice Document Grid View
     * Improvement of Customer Invoice Grid View, adding Net Sum.
   * [#3122](https://github.com/metasfresh/metasfresh/issues/3122) Add Netsum to Vendor Invoice Document Grid View
@@ -55,7 +55,7 @@ Here come the actual release notes:
   * [#3137](https://github.com/metasfresh/metasfresh/issues/3137) Clean C_PaySelection
     * Improvement of the Pay selection window. Removing legacy functionality.
   * [#3140](https://github.com/metasfresh/metasfresh/issues/3140) WebUI: Translate Picking Configuration window to en_US
-    * Improvement od the Translation to en_US of Picking Configuration Window.
+    * Improvement of the Translation to en_US of Picking Configuration Window.
   * [#3149](https://github.com/metasfresh/metasfresh/issues/3149) Automatic Discount for Group Products
     * New Functionality added to the Group Product lines in sales order, allowing to define and use a discount schema for the group products functionality.
   * [#3150](https://github.com/metasfresh/metasfresh/issues/3150) Always keep Terms & Conditions equal per Compensation Group
@@ -92,8 +92,8 @@ Here come the actual release notes:
     * New functionality that allows to open a window and view after a process/ an action is done.
   * [#1414](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1414) View: don't allow user to sort by a given column if layout says so
     * Disabling the sorting feature for columns which are marked as not-sortable.
-  * [#1425](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1425) eslint: increase line max-len from 80 to 120.
-    * Internal House Keeping issie that shall improve the Code Quality.
+  * [#1425](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1425) Eslint: increase line max-len from 80 to 120.
+    * Internal House Keeping issue that shall improve the Code Quality.
 
 #Fixes
 * metasfresh-app
