@@ -9,6 +9,32 @@ const getXAxisTickAngle = (size, width) => {
   return 2 * Math.atan((a + Math.sqrt(a * a + b * b - c * c)) / (b + c));
 };
 
+export const populateY0Axis = (svg, rangeY, width, data, fields) => {
+  const keys = fields.map(field => field.fieldName);
+  const minY = d3.min(data, d => {
+    return d3.min(keys, key => {
+      return d[key];
+    });
+  });
+  if (minY >= 0) return;
+
+  svg
+    .select("g.y0-axis")
+    .selectAll("*")
+    .remove();
+
+  svg
+    .select("g.y0-axis")
+    .append("line")
+    .attr("y1", rangeY(-3))
+    .attr("x1", 0)
+    .attr("y2", rangeY(-3))
+    .attr("x2", width)
+    .attr("stroke-width", 1)
+    .attr("opacity", 0.5)
+    .attr("stroke", "black");
+};
+
 export const populateXAxis = (svg, rangeX0) => {
   const sizes = [];
 

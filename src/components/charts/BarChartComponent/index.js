@@ -5,7 +5,8 @@ import {
   getXAxisLabelsHeight,
   moveXAxis,
   populateXAxis,
-  populateYAxis
+  populateYAxis,
+  populateY0Axis
 } from "./axes";
 import { drawData } from "./data";
 import { getHorizontalDimensions, getVerticalDimensions } from "./dimensions";
@@ -41,6 +42,9 @@ class BarChartComponent extends Component {
       height
     );
     const rangeY = getYRange(vertical.height, data, fields);
+
+    populateY0Axis(this.svg, rangeY, horizontal.width, data, fields);
+
     populateYAxis(this.svg, rangeY);
 
     // adjust x axis
