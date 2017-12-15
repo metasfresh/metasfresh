@@ -98,11 +98,17 @@ Here come the actual release notes:
 #Fixes
 * metasfresh-app
   * [#3110](https://github.com/metasfresh/metasfresh/issues/3110) Request All does not show records
+    * Fix for the Request window, now allowing to show all records again without using the filter button.
   * [#3126](https://github.com/metasfresh/metasfresh/issues/3126) Solve issues around standalone report / jasper service
+    * Fixes issues that occurred in the new Standalone Jasper report service.
   * [#3138](https://github.com/metasfresh/metasfresh/issues/3138) Import BPartner window: cannot see data
+    * Fix for the Import Businesspartner window and functionality. now showing the imported data again.
   * [#3139](https://github.com/metasfresh/metasfresh/issues/3139) Cannot edit System Administrator role (AD_Role_ID=0)
-  * [#3147](https://github.com/metasfresh/metasfresh/issues/3147) Errors wrt C_BPartner SQL columns
+    * Fix in Role Management, now allowed to edit the System Admin Role again.
+  * [#3147](https://github.com/metasfresh/metasfresh/issues/3147) Errors with C_BPartner SQL columns
+    * Fixes an error which appeared with the new SQL columns in Business Partner window, for systems with a lot of Business Partner records.
   * [#3151](https://github.com/metasfresh/metasfresh/issues/3151) ZoomTo-Performance Issues
+    * Improving the Performance of different Zoom-To Releations.
   * [#3159](https://github.com/metasfresh/metasfresh/issues/3159) Translation Tab content missing for Product_Trl
     * Fix for the Product Translation Tab. Now showing the Translations again.
   * [#3160](https://github.com/metasfresh/metasfresh/issues/3160) C_Printing_Queue_ReEnqueue with IsSelected doesn't work
