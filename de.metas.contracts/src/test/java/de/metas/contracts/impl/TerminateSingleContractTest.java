@@ -216,7 +216,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		defaultLineAgg.setIsActive(true);
 		defaultLineAgg.setC_BPartner(null);
 		defaultLineAgg.setM_ProductGroup(null);
-		InterfaceWrapperHelper.save(defaultLineAgg);
+		save(defaultLineAgg);
 
 		final PlainAggregationDAO aggregationDAO = (PlainAggregationDAO)Services.get(IAggregationDAO.class);
 		aggregationDAO.setDefaultAgg(defaultLineAgg);
