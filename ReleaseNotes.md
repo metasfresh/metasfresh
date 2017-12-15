@@ -20,6 +20,10 @@ Here come the actual release notes:
 #Fixes
 * metasfresh-app
 
+* metasfresh-webui-frontend
+  * [#1451](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1451) Batch entry: cursor jumps directly to HU
+    * Fix for the Batch entry focus after opening via alt+q or alt++. Now focussing on Product field again.
+
 # metasfresh 5.39 (2017-50)
 
 **release for week 2017-50**
@@ -27,12 +31,17 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#2338](https://github.com/metasfresh/metasfresh/issues/2338) Relation Type: fact_accounts
+    * New Relation Type that allows to show the Fact accounts quickly for a given document.
   * [#2340](https://github.com/metasfresh/metasfresh/issues/2340) Relation Type: changelog
+    * New Relation Type that allows to show the Changelog quickly for a given record.
   * [#2715](https://github.com/metasfresh/metasfresh/issues/2715) Create webui window for C_Invoice_Candidate_Agg
     * New WIndow in WebUI for the maintenance of Invoice Candidate Aggregation rules.
   * [#3058](https://github.com/metasfresh/metasfresh/issues/3058) TableRecordId relation types to support Prefix_AD_Table_ID and Prefix_Record_ID
-  * [#3079](https://github.com/metasfresh/metasfresh/issues/3079) Warehouse picking group
-  * [#3105](https://github.com/metasfresh/metasfresh/issues/3105) Improve Product import process
+    * New Functionality that supports the usage of Prefix_Table_ID and Prefix_Record_ID in relations.
+  * [#3079](https://github.com/metasfresh/metasfresh/issues/3079) Warehouse Picking Group
+    * New Functionality that allows to define a group of Warehouses that shall be used as Picking Warehouses.
+  * [#3105](https://github.com/metasfresh/metasfresh/issues/3105) Improve Product Import process
+    * Improvement of Import action for Product data.
   * [#3107](https://github.com/metasfresh/metasfresh/issues/3107) Warehouse picking group window
     * New Warehouse Picking Group window in WebUi, allowing the user to define groups of Warehouses that shall be considered as warehouses to be picking sources
   * [#3120](https://github.com/metasfresh/metasfresh/issues/3120) Add Netsum to Customer Invoice Document Grid View
@@ -85,6 +94,9 @@ Here come the actual release notes:
   * [#3160](https://github.com/metasfresh/metasfresh/issues/3160) C_Printing_Queue_ReEnqueue with IsSelected doesn't work
   * [#3174](https://github.com/metasfresh/metasfresh/issues/3174) Material Receipt Candidates not generates when using Purchase Order from Sales Order action
   * [#3183](https://github.com/metasfresh/metasfresh/issues/3183) Jenkins misinterprets positive downstream build result
+  * [#3206](https://github.com/metasfresh/metasfresh/issues/3206) Relation sales order - flatrate term is missing
+  * [#3207](https://github.com/metasfresh/metasfresh/issues/3207) Cannot save an attribute in orderline
+  * [#3208](https://github.com/metasfresh/metasfresh/issues/3208) console error when copying MDocType
 
 * metasfresh-webui-api
   * [#713](https://github.com/metasfresh/metasfresh-webui-api/issues/713) Error creating bean with name 'scopedTarget.internalUserSessionData'
