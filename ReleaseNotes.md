@@ -20,6 +20,10 @@ Here come the actual release notes:
 #Fixes
 * metasfresh-app
 
+* metasfresh-webui-frontend
+  * [#1451](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1451) Batch entry: cursor jumps directly to HU
+    * Fix for the Batch entry focus after opening via alt+q or alt++. Now focussing on Product field again.
+
 # metasfresh 5.39 (2017-50)
 
 **release for week 2017-50**
