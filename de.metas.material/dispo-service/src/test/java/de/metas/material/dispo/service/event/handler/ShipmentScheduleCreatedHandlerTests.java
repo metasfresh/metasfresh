@@ -139,6 +139,7 @@ public class ShipmentScheduleCreatedHandlerTests
 						.quantity(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
 						.build())
+				.reservedQuantity(new BigDecimal("20"))
 				.shipmentScheduleId(shipmentScheduleId)
 				.orderLineId(orderLineId)
 				.build();

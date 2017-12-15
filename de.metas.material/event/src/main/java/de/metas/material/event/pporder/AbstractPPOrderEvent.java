@@ -1,5 +1,7 @@
 package de.metas.material.event.pporder;
 
+import javax.annotation.Nullable;
+
 import org.eevolution.model.I_PP_Order;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -67,7 +69,7 @@ public abstract class AbstractPPOrderEvent implements MaterialEvent
 			@NonNull final EventDescriptor eventDescriptor,
 			@NonNull final PPOrder ppOrder,
 			final int groupId,
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
+			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		this.eventDescriptor = eventDescriptor;
 		this.ppOrder = ppOrder;
