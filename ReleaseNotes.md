@@ -132,14 +132,21 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1361](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1361) View field editor: make sure the field value is sent to backend before the view is deleted
+    * Fix for the patching of adjusted values in modal overlay action views. Now patching the field value before closing the modal overlay.
   * [#1383](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1383) cannot completely delete a numeric field in grid view
+    * Fixes the new Edit mode in main grid views, now allowing to delete recorded numeric field conten completely.
   * [#1393](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1393) View attributes: consider row's supportAttributes property before querying for attributes
+    * Fixes the querying of Attributes, now only done if the API demands that.
   * [#1396](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1396) View field editor: Patch request isn't sent after hit enter
+    * A Patch Request is now sent again, after hitting enter.
   * [#1404](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1404) login form selects 2 items from roles dropdown
+    * Fixes the login form in WebUI, now only selecting 1 role item.
   * [#1406](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1406) Can not enter "-" into any text field
+    * Allowing to enter "-" character into text fields in WebUI.
   * [#1415](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1415) View: singleOverlayField filters are half broken
     * Fix for the Overlay when using Barcode Filter.
   * [#1421](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1421) Drop down lists remain displayed when using tab several times
+    * Closing opened dropdown lists again when navigating through fields in webUI and the field is losing focus.
 
 # metasfresh 5.38 (2017-49)
 
