@@ -5,6 +5,6 @@
 ;
 COMMENT ON COLUMN public.X_MRP_ProductInfo_Detail_MV.Fresh_QtyMRP
   IS 'This phyical column is *not* used within the swing MRP product info window. 
- It is used for a short time while the webui "Material Cockpit" is based on the X_MRP_ProductInfo_Detail_MV table, but (as of now) only to avoid SQL problems on loading X_MRP_ProductInfo_Detail_MV records';
+ It is used for a short time while the webui "Materialcockpit" is based on the X_MRP_ProductInfo_Detail_MV table, but (as of now) only to avoid SQL problems on loading X_MRP_ProductInfo_Detail_MV records';
 
 

@@ -1,6 +1,6 @@
 -- 2017-12-15T18:26:10.125
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO DIM_Dimension_Spec (AD_Client_ID,AD_Org_ID,Created,CreatedBy,DIM_Dimension_Spec_ID,DIM_Dimension_Type_ID,IsActive,IsIncludeEmpty,IsIncludeOtherGroup,Name,Updated,UpdatedBy) VALUES (1000000,0,TO_TIMESTAMP('2017-12-15 18:26:09','YYYY-MM-DD HH24:MI:SS'),100,540010,540000,'Y','N','Y','Material Cockpit',TO_TIMESTAMP('2017-12-15 18:26:09','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO DIM_Dimension_Spec (AD_Client_ID,AD_Org_ID,Created,CreatedBy,DIM_Dimension_Spec_ID,DIM_Dimension_Type_ID,IsActive,IsIncludeEmpty,IsIncludeOtherGroup,Name,Updated,UpdatedBy) VALUES (1000000,0,TO_TIMESTAMP('2017-12-15 18:26:09','YYYY-MM-DD HH24:MI:SS'),100,540010,540000,'Y','N','Y','Materialcockpit',TO_TIMESTAMP('2017-12-15 18:26:09','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-12-15T18:26:58.958

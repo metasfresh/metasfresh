@@ -86,22 +86,22 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000012, SeqNo=7, Updated=now(), UpdatedBy=10
 
 -- 2017-11-28T15:29:01.379
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Window SET Name='Material Cockpit',Updated=TO_TIMESTAMP('2017-11-28 15:29:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540376
+UPDATE AD_Window SET Name='Materialcockpit',Updated=TO_TIMESTAMP('2017-11-28 15:29:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540376
 ;
 
 -- 2017-11-28T15:29:10.044
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-11-28 15:29:10','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Material Cockpit' WHERE AD_Window_ID=540376 AND AD_Language='de_CH'
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-11-28 15:29:10','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Materialcockpit' WHERE AD_Window_ID=540376 AND AD_Language='de_CH'
 ;
 
 -- 2017-11-28T15:29:18.732
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-11-28 15:29:18','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Material Cockpit' WHERE AD_Window_ID=540376 AND AD_Language='en_US'
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-11-28 15:29:18','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Materialcockpit' WHERE AD_Window_ID=540376 AND AD_Language='en_US'
 ;
 
 -- 2017-11-28T15:29:43.476
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy,WEBUI_NameBrowse) VALUES ('W',0,540981,0,540376,TO_TIMESTAMP('2017-11-28 15:29:43','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Material Cockpit','Y','N','N','N','N','Material Cockpit',TO_TIMESTAMP('2017-11-28 15:29:43','YYYY-MM-DD HH24:MI:SS'),100,'Material Cockpit')
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy,WEBUI_NameBrowse) VALUES ('W',0,540981,0,540376,TO_TIMESTAMP('2017-11-28 15:29:43','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Materialcockpit','Y','N','N','N','N','Material Cockpit',TO_TIMESTAMP('2017-11-28 15:29:43','YYYY-MM-DD HH24:MI:SS'),100,'Material Cockpit')
 ;
 
 -- 2017-11-28T15:29:43.478
