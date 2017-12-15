@@ -37,11 +37,11 @@ import lombok.NonNull;
  *
  */
 @Data
-public class DimenstionGroupSubRowBucket
+public class DimensionGroupSubRowBucket
 {
-	public static DimenstionGroupSubRowBucket create(@NonNull final DimensionSpecGroup dimensionSpecGroup)
+	public static DimensionGroupSubRowBucket create(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
-		return new DimenstionGroupSubRowBucket(dimensionSpecGroup);
+		return new DimensionGroupSubRowBucket(dimensionSpecGroup);
 	}
 
 	private final DimensionSpecGroup dimensionSpecGroup;
@@ -61,7 +61,7 @@ public class DimenstionGroupSubRowBucket
 	// zusagbar Zaehlbestand
 	private BigDecimal qtyPromised = BigDecimal.ZERO;
 
-	public DimenstionGroupSubRowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
+	public DimensionGroupSubRowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
 		this.dimensionSpecGroup = dimensionSpecGroup;
 	}

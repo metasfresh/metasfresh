@@ -37,9 +37,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.NumberTranslatableString;
-import de.metas.material.dispo.client.repository.AvailableStockResult;
-import de.metas.material.dispo.client.repository.AvailableStockResult.Group;
-import de.metas.material.dispo.client.repository.AvailableStockService;
 import de.metas.material.dispo.commons.repository.StockQuery;
 import de.metas.material.dispo.commons.repository.StockQuery.StockQueryBuilder;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -47,6 +44,9 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
+import de.metas.ui.web.material.adapter.AvailableStockResultForWebui;
+import de.metas.ui.web.material.adapter.AvailableStockAdapter;
+import de.metas.ui.web.material.adapter.AvailableStockResultForWebui.Group;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -108,7 +108,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private static final CtxName param_AD_Org_ID = CtxNames.parse(WindowConstants.FIELDNAME_AD_Org_ID + "/-1");
 	private final Set<CtxName> parameters;
 
-	private final AvailableStockService availableStockService;
+	private final AvailableStockAdapter availableStockService;
 
 	private static final String ATTRIBUTE_ASI = "asi";
 
@@ -116,7 +116,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private ProductLookupDescriptor(
 			@NonNull final String bpartnerParamName,
 			@NonNull final String dateParamName,
-			@NonNull final AvailableStockService availableStockService)
+			@NonNull final AvailableStockAdapter availableStockService)
 	{
 		param_C_BPartner_ID = CtxNames.parse(bpartnerParamName + "/-1");
 		param_Date = CtxNames.parse(dateParamName + "/NULL");
@@ -450,7 +450,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		stockQueryBuilder.productIds(productLookupValues.getKeysAsInt());
 
 		// invoke the query
-		final AvailableStockResult availableStock = availableStockService.retrieveAvailableStock(stockQueryBuilder.build());
+		final AvailableStockResultForWebui availableStock = availableStockService.retrieveAvailableStock(stockQueryBuilder.build());
 		final List<Group> availableStockGroups = availableStock.getGroups();
 
 		// process the query's result into those explodedProductValues
@@ -477,7 +477,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		final String storageAttributesKeys = sysConfigBL.getValue(
 				SYSCONFIG_PRODUCT_LOOKUP_DESCRIPTOR_STORAGE_ATTRIBUTES_KEYS,
-				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.getAsString(),
+				AttributesKey.ALL.getAsString(),
 				clientId, orgId);
 
 		final Splitter splitter = Splitter
@@ -488,11 +488,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		{
 			if ("<ALL_STORAGE_ATTRIBUTES_KEYS>".equals(storageAttributesKey))
 			{
-				stockQueryBuilder.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
+				stockQueryBuilder.storageAttributesKey(AttributesKey.ALL);
 			}
 			else if ("<OTHER_STORAGE_ATTRIBUTES_KEYS>".equals(storageAttributesKey))
 			{
-				stockQueryBuilder.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER);
+				stockQueryBuilder.storageAttributesKey(AttributesKey.OTHER);
 			}
 			else
 			{

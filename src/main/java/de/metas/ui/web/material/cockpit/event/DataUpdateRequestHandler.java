@@ -11,6 +11,8 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 
 /*
@@ -68,10 +70,16 @@ public class DataUpdateRequestHandler
 
 	private IQuery<I_MD_Cockpit> createQueryForIdentifier(@NonNull final DataRecordIdentifier identifier)
 	{
-		final IQueryBuilder<I_MD_Cockpit> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Cockpit.class)
+		final ProductDescriptor productDescriptor = identifier.getProductDescriptor();
+
+		final AttributesKey attributesKey = productDescriptor.getStorageAttributesKey();
+		attributesKey.assertNotAllOrOther();
+
+		final IQueryBuilder<I_MD_Cockpit> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Cockpit.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Cockpit.COLUMN_M_Product_ID, identifier.getProductDescriptor().getProductId())
-				.addEqualsFilter(I_MD_Cockpit.COLUMN_AttributesKey, identifier.getProductDescriptor().getStorageAttributesKey().getAsString())
+				.addEqualsFilter(I_MD_Cockpit.COLUMN_M_Product_ID, productDescriptor.getProductId())
+				.addEqualsFilter(I_MD_Cockpit.COLUMN_AttributesKey, attributesKey.getAsString())
 				.addEqualsFilter(I_MD_Cockpit.COLUMN_DateGeneral, identifier.getDate());
 
 		if (identifier.getPlantId() > 0)

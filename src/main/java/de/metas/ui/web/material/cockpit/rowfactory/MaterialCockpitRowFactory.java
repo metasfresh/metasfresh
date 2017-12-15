@@ -51,7 +51,7 @@ import lombok.Value;
 @Service
 public class MaterialCockpitRowFactory
 {
-	public static final String DIM_SPEC_INTERNAL_NAME = "MRP_Product_Info_ASI_Values";
+	public static final String DIM_SPEC_INTERNAL_NAME = "Material_Cockpit_Default_Spec";
 
 	@Value
 	@lombok.Builder

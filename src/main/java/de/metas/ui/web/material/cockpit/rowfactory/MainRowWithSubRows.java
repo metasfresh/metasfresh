@@ -52,7 +52,7 @@ public class MainRowWithSubRows
 
 	private final MainRowBucket mainRow = new MainRowBucket();
 
-	private final Map<DimensionSpecGroup, DimenstionGroupSubRowBucket> dimensionGroupSubRows = new LinkedHashMap<>();
+	private final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> dimensionGroupSubRows = new LinkedHashMap<>();
 
 	private final Map<Integer, CountingSubRowBucket> countingSubRows = new LinkedHashMap<>();
 
@@ -63,13 +63,12 @@ public class MainRowWithSubRows
 
 	public void addEmptyAttributesSubrowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
-		dimensionGroupSubRows.computeIfAbsent(dimensionSpecGroup, DimenstionGroupSubRowBucket::create);
+		dimensionGroupSubRows.computeIfAbsent(dimensionSpecGroup, DimensionGroupSubRowBucket::create);
 	}
 
 	public void addEmptyCountingSubrowBucket(int plantId)
 	{
 		countingSubRows.computeIfAbsent(plantId, CountingSubRowBucket::create);
-
 	}
 
 	public void addDataRecord(
@@ -93,7 +92,7 @@ public class MainRowWithSubRows
 	{
 		assertProductIdAndDateOfDataRecord(dataRecord);
 
-		final List<DimenstionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(dataRecord, dimensionSpec);
+		final List<DimensionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(dataRecord, dimensionSpec);
 		subRowBuckets.forEach(bucket -> bucket.addDataRecord(dataRecord));
 	}
 
@@ -107,21 +106,44 @@ public class MainRowWithSubRows
 				productIdAndDate, key, dataRecord);
 	}
 
-	private List<DimenstionGroupSubRowBucket> findOrCreateSubRowBucket(
+	private List<DimensionGroupSubRowBucket> findOrCreateSubRowBucket(
 			@NonNull final I_MD_Cockpit dataRecord,
 			@NonNull final DimensionSpec dimensionSpec)
 	{
-		final ImmutableList.Builder<DimenstionGroupSubRowBucket> result = ImmutableList.builder();
+		final ImmutableList.Builder<DimensionGroupSubRowBucket> result = ImmutableList.builder();
 
 		final AttributesKey dataRecordAttributesKey = AttributesKey.ofString(dataRecord.getAttributesKey());
+
+		DimensionSpecGroup otherGroup = null;
+		boolean addedToAnyGroup = false;
 
 		for (final DimensionSpecGroup group : dimensionSpec.retrieveGroups())
 		{
 			final AttributesKey dimensionAttributesKey = group.getAttributesKey();
-			if (dataRecordAttributesKey.intersects(dimensionAttributesKey))
+
+			if (DimensionSpecGroup.EMPTY_GROUP.equals(group) && AttributesKey.NONE.equals(dataRecordAttributesKey))
 			{
-				result.add(dimensionGroupSubRows.computeIfAbsent(group, DimenstionGroupSubRowBucket::create));
+				result.add(dimensionGroupSubRows.computeIfAbsent(group, DimensionGroupSubRowBucket::create));
+				addedToAnyGroup = true;
+				continue;
 			}
+			else if (dataRecordAttributesKey.intersects(dimensionAttributesKey))
+			{
+				result.add(dimensionGroupSubRows.computeIfAbsent(group, DimensionGroupSubRowBucket::create));
+				addedToAnyGroup = true;
+				continue;
+			}
+
+			// while iterating, also look out out for "otherGroup"
+			if (DimensionSpecGroup.OTHER_GROUP.equals(group))
+			{
+				otherGroup = group;
+			}
+		}
+
+		if (!addedToAnyGroup && otherGroup != null)
+		{
+			result.add(dimensionGroupSubRows.computeIfAbsent(otherGroup, DimensionGroupSubRowBucket::create));
 		}
 		return result.build();
 	}
@@ -149,7 +171,7 @@ public class MainRowWithSubRows
 			mainRowBuilder.includedRow(subRow);
 		}
 
-		for (final DimenstionGroupSubRowBucket subRowBucket : dimensionGroupSubRows.values())
+		for (final DimensionGroupSubRowBucket subRowBucket : dimensionGroupSubRows.values())
 		{
 			final MaterialCockpitRow subRow = subRowBucket.createIncludedRow(this);
 			mainRowBuilder.includedRow(subRow);

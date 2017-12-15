@@ -109,7 +109,7 @@ public class MaterialCockpitRowFactoryTest
 		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr1_value1);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr2_value1);
 
-		final AttributesKey attributesKey1 = AttributesKeys.createAttributesKeyFromASIAllAttributeValues(asi1.getM_AttributeSetInstance_ID());
+		final AttributesKey attributesKey1 = AttributesKeys.createAttributesKeyFromASIAllAttributeValues(asi1.getM_AttributeSetInstance_ID()).get();
 
 		final I_MD_Cockpit record1 = newInstance(I_MD_Cockpit.class);
 		record1.setM_Product(product);
@@ -158,7 +158,7 @@ public class MaterialCockpitRowFactoryTest
 		final MainRowWithSubRows mainRowBucket = result.get(productIdAndDate);
 		assertThat(mainRowBucket.getProductIdAndDate()).isEqualTo(productIdAndDate);
 
-		final Map<DimensionSpecGroup, DimenstionGroupSubRowBucket> subRowBuckets = mainRowBucket.getDimensionGroupSubRows();
+		final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> subRowBuckets = mainRowBucket.getDimensionGroupSubRows();
 		assertThat(subRowBuckets).hasSize(dimensionSpec.retrieveGroups().size());
 		assertThat(subRowBuckets.keySet()).containsOnlyElementsOf(dimensionSpec.retrieveGroups());
 	}

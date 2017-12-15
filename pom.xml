@@ -93,15 +93,6 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
-		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
-		<!-- we need those classes in the webui-api and swing-UI in order to run the MD_Candidate_Request_PP_Order process -->
-		<dependency>
-			<groupId>de.metas.material</groupId>
-			<artifactId>metasfresh-material-dispo-client</artifactId>
-			<version>${metasfresh.version}</version>
-			<type>jar</type>
-		</dependency>
-
 		<dependency>
 			<groupId>de.metas.purchasecandidate</groupId>
 			<artifactId>de.metas.purchasecandidate.base</artifactId>

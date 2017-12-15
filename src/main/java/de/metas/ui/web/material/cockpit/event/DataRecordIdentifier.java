@@ -33,14 +33,23 @@ import lombok.Value;
 @Builder
 public class DataRecordIdentifier
 {
-	@NonNull
 	ProductDescriptor productDescriptor;
 
-	@NonNull
 	Date date;
 
 	/**
 	 * Optional, a value <= 0 means "none"
 	 */
 	int plantId;
+
+	public DataRecordIdentifier(
+			@NonNull final ProductDescriptor productDescriptor,
+			@NonNull final Date date,
+			int plantId)
+	{
+		productDescriptor.getStorageAttributesKey().assertNotAllOrOther();
+		this.productDescriptor = productDescriptor;
+		this.date = date;
+		this.plantId = plantId;
+	}
 }
