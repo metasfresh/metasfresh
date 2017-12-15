@@ -1,7 +1,22 @@
 import counterpart from "counterpart";
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 
 import PaginationContextShortcuts from "../shortcuts/PaginationContextShortcuts";
+
+const propTypes = {
+  selected: PropTypes.array,
+  handleSelectAll: PropTypes.func,
+  handleSelectRange: PropTypes.func,
+  handleChangePage: PropTypes.func,
+  rowLength: PropTypes.number.isRequired,
+  compressed: PropTypes.any, // Looks like it's not used
+  size: PropTypes.number.isRequired,
+  queryLimitHit: PropTypes.number,
+  pageLength: PropTypes.number.isRequired,
+  disablePaginationShortcuts: PropTypes.bool,
+  page: PropTypes.number.isRequired
+};
 
 class TablePagination extends Component {
   constructor(props) {
@@ -34,13 +49,12 @@ class TablePagination extends Component {
   };
 
   handleSubmit = (e, value, pages) => {
-    const { handleChangePage, deselect } = this.props;
+    const { handleChangePage } = this.props;
     if (e.key === "Enter") {
       e.preventDefault();
 
       if (value <= pages && value > 0) {
         handleChangePage(Number(value));
-        deselect();
         this.setState({
           value: "",
           secondDotsState: false,
@@ -109,7 +123,7 @@ class TablePagination extends Component {
   };
 
   renderFirstPartPagination = (pagination, pages) => {
-    const { handleChangePage, deselect, compressed } = this.props;
+    const { handleChangePage, compressed } = this.props;
     const { firstDotsState, value } = this.state;
     pagination.push(
       <li
@@ -118,7 +132,6 @@ class TablePagination extends Component {
         onClick={() => {
           this.resetGoToPage();
           handleChangePage(1);
-          deselect();
         }}
       >
         <a
@@ -142,7 +155,7 @@ class TablePagination extends Component {
   };
 
   renderLastPartPagination = (pagination, pages) => {
-    const { handleChangePage, deselect, compressed } = this.props;
+    const { handleChangePage, compressed } = this.props;
     const { secondDotsState, value } = this.state;
 
     pagination.push(
@@ -163,7 +176,6 @@ class TablePagination extends Component {
         onClick={() => {
           this.resetGoToPage();
           handleChangePage(pages);
-          deselect();
         }}
       >
         <a
@@ -176,7 +188,7 @@ class TablePagination extends Component {
   };
 
   renderPaginationContent = (pagination, page, start, end) => {
-    const { handleChangePage, deselect, compressed } = this.props;
+    const { handleChangePage, compressed } = this.props;
     for (let i = start; i <= end; i++) {
       pagination.push(
         <li
@@ -185,7 +197,6 @@ class TablePagination extends Component {
           onClick={() => {
             this.resetGoToPage();
             handleChangePage(i);
-            deselect();
           }}
         >
           <a
@@ -243,7 +254,7 @@ class TablePagination extends Component {
   };
 
   renderArrow = left => {
-    const { compressed, handleChangePage, deselect } = this.props;
+    const { compressed, handleChangePage } = this.props;
     return (
       <li className="page-item">
         <a
@@ -251,7 +262,6 @@ class TablePagination extends Component {
           onClick={() => {
             this.resetGoToPage();
             handleChangePage(left ? "down" : "up");
-            deselect();
           }}
         >
           <span>{left ? "«" : "»"}</span>
@@ -337,5 +347,7 @@ class TablePagination extends Component {
     );
   }
 }
+
+TablePagination.propTypes = propTypes;
 
 export default TablePagination;
