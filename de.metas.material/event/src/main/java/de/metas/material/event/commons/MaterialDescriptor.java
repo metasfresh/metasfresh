@@ -82,9 +82,9 @@ public class MaterialDescriptor extends ProductDescriptor
 			@JsonProperty("date") final Date date,
 			@JsonProperty("productId") final int productId,
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId,
-			@JsonProperty("storageAttributesKey") final StorageAttributesKey storageAttributesKey)
+			@JsonProperty("storageAttributesKey") final AttributesKey attributesKey)
 	{
-		super(productId, storageAttributesKey, attributeSetInstanceId);
+		super(productId, attributesKey, attributeSetInstanceId);
 
 		this.warehouseId = warehouseId;
 		this.bPartnerId = bPartnerId;

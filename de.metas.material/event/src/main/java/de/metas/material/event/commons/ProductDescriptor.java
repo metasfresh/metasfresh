@@ -52,24 +52,24 @@ public class ProductDescriptor
 
 	public static final ProductDescriptor forProductAndAttributes(
 			final int productId,
-			@NonNull final StorageAttributesKey storageAttributesKey,
+			@NonNull final AttributesKey attributesKey,
 			final int attributeSetInstanceId)
 	{
-		return new ProductDescriptor(productId, storageAttributesKey, attributeSetInstanceId);
+		return new ProductDescriptor(productId, attributesKey, attributeSetInstanceId);
 	}
 
-	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY_ALL = StorageAttributesKey.ofAttributeValueIds(-1000);
+	public static final AttributesKey STORAGE_ATTRIBUTES_KEY_ALL = AttributesKey.ofAttributeValueIds(-1000);
 	public static final String MSG_STORAGE_ATTRIBUTES_KEY_ALL = "de.metas.material.dispo.<ALL_STORAGE_ATTRIBUTES_KEYS>";
 
 	/** This key's meaning depends on the other keys it comes with. */
-	public static final StorageAttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = StorageAttributesKey.ofAttributeValueIds(-1001);
+	public static final AttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = AttributesKey.ofAttributeValueIds(-1001);
 	public static final String MSG_STORAGE_ATTRIBUTES_KEY_OTHER = "de.metas.material.dispo.<OTHER_STORAGE_ATTRIBUTES_KEYS>";
 
 	@Getter
 	int productId;
 
 	@Getter
-	StorageAttributesKey storageAttributesKey;
+	AttributesKey storageAttributesKey;
 
 	/**
 	 * This ID is only here so that the candidate row's attributes can be displayed properly in the UI.
@@ -80,7 +80,7 @@ public class ProductDescriptor
 	@JsonCreator
 	public ProductDescriptor(
 			@JsonProperty("productId") final int productId,
-			@JsonProperty("storageAttributesKey") @NonNull final StorageAttributesKey storageAttributesKey,
+			@JsonProperty("storageAttributesKey") @NonNull final AttributesKey storageAttributesKey,
 			@JsonProperty("attributeSetInstanceId") final int attributeSetInstanceId)
 	{
 		this.productId = productId;

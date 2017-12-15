@@ -3,13 +3,14 @@ package org.adempiere.mm.attributes.api;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.Comparator;
+import java.util.function.Predicate;
 
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -35,9 +36,24 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public final class StorageAttributesKeys
+public final class AttributesKeys
 {
-	public static StorageAttributesKey createAttributesKeyFromASI(final int attributeSetInstanceId)
+
+	public static AttributesKey createAttributesKeyFromASIAllAttributeValues(final int attributeSetInstanceId)
+	{
+		return createAttributesKeyWithFilter(
+				attributeSetInstanceId,
+				ai -> true);
+	}
+
+	public static AttributesKey createAttributesKeyFromASIStorageAttributes(final int attributeSetInstanceId)
+	{
+		return createAttributesKeyWithFilter(
+				attributeSetInstanceId,
+				ai -> ai.getM_Attribute().isStorageRelevant());
+	}
+
+	private static AttributesKey createAttributesKeyWithFilter(final int attributeSetInstanceId, final Predicate<? super I_M_AttributeInstance> additionalFilter)
 	{
 		if (attributeSetInstanceId == AttributeConstants.M_AttributeSetInstance_ID_None)
 		{
@@ -49,11 +65,11 @@ public final class StorageAttributesKeys
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 		final int[] attributeValueIds = attributeDAO.retrieveAttributeInstances(attributeSetInstance).stream()
 				.filter(ai -> ai.getM_AttributeValue_ID() > 0)
-				.filter(ai -> ai.getM_Attribute().isStorageRelevant())
+				.filter(additionalFilter)
 				.sorted(Comparator.comparing(I_M_AttributeInstance::getM_Attribute_ID))
 				.mapToInt(I_M_AttributeInstance::getM_AttributeValue_ID)
 				.toArray();
 
-		return StorageAttributesKey.ofAttributeValueIds(attributeValueIds);
+		return AttributesKey.ofAttributeValueIds(attributeValueIds);
 	}
 }

@@ -14,7 +14,8 @@ import org.compiere.model.X_M_Attribute;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.AttributesKey;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,7 +39,7 @@ import de.metas.material.event.commons.StorageAttributesKey;
  * #L%
  */
 
-public class StorageAttributesKeysTest
+public class AttributesKeysTest
 {
 	private AttributesTestHelper attributesTestHelper;
 
@@ -65,15 +66,15 @@ public class StorageAttributesKeysTest
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue1);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue2);
 
-		final StorageAttributesKey result = StorageAttributesKeys.createAttributesKeyFromASI(asi.getM_AttributeSetInstance_ID());
+		final AttributesKey result = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asi.getM_AttributeSetInstance_ID());
 
-		final StorageAttributesKey expectedResult = StorageAttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());
+		final AttributesKey expectedResult = AttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());
 		assertThat(result).isEqualTo(expectedResult);
 	}
 
-	private final I_M_Attribute createStorageRelevantAttribute(final String name)
+	private final I_M_Attribute createStorageRelevantAttribute(@NonNull final String name)
 	{
-		I_M_Attribute attribute = attributesTestHelper.createM_Attribute(name, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		final I_M_Attribute attribute = attributesTestHelper.createM_Attribute(name, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		attribute.setIsStorageRelevant(true);
 		save(attribute);
 		return attribute;

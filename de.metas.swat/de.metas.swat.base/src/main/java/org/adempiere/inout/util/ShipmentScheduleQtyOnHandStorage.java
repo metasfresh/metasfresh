@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.adempiere.mm.attributes.api.StorageAttributesKeys;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -47,12 +47,12 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.dispo.commons.repository.StockResult;
 import de.metas.material.dispo.commons.repository.StockMultiQuery;
 import de.metas.material.dispo.commons.repository.StockQuery;
 import de.metas.material.dispo.commons.repository.StockQuery.StockQueryBuilder;
 import de.metas.material.dispo.commons.repository.StockRepository;
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.dispo.commons.repository.StockResult;
+import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 
 /**
@@ -171,7 +171,7 @@ public class ShipmentScheduleQtyOnHandStorage
 		final int asiId = sched.getM_AttributeSetInstance_ID();
 		if (asiId > 0)
 		{
-			stockQueryBuilder.storageAttributesKey(StorageAttributesKeys.createAttributesKeyFromASI(asiId));
+			stockQueryBuilder.storageAttributesKey(AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId));
 		}
 
 		// Cache the storage query and return it
@@ -237,7 +237,7 @@ public class ShipmentScheduleQtyOnHandStorage
 
 		//
 		// Storage Attributes Key
-		final List<StorageAttributesKey> queryStorageAttributeKeys = query.getStorageAttributesKeys();
+		final List<AttributesKey> queryStorageAttributeKeys = query.getStorageAttributesKeys();
 		if (!queryStorageAttributeKeys.isEmpty() && !queryStorageAttributeKeys.contains(stockDetail.getStorageAttributesKey()))
 		{
 			return false;
