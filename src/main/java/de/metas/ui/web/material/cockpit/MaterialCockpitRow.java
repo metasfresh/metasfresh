@@ -60,11 +60,7 @@ public class MaterialCockpitRow implements IViewRow
 	private static final String SEPARATOR = "-";
 	private static final Joiner DOCUMENT_ID_JOINER = Joiner.on(SEPARATOR).skipNulls();
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Date, //
-			captionKey = I_MD_Cockpit.COLUMNNAME_DateGeneral, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 5) })
 	private final Timestamp date;
-
 	private final int productId;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
