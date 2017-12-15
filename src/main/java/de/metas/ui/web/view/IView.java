@@ -67,7 +67,7 @@ public interface IView
 
 	/**
 	 * @param documentId can be used by multi-table implementations to return the correct table name for a given row.
-	 * 
+	 *
 	 * @return table name for the given row; might also return {@code null}.
 	 */
 	String getTableNameOrNull(@Nullable DocumentId documentId);
@@ -99,18 +99,18 @@ public interface IView
 
 	/**
 	 * Invalidate ALL view rows.
-	 * 
+	 *
 	 * NOTE: this method is NOT sending websocket notifications
 	 */
 	void invalidateAll();
 
 	/**
 	 * Invalidate given row by ID.
-	 * 
+	 *
 	 * If there is no custom implementation then this method will invalidate all by default.
-	 * 
+	 *
 	 * NOTE: this method is NOT sending websocket notifications
-	 * 
+	 *
 	 * @param rowId
 	 */
 	default void invalidateRowById(final DocumentId rowId)
@@ -139,7 +139,9 @@ public interface IView
 	List<DocumentFilter> getStickyFilters();
 
 	/**
-	 * @return active filters
+	 * Return the active filters for this view.<br>
+	 * Note that whenever the user changes the filter settings on the frontend, a new view is created.<br>
+	 * Therefore, if you implement a view yourself, you probably will want to give it a "static" list of filters to be returned by this method.
 	 */
 	List<DocumentFilter> getFilters();
 
