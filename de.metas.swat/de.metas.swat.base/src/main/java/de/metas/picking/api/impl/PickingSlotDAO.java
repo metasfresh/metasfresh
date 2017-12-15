@@ -92,7 +92,7 @@ public class PickingSlotDAO implements IPickingSlotDAO
 	{
 		final List<I_M_PickingSlot> result = pickingSlotsAll.stream()
 				.filter(isWarehouseMatchingFilter(query.getWarehouseId()))
-				.filter(isAvailableForBPartnerFilter(query.getBpartnerId(), query.getBpartnerLocationId()))
+				.filter(isAvailableForBPartnerFilter(query.getAvailableForBPartnerId(), query.getAvailableForBPartnerLocationId()))
 				.filter(isAssignedToBPartnerFilter(query.getAssignedToBPartnerId(), query.getAssignedToBPartnerLocationId()))
 				.filter(isPickingSlotMatchingBarcodeFilter(query.getBarcode()))
 				.collect(Collectors.toList());
@@ -157,8 +157,8 @@ public class PickingSlotDAO implements IPickingSlotDAO
 			return;
 		}
 
-		final int bpartnerId = query.getBpartnerId();
-		final int bpartnerLocationId = query.getBpartnerLocationId();
+		final int bpartnerId = query.getAvailableForBPartnerId();
+		final int bpartnerLocationId = query.getAvailableForBPartnerLocationId();
 
 		final I_C_BPartner bpartner = bpartnerId <= 0 ? null : loadOutOfTrx(bpartnerId, I_C_BPartner.class);
 		final String bpartnerStr = bpartner == null ? "<" + bpartnerId + ">" : bpartner.getValue();

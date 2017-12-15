@@ -76,8 +76,8 @@ public class PickingSlotKeyBuilder
 	public void addBPartner(final int bpartnerId, final int bpartnerLocationId, final Set<Integer> allowedWarehouseIds)
 	{
 		final PickingSlotQuery pickingSlotRequest = PickingSlotQuery.builder()
-				.bpartnerId(bpartnerId)
-				.bpartnerLocationId(bpartnerLocationId)
+				.availableForBPartnerId(bpartnerId)
+				.availableForBPartnerLocationId(bpartnerLocationId)
 				.build();
 
 		final List<I_M_PickingSlot> bpPickingSlots = Services.get(IPickingSlotDAO.class).retrievePickingSlots(pickingSlotRequest);
