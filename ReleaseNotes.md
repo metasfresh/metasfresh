@@ -112,15 +112,23 @@ Here come the actual release notes:
   * [#3159](https://github.com/metasfresh/metasfresh/issues/3159) Translation Tab content missing for Product_Trl
     * Fix for the Product Translation Tab. Now showing the Translations again.
   * [#3160](https://github.com/metasfresh/metasfresh/issues/3160) C_Printing_Queue_ReEnqueue with IsSelected doesn't work
-  * [#3174](https://github.com/metasfresh/metasfresh/issues/3174) Material Receipt Candidates not generates when using Purchase Order from Sales Order action
+    * Fix for the Reqnqueue action in the Printing Queue Window.
+  * [#3174](https://github.com/metasfresh/metasfresh/issues/3174) Material Receipt Candidates not generated when using Purchase Order from Sales Order action
+    * Fix for the new Purchase Order from Sales Order action, now also creating Material Receipt candidates for these kind of Purchase Orders.
   * [#3183](https://github.com/metasfresh/metasfresh/issues/3183) Jenkins misinterprets positive downstream build result
+    * Solving an internal housekeepinmg issue in Build System.
   * [#3206](https://github.com/metasfresh/metasfresh/issues/3206) Relation sales order - flatrate term is missing
+    * Fixes a missing relation for flatrate term in sales order
   * [#3207](https://github.com/metasfresh/metasfresh/issues/3207) Cannot save an attribute in orderline
-  * [#3208](https://github.com/metasfresh/metasfresh/issues/3208) console error when copying MDocType
+    * Fix for the recording of attributes in orderline.
+  * [#3208](https://github.com/metasfresh/metasfresh/issues/3208) Console error when copying MDocType
+    * Fixes an error in the clone action of Document Types window.
 
 * metasfresh-webui-api
   * [#713](https://github.com/metasfresh/metasfresh-webui-api/issues/713) Error creating bean with name 'scopedTarget.internalUserSessionData'
-  * [#722](https://github.com/metasfresh/metasfresh-webui-api/issues/722) picking terminal: picking slot rows shall NOT have duplicate IDs
+    * Fixes an issue that occured sometimes when switching the language of the user in WebUI.
+  * [#722](https://github.com/metasfresh/metasfresh-webui-api/issues/722) Picking terminal: Picking slot rows shall NOT have duplicate IDs
+    * Solving the issue of having duplicated IDs in Picking Slot Rows.
 
 * metasfresh-webui-frontend
   * [#1361](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1361) View field editor: make sure the field value is sent to backend before the view is deleted
