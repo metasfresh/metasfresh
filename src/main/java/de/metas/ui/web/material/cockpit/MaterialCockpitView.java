@@ -11,6 +11,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -39,12 +40,12 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 {
 	private ImmutableList<DocumentFilter> filters;
 
-	protected MaterialCockpitView(
+	@Builder
+	private MaterialCockpitView(
 			@NonNull final ViewId viewId,
 			@NonNull final ITranslatableString description,
 			@NonNull final Supplier<List<MaterialCockpitRow>> rowsSupplier,
-			@NonNull final ImmutableList<DocumentFilter> filters
-			)
+			@NonNull final ImmutableList<DocumentFilter> filters)
 	{
 		super(viewId, description, rowsSupplier);
 		this.filters = filters;

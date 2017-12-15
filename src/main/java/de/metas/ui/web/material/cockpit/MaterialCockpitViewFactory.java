@@ -69,11 +69,12 @@ public class MaterialCockpitViewFactory implements IViewFactory
 
 		final Supplier<List<MaterialCockpitRow>> rowsSupplier = createRowsSupplier(filtersToUse);
 
-		return new MaterialCockpitView(
-				request.getViewId(),
-				ITranslatableString.empty(),
-				rowsSupplier,
-				filtersToUse);
+		return MaterialCockpitView.builder()
+				.viewId(request.getViewId())
+				.description(ITranslatableString.empty())
+				.rowsSupplier(rowsSupplier)
+				.filters(filtersToUse)
+				.build();
 	}
 
 	private void assertWindowIdOfRequestIsCorrect(@NonNull final CreateViewRequest request)
@@ -88,7 +89,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 
 	private Supplier<List<MaterialCockpitRow>> createRowsSupplier(@NonNull final List<DocumentFilter> filtersToUse)
 	{
-			final Supplier<List<MaterialCockpitRow>> rowsSupplier = () -> materialCockpitRowRepository.retrieveRows(filtersToUse);
+		final Supplier<List<MaterialCockpitRow>> rowsSupplier = () -> materialCockpitRowRepository.retrieveRows(filtersToUse);
 		return rowsSupplier;
 	}
 
@@ -112,6 +113,5 @@ public class MaterialCockpitViewFactory implements IViewFactory
 
 		return viewlayOutBuilder.build();
 	}
-
 
 }
