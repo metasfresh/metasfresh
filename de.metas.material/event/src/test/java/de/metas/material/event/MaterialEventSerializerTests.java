@@ -27,6 +27,7 @@ import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.pporder.PPOrderOrAdviseDeletedEvent;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
@@ -157,34 +158,51 @@ public class MaterialEventSerializerTests
 		final PPOrderAdvisedOrCreatedEvent event = PPOrderAdvisedOrCreatedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
-				.ppOrder(PPOrder.builder()
-						.datePromised(NOW)
-						.dateStartSchedule(NOW)
-						.orgId(100)
-						.plantId(110)
-						.productDescriptor(createProductDescriptor())
-						.productPlanningId(130)
-						.quantity(BigDecimal.TEN)
-						.uomId(140)
-						.warehouseId(150)
-						.line(PPOrderLine.builder()
-								.productDescriptor(createProductDescriptorWithOffSet(10))
-								.description("desc1")
-								.productBomLineId(280)
-								.qtyRequired(BigDecimal.valueOf(220))
-								.receipt(true)
-								.build())
-						.line(PPOrderLine.builder()
-								.productDescriptor(createProductDescriptorWithOffSet(20))
-								.description("desc2")
-								.productBomLineId(380)
-								.qtyRequired(BigDecimal.valueOf(320))
-								.receipt(false)
-								.build())
-						.build())
+				.ppOrder(createPPOrder())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
+	@Test
+	public void ppOrderOrAdviseDeletedEvent()
+	{
+		final PPOrderOrAdviseDeletedEvent event = PPOrderOrAdviseDeletedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
+				.ppOrder(createPPOrder())
+				.build();
+
+		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
+	private PPOrder createPPOrder()
+	{
+		return PPOrder.builder()
+				.datePromised(NOW)
+				.dateStartSchedule(NOW)
+				.orgId(100)
+				.plantId(110)
+				.productDescriptor(createProductDescriptor())
+				.productPlanningId(130)
+				.quantity(BigDecimal.TEN)
+				.uomId(140)
+				.warehouseId(150)
+				.line(PPOrderLine.builder()
+						.productDescriptor(createProductDescriptorWithOffSet(10))
+						.description("desc1")
+						.productBomLineId(280)
+						.qtyRequired(BigDecimal.valueOf(220))
+						.receipt(true)
+						.build())
+				.line(PPOrderLine.builder()
+						.productDescriptor(createProductDescriptorWithOffSet(20))
+						.description("desc2")
+						.productBomLineId(380)
+						.qtyRequired(BigDecimal.valueOf(320))
+						.receipt(false)
+						.build())
+				.build();
 	}
 
 	@Test

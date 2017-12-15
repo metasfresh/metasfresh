@@ -193,6 +193,35 @@ public interface I_MD_Cockpit
     public static final String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
 
 	/**
+	 * Set Produkt-Kategorie.
+	 * Kategorie eines Produktes
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_Category_ID (int M_Product_Category_ID);
+
+	/**
+	 * Get Produkt-Kategorie.
+	 * Kategorie eines Produktes
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_Category_ID();
+
+	public org.compiere.model.I_M_Product_Category getM_Product_Category();
+
+	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category);
+
+    /** Column definition for M_Product_Category_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_M_Product_Category>(I_MD_Cockpit.class, "M_Product_Category_ID", org.compiere.model.I_M_Product_Category.class);
+    /** Column name M_Product_Category_ID */
+    public static final String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
+
+	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
@@ -272,6 +301,56 @@ public interface I_MD_Cockpit
     public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_S_Resource> COLUMN_PP_Plant_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit, org.compiere.model.I_S_Resource>(I_MD_Cockpit.class, "PP_Plant_ID", org.compiere.model.I_S_Resource.class);
     /** Column name PP_Plant_ID */
     public static final String COLUMNNAME_PP_Plant_ID = "PP_Plant_ID";
+
+	/**
+	 * Set Produktname.
+	 * Name des Produktes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setProductName (java.lang.String ProductName);
+
+	/**
+	 * Get Produktname.
+	 * Name des Produktes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getProductName();
+
+    /** Column definition for ProductName */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_ProductName = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "ProductName", null);
+    /** Column name ProductName */
+    public static final String COLUMNNAME_ProductName = "ProductName";
+
+	/**
+	 * Set Produktschlüssel.
+	 * Schlüssel des Produktes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setProductValue (java.lang.String ProductValue);
+
+	/**
+	 * Get Produktschlüssel.
+	 * Schlüssel des Produktes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getProductValue();
+
+    /** Column definition for ProductValue */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "ProductValue", null);
+    /** Column name ProductValue */
+    public static final String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
 	 * Set Zusagbare Menge.

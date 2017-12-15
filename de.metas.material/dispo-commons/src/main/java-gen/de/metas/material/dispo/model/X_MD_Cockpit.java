@@ -15,7 +15,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -127447186L;
+	private static final long serialVersionUID = -1812646570L;
 
     /** Standard Constructor */
     public X_MD_Cockpit (Properties ctx, int MD_Cockpit_ID, String trxName)
@@ -93,6 +93,43 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	public int getMD_Cockpit_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Cockpit_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Product_Category getM_Product_Category() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class);
+	}
+
+	@Override
+	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
+	}
+
+	/** Set Produkt-Kategorie.
+		@param M_Product_Category_ID 
+		Kategorie eines Produktes
+	  */
+	@Override
+	public void setM_Product_Category_ID (int M_Product_Category_ID)
+	{
+		if (M_Product_Category_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_Category_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_Category_ID, Integer.valueOf(M_Product_Category_ID));
+	}
+
+	/** Get Produkt-Kategorie.
+		@return Kategorie eines Produktes
+	  */
+	@Override
+	public int getM_Product_Category_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Category_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -189,6 +226,44 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Produktname.
+		@param ProductName 
+		Name des Produktes
+	  */
+	@Override
+	public void setProductName (java.lang.String ProductName)
+	{
+		set_Value (COLUMNNAME_ProductName, ProductName);
+	}
+
+	/** Get Produktname.
+		@return Name des Produktes
+	  */
+	@Override
+	public java.lang.String getProductName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductName);
+	}
+
+	/** Set Produktschlüssel.
+		@param ProductValue 
+		Schlüssel des Produktes
+	  */
+	@Override
+	public void setProductValue (java.lang.String ProductValue)
+	{
+		set_Value (COLUMNNAME_ProductValue, ProductValue);
+	}
+
+	/** Get Produktschlüssel.
+		@return Schlüssel des Produktes
+	  */
+	@Override
+	public java.lang.String getProductValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
 	}
 
 	/** Set Zusagbare Menge.

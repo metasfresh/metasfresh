@@ -33,13 +33,13 @@ import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class PPOrderAdvisedOrCreatedEvent extends AbstractPPOrderEvent
+public class PPOrderOrAdviseDeletedEvent extends AbstractPPOrderEvent
 {
-	public static final String TYPE = "PPOrderAdvisedOrCreatedEvent";
+	public static final String TYPE = "PPOrderOrAdviseDeletedEvent";
 
 	@JsonCreator
 	@Builder
-	public PPOrderAdvisedOrCreatedEvent(
+	public PPOrderOrAdviseDeletedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("ppOrder") final PPOrder ppOrder,
 			@JsonProperty("groupId") final int groupId,

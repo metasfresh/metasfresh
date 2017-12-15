@@ -8,6 +8,7 @@ import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
+import de.metas.material.event.pporder.PPOrderOrAdviseDeletedEvent;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
@@ -60,7 +61,10 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 		@JsonSubTypes.Type(name = SupplyRequiredEvent.TYPE, value = SupplyRequiredEvent.class),
 
 		@JsonSubTypes.Type(name = DDOrderAdvisedOrCreatedEvent.TYPE, value = DDOrderAdvisedOrCreatedEvent.class),
+
 		@JsonSubTypes.Type(name = PPOrderAdvisedOrCreatedEvent.TYPE, value = PPOrderAdvisedOrCreatedEvent.class),
+		@JsonSubTypes.Type(name = PPOrderOrAdviseDeletedEvent.TYPE, value = PPOrderOrAdviseDeletedEvent.class),
+
 		@JsonSubTypes.Type(name = DemandHandlerAuditEvent.TYPE, value = DemandHandlerAuditEvent.class),
 
 		@JsonSubTypes.Type(name = PPOrderRequestedEvent.TYPE, value = PPOrderRequestedEvent.class),

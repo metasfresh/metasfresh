@@ -6,4 +6,4 @@
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-package de.metas.material.planning.model.interceptor;
+package de.metas.material.planning.interceptor;

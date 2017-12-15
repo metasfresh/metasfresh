@@ -1,4 +1,4 @@
-package de.metas.material.planning.model.interceptor;
+package de.metas.material.planning.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 
