@@ -31,12 +31,17 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#2338](https://github.com/metasfresh/metasfresh/issues/2338) Relation Type: fact_accounts
+    * New Relation Type that allows to show the Fact accounts quickly for a given document.
   * [#2340](https://github.com/metasfresh/metasfresh/issues/2340) Relation Type: changelog
+    * New Relation Type that allows to show the Changelog quickly for a given record.
   * [#2715](https://github.com/metasfresh/metasfresh/issues/2715) Create webui window for C_Invoice_Candidate_Agg
     * New WIndow in WebUI for the maintenance of Invoice Candidate Aggregation rules.
   * [#3058](https://github.com/metasfresh/metasfresh/issues/3058) TableRecordId relation types to support Prefix_AD_Table_ID and Prefix_Record_ID
-  * [#3079](https://github.com/metasfresh/metasfresh/issues/3079) Warehouse picking group
-  * [#3105](https://github.com/metasfresh/metasfresh/issues/3105) Improve Product import process
+    * New Functionality that supports the usage of Prefix_Table_ID and Prefix_Record_ID in relations.
+  * [#3079](https://github.com/metasfresh/metasfresh/issues/3079) Warehouse Picking Group
+    * New Functionality that allows to define a group of Warehouses that shall be used as Picking Warehouses.
+  * [#3105](https://github.com/metasfresh/metasfresh/issues/3105) Improve Product Import process
+    * Improvement of Import action for Product data.
   * [#3107](https://github.com/metasfresh/metasfresh/issues/3107) Warehouse picking group window
     * New Warehouse Picking Group window in WebUi, allowing the user to define groups of Warehouses that shall be considered as warehouses to be picking sources
   * [#3120](https://github.com/metasfresh/metasfresh/issues/3120) Add Netsum to Customer Invoice Document Grid View
