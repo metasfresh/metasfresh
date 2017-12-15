@@ -189,8 +189,8 @@ public class PickingSlotViewRepository
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		final PickingSlotQuery pickingSlotQuery = PickingSlotQuery.builder()
-				.bpartnerId(shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule))
-				.bpartnerLocationId(shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule))
+				.availableForBPartnerId(shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule))
+				.availableForBPartnerLocationId(shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule))
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.barcode(repoQuery.getPickingSlotBarcode())
 				.build();

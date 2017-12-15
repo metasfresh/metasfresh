@@ -41,7 +41,7 @@ import lombok.NonNull;
 
 /**
  * Also see {@link de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -131,13 +131,24 @@ public final class DocumentFilter
 
 	public String getParameterValueAsString(@NonNull final String parameterName)
 	{
-		DocumentFilterParam barcodeParam = getParameter(parameterName);
+		final DocumentFilterParam barcodeParam = getParameter(parameterName);
 		if (barcodeParam == null)
 		{
 			return null;
 		}
 
 		return barcodeParam.getValueAsString();
+	}
+
+	public int getParameterValueAsInt(@NonNull final String parameterName, final int defaultValue)
+	{
+		final DocumentFilterParam barcodeParam = getParameter(parameterName);
+		if (barcodeParam == null)
+		{
+			return defaultValue;
+		}
+
+		return barcodeParam.getValueAsInt(defaultValue);
 	}
 
 	public static final class Builder

@@ -41,6 +41,8 @@ public interface HUEditorViewRepository
 	ViewRowIdsOrderedSelection createSelection(ViewId viewId, List<DocumentFilter> filters, List<DocumentQueryOrderBy> orderBys);
 
 	ViewRowIdsOrderedSelection createSelectionFromSelection(ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
+	
+	void deleteSelection(ViewRowIdsOrderedSelection selection);
 
 	List<HUEditorRow> retrieveHUEditorRows(Set<Integer> huIds, HUEditorRowFilter filter);
 

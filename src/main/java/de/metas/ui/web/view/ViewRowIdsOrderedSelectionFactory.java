@@ -44,4 +44,6 @@ public interface ViewRowIdsOrderedSelectionFactory
 	ViewRowIdsOrderedSelection removeRowIdsFromSelection(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 
 	boolean containsAnyOfRowIds(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
+	
+	void deleteSelection(ViewRowIdsOrderedSelection selection);
 }

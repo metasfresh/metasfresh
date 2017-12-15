@@ -1,7 +1,6 @@
 package de.metas.ui.web.pickingslotsClearing;
 
 import java.util.List;
-import java.util.Properties;
 
 import javax.annotation.Nullable;
 
@@ -9,7 +8,6 @@ import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
-import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
@@ -19,8 +17,8 @@ import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery.PickingSlotQueryBui
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotViewFilters;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewRepository;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutHU;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -67,6 +65,7 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 	static final String WINDOW_ID_STRING = "540371"; // Picking Tray Clearing
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@Autowired
 	private PickingSlotViewRepository pickingSlotRepo;
 
@@ -92,7 +91,7 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 
 	private DocumentFilterDescriptorsProvider getFilterDescriptorsProvider()
 	{
-		return filterDescriptorsProviderCache.getOrLoad(0, () -> PickingSlotViewFilters.createFilterDescriptorsProvider());
+		return filterDescriptorsProviderCache.getOrLoad(0, () -> PickingSlotsClearingViewFilters.createFilterDescriptorsProvider());
 	}
 
 	@Override
@@ -100,7 +99,8 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 	{
 		request.assertNoParentViewOrRow();
 
-		final CreateViewRequest requestEffective = request.unwrapFiltersAndCopy(getFilterDescriptorsProvider());
+		final DocumentFilterDescriptorsProvider filterDescriptors = getFilterDescriptorsProvider();
+		final CreateViewRequest requestEffective = request.unwrapFiltersAndCopy(filterDescriptors);
 
 		final ViewId viewId = ViewId.random(PickingSlotsClearingViewFactory.WINDOW_ID);
 
@@ -110,15 +110,23 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 				.viewId(viewId)
 				.rows(() -> pickingSlotRepo.retrievePickingSlotsRows(query))
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
+				.filterDescriptors(filterDescriptors)
 				.filters(requestEffective.getFilters().getFilters())
 				.build();
 	}
 
 	private static final PickingSlotQuery createPickingSlotQuery(final CreateViewRequest request)
 	{
+		final DocumentFiltersList filters = request.getFilters();
 		final PickingSlotQueryBuilder queryBuilder = PickingSlotQuery.builder();
 
-		String barcode = PickingSlotViewFilters.getPickingSlotBarcode(request.getFilters());
+		final int bpartnerId = PickingSlotsClearingViewFilters.getBPartnerId(filters);
+		if (bpartnerId > 0)
+		{
+			queryBuilder.assignedToBPartnerId(bpartnerId);
+		}
+
+		final String barcode = PickingSlotsClearingViewFilters.getPickingSlotBarcode(filters);
 		if (!Check.isEmpty(barcode, true))
 		{
 			queryBuilder.barcode(barcode);
@@ -131,13 +139,10 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 	{
 		// TODO: cache it
 
-		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-		final Properties ctx = Env.getCtx();
-
 		return ImmutableList.of(
 				// allow to open the HU-editor for various picking related purposes
 				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_PickingSlotsClearingView_TakeOutHU.class))
+						.processId(adProcessDAO.retrieveProcessIdByClass(WEBUI_PickingSlotsClearingView_TakeOutHU.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build());

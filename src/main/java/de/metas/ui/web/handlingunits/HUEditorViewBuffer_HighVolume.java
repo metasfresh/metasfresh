@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.collections.PagedIterator.PageFetcher;
+import org.adempiere.util.lang.Mutables;
+import org.adempiere.util.lang.SynchronizedMutable;
 import org.compiere.util.CCache;
 
 import com.google.common.collect.ImmutableList;
@@ -58,10 +60,11 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 
 	private final HUEditorViewRepository huEditorRepo;
 	private final ImmutableList<DocumentFilter> stickyFilters;
-	
-	private final AtomicReference<ViewRowIdsOrderedSelection> defaultSelectionRef;
+
+	private Supplier<ViewRowIdsOrderedSelection> defaultSelectionFactory;
+	private final SynchronizedMutable<ViewRowIdsOrderedSelection> defaultSelectionRef;
 	private final transient ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, ViewRowIdsOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
-	
+
 	private final CCache<DocumentId, HUEditorRow> cache_huRowsById = CCache.newLRUCache(I_M_HU.Table_Name + "#HUEditorRows#by#Id", 100, 2);
 
 	HUEditorViewBuffer_HighVolume(
@@ -75,8 +78,8 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		this.stickyFilters = ImmutableList.copyOf(stickyFilters);
 
 		final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFilters, filters));
-		final ViewRowIdsOrderedSelection defaultSelection = huEditorRepo.createSelection(viewId, filtersAll, orderBys);
-		defaultSelectionRef = new AtomicReference<>(defaultSelection);
+		defaultSelectionFactory = () -> huEditorRepo.createSelection(viewId, filtersAll, orderBys);
+		defaultSelectionRef = Mutables.synchronizedMutable(defaultSelectionFactory.get());
 	}
 
 	@Override
@@ -87,13 +90,13 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 
 	private ViewRowIdsOrderedSelection getDefaultSelection()
 	{
-		return defaultSelectionRef.get();
+		return defaultSelectionRef.computeIfNull(defaultSelectionFactory);
 	}
-	
+
 	private ViewRowIdsOrderedSelection getSelection(final List<DocumentQueryOrderBy> orderBys)
 	{
 		final ViewRowIdsOrderedSelection defaultSelection = getDefaultSelection();
-		
+
 		if (orderBys == null || orderBys.isEmpty())
 		{
 			return defaultSelection;
@@ -107,14 +110,15 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		return selectionsByOrderBys.computeIfAbsent(ImmutableList.copyOf(orderBys), orderBysImmutable -> huEditorRepo.createSelectionFromSelection(defaultSelection, orderBysImmutable));
 	}
 
-
 	/** @return true if selection was really changed */
 	private boolean changeSelection(final UnaryOperator<ViewRowIdsOrderedSelection> mapper)
 	{
-		final ViewRowIdsOrderedSelection defaultSelectionOld = defaultSelectionRef.get();
-		final ViewRowIdsOrderedSelection defaultSelectionNew = defaultSelectionRef.updateAndGet(mapper);
+		final ViewRowIdsOrderedSelection defaultSelectionOld = defaultSelectionRef.getValue();
+
+		defaultSelectionRef.computeIfNull(defaultSelectionFactory); // make sure it's not null (might be null if it was invalidated)
+		final ViewRowIdsOrderedSelection defaultSelectionNew = defaultSelectionRef.compute(mapper);
 		selectionsByOrderBys.clear(); // invalidate all the other selections, let it recompute when needed
-		
+
 		return !Objects.equals(defaultSelectionOld, defaultSelectionNew);
 	}
 
@@ -133,6 +137,11 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	@Override
 	public void invalidateAll()
 	{
+		defaultSelectionRef.computeIfNotNull(defaultSelection -> {
+			huEditorRepo.deleteSelection(defaultSelection);
+			return null;
+		});
+
 		huEditorRepo.invalidateCache();
 		cache_huRowsById.clear();
 	}

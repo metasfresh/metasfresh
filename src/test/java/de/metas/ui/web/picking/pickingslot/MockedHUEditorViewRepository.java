@@ -120,6 +120,12 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}
+	
+	@Override
+	public void deleteSelection(final ViewRowIdsOrderedSelection selection)
+	{
+		throw new UnsupportedOperationException("not implemented");
+	}
 
 	@Override
 	public Set<Integer> convertToRecordIds(final DocumentIdsSelection rowIds)

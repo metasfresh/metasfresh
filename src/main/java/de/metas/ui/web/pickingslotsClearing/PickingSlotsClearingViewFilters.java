@@ -1,15 +1,19 @@
-package de.metas.ui.web.picking.pickingslot;
+package de.metas.ui.web.pickingslotsClearing;
 
 import org.adempiere.util.Services;
+import org.compiere.util.DisplayType;
 
+import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
-import de.metas.ui.web.window.datatypes.PanelLayoutType;
+import de.metas.ui.web.picking.pickingslot.PickingSlotViewFilters;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -35,32 +39,44 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public class PickingSlotViewFilters
+public class PickingSlotsClearingViewFilters
 {
-	private static final String PickingSlotBarcodeFilter_FilterId = "PickingSlotBarcodeFilter";
-	private static final String PARAM_Barcode = "Barcode";
+	private static final String FILTER_ID_BPartner = "BPartner";
+	private static final String PARAM_C_BPartner_ID = I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 
 	public static DocumentFilterDescriptorsProvider createFilterDescriptorsProvider()
 	{
-		return ImmutableDocumentFilterDescriptorsProvider.of(createPickingSlotBarcodeFilters());
+		return ImmutableDocumentFilterDescriptorsProvider.of(
+				PickingSlotViewFilters.createPickingSlotBarcodeFilters(),
+				createBPartnerFilter());
 	}
 
-	public static final DocumentFilterDescriptor createPickingSlotBarcodeFilters()
+	private DocumentFilterDescriptor createBPartnerFilter()
 	{
+		final LookupDescriptor bpartnerLookupDescriptor = SqlLookupDescriptor.builder()
+				.setCtxColumnName(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
+				.setDisplayType(DisplayType.Search)
+				.buildForDefaultScope();
 		return DocumentFilterDescriptor.builder()
-				.setFilterId(PickingSlotBarcodeFilter_FilterId)
+				.setFilterId(FILTER_ID_BPartner)
 				.setFrequentUsed(true)
-				.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(PARAM_Barcode)
-						.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText("webui.view.pickingSlot.filters.pickingSlotBarcodeFilter"))
+						.setFieldName(PARAM_C_BPartner_ID)
+						.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(PARAM_C_BPartner_ID))
 						.setMandatory(true)
-						.setWidgetType(DocumentFieldWidgetType.Text))
+						.setWidgetType(DocumentFieldWidgetType.Lookup)
+						.setLookupDescriptor(bpartnerLookupDescriptor))
 				.build();
+
 	}
 
 	public static String getPickingSlotBarcode(final DocumentFiltersList filters)
 	{
-		return filters.getParamValueAsString(PickingSlotBarcodeFilter_FilterId, PARAM_Barcode);
+		return PickingSlotViewFilters.getPickingSlotBarcode(filters);
+	}
+
+	public static int getBPartnerId(final DocumentFiltersList filters)
+	{
+		return filters.getParamValueAsInt(FILTER_ID_BPartner, PARAM_C_BPartner_ID, -1);
 	}
 }
