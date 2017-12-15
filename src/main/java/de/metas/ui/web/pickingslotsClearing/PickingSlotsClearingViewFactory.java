@@ -1,7 +1,6 @@
 package de.metas.ui.web.pickingslotsClearing;
 
 import java.util.List;
-import java.util.Properties;
 
 import javax.annotation.Nullable;
 
@@ -9,7 +8,6 @@ import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
-import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
@@ -67,6 +65,7 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 	static final String WINDOW_ID_STRING = "540371"; // Picking Tray Clearing
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@Autowired
 	private PickingSlotViewRepository pickingSlotRepo;
 
@@ -140,13 +139,10 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 	{
 		// TODO: cache it
 
-		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-		final Properties ctx = Env.getCtx();
-
 		return ImmutableList.of(
 				// allow to open the HU-editor for various picking related purposes
 				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_PickingSlotsClearingView_TakeOutHU.class))
+						.processId(adProcessDAO.retrieveProcessIdByClass(WEBUI_PickingSlotsClearingView_TakeOutHU.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build());
