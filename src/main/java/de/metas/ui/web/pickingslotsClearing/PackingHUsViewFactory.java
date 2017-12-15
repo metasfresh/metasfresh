@@ -8,9 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
+import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PackingHUsView_AddHUsToShipperTransportation;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -51,9 +54,10 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 	static final String WINDOW_ID_STRING = "packingHUs";
 	static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
+	// services
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@Autowired
 	private DefaultHUEditorViewFactory huEditorViewFactory;
-
 	private IViewsRepository viewsRepo;
 
 	@Override
@@ -143,10 +147,19 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 		final CreateViewRequest request = CreateViewRequest.builder(packingHUsViewId, JSONViewDataType.includedView)
 				.setParentViewId(pickingSlotsClearingViewId)
 				.addStickyFilters(HUIdsFilterHelper.createFilter(huQuery))
-				// .addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.pickingslot.process.WEBUI_PickingSlotClearingHUs_CreateEmptyPackagingHU.class))
+				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_PackingHUsView_AddHUsToShipperTransportation.class))
 				.build();
 
 		return huEditorViewFactory.createView(request);
+	}
+
+	private RelatedProcessDescriptor createProcessDescriptor(Class<WEBUI_PackingHUsView_AddHUsToShipperTransportation> processClass)
+	{
+		return RelatedProcessDescriptor.builder()
+				.processId(adProcessDAO.retrieveProcessIdByClass(processClass))
+				.anyTable().anyWindow()
+				.webuiQuickAction(true)
+				.build();
 	}
 
 	private IHUQueryBuilder createHUQuery(final PackingHUsViewKey key)
@@ -154,7 +167,9 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 		final IHUQueryBuilder huQuery = Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()
 				.setIncludeAfterPickingLocator(true)
-				.setExcludeHUsOnPickingSlot(true);
+				.setExcludeHUsOnPickingSlot(true)
+				.onlyNotLocked() // not already locked (NOTE: those which were enqueued to Transportation Order are locked)
+		;
 
 		if (key.getBpartnerId() > 0)
 		{
