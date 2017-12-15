@@ -20,10 +20,10 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotViewFilters;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewRepository;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutHU;
 import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.CreateViewRequest.DocumentFiltersList;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
@@ -92,7 +92,7 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 
 	private DocumentFilterDescriptorsProvider getFilterDescriptorsProvider()
 	{
-		return filterDescriptorsProviderCache.getOrLoad(0, () -> PickingSlotViewFilters.createFilterDescriptorsProvider());
+		return filterDescriptorsProviderCache.getOrLoad(0, () -> PickingSlotsClearingViewFilters.createFilterDescriptorsProvider());
 	}
 
 	@Override
@@ -100,7 +100,8 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 	{
 		request.assertNoParentViewOrRow();
 
-		final CreateViewRequest requestEffective = request.unwrapFiltersAndCopy(getFilterDescriptorsProvider());
+		final DocumentFilterDescriptorsProvider filterDescriptors = getFilterDescriptorsProvider();
+		final CreateViewRequest requestEffective = request.unwrapFiltersAndCopy(filterDescriptors);
 
 		final ViewId viewId = ViewId.random(PickingSlotsClearingViewFactory.WINDOW_ID);
 
@@ -110,15 +111,23 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 				.viewId(viewId)
 				.rows(() -> pickingSlotRepo.retrievePickingSlotsRows(query))
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
+				.filterDescriptors(filterDescriptors)
 				.filters(requestEffective.getFilters().getFilters())
 				.build();
 	}
 
 	private static final PickingSlotQuery createPickingSlotQuery(final CreateViewRequest request)
 	{
+		final DocumentFiltersList filters = request.getFilters();
 		final PickingSlotQueryBuilder queryBuilder = PickingSlotQuery.builder();
 
-		String barcode = PickingSlotViewFilters.getPickingSlotBarcode(request.getFilters());
+		final int bpartnerId = PickingSlotsClearingViewFilters.getBPartnerId(filters);
+		if (bpartnerId > 0)
+		{
+			queryBuilder.assignedToBPartnerId(bpartnerId);
+		}
+
+		final String barcode = PickingSlotsClearingViewFilters.getPickingSlotBarcode(filters);
 		if (!Check.isEmpty(barcode, true))
 		{
 			queryBuilder.barcode(barcode);

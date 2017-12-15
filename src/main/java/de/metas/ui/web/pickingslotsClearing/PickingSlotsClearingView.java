@@ -18,6 +18,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
@@ -74,6 +75,8 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 	private final PickingSlotRowsCollection rows;
 
 	private final PackingHUsViewsCollection packingHUsViewsCollection = new PackingHUsViewsCollection();
+
+	private final DocumentFilterDescriptorsProvider filterDescriptors;
 	private final ImmutableList<DocumentFilter> filters;
 
 	@Builder
@@ -82,6 +85,7 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 			@Nullable final ITranslatableString description,
 			@NonNull final Supplier<List<PickingSlotRow>> rows,
 			@Nullable final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors,
+			@NonNull final DocumentFilterDescriptorsProvider filterDescriptors,
 			@NonNull @Singular final ImmutableList<DocumentFilter> filters)
 	{
 		this.viewId = viewId;
@@ -89,6 +93,8 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 		this.rows = PickingSlotRowsCollection.ofSupplier(rows);
 
 		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
+
+		this.filterDescriptors = filterDescriptors;
 		this.filters = filters;
 	}
 
@@ -187,13 +193,19 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
-		throw new UnsupportedOperationException();
+		return filterDescriptors.getByFilterId(filterId)
+				.getParameterByName(filterParameterName)
+				.getLookupDataSource()
+				.findEntities(ctx);
 	}
 
 	@Override
 	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
-		throw new UnsupportedOperationException();
+		return filterDescriptors.getByFilterId(filterId)
+				.getParameterByName(filterParameterName)
+				.getLookupDataSource()
+				.findEntities(ctx, query);
 	}
 
 	@Override
