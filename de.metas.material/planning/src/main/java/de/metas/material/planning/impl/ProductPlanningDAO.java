@@ -174,7 +174,8 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(attributeSetInstanceId);
+		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(attributeSetInstanceId)
+				.orElse(AttributesKey.ALL);
 
 		final ICompositeQueryFilter<I_PP_Product_Planning> matchingAsiFilter = queryBL
 				.createCompositeQueryFilter(I_PP_Product_Planning.class)

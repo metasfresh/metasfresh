@@ -278,7 +278,8 @@ public class DimensionSpec
 				.getOrLoad(dimensionSpecRecord.getDIM_Dimension_Spec_ID(), () -> retrieveGroupsFordimensionSpec(dimensionSpecRecord));
 	}
 
-	private static List<DimensionSpecGroup> retrieveGroupsFordimensionSpec(@NonNull final I_DIM_Dimension_Spec dimensionSpecRecord)
+	private static List<DimensionSpecGroup> retrieveGroupsFordimensionSpec(
+			@NonNull final I_DIM_Dimension_Spec dimensionSpecRecord)
 	{
 
 		final List<I_DIM_Dimension_Spec_Attribute> attrs = Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec_Attribute.class)
@@ -295,6 +296,11 @@ public class DimensionSpec
 		{
 			groupList.add(DimensionSpecGroup.EMPTY_GROUP);
 		}
+		if(dimensionSpecRecord.isIncludeOtherGroup())
+		{
+			groupList.add(DimensionSpecGroup.OTHER_GROUP);
+		}
+
 		sortAndAddMapEntriesToList(groupName2AttributeValueIds, groupList);
 
 		return groupList.build();

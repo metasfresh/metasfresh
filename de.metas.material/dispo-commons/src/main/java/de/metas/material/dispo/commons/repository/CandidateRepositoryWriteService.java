@@ -28,7 +28,6 @@ import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 
 /*
@@ -229,10 +228,9 @@ public class CandidateRepositoryWriteService
 	{
 		final AttributesKey attributesKey = materialDescriptor.getStorageAttributesKey();
 
-		if (Objects.equals(attributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL)
-				|| attributesKey.isNone())
+		if (Objects.equals(attributesKey, AttributesKey.ALL))
 		{
-			return AttributesKey.NONE.getAsString(); // i.e. "", never NULL
+			return AttributesKey.NONE.getAsString(); // i.e. "-1002", never NULL
 		}
 		else
 		{

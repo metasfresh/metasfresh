@@ -36,7 +36,8 @@ import lombok.NonNull;
  */
 
 @Service
-public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory implements ModelProductDescriptorExtractor
+public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory
+		implements ModelProductDescriptorExtractor
 {
 	@Override
 	public final ProductDescriptor createProductDescriptor(@NonNull final Object model)
@@ -46,7 +47,9 @@ public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory imp
 		Preconditions.checkNotNull(asiAware,
 				"The given parameter can't be represented as an IAttributeSetInstanceAware; model=%s", model);
 
-		final AttributesKey storageAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiAware.getM_AttributeSetInstance_ID());
+		final AttributesKey storageAttributesKey = AttributesKeys
+				.createAttributesKeyFromASIStorageAttributes(asiAware.getM_AttributeSetInstance_ID())
+				.orElse(AttributesKey.NONE);
 
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				asiAware.getM_Product_ID(),

@@ -97,7 +97,7 @@ public class MaterialDescriptorQuery
 		this.productId = productId;
 		this.storageAttributesKey = storageAttributesKey != null
 				? storageAttributesKey
-				: ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL;
+				: AttributesKey.ALL;
 
 		if (bPartnerId == null)
 		{

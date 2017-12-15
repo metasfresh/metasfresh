@@ -71,7 +71,7 @@ public class MaterialDescriptor extends ProductDescriptor
 				date,
 				productDescriptor == null ? 0 : productDescriptor.getProductId(),
 				productDescriptor == null ? -1 : productDescriptor.getAttributeSetInstanceId(),
-				productDescriptor == null ? STORAGE_ATTRIBUTES_KEY_ALL : productDescriptor.getStorageAttributesKey());
+				productDescriptor == null ? AttributesKey.ALL : productDescriptor.getStorageAttributesKey());
 	}
 
 	@JsonCreator

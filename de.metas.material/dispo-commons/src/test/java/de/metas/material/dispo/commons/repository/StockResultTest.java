@@ -122,7 +122,7 @@ public class StockResultTest
 
 		final ResultGroup firstResult = emptyResults.get(0);
 		assertThat(firstResult.getProductId()).isEqualTo(10);
-		assertThat(firstResult.getStorageAttributesKey()).isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
+		assertThat(firstResult.getStorageAttributesKey()).isSameAs(AttributesKey.ALL);
 		assertThat(firstResult.getQty()).isEqualByComparingTo("0");
 
 	}

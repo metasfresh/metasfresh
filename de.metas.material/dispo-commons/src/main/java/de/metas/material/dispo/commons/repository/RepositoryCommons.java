@@ -166,7 +166,7 @@ public class RepositoryCommons
 			atLeastOneFilterAdded = true;
 		}
 
-		if (!Objects.equals(materialDescriptorQuery.getStorageAttributesKey(), ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL))
+		if (!Objects.equals(materialDescriptorQuery.getStorageAttributesKey(), AttributesKey.ALL))
 		{
 			final AttributesKey attributesKey = materialDescriptorQuery.getStorageAttributesKey();
 			if (matchExactStorageAttributesKey)

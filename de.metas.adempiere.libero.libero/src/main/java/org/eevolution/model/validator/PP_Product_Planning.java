@@ -42,7 +42,9 @@ public class PP_Product_Planning
 	)
 	public void updateStorageAttributesKey(@NonNull final I_PP_Product_Planning productPlanning)
 	{
-		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(productPlanning.getM_AttributeSetInstance_ID());
+		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(productPlanning.getM_AttributeSetInstance_ID())
+				.orElse(AttributesKey.NONE);
+
 		productPlanning.setStorageAttributesKey(attributesKey.getAsString());
 	}
 }

@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -102,10 +101,10 @@ public class StockResult
 		final List<AttributesKey> storageAttributesKeys = query.getStorageAttributesKeys();
 		if (storageAttributesKeys.isEmpty())
 		{
-			final AttributesKey attributesKey = ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL;
+			final AttributesKey attributesKey = AttributesKey.ALL;
 			return ImmutableList.of(ImmutablePair.of(attributesKey, createStorageAttributesKeyMatcher(attributesKey)));
 		}
-		else if (!storageAttributesKeys.contains(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER))
+		else if (!storageAttributesKeys.contains(AttributesKey.OTHER))
 		{
 			return storageAttributesKeys.stream()
 					.map(storageAttributesKey -> ImmutablePair.of(storageAttributesKey, createStorageAttributesKeyMatcher(storageAttributesKey)))
@@ -114,15 +113,15 @@ public class StockResult
 		else
 		{
 			final Predicate<AttributesKey> othersMatcher = storageAttributesKeys.stream()
-					.filter(storageAttributesKey -> !ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.equals(storageAttributesKey))
-					.filter(storageAttributesKey -> !ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER.equals(storageAttributesKey))
+					.filter(storageAttributesKey -> !AttributesKey.ALL.equals(storageAttributesKey))
+					.filter(storageAttributesKey -> !AttributesKey.OTHER.equals(storageAttributesKey))
 					.map(storageAttributesKey -> createStorageAttributesKeyMatcher(storageAttributesKey).negate())
 					.reduce(Predicate::and)
 					.orElse(Predicates.alwaysTrue());
 
 			return storageAttributesKeys.stream()
 					.map(storageAttributesKey -> {
-						if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER.equals(storageAttributesKey))
+						if (AttributesKey.OTHER.equals(storageAttributesKey))
 						{
 							return ImmutablePair.of(storageAttributesKey, othersMatcher);
 						}
@@ -137,11 +136,11 @@ public class StockResult
 
 	private static Predicate<AttributesKey> createStorageAttributesKeyMatcher(@NonNull final AttributesKey attributesKey)
 	{
-		if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.equals(attributesKey))
+		if (AttributesKey.ALL.equals(attributesKey))
 		{
 			return Predicates.alwaysTrue();
 		}
-		else if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER.equals(attributesKey))
+		else if (AttributesKey.OTHER.equals(attributesKey))
 		{
 			throw new AdempiereException("Creating a matcher for 'OTHERS' storage attributes key is not supported at this level");
 		}

@@ -171,7 +171,9 @@ public class ShipmentScheduleQtyOnHandStorage
 		final int asiId = sched.getM_AttributeSetInstance_ID();
 		if (asiId > 0)
 		{
-			stockQueryBuilder.storageAttributesKey(AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId));
+			stockQueryBuilder.storageAttributesKey(AttributesKeys
+					.createAttributesKeyFromASIStorageAttributes(asiId)
+					.orElse(AttributesKey.ALL));
 		}
 
 		// Cache the storage query and return it

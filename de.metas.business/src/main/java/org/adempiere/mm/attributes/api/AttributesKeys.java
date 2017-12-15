@@ -3,6 +3,7 @@ package org.adempiere.mm.attributes.api;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.adempiere.util.Services;
@@ -10,7 +11,6 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.ProductDescriptor;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -39,25 +39,35 @@ import lombok.experimental.UtilityClass;
 public final class AttributesKeys
 {
 
-	public static AttributesKey createAttributesKeyFromASIAllAttributeValues(final int attributeSetInstanceId)
+	/**
+	 * @return and optional that is empty if no attribute values could be extracted from the given {@code attributeSetInstanceId}.<br>
+	 *         In that case it's up to the caller to interpret the empty result.<br>
+	 *         That can for example be done using using {@link Optional#orElse(Object)} with {@link AttributesKey#NONE}.
+	 */
+	public static Optional<AttributesKey> createAttributesKeyFromASIAllAttributeValues(final int attributeSetInstanceId)
 	{
 		return createAttributesKeyWithFilter(
 				attributeSetInstanceId,
 				ai -> true);
 	}
 
-	public static AttributesKey createAttributesKeyFromASIStorageAttributes(final int attributeSetInstanceId)
+	/**
+	 * Similar to {@link #createAttributesKeyFromASIAllAttributeValues(int)}, but only attributes flagged as "storage relevant" are considered.
+	 *
+	 * @return see {@link #createAttributesKeyFromASIAllAttributeValues(int)}
+	 */
+	public static Optional<AttributesKey> createAttributesKeyFromASIStorageAttributes(final int attributeSetInstanceId)
 	{
 		return createAttributesKeyWithFilter(
 				attributeSetInstanceId,
 				ai -> ai.getM_Attribute().isStorageRelevant());
 	}
 
-	private static AttributesKey createAttributesKeyWithFilter(final int attributeSetInstanceId, final Predicate<? super I_M_AttributeInstance> additionalFilter)
+	private static Optional<AttributesKey> createAttributesKeyWithFilter(final int attributeSetInstanceId, final Predicate<? super I_M_AttributeInstance> additionalFilter)
 	{
 		if (attributeSetInstanceId == AttributeConstants.M_AttributeSetInstance_ID_None)
 		{
-			return ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL;
+			return Optional.empty();
 		}
 
 		final I_M_AttributeSetInstance attributeSetInstance = load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
@@ -70,6 +80,11 @@ public final class AttributesKeys
 				.mapToInt(I_M_AttributeInstance::getM_AttributeValue_ID)
 				.toArray();
 
-		return AttributesKey.ofAttributeValueIds(attributeValueIds);
+		if (attributeValueIds.length == 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(AttributesKey.ofAttributeValueIds(attributeValueIds));
 	}
 }

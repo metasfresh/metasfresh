@@ -13,7 +13,6 @@ import org.adempiere.util.Services;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
-import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -117,11 +116,11 @@ import lombok.experimental.UtilityClass;
 		final ICompositeQueryFilter<I_MD_Candidate_Stock_v> filterForCurrentStorageAttributesKey = queryBL.createCompositeQueryFilter(I_MD_Candidate_Stock_v.class)
 				.setJoinAnd();
 
-		if (Objects.equals(attributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER))
+		if (Objects.equals(attributesKey, AttributesKey.OTHER))
 		{
 			addNotLikeFiltersForAttributesKeys(filterForCurrentStorageAttributesKey, query.getStorageAttributesKeys());
 		}
-		else if (Objects.equals(attributesKey, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL))
+		else if (Objects.equals(attributesKey, AttributesKey.ALL))
 		{
 			// nothing to add to the initial productIds filters
 		}
@@ -139,7 +138,7 @@ import lombok.experimental.UtilityClass;
 	{
 		for (final AttributesKey storageAttributesKeyAgain : attributesKeys)
 		{
-			if (!Objects.equals(storageAttributesKeyAgain, ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER))
+			if (!Objects.equals(storageAttributesKeyAgain, AttributesKey.OTHER))
 			{
 				final String likeExpression = createLikeExpression(storageAttributesKeyAgain);
 				compositeFilter.addStringNotLikeFilter(I_MD_Candidate_Stock_v.COLUMN_StorageAttributesKey, likeExpression, false);

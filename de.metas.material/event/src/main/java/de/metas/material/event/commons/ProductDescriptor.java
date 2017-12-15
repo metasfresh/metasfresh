@@ -45,9 +45,7 @@ public class ProductDescriptor
 {
 	public static final ProductDescriptor completeForProductIdAndEmptyAttribute(final int productId)
 	{
-		return new ProductDescriptor(productId,
-				ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL,
-				0);
+		return new ProductDescriptor(productId,	AttributesKey.NONE, 0);
 	}
 
 	public static final ProductDescriptor forProductAndAttributes(
@@ -57,13 +55,6 @@ public class ProductDescriptor
 	{
 		return new ProductDescriptor(productId, attributesKey, attributeSetInstanceId);
 	}
-
-	public static final AttributesKey STORAGE_ATTRIBUTES_KEY_ALL = AttributesKey.ofAttributeValueIds(-1000);
-	public static final String MSG_STORAGE_ATTRIBUTES_KEY_ALL = "de.metas.material.dispo.<ALL_STORAGE_ATTRIBUTES_KEYS>";
-
-	/** This key's meaning depends on the other keys it comes with. */
-	public static final AttributesKey STORAGE_ATTRIBUTES_KEY_OTHER = AttributesKey.ofAttributeValueIds(-1001);
-	public static final String MSG_STORAGE_ATTRIBUTES_KEY_OTHER = "de.metas.material.dispo.<OTHER_STORAGE_ATTRIBUTES_KEYS>";
 
 	@Getter
 	int productId;

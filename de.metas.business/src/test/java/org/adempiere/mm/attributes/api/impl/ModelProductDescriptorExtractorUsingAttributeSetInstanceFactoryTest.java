@@ -56,7 +56,7 @@ import lombok.NonNull;
 @SpringBootTest(classes = { StartupListener.class,
 		ShutdownListener.class,
 		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
-public class ProductDescriptorFromAttributeSetInstanceFactoryTest
+public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactoryTest
 {
 	private static final int PRODUCT_ID = 20;
 	private ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory factory;
@@ -89,7 +89,7 @@ public class ProductDescriptorFromAttributeSetInstanceFactoryTest
 		assertThat(productDescriptor).isNotNull();
 		assertThat(productDescriptor.getProductId()).isEqualTo(20);
 		assertThat(productDescriptor.getAttributeSetInstanceId()).isEqualTo(AttributeConstants.M_AttributeSetInstance_ID_None);
-		assertThat(productDescriptor.getStorageAttributesKey()).isEqualTo(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
+		assertThat(productDescriptor.getStorageAttributesKey()).isEqualTo(AttributesKey.ALL);
 	}
 
 	@Test

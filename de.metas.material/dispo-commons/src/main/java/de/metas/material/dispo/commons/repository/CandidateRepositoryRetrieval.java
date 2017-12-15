@@ -194,7 +194,7 @@ public class CandidateRepositoryRetrieval
 		final AttributesKey attributesKey;
 		if (Check.isEmpty(candidateRecord.getStorageAttributesKey(), true))
 		{
-			attributesKey = ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL;
+			attributesKey = AttributesKey.ALL;
 		}
 		else
 		{

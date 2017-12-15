@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Optional;
+
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -66,10 +68,11 @@ public class AttributesKeysTest
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue1);
 		attributeSetInstanceBL.getCreateAttributeInstance(asi, attributeValue2);
 
-		final AttributesKey result = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asi.getM_AttributeSetInstance_ID());
+		final Optional<AttributesKey> result = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asi.getM_AttributeSetInstance_ID());
+		assertThat(result).isPresent();
 
 		final AttributesKey expectedResult = AttributesKey.ofAttributeValueIds(attributeValue1.getM_AttributeValue_ID(), attributeValue2.getM_AttributeValue_ID());
-		assertThat(result).isEqualTo(expectedResult);
+		assertThat(result.get()).isEqualTo(expectedResult);
 	}
 
 	private final I_M_Attribute createStorageRelevantAttribute(@NonNull final String name)

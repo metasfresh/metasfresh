@@ -38,6 +38,11 @@ public class DimensionSpecGroup
 			AttributesKey.NONE,
 			true);
 
+	public static DimensionSpecGroup OTHER_GROUP = new DimensionSpecGroup(
+			Services.get(IMsgBL.class).getTranslatableMsgText(AttributesKey.MSG_ATTRIBUTES_KEY_OTHER),
+			AttributesKey.OTHER,
+			true);
+
 	@NonNull
 	ITranslatableString groupName;
 

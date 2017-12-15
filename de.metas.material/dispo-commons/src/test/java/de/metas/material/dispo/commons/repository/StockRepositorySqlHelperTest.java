@@ -143,7 +143,7 @@ public class StockRepositorySqlHelperTest
 				.productId(PRODUCT_ID)
 				.storageAttributesKey(STORAGE_ATTRIBUTES_KEY)
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(3))
-				.storageAttributesKey(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER)
+				.storageAttributesKey(AttributesKey.OTHER)
 				.date(NOW)
 				.build();
 
