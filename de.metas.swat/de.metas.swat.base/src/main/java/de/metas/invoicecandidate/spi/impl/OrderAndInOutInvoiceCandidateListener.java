@@ -25,38 +25,23 @@ public class OrderAndInOutInvoiceCandidateListener extends InvoiceCandidateListe
 	@Override
 	public void onBeforeClosed(I_C_Invoice_Candidate candidate)
 	{
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
-		// Sales invoice candidates
 		if (candidate.isSOTrx())
 		{
-
 			final Set<I_M_ShipmentSchedule> shipmentSchedules = Services.get(IShipmentSchedulePA.class).retrieveForInvoiceCandidate(candidate);
-
-			for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
-			{
-				Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(shipmentSchedule);
-			}
+			shipmentSchedules.forEach(shipmentSchedule -> Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(shipmentSchedule));
 		}
 
 		// Purchase invoice candidates
 		else
 		{
-			// close all the linked receipt schedules (the ones the candidate was based on)
-
 			final Set<I_M_ReceiptSchedule> receiptSchedules = Services.get(IReceiptScheduleDAO.class).retrieveForInvoiceCandidate(candidate);
-			for (final I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
-			{
-				// do not try to close already closed receipt schedules
-				if (receiptScheduleBL.isClosed(receiptSchedule))
-				{
-					continue;
-				}
+			final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
-				receiptScheduleBL.close(receiptSchedule);
-			}
+			receiptSchedules.stream()
+					.filter(receiptSchedule -> !receiptScheduleBL.isClosed(receiptSchedule))
+					.forEach(receiptSchedule -> receiptScheduleBL.close(receiptSchedule));
 		}
-
 	}
 
 }
