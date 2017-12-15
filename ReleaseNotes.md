@@ -53,24 +53,28 @@ Here come the actual release notes:
   * [#3134](https://github.com/metasfresh/metasfresh/issues/3134) Purchase disposition window shall be readonly
     * Setting Fields Readonly to Puchase Disposition Window.
   * [#3137](https://github.com/metasfresh/metasfresh/issues/3137) Clean C_PaySelection
+    * Improvement of the Pay selection window. Removing legacy functionality.
   * [#3140](https://github.com/metasfresh/metasfresh/issues/3140) WebUI: Translate Picking Configuration window to en_US
     * Improvement od the Translation to en_US of Picking Configuration Window.
   * [#3149](https://github.com/metasfresh/metasfresh/issues/3149) Automatic Discount for Group Products
+    * New Functionality added to the Group Product lines in sales order, allowing to define and use a discount schema for the group products functionality.
   * [#3150](https://github.com/metasfresh/metasfresh/issues/3150) Always keep Terms & Conditions equal per Compensation Group
+    * Improved Compensation group feature in sales orderlines, allowing to keep the Terms and conditions equal in a compensation group.
   * [#3164](https://github.com/metasfresh/metasfresh/issues/3164) WebUI: Import BPartner Translations
     * Translating the Import Business Partner window to en_US and improving advanced edit view.
   * [#3166](https://github.com/metasfresh/metasfresh/issues/3166) Businesspartner Window shows Fields that should be in Advanced edit mode
     * Improved Business Partner window, moved Fields to andvanced edit that are not mainly in user focus.
   * [#3171](https://github.com/metasfresh/metasfresh/issues/3171) Add view to keep track of unprocessed async work packages
+    * New view to keep tracking the qty of unprocessed
   * [#3176](https://github.com/metasfresh/metasfresh/issues/3176) Translate Sales Order Actions
     * Improvement of translations in sales order action menu.
 
 * metasfresh-webui-api
-  * [#711](https://github.com/metasfresh/metasfresh-webui-api/issues/711) picking terminal: additional shall support grouping lines by order
-  * [#714](https://github.com/metasfresh/metasfresh-webui-api/issues/714) login authenticate: provide an unique key for each JSONLoginRole
-  * [#716](https://github.com/metasfresh/metasfresh-webui-api/issues/716) picking terminal: scan picking slot by barcode
-  * [#721](https://github.com/metasfresh/metasfresh-webui-api/issues/721) picking terminal: HUs to pick: scan/filter by Locator
-  * [#723](https://github.com/metasfresh/metasfresh-webui-api/issues/723) picking terminal: HUs to pick: Pick CUs process
+  * [#711](https://github.com/metasfresh/metasfresh-webui-api/issues/711) Picking terminal: additional shall support grouping lines by order
+  * [#714](https://github.com/metasfresh/metasfresh-webui-api/issues/714) Login authenticate: provide an unique key for each JSONLoginRole
+  * [#716](https://github.com/metasfresh/metasfresh-webui-api/issues/716) Picking terminal: scan picking slot by barcode
+  * [#721](https://github.com/metasfresh/metasfresh-webui-api/issues/721) Picking terminal: HUs to pick: scan/filter by Locator
+  * [#723](https://github.com/metasfresh/metasfresh-webui-api/issues/723) Picking terminal: HUs to pick: Pick CUs process
   * [#727](https://github.com/metasfresh/metasfresh-webui-api/issues/727) Allow search of Subproducer
   * [#731](https://github.com/metasfresh/metasfresh-webui-api/issues/731) Intoduce process parameters callout minimal functionality
 
