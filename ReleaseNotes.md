@@ -71,51 +71,82 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#711](https://github.com/metasfresh/metasfresh-webui-api/issues/711) Picking terminal: additional shall support grouping lines by order
+    * Introducing new Picking Terminal Workflow Pattern. Now allowing to group the Picking Lines by Sales Order instead of Product.
   * [#714](https://github.com/metasfresh/metasfresh-webui-api/issues/714) Login authenticate: provide an unique key for each JSONLoginRole
+    * Improvement of JSON endpoint for the Login authentication. Now haviung a unique key for each Login Roles.
   * [#716](https://github.com/metasfresh/metasfresh-webui-api/issues/716) Picking terminal: scan picking slot by barcode
+    * New Feature in Picking Terminal allowing to scan and identify the Picking Tray.
   * [#721](https://github.com/metasfresh/metasfresh-webui-api/issues/721) Picking terminal: HUs to pick: scan/filter by Locator
+    * New Filter Feature in Picking Terminla window, allowing to scan Locators and filter by them in Handlign Unit selection view.
   * [#723](https://github.com/metasfresh/metasfresh-webui-api/issues/723) Picking terminal: HUs to pick: Pick CUs process
+    * New Action in Picking terminal allowing to pick CU by quantity.
   * [#727](https://github.com/metasfresh/metasfresh-webui-api/issues/727) Allow search of Subproducer
-  * [#731](https://github.com/metasfresh/metasfresh-webui-api/issues/731) Intoduce process parameters callout minimal functionality
+    * Improved Subproducer Search in Attributes view of Material Receipt Handling Unit Editor. Now the Subproducer Attribute is a Lookup widget.
+  * [#731](https://github.com/metasfresh/metasfresh-webui-api/issues/731) Introduce process parameters callout minimal functionality
+    * New functionality that allows to trigger callouts for action parms in webui.
 
 * metasfresh-webui-frontend
   * [#1375](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1375) Navigation Menu arrow down directly scrolls menu
     * Improving the behavior of scrolling in Navigation Menu with a lot of bookmarks.
-  * [#1407](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1407) process result: open included view: handle profileId property
-  * [#1414](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1414) view: don't allow user to sort by a given column if layout says so
+  * [#1407](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1407) Process result: open included view: handle profileId property
+    * New functionality that allows to open a window and view after a process/ an action is done.
+  * [#1414](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1414) View: don't allow user to sort by a given column if layout says so
+    * Disabling the sorting feature for columns which are marked as not-sortable.
   * [#1425](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1425) eslint: increase line max-len from 80 to 120.
+    * Internal House Keeping issie that shall improve the Code Quality.
 
 #Fixes
 * metasfresh-app
   * [#3110](https://github.com/metasfresh/metasfresh/issues/3110) Request All does not show records
+    * Fix for the Request window, now allowing to show all records again without using the filter button.
   * [#3126](https://github.com/metasfresh/metasfresh/issues/3126) Solve issues around standalone report / jasper service
+    * Fixes issues that occurred in the new Standalone Jasper report service.
   * [#3138](https://github.com/metasfresh/metasfresh/issues/3138) Import BPartner window: cannot see data
+    * Fix for the Import Businesspartner window and functionality. now showing the imported data again.
   * [#3139](https://github.com/metasfresh/metasfresh/issues/3139) Cannot edit System Administrator role (AD_Role_ID=0)
-  * [#3147](https://github.com/metasfresh/metasfresh/issues/3147) Errors wrt C_BPartner SQL columns
+    * Fix in Role Management, now allowed to edit the System Admin Role again.
+  * [#3147](https://github.com/metasfresh/metasfresh/issues/3147) Errors with C_BPartner SQL columns
+    * Fixes an error which appeared with the new SQL columns in Business Partner window, for systems with a lot of Business Partner records.
   * [#3151](https://github.com/metasfresh/metasfresh/issues/3151) ZoomTo-Performance Issues
+    * Improving the Performance of different Zoom-To Releations.
   * [#3159](https://github.com/metasfresh/metasfresh/issues/3159) Translation Tab content missing for Product_Trl
     * Fix for the Product Translation Tab. Now showing the Translations again.
   * [#3160](https://github.com/metasfresh/metasfresh/issues/3160) C_Printing_Queue_ReEnqueue with IsSelected doesn't work
-  * [#3174](https://github.com/metasfresh/metasfresh/issues/3174) Material Receipt Candidates not generates when using Purchase Order from Sales Order action
+    * Fix for the Reqnqueue action in the Printing Queue Window.
+  * [#3174](https://github.com/metasfresh/metasfresh/issues/3174) Material Receipt Candidates not generated when using Purchase Order from Sales Order action
+    * Fix for the new Purchase Order from Sales Order action, now also creating Material Receipt candidates for these kind of Purchase Orders.
   * [#3183](https://github.com/metasfresh/metasfresh/issues/3183) Jenkins misinterprets positive downstream build result
+    * Solving an internal housekeepinmg issue in Build System.
   * [#3206](https://github.com/metasfresh/metasfresh/issues/3206) Relation sales order - flatrate term is missing
+    * Fixes a missing relation for flatrate term in sales order
   * [#3207](https://github.com/metasfresh/metasfresh/issues/3207) Cannot save an attribute in orderline
-  * [#3208](https://github.com/metasfresh/metasfresh/issues/3208) console error when copying MDocType
+    * Fix for the recording of attributes in orderline.
+  * [#3208](https://github.com/metasfresh/metasfresh/issues/3208) Console error when copying MDocType
+    * Fixes an error in the clone action of Document Types window.
 
 * metasfresh-webui-api
   * [#713](https://github.com/metasfresh/metasfresh-webui-api/issues/713) Error creating bean with name 'scopedTarget.internalUserSessionData'
-  * [#722](https://github.com/metasfresh/metasfresh-webui-api/issues/722) picking terminal: picking slot rows shall NOT have duplicate IDs
+    * Fixes an issue that occured sometimes when switching the language of the user in WebUI.
+  * [#722](https://github.com/metasfresh/metasfresh-webui-api/issues/722) Picking terminal: Picking slot rows shall NOT have duplicate IDs
+    * Solving the issue of having duplicated IDs in Picking Slot Rows.
 
 * metasfresh-webui-frontend
   * [#1361](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1361) View field editor: make sure the field value is sent to backend before the view is deleted
+    * Fix for the patching of adjusted values in modal overlay action views. Now patching the field value before closing the modal overlay.
   * [#1383](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1383) cannot completely delete a numeric field in grid view
+    * Fixes the new Edit mode in main grid views, now allowing to delete recorded numeric field conten completely.
   * [#1393](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1393) View attributes: consider row's supportAttributes property before querying for attributes
+    * Fixes the querying of Attributes, now only done if the API demands that.
   * [#1396](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1396) View field editor: Patch request isn't sent after hit enter
+    * A Patch Request is now sent again, after hitting enter.
   * [#1404](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1404) login form selects 2 items from roles dropdown
+    * Fixes the login form in WebUI, now only selecting 1 role item.
   * [#1406](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1406) Can not enter "-" into any text field
+    * Allowing to enter "-" character into text fields in WebUI.
   * [#1415](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1415) View: singleOverlayField filters are half broken
     * Fix for the Overlay when using Barcode Filter.
   * [#1421](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1421) Drop down lists remain displayed when using tab several times
+    * Closing opened dropdown lists again when navigating through fields in webUI and the field is losing focus.
 
 # metasfresh 5.38 (2017-49)
 

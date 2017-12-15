@@ -88,25 +88,51 @@ public class PickingSlotDAO implements IPickingSlotDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private List<I_M_PickingSlot> filter(final List<I_M_PickingSlot> pickingSlotsAll, final PickingSlotQuery request)
+	private List<I_M_PickingSlot> filter(final List<I_M_PickingSlot> pickingSlotsAll, final PickingSlotQuery query)
 	{
-		final int bpartnerId = request.getBpartnerId();
-		final int bpartnerLocationId = request.getBpartnerLocationId();
-
-		final Predicate<I_M_PickingSlot> warehouseFilter = ps -> request.getWarehouseId() <= 0 || request.getWarehouseId() == ps.getM_Warehouse_ID();
-
-		final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
-		final Predicate<I_M_PickingSlot> partnerFilter = ps -> pickingSlotBL.isAvailableForBPartnerAndLocation(ps, bpartnerId, bpartnerLocationId);
-
 		final List<I_M_PickingSlot> result = pickingSlotsAll.stream()
-				.filter(warehouseFilter)
-				.filter(partnerFilter)
-				.filter(isPickingSlotMatchingBarcode(request.getBarcode()))
+				.filter(isWarehouseMatchingFilter(query.getWarehouseId()))
+				.filter(isAvailableForBPartnerFilter(query.getAvailableForBPartnerId(), query.getAvailableForBPartnerLocationId()))
+				.filter(isAssignedToBPartnerFilter(query.getAssignedToBPartnerId(), query.getAssignedToBPartnerLocationId()))
+				.filter(isPickingSlotMatchingBarcodeFilter(query.getBarcode()))
 				.collect(Collectors.toList());
 		return result;
 	}
 
-	private static final Predicate<I_M_PickingSlot> isPickingSlotMatchingBarcode(final String barcode)
+	private static final Predicate<I_M_PickingSlot> isWarehouseMatchingFilter(final int warehouseId)
+	{
+		if (warehouseId <= 0)
+		{
+			return Predicates.alwaysTrue();
+		}
+
+		return pickingSlot -> pickingSlot.getM_Warehouse_ID() == warehouseId;
+	}
+
+	private static final Predicate<I_M_PickingSlot> isAvailableForBPartnerFilter(final int bpartnerId, final int bpartnerLocationId)
+	{
+		final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
+		return pickingSlot -> pickingSlotBL.isAvailableForBPartnerAndLocation(pickingSlot, bpartnerId, bpartnerLocationId);
+	}
+
+	private static final Predicate<I_M_PickingSlot> isAssignedToBPartnerFilter(final int bpartnerId, final int bpartnerLocationId)
+	{
+		if (bpartnerId <= 0)
+		{
+			return Predicates.alwaysTrue();
+		}
+
+		if (bpartnerLocationId <= 0)
+		{
+			return pickingSlot -> pickingSlot.getC_BPartner_ID() == bpartnerId;
+		}
+		else
+		{
+			return pickingSlot -> pickingSlot.getC_BPartner_ID() == bpartnerId && pickingSlot.getC_BPartner_Location_ID() == bpartnerLocationId;
+		}
+	}
+
+	private static final Predicate<I_M_PickingSlot> isPickingSlotMatchingBarcodeFilter(final String barcode)
 	{
 		if (barcode == null)
 		{
@@ -131,8 +157,8 @@ public class PickingSlotDAO implements IPickingSlotDAO
 			return;
 		}
 
-		final int bpartnerId = query.getBpartnerId();
-		final int bpartnerLocationId = query.getBpartnerLocationId();
+		final int bpartnerId = query.getAvailableForBPartnerId();
+		final int bpartnerLocationId = query.getAvailableForBPartnerLocationId();
 
 		final I_C_BPartner bpartner = bpartnerId <= 0 ? null : loadOutOfTrx(bpartnerId, I_C_BPartner.class);
 		final String bpartnerStr = bpartner == null ? "<" + bpartnerId + ">" : bpartner.getValue();
