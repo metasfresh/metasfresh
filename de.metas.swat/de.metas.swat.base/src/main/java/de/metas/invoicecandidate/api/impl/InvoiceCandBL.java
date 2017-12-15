@@ -100,12 +100,6 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
 import de.metas.inoutcandidate.spi.impl.MutableQtyAndQuality;
 import de.metas.interfaces.I_C_OrderLine;
@@ -115,6 +109,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.api.IInvoiceGenerator;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
@@ -1429,7 +1424,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				invoiceCandDAO.invalidateCands(invoiceCands, trxName);
 			}
 
-			final Set<I_C_Invoice_Candidate> toLinkAgainstIl = new HashSet<I_C_Invoice_Candidate>();
+			final Set<I_C_Invoice_Candidate> toLinkAgainstIl = new HashSet<>();
 
 			if (il.getC_OrderLine_ID() > 0)
 			{
@@ -2068,37 +2063,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void closeInvoiceCandidate(final I_C_Invoice_Candidate candidate)
 	{
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
-		// Sales invoice candidates
-		if (candidate.isSOTrx())
-		{
-			// close all the linked shipment schedules (the ones the candidate was based on)
-			final Set<I_M_ShipmentSchedule> shipmentSchedules = Services.get(IShipmentSchedulePA.class).retrieveForInvoiceCandidate(candidate);
-
-			for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
-			{
-				Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(shipmentSchedule);
-			}
-		}
-
-		// Purchase invoice candidates
-		else
-		{
-			// close all the linked receipt schedules (the ones the candidate was based on)
-
-			final Set<I_M_ReceiptSchedule> receiptSchedules = Services.get(IReceiptScheduleDAO.class).retrieveForInvoiceCandidate(candidate);
-			for (final I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
-			{
-				// do not try to close already closed receipt schedules
-				if (receiptScheduleBL.isClosed(receiptSchedule))
-				{
-					continue;
-				}
-
-				receiptScheduleBL.close(receiptSchedule);
-			}
-		}
+		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
+		invoiceCandidateListeners.onBeforeClosed(candidate);
 		candidate.setProcessed_Override("Y");
 
 		Services.get(IInvoiceCandDAO.class).invalidateCand(candidate);

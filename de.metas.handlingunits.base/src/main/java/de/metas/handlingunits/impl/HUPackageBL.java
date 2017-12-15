@@ -64,9 +64,7 @@ public class HUPackageBL implements IHUPackageBL
 	}
 
 	@Override
-	public I_M_Package createM_Package(final Object contextProvider,
-			final I_M_HU hu,
-			final I_M_Shipper shipper)
+	public I_M_Package createM_Package(final I_M_HU hu, final I_M_Shipper shipper)
 	{
 		Check.assumeNotNull(hu, HUException.class, "hu not null");
 		Check.assumeNotNull(shipper, HUException.class, "shipper not null");
@@ -74,7 +72,7 @@ public class HUPackageBL implements IHUPackageBL
 		Check.errorIf(hu.getC_BPartner_ID() <= 0, HUException.class, "M_HU {} has C_BPartner_ID <= 0", hu);
 		Check.errorIf(hu.getC_BPartner_Location_ID() <= 0, HUException.class, "M_HU {} has C_BPartner_Location_ID <= 0", hu);
 
-		final I_M_Package mpackage = InterfaceWrapperHelper.newInstance(I_M_Package.class, contextProvider);
+		final I_M_Package mpackage = InterfaceWrapperHelper.newInstance(I_M_Package.class);
 		mpackage.setM_Shipper_ID(shipper.getM_Shipper_ID());
 		mpackage.setShipDate(null);
 		mpackage.setC_BPartner_ID(hu.getC_BPartner_ID());
