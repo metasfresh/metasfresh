@@ -1,4 +1,4 @@
-package de.metas.ui.web.material.cockpit;
+package de.metas.ui.web.material.cockpit.legacydatamodel;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -9,14 +9,18 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.fresh.model.I_Fresh_QtyOnHand;
+import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
+import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
-import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory.MaterialCockpitRowFactory;
+import de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
 import lombok.NonNull;
 
 /*
@@ -42,6 +46,7 @@ import lombok.NonNull;
  */
 
 @Repository
+@Profile("tmp-legacy")
 public class MaterialCockpitRowRepository
 {
 	private final transient CCache<Integer, List<I_M_Product>> orgIdToproducts = CCache.newCache(
@@ -68,14 +73,24 @@ public class MaterialCockpitRowRepository
 		{
 			return ImmutableList.of();
 		}
-		final List<I_MD_Cockpit> productInfoDetailRecords = materialCockpitFilters
+		final List<I_X_MRP_ProductInfo_Detail_MV> productInfoDetailRecords = materialCockpitFilters
 				.createQuery(filters)
+				.list();
+
+		final List<I_Fresh_QtyOnHand_Line> countings = Services.get(IQueryBL.class).createQueryBuilder(I_Fresh_QtyOnHand.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_Fresh_QtyOnHand.COLUMN_Processed, true)
+				.addEqualsFilter(I_Fresh_QtyOnHand.COLUMN_DateDoc, date)
+				.andCollectChildren(I_Fresh_QtyOnHand_Line.COLUMN_Fresh_QtyOnHand_ID, I_Fresh_QtyOnHand_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
 				.list();
 
 		final CreateRowsRequest request = CreateRowsRequest.builder()
 				.date(date)
 				.relevantProducts(retrieveRelevantProducts(filters))
 				.dataRecords(productInfoDetailRecords)
+				.countings(countings)
 				.build();
 		return materialCockpitRowFactory.createRows(request);
 	}

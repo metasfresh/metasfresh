@@ -1,14 +1,17 @@
-package de.metas.ui.web.material.cockpit.rowfactory;
+package de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.mm.attributes.api.AttributesKeys;
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
+import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
@@ -71,7 +74,7 @@ public class MainRowBucket
 	}
 
 	public void addDataRecord(
-			@NonNull final I_MD_Cockpit dataRecord,
+			@NonNull final I_X_MRP_ProductInfo_Detail_MV dataRecord,
 			@NonNull final DimensionSpec dimensionSpec)
 	{
 		assertProductIdAndDateOfDataRecord(dataRecord);
@@ -80,7 +83,7 @@ public class MainRowBucket
 		subRowBuckets.forEach(bucket -> bucket.addDataRecord(dataRecord));
 	}
 
-	private void assertProductIdAndDateOfDataRecord(@NonNull final I_MD_Cockpit dataRecord)
+	private void assertProductIdAndDateOfDataRecord(@NonNull final I_X_MRP_ProductInfo_Detail_MV dataRecord)
 	{
 		final MainRowBucketId key = MainRowBucketId.createInstanceForDataRecord(dataRecord);
 
@@ -91,12 +94,12 @@ public class MainRowBucket
 	}
 
 	private List<AttributeSubRowBucket> findOrCreateSubRowBucket(
-			@NonNull final I_MD_Cockpit dataRecord,
+			@NonNull final I_X_MRP_ProductInfo_Detail_MV dataRecord,
 			@NonNull final DimensionSpec dimensionSpec)
 	{
 		final ImmutableList.Builder<AttributeSubRowBucket> result = ImmutableList.builder();
 
-		final AttributesKey dataRecordAttributesKey = AttributesKey.ofString(dataRecord.getAttributesKey());
+		final AttributesKey dataRecordAttributesKey = AttributesKeys.createAttributesKeyFromASIAllAttributeValues(dataRecord.getM_AttributeSetInstance_ID());
 
 		for (final DimensionSpecGroup group : dimensionSpec.retrieveGroups())
 		{
@@ -109,7 +112,7 @@ public class MainRowBucket
 		return result.build();
 	}
 
-	public void addCounting(@NonNull final I_MD_Cockpit counting)
+	public void addCounting(@NonNull final I_Fresh_QtyOnHand_Line counting)
 	{
 		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(counting.getPP_Plant_ID(), CountingSubRowBucket::create);
 		countingSubRow.addDataRecord(counting);

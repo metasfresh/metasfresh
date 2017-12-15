@@ -1,10 +1,10 @@
-package de.metas.ui.web.material.cockpit.rowfactory;
+package de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory;
 
 import java.sql.Timestamp;
 
 import org.compiere.util.TimeUtil;
 
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -33,7 +33,7 @@ import lombok.Value;
 @Value
 public class MainRowBucketId
 {
-	public static MainRowBucketId createInstanceForDataRecord(@NonNull final I_MD_Cockpit dataRecord)
+	public static MainRowBucketId createInstanceForDataRecord(@NonNull final I_X_MRP_ProductInfo_Detail_MV dataRecord)
 	{
 		return new MainRowBucketId(
 				dataRecord.getM_Product_ID(),

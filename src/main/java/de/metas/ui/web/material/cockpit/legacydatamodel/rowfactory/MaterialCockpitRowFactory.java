@@ -1,4 +1,4 @@
-package de.metas.ui.web.material.cockpit.rowfactory;
+package de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -11,6 +11,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_S_Resource;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -21,7 +22,8 @@ import com.google.common.collect.ImmutableMap.Builder;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.dimension.IDimensionspecDAO;
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
+import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import lombok.NonNull;
 import lombok.Value;
@@ -49,6 +51,7 @@ import lombok.Value;
  */
 
 @Service
+@Profile("tmp-legacy")
 public class MaterialCockpitRowFactory
 {
 	public static final String DIM_SPEC_INTERNAL_NAME = "MRP_Product_Info_ASI_Values";
@@ -62,7 +65,9 @@ public class MaterialCockpitRowFactory
 		@NonNull
 		List<I_M_Product> relevantProducts;
 		@NonNull
-		List<I_MD_Cockpit> dataRecords;
+		List<I_Fresh_QtyOnHand_Line> countings;
+		@NonNull
+		List<I_X_MRP_ProductInfo_Detail_MV> dataRecords;
 	}
 
 	public List<MaterialCockpitRow> createRows(@NonNull final CreateRowsRequest request)
@@ -76,19 +81,20 @@ public class MaterialCockpitRowFactory
 
 		final Map<MainRowBucketId, MainRowBucket> result = new HashMap<>(emptyRowBuckets);
 
-		for (final I_MD_Cockpit dbRow : request.getDataRecords())
+		for (final I_Fresh_QtyOnHand_Line counting : request.getCountings())
 		{
-			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForDataRecord(dbRow);
-			final MainRowBucket mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowBucket.create(key));
+			final MainRowBucketId mayRowBucketId = MainRowBucketId.createPlainInstance(
+					counting.getM_Product_ID(),
+					request.getDate());
+			final MainRowBucket mainRowBucket = result.computeIfAbsent(mayRowBucketId, key -> MainRowBucket.create(key));
+			mainRowBucket.addCounting(counting);
+		}
 
-			if (dbRow.getQtyOnHandEstimate().signum() != 0 || dbRow.getPP_Plant_ID() > 0)
-			{
-				mainRowBucket.addCounting(dbRow);
-			}
-			else
-			{
-				mainRowBucket.addDataRecord(dbRow, dimensionSpec);
-			}
+		for (final I_X_MRP_ProductInfo_Detail_MV dbRow : request.getDataRecords())
+		{
+			final MainRowBucketId mayRowBucketId = MainRowBucketId.createInstanceForDataRecord(dbRow);
+			final MainRowBucket mainRowBucket = result.computeIfAbsent(mayRowBucketId, key -> MainRowBucket.create(key));
+			mainRowBucket.addDataRecord(dbRow, dimensionSpec);
 		}
 
 		return result.values()

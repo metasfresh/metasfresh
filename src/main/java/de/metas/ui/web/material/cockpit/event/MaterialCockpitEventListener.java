@@ -20,16 +20,9 @@ import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.procurement.AbstractPurchaseOfferEvent;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
-import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
-import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
-import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.stockestimate.AbstractStockCountEvent;
-import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
-import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
-import de.metas.material.event.transactions.TransactionCreatedEvent;
-import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.ui.web.material.cockpit.event.DataUpdateRequest.DataUpdateRequestBuilder;
 import lombok.NonNull;
 
@@ -89,43 +82,24 @@ public class MaterialCockpitEventListener implements MaterialEventListener
 			// * update things similar to transactionEvent
 		}
 
-		// ReceiptSchedule
-		else if (event instanceof ReceiptScheduleCreatedEvent)
+		else if (event instanceof AbstractReceiptScheduleEvent)
 		{
-			requests.add(createDataUpdateRequestForEvent((ReceiptScheduleCreatedEvent)event));
-		}
-		else if (event instanceof ReceiptScheduleUpdatedEvent)
-		{
-			requests.add(createDataUpdateRequestForEvent((ReceiptScheduleUpdatedEvent)event));
-		}
-		else if (event instanceof ReceiptScheduleDeletedEvent)
-		{
-			requests.add(createDataUpdateRequestForEvent((ReceiptScheduleDeletedEvent)event));
+			requests.add(createDataUpdateRequestForEvent((AbstractReceiptScheduleEvent)event));
 		}
 
-		// ShipmentSchedule
 		else if (event instanceof AbstractShipmentScheduleEvent)
 		{
 			requests.add(createDataUpdateRequestForEvent((AbstractShipmentScheduleEvent)event));
 		}
 
-		// stock count
-		else if (event instanceof StockEstimateCreatedEvent) /* i.e. fresh-qtyOnhand-line */
+		else if (event instanceof AbstractStockCountEvent) /* i.e. fresh-qtyOnhand-line */
 		{
-			requests.add(createDataUpdateRequestForEvent((StockEstimateCreatedEvent)event));
-		}
-		else if (event instanceof StockEstimateDeletedEvent) /* i.e. fresh-qtyOnhand-line */
-		{
-			requests.add(createDataUpdateRequestForEvent((StockEstimateDeletedEvent)event));
+			requests.add(createDataUpdateRequestForEvent((AbstractStockCountEvent)event));
 		}
 
-		else if (event instanceof TransactionCreatedEvent)
+		else if (event instanceof AbstractTransactionEvent)
 		{
-			requests.add(createDataUpdateRequestForEvent((TransactionCreatedEvent)event));
-		}
-		else if (event instanceof TransactionDeletedEvent)
-		{
-			requests.add(createDataUpdateRequestForEvent((TransactionDeletedEvent)event));
+			requests.add(createDataUpdateRequestForEvent((AbstractTransactionEvent)event));
 		}
 
 		else if (event instanceof AbstractPurchaseOfferEvent)

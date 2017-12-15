@@ -1,4 +1,4 @@
-package de.metas.ui.web.material.cockpit;
+package de.metas.ui.web.material.cockpit.legacydatamodel;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -14,13 +14,15 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
+import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.material.dispo.model.I_MD_Cockpit;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
@@ -56,6 +58,7 @@ import lombok.NonNull;
  */
 
 @Service
+@Profile("tmp-legacy")
 public class MaterialCockpitFilters
 {
 	private static final String MSG_PRODUCT = "Product";
@@ -85,8 +88,8 @@ public class MaterialCockpitFilters
 	private de.metas.ui.web.document.filter.DocumentFilterDescriptor createDateOnlyFilter()
 	{
 		final Builder standaloneParamDescriptor = DocumentFilterParamDescriptor.builder()
-				.setFieldName(I_MD_Cockpit.COLUMNNAME_DateGeneral)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_DateGeneral))
+				.setFieldName(I_X_MRP_ProductInfo_V.COLUMNNAME_DateGeneral)
+				.setDisplayName(Services.get(IMsgBL.class).translatable(I_X_MRP_ProductInfo_Detail_MV.COLUMNNAME_DateGeneral))
 				.setWidgetType(DocumentFieldWidgetType.Date)
 				.setOperator(Operator.EQUAL)
 				.setMandatory(true)
@@ -104,14 +107,14 @@ public class MaterialCockpitFilters
 	private de.metas.ui.web.document.filter.DocumentFilterDescriptor createAllParamsFilter()
 	{
 		final de.metas.ui.web.document.filter.DocumentFilterParamDescriptor.Builder productNameParameter = DocumentFilterParamDescriptor.builder()
-				.setFieldName(I_MD_Cockpit.COLUMNNAME_ProductName)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_ProductName))
+				.setFieldName(I_X_MRP_ProductInfo_V.COLUMNNAME_ProductName)
+				.setDisplayName(Services.get(IMsgBL.class).translatable(I_X_MRP_ProductInfo_V.COLUMNNAME_ProductName))
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setOperator(Operator.LIKE_I);
 
 		final de.metas.ui.web.document.filter.DocumentFilterParamDescriptor.Builder productValueParameter = DocumentFilterParamDescriptor.builder()
-				.setFieldName(I_MD_Cockpit.COLUMNNAME_ProductValue)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_ProductValue))
+				.setFieldName(I_X_MRP_ProductInfo_V.COLUMNNAME_Value)
+				.setDisplayName(Services.get(IMsgBL.class).translatable(I_X_MRP_ProductInfo_V.COLUMNNAME_Value))
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setOperator(Operator.LIKE_I);
 
@@ -132,7 +135,7 @@ public class MaterialCockpitFilters
 
 	public ImmutableList<DocumentFilter> createAutoFilters()
 	{
-		final String columnName = I_MD_Cockpit.COLUMNNAME_DateGeneral;
+		final String columnName = I_X_MRP_ProductInfo_V.COLUMNNAME_DateGeneral;
 		final ITranslatableString filterCaption = Services.get(IMsgBL.class).translatable(columnName);
 		final DocumentFilter dateFilter = DocumentFilter.builder()
 				.setFilterId(MATERIAL_COCKPIT_DATE_ONLY_FILTER)
@@ -150,9 +153,9 @@ public class MaterialCockpitFilters
 		return ImmutableList.copyOf(filters);
 	}
 
-	public IQuery<I_MD_Cockpit> createQuery(@NonNull final List<DocumentFilter> filters)
+	public IQuery<I_X_MRP_ProductInfo_Detail_MV> createQuery(@NonNull final List<DocumentFilter> filters)
 	{
-		final IQueryBuilder<I_MD_Cockpit> queryBuilder = createInitialQueryBuilder();
+		final IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> queryBuilder = createInitialQueryBuilder();
 
 		boolean anyRestrictionAdded = false;
 		for (final DocumentFilter filter : filters)
@@ -166,7 +169,7 @@ public class MaterialCockpitFilters
 		}
 		if (anyRestrictionAdded)
 		{
-			final IQuery<I_MD_Cockpit> query = augmentqueryBuildWithOrderBy(queryBuilder).create();
+			final IQuery<I_X_MRP_ProductInfo_Detail_MV> query = augmentqueryBuildWithOrderBy(queryBuilder).create();
 			return query;
 		}
 
@@ -174,32 +177,32 @@ public class MaterialCockpitFilters
 		return queryBuilder.filter(ConstantQueryFilter.of(false)).create();
 	}
 
-	private IQueryBuilder<I_MD_Cockpit> createInitialQueryBuilder()
+	private IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> createInitialQueryBuilder()
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_MD_Cockpit> queryBuilder = queryBL
-				.createQueryBuilder(I_MD_Cockpit.class)
+		final IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> queryBuilder = queryBL
+				.createQueryBuilder(I_X_MRP_ProductInfo_Detail_MV.class)
 				.addOnlyActiveRecordsFilter();
 		return queryBuilder;
 	}
 
 	private void augmentQueryBuilderWithFilterParam(
-			@NonNull final IQueryBuilder<I_MD_Cockpit> queryBuilder,
+			@NonNull final IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> queryBuilder,
 			@NonNull final DocumentFilterParam filterParameter)
 	{
 		final String fieldName = filterParameter.getFieldName();
 		final Object value = filterParameter.getValue();
-		if (I_MD_Cockpit.COLUMNNAME_DateGeneral.equals(fieldName))
+		if (I_X_MRP_ProductInfo_V.COLUMNNAME_DateGeneral.equals(fieldName))
 		{
 			addDateToQueryBuilder(value, queryBuilder);
 		}
-		else if (I_MD_Cockpit.COLUMNNAME_ProductName.equals(fieldName))
+		else if (I_X_MRP_ProductInfo_V.COLUMNNAME_ProductName.equals(fieldName))
 		{
 			final String productName = (String)value;
 			addLikeFilterToQueryBuilder(I_M_Product.COLUMN_Name, productName, queryBuilder);
 		}
-		else if (I_MD_Cockpit.COLUMNNAME_ProductValue.equals(fieldName))
+		else if (I_X_MRP_ProductInfo_V.COLUMNNAME_Value.equals(fieldName))
 		{
 			final String productValue = (String)value;
 			addLikeFilterToQueryBuilder(I_M_Product.COLUMN_Value, productValue, queryBuilder);
@@ -208,19 +211,19 @@ public class MaterialCockpitFilters
 
 	private void addDateToQueryBuilder(
 			@NonNull final Object value,
-			@NonNull final IQueryBuilder<I_MD_Cockpit> queryBuilder)
+			@NonNull final IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> queryBuilder)
 	{
 		final Date date = JSONDate.fromObject(value, DocumentFieldWidgetType.Date);
 
 		final Timestamp dayTimestamp = TimeUtil.getDay(date);
-		queryBuilder.addCompareFilter(I_MD_Cockpit.COLUMN_DateGeneral, org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.GREATER_OR_EQUAL, dayTimestamp);
-		queryBuilder.addCompareFilter(I_MD_Cockpit.COLUMN_DateGeneral, org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS, TimeUtil.addDays(dayTimestamp, 1));
+		queryBuilder.addCompareFilter(I_X_MRP_ProductInfo_Detail_MV.COLUMN_DateGeneral, org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.GREATER_OR_EQUAL, dayTimestamp);
+		queryBuilder.addCompareFilter(I_X_MRP_ProductInfo_Detail_MV.COLUMN_DateGeneral, org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS, TimeUtil.addDays(dayTimestamp, 1));
 	}
 
 	private void addLikeFilterToQueryBuilder(
 			@NonNull final ModelColumn<I_M_Product, Object> column,
 			@NonNull final String value,
-			@NonNull final IQueryBuilder<I_MD_Cockpit> queryBuilder)
+			@NonNull final IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> queryBuilder)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -229,17 +232,17 @@ public class MaterialCockpitFilters
 				.addStringLikeFilter(column, value, true)
 				.create();
 
-		queryBuilder.addInSubQueryFilter(I_MD_Cockpit.COLUMN_M_Product_ID, I_M_Product.COLUMN_M_Product_ID, productByValueQuery);
+		queryBuilder.addInSubQueryFilter(I_X_MRP_ProductInfo_Detail_MV.COLUMN_M_Product_ID, I_M_Product.COLUMN_M_Product_ID, productByValueQuery);
 	}
 
-	private IQueryBuilder<I_MD_Cockpit> augmentqueryBuildWithOrderBy(
-			@NonNull final IQueryBuilder<I_MD_Cockpit> queryBuilder)
+	private IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> augmentqueryBuildWithOrderBy(
+			@NonNull final IQueryBuilder<I_X_MRP_ProductInfo_Detail_MV> queryBuilder)
 	{
 		return queryBuilder
 				.orderBy()
-				.addColumn(I_MD_Cockpit.COLUMN_DateGeneral)
-				.addColumn(I_MD_Cockpit.COLUMN_M_Product_ID)
-				.addColumn(I_MD_Cockpit.COLUMN_AttributesKey)
+				.addColumn(I_X_MRP_ProductInfo_Detail_MV.COLUMN_DateGeneral)
+				.addColumn(I_X_MRP_ProductInfo_Detail_MV.COLUMN_M_Product_ID)
+				.addColumn(I_X_MRP_ProductInfo_Detail_MV.COLUMN_ASIKey)
 				.endOrderBy();
 	}
 
@@ -281,11 +284,11 @@ public class MaterialCockpitFilters
 			@NonNull final I_M_Product product,
 			@NonNull final DocumentFilterParam filterParameter)
 	{
-		if (I_MD_Cockpit.COLUMNNAME_ProductName.equals(filterParameter.getFieldName()))
+		if (I_X_MRP_ProductInfo_V.COLUMNNAME_ProductName.equals(filterParameter.getFieldName()))
 		{
 			return doesProductNameMatchFilterParam(product, filterParameter);
 		}
-		else if (I_MD_Cockpit.COLUMNNAME_ProductValue.equals(filterParameter.getFieldName()))
+		else if (I_X_MRP_ProductInfo_V.COLUMNNAME_Value.equals(filterParameter.getFieldName()))
 		{
 			return doesProductValueMatchFilterParam(product, filterParameter);
 		}
@@ -346,7 +349,7 @@ public class MaterialCockpitFilters
 
 	public Timestamp extractDateOrNullFromParam(@NonNull final DocumentFilterParam dateFilterParameter)
 	{
-		if (!I_MD_Cockpit.COLUMNNAME_DateGeneral.equals(dateFilterParameter.getFieldName()))
+		if (!I_X_MRP_ProductInfo_V.COLUMNNAME_DateGeneral.equals(dateFilterParameter.getFieldName()))
 		{
 			return null;
 		}

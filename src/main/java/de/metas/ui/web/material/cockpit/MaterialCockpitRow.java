@@ -19,7 +19,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.dimension.DimensionSpecGroup;
-import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
+import de.metas.material.dispo.model.I_MD_Cockpit;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
@@ -61,45 +61,45 @@ public class MaterialCockpitRow implements IViewRow
 	private static final Joiner DOCUMENT_ID_JOINER = Joiner.on(SEPARATOR).skipNulls();
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Date, //
-			captionKey = I_X_MRP_ProductInfo_V.COLUMNNAME_DateGeneral, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_DateGeneral, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 5) })
 	private final Timestamp date;
 
 	private final int productId;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
-			captionKey = I_X_MRP_ProductInfo_V.COLUMNNAME_Value, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_ProductValue, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10) })
 	private final String productValue;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
-			captionKey = I_X_MRP_ProductInfo_V.COLUMNNAME_ProductName, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_ProductName, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20) })
 	private final String productName;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
-			captionKey = I_X_MRP_ProductInfo_V.COLUMNNAME_M_Product_Category_ID, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_M_Product_Category_ID, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30) })
 	private final String productCategoryOrSubRowName;
 
 	// Zusage Lieferant
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
-			captionKey = I_X_MRP_ProductInfo_V.COLUMNNAME_PMM_QtyPromised_OnDate, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_PMM_QtyPromised_OnDate, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100) })
 	private final BigDecimal pmmQtyPromised;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
-			captionKey = I_X_MRP_ProductInfo_V.COLUMNNAME_QtyReserved_OnDate, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_QtyReserved_Sale, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
 	private final BigDecimal qtyReserved;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
-			captionKey = I_X_MRP_ProductInfo_V.COLUMNNAME_QtyOrdered_OnDate, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_QtyReserved_Purchase, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
 	private final BigDecimal qtyOrdered;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
-			captionKey = I_X_MRP_ProductInfo_V.COLUMNNAME_QtyMaterialentnahme, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_QtyMaterialentnahme, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
 	private final BigDecimal qtyMaterialentnahme;
 
@@ -112,13 +112,13 @@ public class MaterialCockpitRow implements IViewRow
 
 	// Zaehlbestand
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
-			captionKey = I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyOnHand_OnDate, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_QtyOnHandEstimate, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
 	private final BigDecimal qtyOnHand;
 
 	// zusagbar Zaehlbestand
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
-			captionKey = I_X_MRP_ProductInfo_V.COLUMNNAME_Fresh_QtyPromised, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_QtyAvailableToPromise, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
 	private final BigDecimal qtyPromised;
 

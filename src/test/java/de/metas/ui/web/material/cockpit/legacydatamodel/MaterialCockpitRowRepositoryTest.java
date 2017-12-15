@@ -1,17 +1,20 @@
-package de.metas.ui.web.material.cockpit;
+package de.metas.ui.web.material.cockpit.legacydatamodel;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.IQuery;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory.MaterialCockpitRowFactory;
 
 /*
  * #%L
@@ -26,33 +29,37 @@ import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class MaterialCockpitFiltersTest
+public class MaterialCockpitRowRepositoryTest
 {
+	private MaterialCockpitRowRepository materialCockpitRowRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		materialCockpitRowRepository = new MaterialCockpitRowRepository(
+				new MaterialCockpitFilters(),
+				new MaterialCockpitRowFactory());
 	}
 
 	@Test
-	public void createQuery_when_emptyFilters_then_retrieve_nothing()
+	public void retrieveRows_when_emptyFilters_then_return_nothing()
 	{
 		final I_X_MRP_ProductInfo_Detail_MV record = newInstance(I_X_MRP_ProductInfo_Detail_MV.class);
 		save(record);
 
-		final IQuery<I_X_MRP_ProductInfo_Detail_MV> query = new MaterialCockpitFilters().createQuery(ImmutableList.of());
-		assertThat(query).isNotNull();
-		assertThat(query.list()).isEmpty();
+		final List<MaterialCockpitRow> result = materialCockpitRowRepository.retrieveRows(ImmutableList.of());
+		assertThat(result).isEmpty();;
 	}
 
 }

@@ -1,4 +1,4 @@
-package de.metas.ui.web.material.cockpit.rowfactory;
+package de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -33,7 +33,11 @@ import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
-import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
+import de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory.AttributeSubRowBucket;
+import de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory.MainRowBucket;
+import de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory.MainRowBucketId;
+import de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory.MaterialCockpitRowFactory;
+import de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
 
 /*
  * #%L

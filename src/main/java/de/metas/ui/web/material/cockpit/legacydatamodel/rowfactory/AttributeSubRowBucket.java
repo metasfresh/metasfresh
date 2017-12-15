@@ -1,9 +1,9 @@
-package de.metas.ui.web.material.cockpit.rowfactory;
+package de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory;
 
 import java.math.BigDecimal;
 
 import de.metas.dimension.DimensionSpecGroup;
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import lombok.Data;
 import lombok.NonNull;
@@ -66,13 +66,13 @@ public class AttributeSubRowBucket
 		this.dimensionSpecGroup = dimensionSpecGroup;
 	}
 
-	public void addDataRecord(@NonNull final I_MD_Cockpit dataRecord)
+	public void addDataRecord(@NonNull final I_X_MRP_ProductInfo_Detail_MV dataRecord)
 	{
 		pmmQtyPromised = pmmQtyPromised.add(dataRecord.getPMM_QtyPromised_OnDate());
 		qtyMaterialentnahme = qtyMaterialentnahme.add(dataRecord.getQtyMaterialentnahme());
-		qtyMrp = qtyMrp.add(dataRecord.getQtyRequiredForProduction());
-		qtyOrdered = qtyOrdered.add(dataRecord.getQtyReserved_Purchase());
-		qtyReserved = qtyReserved.add(dataRecord.getQtyReserved_Sale());
+		qtyMrp = qtyMrp.add(dataRecord.getFresh_QtyMRP());
+		qtyOrdered = qtyOrdered.add(dataRecord.getQtyOrdered_OnDate());
+		qtyReserved = qtyReserved.add(dataRecord.getQtyReserved_OnDate());
 	}
 
 	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowBucket mainRowBucket)

@@ -44,7 +44,9 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@ViewFactory(windowId = MaterialCockpitConstants.WINDOWID_MaterialCockpitView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
+@ViewFactory(
+		windowId = MaterialCockpitConstants.WINDOWID_MaterialCockpitView_String,
+		viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class MaterialCockpitViewFactory implements IViewFactory
 {
 	private final MaterialCockpitRowRepository materialCockpitRowRepository;
@@ -113,5 +115,4 @@ public class MaterialCockpitViewFactory implements IViewFactory
 
 		return viewlayOutBuilder.build();
 	}
-
 }

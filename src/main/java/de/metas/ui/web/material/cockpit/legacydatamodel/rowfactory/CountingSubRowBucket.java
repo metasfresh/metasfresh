@@ -1,8 +1,8 @@
-package de.metas.ui.web.material.cockpit.rowfactory;
+package de.metas.ui.web.material.cockpit.legacydatamodel.rowfactory;
 
 import java.math.BigDecimal;
 
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -55,9 +55,9 @@ public class CountingSubRowBucket
 		this.plantId = plantId;
 	}
 
-	public void addDataRecord(@NonNull final I_MD_Cockpit dataRecord)
+	public void addDataRecord(@NonNull final I_Fresh_QtyOnHand_Line dataRecord)
 	{
-		qtyOnHand = qtyOnHand.add(dataRecord.getQtyOnHandEstimate());
+		qtyOnHand = qtyOnHand.add(dataRecord.getQtyCount());
 	}
 
 	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowBucket mainRowBucket)
