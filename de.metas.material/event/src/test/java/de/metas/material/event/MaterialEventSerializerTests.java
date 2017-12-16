@@ -9,8 +9,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import org.adempiere.util.Services;
+import org.adempiere.util.UnitTestServiceNamePolicy;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
+import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.event.SimpleObjectSerializer;
@@ -68,6 +71,12 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 
 public class MaterialEventSerializerTests
 {
+	@Before
+	public void init()
+	{
+		Services.setServiceNameAutoDetectPolicy(new UnitTestServiceNamePolicy());
+	}
+
 	@Test
 	public void ddOrderRequestedEvent()
 	{

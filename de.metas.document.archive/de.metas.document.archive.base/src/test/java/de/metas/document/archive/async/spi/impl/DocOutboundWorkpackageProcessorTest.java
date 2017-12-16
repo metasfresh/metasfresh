@@ -2,6 +2,8 @@ package de.metas.document.archive.async.spi.impl;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.adempiere.util.UnitTestServiceNamePolicy;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_Test;
@@ -49,6 +51,8 @@ public class DocOutboundWorkpackageProcessorTest
 	@Before
 	public void init()
 	{
+		Services.setServiceNameAutoDetectPolicy(new UnitTestServiceNamePolicy());
+		
 		processor = new DocOutboundWorkpackageProcessor();
 	}
 	
