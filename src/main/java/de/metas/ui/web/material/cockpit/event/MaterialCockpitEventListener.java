@@ -6,6 +6,7 @@ import java.util.List;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -49,6 +50,10 @@ import lombok.NonNull;
  */
 
 @Service
+// needs to be lazy because somwhere down the road, MaterialEventService wants to get something from AD_SystemConfig
+//..and that means thhe DB has to be there..
+// without lazy, it might just get the PlainSysConfigDAO
+@Lazy
 public class MaterialCockpitEventListener implements MaterialEventListener
 {
 	private final DataUpdateRequestHandler dataUpdateRequestHandler;
