@@ -202,7 +202,7 @@ public class WEBUI_M_HU_Transform
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
 
-		if (!getSelectedDocumentIds().isSingleDocumentId())
+		if (!getSelectedRowIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
@@ -280,7 +280,7 @@ public class WEBUI_M_HU_Transform
 	/** @return true if view was changed and needs invalidation */
 	private final boolean removeSelectedRowsIfHUDestoyed()
 	{
-		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
 		if (selectedRowIds.isEmpty())
 		{
 			return false;

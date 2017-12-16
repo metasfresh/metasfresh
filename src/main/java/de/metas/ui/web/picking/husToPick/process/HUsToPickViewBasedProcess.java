@@ -50,7 +50,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 	protected final Stream<HUEditorRow> retrieveEligibleHUEditorRows()
 	{
 		return getView()
-				.streamByIds(getSelectedDocumentIds())
+				.streamByIds(getSelectedRowIds())
 				.filter(this::isEligible);
 	}
 

@@ -57,7 +57,7 @@ public class WEBUI_PackingHUsView_AddHUsToShipperTransportation extends HUEditor
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (getSelectedDocumentIds().isEmpty())
+		if (getSelectedRowIds().isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}

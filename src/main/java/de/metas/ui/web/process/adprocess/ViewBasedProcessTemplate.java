@@ -215,12 +215,6 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		return _viewRowIdsSelection.getRowIds();
 	}
 
-	@Deprecated
-	protected final DocumentIdsSelection getSelectedDocumentIds()
-	{
-		return getSelectedRowIds();
-	}
-
 	@OverridingMethodsMustInvokeSuper
 	protected IViewRow getSingleSelectedRow()
 	{
