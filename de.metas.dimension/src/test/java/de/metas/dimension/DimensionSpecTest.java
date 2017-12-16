@@ -75,7 +75,7 @@ public class DimensionSpecTest
 		assertThat(groups).hasSize(4);
 		assertThat(groups.get(0).isEmptyGroup()).isTrue();
 		assertThat(groups.get(0).getGroupName().getDefaultValue()).isEqualTo(DimensionConstants.MSG_NoneOrEmpty);
-		assertThat(groups.get(0).getAttributesKey().getAttributeValueIds()).isEmpty();
+		assertThat(groups.get(0).getAttributesKey().isNone()).isTrue();
 
 		// attr1 has two values, but just one of them is "explicitly" added to dimSpecAttr1 which has isIncludeAllAttributeValues=false
 		assertThat(groups.get(1).isEmptyGroup()).isFalse();
@@ -130,7 +130,7 @@ public class DimensionSpecTest
 		assertThat(groups).hasSize(3);
 		assertThat(groups.get(0).isEmptyGroup()).isTrue();
 		assertThat(groups.get(0).getGroupName().getDefaultValue()).isEqualTo(DimensionConstants.MSG_NoneOrEmpty);
-		assertThat(groups.get(0).getAttributesKey().getAttributeValueIds()).isEmpty();
+		assertThat(groups.get(0).getAttributesKey().isNone()).isTrue();
 
 		// attr1 has two values, but just one of them is "explicitly" added to dimSpecAttr1 which has isIncludeAllAttributeValues=false
 		assertThat(groups.get(1).isEmptyGroup()).isFalse();
