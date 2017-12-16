@@ -55,7 +55,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 
 /**
  * Browse Picking slots
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh/issues/518
  */
@@ -69,7 +69,7 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 	@Autowired
 	private PickingSlotViewRepository pickingSlotRepo;
 
-	private CCache<Integer, DocumentFilterDescriptorsProvider> filterDescriptorsProviderCache = CCache.newCache("PickingSlotsClearingViewFactory.FilterDescriptorsProvider", 1, CCache.EXPIREMINUTES_Never);
+	private final CCache<Integer, DocumentFilterDescriptorsProvider> filterDescriptorsProviderCache = CCache.newCache("PickingSlotsClearingViewFactory.FilterDescriptorsProvider", 1, CCache.EXPIREMINUTES_Never);
 
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, @Nullable final ViewProfileId profileId)
@@ -140,12 +140,17 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 		// TODO: cache it
 
 		return ImmutableList.of(
-				// allow to open the HU-editor for various picking related purposes
-				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retrieveProcessIdByClass(WEBUI_PickingSlotsClearingView_TakeOutHU.class))
-						.anyTable().anyWindow()
-						.webuiQuickAction(true)
-						.build());
+				createProcessDescriptor(WEBUI_PickingSlotsClearingView_TakeOutHU.class),
+				createProcessDescriptor(de.metas.ui.web.process.adprocess.WEBUI_TestParentChildViewParams.class));
+	}
+
+	private RelatedProcessDescriptor createProcessDescriptor(final Class<?> processClass)
+	{
+		return RelatedProcessDescriptor.builder()
+				.processId(adProcessDAO.retrieveProcessIdByClass(processClass))
+				.anyTable().anyWindow()
+				.webuiQuickAction(true)
+				.build();
 	}
 
 }
