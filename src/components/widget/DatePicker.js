@@ -5,6 +5,14 @@ import { connect } from "react-redux";
 
 import { addNotification } from "../../actions/AppActions";
 
+const propTypes = {
+  dispatch: PropTypes.func.isRequired,
+  handleBackdropLock: PropTypes.func,
+  patch: PropTypes.func,
+  field: PropTypes.string,
+  value: PropTypes.object
+};
+
 class DatePicker extends Component {
   constructor(props) {
     super(props);
@@ -59,6 +67,10 @@ class DatePicker extends Component {
     this.handleClose();
   };
 
+  handleKeydown = e => {
+    e.stopPropagation();
+  };
+
   renderDay = (props, currentDate) => {
     return (
       <td {...props} onDoubleClick={() => this.handleClose()}>
@@ -75,20 +87,20 @@ class DatePicker extends Component {
 
   render() {
     return (
-      <Datetime
-        closeOnTab={true}
-        renderDay={this.renderDay}
-        renderInput={this.renderInput}
-        onBlur={this.handleBlur}
-        onFocus={this.handleFocus}
-        {...this.props}
-      />
+      <div tabIndex="-1" onKeyDown={this.handleKeydown}>
+        <Datetime
+          closeOnTab={true}
+          renderDay={this.renderDay}
+          renderInput={this.renderInput}
+          onBlur={this.handleBlur}
+          onFocus={this.handleFocus}
+          {...this.props}
+        />
+      </div>
     );
   }
 }
 
-DatePicker.propTypes = {
-  dispatch: PropTypes.func.isRequired
-};
+DatePicker.propTypes = propTypes;
 
 export default connect()(DatePicker);
