@@ -153,9 +153,8 @@ public class Services
 		return interceptor;
 	}
 
-	// using the unit test policy by default. that way not all unit tests have to remember this step
-	// note that the Adempiere.java sets this to DefaultServiceNamePolicy
-	private static IServiceNameAutoDetectPolicy serviceNameAutoDetectPolicy = new UnitTestServiceNamePolicy();
+	// shall not be initialized by default
+	private static IServiceNameAutoDetectPolicy serviceNameAutoDetectPolicy = null;
 
 	public static void setAutodetectServices(boolean enable)
 	{
@@ -276,6 +275,9 @@ public class Services
 	{
 		assertValidServiceInterfaceClass(serviceInterfaceClass);
 
+		final IServiceNameAutoDetectPolicy serviceNameAutoDetectPolicy = Services.serviceNameAutoDetectPolicy;
+		Check.assumeNotNull(serviceNameAutoDetectPolicy, "Services.serviceNameAutoDetectPolicy shall be initialized");
+		
 		//
 		// Find service implementation class
 		final String serviceClassname = serviceNameAutoDetectPolicy.getServiceImplementationClassName(serviceInterfaceClass);
@@ -424,7 +426,7 @@ public class Services
 		}
 	}
 
-	public static void setServiceNameAutoDetectPolicy(final IServiceNameAutoDetectPolicy serviceNameAutoDetectPolicy)
+	public static synchronized void setServiceNameAutoDetectPolicy(final IServiceNameAutoDetectPolicy serviceNameAutoDetectPolicy)
 	{
 		Check.assumeNotNull(serviceNameAutoDetectPolicy, "Param 'serviceNameAutoDetectPolicy' not null");
 
