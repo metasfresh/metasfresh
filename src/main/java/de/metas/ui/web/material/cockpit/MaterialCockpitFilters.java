@@ -64,11 +64,15 @@ public class MaterialCockpitFilters
 	private static final String MSG_DATE = "Date";
 	private static final String MATERIAL_COCKPIT_DATE_ONLY_FILTER = "materialCockpitDateOnlyFilter";
 
-	private final ImmutableList<DocumentFilterDescriptor> filterDescriptors;
+	private ImmutableList<DocumentFilterDescriptor> filterDescriptors;
 
-	public MaterialCockpitFilters()
+	public List<DocumentFilterDescriptor> getFilterDescriptors()
 	{
-		filterDescriptors = createFilterDescriptors();
+		if (filterDescriptors == null)
+		{
+			filterDescriptors = createFilterDescriptors();
+		}
+		return filterDescriptors;
 	}
 
 	private ImmutableList<DocumentFilterDescriptor> createFilterDescriptors()
@@ -123,11 +127,6 @@ public class MaterialCockpitFilters
 				.addParameter(productValueParameter)
 				.build();
 		return filterDescriptor;
-	}
-
-	public List<DocumentFilterDescriptor> getFilterDescriptors()
-	{
-		return filterDescriptors;
 	}
 
 	public ImmutableList<DocumentFilter> createAutoFilters()
