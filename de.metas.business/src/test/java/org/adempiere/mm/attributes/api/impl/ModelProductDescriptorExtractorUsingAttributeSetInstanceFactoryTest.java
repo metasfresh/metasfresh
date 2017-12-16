@@ -89,7 +89,7 @@ public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactoryTest
 		assertThat(productDescriptor).isNotNull();
 		assertThat(productDescriptor.getProductId()).isEqualTo(20);
 		assertThat(productDescriptor.getAttributeSetInstanceId()).isEqualTo(AttributeConstants.M_AttributeSetInstance_ID_None);
-		assertThat(productDescriptor.getStorageAttributesKey()).isEqualTo(AttributesKey.ALL);
+		assertThat(productDescriptor.getStorageAttributesKey()).isEqualTo(AttributesKey.NONE);
 	}
 
 	@Test
