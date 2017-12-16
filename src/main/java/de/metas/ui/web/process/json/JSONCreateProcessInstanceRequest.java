@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -83,17 +84,43 @@ public class JSONCreateProcessInstanceRequest
 	private final transient List<DocumentPath> selectedIncludedDocumentPaths;
 
 	//
-	// Called from view
+	// Called from view: viewId and selected rowIds
 	@JsonProperty("viewId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String viewId;
+	private final String viewIdStr;
 	//
 	@JsonProperty("viewDocumentIds")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final Set<String> viewDocumentIdsStrings;
 	//
 	@JsonIgnore
-	private final transient DocumentIdsSelection viewDocumentIds;
+	private final transient ViewRowIdsSelection viewRowIdsSelection;
+
+	//
+	// Called from view: parent viewId and selected rowIds
+	@JsonProperty("parentViewId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String parentViewIdStr;
+	//
+	@JsonProperty("parentViewSelectedIds")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final Set<String> parentViewSelectedIdsStrings;
+	//
+	@JsonIgnore
+	private final transient ViewRowIdsSelection parentViewRowIdsSelection;
+
+	//
+	// Called from view: child viewId and selected rowIds
+	@JsonProperty("childViewId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String childViewIdStr;
+	//
+	@JsonProperty("childViewSelectedIds")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final Set<String> childViewSelectedIdsStrings;
+	//
+	@JsonIgnore
+	private final transient ViewRowIdsSelection childViewRowIdsSelection;
 
 	@JsonCreator
 	private JSONCreateProcessInstanceRequest(
@@ -105,8 +132,15 @@ public class JSONCreateProcessInstanceRequest
 			@JsonProperty("selectedTab") final JSONSelectedIncludedTab selectedTab,
 			//
 			@JsonProperty("rowId") final String rowId,
-			@JsonProperty("viewId") final String viewId,
-			@JsonProperty("viewDocumentIds") final Set<String> viewDocumentIds)
+			//
+			@JsonProperty("viewId") final String viewIdStr,
+			@JsonProperty("viewDocumentIds") final Set<String> viewDocumentIdsStrings,
+			//
+			@JsonProperty("parentViewId") final String parentViewIdStr,
+			@JsonProperty("parentViewSelectedIds") final Set<String> parentViewDocumentIdsStrings,
+			//
+			@JsonProperty("childViewId") final String childViewIdStr,
+			@JsonProperty("childViewSelectedIds") final Set<String> childViewDocumentIdsStrings)
 	{
 		super();
 		this.processIdStr = processIdStr;
@@ -124,10 +158,27 @@ public class JSONCreateProcessInstanceRequest
 		selectedIncludedDocumentPaths = createSelectedIncludedDocumentPaths(windowId, documentId, selectedTab);
 
 		//
-		// Called from view
-		this.viewId = viewId;
-		viewDocumentIdsStrings = viewDocumentIds == null ? null : ImmutableSet.copyOf(viewDocumentIds);
-		this.viewDocumentIds = DocumentIdsSelection.ofStringSet(viewDocumentIdsStrings);
+		// When called from view: current viewId and selected rowIds
+		this.viewIdStr = viewIdStr;
+		this.viewDocumentIdsStrings = viewDocumentIdsStrings == null ? null : ImmutableSet.copyOf(viewDocumentIdsStrings);
+		if (viewIdStr != null && !viewIdStr.isEmpty())
+		{
+			final ViewId viewId = ViewId.ofViewIdString(viewIdStr, windowId);
+			final DocumentIdsSelection viewDocumentIds = DocumentIdsSelection.ofStringSet(viewDocumentIdsStrings);
+			viewRowIdsSelection = ViewRowIdsSelection.of(viewId, viewDocumentIds);
+		}
+		else
+		{
+			viewRowIdsSelection = null;
+		}
+
+		this.parentViewIdStr = parentViewIdStr;
+		this.parentViewSelectedIdsStrings = parentViewDocumentIdsStrings;
+		this.parentViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(parentViewIdStr, parentViewDocumentIdsStrings);
+
+		this.childViewIdStr = childViewIdStr;
+		this.childViewSelectedIdsStrings = childViewDocumentIdsStrings;
+		this.childViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(childViewIdStr, childViewDocumentIdsStrings);
 	}
 
 	@Override
@@ -142,8 +193,10 @@ public class JSONCreateProcessInstanceRequest
 				.add("tabId", tabId)
 				.add("rowId", rowId)
 				//
-				.add("viewId", viewId)
-				.add("viewDocumentIds", viewDocumentIds)
+				.add("viewRowIdsSelection", viewRowIdsSelection)
+				.add("parentViewRowIdsSelection", parentViewRowIdsSelection)
+				.add("childViewRowIdsSelection", childViewRowIdsSelection)
+				//
 				.add("selectedTab", selectedTab)
 				.toString();
 	}
@@ -175,18 +228,19 @@ public class JSONCreateProcessInstanceRequest
 		return singleDocumentPath;
 	}
 
-	public ViewId getViewId()
+	public ViewRowIdsSelection getViewRowIdsSelection()
 	{
-		if (viewId == null || viewId.isEmpty())
-		{
-			return null;
-		}
-		return ViewId.ofViewIdString(viewId, windowId);
+		return viewRowIdsSelection;
 	}
 
-	public DocumentIdsSelection getViewDocumentIds()
+	public ViewRowIdsSelection getParentViewRowIdsSelection()
 	{
-		return viewDocumentIds;
+		return parentViewRowIdsSelection;
+	}
+
+	public ViewRowIdsSelection getChildViewRowIdsSelection()
+	{
+		return childViewRowIdsSelection;
 	}
 
 	public List<DocumentPath> getSelectedIncludedDocumentPaths()

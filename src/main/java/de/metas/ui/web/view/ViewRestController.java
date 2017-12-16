@@ -7,7 +7,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.concurrent.AsyncIOStreamProducerExecutor;
@@ -58,6 +57,8 @@ import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -321,39 +322,81 @@ public class ViewRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	private Stream<WebuiRelatedProcessDescriptor> streamAllViewActions(final String windowId, final String viewIdStr, final String selectedRowIdsAsStringList)
+	@Builder(builderMethodName = "newPreconditionsContextBuilder")
+	private ViewAsPreconditionsContext createPreconditionsContext(
+			@NonNull final String windowId,
+			@NonNull final String viewIdString,
+			final String selectedIdsList,
+			final String parentViewId,
+			final String parentViewSelectedIdsList,
+			final String childViewId,
+			final String childViewSelectedIdsList)
 	{
-		final ViewId viewId = ViewId.of(windowId, viewIdStr);
-		final DocumentIdsSelection selectedRowIds = DocumentIdsSelection.ofCommaSeparatedString(selectedRowIdsAsStringList);
+		final ViewId viewId = ViewId.of(windowId, viewIdString);
 		final IView view = viewsRepo.getView(viewId);
-		final WebuiPreconditionsContext preconditionsContext = ViewAsPreconditionsContext.newInstance(view, selectedRowIds);
-		return processRestController.streamDocumentRelatedProcesses(preconditionsContext);
+
+		ViewRowIdsSelection viewRowIdsSelection = ViewRowIdsSelection.of(viewId, DocumentIdsSelection.ofCommaSeparatedString(selectedIdsList));
+		ViewRowIdsSelection parentViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(parentViewId, parentViewSelectedIdsList);
+		ViewRowIdsSelection childViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(childViewId, childViewSelectedIdsList);
+
+		return ViewAsPreconditionsContext.builder()
+				.view(view)
+				.viewRowIdsSelection(viewRowIdsSelection)
+				.parentViewRowIdsSelection(parentViewRowIdsSelection)
+				.childViewRowIdsSelection(childViewRowIdsSelection)
+				.build();
 	}
 
 	@GetMapping("/{viewId}/actions")
 	public JSONDocumentActionsList getDocumentActions(
-			@PathVariable(PARAM_WindowId) final String windowId //
-			, @PathVariable("viewId") final String viewIdStr//
-			, @RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr //
-	)
+			@PathVariable(PARAM_WindowId) final String windowId,
+			@PathVariable("viewId") final String viewIdStr,
+			@RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr,
+			@RequestParam(name = "parentViewId", required = false) final String parentViewIdStr,
+			@RequestParam(name = "parentViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String parentViewSelectedIdsListStr,
+			@RequestParam(name = "childViewId", required = false) final String childViewIdStr,
+			@RequestParam(name = "childViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String childViewSelectedIdsListStr)
 	{
 		userSession.assertLoggedIn();
 
-		return streamAllViewActions(windowId, viewIdStr, selectedIdsListStr)
+		final WebuiPreconditionsContext preconditionsContext = newPreconditionsContextBuilder()
+				.windowId(windowId)
+				.viewIdString(viewIdStr)
+				.selectedIdsList(selectedIdsListStr)
+				.parentViewId(parentViewIdStr)
+				.parentViewSelectedIdsList(parentViewSelectedIdsListStr)
+				.childViewId(childViewIdStr)
+				.childViewSelectedIdsList(childViewSelectedIdsListStr)
+				.build();
+
+		return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
 				.filter(WebuiRelatedProcessDescriptor::isEnabled) // only those which are enabled or not silent
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 
 	@GetMapping("/{viewId}/quickActions")
 	public JSONDocumentActionsList getDocumentQuickActions(
-			@PathVariable(PARAM_WindowId) final String windowId //
-			, @PathVariable("viewId") final String viewIdStr //
-			, @RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr //
-	)
+			@PathVariable(PARAM_WindowId) final String windowId,
+			@PathVariable("viewId") final String viewIdStr,
+			@RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr,
+			@RequestParam(name = "parentViewId", required = false) final String parentViewIdStr,
+			@RequestParam(name = "parentViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String parentViewSelectedIdsListStr,
+			@RequestParam(name = "childViewId", required = false) final String childViewIdStr,
+			@RequestParam(name = "childViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String childViewSelectedIdsListStr)
 	{
 		userSession.assertLoggedIn();
 
-		return streamAllViewActions(windowId, viewIdStr, selectedIdsListStr)
+		final WebuiPreconditionsContext preconditionsContext = newPreconditionsContextBuilder()
+				.windowId(windowId)
+				.viewIdString(viewIdStr)
+				.selectedIdsList(selectedIdsListStr)
+				.parentViewId(parentViewIdStr)
+				.parentViewSelectedIdsList(parentViewSelectedIdsListStr)
+				.childViewId(childViewIdStr)
+				.childViewSelectedIdsList(childViewSelectedIdsListStr)
+				.build();
+
+		return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
 				.filter(WebuiRelatedProcessDescriptor::isQuickAction)
 				.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent) // only those which are enabled or not silent
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));

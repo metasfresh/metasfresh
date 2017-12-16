@@ -25,12 +25,11 @@ import org.adempiere.util.lang.MutableInt;
  */
 
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
-import de.metas.ui.web.process.ViewAsPreconditionsContext;
+import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /**
  * Common base class to dedupliate code.
@@ -38,31 +37,25 @@ import de.metas.ui.web.process.ViewAsPreconditionsContext;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public abstract class WEBUI_M_HU_Receipt_Base extends JavaProcess implements IProcessPrecondition
+public abstract class WEBUI_M_HU_Receipt_Base extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final ViewAsPreconditionsContext viewContext = ViewAsPreconditionsContext.castOrNull(context);
-		if (viewContext == null)
+		if (!isViewClass(HUEditorView.class))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("webui view not available");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("The current view is not an HUEditorView");
 		}
 
-		final boolean isHUView = viewContext.getView() instanceof HUEditorView;
-		if (!isHUView)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("The current view is not an HUEditorView; view=" + viewContext.getView() + ";");
-		}
-
-		if (viewContext.isNoSelection())
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+		if (selectedRowIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
 		final MutableInt checkedDocumentsCount = new MutableInt(0);
-		final ProcessPreconditionsResolution firstRejection = viewContext.getView(HUEditorView.class)
-				.streamByIds(viewContext.getSelectedDocumentIds())
+		final ProcessPreconditionsResolution firstRejection = getView(HUEditorView.class)
+				.streamByIds(selectedRowIds)
 				.filter(document -> document.isPureHU())
 				//
 				.peek(document -> checkedDocumentsCount.incrementAndGet()) // count checked documents

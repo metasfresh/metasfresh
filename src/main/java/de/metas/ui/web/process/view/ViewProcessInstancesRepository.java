@@ -147,7 +147,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 				.pinstanceId(pinstanceId)
 				.view(view)
 				.viewActionDescriptor(viewActionDescriptor)
-				.selectedDocumentIds(request.getViewDocumentIds())
+				.selectedDocumentIds(request.getViewRowIdsSelection().getRowIds())
 				.build();
 		request.assertProcessIdEquals(viewActionInstance.getProcessId());
 		viewActionInstancesList.add(viewActionInstance);

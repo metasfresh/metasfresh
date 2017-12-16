@@ -9,7 +9,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.model.I_M_InOut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -18,15 +17,12 @@ import de.metas.handlingunits.inout.ReceiptCorrectHUsProcessor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
@@ -65,16 +61,6 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 	@Autowired
 	private DocumentCollection documentsCollection;
 
-	@Param(parameterName = ViewBasedProcessTemplate.PARAM_ViewWindowId, mandatory = true)
-	private String p_WebuiViewWindowId;
-	@Param(parameterName = ViewBasedProcessTemplate.PARAM_ViewId, mandatory = true)
-	private String p_WebuiViewIdStr;
-
-	public WEBUI_M_HU_ReverseReceipt()
-	{
-		Adempiere.autowire(this);
-	}
-
 	/**
 	 * Only allows rows whose HUs are in the "active" status.
 	 */
@@ -83,7 +69,7 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 	{
 		if (!document.isHUStatusActive())
 		{
-			return ProcessPreconditionsResolution.reject("Only active HUs can be reversed"); // TODO: trl
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Only active HUs can be reversed"); // TODO: trl
 		}
 		return null;
 	}
@@ -139,10 +125,10 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 		return MSG_OK;
 	}
 
-	private HUEditorView getView()
+	@Override
+	protected HUEditorView getView()
 	{
-		final ViewId viewId = ViewId.of(p_WebuiViewWindowId, p_WebuiViewIdStr);
-		return viewsRepo.getView(viewId, HUEditorView.class);
+		return getView(HUEditorView.class);
 	}
 
 	private List<I_M_ReceiptSchedule> getM_ReceiptSchedules()
