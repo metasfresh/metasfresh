@@ -74,6 +74,8 @@ import de.metas.logging.LogManager;
  */
 public class Adempiere
 {
+	public static final String BEANNAME = "adempiere";
+	
 	/**
 	 * The "raw" unsubstituted version string from <code>/de.metas.endcustomer..base/src/main/resources/org/adempiere/version.properties</code>
 	 */
