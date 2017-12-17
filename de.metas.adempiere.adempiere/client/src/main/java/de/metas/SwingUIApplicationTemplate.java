@@ -45,9 +45,9 @@ import lombok.NonNull;
  */
 
 /**
- * Swing application starter.
+ * Swing application starter template. To be extended in "swing distribution" projects.
  * 
- * WARNING: please keep in sync with all other SwingUIApplications
+ * Usually, in extending classes you just have to declare the "main" method and call {@link #main(Class, String[])}.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
