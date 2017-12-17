@@ -141,7 +141,7 @@ public class ServerBoot
 		}
 	}
 
-	@Bean
+	@Bean(Adempiere.BEANNAME)
 	public Adempiere adempiere()
 	{
 		final IHouseKeepingBL houseKeepingRegistry = Services.get(IHouseKeepingBL.class);
