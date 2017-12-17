@@ -9,8 +9,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -49,6 +51,7 @@ import lombok.NonNull;
  */
 
 @Component
+@DependsOn(Adempiere.BEANNAME) // we need adempiere because we need to initialize Services first
 public class InvoiceCandidateGroupRepository implements GroupRepository
 {
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
