@@ -133,7 +133,7 @@ public final class AMenu extends CFrame implements ActionListener, PropertyChang
 		{
 			login(ctx, splash);
 	
-			final AMenu mainWindow = new AMenu(ctx, splash);
+			final AMenu mainWindow = new AMenu(ctx);
 			Env.setMainWindow(mainWindow);
 			return mainWindow;
 		}
@@ -151,7 +151,7 @@ public final class AMenu extends CFrame implements ActionListener, PropertyChang
 	/**
 	 * Application Start and Menu
 	 */
-	private AMenu(final Properties ctx, final Splash splash)
+	private AMenu(final Properties ctx)
 	{
 		m_ctx = ctx;
 		m_WindowNo = Env.WINDOW_MAIN;
@@ -358,7 +358,7 @@ public final class AMenu extends CFrame implements ActionListener, PropertyChang
 	 *
 	 * @throws Exception
 	 */
-	void jbInit()
+	private void jbInit()
 	{
 		this.setName("Menu");
 		this.setLocale(Env.getLanguage(m_ctx).getLocale());
