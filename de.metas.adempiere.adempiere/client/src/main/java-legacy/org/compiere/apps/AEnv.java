@@ -70,7 +70,6 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Splash;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
@@ -751,16 +750,6 @@ public final class AEnv
 	{
 		Env.exitEnv(status);
 	}	// exit
-
-	public static void logout()
-	{
-		Env.logout();
-
-		Splash.getSplash().setVisible(true);
-
-		// reload
-		new AMenu();
-	}
 
 	/**
 	 * Is Workflow Process view enabled.

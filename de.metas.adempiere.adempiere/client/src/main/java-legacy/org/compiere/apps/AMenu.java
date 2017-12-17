@@ -23,7 +23,6 @@ import java.awt.Event;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,6 +33,7 @@ import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Properties;
+import java.util.concurrent.Future;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -47,18 +47,17 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.apps.graph.PAPanel;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.ui.api.IWindowBL;
 import org.adempiere.ui.notifications.SwingEventNotifierService;
 import org.adempiere.util.Services;
+import org.adempiere.util.concurrent.FutureValue;
 import org.compiere.Adempiere;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.search.InfoWindowMenuBuilder;
@@ -69,8 +68,6 @@ import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.MTreeNode;
-import org.compiere.print.ReportCtl;
-import org.compiere.print.SwingViewerProvider;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CFrame;
 import org.compiere.swing.CPanel;
@@ -84,10 +81,8 @@ import org.compiere.wf.api.IADWorkflowBL;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.form.swing.SwingClientUI;
 import de.metas.adempiere.model.I_AD_Form;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**
@@ -101,35 +96,67 @@ import de.metas.logging.LogManager;
  * @see FR [ 1966328 ] New Window Info to MRP and CRP into View http://sourceforge.net/tracker/index.php?func=detail&aid=1966328&group_id=176962&atid=879335
  *
  */
-public final class AMenu extends CFrame
-		implements ActionListener, PropertyChangeListener
+@SuppressWarnings("serial")
+public final class AMenu extends CFrame implements ActionListener, PropertyChangeListener
 {
-	private static final long serialVersionUID = 5255914306969824011L;
+	public static final Future<AMenu> loginAndStartAsync()
+	{
+		final FutureValue<AMenu> futureMainWindow = new FutureValue<>();
+		final Runnable runnable = () -> {
+			try
+			{
+				final AMenu mainWindow = loginAndStartNow();
+				futureMainWindow.set(mainWindow);
+			}
+			catch (Exception ex)
+			{
+				futureMainWindow.setError(ex);
+			}
+		};
+
+		final Thread thread = new Thread(runnable, "SwingStarter");
+		thread.start();
+
+		return futureMainWindow;
+	}
+
+	private static final AMenu loginAndStartNow()
+	{
+		final Properties ctx = Env.getCtx();
+		
+		final Splash splash = Splash.showSplash();
+		splash.setText(Services.get(IMsgBL.class).getMsg(ctx, "Loading"));
+		splash.toFront();
+		splash.paint(splash.getGraphics());
+		
+		try
+		{
+			login(ctx, splash);
+	
+			final AMenu mainWindow = new AMenu(ctx, splash);
+			Env.setMainWindow(mainWindow);
+			return mainWindow;
+		}
+		finally
+		{
+			// Hide slash
+			splash.dispose();
+		}
+	}
 
 	// services
+	private static final Logger log = LogManager.getLogger(AMenu.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	/**
 	 * Application Start and Menu
 	 */
-	public AMenu()
+	private AMenu(final Properties ctx, final Splash splash)
 	{
-		super();
-		Splash splash = Splash.getSplash();
-		//
-		m_WindowNo = Env.createWindowNo(this);
-		// Login
-		initSystem(splash);        // login
-		splash.setText(msgBL.getMsg(m_ctx, "Loading"));
-		splash.toFront();
-		splash.paint(splash.getGraphics());
+		m_ctx = ctx;
+		m_WindowNo = Env.WINDOW_MAIN;
 
-		//
-		if (!Adempiere.startupEnvironment(true))       // Load Environment
-		{
-			System.exit(1);
-		}
-		Services.get(ISessionBL.class).getCurrentOrCreateNewSession(m_ctx);		// Start Session
+		this.setIconImage(Adempiere.getProductIconSmall());
 
 		// Preparation
 		treePanel = new VTreePanel(m_WindowNo, true, false);	// !editable & hasBar
@@ -137,7 +164,6 @@ public final class AMenu extends CFrame
 		try
 		{
 			jbInit();
-			createMenu();
 		}
 		catch (Exception ex)
 		{
@@ -145,7 +171,6 @@ public final class AMenu extends CFrame
 		}
 
 		m_AD_User_ID = Env.getAD_User_ID(m_ctx);
-		m_AD_Role_ID = Env.getAD_Role_ID(m_ctx);
 
 		// initialize & load tree
 		final int AD_Tree_ID = retrieveMenuTreeId(m_ctx);
@@ -189,12 +214,7 @@ public final class AMenu extends CFrame
 		// Setting close operation/listener - teo_sarca [ 1684168 ]
 		mainWindow.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		mainWindow.addWindowListener(mainWindowListener);
-
-		//
-		// Hide slash
-		splash.dispose();
-		splash = null;
-	}	// AMenu
+	}
 
 	/**
 	 * Sets window position, window dimension and shows it.
@@ -244,27 +264,22 @@ public final class AMenu extends CFrame
 	}
 
 	private final int m_WindowNo;
-	private final Properties m_ctx = Env.getCtx();
+	private final Properties m_ctx;
 	private boolean busy = false;
 	/** The User */
 	private int m_AD_User_ID;
-	/** The Role */
-	private int m_AD_Role_ID;
 
 	// Links
 	private int m_request_Menu_ID = 237; // hardcoded. Vorgang
 	private int m_note_Menu_ID = 0;
 	private String m_requestSQL = null;
-	// private DecimalFormat m_memoryFormat = DisplayType.getNumberFormat(DisplayType.Integer);
-	/** Logger */
-	private static Logger log = LogManager.getLogger(AMenu.class);
 
 	/** The Info Update instance **/
 	private InfoUpdater infoUpdater = null;
 	/** The Info Update thread **/
 	private Thread infoUpdaterThread = null;
 
-	private WindowManager windowManager = new WindowManager();
+	private final WindowManager windowManager = new WindowManager();
 
 	private JFrame mainWindow;
 	private final WindowListener mainWindowListener = new WindowAdapter()
@@ -286,7 +301,7 @@ public final class AMenu extends CFrame
 		@Override
 		public void windowClosed(final WindowEvent e)
 		{
-			// NOTE: here we are handling the case when user closes the window from a programatically button
+			// NOTE: here we are handling the case when user closes the window from a programmatically button
 			if (mainWindow == null || e.getWindow() != mainWindow)
 			{
 				return;
@@ -295,36 +310,11 @@ public final class AMenu extends CFrame
 		}
 	};
 
-	/**************************************************************************
-	 * Init System. -- do not get Msg as environment not initialized yet --
-	 *
-	 * <pre>
-	 * - Login - in not successful, exit
-	 * </pre>
-	 *
-	 * @param splash splash window
-	 */
-	private void initSystem(final Splash splash)
+	private static void login(final Properties ctx, final Splash splash)
 	{
-		// Default Image
-		this.setIconImage(Adempiere.getProductIconSmall());
-
-		// Focus Traversal
-		KeyboardFocusManager.setCurrentKeyboardFocusManager(AKeyboardFocusManager.get());
-		// FocusManager.getCurrentManager().setDefaultFocusTraversalPolicy(AFocusTraversalPolicy.get());
-		// this.setFocusTraversalPolicy(AFocusTraversalPolicy.get());
-
-		// Register Swing ClientUI service
-		Services.registerService(IClientUI.class, new SwingClientUI());
-
-		ReportCtl.setDefaultReportEngineReportViewerProvider(SwingViewerProvider.instance);
-
-		/**
-		 * Show Login Screen - if not successful - exit
-		 */
 		log.trace("Login");
 
-		final ALogin login = new ALogin(splash, m_ctx);
+		final ALogin login = new ALogin(splash, ctx);
 		if (!login.initLogin())      		// no automatic login
 		{
 			// Center the window
@@ -332,30 +322,24 @@ public final class AMenu extends CFrame
 			{
 				AEnv.showCenterScreen(login);	// HTML load errors
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
-				log.error(ex.toString());
+				log.error("Failed displaying login screen", ex);
 			}
+
 			if (!login.isConnected() || !login.isOKpressed())
+			{
 				AEnv.exit(1);
+			}
 		}
-
-		// Check Build
-		// we already check the server version via ClientUpdateValidator and that's enough
-		// if (!DB.isBuildOK(m_ctx))
-		// AEnv.exit(1);
-
-		// Check DB (AppsServer Version checked in Login)
-		// DB.isDatabaseOK(m_ctx); // we already check the server version via ClientUpdateValidator and that's enough
-	}	// initSystem
+	}
 
 	// UI
-	private JMenuBar menuBar = new JMenuBar();
 	private CButton bNotes = new CButton();
 	private CButton bRequests = new CButton();
 	// Tabs
 	private PAPanel paPanel = null;
-	private VTreePanel treePanel = null;
+	private final VTreePanel treePanel;
 	private WindowMenu m_WindowMenu;
 
 	/**
@@ -374,11 +358,11 @@ public final class AMenu extends CFrame
 	 *
 	 * @throws Exception
 	 */
-	void jbInit() throws Exception
+	void jbInit()
 	{
 		this.setName("Menu");
-		this.setLocale(Language.getLoginLanguage().getLocale());
-		this.setJMenuBar(menuBar);
+		this.setLocale(Env.getLanguage(m_ctx).getLocale());
+		this.setJMenuBar(createMenu());
 
 		//
 		final CPanel mainPanel = new CPanel();
@@ -462,8 +446,10 @@ public final class AMenu extends CFrame
 	/**
 	 * Create Menu
 	 */
-	private void createMenu()
+	private JMenuBar createMenu()
 	{
+		final JMenuBar menuBar = new JMenuBar();
+
 		// File
 		JMenu mFile = AEnv.getMenu("File");
 		menuBar.add(mFile);
@@ -512,6 +498,8 @@ public final class AMenu extends CFrame
 		AEnv.addMenuItem("Online", null, null, mHelp, this);
 		AEnv.addMenuItem("EMailSupport", null, null, mHelp, this);
 		AEnv.addMenuItem("About", null, null, mHelp, this);
+
+		return menuBar;
 	} // createMenu
 
 	/**
@@ -572,7 +560,9 @@ public final class AMenu extends CFrame
 			windowManager.close();
 			preDispose();
 			super.dispose();
-			AEnv.logout();
+			
+			Env.logout();
+			AMenu.loginAndStartAsync();
 		}
 		catch (Exception ex)
 		{
@@ -656,6 +646,8 @@ public final class AMenu extends CFrame
 			gotoRequests();
 		else if (WindowMenu.ShowAllWindows_ActionName.equals(e.getActionCommand()))
 			m_WindowMenu.expose();
+		else if ("Logout".equals(e.getActionCommand()))
+			logout();
 		else if (!AEnv.actionPerformed(e.getActionCommand(), m_WindowNo, this))
 			log.error("unknown action=" + e.getActionCommand());
 		// updateInfo();
@@ -668,7 +660,7 @@ public final class AMenu extends CFrame
 	 */
 	private int getNotes()
 	{
-		final int retValue = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Note.class, new PlainContextAware(m_ctx))
+		final int retValue = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Note.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Note.COLUMN_AD_User_ID, m_AD_User_ID)
 				.addEqualsFilter(I_AD_Note.COLUMNNAME_Processed, false) // not yet acknowledged.

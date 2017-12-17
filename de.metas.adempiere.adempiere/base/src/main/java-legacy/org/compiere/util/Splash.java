@@ -24,7 +24,6 @@ import java.awt.Image;
 import java.awt.Label;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.util.Locale;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -33,6 +32,7 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
 import org.adempiere.plaf.MetasFreshTheme;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.Adempiere;
 
 /**
@@ -59,71 +59,47 @@ public class Splash extends Frame
 	 *
 	 * @return Splash Screen
 	 */
-	public static Splash getSplash()
+	public static Splash showSplash()
 	{
-		String msg;
-		if (Locale.getDefault().getLanguage().equals("es"))
-		{
-			msg = new String("Cargando...");
-		}
-		else
-		{
-			// Default english
-			msg = new String("Loading...");
-		}
-		return getSplash(msg);
+		return showSplash("Loading...");
 	}   // getSplash
 
 	/**
-	 * Get Splash Screen
+	 * Show slash screen
 	 *
 	 * @param text splash text
 	 * @return Splash Screen
 	 */
-	public static Splash getSplash(final String text)
+	public static Splash showSplash(final String text)
 	{
-		if (s_splash == null)
-		{
-			s_splash = new Splash(text);
-		}
-		else
-		{
-			s_splash.setText(text);
-		}
-		return s_splash;
+		final Splash splash = staticSplashHolder.get();
+		splash.setText(text);
+		return splash;
 	}   // getSplash
 
-	private static Splash s_splash = null;
+	private static ExtendedMemorizingSupplier<Splash> staticSplashHolder = ExtendedMemorizingSupplier.of(Splash::new);
+	private final Label message = new Label();
 
-	/**************************************************************************
-	 * Standard constructor
-	 *
-	 * @param text clear text
-	 */
-	public Splash(final String text)
+	private Splash()
 	{
 		super(Adempiere.getName());
-		message.setText(text);
 		try
 		{
 			jbInit();
 		}
 		catch (final Exception e)
 		{
-			System.out.println("Splash");
+			System.out.println("Failed creating the Splash screen");
 			e.printStackTrace();
 		}
 		display();
 	}	// Splash
 
-	private final Label message = new Label();
 
 	/**
 	 * Static Init
-	 *
-	 * @throws Exception
 	 */
-	private void jbInit() throws Exception
+	private void jbInit()
 	{
 		final Color background = UIManager.getColor(MetasFreshTheme.KEY_Logo_BackgroundColor);
 
@@ -204,6 +180,6 @@ public class Splash extends Frame
 	public void dispose()
 	{
 		super.dispose();
-		s_splash = null;
+		staticSplashHolder.forget();
 	}   // dispose
 }	// Splash

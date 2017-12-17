@@ -1638,7 +1638,12 @@ public final class Env
 	/*************************************************************************/
 
 	// Array of active Windows
-	private static ArrayList<Container> s_windows = new ArrayList<>(20);
+	private static final ArrayList<Container> s_windows = new ArrayList<>(20);
+	static
+	{
+		// assume WINDOW_MAIN == 0
+		s_windows.add(null); // reserve the place for main window
+	}
 
 	/**
 	 * Add Container and return WindowNo. The container is a APanel, AWindow or JFrame/JDialog
@@ -1652,6 +1657,12 @@ public final class Env
 		s_windows.add(win);
 		return retValue;
 	}	// createWindowNo
+
+	public static void setMainWindow(final Container mainWindow)
+	{
+		// assume WINDOW_MAIN == 0
+		s_windows.set(WINDOW_MAIN, mainWindow);
+	}
 
 	/**
 	 * Search Window by comparing the Frames

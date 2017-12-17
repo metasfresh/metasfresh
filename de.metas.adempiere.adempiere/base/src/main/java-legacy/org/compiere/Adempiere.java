@@ -54,14 +54,11 @@ import org.compiere.util.Ini;
 import org.compiere.util.Login;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.SecureInterface;
-import org.compiere.util.Splash;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.addon.IAddonStarter;
-import de.metas.adempiere.addon.impl.AddonStarter;
 import de.metas.adempiere.util.cache.CacheInterceptor;
 import de.metas.logging.LogManager;
 
@@ -820,87 +817,6 @@ public class Adempiere
 
 		return true;
 	}	// startupEnvironment
-
-	/**
-	 * Main Method
-	 *
-	 * @param args optional start class
-	 * @deprecated please start the client in the way the <code>SwingUIApplication</code> class does.
-	 */
-	@Deprecated
-	public static void main(String[] args)
-	{
-		main(null, args);
-	}
-
-	/**
-	 * Starts the metasfresh swing client <b>in a new thread</b> and with an empty set of command line parameters, but with a spring application context.
-	 *
-	 * @param applicationContext
-	 */
-	public static void main(final ApplicationContext applicationContext)
-	{
-		final Runnable runnable = new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				main(applicationContext, new String[] {});
-			}
-		};
-		final Thread thread = new Thread(runnable, Adempiere.class.getSimpleName() + ".main");
-		thread.start();
-	}
-
-	/**
-	 * Main Method
-	 *
-	 * @param applicationContext the pring application context. It is set to the instance that can be retrieved via {@link Env#getSingleAdempiereInstance()}.
-	 * @param args optional start class
-	 */
-	private static void main(ApplicationContext applicationContext, String[] args)
-	{
-		instance.setApplicationContext(applicationContext);
-
-		startAddOns();
-
-		//
-		// Make sure first thing that we do is to initialize ADempiere.
-		// Mainly because we want to have the ContextProvider correctly setup. (task 08859).
-		instance.startup(RunMode.SWING_CLIENT);     // error exit and initUI
-
-		Splash.getSplash();
-
-		// Start with class as argument - or if nothing provided with Client
-		String className = "org.compiere.apps.AMenu";
-		for (int i = 0; i < args.length; i++)
-		{
-			if (!args[i].equals("-debug"))   // ignore -debug
-			{
-				className = args[i];
-				break;
-			}
-		}
-		//
-		try
-		{
-			final Class<?> startClass = Class.forName(className);
-			startClass.newInstance();
-		}
-		catch (Exception e)
-		{
-			System.err.println("ADempiere starting: " + className + " - " + e.toString());
-			e.printStackTrace();
-			System.exit(1); // make sure application is closed, even if there are open windows (like Splash)
-		}
-	}   // main
-
-	// metas:
-	private static void startAddOns()
-	{
-		final IAddonStarter addonStarter = new AddonStarter();
-		addonStarter.startAddons();
-	}
 
 	/**
 	 * If enabled, everything will run database decoupled. Supposed to be called before an interface like org.compiere.model.I_C_Order is to be used in a unit test.

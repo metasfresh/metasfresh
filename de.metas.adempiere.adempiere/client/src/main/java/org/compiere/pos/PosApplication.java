@@ -48,7 +48,7 @@ public class PosApplication {
 
 	PosApplication() {
 		Adempiere.startup(true);	//	needs to be here for UI
-		Splash splash = Splash.getSplash();
+		Splash splash = Splash.showSplash();
 		final CFrame frame = new CFrame();
 		//  Focus Traversal
 		KeyboardFocusManager.setCurrentKeyboardFocusManager(AKeyboardFocusManager.get());
