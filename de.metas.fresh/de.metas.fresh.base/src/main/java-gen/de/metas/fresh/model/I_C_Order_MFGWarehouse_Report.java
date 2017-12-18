@@ -195,7 +195,7 @@ public interface I_C_Order_MFGWarehouse_Report
 	 * Get Erstellt durch.
 	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

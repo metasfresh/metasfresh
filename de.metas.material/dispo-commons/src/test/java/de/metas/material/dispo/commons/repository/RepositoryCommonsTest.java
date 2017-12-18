@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 
 /*
@@ -169,11 +169,11 @@ public class RepositoryCommonsTest
 
 	private MaterialDescriptorQuery commonSetupFor_addProductionDetailToFilter_with_StorageAttributesKey()
 	{
-		final StorageAttributesKey storageAttributesKey = StorageAttributesKey.ofAttributeValueIds(1, 2, 3);
+		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(1, 2, 3);
 
 		// this query won't occur in real life, but we want only the storage-key-filter
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
-				.storageAttributesKey(storageAttributesKey)
+				.storageAttributesKey(attributesKey)
 				.build();
 		return materialDescriptorQuery;
 	}

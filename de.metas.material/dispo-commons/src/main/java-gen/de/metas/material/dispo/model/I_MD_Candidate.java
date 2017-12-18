@@ -240,6 +240,29 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
+	 * Set Geschäftsvorfall.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMD_Candidate_BusinessCase (java.lang.String MD_Candidate_BusinessCase);
+
+	/**
+	 * Get Geschäftsvorfall.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMD_Candidate_BusinessCase();
+
+    /** Column definition for MD_Candidate_BusinessCase */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_BusinessCase = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "MD_Candidate_BusinessCase", null);
+    /** Column name MD_Candidate_BusinessCase */
+    public static final String COLUMNNAME_MD_Candidate_BusinessCase = "MD_Candidate_BusinessCase";
+
+	/**
 	 * Set Gruppen-ID.
 	 *
 	 * <br>Type: Integer
@@ -334,29 +357,6 @@ public interface I_MD_Candidate
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Status = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "MD_Candidate_Status", null);
     /** Column name MD_Candidate_Status */
     public static final String COLUMNNAME_MD_Candidate_Status = "MD_Candidate_Status";
-
-	/**
-	 * Set Untertyp.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMD_Candidate_SubType (java.lang.String MD_Candidate_SubType);
-
-	/**
-	 * Get Untertyp.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMD_Candidate_SubType();
-
-    /** Column definition for MD_Candidate_SubType */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_SubType = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "MD_Candidate_SubType", null);
-    /** Column name MD_Candidate_SubType */
-    public static final String COLUMNNAME_MD_Candidate_SubType = "MD_Candidate_SubType";
 
 	/**
 	 * Set Typ.

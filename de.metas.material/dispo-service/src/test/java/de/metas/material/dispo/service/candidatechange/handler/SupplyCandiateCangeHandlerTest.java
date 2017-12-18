@@ -234,7 +234,7 @@ public class SupplyCandiateCangeHandlerTest
 		final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
 
 		assertThat(supplyRecord.getQty()).isEqualByComparingTo(supplyQty);
-		assertThat(supplyRecord.getMD_Candidate_SubType()).isEqualTo(CandidateBusinessCase.PRODUCTION.toString());
+		assertThat(supplyRecord.getMD_Candidate_BusinessCase()).isEqualTo(CandidateBusinessCase.PRODUCTION.toString());
 		assertThat(stockRecord.getQty()).isEqualByComparingTo(new BigDecimal("34"));
 
 

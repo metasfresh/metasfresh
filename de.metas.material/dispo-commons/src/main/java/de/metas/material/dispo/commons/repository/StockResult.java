@@ -18,8 +18,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.AttributesKey;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -65,7 +64,7 @@ public class StockResult
 
 		for (final StockQuery query : multiQuery.getQueries())
 		{
-			final List<IPair<StorageAttributesKey, Predicate<StorageAttributesKey>>> storageAttributesKeysAndMatchers = extractStorageAttributesKeyAndMatchers(query);
+			final List<IPair<AttributesKey, Predicate<AttributesKey>>> storageAttributesKeysAndMatchers = extractStorageAttributesKeyAndMatchers(query);
 
 			Set<Integer> warehouseIds = query.getWarehouseIds();
 			if (warehouseIds.isEmpty())
@@ -80,7 +79,7 @@ public class StockResult
 			{
 				for (final int productId : productIds)
 				{
-					for (final IPair<StorageAttributesKey, Predicate<StorageAttributesKey>> storageAttributesKeyAndMatcher : storageAttributesKeysAndMatchers)
+					for (final IPair<AttributesKey, Predicate<AttributesKey>> storageAttributesKeyAndMatcher : storageAttributesKeysAndMatchers)
 					{
 						resultBuilder.add(ResultGroup.builder()
 								.productId(productId)
@@ -97,15 +96,15 @@ public class StockResult
 		return new StockResult(resultBuilder.build());
 	}
 
-	private static final List<IPair<StorageAttributesKey, Predicate<StorageAttributesKey>>> extractStorageAttributesKeyAndMatchers(@NonNull final StockQuery query)
+	private static final List<IPair<AttributesKey, Predicate<AttributesKey>>> extractStorageAttributesKeyAndMatchers(@NonNull final StockQuery query)
 	{
-		final List<StorageAttributesKey> storageAttributesKeys = query.getStorageAttributesKeys();
+		final List<AttributesKey> storageAttributesKeys = query.getStorageAttributesKeys();
 		if (storageAttributesKeys.isEmpty())
 		{
-			final StorageAttributesKey storageAttributesKey = ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL;
-			return ImmutableList.of(ImmutablePair.of(storageAttributesKey, createStorageAttributesKeyMatcher(storageAttributesKey)));
+			final AttributesKey attributesKey = AttributesKey.ALL;
+			return ImmutableList.of(ImmutablePair.of(attributesKey, createStorageAttributesKeyMatcher(attributesKey)));
 		}
-		else if (!storageAttributesKeys.contains(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER))
+		else if (!storageAttributesKeys.contains(AttributesKey.OTHER))
 		{
 			return storageAttributesKeys.stream()
 					.map(storageAttributesKey -> ImmutablePair.of(storageAttributesKey, createStorageAttributesKeyMatcher(storageAttributesKey)))
@@ -113,16 +112,16 @@ public class StockResult
 		}
 		else
 		{
-			final Predicate<StorageAttributesKey> othersMatcher = storageAttributesKeys.stream()
-					.filter(storageAttributesKey -> !ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.equals(storageAttributesKey))
-					.filter(storageAttributesKey -> !ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER.equals(storageAttributesKey))
+			final Predicate<AttributesKey> othersMatcher = storageAttributesKeys.stream()
+					.filter(storageAttributesKey -> !AttributesKey.ALL.equals(storageAttributesKey))
+					.filter(storageAttributesKey -> !AttributesKey.OTHER.equals(storageAttributesKey))
 					.map(storageAttributesKey -> createStorageAttributesKeyMatcher(storageAttributesKey).negate())
 					.reduce(Predicate::and)
 					.orElse(Predicates.alwaysTrue());
 
 			return storageAttributesKeys.stream()
 					.map(storageAttributesKey -> {
-						if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER.equals(storageAttributesKey))
+						if (AttributesKey.OTHER.equals(storageAttributesKey))
 						{
 							return ImmutablePair.of(storageAttributesKey, othersMatcher);
 						}
@@ -135,19 +134,19 @@ public class StockResult
 		}
 	}
 
-	private static Predicate<StorageAttributesKey> createStorageAttributesKeyMatcher(@NonNull final StorageAttributesKey storageAttributesKey)
+	private static Predicate<AttributesKey> createStorageAttributesKeyMatcher(@NonNull final AttributesKey attributesKey)
 	{
-		if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL.equals(storageAttributesKey))
+		if (AttributesKey.ALL.equals(attributesKey))
 		{
 			return Predicates.alwaysTrue();
 		}
-		else if (ProductDescriptor.STORAGE_ATTRIBUTES_KEY_OTHER.equals(storageAttributesKey))
+		else if (AttributesKey.OTHER.equals(attributesKey))
 		{
 			throw new AdempiereException("Creating a matcher for 'OTHERS' storage attributes key is not supported at this level");
 		}
 		else
 		{
-			return storageAttributesKeyToMatch -> storageAttributesKeyToMatch.contains(storageAttributesKey);
+			return storageAttributesKeyToMatch -> storageAttributesKeyToMatch.contains(attributesKey);
 		}
 	}
 
@@ -162,8 +161,8 @@ public class StockResult
 
 		private final int warehouseId;
 		private final int productId;
-		private final StorageAttributesKey storageAttributesKey;
-		private final Predicate<StorageAttributesKey> storageAttributesKeyMatcher;
+		private final AttributesKey storageAttributesKey;
+		private final Predicate<AttributesKey> storageAttributesKeyMatcher;
 		private final int bpartnerId;
 		private BigDecimal qty;
 
@@ -171,8 +170,8 @@ public class StockResult
 		public ResultGroup(
 				final int warehouseId,
 				final int productId,
-				@NonNull final StorageAttributesKey storageAttributesKey,
-				@Nullable final Predicate<StorageAttributesKey> storageAttributesKeyMatcher,
+				@NonNull final AttributesKey storageAttributesKey,
+				@Nullable final Predicate<AttributesKey> storageAttributesKeyMatcher,
 				final int bpartnerId,
 				@Nullable final BigDecimal qty)
 		{
@@ -181,7 +180,10 @@ public class StockResult
 			this.warehouseId = warehouseId > 0 ? warehouseId : WAREHOUSE_ID_ANY;
 			this.productId = productId;
 			this.storageAttributesKey = storageAttributesKey;
-			this.storageAttributesKeyMatcher = storageAttributesKeyMatcher != null ? storageAttributesKeyMatcher : createStorageAttributesKeyMatcher(storageAttributesKey);
+			this.storageAttributesKeyMatcher = storageAttributesKeyMatcher != null
+					? storageAttributesKeyMatcher
+					: createStorageAttributesKeyMatcher(storageAttributesKey);
+
 			this.qty = qty == null ? BigDecimal.ZERO : qty;
 
 			if (bpartnerId == StockQuery.BPARTNER_ID_ANY
@@ -238,7 +240,7 @@ public class StockResult
 			return StockQuery.isBPartnerMatching(bpartnerId, bpartnerIdToMatch);
 		}
 
-		private boolean isStorageAttributesKeyMatching(final StorageAttributesKey storageAttributesKeyToMatch)
+		private boolean isStorageAttributesKeyMatching(final AttributesKey storageAttributesKeyToMatch)
 		{
 			return storageAttributesKeyMatcher.test(storageAttributesKeyToMatch);
 		}
@@ -249,7 +251,7 @@ public class StockResult
 	{
 		private final int warehouseId;
 		private final int productId;
-		private final StorageAttributesKey storageAttributesKey;
+		private final AttributesKey storageAttributesKey;
 		private final int bpartnerId;
 		private BigDecimal qty;
 
@@ -257,7 +259,7 @@ public class StockResult
 		public AddToResultGroupRequest(
 				final int warehouseId,
 				final int productId,
-				@NonNull final StorageAttributesKey storageAttributesKey,
+				@NonNull final AttributesKey storageAttributesKey,
 				final int bpartnerId,
 				@NonNull final BigDecimal qty)
 		{

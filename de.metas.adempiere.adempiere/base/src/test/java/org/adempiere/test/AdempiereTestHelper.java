@@ -116,7 +116,6 @@ public class AdempiereTestHelper
 		POJOWrapper.setAllowRefreshingChangedModels(false);
 		POJOWrapper.setDefaultStrictValues(POJOWrapper.DEFAULT_StrictValues);
 
-		//
 		// Setup services
 		{
 			// Make sure we don't have custom registered services
@@ -132,23 +131,20 @@ public class AdempiereTestHelper
 			Services.registerService(IClientUI.class, new TestClientUI());
 		}
 
-		//
 		// Base Language
 		Language.setBaseLanguage(() -> AD_LANGUAGE);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, AD_LANGUAGE);
 
-		//
 		// Reset System Time
 		SystemTime.setTimeSource(null);
 
-		//
 		// Caching
 		AbstractModelListCacheLocal.DEBUG = true;
+		CacheMgt.get().reset();
 
-		//
 		// Logging
 		LogManager.setLevel(Level.WARN);
-	}
+}
 
 	private static Properties setupContext()
 	{

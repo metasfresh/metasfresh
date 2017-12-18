@@ -14,7 +14,7 @@ public class X_C_Order_MFGWarehouse_ReportLine extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1007700789L;
+	private static final long serialVersionUID = -1595991753L;
 
     /** Standard Constructor */
     public X_C_Order_MFGWarehouse_ReportLine (Properties ctx, int C_Order_MFGWarehouse_ReportLine_ID, String trxName)
@@ -23,9 +23,9 @@ public class X_C_Order_MFGWarehouse_ReportLine extends org.compiere.model.PO imp
       /** if (C_Order_MFGWarehouse_ReportLine_ID == 0)
         {
 			setBarcode (null);
+			setC_OrderLine_ID (0);
 			setC_Order_MFGWarehouse_Report_ID (0);
 			setC_Order_MFGWarehouse_ReportLine_ID (0);
-			setC_OrderLine_ID (0);
 			setM_Product_ID (0);
         } */
     }
@@ -59,6 +59,43 @@ public class X_C_Order_MFGWarehouse_ReportLine extends org.compiere.model.PO imp
 	public java.lang.String getBarcode () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Barcode);
+	}
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLine() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine);
+	}
+
+	/** Set Auftragsposition.
+		@param C_OrderLine_ID 
+		Auftragsposition
+	  */
+	@Override
+	public void setC_OrderLine_ID (int C_OrderLine_ID)
+	{
+		if (C_OrderLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, Integer.valueOf(C_OrderLine_ID));
+	}
+
+	/** Get Auftragsposition.
+		@return Auftragsposition
+	  */
+	@Override
+	public int getC_OrderLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
@@ -112,43 +149,6 @@ public class X_C_Order_MFGWarehouse_ReportLine extends org.compiere.model.PO imp
 	public int getC_Order_MFGWarehouse_ReportLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_MFGWarehouse_ReportLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
-	}
-
-	@Override
-	public void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine)
-	{
-		set_ValueFromPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine);
-	}
-
-	/** Set Auftragsposition.
-		@param C_OrderLine_ID 
-		Auftragsposition
-	  */
-	@Override
-	public void setC_OrderLine_ID (int C_OrderLine_ID)
-	{
-		if (C_OrderLine_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, Integer.valueOf(C_OrderLine_ID));
-	}
-
-	/** Get Auftragsposition.
-		@return Auftragsposition
-	  */
-	@Override
-	public int getC_OrderLine_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
