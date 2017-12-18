@@ -324,20 +324,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A00PZN.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA00PZN (int A00PZN);
+	public void setA00PZN (java.lang.String A00PZN);
 
 	/**
 	 * Get A00PZN.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA00PZN();
+	public java.lang.String getA00PZN();
 
     /** Column definition for A00PZN */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A00PZN = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A00PZN", null);
@@ -345,7 +345,7 @@ public interface I_I_Pharma_Product
     public static final String COLUMNNAME_A00PZN = "A00PZN";
 
 	/**
-	 * Set A00SSATZ.
+	 * Set A00SSATZ - Statusindikator Artikelsatz.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -354,7 +354,7 @@ public interface I_I_Pharma_Product
 	public void setA00SSATZ (java.lang.String A00SSATZ);
 
 	/**
-	 * Get A00SSATZ.
+	 * Get A00SSATZ - Statusindikator Artikelsatz.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1083,7 +1083,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02AM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1092,7 +1092,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02AM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1129,7 +1129,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02APPFL.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1138,7 +1138,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02APPFL.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1290,7 +1290,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02BTM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1299,7 +1299,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02BTM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1865,7 +1865,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02TFG.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1874,7 +1874,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02TFG.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1934,7 +1934,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02VSPFL.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1943,7 +1943,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02VSPFL.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2348,7 +2348,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A05EICH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2357,7 +2357,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A05EICH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2371,7 +2371,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A05FEUCHT.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2380,7 +2380,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A05FEUCHT.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2417,7 +2417,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A05KKETTE.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2426,7 +2426,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A05KKETTE.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2440,7 +2440,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A05LAGE.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2449,7 +2449,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A05LAGE.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2463,7 +2463,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A05LICHT.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2472,7 +2472,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A05LICHT.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2578,7 +2578,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A05VFDAT.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2587,7 +2587,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A05VFDAT.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2601,7 +2601,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A05ZERBR.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2610,7 +2610,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A05ZERBR.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2928,6 +2928,56 @@ public interface I_I_Pharma_Product
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Import-Fehlermeldung.
+	 * Meldungen, die durch den Importprozess generiert wurden
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setI_ErrorMsg (java.lang.String I_ErrorMsg);
+
+	/**
+	 * Get Import-Fehlermeldung.
+	 * Meldungen, die durch den Importprozess generiert wurden
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getI_ErrorMsg();
+
+    /** Column definition for I_ErrorMsg */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_I_ErrorMsg = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "I_ErrorMsg", null);
+    /** Column name I_ErrorMsg */
+    public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
+
+	/**
+	 * Set Importiert.
+	 * Ist dieser Import verarbeitet worden?
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setI_IsImported (boolean I_IsImported);
+
+	/**
+	 * Get Importiert.
+	 * Ist dieser Import verarbeitet worden?
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isI_IsImported();
+
+    /** Column definition for I_IsImported */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_I_IsImported = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "I_IsImported", null);
+    /** Column name I_IsImported */
+    public static final String COLUMNNAME_I_IsImported = "I_IsImported";
+
+	/**
 	 * Set Pharma Product.
 	 *
 	 * <br>Type: ID
@@ -2949,6 +2999,85 @@ public interface I_I_Pharma_Product
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_I_Pharma_Product_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "I_Pharma_Product_ID", null);
     /** Column name I_Pharma_Product_ID */
     public static final String COLUMNNAME_I_Pharma_Product_ID = "I_Pharma_Product_ID";
+
+	/**
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsActive (boolean IsActive);
+
+	/**
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isActive();
+
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+	public org.compiere.model.I_M_Product getM_Product();
+
+	public void setM_Product(org.compiere.model.I_M_Product M_Product);
+
+    /** Column definition for M_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_Product>(I_I_Pharma_Product.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setProcessed (boolean Processed);
+
+	/**
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isProcessed();
+
+    /** Column definition for Processed */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "Processed", null);
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Get Aktualisiert.
