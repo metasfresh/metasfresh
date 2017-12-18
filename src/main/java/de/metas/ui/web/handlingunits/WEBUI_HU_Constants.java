@@ -40,6 +40,8 @@ public final class WEBUI_HU_Constants
 
 	public static final String MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU = "WEBUI_Picking_Select_Active_UnSelected_HUs";
 
+	public static final String MSG_WEBUI_ONLY_CU = "WEBUI_Only_CU";
+
 	private WEBUI_HU_Constants()
 	{
 	}
