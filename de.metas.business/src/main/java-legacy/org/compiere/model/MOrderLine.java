@@ -1094,6 +1094,7 @@ public class MOrderLine extends X_C_OrderLine
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.getTrxListenerManager(get_TrxName())
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(innerTrx -> {
 					trxManager.run(new TrxRunnableAdapter()
 					{

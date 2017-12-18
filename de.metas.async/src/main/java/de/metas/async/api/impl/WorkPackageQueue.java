@@ -642,9 +642,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		final ITrxListenerManager trxListenerManager = trxManager.getTrxListenerManager(trxName);
 		trxListenerManager
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(innerTrx -> workpackageTrxListener.afterCommit(innerTrx));
 		trxListenerManager
 				.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(innerTrx -> workpackageTrxListener.afterRollback(innerTrx));
 
 		return callback.getFutureResult();
@@ -653,7 +655,9 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	private class WorkpackageTrxListener
 	{
 		private final ReentrantLock sync = new ReentrantLock();
-		private boolean hit = false;
+
+		// since this var is read and written within locks, it should probably be multi-thread-safe => make it vialtile
+		private volatile boolean hit = false;
 
 		private final I_C_Queue_WorkPackage workPackage;
 		private final SyncQueueProcessorListener callback;

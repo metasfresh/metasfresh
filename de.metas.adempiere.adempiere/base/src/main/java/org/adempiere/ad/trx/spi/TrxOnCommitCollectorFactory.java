@@ -88,6 +88,7 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 					// Register a listener which will process the collector when the transaction is committed.
 					trx.getTrxListenerManager()
 							.newEventListener(TrxEventTiming.AFTER_COMMIT)
+							.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 							.registerHandlingMethod(innerTrx -> {
 								// Get the transaction level collector.
 								// The collector is removed to avoid double processing.
@@ -104,6 +105,7 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 
 					trx.getTrxListenerManager()
 							.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
+							.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 							.registerHandlingMethod(innerTrx -> {
 								// Get the transaction level collector.
 								// The collector is removed to avoid double processing.

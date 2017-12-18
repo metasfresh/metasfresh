@@ -64,6 +64,7 @@ public class C_BPartner
 
 		trxManager.getTrxListenerManager(InterfaceWrapperHelper.getTrxName(bPartner))
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(trx -> {
 
 					final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);

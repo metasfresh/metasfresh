@@ -199,7 +199,7 @@ public class HUTestHelper
 	public I_C_UOM uomKg;
 	public I_C_UOM uomEach;
 	public I_C_UOM uomPCE;
-	
+
 	/**
 	 * Value: Palet
 	 */
@@ -478,14 +478,14 @@ public class HUTestHelper
 
 	/**
 	 * Setup module interceptors: "de.metas.handlingunits" module - FULL (interceptors, factories, etc), like in production (used by some integration tests).
-	 * 
+	 *
 	 * <b>Important:</b> if you do the full monty with interceptors, then you also need to annotate the respective test class like this:
-	 * 
+	 *
 	 * <pre>
 	&#64;RunWith(SpringRunner.class)
 	&#64;SpringBootTest(classes= HandlingUnitsConfiguration.class)
 	 * </pre>
-	 * 
+	 *
 	 * Otherwise, tests will probably fail due to spring application context.
 	 */
 	protected final void setupModuleInterceptors_HU_Full()
@@ -559,9 +559,9 @@ public class HUTestHelper
 		uomKg = createUomKg();
 		uomEach = createUomEach();
 		uomPCE = createUomPCE();
-		
+
 		final AttributesTestHelper attributesTestHelper = new AttributesTestHelper();
-		
+
 		attr_CountryMadeIn = attributesTestHelper.createM_Attribute(HUTestHelper.NAME_CountryMadeIn_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		createAttributeListValues(attr_CountryMadeIn,
 				HUTestHelper.COUNTRYMADEIN_RO,

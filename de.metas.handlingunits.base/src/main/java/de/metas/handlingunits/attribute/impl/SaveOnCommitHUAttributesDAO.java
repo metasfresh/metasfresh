@@ -71,6 +71,7 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 				// Before committing the transaction, this listener makes sure we are also saving all storages
 				trx.getTrxListenerManager()
 						.newEventListener(TrxEventTiming.BEFORE_COMMIT)
+						.invokeMethodJustOnce(false)
 						.registerHandlingMethod(trx -> {
 							// Get and remove the save-decoupled HU Storage DAO
 							final SaveDecoupledHUAttributesDAO innerHuAttributesDAO = trx.setProperty(TRX_PROPERTY_SaveDecoupledHUAttributesDAO, null);
