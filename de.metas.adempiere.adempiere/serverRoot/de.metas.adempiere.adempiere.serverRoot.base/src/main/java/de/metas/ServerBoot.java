@@ -3,33 +3,23 @@ package de.metas;
 import java.io.File;
 import java.io.IOException;
 
-import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
-import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
-import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import de.metas.adempiere.report.jasper.JasperConstants;
+import de.metas.boot.MetasfreshBootConfiguration;
 import de.metas.logging.LogManager;
-import de.metas.server.housekeep.MissingTranslationHouseKeepingTask;
-import de.metas.server.housekeep.RoleAccessUpdateHouseKeepingTask;
-import de.metas.server.housekeep.SequenceCheckHouseKeepingTask;
-import de.metas.server.housekeep.SignDatabaseBuildHouseKeepingTask;
 
 /*
  * #%L
@@ -58,12 +48,10 @@ import de.metas.server.housekeep.SignDatabaseBuildHouseKeepingTask;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@SpringBootApplication(scanBasePackages =
-	{ "de.metas", "org.adempiere" })
-@ServletComponentScan(value =
-	{ "de.metas", "org.adempiere" })
+@SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
+@ServletComponentScan(value = { "de.metas", "org.adempiere" })
 @Profile(ServerBoot.PROFILE)
-public class ServerBoot
+public class ServerBoot implements MetasfreshBootConfiguration
 {
 	/**
 	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
@@ -73,8 +61,8 @@ public class ServerBoot
 
 	public static final String PROFILE = "metasfresh-server";
 
-	@Autowired
-	private ApplicationContext applicationContext;
+	// @Autowired
+	// private ApplicationContext applicationContext;
 
 	public static void main(final String[] args)
 	{
@@ -91,6 +79,26 @@ public class ServerBoot
 				.profiles(PROFILE, JasperConstants.PROFILE_JasperServer)
 				.run(args);
 	}
+
+	@Override
+	public RunMode getRunMode()
+	{
+		return RunMode.BACKEND;
+	}
+
+	// @Bean(Adempiere.BEANNAME)
+	// public Adempiere adempiere()
+	// {
+	// final IHouseKeepingBL houseKeepingRegistry = Services.get(IHouseKeepingBL.class);
+	// houseKeepingRegistry.registerStartupHouseKeepingTask(new SignDatabaseBuildHouseKeepingTask());
+	// houseKeepingRegistry.registerStartupHouseKeepingTask(new SequenceCheckHouseKeepingTask());
+	// houseKeepingRegistry.registerStartupHouseKeepingTask(new RoleAccessUpdateHouseKeepingTask());
+	// houseKeepingRegistry.registerStartupHouseKeepingTask(new MissingTranslationHouseKeepingTask());
+	//
+	// final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
+	// adempiere.startup(RunMode.BACKEND);
+	// return adempiere;
+	// }
 
 	@Configuration
 	public static class StaticResourceConfiguration extends WebMvcConfigurerAdapter
@@ -140,19 +148,4 @@ public class ServerBoot
 			}
 		}
 	}
-
-	@Bean(Adempiere.BEANNAME)
-	public Adempiere adempiere()
-	{
-		final IHouseKeepingBL houseKeepingRegistry = Services.get(IHouseKeepingBL.class);
-		houseKeepingRegistry.registerStartupHouseKeepingTask(new SignDatabaseBuildHouseKeepingTask());
-		houseKeepingRegistry.registerStartupHouseKeepingTask(new SequenceCheckHouseKeepingTask());
-		houseKeepingRegistry.registerStartupHouseKeepingTask(new RoleAccessUpdateHouseKeepingTask());
-		houseKeepingRegistry.registerStartupHouseKeepingTask(new MissingTranslationHouseKeepingTask());
-
-		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
-		adempiere.startup(RunMode.BACKEND);
-		return adempiere;
-	}
-
 }

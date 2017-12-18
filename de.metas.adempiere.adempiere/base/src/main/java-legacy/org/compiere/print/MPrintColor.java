@@ -17,16 +17,15 @@
 package org.compiere.print;
 
 import java.awt.Color;
-import java.awt.SystemColor;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.compiere.model.PO;
 import org.compiere.model.X_AD_PrintColor;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	AD_PrintColor Print Color Model
@@ -77,7 +76,7 @@ public class MPrintColor extends X_AD_PrintColor
 	/*************************************************************************/
 
 	/** Cached Colors						*/
-	static private CCache<Integer,MPrintColor> 	s_colors = new CCache<Integer,MPrintColor>("AD_PrintColor", 20);
+	static private CCache<Integer,MPrintColor> 	s_colors = new CCache<>("AD_PrintColor", 20);
 	/**	Static Logger	*/
 	private static Logger	s_log	= LogManager.getLogger(MPrintColor.class);
 
@@ -93,7 +92,7 @@ public class MPrintColor extends X_AD_PrintColor
 	//	if (AD_PrintColor_ID == 0)
 	//		return new MPrintColor (ctx, 0);
 		Integer key = new Integer(AD_PrintColor_ID);
-		MPrintColor pc = (MPrintColor)s_colors.get(key);
+		MPrintColor pc = s_colors.get(key);
 		if (pc == null)
 		{
 			pc = new MPrintColor (ctx, AD_PrintColor_ID, null);
@@ -199,6 +198,7 @@ public class MPrintColor extends X_AD_PrintColor
 	 * 	String Representation
 	 * 	@return info
 	 */
+	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer("MPrintColor[");
@@ -209,48 +209,4 @@ public class MPrintColor extends X_AD_PrintColor
 			.append("]");
 		return sb.toString();
 	}	//	toString
-	
-	
-	/**************************************************************************
-	 * 	Create Standard Colors
-	 * 	@param args args
-	 */
-	public static void main(String[] args)
-	{
-		org.compiere.Adempiere.startupEnvironment(true);
-		Color[] colors = new Color[]
-			{Color.black, Color.red, Color.green, Color.blue,
-			Color.darkGray, Color.gray, Color.lightGray, Color.white,
-			Color.cyan, Color.magenta, Color.orange, Color.pink, Color.yellow,
-			SystemColor.textHighlight};
-		String[] names = new String[]
-			{"Black", "Red", "Green", "Blue",
-			"Gray dark", "Gray", "Gray light", "White",
-			"Cyan", "Magenta", "Orange", "Pink", "Yellow",
-			"Blue dark"};
-		for (int i = 0; i < colors.length; i++)
-			System.out.println(names[i] + " = " + colors[i] + " RGB=" + colors[i].getRGB()
-				+ " -> " + new Color(colors[i].getRGB(), false)
-				+ " -> " + new Color(colors[i].getRGB(), true));
-/**
-		//	Create Colors
-		for (int i = 0; i < colors.length; i++)
-			create(colors[i], names[i]);
-		create(whiteGray, "Gray white");
-		create(darkGreen, "Green dark");
-		create(blackGreen, "Green black");
-		create(blackBlue, "Blue black");
-		create(brown, "Brown");
-		create(darkBrown, "Brown dark");
-**/
-
-		//	Read All Colors
-		int[] IDs = PO.getAllIDs ("AD_PrintColor", null, null);
-		for (int i = 0; i < IDs.length; i++)
-		{
-			MPrintColor pc = new MPrintColor(Env.getCtx(), IDs[i], null);
-			System.out.println(IDs[i] + ": " + pc + " = " + pc.getColor() + ", RGB=" + pc.getColor().getRGB());
-		}
-	}	//	main
-	
 }	//	MPrintColor

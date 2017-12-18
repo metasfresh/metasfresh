@@ -25,14 +25,13 @@ import javax.print.attribute.standard.MediaSize;
 import javax.print.attribute.standard.MediaSizeName;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.PO;
 import org.compiere.model.X_AD_PrintPaper;
 import org.compiere.util.CCache;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import org.compiere.util.Env;
 
 /**
  *	AD_PrintPaper Print Paper Model
@@ -65,7 +64,7 @@ public class MPrintPaper extends X_AD_PrintPaper
 	static public MPrintPaper get (int AD_PrintPaper_ID)
 	{
 		Integer key = new Integer(AD_PrintPaper_ID);
-		MPrintPaper pp = (MPrintPaper)s_papers.get(key);
+		MPrintPaper pp = s_papers.get(key);
 		if (pp == null)
 		{
 			pp = new MPrintPaper (Env.getCtx(), AD_PrintPaper_ID, null);
@@ -95,7 +94,7 @@ public class MPrintPaper extends X_AD_PrintPaper
 	private static Logger s_log = LogManager.getLogger(MPrintPaper.class);
 	/** Cached Fonts						*/
 	static private CCache<Integer,MPrintPaper> s_papers 
-		= new CCache<Integer,MPrintPaper>("AD_PrintPaper", 5);
+		= new CCache<>("AD_PrintPaper", 5);
 	
 	
 	/**************************************************************************
@@ -271,6 +270,7 @@ public class MPrintPaper extends X_AD_PrintPaper
 		 * 	Get String Table
 		 *	@return string
 		 */
+		@Override
 		public String[] getStringTable ()
 		{
 			return super.getStringTable ();
@@ -280,31 +280,10 @@ public class MPrintPaper extends X_AD_PrintPaper
 		 * 	Get Enum Value Table
 		 *	@return Media Sizes
 		 */
+		@Override
 		public EnumSyntax[] getEnumValueTable ()
 		{
 			return super.getEnumValueTable ();
 		}
 	}	//	CMediaSizeName	
-	
-	/**************************************************************************
-	 * 	Test
-	 * 	@param args args
-	 */
-	public static void main(String[] args)
-	{
-		org.compiere.Adempiere.startupEnvironment(true);
-
-	//	create ("Standard Landscape", true);
-	//	create ("Standard Portrait", false);
-
-		//	Read All Papers
-		int[] IDs = PO.getAllIDs ("AD_PrintPaper", null, null);
-		for (int i = 0; i < IDs.length; i++)
-		{
-			System.out.println("--");
-			MPrintPaper pp = new MPrintPaper(Env.getCtx(), IDs[i], null);
-			pp.dump();
-		}
-
-	}
 }	//	MPrintPaper

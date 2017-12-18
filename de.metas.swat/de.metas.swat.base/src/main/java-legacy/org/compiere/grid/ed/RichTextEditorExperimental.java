@@ -51,7 +51,6 @@ import java.util.Map;
 
 import javax.swing.Action;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -61,7 +60,6 @@ import javax.swing.text.Document;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
 
-import org.compiere.Adempiere;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
@@ -70,7 +68,6 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
-
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -214,7 +211,7 @@ public class RichTextEditorExperimental extends CDialog {
 	private void createMenuBar() {
 		// Build Lookup
 		Action[] actionArray = editorPane.getActions();
-		Hashtable<Object, Action> actions = new Hashtable<Object, Action>();
+		Hashtable<Object, Action> actions = new Hashtable<>();
 		for (int i = 0; i < actionArray.length; i++) {
 			Object name = actionArray[i].getValue(Action.NAME);
 			// System.out.println (name);
@@ -342,26 +339,6 @@ public class RichTextEditorExperimental extends CDialog {
 
 		snippetSelector.setEnabled(true);
 	}
-
-	/***************************************************************************
-	 * Test
-	 * 
-	 * @param args
-	 *            ignored
-	 */
-	public static void main(String[] args) {
-		Adempiere.startupEnvironment(true);
-		JFrame frame = new JFrame("test");
-		frame.setVisible(true);
-		String text = "<html><p>this is a line<br>with <b>bold</> info</html>";
-		int i = 0;
-		while (true) {
-			RichTextEditorExperimental ed = new RichTextEditorExperimental(frame, "heading " + ++i,
-					text, true);
-			text = ed.getHtmlText();
-		}
-	} // main
-
 } // HTMLEditor
 
 /*******************************************************************************

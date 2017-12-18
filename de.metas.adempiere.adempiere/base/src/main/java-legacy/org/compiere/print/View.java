@@ -24,8 +24,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.PrintViewerUI;
@@ -34,8 +32,12 @@ import org.compiere.model.MQuery;
 import org.compiere.print.layout.LayoutEngine;
 import org.compiere.print.layout.Page;
 import org.compiere.swing.CPanel;
+import org.slf4j.Logger;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.logging.LogManager;
 
 /**
  *	View Panel
@@ -139,7 +141,7 @@ public class View extends CPanel
 	 */
 	public boolean isArchivable()
 	{
-		return ArchiveEngine.isValid(m_layout);
+		return m_layout != null && m_layout.isValid();
 	}	//	IsArchivable
 
 	/**

@@ -21,7 +21,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.compiere.Adempiere;
 import org.compiere.util.Env;
 
 /**
@@ -97,6 +96,7 @@ public class MTest extends X_Test
 	 * 	Before Delete
 	 *	@return true if it can be deleted
 	 */
+	@Override
 	protected boolean beforeDelete ()
 	{
 		log.info("***");
@@ -108,6 +108,7 @@ public class MTest extends X_Test
 	 *	@param success
 	 *	@return success
 	 */
+	@Override
 	protected boolean afterDelete (boolean success)
 	{
 		log.info("*** Success=" + success);
@@ -119,6 +120,7 @@ public class MTest extends X_Test
 	 *	@param newRecord
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		log.info("New=" + newRecord + " ***");
@@ -131,43 +133,10 @@ public class MTest extends X_Test
 	 *	@param success
 	 *	@return success
 	 */
+	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		log.info("New=" + newRecord + ", Seccess=" + success + " ***");
 		return success;
 	}	//	afterSave
-
-	
-	/*************************************************************************
-	 * 	Test
-	 *	@param args
-	 */
-	public static void main(String[] args)
-	{
-		Adempiere.startup(true);
-		Properties ctx = Env.getCtx();
-		
-		/** Test CLOB	*/
-		MTest t1 = new MTest (ctx, 0, null);
-		t1.setName("Test1");
-		System.out.println("->" + t1.getCharacterData() + "<-");
-		t1.save();
-		t1.setCharacterData("Long Text JJ");
-		t1.save();
-		int Test_ID = t1.getTest_ID();
-		//
-		MTest t2 = new MTest (Env.getCtx(), Test_ID, null);
-		System.out.println("->" + t2.getCharacterData() + "<-");
-		
-		t2.delete(true);
-		
-		
-		/**	Volume Test 
-		for (int i = 1; i < 20000; i++)
-		{
-			new MTest (ctx, "test", i).save();
-		}		
-		/** */	
-	}	//	main
-	
 }	//	MTest

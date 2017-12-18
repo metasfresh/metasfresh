@@ -27,15 +27,10 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Hashtable;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -46,15 +41,16 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
 
-import org.compiere.Adempiere;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.GridField;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
 
 /**
  *	HTML Editor.
@@ -269,7 +265,7 @@ public class HTMLEditor extends CDialog
 	{
 		//	Build Lookup
 		Action[] actionArray = editorPane.getActions();
-		Hashtable<Object,Action> actions = new Hashtable<Object,Action>();
+		Hashtable<Object,Action> actions = new Hashtable<>();
 		for (int i = 0; i < actionArray.length; i++)
 		{
 			Object name = actionArray[i].getValue(Action.NAME);
@@ -452,24 +448,6 @@ public class HTMLEditor extends CDialog
 		m_text = htmlText;
 		editorPane.setText(htmlText);
 	}	//	setHTMLText
-
-	/**************************************************************************
-	 * 	Test 
-	 *	@param args ignored
-	 */
-	public static void main (String[] args)
-	{
-		Adempiere.startupEnvironment(true);
-		JFrame frame = new JFrame("test");
-		frame.setVisible(true);
-		String text = "<html><p>this is a line<br>with <b>bold</> info</html>";
-		int i = 0;
-		while (true)
-		{
-			HTMLEditor ed = new HTMLEditor (frame, "heading " + ++i, text, true);
-			text = ed.getHtmlText();
-		}
-	}	//	main
 
 	// metas: begin
 	public HTMLEditor (Frame owner, String title, String htmlText, boolean editable, GridField gridField)

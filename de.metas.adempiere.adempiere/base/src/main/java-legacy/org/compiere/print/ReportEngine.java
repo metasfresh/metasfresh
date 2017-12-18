@@ -418,7 +418,6 @@ public class ReportEngine implements PrintServiceAttributeListener
 			// submit
 			boolean printCopy = m_info.isDocumentCopy() && m_info.getCopies() > 1;
 			Services.get(IArchiveBL.class).archive(m_layout, m_info, false, ITrx.TRXNAME_None);
-			// ArchiveEngine.get().archive(m_layout, m_info);
 			PrintUtil.print(job, prats, false, printCopy);
 
 			// Document: Print Copies
@@ -962,7 +961,6 @@ public class ReportEngine implements PrintServiceAttributeListener
 				if (m_layout == null)
 					layout();
 				Services.get(IArchiveBL.class).archive(m_layout, m_info, false, ITrx.TRXNAME_None);
-				// ArchiveEngine.get().archive(m_layout, m_info);
 				Document.getPDFAsFile(fileName, m_layout.getPageable(false));
 			} // 03744
 		}

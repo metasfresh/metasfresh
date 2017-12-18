@@ -44,12 +44,12 @@ import javax.print.Doc;
 import javax.print.DocFlavor;
 import javax.print.attribute.DocAttributeSet;
 
+import org.adempiere.pdf.Document;
 import org.compiere.Adempiere;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MTable;
 import org.compiere.model.PrintInfo;
-import org.compiere.print.ArchiveEngine;
 import org.compiere.print.CPaper;
 import org.compiere.print.DataEngine;
 import org.compiere.print.MPrintColor;
@@ -787,13 +787,19 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	{
 		setCopy(isCopy);
 		if (getNumberOfPages() == 0
-				|| !ArchiveEngine.isValid(this))
+				|| !isValid())
 		{
-			log.warn("Nothing to print - " + toString());
+			log.warn("Nothing to print: {}", this);
 			return null;
 		}
 		return this;
 	}	// getPageable
+
+	public boolean isValid()
+	{
+		return Document.isValid(this)
+				&& getNumberOfPages() > 0;
+	}
 
 	/**************************************************************************
 	 * Set Position on current page (no check)
@@ -2084,5 +2090,4 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	{
 		return m_PrintInfo;
 	}
-
 }	// LayoutEngine

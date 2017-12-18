@@ -21,12 +21,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * 	Actual Click
@@ -49,7 +49,7 @@ public class MClick extends X_W_Click
 	 */
 	public static MClick[] getUnprocessed(Properties ctx)
 	{
-		ArrayList<MClick> list = new ArrayList<MClick> ();
+		ArrayList<MClick> list = new ArrayList<> ();
 		String sql = "SELECT * FROM W_Click WHERE AD_Client_ID=? AND Processed = 'N'";
 		PreparedStatement pstmt = null;
 		try
@@ -129,6 +129,7 @@ public class MClick extends X_W_Click
 	 * 	Set Target URL. Reset Click Count
 	 *	@param TargetURL
 	 */
+	@Override
 	public void setTargetURL(String TargetURL)
 	{
 		super.setTargetURL(TargetURL);
@@ -241,37 +242,11 @@ public class MClick extends X_W_Click
 	 *	@param newRecord new
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		if (getW_ClickCount_ID() == 0)
 			setW_ClickCount_ID();
 		return true;
 	}	//	beforeSave
-	
-	/**************************************************************************
-	 * 	Test
-	 *	@param args ignored
-	 */
-	public static void main (String[] args)
-	{
-		Adempiere.startup(true);
-		Env.setContext(Env.getCtx(), "#AD_Client_ID", 1000000);
-		MClick[] clicks = getUnprocessed(Env.getCtx());
-		int counter = 0;
-		for (int i = 0; i < clicks.length; i++)
-		{
-			MClick click = clicks[i];
-			if (click.getW_ClickCount_ID() == 0)
-			{
-				click.setW_ClickCount_ID();
-				if (click.getW_ClickCount_ID() != 0)
-				{
-					click.save();
-					counter++;
-				}
-			}
-		}
-		System.out.println("#" + counter);
-	}	//	main
-	
 }	//	MClick

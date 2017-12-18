@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 
-@Service
+@Service("JMXMetasfresh")
 @ManagedResource(objectName = "de.metas:type=metasfresh", description = "Provides basic operations on the running metasfresh instance")
 public class Metasfresh
 {

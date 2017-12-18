@@ -45,7 +45,7 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 	public void onApplicationEvent(final ContextRefreshedEvent event)
 	{
 		final ApplicationContext applicationContext = event.getApplicationContext();
-		Adempiere.instance.setApplicationContext(applicationContext);
+		Adempiere.get().setApplicationContext(applicationContext);
 
 		// gh #427: allow service implementations to be managed by spring.
 		Services.setExternalServiceImplProvider(new SpringApplicationContextAsServiceImplProvider(applicationContext));

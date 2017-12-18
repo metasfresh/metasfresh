@@ -4,22 +4,21 @@ import java.awt.KeyboardFocusManager;
 import java.util.concurrent.Future;
 
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.apps.AKeyboardFocusManager;
 import org.compiere.apps.AMenu;
 import org.compiere.print.ReportCtl;
 import org.compiere.print.SwingViewerProvider;
-import org.compiere.util.Env;
 import org.compiere.util.Splash;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
-import de.metas.adempiere.addon.IAddonStarter;
-import de.metas.adempiere.addon.impl.AddonStarter;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.swing.SwingClientUI;
+import de.metas.boot.Metasfresh;
+import de.metas.boot.MetasfreshBootConfiguration;
 import lombok.NonNull;
 
 /*
@@ -58,6 +57,8 @@ public abstract class SwingUIApplicationTemplate
 
 	protected static <T extends SwingUIApplicationTemplate> void main(@NonNull final Class<T> launcherClass, final String[] args)
 	{
+		Splash.showSplash();
+
 		new SpringApplicationBuilder(launcherClass)
 				.headless(false)
 				// actually we would like to it to start actuator endpoints and register with the spring-boot admin server, BUT
@@ -69,48 +70,26 @@ public abstract class SwingUIApplicationTemplate
 				.run(args);
 	}
 
-	/**
-	 * Starts the metasfresh swing client. This needs to be decomposed to make it return during startup.<br>
-	 * Otherwise, the whole spring thing doesn't work properly.
-	 *
-	 * @return
-	 */
-	@Bean(Adempiere.BEANNAME)
-	public Adempiere adempiere(final ApplicationContext applicationContext)
-	{
-		final Splash splash = Splash.showSplash();
-		try
-		{
-			//
-			// First thing, get adempiere instance and set spring's applicationContext to it
-			final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
-			adempiere.setApplicationContext(applicationContext);
-
-			//
-			// Start add-ons
-			final IAddonStarter addonStarter = new AddonStarter();
-			addonStarter.startAddons();
-
-			//
-			// Make sure first thing that we do is to initialize ADempiere.
-			// Mainly because we want to have the ContextProvider correctly setup. (task 08859).
-			adempiere.startup(RunMode.SWING_CLIENT);     // error exit and initUI
-
-			return adempiere;
-		}
-		finally
-		{
-			splash.dispose();
-		}
-	}
-
 	@Bean("swingMainWindow")
-	public Future<AMenu> swingApplication(final Adempiere adempiere)
+	public Future<AMenu> swingApplication(final Metasfresh metasfresh)
 	{
+		Splash.disposeCurrent();
+
 		KeyboardFocusManager.setCurrentKeyboardFocusManager(AKeyboardFocusManager.get());
 		Services.registerService(IClientUI.class, new SwingClientUI());
 		ReportCtl.setDefaultReportEngineReportViewerProvider(SwingViewerProvider.instance);
 
 		return AMenu.loginAndStartAsync();
+	}
+
+	@Configuration
+	@Profile(SwingUIApplicationTemplate.PROFILE)
+	public static class SwingMetasfreshConfiguration implements MetasfreshBootConfiguration
+	{
+		@Override
+		public RunMode getRunMode()
+		{
+			return RunMode.SWING_CLIENT;
+		}
 	}
 }

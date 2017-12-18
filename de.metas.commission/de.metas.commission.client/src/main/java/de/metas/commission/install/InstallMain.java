@@ -38,6 +38,7 @@ import static org.compiere.util.DisplayType.TableDir;
 import java.util.Properties;
 
 import org.compiere.Adempiere;
+import org.compiere.Adempiere.RunMode;
 import org.compiere.model.MColumn;
 import org.compiere.model.X_AD_Table;
 import org.compiere.util.Env;
@@ -478,9 +479,9 @@ public class InstallMain {
 				.save().syncColumn();
 	}
 
-	public static void main(final String[] args) {
-
-		Adempiere.startupEnvironment(false);
+	public static void main(final String[] args)
+	{
+		Adempiere.get().startup(RunMode.BACKEND);
 		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, true);
 		
 		doIt();

@@ -43,6 +43,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
+import org.compiere.Adempiere.RunMode;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Invoice;
@@ -67,7 +69,7 @@ public class QueryTest
 	{
 		final String username = System.getProperty("user.name");
 		System.setProperty("PropertyFile", new File(new File("../de.metas.endcustomer./"), "Adempiere.properties_" + username).getAbsolutePath());
-		org.compiere.Adempiere.startup(true);
+		Adempiere.get().startup(RunMode.SWING_CLIENT);
 
 		// Cleanup T_Query_Selection table
 		DB.executeUpdateEx("delete from t_query_selection", new Object[0], ITrx.TRXNAME_None);
@@ -350,7 +352,7 @@ public class QueryTest
 		assertTrue(AD_PInstance_ID > 0);
 
 		// Create selection list
-		List<Integer> elements = new ArrayList<Integer>();
+		List<Integer> elements = new ArrayList<>();
 		elements.add(102); // AD_Element_ID=102 => AD_Client_ID
 		elements.add(104); // AD_Element_ID=104 => AD_Column_ID
 		DB.executeUpdateEx("DELETE FROM T_Selection WHERE AD_PInstance_ID=" + AD_PInstance_ID, getTrxName());
@@ -376,7 +378,7 @@ public class QueryTest
 		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_None;
 
-		final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<I_AD_Table>(ctx, I_AD_Table.class, "TableName like ?", trxName)
+		final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(ctx, I_AD_Table.class, "TableName like ?", trxName)
 				.setParameters("AD%")
 				.setOrderBy(I_AD_Table.COLUMNNAME_TableName)
 				.setLimit(100, 20);
@@ -417,7 +419,7 @@ public class QueryTest
 
 		final int iteratorBufferSize = 10;
 
-		final TypedSqlQuery<I_Test> query = new TypedSqlQuery<I_Test>(ctx, I_Test.class, I_Test.COLUMNNAME_T_Integer + " BETWEEN ? AND ?", trxName)
+		final TypedSqlQuery<I_Test> query = new TypedSqlQuery<>(ctx, I_Test.class, I_Test.COLUMNNAME_T_Integer + " BETWEEN ? AND ?", trxName)
 				.setParameters(20, 60)
 				.setOption(Query.OPTION_IteratorBufferSize, iteratorBufferSize)
 				.setOrderBy(I_Test.COLUMNNAME_T_Integer);
@@ -455,7 +457,7 @@ public class QueryTest
 
 	private <T> List<T> getList(Iterator<T> it)
 	{
-		final List<T> list = new ArrayList<T>();
+		final List<T> list = new ArrayList<>();
 		while (it.hasNext())
 		{
 			T item = it.next();
@@ -522,7 +524,7 @@ public class QueryTest
 	@Test
 	public void test_getKeyColumnName()
 	{
-		final TypedSqlQuery<I_C_Invoice> query = new TypedSqlQuery<I_C_Invoice>(getCtx(), I_C_Invoice.class, null, getTrxName());
+		final TypedSqlQuery<I_C_Invoice> query = new TypedSqlQuery<>(getCtx(), I_C_Invoice.class, null, getTrxName());
 		Assert.assertEquals("Invalid key column for " + query,
 				"C_Invoice_ID",
 				query.getKeyColumnName());
@@ -531,7 +533,7 @@ public class QueryTest
 	@Test(expected = DBException.class)
 	public void test_getKeyColumnName_CompositePrimaryKey()
 	{
-		final TypedSqlQuery<I_M_Cost> query = new TypedSqlQuery<I_M_Cost>(getCtx(), I_M_Cost.class, null, getTrxName());
+		final TypedSqlQuery<I_M_Cost> query = new TypedSqlQuery<>(getCtx(), I_M_Cost.class, null, getTrxName());
 
 		// shall throw exception
 		query.getKeyColumnName();

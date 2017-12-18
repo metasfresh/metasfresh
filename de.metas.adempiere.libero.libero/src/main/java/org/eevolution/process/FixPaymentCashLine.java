@@ -52,11 +52,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
-import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
 
 
 
@@ -81,7 +80,8 @@ public class FixPaymentCashLine extends JavaProcess {
     /**
      *  Prepare - e.g., get Parameters.
      */
-    protected void prepare() 
+    @Override
+	protected void prepare() 
     {
     	ProcessInfoParameter[] para = getParametersAsArray();
     	
@@ -92,7 +92,8 @@ public class FixPaymentCashLine extends JavaProcess {
      *  @return Message (clear text)
      *  @throws Exception if not successful
      */
-    protected String doIt() throws Exception {
+    @Override
+	protected String doIt() throws Exception {
 
     	String sql = "SELECT cl.C_CashLine_ID, c.Name FROM C_CashLine cl INNER JOIN C_Cash c ON (c.C_Cash_ID=cl.C_Cash_ID) WHERE cl.CashType='T'";
 		
@@ -161,7 +162,7 @@ public class FixPaymentCashLine extends JavaProcess {
 				+ "WHERE p.DocumentNo=? AND R_PnRef=? AND PayAmt=? AND C_BP_BankAccount_ID=? AND AD_Client_ID=? " +
 				" AND TrxType='X' AND TenderType='X'";
 			
-		ArrayList<MPayment> list = new ArrayList<MPayment>();
+		ArrayList<MPayment> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		try
 		{
@@ -196,25 +197,4 @@ public class FixPaymentCashLine extends JavaProcess {
 		list.toArray(retValue);
 		return retValue;
 	}	//	getOfPayment
-    
-	/**************************************************************************
-	 * 	Test
-	 * 	@param args ignored
-	 */
-	public static void main(String[] args)
-	{
-		org.compiere.Adempiere.startup(true);
-		Env.setContext(Env.getCtx(), "#AD_Client_ID", 11);
-		FixPaymentCashLine pcf = new FixPaymentCashLine();
-		try
-		{
-			pcf.doIt();
-		}
-		catch (Exception e)
-		{
-			System.out.println("Error" + e.getMessage());
-		}
-		
-	}	//	main
-        
 }

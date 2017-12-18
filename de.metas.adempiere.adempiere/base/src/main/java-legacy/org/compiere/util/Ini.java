@@ -300,10 +300,8 @@ public final class Ini implements Serializable
 
 	/**
 	 * Load INI parameters from disk
-	 *
-	 * @param reload reload
 	 */
-	public static void loadProperties(boolean reload)
+	public static void loadProperties()
 	{
 		loadProperties(getFileName());
 	}	// loadProperties

@@ -49,6 +49,8 @@ import org.adempiere.test.TestClientUI;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.Adempiere;
+import org.compiere.Adempiere.RunMode;
 import org.compiere.db.CConnection;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_ClientInfo;
@@ -226,7 +228,7 @@ public class Helper implements IHelper
 
 		Services.setAutodetectServices(true);
 		// Services.registerService(IFreightCostBL.class, new FreightCostSubscriptionBL()); // TODO: hardcoded
-		org.compiere.Adempiere.startupEnvironment(true);
+		Adempiere.get().startup(RunMode.SWING_CLIENT);
 		LogManager.setLevel(config.getLogLevel());
 		// Decrease log level for CacheAsp:
 		Logger cacheLogger = LogManager.getLogger(de.metas.adempiere.util.cache.CacheInterceptor.class);

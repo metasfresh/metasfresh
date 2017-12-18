@@ -1,9 +1,10 @@
-package de.metas;
+package de.metas.boot;
 
-import org.compiere.Adempiere;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextStoppedEvent;
-import org.springframework.stereotype.Component;
+import org.compiere.model.ModelValidationEngine;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Configuration;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -15,24 +16,34 @@ import org.springframework.stereotype.Component;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Component
-public class ShutdownListener implements ApplicationListener<ContextStoppedEvent>
+@Configuration(MetasfreshModelInterceptorsConfiguration.BEANNAME)
+public class MetasfreshModelInterceptorsConfiguration
 {
-	@Override
-	public void onApplicationEvent(ContextStoppedEvent event)
+	static final String BEANNAME = "metasfreshModelInterceptorsConfiguration";
+	
+	private static final Logger logger = LogManager.getLogger(MetasfreshModelInterceptorsConfiguration.class);
+
+	public MetasfreshModelInterceptorsConfiguration(final MetasfreshDatabaseConfiguration dbConfig)
 	{
-		Adempiere.get().setApplicationContext(null);
+		init();
+	}
+
+	private void init()
+	{
+		ModelValidationEngine.get();
+
+		logger.info("Init done");
 	}
 }

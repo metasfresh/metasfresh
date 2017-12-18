@@ -1,9 +1,12 @@
-package de.metas;
+package de.metas.boot;
 
-import org.compiere.Adempiere;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextStoppedEvent;
-import org.springframework.stereotype.Component;
+import org.compiere.db.CConnection;
+import org.compiere.model.MLanguage;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Configuration;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -27,12 +30,24 @@ import org.springframework.stereotype.Component;
  * #L%
  */
 
-@Component
-public class ShutdownListener implements ApplicationListener<ContextStoppedEvent>
+@Configuration(MetasfreshDatabaseConfiguration.BEANNAME)
+public class MetasfreshDatabaseConfiguration
 {
-	@Override
-	public void onApplicationEvent(ContextStoppedEvent event)
+	static final String BEANNAME = "metasfreshDatabaseConfiguration";
+	
+	private static final Logger logger = LogManager.getLogger(MetasfreshDatabaseConfiguration.class);
+
+	public MetasfreshDatabaseConfiguration(final MetasfreshPhase0Configuration initialConfig)
 	{
-		Adempiere.get().setApplicationContext(null);
+		init();
+	}
+
+	private void init()
+	{
+		DB.setDBTarget(CConnection.get());
+
+		MLanguage.setBaseLanguage(); // metas
+
+		logger.info("Init done");
 	}
 }

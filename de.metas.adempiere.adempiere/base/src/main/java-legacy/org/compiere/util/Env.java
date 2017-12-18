@@ -2512,11 +2512,12 @@ public final class Env
 
 	public static Adempiere getSingleAdempiereInstance(@Nullable final ApplicationContext applicationContext)
 	{
+		final Adempiere adempiere = Adempiere.get();
 		if (applicationContext != null)
 		{
-			Adempiere.instance.setApplicationContext(applicationContext);
+			adempiere.setApplicationContext(applicationContext);
 		}
-		return Adempiere.instance;
+		return adempiere;
 	}
 
 	/**

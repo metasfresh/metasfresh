@@ -16,8 +16,6 @@
  *****************************************************************************/
 package org.compiere;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.io.IOException;
@@ -27,40 +25,19 @@ import java.util.Properties;
 
 import javax.swing.ImageIcon;
 
-import org.adempiere.ad.housekeeping.IHouseKeepingBL;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.ad.service.ISystemBL;
-import org.adempiere.ad.service.impl.DeveloperModeBL;
-import org.adempiere.context.SwingContextProvider;
-import org.adempiere.context.ThreadLocalContextProvider;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.processing.service.IProcessingService;
-import org.adempiere.processing.service.impl.ProcessingService;
-import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
-import org.adempiere.util.DefaultServiceNamePolicy;
 import org.adempiere.util.Services;
-import org.adempiere.util.proxy.Cached;
-import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.adempiere.warehouse.spi.impl.WarehouseAdvisor;
-import org.compiere.db.CConnection;
-import org.compiere.model.I_AD_System;
-import org.compiere.model.MLanguage;
+import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Login;
-import org.compiere.util.SecureEngine;
-import org.compiere.util.SecureInterface;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
-import ch.qos.logback.classic.Level;
-import de.metas.adempiere.util.cache.CacheInterceptor;
+import de.metas.boot.Metasfresh;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Adempiere Control Class
@@ -71,8 +48,13 @@ import de.metas.logging.LogManager;
  */
 public class Adempiere
 {
-	public static final String BEANNAME = "adempiere";
-	
+	public static final Adempiere get()
+	{
+		return instance;
+	}
+
+//	public static final String BEANNAME = "adempiere";
+
 	/**
 	 * The "raw" unsubstituted version string from <code>/de.metas.endcustomer..base/src/main/resources/org/adempiere/version.properties</code>
 	 */
@@ -84,7 +66,7 @@ public class Adempiere
 	 */
 	public static final String CLIENT_VERSION_LOCAL_BUILD = "LOCAL-NO-RELEASE";
 
-	public static final transient Adempiere instance = new Adempiere();
+	private static final transient Adempiere instance = new Adempiere();
 
 	/**
 	 * Client language to use. If set as a system property, then. no language combo box is show on startup and the given language is used instead. Task 06664.
@@ -137,7 +119,7 @@ public class Adempiere
 
 	public static final ApplicationContext getSpringApplicationContext()
 	{
-		return instance.applicationContext;
+		return get().applicationContext;
 	}
 
 	/**
@@ -598,225 +580,24 @@ public class Adempiere
 		BACKEND
 	}
 
-	/*************************************************************************
-	 * Startup Client/Server. - Print greeting, - Check Java version and - load ini parameters If it is a client, load/set PLAF and exit if error. If Client, you need to call startupEnvironment
-	 * explicitly! For testing call method startupEnvironment
-	 *
-	 * @param isClient true for client
-	 * @return successful startup
-	 * @deprecated use {@link #startup(RunMode)}
-	 */
-	@Deprecated
-	public static synchronized boolean startup(final boolean isClient)
-	{
-		return instance.startup(isClient ? RunMode.SWING_CLIENT : RunMode.BACKEND);
-	}
-
 	/**
 	 * Immediately returns if the member <code>started</code> is already true. Also calls {@link #startupEnvironment(RunMode)}, <b>unless the given runMode is {@link RunMode#SWING_CLIENT}</b>
 	 *
 	 * @param runMode
-	 * @return
-	 */
-	public synchronized boolean startup(final RunMode runMode)
-	{
-		//
-		// Check if already started
-		// NOTE: we can't rely on log != null, because the start could be canceled after log was initialized
-		if (started)
-		{
-			return true;
-		}
-
-		//
-		// Setup context provider (task 08859)
-		if (RunMode.SWING_CLIENT == runMode)
-		{
-			Env.setContextProvider(new SwingContextProvider());
-		}
-		else if (RunMode.BACKEND == runMode)
-		{
-			Env.setContextProvider(new ThreadLocalContextProvider());
-		}
-		else
-		{
-			// don't set the context provider but assume it was already configured.
-		}
-		Env.initContextProvider();
-
-		Services.setServiceNameAutoDetectPolicy(new DefaultServiceNamePolicy());
-		Check.setDefaultExClass(AdempiereException.class);
-
-		Services.getInterceptor().registerInterceptor(Cached.class, new CacheInterceptor()); // task 06952
-
-		// NOTE: this method is called more then one, which leads to multiple Services instances.
-		// If those services contains internal variables (for state) we will have different service implementations with different states
-		// which will lead us to weird behaviour
-		// So, instead of manually instantiating and registering here the services, it's much more safer to use AutodetectServices.
-		Services.setAutodetectServices(true);
-		Services.registerService(IDeveloperModeBL.class, DeveloperModeBL.instance); // we need this during AIT
-
-		final boolean runmodeClient = runMode == RunMode.SWING_CLIENT;
-
-		// Check Version
-		if (!Login.isJavaOK(runmodeClient) && runmodeClient)
-		{
-			System.exit(1);
-		}
-		LogManager.initialize(runmodeClient);
-		Ini.setRunMode(runMode);
-
-		// Greeting
-		logger.info(getSummaryAscii());
-
-		// System properties
-		Ini.loadProperties(false); // reload=false
-
-		//
-		// Update logging configuration from Ini file (applies only if we are running the swing client)
-		if (runmodeClient)
-		{
-			LogManager.updateConfigurationFromIni();
-		}
-		else
-		{
-			LogManager.setLevel(Level.WARN);
-		}
-
-		// Set UI
-		if (runmodeClient)
-		{
-			if (logger.isTraceEnabled())
-			{
-				logger.trace("{}", System.getProperties());
-			}
-
-			AdempierePLAF.setPLAF(); // metas: load plaf from last session
-		}
-
-		// Set Default Database Connection from Ini
-		DB.setDBTarget(CConnection.get());
-
-		MLanguage.setBaseLanguage(); // metas
-
-		// startAddOns(); // metas
-
-		// if (isClient) // don't test connection
-		// return false; // need to call
-		//
-		// return startupEnvironment(isClient);
-		started = true;
-		final boolean rv;
-		if (runmodeClient)
-		{
-			rv = false;
-		}
-		else
-		{
-			rv = startupEnvironment(runMode);
-		}
-		return rv;
-	}   // startup
-
-	/**
-	 * Startup Adempiere Environment. Automatically called for Server connections For testing call this method.
-	 *
-	 * @param isSwingClient true if client connection
-	 * @return successful startup
-	 * @deprecated pls use {@link #startup(RunMode)} instead
+	 * @deprecated consider using {@link MetasfreshBoot} spring configuration
 	 */
 	@Deprecated
-	public static boolean startupEnvironment(boolean isSwingClient)
+	public synchronized void startup(@NonNull final RunMode runMode)
 	{
-		final Adempiere adempiere = instance;
-		final RunMode runMode = isSwingClient ? RunMode.SWING_CLIENT : RunMode.BACKEND;
-
-		adempiere.startup(runMode); // this emulates the old behavior of startupEnvironment
-		return adempiere.startupEnvironment(runMode);
-	}
-
-	private boolean startupEnvironment(final RunMode runMode)
-	{
-		// commenting this out, it makes the startup procedure too complicated
-		// startup(runMode); // returns if already initiated
-		if (!DB.isConnected())
+		if (started)
 		{
-			logger.error("No Database");
-			return false;
+			return;
 		}
+		
+		Metasfresh.startupWithoutSpring(runMode);
 
-		final I_AD_System system = Services.get(ISystemBL.class).get(Env.getCtx());	// Initializes Base Context too
-
-		if (system == null)
-		{
-			logger.error("No AD_System record found");
-			return false;
-		}
-
-		// Initialize main cached Singletons
-		ModelValidationEngine.get();
-		try
-		{
-			String className = system.getEncryptionKey();
-			if (className == null || className.length() == 0)
-			{
-				className = System.getProperty(SecureInterface.METASFRESH_SECURE);
-				if (className != null && className.length() > 0
-						&& !className.equals(SecureInterface.METASFRESH_SECURE_DEFAULT))
-				{
-					SecureEngine.init(className);	// test it
-					system.setEncryptionKey(className);
-					save(system);
-				}
-			}
-			SecureEngine.init(className);
-
-			//
-			if (runMode == RunMode.SWING_CLIENT)
-			{
-				// Login Client loaded later
-				Services.get(IClientDAO.class).retriveClient(Env.getCtx(), IClientDAO.SYSTEM_CLIENT_ID);
-			}
-			else
-			{
-				// Load all clients (cache warm up)
-				Services.get(IClientDAO.class).retrieveAllClients(Env.getCtx());
-			}
-		}
-		catch (Exception e)
-		{
-			logger.warn("Environment problems: " + e.toString());
-		}
-
-		// Start Workflow Document Manager (in other package) for PO
-		String className = null;
-		try
-		{
-			className = "org.compiere.wf.DocWorkflowManager";
-			Class.forName(className);
-			// Initialize Archive Engine
-			className = "org.compiere.print.ArchiveEngine";
-			Class.forName(className);
-		}
-		catch (Exception e)
-		{
-			logger.warn("Not started: " + className + " - " + e.getMessage());
-		}
-
-		// metas: begin
-		Services.registerService(IProcessingService.class, ProcessingService.get());
-		Services.registerService(IWarehouseAdvisor.class, new WarehouseAdvisor());
-		// metas: end
-
-		// task 06295
-		if (runMode == RunMode.BACKEND)
-		{
-			// by now the model validation engine has been initialized and therefore model validators had the chance to register their own housekeeping tasks.
-			Services.get(IHouseKeepingBL.class).runStartupHouseKeepingTasks();
-		}
-
-		return true;
-	}	// startupEnvironment
+		started = true;
+	}   // startup
 
 	/**
 	 * If enabled, everything will run database decoupled. Supposed to be called before an interface like org.compiere.model.I_C_Order is to be used in a unit test.

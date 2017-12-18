@@ -35,6 +35,8 @@ import java.util.Properties;
 import java.util.Random;
 
 import org.adempiere.exceptions.DBException;
+import org.compiere.Adempiere;
+import org.compiere.Adempiere.RunMode;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
@@ -189,7 +191,7 @@ public class VolumeTest
 	
 	public static void main(String[] args)
 	{
-		org.compiere.Adempiere.startup(true);
+		Adempiere.get().startup(RunMode.SWING_CLIENT);
 		
 		final Properties ctx = Env.getCtx();
 		Env.setContext(ctx, "#AD_Client_ID", 11); // GardenWorld

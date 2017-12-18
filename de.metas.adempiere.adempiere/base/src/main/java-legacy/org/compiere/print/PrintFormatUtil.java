@@ -19,11 +19,11 @@ package org.compiere.print;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.util.DB;
-import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  *	Print Format Utilities.
@@ -56,6 +56,7 @@ public class PrintFormatUtil
 	/**
 	 * @deprecated use {@link #addMissingColumns(String)}
 	 */
+	@Deprecated
 	public void addMissingColumns ()
 	{
 		addMissingColumns((String)null);
@@ -150,18 +151,4 @@ public class PrintFormatUtil
 			log.debug("Added=" + counter);
 		return counter;
 	}	//	addMissingColumns
-
-
-	/**************************************************************************
-	 * 	Main
-	 *	@param args arguments
-	 */
-	public static void main(String[] args)
-	{
-		org.compiere.Adempiere.startupEnvironment(true);
-		//
-		PrintFormatUtil pfu = new PrintFormatUtil (Env.getCtx());
-		pfu.addMissingColumns((String)null);
-	}	//	main
-	
 }	//	PrintFormatUtils

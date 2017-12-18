@@ -89,6 +89,7 @@ import org.compiere.util.SecureEngine;
 import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.ValueNamePair;
+import org.compiere.wf.DocWorkflowManager;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -149,20 +150,6 @@ public abstract class PO
 	private static final int QUERY_TIME_OUT = 10;
 
 	final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
-
-	/**
-	 * Set Document Value Workflow Manager
-	 *
-	 * @param docWFMgr mgr
-	 */
-	public static void setDocWorkflowMgr(final DocWorkflowMgr docWFMgr)
-	{
-		s_docWFMgr = docWFMgr;
-		s_log.info("Document workflow manager set to {}", s_docWFMgr);
-	}	// setDocWorkflowMgr
-
-	/** Document Value Workflow Manager */
-	private static DocWorkflowMgr s_docWFMgr = null;
 
 	/** User Maintained Entity Type */
 	static protected final String ENTITYTYPE_UserMaintained = "U";
@@ -2957,20 +2944,7 @@ public abstract class PO
 
 	private final void fireDocWorkflowManager()
 	{
-		if (s_docWFMgr == null)
-		{
-			try
-			{
-				Class.forName("org.compiere.wf.DocWorkflowManager");
-			}
-			catch (Exception e)
-			{
-			}
-		}
-		if (s_docWFMgr != null)
-		{
-			s_docWFMgr.process(this);
-		}
+		DocWorkflowManager.get().process(this);
 	}
 
 	/**

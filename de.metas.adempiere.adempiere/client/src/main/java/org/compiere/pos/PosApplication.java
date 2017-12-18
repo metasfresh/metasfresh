@@ -32,6 +32,7 @@ import javax.swing.JFrame;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
+import org.compiere.Adempiere.RunMode;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AKeyboardFocusManager;
@@ -47,7 +48,7 @@ public class PosApplication {
 	private Properties m_ctx;
 
 	PosApplication() {
-		Adempiere.startup(true);	//	needs to be here for UI
+		Adempiere.get().startup(RunMode.SWING_CLIENT);
 		Splash splash = Splash.showSplash();
 		final CFrame frame = new CFrame();
 		//  Focus Traversal
@@ -85,8 +86,7 @@ public class PosApplication {
 		splash.paint(splash.getGraphics());
 
 		//
-		if (!Adempiere.startupEnvironment(true)) // Load Environment
-			System.exit(1);
+		Adempiere.get().startup(RunMode.SWING_CLIENT);
 		Services.get(ISessionBL.class).getCurrentOrCreateNewSession(Env.getCtx());		//	Start Session
 
 		int m_WindowNo = Env.createWindowNo(frame);

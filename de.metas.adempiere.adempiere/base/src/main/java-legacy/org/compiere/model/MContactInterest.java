@@ -22,7 +22,6 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -239,21 +238,4 @@ public class MContactInterest extends X_R_ContactInterest
 			.append ("]");
 		return sb.toString ();
 	}	//	toString
-
-	/**************************************************************************
-	 * 	@param args ignored
-	 */
-	public static void main (String[] args)
-	{
-		org.compiere.Adempiere.startup(true);
-		int R_InterestArea_ID = 1000002;
-		int AD_User_ID = 1000002;
-		MContactInterest ci = MContactInterest.get(Env.getCtx(), R_InterestArea_ID, AD_User_ID, false, null);
-		ci.subscribe();
-		ci.save();
-		//
-		ci = MContactInterest.get(Env.getCtx(), R_InterestArea_ID, AD_User_ID, false, null);
-	}	//	main
-
-
 }	//	MContactInterest

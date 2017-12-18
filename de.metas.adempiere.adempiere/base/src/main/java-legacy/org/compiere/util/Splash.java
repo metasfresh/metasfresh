@@ -182,4 +182,13 @@ public class Splash extends Frame
 		super.dispose();
 		staticSplashHolder.forget();
 	}   // dispose
+	
+	public static void disposeCurrent()
+	{
+		final Splash splash = staticSplashHolder.forget();
+		if(splash != null)
+		{
+			splash.dispose();
+		}
+	}
 }	// Splash
