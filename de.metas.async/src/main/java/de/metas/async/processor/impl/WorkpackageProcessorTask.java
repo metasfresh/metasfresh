@@ -29,12 +29,12 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -508,24 +508,22 @@ import de.metas.notification.INotificationBL;
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 		trxManager.getTrxListenerManagerOrAutoCommit(trxName)
-				.registerListener(new TrxListenerAdapter()
-				{
-					@Override
-					public void afterCommit(final ITrx trx)
-					{
-						final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-						final I_C_Queue_WorkPackage wpReloaded = InterfaceWrapperHelper.create(ctx, workPackageID, I_C_Queue_WorkPackage.class, ITrx.TRXNAME_None);
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> {
 
-						notificationBL.notifyUser(
-								wpReloaded.getAD_User_InCharge(),
-								MSG_PROCESSING_ERROR_NOTIFICATION_TITLE,
-								msgBL.getMsg(ctx,
-										MSG_PROCESSING_ERROR_NOTIFICATION_TEXT,
-										new Object[] { workPackageID, wpReloaded.getErrorMsg() }),
-								TableRecordReference.of(wpReloaded));
-					}
+					final IMsgBL msgBL = Services.get(IMsgBL.class);
+					final I_C_Queue_WorkPackage wpReloaded = InterfaceWrapperHelper.create(ctx, workPackageID, I_C_Queue_WorkPackage.class, ITrx.TRXNAME_None);
+
+					notificationBL.notifyUser(
+							wpReloaded.getAD_User_InCharge(),
+							MSG_PROCESSING_ERROR_NOTIFICATION_TITLE,
+							msgBL.getMsg(ctx,
+									MSG_PROCESSING_ERROR_NOTIFICATION_TEXT,
+									new Object[] { workPackageID, wpReloaded.getErrorMsg() }),
+							TableRecordReference.of(wpReloaded));
 				});
+
 	}
 
 	/**
