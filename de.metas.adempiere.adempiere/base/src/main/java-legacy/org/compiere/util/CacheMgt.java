@@ -725,6 +725,7 @@ public final class CacheMgt
 				// Listens {@link ITrx}'s after-commit and fires enqueued cache invalidation requests
 				trx.getTrxListenerManager()
 						.newEventListener(TrxEventTiming.AFTER_COMMIT)
+						.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 						.registerHandlingMethod(innerTrx -> {
 
 							final RecordsToResetOnTrxCommitCollector innerCollector = innerTrx.getProperty(TRX_PROPERTY);

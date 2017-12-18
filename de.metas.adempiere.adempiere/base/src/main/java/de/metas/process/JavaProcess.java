@@ -694,7 +694,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	}
 
 	/**
-	 * Schedule runnable to be executed after current transaction is committed.
+	 * Schedule runnable to be executed whenever the current transaction is committed.
 	 * If there is no current transaction, the runnable will be executed right away.
 	 *
 	 * @param runnable
@@ -703,6 +703,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	{
 		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(innerTrx -> runnable.run());
 	}
 

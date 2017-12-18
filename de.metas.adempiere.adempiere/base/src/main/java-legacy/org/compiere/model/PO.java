@@ -3339,6 +3339,7 @@ public abstract class PO
 
 		trx.getTrxListenerManager()
 				.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(transaction -> {
 
 					set_ID(idOld); // revert ID
