@@ -80,7 +80,7 @@ public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactoryTest
 	}
 
 	@Test
-	public void createProductDescriptor_PP_Order_no_ASI()
+	public void createProductDescriptor_PP_Order_no_ASI_result_to_NONE()
 	{
 		final I_PP_Order ppOrder = newInstance(I_PP_Order.class);
 		ppOrder.setM_Product_ID(20);
@@ -89,7 +89,7 @@ public class ModelProductDescriptorExtractorUsingAttributeSetInstanceFactoryTest
 		assertThat(productDescriptor).isNotNull();
 		assertThat(productDescriptor.getProductId()).isEqualTo(20);
 		assertThat(productDescriptor.getAttributeSetInstanceId()).isEqualTo(AttributeConstants.M_AttributeSetInstance_ID_None);
-		assertThat(productDescriptor.getStorageAttributesKey()).isEqualTo(AttributesKey.ALL);
+		assertThat(productDescriptor.getStorageAttributesKey()).isEqualTo(AttributesKey.NONE);
 	}
 
 	@Test
