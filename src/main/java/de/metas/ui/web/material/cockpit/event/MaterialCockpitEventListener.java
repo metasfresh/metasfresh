@@ -22,7 +22,7 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.procurement.AbstractPurchaseOfferEvent;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
-import de.metas.material.event.stockestimate.AbstractStockCountEvent;
+import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.ui.web.material.cockpit.event.DataUpdateRequest.DataUpdateRequestBuilder;
 import lombok.NonNull;
@@ -97,9 +97,9 @@ public class MaterialCockpitEventListener implements MaterialEventListener
 			requests.add(createDataUpdateRequestForEvent((AbstractShipmentScheduleEvent)event));
 		}
 
-		else if (event instanceof AbstractStockCountEvent) /* i.e. fresh-qtyOnhand-line */
+		else if (event instanceof AbstractStockEstimateEvent) /* i.e. fresh-qtyOnhand-line */
 		{
-			requests.add(createDataUpdateRequestForEvent((AbstractStockCountEvent)event));
+			requests.add(createDataUpdateRequestForEvent((AbstractStockEstimateEvent)event));
 		}
 
 		else if (event instanceof AbstractTransactionEvent)
@@ -177,7 +177,7 @@ public class MaterialCockpitEventListener implements MaterialEventListener
 	}
 
 	private DataUpdateRequest createDataUpdateRequestForEvent(
-			@NonNull final AbstractStockCountEvent stockEstimateEvent)
+			@NonNull final AbstractStockEstimateEvent stockEstimateEvent)
 	{
 		final DataRecordIdentifier identifier = DataRecordIdentifier.builder()
 				.productDescriptor(stockEstimateEvent.getProductDescriptor())
