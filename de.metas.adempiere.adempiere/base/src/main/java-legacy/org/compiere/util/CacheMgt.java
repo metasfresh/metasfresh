@@ -28,10 +28,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.ad.trx.spi.ITrxListener;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.WeakList;
@@ -39,7 +38,6 @@ import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -58,7 +56,7 @@ public final class CacheMgt
 {
 	/**
 	 * Get Cache Management
-	 * 
+	 *
 	 * @return Cache Manager
 	 */
 	public static final CacheMgt get()
@@ -91,7 +89,7 @@ public final class CacheMgt
 
 	/**
 	 * List of Table Names.
-	 * 
+	 *
 	 * i.e. map of TableName to "how many cache instances do we have for that table name"
 	 */
 	private final Map<String, AtomicInteger> tableNames = new HashMap<>();
@@ -104,7 +102,7 @@ public final class CacheMgt
 	/**
 	 * Enable caches for the given table to be invalidated by remote events. Example: if a user somewhere else opens/closes a period, we can allow the system to invalidate the local cache to avoid it
 	 * becoming stale.
-	 * 
+	 *
 	 * @param tableName
 	 */
 	public final void enableRemoteCacheInvalidationForTableName(final String tableName)
@@ -231,7 +229,7 @@ public final class CacheMgt
 
 	/**
 	 * Extracts the TableName from given cache instance.
-	 * 
+	 *
 	 * @param instance
 	 * @return table name or <code>null</code> if table name could not be extracted
 	 */
@@ -281,7 +279,7 @@ public final class CacheMgt
 
 	/**
 	 * Invalidate ALL cached entries of all registered {@link CacheInterface}s.
-	 * 
+	 *
 	 * @return how many cache entries were invalidated
 	 */
 	public int reset()
@@ -338,7 +336,7 @@ public final class CacheMgt
 
 	/**
 	 * Invalidate all cached entries for given TableName.
-	 * 
+	 *
 	 * @param tableName table name
 	 * @return how many cache entries were invalidated
 	 */
@@ -350,9 +348,9 @@ public final class CacheMgt
 
 	/**
 	 * Invalidate all cached entries for given TableName.
-	 * 
+	 *
 	 * The event won't be broadcasted.
-	 * 
+	 *
 	 * @param tableName table name
 	 * @return how many cache entries were invalidated
 	 */
@@ -364,7 +362,7 @@ public final class CacheMgt
 
 	/**
 	 * Invalidate all cached entries for given TableName/Record_ID.
-	 * 
+	 *
 	 * @param tableName table name
 	 * @param recordId record if applicable or {@link #RECORD_ID_ALL} for all
 	 * @return how many cache entries were invalidated
@@ -382,9 +380,9 @@ public final class CacheMgt
 
 	/**
 	 * Reset cache for TableName/Record_ID when given transaction is committed.
-	 * 
+	 *
 	 * If no transaction was given or given transaction was not found, the cache is reset right away.
-	 * 
+	 *
 	 * @param trxName
 	 * @param tableName
 	 * @param recordId
@@ -422,7 +420,7 @@ public final class CacheMgt
 
 	/**
 	 * Invalidate all cached entries for given TableName/Record_ID.
-	 * 
+	 *
 	 * @param tableName
 	 * @param recordId
 	 * @param broadcast true if we shall also broadcast this remotely.
@@ -650,7 +648,7 @@ public final class CacheMgt
 
 	/**
 	 * Adds an listener which will be fired when the cache for given table is about to be reset.
-	 * 
+	 *
 	 * @param tableName
 	 * @param cacheResetListener
 	 */
@@ -715,42 +713,33 @@ public final class CacheMgt
 	}
 
 	/** Collects records that needs to be removed from cache when a given transaction is committed */
-	private static final class RecordsToResetOnTrxCommitCollector extends TrxListenerAdapter
+	private static final class RecordsToResetOnTrxCommitCollector
 	{
 		/** Gets/creates the records collector which needs to be reset when transaction is committed */
 		public static final RecordsToResetOnTrxCommitCollector getCreate(final ITrx trx)
 		{
-			return trx.getProperty(TRX_PROPERTY, new Supplier<RecordsToResetOnTrxCommitCollector>()
-			{
+			return trx.getProperty(TRX_PROPERTY, () -> {
 
-				@Override
-				public RecordsToResetOnTrxCommitCollector get()
-				{
-					final RecordsToResetOnTrxCommitCollector collector = new RecordsToResetOnTrxCommitCollector();
-					trx.getTrxListenerManager().registerListener(ResetCacheOnCommitTrxListener);
-					return collector;
+				final RecordsToResetOnTrxCommitCollector collector = new RecordsToResetOnTrxCommitCollector();
 
-				}
+				// Listens {@link ITrx}'s after-commit and fires enqueued cache invalidation requests
+				trx.getTrxListenerManager()
+						.newEventListener(TrxEventTiming.AFTER_COMMIT)
+						.registerHandlingMethod(innerTrx -> {
+
+							final RecordsToResetOnTrxCommitCollector innerCollector = innerTrx.getProperty(TRX_PROPERTY);
+							if (innerCollector == null)
+							{
+								return;
+							}
+							innerCollector.sendRequestsAndClear();
+						});
+
+				return collector;
 			});
 		}
 
 		private static final String TRX_PROPERTY = RecordsToResetOnTrxCommitCollector.class.getName();
-
-		/** Listens {@link ITrx}'s after-commit and fires enqueued cache invalidation requests */
-		private static final ITrxListener ResetCacheOnCommitTrxListener = new TrxListenerAdapter()
-		{
-			@Override
-			public void afterCommit(final ITrx trx)
-			{
-				final RecordsToResetOnTrxCommitCollector collector = trx.getProperty(TRX_PROPERTY);
-				if (collector == null)
-				{
-					return;
-				}
-
-				collector.sendRequestsAndClear();
-			}
-		};
 
 		private final Map<CacheInvalidateRequest, ResetMode> request2resetMode = Maps.newConcurrentMap();
 

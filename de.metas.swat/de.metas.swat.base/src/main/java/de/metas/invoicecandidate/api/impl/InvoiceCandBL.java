@@ -43,6 +43,7 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -705,9 +706,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			qtyInvoicable = qtyOverride.subtract(ic.getQtyToInvoice_OverrideFulfilled()).multiply(factor);
 		}
 
-		if(ic.isInDispute()
+		if (ic.isInDispute()
 				&& ic.getAD_Table_ID() == InterfaceWrapperHelper.getTableId(I_M_InventoryLine.class) // TODO HARDCODED, see ...
-				)
+		)
 		{
 			qtyInvoicable = qtyInvoicable.subtract(ic.getQtyWithIssues_Effective());
 		}
@@ -1316,7 +1317,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					Services.get(ITrxManager.class)
 							.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-							.onAfterCommit(() -> setQtyAndPriceOverride(invoiceCandidateId, qtyToInvoice_Override, priceEntered_Override));
+							.newEventListener(TrxEventTiming.AFTER_COMMIT)
+							.registerHandlingMethod(transaction -> setQtyAndPriceOverride(invoiceCandidateId, qtyToInvoice_Override, priceEntered_Override));
 				}
 
 				if (creditMemo && creditedInvoiceReinvoicable && !creditedInvoiceIsReversed)
