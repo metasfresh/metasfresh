@@ -229,10 +229,9 @@ public class ASIRepository
 			final R result = processor.apply(asiDoc);
 
 			Services.get(ITrxManager.class)
-					.getCurrentTrxListenerManagerOrAutoCommit().newEventListener()
-					.timing(TrxEventTiming.AFTER_COMMIT)
-					.handlingMethod(trx -> commit(asiDoc))
-					.register();
+					.getCurrentTrxListenerManagerOrAutoCommit()
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.registerHandlingMethod(trx -> commit(asiDoc));
 
 			return result;
 		}

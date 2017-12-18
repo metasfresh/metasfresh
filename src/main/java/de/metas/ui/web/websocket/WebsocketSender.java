@@ -116,9 +116,8 @@ public class WebsocketSender implements InitializingBean
 
 		// Bind
 		trx.getTrxListenerManager()
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> queue.sendEventsAndClear())
-				.register();
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> queue.sendEventsAndClear());
 
 		return queue;
 	}

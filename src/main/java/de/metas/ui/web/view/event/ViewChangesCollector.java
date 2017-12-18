@@ -74,9 +74,8 @@ public class ViewChangesCollector implements AutoCloseable
 					.getProperty(TRXPROPERTY_Name, trx -> {
 						final ViewChangesCollector collector = new ViewChangesCollector();
 						trx.getTrxListenerManager()
-								.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-								.handlingMethod(innerTrx -> collector.close())
-								.register();
+								.newEventListener(TrxEventTiming.AFTER_COMMIT)
+								.registerHandlingMethod(innerTrx -> collector.close());
 						return collector;
 					});
 		}

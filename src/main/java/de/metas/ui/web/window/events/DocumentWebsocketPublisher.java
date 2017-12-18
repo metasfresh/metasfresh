@@ -104,9 +104,8 @@ public class DocumentWebsocketPublisher
 		final JSONDocumentChangedWebSocketEventCollector collector = JSONDocumentChangedWebSocketEventCollector.newInstance();
 
 		trx.getTrxListenerManager()
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(transaction -> sendAllAndClear(collector, websocketSender))
-				.register();
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(transaction -> sendAllAndClear(collector, websocketSender));
 
 		return collector;
 	}

@@ -151,10 +151,8 @@ public class AddressRepository
 		addressDoc.processValueChanges(events, REASON_ProcessAddressDocumentChanges);
 
 		Services.get(ITrxManager.class)
-				.getCurrentTrxListenerManagerOrAutoCommit().newEventListener()
-				.timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(trx -> putAddressDocument(addressDoc))
-				.register();
+				.getCurrentTrxListenerManagerOrAutoCommit().newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> putAddressDocument(addressDoc));
 
 	}
 
@@ -166,10 +164,9 @@ public class AddressRepository
 		final I_C_Location locationRecord = createC_Location(addressDoc);
 
 		Services.get(ITrxManager.class)
-				.getCurrentTrxListenerManagerOrAutoCommit().newEventListener()
-				.timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(trx -> removeAddressDocumentById(addressDocId))
-				.register();
+				.getCurrentTrxListenerManagerOrAutoCommit()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> removeAddressDocumentById(addressDocId));
 
 		final String locationStr = Services.get(ILocationBL.class).mkAddress(locationRecord);
 		return IntegerLookupValue.of(locationRecord.getC_Location_ID(), locationStr);
