@@ -2,27 +2,18 @@ package de.metas.ui.web.pickingslotsClearing.process;
 
 import java.math.BigDecimal;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationDestination;
-import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -56,7 +47,6 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToHU extends PickingSlotsClearingViewBasedProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	// services
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
@@ -110,16 +100,8 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToHU extends PickingS
 	{
 		if (PARAM_QtyCU.equals(parameter.getColumnName()))
 		{
-			final I_M_HU fromHU = getFromHU();
-			final IHUContext huContext = huContextFactory.createMutableHUContext();
-			final IHUStorage fromHUStorage = huContext.getHUStorageFactory()
-					.getStorage(fromHU);
-			final I_M_Product product = fromHUStorage.getSingleProductOrNull();
-			if (product == null)
-			{
-				return BigDecimal.ZERO;
-			}
-			return fromHUStorage.getProductStorage(product).getQty();
+			final I_M_HU fromHU = getSingleSelectedPickingSlotTopLevelHU();
+			return retrieveQtyCU(fromHU);
 		}
 		else
 		{
@@ -130,14 +112,19 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToHU extends PickingS
 	@Override
 	protected String doIt()
 	{
-		final I_M_HU fromHU = getFromHU();
+		if (qtyCU == null || qtyCU.signum() <= 0)
+		{
+			throw new FillMandatoryException(PARAM_QtyCU);
+		}
+
+		final I_M_HU fromHU = getSingleSelectedPickingSlotTopLevelHU();
 		final IAllocationSource source = HUListAllocationSourceDestination.of(fromHU)
 				.setDestroyEmptyHUs(true);
 		final IAllocationDestination destination = HUListAllocationSourceDestination.of(getTargetHU());
 		HULoader.of(source, destination)
 				.setAllowPartialUnloads(false)
 				.setAllowPartialLoads(false)
-				.load(createAllocationRequest(fromHU));
+				.load(prepareUnloadRequest(fromHU, qtyCU).create());
 
 		// If the source HU was destroyed, then "remove" it from picking slots
 		if (handlingUnitsBL.isDestroyedRefreshFirst(fromHU))
@@ -152,46 +139,10 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToHU extends PickingS
 		return MSG_OK;
 	}
 
-	private I_M_HU getFromHU()
-	{
-		final PickingSlotRow huRow = getSingleSelectedPickingSlotRow();
-		Check.assume(huRow.isTopLevelHU(), "row {} shall be a top level HU", huRow);
-		final I_M_HU fromHU = InterfaceWrapperHelper.load(huRow.getHuId(), I_M_HU.class);
-		return fromHU;
-	}
-
 	private I_M_HU getTargetHU()
 	{
 		final HUEditorRow huRow = getSingleSelectedPackingHUsRow();
 		Check.assume(huRow.isTopLevel(), "row {} shall be a top level HU", huRow);
 		return huRow.getM_HU();
-	}
-
-	private IAllocationRequest createAllocationRequest(final I_M_HU fromHU)
-	{
-		if (qtyCU == null || qtyCU.signum() <= 0)
-		{
-			throw new FillMandatoryException(PARAM_QtyCU);
-		}
-
-		final IHUContext huContext = huContextFactory.createMutableHUContext();
-
-		final IHUStorage fromHUStorage = huContext.getHUStorageFactory()
-				.getStorage(fromHU);
-		final I_M_Product product = fromHUStorage.getSingleProductOrNull();
-		if (product == null)
-		{
-			throw new AdempiereException("Cannot determine the product to transfer from " + fromHU);
-		}
-		final IHUProductStorage productStorage = fromHUStorage.getProductStorage(product);
-
-		return AllocationUtils.createAllocationRequestBuilder()
-				.setHUContext(huContext)
-				.setProduct(product)
-				.setQuantity(qtyCU, productStorage.getC_UOM())
-				.setDateAsToday()
-				.setFromReferencedModel(null)
-				.setForceQtyAllocation(false)
-				.create();
 	}
 }
