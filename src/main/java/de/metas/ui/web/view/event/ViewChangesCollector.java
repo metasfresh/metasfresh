@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.util.Services;
@@ -72,7 +73,10 @@ public class ViewChangesCollector implements AutoCloseable
 			return currentTrx
 					.getProperty(TRXPROPERTY_Name, trx -> {
 						final ViewChangesCollector collector = new ViewChangesCollector();
-						trx.getTrxListenerManager().onAfterCommit(() -> collector.close());
+						trx.getTrxListenerManager()
+								.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
+								.handlingMethod(innerTrx -> collector.close())
+								.register();
 						return collector;
 					});
 		}
@@ -179,7 +183,7 @@ public class ViewChangesCollector implements AutoCloseable
 
 		autoflushIfEnabled();
 	}
-	
+
 	public void collectRowChanged(final IView view, final DocumentId rowId)
 	{
 		viewChanges(view).addChangedRowId(rowId);

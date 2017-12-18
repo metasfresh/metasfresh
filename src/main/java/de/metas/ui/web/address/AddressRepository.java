@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -150,8 +151,11 @@ public class AddressRepository
 		addressDoc.processValueChanges(events, REASON_ProcessAddressDocumentChanges);
 
 		Services.get(ITrxManager.class)
-				.getCurrentTrxListenerManagerOrAutoCommit()
-				.onAfterCommit(() -> putAddressDocument(addressDoc));
+				.getCurrentTrxListenerManagerOrAutoCommit().newEventListener()
+				.timing(TrxEventTiming.AFTER_COMMIT)
+				.handlingMethod(trx -> putAddressDocument(addressDoc))
+				.register();
+
 	}
 
 	public LookupValue complete(final int addressDocIdInt)
@@ -162,8 +166,10 @@ public class AddressRepository
 		final I_C_Location locationRecord = createC_Location(addressDoc);
 
 		Services.get(ITrxManager.class)
-				.getCurrentTrxListenerManagerOrAutoCommit()
-				.onAfterCommit(() -> removeAddressDocumentById(addressDocId));
+				.getCurrentTrxListenerManagerOrAutoCommit().newEventListener()
+				.timing(TrxEventTiming.AFTER_COMMIT)
+				.handlingMethod(trx -> removeAddressDocumentById(addressDocId))
+				.register();
 
 		final String locationStr = Services.get(ILocationBL.class).mkAddress(locationRecord);
 		return IntegerLookupValue.of(locationRecord.getC_Location_ID(), locationStr);
