@@ -160,6 +160,7 @@ public class HULockBL implements IHULockBL
 		Services.get(ITrxManager.class)
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerWeakly(false) // register "hard", because that's how it was before
 				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(transaction -> unlock0(huId, lockOwner));
 

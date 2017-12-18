@@ -59,6 +59,7 @@ public class TrxListenerManagerTest
 
 		trxListenerManager
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerWeakly(false) // register "hard", because that's how it was before
 				.invokeMethodJustOnce(false)
 				.registerHandlingMethod(innerTrx -> runnable.run());
 
@@ -82,6 +83,7 @@ public class TrxListenerManagerTest
 
 		trxListenerManager
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerWeakly(false) // register "hard", because that's how it was before
 				.invokeMethodJustOnce(true)
 				.registerHandlingMethod(innerTrx -> runnable.run());
 
