@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -636,7 +637,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 							Services.get(ITrxManager.class)
 									.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-									.onAfterCommit(() -> set_QtyAndPriceOverrideToNull(invoiceCandidate_ID));
+									.newEventListener()
+									.timing(TrxEventTiming.AFTER_COMMIT)
+									.handlingMethod(localTrx -> set_QtyAndPriceOverrideToNull(invoiceCandidate_ID))
+									.register();
 						}
 					}
 

@@ -13,11 +13,11 @@ package de.metas.lock.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,9 +28,8 @@ import java.util.Iterator;
 import java.util.concurrent.Future;
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.concurrent.CloseableReentrantLock;
@@ -116,22 +115,20 @@ import de.metas.lock.spi.ILockDatabase;
 		final FutureValue<ILock> futureLock = new FutureValue<>();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.getTrxListenerManagerOrAutoCommit(trxName)
-				.registerListener(new TrxListenerAdapter()
-				{
-					@Override
-					public void beforeCommit(final ITrx trx)
+				.newEventListener().timing(TrxEventTiming.BEFORE_COMMIT)
+				.handlingMethod(innerTrx -> {
+
+					try
 					{
-						try
-						{
-							final ILock lock = acquire();
-							futureLock.set(lock);
-						}
-						catch (Exception e)
-						{
-							futureLock.setError(e);
-						}
+						final ILock lock = acquire();
+						futureLock.set(lock);
 					}
-				});
+					catch (Exception e)
+					{
+						futureLock.setError(e);
+					}
+				})
+				.register();
 		return futureLock;
 	}
 
@@ -204,7 +201,7 @@ import de.metas.lock.spi.ILockDatabase;
 	{
 		return failIfAlreadyLocked;
 	}
-	
+
 	@Override
 	public ILockCommand setFailIfNothingLocked(final boolean failIfNothingLocked)
 	{

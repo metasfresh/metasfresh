@@ -3,6 +3,7 @@ package de.metas.handlingunits.impl;
 import java.util.Collection;
 
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -155,8 +156,11 @@ public class HULockBL implements IHULockBL
 		Preconditions.checkArgument(!lockOwner.isAnyOwner(), "{} not allowed", lockOwner);
 
 		Services.get(ITrxManager.class)
-				.getCurrentTrxListenerManagerOrAutoCommit()
-				.onAfterCommit(() -> unlock0(huId, lockOwner));
+				.getCurrentTrxListenerManagerOrAutoCommit().newEventListener()
+				.timing(TrxEventTiming.AFTER_COMMIT)
+				.handlingMethod(transaction -> unlock0(huId, lockOwner))
+				.register();
+
 	}
 
 	private final void unlock0(final int huId, final LockOwner lockOwner)

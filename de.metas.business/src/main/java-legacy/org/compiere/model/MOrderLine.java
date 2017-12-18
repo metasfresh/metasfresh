@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -22,8 +22,8 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -856,7 +856,7 @@ public class MOrderLine extends X_C_OrderLine
 		{
 			setOrder(getParent());
 		}
-		
+
 		// metas: try to get the pl-id from our plv
 		if (m_M_PriceList_ID <= 0)
 		{
@@ -1092,23 +1092,20 @@ public class MOrderLine extends X_C_OrderLine
 		// The updates in updateHeader0 will try aggregate and obtain any number of additional shared locks.
 		// Concrete, we observed a deadlock between this code and M_ReceiptSchedule.propagateQtysToOrderLine()
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		trxManager
-				.getTrxListenerManager(get_TrxName())
-				.registerListener(new TrxListenerAdapter()
-				{
-					@Override
-					public void afterCommit(final ITrx trx)
+		trxManager.getTrxListenerManager(get_TrxName())
+				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
+				.handlingMethod(innerTrx -> {
+					trxManager.run(new TrxRunnableAdapter()
 					{
-						trxManager.run(new TrxRunnableAdapter()
+						@Override
+						public void run(final String localTrxName) throws Exception
 						{
-							@Override
-							public void run(final String localTrxName) throws Exception
-							{
-								updateHeader0(getC_Order_ID());
-							}
-						});
-					}
-				});
+							updateHeader0(getC_Order_ID());
+						}
+					});
+				})
+				.register();
+
 		return true;
 	}	// updateHeaderTax
 

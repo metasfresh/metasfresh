@@ -43,6 +43,7 @@ import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -705,9 +706,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			qtyInvoicable = qtyOverride.subtract(ic.getQtyToInvoice_OverrideFulfilled()).multiply(factor);
 		}
 
-		if(ic.isInDispute()
+		if (ic.isInDispute()
 				&& ic.getAD_Table_ID() == InterfaceWrapperHelper.getTableId(I_M_InventoryLine.class) // TODO HARDCODED, see ...
-				)
+		)
 		{
 			qtyInvoicable = qtyInvoicable.subtract(ic.getQtyWithIssues_Effective());
 		}
@@ -1315,8 +1316,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					final BigDecimal priceEntered_Override = InterfaceWrapperHelper.getValueOrNull(ilaToReverse, I_C_Invoice_Line_Alloc.COLUMNNAME_PriceEntered_Override);
 
 					Services.get(ITrxManager.class)
-							.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-							.onAfterCommit(() -> setQtyAndPriceOverride(invoiceCandidateId, qtyToInvoice_Override, priceEntered_Override));
+							.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited).newEventListener()
+							.timing(TrxEventTiming.AFTER_COMMIT)
+							.handlingMethod(transaction -> setQtyAndPriceOverride(invoiceCandidateId, qtyToInvoice_Override, priceEntered_Override))
+							.register();
 				}
 
 				if (creditMemo && creditedInvoiceReinvoicable && !creditedInvoiceIsReversed)

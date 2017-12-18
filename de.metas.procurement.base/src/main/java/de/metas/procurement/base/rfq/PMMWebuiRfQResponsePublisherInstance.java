@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
@@ -138,14 +138,9 @@ class PMMWebuiRfQResponsePublisherInstance
 	private final void pushToWebUI()
 	{
 		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-				.registerListener(new TrxListenerAdapter()
-				{
-					@Override
-					public void afterCommit(final ITrx trx)
-					{
-						pushToWebUINow();
-					}
-				});
+				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
+				.handlingMethod(innerTrx -> pushToWebUINow())
+				.register();
 	}
 
 	private final void pushToWebUINow()
