@@ -91,7 +91,8 @@ public class TraceHUTrxListener implements IHUTrxListener
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrxListenerManager trxListenerManager = trxManager.getTrxListenerManager(ITrx.TRXNAME_ThreadInherited);
-		trxListenerManager.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
+		trxListenerManager
+				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
 				.handlingMethod(innerTrx -> {
 
 					// do a brand new transaction in which we execute our things,

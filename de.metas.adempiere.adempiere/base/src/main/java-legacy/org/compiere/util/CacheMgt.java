@@ -723,7 +723,8 @@ public final class CacheMgt
 				final RecordsToResetOnTrxCommitCollector collector = new RecordsToResetOnTrxCommitCollector();
 
 				// Listens {@link ITrx}'s after-commit and fires enqueued cache invalidation requests
-				trx.getTrxListenerManager().newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
+				trx.getTrxListenerManager()
+						.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
 						.handlingMethod(innerTrx -> {
 
 							final RecordsToResetOnTrxCommitCollector innerCollector = innerTrx.getProperty(TRX_PROPERTY);
