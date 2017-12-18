@@ -147,9 +147,9 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				trx.getTrxListenerManager()
 						.newEventListener(TrxEventTiming.AFTER_COMMIT)
 						.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
-						.registerHandlingMethod(localTrx -> {
+						.registerHandlingMethod(innerTrx -> {
 
-							logger.info("Reseting the cache because transaction was commited: {}", trx);
+							logger.info("Reseting the cache because transaction was commited: {}", innerTrx);
 							resetCache(true);
 						});
 				logger.info("Scheduled cache reset after trx commit: {}", trx);

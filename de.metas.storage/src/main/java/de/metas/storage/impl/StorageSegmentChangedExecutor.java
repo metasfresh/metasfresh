@@ -68,7 +68,7 @@ public class StorageSegmentChangedExecutor
 					.newEventListener(TrxEventTiming.AFTER_COMMIT)
 					.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 					.registerHandlingMethod(innerTrx -> {
-						final StorageSegmentChangedExecutor innerCollector = trx.getProperty(TRX_PROPERTYNAME);
+						final StorageSegmentChangedExecutor innerCollector = innerTrx.getProperty(TRX_PROPERTYNAME);
 						if (innerCollector == null || innerCollector.isEmpty())
 						{
 							// nothing to do
