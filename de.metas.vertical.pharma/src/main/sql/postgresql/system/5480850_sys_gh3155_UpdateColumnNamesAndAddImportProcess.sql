@@ -67,3 +67,17 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, Is
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,540903,540880,TO_TIMESTAMP('2017-12-18 17:15:24','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.vertical.pharma','Y',TO_TIMESTAMP('2017-12-18 17:15:24','YYYY-MM-DD HH24:MI:SS'),100,'N','N')
 ;
 
+
+-- 2017-12-18T17:40:26.665
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=540745,Updated=TO_TIMESTAMP('2017-12-18 17:40:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558279
+;
+
+-- 2017-12-18T17:46:27.826
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('i_pharma_product','I_IsImported','CHAR(1)',null,null)
+;
+
+ALTER TABLE i_pharma_product DROP CONSTRAINT i_pharma_product_i_isimported_check;
+
+
