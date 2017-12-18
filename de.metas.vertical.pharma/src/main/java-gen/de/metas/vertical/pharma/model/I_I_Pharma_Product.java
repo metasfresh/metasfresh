@@ -140,20 +140,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A00GTIN.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA00GTIN (int A00GTIN);
+	public void setA00GTIN (java.lang.String A00GTIN);
 
 	/**
 	 * Get A00GTIN.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA00GTIN();
+	public java.lang.String getA00GTIN();
 
     /** Column definition for A00GTIN */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A00GTIN = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A00GTIN", null);
@@ -3026,6 +3026,33 @@ public interface I_I_Pharma_Product
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Dosage Form.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_DosageForm_ID (int M_DosageForm_ID);
+
+	/**
+	 * Get Dosage Form.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_DosageForm_ID();
+
+	public de.metas.vertical.pharma.model.I_M_DosageForm getM_DosageForm();
+
+	public void setM_DosageForm(de.metas.vertical.pharma.model.I_M_DosageForm M_DosageForm);
+
+    /** Column definition for M_DosageForm_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, de.metas.vertical.pharma.model.I_M_DosageForm> COLUMN_M_DosageForm_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, de.metas.vertical.pharma.model.I_M_DosageForm>(I_I_Pharma_Product.class, "M_DosageForm_ID", de.metas.vertical.pharma.model.I_M_DosageForm.class);
+    /** Column name M_DosageForm_ID */
+    public static final String COLUMNNAME_M_DosageForm_ID = "M_DosageForm_ID";
+
+	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
@@ -3053,6 +3080,35 @@ public interface I_I_Pharma_Product
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_Product>(I_I_Pharma_Product.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Package UOM.
+	 * UOM of the package
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPackage_UOM_ID (int Package_UOM_ID);
+
+	/**
+	 * Get Package UOM.
+	 * UOM of the package
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPackage_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getPackage_UOM();
+
+	public void setPackage_UOM(org.compiere.model.I_C_UOM Package_UOM);
+
+    /** Column definition for Package_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_C_UOM> COLUMN_Package_UOM_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_C_UOM>(I_I_Pharma_Product.class, "Package_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name Package_UOM_ID */
+    public static final String COLUMNNAME_Package_UOM_ID = "Package_UOM_ID";
 
 	/**
 	 * Set Verarbeitet.

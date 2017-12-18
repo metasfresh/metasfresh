@@ -14,7 +14,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 230167817L;
+	private static final long serialVersionUID = 517023708L;
 
     /** Standard Constructor */
     public X_I_Pharma_Product (Properties ctx, int I_Pharma_Product_ID, String trxName)
@@ -126,20 +126,17 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/** Set A00GTIN.
 		@param A00GTIN A00GTIN	  */
 	@Override
-	public void setA00GTIN (int A00GTIN)
+	public void setA00GTIN (java.lang.String A00GTIN)
 	{
-		set_Value (COLUMNNAME_A00GTIN, Integer.valueOf(A00GTIN));
+		set_Value (COLUMNNAME_A00GTIN, A00GTIN);
 	}
 
 	/** Get A00GTIN.
 		@return A00GTIN	  */
 	@Override
-	public int getA00GTIN () 
+	public java.lang.String getA00GTIN () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A00GTIN);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return (java.lang.String)get_Value(COLUMNNAME_A00GTIN);
 	}
 
 	/** Set A00HMNR.
@@ -2292,6 +2289,40 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	}
 
 	@Override
+	public de.metas.vertical.pharma.model.I_M_DosageForm getM_DosageForm() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_DosageForm_ID, de.metas.vertical.pharma.model.I_M_DosageForm.class);
+	}
+
+	@Override
+	public void setM_DosageForm(de.metas.vertical.pharma.model.I_M_DosageForm M_DosageForm)
+	{
+		set_ValueFromPO(COLUMNNAME_M_DosageForm_ID, de.metas.vertical.pharma.model.I_M_DosageForm.class, M_DosageForm);
+	}
+
+	/** Set Dosage Form.
+		@param M_DosageForm_ID Dosage Form	  */
+	@Override
+	public void setM_DosageForm_ID (int M_DosageForm_ID)
+	{
+		if (M_DosageForm_ID < 1) 
+			set_Value (COLUMNNAME_M_DosageForm_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_DosageForm_ID, Integer.valueOf(M_DosageForm_ID));
+	}
+
+	/** Get Dosage Form.
+		@return Dosage Form	  */
+	@Override
+	public int getM_DosageForm_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_DosageForm_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
@@ -2323,6 +2354,43 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_UOM getPackage_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Package_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setPackage_UOM(org.compiere.model.I_C_UOM Package_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_Package_UOM_ID, org.compiere.model.I_C_UOM.class, Package_UOM);
+	}
+
+	/** Set Package UOM.
+		@param Package_UOM_ID 
+		UOM of the package
+	  */
+	@Override
+	public void setPackage_UOM_ID (int Package_UOM_ID)
+	{
+		if (Package_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Package_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Package_UOM_ID, Integer.valueOf(Package_UOM_ID));
+	}
+
+	/** Get Package UOM.
+		@return UOM of the package
+	  */
+	@Override
+	public int getPackage_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Package_UOM_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
