@@ -250,12 +250,11 @@ public class WebuiHUTransformCommand
 	 */
 	private WebuiHUTransformCommandResult action_SplitCU_To_ExistingTU(final HUEditorRow cuRow, final I_M_HU tuHU, final BigDecimal qtyCU)
 	{
-		final List<I_M_HU> createdCUs = newHUTransformation().cuToExistingTU(cuRow.getM_HU(), qtyCU, tuHU);
+		newHUTransformation().cuToExistingTU(cuRow.getM_HU(), qtyCU, tuHU);
 
 		return WebuiHUTransformCommandResult.builder()
 				.huIdChanged(cuRow.getM_HU_ID())
 				.huIdChanged(tuHU.getM_HU_ID())
-				.huIdsToAddToView(createdCUs.stream().map(hu -> hu.getM_HU_ID()).collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 

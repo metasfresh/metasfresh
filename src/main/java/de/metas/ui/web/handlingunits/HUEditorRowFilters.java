@@ -66,10 +66,6 @@ public class HUEditorRowFilters
 		{
 			predicate = predicate.and(HUEditorRow::isTU);
 		}
-		else if (rowType == Select.CU)
-		{
-			predicate = predicate.and(HUEditorRow::isCU);
-		}
 		else
 		{
 			throw new AdempiereException("Unknown: " + rowType);

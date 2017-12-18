@@ -61,7 +61,7 @@ public final class HUEditorRowFilter
 
 	public enum Select
 	{
-		ONLY_TOPLEVEL, ALL, LU, TU, CU
+		ONLY_TOPLEVEL, ALL, LU, TU
 	}
 
 	private final ImmutableSet<HUEditorRowId> onlyRowIds;
