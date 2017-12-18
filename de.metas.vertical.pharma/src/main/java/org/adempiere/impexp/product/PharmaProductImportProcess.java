@@ -160,10 +160,11 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 			product.setIsTFG(isTFG);
 		}
 
-		//
+		// FIXME: use them as default values for this WIP
 		product.setProductType(X_I_Product.PRODUCTTYPE_Item);
 		product.setC_UOM_ID(C_UOM_ID);
 		product.setM_Product_Category_ID(M_Product_Category_ID);
+
 		InterfaceWrapperHelper.save(product);
 
 		return product;
