@@ -18,7 +18,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
-import de.metas.material.dispo.client.repository.AvailableStockService;
+import de.metas.ui.web.material.adapter.AvailableStockAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
@@ -63,7 +63,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 /* package */ final class OrderLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
 	@Autowired
-	private AvailableStockService availableStockService;
+	private AvailableStockAdapter availableStockService;
 
 	@Override
 	public Set<MatchingKey> getMatchingKeys()

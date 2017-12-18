@@ -100,7 +100,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		Preconditions.checkArgument(boardId > 0);
 		return TOPIC_Board + "/" + boardId;
 	}
-	
+
 	@Override
 	public void registerStompEndpoints(final StompEndpointRegistry registry)
 	{
@@ -265,7 +265,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 			final String simpDestination = extractSimpDestination(event);
 			websocketProducersRegistry.onTopicUnsubscribed(simpSessionId, simpDestination);
 
-			logger.info("Unsubscribed from {} [ {} ]", simpDestination, simpSessionId);
+			logger.info("Unsubscribed from {} [ {} ]", simpDestination != null ? simpDestination : "<null>", simpSessionId);
 		}
 	}
 

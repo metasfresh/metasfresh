@@ -1,6 +1,7 @@
-package de.metas.ui.web.pickingslot;
+package de.metas.ui.web.pickingslotsClearing;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -17,10 +18,14 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRowId;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRowsCollection;
+import de.metas.ui.web.pickingslotsClearing.PackingHUsViewsCollection.PackingHUsViewSupplier;
+import de.metas.ui.web.pickingslotsClearing.process.HUExtractedFromPickingSlotEvent;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowOverrides;
@@ -37,6 +42,7 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 
 /*
  * #%L
@@ -60,7 +66,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class AggregationPickingSlotView implements IView, IViewRowOverrides
+public class PickingSlotsClearingView implements IView, IViewRowOverrides
 {
 	private final ViewId viewId;
 	private final ITranslatableString description;
@@ -68,22 +74,28 @@ public class AggregationPickingSlotView implements IView, IViewRowOverrides
 
 	private final PickingSlotRowsCollection rows;
 
-	private final ViewId afterPickingHUViewId;
-	private HUEditorView _afterPickingHUView = null; // lazy
+	private final PackingHUsViewsCollection packingHUsViewsCollection = new PackingHUsViewsCollection();
+
+	private final DocumentFilterDescriptorsProvider filterDescriptors;
+	private final ImmutableList<DocumentFilter> filters;
 
 	@Builder
-	private AggregationPickingSlotView(
+	private PickingSlotsClearingView(
 			@NonNull final ViewId viewId,
 			@Nullable final ITranslatableString description,
 			@NonNull final Supplier<List<PickingSlotRow>> rows,
-			@Nullable final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
+			@Nullable final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors,
+			@NonNull final DocumentFilterDescriptorsProvider filterDescriptors,
+			@NonNull @Singular final ImmutableList<DocumentFilter> filters)
 	{
 		this.viewId = viewId;
 		this.description = ITranslatableString.nullToEmpty(description);
 		this.rows = PickingSlotRowsCollection.ofSupplier(rows);
 
-		afterPickingHUViewId = AfterPickingHUViewFactory.extractAfterPickingHUsViewId(viewId);
 		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
+
+		this.filterDescriptors = filterDescriptors;
+		this.filters = filters;
 	}
 
 	@Override
@@ -168,21 +180,32 @@ public class AggregationPickingSlotView implements IView, IViewRowOverrides
 	}
 
 	@Override
-	public IViewRow getById(final DocumentId rowId) throws EntityNotFoundException
+	public PickingSlotRow getById(final DocumentId rowId) throws EntityNotFoundException
 	{
 		return rows.getById(rowId);
+	}
+
+	public PickingSlotRow getRootRowWhichIncludesRowId(final PickingSlotRowId rowId)
+	{
+		return rows.getRootRowWhichIncludes(rowId);
 	}
 
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
-		throw new UnsupportedOperationException();
+		return filterDescriptors.getByFilterId(filterId)
+				.getParameterByName(filterParameterName)
+				.getLookupDataSource()
+				.findEntities(ctx);
 	}
 
 	@Override
 	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
-		throw new UnsupportedOperationException();
+		return filterDescriptors.getByFilterId(filterId)
+				.getParameterByName(filterParameterName)
+				.getLookupDataSource()
+				.findEntities(ctx, query);
 	}
 
 	@Override
@@ -194,7 +217,7 @@ public class AggregationPickingSlotView implements IView, IViewRowOverrides
 	@Override
 	public List<DocumentFilter> getFilters()
 	{
-		return ImmutableList.of();
+		return filters;
 	}
 
 	@Override
@@ -217,7 +240,7 @@ public class AggregationPickingSlotView implements IView, IViewRowOverrides
 	}
 
 	@Override
-	public Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
+	public Stream<PickingSlotRow> streamByIds(final DocumentIdsSelection rowIds)
 	{
 		return rows.streamByIds(rowIds);
 	}
@@ -230,38 +253,49 @@ public class AggregationPickingSlotView implements IView, IViewRowOverrides
 	}
 
 	@Override
-	public ViewId getIncludedViewId()
+	public ViewId getIncludedViewId(final IViewRow row)
 	{
-		return getAfterPickingHUViewId();
+		final PackingHUsViewKey key = extractPackingHUsViewKey(PickingSlotRow.cast(row));
+		return key.getPackingHUsViewId();
 	}
 
-	public ViewId getAfterPickingHUViewId()
+	private PackingHUsViewKey extractPackingHUsViewKey(final PickingSlotRow row)
 	{
-		return afterPickingHUViewId;
+		final PickingSlotRow rootRow = getRootRowWhichIncludesRowId(row.getPickingSlotRowId());
+		return PackingHUsViewKey.builder()
+				.pickingSlotsClearingViewIdPart(getViewId().getViewIdPart())
+				.bpartnerId(rootRow.getBPartnerId())
+				.bpartnerLocationId(rootRow.getBPartnerLocationId())
+				.build();
 	}
 
-	public synchronized HUEditorView getAfterPickingHUViewOrNull()
+	public Optional<HUEditorView> getPackingHUsViewIfExists(final ViewId packingHUsViewId)
 	{
-		return _afterPickingHUView;
+		final PackingHUsViewKey key = PackingHUsViewKey.ofPackingHUsViewId(packingHUsViewId);
+		return packingHUsViewsCollection.getByKeyIfExists(key);
 	}
 
-	public synchronized HUEditorView getAfterPickingHUViewOrCreate(final Supplier<HUEditorView> husViewFactory)
+	public Optional<HUEditorView> getPackingHUsViewIfExists(final PickingSlotRowId rowId)
 	{
-		if (_afterPickingHUView == null)
-		{
-			_afterPickingHUView = husViewFactory.get();
-		}
-		return _afterPickingHUView;
+		final PickingSlotRow rootRow = getRootRowWhichIncludesRowId(rowId);
+		final PackingHUsViewKey key = extractPackingHUsViewKey(rootRow);
+		return packingHUsViewsCollection.getByKeyIfExists(key);
 	}
 
-	public synchronized void clearAfterPickingHUView()
+	public HUEditorView computePackingHUsViewIfAbsent(@NonNull final ViewId packingHUsViewId, @NonNull final PackingHUsViewSupplier packingHUsViewFactory)
 	{
-		final HUEditorView afterPickingHUView = _afterPickingHUView;
-		_afterPickingHUView = null;
+		return packingHUsViewsCollection.computeIfAbsent(PackingHUsViewKey.ofPackingHUsViewId(packingHUsViewId), packingHUsViewFactory::createPackingHUsView);
+	}
 
-		if (afterPickingHUView != null)
-		{
-			afterPickingHUView.close(ViewCloseReason.USER_REQUEST);
-		}
+	public void closePackingHUsView(final ViewId packingHUsViewId)
+	{
+		final PackingHUsViewKey key = PackingHUsViewKey.ofPackingHUsViewId(packingHUsViewId);
+		packingHUsViewsCollection.removeIfExists(key)
+				.ifPresent(packingHUsView -> packingHUsView.close(ViewCloseReason.USER_REQUEST));
+	}
+
+	public void handleEvent(final HUExtractedFromPickingSlotEvent event)
+	{
+		packingHUsViewsCollection.handleEvent(event);
 	}
 }

@@ -16,6 +16,7 @@ import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Component;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import lombok.NonNull;
 
@@ -55,6 +56,9 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 	@Autowired
 	private DocumentCollection documents;
 
+	@Autowired
+	private IViewsRepository viewsRepository;
+
 	private final Executor async;
 
 	public DocumentCacheInvalidationDispatcher()
@@ -81,7 +85,7 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 	private void resetNow(final CacheInvalidateMultiRequest request)
 	{
 		final DocumentWebsocketPublisher websocketPublisher = documents.getWebsocketPublisher();
-		try (IAutoCloseable c = websocketPublisher.temporaryCollectOnThisThread())
+		try (final IAutoCloseable c = websocketPublisher.temporaryCollectOnThisThread())
 		{
 			request.getRequests().forEach(this::resetNow);
 		}
@@ -118,6 +122,8 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 			logger.debug("Invalidating the included document: {}", request);
 			documents.invalidateIncludedDocumentsByRecordId(rootTableName, rootRecordId, childTableName, childRecordId);
 		}
+
+		viewsRepository.notifyRecordChanged(rootTableName, rootRecordId);
 	}
 
 }

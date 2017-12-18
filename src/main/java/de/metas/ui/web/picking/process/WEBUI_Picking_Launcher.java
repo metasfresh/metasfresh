@@ -134,7 +134,7 @@ public class WEBUI_Picking_Launcher extends ViewBasedProcessTemplate implements 
 
 	private DocumentIdsSelection getSelectedRootDocumentIds()
 	{
-		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
 		if (selectedRowIds.isAll())
 		{
 			return selectedRowIds;

@@ -681,4 +681,17 @@ public final class SqlViewSelectionQueryBuilder
 
 		return TypedSqlQueryFilter.of(sql, sqlParams);
 	}
+
+	public String buildSqlDeleteSelection(@NonNull final String selectionId)
+	{
+		return "DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name
+				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(selectionId);
+	}
+
+	public String buildSqlDeleteSelectionLines(@NonNull final String selectionId)
+	{
+		return "DELETE FROM " + I_T_WEBUI_ViewSelectionLine.Table_Name
+				+ " WHERE " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + "=" + DB.TO_STRING(selectionId);
+	}
+
 }

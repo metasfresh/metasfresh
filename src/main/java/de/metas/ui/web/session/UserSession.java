@@ -157,6 +157,7 @@ public class UserSession
 	
 	private InternalUserSessionData getData()
 	{
+		_data.initializeIfNeeded();
 		return _data;
 	}
 

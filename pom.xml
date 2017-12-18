@@ -86,33 +86,40 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.ui.web</groupId>
 			<artifactId>de.metas.ui.web.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 
-		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
-		<!-- we need those classes in the webui-api and swing-UI in order to run the MD_Candidate_Request_PP_Order process -->
-		<dependency>
-			<groupId>de.metas.material</groupId>
-			<artifactId>metasfresh-material-dispo-client</artifactId>
-			<version>${metasfresh.version}</version>
-			<type>jar</type>
-		</dependency>
-		
 		<dependency>
 			<groupId>de.metas.purchasecandidate</groupId>
-			<artifactId>de.metas.purchasecandidate.base</artifactId> 
+			<artifactId>de.metas.purchasecandidate.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.vertical.pharma</groupId>
 			<artifactId>metasfresh-pharma</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>${metasfresh.version}</version>
+			<scope>test</scope>
+			<classifier>tests</classifier>
+		</dependency>
+
 
 		<!-- Elasticsearch -->
 		<dependency>

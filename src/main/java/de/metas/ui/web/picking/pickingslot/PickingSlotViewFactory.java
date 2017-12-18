@@ -65,7 +65,7 @@ import lombok.NonNull;
 
 /**
  * Factory to create {@link PickingSlotView}s instances. This includes assigning a number of picking related processed to the view.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -119,7 +119,7 @@ public class PickingSlotViewFactory implements IViewFactory
 
 	/**
 	 * This method is called once for each shipment schedule (left-hand side) and creates the respective picking view (right-hand side)
-	 * 
+	 *
 	 * @param request
 	 * @param allShipmentScheduleIds the shipment schedule IDs to display picking slots for; <br>
 	 *            may be {@code null} or empty, in this case we assume that only the given {@code request}'s {@code shipmentScheduleId} is available.

@@ -56,7 +56,7 @@ public class C_Invoice_Candidate_ApproveForInvoicing extends ViewBasedProcessTem
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
 		if (selectedRowIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
@@ -115,7 +115,7 @@ public class C_Invoice_Candidate_ApproveForInvoicing extends ViewBasedProcessTem
 		;
 
 		// Only selected rows
-		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
 		if (!selectedRowIds.isAll())
 		{
 			final Set<Integer> invoiceCandidateIds = selectedRowIds.toIntSet();

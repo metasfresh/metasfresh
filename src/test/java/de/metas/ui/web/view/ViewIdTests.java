@@ -2,7 +2,12 @@ package de.metas.ui.web.view;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Random;
+
+import org.junit.Assert;
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.WindowId;
 
@@ -30,6 +35,8 @@ import de.metas.ui.web.window.datatypes.WindowId;
 
 public class ViewIdTests
 {
+	private final Random random = new Random(System.currentTimeMillis());
+
 	@Test
 	public void test_deriveWithWindowId_StandardCase()
 	{
@@ -59,4 +66,128 @@ public class ViewIdTests
 		assertThat(viewId.getPart(0)).isEqualTo(windowIdStr);
 		assertThat(viewId.getPart(1)).isEqualTo(viewIdPart);
 	}
+
+	@Test
+	public void test_ofViewIdString_CorrectWindowId()
+	{
+		final ViewId viewId = randomViewId();
+
+		final WindowId expectedWindowId = viewId.getWindowId();
+		final ViewId viewId2 = ViewId.ofViewIdString(viewId.getViewId(), expectedWindowId);
+
+		Assert.assertEquals(viewId, viewId2);
+	}
+
+	@Test
+	public void test_of_CorrectWindowId()
+	{
+		final ViewId viewId = randomViewId();
+
+		final String expectedWindowIdStr = viewId.getWindowId().toJson();
+		final ViewId viewId2 = ViewId.of(expectedWindowIdStr, viewId.toJson());
+
+		Assert.assertEquals(viewId, viewId2);
+	}
+
+	@Test
+	public void test_ofViewIdString_NullWindowId()
+	{
+		final ViewId viewId = randomViewId();
+
+		final WindowId expectedWindowId = null;
+		final ViewId viewId2 = ViewId.ofViewIdString(viewId.getViewId(), expectedWindowId);
+
+		Assert.assertEquals(viewId, viewId2);
+	}
+
+	@Test
+	public void test_of_NullWindowId()
+	{
+		final ViewId viewId = randomViewId();
+
+		final String expectedWindowIdStr = null;
+		final ViewId viewId2 = ViewId.of(expectedWindowIdStr, viewId.toJson());
+
+		Assert.assertEquals(viewId, viewId2);
+	}
+
+	@Test
+	public void test_ofViewIdString_WrongWindowId()
+	{
+		final ViewId viewId = randomViewId();
+
+		final WindowId expectedWindowId = randomWindowIdButNot(viewId.getWindowId());
+
+		try
+		{
+			final ViewId viewId2 = ViewId.ofViewIdString(viewId.getViewId(), expectedWindowId);
+			Assert.fail("Exception was expected because windowId are not matching: viewId2=" + viewId2 + ", expectedWindowId=" + expectedWindowId);
+		}
+		catch (final IllegalArgumentException ex)
+		{
+			// OK
+		}
+	}
+
+	@Test
+	public void test_of_WrongWindowId()
+	{
+		final ViewId viewId = randomViewId();
+
+		final String expectedWindowIdStr = randomWindowIdButNot(viewId.getWindowId()).toJson();
+
+		try
+		{
+			final ViewId viewId2 = ViewId.of(expectedWindowIdStr, viewId.toJson());
+			Assert.fail("Exception was expected because windowId are not matching: viewId2=" + viewId2 + ", expectedWindowId=" + expectedWindowIdStr);
+		}
+		catch (final IllegalArgumentException ex)
+		{
+			// OK
+		}
+	}
+
+	private final ViewId randomViewId()
+	{
+		final WindowId windowId = randomWindowId();
+		return ViewId.random(windowId);
+	}
+
+	private final WindowId randomWindowId()
+	{
+		final int windowIdInt = random.nextInt(9000000) + 1;
+		return WindowId.of(windowIdInt);
+	}
+
+	private final WindowId randomWindowIdButNot(final WindowId windowIdToExclude)
+	{
+		WindowId windowId = randomWindowId();
+		while (windowId.equals(windowIdToExclude))
+		{
+			windowId = randomWindowId();
+		}
+		return windowId;
+	}
+
+	@Test
+	public void test_getOtherParts_NoElementExpected()
+	{
+		final ViewId viewId = ViewId.ofViewIdString("packingHUs-351a5c70a1ff4d4fb2852468d6b5b01b");
+		assertThat(viewId.getOtherParts()).isEqualTo(ImmutableList.of());
+	}
+
+	@Test
+	public void test_getOtherParts_OneElementExpected()
+	{
+		final ViewId viewId = ViewId.ofViewIdString("packingHUs-351a5c70a1ff4d4fb2852468d6b5b01b-1000103");
+		assertThat(viewId.getOtherParts()).isEqualTo(ImmutableList.of("1000103"));
+	}
+
+	@Test
+	public void test_getOtherParts_ThreeElementExpected()
+	{
+		final ViewId viewId = ViewId.ofViewIdString("packingHUs-351a5c70a1ff4d4fb2852468d6b5b01b-1-2-3");
+		assertThat(viewId.getOtherParts()).isEqualTo(ImmutableList.of("1", "2", "3"));
+	}
+
 }

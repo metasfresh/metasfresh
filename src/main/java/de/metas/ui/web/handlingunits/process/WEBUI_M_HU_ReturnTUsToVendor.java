@@ -76,7 +76,7 @@ public class WEBUI_M_HU_ReturnTUsToVendor extends HUEditorProcessTemplate implem
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
 
-		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
 		if (!selectedRowIds.isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();

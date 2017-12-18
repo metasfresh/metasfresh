@@ -13,6 +13,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -54,7 +56,6 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -66,6 +67,7 @@ import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -100,11 +102,6 @@ import lombok.NonNull;
 {
 	private static final transient Logger logger = LogManager.getLogger(ADProcessInstanceController.class);
 
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
 	private final DocumentId instanceId;
 
 	private final ProcessDescriptor processDescriptor;
@@ -112,7 +109,6 @@ import lombok.NonNull;
 	private final Object processClassInstance;
 
 	private final ViewId viewId;
-	private final DocumentIdsSelection viewSelectedDocumentIds;
 
 	private final DocumentPath contextSingleDocumentPath;
 
@@ -122,17 +118,24 @@ import lombok.NonNull;
 	private final ReentrantReadWriteLock readwriteLock;
 
 	/** New instance constructor */
-	private ADProcessInstanceController(@NonNull final Builder builder)
+	@Builder
+	private ADProcessInstanceController(
+			@NonNull final ProcessDescriptor processDescriptor,
+			@NonNull final DocumentId instanceId,
+			@Nullable final Document parameters,
+			@Nullable final Object processClassInstance,
+			@Nullable final DocumentPath contextSingleDocumentPath,
+			//
+			@Nullable final ViewId viewId)
 	{
-		processDescriptor = builder.processDescriptor;
-		instanceId = builder.instanceId;
-		parameters = builder.parameters;
-		processClassInstance = builder.processClassInstance;
+		this.processDescriptor = processDescriptor;
+		this.instanceId = instanceId;
+		this.parameters = parameters;
+		this.processClassInstance = processClassInstance;
 
-		viewId = builder.viewId;
-		viewSelectedDocumentIds = builder.viewSelectedDocumentIds == null ? DocumentIdsSelection.EMPTY : builder.viewSelectedDocumentIds;
+		this.viewId = viewId;
 
-		contextSingleDocumentPath = builder.contextSingleDocumentPath;
+		this.contextSingleDocumentPath = contextSingleDocumentPath;
 
 		executed = false;
 		executionResult = null;
@@ -150,7 +153,6 @@ import lombok.NonNull;
 		processClassInstance = from.processClassInstance;
 
 		viewId = from.viewId;
-		viewSelectedDocumentIds = from.viewSelectedDocumentIds;
 
 		contextSingleDocumentPath = from.contextSingleDocumentPath;
 
@@ -182,7 +184,7 @@ import lombok.NonNull;
 	{
 		return instanceId;
 	}
-	
+
 	public ViewId getViewId()
 	{
 		return viewId;
@@ -310,7 +312,7 @@ import lombok.NonNull;
 				.onErrorThrowException() // throw exception directly... this will allow the original exception (including exception params) to be sent back to frontend
 				.executeSync();
 		final ProcessExecutionResult processExecutionResult = processExecutor.getResult();
-		
+
 		invalidateDocumentsAndViews(processExecutionResult, viewsRepo, documentsCollection);
 
 		//
@@ -326,7 +328,7 @@ import lombok.NonNull;
 			final ProcessInstanceResult.Builder resultBuilder = ProcessInstanceResult.builder(DocumentId.of(processExecutionResult.getAD_PInstance_ID()))
 					.setSummary(summary)
 					.setError(processExecutionResult.isError());
-			
+
 			//
 			// Create result post process actions
 			{
@@ -392,20 +394,20 @@ import lombok.NonNull;
 			return result;
 		}
 	}
-	
+
 	private void invalidateDocumentsAndViews(final ProcessExecutionResult processExecutionResult,
 			final IViewsRepository viewsRepo,
 			final DocumentCollection documentsCollection)
 	{
-		final Supplier<IView> viewSupplier = Suppliers.memoize(()->{
+		final Supplier<IView> viewSupplier = Suppliers.memoize(() -> {
 			final ViewId viewId = getViewId();
-			if(viewId == null)
+			if (viewId == null)
 			{
 				return null;
 			}
-			
+
 			final IView view = viewsRepo.getViewIfExists(viewId);
-			if(view == null)
+			if (view == null)
 			{
 				logger.warn("No view found for {}. View invalidation will be skipped for {}", viewId, processExecutionResult);
 			}
@@ -415,7 +417,7 @@ import lombok.NonNull;
 		//
 		// Refresh all
 		boolean viewInvalidateAllCalled = false;
-		if(processExecutionResult.isRefreshAllAfterExecution() && viewSupplier.get() != null)
+		if (processExecutionResult.isRefreshAllAfterExecution() && viewSupplier.get() != null)
 		{
 			viewSupplier.get().invalidateAll();
 			viewInvalidateAllCalled = true;
@@ -427,8 +429,8 @@ import lombok.NonNull;
 		if (recordToRefresh != null)
 		{
 			documentsCollection.invalidateDocumentByRecordId(recordToRefresh.getTableName(), recordToRefresh.getRecord_ID());
-			
-			if(!viewInvalidateAllCalled && viewSupplier.get() != null)
+
+			if (!viewInvalidateAllCalled && viewSupplier.get() != null)
 			{
 				viewSupplier.get().notifyRecordsChanged(ImmutableSet.of(recordToRefresh));
 			}
@@ -606,71 +608,4 @@ import lombok.NonNull;
 			logger.debug("Released write lock for {}: {}", this, writeLock);
 		};
 	}
-
-	//
-	//
-	// Builder
-	//
-	//
-	public static class Builder
-	{
-		private ProcessDescriptor processDescriptor;
-		private DocumentId instanceId;
-		private Document parameters;
-
-		private ViewId viewId;
-		private DocumentIdsSelection viewSelectedDocumentIds;
-
-		private Object processClassInstance;
-
-		private DocumentPath contextSingleDocumentPath;
-
-		private Builder()
-		{
-		}
-
-		public ADProcessInstanceController build()
-		{
-
-			return new ADProcessInstanceController(this);
-		}
-
-		public Builder setProcessDescriptor(final ProcessDescriptor processDescriptor)
-		{
-			this.processDescriptor = processDescriptor;
-			return this;
-		}
-
-		public Builder setInstanceId(final DocumentId instanceId)
-		{
-			this.instanceId = instanceId;
-			return this;
-		}
-
-		public Builder setParameters(final Document parameters)
-		{
-			this.parameters = parameters;
-			return this;
-		}
-
-		public Builder setView(final ViewId viewId, final DocumentIdsSelection selectedDocumentIds)
-		{
-			this.viewId = viewId;
-			viewSelectedDocumentIds = selectedDocumentIds;
-			return this;
-		}
-
-		public Builder setProcessClassInstance(final Object processClassInstance)
-		{
-			this.processClassInstance = processClassInstance;
-			return this;
-		}
-
-		public Builder setContextSingleDocumentPath(final DocumentPath contextSingleDocumentPath)
-		{
-			this.contextSingleDocumentPath = contextSingleDocumentPath;
-			return this;
-		}
-	}
-
 }

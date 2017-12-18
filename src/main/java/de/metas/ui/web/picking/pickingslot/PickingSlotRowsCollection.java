@@ -5,17 +5,20 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -48,11 +51,11 @@ public final class PickingSlotRowsCollection
 		return new PickingSlotRowsCollection(rowsSupplier);
 	}
 
-	private final ExtendedMemorizingSupplier<Map<PickingSlotRowId, PickingSlotRow>> rowsSupplier;
+	private final ExtendedMemorizingSupplier<PickingSlotRowsIndex> rowsSupplier;
 
 	private PickingSlotRowsCollection(@NonNull final Supplier<List<PickingSlotRow>> rowsSupplier)
 	{
-		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rowsSupplier.get(), PickingSlotRow::getPickingSlotRowId));
+		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> new PickingSlotRowsIndex(rowsSupplier.get()));
 	}
 
 	@Override
@@ -66,19 +69,19 @@ public final class PickingSlotRowsCollection
 		rowsSupplier.forget();
 	}
 
-	private final Map<PickingSlotRowId, PickingSlotRow> getRowsMap()
+	private final PickingSlotRowsIndex getRowsIndex()
 	{
 		return rowsSupplier.get();
 	}
 
 	public long size()
 	{
-		return getRowsMap().size();
+		return getRowsIndex().size();
 	}
 
 	public List<PickingSlotRow> getPage(final int firstRow, final int pageLength)
 	{
-		return getRowsMap().values().stream()
+		return getRowsIndex().stream()
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : DEFAULT_PAGE_LENGTH)
 				.collect(ImmutableList.toImmutableList());
@@ -87,14 +90,19 @@ public final class PickingSlotRowsCollection
 	public PickingSlotRow getById(@NonNull final DocumentId id) throws EntityNotFoundException
 	{
 		final PickingSlotRowId rowId = PickingSlotRowId.fromDocumentId(id);
+		return getById(rowId);
+	}
+
+	public PickingSlotRow getById(@NonNull final PickingSlotRowId rowId) throws EntityNotFoundException
+	{
 
 		if (rowId.getPickingSlotId() <= 0)
 		{
-			return assertRowNotNull(rowId, getRowsMap().get(rowId));
+			return assertRowNotNull(rowId, getRowsIndex().getRow(rowId));
 		}
 
 		final PickingSlotRowId pickingSlotRowId = PickingSlotRowId.ofPickingSlotId(rowId.getPickingSlotId());
-		final PickingSlotRow pickingSlotRow = getRowsMap().get(pickingSlotRowId);
+		final PickingSlotRow pickingSlotRow = getRowsIndex().getRow(pickingSlotRowId);
 
 		if (java.util.Objects.equals(rowId, pickingSlotRowId))
 		{
@@ -103,6 +111,16 @@ public final class PickingSlotRowsCollection
 
 		return pickingSlotRow.findIncludedRowById(rowId)
 				.orElseThrow(() -> new EntityNotFoundException("Row not found").setParameter("pickingSlotRow", pickingSlotRow).setParameter("rowId", rowId));
+	}
+
+	public PickingSlotRow getRootRowWhichIncludes(@NonNull final PickingSlotRowId rowId)
+	{
+		final PickingSlotRow rootRowId = getRowsIndex().getRootRow(rowId);
+		if (rootRowId == null)
+		{
+			throw new AdempiereException("No root row found which includes " + rowId);
+		}
+		return rootRowId;
 	}
 
 	private static final PickingSlotRow assertRowNotNull(final PickingSlotRowId pickingSlotRowId, final PickingSlotRow pickingSlotRow)
@@ -114,15 +132,64 @@ public final class PickingSlotRowsCollection
 		return pickingSlotRow;
 	}
 
-	public Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
+	public Stream<PickingSlotRow> streamByIds(final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isAll())
 		{
-			return getRowsMap().values().stream();
+			return getRowsIndex().stream();
 		}
 		else
 		{
 			return rowIds.stream().map(this::getById);
+		}
+	}
+
+	@ToString
+	private static final class PickingSlotRowsIndex
+	{
+		private final ImmutableMap<PickingSlotRowId, PickingSlotRow> rowsById;
+		private final ImmutableMap<PickingSlotRowId, PickingSlotRowId> rowId2rootRowId;
+
+		private PickingSlotRowsIndex(final List<PickingSlotRow> rows)
+		{
+			rowsById = Maps.uniqueIndex(rows, PickingSlotRow::getPickingSlotRowId);
+
+			rowId2rootRowId = rows.stream()
+					.flatMap(rootRow -> streamChild2RootRowIdsRecursivelly(rootRow))
+					.collect(GuavaCollectors.toImmutableMap());
+		}
+
+		private static final Stream<Map.Entry<PickingSlotRowId, PickingSlotRowId>> streamChild2RootRowIdsRecursivelly(final PickingSlotRow row)
+		{
+			final PickingSlotRowId rootRowId = row.getPickingSlotRowId();
+			return row.streamThisRowAndIncludedRowsRecursivelly()
+					.map(PickingSlotRow::getPickingSlotRowId)
+					.map(includedRowId -> GuavaCollectors.entry(includedRowId, rootRowId));
+		}
+
+		public PickingSlotRow getRow(final PickingSlotRowId rowId)
+		{
+			return rowsById.get(rowId);
+		}
+
+		public PickingSlotRow getRootRow(final PickingSlotRowId rowId)
+		{
+			final PickingSlotRowId rootRowId = rowId2rootRowId.get(rowId);
+			if (rootRowId == null)
+			{
+				return null;
+			}
+			return getRow(rootRowId);
+		}
+
+		public long size()
+		{
+			return rowsById.size();
+		}
+
+		public Stream<PickingSlotRow> stream()
+		{
+			return rowsById.values().stream();
 		}
 	}
 }

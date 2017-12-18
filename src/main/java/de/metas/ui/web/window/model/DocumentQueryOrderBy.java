@@ -136,9 +136,9 @@ public final class DocumentQueryOrderBy
 
 	@FunctionalInterface
 	public static interface FieldValueExtractor<T>
-	{
+		{
 		Object getFieldValue(T object, String fieldName);
-	}
+		}
 
 	@ToString
 	private static final class ValueComparator implements Comparator<Object>

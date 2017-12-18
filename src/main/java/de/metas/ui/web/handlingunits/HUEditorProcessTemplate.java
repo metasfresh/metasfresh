@@ -61,7 +61,7 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 
 	protected final Stream<HUEditorRow> streamSelectedRows(@NonNull final HUEditorRowFilter filter)
 	{
-		final DocumentIdsSelection selectedDocumentIds = getSelectedDocumentIds();
+		final DocumentIdsSelection selectedDocumentIds = getSelectedRowIds();
 		if (selectedDocumentIds.isEmpty())
 		{
 			return Stream.empty();

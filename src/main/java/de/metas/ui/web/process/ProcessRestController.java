@@ -36,6 +36,7 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -159,25 +160,27 @@ public class ProcessRestController
 	{
 		userSession.assertLoggedIn();
 
-		final ViewId viewId = jsonRequest.getViewId();
-		final DocumentIdsSelection viewDocumentIds = jsonRequest.getViewDocumentIds();
+		final ViewRowIdsSelection viewRowIdsSelection = jsonRequest.getViewRowIdsSelection();
+		final ViewId viewId = viewRowIdsSelection != null ? viewRowIdsSelection.getViewId() : null;
+		final DocumentIdsSelection viewSelectedRowIds = viewRowIdsSelection != null ? viewRowIdsSelection.getRowIds() : DocumentIdsSelection.EMPTY;
 
 		// Get the effective singleDocumentPath, i.e.
 		// * if provided, use it
 		// * if not provided and we have a single selected row in the view, ask the view's row to provide the effective document path
 		DocumentPath singleDocumentPath = jsonRequest.getSingleDocumentPath();
-		if (singleDocumentPath == null && viewDocumentIds.isSingleDocumentId())
+		if (singleDocumentPath == null && viewSelectedRowIds.isSingleDocumentId())
 		{
 			final IView view = viewsRepo.getView(viewId);
-			singleDocumentPath = view.getById(viewDocumentIds.getSingleDocumentId()).getDocumentPath();
+			singleDocumentPath = view.getById(viewSelectedRowIds.getSingleDocumentId()).getDocumentPath();
 		}
 
 		final CreateProcessInstanceRequest request = CreateProcessInstanceRequest.builder()
 				.processId(ProcessId.fromJson(processIdStr))
 				.singleDocumentPath(singleDocumentPath)
 				.selectedIncludedDocumentPaths(jsonRequest.getSelectedIncludedDocumentPaths())
-				.viewId(viewId)
-				.viewDocumentIds(viewDocumentIds)
+				.viewRowIdsSelection(viewRowIdsSelection)
+				.parentViewRowIdsSelection(jsonRequest.getParentViewRowIdsSelection())
+				.childViewRowIdsSelection(jsonRequest.getChildViewRowIdsSelection())
 				.build();
 		// Validate request's AD_Process_ID
 		// (we are not using it, but just for consistency)
@@ -226,7 +229,7 @@ public class ProcessRestController
 			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull(); // get our collector to fill with the changes that we will record
 
 			instancesRepository.forProcessInstanceWritable(pinstanceId, changesCollector, processInstance -> {
-				
+
 				processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
 				return null; // void
 			});
