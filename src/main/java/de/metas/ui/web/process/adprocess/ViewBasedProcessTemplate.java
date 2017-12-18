@@ -164,7 +164,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 
 	}
 
-	protected final <T extends IView> T getView(final Class<T> type)
+	protected final <T extends IView> T getView(@NonNull final Class<T> type)
 	{
 		Check.assumeNotNull(_view, "View loaded");
 		return type.cast(_view);
@@ -239,4 +239,27 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	{
 		return _childViewRowIdsSelection;
 	}
+
+	protected final <T extends IView> T getChildView(@NonNull final Class<T> viewType)
+	{
+		final ViewRowIdsSelection childViewRowIdsSelection = getChildViewRowIdsSelection();
+		Check.assumeNotNull(childViewRowIdsSelection, "child view is set");
+		final IView childView = viewsRepo.getView(childViewRowIdsSelection.getViewId());
+
+		return viewType.cast(childView);
+	}
+
+	protected final DocumentIdsSelection getChildViewSelectedRowIds()
+	{
+		final ViewRowIdsSelection childViewRowIdsSelection = getChildViewRowIdsSelection();
+		return childViewRowIdsSelection != null ? childViewRowIdsSelection.getRowIds() : DocumentIdsSelection.EMPTY;
+	}
+
+	protected IViewRow getChildViewSingleSelectedRow()
+	{
+		final DocumentIdsSelection selectedRowIds = getChildViewSelectedRowIds();
+		final DocumentId rowId = selectedRowIds.getSingleDocumentId();
+		return getChildView(IView.class).getById(rowId);
+	}
+
 }

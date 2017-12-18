@@ -27,7 +27,6 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.pickingslotsClearing.PickingSlotsClearingView;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
@@ -52,7 +51,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * #L%
  */
 
-public class WEBUI_PickingSlotsClearingView_TakeOutHU extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class WEBUI_PickingSlotsClearingView_TakeOutHU extends PickingSlotsClearingViewBasedProcess implements IProcessPrecondition
 {
 	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final transient IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
@@ -78,7 +77,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHU extends ViewBasedProcessTe
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final PickingSlotRow row = PickingSlotRow.cast(getSingleSelectedRow());
+		final PickingSlotRow row = getSingleSelectedPickingSlotRow();
 		if (!row.isTopLevelHU())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select a top level HU");
@@ -92,7 +91,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHU extends ViewBasedProcessTe
 	{
 		//
 		// Get the HU
-		final PickingSlotRow huRow = getSingleSelectedRow();
+		final PickingSlotRow huRow = getSingleSelectedPickingSlotRow();
 		Check.assume(huRow.isTopLevelHU(), "row {} shall be a top level HU", huRow);
 		final I_M_HU hu = InterfaceWrapperHelper.load(huRow.getHuId(), I_M_HU.class);
 		final String huStatus = hu.getHUStatus();
@@ -103,7 +102,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHU extends ViewBasedProcessTe
 
 		//
 		// Make sure the HU has the BPartner/Location of the picking slot
-		final PickingSlotRow pickingSlotRow = getSelectedPickingSlotRow();
+		final PickingSlotRow pickingSlotRow = getRootSelectedPickingSlotRow();
 		if (pickingSlotRow.getBPartnerId() > 0)
 		{
 			hu.setC_BPartner_ID(pickingSlotRow.getBPartnerId());
@@ -154,28 +153,9 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHU extends ViewBasedProcessTe
 		//
 		// Invalidate the views
 		// Expectation: the HU shall disappear from picking slots view (left side) and shall appear on after picking HUs view (right side).
-		final PickingSlotsClearingView pickingSlotsClearingView = getView();
+		final PickingSlotsClearingView pickingSlotsClearingView = getPickingSlotsClearingView();
 		invalidateView(pickingSlotsClearingView.getViewId());
 		//
 		husExtractedEvents.forEach(pickingSlotsClearingView::handleEvent);
-	}
-
-	@Override
-	protected PickingSlotsClearingView getView()
-	{
-		return super.getView(PickingSlotsClearingView.class);
-	};
-
-	/** @return the actual picking slow row (the top level row) */
-	protected PickingSlotRow getSelectedPickingSlotRow()
-	{
-		final PickingSlotRow row = getSingleSelectedRow();
-		return getView().getRootRowWhichIncludesRowId(row.getPickingSlotRowId());
-	}
-
-	@Override
-	protected PickingSlotRow getSingleSelectedRow()
-	{
-		return PickingSlotRow.cast(super.getSingleSelectedRow());
 	}
 }
