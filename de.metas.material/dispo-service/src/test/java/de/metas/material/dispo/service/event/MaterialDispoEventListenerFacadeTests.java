@@ -41,6 +41,7 @@ import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHand
 import de.metas.material.dispo.service.event.handler.TransactionCreatedHandler;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
@@ -152,9 +153,11 @@ public class MaterialDispoEventListenerFacadeTests
 	public void test_shipmentScheduleCreatedEvent_then_distributionAdvisedEvent()
 	{
 		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedHandlerTests.createShipmentScheduleTestEvent();
-		final Date shipmentScheduleEventTime = shipmentScheduleEvent.getMaterialDescriptor().getDate();
+		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getOrderedMaterial();
 
-		RepositoryTestHelper.setupMockedRetrieveAvailableStock(stockRepository, shipmentScheduleEvent.getMaterialDescriptor(), "0");
+		final Date shipmentScheduleEventTime = orderedMaterial.getDate();
+
+		RepositoryTestHelper.setupMockedRetrieveAvailableStock(stockRepository, orderedMaterial, "0");
 
 		mdEventListener.onEvent(shipmentScheduleEvent);
 
@@ -171,7 +174,7 @@ public class MaterialDispoEventListenerFacadeTests
 						.datePromised(shipmentScheduleEventTime)
 						.line(DDOrderLine.builder()
 								.productDescriptor(createProductDescriptor())
-								.bPartnerId(shipmentScheduleEvent.getMaterialDescriptor().getBPartnerId())
+								.bPartnerId(orderedMaterial.getBPartnerId())
 								.qty(BigDecimal.TEN)
 								.durationDays(0)
 								.networkDistributionLineId(900)
@@ -209,14 +212,15 @@ public class MaterialDispoEventListenerFacadeTests
 	{
 		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedHandlerTests.createShipmentScheduleTestEvent();
 
-		final Date shipmentScheduleEventTime = shipmentScheduleEvent.getMaterialDescriptor().getDate();
+		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getOrderedMaterial();
+		final Date shipmentScheduleEventTime = orderedMaterial.getDate();
 		final Timestamp twoHoursAfterShipmentSched = TimeUtil.addHours(shipmentScheduleEventTime, 2);
 
 		mdEventListener.onEvent(shipmentScheduleEvent);
 
 		final TransactionCreatedEvent transactionEvent = TransactionCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
-				.materialDescriptor(shipmentScheduleEvent.getMaterialDescriptor().withDate(twoHoursAfterShipmentSched))
+				.materialDescriptor(orderedMaterial.withDate(twoHoursAfterShipmentSched))
 				.build();
 
 		mdEventListener.onEvent(transactionEvent);

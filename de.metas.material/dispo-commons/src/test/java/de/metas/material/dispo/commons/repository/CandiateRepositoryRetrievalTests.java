@@ -174,7 +174,7 @@ public class CandiateRepositoryRetrievalTests
 	{
 		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
-		record.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION);
+		record.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION);
 		save(record);
 
 		final I_MD_Candidate_Prod_Detail productionDetailRecord = newInstance(I_MD_Candidate_Prod_Detail.class);
@@ -220,7 +220,7 @@ public class CandiateRepositoryRetrievalTests
 		// make another record, just like "record", but without a proeductionDetailRecord
 		final I_MD_Candidate otherRecord = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		otherRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
-		otherRecord.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION);
+		otherRecord.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION);
 		save(otherRecord);
 
 		final Candidate expectedRecordWithProdDetails = candidateRepositoryRetrieval
@@ -248,7 +248,7 @@ public class CandiateRepositoryRetrievalTests
 	{
 		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
-		record.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_DISTRIBUTION);
+		record.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION);
 		save(record);
 
 		final I_MD_Candidate_Dist_Detail distributionDetailRecord = newInstance(I_MD_Candidate_Dist_Detail.class);
@@ -294,7 +294,7 @@ public class CandiateRepositoryRetrievalTests
 		// make another record, just like "record", but without a distributionDetailRecord
 		final I_MD_Candidate otherRecord = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		otherRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
-		otherRecord.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_DISTRIBUTION);
+		otherRecord.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION);
 		save(otherRecord);
 
 		final Candidate expectedRecordWithDistDetails = candidateRepositoryRetrieval
@@ -361,7 +361,7 @@ public class CandiateRepositoryRetrievalTests
 		// make another record, just like "record", but without a demandDetailRecord
 		final I_MD_Candidate otherRecord = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		otherRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
-		otherRecord.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION);
+		otherRecord.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION);
 		save(otherRecord);
 
 		final I_MD_Candidate_Demand_Detail otherDemandDetailRecord = newInstance(I_MD_Candidate_Demand_Detail.class);
@@ -389,7 +389,7 @@ public class CandiateRepositoryRetrievalTests
 	{
 		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
-		record.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION);
+		record.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION);
 		save(record);
 
 		final I_MD_Candidate_Demand_Detail demandDetailRecord = newInstance(I_MD_Candidate_Demand_Detail.class);

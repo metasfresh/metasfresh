@@ -3,7 +3,11 @@ package de.metas.handlingunits.picking;
 import java.util.List;
 import java.util.OptionalInt;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.springframework.stereotype.Service;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
@@ -135,5 +139,18 @@ public class PickingCandidateService
 		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidatesByShipmentScheduleIdsAndStatus(shipmentScheduleIds, X_M_Picking_Candidate.STATUS_PR);
 		return ClosePickingCandidateCommand.builder()
 				.pickingCandidates(pickingCandidates);
+	}
+
+	public void inactivateForHUId(final int huId)
+	{
+		Check.assume(huId > 0, "huId > 0");
+		
+		pickingCandidateRepository.retrievePickingCandidatesByHUIds(ImmutableList.of(huId))
+				.forEach(pickingCandidate -> {
+					pickingCandidate.setIsActive(false);
+					pickingCandidate.setStatus(X_M_Picking_Candidate.STATUS_CL);
+					InterfaceWrapperHelper.save(pickingCandidate);
+				});
+
 	}
 }

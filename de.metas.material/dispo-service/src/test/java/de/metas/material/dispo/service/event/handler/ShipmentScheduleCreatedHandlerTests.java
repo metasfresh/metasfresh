@@ -105,7 +105,7 @@ public class ShipmentScheduleCreatedHandlerTests
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
 				stockRepository,
-				event.getMaterialDescriptor(),
+				event.getOrderedMaterial(),
 				"0");
 
 		shipmentScheduleEventHandler.handleShipmentScheduleCreatedEvent(event);
@@ -132,13 +132,14 @@ public class ShipmentScheduleCreatedHandlerTests
 	{
 		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
-				.materialDescriptor(MaterialDescriptor.builder()
+				.orderedMaterial(MaterialDescriptor.builder()
 						.date(NOW)
 						.productDescriptor(createProductDescriptor())
 						.bPartnerId(BPARTNER_ID)
 						.quantity(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
 						.build())
+				.reservedQuantity(new BigDecimal("20"))
 				.shipmentScheduleId(shipmentScheduleId)
 				.orderLineId(orderLineId)
 				.build();

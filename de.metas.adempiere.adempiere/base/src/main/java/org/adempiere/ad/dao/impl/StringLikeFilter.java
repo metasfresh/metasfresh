@@ -120,7 +120,7 @@ public class StringLikeFilter<T> extends CompareQueryFilter<T>
 	 * @param substring
 	 * @param ignoreCase
 	 */
-	StringLikeFilter(
+	public StringLikeFilter(
 			@NonNull final String columnName,
 			@NonNull final String substring,
 			final boolean ignoreCase)

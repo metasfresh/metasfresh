@@ -10,12 +10,12 @@ package de.metas.dimension.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,7 +24,6 @@ package de.metas.dimension.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -35,7 +34,10 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.dimension.DimensionConstants;
+import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Assignment;
@@ -87,7 +89,7 @@ public class DimensionspecDAO implements IDimensionspecDAO
 	}
 
 	@Override
-	public List<I_DIM_Dimension_Spec> retrieveForColumn(final I_AD_Column column)
+	public List<DimensionSpec> retrieveForColumn(final I_AD_Column column)
 	{
 		final IQuery<I_DIM_Dimension_Spec_Assignment> assignmentQuery = createDimAssignmentQueryBuilderFor(column)
 				.addOnlyActiveRecordsFilter()
@@ -96,17 +98,24 @@ public class DimensionspecDAO implements IDimensionspecDAO
 		return Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec.class, column)
 				.addInSubQueryFilter(I_DIM_Dimension_Spec.COLUMN_DIM_Dimension_Spec_ID, I_DIM_Dimension_Spec_Assignment.COLUMN_DIM_Dimension_Spec_ID, assignmentQuery)
 				.create()
-				.list(I_DIM_Dimension_Spec.class);
+				.stream(I_DIM_Dimension_Spec.class)
+				.map(DimensionSpec::ofRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
-	public I_DIM_Dimension_Spec retrieveForInternalName(final String internalName, final IContextAware ctxAware)
+	public DimensionSpec retrieveForInternalNameOrNull(final String internalName)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec.class, ctxAware)
+		final I_DIM_Dimension_Spec record = Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DIM_Dimension_Spec.COLUMN_InternalName, internalName)
 				.create()
 				.firstOnly(I_DIM_Dimension_Spec.class);
+		if(record == null)
+		{
+			return null;
+		}
+		return DimensionSpec.ofRecord(record);
 	}
 
 	@Override

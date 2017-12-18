@@ -234,7 +234,7 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 		shipperTransportation.setShipper_Location_ID(p_Shipper_Location_ID);
 		shipperTransportation.setM_Shipper_ID(p_M_Shipper_ID);
 		Services.get(IShipperTransportationBL.class).setC_DocType(shipperTransportation);
-		shipperTransportation.setCollectiveBillReport("N"); // FIXME: why the fuck we need to set that?
+		shipperTransportation.setCollectiveBillReport("N"); // FIXME: why the fuck we need to set that? / update: not mandatory anymore  but i didn't remove this line because no time to test
 
 		// 07958
 		// also set the tour id

@@ -54,6 +54,7 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 		register(I_C_OrderLine.Table_Name, new OrderLineModelCacheInvalidateRequestFactory());
 	}
 
+	@Override
 	public void register(@NonNull final String tableName, @NonNull final ModelCacheInvalidateRequestFactory requestFactory)
 	{
 		requestFactoriesByTableName.put(tableName, requestFactory);
