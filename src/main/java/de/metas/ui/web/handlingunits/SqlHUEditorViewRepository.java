@@ -581,6 +581,12 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	{
 		return viewSelectionFactory.containsAnyOfRowIds(selection, rowIds);
 	}
+	
+	@Override
+	public void deleteSelection(final ViewRowIdsOrderedSelection selection)
+	{
+		viewSelectionFactory.deleteSelection(selection);
+	}
 
 	@Override
 	public Set<Integer> convertToRecordIds(final DocumentIdsSelection rowIds)

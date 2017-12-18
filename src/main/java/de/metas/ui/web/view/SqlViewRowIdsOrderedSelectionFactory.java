@@ -259,4 +259,25 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	{
 		return newSqlViewSelectionQueryBuilder().buildInSelectionQueryFilter(selectionId);
 	}
+
+	@Override
+	public void deleteSelection(@NonNull final ViewRowIdsOrderedSelection selection)
+	{
+		final String selectionId = selection.getSelectionId();
+		final SqlViewSelectionQueryBuilder viewQueryBuilder = newSqlViewSelectionQueryBuilder();
+
+		// Delete selection lines
+		{
+			final String sql = viewQueryBuilder.buildSqlDeleteSelectionLines(selectionId);
+			final int countDeleted = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			logger.trace("Delete {} selection lines for {}", countDeleted, selectionId);
+		}
+
+		// Delete selection rows
+		{
+			final String sql = viewQueryBuilder.buildSqlDeleteSelection(selectionId);
+			final int countDeleted = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			logger.trace("Delete {} selection rows for {}", countDeleted, selectionId);
+		}
+	}
 }

@@ -159,12 +159,6 @@ public final class ViewRow implements IViewRow
 	}
 
 	@Override
-	public boolean hasIncludedView()
-	{
-		return false;
-	}
-
-	@Override
 	public List<IViewRow> getIncludedRows()
 	{
 		return includedRows;

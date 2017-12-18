@@ -80,10 +80,15 @@ public final class ViewId
 	public static ViewId random(@NonNull final WindowId windowId)
 	{
 		// TODO: find a way to generate smaller viewIds
-		final String viewIdPart = toString(UUID.randomUUID());
+		final String viewIdPart = randomViewIdPart();
 		final ImmutableList<String> parts = ImmutableList.of(windowId.toJson(), viewIdPart);
 		final String viewIdStr = JOINER.join(parts);
 		return new ViewId(viewIdStr, parts, windowId);
+	}
+
+	public static String randomViewIdPart()
+	{
+		return toString(UUID.randomUUID());
 	}
 
 	private static final String toString(final UUID uuid)
@@ -170,10 +175,29 @@ public final class ViewId
 		return parts.get(index);
 	}
 
+	public int getPartAsInt(final int index)
+	{
+		try
+		{
+			final String partStr = getPart(index);
+			return Integer.parseInt(partStr);
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Cannot extract part with index " + index + " as integer from " + this, ex);
+		}
+	}
+
 	/** @return just the viewId part (without the leading WindowId, without other parts etc) */
 	public String getViewIdPart()
 	{
 		return parts.get(1);
+	}
+
+	/** @return other parts (those which come after viewId part) */
+	public ImmutableList<String> getOtherParts()
+	{
+		return parts.size() > 2 ? parts.subList(2, parts.size()) : ImmutableList.of();
 	}
 
 	public ViewId deriveWithWindowId(@NonNull final WindowId windowId)

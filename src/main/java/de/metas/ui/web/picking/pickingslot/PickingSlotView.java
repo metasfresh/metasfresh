@@ -63,7 +63,7 @@ import lombok.NonNull;
  * Picking editor's view right-hand side view which lists {@link PickingSlotRow}s.
  * <p>
  * Note that technically this is contained in the left-hand side {@link PackageableView}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -246,7 +246,7 @@ public class PickingSlotView implements IView
 
 	/**
 	 * Returns the {@code M_ShipmentSchedule_ID} of the packageable line that is currently selected within the {@link PackageableView}.
-	 * 
+	 *
 	 * @return never returns a value {@code <= 0} (see constructor code).
 	 */
 	public int getCurrentShipmentScheduleId()
@@ -256,7 +256,7 @@ public class PickingSlotView implements IView
 
 	/**
 	 * Convenience method. See {@link #getCurrentShipmentScheduleId()}.
-	 * 
+	 *
 	 * @return never returns {@code null} (see constructor code).
 	 */
 	public I_M_ShipmentSchedule getCurrentShipmentSchedule()

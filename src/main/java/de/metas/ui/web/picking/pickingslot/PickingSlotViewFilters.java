@@ -6,8 +6,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
+import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
-import de.metas.ui.web.view.CreateViewRequest.DocumentFiltersList;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.experimental.UtilityClass;
@@ -45,7 +45,7 @@ public class PickingSlotViewFilters
 		return ImmutableDocumentFilterDescriptorsProvider.of(createPickingSlotBarcodeFilters());
 	}
 
-	private static final DocumentFilterDescriptor createPickingSlotBarcodeFilters()
+	public static final DocumentFilterDescriptor createPickingSlotBarcodeFilters()
 	{
 		return DocumentFilterDescriptor.builder()
 				.setFilterId(PickingSlotBarcodeFilter_FilterId)

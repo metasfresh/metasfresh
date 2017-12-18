@@ -38,7 +38,7 @@ public class WEBUI_Picking_M_Source_HU_Delete
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getSelectedDocumentIds().isSingleDocumentId())
+		if (!getSelectedRowIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}

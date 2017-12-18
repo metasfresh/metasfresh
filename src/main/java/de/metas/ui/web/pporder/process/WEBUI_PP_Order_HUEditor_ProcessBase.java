@@ -21,7 +21,7 @@ public abstract class WEBUI_PP_Order_HUEditor_ProcessBase extends HUEditorProces
 	protected final Stream<HUEditorRow> retrieveSelectedAndEligibleHUEditorRows()
 	{
 		final HUEditorView huEditorView = HUEditorView.cast(super.getView());
-		final Stream<HUEditorRow> huEditorRows = huEditorView.streamByIds(getSelectedDocumentIds());
+		final Stream<HUEditorRow> huEditorRows = huEditorView.streamByIds(getSelectedRowIds());
 
 		return retrieveEligibleHUEditorRows(huEditorRows);
 	}

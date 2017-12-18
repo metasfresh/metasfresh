@@ -6,7 +6,6 @@ import java.util.Locale;
 import java.util.Properties;
 
 import org.compiere.util.Env;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -55,7 +54,7 @@ import de.metas.ui.web.base.session.UserPreference;
 @Primary
 @SessionScope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @lombok.Data
-/* package */ class InternalUserSessionData implements Serializable, InitializingBean
+/* package */ class InternalUserSessionData implements Serializable
 {
 	private static final long serialVersionUID = 4046535476486036184L;
 
@@ -67,6 +66,7 @@ import de.metas.ui.web.base.session.UserPreference;
 
 	//
 	// Actual session data
+	private volatile boolean initialized = false;
 	private String sessionId = null;
 	private UserPreference userPreference = null;
 	private boolean loggedIn = false;
@@ -114,8 +114,22 @@ import de.metas.ui.web.base.session.UserPreference;
 		UserSession.logger.trace("User session created: {}", this);
 	}
 
-	@Override
-	public void afterPropertiesSet() throws Exception
+	void initializeIfNeeded()
+	{
+		if (!initialized)
+		{
+			synchronized (this)
+			{
+				if (!initialized)
+				{
+					initializeNow();
+					initialized = true;
+				}
+			}
+		}
+	}
+
+	private void initializeNow()
 	{
 		//
 		// Set initial properties

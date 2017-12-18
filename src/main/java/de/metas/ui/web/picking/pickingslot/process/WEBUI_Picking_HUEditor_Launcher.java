@@ -60,7 +60,7 @@ public class WEBUI_Picking_HUEditor_Launcher extends ViewBasedProcessTemplate
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getSelectedDocumentIds().isSingleDocumentId())
+		if (!getSelectedRowIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}

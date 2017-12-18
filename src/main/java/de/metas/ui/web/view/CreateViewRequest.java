@@ -11,13 +11,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.ListUtils;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.DocumentFiltersList;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
@@ -457,142 +457,5 @@ public final class CreateViewRequest
 			return this;
 		}
 
-	}
-
-	public static final class DocumentFiltersList
-	{
-		private static DocumentFiltersList ofFilters(final List<DocumentFilter> filters)
-		{
-			if (filters == null || filters.isEmpty())
-			{
-				return EMPTY;
-			}
-
-			final ImmutableList<JSONDocumentFilter> jsonFiltersEffective = null;
-			final ImmutableList<DocumentFilter> filtersEffective = ImmutableList.copyOf(filters);
-			return new DocumentFiltersList(jsonFiltersEffective, filtersEffective);
-		}
-
-		private static DocumentFiltersList ofJSONFilters(final List<JSONDocumentFilter> jsonFilters)
-		{
-			if (jsonFilters == null || jsonFilters.isEmpty())
-			{
-				return EMPTY;
-			}
-
-			final ImmutableList<JSONDocumentFilter> jsonFiltersEffective = ImmutableList.copyOf(jsonFilters);
-			final ImmutableList<DocumentFilter> filtersEffective = null;
-			return new DocumentFiltersList(jsonFiltersEffective, filtersEffective);
-		}
-
-		private static final DocumentFiltersList EMPTY = new DocumentFiltersList();
-
-		private final ImmutableList<JSONDocumentFilter> jsonFilters;
-		private final ImmutableList<DocumentFilter> filters;
-
-		private DocumentFiltersList(final ImmutableList<JSONDocumentFilter> jsonFilters, final ImmutableList<DocumentFilter> filters)
-		{
-			this.jsonFilters = jsonFilters;
-			this.filters = filters;
-		}
-
-		/** empty constructor */
-		private DocumentFiltersList()
-		{
-			filters = ImmutableList.of();
-			jsonFilters = null;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this).omitNullValues().addValue(jsonFilters).addValue(filters).toString();
-		}
-
-		public boolean isJson()
-		{
-			return jsonFilters != null;
-		}
-
-		public List<JSONDocumentFilter> getJsonFilters()
-		{
-			if (jsonFilters == null)
-			{
-				throw new AdempiereException("Json filters are not available for " + this);
-			}
-			return jsonFilters;
-		}
-
-		public List<DocumentFilter> getFilters()
-		{
-			if (jsonFilters != null && !jsonFilters.isEmpty())
-			{
-				throw new AdempiereException("Filters are not available because they were not unwrapped from JSON: " + this);
-			}
-			else if (filters == null)
-			{
-				return ImmutableList.of();
-			}
-			else
-			{
-				return filters;
-			}
-		}
-
-		public DocumentFilter getFilterByIdOrNull(final String filterId)
-		{
-			return getFilters().stream()
-					.filter(filter -> Objects.equals(filter.getFilterId(), filterId))
-					.findFirst()
-					.orElse(null);
-		}
-
-		public String getParamValueAsString(final String filterId, final String parameterName)
-		{
-			final DocumentFilter filter = getFilterByIdOrNull(filterId);
-			if (filter == null)
-			{
-				return null;
-			}
-
-			return filter.getParameterValueAsString(parameterName);
-		}
-
-		private List<DocumentFilter> getOrUnwrapFilters(final DocumentFilterDescriptorsProvider descriptors)
-		{
-			if (filters != null)
-			{
-				return filters;
-			}
-
-			if (jsonFilters == null || jsonFilters.isEmpty())
-			{
-				return ImmutableList.of();
-			}
-
-			return JSONDocumentFilter.unwrapList(jsonFilters, descriptors);
-		}
-
-		private DocumentFiltersList unwrapAndCopy(final DocumentFilterDescriptorsProvider descriptors)
-		{
-			if (filters != null)
-			{
-				return this;
-			}
-
-			if (jsonFilters == null || jsonFilters.isEmpty())
-			{
-				return this;
-			}
-
-			final ImmutableList<DocumentFilter> filtersNew = JSONDocumentFilter.unwrapList(jsonFilters, descriptors);
-			if (filtersNew.isEmpty())
-			{
-				return EMPTY;
-			}
-
-			final ImmutableList<JSONDocumentFilter> jsonFiltersNew = null;
-			return new DocumentFiltersList(jsonFiltersNew, filtersNew);
-		}
 	}
 }

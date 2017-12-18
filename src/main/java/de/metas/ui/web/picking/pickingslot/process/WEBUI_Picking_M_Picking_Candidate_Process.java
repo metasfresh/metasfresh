@@ -65,7 +65,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getSelectedDocumentIds().isSingleDocumentId())
+		if (!getSelectedRowIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
@@ -75,9 +75,8 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
-		if (pickingSlotRow.getIncludedRows().isEmpty())
+		if (!pickingSlotRow.isTopLevelHU())
 		{
-			// we want a toplevel HU..this is kindof dirty, but should work in this context
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
 
