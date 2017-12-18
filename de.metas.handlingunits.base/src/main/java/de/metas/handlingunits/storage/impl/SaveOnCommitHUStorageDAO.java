@@ -74,8 +74,8 @@ public class SaveOnCommitHUStorageDAO implements IHUStorageDAO
 				// Listen this transaction for COMMIT events
 				// Before committing the transaction, this listener makes sure we are also saving all storages
 				trx.getTrxListenerManager()
-						.newEventListener().timing(TrxEventTiming.BEFORE_COMMIT)
-						.handlingMethod(innerTrx -> {
+						.newEventListener(TrxEventTiming.BEFORE_COMMIT)
+						.registerHandlingMethod(innerTrx -> {
 							// Get and remove the save-decoupled HU Storage DAO
 							final SaveDecoupledHUStorageDAO innerHuStorageDAO = trx.setProperty(TRX_PROPERTY_SaveDecoupledHUStorageDAO, null);
 							if (innerHuStorageDAO == null)
@@ -85,8 +85,7 @@ public class SaveOnCommitHUStorageDAO implements IHUStorageDAO
 
 							// Save everything to database
 							innerHuStorageDAO.flush();
-						})
-						.register();
+						});
 
 				return huStorageDAO;
 			}

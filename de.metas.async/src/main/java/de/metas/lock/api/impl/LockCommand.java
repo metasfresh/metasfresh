@@ -115,8 +115,8 @@ import de.metas.lock.spi.ILockDatabase;
 		final FutureValue<ILock> futureLock = new FutureValue<>();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.getTrxListenerManagerOrAutoCommit(trxName)
-				.newEventListener().timing(TrxEventTiming.BEFORE_COMMIT)
-				.handlingMethod(innerTrx -> {
+				.newEventListener(TrxEventTiming.BEFORE_COMMIT)
+				.registerHandlingMethod(innerTrx -> {
 
 					try
 					{
@@ -127,8 +127,7 @@ import de.metas.lock.spi.ILockDatabase;
 					{
 						futureLock.setError(e);
 					}
-				})
-				.register();
+				});
 		return futureLock;
 	}
 

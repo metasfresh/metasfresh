@@ -516,16 +516,15 @@ import lombok.NonNull;
 			final String trxName = InterfaceWrapperHelper.getTrxName(po);
 
 			Services.get(ITrxManager.class)
-					.getTrxListenerManagerOrAutoCommit(trxName).newEventListener()
-					.timing(TrxEventTiming.AFTER_COMMIT)
-					.handlingMethod(transaction -> InterfaceWrapperHelper.setTrxName(po, ITrx.TRXNAME_ThreadInherited))
-					.invokeMethodJustOnce(true)
+					.getTrxListenerManagerOrAutoCommit(trxName)
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
 					.toStringSupplier(() -> MoreObjects.toStringHelper(this)
 							.add("pointcut", pointcut)
 							.add("po", po)
 							.add("timing", timing)
 							.toString())
-					.register();
+					.invokeMethodJustOnce(true)
+					.registerHandlingMethod(transaction -> InterfaceWrapperHelper.setTrxName(po, ITrx.TRXNAME_ThreadInherited));
 		}
 	}
 

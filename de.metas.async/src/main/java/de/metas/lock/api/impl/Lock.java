@@ -179,9 +179,8 @@ import de.metas.logging.LogManager;
 	{
 		Services.get(ITrxManager.class)
 				.getTrxListenerManagerOrAutoCommit(trxName)
-				.newEventListener().timing(TrxEventTiming.AFTER_CLOSE)
-				.handlingMethod(innerTrx -> close())
-				.register();
+				.newEventListener(TrxEventTiming.AFTER_CLOSE)
+				.registerHandlingMethod(innerTrx -> close());
 	}
 
 	private final void assertHasRealOwner()

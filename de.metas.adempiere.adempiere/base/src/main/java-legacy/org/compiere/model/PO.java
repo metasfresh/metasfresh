@@ -3339,9 +3339,9 @@ public abstract class PO
 		// We are registering a fallback trx listener: in case the transaction fails we need to revert IDs to their old values
 		final ITrx trx = get_TrxManager().get(m_trxName, OnTrxMissingPolicy.Fail);
 
-		trx.getTrxListenerManager().newEventListener()
-				.timing(TrxEventTiming.AFTER_ROLLBACK)
-				.handlingMethod(transaction -> {
+		trx.getTrxListenerManager()
+				.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
+				.registerHandlingMethod(transaction -> {
 
 					set_ID(idOld); // revert ID
 					m_createNew = createNewOld;

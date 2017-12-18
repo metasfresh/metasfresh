@@ -131,13 +131,12 @@ public final class PMMRfQEventListener extends RfQEventListenerAdapter
 		{
 			Services.get(ITrxManager.class)
 					.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-					.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-					.handlingMethod(innerTrx -> {
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.registerHandlingMethod(innerTrx -> {
 
 						final IWebuiPush webuiPush = Services.get(IWebuiPush.class);
 						webuiPush.pushRfQCloseEvents(syncRfQCloseEvents);
-					})
-					.register();
+					});
 		}
 	};
 

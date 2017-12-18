@@ -138,9 +138,8 @@ class PMMWebuiRfQResponsePublisherInstance
 	private final void pushToWebUI()
 	{
 		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> pushToWebUINow())
-				.register();
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> pushToWebUINow());
 	}
 
 	private final void pushToWebUINow()

@@ -122,20 +122,18 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 
 		// Flush queued events and stop queuing
 		trxListenerManager
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> flushAndStopQueuing())
-				.register();
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> flushAndStopQueuing());
 
 		// On close, discard any queued event and make sure we are not queuing anymore.
 		// This is a defensive guard in case there was a rollback.
 
 		trxListenerManager
-				.newEventListener().timing(TrxEventTiming.AFTER_CLOSE)
-				.handlingMethod(innerTrx -> {
+				.newEventListener(TrxEventTiming.AFTER_CLOSE)
+				.registerHandlingMethod(innerTrx -> {
 					clearQueuedEvents();
 					flushAndStopQueuing();
-				})
-				.register();
+				});
 
 		return this;
 	}

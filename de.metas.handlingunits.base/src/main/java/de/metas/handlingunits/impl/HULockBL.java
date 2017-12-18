@@ -156,10 +156,9 @@ public class HULockBL implements IHULockBL
 		Preconditions.checkArgument(!lockOwner.isAnyOwner(), "{} not allowed", lockOwner);
 
 		Services.get(ITrxManager.class)
-				.getCurrentTrxListenerManagerOrAutoCommit().newEventListener()
-				.timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(transaction -> unlock0(huId, lockOwner))
-				.register();
+				.getCurrentTrxListenerManagerOrAutoCommit()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(transaction -> unlock0(huId, lockOwner));
 
 	}
 

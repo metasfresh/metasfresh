@@ -57,11 +57,10 @@ public class TrxListenerManagerTest
 
 		final TrxRrunnable runnable = new TrxRrunnable();
 
-		trxListenerManager.newEventListener()
-				.timing(TrxEventTiming.AFTER_COMMIT)
+		trxListenerManager
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.invokeMethodJustOnce(false)
-				.handlingMethod(innerTrx -> runnable.run())
-				.register();
+				.registerHandlingMethod(innerTrx -> runnable.run());
 
 		trx.commit(false);
 		assertThat(runnable.timesInvoked).isEqualTo(1);
@@ -81,11 +80,10 @@ public class TrxListenerManagerTest
 
 		final TrxRrunnable runnable = new TrxRrunnable();
 
-		trxListenerManager.newEventListener()
-				.timing(TrxEventTiming.AFTER_COMMIT)
+		trxListenerManager
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.invokeMethodJustOnce(true)
-				.handlingMethod(innerTrx -> runnable.run())
-				.register();
+				.registerHandlingMethod(innerTrx -> runnable.run());
 
 		trx.commit(false);
 		assertThat(runnable.timesInvoked).isEqualTo(1);

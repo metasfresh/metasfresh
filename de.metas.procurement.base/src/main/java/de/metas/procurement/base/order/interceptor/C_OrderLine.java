@@ -131,11 +131,11 @@ public class C_OrderLine
 		// Schedule event after commit
 		logger.debug("Scheduling event: {}", event);
 		final ITrxListenerManager trxListenerManager = Services.get(ITrxManager.class).getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited);
-		trxListenerManager.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> {
+		trxListenerManager
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> {
 					Services.get(IPMMBalanceChangeEventProcessor.class).addEvent(event);
 					logger.debug("Event sent: {}", event);
-				})
-				.register();
+				});
 	}
 }

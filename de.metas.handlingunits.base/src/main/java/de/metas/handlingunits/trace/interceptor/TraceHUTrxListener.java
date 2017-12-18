@@ -92,8 +92,8 @@ public class TraceHUTrxListener implements IHUTrxListener
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrxListenerManager trxListenerManager = trxManager.getTrxListenerManager(ITrx.TRXNAME_ThreadInherited);
 		trxListenerManager
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> {
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> {
 
 					// do a brand new transaction in which we execute our things,
 					// because basically 'innerTrx' is already done and might even already be closed
@@ -106,8 +106,7 @@ public class TraceHUTrxListener implements IHUTrxListener
 
 						afterTrxProcessed0(trxLines, trxHdr);
 					});
-				})
-				.register();
+				});
 		logger.info("Enqueued M_HU_Trx_Hdr and _M_HU_Trx_Lines for HU-tracing after the next commit; trxHdr={}; trxLines={}", trxHdr, trxLines);
 	}
 

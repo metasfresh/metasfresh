@@ -118,8 +118,8 @@ public class C_Print_Job_Instructions
 			final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 			trxManager.getTrxListenerManagerOrAutoCommit(trxName)
-					.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-					.handlingMethod(innerTrx -> {
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.registerHandlingMethod(innerTrx -> {
 
 						final IPair<I_C_Print_Job_Instructions, I_AD_User> reloadRecords = reloadRecords(ctx, printJobInstructionsID, userToPrintID);
 						final I_C_Print_Job_Instructions printJobInstructionsReloaded = reloadRecords.getLeft();
@@ -130,8 +130,7 @@ public class C_Print_Job_Instructions
 								MSG_CLIENT_REPORTS_PRINT_ERROR,
 								printJobInstructionsReloaded.getErrorMsg(),
 								TableRecordReference.of(printJobInstructionsReloaded));
-					})
-					.register();
+					});
 		}
 	}
 
@@ -206,8 +205,8 @@ public class C_Print_Job_Instructions
 		// that is because we want to be on the safe side, even if
 		// the timeout is e.g. just one second and there is a unexpected delay with the commit of the given 'jobInstructions'.
 		trxManager.getTrxListenerManagerOrAutoCommit(trxName)
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> {
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> {
 
 					// schedule our check to be run after 'printTimeOutSeconds' seconds
 					taskExecutorService.schedule(
@@ -242,8 +241,7 @@ public class C_Print_Job_Instructions
 							printTimeOutSeconds,
 							TimeUnit.SECONDS,
 							C_Print_Job_Instructions.class.getSimpleName());
-				})
-				.register();
+				});
 	}
 
 	/**

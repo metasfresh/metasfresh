@@ -31,8 +31,7 @@ import de.metas.lock.api.ILockAutoCloseable;
 	{
 		Services.get(ITrxManager.class)
 				.getTrxListenerManagerOrAutoCommit(trxName)
-				.newEventListener().timing(TrxEventTiming.AFTER_CLOSE)
-				.handlingMethod(innerTrx -> closeNow())
-				.register();
+				.newEventListener(TrxEventTiming.AFTER_CLOSE)
+				.registerHandlingMethod(innerTrx -> closeNow());
 	}
 }

@@ -702,9 +702,8 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	protected final void runAfterCommit(@NonNull final Runnable runnable)
 	{
 		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> runnable.run())
-				.register();
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> runnable.run());
 	}
 
 	/**

@@ -2,10 +2,7 @@ package org.adempiere.ad.trx.api;
 
 import java.util.function.Supplier;
 
-import org.adempiere.ad.trx.api.ITrxListenerManager.RegisterListenerRequest.RegisterListenerRequestBuilder;
-
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -77,23 +74,60 @@ public interface ITrxListenerManager
 		void onTransactionEvent(ITrx trx);
 	}
 
-	@Data
 	public class RegisterListenerRequest
 	{
-
+		@Getter
 		private final TrxEventTiming timing;
+		@Getter
+		private boolean registerWeakly = true;
+		@Getter
+		private boolean invokeMethodJustOnce = true;
+		@Getter
+		private EventHandlingMethod handlingMethod;
+		@Getter
+		private Supplier<String> toStringSupplier = () -> toString();
 
-		private final boolean registerWeakly;
-
-		private final boolean invokeMethodJustOnce;
-
-		private final EventHandlingMethod handlingMethod;
+		private boolean active = true;
 
 		private final ITrxListenerManager parent;
 
-		private Supplier<String> toStringSupplier;
+		private RegisterListenerRequest(
+				@NonNull final ITrxListenerManager parent,
+				@NonNull final TrxEventTiming timing)
+		{
+			this.parent = parent;
+			this.timing = timing;
+		}
 
-		private boolean active = true;
+		public RegisterListenerRequest registerWeakly(final boolean registerWeakly)
+		{
+			this.registerWeakly = registerWeakly;
+			return this;
+		}
+
+		public RegisterListenerRequest invokeMethodJustOnce(final boolean invokeMethodJustOnce)
+		{
+			this.invokeMethodJustOnce = invokeMethodJustOnce;
+			return this;
+		}
+
+		public RegisterListenerRequest toStringSupplier(@NonNull final Supplier<String> toStringSupplier)
+		{
+			this.toStringSupplier = toStringSupplier;
+			return this;
+		}
+
+		public void registerHandlingMethod(@NonNull final EventHandlingMethod handlingMethod)
+		{
+			this.handlingMethod = handlingMethod;
+			parent.registerListener(this);
+		}
+
+		@Override
+		public String toString()
+		{
+			return toStringSupplier.get();
+		}
 
 		/**
 		 * Deactivate this listener, so that it won't be invoked any further.
@@ -114,46 +148,38 @@ public interface ITrxListenerManager
 		{
 			return active;
 		}
-
-		@Builder(buildMethodName = "register")
-		private RegisterListenerRequest(
-				@NonNull final TrxEventTiming timing,
-				@NonNull final EventHandlingMethod handlingMethod,
-				@NonNull final ITrxListenerManager parent,
-				Boolean registerWeakly,
-				Boolean invokeMethodJustOnce,
-				Supplier<String> toStringSupplier)
-		{
-			this.parent = parent;
-			this.timing = timing;
-			this.registerWeakly = registerWeakly != null ? registerWeakly : true;
-			this.invokeMethodJustOnce = invokeMethodJustOnce != null ? invokeMethodJustOnce : true;
-			this.handlingMethod = handlingMethod;
-
-			this.toStringSupplier = toStringSupplier != null ? toStringSupplier : () -> toString();
-			parent.registerListener(this);
-		}
-
-		@Override
-		public String toString()
-		{
-			return toStringSupplier.get();
-		}
-
 	}
 
-	default RegisterListenerRequestBuilder newEventListener()
+	default RegisterListenerRequest newEventListener(@NonNull final TrxEventTiming timing)
 	{
-		return RegisterListenerRequest.builder().parent(this);
+		return new RegisterListenerRequest(this, timing);
 	}
 
+	/**
+	 * This method shall only be called by the framework. Instead, call {@link #newEventListener()}
+	 * and be sure to call {@link RegisterListenerRequest#registerHandlingMethod(EventHandlingMethod)} at the end.
+	 *
+	 * @param listener
+	 */
 	void registerListener(RegisterListenerRequest listener);
 
+	/**
+	 * This method shall only be called by the framework.
+	 */
 	void fireBeforeCommit(ITrx trx);
 
+	/**
+	 * This method shall only be called by the framework.
+	 */
 	void fireAfterCommit(ITrx trx);
 
+	/**
+	 * This method shall only be called by the framework.
+	 */
 	void fireAfterRollback(ITrx trx);
 
+	/**
+	 * This method shall only be called by the framework.
+	 */
 	void fireAfterClose(ITrx trx);
 }

@@ -77,8 +77,8 @@ public class UnlockCommand implements IUnlockCommand
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.getTrxListenerManagerOrAutoCommit(trxName)
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> {
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> {
 					try
 					{
 						final int countUnlocked = release();
@@ -88,8 +88,7 @@ public class UnlockCommand implements IUnlockCommand
 					{
 						countUnlockedFuture.setError(e);
 					}
-				})
-				.register();
+				});
 		return countUnlockedFuture;
 	}
 

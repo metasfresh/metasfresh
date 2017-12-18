@@ -724,8 +724,8 @@ public final class CacheMgt
 
 				// Listens {@link ITrx}'s after-commit and fires enqueued cache invalidation requests
 				trx.getTrxListenerManager()
-						.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-						.handlingMethod(innerTrx -> {
+						.newEventListener(TrxEventTiming.AFTER_COMMIT)
+						.registerHandlingMethod(innerTrx -> {
 
 							final RecordsToResetOnTrxCommitCollector innerCollector = innerTrx.getProperty(TRX_PROPERTY);
 							if (innerCollector == null)
@@ -733,8 +733,7 @@ public final class CacheMgt
 								return;
 							}
 							innerCollector.sendRequestsAndClear();
-						})
-						.register();
+						});
 
 				return collector;
 			});

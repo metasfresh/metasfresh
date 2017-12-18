@@ -586,9 +586,8 @@ import lombok.NonNull;
 		if (!trxManager.isNull(trxName))
 		{
 			trxManager.getTrxListenerManager(trxName)
-					.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-					.handlingMethod(innerTrx -> postRunnable.run())
-					.register();
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.registerHandlingMethod(innerTrx -> postRunnable.run());
 
 			// TODO figure out what shall be the posting status in this case,
 			// or how shall be tell the caller that we don't know the status because the posting will be done async,

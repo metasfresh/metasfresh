@@ -174,14 +174,12 @@ public class HUReportExecutor
 		// The background is that in the handling unit framework we have some "decoupled" DAOs, that collect data in memory and then safe it all at once, right before the commit is made.
 
 		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> huReportTrxListener.afterCommit(innerTrx))
-				.register();
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> huReportTrxListener.afterCommit(innerTrx));
 
 		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-				.newEventListener().timing(TrxEventTiming.AFTER_CLOSE)
-				.handlingMethod(innerTrx -> huReportTrxListener.afterClose(innerTrx))
-				.register();
+				.newEventListener(TrxEventTiming.AFTER_CLOSE)
+				.registerHandlingMethod(innerTrx -> huReportTrxListener.afterClose(innerTrx));
 
 		huReportTrxListener.setListenerWasRegistered();
 	}

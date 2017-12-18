@@ -143,14 +143,13 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			final String TRXPROPERTY_ResetCache = getClass().getName() + ".ResetCache";
 
 			final Supplier<Boolean> valueInitializer = () -> {
-				
-				trx.getTrxListenerManager().newEventListener()
-						.timing(TrxEventTiming.AFTER_COMMIT)
-						.handlingMethod(localTrx -> {
+
+				trx.getTrxListenerManager()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+						.registerHandlingMethod(localTrx -> {
 							logger.info("Reseting the cache because transaction was commited: {}", trx);
 							resetCache(true);
-						})
-						.register();
+						});
 				logger.info("Scheduled cache reset after trx commit: {}", trx);
 				return Boolean.TRUE;
 			};

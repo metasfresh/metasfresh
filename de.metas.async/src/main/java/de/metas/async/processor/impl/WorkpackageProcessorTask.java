@@ -509,8 +509,8 @@ import de.metas.notification.INotificationBL;
 
 		trxManager.getTrxListenerManagerOrAutoCommit(trxName)
 
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> {
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> {
 
 					final IMsgBL msgBL = Services.get(IMsgBL.class);
 					final I_C_Queue_WorkPackage wpReloaded = InterfaceWrapperHelper.create(ctx, workPackageID, I_C_Queue_WorkPackage.class, ITrx.TRXNAME_None);
@@ -522,8 +522,7 @@ import de.metas.notification.INotificationBL;
 									MSG_PROCESSING_ERROR_NOTIFICATION_TEXT,
 									new Object[] { workPackageID, wpReloaded.getErrorMsg() }),
 							TableRecordReference.of(wpReloaded));
-				})
-				.register();
+				});
 
 	}
 

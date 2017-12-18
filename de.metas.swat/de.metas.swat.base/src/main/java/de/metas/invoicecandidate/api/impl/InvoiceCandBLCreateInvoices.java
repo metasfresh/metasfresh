@@ -637,10 +637,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 							Services.get(ITrxManager.class)
 									.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-									.newEventListener()
-									.timing(TrxEventTiming.AFTER_COMMIT)
-									.handlingMethod(localTrx -> set_QtyAndPriceOverrideToNull(invoiceCandidate_ID))
-									.register();
+									.newEventListener(TrxEventTiming.AFTER_COMMIT)
+									.registerHandlingMethod(localTrx -> set_QtyAndPriceOverrideToNull(invoiceCandidate_ID));
 						}
 					}
 

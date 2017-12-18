@@ -64,9 +64,8 @@ final class SyncConfirmationsSender
 				final SyncConfirmationsSender sender = new SyncConfirmationsSender();
 				sender.setAutoSendAfterEachConfirm(false);
 				trx.getTrxListenerManager()
-						.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-						.handlingMethod(innerTrx -> sender.send())
-						.register();
+						.newEventListener(TrxEventTiming.AFTER_COMMIT)
+						.registerHandlingMethod(innerTrx -> sender.send());
 
 				return sender;
 			}

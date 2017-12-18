@@ -643,13 +643,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		final ITrxListenerManager trxListenerManager = trxManager.getTrxListenerManager(trxName);
 		trxListenerManager
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> workpackageTrxListener.afterCommit(innerTrx))
-				.register();
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> workpackageTrxListener.afterCommit(innerTrx));
 		trxListenerManager
-				.newEventListener().timing(TrxEventTiming.AFTER_ROLLBACK)
-				.handlingMethod(innerTrx -> workpackageTrxListener.afterRollback(innerTrx))
-				.register();
+				.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
+				.registerHandlingMethod(innerTrx -> workpackageTrxListener.afterRollback(innerTrx));
 
 		return callback.getFutureResult();
 	}

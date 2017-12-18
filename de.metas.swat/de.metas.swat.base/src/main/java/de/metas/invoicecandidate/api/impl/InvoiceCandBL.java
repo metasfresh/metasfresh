@@ -1316,10 +1316,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					final BigDecimal priceEntered_Override = InterfaceWrapperHelper.getValueOrNull(ilaToReverse, I_C_Invoice_Line_Alloc.COLUMNNAME_PriceEntered_Override);
 
 					Services.get(ITrxManager.class)
-							.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited).newEventListener()
-							.timing(TrxEventTiming.AFTER_COMMIT)
-							.handlingMethod(transaction -> setQtyAndPriceOverride(invoiceCandidateId, qtyToInvoice_Override, priceEntered_Override))
-							.register();
+							.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
+							.newEventListener(TrxEventTiming.AFTER_COMMIT)
+							.registerHandlingMethod(transaction -> setQtyAndPriceOverride(invoiceCandidateId, qtyToInvoice_Override, priceEntered_Override));
 				}
 
 				if (creditMemo && creditedInvoiceReinvoicable && !creditedInvoiceIsReversed)

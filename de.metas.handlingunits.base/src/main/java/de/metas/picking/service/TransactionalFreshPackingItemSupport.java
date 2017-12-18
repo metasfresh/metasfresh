@@ -85,14 +85,12 @@ public class TransactionalFreshPackingItemSupport
 		//
 		// Register the commit/rollback transaction listeners
 		trx.getTrxListenerManager()
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> commit())
-				.register();
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> commit());
 
 		trx.getTrxListenerManager()
-				.newEventListener().timing(TrxEventTiming.AFTER_ROLLBACK)
-				.handlingMethod(innerTrx -> rollback())
-				.register();
+				.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
+				.registerHandlingMethod(innerTrx -> rollback());
 	}
 
 	private synchronized void commit()

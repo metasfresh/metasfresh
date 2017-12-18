@@ -491,8 +491,8 @@ public class InvoiceCandidateWriter
 		// TODO: check if we actually have to run this code afterCommit, since we now have _maxInvoiceCandidateToDeleteID to make sure we only delete "old" ICs.
 		trxManager
 				.getTrxListenerManagerOrAutoCommit(getContext().getTrxName())
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> {
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> {
 
 					trxManager.run(new TrxRunnableAdapter()
 					{
@@ -508,7 +508,7 @@ public class InvoiceCandidateWriter
 									localTrxName);
 						}
 					});
-				}).register();
+				});
 	}
 
 	private void deleteExistingInvoiceCandidates0(final int modelTableId,

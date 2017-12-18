@@ -87,8 +87,8 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 
 					// Register a listener which will process the collector when the transaction is committed.
 					trx.getTrxListenerManager()
-							.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-							.handlingMethod(innerTrx -> {
+							.newEventListener(TrxEventTiming.AFTER_COMMIT)
+							.registerHandlingMethod(innerTrx -> {
 								// Get the transaction level collector.
 								// The collector is removed to avoid double processing.
 								// If there is no collector, do nothing.
@@ -100,12 +100,11 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 
 								// Process the collector.
 								processCollector(innerCollector);
-							})
-							.register();
+							});
 
 					trx.getTrxListenerManager()
-							.newEventListener().timing(TrxEventTiming.AFTER_ROLLBACK)
-							.handlingMethod(innerTrx -> {
+							.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
+							.registerHandlingMethod(innerTrx -> {
 								// Get the transaction level collector.
 								// The collector is removed to avoid double processing.
 								// If there is no collector, do nothing.
@@ -117,8 +116,7 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 
 								// Process the collector.
 								discardCollector(innerCollector);
-							})
-							.register();
+							});
 
 					// Return the newly created collector.
 					return collector;

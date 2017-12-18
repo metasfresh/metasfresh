@@ -65,8 +65,8 @@ public class StorageSegmentChangedExecutor
 			// register our listener: we will actually fire the storage segment changed when the transaction is commited
 			// Listens the {@link ITrx} and on commit actually fires the segment changed event
 			trx.getTrxListenerManager()
-					.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-					.handlingMethod(innerTrx -> {
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.registerHandlingMethod(innerTrx -> {
 						final StorageSegmentChangedExecutor innerCollector = trx.getProperty(TRX_PROPERTYNAME);
 						if (innerCollector == null || innerCollector.isEmpty())
 						{

@@ -165,9 +165,8 @@ public class MaterialEventService
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		trxManager.getTrxListenerManager(trxName)
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> fireEvent(event))
-				.register();
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> fireEvent(event));
 	}
 
 	/**

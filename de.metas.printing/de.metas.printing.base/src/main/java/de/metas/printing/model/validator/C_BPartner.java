@@ -63,9 +63,8 @@ public class C_BPartner
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		trxManager.getTrxListenerManager(InterfaceWrapperHelper.getTrxName(bPartner))
-				.newEventListener()
-				.timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(trx -> {
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(trx -> {
 
 					final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 					final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -95,7 +94,6 @@ public class C_BPartner
 
 					logger.debug("C_BPartner={}: set C_Printing_Queue.Copies={} for {} C_Printing_Queue records",
 							new Object[] { bPartner, documentCopies, updatedCount });
-				})
-				.register();
+				});
 	}
 }

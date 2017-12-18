@@ -1093,8 +1093,8 @@ public class MOrderLine extends X_C_OrderLine
 		// Concrete, we observed a deadlock between this code and M_ReceiptSchedule.propagateQtysToOrderLine()
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.getTrxListenerManager(get_TrxName())
-				.newEventListener().timing(TrxEventTiming.AFTER_COMMIT)
-				.handlingMethod(innerTrx -> {
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> {
 					trxManager.run(new TrxRunnableAdapter()
 					{
 						@Override
@@ -1103,8 +1103,7 @@ public class MOrderLine extends X_C_OrderLine
 							updateHeader0(getC_Order_ID());
 						}
 					});
-				})
-				.register();
+				});
 
 		return true;
 	}	// updateHeaderTax
