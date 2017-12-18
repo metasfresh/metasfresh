@@ -31,7 +31,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	final private int C_UOM_ID = 100;
 	final private int M_Product_Category_ID = 1000000;
 
-	final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@Override
 	public Class<I_I_Pharma_Product> getImportModelClass()
@@ -127,38 +127,9 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		{
 			product.setUPC(importRecord.getA00GTIN());
 		}
-		if (!Check.isEmpty(importRecord.getA00PGMENG(), true))
-		{
-			product.setPackageSize(new BigDecimal(importRecord.getA00PGMENG()));
-		}
-		if (importRecord.getPackage_UOM_ID() > 0)
-		{
-			product.setPackage_UOM_ID(importRecord.getPackage_UOM_ID());
-		}
-		if (importRecord.getM_DosageForm_ID() > 0)
-		{
-			product.setM_DosageForm_ID(importRecord.getM_DosageForm_ID());
-		}
-		final Boolean isColdChain = extractIsColdChain(importRecord);
-		if (isColdChain != null)
-		{
-			product.setIsColdChain(isColdChain);
-		}
-		final Boolean isPrescription = extractIsPrescription(importRecord);
-		if (isPrescription != null)
-		{
-			product.setIsPrescription(isPrescription);
-		}
-		final Boolean isNarcotic = extractIsNarcotic(importRecord);
-		if (isNarcotic != null)
-		{
-			product.setIsNarcotic(isNarcotic);
-		}
-		final Boolean isTFG = extractIsTFG(importRecord);
-		if (isNarcotic != null)
-		{
-			product.setIsTFG(isTFG);
-		}
+
+		setPackageFields(importRecord, product);
+		setPharmaFields(importRecord, product);
 
 		// FIXME: use them as default values for this WIP
 		product.setProductType(X_I_Product.PRODUCTTYPE_Item);
@@ -195,6 +166,16 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		{
 			product.setUPC(importRecord.getA00GTIN());
 		}
+
+		setPackageFields(importRecord, product);
+		setPharmaFields(importRecord, product);
+
+		InterfaceWrapperHelper.save(product);
+		return product;
+	}
+
+	private void setPackageFields(@NonNull final I_I_Pharma_Product importRecord, final I_M_Product product)
+	{
 		if (!Check.isEmpty(importRecord.getA00PGMENG(), true))
 		{
 			product.setPackageSize(new BigDecimal(importRecord.getA00PGMENG()));
@@ -203,6 +184,10 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		{
 			product.setPackage_UOM_ID(importRecord.getPackage_UOM_ID());
 		}
+	}
+
+	private void setPharmaFields(@NonNull final I_I_Pharma_Product importRecord, final I_M_Product product)
+	{
 		if (importRecord.getM_DosageForm_ID() > 0)
 		{
 			product.setM_DosageForm_ID(importRecord.getM_DosageForm_ID());
@@ -227,10 +212,6 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		{
 			product.setIsTFG(isTFG);
 		}
-		InterfaceWrapperHelper.save(product);
-
-		return product;
-
 	}
 
 	private Boolean extractIsColdChain(@NonNull final I_I_Pharma_Product record)

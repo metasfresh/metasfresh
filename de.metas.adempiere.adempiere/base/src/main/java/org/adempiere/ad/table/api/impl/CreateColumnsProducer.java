@@ -118,9 +118,9 @@ public class CreateColumnsProducer
 	@Getter
 	public static class ColumnSource
 	{
-		final int length;
-		final String name;
-		final int type;
+		final private int length;
+		final private String name;
+		final private int type;
 	}
 
 	private List<ColumnSource> createSourceColumns()
@@ -201,7 +201,7 @@ public class CreateColumnsProducer
 		colTarget.setAD_Reference_ID(sourceColumn.getType());
 		colTarget.setIsActive(true);
 		colTarget.setIsUpdateable(true);
-		InterfaceWrapperHelper.save(colTarget);
+		save(colTarget);
 		addLog("@AD_Column_ID@ " + targetTable.getTableName() + "." + colTarget.getColumnName() + ": @Created@");
 
 		return colTarget;
