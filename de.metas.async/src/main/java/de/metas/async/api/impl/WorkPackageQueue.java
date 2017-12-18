@@ -427,13 +427,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	}
 
 	@Override
-	public I_C_Queue_WorkPackage enqueueWorkPackage(final I_C_Queue_Block block,
-			final IWorkpackagePrioStrategy priority)
+	public I_C_Queue_WorkPackage enqueueWorkPackage(
+			@NonNull final I_C_Queue_Block block,
+			@NonNull final IWorkpackagePrioStrategy priority)
 	{
 		// TODO: please really consider to move this method somewhere inside de.metas.async.api.impl.WorkPackageBuilder.build()
-
-		Check.assume(block != null, "block not null");
-		Check.assume(priority != null, "Param 'priority' not null. Use {} to indicate 'no specific priority'", NullWorkpackagePrio.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(block);
 		final String trxName = InterfaceWrapperHelper.getTrxName(block);

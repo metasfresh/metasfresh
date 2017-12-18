@@ -2,10 +2,13 @@ package org.adempiere.ad.trx.api.impl;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.exceptions.TrxException;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.WeakList;
 
 /*
@@ -31,6 +34,8 @@ import org.adempiere.util.WeakList;
  */
 
 import org.slf4j.Logger;
+
+import com.google.common.base.Predicates;
 
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -69,18 +74,7 @@ public class TrxListenerManager implements ITrxListenerManager
 			return;
 		}
 
-		final TrxEventTiming eventTimingOfListener = listener.getTiming();
-		final boolean listenerHasProblematicTiming = !eventTimingOfListener.canBeRegisteredWithinOtherTiming(runningWithinTrxEventInfo.get());
-		if (listenerHasProblematicTiming)
-		{
-			logger.warn(
-					"Registering another listener within a listener's event handling code might be a development error and that other listener might not be fired."
-							+ "\n current trx event timing={}"
-							+ "\n listener that is registerd={}",
-					runningWithinTrxEventInfo.get(),
-					listener,
-					new AdempiereException("STACKTRACE"));
-		}
+		verifyEventTiming(listener);
 
 		if (listeners == null)
 		{
@@ -96,6 +90,23 @@ public class TrxListenerManager implements ITrxListenerManager
 		// }
 
 		listeners.add(listener, listener.isRegisterWeakly());
+	}
+
+	private void verifyEventTiming(@NonNull final RegisterListenerRequest listener)
+	{
+		final TrxEventTiming eventTimingOfListener = listener.getTiming();
+		final boolean listenerHasProblematicTiming = !eventTimingOfListener.canBeRegisteredWithinOtherTiming(runningWithinTrxEventInfo.get());
+
+		if (listenerHasProblematicTiming)
+		{
+			final String message = StringUtils.formatMessage("Registering another listener within a listener's event handling code might be a development error and that other listener might not be fired."
+					+ "\n current trx event timing={}"
+					+ "\n listener that is registerd={}",
+					runningWithinTrxEventInfo.get(),
+					listener);
+
+			new AdempiereException(message).throwIfDeveloperModeOrLogWarningElse(logger);
+		}
 	}
 
 	@Override
@@ -127,9 +138,9 @@ public class TrxListenerManager implements ITrxListenerManager
 	}
 
 	private final void fireListeners(
-			final OnError onError,
-			final TrxEventTiming timingInfo,
-			final ITrx trx)
+			@NonNull final OnError onError,
+			@NonNull final TrxEventTiming timingInfo,
+			@NonNull final ITrx trx)
 	{
 		if (listeners == null)
 		{
@@ -139,44 +150,62 @@ public class TrxListenerManager implements ITrxListenerManager
 		runningWithinTrxEventInfo.set(timingInfo);
 		try
 		{
-			for (final RegisterListenerRequest listener : listeners.hardList())
-			{
-				// shouldn't be necessary but in fact i just had an NPE at this place
-				if (listener == null || !listener.isActive())
-				{
-					continue;
-				}
-
-				// Execute the listener method
-				try
-				{
-					listener.getHandlingMethod().onTransactionEvent(trx);
-				}
-				catch (final Exception ex)
-				{
-					if (onError == OnError.LogAndSkip)
-					{
-						logger.warn("Error while invoking {} using {}. Error was discarded.", timingInfo, listener, ex);
-					}
-					else // if (onError == OnError.ThrowException)
-					{
-						throw new TrxException("Error on " + timingInfo, ex)
-								.setParameter("listener", listener)
-								.appendParametersToMessage();
-					}
-				}
-				finally
-				{
-					if (listener.isInvokeMethodJustOnce())
-					{
-						listener.deactivate();
-					}
-				}
-			}
+			listeners.hardList().stream()
+					.filter(Predicates.notNull())
+					.filter(listener -> timingInfo.equals(listener.getTiming()))
+					.forEach(listener -> fireListener(onError, timingInfo, trx, listener));
 		}
 		finally
 		{
 			runningWithinTrxEventInfo.set(TrxEventTiming.NONE);
+		}
+	}
+
+	private void fireListener(
+			@NonNull final OnError onError,
+			@NonNull final TrxEventTiming timingInfo,
+			@NonNull final ITrx trx,
+			@Nullable final RegisterListenerRequest listener)
+	{
+		// shouldn't be necessary but in fact i just had an NPE at this place
+		if (listener == null || !listener.isActive())
+		{
+			return;
+		}
+
+		// Execute the listener method
+		try
+		{
+			listener.getHandlingMethod().onTransactionEvent(trx);
+		}
+		catch (final Exception ex)
+		{
+			handleException(onError, timingInfo, listener, ex);
+		}
+		finally
+		{
+			if (listener.isInvokeMethodJustOnce())
+			{
+				listener.deactivate();
+			}
+		}
+	}
+
+	private void handleException(
+			@NonNull final OnError onError,
+			@NonNull final TrxEventTiming timingInfo,
+			@NonNull final RegisterListenerRequest listener,
+			@NonNull final Exception ex)
+	{
+		if (onError == OnError.LogAndSkip)
+		{
+			logger.warn("Error while invoking {} using {}. Error was discarded.", timingInfo, listener, ex);
+		}
+		else // if (onError == OnError.ThrowException)
+		{
+			throw new TrxException("Error on " + timingInfo, ex)
+					.setParameter("listener", listener)
+					.appendParametersToMessage();
 		}
 	}
 }

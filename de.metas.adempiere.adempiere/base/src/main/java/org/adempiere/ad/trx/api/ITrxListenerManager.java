@@ -2,6 +2,9 @@ package org.adempiere.ad.trx.api;
 
 import java.util.function.Supplier;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
+
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -85,7 +88,7 @@ public interface ITrxListenerManager
 		@Getter
 		private EventHandlingMethod handlingMethod;
 		@Getter
-		private Supplier<String> toStringSupplier = () -> toString();
+		private Supplier<String> additionalToStringInfo = null;
 
 		private boolean active = true;
 
@@ -111,9 +114,9 @@ public interface ITrxListenerManager
 			return this;
 		}
 
-		public RegisterListenerRequest toStringSupplier(@NonNull final Supplier<String> toStringSupplier)
+		public RegisterListenerRequest additionalToStringInfo(@NonNull final Supplier<String> additionalToStringInfo)
 		{
-			this.toStringSupplier = toStringSupplier;
+			this.additionalToStringInfo = additionalToStringInfo;
 			return this;
 		}
 
@@ -126,7 +129,16 @@ public interface ITrxListenerManager
 		@Override
 		public String toString()
 		{
-			return toStringSupplier.get();
+			final ToStringHelper toStringHelper = MoreObjects.toStringHelper(this)
+					.add("timing", timing)
+					.add("active", active)
+					.add("invokeMethodJustOnce", invokeMethodJustOnce)
+					.add("registerWeakly", registerWeakly);
+			if (additionalToStringInfo != null)
+			{
+				toStringHelper.add("additionalToStringInfo", additionalToStringInfo.get());
+			}
+			return toStringHelper.toString();
 		}
 
 		/**

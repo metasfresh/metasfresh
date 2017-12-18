@@ -518,7 +518,7 @@ import lombok.NonNull;
 			Services.get(ITrxManager.class)
 					.getTrxListenerManagerOrAutoCommit(trxName)
 					.newEventListener(TrxEventTiming.AFTER_COMMIT)
-					.toStringSupplier(() -> MoreObjects.toStringHelper(this)
+					.additionalToStringInfo(() -> MoreObjects.toStringHelper(this)
 							.add("pointcut", pointcut)
 							.add("po", po)
 							.add("timing", timing)

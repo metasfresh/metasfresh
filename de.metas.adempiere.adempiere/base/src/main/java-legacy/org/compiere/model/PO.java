@@ -2703,7 +2703,6 @@ public abstract class PO
 		final boolean newRecordInitial = m_createNew;
 		trxManager.run(trxNameInitial, new TrxRunnable2()
 		{
-
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
@@ -2716,7 +2715,6 @@ public abstract class PO
 			{
 				// restoring settings and flags before failing
 				m_createNew = newRecordInitial;
-
 				throw e;
 			}
 
