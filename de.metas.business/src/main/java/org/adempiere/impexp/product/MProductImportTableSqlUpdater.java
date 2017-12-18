@@ -51,6 +51,7 @@ public class MProductImportTableSqlUpdater
 	private static final transient Logger logger = LogManager.getLogger(MProductImportTableSqlUpdater.class);
 
 	private String targetTableName = I_I_Product.Table_Name;
+	private String valueColumnName = I_I_Product.COLUMNNAME_Value;
 
 	@Builder(buildMethodName = "updateIProduct")
 	private void updateMProductImportTable(@NonNull final String whereClause, @NonNull final Properties ctx)
@@ -85,13 +86,12 @@ public class MProductImportTableSqlUpdater
 	}
 
 	@Builder(buildMethodName = "updateIPharmaProduct")
-	private void updatePharmaProductImportTable(@NonNull final String whereClause, @NonNull final Properties ctx, @NonNull final String tableName)
+	private void updatePharmaProductImportTable(@NonNull final String whereClause, @NonNull final Properties ctx, @NonNull final String tableName, @NonNull String valueName)
 	{
 		targetTableName = tableName;
+		valueColumnName = valueName;
 
 		dbUpdateProductsByValue(whereClause);
-
-		dbUpdateProductCategories(whereClause, ctx);
 
 		dbUpdatePackageUOM(whereClause);
 
@@ -150,7 +150,9 @@ public class MProductImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET M_Product_ID=(SELECT M_Product_ID FROM M_Product p")
-				.append(" WHERE i.Value=p.Value AND i.AD_Client_ID=p.AD_Client_ID) ")
+				.append(" WHERE i.")
+				.append(valueColumnName)
+				.append("=p.Value AND i.AD_Client_ID=p.AD_Client_ID) ")
 				.append("WHERE M_Product_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "='N'").append(whereClause);
 		int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
@@ -319,14 +321,6 @@ public class MProductImportTableSqlUpdater
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Set Package_UOM =" + no);
-		//
-		sql = new StringBuilder("UPDATE ")
-				.append(targetTableName + " i ")
-				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Package_UOM , ' ")
-				.append("WHERE Package_UOM_ID IS NULL")
-				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.warn("Invalid UOM=" + no);
 	}
 
 	private void dbUpdateCurrency(@NonNull final String whereClause)

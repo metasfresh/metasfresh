@@ -12,9 +12,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
-import org.compiere.model.I_I_Product;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
 
@@ -26,6 +26,10 @@ import lombok.NonNull;
 
 public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma_Product>
 {
+
+	// temporary defaults
+	final private int C_UOM_ID = 100;
+	final private int M_Product_Category_ID = 1000000;
 
 	final IProductDAO productDAO = Services.get(IProductDAO.class);
 
@@ -50,7 +54,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	@Override
 	protected String getImportOrderBySql()
 	{
-		return I_I_Product.COLUMNNAME_ProductCategory_Value;
+		return I_I_Pharma_Product.COLUMNNAME_A00PZN;
 	}
 
 	@Override
@@ -67,6 +71,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.whereClause(whereClause)
 				.ctx(getCtx())
 				.tableName(getImportTableName())
+				.valueName(I_I_Pharma_Product.COLUMNNAME_A00PZN)
 				.updateIPharmaProduct();
 	}
 
@@ -94,20 +99,71 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		return newProduct ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
 
+	@Override
+	protected void markImported(final I_I_Pharma_Product importRecord)
+	{
+		importRecord.setI_IsImported(X_I_Pharma_Product.I_ISIMPORTED_Imported);
+		importRecord.setProcessed(true);
+		InterfaceWrapperHelper.save(importRecord);
+	}
+
 	private I_M_Product createProduct(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final I_M_Product product = newInstance(I_M_Product.class, importRecord);
 		product.setValue(importRecord.getA00PZN());
-		product.setName(importRecord.getA00PBEZ());
-		product.setDescription(importRecord.getA00PNAM());
-		product.setUPC(importRecord.getA00GTIN());
-		product.setPackageSize(new BigDecimal(importRecord.getA00PGMENG()));
-		product.setPackage_UOM_ID(importRecord.getPackage_UOM_ID());
-		product.setIsColdChain(extractIsColdChain(importRecord));
-		product.setIsPrescription(extractIsPrescription(importRecord));
-		product.setIsNarcotic(extractIsNarcotic(importRecord));
-		product.setIsTFG(extractIsTFG(importRecord));
+		if (Check.isEmpty(importRecord.getA00PBEZ()))
+		{
+			product.setName(importRecord.getA00PZN());
+		}
+		else
+		{
+			product.setName(importRecord.getA00PBEZ());
+		}
+		if (!Check.isEmpty(importRecord.getA00PNAM()))
+		{
+			product.setDescription(importRecord.getA00PNAM());
+		}
+		if (!Check.isEmpty(importRecord.getA00GTIN()))
+		{
+			product.setUPC(importRecord.getA00GTIN());
+		}
+		if (!Check.isEmpty(importRecord.getA00PGMENG(), true))
+		{
+			product.setPackageSize(new BigDecimal(importRecord.getA00PGMENG()));
+		}
+		if (importRecord.getPackage_UOM_ID() > 0)
+		{
+			product.setPackage_UOM_ID(importRecord.getPackage_UOM_ID());
+		}
+		if (importRecord.getM_DosageForm_ID() > 0)
+		{
+			product.setM_DosageForm_ID(importRecord.getM_DosageForm_ID());
+		}
+		final Boolean isColdChain = extractIsColdChain(importRecord);
+		if (isColdChain != null)
+		{
+			product.setIsColdChain(isColdChain);
+		}
+		final Boolean isPrescription = extractIsPrescription(importRecord);
+		if (isPrescription != null)
+		{
+			product.setIsPrescription(isPrescription);
+		}
+		final Boolean isNarcotic = extractIsNarcotic(importRecord);
+		if (isNarcotic != null)
+		{
+			product.setIsNarcotic(isNarcotic);
+		}
+		final Boolean isTFG = extractIsTFG(importRecord);
+		if (isNarcotic != null)
+		{
+			product.setIsTFG(isTFG);
+		}
+
+		//
 		product.setProductType(X_I_Product.PRODUCTTYPE_Item);
+		product.setC_UOM_ID(C_UOM_ID);
+		product.setM_Product_Category_ID(M_Product_Category_ID);
 		InterfaceWrapperHelper.save(product);
 
 		return product;
@@ -126,38 +182,73 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		}
 
 		product.setValue(importRecord.getA00PZN());
-		product.setName(importRecord.getA00PBEZ());
-		product.setDescription(importRecord.getA00PNAM());
-		product.setUPC(importRecord.getA00GTIN());
-		product.setPackageSize(new BigDecimal(importRecord.getA00PGMENG()));
-		product.setPackage_UOM_ID(importRecord.getPackage_UOM_ID());
-		product.setIsColdChain(extractIsColdChain(importRecord));
-		product.setIsPrescription(extractIsPrescription(importRecord));
-		product.setIsNarcotic(extractIsNarcotic(importRecord));
-		product.setIsTFG(extractIsTFG(importRecord));
+		if (!Check.isEmpty(importRecord.getA00PBEZ()))
+		{
+			product.setName(importRecord.getA00PBEZ());
+		}
+		if (!Check.isEmpty(importRecord.getA00PNAM()))
+		{
+			product.setDescription(importRecord.getA00PNAM());
+		}
+		if (!Check.isEmpty(importRecord.getA00GTIN()))
+		{
+			product.setUPC(importRecord.getA00GTIN());
+		}
+		if (!Check.isEmpty(importRecord.getA00PGMENG(), true))
+		{
+			product.setPackageSize(new BigDecimal(importRecord.getA00PGMENG()));
+		}
+		if (importRecord.getPackage_UOM_ID() > 0)
+		{
+			product.setPackage_UOM_ID(importRecord.getPackage_UOM_ID());
+		}
+		if (importRecord.getM_DosageForm_ID() > 0)
+		{
+			product.setM_DosageForm_ID(importRecord.getM_DosageForm_ID());
+		}
+		final Boolean isColdChain = extractIsColdChain(importRecord);
+		if (isColdChain != null)
+		{
+			product.setIsColdChain(isColdChain);
+		}
+		final Boolean isPrescription = extractIsPrescription(importRecord);
+		if (isPrescription != null)
+		{
+			product.setIsPrescription(isPrescription);
+		}
+		final Boolean isNarcotic = extractIsNarcotic(importRecord);
+		if (isNarcotic != null)
+		{
+			product.setIsNarcotic(isNarcotic);
+		}
+		final Boolean isTFG = extractIsTFG(importRecord);
+		if (isNarcotic != null)
+		{
+			product.setIsTFG(isTFG);
+		}
 		InterfaceWrapperHelper.save(product);
 
 		return product;
 
 	}
 
-	private boolean extractIsColdChain(@NonNull final I_I_Pharma_Product record)
+	private Boolean extractIsColdChain(@NonNull final I_I_Pharma_Product record)
 	{
-		return X_I_Pharma_Product.A05KKETTE_01.equals(record.getA05KKETTE());
+		return record.getA05KKETTE() == null ? null : X_I_Pharma_Product.A05KKETTE_01.equals(record.getA05KKETTE());
 	}
 
-	private boolean extractIsPrescription(I_I_Pharma_Product importRecord)
+	private Boolean extractIsPrescription(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		return (X_I_Pharma_Product.A02VSPFL_01.equals(importRecord.getA02VSPFL()) || X_I_Pharma_Product.A02VSPFL_02.equals(importRecord.getA02VSPFL()));
+		return importRecord.getA02VSPFL() == null ? null : (X_I_Pharma_Product.A02VSPFL_01.equals(importRecord.getA02VSPFL()) || X_I_Pharma_Product.A02VSPFL_02.equals(importRecord.getA02VSPFL()));
 	}
 
-	private boolean extractIsNarcotic(I_I_Pharma_Product importRecord)
+	private Boolean extractIsNarcotic(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		return (X_I_Pharma_Product.A02BTM_01.equals(importRecord.getA02BTM()) || X_I_Pharma_Product.A02BTM_02.equals(importRecord.getA02BTM()));
+		return importRecord.getA02BTM() == null ? null : (X_I_Pharma_Product.A02BTM_01.equals(importRecord.getA02BTM()) || X_I_Pharma_Product.A02BTM_02.equals(importRecord.getA02BTM()));
 	}
 
-	private boolean extractIsTFG(I_I_Pharma_Product importRecord)
+	private Boolean extractIsTFG(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		return X_I_Pharma_Product.A02TFG_01.equals(importRecord.getA02TFG());
+		return importRecord.getA02TFG() == null ? null : X_I_Pharma_Product.A02TFG_01.equals(importRecord.getA02TFG());
 	}
 }
