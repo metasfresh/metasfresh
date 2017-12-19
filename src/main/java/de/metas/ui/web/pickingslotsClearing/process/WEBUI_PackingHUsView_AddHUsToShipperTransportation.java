@@ -65,6 +65,8 @@ public class WEBUI_PackingHUsView_AddHUsToShipperTransportation extends PackingH
 	{
 		final List<I_M_HU> hus = retrieveEligibleHUs();
 		huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, hus);
+		
+		onHUsAddedToShipperTransportation(hus);
 
 		return MSG_OK;
 	}
