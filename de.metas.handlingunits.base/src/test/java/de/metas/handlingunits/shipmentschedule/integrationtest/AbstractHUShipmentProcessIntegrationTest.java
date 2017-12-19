@@ -348,7 +348,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		//
 		// Test Generate Shipment from HUs
-		final I_C_Queue_WorkPackage workpackage = GenerateInOutFromHU.enqueueWorkpackage(helper.getCtx(), afterAggregation_HUs);
+		final I_C_Queue_WorkPackage workpackage = GenerateInOutFromHU.enqueueWorkpackage(afterAggregation_HUs);
 
 		// Make sure we are working with valid candidates
 		final GenerateInOutFromHU processor = new GenerateInOutFromHU();

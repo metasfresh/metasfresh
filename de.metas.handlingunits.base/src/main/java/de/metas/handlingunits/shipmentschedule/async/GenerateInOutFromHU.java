@@ -28,16 +28,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -58,6 +60,9 @@ import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentSch
 import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
 import de.metas.inout.event.InOutProcessedEventBus;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 
 /**
  * Generates Shipment document from given loading units (LUs).
@@ -77,6 +82,13 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 
 	private InOutGenerateResult inoutGenerateResult = null;
 
+	private static final String PARAMETERNAME_InvoiceMode = "InvoiceMode";
+
+	public static enum InvoiceMode
+	{
+		None, AllWithoutInvoiceSchedule,
+	};
+
 	/**
 	 * Create and enqueue a workpackage for given handling units. Created workpackage will be marked as ready for processing.
 	 *
@@ -84,18 +96,32 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	 * @param hus handling units to enqueue
 	 * @return created workpackage.
 	 */
-	public static final I_C_Queue_WorkPackage enqueueWorkpackage(final Properties ctx, final List<I_M_HU> hus)
+	public static final I_C_Queue_WorkPackage enqueueWorkpackage(final List<I_M_HU> hus)
 	{
-		if (hus == null || hus.isEmpty())
-		{
-			throw new AdempiereException("@NotFound@ @M_HU_ID@");
-		}
+		return prepareWorkpackage()
+				.hus(hus)
+				.invoiceMode(InvoiceMode.None)
+				.enqueue();
+	}
 
+	@Builder(builderMethodName = "prepareWorkpackage", buildMethodName = "enqueue")
+	private static final I_C_Queue_WorkPackage enqueueWorkpackage(
+			@NonNull @Singular("hu") final List<I_M_HU> hus,
+			@Nullable final InvoiceMode invoiceMode)
+	{
+		Check.assumeNotEmpty(hus, "hus is not empty");
+
+		final InvoiceMode invoiceModeEffective = invoiceMode != null ? invoiceMode : InvoiceMode.None;
+
+		final Properties ctx = Env.getCtx();
 		return Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(ctx, GenerateInOutFromHU.class)
 				.newBlock()
 				.setContext(ctx)
 				.newWorkpackage()
+				.parameters()
+				.setParameter(PARAMETERNAME_InvoiceMode, invoiceModeEffective.name())
+				.end()
 				.addElements(hus)
 				.build();
 	}
@@ -122,7 +148,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance);
 
 		inoutGenerateResult = generateInOuts(ctx, candidates, docActionNone, createPackingLines, manualPackingMaterial,
-				true, //isShipmentDateToday:  if this is ever used, it should be on true to keep legacy
+				true, // isShipmentDateToday: if this is ever used, it should be on true to keep legacy
 				ITrx.TRXNAME_ThreadInherited);
 		Loggables.get().addLog("Generated " + inoutGenerateResult.toString());
 
@@ -276,5 +302,22 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		// TODO: make sure all shipment schedules are valid
 
 		return result.iterator();
+	}
+
+	private void generateInvoicesIfNeeded()
+	{
+		final InvoiceMode invoiceMode = getInvoiceMode();
+		if(invoiceMode == InvoiceMode.None)
+		{
+			return;
+		}
+		
+		// TODO: implement
+	}
+
+	private InvoiceMode getInvoiceMode()
+	{
+		final String invoiceModeStr = getParameters().getParameterAsString(PARAMETERNAME_InvoiceMode);
+		return !Check.isEmpty(invoiceModeStr, true) ? InvoiceMode.valueOf(invoiceModeStr) : InvoiceMode.None;
 	}
 }
