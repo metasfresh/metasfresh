@@ -343,6 +343,7 @@ public class HUTransformService
 		}
 		else
 		{
+			// TODO implement getCreatedHUs in HUListAllocationSourceDestination or chnge this logic. Currently it throws an error here in care of aggregated hus
 			// destination must be the HUProducerDestination we created further up, otherwise we would already have returned
 			childCUs = ((HUProducerDestination)destination).getCreatedHUs(); // i think there will be just one, but no need to bother
 		}
