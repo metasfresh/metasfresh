@@ -1,5 +1,7 @@
 package de.metas.inout;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -45,6 +47,8 @@ public interface IInOutDAO extends ISingletonService
 	 * @return <code>inOut</code>'s lines
 	 */
 	<T extends I_M_InOutLine> List<T> retrieveLines(I_M_InOut inOut, Class<T> inoutLineClass);
+
+	List<I_M_InOutLine> retrieveLinesForInOuts(Collection<? extends I_M_InOut> inouts);
 
 	/**
 	 * For the given <code>inOut</code> the method returns those inout lines that don't reference an order line.
