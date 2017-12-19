@@ -41,6 +41,7 @@ import org.compiere.model.I_M_Product_Category;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductMappingAware;
+import lombok.NonNull;
 
 public class ProductDAO implements IProductDAO
 {
@@ -50,6 +51,18 @@ public class ProductDAO implements IProductDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, upc)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient(ctx)
+				.create()
+				.firstOnly(I_M_Product.class);
+	}
+
+	@Override
+	@Cached(cacheName = I_M_Product.Table_Name + "#by#" + I_M_Product.COLUMNNAME_Value)
+	public I_M_Product retrieveProductByValue(@CacheCtx final Properties ctx, @NonNull final String value)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
 				.create()
