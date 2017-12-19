@@ -8,17 +8,20 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.process.WebuiHUTransformCommandResult.WebuiHUTransformCommandResultBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -338,13 +341,26 @@ public class WebuiHUTransformCommand
 	 */
 	private WebuiHUTransformCommandResult action_SplitTU_To_NewTUs(final HUEditorRow tuRow, final BigDecimal qtyTU)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 		// TODO: if qtyTU is the "maximum", then don't do anything, but show a user message
-		final I_M_HU sourceTuHU = tuRow.getM_HU();
+		final I_M_HU fromTU = tuRow.getM_HU();
+		final I_M_HU fromTopLevelHU = handlingUnitsBL.getTopLevelParent(fromTU);
 
-		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewTUs(sourceTuHU, qtyTU);
+		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewTUs(fromTU, qtyTU);
 
-		return WebuiHUTransformCommandResult.builder()
-				.huIdsToAddToView(createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()))
-				.build();
+		final WebuiHUTransformCommandResultBuilder resultBuilder = WebuiHUTransformCommandResult.builder()
+				.huIdsToAddToView(createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()));
+
+		if (handlingUnitsBL.isDestroyedRefreshFirst(fromTopLevelHU))
+		{
+			resultBuilder.huIdToRemoveFromView(fromTopLevelHU.getM_HU_ID());
+		}
+		else
+		{
+			resultBuilder.huIdChanged(fromTopLevelHU.getM_HU_ID());
+		}
+
+		return resultBuilder.build();
 	}
 }

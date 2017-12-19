@@ -35,6 +35,7 @@ public class WEBUI_PackingHUsView_AddHUsToShipperTransportationShipAndInvoice ex
 	{
 		GenerateInOutFromHU.prepareWorkpackage()
 				.hus(hus)
+				.completeShipments(true)
 				.invoiceMode(InvoiceMode.AllWithoutInvoiceSchedule)
 				.enqueue();
 	}
