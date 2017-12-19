@@ -244,10 +244,9 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 
 		final Set<Integer> huIds = huEditorRepo.convertToRecordIds(rowIdsEffective);
-		if (huIds.isEmpty())
-		{
-			throw new IllegalArgumentException("No HU rows found for " + rowIds);
-		}
+		// NOTE: accept it even if is empty. In case it's empty, we will return something like M_HU_ID in (-1)
+		// same this is happening for the others HUEditorViewBuffer implementation
+		// see https://github.com/metasfresh/metasfresh-webui-api/issues/764
 
 		final String sqlKeyColumnNameFK = I_M_HU.Table_Name + "." + I_M_HU.COLUMNNAME_M_HU_ID;
 		return sqlKeyColumnNameFK + " IN " + DB.buildSqlList(huIds);
