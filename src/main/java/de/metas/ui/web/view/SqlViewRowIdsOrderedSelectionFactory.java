@@ -251,7 +251,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sqlCount = newSqlViewSelectionQueryBuilder().buildSqlCount(sqlParams, selection.getSelectionId(), rowIds);
-		final int count = DB.executeUpdateEx(sqlCount, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		final int count = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlCount, sqlParams.toArray());
 		return count > 0;
 	}
 
