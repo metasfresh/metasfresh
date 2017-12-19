@@ -166,6 +166,7 @@ public class MaterialEventService
 
 		trxManager.getTrxListenerManager(trxName)
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerWeakly(false) // register "hard", because that's how it was before
 				.registerHandlingMethod(innerTrx -> fireEvent(event));
 	}
 

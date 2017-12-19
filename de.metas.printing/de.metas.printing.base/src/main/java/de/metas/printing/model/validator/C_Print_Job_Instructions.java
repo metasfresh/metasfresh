@@ -57,6 +57,7 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
+import lombok.NonNull;
 
 @Validator(I_C_Print_Job_Instructions.class)
 public class C_Print_Job_Instructions
@@ -177,8 +178,9 @@ public class C_Print_Job_Instructions
 	 * @param sysconfigName
 	 * @task http://dewiki908/mediawiki/index.php/09618_Bestellkontrolle_Druck_Probleme_%28106933593952%29
 	 */
-	private void scheduleTimeoutCheck(final I_C_Print_Job_Instructions jobInstructions,
-			final String sysconfigName)
+	private void scheduleTimeoutCheck(
+			@NonNull final I_C_Print_Job_Instructions jobInstructions,
+			@NonNull final String sysconfigName)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final ITaskExecutorService taskExecutorService = Services.get(ITaskExecutorService.class);

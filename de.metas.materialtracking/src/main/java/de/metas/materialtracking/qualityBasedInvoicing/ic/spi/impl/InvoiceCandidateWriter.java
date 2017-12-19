@@ -492,6 +492,7 @@ public class InvoiceCandidateWriter
 		trxManager
 				.getTrxListenerManagerOrAutoCommit(getContext().getTrxName())
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(innerTrx -> {
 
 					trxManager.run(new TrxRunnableAdapter()
@@ -606,10 +607,17 @@ public class InvoiceCandidateWriter
 		final boolean isSOTrx = false;
 
 		final int taxID = taxBL.getTax(
-				ctx, ic, taxCategoryId, ic.getM_Product_ID(), -1 // C_Charge_ID
+				ctx,
+				ic,
+				taxCategoryId,
+				ic.getM_Product_ID(),
+				-1 // C_Charge_ID
 				, date // bill date
 				, date // ship date
-				, ic.getAD_Org_ID(), warehouse, ic.getBill_Location_ID(), -1 // shipPartnerLocation
+				, ic.getAD_Org_ID(),
+				warehouse,
+				ic.getBill_Location_ID(),
+				-1 // shipPartnerLocation
 				, isSOTrx, trxName);
 		ic.setC_Tax_ID(taxID);
 	}

@@ -208,6 +208,7 @@ public class ThreadPoolQueueProcessorTest extends QueueProcessorTestBase
 		// Make sure second commit will fail and execute it
 		trx.getTrxListenerManager()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(innerTrx -> {
 					throw new AdempiereException("Test fail on after commit: " + innerTrx);
 				});

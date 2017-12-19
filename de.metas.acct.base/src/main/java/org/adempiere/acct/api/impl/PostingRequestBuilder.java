@@ -587,6 +587,7 @@ import lombok.NonNull;
 		{
 			trxManager.getTrxListenerManager(trxName)
 					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.invokeMethodJustOnce(false) // invoking the method on *every* commit, because that's how it was and I can't check now if it's really needed
 					.registerHandlingMethod(innerTrx -> postRunnable.run());
 
 			// TODO figure out what shall be the posting status in this case,

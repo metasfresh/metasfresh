@@ -132,6 +132,8 @@ public final class PMMRfQEventListener extends RfQEventListenerAdapter
 			Services.get(ITrxManager.class)
 					.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.registerWeakly(false) // register "hard", because that's how it was before
+					.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 					.registerHandlingMethod(innerTrx -> {
 
 						final IWebuiPush webuiPush = Services.get(IWebuiPush.class);

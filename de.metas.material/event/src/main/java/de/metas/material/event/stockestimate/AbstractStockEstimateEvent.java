@@ -36,11 +36,8 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = false)
 @Getter
 @ToString
-public abstract class AbstractStockCountEvent implements MaterialEvent
+public abstract class AbstractStockEstimateEvent implements MaterialEvent
 {
-	// TODO: fire this event for Freq_QtyOnHand_Lines
-
-
 	private final EventDescriptor eventDescriptor;
 
 	private final ProductDescriptor productDescriptor;
@@ -52,7 +49,7 @@ public abstract class AbstractStockCountEvent implements MaterialEvent
 
 	private final BigDecimal quantity;
 
-	public AbstractStockCountEvent(
+	public AbstractStockEstimateEvent(
 			@NonNull final EventDescriptor eventDescriptor,
 			@NonNull final ProductDescriptor productDescriptor,
 			@NonNull final Date date,

@@ -17,9 +17,11 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.FromDataPoints;
@@ -72,6 +74,9 @@ import mockit.Mocked;
 @RunWith(Theories.class)
 public class HUTransformServiceTests
 {
+	@Rule
+	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
+
 	/**
 	 * This dataPoint shall enable us to test with both values of {@code isOwnPackingMaterials}.
 	 */
@@ -825,9 +830,9 @@ public class HUTransformServiceTests
 	/**
 	 * Verifies the splitting off an aggregate HU with a non-int storage value.
 	 * If this test shows problems, also see {@link LUTUProducerDestinationLoadTests#testAggregateSingleLUFullyLoaded_non_int()}.
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1237, but this even worked before the issue came up.
-	 * 
+	 *
 	 */
 	@Test
 	public void testAggregateSingleLUFullyLoaded_non_int()

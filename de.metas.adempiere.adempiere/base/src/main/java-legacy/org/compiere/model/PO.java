@@ -3339,6 +3339,8 @@ public abstract class PO
 
 		trx.getTrxListenerManager()
 				.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerWeakly(true) // weak because in case the object is not referenced anymore there is no point to update it's status
 				.registerHandlingMethod(transaction -> {
 
 					set_ID(idOld); // revert ID

@@ -524,7 +524,11 @@ import lombok.NonNull;
 							.add("timing", timing)
 							.toString())
 					.invokeMethodJustOnce(true)
-					.registerHandlingMethod(transaction -> InterfaceWrapperHelper.setTrxName(po, ITrx.TRXNAME_ThreadInherited));
+					.registerHandlingMethod(transaction -> {
+
+						executeNow(po, pointcut, timing);
+						InterfaceWrapperHelper.setTrxName(po, ITrx.TRXNAME_ThreadInherited);
+					});
 		}
 	}
 

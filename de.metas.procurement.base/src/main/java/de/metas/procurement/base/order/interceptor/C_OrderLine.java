@@ -133,6 +133,7 @@ public class C_OrderLine
 		final ITrxListenerManager trxListenerManager = Services.get(ITrxManager.class).getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited);
 		trxListenerManager
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerWeakly(false) // register "hard", because that's how it was before
 				.registerHandlingMethod(innerTrx -> {
 					Services.get(IPMMBalanceChangeEventProcessor.class).addEvent(event);
 					logger.debug("Event sent: {}", event);

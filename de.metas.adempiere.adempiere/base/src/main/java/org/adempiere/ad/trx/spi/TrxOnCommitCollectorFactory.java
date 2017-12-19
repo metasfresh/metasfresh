@@ -88,11 +88,13 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 					// Register a listener which will process the collector when the transaction is committed.
 					trx.getTrxListenerManager()
 							.newEventListener(TrxEventTiming.AFTER_COMMIT)
+							.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 							.registerHandlingMethod(innerTrx -> {
+
 								// Get the transaction level collector.
 								// The collector is removed to avoid double processing.
 								// If there is no collector, do nothing.
-								final CollectorType innerCollector = trx.setProperty(trxProperyName, null);
+								final CollectorType innerCollector = innerTrx.setProperty(trxProperyName, null);
 								if (collector == null)
 								{
 									return;
@@ -104,11 +106,13 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 
 					trx.getTrxListenerManager()
 							.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
+							.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 							.registerHandlingMethod(innerTrx -> {
+
 								// Get the transaction level collector.
 								// The collector is removed to avoid double processing.
 								// If there is no collector, do nothing.
-								final CollectorType innerCollector = trx.setProperty(trxProperyName, null);
+								final CollectorType innerCollector = innerTrx.setProperty(trxProperyName, null);
 								if (innerCollector == null)
 								{
 									return;

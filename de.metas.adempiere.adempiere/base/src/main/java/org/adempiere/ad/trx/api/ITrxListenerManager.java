@@ -82,7 +82,7 @@ public interface ITrxListenerManager
 		@Getter
 		private final TrxEventTiming timing;
 		@Getter
-		private boolean registerWeakly = true;
+		private boolean registerWeakly = false;
 		@Getter
 		private boolean invokeMethodJustOnce = true;
 		@Getter

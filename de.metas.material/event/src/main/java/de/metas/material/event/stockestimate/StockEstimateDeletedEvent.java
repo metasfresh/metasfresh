@@ -36,7 +36,7 @@ import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class StockEstimateDeletedEvent extends AbstractStockCountEvent
+public class StockEstimateDeletedEvent extends AbstractStockEstimateEvent
 {
 	public static final String TYPE = "StockCountDeletedEvent";
 

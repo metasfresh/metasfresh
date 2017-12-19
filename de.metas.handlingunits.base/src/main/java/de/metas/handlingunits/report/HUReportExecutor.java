@@ -175,10 +175,12 @@ public class HUReportExecutor
 
 		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(innerTrx -> huReportTrxListener.afterCommit(innerTrx));
 
 		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 				.newEventListener(TrxEventTiming.AFTER_CLOSE)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(innerTrx -> huReportTrxListener.afterClose(innerTrx));
 
 		huReportTrxListener.setListenerWasRegistered();

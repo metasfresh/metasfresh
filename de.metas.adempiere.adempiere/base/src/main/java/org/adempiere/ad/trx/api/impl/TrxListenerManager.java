@@ -55,7 +55,7 @@ public class TrxListenerManager implements ITrxListenerManager
 	/**
 	 * Never contains {@code null} or {@link TrxEventTiming#UNSPECIFIED}.
 	 */
-	private final AtomicReference<TrxEventTiming> runningWithinTrxEventInfo = new AtomicReference<>(TrxEventTiming.NONE);
+	private final AtomicReference<TrxEventTiming> runningWithinTrxEventTiming = new AtomicReference<>(TrxEventTiming.NONE);
 
 	private static enum OnError
 	{
@@ -95,14 +95,14 @@ public class TrxListenerManager implements ITrxListenerManager
 	private void verifyEventTiming(@NonNull final RegisterListenerRequest listener)
 	{
 		final TrxEventTiming eventTimingOfListener = listener.getTiming();
-		final boolean listenerHasProblematicTiming = !eventTimingOfListener.canBeRegisteredWithinOtherTiming(runningWithinTrxEventInfo.get());
+		final boolean listenerHasProblematicTiming = !eventTimingOfListener.canBeRegisteredWithinOtherTiming(runningWithinTrxEventTiming.get());
 
 		if (listenerHasProblematicTiming)
 		{
 			final String message = StringUtils.formatMessage("Registering another listener within a listener's event handling code might be a development error and that other listener might not be fired."
 					+ "\n current trx event timing={}"
 					+ "\n listener that is registerd={}",
-					runningWithinTrxEventInfo.get(),
+					runningWithinTrxEventTiming.get(),
 					listener);
 
 			new AdempiereException(message).throwIfDeveloperModeOrLogWarningElse(logger);
@@ -147,7 +147,7 @@ public class TrxListenerManager implements ITrxListenerManager
 			return;
 		}
 
-		runningWithinTrxEventInfo.set(timingInfo);
+		runningWithinTrxEventTiming.set(timingInfo);
 		try
 		{
 			listeners.hardList().stream()
@@ -157,7 +157,7 @@ public class TrxListenerManager implements ITrxListenerManager
 		}
 		finally
 		{
-			runningWithinTrxEventInfo.set(TrxEventTiming.NONE);
+			runningWithinTrxEventTiming.set(TrxEventTiming.NONE);
 		}
 	}
 

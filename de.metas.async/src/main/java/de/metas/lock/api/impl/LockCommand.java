@@ -43,6 +43,7 @@ import de.metas.lock.api.LockOwner;
 import de.metas.lock.exceptions.LockAlreadyClosedException;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.lock.spi.ILockDatabase;
+import lombok.NonNull;
 
 /* package */class LockCommand implements ILockCommand
 {
@@ -73,11 +74,8 @@ import de.metas.lock.spi.ILockDatabase;
 	/**
 	 * Creates a lock change command
 	 */
-	public LockCommand(final Lock parentLock)
+	public LockCommand(@NonNull final Lock parentLock)
 	{
-		super();
-
-		Check.assumeNotNull(parentLock, "parentLock not null");
 		this._parentLock = parentLock;
 
 		this.lockDatabase = parentLock.getLockDatabase();
@@ -116,6 +114,7 @@ import de.metas.lock.spi.ILockDatabase;
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.getTrxListenerManagerOrAutoCommit(trxName)
 				.newEventListener(TrxEventTiming.BEFORE_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(innerTrx -> {
 
 					try

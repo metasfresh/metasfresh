@@ -13,21 +13,21 @@ package de.metas.inoutcandidate.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
@@ -41,7 +41,7 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 	private final boolean storeInOuts;
 
 	private int inoutCount = 0;
-	private final List<I_M_InOut> inouts = new ArrayList<I_M_InOut>();
+	private final List<I_M_InOut> inouts = new ArrayList<>();
 	@ToStringBuilder(skip = true)
 	private final List<I_M_InOut> inoutsRO = Collections.unmodifiableList(inouts);
 
@@ -77,6 +77,10 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 	@Override
 	public List<I_M_InOut> getInOuts()
 	{
+		if (!storeInOuts)
+		{
+			throw new AdempiereException("Cannot provide the generated shipments because the result was not configured to retain them");
+		}
 		return inoutsRO;
 	}
 

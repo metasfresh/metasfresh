@@ -8,7 +8,6 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
