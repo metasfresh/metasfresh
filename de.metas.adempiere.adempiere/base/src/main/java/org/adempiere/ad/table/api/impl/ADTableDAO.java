@@ -247,7 +247,7 @@ public class ADTableDAO implements IADTableDAO
 				.addOnlyContextClient()
 				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, table.getAD_Table_ID())
 				.orderBy()
-				.addColumnAscending(I_AD_Column.COLUMNNAME_AD_Table_ID)
+				.addColumnAscending(I_AD_Column.COLUMNNAME_AD_Column_ID)
 				.endOrderBy()
 				.create()
 				.list();
