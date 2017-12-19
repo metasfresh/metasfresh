@@ -1,26 +1,15 @@
 package de.metas.ui.web.pickingslotsClearing.process;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.i18n.IMsgBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
-import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.handlingunits.HUEditorRowFilter;
-import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 
 /*
@@ -45,17 +34,15 @@ import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
  * #L%
  */
 
-public class WEBUI_PackingHUsView_AddHUsToShipperTransportation extends HUEditorProcessTemplate implements IProcessPrecondition
+public class WEBUI_PackingHUsView_AddHUsToShipperTransportation extends PackingHUsViewBasedProcess implements IProcessPrecondition
 {
 	private final transient IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
-	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Param(parameterName = I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, mandatory = true)
 	private int shipperTransportationId;
 
 	@Override
-	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
+	protected final ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		if (getSelectedRowIds().isEmpty())
 		{
@@ -74,7 +61,7 @@ public class WEBUI_PackingHUsView_AddHUsToShipperTransportation extends HUEditor
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected final String doIt() throws Exception
 	{
 		final List<I_M_HU> hus = retrieveEligibleHUs();
 		huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, hus);
@@ -82,8 +69,13 @@ public class WEBUI_PackingHUsView_AddHUsToShipperTransportation extends HUEditor
 		return MSG_OK;
 	}
 
+	protected void onHUsAddedToShipperTransportation(final List<I_M_HU> hus)
+	{
+		// nothing on this level
+	}
+
 	@Override
-	protected void postProcess(final boolean success)
+	protected final void postProcess(final boolean success)
 	{
 		if (!success)
 		{
@@ -92,29 +84,4 @@ public class WEBUI_PackingHUsView_AddHUsToShipperTransportation extends HUEditor
 
 		getView().invalidateAll();
 	}
-
-	private List<I_M_HU> retrieveEligibleHUs()
-	{
-		final Set<Integer> huIds = streamEligibleHURows()
-				.map(HUEditorRow::getM_HU_ID)
-				.collect(ImmutableSet.toImmutableSet());
-		Check.assumeNotEmpty(huIds, "huIds is not empty"); // shall not happen
-
-		final List<I_M_HU> hus = queryBL
-				.createQueryBuilder(I_M_HU.class)
-				.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list(I_M_HU.class);
-		Check.assumeNotEmpty(hus, "hus is not empty"); // shall not happen
-
-		return hus;
-
-	}
-
-	private Stream<HUEditorRow> streamEligibleHURows()
-	{
-		return streamSelectedRows(HUEditorRowFilter.select(Select.ONLY_TOPLEVEL));
-	}
-
 }
