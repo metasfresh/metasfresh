@@ -2,20 +2,24 @@
 package de.metas.ui.web.handlingunits.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.api.ISerialNoDAO;
 import org.adempiere.model.IContextAware;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 
@@ -24,15 +28,14 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
@@ -66,7 +69,6 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate implements IProcessPrecondition
 {
 	private static transient IHandlingUnitsBL huBL = Services.get(IHandlingUnitsBL.class);
-	private static transient IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private static final String PARAM_SerialNo = "SerialNo";
 	@Param(parameterName = PARAM_SerialNo, mandatory = true)
@@ -98,21 +100,33 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 
 		final String serialNumbersString = replaceAllSeparatorsWithComma(p_SerialNo);
 		serialNumbers = splitIntoSerialNumbers(serialNumbersString);
 
-		final ImmutableList<HUEditorRow> nonAggregatedCURows = streamSelectedRows(HUEditorRowFilter.select(Select.ALL)).filter(huRow -> !isAggregateHU(huRow)).collect(ImmutableList.toImmutableList());
+		final ImmutableList<HUEditorRow> selectedCuRows = streamSelectedRows(HUEditorRowFilter.select(Select.ALL))
+				.sorted(new Comparator<HUEditorRow>()
+				{
+					@Override
+					public int compare(final HUEditorRow o1, final HUEditorRow o2)
+					{
+						return !isAggregateHU(o1) ? -1 : 1;
+					}
+				}).collect(ImmutableList.toImmutableList());
 
-		for (HUEditorRow nonAggregatedCURow : nonAggregatedCURows)
+		// filter(huRow -> !isAggregateHU(huRow)).sorted(!isAggregateHU(huRow))collect(ImmutableList.toImmutableList());
+
+		for (HUEditorRow selectedCuRow : selectedCuRows)
 		{
-			final int qtyCU = nonAggregatedCURow.getQtyCU().intValueExact();
+
+			final int qtyCU = selectedCuRow.getQtyCU().intValueExact();
 
 			if (qtyCU == 1)
 			{
-				assignSerialNoToCU(nonAggregatedCURow.getM_HU(), serialNumbers.get(0));
+				assignSerialNumberToCU(selectedCuRow.getM_HU(), serialNumbers.get(0));
 				serialNumbers.remove(0);
 			}
 			else
@@ -120,32 +134,7 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 				final int serialNoCount = serialNumbers.size();
 				final int cusToCreateNo = qtyCU < serialNoCount ? qtyCU : serialNoCount;
 
-				final List<I_M_HU> createdCus = createNewCus(nonAggregatedCURow, cusToCreateNo);
-				assignSerialNumbersToCUs(createdCus);
-
-			}
-		}
-		// createNewCus(cuRow.getQtyCU());
-		//
-		// final int nonAggregatedCUsNo = nonAggregatedCUs.size();
-		//
-		final ImmutableList<HUEditorRow> aggregatedCURows = streamSelectedRows(HUEditorRowFilter.select(Select.ALL)).filter(huRow -> isAggregateHU(huRow)).collect(ImmutableList.toImmutableList());
-
-		for (HUEditorRow aggregatedCURow : aggregatedCURows)
-		{
-			final int qtyCU = aggregatedCURow.getQtyCU().intValueExact();
-
-			if (qtyCU == 1)
-			{
-				assignSerialNoToCU(aggregatedCURow.getM_HU(), serialNumbers.get(0));
-				serialNumbers.remove(0);
-			}
-			else
-			{
-				final int serialNoCount = serialNumbers.size();
-				final int cusToCreateNo = qtyCU < serialNoCount ? qtyCU : serialNoCount;
-
-				final List<I_M_HU> createdCus = createNewCus(aggregatedCURow, cusToCreateNo);
+				final List<I_M_HU> createdCus = createNewCus(selectedCuRow, cusToCreateNo);
 				assignSerialNumbersToCUs(createdCus);
 
 			}
@@ -173,15 +162,16 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 			return Collections.emptyList();
 		}
 
+		final HUEditorRow parentRow = getParentHURow(cuRow);
+
 		final List<I_M_HU> createdCUs = new ArrayList<>();
 
 		for (int i = 0; i < cuNumber; i++)
 		{
-			final I_M_HU_Item parentTUItem = huDAO.retrieveParentItem(cuRow.getM_HU());
 
 			final WebuiHUTransformParameters parameters;
 
-			if (parentTUItem == null)
+			if (parentRow == null)
 			{
 				parameters = WebuiHUTransformParameters.builder()
 						.actionType(ActionType.CU_To_NewCU)
@@ -190,17 +180,18 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 			}
 			else
 			{
-
-				final HUEditorRow parentRow = getParentHURow(cuRow); // TODO
+				final I_M_HU parentHU;
 
 				if (isAggregateHU(parentRow))
 				{
-					createNonAggregatedTU(parentRow);
+					parentHU = createNonAggregatedTU(parentRow);
 
 				}
-				
-				final I_M_HU parentHU = getParentHURow(cuRow).getM_HU();
-				
+				else
+				{
+					parentHU = parentRow.getM_HU();
+				}
+
 				parameters = WebuiHUTransformParameters.builder()
 						.actionType(ActionType.CU_To_ExistingTU)
 						.tuHU(parentHU)
@@ -214,9 +205,13 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 					.parameters(parameters)
 					.build();
 
-			final WebuiHUTransformCommandResult result = command.execute();
+			final IMutable<WebuiHUTransformCommandResult> result = new Mutable<>();
+			
+			Services.get(ITrxManager.class).run(() -> {
+				result.setValue(command.execute());
+			});
 
-			final ImmutableSet<Integer> huIdsToAddToView = result.getHuIdsToAddToView();
+			ImmutableSet<Integer> huIdsToAddToView = result.getValue().getHuIdsToAddToView();
 
 			for (int huId : huIdsToAddToView)
 			{
@@ -230,14 +225,13 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 
 	}
 
-	private void createNonAggregatedTU(final HUEditorRow tuRow)
+	private I_M_HU createNonAggregatedTU(final HUEditorRow tuRow)
 	{
-		final I_M_HU_Item parentTUItem = huDAO.retrieveParentItem(tuRow.getM_HU());
 
 		final WebuiHUTransformParameters parentParameters = WebuiHUTransformParameters.builder()
 				.actionType(ActionType.TU_To_NewTUs)
-				.qtyCU(BigDecimal.ONE)
-				.tuHU(parentTUItem.getM_HU())
+				.qtyTU(BigDecimal.ONE) 
+				.tuHU(tuRow.getM_HU())
 				.build();
 
 		final WebuiHUTransformCommand command = WebuiHUTransformCommand.builder()
@@ -245,20 +239,23 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 				.parameters(parentParameters)
 				.build();
 
-		final WebuiHUTransformCommandResult result = command.execute();
-		ImmutableSet<Integer> huIdsToAddToView = result.getHuIdsToAddToView();
+		final IMutable<WebuiHUTransformCommandResult> result = new Mutable<>();
+		
+		Services.get(ITrxManager.class).run(() -> {
+			result.setValue(command.execute());
+		});
 
-		// parentHU = create(Env.getCtx(),huIdsToAddToView.asList().get(0), I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
+		ImmutableSet<Integer> huIdsToAddToView = result.getValue().getHuIdsToAddToView();
 
-		invalidateView();
+		final I_M_HU newParentHU = create(Env.getCtx(), huIdsToAddToView.asList().get(0), I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
+
+		return newParentHU;
 
 	}
 
 	private HUEditorRow getParentHURow(final HUEditorRow cuRow)
 	{
-		final I_M_HU_Item parentTUItem = huDAO.retrieveParentItem(cuRow.getM_HU());
-
-		return null;
+		return getView().getParentRowByChildId(cuRow.getId());
 	}
 
 	private boolean isAggregateHU(final HUEditorRow huRow)
@@ -274,14 +271,19 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 
 		for (int i = 0; i < numberOfCUs; i++)
 		{
-			assignSerialNoToCU(cus.get(i), serialNumbers.get(0));
+			if (Check.isEmpty(serialNumbers))
+			{
+				return;
+			}
+
+			assignSerialNumberToCU(cus.get(i), serialNumbers.get(0));
 			serialNumbers.remove(0);
 		}
 	}
 
-	private void assignSerialNoToCU(final I_M_HU hu, final String serialNo)
+	private void assignSerialNumberToCU(final I_M_HU hu, final String serialNo)
 	{
-		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
+		final IContextAware ctxAware = getContextAware(hu);
 
 		final IHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctxAware);
 
