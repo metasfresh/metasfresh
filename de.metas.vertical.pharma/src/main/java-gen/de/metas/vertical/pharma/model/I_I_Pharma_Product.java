@@ -71,7 +71,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A00ATYP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -80,7 +80,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A00ATYP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -232,7 +232,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A00PGEINH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -241,7 +241,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A00PGEINH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -370,7 +370,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A00WGA.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -379,7 +379,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A00WGA.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -991,7 +991,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02130A18.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1000,7 +1000,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02130A18.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1014,7 +1014,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02130A1A8.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1023,7 +1023,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02130A1A8.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1037,7 +1037,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A0247AMG.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1046,7 +1046,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A0247AMG.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1060,7 +1060,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A0252B.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1069,7 +1069,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A0252B.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1106,7 +1106,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02ANTHRO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1115,7 +1115,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02ANTHRO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1152,7 +1152,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02AUSNREI.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1161,7 +1161,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02AUSNREI.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1175,7 +1175,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02BATTG.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1184,7 +1184,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02BATTG.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1198,7 +1198,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02BIOSIEG.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1207,7 +1207,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02BIOSIEG.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1221,7 +1221,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02BIOTECH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1230,7 +1230,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02BIOTECH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1244,7 +1244,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02BIOZID.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1253,7 +1253,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02BIOZID.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1313,7 +1313,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02DIAET.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1322,7 +1322,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02DIAET.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1382,7 +1382,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02ELEKEAR.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1391,7 +1391,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02ELEKEAR.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1405,7 +1405,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02ELEKTRO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1414,7 +1414,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02ELEKTRO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1428,7 +1428,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02EXPLOS.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1437,7 +1437,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02EXPLOS.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1474,7 +1474,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02GENER.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1483,7 +1483,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02GENER.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1520,7 +1520,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02HOMOEO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1529,7 +1529,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02HOMOEO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1543,7 +1543,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02KOSMET.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1552,7 +1552,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02KOSMET.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1566,7 +1566,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02LEBENSM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1575,7 +1575,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02LEBENSM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1589,7 +1589,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02LIFSTYL.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1598,7 +1598,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02LIFSTYL.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1635,7 +1635,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02MP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1644,7 +1644,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02MP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1681,7 +1681,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02NEM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1690,7 +1690,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02NEM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1704,7 +1704,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02PHYTO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1713,7 +1713,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02PHYTO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1727,7 +1727,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02PSM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1736,7 +1736,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02PSM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1819,7 +1819,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02SDB.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1828,7 +1828,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02SDB.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1842,7 +1842,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02STERIL.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1851,7 +1851,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02STERIL.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1911,7 +1911,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02TREZEP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1920,7 +1920,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02TREZEP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1980,7 +1980,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02WIRKSTO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1989,7 +1989,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02WIRKSTO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2095,7 +2095,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A03VWGAPO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2104,7 +2104,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A03VWGAPO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2118,7 +2118,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A03VWGGH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2127,7 +2127,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A03VWGGH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2141,7 +2141,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A03VWGKAP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2150,7 +2150,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A03VWGKAP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2164,7 +2164,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A03VWGSEH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2173,7 +2173,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A03VWGSEH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2325,7 +2325,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A04VPART.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2334,7 +2334,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A04VPART.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2716,7 +2716,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A09THGP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2725,7 +2725,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A09THGP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2762,7 +2762,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A11VERIFIZ.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2771,7 +2771,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A11VERIFIZ.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
