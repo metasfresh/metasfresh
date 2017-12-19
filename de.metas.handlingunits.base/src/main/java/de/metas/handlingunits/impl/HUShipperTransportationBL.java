@@ -163,7 +163,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			throw new AdempiereException("@NotFound@ @M_HU_ID@ @Locked@");
 		}
 
-		GenerateInOutFromHU.enqueueWorkpackage(ctx, hus);
+		GenerateInOutFromHU.enqueueWorkpackage(hus);
 	}
 
 	@Override
