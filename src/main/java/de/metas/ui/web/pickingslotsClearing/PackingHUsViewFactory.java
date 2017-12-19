@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.JavaProcess;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorView;
@@ -153,7 +154,7 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 		return huEditorViewFactory.createView(request);
 	}
 
-	private RelatedProcessDescriptor createProcessDescriptor(Class<WEBUI_PackingHUsView_AddHUsToShipperTransportation> processClass)
+	private RelatedProcessDescriptor createProcessDescriptor(Class<? extends JavaProcess> processClass)
 	{
 		return RelatedProcessDescriptor.builder()
 				.processId(adProcessDAO.retrieveProcessIdByClass(processClass))
