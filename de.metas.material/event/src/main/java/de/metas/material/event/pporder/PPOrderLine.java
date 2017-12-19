@@ -1,7 +1,5 @@
 package de.metas.material.event.pporder;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
-
 import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -84,7 +82,9 @@ public class PPOrderLine
 	{
 		this.description = description;
 
-		this.productBomLineId = checkIdGreaterThanZero("productBomLineId", productBomLineId);
+		// don't assert that the ID is greater that zero, because this might not be the case with "handmade" PPOrders
+		this.productBomLineId = productBomLineId;
+
 		this.ppOrderLineId = ppOrderLineId;
 		this.receipt = receipt;
 
