@@ -255,7 +255,7 @@ public class WebuiHUTransformCommand
 		return WebuiHUTransformCommandResult.builder()
 				.huIdChanged(cuRow.getM_HU_ID())
 				.huIdChanged(tuHU.getM_HU_ID())
-				.huIdsToAddToView(createdCUs.stream().filter(hu -> hu.getM_HU_ID()).collect(ImmutableList.toImmutableList()))
+				.huIdsToAddToView(createdCUs.stream().map(hu -> hu.getM_HU_ID()).collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 

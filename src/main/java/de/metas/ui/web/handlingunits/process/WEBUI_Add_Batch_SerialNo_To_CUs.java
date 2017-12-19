@@ -82,7 +82,7 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
 
-		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
 		if (selectedRowIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
@@ -155,6 +155,17 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 
 	}
 
+	@Override
+	protected void postProcess(boolean success)
+	{
+		if (!success)
+		{
+			return;
+		}
+
+		invalidateView();
+	}
+
 	private List<I_M_HU> createNewCus(final HUEditorRow cuRow, final int cuNumber)
 	{
 		if (cuNumber == 0)
@@ -166,11 +177,11 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 
 		for (int i = 0; i < cuNumber; i++)
 		{
-			final I_M_HU_Item parentTU = huDAO.retrieveParentItem(cuRow.getM_HU());
+			final I_M_HU_Item parentTUItem = huDAO.retrieveParentItem(cuRow.getM_HU());
 
 			final WebuiHUTransformParameters parameters;
 
-			if (parentTU == null)
+			if (parentTUItem == null)
 			{
 				parameters = WebuiHUTransformParameters.builder()
 						.actionType(ActionType.CU_To_NewCU)
@@ -179,10 +190,21 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 			}
 			else
 			{
+
+				final HUEditorRow parentRow = getParentHURow(cuRow); // TODO
+
+				if (isAggregateHU(parentRow))
+				{
+					createNonAggregatedTU(parentRow);
+
+				}
+				
+				final I_M_HU parentHU = getParentHURow(cuRow).getM_HU();
+				
 				parameters = WebuiHUTransformParameters.builder()
 						.actionType(ActionType.CU_To_ExistingTU)
+						.tuHU(parentHU)
 						.qtyCU(BigDecimal.ONE)
-						.tuHU(parentTU.getM_HU())
 						.build();
 
 			}
@@ -208,6 +230,37 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 
 	}
 
+	private void createNonAggregatedTU(final HUEditorRow tuRow)
+	{
+		final I_M_HU_Item parentTUItem = huDAO.retrieveParentItem(tuRow.getM_HU());
+
+		final WebuiHUTransformParameters parentParameters = WebuiHUTransformParameters.builder()
+				.actionType(ActionType.TU_To_NewTUs)
+				.qtyCU(BigDecimal.ONE)
+				.tuHU(parentTUItem.getM_HU())
+				.build();
+
+		final WebuiHUTransformCommand command = WebuiHUTransformCommand.builder()
+				.selectedRow(tuRow)
+				.parameters(parentParameters)
+				.build();
+
+		final WebuiHUTransformCommandResult result = command.execute();
+		ImmutableSet<Integer> huIdsToAddToView = result.getHuIdsToAddToView();
+
+		// parentHU = create(Env.getCtx(),huIdsToAddToView.asList().get(0), I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
+
+		invalidateView();
+
+	}
+
+	private HUEditorRow getParentHURow(final HUEditorRow cuRow)
+	{
+		final I_M_HU_Item parentTUItem = huDAO.retrieveParentItem(cuRow.getM_HU());
+
+		return null;
+	}
+
 	private boolean isAggregateHU(final HUEditorRow huRow)
 	{
 		final I_M_HU hu = huRow.getM_HU();
@@ -215,16 +268,15 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		return huBL.isAggregateHU(hu);
 	}
 
-	private void assignSerialNumbersToCUs(final List<I_M_HU> createdCus)
+	private void assignSerialNumbersToCUs(final List<I_M_HU> cus)
 	{
-		final int numberOfCUs = createdCus.size();
+		final int numberOfCUs = cus.size();
 
 		for (int i = 0; i < numberOfCUs; i++)
 		{
-			assignSerialNoToCU(createdCus.get(i), serialNumbers.get(0));
+			assignSerialNoToCU(cus.get(i), serialNumbers.get(0));
 			serialNumbers.remove(0);
 		}
-
 	}
 
 	private void assignSerialNoToCU(final I_M_HU hu, final String serialNo)
