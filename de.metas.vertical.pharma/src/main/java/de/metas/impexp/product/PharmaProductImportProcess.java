@@ -1,4 +1,4 @@
-package org.adempiere.impexp.product;
+package de.metas.impexp.product;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -11,6 +11,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
+import org.adempiere.impexp.product.MProductImportTableSqlUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -201,6 +202,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		if (isPrescription != null)
 		{
 			product.setIsPrescription(isPrescription);
+
 		}
 		final Boolean isNarcotic = extractIsNarcotic(importRecord);
 		if (isNarcotic != null)

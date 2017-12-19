@@ -1,4 +1,4 @@
-package org.adempiere.impexp.process;
+package de.metas.impexp.process;
 
 import org.compiere.process.AbstractImportJavaProcess;
 

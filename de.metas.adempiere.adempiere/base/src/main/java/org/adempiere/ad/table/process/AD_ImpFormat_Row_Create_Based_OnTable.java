@@ -1,4 +1,4 @@
-package org.adempiere.ad.table.api.impl;
+package org.adempiere.ad.table.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;

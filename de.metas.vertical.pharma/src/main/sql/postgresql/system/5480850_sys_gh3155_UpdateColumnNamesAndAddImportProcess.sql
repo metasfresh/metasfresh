@@ -81,3 +81,10 @@ INSERT INTO t_alter_column values('i_pharma_product','I_IsImported','CHAR(1)',nu
 ALTER TABLE i_pharma_product DROP CONSTRAINT i_pharma_product_i_isimported_check;
 
 
+-- 2017-12-19T11:31:35.632
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Classname='de.metas.impexp.process.ImportPharmaProduct',Updated=TO_TIMESTAMP('2017-12-19 11:31:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540903
+;
+
+
+
