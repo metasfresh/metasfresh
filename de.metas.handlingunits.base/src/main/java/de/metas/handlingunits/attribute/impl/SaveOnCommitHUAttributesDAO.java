@@ -10,25 +10,23 @@ package de.metas.handlingunits.attribute.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.ITrxListener;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -47,30 +45,8 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final HUAttributesDAO dbHUAttributesDAO;
 
-	/**
-	 * Before commiting the transaction, this listener makes sure we are also saving all storages
-	 */
-	private static final transient ITrxListener SaveOnCommitHUAttributesDAOTrxListener = new TrxListenerAdapter()
-	{
-		@Override
-		public void beforeCommit(final ITrx trx)
-		{
-			// Get and remove the save-decoupled HU Storage DAO
-			final SaveDecoupledHUAttributesDAO huAttributesDAO = trx.setProperty(TRX_PROPERTY_SaveDecoupledHUAttributesDAO, null);
-			if (huAttributesDAO == null)
-			{
-				// shall not happen, but silently ignore it
-				return;
-			}
-
-			// Save everything to database
-			huAttributesDAO.flush();
-		}
-	};
-	
 	public SaveOnCommitHUAttributesDAO()
 	{
-		super();
 		dbHUAttributesDAO = HUAttributesDAO.instance;
 	}
 
@@ -90,10 +66,26 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 			{
 				// Create a new attributes storage
 				final SaveDecoupledHUAttributesDAO huAttributesDAO = new SaveDecoupledHUAttributesDAO(dbHUAttributesDAO);
-				
-				// Listen this transaction for COMMIT events  
-				trx.getTrxListenerManager().registerListener(SaveOnCommitHUAttributesDAOTrxListener);
-				
+
+				// Listen this transaction for COMMIT events
+				// Before committing the transaction, this listener makes sure we are also saving all storages
+				trx.getTrxListenerManager()
+						.newEventListener(TrxEventTiming.BEFORE_COMMIT)
+						.registerHandlingMethod(innerTrx -> {
+
+							// Get and remove the save-decoupled HU Storage DAO
+							final SaveDecoupledHUAttributesDAO innerHuAttributesDAO = innerTrx.setProperty(TRX_PROPERTY_SaveDecoupledHUAttributesDAO, null);
+							if (innerHuAttributesDAO == null)
+							{
+								// shall not happen, because this handlerMetghod is invoked only once, 
+								// but silently ignore it
+								return;
+							}
+
+							// Save everything to database
+							innerHuAttributesDAO.flush();
+						});
+
 				return huAttributesDAO;
 			}
 		});
@@ -156,7 +148,7 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 	public void flushAndClearCache()
 	{
 		// NOTE: clearing the underlying cache is not supported because in order to decide with which delegate we need to work,
-		// we need the HU or at least which is the transaction. 
+		// we need the HU or at least which is the transaction.
 	}
 
 }

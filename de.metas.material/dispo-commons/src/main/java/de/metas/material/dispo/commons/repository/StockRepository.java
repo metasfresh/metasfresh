@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -101,21 +103,24 @@ public class StockRepository
 		final MemoizingFunction<Date, Timestamp> maxDateLessOrEqualFunction //
 				= Functions.memoizing(date -> retrieveMaxDateLessOrEqual(date));
 
-		return multiQuery.getQueries()
-				.stream()
-				.map(stockQuery -> {
+		final Function<? super StockQuery, ? extends StockQuery> setStockQueryDataParameter = //
+				stockQuery -> {
 					final Timestamp latestDateOrNull = maxDateLessOrEqualFunction.apply(stockQuery.getDate());
 					if (latestDateOrNull == null)
 					{
 						return null;
 					}
 					return stockQuery.withDate(latestDateOrNull);
-				})
-				.filter(Predicates.notNull())
-				.map(stockQuery -> StockRepositorySqlHelper.createDBQueryForStockQuery(stockQuery)
+				};
+
+		final Function<? super StockQuery, ? extends IQuery<I_MD_Candidate_Stock_v>> createDbQueryForSingleStockQuery = //
+				stockQuery -> StockRepositorySqlHelper
+						.createDBQueryForStockQuery(stockQuery)
 						.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
-						.create())
-				.reduce((previousDBQuery, dbQuery) -> {
+						.create();
+
+		final BinaryOperator<IQuery<I_MD_Candidate_Stock_v>> allQueriesToOneUnion = //
+				(previousDBQuery, dbQuery) -> {
 					if (previousDBQuery == null)
 					{
 						return dbQuery;
@@ -125,7 +130,14 @@ public class StockRepository
 						previousDBQuery.addUnion(dbQuery, true);
 						return previousDBQuery;
 					}
-				})
+				};
+
+		return multiQuery.getQueries()
+				.stream()
+				.map(setStockQueryDataParameter)
+				.filter(Predicates.notNull())
+				.map(createDbQueryForSingleStockQuery)
+				.reduce(allQueriesToOneUnion)
 				.orElse(null);
 	}
 

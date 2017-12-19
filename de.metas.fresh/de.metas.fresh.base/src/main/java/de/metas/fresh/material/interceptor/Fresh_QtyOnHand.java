@@ -43,7 +43,7 @@ import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.stockestimate.AbstractStockCountEvent;
+import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import lombok.NonNull;
@@ -72,12 +72,12 @@ public class Fresh_QtyOnHand
 
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 
-		List<AbstractStockCountEvent> events = new ArrayList<>();
+		List<AbstractStockEstimateEvent> events = new ArrayList<>();
 
 		final List<I_Fresh_QtyOnHand_Line> lines = Services.get(IFreshQtyOnHandDAO.class).retrieveLines(qtyOnHand);
 		for (final I_Fresh_QtyOnHand_Line line : lines)
 		{
-			final AbstractStockCountEvent event;
+			final AbstractStockEstimateEvent event;
 
 			final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(line);
 			if (createDeletedEvent)
@@ -95,13 +95,13 @@ public class Fresh_QtyOnHand
 		events.forEach(event -> materialEventService.fireEventAfterNextCommit(event, getTrxName(qtyOnHand)));
 	}
 
-	private AbstractStockCountEvent createCreatedEvent(
+	private AbstractStockEstimateEvent createCreatedEvent(
 			@NonNull final I_Fresh_QtyOnHand_Line line,
 			@NonNull final ProductDescriptor productDescriptor)
 	{
 		final I_Fresh_QtyOnHand qtyOnHand = line.getFresh_QtyOnHand();
 
-		final AbstractStockCountEvent
+		final AbstractStockEstimateEvent
 		event = StockEstimateCreatedEvent.builder()
 				.date(qtyOnHand.getDateDoc())
 				.eventDescriptor(EventDescriptor.createNew(line))
@@ -112,13 +112,13 @@ public class Fresh_QtyOnHand
 		return event;
 	}
 
-	private AbstractStockCountEvent createDeletedEvent(
+	private AbstractStockEstimateEvent createDeletedEvent(
 			@NonNull final I_Fresh_QtyOnHand_Line line,
 			@NonNull final ProductDescriptor productDescriptor)
 	{
 		final I_Fresh_QtyOnHand qtyOnHand = line.getFresh_QtyOnHand();
 
-		final AbstractStockCountEvent event = StockEstimateDeletedEvent.builder()
+		final AbstractStockEstimateEvent event = StockEstimateDeletedEvent.builder()
 				.date(qtyOnHand.getDateDoc())
 				.eventDescriptor(EventDescriptor.createNew(line))
 				.plantId(line.getPP_Plant_ID())

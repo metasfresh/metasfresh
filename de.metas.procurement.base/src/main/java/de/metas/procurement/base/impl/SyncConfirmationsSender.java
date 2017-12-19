@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 
@@ -29,11 +29,11 @@ import de.metas.procurement.sync.protocol.SyncConfirmation;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -63,14 +63,9 @@ final class SyncConfirmationsSender
 			{
 				final SyncConfirmationsSender sender = new SyncConfirmationsSender();
 				sender.setAutoSendAfterEachConfirm(false);
-				trx.getTrxListenerManager().registerListener(new TrxListenerAdapter()
-				{
-					@Override
-					public void afterCommit(ITrx trx)
-					{
-						sender.send();
-					}
-				});
+				trx.getTrxListenerManager()
+						.newEventListener(TrxEventTiming.AFTER_COMMIT)
+						.registerHandlingMethod(innerTrx -> sender.send());
 
 				return sender;
 			}

@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.util.Services;
 
 import com.google.common.base.Supplier;
@@ -39,7 +39,7 @@ import com.google.common.base.Supplier;
 
 /**
  * Transactional support helper for {@link TransactionalFreshPackingItem}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -49,9 +49,9 @@ public class TransactionalFreshPackingItemSupport
 
 	/**
 	 * Gets the transaction support for current transaction.
-	 * 
+	 *
 	 * If there is no transaction support, a new instance will be created and registered.
-	 * 
+	 *
 	 * @return transaction support or <code>null</code> if running out of transaction
 	 */
 	public static final TransactionalFreshPackingItemSupport getCreate()
@@ -83,21 +83,16 @@ public class TransactionalFreshPackingItemSupport
 		super();
 
 		//
-		// Register the commit/rollback transaction listener
-		trx.getTrxListenerManager().registerListener(new TrxListenerAdapter()
-		{
-			@Override
-			public void afterCommit(final ITrx trx)
-			{
-				commit();
-			}
+		// Register the commit/rollback transaction listeners
+		trx.getTrxListenerManager()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerHandlingMethod(innerTrx -> commit());
 
-			@Override
-			public void afterRollback(final ITrx trx)
-			{
-				rollback();
-			}
-		});
+		trx.getTrxListenerManager()
+				.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerHandlingMethod(innerTrx -> rollback());
 	}
 
 	private synchronized void commit()
@@ -117,7 +112,7 @@ public class TransactionalFreshPackingItemSupport
 
 	/**
 	 * Gets the current state for given transactional item.
-	 * 
+	 *
 	 * @param item
 	 * @return current stateș never returns null.
 	 */
@@ -135,7 +130,7 @@ public class TransactionalFreshPackingItemSupport
 
 	/**
 	 * Transactional item state holder.
-	 * 
+	 *
 	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */

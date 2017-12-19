@@ -3,6 +3,7 @@ package de.metas.handlingunits.impl;
 import java.util.Collection;
 
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -16,6 +17,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.lock.api.ILockCommand.AllowAdditionalLocks;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -148,15 +150,20 @@ public class HULockBL implements IHULockBL
 	}
 
 	@Override
-	public void unlockOnAfterCommit(final int huId, final LockOwner lockOwner)
+	public void unlockOnAfterCommit(
+			final int huId,
+			@NonNull final LockOwner lockOwner)
 	{
 		Preconditions.checkNotNull(huId > 0, "huId shall be > 0");
-		Preconditions.checkNotNull(lockOwner, "lockOwner is null");
 		Preconditions.checkArgument(!lockOwner.isAnyOwner(), "{} not allowed", lockOwner);
 
 		Services.get(ITrxManager.class)
 				.getCurrentTrxListenerManagerOrAutoCommit()
-				.onAfterCommit(() -> unlock0(huId, lockOwner));
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerWeakly(false) // register "hard", because that's how it was before
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerHandlingMethod(transaction -> unlock0(huId, lockOwner));
+
 	}
 
 	private final void unlock0(final int huId, final LockOwner lockOwner)

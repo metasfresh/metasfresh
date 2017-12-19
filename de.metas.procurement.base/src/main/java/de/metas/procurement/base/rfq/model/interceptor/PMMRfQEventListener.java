@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -131,17 +131,15 @@ public final class PMMRfQEventListener extends RfQEventListenerAdapter
 		{
 			Services.get(ITrxManager.class)
 					.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-					.registerListener(new TrxListenerAdapter()
-					{
-						@Override
-						public void afterCommit(final ITrx trx)
-						{
-							final IWebuiPush webuiPush = Services.get(IWebuiPush.class);
-							webuiPush.pushRfQCloseEvents(syncRfQCloseEvents);
-						}
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.registerWeakly(false) // register "hard", because that's how it was before
+					.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+					.registerHandlingMethod(innerTrx -> {
+
+						final IWebuiPush webuiPush = Services.get(IWebuiPush.class);
+						webuiPush.pushRfQCloseEvents(syncRfQCloseEvents);
 					});
 		}
-
 	};
 
 	@Override
@@ -151,7 +149,7 @@ public final class PMMRfQEventListener extends RfQEventListenerAdapter
 		{
 			return;
 		}
-		
+
 		Services.get(IPMM_RfQ_BL.class).createDraftContractsForSelectedWinners(rfqResponse);
 	}
 }
