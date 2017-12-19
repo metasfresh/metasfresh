@@ -28,8 +28,11 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Producer class used to create table and columns from agiven input stream).
- *
+ * Producer class used to create table and columns from a given input stream).
+ * Input stream shall be like:<br>
+ * * ColumName<br>
+ * * AD_Reference_ID<br>
+ * * length<br>
  */
 public class CreateColumnsProducer
 {
