@@ -9,11 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.JavaProcess;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PackingHUsView_AddHUsToShipperTransportation;
+import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PackingHUsView_AddHUsToShipperTransportationShipAndInvoice;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -148,12 +150,13 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 				.setParentViewId(pickingSlotsClearingViewId)
 				.addStickyFilters(HUIdsFilterHelper.createFilter(huQuery))
 				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_PackingHUsView_AddHUsToShipperTransportation.class))
+				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_PackingHUsView_AddHUsToShipperTransportationShipAndInvoice.class))
 				.build();
 
 		return huEditorViewFactory.createView(request);
 	}
 
-	private RelatedProcessDescriptor createProcessDescriptor(Class<WEBUI_PackingHUsView_AddHUsToShipperTransportation> processClass)
+	private RelatedProcessDescriptor createProcessDescriptor(Class<? extends JavaProcess> processClass)
 	{
 		return RelatedProcessDescriptor.builder()
 				.processId(adProcessDAO.retrieveProcessIdByClass(processClass))

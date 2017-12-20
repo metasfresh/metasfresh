@@ -85,6 +85,18 @@ interface HUEditorViewBuffer
 
 	HUEditorRow getById(DocumentId rowId) throws EntityNotFoundException;
 
+	default HUEditorRow getParentRowByChildId(final DocumentId childId) throws EntityNotFoundException
+	{
+		final HUEditorRowId childRowId = HUEditorRowId.ofDocumentId(childId);
+		final HUEditorRowId topLevelRowId = childRowId.toTopLevelRowId();
+		final HUEditorRow topLevelRow = getById(topLevelRowId.toDocumentId());
+		return topLevelRow
+				.streamRecursive()
+				.filter(row -> row.getIncludedRowById(childId).isPresent())
+				.findFirst()
+				.orElseThrow(() -> new EntityNotFoundException("No parent row found for " + childId).setParameter("topLevelRow", topLevelRow));
+	}
+
 	/** @return SQL where clause using fully qualified table name (i.e. not table alias) */
 	String getSqlWhereClause(DocumentIdsSelection rowIds);
 }
