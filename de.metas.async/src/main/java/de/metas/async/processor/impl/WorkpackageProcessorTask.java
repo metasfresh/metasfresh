@@ -1,5 +1,7 @@
 package de.metas.async.processor.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.async
@@ -484,44 +486,33 @@ import de.metas.notification.INotificationBL;
 		// 09700: notify the user in charge, if one was set
 		if (workPackage.getAD_User_InCharge_ID() > 0)
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
-			final int workPackageID = workPackage.getC_Queue_WorkPackage_ID();
-			final String trxName = InterfaceWrapperHelper.getTrxName(workPackage);
-
 			// do the notification after commit, because e.g. if we send a mail, and even if that fails, we don't want this method to fail.
-			notifyErrorAfterCommit(ctx, workPackageID, trxName);
+			notifyErrorAfterCommit(workPackage.getC_Queue_WorkPackage_ID());
 		}
 	}
 
 	/**
 	 *
 	 * @param ctx
-	 * @param workPackageID
+	 * @param workPackageId
 	 * @param trxName
 	 * @task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
 	 */
-	private void notifyErrorAfterCommit(final Properties ctx,
-			final int workPackageID,
-			final String trxName)
+	private void notifyErrorAfterCommit(final int workPackageId)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-		trxManager.getTrxListenerManagerOrAutoCommit(trxName)
-
+		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 				.registerHandlingMethod(innerTrx -> {
-
-					final IMsgBL msgBL = Services.get(IMsgBL.class);
-					final I_C_Queue_WorkPackage wpReloaded = InterfaceWrapperHelper.create(ctx, workPackageID, I_C_Queue_WorkPackage.class, ITrx.TRXNAME_None);
-
+					final I_C_Queue_WorkPackage wpReloaded = loadOutOfTrx(workPackageId, I_C_Queue_WorkPackage.class);
 					notificationBL.notifyUser(
 							wpReloaded.getAD_User_InCharge(),
 							MSG_PROCESSING_ERROR_NOTIFICATION_TITLE,
-							msgBL.getMsg(ctx,
-									MSG_PROCESSING_ERROR_NOTIFICATION_TEXT,
-									new Object[] { workPackageID, wpReloaded.getErrorMsg() }),
+							msgBL.getMsg(Env.getCtx(), MSG_PROCESSING_ERROR_NOTIFICATION_TEXT, new Object[] { workPackageId, wpReloaded.getErrorMsg() }),
 							TableRecordReference.of(wpReloaded));
 				});
 
