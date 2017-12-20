@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.util.Services;
@@ -114,7 +115,9 @@ public class WebsocketSender implements InitializingBean
 		final WebsocketEventsQueue queue = new WebsocketEventsQueue(name, websocketMessagingTemplate, eventsLog, autoflush);
 
 		// Bind
-		trx.getTrxListenerManager().onAfterCommit(queue::sendEventsAndClear);
+		trx.getTrxListenerManager()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> queue.sendEventsAndClear());
 
 		return queue;
 	}

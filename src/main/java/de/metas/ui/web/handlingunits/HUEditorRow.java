@@ -283,12 +283,6 @@ public final class HUEditorRow implements IViewRow
 	}
 
 	@Override
-	public boolean hasIncludedView()
-	{
-		return false;
-	}
-
-	@Override
 	public List<HUEditorRow> getIncludedRows()
 	{
 		return includedRows;

@@ -17,8 +17,6 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
-import de.metas.ui.web.picking.husToPick.process.WEBUI_Picking_HUEditor_Create_M_Source_HUs;
-import de.metas.ui.web.picking.husToPick.process.WEBUI_Picking_HUEditor_PickHU;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -120,8 +118,9 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	protected void customizeHUEditorView(HUEditorViewBuilder huViewBuilder)
 	{
 		huViewBuilder
-				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_Picking_HUEditor_PickHU.class))
-				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_Picking_HUEditor_Create_M_Source_HUs.class))
+				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.picking.husToPick.process.WEBUI_Picking_HUEditor_PickHU.class))
+				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.picking.husToPick.process.WEBUI_HUsToPick_PickCU.class))
+				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(de.metas.ui.web.picking.husToPick.process.WEBUI_Picking_HUEditor_Create_M_Source_HUs.class))
 				//
 				.clearOrderBys()
 				.orderBy(DocumentQueryOrderBy.builder().fieldName(HUEditorRow.FIELDNAME_BestBeforeDate).ascending(true).nullsLast(true).build())

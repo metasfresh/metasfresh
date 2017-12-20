@@ -86,7 +86,7 @@ public final class DocumentLayoutElementDescriptor
 	private final LayoutType layoutType;
 	private final WidgetSize widgetSize;
 	private final boolean advancedField;
-	
+
 	private final LayoutAlign gridAlign;
 	private final ViewEditorRenderMode viewEditorRenderMode;
 	private final boolean viewAllowSorting;
@@ -112,7 +112,7 @@ public final class DocumentLayoutElementDescriptor
 
 		layoutType = builder.getLayoutType();
 		widgetSize = builder.getWidgetSize();
-		
+
 		gridAlign = builder.getGridAlign();
 		viewEditorRenderMode = builder.getViewEditorRenderMode();
 		viewAllowSorting = builder.isViewAllowSorting();
@@ -135,7 +135,7 @@ public final class DocumentLayoutElementDescriptor
 				.add("fields", fields.isEmpty() ? null : fields)
 				.toString();
 	}
-	
+
 	public boolean isGridElement()
 	{
 		return gridElement;
@@ -173,7 +173,7 @@ public final class DocumentLayoutElementDescriptor
 	{
 		return precision;
 	}
-	
+
 	public boolean isAllowShowPassword()
 	{
 		return allowShowPassword;
@@ -183,7 +183,7 @@ public final class DocumentLayoutElementDescriptor
 	{
 		return layoutType;
 	}
-	
+
 	public WidgetSize getWidgetSize()
 	{
 		return widgetSize;
@@ -193,7 +193,7 @@ public final class DocumentLayoutElementDescriptor
 	{
 		return gridAlign;
 	}
-	
+
 	public ViewEditorRenderMode getViewEditorRenderMode()
 	{
 		return viewEditorRenderMode;
@@ -236,18 +236,18 @@ public final class DocumentLayoutElementDescriptor
 		private String _internalName;
 		private ITranslatableString _caption = null;
 		private ITranslatableString _description = null;
-		
+
 		private DocumentFieldWidgetType _widgetType;
 		private boolean _allowShowPassword = false; // in case widgetType is Password
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
-		
+
 		private LayoutType _layoutType;
 		private WidgetSize _widgetSize;
-		
+
 		private boolean _gridElement = false;
 		private ViewEditorRenderMode viewEditorRenderMode = null;
 		private boolean viewAllowSorting = true;
-		
+
 		private boolean _advancedField = false;
 		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> _fieldsBuilders = new LinkedHashMap<>();
 		private boolean excludeSpecialFields = false;
@@ -399,13 +399,13 @@ public final class DocumentLayoutElementDescriptor
 			Check.assumeNotNull(_widgetType, DocumentLayoutBuildException.class, "Parameter widgetType is not null for {}", this);
 			return _widgetType;
 		}
-		
+
 		public Builder setAllowShowPassword(boolean allowShowPassword)
 		{
 			this._allowShowPassword = allowShowPassword;
 			return this;
 		}
-		
+
 		private boolean isAllowShowPassword()
 		{
 			return _allowShowPassword;
@@ -438,7 +438,7 @@ public final class DocumentLayoutElementDescriptor
 			_widgetSize = widgetSize;
 			return this;
 		}
-		
+
 		private WidgetSize getWidgetSize()
 		{
 			return _widgetSize;
@@ -522,7 +522,7 @@ public final class DocumentLayoutElementDescriptor
 			_gridElement = true;
 			return this;
 		}
-		
+
 		/**
 		 * Reset the "grid element" flag.
 		 *
@@ -540,7 +540,7 @@ public final class DocumentLayoutElementDescriptor
 		{
 			return isGridElement() ? getWidgetType().getGridAlign() : null;
 		}
-		
+
 		public Builder setViewEditorRenderMode(final ViewEditorRenderMode gridEditorRenderMode)
 		{
 			this.viewEditorRenderMode = gridEditorRenderMode;
@@ -551,7 +551,7 @@ public final class DocumentLayoutElementDescriptor
 		{
 			return viewEditorRenderMode;
 		}
-		
+
 		public Builder setViewAllowSorting(boolean viewAllowSorting)
 		{
 			this.viewAllowSorting = viewAllowSorting;

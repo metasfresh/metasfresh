@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
@@ -229,7 +230,8 @@ public class ASIRepository
 
 			Services.get(ITrxManager.class)
 					.getCurrentTrxListenerManagerOrAutoCommit()
-					.onAfterCommit(() -> commit(asiDoc));
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.registerHandlingMethod(trx -> commit(asiDoc));
 
 			return result;
 		}

@@ -19,10 +19,6 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			name: 'MF_UPSTREAM_BRANCH'),
 
 		string(defaultValue: '',
-			description: 'Build number of the upstream job that called us, if any.',
-			name: 'MF_UPSTREAM_BUILDNO'),
-
-		string(defaultValue: '',
 			description: 'Version of the metasfresh "main" code we shall use when resolving dependencies. Leave empty and this build will use the latest.',
 			name: 'MF_UPSTREAM_VERSION'),
 
@@ -146,7 +142,7 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
    build job: jobName,
      parameters: [
        string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
-       string(name: 'MF_UPSTREAM_BUILDNO', value: MF_UPSTREAM_BUILDNO),
+       string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
        string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
        string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui'),
        booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs

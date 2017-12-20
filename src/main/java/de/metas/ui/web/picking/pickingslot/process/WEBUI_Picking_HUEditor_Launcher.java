@@ -13,7 +13,6 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.picking.husToPick.HUsToPickViewFactory;
-import de.metas.ui.web.picking.husToPick.process.WEBUI_Picking_HUEditor_PickHU;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -47,10 +46,9 @@ import lombok.NonNull;
  */
 
 /**
- * This process opens a HU editor window within the picking window and registers the processes {@link WEBUI_Picking_HUEditor_PickHU} for that window.
+ * This process opens the HUsToPick view.
  * 
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class WEBUI_Picking_HUEditor_Launcher extends ViewBasedProcessTemplate
 {
@@ -62,7 +60,7 @@ public class WEBUI_Picking_HUEditor_Launcher extends ViewBasedProcessTemplate
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getSelectedDocumentIds().isSingleDocumentId())
+		if (!getSelectedRowIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}

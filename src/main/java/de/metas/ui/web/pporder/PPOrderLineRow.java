@@ -451,12 +451,6 @@ public class PPOrderLineRow implements IViewRow
 	}
 
 	@Override
-	public boolean hasIncludedView()
-	{
-		return isIssue();
-	}
-
-	@Override
 	public boolean hasAttributes()
 	{
 		return attributesSupplier != null;

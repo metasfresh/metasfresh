@@ -36,7 +36,6 @@ import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 
 public interface IViewRow
 {
-	//
 	// Document info
 	// @formatter:off
 	DocumentId getId();
@@ -61,7 +60,7 @@ public interface IViewRow
 	{
 		return ImmutableMap.of();
 	}
-	
+
 	default Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
 	{
 		return ImmutableMap.of();
@@ -79,9 +78,8 @@ public interface IViewRow
 	// @formatter:on
 
 	//
-	// Attributes
+	// IncludedView
 	// @formatter:off
-	default boolean hasIncludedView() { return false; }
 	default ViewId getIncludedViewId() { return null; }
 	// @formatter:on
 

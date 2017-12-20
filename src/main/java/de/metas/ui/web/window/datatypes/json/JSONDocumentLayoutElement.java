@@ -20,6 +20,7 @@ import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor.ButtonFieldActionType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
+import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import io.swagger.annotations.ApiModel;
 import lombok.ToString;
@@ -178,7 +179,7 @@ public final class JSONDocumentLayoutElement
 		type = null;
 		size = null;
 		gridAlign = JSONLayoutAlign.right;
-		viewEditorRenderMode = null;
+		viewEditorRenderMode = ViewEditorRenderMode.NEVER.toJson();
 		viewAllowSorting = null;
 
 		fields = ImmutableSet.of(new JSONDocumentLayoutElementField( //

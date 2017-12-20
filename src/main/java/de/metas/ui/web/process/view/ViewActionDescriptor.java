@@ -122,7 +122,7 @@ public final class ViewActionDescriptor
 	public final WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(final ViewAsPreconditionsContext viewContext)
 	{
 		final IView view = viewContext.getView();
-		final DocumentIdsSelection selectedDocumentIds = viewContext.getSelectedDocumentIds();
+		final DocumentIdsSelection selectedDocumentIds = viewContext.getSelectedRowIds();
 
 		return WebuiRelatedProcessDescriptor.builder()
 				.processId(ViewProcessInstancesRepository.buildProcessId(view.getViewId(), actionId))

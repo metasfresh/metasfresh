@@ -56,8 +56,6 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 
 	public UserQueryDocumentFilterDescriptorsProvider(final int adTabId, final String tableName, final Collection<DocumentFieldDescriptor> fields)
 	{
-		super();
-
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 		Check.assume(adTabId > 0, "adTabId > 0");
 

@@ -8,6 +8,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Calendar;
+import java.util.Date;
 
 import org.adempiere.util.time.SimpleDateFormatThreadLocal;
 import org.adempiere.util.time.SystemTime;
@@ -46,12 +47,12 @@ public final class JSONDate implements Serializable
 	private static final transient Logger logger = LogManager.getLogger(JSONDate.class);
 
 	public static final String DATE_PATTEN = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
-	// private static final SimpleDateFormatThreadLocal DATE_FORMAT = new SimpleDateFormatThreadLocal(DATE_PATTEN);
+
 	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern(JSONDate.DATE_PATTEN);
 
 	private static final SimpleDateFormatThreadLocal TIMEZONE_FORMAT = new SimpleDateFormatThreadLocal("XXX");
 
-	public static String toJson(final java.util.Date date)
+	public static String toJson(final Date date)
 	{
 		return toJson(date.getTime());
 	}
@@ -62,7 +63,7 @@ public final class JSONDate implements Serializable
 		return DATE_FORMAT.format(zdt);
 	}
 
-	public static java.util.Date fromJson(final String valueStr, final DocumentFieldWidgetType widgetType)
+	public static Date fromJson(final String valueStr, final DocumentFieldWidgetType widgetType)
 	{
 		if (widgetType == DocumentFieldWidgetType.Date)
 		{
@@ -73,32 +74,36 @@ public final class JSONDate implements Serializable
 			return fromDateTimeString(valueStr);
 		}
 	}
-	
-	public static java.util.Date fromObject(final Object value, final DocumentFieldWidgetType widgetType)
+
+	public static Date fromObject(final Object value, final DocumentFieldWidgetType widgetType)
 	{
 		if (value == null)
 		{
 			return null;
 		}
+		if(value instanceof Date)
+		{
+			return (Date)value;
+		}
 		final String valueStr = value.toString().trim();
-		return JSONDate.fromJson(valueStr, DocumentFieldWidgetType.DateTime);
+		return JSONDate.fromJson(valueStr, widgetType);
 	}
 
-	public static java.util.Date fromTimestamp(final Timestamp ts)
+	public static Date fromTimestamp(final Timestamp ts)
 	{
 		if (ts == null)
 		{
 			return null;
 		}
-		return new java.util.Date(ts.getTime());
+		return new Date(ts.getTime());
 	}
 
-	private static final java.util.Date fromDateTimeString(final String valueStr)
+	private static final Date fromDateTimeString(final String valueStr)
 	{
 		try
 		{
 			final ZonedDateTime zdt = ZonedDateTime.parse(valueStr, DATE_FORMAT);
-			java.util.Date date = java.util.Date.from(zdt.toInstant());
+			Date date = Date.from(zdt.toInstant());
 			return date;
 		}
 		catch (final DateTimeParseException ex1)
@@ -123,7 +128,7 @@ public final class JSONDate implements Serializable
 		}
 	}
 
-	private static final java.util.Date fromDateString(final String valueStr)
+	private static final Date fromDateString(final String valueStr)
 	{
 		try
 		{
@@ -139,7 +144,7 @@ public final class JSONDate implements Serializable
 			cal.set(Calendar.SECOND, 0);
 			cal.set(Calendar.MILLISECOND, 0);
 
-			java.util.Date date = cal.getTime();
+			Date date = cal.getTime();
 			return date;
 		}
 		catch (final DateTimeParseException ex1)
@@ -166,7 +171,7 @@ public final class JSONDate implements Serializable
 
 	public static String getCurrentTimeZoneAsJson()
 	{
-		final java.util.Date now = SystemTime.asDate();
+		final Date now = SystemTime.asDate();
 		final String timeZone = TIMEZONE_FORMAT.format(now);
 		return timeZone;
 	}

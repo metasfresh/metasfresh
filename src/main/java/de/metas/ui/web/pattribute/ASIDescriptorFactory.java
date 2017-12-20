@@ -3,6 +3,7 @@ package de.metas.ui.web.pattribute;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -21,8 +22,6 @@ import org.compiere.util.CCache;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Component;
-
-import com.hazelcast.util.function.BiConsumer;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentId;

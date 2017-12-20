@@ -9,10 +9,10 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -63,7 +63,7 @@ import lombok.NonNull;
  * Picking editor's view right-hand side view which lists {@link PickingSlotRow}s.
  * <p>
  * Note that technically this is contained in the left-hand side {@link PackageableView}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -94,7 +94,7 @@ public class PickingSlotView implements IView
 			@Nullable final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors,
 			@Nullable final List<DocumentFilter> filters)
 	{
-		Preconditions.checkArgument(currentShipmentScheduleId > 0, "shipmentScheduleId > 0");
+		Check.assume(currentShipmentScheduleId > 0, "shipmentScheduleId > 0");
 
 		this.viewId = viewId;
 		this.parentViewId = parentViewId;
@@ -246,7 +246,7 @@ public class PickingSlotView implements IView
 
 	/**
 	 * Returns the {@code M_ShipmentSchedule_ID} of the packageable line that is currently selected within the {@link PackageableView}.
-	 * 
+	 *
 	 * @return never returns a value {@code <= 0} (see constructor code).
 	 */
 	public int getCurrentShipmentScheduleId()
@@ -256,7 +256,7 @@ public class PickingSlotView implements IView
 
 	/**
 	 * Convenience method. See {@link #getCurrentShipmentScheduleId()}.
-	 * 
+	 *
 	 * @return never returns {@code null} (see constructor code).
 	 */
 	public I_M_ShipmentSchedule getCurrentShipmentSchedule()

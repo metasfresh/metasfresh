@@ -200,12 +200,6 @@ public final class PackageableRow implements IViewRow
 	}
 
 	@Override
-	public boolean hasIncludedView()
-	{
-		return true;
-	}
-
-	@Override
 	public ViewId getIncludedViewId()
 	{
 		return includedViewId;

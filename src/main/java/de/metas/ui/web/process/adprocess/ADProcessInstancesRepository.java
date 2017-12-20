@@ -30,6 +30,7 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfo.ProcessInfoBuilder;
 import de.metas.ui.web.process.CreateProcessInstanceRequest;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstancesRepository;
@@ -41,6 +42,7 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -180,12 +182,12 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			//
 			// Create (webui) process instance and add it to our internal cache.
 			final ADProcessInstanceController pinstance = ADProcessInstanceController.builder()
-					.setProcessDescriptor(processDescriptor)
-					.setInstanceId(adPInstanceId)
-					.setParameters(parametersDoc)
-					.setView(request.getViewId(), request.getViewDocumentIds())
-					.setProcessClassInstance(processClassInstance)
-					.setContextSingleDocumentPath(request.getSingleDocumentPath())
+					.processDescriptor(processDescriptor)
+					.instanceId(adPInstanceId)
+					.parameters(parametersDoc)
+					.processClassInstance(processClassInstance)
+					.contextSingleDocumentPath(request.getSingleDocumentPath())
+					.viewId(request.getViewRowIdsSelection() != null ? request.getViewRowIdsSelection().getViewId() : null)
 					.build();
 			processInstances.put(adPInstanceId, pinstance.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
 			return pinstance;
@@ -194,20 +196,19 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 
 	private ProcessInfo createProcessInfo(@NonNull final CreateProcessInstanceRequest request)
 	{
+		final DocumentPath singleDocumentPath = request.getSingleDocumentPath();
 		final String tableName;
 		final int recordId;
 		final String sqlWhereClause;
 
 		//
 		// View
-		final ViewId viewId = request.getViewId();
-		final String viewSelectedIdsAsStr;
-		final DocumentPath singleDocumentPath = request.getSingleDocumentPath();
-		if (viewId != null)
+		if (request.getViewRowIdsSelection() != null)
 		{
+			final ViewRowIdsSelection viewRowIdsSelection = request.getViewRowIdsSelection();
+			final ViewId viewId = viewRowIdsSelection.getViewId();
 			final IView view = viewsRepo.getView(viewId);
-			final DocumentIdsSelection viewDocumentIds = request.getViewDocumentIds();
-			viewSelectedIdsAsStr = viewDocumentIds.toCommaSeparatedString();
+			final DocumentIdsSelection viewDocumentIds = viewRowIdsSelection.getRowIds();
 
 			if (viewDocumentIds.isSingleDocumentId())
 			{
@@ -244,8 +245,6 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		// Single document call
 		else if (singleDocumentPath != null)
 		{
-			viewSelectedIdsAsStr = null;
-
 			final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(singleDocumentPath);
 			tableName = entityDescriptor.getTableNameOrNull();
 			if (singleDocumentPath.isRootDocument())
@@ -264,7 +263,6 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		// From menu
 		else
 		{
-			viewSelectedIdsAsStr = null;
 			tableName = null;
 			recordId = -1;
 			sqlWhereClause = null;
@@ -276,20 +274,43 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				.map(documentDescriptorFactory::getTableRecordReference)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return ProcessInfo.builder()
+		final ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(request.getProcessIdAsInt())
 				.setRecord(tableName, recordId)
 				.setSelectedIncludedRecords(selectedIncludedRecords)
-				.setWhereClause(sqlWhereClause)
-				//
-				.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
-				.addParameter(ViewBasedProcessTemplate.PARAM_ViewWindowId, viewId == null ? null : viewId.getWindowId().toJson()) // internal parameter
-				.addParameter(ViewBasedProcessTemplate.PARAM_ViewId, viewId == null ? null : viewId.getViewId()) // internal parameter
-				.addParameter(ViewBasedProcessTemplate.PARAM_ViewSelectedIds, viewSelectedIdsAsStr) // internal parameter
-				//
-				.build();
+				.setWhereClause(sqlWhereClause);
+
+		//
+		// View related internal parameters
+		if (request.getViewRowIdsSelection() != null)
+		{
+			final ViewRowIdsSelection viewRowIdsSelection = request.getViewRowIdsSelection();
+			processInfoBuilder
+					.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
+					.addParameter(ViewBasedProcessTemplate.PARAM_ViewId, viewRowIdsSelection.getViewId().toJson())
+					.addParameter(ViewBasedProcessTemplate.PARAM_ViewSelectedIds, viewRowIdsSelection.getRowIds().toCommaSeparatedString());
+		}
+		if (request.getParentViewRowIdsSelection() != null)
+		{
+			final ViewRowIdsSelection parentViewRowIdsSelection = request.getParentViewRowIdsSelection();
+			processInfoBuilder
+					.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
+					.addParameter(ViewBasedProcessTemplate.PARAM_ParentViewId, parentViewRowIdsSelection.getViewId().toJson())
+					.addParameter(ViewBasedProcessTemplate.PARAM_ParentViewSelectedIds, parentViewRowIdsSelection.getRowIds().toCommaSeparatedString());
+
+		}
+		if (request.getChildViewRowIdsSelection() != null)
+		{
+			final ViewRowIdsSelection childViewRowIdsSelection = request.getChildViewRowIdsSelection();
+			processInfoBuilder
+					.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
+					.addParameter(ViewBasedProcessTemplate.PARAM_ChildViewId, childViewRowIdsSelection.getViewId().toJson())
+					.addParameter(ViewBasedProcessTemplate.PARAM_ChildViewSelectedIds, childViewRowIdsSelection.getRowIds().toCommaSeparatedString());
+		}
+
+		return processInfoBuilder.build();
 	}
 
 	private ADProcessInstanceController retrieveProcessInstance(final DocumentId adPInstanceId)
@@ -327,20 +348,16 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			//
 			// View informations
 			final IRangeAwareParams processInfoParams = processInfo.getParameterAsIParams();
-			final String viewWindowId = processInfoParams.getParameterAsString(ViewBasedProcessTemplate.PARAM_ViewWindowId);
 			final String viewIdStr = processInfoParams.getParameterAsString(ViewBasedProcessTemplate.PARAM_ViewId);
-			final ViewId viewId = Strings.isNullOrEmpty(viewIdStr) ? null : ViewId.of(viewWindowId, viewIdStr);
-			//
-			final String viewSelectedIdsStr = processInfoParams.getParameterAsString(ViewBasedProcessTemplate.PARAM_ViewSelectedIds);
-			final DocumentIdsSelection viewSelectedIds = DocumentIdsSelection.ofCommaSeparatedString(viewSelectedIdsStr);
+			final ViewId viewId = Strings.isNullOrEmpty(viewIdStr) ? null : ViewId.ofViewIdString(viewIdStr);
 
 			//
 			return ADProcessInstanceController.builder()
-					.setProcessDescriptor(processDescriptor)
-					.setInstanceId(adPInstanceId)
-					.setParameters(parametersDoc)
-					.setView(viewId, viewSelectedIds)
-					.setProcessClassInstance(processClassInstance)
+					.processDescriptor(processDescriptor)
+					.instanceId(adPInstanceId)
+					.parameters(parametersDoc)
+					.processClassInstance(processClassInstance)
+					.viewId(viewId)
 					.build();
 		}
 	}

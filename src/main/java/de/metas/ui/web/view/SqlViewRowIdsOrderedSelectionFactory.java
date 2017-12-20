@@ -251,12 +251,33 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sqlCount = newSqlViewSelectionQueryBuilder().buildSqlCount(sqlParams, selection.getSelectionId(), rowIds);
-		final int count = DB.executeUpdateEx(sqlCount, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		final int count = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlCount, sqlParams.toArray());
 		return count > 0;
 	}
 
 	public <T> IQueryFilter<T> createQueryFilter(final String selectionId)
 	{
 		return newSqlViewSelectionQueryBuilder().buildInSelectionQueryFilter(selectionId);
+	}
+
+	@Override
+	public void deleteSelection(@NonNull final ViewRowIdsOrderedSelection selection)
+	{
+		final String selectionId = selection.getSelectionId();
+		final SqlViewSelectionQueryBuilder viewQueryBuilder = newSqlViewSelectionQueryBuilder();
+
+		// Delete selection lines
+		{
+			final String sql = viewQueryBuilder.buildSqlDeleteSelectionLines(selectionId);
+			final int countDeleted = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			logger.trace("Delete {} selection lines for {}", countDeleted, selectionId);
+		}
+
+		// Delete selection rows
+		{
+			final String sql = viewQueryBuilder.buildSqlDeleteSelection(selectionId);
+			final int countDeleted = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			logger.trace("Delete {} selection rows for {}", countDeleted, selectionId);
+		}
 	}
 }

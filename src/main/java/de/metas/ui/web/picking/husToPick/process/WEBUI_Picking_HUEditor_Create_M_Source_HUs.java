@@ -38,7 +38,7 @@ import de.metas.ui.web.picking.pickingslot.process.WEBUI_Picking_PickQtyToNewHU;
  *
  */
 public class WEBUI_Picking_HUEditor_Create_M_Source_HUs
-		extends WEBUI_Picking_Select_M_HU_Base
+		extends HUsToPickViewBasedProcess
 		implements IProcessPrecondition
 {
 
@@ -52,7 +52,7 @@ public class WEBUI_Picking_HUEditor_Create_M_Source_HUs
 					sourceHuService.addSourceHuMarker(huEditorRow.getM_HU_ID());
 				});
 
-		invalidateViewsAndPrepareReturn();
+		invalidateViewsAndGoBackToPickingSlotsView();
 		return MSG_OK;
 	}
 }

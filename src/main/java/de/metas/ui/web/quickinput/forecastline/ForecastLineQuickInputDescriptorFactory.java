@@ -18,7 +18,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_M_ForecastLine;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
-import de.metas.material.dispo.client.repository.AvailableStockService;
+import de.metas.ui.web.material.adapter.AvailableStockAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
@@ -63,7 +63,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
 	@Autowired
-	private AvailableStockService availableStockService;
+	private AvailableStockAdapter availableStockService;
 
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
@@ -112,9 +112,10 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 				.setCaption(Services.get(IMsgBL.class).translatable(IForecastLineQuickInput.COLUMNNAME_M_Product_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(ProductLookupDescriptor.builder()
+				.setLookupDescriptorProvider(ProductLookupDescriptor.builderWithStockInfo()
 						.bpartnerParamName(I_M_Forecast.COLUMNNAME_C_BPartner_ID)
-						.dateParamName(I_M_Forecast.COLUMNNAME_DatePromised)
+						.pricingDateParamName(I_M_Forecast.COLUMNNAME_DatePromised)
+						.availableStockDateParamName(I_M_Forecast.COLUMNNAME_DatePromised)
 						.availableStockService(availableStockService)
 						.build())
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)

@@ -31,7 +31,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -433,7 +433,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@NonNull final HUIdsFilterData huIdsFilter,
 			@NonNull final List<DocumentFilter> filters)
 	{
-
 		final ImmutableList<Integer> onlyHUIds = extractHUIds(huIdsFilter);
 
 		if (filters.isEmpty() && !huIdsFilter.hasInitialHUQuery() && onlyHUIds != null)
@@ -455,6 +454,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		{
 			huQuery.addOnlyHUIds(onlyHUIds);
 		}
+		
 
 		// Exclude HUs
 		huQuery.addHUIdsToExclude(huIdsFilter.getShallNotHUIds());
@@ -472,24 +472,21 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 	private static ImmutableList<Integer> extractHUIds(@NonNull final HUIdsFilterData huIdsFilter)
 	{
-		final ImmutableList<Integer> onlyHUIds;
-		if (huIdsFilter.getInitialHUIds() != null && huIdsFilter.getMustHUIds() != null)
+		final Set<Integer> initialHUIds = huIdsFilter.getInitialHUIds();
+		final Set<Integer> huIdsToInclude = huIdsFilter.getMustHUIds();
+		final Set<Integer> huIdsToExclude = huIdsFilter.getShallNotHUIds();
+
+		if (initialHUIds == null && huIdsToInclude.isEmpty() && huIdsToExclude.isEmpty())
 		{
-			onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
+			return null; // no restrictions
 		}
-		else if (huIdsFilter.getInitialHUIds() != null)
-		{
-			onlyHUIds = ImmutableList.copyOf(huIdsFilter.getInitialHUIds());
-		}
-		else if (huIdsFilter.getMustHUIds() != null)
-		{
-			onlyHUIds = ImmutableList.copyOf(huIdsFilter.getMustHUIds());
-		}
-		else
-		{
-			onlyHUIds = null; // both are null => no restriction
-		}
-		return onlyHUIds;
+
+		final Set<Integer> initialHUIdsOrEmpty = initialHUIds != null ? initialHUIds : ImmutableSet.of();
+		
+		return Stream.concat(initialHUIdsOrEmpty.stream(), huIdsToInclude.stream())
+				.filter(huId -> !huIdsToExclude.contains(huId))
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -580,6 +577,12 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	public boolean containsAnyOfRowIds(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
 	{
 		return viewSelectionFactory.containsAnyOfRowIds(selection, rowIds);
+	}
+
+	@Override
+	public void deleteSelection(final ViewRowIdsOrderedSelection selection)
+	{
+		viewSelectionFactory.deleteSelection(selection);
 	}
 
 	@Override

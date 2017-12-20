@@ -12,6 +12,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -50,10 +51,8 @@ final class LookupDataSourceAdapter implements LookupDataSource
 
 	private final LookupDataSourceFetcher fetcher;
 
-	protected LookupDataSourceAdapter(final LookupDataSourceFetcher fetcher)
+	protected LookupDataSourceAdapter(@NonNull final LookupDataSourceFetcher fetcher)
 	{
-		super();
-		Check.assumeNotNull(fetcher, "Parameter fetcher is not null");
 		this.fetcher = fetcher;
 	}
 

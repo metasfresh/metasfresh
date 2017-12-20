@@ -11,6 +11,8 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.Value;
 
 /*
@@ -56,6 +58,7 @@ public final class DocumentFilterParamDescriptor
 	private final Object defaultValueTo;
 
 	private final boolean mandatory;
+	@Getter(AccessLevel.NONE)
 	private final LookupDescriptor lookupDescriptor;
 
 	public static final String AUTOFILTER_INITIALVALUE_DATE_NOW = new String("NOW");
@@ -130,7 +133,6 @@ public final class DocumentFilterParamDescriptor
 	{
 		return widgetType.isDateOrTime() && AUTOFILTER_INITIALVALUE_DATE_NOW.equals(autoFilterInitialValue);
 	}
-
 
 	public static final class Builder
 	{
@@ -244,7 +246,7 @@ public final class DocumentFilterParamDescriptor
 			this.showIncrementDecrementButtons = showIncrementDecrementButtons;
 			return this;
 		}
-		
+
 		public Builder setAutoFilterInitialValue(Object autoFilterInitialValue)
 		{
 			this.autoFilterInitialValue = autoFilterInitialValue;
