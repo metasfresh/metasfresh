@@ -57,10 +57,8 @@ import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
 import org.jdesktop.swingx.JXPanel;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import net.miginfocom.swing.MigLayout;
 
@@ -136,6 +134,7 @@ public class InfoQueryCriteriaDateModifier implements IInfoQueryCriteria
 		Check.assume(DisplayType.isDate(displayType), "displayType is Date or DateTime, but was {}", displayType);
 
 		final String columnName = infoColumn.getAD_Element().getColumnName();
+		Check.assumeNotNull(columnName, "The element {} does not have a column name set", infoColumn.getAD_Element());
 
 		final ImageIcon prevIcon = Images.getImageIcon2("Next16");
 		final ImageIcon nextIcon = Images.getImageIcon2("Previous16");

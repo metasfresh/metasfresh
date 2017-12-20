@@ -302,7 +302,11 @@ public class MColumn extends X_AD_Column
 				&& getAD_Element_ID() != 0)
 		{
 			M_Element element = new M_Element(getCtx(), getAD_Element_ID(), get_TrxName());
-			setColumnName(element.getColumnName());
+			
+			final String elementColumnName = element.getColumnName ();
+			Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", element);
+			
+			setColumnName(elementColumnName);
 			setName(element.getName());
 			setDescription(element.getDescription());
 			setHelp(element.getHelp());
@@ -331,8 +335,7 @@ public class MColumn extends X_AD_Column
 						.append(DB.TO_STRING(getName()))
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE AD_Column_ID=").append(get_ID())
-						.append(" AND IsCentrallyMaintained='Y'");
+						.append(" WHERE AD_Column_ID=").append(get_ID());
 				int no = DB.executeUpdate(sql.toString(), get_TrxName());
 				log.debug("afterSave - Fields updated #" + no);
 			}
