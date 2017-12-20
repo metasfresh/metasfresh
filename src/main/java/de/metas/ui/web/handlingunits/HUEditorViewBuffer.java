@@ -92,7 +92,7 @@ interface HUEditorViewBuffer
 		final HUEditorRow topLevelRow = getById(topLevelRowId.toDocumentId());
 		return topLevelRow
 				.streamRecursive()
-				.filter(row -> row.getIncludedRowById(childId).isPresent())
+				.filter(row -> row.hasDirectChild(childId).isPresent())
 				.findFirst()
 				.orElseThrow(() -> new EntityNotFoundException("No parent row found for " + childId).setParameter("topLevelRow", topLevelRow));
 	}

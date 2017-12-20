@@ -219,12 +219,18 @@ public class HUEditorView implements IView
 	{
 		return rowsBuffer.getById(rowId);
 	}
-	
-	public HUEditorRow getParentRowByChildId(final DocumentId childId) throws EntityNotFoundException
-	{
-		return rowsBuffer.getParentRowByChildId(childId);
-	}
 
+	public HUEditorRow getParentRowByChildIdOrNull(final DocumentId childId) throws EntityNotFoundException
+	{
+		try
+		{
+			return rowsBuffer.getParentRowByChildId(childId);
+		}
+		catch (Exception e)
+		{
+			return null;
+		}
+	}
 
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)

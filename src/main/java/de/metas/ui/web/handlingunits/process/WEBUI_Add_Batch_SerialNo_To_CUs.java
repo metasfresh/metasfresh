@@ -40,6 +40,7 @@ import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
+import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.handlingunits.process.WebuiHUTransformCommand.ActionType;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -107,17 +108,7 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		final String serialNumbersString = replaceAllSeparatorsWithComma(p_SerialNo);
 		serialNumbers = splitIntoSerialNumbers(serialNumbersString);
 
-		final ImmutableList<HUEditorRow> selectedCuRows = streamSelectedRows(HUEditorRowFilter.select(Select.ALL))
-				.sorted(new Comparator<HUEditorRow>()
-				{
-					@Override
-					public int compare(final HUEditorRow o1, final HUEditorRow o2)
-					{
-						return !isAggregateHU(o1) ? -1 : 1;
-					}
-				}).collect(ImmutableList.toImmutableList());
-
-		// filter(huRow -> !isAggregateHU(huRow)).sorted(!isAggregateHU(huRow))collect(ImmutableList.toImmutableList());
+		final ImmutableList<HUEditorRow> selectedCuRows = getSelectedCUs();
 
 		for (HUEditorRow selectedCuRow : selectedCuRows)
 		{
@@ -134,7 +125,7 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 				final int serialNoCount = serialNumbers.size();
 				final int cusToCreateNo = qtyCU < serialNoCount ? qtyCU : serialNoCount;
 
-				final List<I_M_HU> createdCus = createNewCus(selectedCuRow, cusToCreateNo);
+				final List<I_M_HU> createdCus = retrieveCUsToAddSerialNo(selectedCuRow, cusToCreateNo);
 				assignSerialNumbersToCUs(createdCus);
 
 			}
@@ -155,114 +146,125 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		invalidateView();
 	}
 
-	private List<I_M_HU> createNewCus(final HUEditorRow cuRow, final int cuNumber)
+	private ImmutableList<HUEditorRow> getSelectedCUs()
 	{
+		return streamSelectedRows(HUEditorRowFilter.select(Select.ALL))
+				.sorted(new Comparator<HUEditorRow>()
+				{
+					@Override
+					public int compare(final HUEditorRow o1, final HUEditorRow o2)
+					{
+						return !isAggregateHU(o1) ? -1 : 1;
+					}
+				}).collect(ImmutableList.toImmutableList());
+	}
+
+	final String replaceAllSeparatorsWithComma(final String originalString)
+	{
+		return originalString.replaceAll("\\t", ",")
+				.replaceAll(";", ",");
+	}
+
+	final List<String> splitIntoSerialNumbers(final String originalString)
+	{
+		final String[] split = originalString.split(",");
+
+		return new LinkedList<>(Arrays.asList(split));
+	}
+
+	private List<I_M_HU> retrieveCUsToAddSerialNo(final HUEditorRow cuRow, final int cuNumber)
+	{
+		final HUEditorRow parentRow = getParentHURow(cuRow);
+		HUEditorRow cuRowToSplit = cuRow;
+
 		if (cuNumber == 0)
 		{
 			return Collections.emptyList();
 		}
 
-		final HUEditorRow parentRow = getParentHURow(cuRow);
+		final WebuiHUTransformParameters parameters;
+
+		if (parentRow == null)
+		{
+			parameters = WebuiHUTransformParameters.builder()
+					.actionType(ActionType.CU_To_NewCU)
+					.qtyCU(BigDecimal.ONE)
+					.build();
+		}
+		else
+		{
+			Check.assume(parentRow.isTU(), " Parent row must be TU: " + parentRow);
+
+			final I_M_HU parentHU;
+
+			if (isAggregateHU(parentRow))
+			{
+				parentHU = createNonAggregatedTU(parentRow);
+				cuRowToSplit = getIncludedCURow(parentHU);
+			}
+			else
+			{
+				parentHU = parentRow.getM_HU();
+			}
+
+			parameters = WebuiHUTransformParameters.builder()
+					.actionType(ActionType.CU_To_ExistingTU)
+					.tuHU(parentHU)
+					.qtyCU(BigDecimal.ONE)
+					.build();
+		}
 
 		final List<I_M_HU> createdCUs = new ArrayList<>();
 
 		for (int i = 0; i < cuNumber; i++)
 		{
-
-			final WebuiHUTransformParameters parameters;
-
-			if (parentRow == null)
-			{
-				parameters = WebuiHUTransformParameters.builder()
-						.actionType(ActionType.CU_To_NewCU)
-						.qtyCU(BigDecimal.ONE)
-						.build();
-			}
-			else
-			{
-				final I_M_HU parentHU;
-
-				if (isAggregateHU(parentRow))
-				{
-					parentHU = createNonAggregatedTU(parentRow);
-
-				}
-				else
-				{
-					parentHU = parentRow.getM_HU();
-				}
-
-				parameters = WebuiHUTransformParameters.builder()
-						.actionType(ActionType.CU_To_ExistingTU)
-						.tuHU(parentHU)
-						.qtyCU(BigDecimal.ONE)
-						.build();
-
-			}
-
-			final WebuiHUTransformCommand command = WebuiHUTransformCommand.builder()
-					.selectedRow(cuRow)
-					.parameters(parameters)
-					.build();
-
-			final IMutable<WebuiHUTransformCommandResult> result = new Mutable<>();
-			
-			Services.get(ITrxManager.class).run(() -> {
-				result.setValue(command.execute());
-			});
-
-			ImmutableSet<Integer> huIdsToAddToView = result.getValue().getHuIdsToAddToView();
-
-			for (int huId : huIdsToAddToView)
-			{
-				final I_M_HU cu = create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
-
-				createdCUs.add(cu);
-			}
+			final List<I_M_HU> newCUs = createNewCUs(cuRowToSplit, parameters);
+			createdCUs.addAll(newCUs);
 		}
 
 		return createdCUs;
-
 	}
 
-	private I_M_HU createNonAggregatedTU(final HUEditorRow tuRow)
+	private List<I_M_HU> createNewCUs(HUEditorRow cuRowToUse, WebuiHUTransformParameters parameters)
 	{
-
-		final WebuiHUTransformParameters parentParameters = WebuiHUTransformParameters.builder()
-				.actionType(ActionType.TU_To_NewTUs)
-				.qtyTU(BigDecimal.ONE) 
-				.tuHU(tuRow.getM_HU())
-				.build();
+		final List<I_M_HU> createdCUs = new ArrayList<>();
 
 		final WebuiHUTransformCommand command = WebuiHUTransformCommand.builder()
-				.selectedRow(tuRow)
-				.parameters(parentParameters)
+				.selectedRow(cuRowToUse)
+				.parameters(parameters)
 				.build();
 
 		final IMutable<WebuiHUTransformCommandResult> result = new Mutable<>();
-		
+
 		Services.get(ITrxManager.class).run(() -> {
 			result.setValue(command.execute());
 		});
 
-		ImmutableSet<Integer> huIdsToAddToView = result.getValue().getHuIdsToAddToView();
+		invalidateView();
 
-		final I_M_HU newParentHU = create(Env.getCtx(), huIdsToAddToView.asList().get(0), I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
+		final ImmutableSet<Integer> huIdsToAddToView = result.getValue().getHuIdsToAddToView();
 
-		return newParentHU;
+		for (int huId : huIdsToAddToView)
+		{
+			final I_M_HU cu = create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
 
+			createdCUs.add(cu);
+		}
+
+		return createdCUs;
 	}
 
-	private HUEditorRow getParentHURow(final HUEditorRow cuRow)
+	private HUEditorRow getIncludedCURow(final I_M_HU parentHU)
 	{
-		return getView().getParentRowByChildId(cuRow.getId());
-	}
+		final I_M_HU topLevelParent = huBL.getTopLevelParent(parentHU);
+		final HUEditorRowId newTURowId = HUEditorRowId.ofHU(parentHU.getM_HU_ID(), topLevelParent == null ? -1 : topLevelParent.getM_HU_ID());
 
-	private boolean isAggregateHU(final HUEditorRow huRow)
-	{
-		final I_M_HU hu = huRow.getM_HU();
+		final HUEditorRow newTURow = getView().getById(newTURowId.toDocumentId());
 
-		return huBL.isAggregateHU(hu);
+		final List<HUEditorRow> newCURow = newTURow.getIncludedRows();
+		Check.assume(newCURow.size() == 1, " There should be only one CU line included in " + newTURow);
+
+		return newCURow.get(0);
 	}
 
 	private void assignSerialNumbersToCUs(final List<I_M_HU> cus)
@@ -298,6 +300,87 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 
 	}
 
+	private I_M_HU createNonAggregatedTU(final HUEditorRow tuRow)
+	{
+		final HUEditorRow luRow = getParentHURow(tuRow);
+
+		final WebuiHUTransformParameters parentParameters = WebuiHUTransformParameters.builder()
+				.actionType(ActionType.TU_To_NewTUs)
+				.qtyTU(BigDecimal.ONE)
+				.tuHU(tuRow.getM_HU())
+
+				.build();
+
+		final WebuiHUTransformCommand command = WebuiHUTransformCommand.builder()
+				.selectedRow(tuRow)
+				.parameters(parentParameters)
+				.build();
+
+		final IMutable<WebuiHUTransformCommandResult> result = new Mutable<>();
+
+		Services.get(ITrxManager.class).run(() -> {
+			result.setValue(command.execute());
+		});
+
+		final ImmutableSet<Integer> huIdsToAddToView = result.getValue().getHuIdsToAddToView();
+		
+		getView().addHUIdsAndInvalidate(huIdsToAddToView);
+
+		if (luRow != null)
+		{
+			for (int huIdToAdd : huIdsToAddToView)
+			{
+				final I_M_HU newTU = create(Env.getCtx(), huIdToAdd, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
+
+				final WebuiHUTransformParameters tuToLUParameters = WebuiHUTransformParameters.builder()
+						.actionType(ActionType.TU_To_ExistingLU)
+						.qtyTU(BigDecimal.ONE)
+						.tuHU(newTU)
+						.luHU(luRow.getM_HU())
+						.build();
+				
+				final HUEditorRowId newTURowId = HUEditorRowId.ofHU(huIdToAdd, -1);
+
+				final HUEditorRow newTURow = getView().getById(newTURowId.toDocumentId());
+
+				
+				final WebuiHUTransformCommand tuToLUcommand = WebuiHUTransformCommand.builder()
+						.selectedRow(newTURow)
+						.parameters(tuToLUParameters)
+						.build();
+
+				
+				final IMutable<WebuiHUTransformCommandResult> resultTUToLU = new Mutable<>();
+
+				Services.get(ITrxManager.class).run(() -> {
+					resultTUToLU.setValue(tuToLUcommand.execute());
+				});
+				
+			
+				getView().invalidateAll();
+			}
+		}
+
+		
+
+		final I_M_HU newParentHU = create(Env.getCtx(), huIdsToAddToView.asList().get(0), I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
+
+		return newParentHU;
+
+	}
+
+	private HUEditorRow getParentHURow(final HUEditorRow cuRow)
+	{
+		return getView().getParentRowByChildIdOrNull(cuRow.getId());
+	}
+
+	private boolean isAggregateHU(final HUEditorRow huRow)
+	{
+		final I_M_HU hu = huRow.getM_HU();
+
+		return huBL.isAggregateHU(hu);
+	}
+
 	private final IAttributeStorage getAttributeStorage(final IHUContext huContext, final I_M_HU hu)
 	{
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
@@ -323,19 +406,6 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		}
 
 		return false;
-	}
-
-	final String replaceAllSeparatorsWithComma(final String originalString)
-	{
-		return originalString.replaceAll("\\t", ",")
-				.replaceAll(";", ",");
-	}
-
-	final List<String> splitIntoSerialNumbers(final String originalString)
-	{
-		final String[] split = originalString.split(",");
-
-		return new LinkedList<>(Arrays.asList(split));
 	}
 
 }

@@ -309,6 +309,14 @@ public final class HUEditorRow implements IViewRow
 				.filter(row -> rowId.equals(row.getId()))
 				.findFirst();
 	}
+	
+	public Optional<HUEditorRow> hasDirectChild(final DocumentId childId)
+	{
+		return getIncludedRows()
+				.stream()
+				.filter(row -> childId.equals(row.getId()))
+				.findAny();
+	}
 
 	/**
 	 *
