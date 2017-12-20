@@ -123,6 +123,33 @@ public interface I_AD_Field
     public static final String COLUMNNAME_AD_FieldGroup_ID = "AD_FieldGroup_ID";
 
 	/**
+	 * Set AD_Name_ID.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Name_ID (int AD_Name_ID);
+
+	/**
+	 * Get AD_Name_ID.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Name_ID();
+
+	public org.compiere.model.I_AD_Element getAD_Name();
+
+	public void setAD_Name(org.compiere.model.I_AD_Element AD_Name);
+
+    /** Column definition for AD_Name_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Field, org.compiere.model.I_AD_Element> COLUMN_AD_Name_ID = new org.adempiere.model.ModelColumn<I_AD_Field, org.compiere.model.I_AD_Element>(I_AD_Field.class, "AD_Name_ID", org.compiere.model.I_AD_Element.class);
+    /** Column name AD_Name_ID */
+    public static final String COLUMNNAME_AD_Name_ID = "AD_Name_ID";
+
+	/**
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
@@ -600,31 +627,6 @@ public interface I_AD_Field
     public static final org.adempiere.model.ModelColumn<I_AD_Field, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Field, Object>(I_AD_Field.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Zentral verwaltet.
-	 * Information maintained in System Element table
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsCentrallyMaintained (boolean IsCentrallyMaintained);
-
-	/**
-	 * Get Zentral verwaltet.
-	 * Information maintained in System Element table
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isCentrallyMaintained();
-
-    /** Column definition for IsCentrallyMaintained */
-    public static final org.adempiere.model.ModelColumn<I_AD_Field, Object> COLUMN_IsCentrallyMaintained = new org.adempiere.model.ModelColumn<I_AD_Field, Object>(I_AD_Field.class, "IsCentrallyMaintained", null);
-    /** Column name IsCentrallyMaintained */
-    public static final String COLUMNNAME_IsCentrallyMaintained = "IsCentrallyMaintained";
 
 	/**
 	 * Set Displayed.

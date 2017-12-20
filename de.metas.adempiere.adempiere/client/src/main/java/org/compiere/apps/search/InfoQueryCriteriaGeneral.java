@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.util.Check;
 import org.compiere.grid.ed.VCheckBox;
 import org.compiere.grid.ed.VDate;
 import org.compiere.grid.ed.VLookup;
@@ -75,6 +76,8 @@ public class InfoQueryCriteriaGeneral extends AbstractInfoQueryCriteriaGeneral
 		final int windowNo = parent.getWindowNo();
 		final int displayType = infoColumn.getAD_Reference_ID();
 		final String columnName = infoColumn.getAD_Element().getColumnName();
+		
+		Check.assumeNotNull(columnName, "The element {} does not have a column name set", infoColumn.getAD_Element());
 
 		if (DisplayType.YesNo == displayType)
 		{
@@ -182,7 +185,7 @@ public class InfoQueryCriteriaGeneral extends AbstractInfoQueryCriteriaGeneral
 	}
 
 	@Override
-	protected CEditor createCheckboxEditor(final String columnName, final String label)
+	protected CEditor createCheckboxEditor( final String label)
 	{
 		final VCheckBox cb = new VCheckBox();
 		cb.setText(label);
@@ -207,7 +210,7 @@ public class InfoQueryCriteriaGeneral extends AbstractInfoQueryCriteriaGeneral
 	}
 
 	@Override
-	protected CEditor createStringEditor(final String columnName, final String defaultValue)
+	protected CEditor createStringEditor(final String defaultValue)
 	{
 		final VString field = new VString();
 		field.setBackground(AdempierePLAF.getInfoBackground());
