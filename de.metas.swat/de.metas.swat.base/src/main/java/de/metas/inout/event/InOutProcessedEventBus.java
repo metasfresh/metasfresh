@@ -13,15 +13,14 @@ package de.metas.inout.event;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Collections;
@@ -60,14 +59,15 @@ public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 			.setName("de.metas.inout.InOut.ProcessedEvents")
 			.setType(Type.REMOTE)
 			.build();
-	
+
 	// services
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	private static final String MSG_Event_ShipmentGenerated = "Event_ShipmentGenerated";
-	private static final String MSG_Event_ReceiptGenerated = "Event_ReceiptGenerated";
-	//
 	private static final String MSG_Event_ShipmentReversed = "Event_ShipmentReversed";
+	private static final String MSG_Event_ShipmentError = "Event_ShipmentError";
+	//
+	private static final String MSG_Event_ReceiptGenerated = "Event_ReceiptGenerated";
 	private static final String MSG_Event_ReceiptReversed = "Event_ReceiptReversed";
 
 	private InOutProcessedEventBus(final IEventBus delegate)
@@ -88,7 +88,7 @@ public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 		super.queueEventsUntilTrxCommit(trxName);
 		return this;
 	}
-	
+
 	@Override
 	public InOutProcessedEventBus queueEventsUntilCurrentTrxCommit()
 	{
@@ -153,10 +153,10 @@ public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 				.build();
 		return event;
 	}
-	
+
 	private final String getNotificationAD_Message(final I_M_InOut inout)
 	{
-		if(docActionBL.isDocumentReversedOrVoided(inout))
+		if (docActionBL.isDocumentReversedOrVoided(inout))
 		{
 			return inout.isSOTrx() ? MSG_Event_ShipmentReversed : MSG_Event_ReceiptReversed;
 		}
@@ -165,19 +165,19 @@ public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 			return inout.isSOTrx() ? MSG_Event_ShipmentGenerated : MSG_Event_ReceiptGenerated;
 		}
 	}
-	
+
 	private final int getNotificationRecipientUserId(final I_M_InOut inout)
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
-		if(docActionBL.isDocumentReversedOrVoided(inout))
+		if (docActionBL.isDocumentReversedOrVoided(inout))
 		{
 			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
-			if(currentUserId > 0)
+			if (currentUserId > 0)
 			{
 				return currentUserId;
 			}
-			
+
 			return inout.getUpdatedBy(); // last updated
 		}
 		//
@@ -186,5 +186,19 @@ public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 		{
 			return inout.getCreatedBy();
 		}
+	}
+
+	public InOutProcessedEventBus notifyShipmentError(final String sourceInfo, final String errorMessage)
+	{
+		final int recipientUserId = Env.getAD_User_ID(Env.getCtx());
+		
+		final Event event = Event.builder()
+				.setDetailADMessage(MSG_Event_ShipmentError, sourceInfo, errorMessage)
+				.addRecipient_User_ID(recipientUserId)
+				.build();
+		postEvent(event);
+
+		return this;
+
 	}
 }
