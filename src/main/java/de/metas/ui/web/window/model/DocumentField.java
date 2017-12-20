@@ -80,7 +80,6 @@ import lombok.NonNull;
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
 	{
-		super();
 		this.descriptor = descriptor;
 		_document = document;
 

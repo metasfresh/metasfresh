@@ -82,9 +82,9 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.setCaption(msgBL.translatable(IInvoiceLineQuickInput.COLUMNNAME_M_Product_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(ProductLookupDescriptor.builder()
+				.setLookupDescriptorProvider(ProductLookupDescriptor.builderWithoutStockInfo()
 						.bpartnerParamName(I_C_Invoice.COLUMNNAME_C_BPartner_ID)
-						.dateParamName(I_C_Invoice.COLUMNNAME_DateInvoiced)
+						.pricingDateParamName(I_C_Invoice.COLUMNNAME_DateInvoiced)
 						.availableStockService(availableStockService)
 						.build())
 				.setMandatoryLogic(true)

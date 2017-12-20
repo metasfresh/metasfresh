@@ -112,9 +112,10 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 				.setCaption(Services.get(IMsgBL.class).translatable(IForecastLineQuickInput.COLUMNNAME_M_Product_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(ProductLookupDescriptor.builder()
+				.setLookupDescriptorProvider(ProductLookupDescriptor.builderWithStockInfo()
 						.bpartnerParamName(I_M_Forecast.COLUMNNAME_C_BPartner_ID)
-						.dateParamName(I_M_Forecast.COLUMNNAME_DatePromised)
+						.pricingDateParamName(I_M_Forecast.COLUMNNAME_DatePromised)
+						.availableStockDateParamName(I_M_Forecast.COLUMNNAME_DatePromised)
 						.availableStockService(availableStockService)
 						.build())
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
