@@ -108,6 +108,12 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	}
 
 	@Override
+	public boolean isAllowRetryOnError()
+	{
+		return false;
+	}
+
+	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage_NOTUSED, final String localTrxName_NOTUSED)
 	{
 		//
