@@ -14,7 +14,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1016667625L;
+	private static final long serialVersionUID = -1262599193L;
 
     /** Standard Constructor */
     public X_I_Pharma_Product (Properties ctx, int I_Pharma_Product_ID, String trxName)
@@ -1104,8 +1104,8 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	public static final String A02BIOTECH_01 = "01";
 	/** 02 = 02 */
 	public static final String A02BIOTECH_02 = "02";
-	/** 02 = 03 */
-	public static final String A02BIOTECH_02 = "03";
+	/** 03 = 03 */
+	public static final String A02BIOTECH_03 = "03";
 	/** Set A02BIOTECH.
 		@param A02BIOTECH A02BIOTECH	  */
 	@Override
