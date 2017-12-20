@@ -53,3 +53,8 @@ UPDATE AD_Process_Para SET EntityType='de.metas.ui.web',Updated=TO_TIMESTAMP('20
 UPDATE AD_Element SET EntityType='de.metas.ui.web',Updated=TO_TIMESTAMP('2017-12-14 16:10:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543684
 ;
 
+-- 2017-12-20T11:03:06.489
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Nur CUs sind erlaubt', MsgType='I',Updated=TO_TIMESTAMP('2017-12-20 11:03:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544611
+;
+
