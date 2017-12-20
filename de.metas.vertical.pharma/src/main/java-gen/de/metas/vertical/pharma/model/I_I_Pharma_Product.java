@@ -2898,6 +2898,87 @@ public interface I_I_Pharma_Product
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Price List AEP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAEP_Price_List_ID (int AEP_Price_List_ID);
+
+	/**
+	 * Get Price List AEP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAEP_Price_List_ID();
+
+	public org.compiere.model.I_M_PriceList getAEP_Price_List();
+
+	public void setAEP_Price_List(org.compiere.model.I_M_PriceList AEP_Price_List);
+
+    /** Column definition for AEP_Price_List_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList> COLUMN_AEP_Price_List_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList>(I_I_Pharma_Product.class, "AEP_Price_List_ID", org.compiere.model.I_M_PriceList.class);
+    /** Column name AEP_Price_List_ID */
+    public static final String COLUMNNAME_AEP_Price_List_ID = "AEP_Price_List_ID";
+
+	/**
+	 * Set Price List APU.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAPU_Price_List_ID (int APU_Price_List_ID);
+
+	/**
+	 * Get Price List APU.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAPU_Price_List_ID();
+
+	public org.compiere.model.I_M_PriceList getAPU_Price_List();
+
+	public void setAPU_Price_List(org.compiere.model.I_M_PriceList APU_Price_List);
+
+    /** Column definition for APU_Price_List_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList> COLUMN_APU_Price_List_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList>(I_I_Pharma_Product.class, "APU_Price_List_ID", org.compiere.model.I_M_PriceList.class);
+    /** Column name APU_Price_List_ID */
+    public static final String COLUMNNAME_APU_Price_List_ID = "APU_Price_List_ID";
+
+	/**
+	 * Set Price List AVP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAVP_Price_List_ID (int AVP_Price_List_ID);
+
+	/**
+	 * Get Price List AVP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAVP_Price_List_ID();
+
+	public org.compiere.model.I_M_PriceList getAVP_Price_List();
+
+	public void setAVP_Price_List(org.compiere.model.I_M_PriceList AVP_Price_List);
+
+    /** Column definition for AVP_Price_List_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList> COLUMN_AVP_Price_List_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList>(I_I_Pharma_Product.class, "AVP_Price_List_ID", org.compiere.model.I_M_PriceList.class);
+    /** Column name AVP_Price_List_ID */
+    public static final String COLUMNNAME_AVP_Price_List_ID = "AVP_Price_List_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -3024,6 +3105,33 @@ public interface I_I_Pharma_Product
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Price List KAEP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setKAEP_Price_List_ID (int KAEP_Price_List_ID);
+
+	/**
+	 * Get Price List KAEP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getKAEP_Price_List_ID();
+
+	public org.compiere.model.I_M_PriceList getKAEP_Price_List();
+
+	public void setKAEP_Price_List(org.compiere.model.I_M_PriceList KAEP_Price_List);
+
+    /** Column definition for KAEP_Price_List_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList> COLUMN_KAEP_Price_List_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList>(I_I_Pharma_Product.class, "KAEP_Price_List_ID", org.compiere.model.I_M_PriceList.class);
+    /** Column name KAEP_Price_List_ID */
+    public static final String COLUMNNAME_KAEP_Price_List_ID = "KAEP_Price_List_ID";
 
 	/**
 	 * Set Dosage Form.
@@ -3164,4 +3272,58 @@ public interface I_I_Pharma_Product
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_AD_User>(I_I_Pharma_Product.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Price List UVP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setUVP_Price_List_ID (int UVP_Price_List_ID);
+
+	/**
+	 * Get Price List UVP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getUVP_Price_List_ID();
+
+	public org.compiere.model.I_M_PriceList getUVP_Price_List();
+
+	public void setUVP_Price_List(org.compiere.model.I_M_PriceList UVP_Price_List);
+
+    /** Column definition for UVP_Price_List_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList> COLUMN_UVP_Price_List_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList>(I_I_Pharma_Product.class, "UVP_Price_List_ID", org.compiere.model.I_M_PriceList.class);
+    /** Column name UVP_Price_List_ID */
+    public static final String COLUMNNAME_UVP_Price_List_ID = "UVP_Price_List_ID";
+
+	/**
+	 * Set Price List ZBV.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setZBV_Price_List_ID (int ZBV_Price_List_ID);
+
+	/**
+	 * Get Price List ZBV.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getZBV_Price_List_ID();
+
+	public org.compiere.model.I_M_PriceList getZBV_Price_List();
+
+	public void setZBV_Price_List(org.compiere.model.I_M_PriceList ZBV_Price_List);
+
+    /** Column definition for ZBV_Price_List_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList> COLUMN_ZBV_Price_List_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList>(I_I_Pharma_Product.class, "ZBV_Price_List_ID", org.compiere.model.I_M_PriceList.class);
+    /** Column name ZBV_Price_List_ID */
+    public static final String COLUMNNAME_ZBV_Price_List_ID = "ZBV_Price_List_ID";
 }

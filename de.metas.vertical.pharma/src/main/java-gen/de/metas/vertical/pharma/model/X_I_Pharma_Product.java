@@ -14,7 +14,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1262599193L;
+	private static final long serialVersionUID = 1258188346L;
 
     /** Standard Constructor */
     public X_I_Pharma_Product (Properties ctx, int I_Pharma_Product_ID, String trxName)
@@ -2687,6 +2687,108 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_M_PriceList getAEP_Price_List() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AEP_Price_List_ID, org.compiere.model.I_M_PriceList.class);
+	}
+
+	@Override
+	public void setAEP_Price_List(org.compiere.model.I_M_PriceList AEP_Price_List)
+	{
+		set_ValueFromPO(COLUMNNAME_AEP_Price_List_ID, org.compiere.model.I_M_PriceList.class, AEP_Price_List);
+	}
+
+	/** Set Price List AEP.
+		@param AEP_Price_List_ID Price List AEP	  */
+	@Override
+	public void setAEP_Price_List_ID (int AEP_Price_List_ID)
+	{
+		if (AEP_Price_List_ID < 1) 
+			set_Value (COLUMNNAME_AEP_Price_List_ID, null);
+		else 
+			set_Value (COLUMNNAME_AEP_Price_List_ID, Integer.valueOf(AEP_Price_List_ID));
+	}
+
+	/** Get Price List AEP.
+		@return Price List AEP	  */
+	@Override
+	public int getAEP_Price_List_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AEP_Price_List_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_PriceList getAPU_Price_List() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_APU_Price_List_ID, org.compiere.model.I_M_PriceList.class);
+	}
+
+	@Override
+	public void setAPU_Price_List(org.compiere.model.I_M_PriceList APU_Price_List)
+	{
+		set_ValueFromPO(COLUMNNAME_APU_Price_List_ID, org.compiere.model.I_M_PriceList.class, APU_Price_List);
+	}
+
+	/** Set Price List APU.
+		@param APU_Price_List_ID Price List APU	  */
+	@Override
+	public void setAPU_Price_List_ID (int APU_Price_List_ID)
+	{
+		if (APU_Price_List_ID < 1) 
+			set_Value (COLUMNNAME_APU_Price_List_ID, null);
+		else 
+			set_Value (COLUMNNAME_APU_Price_List_ID, Integer.valueOf(APU_Price_List_ID));
+	}
+
+	/** Get Price List APU.
+		@return Price List APU	  */
+	@Override
+	public int getAPU_Price_List_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_APU_Price_List_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_PriceList getAVP_Price_List() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AVP_Price_List_ID, org.compiere.model.I_M_PriceList.class);
+	}
+
+	@Override
+	public void setAVP_Price_List(org.compiere.model.I_M_PriceList AVP_Price_List)
+	{
+		set_ValueFromPO(COLUMNNAME_AVP_Price_List_ID, org.compiere.model.I_M_PriceList.class, AVP_Price_List);
+	}
+
+	/** Set Price List AVP.
+		@param AVP_Price_List_ID Price List AVP	  */
+	@Override
+	public void setAVP_Price_List_ID (int AVP_Price_List_ID)
+	{
+		if (AVP_Price_List_ID < 1) 
+			set_Value (COLUMNNAME_AVP_Price_List_ID, null);
+		else 
+			set_Value (COLUMNNAME_AVP_Price_List_ID, Integer.valueOf(AVP_Price_List_ID));
+	}
+
+	/** Get Price List AVP.
+		@return Price List AVP	  */
+	@Override
+	public int getAVP_Price_List_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AVP_Price_List_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Import-Fehlermeldung.
 		@param I_ErrorMsg 
 		Meldungen, die durch den Importprozess generiert wurden
@@ -2754,6 +2856,40 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	public int getI_Pharma_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_I_Pharma_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_PriceList getKAEP_Price_List() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_KAEP_Price_List_ID, org.compiere.model.I_M_PriceList.class);
+	}
+
+	@Override
+	public void setKAEP_Price_List(org.compiere.model.I_M_PriceList KAEP_Price_List)
+	{
+		set_ValueFromPO(COLUMNNAME_KAEP_Price_List_ID, org.compiere.model.I_M_PriceList.class, KAEP_Price_List);
+	}
+
+	/** Set Price List KAEP.
+		@param KAEP_Price_List_ID Price List KAEP	  */
+	@Override
+	public void setKAEP_Price_List_ID (int KAEP_Price_List_ID)
+	{
+		if (KAEP_Price_List_ID < 1) 
+			set_Value (COLUMNNAME_KAEP_Price_List_ID, null);
+		else 
+			set_Value (COLUMNNAME_KAEP_Price_List_ID, Integer.valueOf(KAEP_Price_List_ID));
+	}
+
+	/** Get Price List KAEP.
+		@return Price List KAEP	  */
+	@Override
+	public int getKAEP_Price_List_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_KAEP_Price_List_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -2891,5 +3027,73 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	@Override
+	public org.compiere.model.I_M_PriceList getUVP_Price_List() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_UVP_Price_List_ID, org.compiere.model.I_M_PriceList.class);
+	}
+
+	@Override
+	public void setUVP_Price_List(org.compiere.model.I_M_PriceList UVP_Price_List)
+	{
+		set_ValueFromPO(COLUMNNAME_UVP_Price_List_ID, org.compiere.model.I_M_PriceList.class, UVP_Price_List);
+	}
+
+	/** Set Price List UVP.
+		@param UVP_Price_List_ID Price List UVP	  */
+	@Override
+	public void setUVP_Price_List_ID (int UVP_Price_List_ID)
+	{
+		if (UVP_Price_List_ID < 1) 
+			set_Value (COLUMNNAME_UVP_Price_List_ID, null);
+		else 
+			set_Value (COLUMNNAME_UVP_Price_List_ID, Integer.valueOf(UVP_Price_List_ID));
+	}
+
+	/** Get Price List UVP.
+		@return Price List UVP	  */
+	@Override
+	public int getUVP_Price_List_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_UVP_Price_List_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_PriceList getZBV_Price_List() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_ZBV_Price_List_ID, org.compiere.model.I_M_PriceList.class);
+	}
+
+	@Override
+	public void setZBV_Price_List(org.compiere.model.I_M_PriceList ZBV_Price_List)
+	{
+		set_ValueFromPO(COLUMNNAME_ZBV_Price_List_ID, org.compiere.model.I_M_PriceList.class, ZBV_Price_List);
+	}
+
+	/** Set Price List ZBV.
+		@param ZBV_Price_List_ID Price List ZBV	  */
+	@Override
+	public void setZBV_Price_List_ID (int ZBV_Price_List_ID)
+	{
+		if (ZBV_Price_List_ID < 1) 
+			set_Value (COLUMNNAME_ZBV_Price_List_ID, null);
+		else 
+			set_Value (COLUMNNAME_ZBV_Price_List_ID, Integer.valueOf(ZBV_Price_List_ID));
+	}
+
+	/** Get Price List ZBV.
+		@return Price List ZBV	  */
+	@Override
+	public int getZBV_Price_List_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_ZBV_Price_List_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }
