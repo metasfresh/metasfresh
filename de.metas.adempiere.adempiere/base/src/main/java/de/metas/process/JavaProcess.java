@@ -16,6 +16,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
@@ -82,6 +83,8 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	private Properties _ctx;
 	private ProcessInfo _processInfo;
 
+	private final IProcessParametersCallout parametersCallout;
+
 	//
 	// Transaction management
 	/** Process Main transaction */
@@ -108,8 +111,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 	protected JavaProcess()
 	{
-		super();
-
+		parametersCallout = this instanceof IProcessParametersCallout ? (IProcessParametersCallout)this : null;
 		_fieldsIndexedByFieldKey = ProcessClassInfo.retrieveParameterFieldsIndexedByFieldKey(getClass());
 	}
 
@@ -142,7 +144,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 	/**
 	 * Set the current process instance, assuming that none is set right now. If one is already set, then throw an exception.
-	 * 
+	 *
 	 * @param instance
 	 * @return
 	 */
@@ -154,7 +156,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 	/**
 	 * Set the current process instance. If one is already set, then overwrite it.
-	 * 
+	 *
 	 * @param instance
 	 * @return
 	 */
@@ -165,10 +167,10 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	}
 
 	/**
-	 * 
+	 *
 	 * @param instance
 	 * @param overrideCurrentInstance of {@code false} and there is already an instance set, then throw an exception.
-	 * 
+	 *
 	 * @return
 	 */
 	private static final IAutoCloseable temporaryChangeCurrentInstance(@NonNull final Object instance, final boolean overrideCurrentInstance)
@@ -323,9 +325,9 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 	/**
 	 * Initialize this process from given process instance info.
-	 * 
+	 *
 	 * NOTE: don't call this method directly. Only the API is allowed to call it.
-	 * 
+	 *
 	 * @param pi process instance info
 	 */
 	public final void init(final ProcessInfo pi)
@@ -355,9 +357,9 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 	/**
 	 * Initialize this process from given preconditions context.
-	 * 
+	 *
 	 * NOTE: don't call this method directly. Only the API is allowed to call it.
-	 * 
+	 *
 	 * @param context preconditions context
 	 */
 	@OverridingMethodsMustInvokeSuper
@@ -368,7 +370,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 	/**
 	 * Load "@Param" annotated parameters from {@link ProcessInfo}.
-	 * 
+	 *
 	 * @param failIfNotValid
 	 */
 	@OverridingMethodsMustInvokeSuper
@@ -400,10 +402,10 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 	/**
 	 * Load process autowired parameter from given <code>source</code>.
-	 * 
+	 *
 	 * If the parameter value is not valid (e.g. mandatory required but was null),
 	 * this method won't fail but will simply not set the value.
-	 * 
+	 *
 	 * @param parameterName
 	 * @param isParameterTo
 	 * @param source
@@ -423,6 +425,12 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 			paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
 		});
 
+		//
+		// Fire parameters callout if any
+		if (parametersCallout != null)
+		{
+			parametersCallout.onParameterChanged(parameterName);
+		}
 	}
 
 	private Collection<ProcessClassParamInfo> getParameterInfos(final String parameterName)
@@ -644,7 +652,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	/**
 	 * Prepare process run.
 	 * This method is called after the {@link Param} annotated parameters were loaded.
-	 * 
+	 *
 	 * <p>
 	 * Here you would implement process preparation business logic (e.g. parameters retrieval).
 	 * <p>
@@ -686,16 +694,17 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	}
 
 	/**
-	 * Schedule runnable to be executed after current transaction is committed.
+	 * Schedule runnable to be executed whenever the current transaction is committed.
 	 * If there is no current transaction, the runnable will be executed right away.
-	 * 
+	 *
 	 * @param runnable
 	 */
-	protected final void runAfterCommit(final Runnable runnable)
+	protected final void runAfterCommit(@NonNull final Runnable runnable)
 	{
-		Check.assumeNotNull(runnable, "Parameter runnable is not null");
 		trxManager.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-				.onAfterCommit(runnable);
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerHandlingMethod(innerTrx -> runnable.run());
 	}
 
 	/**
@@ -847,7 +856,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 
 		return getProcessInfo().getRecord(modelClass, trxName);
 	}
-	
+
 	/** @return selected included row IDs of current single selected document */
 	protected final <T> Set<Integer> getSelectedIncludedRecordIds(final Class<T> modelClass)
 	{
@@ -992,7 +1001,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 * <li>else if the single record is set ({@link ProcessInfo}'s AD_Table_ID/Record_ID) that will will be used
 	 * <li>else an exception is thrown
 	 * </ul>
-	 * 
+	 *
 	 * @param modelClass
 	 * @return query builder which will provide selected record(s)
 	 */

@@ -28,16 +28,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -46,6 +50,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -56,8 +61,17 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.inout.event.InOutProcessedEventBus;
+import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 
 /**
  * Generates Shipment document from given loading units (LUs).
@@ -77,6 +91,14 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 
 	private InOutGenerateResult inoutGenerateResult = null;
 
+	private static final String PARAMETERNAME_InvoiceMode = "InvoiceMode";
+	private static final String PARAMETERNAME_IsCompleteShipments = ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments;
+
+	public static enum InvoiceMode
+	{
+		None, AllWithoutInvoiceSchedule,
+	};
+
 	/**
 	 * Create and enqueue a workpackage for given handling units. Created workpackage will be marked as ready for processing.
 	 *
@@ -84,18 +106,36 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	 * @param hus handling units to enqueue
 	 * @return created workpackage.
 	 */
-	public static final I_C_Queue_WorkPackage enqueueWorkpackage(final Properties ctx, final List<I_M_HU> hus)
+	public static final I_C_Queue_WorkPackage enqueueWorkpackage(final List<I_M_HU> hus)
 	{
-		if (hus == null || hus.isEmpty())
-		{
-			throw new AdempiereException("@NotFound@ @M_HU_ID@");
-		}
+		return prepareWorkpackage()
+				.hus(hus)
+				.completeShipments(false)
+				.invoiceMode(InvoiceMode.None)
+				.enqueue();
+	}
 
+	@Builder(builderMethodName = "prepareWorkpackage", buildMethodName = "enqueue")
+	private static final I_C_Queue_WorkPackage enqueueWorkpackage(
+			@NonNull @Singular("hu") final List<I_M_HU> hus,
+			final boolean completeShipments,
+			@Nullable final InvoiceMode invoiceMode)
+	{
+		Check.assumeNotEmpty(hus, "hus is not empty");
+
+		final InvoiceMode invoiceModeEffective = invoiceMode != null ? invoiceMode : InvoiceMode.None;
+
+		final Properties ctx = Env.getCtx();
 		return Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(ctx, GenerateInOutFromHU.class)
 				.newBlock()
 				.setContext(ctx)
 				.newWorkpackage()
+				.bindToThreadInheritedTrx()
+				.parameters()
+				.setParameter(PARAMETERNAME_InvoiceMode, invoiceModeEffective.name())
+				.setParameter(PARAMETERNAME_IsCompleteShipments, completeShipments)
+				.end()
 				.addElements(hus)
 				.build();
 	}
@@ -112,8 +152,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(ctx, ITrx.TRXNAME_ThreadInherited);
 		final Iterator<IShipmentScheduleWithHU> candidates = retrieveCandidates(huContext, workpackage, ITrx.TRXNAME_ThreadInherited);
 
-		// 07113: At this point, we only need the shipment drafted
-		final String docActionNone = null;
+		final String shipmentDocAction = isCompleteShipments() ? IDocument.ACTION_Complete : null;
 		final boolean createPackingLines = false; // the packing lines shall only be created when the shipments are completed
 		final boolean manualPackingMaterial = false; // use the HUs!
 
@@ -121,10 +160,12 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 		setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance);
 
-		inoutGenerateResult = generateInOuts(ctx, candidates, docActionNone, createPackingLines, manualPackingMaterial,
-				true, //isShipmentDateToday:  if this is ever used, it should be on true to keep legacy
+		inoutGenerateResult = generateInOuts(ctx, candidates, shipmentDocAction, createPackingLines, manualPackingMaterial,
+				true, // isShipmentDateToday: if this is ever used, it should be on true to keep legacy
 				ITrx.TRXNAME_ThreadInherited);
 		Loggables.get().addLog("Generated " + inoutGenerateResult.toString());
+
+		generateInvoicesIfNeeded(inoutGenerateResult.getInOuts());
 
 		return Result.SUCCESS;
 	}
@@ -265,7 +306,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 			// Log if there were no candidates created for current HU.
 			if (candidatesForHU.isEmpty())
 			{
-				Loggables.get().addLog("No eligible " + I_M_ShipmentSchedule_QtyPicked.Table_Name + " records found for " + handlingUnitsBL.getDisplayName(hu));
+				Loggables.get().addLog("No eligible " + de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.Table_Name + " records found for " + handlingUnitsBL.getDisplayName(hu));
 			}
 		}
 
@@ -276,5 +317,48 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		// TODO: make sure all shipment schedules are valid
 
 		return result.iterator();
+	}
+
+	private void generateInvoicesIfNeeded(final List<I_M_InOut> shipments)
+	{
+		if (shipments.isEmpty())
+		{
+			return;
+		}
+
+		final InvoiceMode invoiceMode = getInvoiceMode();
+		if (invoiceMode == InvoiceMode.None)
+		{
+			return;
+		}
+
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
+		// TODO: atm createSelection from a query with UNIONs is not working. Fix that first.
+		final List<Integer> invoiceCandidateIds = invoiceCandDAO.retrieveInvoiceCandidatesQueryForInOuts(shipments).listIds();
+		final int invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, ITrx.TRXNAME_ThreadInherited);
+
+		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		invoicingParams.setIgnoreInvoiceSchedule(InvoiceMode.AllWithoutInvoiceSchedule == invoiceMode);
+
+		final ILoggable loggable = Loggables.get();
+		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
+				.setLoggable(loggable)
+				.setInvoicingParams(invoicingParams)
+				//
+				.enqueueSelection(invoiceCandidatesSelectionId);
+		loggable.addLog("Invoice candidates enqueued: {}", enqueueResult);
+	}
+
+	private InvoiceMode getInvoiceMode()
+	{
+		final String invoiceModeStr = getParameters().getParameterAsString(PARAMETERNAME_InvoiceMode);
+		return !Check.isEmpty(invoiceModeStr, true) ? InvoiceMode.valueOf(invoiceModeStr) : InvoiceMode.None;
+	}
+
+	private boolean isCompleteShipments()
+	{
+		return getParameters().getParameterAsBool(PARAMETERNAME_IsCompleteShipments);
 	}
 }

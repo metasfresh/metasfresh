@@ -16,7 +16,6 @@
 
 	<modules>
 		<module>dispo-commons</module>
-		<module>dispo-client</module>
 		<module>dispo-service</module>
 		<module>event</module>
 		<module>planning</module>

@@ -304,7 +304,6 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 					huShipperTransportationBL.isEligibleForAddingToShipperTransportation(afterAggregation_HU));
 			huShipperTransportationBL
 					.addHUsToShipperTransportation(
-							helper.getContextProvider(),
 							shipperTransportation.getM_ShipperTransportation_ID(),
 							Collections.singletonList(afterAggregation_HU));
 
@@ -349,7 +348,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		//
 		// Test Generate Shipment from HUs
-		final I_C_Queue_WorkPackage workpackage = GenerateInOutFromHU.enqueueWorkpackage(helper.getCtx(), afterAggregation_HUs);
+		final I_C_Queue_WorkPackage workpackage = GenerateInOutFromHU.enqueueWorkpackage(afterAggregation_HUs);
 
 		// Make sure we are working with valid candidates
 		final GenerateInOutFromHU processor = new GenerateInOutFromHU();
@@ -360,7 +359,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		//
 		// When matching expectations, sort the candidates so that they have the same indexes as the aggregated HUs
 		//
-		final List<IShipmentScheduleWithHU> candidatesSorted = new ArrayList<IShipmentScheduleWithHU>();
+		final List<IShipmentScheduleWithHU> candidatesSorted = new ArrayList<>();
 		while (candidates.hasNext())
 		{
 			final IShipmentScheduleWithHU candidate = candidates.next();

@@ -92,6 +92,35 @@ public interface I_C_Order_MFGWarehouse_ReportLine
     public static final String COLUMNNAME_Barcode = "Barcode";
 
 	/**
+	 * Set Auftragsposition.
+	 * Auftragsposition
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_OrderLine_ID (int C_OrderLine_ID);
+
+	/**
+	 * Get Auftragsposition.
+	 * Auftragsposition
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_OrderLine_ID();
+
+	public org.compiere.model.I_C_OrderLine getC_OrderLine();
+
+	public void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine);
+
+    /** Column definition for C_OrderLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_ReportLine, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_ReportLine, org.compiere.model.I_C_OrderLine>(I_C_Order_MFGWarehouse_ReportLine.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
+    /** Column name C_OrderLine_ID */
+    public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
+
+	/**
 	 * Set Order / MFG Warehouse report.
 	 *
 	 * <br>Type: Search
@@ -140,35 +169,6 @@ public interface I_C_Order_MFGWarehouse_ReportLine
     public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_ReportLine, Object> COLUMN_C_Order_MFGWarehouse_ReportLine_ID = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_ReportLine, Object>(I_C_Order_MFGWarehouse_ReportLine.class, "C_Order_MFGWarehouse_ReportLine_ID", null);
     /** Column name C_Order_MFGWarehouse_ReportLine_ID */
     public static final String COLUMNNAME_C_Order_MFGWarehouse_ReportLine_ID = "C_Order_MFGWarehouse_ReportLine_ID";
-
-	/**
-	 * Set Auftragsposition.
-	 * Auftragsposition
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_OrderLine_ID (int C_OrderLine_ID);
-
-	/**
-	 * Get Auftragsposition.
-	 * Auftragsposition
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_OrderLine_ID();
-
-	public org.compiere.model.I_C_OrderLine getC_OrderLine();
-
-	public void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine);
-
-    /** Column definition for C_OrderLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_ReportLine, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_ReportLine, org.compiere.model.I_C_OrderLine>(I_C_Order_MFGWarehouse_ReportLine.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
-    /** Column name C_OrderLine_ID */
-    public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
 	 * Get Erstellt.

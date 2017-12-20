@@ -10,12 +10,12 @@ package org.adempiere.util.lang;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,7 +27,7 @@ import java.io.Serializable;
 
 /**
  * An memorizing supplier which also allows to forget the value or to peek current value.
- * 
+ *
  * @param <T>
  */
 public final class ExtendedMemorizingSupplier<T> implements java.util.function.Supplier<T>, Serializable
@@ -49,7 +49,6 @@ public final class ExtendedMemorizingSupplier<T> implements java.util.function.S
 
 	private ExtendedMemorizingSupplier(final java.util.function.Supplier<T> delegate)
 	{
-		super();
 		this.delegate = delegate;
 	}
 
@@ -84,7 +83,7 @@ public final class ExtendedMemorizingSupplier<T> implements java.util.function.S
 
 	/**
 	 * Forget memorized value
-	 * @return 
+	 * @return
 	 * @return current value if any
 	 */
 	public T forget()

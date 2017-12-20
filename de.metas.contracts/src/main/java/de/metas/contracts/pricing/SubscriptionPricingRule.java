@@ -112,6 +112,7 @@ public class SubscriptionPricingRule implements IPricingRule
 		subscriptionPricingCtx.setSOTrx(pricingCtx.isSOTrx());
 		subscriptionPricingCtx.setAD_Table_ID(pricingCtx.getAD_Table_ID());
 		subscriptionPricingCtx.setRecord_ID(pricingCtx.getRecord_ID());
+		subscriptionPricingCtx.setDisallowDiscount(pricingCtx.isDisallowDiscount());
 
 		// don't set a ReferencedObject, so that this rule's 'applies()' method will return false
 		subscriptionPricingCtx.setReferencedObject(null);
@@ -119,7 +120,7 @@ public class SubscriptionPricingRule implements IPricingRule
 		// set the price list from subscription's M_Pricing_Systen
 		subscriptionPricingCtx.setM_PriceList_Version_ID(0);
 		subscriptionPricingCtx.setM_PriceList_ID(subscriptionPriceList.getM_PriceList_ID());
-
+		
 		return subscriptionPricingCtx;
 	}
 

@@ -34,9 +34,7 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -63,7 +61,7 @@ public class MAttribute extends X_M_Attribute
 	public static MAttribute[] getOfClient(Properties ctx,
 			boolean onlyProductAttributes, boolean onlyListAttributes)
 	{
-		ArrayList<MAttribute> list = new ArrayList<MAttribute>();
+		ArrayList<MAttribute> list = new ArrayList<>();
 		int AD_Client_ID = Env.getAD_Client_ID(ctx);
 		String sql = "SELECT * FROM M_Attribute "
 				+ "WHERE AD_Client_ID=? AND IsActive='Y'";
@@ -161,7 +159,7 @@ public class MAttribute extends X_M_Attribute
 	{
 		if (m_values == null && ATTRIBUTEVALUETYPE_List.equals(getAttributeValueType()))
 		{
-			final List<I_M_AttributeValue> list = new ArrayList<I_M_AttributeValue>();
+			final List<I_M_AttributeValue> list = new ArrayList<>();
 			if (!isMandatory())
 				list.add(null);
 			//
@@ -217,7 +215,7 @@ public class MAttribute extends X_M_Attribute
 		// task 07948
 		// note: in fact there is an asi with ID = null (created in 2000), but we want to ignore it;
 		// it's a special one and it shall not have any Attribute instances
-		Check.errorIf(M_AttributeSetInstance_ID <= 0, "This method shall not be called with M_AttributeSetInstance_ID=0");
+		Check.errorIf(M_AttributeSetInstance_ID <= 0, "This method shall not be called with M_AttributeSetInstance_ID<=0");
 
 		//
 		// Extract M_AttributeValue_ID and Value

@@ -102,7 +102,7 @@ public class SupplyProposalEvaluator
 			return false;
 		}
 
-	final	MaterialDescriptorQuery supplyMaterialDescriptorQuery  = MaterialDescriptorQuery.builder()
+		final MaterialDescriptorQuery supplyMaterialDescriptorQuery = MaterialDescriptorQuery.builder()
 				.productId(productDescriptor.getProductId())
 				.storageAttributesKey(productDescriptor.getStorageAttributesKey())
 				.warehouseId(proposal.getSourceWarehouseId())

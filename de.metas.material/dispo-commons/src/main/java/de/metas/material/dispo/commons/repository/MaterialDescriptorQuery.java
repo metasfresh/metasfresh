@@ -6,9 +6,8 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.base.Preconditions;
 
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.StorageAttributesKey;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -79,7 +78,7 @@ public class MaterialDescriptorQuery
 
 	int warehouseId;
 	int productId;
-	StorageAttributesKey storageAttributesKey;
+	AttributesKey storageAttributesKey;
 	int bPartnerId;
 	Date date;
 
@@ -87,7 +86,7 @@ public class MaterialDescriptorQuery
 	private MaterialDescriptorQuery(
 			final int warehouseId,
 			final int productId,
-			final StorageAttributesKey storageAttributesKey,
+			final AttributesKey storageAttributesKey,
 			final Integer bPartnerId,
 			final Date date,
 			final DateOperator dateOperator)
@@ -95,7 +94,9 @@ public class MaterialDescriptorQuery
 		this.warehouseId = warehouseId > 0 ? warehouseId : -1;
 
 		this.productId = productId;
-		this.storageAttributesKey = storageAttributesKey != null ? storageAttributesKey : ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL;
+		this.storageAttributesKey = storageAttributesKey != null
+				? storageAttributesKey
+				: AttributesKey.ALL;
 
 		if (bPartnerId == null)
 		{

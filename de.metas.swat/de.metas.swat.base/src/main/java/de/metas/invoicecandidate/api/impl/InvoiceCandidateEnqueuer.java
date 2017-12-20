@@ -29,6 +29,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,6 +40,7 @@ import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.base.Joiner;
@@ -84,9 +86,9 @@ import de.metas.lock.api.LockOwner;
 	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 
 	// Parameters
-	private Properties _ctx;
-	private String _trxNameInitial;
-	private String _trxName;
+	private Properties _ctx = Env.getCtx();
+	private String _trxNameInitial = ITrx.TRXNAME_ThreadInherited;
+	private String _trxName = ITrx.TRXNAME_ThreadInherited;
 	private ILoggable _loggable = NullLoggable.instance;
 	private boolean _failIfNothingEnqueued;
 	private Boolean _failOnChanges = null;

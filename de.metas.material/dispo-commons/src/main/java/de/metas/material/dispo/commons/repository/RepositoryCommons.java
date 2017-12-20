@@ -24,8 +24,7 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -166,16 +165,16 @@ public class RepositoryCommons
 			atLeastOneFilterAdded = true;
 		}
 
-		if (!Objects.equals(materialDescriptorQuery.getStorageAttributesKey(), ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL))
+		if (!Objects.equals(materialDescriptorQuery.getStorageAttributesKey(), AttributesKey.ALL))
 		{
-			final StorageAttributesKey storageAttributesKey = materialDescriptorQuery.getStorageAttributesKey();
+			final AttributesKey attributesKey = materialDescriptorQuery.getStorageAttributesKey();
 			if (matchExactStorageAttributesKey)
 			{
-				builder.addEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, storageAttributesKey.getAsString());
+				builder.addEqualsFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, attributesKey.getAsString());
 			}
 			else
 			{
-				builder.addStringLikeFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, storageAttributesKey.getSqlLikeString(), false); // iggnoreCase=false
+				builder.addStringLikeFilter(I_MD_Candidate.COLUMN_StorageAttributesKey, attributesKey.getSqlLikeString(), false); // iggnoreCase=false
 			}
 			atLeastOneFilterAdded = true;
 		}

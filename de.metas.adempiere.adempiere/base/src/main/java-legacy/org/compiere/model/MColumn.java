@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,7 +36,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.dbPort.Convert;
 import org.compiere.util.CCache;
 import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
@@ -812,7 +812,7 @@ public class MColumn extends X_AD_Column
 	{
 		if (addingSingleColumn && isAddColumnDDL(sqlStatement))
 		{
-			final String sql = Convert.DDL_PREFIX + "SELECT public.db_alter_table(" + DB.TO_STRING(tableName) + "," + DB.TO_STRING(sqlStatement) + ")";
+			final String sql = MigrationScriptFileLoggerHolder.DDL_PREFIX + "SELECT public.db_alter_table(" + DB.TO_STRING(tableName) + "," + DB.TO_STRING(sqlStatement) + ")";
 			final Object[] sqlParams = null; // IMPORTANT: don't use any parameters because we want to log this command to migration script file
 			DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
 		}

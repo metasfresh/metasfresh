@@ -49,10 +49,10 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 
 	private final Predicate<I_MD_Candidate> subTypeIsProductionOrdistribution = r -> {
 
-		final String subType = r.getMD_Candidate_SubType();
+		final String businessCase = r.getMD_Candidate_BusinessCase();
 
-		return X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION.equals(subType)
-				|| X_MD_Candidate.MD_CANDIDATE_SUBTYPE_DISTRIBUTION.equals(subType);
+		return X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION.equals(businessCase)
+				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION.equals(businessCase);
 	};
 
 	private final Predicate<I_MD_Candidate> statusIsDocPlanned = r -> {

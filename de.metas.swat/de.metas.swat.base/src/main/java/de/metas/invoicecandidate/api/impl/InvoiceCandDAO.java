@@ -80,6 +80,7 @@ import de.metas.adempiere.util.CacheTrx;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
@@ -331,6 +332,19 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.endOrderBy()
 		//
 		;
+	}
+
+	@Override
+	public final IQuery<I_C_Invoice_Candidate> retrieveInvoiceCandidatesQueryForInOuts(final Collection<? extends I_M_InOut> inouts)
+	{
+		Check.assumeNotEmpty(inouts, "inouts is not empty");
+		
+		final List<I_M_InOutLine> inoutLines = Services.get(IInOutDAO.class).retrieveLinesForInOuts(inouts);
+		return inoutLines.stream()
+				.map(this::retrieveInvoiceCandidatesForInOutLineQuery)
+				.map(IQueryBuilder::create)
+				.reduce(IQuery.unionDistict())
+				.get();
 	}
 
 	@Override

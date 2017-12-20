@@ -1,5 +1,7 @@
 package de.metas.contracts.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.contracts
@@ -354,8 +356,17 @@ public class ContractChangeBL implements IContractChangeBL
 		if (X_C_SubscriptionProgress.EVENTTYPE_Delivery.equals(evtType)
 				&& (X_C_SubscriptionProgress.STATUS_Planned.equals(status) || X_C_SubscriptionProgress.STATUS_Open.equals(status)))
 		{
-			surplusQty = surplusQty.add(currentSP.getQty());
-			InterfaceWrapperHelper.delete(currentSP);
+			if (currentSP.getM_ShipmentSchedule_ID() > 0)
+			{
+				currentSP.setStatus(X_C_SubscriptionProgress.STATUS_Done);
+				currentSP.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Quit);
+				save(currentSP);
+			}
+			else
+			{
+				surplusQty = surplusQty.add(currentSP.getQty());
+				InterfaceWrapperHelper.delete(currentSP);
+			}
 		}
 		else if (X_C_SubscriptionProgress.EVENTTYPE_BeginOfPause.equals(evtType) || X_C_SubscriptionProgress.EVENTTYPE_EndOfPause.equals(evtType))
 		{
@@ -364,6 +375,8 @@ public class ContractChangeBL implements IContractChangeBL
 
 		return surplusQty;
 	}
+
+
 
 	private void setQuitContractStatus(@NonNull final I_C_SubscriptionProgress progress)
 	{

@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -25,7 +27,7 @@ import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.dispo.model.X_MD_Candidate;
-import de.metas.material.event.commons.StorageAttributesKey;
+import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -101,31 +103,28 @@ public class StockRepository
 		final MemoizingFunction<Date, Timestamp> maxDateLessOrEqualFunction //
 				= Functions.memoizing(date -> retrieveMaxDateLessOrEqual(date));
 
-		return multiQuery.getQueries()
-				.stream()
-				.map(stockQuery -> {
+		final UnaryOperator<StockQuery> setStockQueryDataParameter = //
+				stockQuery -> {
 					final Timestamp latestDateOrNull = maxDateLessOrEqualFunction.apply(stockQuery.getDate());
 					if (latestDateOrNull == null)
 					{
 						return null;
 					}
 					return stockQuery.withDate(latestDateOrNull);
-				})
-				.filter(Predicates.notNull())
-				.map(stockQuery -> StockRepositorySqlHelper.createDBQueryForStockQuery(stockQuery)
+				};
+
+		final Function<StockQuery, IQuery<I_MD_Candidate_Stock_v>> createDbQueryForSingleStockQuery = //
+				stockQuery -> StockRepositorySqlHelper
+						.createDBQueryForStockQuery(stockQuery)
 						.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
-						.create())
-				.reduce((previousDBQuery, dbQuery) -> {
-					if (previousDBQuery == null)
-					{
-						return dbQuery;
-					}
-					else
-					{
-						previousDBQuery.addUnion(dbQuery, true);
-						return previousDBQuery;
-					}
-				})
+						.create();
+
+		return multiQuery.getQueries()
+				.stream()
+				.map(setStockQueryDataParameter)
+				.filter(Predicates.notNull())
+				.map(createDbQueryForSingleStockQuery)
+				.reduce(IQuery.unionDistict())
 				.orElse(null);
 	}
 
@@ -160,7 +159,7 @@ public class StockRepository
 				.productId(stockRecord.getM_Product_ID())
 				.bpartnerId(bPpartnerIdForRequest)
 				.warehouseId(stockRecord.getM_Warehouse_ID())
-				.storageAttributesKey(StorageAttributesKey.ofString(stockRecord.getStorageAttributesKey()))
+				.storageAttributesKey(AttributesKey.ofString(stockRecord.getStorageAttributesKey()))
 				.qty(stockRecord.getQty())
 				.build();
 	}

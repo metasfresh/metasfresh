@@ -13,11 +13,11 @@ package de.metas.printing.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,13 +34,14 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
@@ -56,6 +57,7 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
+import lombok.NonNull;
 
 @Validator(I_C_Print_Job_Instructions.class)
 public class C_Print_Job_Instructions
@@ -74,8 +76,7 @@ public class C_Print_Job_Instructions
 	 *
 	 * @param jobInstructions
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }
-			, ifColumnsChanged = I_C_Print_Job_Instructions.COLUMNNAME_Status)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }, ifColumnsChanged = I_C_Print_Job_Instructions.COLUMNNAME_Status)
 	public void logDocOutbound(final I_C_Print_Job_Instructions jobInstructions)
 	{
 		// We log the doc outbound only when Status changed to Done
@@ -92,8 +93,7 @@ public class C_Print_Job_Instructions
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }
-			, ifColumnsChanged = I_C_Print_Job_Instructions.COLUMNNAME_Status)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }, ifColumnsChanged = I_C_Print_Job_Instructions.COLUMNNAME_Status)
 	public void createNoticeOnError(final I_C_Print_Job_Instructions jobInstructions)
 	{
 		if (!X_C_Print_Job_Instructions.STATUS_Error.equals(jobInstructions.getStatus()))
@@ -119,25 +119,19 @@ public class C_Print_Job_Instructions
 			final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 			trxManager.getTrxListenerManagerOrAutoCommit(trxName)
-					.registerListener(new TrxListenerAdapter()
-					{
-						@Override
-						public void afterCommit(final ITrx trx)
-						{
-							final Pair<I_C_Print_Job_Instructions, I_AD_User> reloadRecords = reloadRecords(ctx, printJobInstructionsID, userToPrintID);
-							final I_C_Print_Job_Instructions printJobInstructionsReloaded = reloadRecords.getFirst();
-							final I_AD_User userToPrintReloaded = reloadRecords.getSecond();
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.registerHandlingMethod(innerTrx -> {
 
-							notificationBL.notifyUser(
-									userToPrintReloaded,
-									MSG_CLIENT_REPORTS_PRINT_ERROR,
-									printJobInstructionsReloaded.getErrorMsg(),
-									TableRecordReference.of(printJobInstructionsReloaded));
+						final IPair<I_C_Print_Job_Instructions, I_AD_User> reloadRecords = reloadRecords(ctx, printJobInstructionsID, userToPrintID);
+						final I_C_Print_Job_Instructions printJobInstructionsReloaded = reloadRecords.getLeft();
+						final I_AD_User userToPrintReloaded = reloadRecords.getRight();
 
-							this.deactivate(); // make sure that the notification is created only once, even if there are >1 commits
-						}
+						notificationBL.notifyUser(
+								userToPrintReloaded,
+								MSG_CLIENT_REPORTS_PRINT_ERROR,
+								printJobInstructionsReloaded.getErrorMsg(),
+								TableRecordReference.of(printJobInstructionsReloaded));
 					});
-
 		}
 	}
 
@@ -154,8 +148,7 @@ public class C_Print_Job_Instructions
 			ModelValidator.TYPE_AFTER_NEW,
 			ModelValidator.TYPE_AFTER_NEW_REPLICATION,
 			ModelValidator.TYPE_AFTER_CHANGE,
-			ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }
-			, ifColumnsChanged = I_C_Print_Job_Instructions.COLUMNNAME_Status)
+			ModelValidator.TYPE_AFTER_CHANGE_REPLICATION }, ifColumnsChanged = I_C_Print_Job_Instructions.COLUMNNAME_Status)
 	public void scheduleCheckForStatustimeout(final I_C_Print_Job_Instructions jobInstructions)
 	{
 		final String sysconfigName;
@@ -185,8 +178,9 @@ public class C_Print_Job_Instructions
 	 * @param sysconfigName
 	 * @task http://dewiki908/mediawiki/index.php/09618_Bestellkontrolle_Druck_Probleme_%28106933593952%29
 	 */
-	private void scheduleTimeoutCheck(final I_C_Print_Job_Instructions jobInstructions,
-			final String sysconfigName)
+	private void scheduleTimeoutCheck(
+			@NonNull final I_C_Print_Job_Instructions jobInstructions,
+			@NonNull final String sysconfigName)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final ITaskExecutorService taskExecutorService = Services.get(ITaskExecutorService.class);
@@ -213,45 +207,42 @@ public class C_Print_Job_Instructions
 		// that is because we want to be on the safe side, even if
 		// the timeout is e.g. just one second and there is a unexpected delay with the commit of the given 'jobInstructions'.
 		trxManager.getTrxListenerManagerOrAutoCommit(trxName)
-				.registerListener(new TrxListenerAdapter()
-				{
-					@Override
-					public void afterCommit(final ITrx trx)
-					{
-						// schedule our check to be run after 'printTimeOutSeconds' seconds
-						taskExecutorService.schedule(
-								new Callable<Void>()
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerHandlingMethod(innerTrx -> {
+
+					// schedule our check to be run after 'printTimeOutSeconds' seconds
+					taskExecutorService.schedule(
+							new Callable<Void>()
+							{
+								@Override
+								public Void call() throws Exception
 								{
-									@Override
-									public Void call() throws Exception
+									final INotificationBL notificationBL = Services.get(INotificationBL.class);
+									final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+									final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+									final IPair<I_C_Print_Job_Instructions, I_AD_User> reloadRecords = reloadRecords(ctx, printJobInstructionsID, userToPrintID);
+									final I_C_Print_Job_Instructions printJobInstructionsReloaded = reloadRecords.getLeft();
+									final I_AD_User userToPrintReloaded = reloadRecords.getRight();
+
+									if (status.equals(printJobInstructionsReloaded.getStatus()))
 									{
-										final INotificationBL notificationBL = Services.get(INotificationBL.class);
-										final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
-										final IMsgBL msgBL = Services.get(IMsgBL.class);
+										// the status is still unchanged after the specified timeout => notify the user
+										final String statusName = adReferenceDAO.retrieveListNameTrl(ctx, X_C_Print_Job_Instructions.STATUS_AD_Reference_ID, status);
+										final String timeoutMsg = msgBL.getMsg(ctx, MSG_CLIENT_PRINT_TIMEOUT_DETAILS, new Object[] { printTimeOutSeconds, statusName });
 
-										final Pair<I_C_Print_Job_Instructions, I_AD_User> reloadRecords = reloadRecords(ctx, printJobInstructionsID, userToPrintID);
-										final I_C_Print_Job_Instructions printJobInstructionsReloaded = reloadRecords.getFirst();
-										final I_AD_User userToPrintReloaded = reloadRecords.getSecond();
-
-										if (status.equals(printJobInstructionsReloaded.getStatus()))
-										{
-											// the status is still unchanged after the specified timeout => notify the user
-											final String statusName = adReferenceDAO.retrieveListNameTrl(ctx, X_C_Print_Job_Instructions.STATUS_AD_Reference_ID, status);
-											final String timeoutMsg = msgBL.getMsg(ctx, MSG_CLIENT_PRINT_TIMEOUT_DETAILS, new Object[] { printTimeOutSeconds, statusName });
-
-											notificationBL.notifyUser(
-													userToPrintReloaded,
-													MSG_CLIENT_PRINT_TIMEOUT,
-													timeoutMsg,
-													TableRecordReference.of(printJobInstructionsReloaded));
-										}
-										return null;
+										notificationBL.notifyUser(
+												userToPrintReloaded,
+												MSG_CLIENT_PRINT_TIMEOUT,
+												timeoutMsg,
+												TableRecordReference.of(printJobInstructionsReloaded));
 									}
-								},
-								printTimeOutSeconds,
-								TimeUnit.SECONDS,
-								C_Print_Job_Instructions.class.getSimpleName());
-					}
+									return null;
+								}
+							},
+							printTimeOutSeconds,
+							TimeUnit.SECONDS,
+							C_Print_Job_Instructions.class.getSimpleName());
 				});
 	}
 
@@ -264,22 +255,21 @@ public class C_Print_Job_Instructions
 	 * @param userToPrintID
 	 * @return
 	 */
-	private Pair<I_C_Print_Job_Instructions, I_AD_User> reloadRecords(final Properties ctx,
+	private IPair<I_C_Print_Job_Instructions, I_AD_User> reloadRecords(final Properties ctx,
 			final int printJobInstructionsID,
 			final int userToPrintID)
 	{
-		final I_C_Print_Job_Instructions printJobInstructionsReloaded =
-				InterfaceWrapperHelper.create(ctx,
-						printJobInstructionsID,
-						I_C_Print_Job_Instructions.class,
-						ITrx.TRXNAME_None);
+		final I_C_Print_Job_Instructions printJobInstructionsReloaded = InterfaceWrapperHelper.create(ctx,
+				printJobInstructionsID,
+				I_C_Print_Job_Instructions.class,
+				ITrx.TRXNAME_None);
 
-		final I_AD_User userToPrintReloaded =
-				InterfaceWrapperHelper.create(ctx,
-						userToPrintID,
-						I_AD_User.class,
-						ITrx.TRXNAME_None);
-		return new Pair<I_C_Print_Job_Instructions, I_AD_User>(printJobInstructionsReloaded, userToPrintReloaded);
+		final I_AD_User userToPrintReloaded = InterfaceWrapperHelper.create(ctx,
+				userToPrintID,
+				I_AD_User.class,
+				ITrx.TRXNAME_None);
+
+		return ImmutablePair.of(printJobInstructionsReloaded, userToPrintReloaded);
 	}
 
 	private void logDocOutbound(final I_C_Print_Job_Line line, final I_AD_User userToPrint)
@@ -302,8 +292,7 @@ public class C_Print_Job_Instructions
 					userToPrint,
 					printerName,
 					IArchiveEventManager.COPIES_ONE,
-					IArchiveEventManager.STATUS_Success
-					);
+					IArchiveEventManager.STATUS_Success);
 		}
 	}
 }

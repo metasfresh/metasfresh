@@ -10,25 +10,23 @@ package de.metas.handlingunits.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.ITrxListener;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -48,35 +46,15 @@ public class SaveOnCommitHUStorageDAO implements IHUStorageDAO
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final HUStorageDAO dbStorageDAO;
 
-	/**
-	 * Before commiting the transaction, this listener makes sure we are also saving all storages
-	 */
-	private static final transient ITrxListener SaveOnCommitHUStorageDAOTrxListener = new TrxListenerAdapter()
-	{
-		@Override
-		public void beforeCommit(final ITrx trx)
-		{
-			// Get and remove the save-decoupled HU Storage DAO
-			final SaveDecoupledHUStorageDAO huStorageDAO = trx.setProperty(TRX_PROPERTY_SaveDecoupledHUStorageDAO, null);
-			if (huStorageDAO == null)
-			{
-				return;
-			}
-
-			// Save everything to database
-			huStorageDAO.flush();
-		}
-	};
-
 	public SaveOnCommitHUStorageDAO()
 	{
-		super();
 		dbStorageDAO = new HUStorageDAO();
 	}
 
 	/**
 	 * For the current (inherited) trx, this method gets the {@link SaveDecoupledHUStorageDAO} that is added to the trx using {@link #TRX_PROPERTY_SaveDecoupledHUStorageDAO}.
 	 * If there isn't one added yet, it add one and also registers a {@link ITrxListener} that will invoke {@link SaveDecoupledHUStorageDAO#flush()} when the current trx is committed.
+	 *
 	 * @param contextProvider
 	 * @return
 	 */
@@ -94,7 +72,21 @@ public class SaveOnCommitHUStorageDAO implements IHUStorageDAO
 				final SaveDecoupledHUStorageDAO huStorageDAO = new SaveDecoupledHUStorageDAO(dbStorageDAO);
 
 				// Listen this transaction for COMMIT events
-				trx.getTrxListenerManager().registerListener(SaveOnCommitHUStorageDAOTrxListener);
+				// Before committing the transaction, this listener makes sure we are also saving all storages
+				trx.getTrxListenerManager()
+						.newEventListener(TrxEventTiming.BEFORE_COMMIT)
+						.invokeMethodJustOnce(false) // we need this to happen on every last single commit
+						.registerHandlingMethod(innerTrx -> {
+							// Get and remove the save-decoupled HU Storage DAO
+							final SaveDecoupledHUStorageDAO innerHuStorageDAO = innerTrx.setProperty(TRX_PROPERTY_SaveDecoupledHUStorageDAO, null);
+							if (innerHuStorageDAO == null)
+							{
+								return;
+							}
+
+							// Save everything to database
+							innerHuStorageDAO.flush();
+						});
 
 				return huStorageDAO;
 			}

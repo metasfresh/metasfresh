@@ -14,7 +14,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteServic
 import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.EventTestHelper;
-import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.commons.AttributesKey;
 
 /*
  * #%L
@@ -56,7 +56,7 @@ public class RepositoryTestHelperTest
 				.mkQueryForStockUntilDate(EventTestHelper.NOW);
 
 		assertThat(stockCandidatequery.getMaterialDescriptorQuery().getStorageAttributesKey())
-				.isSameAs(ProductDescriptor.STORAGE_ATTRIBUTES_KEY_ALL);
+				.isSameAs(AttributesKey.ALL);
 	}
 
 	@Test
