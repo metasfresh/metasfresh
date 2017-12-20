@@ -77,6 +77,9 @@ import de.metas.async.processor.IWorkpackageSkipRequest;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.async.spi.IWorkpackageProcessor2;
+import de.metas.event.Event;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
@@ -229,7 +232,7 @@ import de.metas.notification.INotificationBL;
 			}
 			else
 			{
-				markError(workPackage, e);
+				markError(workPackage, AdempiereException.wrapIfNeeded(e));
 			}
 		}
 		finally
@@ -336,7 +339,7 @@ import de.metas.notification.INotificationBL;
 		}
 		catch (final Exception e)
 		{
-			markError(workPackage, e);
+			markError(workPackage, AdempiereException.wrapIfNeeded(e));
 		}
 
 		// NOTE: when notifying, we shall use the original workpackage processor, because that one is known in exterior
@@ -450,8 +453,7 @@ import de.metas.notification.INotificationBL;
 		Loggables.get().addLog(msg);
 	}
 
-	private void markError(final I_C_Queue_WorkPackage workPackage,
-			final Exception ex)
+	private void markError(final I_C_Queue_WorkPackage workPackage, final AdempiereException ex)
 	{
 		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, ex);
 
@@ -466,6 +468,7 @@ import de.metas.notification.INotificationBL;
 			// Flag the workpackage as processed in order to:
 			// * not allow future retries
 			// * avoid discarding items from this workpackage on future workpackages because they were enqueued here
+			// TODO shall we also release the elements lock if any?
 			workPackage.setProcessed(true);
 		}
 
@@ -488,6 +491,19 @@ import de.metas.notification.INotificationBL;
 		{
 			// do the notification after commit, because e.g. if we send a mail, and even if that fails, we don't want this method to fail.
 			notifyErrorAfterCommit(workPackage.getC_Queue_WorkPackage_ID());
+
+			if (!ex.isUserNotified())
+			{
+				ex.markUserNotified();
+
+				final ITrxManager trxManager = Services.get(ITrxManager.class);
+				final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
+				final IEventBus eventBus = eventBusFactory.getEventBus(Async_Constants.EVENTBUS_WORKPACKAGE_PROCESSING_ERRORS);
+				trxManager.getCurrentTrxListenerManagerOrAutoCommit()
+						.newEventListener(TrxEventTiming.AFTER_COMMIT)
+						.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+						.registerHandlingMethod(innerTrx -> eventBus.postEvent(createWorkpackageProcessingErrorEvent(workPackage, ex)));
+			}
 		}
 	}
 
@@ -515,7 +531,15 @@ import de.metas.notification.INotificationBL;
 							msgBL.getMsg(Env.getCtx(), MSG_PROCESSING_ERROR_NOTIFICATION_TEXT, new Object[] { workPackageId, wpReloaded.getErrorMsg() }),
 							TableRecordReference.of(wpReloaded));
 				});
+	}
 
+	private Event createWorkpackageProcessingErrorEvent(final I_C_Queue_WorkPackage workpackage, final Exception ex)
+	{
+		return Event.builder()
+				.setDetailADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TEXT, workpackage.getC_Queue_WorkPackage_ID(), ex.getLocalizedMessage())
+				.addRecipient_User_ID(workpackage.getAD_User_InCharge_ID())
+				.setRecord(TableRecordReference.of(workpackage))
+				.build();
 	}
 
 	/**

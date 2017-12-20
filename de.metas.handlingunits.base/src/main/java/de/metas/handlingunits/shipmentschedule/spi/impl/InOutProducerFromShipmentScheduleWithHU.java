@@ -163,7 +163,8 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 			shipmentGeneratedNotifications.notifyShipmentError(sourceInfo, ex.getLocalizedMessage());
 
 			// propagate
-			throw AdempiereException.wrapIfNeeded(ex);
+			throw AdempiereException.wrapIfNeeded(ex)
+					.markUserNotified();
 		}
 
 	}
