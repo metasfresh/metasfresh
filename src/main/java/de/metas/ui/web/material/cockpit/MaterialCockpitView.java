@@ -9,7 +9,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.ViewId;

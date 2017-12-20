@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 
 import org.compiere.util.TimeUtil;
 
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
 import lombok.NonNull;
 import lombok.Value;
 

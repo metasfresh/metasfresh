@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
@@ -158,11 +158,12 @@ public class MainRowWithSubRows
 	{
 		final MainRowBuilder mainRowBuilder = MaterialCockpitRow.mainRowBuilder()
 				.qtyMaterialentnahme(mainRow.getQtyMaterialentnahme())
-				.qtyMrp(mainRow.getQtyMrp())
-				.qtyOnHand(mainRow.getQtyOnHand())
-				.qtyOrdered(mainRow.getQtyOrdered())
-				.qtyPromised(mainRow.getQtyPromised())
-				.qtyReserved(mainRow.getQtyReserved())
+				.qtyRequiredForProduction(mainRow.getQtyRequiredForProduction())
+				.qtyOnHandEstimate(mainRow.getQtyOnHandEstimate())
+				.qtyOnHandStock(mainRow.getQtyOnHandStock())
+				.qtyReservedPurchase(mainRow.getQtyReservedPurchase())
+				.qtyAvailableToPromise(mainRow.getQtyAvailableToPromise())
+				.qtyReservedSale(mainRow.getQtyReservedSale())
 				.pmmQtyPromised(mainRow.getPmmQtyPromised());
 
 		for (final CountingSubRowBucket subRowBucket : countingSubRows.values())

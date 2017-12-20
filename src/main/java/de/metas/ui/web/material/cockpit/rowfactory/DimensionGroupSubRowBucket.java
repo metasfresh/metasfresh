@@ -3,7 +3,7 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 import java.math.BigDecimal;
 
 import de.metas.dimension.DimensionSpecGroup;
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import lombok.Data;
 import lombok.NonNull;
@@ -49,17 +49,19 @@ public class DimensionGroupSubRowBucket
 	// Zusage Lieferant
 	private BigDecimal pmmQtyPromised = BigDecimal.ZERO;
 
-	private BigDecimal qtyReserved = BigDecimal.ZERO;
+	private BigDecimal qtyReservedSale = BigDecimal.ZERO;
 
-	private BigDecimal qtyOrdered = BigDecimal.ZERO;
+	private BigDecimal qtyReservedPurchase = BigDecimal.ZERO;
 
 	private BigDecimal qtyMaterialentnahme = BigDecimal.ZERO;
 
 	// MRP MEnge
-	private BigDecimal qtyMrp = BigDecimal.ZERO;
+	private BigDecimal qtyRequiredForProduction = BigDecimal.ZERO;
 
 	// zusagbar Zaehlbestand
-	private BigDecimal qtyPromised = BigDecimal.ZERO;
+	private BigDecimal qtyAvailableToPromise = BigDecimal.ZERO;
+
+	private BigDecimal qtyOnHandStock = BigDecimal.ZERO;
 
 	public DimensionGroupSubRowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
@@ -70,10 +72,11 @@ public class DimensionGroupSubRowBucket
 	{
 		pmmQtyPromised = pmmQtyPromised.add(dataRecord.getPMM_QtyPromised_OnDate());
 		qtyMaterialentnahme = qtyMaterialentnahme.add(dataRecord.getQtyMaterialentnahme());
-		qtyMrp = qtyMrp.add(dataRecord.getQtyRequiredForProduction());
-		qtyOrdered = qtyOrdered.add(dataRecord.getQtyReserved_Purchase());
-		qtyReserved = qtyReserved.add(dataRecord.getQtyReserved_Sale());
-		qtyPromised = qtyPromised.add(dataRecord.getQtyAvailableToPromise());
+		qtyRequiredForProduction = qtyRequiredForProduction.add(dataRecord.getQtyRequiredForProduction());
+		qtyReservedPurchase = qtyReservedPurchase.add(dataRecord.getQtyReserved_Purchase());
+		qtyReservedSale = qtyReservedSale.add(dataRecord.getQtyReserved_Sale());
+		qtyAvailableToPromise = qtyAvailableToPromise.add(dataRecord.getQtyAvailableToPromise());
+		qtyOnHandStock = qtyOnHandStock.add(dataRecord.getQtyOnHandStock());
 	}
 
 	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowWithSubRows mainRowBucket)
@@ -86,9 +89,10 @@ public class DimensionGroupSubRowBucket
 				.dimensionGroup(dimensionSpecGroup)
 				.pmmQtyPromised(getPmmQtyPromised())
 				.qtyMaterialentnahme(getQtyMaterialentnahme())
-				.qtyMrp(getQtyMrp())
-				.qtyOrdered(getQtyOrdered())
-				.qtyReserved(getQtyReserved())
+				.qtyRequiredForProduction(getQtyRequiredForProduction())
+				.qtyReservedPurchase(getQtyReservedPurchase())
+				.qtyReservedSale(getQtyReservedSale())
+				.qtyOnHandStock(getQtyOnHandStock())
 				.build();
 	}
 }

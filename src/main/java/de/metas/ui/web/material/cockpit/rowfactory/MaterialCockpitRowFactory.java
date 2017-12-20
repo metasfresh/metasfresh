@@ -21,7 +21,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.dimension.IDimensionspecDAO;
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import lombok.NonNull;
 import lombok.Value;

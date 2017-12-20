@@ -2,11 +2,11 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 
 import java.math.BigDecimal;
 
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -36,8 +36,8 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Data
 @EqualsAndHashCode(of = "plantId")
+@ToString
 public class CountingSubRowBucket
 {
 	public static CountingSubRowBucket create(final int plantId)
@@ -48,7 +48,7 @@ public class CountingSubRowBucket
 	private final int plantId;
 
 	// Zaehlbestand
-	private BigDecimal qtyOnHand = BigDecimal.ZERO;
+	private BigDecimal qtyOnHandEstimate = BigDecimal.ZERO;
 
 	public CountingSubRowBucket(final int plantId)
 	{
@@ -57,7 +57,7 @@ public class CountingSubRowBucket
 
 	public void addDataRecord(@NonNull final I_MD_Cockpit dataRecord)
 	{
-		qtyOnHand = qtyOnHand.add(dataRecord.getQtyOnHandEstimate());
+		qtyOnHandEstimate = qtyOnHandEstimate.add(dataRecord.getQtyOnHandEstimate());
 	}
 
 	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowWithSubRows mainRowBucket)
@@ -68,7 +68,7 @@ public class CountingSubRowBucket
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId())
 				.plantId(plantId)
-				.qtyOnHand(getQtyOnHand())
+				.qtyOnHandEstimate(qtyOnHandEstimate)
 				.build();
 
 	}

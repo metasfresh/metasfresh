@@ -19,7 +19,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.dimension.DimensionSpecGroup;
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
@@ -87,12 +87,12 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_QtyReserved_Sale, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50) })
-	private final BigDecimal qtyReserved;
+	private final BigDecimal qtyReservedSale;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_QtyReserved_Purchase, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60) })
-	private final BigDecimal qtyOrdered;
+	private final BigDecimal qtyReservedPurchase;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_QtyMaterialentnahme, //
@@ -103,19 +103,24 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_QtyRequiredForProduction, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80) })
-	private final BigDecimal qtyMrp;
+	private final BigDecimal qtyRequiredForProduction;
 
 	// Zaehlbestand
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_QtyOnHandEstimate, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90) })
-	private final BigDecimal qtyOnHand;
+	private final BigDecimal qtyOnHandEstimate;
 
 	// zusagbar Zaehlbestand
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_QtyAvailableToPromise, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100) })
-	private final BigDecimal qtyPromised;
+	private final BigDecimal qtyAvailableToPromise;
+
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
+			captionKey = I_MD_Cockpit.COLUMNNAME_QtyOnHandStock, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
+	private final BigDecimal qtyOnHandStock;
 
 	private final DocumentId documentId;
 
@@ -130,12 +135,13 @@ public class MaterialCockpitRow implements IViewRow
 	@lombok.Builder(builderClassName = "MainRowBuilder", builderMethodName = "mainRowBuilder")
 	private MaterialCockpitRow(
 			final BigDecimal pmmQtyPromised,
-			final BigDecimal qtyReserved,
-			final BigDecimal qtyOrdered,
+			final BigDecimal qtyReservedSale,
+			final BigDecimal qtyReservedPurchase,
 			final BigDecimal qtyMaterialentnahme,
-			final BigDecimal qtyMrp,
-			final BigDecimal qtyPromised,
-			final BigDecimal qtyOnHand,
+			final BigDecimal qtyRequiredForProduction,
+			final BigDecimal qtyAvailableToPromise,
+			final BigDecimal qtyOnHandEstimate,
+			final BigDecimal qtyOnHandStock,
 			@Singular final List<MaterialCockpitRow> includedRows)
 	{
 		Check.errorIf(includedRows.isEmpty(), "The given includedRows may not be empty");
@@ -161,12 +167,13 @@ public class MaterialCockpitRow implements IViewRow
 		this.includedRows = includedRows;
 
 		this.pmmQtyPromised = pmmQtyPromised;
-		this.qtyReserved = qtyReserved;
-		this.qtyOrdered = qtyOrdered;
+		this.qtyReservedSale = qtyReservedSale;
+		this.qtyReservedPurchase = qtyReservedPurchase;
 		this.qtyMaterialentnahme = qtyMaterialentnahme;
-		this.qtyMrp = qtyMrp;
-		this.qtyOnHand = qtyOnHand;
-		this.qtyPromised = qtyPromised;
+		this.qtyRequiredForProduction = qtyRequiredForProduction;
+		this.qtyOnHandEstimate = qtyOnHandEstimate;
+		this.qtyAvailableToPromise = qtyAvailableToPromise;
+		this.qtyOnHandStock = qtyOnHandStock;
 	}
 
 	private static Timestamp extractDate(final List<MaterialCockpitRow> includedRows)
@@ -191,11 +198,12 @@ public class MaterialCockpitRow implements IViewRow
 			final Timestamp date,
 			final DimensionSpecGroup dimensionGroup,
 			final BigDecimal pmmQtyPromised,
-			final BigDecimal qtyReserved,
-			final BigDecimal qtyOrdered,
+			final BigDecimal qtyReservedSale,
+			final BigDecimal qtyReservedPurchase,
 			final BigDecimal qtyMaterialentnahme,
-			final BigDecimal qtyMrp,
-			final BigDecimal qtyPromised)
+			final BigDecimal qtyRequiredForProduction,
+			final BigDecimal qtyAvailableToPromise,
+			final BigDecimal qtyOnHandStock)
 	{
 		this.rowType = DefaultRowType.Line;
 
@@ -221,12 +229,13 @@ public class MaterialCockpitRow implements IViewRow
 		this.includedRows = ImmutableList.of();
 
 		this.pmmQtyPromised = Util.coalesce(pmmQtyPromised, BigDecimal.ZERO);
-		this.qtyReserved = Util.coalesce(qtyReserved, BigDecimal.ZERO);
-		this.qtyOrdered = Util.coalesce(qtyOrdered, BigDecimal.ZERO);
+		this.qtyReservedSale = Util.coalesce(qtyReservedSale, BigDecimal.ZERO);
+		this.qtyReservedPurchase = Util.coalesce(qtyReservedPurchase, BigDecimal.ZERO);
 		this.qtyMaterialentnahme = Util.coalesce(qtyMaterialentnahme, BigDecimal.ZERO);
-		this.qtyMrp = Util.coalesce(qtyMrp, BigDecimal.ZERO);
-		this.qtyOnHand = null;
-		this.qtyPromised = Util.coalesce(qtyPromised, BigDecimal.ZERO);
+		this.qtyRequiredForProduction = Util.coalesce(qtyRequiredForProduction, BigDecimal.ZERO);
+		this.qtyOnHandEstimate = null;
+		this.qtyOnHandStock = qtyOnHandStock;
+		this.qtyAvailableToPromise = Util.coalesce(qtyAvailableToPromise, BigDecimal.ZERO);
 	}
 
 	@lombok.Builder(builderClassName = "CountingSubRowBuilder", builderMethodName = "countingSubRowBuilder")
@@ -234,7 +243,8 @@ public class MaterialCockpitRow implements IViewRow
 			final int productId,
 			final Timestamp date,
 			final int plantId,
-			final BigDecimal qtyOnHand)
+			final BigDecimal qtyOnHandEstimate,
+			final BigDecimal qtyOnHandStock)
 	{
 		this.rowType = DefaultRowType.Line;
 
@@ -268,12 +278,13 @@ public class MaterialCockpitRow implements IViewRow
 		this.includedRows = ImmutableList.of();
 
 		this.pmmQtyPromised = null;
-		this.qtyReserved = null;
-		this.qtyOrdered = null;
+		this.qtyReservedSale = null;
+		this.qtyReservedPurchase = null;
 		this.qtyMaterialentnahme = null;
-		this.qtyMrp = null;
-		this.qtyOnHand = Util.coalesce(qtyOnHand, BigDecimal.ZERO);
-		this.qtyPromised = null;
+		this.qtyRequiredForProduction = null;
+		this.qtyOnHandEstimate = Util.coalesce(qtyOnHandEstimate, BigDecimal.ZERO);
+		this.qtyOnHandStock = qtyOnHandStock;
+		this.qtyAvailableToPromise = null;
 	}
 
 	@Override
