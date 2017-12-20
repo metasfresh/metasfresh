@@ -8,10 +8,10 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 
 /*
@@ -91,7 +91,7 @@ public class EventTestHelper
 		return SupplyRequiredDescriptor.builder()
 				.shipmentScheduleId(21)
 				.demandCandidateId(41)
-				.eventDescr(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.materialDescriptor(createMaterialDescriptor())
 				.build();
 	}

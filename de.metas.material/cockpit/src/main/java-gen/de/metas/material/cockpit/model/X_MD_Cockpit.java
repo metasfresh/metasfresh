@@ -1,5 +1,5 @@
 /** Generated Model - DO NOT CHANGE */
-package de.metas.material.dispo.model;
+package de.metas.material.cockpit.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -15,7 +15,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1812646570L;
+	private static final long serialVersionUID = 1228933274L;
 
     /** Standard Constructor */
     public X_MD_Cockpit (Properties ctx, int MD_Cockpit_ID, String trxName)
@@ -76,8 +76,8 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateGeneral);
 	}
 
-	/** Set Material-Cockpit.
-		@param MD_Cockpit_ID Material-Cockpit	  */
+	/** Set Materialcockpit.
+		@param MD_Cockpit_ID Materialcockpit	  */
 	@Override
 	public void setMD_Cockpit_ID (int MD_Cockpit_ID)
 	{
@@ -87,8 +87,8 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, Integer.valueOf(MD_Cockpit_ID));
 	}
 
-	/** Get Material-Cockpit.
-		@return Material-Cockpit	  */
+	/** Get Materialcockpit.
+		@return Materialcockpit	  */
 	@Override
 	public int getMD_Cockpit_ID () 
 	{
@@ -343,6 +343,28 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	public java.math.BigDecimal getQtyOnHandEstimate () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOnHandEstimate);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Lagerbestand.
+		@param QtyOnHandStock 
+		Aktueller oder geplanter Lagerbestand
+	  */
+	@Override
+	public void setQtyOnHandStock (java.math.BigDecimal QtyOnHandStock)
+	{
+		set_Value (COLUMNNAME_QtyOnHandStock, QtyOnHandStock);
+	}
+
+	/** Get Lagerbestand.
+		@return Aktueller oder geplanter Lagerbestand
+	  */
+	@Override
+	public java.math.BigDecimal getQtyOnHandStock () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOnHandStock);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

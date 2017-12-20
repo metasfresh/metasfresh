@@ -1,4 +1,4 @@
-package de.metas.material.interceptor;
+package de.metas.handlingunits.material.interceptor;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -13,6 +13,7 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Transaction;
@@ -22,6 +23,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
+import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
@@ -58,7 +60,7 @@ import lombok.NonNull;
 @Interceptor(I_M_Transaction.class)
 public class M_Transaction
 {
-	static final M_Transaction INSTANCE = new M_Transaction();
+	public static final M_Transaction INSTANCE = new M_Transaction();
 
 	private M_Transaction()
 	{
@@ -124,6 +126,8 @@ public class M_Transaction
 		final EventDescriptor eventDescriptor = EventDescriptor.createNew(transaction);
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(transaction, quantity);
 
+		final boolean directMovementWarehouse = isDirectMovementWarehouse(extractTransactionWarehouseId(transaction));
+
 		final AbstractTransactionEvent event;
 		if (deleted)
 		{
@@ -132,6 +136,7 @@ public class M_Transaction
 					.transactionId(transaction.getM_Transaction_ID())
 					.materialDescriptor(materialDescriptor)
 					.shipmentScheduleId(entry.getKey())
+					.directMovementWarehouse(directMovementWarehouse)
 					.build();
 		}
 		else
@@ -141,9 +146,16 @@ public class M_Transaction
 					.transactionId(transaction.getM_Transaction_ID())
 					.materialDescriptor(materialDescriptor)
 					.shipmentScheduleId(entry.getKey())
+					.directMovementWarehouse(directMovementWarehouse)
 					.build();
 		}
 		return event;
+	}
+
+	private static boolean isDirectMovementWarehouse(final int warehouseId)
+	{
+		final int intValue = Services.get(ISysConfigBL.class).getIntValue(IHUMovementBL.SYSCONFIG_DirectMove_Warehouse_ID, -1);
+		return intValue == warehouseId;
 	}
 
 	@VisibleForTesting
@@ -220,11 +232,16 @@ public class M_Transaction
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(transaction);
 
 		return MaterialDescriptor.builder()
-				.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
+				.warehouseId(extractTransactionWarehouseId(transaction))
 				.date(transaction.getMovementDate())
 				.productDescriptor(productDescriptor)
 				.bPartnerId(transaction.getC_BPartner_ID())
 				.quantity(quantity)
 				.build();
+	}
+
+	private static int extractTransactionWarehouseId(@NonNull final I_M_Transaction transaction)
+	{
+		return transaction.getM_Locator().getM_Warehouse_ID();
 	}
 }

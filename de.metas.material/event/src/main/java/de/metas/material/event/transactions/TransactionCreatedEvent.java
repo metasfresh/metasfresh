@@ -41,9 +41,14 @@ public class TransactionCreatedEvent extends AbstractTransactionEvent
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
-			@JsonProperty("transactionId") final int transactionId)
+			@JsonProperty("transactionId") final int transactionId,
+			@JsonProperty("directMovementWarehouse") final boolean directMovementWarehouse)
 	{
-		super(eventDescriptor, materialDescriptor, shipmentScheduleId, transactionId);
+		super(eventDescriptor,
+				materialDescriptor,
+				shipmentScheduleId,
+				transactionId,
+				directMovementWarehouse);
 	}
 
 	@Override

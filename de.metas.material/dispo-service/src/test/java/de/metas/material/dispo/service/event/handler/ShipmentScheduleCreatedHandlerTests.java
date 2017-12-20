@@ -93,7 +93,10 @@ public class ShipmentScheduleCreatedHandlerTests
 						candidateRepositoryCommands,
 						materialEventService,
 						stockRepository,
-						new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands))));
+						new StockCandidateService(
+								candidateRepositoryRetrieval,
+								candidateRepositoryCommands,
+								materialEventService))));
 
 		shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(candidateChangeHandler);
 	}

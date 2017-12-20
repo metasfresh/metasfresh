@@ -32,6 +32,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
 
@@ -74,7 +75,10 @@ public class StockCandidateServiceTests
 
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
 		candidateRepositoryCommands = new CandidateRepositoryWriteService();
-		stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
+		stockCandidateService = new StockCandidateService(
+				candidateRepository,
+				candidateRepositoryCommands,
+				MaterialEventService.createLocalServiceThatIsReadyToUse());
 	}
 
 	private void createStockRecordAtTimeNOW()

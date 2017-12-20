@@ -103,7 +103,9 @@ public class SupplyProposalEvaluatorTests
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
-				candidateRepositoryRetrieval, candidateRepositoryCommands);
+				candidateRepositoryRetrieval,
+				candidateRepositoryCommands,
+				materialEventService);
 
 		stockRepository = new StockRepository();
 

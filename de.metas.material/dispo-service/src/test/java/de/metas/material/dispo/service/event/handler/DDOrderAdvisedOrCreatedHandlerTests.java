@@ -122,7 +122,10 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		stockRepository = new StockRepository();
-		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
+		final StockCandidateService stockCandidateService = new StockCandidateService(
+				candidateRepository,
+				candidateRepositoryCommands,
+				materialEventService);
 
 		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(
 				candidateRepository,

@@ -1,15 +1,18 @@
-package de.metas.material.interceptor;
+package de.metas.material.cockpit.interceptor;
 
+import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.Adempiere;
-import org.compiere.model.I_AD_Client;
+import org.compiere.util.CacheMgt;
 
+import de.metas.material.cockpit.MaterialCockpitEventListener;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.event.MaterialEventService;
+import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.swat.base
+ * metasfresh-material-dispo-commons
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -31,25 +34,23 @@ import de.metas.material.event.MaterialEventService;
 
 public class Main extends AbstractModuleInterceptor
 {
-	@Override
-	protected void registerInterceptors(
-			final IModelValidationEngine engine,
-			final I_AD_Client client)
-	{
-		engine.addModelValidator(M_ShipmentSchedule.INSTANCE, client);
-		engine.addModelValidator(M_ReceiptSchedule.INSTANCE, client);
-		engine.addModelValidator(M_Forecast.INSTANCE, client);
-	}
-
+	/**
+	 * Registers the {@link MaterialCockpitEventListener} that keeps the {@code MD_Cockpit} table up to date.
+	 */
 	@Override
 	protected void onAfterInit()
 	{
-		letOurselfFireAndReceiveEvents();
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		final MaterialCockpitEventListener cockpitListener = Adempiere.getBean(MaterialCockpitEventListener.class);
+
+		materialEventService.registerListener(cockpitListener);
+		materialEventService.subscribeToEventBus();
 	}
 
-	private void letOurselfFireAndReceiveEvents()
+	@Override
+	protected void setupCaching(@NonNull final IModelCacheService cachingService)
 	{
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.subscribeToEventBus();
+		// needed to update the webui-view on data changes
+		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_MD_Cockpit.Table_Name);
 	}
 }

@@ -127,6 +127,8 @@ public class SupplyCandiateHandler implements CandidateHandler
 			}
 		}
 
+		stockCandidateService.fireStockChangeEvent(parentStockCandidateWithIdAndDelta);
+
 		final BigDecimal delta = parentStockCandidateWithIdAndDelta.getQuantity();
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(
 				parentStockCandidateWithIdAndDelta.getMaterialDescriptor(),

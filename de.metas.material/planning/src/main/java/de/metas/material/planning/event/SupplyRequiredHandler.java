@@ -90,7 +90,7 @@ public class SupplyRequiredHandler
 			final List<String> singleMessages = plainStringLoggable.getSingleMessages();
 
 			final DemandHandlerAuditEvent demandHandlerAuditEvent = DemandHandlerAuditEvent.builder()
-					.eventDescriptor(descriptor.getEventDescr().createNew())
+					.eventDescriptor(descriptor.getEventDescriptor().createNew())
 					.descr(descriptor.getMaterialDescriptor())
 					.orderLineId(descriptor.getOrderLineId())
 					.messages(singleMessages)
@@ -113,7 +113,7 @@ public class SupplyRequiredHandler
 
 	private IMutableMRPContext mkMRPContext(@NonNull final SupplyRequiredDescriptor materialDemandEvent)
 	{
-		final EventDescriptor eventDescr = materialDemandEvent.getEventDescr();
+		final EventDescriptor eventDescr = materialDemandEvent.getEventDescriptor();
 
 		final MaterialDescriptor materialDescr = materialDemandEvent.getMaterialDescriptor();
 

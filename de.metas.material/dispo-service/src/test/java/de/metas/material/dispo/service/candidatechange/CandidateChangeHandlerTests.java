@@ -110,7 +110,10 @@ public class CandidateChangeHandlerTests
 		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
 		stockRepository = new StockRepository();
-		stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands);
+		stockCandidateService = new StockCandidateService(
+				candidateRepositoryRetrieval,
+				candidateRepositoryCommands,
+				materialEventService);
 
 		candidateChangeHandler = new CandidateChangeService(
 				ImmutableList.of(

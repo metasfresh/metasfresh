@@ -19,6 +19,7 @@ import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
+import de.metas.material.event.stock.OnHandQuantityChangedEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
@@ -70,6 +71,8 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 		@JsonSubTypes.Type(name = PPOrderRequestedEvent.TYPE, value = PPOrderRequestedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderRequestedEvent.TYPE, value = DDOrderRequestedEvent.class),
 		@JsonSubTypes.Type(name = ForecastCreatedEvent.TYPE, value = ForecastCreatedEvent.class),
+
+		@JsonSubTypes.Type(name = OnHandQuantityChangedEvent.TYPE, value = OnHandQuantityChangedEvent.class),
 
 		@JsonSubTypes.Type(name = PurchaseOfferCreatedEvent.TYPE, value = PurchaseOfferCreatedEvent.class),
 		@JsonSubTypes.Type(name = PurchaseOfferUpdatedEvent.TYPE, value = PurchaseOfferUpdatedEvent.class),

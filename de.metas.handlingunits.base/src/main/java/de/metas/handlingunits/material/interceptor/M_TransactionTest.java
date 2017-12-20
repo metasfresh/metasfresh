@@ -1,4 +1,4 @@
-package de.metas.material.interceptor;
+package de.metas.handlingunits.material.interceptor;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;

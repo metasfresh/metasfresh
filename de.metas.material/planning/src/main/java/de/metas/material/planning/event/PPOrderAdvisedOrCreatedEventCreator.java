@@ -67,7 +67,7 @@ public class PPOrderAdvisedOrCreatedEventCreator
 
 		final PPOrderAdvisedOrCreatedEvent event = PPOrderAdvisedOrCreatedEvent.builder()
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
-				.eventDescriptor(supplyRequiredDescriptor.getEventDescr().createNew())
+				.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor().createNew())
 				.ppOrder(ppOrder)
 				.build();
 

@@ -30,6 +30,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteServic
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 
 /*
@@ -73,7 +74,10 @@ public class SupplyCandiateCangeHandlerTest
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
 		candidateRepositoryWriteService = new CandidateRepositoryWriteService();
 
-		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryWriteService);
+		final StockCandidateService stockCandidateService = new StockCandidateService(
+				candidateRepository,
+				candidateRepositoryWriteService,
+				MaterialEventService.createLocalServiceThatIsReadyToUse());
 
 		supplyCandiateHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryWriteService, stockCandidateService);
 	}
@@ -236,7 +240,6 @@ public class SupplyCandiateCangeHandlerTest
 		assertThat(supplyRecord.getQty()).isEqualByComparingTo(supplyQty);
 		assertThat(supplyRecord.getMD_Candidate_BusinessCase()).isEqualTo(CandidateBusinessCase.PRODUCTION.toString());
 		assertThat(stockRecord.getQty()).isEqualByComparingTo(new BigDecimal("34"));
-
 
 		assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
 	}

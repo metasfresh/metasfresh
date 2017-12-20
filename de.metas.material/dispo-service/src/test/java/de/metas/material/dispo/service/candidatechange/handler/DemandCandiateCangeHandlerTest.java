@@ -90,7 +90,10 @@ public class DemandCandiateCangeHandlerTest
 
 		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
-		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands);
+		final StockCandidateService stockCandidateService = new StockCandidateService(
+				candidateRepositoryRetrieval,
+				candidateRepositoryCommands,
+				materialEventService);
 
 		demandCandidateHandler = new DemandCandiateHandler(
 				candidateRepositoryRetrieval,

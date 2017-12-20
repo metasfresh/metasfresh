@@ -38,6 +38,7 @@ import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
+import de.metas.material.event.stock.OnHandQuantityChangedEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
@@ -230,6 +231,18 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
+	public void onHandQunatityChangedEvent()
+	{
+		OnHandQuantityChangedEvent onHandQunatityChangedEvent = OnHandQuantityChangedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.materialdescriptor(createMaterialDescriptor())
+				.quantityDelta(BigDecimal.TEN)
+				.build();
+
+		assertEventEqualAfterSerializeDeserialize(onHandQunatityChangedEvent);
+	}
+
+	@Test
 	public void supplyRequiredEvent()
 	{
 		final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEvent.builder()
@@ -242,7 +255,7 @@ public class MaterialEventSerializerTests
 	{
 		return SupplyRequiredDescriptor.builder()
 				.demandCandidateId(30)
-				.eventDescr(createEventDescriptor())
+				.eventDescriptor(createEventDescriptor())
 				.forecastLineId(40)
 				.materialDescriptor(createMaterialDescriptor())
 				.orderLineId(50)

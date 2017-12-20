@@ -1,15 +1,15 @@
-package de.metas.material.event.supplyrequired;
+package de.metas.material.cockpit;
 
-import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import java.util.Date;
+
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * metasfresh-material-event
+ * metasfresh-webui-api
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -20,28 +20,36 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @Value
 @Builder
-public class SupplyRequiredEvent implements MaterialEvent
+public class DataRecordIdentifier
 {
-	public static final String TYPE = "SupplyRequiredEvent";
+	ProductDescriptor productDescriptor;
 
-	@NonNull
-	SupplyRequiredDescriptor supplyRequiredDescriptor;
+	Date date;
 
+	/**
+	 * Optional, a value <= 0 means "none"
+	 */
+	int plantId;
 
-	@Override
-	public EventDescriptor getEventDescriptor()
+	public DataRecordIdentifier(
+			@NonNull final ProductDescriptor productDescriptor,
+			@NonNull final Date date,
+			int plantId)
 	{
-		return supplyRequiredDescriptor.getEventDescriptor();
+		productDescriptor.getStorageAttributesKey().assertNotAllOrOther();
+		this.productDescriptor = productDescriptor;
+		this.date = date;
+		this.plantId = plantId;
 	}
 }

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
@@ -112,6 +113,7 @@ public class DemandCandiateHandler implements CandidateHandler
 			final Candidate existingSupplyParentStockWithoutParentId = retrieveSupplyParentStockWithoutParentIdOrNull(demandCandidateWithId);
 			if (existingSupplyParentStockWithoutParentId != null)
 			{
+				//
 				final Candidate existingSupplyParentStockWithUpdatedQty = existingSupplyParentStockWithoutParentId
 						.withQuantity(existingSupplyParentStockWithoutParentId.getQuantity().subtract(demandCandidateWithId.getQuantity()))
 						.withParentId(CandidatesQuery.UNSPECIFIED_PARENT_ID);
@@ -127,6 +129,8 @@ public class DemandCandiateHandler implements CandidateHandler
 				childStockWithDemand = childStockWithDemandDelta.withQuantity(newDemandCandidateChild.getQuantity());
 			}
 		}
+
+		stockCandidateService.fireStockChangeEvent(childStockWithDemandDelta);
 
 		candidateRepositoryWriteService.updateCandidate(childStockWithDemand
 				.withParentId(demandCandidateWithId.getId()));
@@ -198,7 +202,6 @@ public class DemandCandiateHandler implements CandidateHandler
 		return existingSupplyParentStockWithoutOwnParentId;
 	}
 
-
 	private void fireSupplyRequiredEventIfQtyBelowZero(@NonNull final Candidate demandCandidateWithId)
 	{
 		final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(demandCandidateWithId.getMaterialDescriptor());
@@ -210,7 +213,7 @@ public class DemandCandiateHandler implements CandidateHandler
 
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
 					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty);
-			materialEventService.fireEvent(supplyRequiredEvent);
+			materialEventService.fireEventAfterNextCommit(supplyRequiredEvent, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 }

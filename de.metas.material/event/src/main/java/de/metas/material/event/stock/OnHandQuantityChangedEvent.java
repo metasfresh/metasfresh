@@ -1,8 +1,10 @@
-package de.metas.material.event.supplyrequired;
+package de.metas.material.event.stock;
+
+import java.math.BigDecimal;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,17 +33,16 @@ import lombok.Value;
 
 @Value
 @Builder
-public class SupplyRequiredEvent implements MaterialEvent
+public class OnHandQuantityChangedEvent implements MaterialEvent
 {
-	public static final String TYPE = "SupplyRequiredEvent";
+	public static final String TYPE = "OnHandQunatityChangedEvent";
 
 	@NonNull
-	SupplyRequiredDescriptor supplyRequiredDescriptor;
+	EventDescriptor eventDescriptor;
 
+	@NonNull
+	MaterialDescriptor materialdescriptor;
 
-	@Override
-	public EventDescriptor getEventDescriptor()
-	{
-		return supplyRequiredDescriptor.getEventDescriptor();
-	}
+	@NonNull
+	BigDecimal quantityDelta;
 }

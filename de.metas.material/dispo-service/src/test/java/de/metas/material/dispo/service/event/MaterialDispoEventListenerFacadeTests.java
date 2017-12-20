@@ -108,7 +108,8 @@ public class MaterialDispoEventListenerFacadeTests
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
-				candidateRepositoryCommands);
+				candidateRepositoryCommands,
+				materialEventService);
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new DemandCandiateHandler(

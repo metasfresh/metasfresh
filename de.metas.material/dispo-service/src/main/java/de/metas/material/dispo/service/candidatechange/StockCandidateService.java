@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
@@ -18,7 +19,10 @@ import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.stock.OnHandQuantityChangedEvent;
 import lombok.NonNull;
 
 /*
@@ -49,12 +53,16 @@ public class StockCandidateService
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
+	private final MaterialEventService materialEventService;
+
 	public StockCandidateService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands)
+			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
+			@NonNull final MaterialEventService materialEventService)
 	{
 		this.candidateRepositoryRetrieval = candidateRepository;
 		this.candidateRepositoryWriteService = candidateRepositoryCommands;
+		this.materialEventService = materialEventService;
 	}
 
 	/**
@@ -196,6 +204,19 @@ public class StockCandidateService
 			candidateRepositoryWriteService.updateCandidate(candidate
 					.withQuantity(newQty)
 					.withGroupId(groupId));
+		}
+	}
+
+	public void fireStockChangeEvent(@NonNull final Candidate stockWithQuantityDelta)
+	{
+		if (stockWithQuantityDelta.getQuantity().signum() != 0)
+		{
+			final OnHandQuantityChangedEvent stockChangedEvent = OnHandQuantityChangedEvent.builder()
+					.eventDescriptor(new EventDescriptor(stockWithQuantityDelta.getClientId(), stockWithQuantityDelta.getOrgId()))
+					.materialdescriptor(stockWithQuantityDelta.getMaterialDescriptor())
+					.quantityDelta(stockWithQuantityDelta.getQuantity())
+					.build();
+			materialEventService.fireEventAfterNextCommit(stockChangedEvent, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 }

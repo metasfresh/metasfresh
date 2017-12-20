@@ -93,7 +93,8 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,
-				candidateRepositoryCommands);
+				candidateRepositoryCommands,
+				materialEventService);
 
 		stockRepository = new StockRepository();
 

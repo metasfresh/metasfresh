@@ -1,4 +1,4 @@
-package de.metas.material.dispo.model;
+package de.metas.material.cockpit.model;
 
 
 /** Generated Interface for MD_Cockpit
@@ -170,7 +170,7 @@ public interface I_MD_Cockpit
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Material-Cockpit.
+	 * Set Materialcockpit.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -179,7 +179,7 @@ public interface I_MD_Cockpit
 	public void setMD_Cockpit_ID (int MD_Cockpit_ID);
 
 	/**
-	 * Get Material-Cockpit.
+	 * Get Materialcockpit.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -447,6 +447,31 @@ public interface I_MD_Cockpit
     public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyOnHandEstimate = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "QtyOnHandEstimate", null);
     /** Column name QtyOnHandEstimate */
     public static final String COLUMNNAME_QtyOnHandEstimate = "QtyOnHandEstimate";
+
+	/**
+	 * Set Lagerbestand.
+	 * Aktueller oder geplanter Lagerbestand
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyOnHandStock (java.math.BigDecimal QtyOnHandStock);
+
+	/**
+	 * Get Lagerbestand.
+	 * Aktueller oder geplanter Lagerbestand
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyOnHandStock();
+
+    /** Column definition for QtyOnHandStock */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyOnHandStock = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "QtyOnHandStock", null);
+    /** Column name QtyOnHandStock */
+    public static final String COLUMNNAME_QtyOnHandStock = "QtyOnHandStock";
 
 	/**
 	 * Set Benötigte Menge für Produktion.
