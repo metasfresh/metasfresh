@@ -13,15 +13,14 @@ package org.compiere.apps.search;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -65,11 +64,11 @@ public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCrit
 		initDefaults();
 	}
 
-	protected abstract CEditor createCheckboxEditor(String columnName, String label);
+	protected abstract CEditor createCheckboxEditor(String label);
 
 	protected abstract CEditor createLookupEditor(String columnName, Lookup lookup, Object defaultValue);
 
-	protected abstract CEditor createStringEditor(String columnName, String defaultValue);
+	protected abstract CEditor createStringEditor(String defaultValue);
 
 	protected abstract CEditor createNumberEditor(String columnName, String title, int displayType);
 
@@ -86,9 +85,11 @@ public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCrit
 		final int displayType = infoColumn.getAD_Reference_ID();
 		final String columnName = infoColumn.getAD_Element().getColumnName();
 
+		Check.assumeNotNull(columnName, "The element {} does not have a column name set", infoColumn.getAD_Element());
+
 		if (DisplayType.YesNo == displayType)
 		{
-			editor = createCheckboxEditor(columnName, label);
+			editor = createCheckboxEditor(label);
 			label = null;
 		}
 		else if (DisplayType.List == displayType
@@ -108,8 +109,7 @@ public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCrit
 						columnName,
 						infoColumn.getAD_Reference_Value_ID(),
 						false, // IsParent
-						infoColumn.getAD_Val_Rule_ID()
-						);
+						infoColumn.getAD_Val_Rule_ID());
 			}
 			catch (final Exception e)
 			{
@@ -128,16 +128,17 @@ public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCrit
 		}
 		else if (DisplayType.String == displayType)
 		{
-			editor = createStringEditor(columnName, null);
+			editor = createStringEditor(null);
 			//
 			if (infoColumn.isRange())
 			{
-				editor2 = createStringEditor(columnName + "_2", null);
+				editor2 = createStringEditor(null);
 			}
 		}
 		// Number
 		else if (DisplayType.isNumeric(displayType))
 		{
+
 			editor = createNumberEditor(columnName, infoColumn.getName(), displayType);
 			//
 			if (infoColumn.isRange())
@@ -148,6 +149,7 @@ public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCrit
 		// Date
 		else if (DisplayType.isDate(displayType))
 		{
+
 			editor = createDateEditor(columnName, infoColumn.getName(), displayType);
 			//
 			if (infoColumn.isRange())

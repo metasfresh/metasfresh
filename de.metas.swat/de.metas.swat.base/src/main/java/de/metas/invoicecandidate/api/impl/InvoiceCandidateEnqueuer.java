@@ -166,7 +166,7 @@ import de.metas.lock.api.LockOwner;
 		// Create workpackages.
 		// NOTE: loading them again after we made sure that they are fairly up to date.
 		final InvoiceCandidate2WorkpackageAggregator workpackageAggregator = new InvoiceCandidate2WorkpackageAggregator(ctx, trxName)
-				.setAD_PInstance_ID(adPInstanceId)
+				.setAD_PInstance_Creator_ID(adPInstanceId)
 				.setInvoiceCandidatesLock(icLock)
 				.setC_Async_Batch(_asyncBatch);
 

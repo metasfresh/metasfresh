@@ -27,9 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -39,9 +37,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -277,18 +272,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				.createInOutGenerateResult(true); // storeReceipts = true
 
 		return new InOutProducerFromShipmentScheduleWithHU(result);
-	}
-
-	@Override
-	public void generateInOuts(final Properties ctx,
-			final IInOutProducerFromShipmentScheduleWithHU producer,
-			final Iterator<IShipmentScheduleWithHU> receiptSchedules)
-	{
-		final ITrxItemProcessorExecutorService executorService = Services.get(ITrxItemProcessorExecutorService.class);
-		final ITrxItemProcessorContext processorCtx = executorService.createProcessorContext(ctx, ITrx.TRX_None);
-		final ITrxItemProcessorExecutor<IShipmentScheduleWithHU, InOutGenerateResult> executor = executorService.createExecutor(processorCtx, producer);
-
-		executor.execute(receiptSchedules);
 	}
 
 	/**
