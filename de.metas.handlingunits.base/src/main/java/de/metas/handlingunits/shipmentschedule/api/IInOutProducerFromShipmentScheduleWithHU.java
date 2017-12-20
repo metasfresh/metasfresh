@@ -1,28 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.util.List;
 
-import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
+import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -34,21 +14,11 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
  *
  *
  */
-public interface IInOutProducerFromShipmentScheduleWithHU extends ITrxItemChunkProcessor<IShipmentScheduleWithHU, InOutGenerateResult>
+public interface IInOutProducerFromShipmentScheduleWithHU
 {
-	/**
-	 * Determines if the shipments shall be completed or left in their initial status (i.e. "draft").
-	 *
-	 * Notes:
-	 * <ul>
-	 * <li>the default (in case this method is not used) is <code>'CO'</code> (complete).
-	 * <li>if no processing is desired, call this method with <code>docAction == null</code>.
-	 * </ul>
-	 *
-	 * @param completeShipments
-	 * @return this instance
-	 */
-	IInOutProducerFromShipmentScheduleWithHU setProcessShipmentsDocAction(String docAction);
+	InOutGenerateResult createShipments(List<IShipmentScheduleWithHU> candidates);
+	
+	IInOutProducerFromShipmentScheduleWithHU setProcessShipments(boolean processShipments);
 
 	/**
 	 * Determines if this producer shall explicitly invoke {@link IHUInOutBL#createPackingMaterialLines(org.compiere.model.I_M_InOut)} to create packing inOutLines.
@@ -82,4 +52,6 @@ public interface IInOutProducerFromShipmentScheduleWithHU extends ITrxItemChunkP
 	 * @return
 	 */
 	IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(boolean forceDateToday);
+	
+	IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
 }

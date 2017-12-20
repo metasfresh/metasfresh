@@ -29,12 +29,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -352,19 +350,16 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		// Make sure we are working with valid candidates
 		final GenerateInOutFromHU processor = new GenerateInOutFromHU();
-		final Iterator<IShipmentScheduleWithHU> candidates = processor.retrieveCandidates(huContext, workpackage, ITrx.TRXNAME_None);
+		processor.setC_Queue_WorkPackage(workpackage);
+		
+		final List<IShipmentScheduleWithHU> candidates = processor.retrieveCandidates();
 
 		//
 		// Important!
 		//
 		// When matching expectations, sort the candidates so that they have the same indexes as the aggregated HUs
 		//
-		final List<IShipmentScheduleWithHU> candidatesSorted = new ArrayList<>();
-		while (candidates.hasNext())
-		{
-			final IShipmentScheduleWithHU candidate = candidates.next();
-			candidatesSorted.add(candidate);
-		}
+		final List<IShipmentScheduleWithHU> candidatesSorted = new ArrayList<>(candidates);
 		Collections.sort(candidatesSorted, new Comparator<IShipmentScheduleWithHU>()
 		{
 			@Override
@@ -400,7 +395,6 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		// Process the workpackage
 		// => shipment shall be generated
-		processor.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance); // fail on error
 		processor.processWorkPackage(workpackage, ITrx.TRXNAME_None);
 
 		//

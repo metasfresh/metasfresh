@@ -27,9 +27,15 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
@@ -39,6 +45,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
+import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -53,6 +60,7 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
+import de.metas.inout.event.InOutProcessedEventBus;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -67,7 +75,7 @@ import lombok.NonNull;
  * @author tsa
  *
  */
-public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFromShipmentScheduleWithHU
+public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFromShipmentScheduleWithHU, ITrxItemChunkProcessor<IShipmentScheduleWithHU, InOutGenerateResult>
 {
 	//
 	// Services
@@ -85,6 +93,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	private final IAggregationKeyBuilder<IShipmentScheduleWithHU> huShipmentScheduleKeyBuilder;
 
 	private ITrxItemProcessorContext processorCtx;
+	private ITrxItemExceptionHandler trxItemExceptionHandler = FailTrxItemExceptionHandler.instance;
 
 	private I_M_InOut currentShipment;
 	private ShipmentLineBuilder currentShipmentLineBuilder;
@@ -100,8 +109,8 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	private IShipmentScheduleWithHU lastItem;
 
 	//
-	// 07113: constant to know if the document shall be completed or not. Null means "don't process"
-	private String processShipmentDocAction = IDocument.ACTION_Complete;
+	// 07113: constant to know if the document shall be completed or not.
+	private boolean processShipments = true;
 
 	private boolean createPackingLines = false;
 	private boolean manualPackingMaterial = false;
@@ -124,6 +133,65 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 
 		shipmentScheduleKeyBuilder = shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilder();
 		huShipmentScheduleKeyBuilder = huShipmentScheduleBL.mkHUShipmentScheduleHeaderAggregationKeyBuilder();
+	}
+
+	@Override
+	public InOutGenerateResult createShipments(final List<IShipmentScheduleWithHU> candidates)
+	{
+		final InOutProcessedEventBus shipmentGeneratedNotifications = InOutProcessedEventBus.newInstance()
+				.queueEventsUntilCurrentTrxCommit();
+
+		try
+		{
+			final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
+			final InOutGenerateResult result = trxItemProcessorExecutorService
+					.<IShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
+					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+					.setProcessor(this)
+					.setExceptionHandler(trxItemExceptionHandler)
+					.process(candidates);
+
+			//
+			// Send notifications
+			shipmentGeneratedNotifications.notify(result.getInOuts());
+
+			return result;
+		}
+		catch (final Exception ex)
+		{
+			final String sourceInfo = extractSourceInfo(candidates);
+			shipmentGeneratedNotifications.notifyShipmentError(sourceInfo, ex.getLocalizedMessage());
+
+			// propagate
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+
+	}
+
+	private static String extractSourceInfo(final List<IShipmentScheduleWithHU> candidates)
+	{
+		return candidates.stream()
+				.map(candidate -> extractSourceInfo(candidate))
+				.distinct()
+				.collect(Collectors.joining(", "));
+	}
+
+	private static String extractSourceInfo(final IShipmentScheduleWithHU candidate)
+	{
+		I_M_HU luHU = candidate.getM_LU_HU();
+		if (luHU != null)
+		{
+			return luHU.getValue();
+		}
+
+		final I_M_HU tuHU = candidate.getM_TU_HU();
+		if (tuHU != null)
+		{
+			return tuHU.getValue();
+		}
+
+		// default, shall not reach this point
+		return "#" + candidate.getM_ShipmentSchedule().getM_ShipmentSchedule_ID();
 	}
 
 	@Override
@@ -344,9 +412,9 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 			//
 			// Process current shipment
 			// 07113: if the CompleteShipment is false, we will have them only drafted (as default)
-			if (!Check.isEmpty(processShipmentDocAction, true))
+			if (processShipments)
 			{
-				docActionBL.processEx(currentShipment, processShipmentDocAction, null);
+				docActionBL.processEx(currentShipment, IDocument.ACTION_Complete, null);
 			}
 			result.addInOut(currentShipment);
 
@@ -415,6 +483,13 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(@NonNull final ITrxItemExceptionHandler trxItemExceptionHandler)
+	{
+		this.trxItemExceptionHandler = trxItemExceptionHandler;
+		return this;
+	}
+
+	@Override
 	public void process(final IShipmentScheduleWithHU item) throws Exception
 	{
 		updateShipmentDate(currentShipment, item);
@@ -442,16 +517,16 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	{
 		final Timestamp today = SystemTime.asDayTimestamp();
 		final Timestamp movementDate = shipment.getMovementDate();
-		
+
 		final boolean isCandidateInThePast = shipmentDeliveryDate.before(today);
 		final boolean isMovementDateInThePast = movementDate.before(today);
 		final boolean isCandidateSoonerThanMovementDate = movementDate.after(shipmentDeliveryDate);
 
-		if(isCandidateInThePast)
+		if (isCandidateInThePast)
 		{
 			return false;
 		}
-		
+
 		if (isMovementDateInThePast)
 		{
 			return true;
@@ -499,9 +574,9 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	@Override
-	public IInOutProducerFromShipmentScheduleWithHU setProcessShipmentsDocAction(final String docAction)
+	public IInOutProducerFromShipmentScheduleWithHU setProcessShipments(final boolean processShipments)
 	{
-		processShipmentDocAction = docAction;
+		this.processShipments = processShipments;
 		return this;
 	}
 
