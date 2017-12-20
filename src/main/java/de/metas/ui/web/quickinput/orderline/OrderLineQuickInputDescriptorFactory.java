@@ -112,9 +112,10 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 				.setCaption(Services.get(IMsgBL.class).translatable(IOrderLineQuickInput.COLUMNNAME_M_Product_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(ProductLookupDescriptor.builder()
+				.setLookupDescriptorProvider(ProductLookupDescriptor.builderWithStockInfo()
 						.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
-						.dateParamName(I_C_Order.COLUMNNAME_DatePromised)
+						.availableStockDateParamName(I_C_Order.COLUMNNAME_DatePromised)
+						.pricingDateParamName(I_C_Order.COLUMNNAME_PreparationDate)
 						.availableStockService(availableStockService)
 						.build())
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
@@ -140,7 +141,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 		{
 			return;
 		}
-		
+
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(productLookupValue);
 		final I_M_Product quickInputProduct = load(productAndAttributes.getProductId(), I_M_Product.class);
 
