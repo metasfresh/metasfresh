@@ -79,11 +79,19 @@ public class MaterialEventService
 
 			try (final IAutoCloseable c = Env.switchContext(temporaryCtx))
 			{
+				invokeAllListnersInOneTrx(lightWeightEvent);
+			}
+		}
+
+		private void invokeAllListnersInOneTrx(@NonNull final MaterialEvent materialEvent)
+		{
+			Services.get(ITrxManager.class).run(() -> {
+
 				for (final MaterialEventListener listener : listeners)
 				{
-					listener.onEvent(lightWeightEvent);
+					listener.onEvent(materialEvent);
 				}
-			}
+			});
 		}
 
 		@Override
@@ -92,6 +100,8 @@ public class MaterialEventService
 			return MaterialEventService.class.getName() + ".internalListener";
 		}
 	};
+
+
 
 	public static MaterialEventService createLocalServiceThatIsReadyToUse()
 	{
