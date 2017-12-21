@@ -84,8 +84,8 @@ class DocList extends Component {
     this.setState({ notfound: isNotFound });
   };
 
-  handleUpdateParentSelectedIds = () => {
-    this.masterDocumentList.updateQuickActions();
+  handleUpdateParentSelectedIds = childSelection => {
+    this.masterDocumentList.updateQuickActions(childSelection);
   };
 
   render() {

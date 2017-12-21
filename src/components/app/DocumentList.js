@@ -267,9 +267,9 @@ class DocumentList extends Component {
     });
   };
 
-  updateQuickActions = () => {
+  updateQuickActions = childSelection => {
     if (this.quickActionsComponent) {
-      this.quickActionsComponent.updateActions();
+      this.quickActionsComponent.updateActions(childSelection);
     }
   };
 

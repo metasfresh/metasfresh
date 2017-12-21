@@ -295,37 +295,37 @@ class Table extends Component {
 
   selectProduct = (id, idFocused, idFocusedDown) => {
     const { dispatch, type, disconnectFromState, tabInfo, viewId } = this.props;
+    const { selected } = this.state;
 
-    this.setState(
-      prevState => ({
-        selected: prevState.selected.concat([id])
-      }),
-      () => {
-        const { selected } = this.state;
+    const newSelected = selected.concat([id]);
 
-        if (tabInfo) {
-          dispatch(
-            selectTableItems({
-              windowType: type,
-              viewId,
-              ids: selected
-            })
-          );
-        }
+    this.setState({ selected: newSelected }, () => {
+      const { selected } = this.state;
 
-        if (!disconnectFromState) {
-          dispatch(
-            selectTableItems({
-              windowType: type,
-              viewId,
-              ids: selected
-            })
-          );
-        }
-
-        this.triggerFocus(idFocused, idFocusedDown);
+      if (tabInfo) {
+        dispatch(
+          selectTableItems({
+            windowType: type,
+            viewId,
+            ids: selected
+          })
+        );
       }
-    );
+
+      if (!disconnectFromState) {
+        dispatch(
+          selectTableItems({
+            windowType: type,
+            viewId,
+            ids: selected
+          })
+        );
+      }
+
+      this.triggerFocus(idFocused, idFocusedDown);
+    });
+
+    return newSelected;
   };
 
   selectRangeProduct = ids => {
@@ -613,28 +613,34 @@ class Table extends Component {
       const isSelected = selected.indexOf(id) > -1;
       const isAnySelected = selected.length > 0;
 
-      if (onSelectionChanged) {
-        onSelectionChanged();
-      }
+      let newSelection;
 
       if (selectMore) {
         if (isSelected) {
-          const newSelected = this.deselectProduct(id);
-          return newSelected.length > 0;
+          newSelection = this.deselectProduct(id);
         } else {
-          this.selectProduct(id);
+          newSelection = this.selectProduct(id);
         }
       } else if (selectRange) {
         if (isAnySelected) {
-          const idsToSelect = this.getProductRange(id);
-          this.selectRangeProduct(idsToSelect);
+          newSelection = this.getProductRange(id);
+          this.selectRangeProduct(newSelection);
         } else {
+          newSelection = [id];
           this.selectOneProduct(id);
         }
       } else {
+        newSelection = [id];
         this.selectOneProduct(id);
       }
+
+      if (onSelectionChanged) {
+        onSelectionChanged(newSelection);
+      }
+
+      return newSelection.length > 0;
     }
+
     return true;
   };
 

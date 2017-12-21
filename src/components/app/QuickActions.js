@@ -77,9 +77,15 @@ class QuickActions extends Component {
     return nextProps.shouldNotUpdate !== true;
   }
 
-  updateActions = () => {
+  updateActions = (childSelection = this.props.childView.viewSelectedIds) => {
     const { windowType, viewId, selected, childView, parentView } = this.props;
-    this.fetchActions(windowType, viewId, selected, childView, parentView);
+    this.fetchActions(
+      windowType,
+      viewId,
+      selected,
+      { ...childView, viewSelectedIds: childSelection },
+      parentView
+    );
   };
 
   componentDidUpdate = prevProps => {
