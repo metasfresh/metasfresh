@@ -47,6 +47,13 @@ import lombok.NonNull;
 	{
 		execute(listener);
 	}
+	
+	@Override
+	public boolean canRegisterOnTiming(@NonNull final TrxEventTiming timing)
+	{
+		// any timing is accepted because we are executing directly
+		return true;
+	}
 
 	private final void execute(final RegisterListenerRequest listener)
 	{

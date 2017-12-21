@@ -108,6 +108,12 @@ public class TrxListenerManager implements ITrxListenerManager
 			new AdempiereException(message).throwIfDeveloperModeOrLogWarningElse(logger);
 		}
 	}
+	
+	@Override
+	public boolean canRegisterOnTiming(@NonNull final TrxEventTiming timing)
+	{
+		return timing.canBeRegisteredWithinOtherTiming(runningWithinTrxEventTiming.get());
+	}
 
 	@Override
 	public void fireBeforeCommit(final ITrx trx)

@@ -3,6 +3,7 @@ package de.metas.handlingunits.impl;
 import java.util.Collection;
 
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -14,6 +15,7 @@ import com.google.common.base.Preconditions;
 
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockCommand.AllowAdditionalLocks;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
@@ -51,7 +53,7 @@ public class HULockBL implements IHULockBL
 	@Override
 	public boolean isLocked(final I_M_HU hu)
 	{
-		if (isUseVirtualcolumn())
+		if (isUseVirtualColumn())
 		{
 			return hu.isLocked(); // gh #1861 return the value of this virtual column
 		}
@@ -61,7 +63,7 @@ public class HULockBL implements IHULockBL
 	/**
 	 * @task https://github.com/metasfresh/metasfresh/issues/1861
 	 */
-	private boolean isUseVirtualcolumn()
+	private boolean isUseVirtualColumn()
 	{
 		final String value = Services.get(ISysConfigBL.class).getValue(SYS_CONFIG_LOCK_VIA_VIRTUAL_COLUMN, "N");
 		if ("N".equalsIgnoreCase(value))
@@ -88,23 +90,35 @@ public class HULockBL implements IHULockBL
 	@Override
 	public void lock(final I_M_HU hu, final LockOwner lockOwner)
 	{
+		lockPrepare(hu, lockOwner)
+				.acquire();
+
+		if (isUseVirtualColumn())
+		{
+			InterfaceWrapperHelper.refresh(hu);
+		}
+	}
+
+	@Override
+	public void lockAfterCommit(final I_M_HU hu, final LockOwner lockOwner)
+	{
+		lockPrepare(hu, lockOwner)
+				.acquireAfterTrxCommit(ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private ILockCommand lockPrepare(final I_M_HU hu, final LockOwner lockOwner)
+	{
 		Preconditions.checkNotNull(hu, "hu is null");
 		Preconditions.checkNotNull(lockOwner, "lockOwner is null");
 		Preconditions.checkArgument(!lockOwner.isAnyOwner(), "{} not allowed", lockOwner);
 
-		Services.get(ILockManager.class)
+		return Services.get(ILockManager.class)
 				.lock()
 				.setOwner(lockOwner)
 				.setFailIfAlreadyLocked(false)
 				.setAllowAdditionalLocks(AllowAdditionalLocks.FOR_DIFFERENT_OWNERS)
 				.setAutoCleanup(false)
-				.setRecordByModel(hu)
-				.acquire();
-
-		if (isUseVirtualcolumn())
-		{
-			InterfaceWrapperHelper.refresh(hu);
-		}
+				.setRecordByModel(hu);
 	}
 
 	@Override
@@ -127,7 +141,7 @@ public class HULockBL implements IHULockBL
 				.addRecordsByModel(hus)
 				.acquire();
 
-		if (isUseVirtualcolumn())
+		if (isUseVirtualColumn())
 		{
 			InterfaceWrapperHelper.refreshAll(hus);
 		}
@@ -143,7 +157,7 @@ public class HULockBL implements IHULockBL
 		final int huId = hu.getM_HU_ID();
 		unlock0(huId, lockOwner);
 
-		if (isUseVirtualcolumn())
+		if (isUseVirtualColumn())
 		{
 			InterfaceWrapperHelper.refresh(hu);
 		}
@@ -192,7 +206,7 @@ public class HULockBL implements IHULockBL
 				.setRecordsByModels(hus)
 				.release();
 
-		if (isUseVirtualcolumn())
+		if (isUseVirtualColumn())
 		{
 			InterfaceWrapperHelper.refresh(hus);
 		}

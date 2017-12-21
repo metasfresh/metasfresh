@@ -128,10 +128,9 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	 * @param ctx
 	 * @param receiptSchedules
 	 * @param selectedHUs HUs to receive
-	 * @param storeReceipts if true, receipts shall be stored in the result (particularly useful for testing)
-	 * @return receipt generation result
+	 * @return receipt generation result with receipts collected
 	 */
-	InOutGenerateResult processReceiptSchedules(Properties ctx, List<I_M_ReceiptSchedule> receiptSchedules, Set<I_M_HU> selectedHUs, boolean storeReceipts);
+	InOutGenerateResult processReceiptSchedules(Properties ctx, List<I_M_ReceiptSchedule> receiptSchedules, Set<I_M_HU> selectedHUs);
 
 	/**
 	 * Set request's initial attribute values defaults to be used when new HUs are created.
