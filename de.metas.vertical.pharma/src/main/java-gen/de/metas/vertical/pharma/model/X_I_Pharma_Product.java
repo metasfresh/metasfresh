@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.vertical.pharma.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -253077151L;
+	private static final long serialVersionUID = 1970459605L;
 
     /** Standard Constructor */
     public X_I_Pharma_Product (Properties ctx, int I_Pharma_Product_ID, String trxName)
@@ -395,20 +396,20 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/** Set A01AEP.
 		@param A01AEP A01AEP	  */
 	@Override
-	public void setA01AEP (int A01AEP)
+	public void setA01AEP (java.math.BigDecimal A01AEP)
 	{
-		set_Value (COLUMNNAME_A01AEP, Integer.valueOf(A01AEP));
+		set_Value (COLUMNNAME_A01AEP, A01AEP);
 	}
 
 	/** Get A01AEP.
 		@return A01AEP	  */
 	@Override
-	public int getA01AEP () 
+	public java.math.BigDecimal getA01AEP () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A01AEP);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A01AEP);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set A01AEPPPU.
@@ -465,20 +466,20 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/** Set A01APU.
 		@param A01APU A01APU	  */
 	@Override
-	public void setA01APU (int A01APU)
+	public void setA01APU (java.math.BigDecimal A01APU)
 	{
-		set_Value (COLUMNNAME_A01APU, Integer.valueOf(A01APU));
+		set_Value (COLUMNNAME_A01APU, A01APU);
 	}
 
 	/** Get A01APU.
 		@return A01APU	  */
 	@Override
-	public int getA01APU () 
+	public java.math.BigDecimal getA01APU () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A01APU);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A01APU);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set A01APU783A.
@@ -503,20 +504,20 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/** Set A01AVP.
 		@param A01AVP A01AVP	  */
 	@Override
-	public void setA01AVP (int A01AVP)
+	public void setA01AVP (java.math.BigDecimal A01AVP)
 	{
-		set_Value (COLUMNNAME_A01AVP, Integer.valueOf(A01AVP));
+		set_Value (COLUMNNAME_A01AVP, A01AVP);
 	}
 
 	/** Get A01AVP.
 		@return A01AVP	  */
 	@Override
-	public int getA01AVP () 
+	public java.math.BigDecimal getA01AVP () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A01AVP);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A01AVP);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set A01AVPPPU.
@@ -573,20 +574,20 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/** Set A01KAEP.
 		@param A01KAEP A01KAEP	  */
 	@Override
-	public void setA01KAEP (int A01KAEP)
+	public void setA01KAEP (java.math.BigDecimal A01KAEP)
 	{
-		set_Value (COLUMNNAME_A01KAEP, Integer.valueOf(A01KAEP));
+		set_Value (COLUMNNAME_A01KAEP, A01KAEP);
 	}
 
 	/** Get A01KAEP.
 		@return A01KAEP	  */
 	@Override
-	public int getA01KAEP () 
+	public java.math.BigDecimal getA01KAEP () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A01KAEP);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A01KAEP);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** 
@@ -808,39 +809,39 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/** Set A01UVP.
 		@param A01UVP A01UVP	  */
 	@Override
-	public void setA01UVP (int A01UVP)
+	public void setA01UVP (java.math.BigDecimal A01UVP)
 	{
-		set_Value (COLUMNNAME_A01UVP, Integer.valueOf(A01UVP));
+		set_Value (COLUMNNAME_A01UVP, A01UVP);
 	}
 
 	/** Get A01UVP.
 		@return A01UVP	  */
 	@Override
-	public int getA01UVP () 
+	public java.math.BigDecimal getA01UVP () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A01UVP);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A01UVP);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set A01ZBV.
 		@param A01ZBV A01ZBV	  */
 	@Override
-	public void setA01ZBV (int A01ZBV)
+	public void setA01ZBV (java.math.BigDecimal A01ZBV)
 	{
-		set_Value (COLUMNNAME_A01ZBV, Integer.valueOf(A01ZBV));
+		set_Value (COLUMNNAME_A01ZBV, A01ZBV);
 	}
 
 	/** Get A01ZBV.
 		@return A01ZBV	  */
 	@Override
-	public int getA01ZBV () 
+	public java.math.BigDecimal getA01ZBV () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A01ZBV);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A01ZBV);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** 
@@ -2796,43 +2797,6 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	public int getAVP_Price_List_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AVP_Price_List_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_TaxCategory getC_TaxCategory() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class);
-	}
-
-	@Override
-	public void setC_TaxCategory(org.compiere.model.I_C_TaxCategory C_TaxCategory)
-	{
-		set_ValueFromPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class, C_TaxCategory);
-	}
-
-	/** Set Steuerkategorie.
-		@param C_TaxCategory_ID 
-		Steuerkategorie
-	  */
-	@Override
-	public void setC_TaxCategory_ID (int C_TaxCategory_ID)
-	{
-		if (C_TaxCategory_ID < 1) 
-			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_TaxCategory_ID, Integer.valueOf(C_TaxCategory_ID));
-	}
-
-	/** Get Steuerkategorie.
-		@return Steuerkategorie
-	  */
-	@Override
-	public int getC_TaxCategory_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxCategory_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

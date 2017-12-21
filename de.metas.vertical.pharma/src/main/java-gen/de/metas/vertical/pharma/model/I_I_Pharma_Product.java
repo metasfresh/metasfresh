@@ -416,20 +416,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A01AEP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA01AEP (int A01AEP);
+	public void setA01AEP (java.math.BigDecimal A01AEP);
 
 	/**
 	 * Get A01AEP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA01AEP();
+	public java.math.BigDecimal getA01AEP();
 
     /** Column definition for A01AEP */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A01AEP = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A01AEP", null);
@@ -508,20 +508,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A01APU.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA01APU (int A01APU);
+	public void setA01APU (java.math.BigDecimal A01APU);
 
 	/**
 	 * Get A01APU.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA01APU();
+	public java.math.BigDecimal getA01APU();
 
     /** Column definition for A01APU */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A01APU = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A01APU", null);
@@ -554,20 +554,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A01AVP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA01AVP (int A01AVP);
+	public void setA01AVP (java.math.BigDecimal A01AVP);
 
 	/**
 	 * Get A01AVP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA01AVP();
+	public java.math.BigDecimal getA01AVP();
 
     /** Column definition for A01AVP */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A01AVP = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A01AVP", null);
@@ -646,20 +646,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A01KAEP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA01KAEP (int A01KAEP);
+	public void setA01KAEP (java.math.BigDecimal A01KAEP);
 
 	/**
 	 * Get A01KAEP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA01KAEP();
+	public java.math.BigDecimal getA01KAEP();
 
     /** Column definition for A01KAEP */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A01KAEP = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A01KAEP", null);
@@ -945,20 +945,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A01UVP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA01UVP (int A01UVP);
+	public void setA01UVP (java.math.BigDecimal A01UVP);
 
 	/**
 	 * Get A01UVP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA01UVP();
+	public java.math.BigDecimal getA01UVP();
 
     /** Column definition for A01UVP */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A01UVP = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A01UVP", null);
@@ -968,20 +968,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A01ZBV.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA01ZBV (int A01ZBV);
+	public void setA01ZBV (java.math.BigDecimal A01ZBV);
 
 	/**
 	 * Get A01ZBV.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA01ZBV();
+	public java.math.BigDecimal getA01ZBV();
 
     /** Column definition for A01ZBV */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A01ZBV = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A01ZBV", null);
@@ -2977,35 +2977,6 @@ public interface I_I_Pharma_Product
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList> COLUMN_AVP_Price_List_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList>(I_I_Pharma_Product.class, "AVP_Price_List_ID", org.compiere.model.I_M_PriceList.class);
     /** Column name AVP_Price_List_ID */
     public static final String COLUMNNAME_AVP_Price_List_ID = "AVP_Price_List_ID";
-
-	/**
-	 * Set Steuerkategorie.
-	 * Steuerkategorie
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_TaxCategory_ID (int C_TaxCategory_ID);
-
-	/**
-	 * Get Steuerkategorie.
-	 * Steuerkategorie
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_TaxCategory_ID();
-
-	public org.compiere.model.I_C_TaxCategory getC_TaxCategory();
-
-	public void setC_TaxCategory(org.compiere.model.I_C_TaxCategory C_TaxCategory);
-
-    /** Column definition for C_TaxCategory_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_C_TaxCategory> COLUMN_C_TaxCategory_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_C_TaxCategory>(I_I_Pharma_Product.class, "C_TaxCategory_ID", org.compiere.model.I_C_TaxCategory.class);
-    /** Column name C_TaxCategory_ID */
-    public static final String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
 
 	/**
 	 * Get Erstellt.
