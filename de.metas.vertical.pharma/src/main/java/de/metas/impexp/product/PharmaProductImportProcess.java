@@ -376,6 +376,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.filter(filter)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
+				.orderBy(I_C_TaxCategory.COLUMNNAME_Name)
 				.create()
 				.first(I_C_TaxCategory.class);
 	}
