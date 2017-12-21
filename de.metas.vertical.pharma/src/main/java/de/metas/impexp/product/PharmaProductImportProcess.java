@@ -10,15 +10,18 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.impexp.product.MProductImportTableSqlUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPriceListDAO;
+import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
@@ -37,9 +40,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 {
 
 	// temporary defaults
-	final private int C_UOM_ID = 100;
-	final private int M_Product_Category_ID = 1000000;
-	final private int C_TaxCategory_ID = 100;
+	final private int M_Product_Category_ID = 1000000; // FIXME : don't know yet from where to take it
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
@@ -143,9 +144,8 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		setPackageFields(importRecord, product);
 		setPharmaFields(importRecord, product);
 
-		// FIXME: use them as default values for this WIP
 		product.setProductType(X_I_Product.PRODUCTTYPE_Item);
-		product.setC_UOM_ID(C_UOM_ID);
+		product.setC_UOM(Services.get(IUOMDAO.class).retrieveEachUOM(getCtx()));
 		product.setM_Product_Category_ID(M_Product_Category_ID);
 
 		InterfaceWrapperHelper.save(product);
@@ -264,6 +264,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.priceList(importRecord.getKAEP_Price_List())
 				.product(importRecord.getM_Product())
 				.validDate(importRecord.getA01GDAT())
+				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
 		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
@@ -276,6 +277,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.priceList(importRecord.getAPU_Price_List())
 				.product(importRecord.getM_Product())
 				.validDate(importRecord.getA01GDAT())
+				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
 		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
@@ -288,6 +290,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.priceList(importRecord.getAEP_Price_List())
 				.product(importRecord.getM_Product())
 				.validDate(importRecord.getA01GDAT())
+				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
 		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
@@ -300,6 +303,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.priceList(importRecord.getAVP_Price_List())
 				.product(importRecord.getM_Product())
 				.validDate(importRecord.getA01GDAT())
+				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
 		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
@@ -312,6 +316,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.priceList(importRecord.getUVP_Price_List())
 				.product(importRecord.getM_Product())
 				.validDate(importRecord.getA01GDAT())
+				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
 		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
@@ -324,6 +329,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.priceList(importRecord.getZBV_Price_List())
 				.product(importRecord.getM_Product())
 				.validDate(importRecord.getA01GDAT())
+				.taxCategory(findTaxCategory(importRecord))
 				.build();
 
 		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
@@ -338,6 +344,35 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		@NonNull
 		private final BigDecimal price;
 		final Timestamp validDate;
+		@NonNull
+		final I_C_TaxCategory taxCategory ;
+	}
+
+	private I_C_TaxCategory findTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class, importRecord)
+				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsDefault, extractIsDefaultTaxCategory(importRecord))
+				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsReduced, extractIsReducedTaxCategory(importRecord))
+				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsWithout, extractIsWithoutTaxCategory(importRecord))
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.create()
+				.first(I_C_TaxCategory.class);
+	}
+
+	private boolean extractIsDefaultTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
+	{
+		return X_I_Pharma_Product.A01MWST_00.equals(importRecord.getA01MWST());
+	}
+
+	private boolean extractIsReducedTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
+	{
+		return X_I_Pharma_Product.A01MWST_01.equals(importRecord.getA01MWST());
+	}
+
+	private boolean extractIsWithoutTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
+	{
+		return X_I_Pharma_Product.A01MWST_02.equals(importRecord.getA01MWST());
 	}
 
 	private void createProductPrice_And_PriceListVersionIfNeeded(@NonNull final ProductPriceContext productPriceCtx)
@@ -369,6 +404,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private I_M_ProductPrice createProductPrice(@NonNull final ProductPriceContext productPriceCtx, @NonNull final I_M_PriceList_Version plv)
 	{
+		final I_C_TaxCategory taxCategory =  productPriceCtx.getTaxCategory();
 		final BigDecimal price = productPriceCtx.getPrice();
 		final I_M_ProductPrice pp = newInstance(I_M_ProductPrice.class, plv);
 		pp.setM_PriceList_Version(plv);
@@ -377,7 +413,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		pp.setPriceList(price);
 		pp.setPriceStd(price);
 		pp.setC_UOM(productPriceCtx.getProduct().getC_UOM());
-		pp.setC_TaxCategory_ID(C_TaxCategory_ID);
+		pp.setC_TaxCategory(taxCategory);
 		save(pp);
 
 		return pp;
