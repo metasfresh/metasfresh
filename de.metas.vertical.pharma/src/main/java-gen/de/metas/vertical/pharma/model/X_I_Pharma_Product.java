@@ -14,7 +14,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1506068486L;
+	private static final long serialVersionUID = -253077151L;
 
     /** Standard Constructor */
     public X_I_Pharma_Product (Properties ctx, int I_Pharma_Product_ID, String trxName)
@@ -80,14 +80,14 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_ArticleType
 	 */
 	public static final int A00ATYP_AD_Reference_ID=540791;
-	/** 00 = 00 */
-	public static final String A00ATYP_00 = "00";
-	/** 01 = 01 */
-	public static final String A00ATYP_01 = "01";
-	/** 03 = 03 */
-	public static final String A00ATYP_03 = "03";
-	/** 04 = 04 */
-	public static final String A00ATYP_04 = "04";
+	/** 0 = 0 */
+	public static final String A00ATYP_0 = "0";
+	/** 1 = 1 */
+	public static final String A00ATYP_1 = "1";
+	/** 3 = 3 */
+	public static final String A00ATYP_3 = "3";
+	/** 4 = 4 */
+	public static final String A00ATYP_4 = "4";
 	/** Set A00ATYP.
 		@param A00ATYP A00ATYP	  */
 	@Override
@@ -336,24 +336,24 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_Group
 	 */
 	public static final int A00WGA_AD_Reference_ID=540792;
-	/** 00 = 00 */
-	public static final String A00WGA_00 = "00";
-	/** 01 = 01 */
-	public static final String A00WGA_01 = "01";
-	/** 02 = 02 */
-	public static final String A00WGA_02 = "02";
-	/** 03 = 03 */
-	public static final String A00WGA_03 = "03";
-	/** 04 = 04 */
-	public static final String A00WGA_04 = "04";
-	/** 05 = 05 */
-	public static final String A00WGA_05 = "05";
-	/** 06 = 06 */
-	public static final String A00WGA_06 = "06";
-	/** 07 = 07 */
-	public static final String A00WGA_07 = "07";
-	/** 08 = 08 */
-	public static final String A00WGA_08 = "08";
+	/** 0 = 0 */
+	public static final String A00WGA_0 = "0";
+	/** 1 = 1 */
+	public static final String A00WGA_1 = "1";
+	/** 2 = 2 */
+	public static final String A00WGA_2 = "2";
+	/** 3 = 3 */
+	public static final String A00WGA_3 = "3";
+	/** 4 = 4 */
+	public static final String A00WGA_4 = "4";
+	/** 5 = 5 */
+	public static final String A00WGA_5 = "5";
+	/** 6 = 6 */
+	public static final String A00WGA_6 = "6";
+	/** 7 = 7 */
+	public static final String A00WGA_7 = "7";
+	/** 8 = 8 */
+	public static final String A00WGA_8 = "8";
 	/** 55 = 55 */
 	public static final String A00WGA_55 = "55";
 	/** Set A00WGA.
@@ -594,12 +594,12 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_Tax
 	 */
 	public static final int A01MWST_AD_Reference_ID=540801;
-	/** 00 = 00 */
-	public static final String A01MWST_00 = "00";
-	/** 01 = 01 */
-	public static final String A01MWST_01 = "01";
-	/** 02 = 02 */
-	public static final String A01MWST_02 = "02";
+	/** 0 = 0 */
+	public static final String A01MWST_0 = "0";
+	/** 1 = 1 */
+	public static final String A01MWST_1 = "1";
+	/** 2 = 2 */
+	public static final String A01MWST_2 = "2";
 	/** Set A01MWST.
 		@param A01MWST A01MWST	  */
 	@Override
@@ -848,10 +848,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02130A18_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02130A18_00 = "00";
-	/** 01 = 01 */
-	public static final String A02130A18_01 = "01";
+	/** 0 = 0 */
+	public static final String A02130A18_0 = "0";
+	/** 1 = 1 */
+	public static final String A02130A18_1 = "1";
 	/** Set A02130A18.
 		@param A02130A18 A02130A18	  */
 	@Override
@@ -874,10 +874,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02130A1A8_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02130A1A8_00 = "00";
-	/** 01 = 01 */
-	public static final String A02130A1A8_01 = "01";
+	/** 0 = 0 */
+	public static final String A02130A1A8_0 = "0";
+	/** 1 = 1 */
+	public static final String A02130A1A8_1 = "1";
 	/** Set A02130A1A8.
 		@param A02130A1A8 A02130A1A8	  */
 	@Override
@@ -900,10 +900,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A0247AMG_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A0247AMG_00 = "00";
-	/** 01 = 01 */
-	public static final String A0247AMG_01 = "01";
+	/** 0 = 0 */
+	public static final String A0247AMG_0 = "0";
+	/** 1 = 1 */
+	public static final String A0247AMG_1 = "1";
 	/** Set A0247AMG.
 		@param A0247AMG A0247AMG	  */
 	@Override
@@ -926,10 +926,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A0252B_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A0252B_00 = "00";
-	/** 01 = 01 */
-	public static final String A0252B_01 = "01";
+	/** 0 = 0 */
+	public static final String A0252B_0 = "0";
+	/** 1 = 1 */
+	public static final String A0252B_1 = "1";
 	/** Set A0252B.
 		@param A0252B A0252B	  */
 	@Override
@@ -952,10 +952,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02AM_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02AM_00 = "00";
-	/** 01 = 01 */
-	public static final String A02AM_01 = "01";
+	/** 0 = 0 */
+	public static final String A02AM_0 = "0";
+	/** 1 = 1 */
+	public static final String A02AM_1 = "1";
 	/** Set A02AM.
 		@param A02AM A02AM	  */
 	@Override
@@ -978,10 +978,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02ANTHRO_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02ANTHRO_00 = "00";
-	/** 01 = 01 */
-	public static final String A02ANTHRO_01 = "01";
+	/** 0 = 0 */
+	public static final String A02ANTHRO_0 = "0";
+	/** 1 = 1 */
+	public static final String A02ANTHRO_1 = "1";
 	/** Set A02ANTHRO.
 		@param A02ANTHRO A02ANTHRO	  */
 	@Override
@@ -1004,12 +1004,12 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_IsPharmacy
 	 */
 	public static final int A02APPFL_AD_Reference_ID=540789;
-	/** 00 = 00 */
-	public static final String A02APPFL_00 = "00";
-	/** 01 = 01 */
-	public static final String A02APPFL_01 = "01";
-	/** 02 = 02 */
-	public static final String A02APPFL_02 = "02";
+	/** 0 = 0 */
+	public static final String A02APPFL_0 = "0";
+	/** 1 = 1 */
+	public static final String A02APPFL_1 = "1";
+	/** 2 = 2 */
+	public static final String A02APPFL_2 = "2";
 	/** Set A02APPFL.
 		@param A02APPFL A02APPFL	  */
 	@Override
@@ -1032,10 +1032,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02AUSNREI_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02AUSNREI_00 = "00";
-	/** 01 = 01 */
-	public static final String A02AUSNREI_01 = "01";
+	/** 0 = 0 */
+	public static final String A02AUSNREI_0 = "0";
+	/** 1 = 1 */
+	public static final String A02AUSNREI_1 = "1";
 	/** Set A02AUSNREI.
 		@param A02AUSNREI A02AUSNREI	  */
 	@Override
@@ -1058,10 +1058,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02BATTG_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02BATTG_00 = "00";
-	/** 01 = 01 */
-	public static final String A02BATTG_01 = "01";
+	/** 0 = 0 */
+	public static final String A02BATTG_0 = "0";
+	/** 1 = 1 */
+	public static final String A02BATTG_1 = "1";
 	/** Set A02BATTG.
 		@param A02BATTG A02BATTG	  */
 	@Override
@@ -1084,10 +1084,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02BIOSIEG_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02BIOSIEG_00 = "00";
-	/** 01 = 01 */
-	public static final String A02BIOSIEG_01 = "01";
+	/** 0 = 0 */
+	public static final String A02BIOSIEG_0 = "0";
+	/** 1 = 1 */
+	public static final String A02BIOSIEG_1 = "1";
 	/** Set A02BIOSIEG.
 		@param A02BIOSIEG A02BIOSIEG	  */
 	@Override
@@ -1110,14 +1110,14 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_Biotech
 	 */
 	public static final int A02BIOTECH_AD_Reference_ID=540797;
-	/** 00 = 00 */
-	public static final String A02BIOTECH_00 = "00";
-	/** 01 = 01 */
-	public static final String A02BIOTECH_01 = "01";
-	/** 02 = 02 */
-	public static final String A02BIOTECH_02 = "02";
-	/** 03 = 03 */
-	public static final String A02BIOTECH_03 = "03";
+	/** 0 = 0 */
+	public static final String A02BIOTECH_0 = "0";
+	/** 1 = 1 */
+	public static final String A02BIOTECH_1 = "1";
+	/** 2 = 2 */
+	public static final String A02BIOTECH_2 = "2";
+	/** 3 = 3 */
+	public static final String A02BIOTECH_3 = "3";
 	/** Set A02BIOTECH.
 		@param A02BIOTECH A02BIOTECH	  */
 	@Override
@@ -1140,10 +1140,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02BIOZID_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02BIOZID_00 = "00";
-	/** 01 = 01 */
-	public static final String A02BIOZID_01 = "01";
+	/** 0 = 0 */
+	public static final String A02BIOZID_0 = "0";
+	/** 1 = 1 */
+	public static final String A02BIOZID_1 = "1";
 	/** Set A02BIOZID.
 		@param A02BIOZID A02BIOZID	  */
 	@Override
@@ -1185,12 +1185,12 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_IsNarcotic
 	 */
 	public static final int A02BTM_AD_Reference_ID=540785;
-	/** 00 = 00 */
-	public static final String A02BTM_00 = "00";
-	/** 01 = 01 */
-	public static final String A02BTM_01 = "01";
-	/** 02 = 02 */
-	public static final String A02BTM_02 = "02";
+	/** 0 = 0 */
+	public static final String A02BTM_0 = "0";
+	/** 1 = 1 */
+	public static final String A02BTM_1 = "1";
+	/** 2 = 2 */
+	public static final String A02BTM_2 = "2";
 	/** Set A02BTM.
 		@param A02BTM A02BTM	  */
 	@Override
@@ -1213,10 +1213,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_Dietetic
 	 */
 	public static final int A02DIAET_AD_Reference_ID=540796;
-	/** 00 = 00 */
-	public static final String A02DIAET_00 = "00";
-	/** 01 = 01 */
-	public static final String A02DIAET_01 = "01";
+	/** 0 = 0 */
+	public static final String A02DIAET_0 = "0";
+	/** 1 = 1 */
+	public static final String A02DIAET_1 = "1";
 	/** 99 = 99 */
 	public static final String A02DIAET_99 = "99";
 	/** Set A02DIAET.
@@ -1273,10 +1273,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02ELEKEAR_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02ELEKEAR_00 = "00";
-	/** 01 = 01 */
-	public static final String A02ELEKEAR_01 = "01";
+	/** 0 = 0 */
+	public static final String A02ELEKEAR_0 = "0";
+	/** 1 = 1 */
+	public static final String A02ELEKEAR_1 = "1";
 	/** Set A02ELEKEAR.
 		@param A02ELEKEAR A02ELEKEAR	  */
 	@Override
@@ -1299,10 +1299,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02ELEKTRO_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02ELEKTRO_00 = "00";
-	/** 01 = 01 */
-	public static final String A02ELEKTRO_01 = "01";
+	/** 0 = 0 */
+	public static final String A02ELEKTRO_0 = "0";
+	/** 1 = 1 */
+	public static final String A02ELEKTRO_1 = "1";
 	/** Set A02ELEKTRO.
 		@param A02ELEKTRO A02ELEKTRO	  */
 	@Override
@@ -1325,10 +1325,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02EXPLOS_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02EXPLOS_00 = "00";
-	/** 01 = 01 */
-	public static final String A02EXPLOS_01 = "01";
+	/** 0 = 0 */
+	public static final String A02EXPLOS_0 = "0";
+	/** 1 = 1 */
+	public static final String A02EXPLOS_1 = "1";
 	/** Set A02EXPLOS.
 		@param A02EXPLOS A02EXPLOS	  */
 	@Override
@@ -1367,10 +1367,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02GENER_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02GENER_00 = "00";
-	/** 01 = 01 */
-	public static final String A02GENER_01 = "01";
+	/** 0 = 0 */
+	public static final String A02GENER_0 = "0";
+	/** 1 = 1 */
+	public static final String A02GENER_1 = "1";
 	/** Set A02GENER.
 		@param A02GENER A02GENER	  */
 	@Override
@@ -1409,10 +1409,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02HOMOEO_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02HOMOEO_00 = "00";
-	/** 01 = 01 */
-	public static final String A02HOMOEO_01 = "01";
+	/** 0 = 0 */
+	public static final String A02HOMOEO_0 = "0";
+	/** 1 = 1 */
+	public static final String A02HOMOEO_1 = "1";
 	/** Set A02HOMOEO.
 		@param A02HOMOEO A02HOMOEO	  */
 	@Override
@@ -1435,10 +1435,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02KOSMET_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02KOSMET_00 = "00";
-	/** 01 = 01 */
-	public static final String A02KOSMET_01 = "01";
+	/** 0 = 0 */
+	public static final String A02KOSMET_0 = "0";
+	/** 1 = 1 */
+	public static final String A02KOSMET_1 = "1";
 	/** Set A02KOSMET.
 		@param A02KOSMET A02KOSMET	  */
 	@Override
@@ -1461,10 +1461,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_Food
 	 */
 	public static final int A02LEBENSM_AD_Reference_ID=540795;
-	/** 00 = 00 */
-	public static final String A02LEBENSM_00 = "00";
-	/** 01 = 01 */
-	public static final String A02LEBENSM_01 = "01";
+	/** 0 = 0 */
+	public static final String A02LEBENSM_0 = "0";
+	/** 1 = 1 */
+	public static final String A02LEBENSM_1 = "1";
 	/** 99 = 99 */
 	public static final String A02LEBENSM_99 = "99";
 	/** Set A02LEBENSM.
@@ -1489,12 +1489,12 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_LifeStyle
 	 */
 	public static final int A02LIFSTYL_AD_Reference_ID=540794;
-	/** 00 = 00 */
-	public static final String A02LIFSTYL_00 = "00";
-	/** 01 = 01 */
-	public static final String A02LIFSTYL_01 = "01";
-	/** 02 = 02 */
-	public static final String A02LIFSTYL_02 = "02";
+	/** 0 = 0 */
+	public static final String A02LIFSTYL_0 = "0";
+	/** 1 = 1 */
+	public static final String A02LIFSTYL_1 = "1";
+	/** 2 = 2 */
+	public static final String A02LIFSTYL_2 = "2";
 	/** Set A02LIFSTYL.
 		@param A02LIFSTYL A02LIFSTYL	  */
 	@Override
@@ -1536,10 +1536,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02MP_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02MP_00 = "00";
-	/** 01 = 01 */
-	public static final String A02MP_01 = "01";
+	/** 0 = 0 */
+	public static final String A02MP_0 = "0";
+	/** 1 = 1 */
+	public static final String A02MP_1 = "1";
 	/** Set A02MP.
 		@param A02MP A02MP	  */
 	@Override
@@ -1578,10 +1578,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02NEM_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02NEM_00 = "00";
-	/** 01 = 01 */
-	public static final String A02NEM_01 = "01";
+	/** 0 = 0 */
+	public static final String A02NEM_0 = "0";
+	/** 1 = 1 */
+	public static final String A02NEM_1 = "1";
 	/** Set A02NEM.
 		@param A02NEM A02NEM	  */
 	@Override
@@ -1604,10 +1604,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02PHYTO_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02PHYTO_00 = "00";
-	/** 01 = 01 */
-	public static final String A02PHYTO_01 = "01";
+	/** 0 = 0 */
+	public static final String A02PHYTO_0 = "0";
+	/** 1 = 1 */
+	public static final String A02PHYTO_1 = "1";
 	/** Set A02PHYTO.
 		@param A02PHYTO A02PHYTO	  */
 	@Override
@@ -1630,10 +1630,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02PSM_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02PSM_00 = "00";
-	/** 01 = 01 */
-	public static final String A02PSM_01 = "01";
+	/** 0 = 0 */
+	public static final String A02PSM_0 = "0";
+	/** 1 = 1 */
+	public static final String A02PSM_1 = "1";
 	/** Set A02PSM.
 		@param A02PSM A02PSM	  */
 	@Override
@@ -1704,10 +1704,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02SDB_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02SDB_00 = "00";
-	/** 01 = 01 */
-	public static final String A02SDB_01 = "01";
+	/** 0 = 0 */
+	public static final String A02SDB_0 = "0";
+	/** 1 = 1 */
+	public static final String A02SDB_1 = "1";
 	/** Set A02SDB.
 		@param A02SDB A02SDB	  */
 	@Override
@@ -1730,10 +1730,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02STERIL_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02STERIL_00 = "00";
-	/** 01 = 01 */
-	public static final String A02STERIL_01 = "01";
+	/** 0 = 0 */
+	public static final String A02STERIL_0 = "0";
+	/** 1 = 1 */
+	public static final String A02STERIL_1 = "1";
 	/** Set A02STERIL.
 		@param A02STERIL A02STERIL	  */
 	@Override
@@ -1756,10 +1756,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02TFG_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02TFG_00 = "00";
-	/** 01 = 01 */
-	public static final String A02TFG_01 = "01";
+	/** 0 = 0 */
+	public static final String A02TFG_0 = "0";
+	/** 1 = 1 */
+	public static final String A02TFG_1 = "1";
 	/** Set A02TFG.
 		@param A02TFG A02TFG	  */
 	@Override
@@ -1798,10 +1798,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02TREZEP_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02TREZEP_00 = "00";
-	/** 01 = 01 */
-	public static final String A02TREZEP_01 = "01";
+	/** 0 = 0 */
+	public static final String A02TREZEP_0 = "0";
+	/** 1 = 1 */
+	public static final String A02TREZEP_1 = "1";
 	/** Set A02TREZEP.
 		@param A02TREZEP A02TREZEP	  */
 	@Override
@@ -1824,14 +1824,14 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_IsPrescription
 	 */
 	public static final int A02VSPFL_AD_Reference_ID=540783;
-	/** 00 = 00 */
-	public static final String A02VSPFL_00 = "00";
-	/** 01 = 01 */
-	public static final String A02VSPFL_01 = "01";
-	/** 02 = 02 */
-	public static final String A02VSPFL_02 = "02";
-	/** nein / Ausnahmeregel = 03 */
-	public static final String A02VSPFL_NeinAusnahmeregel = "03";
+	/** 0 = 0 */
+	public static final String A02VSPFL_0 = "0";
+	/** 1 = 1 */
+	public static final String A02VSPFL_1 = "1";
+	/** 2 = 2 */
+	public static final String A02VSPFL_2 = "2";
+	/** 3 = 3 */
+	public static final String A02VSPFL_3 = "3";
 	/** Set A02VSPFL.
 		@param A02VSPFL A02VSPFL	  */
 	@Override
@@ -1873,10 +1873,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02WIRKSTO_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02WIRKSTO_00 = "00";
-	/** 01 = 01 */
-	public static final String A02WIRKSTO_01 = "01";
+	/** 0 = 0 */
+	public static final String A02WIRKSTO_0 = "0";
+	/** 1 = 1 */
+	public static final String A02WIRKSTO_1 = "1";
 	/** Set A02WIRKSTO.
 		@param A02WIRKSTO A02WIRKSTO	  */
 	@Override
@@ -1963,10 +1963,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A03VWGAPO_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A03VWGAPO_00 = "00";
-	/** 01 = 01 */
-	public static final String A03VWGAPO_01 = "01";
+	/** 0 = 0 */
+	public static final String A03VWGAPO_0 = "0";
+	/** 1 = 1 */
+	public static final String A03VWGAPO_1 = "1";
 	/** Set A03VWGAPO.
 		@param A03VWGAPO A03VWGAPO	  */
 	@Override
@@ -1989,10 +1989,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A03VWGGH_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A03VWGGH_00 = "00";
-	/** 01 = 01 */
-	public static final String A03VWGGH_01 = "01";
+	/** 0 = 0 */
+	public static final String A03VWGGH_0 = "0";
+	/** 1 = 1 */
+	public static final String A03VWGGH_1 = "1";
 	/** Set A03VWGGH.
 		@param A03VWGGH A03VWGGH	  */
 	@Override
@@ -2015,10 +2015,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A03VWGKAP_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A03VWGKAP_00 = "00";
-	/** 01 = 01 */
-	public static final String A03VWGKAP_01 = "01";
+	/** 0 = 0 */
+	public static final String A03VWGKAP_0 = "0";
+	/** 1 = 1 */
+	public static final String A03VWGKAP_1 = "1";
 	/** Set A03VWGKAP.
 		@param A03VWGKAP A03VWGKAP	  */
 	@Override
@@ -2041,10 +2041,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A03VWGSEH_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A03VWGSEH_00 = "00";
-	/** 01 = 01 */
-	public static final String A03VWGSEH_01 = "01";
+	/** 0 = 0 */
+	public static final String A03VWGSEH_0 = "0";
+	/** 1 = 1 */
+	public static final String A03VWGSEH_1 = "1";
 	/** Set A03VWGSEH.
 		@param A03VWGSEH A03VWGSEH	  */
 	@Override
@@ -2163,24 +2163,24 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_PackageType
 	 */
 	public static final int A04VPART_AD_Reference_ID=540793;
-	/** 01 = 01 */
-	public static final String A04VPART_01 = "01";
-	/** 02 = 02 */
-	public static final String A04VPART_02 = "02";
-	/** 03 = 03 */
-	public static final String A04VPART_03 = "03";
-	/** 04 = 04 */
-	public static final String A04VPART_04 = "04";
-	/** 05 = 05 */
-	public static final String A04VPART_05 = "05";
-	/** 06 = 06 */
-	public static final String A04VPART_06 = "06";
-	/** 07 = 07 */
-	public static final String A04VPART_07 = "07";
-	/** 08 = 08 */
-	public static final String A04VPART_08 = "08";
-	/** 09 = 09 */
-	public static final String A04VPART_09 = "09";
+	/** 1 = 1 */
+	public static final String A04VPART_1 = "1";
+	/** 2 = 2 */
+	public static final String A04VPART_2 = "2";
+	/** 3 = 3 */
+	public static final String A04VPART_3 = "3";
+	/** 4 = 4 */
+	public static final String A04VPART_4 = "4";
+	/** 5 = 5 */
+	public static final String A04VPART_5 = "5";
+	/** 6 = 6 */
+	public static final String A04VPART_6 = "6";
+	/** 7 = 7 */
+	public static final String A04VPART_7 = "7";
+	/** 8 = 8 */
+	public static final String A04VPART_8 = "8";
+	/** 9 = 9 */
+	public static final String A04VPART_9 = "9";
 	/** 10 = 10 */
 	public static final String A04VPART_10 = "10";
 	/** 11 = 11 */
@@ -2231,10 +2231,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A05EICH_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A05EICH_00 = "00";
-	/** 01 = 01 */
-	public static final String A05EICH_01 = "01";
+	/** 0 = 0 */
+	public static final String A05EICH_0 = "0";
+	/** 1 = 1 */
+	public static final String A05EICH_1 = "1";
 	/** Set A05EICH.
 		@param A05EICH A05EICH	  */
 	@Override
@@ -2257,10 +2257,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A05FEUCHT_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A05FEUCHT_00 = "00";
-	/** 01 = 01 */
-	public static final String A05FEUCHT_01 = "01";
+	/** 0 = 0 */
+	public static final String A05FEUCHT_0 = "0";
+	/** 1 = 1 */
+	public static final String A05FEUCHT_1 = "1";
 	/** Set A05FEUCHT.
 		@param A05FEUCHT A05FEUCHT	  */
 	@Override
@@ -2299,10 +2299,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A05KKETTE_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A05KKETTE_00 = "00";
-	/** 01 = 01 */
-	public static final String A05KKETTE_01 = "01";
+	/** 0 = 0 */
+	public static final String A05KKETTE_0 = "0";
+	/** 1 = 1 */
+	public static final String A05KKETTE_1 = "1";
 	/** Set A05KKETTE.
 		@param A05KKETTE A05KKETTE	  */
 	@Override
@@ -2325,12 +2325,12 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_PositionSenstive
 	 */
 	public static final int A05LAGE_AD_Reference_ID=540788;
-	/** 00 = 00 */
-	public static final String A05LAGE_00 = "00";
-	/** 01 = 01 */
-	public static final String A05LAGE_01 = "01";
-	/** 02 = 02 */
-	public static final String A05LAGE_02 = "02";
+	/** 0 = 0 */
+	public static final String A05LAGE_0 = "0";
+	/** 1 = 1 */
+	public static final String A05LAGE_1 = "1";
+	/** 2 = 2 */
+	public static final String A05LAGE_2 = "2";
 	/** Set A05LAGE.
 		@param A05LAGE A05LAGE	  */
 	@Override
@@ -2353,12 +2353,12 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_Photosensitive
 	 */
 	public static final int A05LICHT_AD_Reference_ID=540786;
-	/** 00 = 00 */
-	public static final String A05LICHT_00 = "00";
-	/** 01 = 01 */
-	public static final String A05LICHT_01 = "01";
-	/** 02 = 02 */
-	public static final String A05LICHT_02 = "02";
+	/** 0 = 0 */
+	public static final String A05LICHT_0 = "0";
+	/** 1 = 1 */
+	public static final String A05LICHT_1 = "1";
+	/** 2 = 2 */
+	public static final String A05LICHT_2 = "2";
 	/** Set A05LICHT.
 		@param A05LICHT A05LICHT	  */
 	@Override
@@ -2451,10 +2451,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A05VFDAT_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A05VFDAT_00 = "00";
-	/** 01 = 01 */
-	public static final String A05VFDAT_01 = "01";
+	/** 0 = 0 */
+	public static final String A05VFDAT_0 = "0";
+	/** 1 = 1 */
+	public static final String A05VFDAT_1 = "1";
 	/** Set A05VFDAT.
 		@param A05VFDAT A05VFDAT	  */
 	@Override
@@ -2477,10 +2477,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A05ZERBR_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A05ZERBR_00 = "00";
-	/** 01 = 01 */
-	public static final String A05ZERBR_01 = "01";
+	/** 0 = 0 */
+	public static final String A05ZERBR_0 = "0";
+	/** 1 = 1 */
+	public static final String A05ZERBR_1 = "1";
 	/** Set A05ZERBR.
 		@param A05ZERBR A05ZERBR	  */
 	@Override
@@ -2573,16 +2573,16 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_PackSize
 	 */
 	public static final int A09THGP_AD_Reference_ID=540798;
-	/** 00 = 00 */
-	public static final String A09THGP_00 = "00";
-	/** 01 = 01 */
-	public static final String A09THGP_01 = "01";
-	/** 02 = 02 */
-	public static final String A09THGP_02 = "02";
-	/** 03 = 03 */
-	public static final String A09THGP_03 = "03";
-	/** 04 = 04 */
-	public static final String A09THGP_04 = "04";
+	/** 0 = 0 */
+	public static final String A09THGP_0 = "0";
+	/** 1 = 1 */
+	public static final String A09THGP_1 = "1";
+	/** 2 = 2 */
+	public static final String A09THGP_2 = "2";
+	/** 3 = 3 */
+	public static final String A09THGP_3 = "3";
+	/** 4 = 4 */
+	public static final String A09THGP_4 = "4";
 	/** Set A09THGP.
 		@param A09THGP A09THGP	  */
 	@Override
@@ -2621,10 +2621,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A11VERIFIZ_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A11VERIFIZ_00 = "00";
-	/** 01 = 01 */
-	public static final String A11VERIFIZ_01 = "01";
+	/** 0 = 0 */
+	public static final String A11VERIFIZ_0 = "0";
+	/** 1 = 1 */
+	public static final String A11VERIFIZ_1 = "1";
 	/** Set A11VERIFIZ.
 		@param A11VERIFIZ A11VERIFIZ	  */
 	@Override

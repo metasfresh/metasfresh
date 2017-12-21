@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
@@ -229,22 +230,22 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private Boolean extractIsColdChain(@NonNull final I_I_Pharma_Product record)
 	{
-		return record.getA05KKETTE() == null ? null : X_I_Pharma_Product.A05KKETTE_01.equals(record.getA05KKETTE());
+		return record.getA05KKETTE() == null ? null : X_I_Pharma_Product.A05KKETTE_1.equals(record.getA05KKETTE());
 	}
 
 	private Boolean extractIsPrescription(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		return importRecord.getA02VSPFL() == null ? null : (X_I_Pharma_Product.A02VSPFL_01.equals(importRecord.getA02VSPFL()) || X_I_Pharma_Product.A02VSPFL_02.equals(importRecord.getA02VSPFL()));
+		return importRecord.getA02VSPFL() == null ? null : (X_I_Pharma_Product.A02VSPFL_1.equals(importRecord.getA02VSPFL()) || X_I_Pharma_Product.A02VSPFL_2.equals(importRecord.getA02VSPFL()));
 	}
 
 	private Boolean extractIsNarcotic(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		return importRecord.getA02BTM() == null ? null : (X_I_Pharma_Product.A02BTM_01.equals(importRecord.getA02BTM()) || X_I_Pharma_Product.A02BTM_02.equals(importRecord.getA02BTM()));
+		return importRecord.getA02BTM() == null ? null : (X_I_Pharma_Product.A02BTM_1.equals(importRecord.getA02BTM()) || X_I_Pharma_Product.A02BTM_2.equals(importRecord.getA02BTM()));
 	}
 
 	private Boolean extractIsTFG(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		return importRecord.getA02TFG() == null ? null : X_I_Pharma_Product.A02TFG_01.equals(importRecord.getA02TFG());
+		return importRecord.getA02TFG() == null ? null : X_I_Pharma_Product.A02TFG_1.equals(importRecord.getA02TFG());
 	}
 
 	private void importPrices(@NonNull final I_I_Pharma_Product importRecord)
@@ -350,10 +351,29 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private I_C_TaxCategory findTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class, importRecord)
-				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsDefault, extractIsDefaultTaxCategory(importRecord))
-				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsReduced, extractIsReducedTaxCategory(importRecord))
-				.addEqualsFilter(I_C_TaxCategory.COLUMN_IsWithout, extractIsWithoutTaxCategory(importRecord))
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final ICompositeQueryFilter<I_C_TaxCategory> filter = queryBL.createCompositeQueryFilter(I_C_TaxCategory.class);
+		filter.setJoinAnd();
+		if (extractIsDefaultTaxCategory(importRecord))
+		{
+			filter.addEqualsFilter(I_C_TaxCategory.COLUMN_IsDefault, true);
+		}
+		else if (extractIsReducedTaxCategory(importRecord))
+		{
+			filter.addEqualsFilter(I_C_TaxCategory.COLUMN_IsReduced, true);
+		}
+		else if (extractIsWithoutTaxCategory(importRecord))
+		{
+			filter.addEqualsFilter(I_C_TaxCategory.COLUMN_IsWithout, true);
+		}
+		else
+		{
+			filter.addEqualsFilter(I_C_TaxCategory.COLUMN_IsDefault, true);
+		}
+
+		return queryBL.createQueryBuilder(I_C_TaxCategory.class, importRecord)
+				.filter(filter)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.create()
@@ -362,17 +382,17 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private boolean extractIsDefaultTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		return X_I_Pharma_Product.A01MWST_00.equals(importRecord.getA01MWST());
+		return X_I_Pharma_Product.A01MWST_0.equals(importRecord.getA01MWST());
 	}
 
 	private boolean extractIsReducedTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		return X_I_Pharma_Product.A01MWST_01.equals(importRecord.getA01MWST());
+		return X_I_Pharma_Product.A01MWST_1.equals(importRecord.getA01MWST());
 	}
 
 	private boolean extractIsWithoutTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		return X_I_Pharma_Product.A01MWST_02.equals(importRecord.getA01MWST());
+		return X_I_Pharma_Product.A01MWST_2.equals(importRecord.getA01MWST());
 	}
 
 	private void createProductPrice_And_PriceListVersionIfNeeded(@NonNull final ProductPriceContext productPriceCtx)
