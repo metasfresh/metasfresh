@@ -29,8 +29,9 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
+
+import com.google.common.base.MoreObjects;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
@@ -58,7 +59,11 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
+		return MoreObjects.toStringHelper(this)
+				.add("inoutCount", inoutCount)
+				.add("storeInOuts", storeInOuts)
+				.add("inouts", inoutsRO)
+				.toString();
 	}
 
 	@Override

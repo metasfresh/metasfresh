@@ -54,6 +54,7 @@ import lombok.NonNull;
 	private IWorkpackagePrioStrategy _priority = SizeBasedWorkpackagePrio.INSTANCE;
 	private I_C_Async_Batch asyncBatch = null;
 	private boolean asyncBatchSet = false;
+	private int userInChargeId;
 	private WorkPackageParamsBuilder _parametersBuilder;
 	private String _trxName = ITrx.TRXNAME_None;
 	private boolean _trxNameBound = false;
@@ -112,6 +113,11 @@ import lombok.NonNull;
 		{
 			workpackage.setC_Async_Batch(asyncBatch);
 			Services.get(IQueueDAO.class).save(asyncBatch);
+		}
+		
+		if(userInChargeId > 0)
+		{
+			workpackage.setAD_User_InCharge_ID(userInChargeId);
 		}
 
 		// Create workpackage parameters
@@ -275,6 +281,14 @@ import lombok.NonNull;
 		assertNotBuilt();
 		this.asyncBatch = asyncBatch;
 		this.asyncBatchSet = true;
+		return this;
+	}
+	
+	@Override
+	public IWorkPackageBuilder setUserInChargeId(int userInChargeId)
+	{
+		assertNotBuilt();
+		this.userInChargeId = userInChargeId;
 		return this;
 	}
 }

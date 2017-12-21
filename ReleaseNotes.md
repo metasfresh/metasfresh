@@ -18,6 +18,8 @@ Here come the actual release notes:
 * metasfresh-app
   * [#3229](https://github.com/metasfresh/metasfresh/issues/3229) Show c_activity_ID in purchase Orderlines Grid View
     * New Field for Activity in Purchase Orderlines.
+  * [#3234](https://github.com/metasfresh/metasfresh/issues/3234) Material Tracking ID in Invoice Candidates Filter shall be search
+    * Improving the Material Tracking ID Lookup widget. It is now an autocomplete search field instead of a dropdown list.
 
 #Fixes
 * metasfresh-app

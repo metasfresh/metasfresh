@@ -49,4 +49,6 @@ public interface IHUShipmentScheduleDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_M_ShipmentSchedule_QtyPicked> retriveQtyPickedNotDeliveredForTopLevelHU(I_M_HU hu);
+
+	List<IShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(List<I_M_HU> hus);
 }

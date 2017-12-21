@@ -1,5 +1,7 @@
 package de.metas.async.model.validator;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.async
@@ -37,6 +39,9 @@ import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.api.impl.AsyncBatchDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -45,6 +50,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.async.processor.IQueueProcessorExecutorService;
 import de.metas.async.spi.impl.DefaultAsyncBatchListener;
 import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
 
 /**
  * ASync module main validator. This is the entry point for all other stuff.
@@ -145,5 +151,11 @@ public class Main extends AbstractModuleInterceptor
 		}
 
 		Services.get(IQueueProcessorExecutorService.class).removeAllQueueProcessors();
+	}
+	
+	@Override
+	protected List<Topic> getAvailableUserNotificationsTopics()
+	{
+		return ImmutableList.of(Async_Constants.EVENTBUS_WORKPACKAGE_PROCESSING_ERRORS);
 	}
 }

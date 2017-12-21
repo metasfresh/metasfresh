@@ -24,8 +24,6 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
@@ -62,8 +60,6 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * @return producer
 	 */
 	IInOutProducerFromShipmentScheduleWithHU createInOutProducerFromShipmentSchedule();
-
-	void generateInOuts(Properties ctx, IInOutProducerFromShipmentScheduleWithHU producer, Iterator<IShipmentScheduleWithHU> schedsEtAll);
 
 	/**
 	 * @param candidate
