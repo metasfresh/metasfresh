@@ -513,3 +513,7 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-21 17:42:10'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-21 17:42:29','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Customer Accounts' WHERE AD_Field_ID=561241 AND AD_Language='en_US'
 ;
 
+-- 2017-12-21T17:44:51.399
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-21 17:44:51','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Customer Accounts',WEBUI_NameBrowse='Customer Accounts' WHERE AD_Menu_ID=541000 AND AD_Language='en_US'
+;
