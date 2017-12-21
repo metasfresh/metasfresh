@@ -24,6 +24,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
@@ -40,6 +41,7 @@ import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
@@ -96,6 +98,17 @@ import de.metas.lock.api.LockOwner;
 	private IInvoicingParams _invoicingParams;
 	private I_C_Async_Batch _asyncBatch = null;
 	private IWorkpackagePrioStrategy _priority = null;
+	
+	private boolean setWorkpackageADPInstanceCreatorId = true;
+	
+	@Override
+	public IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(final Collection<Integer> invoiceCandidateIds)
+	{
+		final int invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, ITrx.TRXNAME_None);
+		
+		setWorkpackageADPInstanceCreatorId = false;
+		return enqueueSelection(invoiceCandidatesSelectionId);
+	}
 
 	@Override
 	public IInvoiceCandidateEnqueueResult enqueueSelection(final int adPInstanceId)
@@ -166,9 +179,13 @@ import de.metas.lock.api.LockOwner;
 		// Create workpackages.
 		// NOTE: loading them again after we made sure that they are fairly up to date.
 		final InvoiceCandidate2WorkpackageAggregator workpackageAggregator = new InvoiceCandidate2WorkpackageAggregator(ctx, trxName)
-				.setAD_PInstance_Creator_ID(adPInstanceId)
 				.setInvoiceCandidatesLock(icLock)
 				.setC_Async_Batch(_asyncBatch);
+		
+		if(setWorkpackageADPInstanceCreatorId)
+		{
+			workpackageAggregator.setAD_PInstance_Creator_ID(adPInstanceId);
+		}
 
 		final int workpackageQueueSizeBeforeEnqueueing = workpackageAggregator.getQueueSize();
 		int invoiceCandidateSelectionCount = 0; // how many eligible items were in given selection
