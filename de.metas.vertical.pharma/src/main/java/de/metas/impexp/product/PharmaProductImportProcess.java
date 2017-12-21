@@ -12,6 +12,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
@@ -346,14 +347,24 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		private final BigDecimal price;
 		final Timestamp validDate;
 		@NonNull
-		final I_C_TaxCategory taxCategory ;
+		final I_C_TaxCategory taxCategory;
 	}
 
 	private I_C_TaxCategory findTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryFilter<I_C_TaxCategory> filter = createTaxCategoryFilter(importRecord);
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class, importRecord)
+				.filter(filter)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.orderBy(I_C_TaxCategory.COLUMNNAME_Name)
+				.create()
+				.first(I_C_TaxCategory.class);
+	}
 
-		final ICompositeQueryFilter<I_C_TaxCategory> filter = queryBL.createCompositeQueryFilter(I_C_TaxCategory.class);
+	private IQueryFilter<I_C_TaxCategory> createTaxCategoryFilter(@NonNull final I_I_Pharma_Product importRecord)
+	{
+		final ICompositeQueryFilter<I_C_TaxCategory> filter = Services.get(IQueryBL.class).createCompositeQueryFilter(I_C_TaxCategory.class);
 		filter.setJoinAnd();
 		if (extractIsDefaultTaxCategory(importRecord))
 		{
@@ -372,13 +383,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 			filter.addEqualsFilter(I_C_TaxCategory.COLUMN_IsDefault, true);
 		}
 
-		return queryBL.createQueryBuilder(I_C_TaxCategory.class, importRecord)
-				.filter(filter)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.orderBy(I_C_TaxCategory.COLUMNNAME_Name)
-				.create()
-				.first(I_C_TaxCategory.class);
+		return filter;
 	}
 
 	private boolean extractIsDefaultTaxCategory(@NonNull final I_I_Pharma_Product importRecord)
@@ -425,7 +430,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private I_M_ProductPrice createProductPrice(@NonNull final ProductPriceContext productPriceCtx, @NonNull final I_M_PriceList_Version plv)
 	{
-		final I_C_TaxCategory taxCategory =  productPriceCtx.getTaxCategory();
+		final I_C_TaxCategory taxCategory = productPriceCtx.getTaxCategory();
 		final BigDecimal price = productPriceCtx.getPrice();
 		final I_M_ProductPrice pp = newInstance(I_M_ProductPrice.class, plv);
 		pp.setM_PriceList_Version(plv);
