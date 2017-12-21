@@ -165,7 +165,15 @@ class Header extends Component {
     this.setState({ tooltipOpen: tooltip });
   };
 
-  openModal = (windowType, type, caption, isAdvanced) => {
+  openModal = (
+    windowType,
+    type,
+    caption,
+    isAdvanced,
+    selected,
+    childViewId,
+    childViewSelectedIds
+  ) => {
     const { dispatch, query } = this.props;
     dispatch(
       openModal(
@@ -175,7 +183,14 @@ class Header extends Component {
         null,
         null,
         isAdvanced,
-        query && query.viewId
+        query && query.viewId,
+        selected,
+        null,
+        null,
+        null,
+        null,
+        childViewId,
+        childViewSelectedIds
       )
     );
   };

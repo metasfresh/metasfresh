@@ -169,7 +169,15 @@ class Actions extends Component {
   };
 
   renderAction = identifier => (item, key) => {
-    const { closeSubheader, openModalRow, openModal } = this.props;
+    const {
+      closeSubheader,
+      openModalRow,
+      openModal,
+      viewId,
+      selected,
+      childViewId,
+      childViewSelectedIds
+    } = this.props;
 
     let handleClick = null;
 
@@ -187,7 +195,15 @@ class Actions extends Component {
           );
       } else {
         handleModal = () =>
-          openModal(item.processId + "", "process", item.caption);
+          openModal(
+            item.processId + "",
+            "process",
+            item.caption,
+            false,
+            selected,
+            childViewId,
+            childViewSelectedIds
+          );
       }
 
       handleClick = () => {
