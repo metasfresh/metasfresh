@@ -3,9 +3,10 @@ package de.metas.ui.web.pickingslotsClearing.process;
 import java.util.List;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
+import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.InvoiceMode;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -65,14 +66,14 @@ public class WEBUI_PackingHUsView_AddHUsToShipperTransportationShipAndInvoice ex
 
 		final List<I_M_HU> hus = retrieveEligibleHUs();
 
-		// TODO: somehow make those HUs vanish from view (lock them?)
-
-		GenerateInOutFromHU.prepareWorkpackage()
+		HUShippingFacade.builder()
+				.loggable(Loggables.get())
 				.hus(hus)
 				.addToShipperTransportationId(shipperTransportationId)
 				.completeShipments(true)
 				.invoiceMode(InvoiceMode.AllWithoutInvoiceSchedule)
-				.enqueue();
+				.build()
+				.generateShippingDocuments();
 
 		return MSG_OK;
 	}
