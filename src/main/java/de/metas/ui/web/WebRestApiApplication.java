@@ -26,6 +26,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
+import de.metas.ui.web.material.cockpit.event.MaterialCockpitEventListener;
 import de.metas.ui.web.session.WebRestApiContextProvider;
 import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
 
@@ -125,6 +126,9 @@ public class WebRestApiApplication
 		adempiere.startup(RunMode.WEBUI);
 
 		Services.get(IMigrationLogger.class).addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
+
+		// Qnd hack to get this lazy service initialized
+		final MaterialCockpitEventListener materialCockpitEventListener = Adempiere.getBean(MaterialCockpitEventListener.class);
 
 		return adempiere;
 	}
