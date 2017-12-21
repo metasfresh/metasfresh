@@ -262,7 +262,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	private void createKAEP(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
-				.price(new BigDecimal(importRecord.getA01KAEP()))
+				.price(importRecord.getA01KAEP())
 				.priceList(importRecord.getKAEP_Price_List())
 				.product(importRecord.getM_Product())
 				.validDate(importRecord.getA01GDAT())
@@ -275,7 +275,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	private void createAPU(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
-				.price(new BigDecimal(importRecord.getA01APU()))
+				.price(importRecord.getA01APU())
 				.priceList(importRecord.getAPU_Price_List())
 				.product(importRecord.getM_Product())
 				.validDate(importRecord.getA01GDAT())
@@ -288,7 +288,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	private void createAEP(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
-				.price(new BigDecimal(importRecord.getA01AEP()))
+				.price(importRecord.getA01AEP())
 				.priceList(importRecord.getAEP_Price_List())
 				.product(importRecord.getM_Product())
 				.validDate(importRecord.getA01GDAT())
@@ -301,7 +301,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	private void createAVP(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
-				.price(new BigDecimal(importRecord.getA01AVP()))
+				.price(importRecord.getA01AVP())
 				.priceList(importRecord.getAVP_Price_List())
 				.product(importRecord.getM_Product())
 				.validDate(importRecord.getA01GDAT())
@@ -314,7 +314,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	private void createUVP(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
-				.price(new BigDecimal(importRecord.getA01UVP()))
+				.price(importRecord.getA01UVP())
 				.priceList(importRecord.getUVP_Price_List())
 				.product(importRecord.getM_Product())
 				.validDate(importRecord.getA01GDAT())
@@ -327,7 +327,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	private void createZBV(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
-				.price(new BigDecimal(importRecord.getA01ZBV()))
+				.price(importRecord.getA01ZBV())
 				.priceList(importRecord.getZBV_Price_List())
 				.product(importRecord.getM_Product())
 				.validDate(importRecord.getA01GDAT())
