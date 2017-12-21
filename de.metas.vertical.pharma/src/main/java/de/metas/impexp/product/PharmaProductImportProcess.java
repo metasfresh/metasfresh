@@ -2,10 +2,12 @@ package de.metas.impexp.product;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -13,9 +15,13 @@ import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.impexp.product.MProductImportTableSqlUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
 
@@ -23,6 +29,8 @@ import de.metas.product.IProductDAO;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_M_Product;
 import de.metas.vertical.pharma.model.X_I_Pharma_Product;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma_Product>
@@ -31,6 +39,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	// temporary defaults
 	final private int C_UOM_ID = 100;
 	final private int M_Product_Category_ID = 1000000;
+	final private int C_TaxCategory_ID = 100;
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
@@ -96,6 +105,8 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		importRecord.setM_Product_ID(product.getM_Product_ID());
 
 		ModelValidationEngine.get().fireImportValidate(this, importRecord, importRecord.getM_Product(), IImportInterceptor.TIMING_AFTER_IMPORT);
+
+		importPrices(importRecord);
 
 		return newProduct ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
@@ -234,5 +245,152 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 	private Boolean extractIsTFG(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		return importRecord.getA02TFG() == null ? null : X_I_Pharma_Product.A02TFG_01.equals(importRecord.getA02TFG());
+	}
+
+	private void importPrices(@NonNull final I_I_Pharma_Product importRecord)
+	{
+		createKAEP(importRecord);
+		createAPU(importRecord);
+		createAEP(importRecord);
+		createAVP(importRecord);
+		createUVP(importRecord);
+		createZBV(importRecord);
+	}
+
+	private void createKAEP(@NonNull final I_I_Pharma_Product importRecord)
+	{
+		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
+				.price(new BigDecimal(importRecord.getA01KAEP()))
+				.priceList(importRecord.getKAEP_Price_List())
+				.product(importRecord.getM_Product())
+				.validDate(importRecord.getA01GDAT())
+				.build();
+
+		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
+	}
+
+	private void createAPU(@NonNull final I_I_Pharma_Product importRecord)
+	{
+		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
+				.price(new BigDecimal(importRecord.getA01APU()))
+				.priceList(importRecord.getAPU_Price_List())
+				.product(importRecord.getM_Product())
+				.validDate(importRecord.getA01GDAT())
+				.build();
+
+		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
+	}
+
+	private void createAEP(@NonNull final I_I_Pharma_Product importRecord)
+	{
+		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
+				.price(new BigDecimal(importRecord.getA01AEP()))
+				.priceList(importRecord.getAEP_Price_List())
+				.product(importRecord.getM_Product())
+				.validDate(importRecord.getA01GDAT())
+				.build();
+
+		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
+	}
+
+	private void createAVP(@NonNull final I_I_Pharma_Product importRecord)
+	{
+		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
+				.price(new BigDecimal(importRecord.getA01AVP()))
+				.priceList(importRecord.getAVP_Price_List())
+				.product(importRecord.getM_Product())
+				.validDate(importRecord.getA01GDAT())
+				.build();
+
+		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
+	}
+
+	private void createUVP(@NonNull final I_I_Pharma_Product importRecord)
+	{
+		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
+				.price(new BigDecimal(importRecord.getA01UVP()))
+				.priceList(importRecord.getUVP_Price_List())
+				.product(importRecord.getM_Product())
+				.validDate(importRecord.getA01GDAT())
+				.build();
+
+		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
+	}
+
+	private void createZBV(@NonNull final I_I_Pharma_Product importRecord)
+	{
+		final ProductPriceContext productPriceCtx = ProductPriceContext.builder()
+				.price(new BigDecimal(importRecord.getA01ZBV()))
+				.priceList(importRecord.getZBV_Price_List())
+				.product(importRecord.getM_Product())
+				.validDate(importRecord.getA01GDAT())
+				.build();
+
+		createProductPrice_And_PriceListVersionIfNeeded(productPriceCtx);
+	}
+
+	@Builder
+	@Getter
+	private static class ProductPriceContext
+	{
+		private final org.compiere.model.I_M_Product product;
+		private final I_M_PriceList priceList;
+		@NonNull
+		private final BigDecimal price;
+		final Timestamp validDate;
+	}
+
+	private void createProductPrice_And_PriceListVersionIfNeeded(@NonNull final ProductPriceContext productPriceCtx)
+	{
+		if (!isValidPriceRecord(productPriceCtx))
+		{
+			return;
+		}
+
+		final I_M_PriceList priceList = productPriceCtx.getPriceList();
+		final Timestamp validDate = productPriceCtx.getValidDate();
+		I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrievePriceListVersionWithExactValidDate(priceList.getM_PriceList_ID(), validDate);
+
+		if (plv == null)
+		{
+			plv = createPriceListVersion(priceList, validDate);
+		}
+
+		createProductPrice(productPriceCtx, plv);
+	}
+
+	private boolean isValidPriceRecord(@NonNull final ProductPriceContext productPriceCtx)
+	{
+		return productPriceCtx.getProduct() != null
+				&& productPriceCtx.getPrice().signum() > 0
+				&& productPriceCtx.getPriceList() != null
+				&& productPriceCtx.getValidDate() != null;
+	}
+
+	private I_M_ProductPrice createProductPrice(@NonNull final ProductPriceContext productPriceCtx, @NonNull final I_M_PriceList_Version plv)
+	{
+		final BigDecimal price = productPriceCtx.getPrice();
+		final I_M_ProductPrice pp = newInstance(I_M_ProductPrice.class, plv);
+		pp.setM_PriceList_Version(plv);
+		pp.setM_Product(productPriceCtx.getProduct());
+		pp.setPriceLimit(price);
+		pp.setPriceList(price);
+		pp.setPriceStd(price);
+		pp.setC_UOM(productPriceCtx.getProduct().getC_UOM());
+		pp.setC_TaxCategory_ID(C_TaxCategory_ID);
+		save(pp);
+
+		return pp;
+	}
+
+	private I_M_PriceList_Version createPriceListVersion(@NonNull final I_M_PriceList priceList, @NonNull final Timestamp validFrom)
+	{
+		final I_M_PriceList_Version plv = newInstance(I_M_PriceList_Version.class, priceList);
+		plv.setName(priceList.getName() + validFrom);
+		plv.setValidFrom(validFrom);
+		plv.setM_PriceList(priceList);
+		save(plv);
+
+		return plv;
 	}
 }
