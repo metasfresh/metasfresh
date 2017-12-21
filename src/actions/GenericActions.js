@@ -1,4 +1,22 @@
 import axios from "axios";
+import queryString from "query-string";
+
+// utility functions
+
+export const getQueryString = query =>
+  queryString.stringify(
+    Object.keys(query).reduce((parameters, key) => {
+      const value = query[key];
+
+      if (Array.isArray(value) && value.length > 0) {
+        parameters[key] = value.join(",");
+      } else {
+        parameters[key] = value;
+      }
+
+      return parameters;
+    }, {})
+  );
 
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
 
@@ -272,31 +290,18 @@ export function actionsRequest({
   id,
   selectedIds,
   selectedTabId,
-  selectedRowIds
+  selectedRowIds,
+  childViewId,
+  childViewSelectedIds
 }) {
-  const query = {
-    disabled: true
-  };
-
-  if (selectedIds && selectedIds.length) {
-    query.selectedIds = selectedIds.join(",");
-  }
-
-  if (selectedTabId) {
-    query.selectedTabId = selectedTabId;
-  }
-
-  if (selectedRowIds && selectedRowIds.length > 0) {
-    query.selectedRowIds = selectedRowIds.join(",");
-  }
-
-  let queryString = "";
-  const queryEntries = Object.entries(query);
-
-  if (queryEntries.length > 0) {
-    queryString =
-      "?" + queryEntries.map(([key, value]) => `${key}=${value}`).join("&");
-  }
+  const query = getQueryString({
+    disabled: true,
+    selectedIds,
+    selectedTabId,
+    selectedRowIds,
+    childViewId,
+    childViewSelectedIds
+  });
 
   return axios.get(
     config.API_URL +
@@ -307,7 +312,7 @@ export function actionsRequest({
       "/" +
       id +
       "/actions" +
-      queryString
+      (query ? "?" + query : "")
   );
 }
 

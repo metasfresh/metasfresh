@@ -8,8 +8,44 @@ import {
   rowActionsRequest
 } from "../../actions/GenericActions";
 import Loader from "../app/Loader";
+import { getSelection } from "../../reducers/windowHandler";
+
+const mapStateToProps = (state, props) => {
+  const includedView = state.listHandler.includedView;
+
+  const result = {
+    selected: getSelection({
+      state,
+      windowType: props.windowType,
+      viewId: props.viewId
+    })
+  };
+
+  if (includedView && includedView.viewId) {
+    result.childViewId = includedView.viewId;
+    result.childViewSelectedIds = getSelection({
+      state,
+      windowType: includedView.windowType,
+      viewId: includedView.viewId
+    });
+  }
+
+  return result;
+};
 
 class Actions extends Component {
+  static propTypes = {
+    // from <SubHeader>
+    windowType: PropTypes.string,
+    viewId: PropTypes.string,
+
+    // from @connect
+    childViewId: PropTypes.string,
+    childViewSelectedIds: PropTypes.array,
+    dispatch: PropTypes.func.isRequired,
+    selected: PropTypes.array.isRequired
+  };
+
   state = {
     actions: null,
     rowActions: null
@@ -58,6 +94,9 @@ class Actions extends Component {
   requestActions = async () => {
     const {
       windowType,
+      viewId,
+      childViewId,
+      childViewSelectedIds,
       entity,
       docId,
       rowId,
@@ -69,6 +108,9 @@ class Actions extends Component {
       const request = {
         entity,
         type: windowType,
+        viewId,
+        childViewId,
+        childViewSelectedIds,
         id: docId
       };
 
@@ -219,9 +261,4 @@ class Actions extends Component {
   }
 }
 
-Actions.propTypes = {
-  windowType: PropTypes.string,
-  dispatch: PropTypes.func.isRequired
-};
-
-export default connect()(Actions);
+export default connect(mapStateToProps)(Actions);

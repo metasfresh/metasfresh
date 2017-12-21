@@ -350,6 +350,7 @@ class Subheader extends Component {
   renderActionsColumn = () => {
     const {
       windowType,
+      viewId,
       dataId,
       selected,
       entity,
@@ -365,6 +366,7 @@ class Subheader extends Component {
       <Actions
         key={1}
         windowType={windowType}
+        viewId={viewId}
         entity={entity}
         openModal={openModal}
         openModalRow={openModalRow}
