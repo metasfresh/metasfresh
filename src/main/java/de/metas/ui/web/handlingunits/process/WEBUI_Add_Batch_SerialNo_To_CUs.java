@@ -146,6 +146,21 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		invalidateView();
 	}
 
+	private boolean isEligibleHuRow(final HUEditorRow huRow)
+	{
+		if (!huRow.isCU())
+		{
+			return false;
+		}
+
+		if (huRow.getC_UOM_ID() != IUOMDAO.C_UOM_ID_Each)
+		{
+			return false;
+		}
+
+		return huRow.isHUStatusPlanning() || huRow.isHUStatusActive();
+		
+	}
 	private ImmutableList<HUEditorRow> orderSelectedCUs()
 	{
 		return streamSelectedRows(HUEditorRowFilter.select(Select.ALL))
@@ -397,24 +412,6 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		return attributeStorage;
 	}
 
-	private boolean isEligibleHuRow(final HUEditorRow huRow)
-	{
-		if (!huRow.isCU())
-		{
-			return false;
-		}
 
-		if (huRow.getC_UOM_ID() != IUOMDAO.C_UOM_ID_Each)
-		{
-			return false;
-		}
-
-		if (huRow.isHUStatusPlanning() || huRow.isHUStatusActive())
-		{
-			return true;
-		}
-
-		return false;
-	}
 
 }
