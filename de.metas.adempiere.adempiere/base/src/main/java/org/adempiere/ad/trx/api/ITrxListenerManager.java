@@ -175,6 +175,8 @@ public interface ITrxListenerManager
 	 */
 	void registerListener(RegisterListenerRequest listener);
 
+	boolean canRegisterOnTiming(TrxEventTiming timing);
+
 	/**
 	 * This method shall only be called by the framework.
 	 */

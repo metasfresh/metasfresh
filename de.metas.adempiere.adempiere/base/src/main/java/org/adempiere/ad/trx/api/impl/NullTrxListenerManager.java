@@ -26,6 +26,8 @@ package org.adempiere.ad.trx.api.impl;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 
+import lombok.NonNull;
+
 /**
  * Null {@link ITrxListenerManager} implementation
  *
@@ -44,6 +46,12 @@ public final class NullTrxListenerManager implements ITrxListenerManager
 	public void registerListener(final RegisterListenerRequest listener)
 	{
 		// nothing
+	}
+	
+	@Override
+	public boolean canRegisterOnTiming(@NonNull final TrxEventTiming timing)
+	{
+		return false;
 	}
 
 	/**

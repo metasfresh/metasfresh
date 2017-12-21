@@ -75,6 +75,8 @@ public interface ILockCommand
 
 	Future<ILock> acquireBeforeTrxCommit(String trxName);
 
+	Future<ILock> acquireAfterTrxCommit(String trxName);
+
 	ILock getParentLock();
 
 	/**
