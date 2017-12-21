@@ -173,7 +173,6 @@ class Actions extends Component {
       closeSubheader,
       openModalRow,
       openModal,
-      viewId,
       selected,
       childViewId,
       childViewSelectedIds
