@@ -111,7 +111,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 				//
 				// Mark the top level HU as Locked & save it
-				huLockBL.lock(hu, transportationLockOwner);
+				huLockBL.lockAfterCommit(hu, transportationLockOwner);
 
 				//
 				// Remove HU from picking slots, if any (07499).
