@@ -104,7 +104,6 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-
 		final String serialNumbersString = replaceAllSeparatorsWithComma(p_SerialNo);
 		serialNumbers = splitIntoSerialNumbers(serialNumbersString);
 
@@ -112,25 +111,9 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 
 		for (HUEditorRow selectedCuRow : selectedCuRows)
 		{
+			processCURow(selectedCuRow);
 
-			final int qtyCU = selectedCuRow.getQtyCU().intValueExact();
-
-			if (qtyCU == 1)
-			{
-				assignSerialNumberToCU(selectedCuRow.getM_HU(), serialNumbers.get(0));
-				serialNumbers.remove(0);
-			}
-			else
-			{
-				final int serialNoCount = serialNumbers.size();
-				final int cusToCreateNo = qtyCU < serialNoCount ? qtyCU : serialNoCount;
-
-				final List<I_M_HU> createdCus = retrieveCUsToAddSerialNo(selectedCuRow, cusToCreateNo);
-				assignSerialNumbersToCUs(createdCus);
-
-			}
 		}
-
 		return MSG_OK;
 
 	}
@@ -159,8 +142,9 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		}
 
 		return huRow.isHUStatusPlanning() || huRow.isHUStatusActive();
-		
+
 	}
+
 	private ImmutableList<HUEditorRow> orderSelectedCUs()
 	{
 		return streamSelectedRows(HUEditorRowFilter.select(Select.ALL))
@@ -169,11 +153,11 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 					@Override
 					public int compare(final HUEditorRow o1, final HUEditorRow o2)
 					{
-						if(!isAggregateHU(o1))
+						if (!isAggregateHU(o1))
 						{
 							return -1;
 						}
-						if(!isAggregateHU(o2))
+						if (!isAggregateHU(o2))
 						{
 							return 1;
 						}
@@ -196,7 +180,32 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		return new LinkedList<>(Arrays.asList(split));
 	}
 
-	private List<I_M_HU> retrieveCUsToAddSerialNo(final HUEditorRow cuRow, final int cuNumber)
+	private void processCURow(HUEditorRow selectedCuRow)
+	{
+		if(Check.isEmpty(serialNumbers))
+		{
+			// the serial numbers are done. Nothing to do any more
+			return;
+		}
+		final int qtyCU = selectedCuRow.getQtyCU().intValueExact();
+
+		if (qtyCU == 1)
+		{
+			assignSerialNumberToCU(selectedCuRow.getM_HU(), serialNumbers.get(0));
+			serialNumbers.remove(0);
+		}
+		else
+		{
+			final int serialNoCount = serialNumbers.size();
+			final int cusToCreateCount = qtyCU < serialNoCount ? qtyCU : serialNoCount;
+
+			final List<I_M_HU> splittedCUs = splitIntoCUs(selectedCuRow, cusToCreateCount);
+			assignSerialNumbersToCUs(splittedCUs);
+
+		}
+	}
+
+	private List<I_M_HU> splitIntoCUs(final HUEditorRow cuRow, final int cuNumber)
 	{
 		final HUEditorRow parentRow = getParentHURow(cuRow);
 		HUEditorRow cuRowToSplit = cuRow;
@@ -206,53 +215,65 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 			return Collections.emptyList();
 		}
 
-		final WebuiHUTransformParameters parameters;
+		final List<I_M_HU> createdCUs = new ArrayList<>();
 
-		if (parentRow == null)
+		while (cuNumber > createdCUs.size())
 		{
-			parameters = WebuiHUTransformParameters.builder()
-					.actionType(ActionType.CU_To_NewCU)
-					.qtyCU(BigDecimal.ONE)
-					.build();
-		}
-		else
-		{
-			Check.assume(parentRow.isTU(), " Parent row must be TU: " + parentRow);
+			final WebuiHUTransformParameters parameters;
 
-			final I_M_HU parentHU;
-
-			if (isAggregateHU(parentRow))
+			if (parentRow == null)
 			{
-				parentHU = createNonAggregatedTU(parentRow);
-				cuRowToSplit = getIncludedCURow(parentHU);
+				parameters = WebuiHUTransformParameters.builder()
+						.actionType(ActionType.CU_To_NewCU)
+						.qtyCU(BigDecimal.ONE)
+						.build();
 			}
 			else
 			{
-				parentHU = parentRow.getM_HU();
+				Check.assume(parentRow.isTU(), " Parent row must be TU: " + parentRow);
+
+				final I_M_HU parentHU;
+
+				if (isAggregateHU(parentRow))
+				{
+					parentHU = createNonAggregatedTU(parentRow);
+					cuRowToSplit = getIncludedCURow(parentHU);
+				}
+				else
+				{
+					parentHU = parentRow.getM_HU();
+				}
+
+				parameters = WebuiHUTransformParameters.builder()
+						.actionType(ActionType.CU_To_ExistingTU)
+						.tuHU(parentHU)
+						.qtyCU(BigDecimal.ONE)
+						.build();
 			}
 
-			parameters = WebuiHUTransformParameters.builder()
-					.actionType(ActionType.CU_To_ExistingTU)
-					.tuHU(parentHU)
-					.qtyCU(BigDecimal.ONE)
-					.build();
+			final int numberOfCUsStillToBeCreated = cuNumber - createdCUs.size();
+
+			final int qtyCU = cuRowToSplit.getQtyCU().intValueExact();
+
+			final int numberOfCUsToCreate = numberOfCUsStillToBeCreated < qtyCU ? numberOfCUsStillToBeCreated : qtyCU;
+
+			for (int i = 0; i < numberOfCUsToCreate; i++)
+			{
+				final I_M_HU newCU = createNewCU(cuRowToSplit, parameters);
+
+				createdCUs.add(newCU);
+			}
+
 		}
 
-		final List<I_M_HU> createdCUs = new ArrayList<>();
-
-		for (int i = 0; i < cuNumber; i++)
-		{
-			final List<I_M_HU> newCUs = createNewCUs(cuRowToSplit, parameters);
-			createdCUs.addAll(newCUs);
-		}
+		final ImmutableList<Integer> huIDsToAdd = createdCUs.stream().map(hu -> hu.getM_HU_ID()).collect(ImmutableList.toImmutableList());
+		getView().addHUIdsAndInvalidate(huIDsToAdd);
 
 		return createdCUs;
 	}
 
-	private List<I_M_HU> createNewCUs(final HUEditorRow cuRowToUse, final WebuiHUTransformParameters parameters)
+	private I_M_HU createNewCU(final HUEditorRow cuRowToUse, final WebuiHUTransformParameters parameters)
 	{
-		final List<I_M_HU> createdCUs = new ArrayList<>();
-
 		final WebuiHUTransformCommand command = WebuiHUTransformCommand.builder()
 				.selectedRow(cuRowToUse)
 				.parameters(parameters)
@@ -265,16 +286,18 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		});
 
 		final ImmutableSet<Integer> huIdsToAddToView = result.getValue().getHuIdsToAddToView();
-		getView().addHUIdsAndInvalidate(huIdsToAddToView);
 
-		for (int huId : huIdsToAddToView)
+		Check.assume(huIdsToAddToView.size() <= 1, "Only one or no CU should be created");
+
+		if (Check.isEmpty(huIdsToAddToView))
 		{
-			final I_M_HU cu = create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
-
-			createdCUs.add(cu);
+			return cuRowToUse.getM_HU();
 		}
 
-		return createdCUs;
+		final int huId = huIdsToAddToView.asList().get(0);
+		final I_M_HU cu = create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
+
+		return cu;
 	}
 
 	private HUEditorRow getIncludedCURow(final I_M_HU parentHU)
@@ -411,7 +434,5 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
 		return attributeStorage;
 	}
-
-
 
 }
