@@ -108,7 +108,7 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		final String serialNumbersString = replaceAllSeparatorsWithComma(p_SerialNo);
 		serialNumbers = splitIntoSerialNumbers(serialNumbersString);
 
-		final ImmutableList<HUEditorRow> selectedCuRows = getSelectedCUs();
+		final ImmutableList<HUEditorRow> selectedCuRows = orderSelectedCUs();
 
 		for (HUEditorRow selectedCuRow : selectedCuRows)
 		{
@@ -146,7 +146,7 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		invalidateView();
 	}
 
-	private ImmutableList<HUEditorRow> getSelectedCUs()
+	private ImmutableList<HUEditorRow> orderSelectedCUs()
 	{
 		return streamSelectedRows(HUEditorRowFilter.select(Select.ALL))
 				.sorted(new Comparator<HUEditorRow>()
@@ -154,14 +154,23 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 					@Override
 					public int compare(final HUEditorRow o1, final HUEditorRow o2)
 					{
-						return !isAggregateHU(o1) ? -1 : 1;
+						if(!isAggregateHU(o1))
+						{
+							return -1;
+						}
+						if(!isAggregateHU(o2))
+						{
+							return 1;
+						}
+						return 0;
 					}
 				}).collect(ImmutableList.toImmutableList());
 	}
 
 	final String replaceAllSeparatorsWithComma(final String originalString)
 	{
-		return originalString.replaceAll("\\t", ",")
+		return originalString
+				.replaceAll("\n", ",")
 				.replaceAll(";", ",");
 	}
 
@@ -225,7 +234,7 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		return createdCUs;
 	}
 
-	private List<I_M_HU> createNewCUs(HUEditorRow cuRowToUse, WebuiHUTransformParameters parameters)
+	private List<I_M_HU> createNewCUs(final HUEditorRow cuRowToUse, final WebuiHUTransformParameters parameters)
 	{
 		final List<I_M_HU> createdCUs = new ArrayList<>();
 
@@ -240,9 +249,8 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 			result.setValue(command.execute());
 		});
 
-		invalidateView();
-
 		final ImmutableSet<Integer> huIdsToAddToView = result.getValue().getHuIdsToAddToView();
+		getView().addHUIdsAndInvalidate(huIdsToAddToView);
 
 		for (int huId : huIdsToAddToView)
 		{
@@ -323,49 +331,50 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		});
 
 		final ImmutableSet<Integer> huIdsToAddToView = result.getValue().getHuIdsToAddToView();
-		
+
 		getView().addHUIdsAndInvalidate(huIdsToAddToView);
 
 		if (luRow != null)
 		{
-			for (int huIdToAdd : huIdsToAddToView)
-			{
-				final I_M_HU newTU = create(Env.getCtx(), huIdToAdd, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
-
-				final WebuiHUTransformParameters tuToLUParameters = WebuiHUTransformParameters.builder()
-						.actionType(ActionType.TU_To_ExistingLU)
-						.qtyTU(BigDecimal.ONE)
-						.tuHU(newTU)
-						.luHU(luRow.getM_HU())
-						.build();
-				
-				final HUEditorRowId newTURowId = HUEditorRowId.ofHU(huIdToAdd, -1);
-
-				final HUEditorRow newTURow = getView().getById(newTURowId.toDocumentId());
-
-				
-				final WebuiHUTransformCommand tuToLUcommand = WebuiHUTransformCommand.builder()
-						.selectedRow(newTURow)
-						.parameters(tuToLUParameters)
-						.build();
-
-				
-				final IMutable<WebuiHUTransformCommandResult> resultTUToLU = new Mutable<>();
-
-				Services.get(ITrxManager.class).run(() -> {
-					resultTUToLU.setValue(tuToLUcommand.execute());
-				});
-				
-			
-				getView().invalidateAll();
-			}
+			moveTUsToLU(huIdsToAddToView, luRow);
 		}
-
-		
 
 		final I_M_HU newParentHU = create(Env.getCtx(), huIdsToAddToView.asList().get(0), I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
 
 		return newParentHU;
+
+	}
+
+	private void moveTUsToLU(final ImmutableSet<Integer> huIdsToAddToView, final HUEditorRow luRow)
+	{
+		for (int huIdToAdd : huIdsToAddToView)
+		{
+			final I_M_HU newTU = create(Env.getCtx(), huIdToAdd, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
+
+			final WebuiHUTransformParameters tuToLUParameters = WebuiHUTransformParameters.builder()
+					.actionType(ActionType.TU_To_ExistingLU)
+					.qtyTU(BigDecimal.ONE)
+					.tuHU(newTU)
+					.luHU(luRow.getM_HU())
+					.build();
+
+			final HUEditorRowId newTURowId = HUEditorRowId.ofHU(huIdToAdd, -1);
+
+			final HUEditorRow newTURow = getView().getById(newTURowId.toDocumentId());
+
+			final WebuiHUTransformCommand tuToLUcommand = WebuiHUTransformCommand.builder()
+					.selectedRow(newTURow)
+					.parameters(tuToLUParameters)
+					.build();
+
+			final IMutable<WebuiHUTransformCommandResult> resultTUToLU = new Mutable<>();
+
+			Services.get(ITrxManager.class).run(() -> {
+				resultTUToLU.setValue(tuToLUcommand.execute());
+			});
+
+			getView().invalidateAll();
+		}
 
 	}
 
