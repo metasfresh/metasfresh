@@ -148,21 +148,6 @@ public class ProductPA implements IProductPA
 					+ "    AND p.IsActive='Y' AND l.IsActive='Y'"
 					+ " ORDER BY coalesce(l.C_Location_ID, 0) DESC";
 
-	public static final String SQL_PRICELIST_BY_RPICINGSYSTEM = //
-			"SELECT p.* " //
-					+ " FROM M_PriceList p " //
-					+ " LEFT JOIN C_Location l " //
-					+ "    ON l.C_Country_ID=p.C_Country_ID " //
-					+ " WHERE " //
-					+ "    p.M_PricingSystem_ID=? " //
-					+ "    AND p.IsSOPriceList=? " //
-					+ "    AND p.IsActive='Y' " //
-					+ "    AND ( " //
-					+ "          l.C_Location_ID=? " //
-					+ "          OR l.C_Location_ID=0 OR l.C_Location_ID IS NULL " //
-					+ "    )" //
-					+ " ORDER BY coalesce(l.C_Location_ID, 0) DESC";;
-
 	private final static String SQL_SCALEPRICE_FOR_QTY = //
 			" SELECT * "//
 					+ " FROM " + I_M_ProductScalePrice.Table_Name //
