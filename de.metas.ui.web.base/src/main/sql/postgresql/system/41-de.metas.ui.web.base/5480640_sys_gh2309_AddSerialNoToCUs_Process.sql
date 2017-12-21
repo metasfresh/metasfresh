@@ -58,3 +58,26 @@ UPDATE AD_Element SET EntityType='de.metas.ui.web',Updated=TO_TIMESTAMP('2017-12
 UPDATE AD_Message SET MsgText='Nur CUs sind erlaubt', MsgType='I',Updated=TO_TIMESTAMP('2017-12-20 11:03:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544611
 ;
 
+
+
+-- 2017-12-21T11:18:09.960
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Add CUs with Serial Numbers',Updated=TO_TIMESTAMP('2017-12-21 11:18:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540898
+;
+
+-- 2017-12-21T11:18:19.079
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-21 11:18:19','YYYY-MM-DD HH24:MI:SS'),Name='Add CUs with Serial Numbers' WHERE AD_Process_ID=540898 AND AD_Language='en_US'
+;
+
+-- 2017-12-21T11:18:52.571
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-21 11:18:52','YYYY-MM-DD HH24:MI:SS'),Name='Add CUs with Serial Numbers' WHERE AD_Process_ID=540898 AND AD_Language='de_CH'
+;
+
+-- 2017-12-21T11:18:57.025
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-21 11:18:57','YYYY-MM-DD HH24:MI:SS'),Name='Add CUs with Serial Numbers' WHERE AD_Process_ID=540898 AND AD_Language='nl_NL'
+;
+
+
