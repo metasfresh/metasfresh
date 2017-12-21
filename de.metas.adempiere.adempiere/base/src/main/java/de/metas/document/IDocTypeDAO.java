@@ -25,9 +25,11 @@ package de.metas.document;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_DocType;
+import org.compiere.util.Env;
 
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -62,6 +64,11 @@ public interface IDocTypeDAO extends ISingletonService
 	 * @throws DocTypeNotFoundException if no document type was found
 	 */
 	int getDocTypeId(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
+	
+	default int getDocTypeId(String docBaseType, int adClientId, int adOrgId)
+	{
+		return getDocTypeId(Env.getCtx(), docBaseType, adClientId, adOrgId, ITrx.TRXNAME_None);
+	}
 
 	/**
 	 *

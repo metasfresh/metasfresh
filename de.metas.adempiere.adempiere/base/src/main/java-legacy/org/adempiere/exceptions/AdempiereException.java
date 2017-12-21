@@ -166,6 +166,7 @@ public class AdempiereException extends RuntimeException
 	private String _messageBuilt = null;
 
 	private Integer adIssueId = null;
+	private boolean userNotified = false;
 
 	private Map<String, Object> parameters = null;
 	private boolean appendParametersToMessage = false;
@@ -436,6 +437,17 @@ public class AdempiereException extends RuntimeException
 	{
 		// NOTE: we consider it as issue reported even if the AD_Issue_ID <= 0
 		return adIssueId != null;
+	}
+	
+	public final boolean isUserNotified()
+	{
+		return userNotified;
+	}
+	
+	public final AdempiereException markUserNotified()
+	{
+		userNotified = true;
+		return this;
 	}
 
 	/**

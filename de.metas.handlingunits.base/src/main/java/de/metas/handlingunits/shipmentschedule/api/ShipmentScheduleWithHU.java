@@ -1,4 +1,4 @@
-package de.metas.handlingunits.shipmentschedule.async;
+package de.metas.handlingunits.shipmentschedule.api;
 
 /*
  * #%L
@@ -48,12 +48,11 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
 
-/* package */class ShipmentScheduleWithHU implements IShipmentScheduleWithHU
+public class ShipmentScheduleWithHU implements IShipmentScheduleWithHU
 {
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleWithHU.class);
 

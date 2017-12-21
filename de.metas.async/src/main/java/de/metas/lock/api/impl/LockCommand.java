@@ -110,11 +110,22 @@ import lombok.NonNull;
 	@Override
 	public Future<ILock> acquireBeforeTrxCommit(final String trxName)
 	{
+		return acquireOnTrxEventTiming(trxName, TrxEventTiming.BEFORE_COMMIT);
+	}
+	
+	@Override
+	public Future<ILock> acquireAfterTrxCommit(final String trxName)
+	{
+		return acquireOnTrxEventTiming(trxName, TrxEventTiming.AFTER_COMMIT);
+	}
+	
+	private Future<ILock> acquireOnTrxEventTiming(final String trxName, final TrxEventTiming timing)
+	{
 		final FutureValue<ILock> futureLock = new FutureValue<>();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager.getTrxListenerManagerOrAutoCommit(trxName)
-				.newEventListener(TrxEventTiming.BEFORE_COMMIT)
-				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.newEventListener(timing)
+				.invokeMethodJustOnce(true) // only once, also because subsequent calls on FutureValue.setValue will throw exception
 				.registerHandlingMethod(innerTrx -> {
 
 					try
@@ -129,6 +140,8 @@ import lombok.NonNull;
 				});
 		return futureLock;
 	}
+
+
 
 	@Override
 	public ILockCommand setOwner(final LockOwner owner)
