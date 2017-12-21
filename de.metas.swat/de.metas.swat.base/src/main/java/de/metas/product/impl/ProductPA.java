@@ -10,14 +10,14 @@ package de.metas.product.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.db.IDatabaseBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -85,31 +87,27 @@ import de.metas.product.IProductPA;
 public class ProductPA implements IProductPA
 {
 
-	public static final String WHERE_PRODUCT_PRICE =
-			I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "=?";
+	public static final String WHERE_PRODUCT_PRICE = I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "=?";
 
-	public static final String WHERE_PRODUCT_SCALE_PRICE =
-			I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID + "=?";
+	public static final String WHERE_PRODUCT_SCALE_PRICE = I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID + "=?";
 
 	private static final Logger logger = LogManager.getLogger(ProductPA.class);
 
-	public static final String SQL_PRODUCT =
-			"SELECT * FROM "
-					+ I_M_Product.Table_Name + " WHERE " + I_M_Product.COLUMNNAME_Value + "=?";
+	public static final String SQL_PRODUCT = "SELECT * FROM "
+			+ I_M_Product.Table_Name + " WHERE " + I_M_Product.COLUMNNAME_Value + "=?";
 
-	private static final String SQL_SELECT_ASI =
-			"SELECT asi.* "
-					+ " FROM " + I_M_AttributeSetInstance.Table_Name + " asi"
-					+ " WHERE "//
-					+ "    asi." + I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSet_ID + "=?"
-					+ "    AND asi." + I_M_AttributeSetInstance.COLUMNNAME_SerNo + "=? ";
+	private static final String SQL_SELECT_ASI = "SELECT asi.* "
+			+ " FROM " + I_M_AttributeSetInstance.Table_Name + " asi"
+			+ " WHERE "//
+			+ "    asi." + I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSet_ID + "=?"
+			+ "    AND asi." + I_M_AttributeSetInstance.COLUMNNAME_SerNo + "=? ";
 
 	public static final String SQL_PRODUCT_PO = //
-	"SELECT * FROM "
-			+ I_M_Product_PO.Table_Name //
-			+ " WHERE " //
-			+ I_M_Product_PO.COLUMNNAME_M_Product_ID + "=? AND "
-			+ I_M_Product_PO.COLUMNNAME_C_BPartner_ID + "=?";
+			"SELECT * FROM "
+					+ I_M_Product_PO.Table_Name //
+					+ " WHERE " //
+					+ I_M_Product_PO.COLUMNNAME_M_Product_ID + "=? AND "
+					+ I_M_Product_PO.COLUMNNAME_C_BPartner_ID + "=?";
 
 	public static final String SQL_REQUISITION_LINE = //
 			"SELECT rl.* " //
@@ -166,13 +164,13 @@ public class ProductPA implements IProductPA
 					+ " ORDER BY coalesce(l.C_Location_ID, 0) DESC";;
 
 	private final static String SQL_SCALEPRICE_FOR_QTY = //
-	" SELECT * "//
-			+ " FROM " + I_M_ProductScalePrice.Table_Name //
-			+ " WHERE " //
-			+ I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID + "=?" //
-			+ "    AND " + I_M_ProductScalePrice.COLUMNNAME_Qty + "<=?" //
-			+ "    AND " + I_M_ProductScalePrice.COLUMNNAME_IsActive + "='Y'" //
-			+ " ORDER BY " + I_M_ProductScalePrice.COLUMNNAME_Qty + " DESC";
+			" SELECT * "//
+					+ " FROM " + I_M_ProductScalePrice.Table_Name //
+					+ " WHERE " //
+					+ I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID + "=?" //
+					+ "    AND " + I_M_ProductScalePrice.COLUMNNAME_Qty + "<=?" //
+					+ "    AND " + I_M_ProductScalePrice.COLUMNNAME_IsActive + "='Y'" //
+					+ " ORDER BY " + I_M_ProductScalePrice.COLUMNNAME_Qty + " DESC";
 
 	private static final String PREFIX_ERR_MSG_NONEXISTING_PROD = "Param 'productId' must be the of product that exists in the database. Was: ";
 
@@ -226,10 +224,12 @@ public class ProductPA implements IProductPA
 
 	/**
 	 * returns an attribute instance that has a certain text and belongs to a certain product.
-	 * 
+	 *
 	 * @return the retrieved attribute set instance(s) or an empty collection if no asi for the given product with the given text yet.
-	 * 
-	 * @throws IllegalArgumentException if <li>Parameter <code>text</code> is null</li> <li>there is no product with the given <code>productId</code></li>
+	 *
+	 * @throws IllegalArgumentException if
+	 *             <li>Parameter <code>text</code> is null</li>
+	 *             <li>there is no product with the given <code>productId</code></li>
 	 */
 	@Override
 	public Collection<MAttributeSetInstance> retrieveSerno(final int productId, final String text, final String trxName)
@@ -262,7 +262,7 @@ public class ProductPA implements IProductPA
 
 			rs = pstmt.executeQuery();
 
-			final List<MAttributeSetInstance> result = new ArrayList<MAttributeSetInstance>();
+			final List<MAttributeSetInstance> result = new ArrayList<>();
 
 			while (rs.next())
 			{
@@ -305,9 +305,11 @@ public class ProductPA implements IProductPA
 			}
 
 			if (logger.isDebugEnabled())
+			{
 				logger.debug("There is no M_ProductPO entry for productId "
 						+ productId + " and bPartnerId " + bPartnerId
 						+ ". Returning null");
+			}
 			return null;
 
 		}
@@ -336,7 +338,7 @@ public class ProductPA implements IProductPA
 			pstmt.setInt(1, productId);
 			pstmt.setInt(2, warehouseId);
 
-			final ArrayList<I_M_RequisitionLine> result = new ArrayList<I_M_RequisitionLine>();
+			final ArrayList<I_M_RequisitionLine> result = new ArrayList<>();
 
 			rs = pstmt.executeQuery();
 
@@ -377,7 +379,7 @@ public class ProductPA implements IProductPA
 		{
 			pstmt.setString(1, docNo);
 
-			final ArrayList<I_M_RequisitionLine> result = new ArrayList<I_M_RequisitionLine>();
+			final ArrayList<I_M_RequisitionLine> result = new ArrayList<>();
 
 			rs = pstmt.executeQuery();
 
@@ -412,7 +414,7 @@ public class ProductPA implements IProductPA
 		{
 			pstmt.setString(1, docStatus);
 
-			final ArrayList<I_M_Requisition> result = new ArrayList<I_M_Requisition>();
+			final ArrayList<I_M_Requisition> result = new ArrayList<>();
 
 			rs = pstmt.executeQuery();
 
@@ -550,30 +552,21 @@ public class ProductPA implements IProductPA
 		}
 
 		final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.create(ctx, bPartnerLocationId, I_C_BPartner_Location.class, trxName);
+		final int countryId = bPartnerLocation.getC_Location().getC_Country_ID();
 
-		final Object[] params = { //
-		pricingSystemId, //
-				isSOPriceList, //
-				bPartnerLocation.getC_Location_ID() //
-		};
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IDatabaseBL databaseBL = Services.get(IDatabaseBL.class);
-
-		final List<MPriceList> result = databaseBL.retrieveList(
-				SQL_PRICELIST_BY_RPICINGSYSTEM, //
-				params, MPriceList.class, trxName);
-
-		final MPriceList pl;
-
-		if (result.isEmpty())
-		{
-			pl = null;
-		}
-		else
-		{
-			pl = result.get(0);
-		}
-		return InterfaceWrapperHelper.create(pl, I_M_PriceList.class);
+		return queryBL.createQueryBuilder(I_M_PriceList.class)
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, pricingSystemId)
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, isSOPriceList)
+				.addInArrayFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, countryId, null)
+				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
+				.orderBy()
+				.addColumn(I_M_PriceList.COLUMNNAME_C_Country_ID, Direction.Ascending, Nulls.Last)
+				.endOrderBy()
+				.create()
+				.first(I_M_PriceList.class);
 	}
 
 	@Override
@@ -600,14 +593,14 @@ public class ProductPA implements IProductPA
 
 	/**
 	 * Invokes {@link MProductScalePrice#MProductScalePrice(java.util.Properties, int, String)} .
-	 * 
+	 *
 	 * @param trxName
 	 * @return
 	 */
 	@Override
 	public I_M_ProductScalePrice createScalePrice(final String trxName)
 	{
-		return InterfaceWrapperHelper.newInstance(I_M_ProductScalePrice.class, PlainContextAware.newWithTrxName(Env.getCtx(),trxName));
+		return InterfaceWrapperHelper.newInstance(I_M_ProductScalePrice.class, PlainContextAware.newWithTrxName(Env.getCtx(), trxName));
 	}
 
 	/**
@@ -625,7 +618,7 @@ public class ProductPA implements IProductPA
 
 	/**
 	 * Returns an existing scale price or (if <code>createNew</code> is true) creates a new one.
-	 * 
+	 *
 	 * @param productPriceId
 	 * @param qty
 	 * @param createNew
