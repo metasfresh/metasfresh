@@ -38,18 +38,41 @@ import Table from "../table/Table";
 import QuickActions from "./QuickActions";
 import SelectionAttributes from "./SelectionAttributes";
 
+const NO_SELECTION = [];
+const NO_VIEW = {};
 const mapStateToProps = (state, props) => ({
   selected: getSelection({
     state,
     windowType: props.windowType,
     viewId: props.defaultViewId
-  })
+  }),
+  childSelected:
+    props.includedView && props.includedView.windowType
+      ? getSelection({
+          state,
+          windowType: props.includedView.windowType,
+          viewId: props.includedView.viewId
+        })
+      : NO_SELECTION,
+  parentSelected: props.parentWindowType
+    ? getSelection({
+        state,
+        windowType: props.parentWindowType,
+        viewId: props.parentDefaultViewId
+      })
+    : NO_SELECTION
 });
 
 class DocumentList extends Component {
   static propTypes = {
+    // from parent
     windowType: PropTypes.string.isRequired,
-    dispatch: PropTypes.func.isRequired
+
+    // from @connect
+    childSelected: PropTypes.array.isRequired,
+    dispatch: PropTypes.func.isRequired,
+    parentSelected: PropTypes.array.isRequired,
+    selected: PropTypes.array.isRequired
   };
 
   static contextTypes = {
@@ -625,7 +648,10 @@ class DocumentList extends Component {
       windowType,
       open,
       closeOverlays,
+      childSelected,
       selected,
+      parentSelected,
+      parentDefaultViewId,
       inBackground,
       fetchQuickActionsOnInit,
       isModal,
@@ -734,6 +760,22 @@ class DocumentList extends Component {
                   shouldNotUpdate={inBackground && !hasIncluded}
                   inBackground={disablePaginationShortcuts}
                   inModal={inModal}
+                  childView={
+                    hasIncluded
+                      ? {
+                          viewId: includedView.viewId,
+                          viewSelectedIds: childSelected
+                        }
+                      : NO_VIEW
+                  }
+                  parentView={
+                    isIncluded
+                      ? {
+                          viewId: parentDefaultViewId,
+                          viewSelectedIds: parentSelected
+                        }
+                      : NO_VIEW
+                  }
                 />
               )}
             </div>

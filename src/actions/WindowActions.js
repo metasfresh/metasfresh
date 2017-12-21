@@ -255,7 +255,11 @@ export function openModal(
   viewId,
   viewDocumentIds,
   dataId,
-  triggerField
+  triggerField,
+  parentViewId,
+  parentViewSelectedIds,
+  childViewId,
+  childViewSelectedIds
 ) {
   return {
     type: types.OPEN_MODAL,
@@ -268,7 +272,11 @@ export function openModal(
     title: title,
     isAdvanced: isAdvanced,
     viewDocumentIds: viewDocumentIds,
-    triggerField: triggerField
+    triggerField: triggerField,
+    parentViewId,
+    parentViewSelectedIds,
+    childViewId,
+    childViewSelectedIds
   };
 }
 
@@ -841,7 +849,11 @@ export function createProcess({
   tabId,
   type,
   viewId,
-  selectedTab
+  selectedTab,
+  childViewId,
+  childViewSelectedIds,
+  parentViewId,
+  parentViewSelectedIds
 }) {
   let pid = null;
 
@@ -858,7 +870,11 @@ export function createProcess({
         tabId,
         type,
         viewId,
-        selectedTab
+        selectedTab,
+        childViewId,
+        childViewSelectedIds,
+        parentViewId,
+        parentViewSelectedIds
       });
     } catch (error) {
       // Close process modal in case when process start failed
@@ -1014,7 +1030,11 @@ function getProcessData({
   ids,
   tabId,
   rowId,
-  selectedTab
+  selectedTab,
+  childViewId,
+  childViewSelectedIds,
+  parentViewId,
+  parentViewSelectedIds
 }) {
   const payload = {
     processId: processId
@@ -1023,6 +1043,16 @@ function getProcessData({
   if (viewId) {
     payload.viewId = viewId;
     payload.viewDocumentIds = ids;
+
+    if (childViewId) {
+      payload.childViewId = childViewId;
+      payload.childViewSelectedIds = childViewSelectedIds;
+    }
+
+    if (parentViewId) {
+      payload.parentViewId = parentViewId;
+      payload.parentViewSelectedIds = parentViewSelectedIds;
+    }
   } else {
     payload.documentId = Array.isArray(ids) ? ids[0] : ids;
     payload.documentType = type;

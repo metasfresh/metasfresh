@@ -18,6 +18,10 @@ const initialState = {
     modalType: "",
     isAdvanced: false,
     viewDocumentIds: null,
+    childViewId: null,
+    childViewSelectedIds: null,
+    parentViewId: null,
+    parentViewSelectedIds: null,
     triggerField: null,
     saveStatus: {},
     validStatus: {},
@@ -74,7 +78,11 @@ export default function windowHandler(state = initialState, action) {
           modalType: action.modalType,
           isAdvanced: action.isAdvanced,
           viewDocumentIds: action.viewDocumentIds,
-          triggerField: action.triggerField
+          triggerField: action.triggerField,
+          parentViewId: action.parentViewId,
+          parentViewSelectedIds: action.parentViewSelectedIds,
+          childViewId: action.childViewId,
+          childViewSelectedIds: action.childViewSelectedIds
         })
       });
 

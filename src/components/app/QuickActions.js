@@ -18,6 +18,15 @@ const initialState = {
 };
 
 class QuickActions extends Component {
+  static propTypes = {
+    // from @connect
+    dispatch: PropTypes.func.isRequired,
+
+    // from <DocumentList>
+    childView: PropTypes.object.isRequired,
+    parentView: PropTypes.object.isRequired
+  };
+
   constructor(props) {
     super(props);
 
@@ -87,7 +96,7 @@ class QuickActions extends Component {
   };
 
   handleClick = action => {
-    const { dispatch, viewId, selected } = this.props;
+    const { dispatch, viewId, selected, childView, parentView } = this.props;
 
     if (action.disabled) {
       return;
@@ -106,7 +115,13 @@ class QuickActions extends Component {
         null,
         false,
         viewId,
-        selected
+        selected,
+        null,
+        null,
+        parentView.viewId,
+        parentView.viewSelectedIds,
+        childView.viewId,
+        childView.viewSelectedIds
       )
     );
 
@@ -229,9 +244,5 @@ class QuickActions extends Component {
     }
   }
 }
-
-QuickActions.propTypes = {
-  dispatch: PropTypes.func.isRequired
-};
 
 export default connect(false, false, false, { withRef: true })(QuickActions);

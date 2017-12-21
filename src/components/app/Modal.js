@@ -133,7 +133,11 @@ class Modal extends Component {
       isAdvanced,
       modalViewId,
       modalViewDocumentIds,
-      activeTabId
+      activeTabId,
+      childViewId,
+      childViewSelectedIds,
+      parentViewId,
+      parentViewSelectedIds
     } = this.props;
 
     switch (modalType) {
@@ -171,6 +175,16 @@ class Modal extends Component {
               tabId: activeTabId,
               rowIds: parentSelection
             };
+          }
+
+          if (childViewId) {
+            options.childViewId = childViewId;
+            options.childViewSelectedIds = childViewSelectedIds;
+          }
+
+          if (parentViewId) {
+            options.parentViewId = parentViewId;
+            options.parentViewSelectedIds = parentViewSelectedIds;
           }
 
           await dispatch(createProcess(options));

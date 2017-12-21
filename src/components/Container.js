@@ -119,6 +119,10 @@ class Container extends Component {
               rawModalVisible={rawModal.visible}
               indicator={indicator}
               modalViewDocumentIds={modal.viewDocumentIds}
+              childViewId={modal.childViewId}
+              childViewSelectedIds={modal.childViewSelectedIds}
+              parentViewId={modal.parentViewId}
+              parentViewSelectedIds={modal.parentViewSelectedIds}
               closeCallback={closeModalCallback}
               modalSaveStatus={
                 modal.saveStatus && modal.saveStatus.saved !== undefined
