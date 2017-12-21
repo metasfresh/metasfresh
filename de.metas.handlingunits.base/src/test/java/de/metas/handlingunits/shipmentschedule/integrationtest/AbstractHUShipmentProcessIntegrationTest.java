@@ -13,11 +13,11 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -46,7 +46,6 @@ import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_BPartner_Location;
-import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
@@ -63,8 +62,8 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
-import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.logging.LogManager;
@@ -127,7 +126,8 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	@Override
 	protected HUTestHelper createHUTestHelper()
 	{
-		return new HUTestHelper() {
+		return new HUTestHelper()
+		{
 			@Override
 			protected String createAndStartTransaction()
 			{
@@ -146,7 +146,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// Prepare context
 		final String trxName = helper.trxName; // use the helper's thread-inherited trxName
 
-		if(Services.get(ITrxManager.class).isNull(trxName))
+		if (Services.get(ITrxManager.class).isNull(trxName))
 		{
 			huContext = helper.createMutableHUContextOutOfTransaction();
 		}
@@ -181,14 +181,14 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		{
 			// PM
 			// don't create the PM item, because if we do, the HUPackingPaterialsCollector will try to do its thing.
-			// this won't work, unless we also give each HU a locator and set up a distribution network 
+			// this won't work, unless we also give each HU a locator and set up a distribution network
 			// helper.createHU_PI_Item_PackingMaterial(piTU, pmIFCO);
-			
+
 			// MI
 			piTU_Item = helper.createHU_PI_Item_Material(piTU);
 			helper.assignProduct(piTU_Item, pTomato, BigDecimal.TEN, productUOM);
 			helper.assignProduct(piTU_Item, pSalad, BigDecimal.TEN, productUOM);
-			
+
 		}
 
 		piLU = helper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
@@ -346,20 +346,16 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		//
 		// Test Generate Shipment from HUs
-		final I_C_Queue_WorkPackage workpackage = GenerateInOutFromHU.enqueueWorkpackage(afterAggregation_HUs);
-
-		// Make sure we are working with valid candidates
-		final GenerateInOutFromHU processor = new GenerateInOutFromHU();
-		processor.setC_Queue_WorkPackage(workpackage);
-		
-		final List<IShipmentScheduleWithHU> candidates = processor.retrieveCandidates();
+		final HUShippingFacade huShippingFacade = HUShippingFacade.builder()
+				.hus(afterAggregation_HUs)
+				.build();
 
 		//
 		// Important!
 		//
 		// When matching expectations, sort the candidates so that they have the same indexes as the aggregated HUs
 		//
-		final List<IShipmentScheduleWithHU> candidatesSorted = new ArrayList<>(candidates);
+		final List<IShipmentScheduleWithHU> candidatesSorted = new ArrayList<>(huShippingFacade.getCandidates());
 		Collections.sort(candidatesSorted, new Comparator<IShipmentScheduleWithHU>()
 		{
 			@Override
@@ -393,13 +389,12 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		final InOutGeneratedNotificationChecker notificationsChecker = InOutGeneratedNotificationChecker.createAnSubscribe();
 
-		// Process the workpackage
-		// => shipment shall be generated
-		processor.processWorkPackage(workpackage, ITrx.TRXNAME_None);
+		// Generate shipments
+		huShippingFacade.generateShippingDocuments();
 
 		//
-		// Retrieve generated shipment
-		generatedShipments = processor.getInOutGenerateResult().getInOuts();
+		// Retrieve generated shipments
+		generatedShipments = huShippingFacade.getGeneratedShipments();
 
 		// Assert all generated shipments were also notified on generated inouts event bus
 		notificationsChecker.assertAllNotified(generatedShipments);

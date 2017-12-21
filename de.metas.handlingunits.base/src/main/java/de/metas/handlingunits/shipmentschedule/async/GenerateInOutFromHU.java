@@ -6,35 +6,20 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.util.Check;
-import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.compiere.util.DB;
+import org.adempiere.util.api.IParams;
 import org.compiere.util.Env;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
-import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
-import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -118,44 +103,26 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	{
 		//
 		// Retrieve enqueued HUs
-		final List<I_M_HU> hus = retriveWorkpackageHUs();
+		final List<I_M_HU> hus = retrieveItems(I_M_HU.class);
 		if (hus.isEmpty())
 		{
 			Loggables.get().addLog("No HUs found");
 			return Result.SUCCESS;
 		}
 
-		//
-		// Add HUs to shipper transportation if needed
-		final int addToShipperTransportationId = getAddToShipperTransportationId();
-		if (addToShipperTransportationId > 0)
-		{
-			final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
-			huShipperTransportationBL.addHUsToShipperTransportation(addToShipperTransportationId, hus);
-			Loggables.get().addLog("HUs added to M_ShipperTransportation_ID={}", addToShipperTransportationId);
-		}
+		final IParams parameters = getParameters();
 
-		//
-		// Generate shipments
-		{
-			final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
-			final List<IShipmentScheduleWithHU> candidates = huShipmentScheduleDAO.retrieveShipmentSchedulesWithHUsFromHUs(hus);
-			inoutGenerateResult = Services.get(IHUShipmentScheduleBL.class)
-					.createInOutProducerFromShipmentSchedule()
-					.setProcessShipments(isCompleteShipments())
-					.setCreatePackingLines(false) // the packing lines shall only be created when the shipments are completed
-					.setManualPackingMaterial(false) // use the HUs!
-					.computeShipmentDate(true) // if this is ever used, it should be on true to keep legacy
-					// Fail on any exception, because we cannot create just a part of those shipments.
-					// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
-					.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
-					.createShipments(candidates);
-			Loggables.get().addLog("Generated {}", inoutGenerateResult.toString());
-		}
-
-		//
-		// Generate invoices
-		generateInvoicesIfNeeded(inoutGenerateResult.getInOuts());
+		final int addToShipperTransportationId = parameters.getParameterAsInt(PARAMETERNAME_AddToShipperTransportationId);
+		final boolean completeShipments = parameters.getParameterAsBool(PARAMETERNAME_IsCompleteShipments);
+		final InvoiceMode invoiceMode = parameters.getParameterAsEnum(PARAMETERNAME_InvoiceMode, InvoiceMode.class, InvoiceMode.None);
+		HUShippingFacade.builder()
+				.loggable(Loggables.get())
+				.hus(hus)
+				.addToShipperTransportationId(addToShipperTransportationId)
+				.completeShipments(completeShipments)
+				.invoiceMode(invoiceMode)
+				.build()
+				.generateShippingDocuments();
 
 		return Result.SUCCESS;
 	}
@@ -180,78 +147,5 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	{
 		Check.assumeNotNull(inoutGenerateResult, "workpackage shall be processed first");
 		return inoutGenerateResult;
-	}
-
-	private List<I_M_HU> retriveWorkpackageHUs()
-	{
-		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-		final I_C_Queue_WorkPackage workpackage = getC_Queue_WorkPackage();
-
-		final List<I_M_HU> hus = queueDAO.retrieveItems(workpackage, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
-		return hus;
-	}
-
-	@VisibleForTesting
-	public List<IShipmentScheduleWithHU> retrieveCandidates()
-	{
-		final List<I_M_HU> hus = retriveWorkpackageHUs();
-		if (hus.isEmpty())
-		{
-			Loggables.get().addLog("No HUs found");
-			return ImmutableList.of();
-		}
-		else
-		{
-			final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
-			return huShipmentScheduleDAO.retrieveShipmentSchedulesWithHUsFromHUs(hus);
-		}
-	}
-
-	private void generateInvoicesIfNeeded(final List<I_M_InOut> shipments)
-	{
-		if (shipments.isEmpty())
-		{
-			return;
-		}
-
-		final InvoiceMode invoiceMode = getInvoiceMode();
-		if (invoiceMode == InvoiceMode.None)
-		{
-			return;
-		}
-
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
-		// TODO: atm createSelection from a query with UNIONs is not working. Fix that first.
-		final List<Integer> invoiceCandidateIds = invoiceCandDAO.retrieveInvoiceCandidatesQueryForInOuts(shipments).listIds();
-		final int invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, ITrx.TRXNAME_ThreadInherited);
-
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(InvoiceMode.AllWithoutInvoiceSchedule == invoiceMode);
-
-		final ILoggable loggable = Loggables.get();
-		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
-				.setLoggable(loggable)
-				.setInvoicingParams(invoicingParams)
-				//
-				.enqueueSelection(invoiceCandidatesSelectionId);
-		loggable.addLog("Invoice candidates enqueued: {}", enqueueResult);
-	}
-
-	private int getAddToShipperTransportationId()
-	{
-		return getParameters().getParameterAsInt(PARAMETERNAME_AddToShipperTransportationId);
-	}
-
-	private boolean isCompleteShipments()
-	{
-		return getParameters().getParameterAsBool(PARAMETERNAME_IsCompleteShipments);
-	}
-
-	private InvoiceMode getInvoiceMode()
-	{
-		final String invoiceModeStr = getParameters().getParameterAsString(PARAMETERNAME_InvoiceMode);
-		return !Check.isEmpty(invoiceModeStr, true) ? InvoiceMode.valueOf(invoiceModeStr) : InvoiceMode.None;
 	}
 }
