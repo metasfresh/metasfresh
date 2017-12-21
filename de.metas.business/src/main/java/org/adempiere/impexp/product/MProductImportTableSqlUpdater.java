@@ -463,7 +463,7 @@ public class MProductImportTableSqlUpdater
 				.append(targetTableName + " i set ")
 				.append(nameToMatch)
 				.append("_Price_List_ID=(select pl.M_PriceList_ID from M_PriceList pl ")
-				.append(" where pl.Name=?")
+				.append(" where pl.InternalName=?")
 				.append(" and pl.AD_Client_ID=?")
 				.append(" and pl.IsActive='Y' order by pl.M_PriceList_ID limit 1)")
 				.append(" where true")
