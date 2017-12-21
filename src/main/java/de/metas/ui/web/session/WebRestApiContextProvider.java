@@ -13,8 +13,8 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import de.metas.Profiles;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.WebRestApiApplication;
 
 /*
  * #%L
@@ -40,7 +40,7 @@ import de.metas.ui.web.WebRestApiApplication;
 
 @SuppressWarnings("serial")
 @Component
-@Profile(WebRestApiApplication.PROFILE_Webui)
+@Profile(Profiles.PROFILE_Webui)
 public final class WebRestApiContextProvider implements ContextProvider, Serializable
 {
 	private static final Logger logger = LogManager.getLogger(WebRestApiContextProvider.class);
@@ -153,7 +153,7 @@ public final class WebRestApiContextProvider implements ContextProvider, Seriali
 				}
 
 				closed = true;
-				
+
 				logger.trace("Switched back from temporary context");
 			}
 		};
@@ -164,7 +164,7 @@ public final class WebRestApiContextProvider implements ContextProvider, Seriali
 	{
 		temporaryCtxHolder.remove();
 		serverCtx.clear();
-		
+
 		logger.debug("Reset done");
 	}
 }

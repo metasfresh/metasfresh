@@ -88,12 +88,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.material</groupId>
-			<artifactId>metasfresh-material-cockpit</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>de.metas.ui.web</groupId>
 			<artifactId>de.metas.ui.web.base</artifactId>
 			<version>${metasfresh.version}</version>

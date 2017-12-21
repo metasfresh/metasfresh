@@ -2,11 +2,11 @@ package de.metas.ui.web.procurement.process;
 
 import org.springframework.context.annotation.Profile;
 
+import de.metas.Profiles;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.async.PMM_GenerateOrders;
-import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
@@ -34,11 +34,11 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /**
  * Mass enqueue {@link I_PMM_PurchaseCandidate} records to be processed and purchase orders to be generated.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Profile(WebRestApiApplication.PROFILE_Webui)
+@Profile(Profiles.PROFILE_Webui)
 public class PMM_Purchase_Candidate_CreatePurchaseOrder extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	private int recordsEnqueued;

@@ -9,6 +9,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
@@ -47,7 +48,7 @@ import lombok.AllArgsConstructor;
  */
 
 @Component
-@DependsOn(WebRestApiApplication.BEANNAME_Adempiere) // NOTE: we need Adempiere as parameter to make sure it was initialized. Else the "addModelInterceptor" will fail.
+@DependsOn(Adempiere.BEAN_NAME) // NOTE: we need Adempiere as parameter to make sure it was initialized. Else the "addModelInterceptor" will fail.
 public class UserSessionRepository
 {
 	@Autowired
