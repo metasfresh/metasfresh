@@ -1,7 +1,7 @@
 package de.metas.material.event;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -11,10 +11,12 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
 
+import de.metas.Profiles;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -48,13 +50,14 @@ import lombok.NonNull;
  * #L%
  */
 @Service
+@Profile(value = { Profiles.PROFILE_App, Profiles.PROFILE_MaterialDispo, Profiles.PROFILE_Test })
 public class MaterialEventService
 {
 	private static final Logger logger = LogManager.getLogger(MaterialEventService.class);
 
 	public static final String MATERIAL_DISPOSITION_EVENT = "MaterialDispositionEvent";
 
-	private final List<MaterialEventListener> listeners = new ArrayList<>();
+	private final LinkedHashSet<MaterialEventListener> listeners = new LinkedHashSet<>();
 
 	/** Topic used to send notifications about sales and purchase orders that were generated/reversed asynchronously */
 	private final Topic eventBusTopic;
@@ -101,11 +104,10 @@ public class MaterialEventService
 		}
 	};
 
-
-
-	public static MaterialEventService createLocalServiceThatIsReadyToUse()
+	public static MaterialEventService createLocalServiceThatIsReadyToUse(Collection<MaterialEventListener> listeners)
 	{
-		final MaterialEventService materialEventService = new MaterialEventService(Type.LOCAL);
+		final MaterialEventService materialEventService = new MaterialEventService(Type.LOCAL, listeners);
+
 		materialEventService.subscribeToEventBus();
 		return materialEventService;
 	}
@@ -115,9 +117,9 @@ public class MaterialEventService
 	 *
 	 * @return
 	 */
-	public static MaterialEventService createDistributedServiceThatNeedsToSubscribe()
+	public static MaterialEventService createDistributedServiceThatNeedsToSubscribe(Collection<MaterialEventListener> listeners)
 	{
-		return new MaterialEventService(Type.REMOTE);
+		return new MaterialEventService(Type.REMOTE, listeners);
 	}
 
 	/**
@@ -127,12 +129,15 @@ public class MaterialEventService
 	 *
 	 * @param eventType
 	 */
-	private MaterialEventService(@NonNull final Type eventType)
+	protected MaterialEventService(@NonNull final Type eventType,
+			@NonNull final Collection<MaterialEventListener> listeners)
 	{
 		eventBusTopic = Topic.builder()
 				.setName(MaterialEventBus.EVENTBUS_TOPIC_NAME)
 				.setType(eventType)
 				.build();
+
+		listeners.forEach(l -> this.registerListener(l));
 	}
 
 	/**
@@ -158,7 +163,7 @@ public class MaterialEventService
 	 *
 	 * @param materialDemandListener
 	 */
-	public void registerListener(final MaterialEventListener listener)
+	private void registerListener(final MaterialEventListener listener)
 	{
 		Preconditions.checkNotNull(listener, "Param listener is null");
 		listeners.add(listener);

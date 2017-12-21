@@ -122,7 +122,7 @@ public class MaterialDispoEventListenerFacadeTests
 
 		final RequestMaterialOrderService candidateService = new RequestMaterialOrderService(
 				candidateRepositoryRetrieval,
-				MaterialEventService.createLocalServiceThatIsReadyToUse());
+				MaterialEventService.createLocalServiceThatIsReadyToUse(ImmutableList.of()));
 
 		final DDOrderAdvisedOrCreatedHandler distributionAdvisedEventHandler = new DDOrderAdvisedOrCreatedHandler(
 				candidateRepositoryRetrieval,

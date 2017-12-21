@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -58,7 +59,7 @@ public class RequestMaterialOrderService
 
 	public RequestMaterialOrderService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final MaterialEventService materialEventService)
+			@NonNull @Lazy final MaterialEventService materialEventService)
 	{
 		this.materialEventService = materialEventService;
 		this.candidateRepository = candidateRepository;

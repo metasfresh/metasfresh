@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
@@ -58,7 +59,7 @@ public class StockCandidateService
 	public StockCandidateService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
-			@NonNull final MaterialEventService materialEventService)
+			@NonNull @Lazy final MaterialEventService materialEventService)
 	{
 		this.candidateRepositoryRetrieval = candidateRepository;
 		this.candidateRepositoryWriteService = candidateRepositoryCommands;

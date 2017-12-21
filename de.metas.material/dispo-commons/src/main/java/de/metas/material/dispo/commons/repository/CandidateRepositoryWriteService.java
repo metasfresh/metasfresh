@@ -120,11 +120,11 @@ public class CandidateRepositoryWriteService
 
 		setFallBackSeqNoAndGroupIdIfNeeded(synchedRecord);
 
-		addOrRecplaceProductionDetail(candidate, synchedRecord);
+		addOrReplaceProductionDetail(candidate, synchedRecord);
 
-		addOrRecplaceDistributionDetail(candidate, synchedRecord);
+		addOrReplaceDistributionDetail(candidate, synchedRecord);
 
-		addOrRecplaceDemandDetail(candidate, synchedRecord);
+		addOrReplaceDemandDetail(candidate, synchedRecord);
 
 		addOrReplaceTransactionDetail(candidate, synchedRecord);
 
@@ -238,7 +238,7 @@ public class CandidateRepositoryWriteService
 		}
 	}
 
-	private void addOrRecplaceProductionDetail(
+	private void addOrReplaceProductionDetail(
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
@@ -260,6 +260,7 @@ public class CandidateRepositoryWriteService
 			detailRecordToUpdate = existingDetail;
 		}
 
+		detailRecordToUpdate.setIsAdvised(productionDetail.isAdvised());
 		detailRecordToUpdate.setDescription(productionDetail.getDescription());
 		detailRecordToUpdate.setPP_Plant_ID(productionDetail.getPlantId());
 		detailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
@@ -271,7 +272,7 @@ public class CandidateRepositoryWriteService
 		save(detailRecordToUpdate);
 	}
 
-	private void addOrRecplaceDistributionDetail(
+	private void addOrReplaceDistributionDetail(
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate synchedRecord)
 	{
@@ -304,7 +305,7 @@ public class CandidateRepositoryWriteService
 	}
 
 	@VisibleForTesting
-	void addOrRecplaceDemandDetail(
+	void addOrReplaceDemandDetail(
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate synchedRecord)
 	{

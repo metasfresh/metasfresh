@@ -16,7 +16,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
-import de.metas.adempiere.report.jasper.JasperConstants;
+import de.metas.Profiles;
 
 /*
  * #%L
@@ -45,7 +45,7 @@ import de.metas.adempiere.report.jasper.JasperConstants;
 	{ "de.metas.report", "de.metas.adempiere.report.jasper" })
 @ServletComponentScan(value =
 	{ "de.metas.adempiere.report.jasper.servlet" })
-@Profile(JasperConstants.PROFILE_JasperServer)
+@Profile(Profiles.PROFILE_JasperServer)
 public class ReportServiceMain
 {
 	@Autowired
@@ -66,12 +66,12 @@ public class ReportServiceMain
 		new SpringApplicationBuilder(ReportServiceMain.class)
 				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 				.web(true)
-				.profiles(JasperConstants.PROFILE_JasperServer)
+				.profiles(Profiles.PROFILE_JasperServer)
 				.run(args);
 	}
 
-	@Bean
-	@Profile("!test")
+	@Profile(Profiles.PROFILE_NotTest)
+	@Bean(Adempiere.BEAN_NAME)
 	public Adempiere adempiere()
 	{
 		// as of right now, we are not interested in loading *any* model validator whatsoever within this service

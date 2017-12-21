@@ -39,7 +39,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.TrxRunnable;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alternative;
 import org.eevolution.model.X_PP_MRP;
@@ -54,6 +53,7 @@ import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMRPSegment;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
 
 public class MRPBL implements IMRPBL

@@ -34,7 +34,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.api.IDDOrderDAO;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
@@ -46,6 +45,7 @@ import org.eevolution.mrp.api.IMRPDAO;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.LiberoException;
 
 public class DDOrderDAO implements IDDOrderDAO
 {

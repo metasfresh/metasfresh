@@ -3,19 +3,21 @@ package de.metas.material.cockpit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.compiere.util.CacheMgt;
 import org.compiere.util.TimeUtil;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.Profiles;
 import de.metas.material.cockpit.DataUpdateRequest.DataUpdateRequestBuilder;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
-import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
+import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.procurement.AbstractPurchaseOfferEvent;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
@@ -48,19 +50,17 @@ import lombok.NonNull;
  */
 
 @Service
-// needs to be lazy because somewhere down the road, MaterialEventService wants to get something from AD_SystemConfig
-// ..and that means the DB has to be there..
-// without lazy, it might just get the PlainSysConfigDAO
-@Lazy
+@Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
 public class MaterialCockpitEventListener implements MaterialEventListener
 {
 	private final DataUpdateRequestHandler dataUpdateRequestHandler;
 
-	public MaterialCockpitEventListener(
-			@NonNull final MaterialEventService materialEventService,
-			@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler)
+	public MaterialCockpitEventListener(@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
+
+		// needed to update the webui-view on data changes performed by this listener
+		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_MD_Cockpit.Table_Name);
 	}
 
 	@Override
@@ -74,9 +74,9 @@ public class MaterialCockpitEventListener implements MaterialEventListener
 		// }
 
 		// ddOrder
-		if (event instanceof PPOrderAdvisedOrCreatedEvent)
+		if (event instanceof PPOrderCreatedEvent)
 		{
-			requests.addAll(createDataUpdateRequestForEvent((PPOrderAdvisedOrCreatedEvent)event));
+			requests.addAll(createDataUpdateRequestForEvent((PPOrderCreatedEvent)event));
 			// if not "planned", but "done", then *DO NOT, because the old impl doesn't either*:
 			// * "undo" the former change, i.e. subtract on the "supply" side, add on the "demand" side
 			// * update things similar to transactionEvent
@@ -116,7 +116,7 @@ public class MaterialCockpitEventListener implements MaterialEventListener
 	}
 
 	private ImmutableList<DataUpdateRequest> createDataUpdateRequestForEvent(
-			@NonNull final PPOrderAdvisedOrCreatedEvent ppOrderAdvisedOrCreatedEvent)
+			@NonNull final PPOrderCreatedEvent ppOrderAdvisedOrCreatedEvent)
 	{
 		final PPOrder ppOrder = ppOrderAdvisedOrCreatedEvent.getPpOrder();
 		final List<PPOrderLine> lines = ppOrder.getLines();

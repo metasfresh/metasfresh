@@ -3,6 +3,7 @@ package de.metas.material.dispo.service.candidatechange.handler;
 import java.math.BigDecimal;
 import java.util.Collection;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
@@ -61,7 +62,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 	public StockUpCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
-			@NonNull final MaterialEventService materialEventService,
+			@NonNull @Lazy final MaterialEventService materialEventService,
 			@NonNull final StockRepository stockRepository)
 	{
 		this.stockRepository = stockRepository;

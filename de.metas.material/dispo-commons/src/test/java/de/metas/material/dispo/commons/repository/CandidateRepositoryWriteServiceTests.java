@@ -114,7 +114,7 @@ public class CandidateRepositoryWriteServiceTests
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
 		save(candidateRecord);
 
-		candidateRepositoryWriteService.addOrRecplaceDemandDetail(candidate, candidateRecord);
+		candidateRepositoryWriteService.addOrReplaceDemandDetail(candidate, candidateRecord);
 
 		final List<I_MD_Candidate_Demand_Detail> allDemandDetails = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Demand_Detail.class).create().list();
 		assertThat(allDemandDetails).hasSize(1);

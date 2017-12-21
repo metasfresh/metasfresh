@@ -25,9 +25,12 @@ import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
+import de.metas.material.event.pporder.PPOrderAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderCreatedEvent;
+import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.PPOrderOrAdviseDeletedEvent;
+import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent;
+import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent.PPOrderLineChangeDescriptor;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
@@ -133,13 +136,7 @@ public class MaterialEventSerializerTests
 						.quantity(BigDecimal.TEN)
 						.uomId(140)
 						.warehouseId(WAREHOUSE_ID)
-						.line(PPOrderLine.builder()
-								.productDescriptor(createProductDescriptorWithOffSet(10))
-								.description("desc1")
-								.productBomLineId(280)
-								.qtyRequired(BigDecimal.valueOf(220))
-								.receipt(true)
-								.build())
+						.line(createPPOrderLine())
 						.line(PPOrderLine.builder()
 								.productDescriptor(createProductDescriptorWithOffSet(20))
 								.description("desc2")
@@ -154,9 +151,9 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
-	public void ppOrderAdvisedOrCreatedEvent()
+	public void ppOrderAdvisedEvent()
 	{
-		final PPOrderAdvisedOrCreatedEvent event = PPOrderAdvisedOrCreatedEvent.builder()
+		final PPOrderAdvisedEvent event = PPOrderAdvisedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.ppOrder(createPPOrder())
@@ -166,14 +163,45 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
-	public void ppOrderOrAdviseDeletedEvent()
+	public void ppOrderCreatedEvent()
 	{
-		final PPOrderOrAdviseDeletedEvent event = PPOrderOrAdviseDeletedEvent.builder()
+		final PPOrderCreatedEvent event = PPOrderCreatedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.ppOrder(createPPOrder())
 				.build();
 
+		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
+	@Test
+	public void ppOrderDeletedEvent()
+	{
+		final PPOrderDeletedEvent event = PPOrderDeletedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
+				.ppOrder(createPPOrder())
+				.build();
+
+		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
+	@Test
+	public void ppOrderQtyEnteredChangedEvent()
+	{
+		final PPOrderQtyEnteredChangedEvent event = PPOrderQtyEnteredChangedEvent.builder()
+				.ppOrderId(10)
+				.deletedPPOrderLineID(20)
+				.deletedPPOrderLineID(30)
+				.eventDescriptor(createEventDescriptor())
+				.newPPOrderLine(createPPOrderLine())
+				.ppOrderLineChange(PPOrderLineChangeDescriptor.builder()
+						.oldPPOrderLineId(40)
+						.newPPOrderLineId(50)
+						.oldQuantity(new BigDecimal("60"))
+						.newQuantity(new BigDecimal("70"))
+						.build())
+				.build();
 		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
@@ -189,13 +217,7 @@ public class MaterialEventSerializerTests
 				.quantity(BigDecimal.TEN)
 				.uomId(140)
 				.warehouseId(150)
-				.line(PPOrderLine.builder()
-						.productDescriptor(createProductDescriptorWithOffSet(10))
-						.description("desc1")
-						.productBomLineId(280)
-						.qtyRequired(BigDecimal.valueOf(220))
-						.receipt(true)
-						.build())
+				.line(createPPOrderLine())
 				.line(PPOrderLine.builder()
 						.productDescriptor(createProductDescriptorWithOffSet(20))
 						.description("desc2")
@@ -203,6 +225,17 @@ public class MaterialEventSerializerTests
 						.qtyRequired(BigDecimal.valueOf(320))
 						.receipt(false)
 						.build())
+				.build();
+	}
+
+	private PPOrderLine createPPOrderLine()
+	{
+		return PPOrderLine.builder()
+				.productDescriptor(createProductDescriptorWithOffSet(10))
+				.description("desc1")
+				.productBomLineId(280)
+				.qtyRequired(BigDecimal.valueOf(220))
+				.receipt(true)
 				.build();
 	}
 

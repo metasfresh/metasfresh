@@ -43,7 +43,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
 import org.eevolution.mrp.api.IMRPDAO;
@@ -65,6 +64,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMRPSegment;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.pporder.LiberoException;
 
 public abstract class AbstractMRPSupplyProducer implements IMRPSupplyProducer
 {

@@ -21,6 +21,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -77,7 +79,7 @@ public class SupplyCandiateCangeHandlerTest
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryWriteService,
-				MaterialEventService.createLocalServiceThatIsReadyToUse());
+				MaterialEventService.createLocalServiceThatIsReadyToUse(ImmutableList.of()));
 
 		supplyCandiateHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryWriteService, stockCandidateService);
 	}

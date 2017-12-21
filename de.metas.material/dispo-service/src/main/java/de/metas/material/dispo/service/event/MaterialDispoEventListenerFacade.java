@@ -1,8 +1,9 @@
 package de.metas.material.dispo.service.event;
 
-import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import de.metas.Profiles;
 import de.metas.material.dispo.service.event.handler.DDOrderAdvisedOrCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
 import de.metas.material.dispo.service.event.handler.PPOrderAdvisedOrCreatedHandler;
@@ -12,7 +13,8 @@ import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
 import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
-import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
+import de.metas.material.event.pporder.PPOrderAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import lombok.NonNull;
@@ -39,7 +41,7 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-@Lazy
+@Profile(Profiles.PROFILE_MaterialDispo)
 public class MaterialDispoEventListenerFacade implements MaterialEventListener
 {
 
@@ -86,9 +88,13 @@ public class MaterialDispoEventListenerFacade implements MaterialEventListener
 		{
 			distributionAdvisedHandler.handleDDOrderAdvisedOrCreatedEvent((DDOrderAdvisedOrCreatedEvent)event);
 		}
-		else if (event instanceof PPOrderAdvisedOrCreatedEvent)
+		else if (event instanceof PPOrderCreatedEvent)
 		{
-			productionAdvisedHandler.handlePPOrderAdvisedOrCreatedEvent((PPOrderAdvisedOrCreatedEvent)event);
+			productionAdvisedHandler.handlePPOrderCreatedEvent((PPOrderCreatedEvent)event);
+		}
+		else if (event instanceof PPOrderAdvisedEvent)
+		{
+			productionAdvisedHandler.handlePPOrderAdvisedEvent((PPOrderAdvisedEvent)event);
 		}
 	}
 }

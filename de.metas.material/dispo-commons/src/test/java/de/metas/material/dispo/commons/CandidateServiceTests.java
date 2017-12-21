@@ -55,7 +55,7 @@ public class CandidateServiceTests
 	{
 		requestMaterialOrderService = new RequestMaterialOrderService(
 				new CandidateRepositoryRetrieval(),
-				MaterialEventService.createLocalServiceThatIsReadyToUse());
+				MaterialEventService.createLocalServiceThatIsReadyToUse(ImmutableList.of()));
 	}
 
 	@Test

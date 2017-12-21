@@ -37,7 +37,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
@@ -59,6 +58,7 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 
 /**

@@ -16,6 +16,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.event.DemandHandlerAuditEvent;
@@ -58,17 +59,17 @@ public class SupplyRequiredHandler
 {
 	private final DDOrderAdvisedOrCreatedEventCreator dDOrderAdvisedOrCreatedEventCreator;
 
-	private final PPOrderAdvisedOrCreatedEventCreator pPOrderAdvisedOrCreatedEventCreator;
+	private final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator;
 
 	private final MaterialEventService materialEventService;
 
 	public SupplyRequiredHandler(
 			@NonNull final DDOrderAdvisedOrCreatedEventCreator dDOrderAdvisedOrCreatedEventCreator,
-			@NonNull final PPOrderAdvisedOrCreatedEventCreator pPOrderAdvisedOrCreatedEventCreator,
-			@NonNull final MaterialEventService materialEventService)
+			@NonNull final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator,
+			@NonNull @Lazy final MaterialEventService materialEventService)
 	{
 		this.dDOrderAdvisedOrCreatedEventCreator = dDOrderAdvisedOrCreatedEventCreator;
-		this.pPOrderAdvisedOrCreatedEventCreator = pPOrderAdvisedOrCreatedEventCreator;
+		this.ppOrderAdvisedEventCreator = ppOrderAdvisedEventCreator;
 		this.materialEventService = materialEventService;
 	}
 
@@ -106,7 +107,7 @@ public class SupplyRequiredHandler
 
 		final List<MaterialEvent> events = new ArrayList<>();
 		events.addAll(dDOrderAdvisedOrCreatedEventCreator.createDistributionAdvisedEvents(supplyRequiredDescriptor, mrpContext));
-		events.addAll(pPOrderAdvisedOrCreatedEventCreator.createProductionAdvisedEvents(supplyRequiredDescriptor, mrpContext));
+		events.addAll(ppOrderAdvisedEventCreator.createPPOrderAdvisedEvents(supplyRequiredDescriptor, mrpContext));
 
 		events.forEach(e -> materialEventService.fireEvent(e));
 	}

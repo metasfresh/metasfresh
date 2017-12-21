@@ -180,6 +180,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-cockpit</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.materialtracking</groupId>
 			<artifactId>de.metas.materialtracking</artifactId>
 			<version>${metasfresh.version}</version>

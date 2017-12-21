@@ -1,10 +1,16 @@
 package de.metas.material.event;
 
+import java.util.Collection;
+
+import org.compiere.Adempiere;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
+
+import de.metas.Profiles;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -31,23 +37,24 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 @ComponentScan(basePackageClasses = {
 		MaterialEventConfiguration.class,
-		// StartupListener.class // there are different startup listener classes. one for  metasfresh-backend, one for metasfresh-webui-api.
+		// StartupListener.class // there are different startup listener classes. one for metasfresh-backend, one for metasfresh-webui-api.
 })
 public class MaterialEventConfiguration
 {
-
 	@Bean(name = "materialEventService")
-	@Profile("test")
-	public MaterialEventService materialEventServiceLocal()
+	@Profile(Profiles.PROFILE_Test)
+	public MaterialEventService createLocalMaterialEventService(@NonNull final Collection<MaterialEventListener> listeners)
 	{
-		return MaterialEventService.createLocalServiceThatIsReadyToUse();
+		return MaterialEventService.createLocalServiceThatIsReadyToUse(listeners);
 	}
 
-	@Bean()
-	@Lazy // needed to avoid problem on startup when SysConfigBL etc is not yet available
-	@Profile("!test")
-	public MaterialEventService materialEventService()
+	@Bean(name = "materialEventService")
+	@DependsOn(Adempiere.BEAN_NAME)
+	@Profile(value = { Profiles.PROFILE_App, Profiles.PROFILE_MaterialDispo })
+	public MaterialEventService createDistributedMaterialEventService(@NonNull final Collection<MaterialEventListener> listeners)
 	{
-		return MaterialEventService.createDistributedServiceThatNeedsToSubscribe();
+		final MaterialEventService materialEventService = MaterialEventService.createDistributedServiceThatNeedsToSubscribe(listeners);
+		materialEventService.subscribeToEventBus();
+		return materialEventService;
 	}
 }

@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
+import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.pporder.PPOrderDemandMatcher;
 import de.metas.material.planning.pporder.PPOrderPojoSupplier;
@@ -37,13 +37,13 @@ import lombok.NonNull;
  */
 
 @Service
-public class PPOrderAdvisedOrCreatedEventCreator
+public class PPOrderAdvisedEventCreator
 {
 	private final PPOrderDemandMatcher ppOrderDemandMatcher;
 
 	private final PPOrderPojoSupplier ppOrderPojoSupplier;
 
-	public PPOrderAdvisedOrCreatedEventCreator(
+	public PPOrderAdvisedEventCreator(
 			@NonNull final PPOrderDemandMatcher ppOrderDemandMatcher,
 			@NonNull final PPOrderPojoSupplier ppOrderPojoSupplier)
 	{
@@ -51,7 +51,7 @@ public class PPOrderAdvisedOrCreatedEventCreator
 		this.ppOrderPojoSupplier = ppOrderPojoSupplier;
 	}
 
-	public List<PPOrderAdvisedOrCreatedEvent> createProductionAdvisedEvents(
+	public List<PPOrderAdvisedEvent> createPPOrderAdvisedEvents(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final IMutableMRPContext mrpContext)
 	{
@@ -65,7 +65,7 @@ public class PPOrderAdvisedOrCreatedEventCreator
 						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext),
 						SupplyRequiredHandlerUtils.mkMRPNotesCollector());
 
-		final PPOrderAdvisedOrCreatedEvent event = PPOrderAdvisedOrCreatedEvent.builder()
+		final PPOrderAdvisedEvent event = PPOrderAdvisedEvent.builder()
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor().createNew())
 				.ppOrder(ppOrder)

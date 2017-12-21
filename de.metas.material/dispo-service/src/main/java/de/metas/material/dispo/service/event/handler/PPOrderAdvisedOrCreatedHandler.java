@@ -13,8 +13,10 @@ import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
+import de.metas.material.event.pporder.PPOrderAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import lombok.NonNull;
 
@@ -58,20 +60,32 @@ public class PPOrderAdvisedOrCreatedHandler
 		this.requestMaterialOrderService = candidateService;
 	}
 
-	public void handlePPOrderAdvisedOrCreatedEvent(final PPOrderAdvisedOrCreatedEvent productionAdvisedEvent)
+	public void handlePPOrderCreatedEvent(@NonNull final PPOrderCreatedEvent productionAdvisedEvent)
 	{
-		final PPOrder ppOrder = productionAdvisedEvent.getPpOrder();
+		handlePPOrderAdvisedOrCreatedEvent(productionAdvisedEvent, false);
+	}
+
+	public void handlePPOrderAdvisedEvent(@NonNull final PPOrderAdvisedEvent productionAdvisedEvent)
+	{
+		handlePPOrderAdvisedOrCreatedEvent(productionAdvisedEvent, true);
+	}
+
+	private void handlePPOrderAdvisedOrCreatedEvent(
+			@NonNull final AbstractPPOrderEvent ppOrderEvent,
+			final boolean advised)
+	{
+		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 
 		final CandidateStatus candidateStatus = getCandidateStatus(ppOrder);
 
 		final DemandDetail demandDetailOrNull = DemandDetail.createOrNull(
-				productionAdvisedEvent.getSupplyRequiredDescriptor());
+				ppOrderEvent.getSupplyRequiredDescriptor());
 
-		final Candidate supplyCandidate = Candidate.builderForEventDescr(productionAdvisedEvent.getEventDescriptor())
+		final Candidate supplyCandidate = Candidate.builderForEventDescr(ppOrderEvent.getEventDescriptor())
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.status(candidateStatus)
-				.productionDetail(createProductionDetailForPPOrder(ppOrder))
+				.productionDetail(createProductionDetailForPPOrder(ppOrder, advised))
 				.demandDetail(demandDetailOrNull)
 				.materialDescriptor(createMaterialDescriptorFromPpOrder(ppOrder))
 				.build();
@@ -80,7 +94,7 @@ public class PPOrderAdvisedOrCreatedHandler
 
 		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
 		{
-			final CandidateBuilder builder = Candidate.builderForEventDescr(productionAdvisedEvent.getEventDescriptor())
+			final CandidateBuilder builder = Candidate.builderForEventDescr(ppOrderEvent.getEventDescriptor())
 					.type(ppOrderLine.isReceipt() ? CandidateType.SUPPLY : CandidateType.DEMAND)
 					.businessCase(CandidateBusinessCase.PRODUCTION)
 					.status(candidateStatus)
@@ -88,7 +102,7 @@ public class PPOrderAdvisedOrCreatedHandler
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)
 					.materialDescriptor(createMaterialDescriptorForPpOrderAndLine(ppOrder, ppOrderLine))
 					.demandDetail(demandDetailOrNull)
-					.productionDetail(createProductionDetailForPPOrderAndLine(ppOrder, ppOrderLine));
+					.productionDetail(createProductionDetailForPPOrderAndLine(ppOrder, ppOrderLine, advised));
 
 			// in case of CandidateType.DEMAND this might trigger further demand events
 			candidateChangeHandler.onCandidateNewOrChange(builder.build());
@@ -140,9 +154,12 @@ public class PPOrderAdvisedOrCreatedHandler
 		return candidateStatus;
 	}
 
-	private static ProductionDetail createProductionDetailForPPOrder(@NonNull final PPOrder ppOrder)
+	private static ProductionDetail createProductionDetailForPPOrder(
+			@NonNull final PPOrder ppOrder,
+			final boolean advised)
 	{
 		final ProductionDetail productionCandidateDetail = ProductionDetail.builder()
+				.advised(advised)
 				.plantId(ppOrder.getPlantId())
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.ppOrderId(ppOrder.getPpOrderId())
@@ -154,9 +171,11 @@ public class PPOrderAdvisedOrCreatedHandler
 
 	private static ProductionDetail createProductionDetailForPPOrderAndLine(
 			@NonNull final PPOrder ppOrder,
-			@NonNull final PPOrderLine ppOrderLine)
+			@NonNull final PPOrderLine ppOrderLine,
+			final boolean advised)
 	{
 		return ProductionDetail.builder()
+				.advised(advised)
 				.plantId(ppOrder.getPlantId())
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.productBomLineId(ppOrderLine.getProductBomLineId())

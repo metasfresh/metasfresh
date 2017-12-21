@@ -37,7 +37,7 @@ import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderAdvisedOrCreatedEvent;
+import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import lombok.NonNull;
 import mockit.Mocked;
@@ -109,7 +109,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 		final RequestMaterialOrderService candidateService = new RequestMaterialOrderService(
 				candidateRepository,
-				MaterialEventService.createLocalServiceThatIsReadyToUse());
+				MaterialEventService.createLocalServiceThatIsReadyToUse(ImmutableList.of()));
 
 		ppOrderAdvisedOrCreatedHandler = new PPOrderAdvisedOrCreatedHandler(candidateChangeHandler, candidateService);
 	}
@@ -117,19 +117,19 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 	@Test
 	public void handlePPOrderAdvisedOrCreatedEvent()
 	{
-		perform_testPPOrderAdvisedOrCreatedEvent(createPPOrderEventWithPpOrderId(0));
+		perform_testPPOrderCreatedEvent(createPPOrderEventWithPpOrderId(0));
 	}
 
 	@Test
 	public void handlePPOrderAdvisedOrCreatedEvent_invoke_twice()
 	{
-		perform_testPPOrderAdvisedOrCreatedEvent(createPPOrderEventWithPpOrderId(0));
-		perform_testPPOrderAdvisedOrCreatedEvent(createPPOrderEventWithPpOrderId(30));
+		perform_testPPOrderCreatedEvent(createPPOrderEventWithPpOrderId(0));
+		perform_testPPOrderCreatedEvent(createPPOrderEventWithPpOrderId(30));
 	}
 
-	private void perform_testPPOrderAdvisedOrCreatedEvent(final PPOrderAdvisedOrCreatedEvent ppOrderAdvisedOrCreatedEvent)
+	private void perform_testPPOrderCreatedEvent(final PPOrderCreatedEvent ppOrderCreatedEvent)
 	{
-		ppOrderAdvisedOrCreatedHandler.handlePPOrderAdvisedOrCreatedEvent(ppOrderAdvisedOrCreatedEvent);
+		ppOrderAdvisedOrCreatedHandler.handlePPOrderCreatedEvent(ppOrderCreatedEvent);
 
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1); //
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // we have two different inputs
@@ -180,16 +180,16 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		assertThat(t1Product2Stock.getMD_Candidate_Parent_ID()).isEqualTo(t1Product2Demand.getMD_Candidate_ID());
 		assertThat(t1Product2Stock.getMD_Candidate_GroupId()).isNotEqualTo(t1Product1Stock.getMD_Candidate_GroupId());  // stock candidates' groupIds are different if they are about different products or warehouses
 
-		final int ppOrderId = ppOrderAdvisedOrCreatedEvent.getPpOrder().getPpOrderId();
+		final int ppOrderId = ppOrderCreatedEvent.getPpOrder().getPpOrderId();
 		assertThat(DispoTestUtils.filterExclStock()).allSatisfy(r -> assertCandidateRecordHasPpOorderId(r, ppOrderId));
 		assertThat(DispoTestUtils.retrieveAllRecords()).allSatisfy(r -> assertThat(r.getC_BPartner_ID()).isEqualTo(BPARTNER_ID));
 	}
 
-	private PPOrderAdvisedOrCreatedEvent createPPOrderEventWithPpOrderId(final int ppOrderId)
+	private PPOrderCreatedEvent createPPOrderEventWithPpOrderId(final int ppOrderId)
 	{
 		final PPOrder ppOrder = createPpOrderWithPpOrderId(ppOrderId);
 
-		final PPOrderAdvisedOrCreatedEvent productionAdvisedEvent = PPOrderAdvisedOrCreatedEvent.builder()
+		final PPOrderCreatedEvent productionAdvisedEvent = PPOrderCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.supplyRequiredDescriptor(null)
 				.ppOrder(ppOrder)

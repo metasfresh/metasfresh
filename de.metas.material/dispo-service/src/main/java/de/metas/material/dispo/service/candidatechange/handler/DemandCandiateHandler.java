@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
@@ -61,7 +62,7 @@ public class DemandCandiateHandler implements CandidateHandler
 	public DemandCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
-			@NonNull final MaterialEventService materialEventService,
+			@NonNull @Lazy final MaterialEventService materialEventService,
 			@NonNull final StockRepository stockRepository,
 			@NonNull final StockCandidateService stockCandidateService)
 	{

@@ -45,6 +45,8 @@ public class ProductionDetail
 
 	int ppOrderLineId;
 
+	boolean advised;
+
 	@Builder
 	private ProductionDetail(
 			int plantId,
@@ -54,15 +56,19 @@ public class ProductionDetail
 			String description,
 			int ppOrderId,
 			String ppOrderDocStatus,
-			int ppOrderLineId)
+			int ppOrderLineId,
+			boolean advised)
 	{
+		this.advised = advised;
+
 		final boolean detailForPpOrderHead = productBomLineId <= 0;
-		if (detailForPpOrderHead)
+		if (advised && detailForPpOrderHead)
 		{
 			// these two need to be available when using this productionDetail to ppOrder pojo
 			checkIdGreaterThanZero("plantId", plantId);
 			checkIdGreaterThanZero("uomId", uomId);
 		}
+
 		this.plantId = plantId;
 		this.uomId = uomId;
 
@@ -72,5 +78,6 @@ public class ProductionDetail
 		this.ppOrderId = ppOrderId;
 		this.ppOrderDocStatus = ppOrderDocStatus;
 		this.ppOrderLineId = ppOrderLineId;
+
 	}
 }

@@ -25,4 +25,9 @@ package de.metas.material.event;
 public interface MaterialEventListener
 {
 	public void onEvent(MaterialEvent event);
+
+	default void setServiceIfyouCare(MaterialEventService materialEventService)
+	{
+		// by default we don't care
+	}
 }

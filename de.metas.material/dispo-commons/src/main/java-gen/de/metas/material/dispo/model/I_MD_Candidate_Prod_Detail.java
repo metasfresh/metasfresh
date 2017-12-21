@@ -176,6 +176,29 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Geplant.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAdvised (boolean IsAdvised);
+
+	/**
+	 * Get Geplant.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAdvised();
+
+    /** Column definition for IsAdvised */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, Object> COLUMN_IsAdvised = new org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, Object>(I_MD_Candidate_Prod_Detail.class, "IsAdvised", null);
+    /** Column name IsAdvised */
+    public static final String COLUMNNAME_IsAdvised = "IsAdvised";
+
+	/**
 	 * Set Dispositionskandidat.
 	 *
 	 * <br>Type: Search

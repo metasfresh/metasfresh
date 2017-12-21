@@ -50,7 +50,6 @@ import org.compiere.util.DB;
 import org.compiere.util.TrxRunnable2;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -69,6 +68,7 @@ import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.process.JavaProcess;
 
 /**

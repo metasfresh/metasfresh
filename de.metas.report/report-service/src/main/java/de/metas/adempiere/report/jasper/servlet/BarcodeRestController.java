@@ -51,12 +51,12 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
-import de.metas.adempiere.report.jasper.JasperConstants;
+import de.metas.Profiles;
 import de.metas.adempiere.report.jasper.JasperServerConstants;
 
 @RestController
 @RequestMapping(value = BarcodeRestController.ENDPOINT)
-@Profile(JasperConstants.PROFILE_JasperServer)
+@Profile(Profiles.PROFILE_JasperServer)
 public class BarcodeRestController
 {
 	public static final String ENDPOINT = JasperServerConstants.SERVLET_ROOT + "/BarcodeServlet";

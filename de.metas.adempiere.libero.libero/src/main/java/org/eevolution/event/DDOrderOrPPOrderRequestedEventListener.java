@@ -1,8 +1,10 @@
 package org.eevolution.event;
 
 import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
@@ -39,15 +41,16 @@ import lombok.NonNull;
  *
  */
 @Service
-public class MaterialDispoEventListenerFacade implements MaterialEventListener
+@Profile(Profiles.PROFILE_App) // only one handler should bother itself with these events
+public class DDOrderOrPPOrderRequestedEventListener implements MaterialEventListener
 {
-	private static final transient Logger logger = LogManager.getLogger(MaterialDispoEventListenerFacade.class);
+	private static final transient Logger logger = LogManager.getLogger(DDOrderOrPPOrderRequestedEventListener.class);
 
 	private final PPOrderRequestedEventHandler ppOrderRequestedEventHandler;
 
 	private final DDOrderRequestedEventHandler ddOrderRequestedEventHandler;
 
-	public MaterialDispoEventListenerFacade(
+	public DDOrderOrPPOrderRequestedEventListener(
 			@NonNull final PPOrderRequestedEventHandler ppOrderRequestedEventHandler,
 			@NonNull final DDOrderRequestedEventHandler ddOrderRequestedEventHandler)
 	{

@@ -52,7 +52,6 @@ import org.compiere.util.TrxRunnable;
 import org.eevolution.LiberoConstants;
 import org.eevolution.api.IPPWorkflowDAO;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_AD_Note;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -90,6 +89,7 @@ import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.impl.MRPContextFactory;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 @Component

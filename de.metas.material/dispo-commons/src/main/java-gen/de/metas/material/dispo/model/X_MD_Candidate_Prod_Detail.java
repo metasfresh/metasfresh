@@ -14,7 +14,7 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -117710910L;
+	private static final long serialVersionUID = 1853581234L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Prod_Detail (Properties ctx, int MD_Candidate_Prod_Detail_ID, String trxName)
@@ -22,6 +22,7 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
       super (ctx, MD_Candidate_Prod_Detail_ID, trxName);
       /** if (MD_Candidate_Prod_Detail_ID == 0)
         {
+			setIsAdvised (false); // N
 			setMD_Candidate_Prod_Detail_ID (0);
         } */
     }
@@ -92,6 +93,29 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Geplant.
+		@param IsAdvised Geplant	  */
+	@Override
+	public void setIsAdvised (boolean IsAdvised)
+	{
+		set_Value (COLUMNNAME_IsAdvised, Boolean.valueOf(IsAdvised));
+	}
+
+	/** Get Geplant.
+		@return Geplant	  */
+	@Override
+	public boolean isAdvised () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAdvised);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override

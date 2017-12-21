@@ -1,9 +1,10 @@
 package de.metas.material.planning.event;
 
 import org.slf4j.Logger;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
@@ -38,7 +39,7 @@ import lombok.NonNull;
  *
  */
 @Service
-@Lazy // .. because MaterialEventService needs to be lazy
+@Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvent
 public class SupplyRequiredEventListener implements MaterialEventListener
 {
 	private static final transient Logger logger = LogManager.getLogger(SupplyRequiredEventListener.class);

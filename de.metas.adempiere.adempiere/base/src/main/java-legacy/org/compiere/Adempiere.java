@@ -74,6 +74,8 @@ import de.metas.logging.LogManager;
  */
 public class Adempiere
 {
+	public static final String BEAN_NAME = "Adempiere";
+
 	/**
 	 * The "raw" unsubstituted version string from <code>/de.metas.endcustomer..base/src/main/resources/org/adempiere/version.properties</code>
 	 */
@@ -143,7 +145,7 @@ public class Adempiere
 
 	/**
 	 * Inject the application context from outside <b>and</b> enable {@link Services} to retrieve service implementations from it.
-	 * 
+	 *
 	 * Currently seems to be required because currently the client startup procedure needs to be decomposed more.
 	 * See <code>SwingUIApplication</code> to know what I mean.
 	 *
@@ -175,7 +177,7 @@ public class Adempiere
 
 	/**
 	 * When running this method from within a junit test, we need to fire up spring
-	 * 
+	 *
 	 * @param requiredType
 	 * @return
 	 */

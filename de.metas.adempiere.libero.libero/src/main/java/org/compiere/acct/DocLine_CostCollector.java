@@ -33,7 +33,8 @@ import org.compiere.model.MCostElement;
 import org.compiere.model.PO;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
-import org.eevolution.exceptions.LiberoException;
+
+import de.metas.material.planning.pporder.LiberoException;
 
 /**
  * @author Teo Sarca, www.arhipac.ro

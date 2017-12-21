@@ -14,8 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
-import de.metas.material.dispo.service.event.MaterialDispoEventListenerFacade;
-import de.metas.material.event.MaterialEventService;
+import de.metas.Profiles;
 
 /*
  * #%L
@@ -52,12 +51,6 @@ public class Application
 	@Autowired
 	private ApplicationContext applicationContext;
 
-	@Autowired
-	private MaterialEventService eventService;
-
-	@Autowired
-	private MaterialDispoEventListenerFacade mdEventListener;
-
 	public static void main(final String[] args)
 	{
 		Ini.setRunMode(RunMode.BACKEND);
@@ -65,10 +58,11 @@ public class Application
 		new SpringApplicationBuilder(Application.class)
 				.headless(true)
 				.web(true)
+				.profiles(Profiles.PROFILE_MaterialDispo)
 				.run(args);
 	}
 
-	@Bean
+	@Bean(name=Adempiere.BEAN_NAME)
 	@Profile("!test")
 	public Adempiere adempiere()
 	{
@@ -79,10 +73,6 @@ public class Application
 		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
 		adempiere.startup(RunMode.BACKEND);
 
-		eventService.registerListener(mdEventListener);
-		eventService.subscribeToEventBus();
-
 		return adempiere;
 	}
-
 }

@@ -2,10 +2,7 @@ package de.metas.material.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
-
-import de.metas.material.event.MaterialEventService;
 
 /*
  * #%L
@@ -39,17 +36,5 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(M_ShipmentSchedule.INSTANCE, client);
 		engine.addModelValidator(M_ReceiptSchedule.INSTANCE, client);
 		engine.addModelValidator(M_Forecast.INSTANCE, client);
-	}
-
-	@Override
-	protected void onAfterInit()
-	{
-		letOurselfFireAndReceiveEvents();
-	}
-
-	private void letOurselfFireAndReceiveEvents()
-	{
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.subscribeToEventBus();
 	}
 }

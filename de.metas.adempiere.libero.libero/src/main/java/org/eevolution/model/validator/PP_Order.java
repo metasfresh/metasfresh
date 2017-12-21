@@ -1,5 +1,7 @@
 package org.eevolution.model.validator;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -24,7 +26,10 @@ package org.eevolution.model.validator;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -37,6 +42,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -47,17 +53,26 @@ import org.compiere.model.ModelValidator;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderCostDAO;
 import org.eevolution.api.IPPOrderWorkflowBL;
 import org.eevolution.api.IPPOrderWorkflowDAO;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.X_PP_Order;
 
+import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent;
+import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent.PPOrderLineChangeDescriptor;
+import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent.PPOrderLineChangeDescriptor.PPOrderLineChangeDescriptorBuilder;
+import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent.PPOrderQtyEnteredChangedEventBuilder;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.product.IProductBL;
 
 @Interceptor(I_PP_Order.class)
@@ -178,60 +193,93 @@ public class PP_Order
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void afterSave(final I_PP_Order ppOrder, final int changeType)
+	public void afterSave(final I_PP_Order ppOrderRecord, final int changeType)
 	{
 		final boolean newRecord = ModelValidator.TYPE_AFTER_NEW == changeType;
 
 		//
 		// Don't touch closed/voided orders
-		final String docAction = ppOrder.getDocAction();
+		final String docAction = ppOrderRecord.getDocAction();
 		if (X_PP_Order.DOCACTION_Close.equals(docAction)
 				|| X_PP_Order.DOCACTION_Void.equals(docAction))
 		{
 			return;
 		}
 
-		final boolean qtyEnteredChanged = InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_QtyEntered);
+		final boolean qtyEnteredChanged = InterfaceWrapperHelper.isValueChanged(ppOrderRecord, I_PP_Order.COLUMNNAME_QtyEntered);
 		if (qtyEnteredChanged && !newRecord)
 		{
-			final boolean delivered = Services.get(IPPOrderBL.class).isDelivered(ppOrder);
+			final boolean delivered = Services.get(IPPOrderBL.class).isDelivered(ppOrderRecord);
 			if (delivered)
 			{
 				throw new LiberoException("Cannot Change Quantity, Only is allow with Draft or In Process Status"); // TODO: Create Message for Translation
 			}
 
-			deleteWorkflowAndBOM(ppOrder);
-			createWorkflowAndBOM(ppOrder);
+			final PPOrderQtyEnteredChangedEventBuilder eventBuilder = PPOrderQtyEnteredChangedEvent
+					.builder()
+					.eventDescriptor(EventDescriptor.createNew(ppOrderRecord))
+					.ppOrderId(ppOrderRecord.getPP_Order_ID());
+
+			final PPOrderPojoConverter ppOrderConverter = Adempiere.getBean(PPOrderPojoConverter.class);
+			final PPOrder oldPPOrder = ppOrderConverter.asPPOrderPojo(ppOrderRecord);
+
+			final Map<Integer, PPOrderLineChangeDescriptorBuilder> map = new HashMap<>();
+			for (final PPOrderLine ppOrderLine : oldPPOrder.getLines())
+			{
+				final int productBomLineId = ppOrderLine.getProductBomLineId();
+				if (productBomLineId <= 0)
+				{
+					eventBuilder.deletedPPOrderLineID(ppOrderLine.getPpOrderLineId()); // nothing we can do for this line
+				}
+				else
+				{
+					final PPOrderLineChangeDescriptorBuilder builder = PPOrderLineChangeDescriptor.builder()
+							.oldPPOrderLineId(ppOrderLine.getPpOrderLineId())
+							.oldQuantity(ppOrderLine.getQtyRequired());
+					map.put(productBomLineId, builder);
+				}
+			}
+
+			deleteWorkflowAndBOM(ppOrderRecord);
+			createWorkflowAndBOM(ppOrderRecord);
+
+			final PPOrder updatedPPOrder = ppOrderConverter.asPPOrderPojo(ppOrderRecord);
+
+			for (final PPOrderLine updatedPPOrderLine : updatedPPOrder.getLines())
+			{
+				final int productBomLineId = updatedPPOrderLine.getProductBomLineId();
+				if (!map.containsKey(productBomLineId))
+				{
+					eventBuilder.newPPOrderLine(updatedPPOrderLine);
+				}
+				else
+				{
+					map.get(productBomLineId)
+							.newPPOrderLineId(updatedPPOrderLine.getPpOrderLineId())
+							.newQuantity(updatedPPOrderLine.getQtyRequired());
+				}
+			}
+
+			final Map<Boolean, List<PPOrderLineChangeDescriptor>> collect = map.values().stream()
+					.map(PPOrderLineChangeDescriptorBuilder::build)
+					.collect(Collectors.partitioningBy(descriptor -> descriptor.getNewPPOrderLineId() > 0));
+
+			final List<PPOrderLineChangeDescriptor> updatedPPOrderLines = collect.get(true);
+			eventBuilder.ppOrderLineChanges(updatedPPOrderLines);
+
+			final List<PPOrderLineChangeDescriptor> deletedPPOrderLines = collect.get(false);
+			deletedPPOrderLines.forEach(descriptor -> eventBuilder.deletedPPOrderLineID(descriptor.getOldPPOrderLineId()));
+
+			final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+			materialEventService.fireEventAfterNextCommit(eventBuilder.build(), getTrxName(ppOrderRecord));
 		}
 
 		if (newRecord)
 		{
-			createWorkflowAndBOM(ppOrder);
+			createWorkflowAndBOM(ppOrderRecord);
 		}
 
 	} // beforeSave
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void beforeDelete(final I_PP_Order ppOrder)
-	{
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-		final IPPOrderCostDAO ppOrderCostDAO = Services.get(IPPOrderCostDAO.class);
-
-		//
-		// Delete depending records
-		final String docStatus = ppOrder.getDocStatus();
-		if (X_PP_Order.DOCSTATUS_Drafted.equals(docStatus)
-				|| X_PP_Order.DOCSTATUS_InProgress.equals(docStatus))
-		{
-			ppOrderCostDAO.deleteOrderCosts(ppOrder);
-			deleteWorkflowAndBOM(ppOrder);
-		}
-
-		//
-		// Un-Order Stock
-		ppOrderBL.setQtyOrdered(ppOrder, BigDecimal.ZERO);
-		ppOrderBL.orderStock(ppOrder);
-	}
 
 	private void deleteWorkflowAndBOM(final I_PP_Order ppOrder)
 	{
@@ -254,31 +302,27 @@ public class PP_Order
 		Services.get(IPPOrderBOMBL.class).createOrderBOMAndLines(ppOrder);
 	}
 
-	// commenting this out, to prevent
-	// org.eevolution.exceptions.LiberoException: No MRP supply record found for MPPOrder[ID=1047383-DocumentNo=1045999,IsSOTrx=false,C_DocType_ID=1000037]
-	// at org.eevolution.api.impl.DDOrderDAO.retrieveForwardDDOrderLinesQuery(DDOrderDAO.java:232)
-	// at org.eevolution.model.validator.PP_Order.preventForwardDDOrderToBeCleanedUp(PP_Order.java:272)
-	//
-	// @DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	// public void preventForwardDDOrderToBeCleanedUp(final I_PP_Order ppOrder)
-	// {
-	// final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
-	//
-	// final List<I_DD_Order> forwardDDOrdersToDisallowCleanup = ddOrderDAO.retrieveForwardDDOrderLinesQuery(ppOrder)
-	// .andCollect(I_DD_OrderLine.COLUMN_DD_Order_ID)
-	// .addEqualsFilter(I_DD_Order.COLUMNNAME_MRP_AllowCleanup, true)
-	// .create()
-	// .list();
-	//
-	// for (final I_DD_Order ddOrder : forwardDDOrdersToDisallowCleanup)
-	// {
-	// if (ddOrder.isMRP_AllowCleanup())
-	// {
-	// ddOrder.setMRP_AllowCleanup(false);
-	// InterfaceWrapperHelper.save(ddOrder);
-	// }
-	// }
-	// }
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void beforeDelete(final I_PP_Order ppOrder)
+	{
+		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+		final IPPOrderCostDAO ppOrderCostDAO = Services.get(IPPOrderCostDAO.class);
+
+		//
+		// Delete depending records
+		final String docStatus = ppOrder.getDocStatus();
+		if (X_PP_Order.DOCSTATUS_Drafted.equals(docStatus)
+				|| X_PP_Order.DOCSTATUS_InProgress.equals(docStatus))
+		{
+			ppOrderCostDAO.deleteOrderCosts(ppOrder);
+			deleteWorkflowAndBOM(ppOrder);
+		}
+
+		//
+		// Un-Order Stock
+		ppOrderBL.setQtyOrdered(ppOrder, BigDecimal.ZERO);
+		ppOrderBL.orderStock(ppOrder);
+	}
 
 	/**
 	 * When manufacturing order is completed by the user, complete supply DD Orders.

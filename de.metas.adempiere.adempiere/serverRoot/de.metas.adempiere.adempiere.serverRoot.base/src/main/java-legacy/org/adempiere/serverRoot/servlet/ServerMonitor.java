@@ -80,7 +80,7 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 
 import ch.qos.logback.classic.Level;
-import de.metas.ServerBoot;
+import de.metas.Profiles;
 import de.metas.logging.LogManager;
 
 /**
@@ -90,7 +90,7 @@ import de.metas.logging.LogManager;
  * @author tsa
  */
 @WebServlet(value = "/serverMonitor", loadOnStartup = 1)
-@Profile(ServerBoot.PROFILE)
+@Profile(Profiles.PROFILE_App)
 public class ServerMonitor extends HttpServlet
 {
 	/**

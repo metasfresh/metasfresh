@@ -26,6 +26,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -78,7 +80,7 @@ public class StockCandidateServiceTests
 		stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryCommands,
-				MaterialEventService.createLocalServiceThatIsReadyToUse());
+				MaterialEventService.createLocalServiceThatIsReadyToUse(ImmutableList.of()));
 	}
 
 	private void createStockRecordAtTimeNOW()

@@ -211,6 +211,7 @@ public class CandidateRepositoryRetrieval
 			return null;
 		}
 		final ProductionDetail productionCandidateDetail = ProductionDetail.builder()
+				.advised(productionDetail.isAdvised())
 				.description(productionDetail.getDescription())
 				.plantId(productionDetail.getPP_Plant_ID())
 				.productBomLineId(productionDetail.getPP_Product_BOMLine_ID())
