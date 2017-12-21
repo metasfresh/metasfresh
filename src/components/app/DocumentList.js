@@ -68,6 +68,9 @@ class DocumentList extends Component {
     // from parent
     windowType: PropTypes.string.isRequired,
 
+    // from <DocList>
+    updateParentSelectedIds: PropTypes.func,
+
     // from @connect
     childSelected: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
@@ -663,7 +666,8 @@ class DocumentList extends Component {
       notfound,
       disconnectFromState,
       autofocus,
-      inModal
+      inModal,
+      updateParentSelectedIds
     } = this.props;
     const {
       layout,
@@ -803,6 +807,7 @@ class DocumentList extends Component {
               size={data.size}
               pageLength={this.pageLength}
               handleChangePage={this.handleChangePage}
+              onSelectionChanged={updateParentSelectedIds}
               mainTable={true}
               updateDocList={this.fetchLayoutAndData}
               sort={this.sortData}

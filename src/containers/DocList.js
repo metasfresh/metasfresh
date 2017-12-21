@@ -84,6 +84,10 @@ class DocList extends Component {
     this.setState({ notfound: isNotFound });
   };
 
+  handleUpdateParentSelectedIds = () => {
+    this.masterDocumentList.updateQuickActions();
+  };
+
   render() {
     const {
       windowType,
@@ -163,6 +167,7 @@ class DocList extends Component {
                 defaultViewId={includedView.viewId}
                 parentWindowType={windowType}
                 parentDefaultViewId={query.viewId}
+                updateParentSelectedIds={this.handleUpdateParentSelectedIds}
                 viewProfileId={includedView.viewProfileId}
                 fetchQuickActionsOnInit
                 processStatus={processStatus}

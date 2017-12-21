@@ -27,6 +27,14 @@ import TableItem from "./TableItem";
 import TablePagination from "./TablePagination";
 
 class Table extends Component {
+  static propTypes = {
+    // from @connect
+    dispatch: PropTypes.func.isRequired,
+
+    // from <DocumentList>
+    onSelectionChanged: PropTypes.func
+  };
+
   constructor(props) {
     super(props);
 
@@ -596,6 +604,7 @@ class Table extends Component {
   };
 
   handleClick = (e, keyProperty, item) => {
+    const { onSelectionChanged } = this.props;
     const id = item[keyProperty];
     if (e.button === 0) {
       const { selected } = this.state;
@@ -603,6 +612,10 @@ class Table extends Component {
       const selectRange = e.shiftKey;
       const isSelected = selected.indexOf(id) > -1;
       const isAnySelected = selected.length > 0;
+
+      if (onSelectionChanged) {
+        onSelectionChanged();
+      }
 
       if (selectMore) {
         if (isSelected) {
@@ -1295,10 +1308,6 @@ class Table extends Component {
     );
   }
 }
-
-Table.propTypes = {
-  dispatch: PropTypes.func.isRequired
-};
 
 const mapStateToProps = state => ({
   allowShortcut: state.windowHandler.allowShortcut
