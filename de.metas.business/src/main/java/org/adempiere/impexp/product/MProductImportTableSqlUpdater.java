@@ -53,6 +53,13 @@ public class MProductImportTableSqlUpdater
 	private String targetTableName = I_I_Product.Table_Name;
 	private String valueColumnName = I_I_Product.COLUMNNAME_Value;
 
+	final private String priceName_KAEP = "KAEP";
+	final private String priceName_APU = "APU";
+	final private String priceName_AEP = "AEP";
+	final private String priceName_AVP = "AVP";
+	final private String priceName_UVP = "UVP";
+	final private String priceName_ZBV = "ZBV";
+
 	@Builder(buildMethodName = "updateIProduct")
 	private void updateMProductImportTable(@NonNull final String whereClause, @NonNull final Properties ctx)
 	{
@@ -96,6 +103,13 @@ public class MProductImportTableSqlUpdater
 		dbUpdatePackageUOM(whereClause);
 
 		dbDosageForm(whereClause);
+
+		dbUpdatePriceLists(whereClause, ctx, priceName_KAEP);
+		dbUpdatePriceLists(whereClause, ctx, priceName_APU);
+		dbUpdatePriceLists(whereClause, ctx, priceName_AEP);
+		dbUpdatePriceLists(whereClause, ctx, priceName_AVP);
+		dbUpdatePriceLists(whereClause, ctx, priceName_UVP);
+		dbUpdatePriceLists(whereClause, ctx, priceName_ZBV);
 	}
 
 	private void dbUpdateBPartners(@NonNull final String whereClause)
@@ -440,6 +454,23 @@ public class MProductImportTableSqlUpdater
 				.append("WHERE M_Indication_ID IS NULL AND M_Indication_Name IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private void dbUpdatePriceLists(@NonNull final String whereClause, @NonNull final Properties ctx, @NonNull final String nameToMatch)
+	{
+		final int adClientId = Env.getAD_Client_ID(ctx);
+		final StringBuilder sql = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i set ")
+				.append(nameToMatch)
+				.append("_Price_List_ID=(select pl.M_PriceList_ID from M_PriceList pl ")
+				.append(" where pl.Name=?")
+				.append(" and pl.AD_Client_ID=?")
+				.append(" and pl.IsActive='Y' order by pl.M_PriceList_ID limit 1)")
+				.append(" where true")
+				.append(" and " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(whereClause);
+		Object[] params = new Object[]{nameToMatch, adClientId};
+		DB.executeUpdateEx(sql.toString(), params, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateErrorMessages(@NonNull final String whereClause)
