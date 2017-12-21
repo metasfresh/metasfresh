@@ -10,7 +10,7 @@ const propTypes = {
   handleBackdropLock: PropTypes.func,
   patch: PropTypes.func,
   field: PropTypes.string,
-  value: PropTypes.object
+  value: PropTypes.any
 };
 
 class DatePicker extends Component {
