@@ -430,12 +430,10 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	{
 		final Properties ctx = huContext.getCtx();
 		final List<I_M_ReceiptSchedule> receiptSchedules = Collections.singletonList(receiptSchedule);
-		final Set<I_M_HU> selectedHUsSet = new HashSet<I_M_HU>(selectedHUsToReceive);
+		final Set<I_M_HU> selectedHUsSet = new HashSet<>(selectedHUsToReceive);
 		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(ctx,
 				receiptSchedules,
-				selectedHUsSet,
-				true // storeReceipts
-		);
+				selectedHUsSet);
 		final I_M_InOut receipt = result.getInOuts().get(0);
 		return receipt;
 	}
