@@ -95,7 +95,7 @@ public abstract class TrxOnCommitCollectorFactory<CollectorType, ItemType>
 								// The collector is removed to avoid double processing.
 								// If there is no collector, do nothing.
 								final CollectorType innerCollector = innerTrx.setProperty(trxProperyName, null);
-								if (collector == null)
+								if (innerCollector == null)
 								{
 									return;
 								}
