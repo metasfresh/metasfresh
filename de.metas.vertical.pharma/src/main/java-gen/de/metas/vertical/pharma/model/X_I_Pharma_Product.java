@@ -14,7 +14,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1258188346L;
+	private static final long serialVersionUID = -1506068486L;
 
     /** Standard Constructor */
     public X_I_Pharma_Product (Properties ctx, int I_Pharma_Product_ID, String trxName)
@@ -589,11 +589,23 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return ii.intValue();
 	}
 
+	/** 
+	 * A01MWST AD_Reference_ID=540801
+	 * Reference name: Pharma_Tax
+	 */
+	public static final int A01MWST_AD_Reference_ID=540801;
+	/** 00 = 00 */
+	public static final String A01MWST_00 = "00";
+	/** 01 = 01 */
+	public static final String A01MWST_01 = "01";
+	/** 02 = 02 */
+	public static final String A01MWST_02 = "02";
 	/** Set A01MWST.
 		@param A01MWST A01MWST	  */
 	@Override
 	public void setA01MWST (java.lang.String A01MWST)
 	{
+
 		set_Value (COLUMNNAME_A01MWST, A01MWST);
 	}
 
@@ -2784,6 +2796,43 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	public int getAVP_Price_List_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AVP_Price_List_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_TaxCategory getC_TaxCategory() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class);
+	}
+
+	@Override
+	public void setC_TaxCategory(org.compiere.model.I_C_TaxCategory C_TaxCategory)
+	{
+		set_ValueFromPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class, C_TaxCategory);
+	}
+
+	/** Set Steuerkategorie.
+		@param C_TaxCategory_ID 
+		Steuerkategorie
+	  */
+	@Override
+	public void setC_TaxCategory_ID (int C_TaxCategory_ID)
+	{
+		if (C_TaxCategory_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, Integer.valueOf(C_TaxCategory_ID));
+	}
+
+	/** Get Steuerkategorie.
+		@return Steuerkategorie
+	  */
+	@Override
+	public int getC_TaxCategory_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxCategory_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

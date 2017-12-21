@@ -669,7 +669,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A01MWST.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -678,7 +678,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A01MWST.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2977,6 +2977,35 @@ public interface I_I_Pharma_Product
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList> COLUMN_AVP_Price_List_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList>(I_I_Pharma_Product.class, "AVP_Price_List_ID", org.compiere.model.I_M_PriceList.class);
     /** Column name AVP_Price_List_ID */
     public static final String COLUMNNAME_AVP_Price_List_ID = "AVP_Price_List_ID";
+
+	/**
+	 * Set Steuerkategorie.
+	 * Steuerkategorie
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_TaxCategory_ID (int C_TaxCategory_ID);
+
+	/**
+	 * Get Steuerkategorie.
+	 * Steuerkategorie
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_TaxCategory_ID();
+
+	public org.compiere.model.I_C_TaxCategory getC_TaxCategory();
+
+	public void setC_TaxCategory(org.compiere.model.I_C_TaxCategory C_TaxCategory);
+
+    /** Column definition for C_TaxCategory_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_C_TaxCategory> COLUMN_C_TaxCategory_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_C_TaxCategory>(I_I_Pharma_Product.class, "C_TaxCategory_ID", org.compiere.model.I_C_TaxCategory.class);
+    /** Column name C_TaxCategory_ID */
+    public static final String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
 
 	/**
 	 * Get Erstellt.
