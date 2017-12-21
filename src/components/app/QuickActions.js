@@ -30,11 +30,18 @@ class QuickActions extends Component {
   constructor(props) {
     super(props);
 
-    const { fetchOnInit, selected, windowType, viewId } = props;
+    const {
+      fetchOnInit,
+      selected,
+      windowType,
+      viewId,
+      childView,
+      parentView
+    } = props;
     this.state = initialState;
 
     if (fetchOnInit) {
-      this.fetchActions(windowType, viewId, selected);
+      this.fetchActions(windowType, viewId, selected, childView, parentView);
     }
   }
 
@@ -59,7 +66,9 @@ class QuickActions extends Component {
       this.fetchActions(
         nextProps.windowType,
         nextProps.viewId,
-        nextProps.selected
+        nextProps.selected,
+        nextProps.childView,
+        nextProps.parentView
       );
     }
   };
@@ -69,8 +78,8 @@ class QuickActions extends Component {
   }
 
   updateActions = () => {
-    const { windowType, viewId, selected } = this.props;
-    this.fetchActions(windowType, viewId, selected);
+    const { windowType, viewId, selected, childView, parentView } = this.props;
+    this.fetchActions(windowType, viewId, selected, childView, parentView);
   };
 
   componentDidUpdate = prevProps => {
@@ -128,15 +137,15 @@ class QuickActions extends Component {
     this.toggleDropdown();
   };
 
-  fetchActions = (windowType, viewId, selected) => {
+  fetchActions = (windowType, viewId, selected, childView, parentView) => {
     /*
         this.setState({
             loading: true
         });
 */
 
-    if (windowType && viewId && selected) {
-      quickActionsRequest(windowType, viewId, selected)
+    if (windowType && viewId && selected && childView && parentView) {
+      quickActionsRequest(windowType, viewId, selected, childView, parentView)
         .then(response => {
           this.setState({
             actions: response.data.actions,

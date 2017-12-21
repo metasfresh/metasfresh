@@ -1,4 +1,20 @@
 import axios from "axios";
+import queryString from "query-string";
+
+const getQueryString = query =>
+  queryString.stringify(
+    Object.keys(query).reduce((parameters, key) => {
+      const value = query[key];
+
+      if (Array.isArray(value) && value.length > 0) {
+        parameters[key] = value.join(",");
+      } else {
+        parameters[key] = value;
+      }
+
+      return parameters;
+    }, {})
+  );
 
 export function getViewLayout(windowId, viewType, viewProfileId = null) {
   return axios.get(
@@ -104,7 +120,21 @@ export function deleteStaticFilter(windowId, viewId, filterId) {
   );
 }
 
-export function quickActionsRequest(windowId, viewId, selectedIds) {
+export function quickActionsRequest(
+  windowId,
+  viewId,
+  selectedIds,
+  childView,
+  parentView
+) {
+  const query = getQueryString({
+    selectedIds,
+    childViewId: childView.viewId,
+    childViewSelectedIds: childView.viewSelectedIds,
+    parentViewId: parentView.viewId,
+    parentViewSelectedIds: parentView.viewSelectedIds
+  });
+
   return axios.get(
     config.API_URL +
       "/documentView/" +
@@ -112,6 +142,6 @@ export function quickActionsRequest(windowId, viewId, selectedIds) {
       "/" +
       viewId +
       "/quickActions" +
-      (selectedIds && selectedIds.length ? "?selectedIds=" + selectedIds : "")
+      (query ? "?" + query : "")
   );
 }
