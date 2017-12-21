@@ -334,6 +334,11 @@ public class HUTransformService
 		}
 
 
+		if (handlingUnitsBL.isAggregateHU(targetTuHU))
+		{
+			return Collections.emptyList(); // we are done; no attaching
+		}
+
 
 		// we attach the
 		final List<I_M_HU> childCUs;
@@ -348,10 +353,6 @@ public class HUTransformService
 			childCUs = ((HUProducerDestination)destination).getCreatedHUs(); // i think there will be just one, but no need to bother
 		}
 		
-		if (handlingUnitsBL.isAggregateHU(targetTuHU))
-		{
-			return childCUs; // we are done; no attaching
-		}
 
 		// get *the* MI HU_Item of 'tuHU'. There must be exactly one, otherwise, tuHU wouldn't exist here in the first place.
 		final List<I_M_HU_Item> tuMaterialItem = handlingUnitsDAO.retrieveItems(targetTuHU)
