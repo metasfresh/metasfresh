@@ -77,8 +77,7 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends WEBUI_M_HU_Receipt_Base im
 		// Generate material receipts
 		final List<I_M_ReceiptSchedule> receiptSchedules = getM_ReceiptSchedules();
 		final Set<I_M_HU> selectedHUs = retrieveHUsToReceive();
-		final boolean collectGeneratedInOuts = true;
-		Services.get(IHUReceiptScheduleBL.class).processReceiptSchedules(getCtx(), receiptSchedules, selectedHUs, collectGeneratedInOuts);
+		Services.get(IHUReceiptScheduleBL.class).processReceiptSchedules(getCtx(), receiptSchedules, selectedHUs);
 		// NOTE: we assume user was already notified about generated material receipts
 
 		//

@@ -102,6 +102,10 @@ public class WebsocketSender implements InitializingBean
 		{
 			return autoflushQueue;
 		}
+		else if(!trx.getTrxListenerManager().canRegisterOnTiming(TrxEventTiming.AFTER_COMMIT))
+		{
+			return autoflushQueue;
+		}
 		else
 		{
 			return trx.getProperty(WebsocketEventsQueue.class.getName(), () -> createAndBindTrxQueue(trx));
