@@ -2,10 +2,12 @@ package de.metas.shipper.gateway.go;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.shipper.gateway.api.ShipperGatewayClient;
 import de.metas.shipper.gateway.api.model.Address;
@@ -15,6 +17,8 @@ import de.metas.shipper.gateway.api.model.DeliveryPosition;
 import de.metas.shipper.gateway.api.model.PackageDimensions;
 import de.metas.shipper.gateway.api.model.PhoneNumber;
 import de.metas.shipper.gateway.api.model.PickupDate;
+import de.metas.shipper.gateway.api.model.PickupOrderResponse;
+import de.metas.shipper.gateway.api.model.PickupOrderResponse.ResponseDeliveryPosition;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;
 import de.metas.shipper.gateway.go.schema.ObjectFactory;
 import de.metas.shipper.gateway.go.schema.Sendung;
@@ -25,6 +29,7 @@ import de.metas.shipper.gateway.go.schema.Sendung.Empfaenger.Ansprechpartner;
 import de.metas.shipper.gateway.go.schema.Sendung.Empfaenger.Ansprechpartner.Telefon;
 import de.metas.shipper.gateway.go.schema.Sendung.SendungsPosition;
 import de.metas.shipper.gateway.go.schema.Sendung.SendungsPosition.Abmessungen;
+import de.metas.shipper.gateway.go.schema.SendungsRueckmeldung;
 
 /*
  * #%L
@@ -64,16 +69,23 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 	}
 
 	@Override
-	public void createPickupOrder(final CreatePickupOrderRequest request)
+	public PickupOrderResponse createPickupOrder(final CreatePickupOrderRequest request)
+	{
+		final Sendung goRequest = createGOPickupRequest(request);
+		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)getWebServiceTemplate().marshalSendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
+		final PickupOrderResponse response = createPickupOrderResponse(goResponse);
+		return response;
+	}
+
+	private Sendung createGOPickupRequest(final CreatePickupOrderRequest request)
 	{
 		final Abholadresse pickupAddress = createGOPickupAddress(request.getPickupAddress());
 		final Abholdatum pickupDate = createGOPickupDate(request.getPickupDate());
 
 		final Empfaenger deliveryAddress = createGODeliveryAddress(request.getDeliveryAddress(), request.getDeliveryContact());
 		final SendungsPosition deliveryPosition = createGODeliveryPosition(request.getDeliveryPosition());
-
-		//
 		final Sendung goRequest = objectFactory.createSendung();
+
 		goRequest.setSendungsnummerAX4(null); // AX4 shipment no. (n15, mandatory for update and cancellation)
 		goRequest.setFrachtbriefnummer(null); // HWB no. (N18, not mandatory). If you provide a HWB no. in this field, AX4 will not generate a new HWB no.
 		goRequest.setVersender(null); // AX4 ID shipper (n30, not mandatory). This is the AX4 ID to be booked for this order
@@ -98,11 +110,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		goRequest.setTelefonEmpfangsbestaetigung(request.getReceiptConfirmationPhoneNumber()); // Phone no. for confirmation of receipt (an25, mandatory)
 
 		goRequest.setSendungsPosition(deliveryPosition); // Shipment position (mandatory, max. 1)
-
-		final Object response = getWebServiceTemplate().marshalSendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
-		System.out.println(response);
-
-		// TODO: return some response
+		return goRequest;
 	}
 
 	private SendungsPosition createGODeliveryPosition(final DeliveryPosition shipmentPosition)
@@ -186,5 +194,27 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		}
 
 		return goDeliveryAddress;
+	}
+
+	private PickupOrderResponse createPickupOrderResponse(SendungsRueckmeldung goResponse)
+	{
+		final SendungsRueckmeldung.Sendung goResponseContent = goResponse.getSendung();
+
+		final List<ResponseDeliveryPosition> deliveryPositions = goResponseContent.getPosition()
+				.stream()
+				.map(goDeliveryPosition -> PickupOrderResponse.ResponseDeliveryPosition.builder()
+						.positionNo(goDeliveryPosition.getPositionsNr())
+						.numberOfPackages(goDeliveryPosition.getAnzahlPackstuecke())
+						.barcodes(goDeliveryPosition.getBarcodes().getBarcodeNr())
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
+		return PickupOrderResponse.builder()
+				.orderId(goResponseContent.getSendungsnummerAX4())
+				.hwbNumber(goResponseContent.getFrachtbriefnummer())
+				.pickupDate(goResponseContent.getAbholdatum())
+				.note(goResponseContent.getHinweis())
+				.deliveryPositions(deliveryPositions)
+				.build();
 	}
 }
