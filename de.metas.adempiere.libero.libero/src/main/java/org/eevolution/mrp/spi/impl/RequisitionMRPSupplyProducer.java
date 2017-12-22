@@ -10,12 +10,12 @@ package org.eevolution.mrp.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -59,6 +59,7 @@ import de.metas.adempiere.service.IRequisitionBL;
 import de.metas.document.engine.IDocument;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.ProductPlanningBL;
+import de.metas.quantity.Quantity;
 
 public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 {
@@ -118,7 +119,7 @@ public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 		final I_PP_Product_Planning m_product_planning = mrpContext.getProductPlanning();
 		final int AD_Org_ID = mrpContext.getAD_Org().getAD_Org_ID();
 		final Timestamp DemandDateStartSchedule = TimeUtil.asTimestamp(request.getDemandDate());
-		final BigDecimal QtyPlanned = request.getQtyToSupply();
+		final Quantity qtyPlanned = request.getQtyToSupply();
 		final int bpartnerId = m_product_planning.getC_BPartner_ID();
 
 		log.info("Create Requisition");
@@ -168,7 +169,8 @@ public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 		reqline.setM_Product_ID(m_product_planning.getM_Product_ID());
 		// reqline.setPrice(); // called automatically on beforeSave
 		reqline.setPriceActual(BigDecimal.ZERO);
-		reqline.setQty(QtyPlanned);
+		reqline.setQty(qtyPlanned.getQty());
+		reqline.setC_UOM_ID(qtyPlanned.getUOM().getC_UOM_ID());
 		InterfaceWrapperHelper.save(reqline);
 
 		// Set Correct Dates for Plan
@@ -190,7 +192,7 @@ public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 	private int calculateDurationDays(final IMaterialPlanningContext mrpContext)
 	{
 		final ProductPlanningBL productPlanningBL = Adempiere.getSpringApplicationContext().getBean(ProductPlanningBL.class);
-		
+
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 		final int leadtimeDays = productPlanningData.getDeliveryTime_Promised().intValueExact();
 		final int durationTotalDays = productPlanningBL.calculateDurationDays(leadtimeDays, productPlanningData);
@@ -245,7 +247,7 @@ public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create MRP record based in Requisition Line
-	 * 
+	 *
 	 * @param MRequisitionLine Requisition Line
 	 */
 	private void M_Requisition(final I_M_Requisition r)
@@ -265,7 +267,7 @@ public class RequisitionMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create MRP record based in Requisition Line
-	 * 
+	 *
 	 * @param MRequisitionLine Requisition Line
 	 */
 	private void M_RequisitionLine(final I_M_RequisitionLine rl)

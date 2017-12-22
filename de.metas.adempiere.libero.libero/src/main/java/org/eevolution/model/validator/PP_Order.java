@@ -26,13 +26,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -50,29 +46,19 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
-import org.eevolution.api.IDDOrderBL;
-import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostDAO;
 import org.eevolution.api.IPPOrderWorkflowBL;
 import org.eevolution.api.IPPOrderWorkflowDAO;
-import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.X_PP_Order;
 
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent;
-import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent.PPOrderLineChangeDescriptor;
-import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent.PPOrderLineChangeDescriptor.PPOrderLineChangeDescriptorBuilder;
-import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent.PPOrderQtyEnteredChangedEventBuilder;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.product.IProductBL;
 
 @Interceptor(I_PP_Order.class)
@@ -87,10 +73,10 @@ public class PP_Order
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final I_PP_Order ppOrder)
+	public void beforeSave(final I_PP_Order ppOrder, final ModelChangeType changeType)
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-		final boolean newRecord = InterfaceWrapperHelper.isNew(ppOrder);
+		final boolean newRecord = changeType.isNew();
 
 		//
 		// If UOM not filled, get it from Product
@@ -192,103 +178,36 @@ public class PP_Order
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void afterSave(final I_PP_Order ppOrderRecord, final int changeType)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	public void createWorkFlowAndBom(final I_PP_Order ppOrderRecord)
 	{
-		final boolean newRecord = ModelValidator.TYPE_AFTER_NEW == changeType;
+		createWorkflowAndBOM(ppOrderRecord);
+	}
 
-		//
-		// Don't touch closed/voided orders
-		final String docAction = ppOrderRecord.getDocAction();
-		if (X_PP_Order.DOCACTION_Close.equals(docAction)
-				|| X_PP_Order.DOCACTION_Void.equals(docAction))
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_PP_Order.COLUMNNAME_QtyEntered)
+	public void updateAndFireEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
+	{
+		final boolean delivered = Services.get(IPPOrderBL.class).isDelivered(ppOrderRecord);
+		if (delivered)
 		{
-			return;
+			throw new LiberoException("Cannot Change Quantity, Only is allow with Draft or In Process Status"); // TODO: Create Message for Translation
 		}
 
-		final boolean qtyEnteredChanged = InterfaceWrapperHelper.isValueChanged(ppOrderRecord, I_PP_Order.COLUMNNAME_QtyEntered);
-		if (qtyEnteredChanged && !newRecord)
-		{
-			final boolean delivered = Services.get(IPPOrderBL.class).isDelivered(ppOrderRecord);
-			if (delivered)
-			{
-				throw new LiberoException("Cannot Change Quantity, Only is allow with Draft or In Process Status"); // TODO: Create Message for Translation
-			}
+		final PPOrderQtyEnteredChangeEventFactory eventfactory = PPOrderQtyEnteredChangeEventFactory.newWithPPOrderBeforeChange(ppOrderRecord);
 
-			final PPOrderQtyEnteredChangedEventBuilder eventBuilder = PPOrderQtyEnteredChangedEvent
-					.builder()
-					.eventDescriptor(EventDescriptor.createNew(ppOrderRecord))
-					.ppOrderId(ppOrderRecord.getPP_Order_ID());
+		deleteWorkflowAndBOM(ppOrderRecord);
+		createWorkflowAndBOM(ppOrderRecord);
 
-			final PPOrderPojoConverter ppOrderConverter = Adempiere.getBean(PPOrderPojoConverter.class);
-			final PPOrder oldPPOrder = ppOrderConverter.asPPOrderPojo(ppOrderRecord);
+		final PPOrderQtyEnteredChangedEvent event = eventfactory.inspectPPOrderAfterChange();
 
-			final Map<Integer, PPOrderLineChangeDescriptorBuilder> map = new HashMap<>();
-			for (final PPOrderLine ppOrderLine : oldPPOrder.getLines())
-			{
-				final int productBomLineId = ppOrderLine.getProductBomLineId();
-				if (productBomLineId <= 0)
-				{
-					eventBuilder.deletedPPOrderLineID(ppOrderLine.getPpOrderLineId()); // nothing we can do for this line
-				}
-				else
-				{
-					final PPOrderLineChangeDescriptorBuilder builder = PPOrderLineChangeDescriptor.builder()
-							.oldPPOrderLineId(ppOrderLine.getPpOrderLineId())
-							.oldQuantity(ppOrderLine.getQtyRequired());
-					map.put(productBomLineId, builder);
-				}
-			}
-
-			deleteWorkflowAndBOM(ppOrderRecord);
-			createWorkflowAndBOM(ppOrderRecord);
-
-			final PPOrder updatedPPOrder = ppOrderConverter.asPPOrderPojo(ppOrderRecord);
-
-			for (final PPOrderLine updatedPPOrderLine : updatedPPOrder.getLines())
-			{
-				final int productBomLineId = updatedPPOrderLine.getProductBomLineId();
-				if (!map.containsKey(productBomLineId))
-				{
-					eventBuilder.newPPOrderLine(updatedPPOrderLine);
-				}
-				else
-				{
-					map.get(productBomLineId)
-							.newPPOrderLineId(updatedPPOrderLine.getPpOrderLineId())
-							.newQuantity(updatedPPOrderLine.getQtyRequired());
-				}
-			}
-
-			final Map<Boolean, List<PPOrderLineChangeDescriptor>> collect = map.values().stream()
-					.map(PPOrderLineChangeDescriptorBuilder::build)
-					.collect(Collectors.partitioningBy(descriptor -> descriptor.getNewPPOrderLineId() > 0));
-
-			final List<PPOrderLineChangeDescriptor> updatedPPOrderLines = collect.get(true);
-			eventBuilder.ppOrderLineChanges(updatedPPOrderLines);
-
-			final List<PPOrderLineChangeDescriptor> deletedPPOrderLines = collect.get(false);
-			deletedPPOrderLines.forEach(descriptor -> eventBuilder.deletedPPOrderLineID(descriptor.getOldPPOrderLineId()));
-
-			final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-			materialEventService.fireEventAfterNextCommit(eventBuilder.build(), getTrxName(ppOrderRecord));
-		}
-
-		if (newRecord)
-		{
-			createWorkflowAndBOM(ppOrderRecord);
-		}
-
-	} // beforeSave
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		materialEventService.fireEventAfterNextCommit(event, getTrxName(ppOrderRecord));
+	}
 
 	private void deleteWorkflowAndBOM(final I_PP_Order ppOrder)
 	{
-		//
-		// Delete Order Workflow/Routing
 		Services.get(IPPOrderWorkflowDAO.class).deleteOrderWorkflow(ppOrder);
 
-		//
-		// Delete Order BOM
 		final I_PP_Order_BOM orderBOM = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOM(ppOrder);
 		if (orderBOM != null)
 		{
@@ -322,28 +241,5 @@ public class PP_Order
 		// Un-Order Stock
 		ppOrderBL.setQtyOrdered(ppOrder, BigDecimal.ZERO);
 		ppOrderBL.orderStock(ppOrder);
-	}
-
-	/**
-	 * When manufacturing order is completed by the user, complete supply DD Orders.
-	 *
-	 * @param ppOrder
-	 */
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void completeBackwardDDOrders_IfUserCompleted(final I_PP_Order ppOrder)
-	{
-		// If it's not an UI action, then do nothing
-		if (!InterfaceWrapperHelper.isUIAction(ppOrder))
-		{
-			return;
-		}
-
-		final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
-		final List<I_DD_Order> ddOrders = ddOrderDAO.retrieveBackwardSupplyDDOrders(ppOrder);
-
-		//
-		// Complete DD Orders
-		final IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
-		ddOrderBL.completeDDOrdersIfNeeded(ddOrders);
 	}
 }

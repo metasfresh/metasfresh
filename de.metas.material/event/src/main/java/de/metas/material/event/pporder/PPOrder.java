@@ -63,6 +63,8 @@ public class PPOrder
 
 	int uomId;
 
+	BigDecimal quantityInUOM;
+
 	/**
 	 * In a build-to-order scenario, this is the ID of the order line which this all is about.
 	 */
@@ -111,6 +113,7 @@ public class PPOrder
 			@JsonProperty("productPlanningId") final int productPlanningId,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
 			@JsonProperty("uomId") final int uomId,
+			@JsonProperty("quantityInUOM") @NonNull final BigDecimal quantityInUOM,
 			@JsonProperty("orderLineId") final int orderLineId,
 			@JsonProperty("ppOrderId") final int ppOrderId,
 			@JsonProperty("docStatus") @Nullable final String docStatus,
@@ -129,6 +132,8 @@ public class PPOrder
 		this.productDescriptor = productDescriptor;
 
 		this.uomId = checkIdGreaterThanZero("uomId", uomId);
+		this.quantityInUOM = quantityInUOM;
+
 		this.orderLineId = orderLineId;
 		this.ppOrderId = ppOrderId;
 		this.docStatus = docStatus;

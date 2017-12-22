@@ -23,7 +23,7 @@ import de.metas.material.planning.IMaterialPlanningContext;
 
 /**
  * Calculate Material Plan MRP
- * 
+ *
  * @author Victor Perez, e-Evolution, S.C.
  * @author Teo Sarca, www.arhipac.ro
  */
@@ -32,6 +32,7 @@ public class MRP extends AbstractMRPProcess
 	@Override
 	protected IMRPResult run(final IMaterialPlanningContext mrpContext)
 	{
-		return mrpExecutorService.run(mrpContext);
+		return null;
+	//	return mrpExecutorService.run(mrpContext);
 	}
 }

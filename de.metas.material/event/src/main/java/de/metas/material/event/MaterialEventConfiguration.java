@@ -1,6 +1,7 @@
 package de.metas.material.event;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import org.compiere.Adempiere;
 import org.springframework.context.annotation.Bean;
@@ -8,6 +9,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import lombok.NonNull;
@@ -35,25 +38,25 @@ import lombok.NonNull;
  */
 
 @Configuration
-@ComponentScan(basePackageClasses = {
-		MaterialEventConfiguration.class,
-		// StartupListener.class // there are different startup listener classes. one for metasfresh-backend, one for metasfresh-webui-api.
-})
+@ComponentScan(basePackageClasses = MaterialEventConfiguration.class)
 public class MaterialEventConfiguration
 {
 	@Bean(name = "materialEventService")
 	@Profile(Profiles.PROFILE_Test)
-	public MaterialEventService createLocalMaterialEventService(@NonNull final Collection<MaterialEventListener> listeners)
+	public MaterialEventService createLocalMaterialEventService(@NonNull final Optional<Collection<MaterialEventListener>> listeners)
 	{
-		return MaterialEventService.createLocalServiceThatIsReadyToUse(listeners);
+		return MaterialEventService
+				.createLocalServiceThatIsReadyToUse(listeners.orElse(ImmutableList.of()));
 	}
 
 	@Bean(name = "materialEventService")
 	@DependsOn(Adempiere.BEAN_NAME)
-	@Profile(value = { Profiles.PROFILE_App, Profiles.PROFILE_MaterialDispo })
-	public MaterialEventService createDistributedMaterialEventService(@NonNull final Collection<MaterialEventListener> listeners)
+	@Profile(Profiles.PROFILE_NotTest)
+	public MaterialEventService createDistributedMaterialEventService(@NonNull final Optional<Collection<MaterialEventListener>> listeners)
 	{
-		final MaterialEventService materialEventService = MaterialEventService.createDistributedServiceThatNeedsToSubscribe(listeners);
+		final MaterialEventService materialEventService = MaterialEventService
+				.createDistributedServiceThatNeedsToSubscribe(listeners.orElse(ImmutableList.of()));
+
 		materialEventService.subscribeToEventBus();
 		return materialEventService;
 	}

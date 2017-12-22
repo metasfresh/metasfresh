@@ -1,10 +1,12 @@
 package org.eevolution.model.validator;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+
 import org.adempiere.ad.modelvalidator.InterceptorUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.eevolution.event.PPOrderRequestedEventHandler;
@@ -13,7 +15,9 @@ import org.eevolution.model.I_PP_Order;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderChangedDocStatusEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
+import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import lombok.NonNull;
 
@@ -34,21 +38,10 @@ public class PP_OrderFireMaterialEvent
 			@NonNull final ModelChangeType type)
 	{
 		final boolean newPPOrder = type.isNew() || InterceptorUtil.isJustActivated(ppOrder);
-		if(!newPPOrder)
+		if (!newPPOrder)
 		{
 			return;
 		}
-		// when going with @DocAction, at this point the ppOrder's docStatus would still be "IP" even if we are invoked on afterComplete..
-		// also, it might still be rolled back
-		// those aren't show-stoppers, but we therefore rather work with @ModelChange
-//		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-//		if (!docActionBL.isDocumentCompletedOrClosed(ppOrder))
-//		{
-//			// quick workaround for https://github.com/metasfresh/metasfresh/issues/1581
-//			// don't send an event while the PP_Order is not yet completed.
-//			// this doesn't help when a PP_Order is reactivated
-//			return;
-//		}
 
 		final PPOrderPojoConverter pojoSupplier = Adempiere.getBean(PPOrderPojoConverter.class);
 		final PPOrder ppOrderPojo = pojoSupplier.asPPOrderPojo(ppOrder);
@@ -61,8 +54,50 @@ public class PP_OrderFireMaterialEvent
 				.build();
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event, InterfaceWrapperHelper.getTrxName(ppOrder));
+		materialEventService.fireEventAfterNextCommit(event, getTrxName(ppOrder));
 	}
 
+	@ModelChange(//
+			timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
+	public void fireMaterialEvent_deletedPPOrder(
+			@NonNull final I_PP_Order ppOrder,
+			@NonNull final ModelChangeType type)
+	{
+		final boolean deletedPPOrder = type.isDelete() || InterceptorUtil.isJustDeactivated(ppOrder);
+		if (!deletedPPOrder)
+		{
+			return;
+		}
 
+		final PPOrderDeletedEvent event = PPOrderDeletedEvent.builder()
+				.eventDescriptor(EventDescriptor.createNew(ppOrder))
+				.ppOrderId(ppOrder.getPP_Order_ID())
+				.build();
+
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		materialEventService.fireEventAfterNextCommit(event, getTrxName(ppOrder));
+	}
+
+	@ModelChange(//
+			timings = ModelValidator.TYPE_AFTER_CHANGE, //
+			ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
+	public void fireMaterialEvent_ppOrderDocStatusChange(@NonNull final I_PP_Order ppOrder)
+	{
+		final PPOrderChangedDocStatusEvent event = PPOrderChangedDocStatusEvent.builder()
+				.eventDescriptor(EventDescriptor.createNew(ppOrder))
+				.ppOrderId(ppOrder.getPP_Order_ID())
+				.newDocStatus(ppOrder.getDocStatus())
+				.build();
+
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		materialEventService.fireEventAfterNextCommit(event, getTrxName(ppOrder));
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_CLOSE)
+	public void fireMaterialEvent_ppOrderClosed(@NonNull final I_PP_Order ppOrderRecord)
+	{
+		final PPOrderPojoConverter ppOrderPojoConverter = Adempiere.getBean(PPOrderPojoConverter.class);
+		final PPOrder ppOrder = ppOrderPojoConverter.asPPOrderPojo(ppOrderRecord);
+
+	}
 }

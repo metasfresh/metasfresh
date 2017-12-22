@@ -3,11 +3,10 @@ package de.metas.material.event.pporder;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.Value;
 
 /*
  * #%L
@@ -22,29 +21,32 @@ import lombok.ToString;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class PPOrderDeletedEvent extends AbstractPPOrderEvent
+@Value
+@Builder
+public class PPOrderDeletedEvent implements MaterialEvent
 {
-	public static final String TYPE = "PPOrderOrAdviseDeletedEvent";
+	public static final String TYPE = "PPOrderDeletedEvent";
+
+	EventDescriptor eventDescriptor;
+
+	int ppOrderId;
 
 	@JsonCreator
 	@Builder
 	public PPOrderDeletedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("ppOrder") final PPOrder ppOrder,
-			@JsonProperty("groupId") final int groupId,
-			@JsonProperty("supplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor)
+			@JsonProperty("ppOrderId") final int ppOrderId)
 	{
-		super(eventDescriptor, ppOrder, groupId, supplyRequiredDescriptor);
+		this.eventDescriptor = eventDescriptor;
+		this.ppOrderId = ppOrderId;
 	}
 }

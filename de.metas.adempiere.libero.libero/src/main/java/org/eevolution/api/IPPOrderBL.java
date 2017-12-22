@@ -10,12 +10,12 @@ package org.eevolution.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,15 +37,13 @@ public interface IPPOrderBL extends ISingletonService
 {
 	void setDefaults(I_PP_Order ppOrder);
 
-	void setQty(I_PP_Order order, BigDecimal Qty);
+	void setQtyEntered(I_PP_Order order, BigDecimal qtyEntered);
 
-	void setQtyEntered(I_PP_Order order, BigDecimal QtyEntered);
-
-	void setQtyOrdered(I_PP_Order order, BigDecimal QtyOrdered);
+	void setQtyOrdered(I_PP_Order order, BigDecimal qtyOrdered);
 
 	/**
 	 * Add to Description
-	 * 
+	 *
 	 * @param orderO
 	 * @param description text
 	 */
@@ -53,7 +51,7 @@ public interface IPPOrderBL extends ISingletonService
 
 	/**
 	 * Set QtyBatchSize and QtyBatchs using Workflow and QtyOrdered
-	 * 
+	 *
 	 * @param order MO
 	 * @param override if true, will set QtyBatchSize even if is already set (QtyBatchSize!=0)
 	 */
@@ -68,16 +66,16 @@ public interface IPPOrderBL extends ISingletonService
 
 	/**
 	 * Gets Open Qty (i.e. how much we still need to receive).
-	 * 
+	 *
 	 * @return Open Qty (Ordered - Delivered - Scrap)
 	 */
 	BigDecimal getQtyOpen(I_PP_Order ppOrder);
 
 	/**
 	 * Gets the "direct" order line.
-	 * 
+	 *
 	 * A "direct" order line is the order line that directly triggered this manufacturing order. In other words order line's Product and manufacturing order's Product shall match.
-	 * 
+	 *
 	 * @param ppOrder manufacturing order
 	 * @return direct order line or null
 	 */
@@ -85,14 +83,14 @@ public interface IPPOrderBL extends ISingletonService
 
 	/**
 	 * Propagate Order's AD_Org_ID/Warehouse/Locator to BOM Lines
-	 * 
+	 *
 	 * @param ppOrder
 	 */
 	void updateBOMOrderLinesWarehouseAndLocator(I_PP_Order ppOrder);
 
 	/**
 	 * Sets a dynamic (memory-only) attribute for the given record, which can later be validated by other methods of this service.
-	 * 
+	 *
 	 * @param ppOrder
 	 * @param forceQtyReservation
 	 * @see org.adempiere.model.InterfaceWrapperHelper#setDynAttribute(Object, String, Object)
@@ -104,7 +102,7 @@ public interface IPPOrderBL extends ISingletonService
 
 	/**
 	 * Sets manufacturing order's document type(s).
-	 * 
+	 *
 	 * @param ppOrder
 	 * @param docBaseType
 	 * @param docSubType document sub-type or {@link IDocTypeDAO#DOCSUBTYPE_Any}
@@ -114,7 +112,7 @@ public interface IPPOrderBL extends ISingletonService
 
 	/**
 	 * Set QtyOrdered=QtyDelivered, QtyClosed=QtyOrdered(old) - QtyDelivered
-	 * 
+	 *
 	 * @param ppOrder
 	 */
 	void closeQtyOrdered(I_PP_Order ppOrder);

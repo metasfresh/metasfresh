@@ -1,5 +1,7 @@
 package de.metas.handlingunits.material.interceptor;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
@@ -76,9 +78,7 @@ public class M_Transaction
 			ModelValidator.TYPE_AFTER_NEW,
 			ModelValidator.TYPE_AFTER_CHANGE
 			// ModelValidator.TYPE_BEFORE_DELETE /* beforeDelete because we still need the M_TransAction_ID */
-	}, //
-			afterCommit = true // need to run after commit because the M_transaction is stored because a possible shipment schedule is linked to the inoutline via M_ShipmentSchedule_QtyPicked
-	)
+	})
 	public void fireTransactionEvent(
 			@NonNull final I_M_Transaction transaction,
 			@NonNull final ModelChangeType type)
@@ -93,7 +93,7 @@ public class M_Transaction
 		final Collection<AbstractTransactionEvent> events = createTransactionEvents(transaction, type);
 		for (final AbstractTransactionEvent event : events)
 		{
-			materialEventService.fireEvent(event);
+			materialEventService.fireEventAfterNextCommit(event, getTrxName(transaction));
 		}
 	}
 

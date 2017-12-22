@@ -110,7 +110,8 @@ public class PPOrderProducer
 
 		//
 		// Qtys
-		ppOrderBL.setQty(ppOrder, pojo.getQuantity());
+		ppOrderBL.setQtyOrdered(ppOrder, pojo.getQuantity());
+		ppOrderBL.setQtyEntered(ppOrder, pojo.getQuantityInUOM());
 		// QtyBatchSize : do not set it, let the MO to take it from workflow
 		ppOrder.setYield(BigDecimal.ZERO);
 

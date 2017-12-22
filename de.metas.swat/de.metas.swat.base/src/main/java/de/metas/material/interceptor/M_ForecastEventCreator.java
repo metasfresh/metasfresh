@@ -3,7 +3,6 @@ package de.metas.material.interceptor;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
@@ -92,7 +91,6 @@ public class M_ForecastEventCreator
 		return ForecastLine.builder()
 				.forecastLineId(forecastLine.getM_ForecastLine_ID())
 				.materialDescriptor(materialDescriptor)
-				.reference(TableRecordReference.of(forecastLine))
 				.build();
 	}
 }

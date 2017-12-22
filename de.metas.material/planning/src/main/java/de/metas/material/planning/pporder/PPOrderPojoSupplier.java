@@ -11,7 +11,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Workflow;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
@@ -37,6 +36,7 @@ import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.MrpException;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -88,9 +88,9 @@ public class PPOrderPojoSupplier
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 		final I_M_Product product = mrpContext.getM_Product();
 
-		final I_C_UOM uom = mrpContext.getC_UOM();
 		final Timestamp demandDateStartSchedule = TimeUtil.asTimestamp(request.getDemandDate());
-		final BigDecimal qtyToSupply = request.getQtyToSupply();
+		final Quantity qtyToSupply = request.getQtyToSupply();
+
 
 		//
 		// BOM
@@ -109,7 +109,7 @@ public class PPOrderPojoSupplier
 
 		//
 		// Calculate duration & Planning dates
-		final int durationDays = calculateDurationDays(mrpContext, qtyToSupply);
+		final int durationDays = calculateDurationDays(mrpContext, qtyToSupply.getQty());
 		final Timestamp dateFinishSchedule = demandDateStartSchedule;
 
 		final Timestamp dateStartSchedule = TimeUtil.addDays(dateFinishSchedule, -durationDays);
@@ -126,14 +126,14 @@ public class PPOrderPojoSupplier
 
 				// Product, UOM, ASI
 				.productDescriptor(productDescriptor)
-				.uomId(uom.getC_UOM_ID())
+				.uomId(qtyToSupply.getUOM().getC_UOM_ID())
 
 				// Dates
 				.datePromised(dateFinishSchedule)
 				.dateStartSchedule(dateStartSchedule)
 
 				// Qtys
-				.quantity(qtyToSupply)
+				.quantityInUOM(qtyToSupply.getQty())
 
 				.orderLineId(request.getMrpDemandOrderLineSOId())
 				.bPartnerId(request.getMrpDemandBPartnerId())
@@ -171,15 +171,14 @@ public class PPOrderPojoSupplier
 		final int leadtimeDays = productPlanningData.getDeliveryTime_Promised().intValueExact();
 		if (leadtimeDays > 0)
 		{
-			// Leadtime was set in Product Planning
-			// take the leadtime as it is
+			// Leadtime was set in Product Planning/ take the leadtime as it is
 			return leadtimeDays;
 		}
 
 		final I_AD_Workflow adWorkflow = productPlanningData.getAD_Workflow();
 		final I_S_Resource plant = productPlanningData.getS_Resource();
 		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService(ctx);
-		final BigDecimal leadtimeCalc = routingService.calculateDuration(adWorkflow, plant, qty);
+		final BigDecimal leadtimeCalc = routingService.calculateDurationDays(adWorkflow, plant, qty);
 		return leadtimeCalc.intValueExact();
 	}
 

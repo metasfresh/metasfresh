@@ -9,7 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.junit.Test;
 
@@ -26,6 +25,7 @@ import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderChangedDocStatusEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -175,12 +175,23 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
+	public void ppOrderChangedDocStatusEvent()
+	{
+		final PPOrderChangedDocStatusEvent event = PPOrderChangedDocStatusEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.ppOrderId(10)
+				.newDocStatus("newDocStatus")
+				.build();
+
+		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
+	@Test
 	public void ppOrderDeletedEvent()
 	{
 		final PPOrderDeletedEvent event = PPOrderDeletedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
-				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
-				.ppOrder(createPPOrder())
+				.ppOrderId(10)
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(event);
@@ -247,7 +258,6 @@ public class MaterialEventSerializerTests
 		final ForecastLine forecastLine = ForecastLine.builder()
 				.forecastLineId(30)
 				.materialDescriptor(materialDescriptor)
-				.reference(TableRecordReference.of("table", 24))
 				.build();
 		final Forecast forecast = Forecast.builder()
 				.forecastId(20)

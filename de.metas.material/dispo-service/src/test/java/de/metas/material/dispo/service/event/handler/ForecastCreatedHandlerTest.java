@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -180,7 +179,6 @@ public class ForecastCreatedHandlerTest
 						.quantity(new BigDecimal("8"))
 						.date(NOW)
 						.build())
-				.reference(TableRecordReference.of("someTable", 300))
 				.build();
 
 		final Forecast forecast = Forecast.builder().forecastId(200)

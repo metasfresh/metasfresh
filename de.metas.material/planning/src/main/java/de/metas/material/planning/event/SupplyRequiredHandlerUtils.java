@@ -1,6 +1,11 @@
 package de.metas.material.planning.event;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import java.math.BigDecimal;
 import java.util.Collections;
+
+import org.compiere.model.I_M_Product;
 
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.planning.IMRPNoteBuilder;
@@ -8,6 +13,7 @@ import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.impl.SimpleMRPNoteBuilder;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -43,8 +49,11 @@ public class SupplyRequiredHandlerUtils
 	{
 		final int descriptorBPartnerId = supplyRequiredDescriptor.getMaterialDescriptor().getBPartnerId();
 
+		final BigDecimal qtyToSupply = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
+		final I_M_Product product = load(supplyRequiredDescriptor.getMaterialDescriptor().getProductId(), I_M_Product.class);
+
 		return MaterialRequest.builder()
-				.qtyToSupply(supplyRequiredDescriptor.getMaterialDescriptor().getQuantity())
+				.qtyToSupply(Quantity.of(qtyToSupply, product.getC_UOM()))
 				.mrpContext(mrpContext)
 				.mrpDemandBPartnerId(descriptorBPartnerId > 0 ? descriptorBPartnerId : -1)
 				.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())

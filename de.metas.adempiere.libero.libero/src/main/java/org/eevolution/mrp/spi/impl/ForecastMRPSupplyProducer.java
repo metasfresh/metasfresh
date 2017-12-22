@@ -10,12 +10,12 @@ package org.eevolution.mrp.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -66,7 +66,7 @@ public class ForecastMRPSupplyProducer extends AbstractMRPSupplyProducer
 				I_M_ForecastLine.COLUMNNAME_Qty
 		});
 	}
-	
+
 
 	@Override
 	public Class<?> getDocumentClass()
@@ -127,7 +127,7 @@ public class ForecastMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create MRP record based in Forecast
-	 * 
+	 *
 	 * @param MForecast Forecast
 	 */
 	private void M_Forecast(final I_M_Forecast forecast)
@@ -141,14 +141,14 @@ public class ForecastMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create MRP record based in Forecast Line
-	 * 
+	 *
 	 * @param I_M_ForecastLine Forecast Line
 	 */
 	private void M_ForecastLine(final I_M_ForecastLine forecastLine)
 	{
 		final I_M_Product product = forecastLine.getM_Product();
 		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
-		
+
 		final I_M_Forecast forecast = forecastLine.getM_Forecast();
 		I_PP_MRP mrp = Services.get(IMRPDAO.class).retrieveMRPRecord(forecastLine);
 		if (mrp == null)
@@ -182,7 +182,7 @@ public class ForecastMRPSupplyProducer extends AbstractMRPSupplyProducer
 	private final void setM_Forecast(final I_PP_MRP mrp, final I_M_Forecast f)
 	{
 		mrpBL.updateMRPFromContext(mrp);
-		
+
 		mrp.setOrderType(X_PP_MRP.ORDERTYPE_Forecast);
 		mrp.setTypeMRP(X_PP_MRP.TYPEMRP_Demand);
 		mrp.setM_Forecast_ID(f.getM_Forecast_ID());
