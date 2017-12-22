@@ -61,15 +61,6 @@ public interface ILocationBL extends ISingletonService
 
 	I_C_Country getCountryByCode(Properties ctx, String countryCode);
 
-	/**
-	 * Check if given country/postal code exists in DPD_Route table
-	 * 
-	 * @param countryCode
-	 * @param postal
-	 * @return
-	 */
-	boolean checkOnDPDRoute(String countryCode, String postal);
-
 	void registerLocal(Properties ctx, String countryCode, String city, String postal);
 
 	/**
