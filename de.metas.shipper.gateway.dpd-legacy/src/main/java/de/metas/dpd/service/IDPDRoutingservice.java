@@ -36,7 +36,7 @@ import de.metas.inout.model.I_M_InOut;
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</a>"
  */
-public interface IDPDRoutingservice extends ISingletonService
+public interface IDPDRoutingService extends ISingletonService
 {
 	RoutingResult retrieveData(Properties ctx, RoutingQuery query, String trxName);
 
