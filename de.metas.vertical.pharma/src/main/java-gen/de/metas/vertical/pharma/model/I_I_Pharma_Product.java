@@ -71,7 +71,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A00ATYP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -80,7 +80,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A00ATYP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -232,7 +232,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A00PGEINH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -241,7 +241,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A00PGEINH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -370,7 +370,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A00WGA.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -379,7 +379,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A00WGA.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -416,20 +416,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A01AEP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA01AEP (int A01AEP);
+	public void setA01AEP (java.math.BigDecimal A01AEP);
 
 	/**
 	 * Get A01AEP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA01AEP();
+	public java.math.BigDecimal getA01AEP();
 
     /** Column definition for A01AEP */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A01AEP = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A01AEP", null);
@@ -508,20 +508,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A01APU.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA01APU (int A01APU);
+	public void setA01APU (java.math.BigDecimal A01APU);
 
 	/**
 	 * Get A01APU.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA01APU();
+	public java.math.BigDecimal getA01APU();
 
     /** Column definition for A01APU */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A01APU = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A01APU", null);
@@ -554,20 +554,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A01AVP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA01AVP (int A01AVP);
+	public void setA01AVP (java.math.BigDecimal A01AVP);
 
 	/**
 	 * Get A01AVP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA01AVP();
+	public java.math.BigDecimal getA01AVP();
 
     /** Column definition for A01AVP */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A01AVP = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A01AVP", null);
@@ -646,20 +646,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A01KAEP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA01KAEP (int A01KAEP);
+	public void setA01KAEP (java.math.BigDecimal A01KAEP);
 
 	/**
 	 * Get A01KAEP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA01KAEP();
+	public java.math.BigDecimal getA01KAEP();
 
     /** Column definition for A01KAEP */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A01KAEP = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A01KAEP", null);
@@ -669,7 +669,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A01MWST.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -678,7 +678,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A01MWST.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -945,20 +945,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A01UVP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA01UVP (int A01UVP);
+	public void setA01UVP (java.math.BigDecimal A01UVP);
 
 	/**
 	 * Get A01UVP.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA01UVP();
+	public java.math.BigDecimal getA01UVP();
 
     /** Column definition for A01UVP */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A01UVP = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A01UVP", null);
@@ -968,20 +968,20 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A01ZBV.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA01ZBV (int A01ZBV);
+	public void setA01ZBV (java.math.BigDecimal A01ZBV);
 
 	/**
 	 * Get A01ZBV.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getA01ZBV();
+	public java.math.BigDecimal getA01ZBV();
 
     /** Column definition for A01ZBV */
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_A01ZBV = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "A01ZBV", null);
@@ -991,7 +991,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02130A18.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1000,7 +1000,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02130A18.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1014,7 +1014,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02130A1A8.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1023,7 +1023,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02130A1A8.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1037,7 +1037,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A0247AMG.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1046,7 +1046,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A0247AMG.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1060,7 +1060,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A0252B.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1069,7 +1069,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A0252B.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1106,7 +1106,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02ANTHRO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1115,7 +1115,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02ANTHRO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1152,7 +1152,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02AUSNREI.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1161,7 +1161,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02AUSNREI.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1175,7 +1175,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02BATTG.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1184,7 +1184,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02BATTG.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1198,7 +1198,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02BIOSIEG.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1207,7 +1207,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02BIOSIEG.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1221,7 +1221,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02BIOTECH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1230,7 +1230,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02BIOTECH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1244,7 +1244,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02BIOZID.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1253,7 +1253,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02BIOZID.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1313,7 +1313,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02DIAET.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1322,7 +1322,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02DIAET.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1382,7 +1382,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02ELEKEAR.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1391,7 +1391,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02ELEKEAR.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1405,7 +1405,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02ELEKTRO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1414,7 +1414,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02ELEKTRO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1428,7 +1428,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02EXPLOS.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1437,7 +1437,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02EXPLOS.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1474,7 +1474,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02GENER.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1483,7 +1483,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02GENER.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1520,7 +1520,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02HOMOEO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1529,7 +1529,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02HOMOEO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1543,7 +1543,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02KOSMET.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1552,7 +1552,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02KOSMET.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1566,7 +1566,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02LEBENSM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1575,7 +1575,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02LEBENSM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1589,7 +1589,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02LIFSTYL.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1598,7 +1598,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02LIFSTYL.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1635,7 +1635,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02MP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1644,7 +1644,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02MP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1681,7 +1681,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02NEM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1690,7 +1690,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02NEM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1704,7 +1704,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02PHYTO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1713,7 +1713,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02PHYTO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1727,7 +1727,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02PSM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1736,7 +1736,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02PSM.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1819,7 +1819,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02SDB.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1828,7 +1828,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02SDB.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1842,7 +1842,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02STERIL.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1851,7 +1851,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02STERIL.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1911,7 +1911,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02TREZEP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1920,7 +1920,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02TREZEP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1980,7 +1980,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A02WIRKSTO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1989,7 +1989,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A02WIRKSTO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2095,7 +2095,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A03VWGAPO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2104,7 +2104,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A03VWGAPO.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2118,7 +2118,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A03VWGGH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2127,7 +2127,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A03VWGGH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2141,7 +2141,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A03VWGKAP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2150,7 +2150,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A03VWGKAP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2164,7 +2164,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A03VWGSEH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2173,7 +2173,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A03VWGSEH.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2325,7 +2325,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A04VPART.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2334,7 +2334,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A04VPART.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2716,7 +2716,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A09THGP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2725,7 +2725,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A09THGP.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2762,7 +2762,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Set A11VERIFIZ.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2771,7 +2771,7 @@ public interface I_I_Pharma_Product
 	/**
 	 * Get A11VERIFIZ.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2896,6 +2896,87 @@ public interface I_I_Pharma_Product
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_AD_Org>(I_I_Pharma_Product.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Price List AEP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAEP_Price_List_ID (int AEP_Price_List_ID);
+
+	/**
+	 * Get Price List AEP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAEP_Price_List_ID();
+
+	public org.compiere.model.I_M_PriceList getAEP_Price_List();
+
+	public void setAEP_Price_List(org.compiere.model.I_M_PriceList AEP_Price_List);
+
+    /** Column definition for AEP_Price_List_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList> COLUMN_AEP_Price_List_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList>(I_I_Pharma_Product.class, "AEP_Price_List_ID", org.compiere.model.I_M_PriceList.class);
+    /** Column name AEP_Price_List_ID */
+    public static final String COLUMNNAME_AEP_Price_List_ID = "AEP_Price_List_ID";
+
+	/**
+	 * Set Price List APU.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAPU_Price_List_ID (int APU_Price_List_ID);
+
+	/**
+	 * Get Price List APU.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAPU_Price_List_ID();
+
+	public org.compiere.model.I_M_PriceList getAPU_Price_List();
+
+	public void setAPU_Price_List(org.compiere.model.I_M_PriceList APU_Price_List);
+
+    /** Column definition for APU_Price_List_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList> COLUMN_APU_Price_List_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList>(I_I_Pharma_Product.class, "APU_Price_List_ID", org.compiere.model.I_M_PriceList.class);
+    /** Column name APU_Price_List_ID */
+    public static final String COLUMNNAME_APU_Price_List_ID = "APU_Price_List_ID";
+
+	/**
+	 * Set Price List AVP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAVP_Price_List_ID (int AVP_Price_List_ID);
+
+	/**
+	 * Get Price List AVP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAVP_Price_List_ID();
+
+	public org.compiere.model.I_M_PriceList getAVP_Price_List();
+
+	public void setAVP_Price_List(org.compiere.model.I_M_PriceList AVP_Price_List);
+
+    /** Column definition for AVP_Price_List_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList> COLUMN_AVP_Price_List_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList>(I_I_Pharma_Product.class, "AVP_Price_List_ID", org.compiere.model.I_M_PriceList.class);
+    /** Column name AVP_Price_List_ID */
+    public static final String COLUMNNAME_AVP_Price_List_ID = "AVP_Price_List_ID";
 
 	/**
 	 * Get Erstellt.
@@ -3024,6 +3105,33 @@ public interface I_I_Pharma_Product
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, Object>(I_I_Pharma_Product.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Price List KAEP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setKAEP_Price_List_ID (int KAEP_Price_List_ID);
+
+	/**
+	 * Get Price List KAEP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getKAEP_Price_List_ID();
+
+	public org.compiere.model.I_M_PriceList getKAEP_Price_List();
+
+	public void setKAEP_Price_List(org.compiere.model.I_M_PriceList KAEP_Price_List);
+
+    /** Column definition for KAEP_Price_List_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList> COLUMN_KAEP_Price_List_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList>(I_I_Pharma_Product.class, "KAEP_Price_List_ID", org.compiere.model.I_M_PriceList.class);
+    /** Column name KAEP_Price_List_ID */
+    public static final String COLUMNNAME_KAEP_Price_List_ID = "KAEP_Price_List_ID";
 
 	/**
 	 * Set Dosage Form.
@@ -3164,4 +3272,58 @@ public interface I_I_Pharma_Product
     public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_AD_User>(I_I_Pharma_Product.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Price List UVP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setUVP_Price_List_ID (int UVP_Price_List_ID);
+
+	/**
+	 * Get Price List UVP.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getUVP_Price_List_ID();
+
+	public org.compiere.model.I_M_PriceList getUVP_Price_List();
+
+	public void setUVP_Price_List(org.compiere.model.I_M_PriceList UVP_Price_List);
+
+    /** Column definition for UVP_Price_List_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList> COLUMN_UVP_Price_List_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList>(I_I_Pharma_Product.class, "UVP_Price_List_ID", org.compiere.model.I_M_PriceList.class);
+    /** Column name UVP_Price_List_ID */
+    public static final String COLUMNNAME_UVP_Price_List_ID = "UVP_Price_List_ID";
+
+	/**
+	 * Set Price List ZBV.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setZBV_Price_List_ID (int ZBV_Price_List_ID);
+
+	/**
+	 * Get Price List ZBV.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getZBV_Price_List_ID();
+
+	public org.compiere.model.I_M_PriceList getZBV_Price_List();
+
+	public void setZBV_Price_List(org.compiere.model.I_M_PriceList ZBV_Price_List);
+
+    /** Column definition for ZBV_Price_List_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList> COLUMN_ZBV_Price_List_ID = new org.adempiere.model.ModelColumn<I_I_Pharma_Product, org.compiere.model.I_M_PriceList>(I_I_Pharma_Product.class, "ZBV_Price_List_ID", org.compiere.model.I_M_PriceList.class);
+    /** Column name ZBV_Price_List_ID */
+    public static final String COLUMNNAME_ZBV_Price_List_ID = "ZBV_Price_List_ID";
 }
