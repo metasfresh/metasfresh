@@ -30,6 +30,8 @@ import de.metas.shipper.gateway.api.model.UpdateDeliveryOrderRequest;
 
 public interface ShipperGatewayClient
 {
+	String getShipperGatewayId();
+	
 	DeliveryOrderResponse createDeliveryOrder(CreateDeliveryOrderRequest request) throws ShipperGatewayException;
 
 	DeliveryOrderResponse updateDeliveryOrder(UpdateDeliveryOrderRequest request) throws ShipperGatewayException;

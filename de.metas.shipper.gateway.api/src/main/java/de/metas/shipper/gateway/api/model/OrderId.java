@@ -2,7 +2,12 @@ package de.metas.shipper.gateway.api.model;
 
 import org.adempiere.util.Check;
 
-import lombok.EqualsAndHashCode;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Value;
 
 /*
  * #%L
@@ -26,30 +31,28 @@ import lombok.EqualsAndHashCode;
  * #L%
  */
 
-@EqualsAndHashCode
+@Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class OrderId
 {
-	public static final OrderId of(final String orderIdStr)
+	public static final OrderId of(final String shipperGatewayId, final String orderIdAsString)
 	{
-		return new OrderId(orderIdStr);
+		return new OrderId(shipperGatewayId, orderIdAsString);
 	}
 
-	private final String orderIdStr;
+	@JsonProperty("gatewayId")
+	private final String shipperGatewayId;
+	@JsonProperty("orderId")
+	private final String orderIdAsString;
 
-	private OrderId(final String orderIdStr)
+	@JsonCreator
+	private OrderId(
+			@JsonProperty("gatewayId") final String shipperGatewayId,
+			@JsonProperty("orderId") final String orderIdAsString)
 	{
-		Check.assumeNotEmpty(orderIdStr, "orderIdStr is not empty");
-		this.orderIdStr = orderIdStr;
-	}
-
-	@Override
-	public String toString()
-	{
-		return getAsString();
-	}
-
-	public String getAsString()
-	{
-		return orderIdStr;
+		Check.assumeNotEmpty(shipperGatewayId, "shipperGatewayId is not empty");
+		Check.assumeNotEmpty(orderIdAsString, "orderIdAsString is not empty");
+		this.shipperGatewayId = shipperGatewayId;
+		this.orderIdAsString = orderIdAsString;
 	}
 }

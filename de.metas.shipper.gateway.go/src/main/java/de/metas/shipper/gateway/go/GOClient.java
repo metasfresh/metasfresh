@@ -68,6 +68,8 @@ import lombok.NonNull;
 
 public class GOClient extends WebServiceGatewaySupport implements ShipperGatewayClient
 {
+	public static final String SHIPPER_GATEWAY_ID = "go";
+
 	private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 	private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -81,6 +83,12 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 				.toString();
 	}
 
+	@Override
+	public String getShipperGatewayId()
+	{
+		return SHIPPER_GATEWAY_ID;
+	}
+	
 	@Override
 	public DeliveryOrderResponse createDeliveryOrder(@NonNull final CreateDeliveryOrderRequest request)
 	{
@@ -100,7 +108,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 	public DeliveryOrderResponse completePickupOrder(@NonNull final OrderId orderId)
 	{
 		final Sendung goRequest = objectFactory.createSendung();
-		goRequest.setSendungsnummerAX4(orderId.getAsString());
+		goRequest.setSendungsnummerAX4(orderId.getOrderIdAsString());
 		goRequest.setStatus(GOOrderStatus.APPROVED.getCode());
 
 		final Object goResponseObj = getWebServiceTemplate().marshalSendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
@@ -111,11 +119,16 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 	public DeliveryOrderResponse voidPickupOrder(final OrderId orderId)
 	{
 		final Sendung goRequest = objectFactory.createSendung();
-		goRequest.setSendungsnummerAX4(orderId.getAsString());
+		goRequest.setSendungsnummerAX4(orderId.getOrderIdAsString());
 		goRequest.setStatus(GOOrderStatus.CANCELLATION.getCode());
 
 		final Object goResponseObj = getWebServiceTemplate().marshalSendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
 		return extractDeliveryOrderResponse(goResponseObj);
+	}
+	
+	private static final OrderId createOrderId(final String orderIdStr)
+	{
+		return OrderId.of(SHIPPER_GATEWAY_ID, orderIdStr);
 	}
 
 	private DeliveryOrderResponse extractDeliveryOrderResponse(@NonNull final Object goResponseObj)
@@ -294,7 +307,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		final LocalDate pickupDate = LocalDate.parse(goResponseContent.getAbholdatum(), dateFormatter);
 
 		return DeliveryOrderResponse.builder()
-				.orderId(OrderId.of(goResponseContent.getSendungsnummerAX4()))
+				.orderId(createOrderId(goResponseContent.getSendungsnummerAX4()))
 				.hwbNumber(HWBNumber.of(goResponseContent.getFrachtbriefnummer()))
 				.pickupDate(pickupDate)
 				.note(goResponseContent.getHinweis())
@@ -315,7 +328,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		final PDFs pdfs = goPackageLabels.getPDFs();
 
 		return PackageLabels.builder()
-				.orderId(OrderId.of(goPackageLabels.getSendungsnummerAX4()))
+				.orderId(createOrderId(goPackageLabels.getSendungsnummerAX4()))
 				.hwbNumber(HWBNumber.of(goPackageLabels.getFrachtbriefnummer()))
 				.defaultLabelType(GOPackageLabelType.DIN_A6_ROUTER_LABEL)
 				.label(PackageLabel.builder()
