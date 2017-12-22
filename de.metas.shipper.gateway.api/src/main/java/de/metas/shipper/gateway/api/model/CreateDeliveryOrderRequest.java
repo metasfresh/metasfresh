@@ -30,17 +30,21 @@ import lombok.Value;
 
 @Value
 @Builder
-public class CreatePickupOrderRequest
+public class CreateDeliveryOrderRequest
 {
 	@NonNull
 	private Address pickupAddress;
 	@NonNull
 	private PickupDate pickupDate;
+	@Nullable
+	private String pickupNote;
 
 	@NonNull
 	private Address deliveryAddress;
 	@Nullable
 	private ContactPerson deliveryContact;
+	@Nullable
+	private String deliveryNote;
 
 	@NonNull
 	private DeliveryPosition deliveryPosition;

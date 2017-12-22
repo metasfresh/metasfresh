@@ -25,9 +25,18 @@ import lombok.Getter;
  * #L%
  */
 
+/**
+ * Self delivery: does the Sender bring to Shipper or Shipper is fetching from Sender.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public enum GOSelfDelivery implements SelfDelivery
 {
-	Pickup("0"), SelfPickup("1");
+	/** Shipper will fetch the packages from Sender */
+	Pickup("0"),
+	/** Sender is bringing packages to Shipper */
+	SelfPickup("1");
 
 	@Getter
 	private final String code;

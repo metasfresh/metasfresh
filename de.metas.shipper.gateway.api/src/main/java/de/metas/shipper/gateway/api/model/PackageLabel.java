@@ -1,11 +1,12 @@
-package de.metas.shipper.gateway.go.schema;
+package de.metas.shipper.gateway.api.model;
 
-import de.metas.shipper.gateway.api.model.PaidMode;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.shipper.go
+ * de.metas.shipper.gateway.api
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -25,18 +26,16 @@ import lombok.Getter;
  * #L%
  */
 
-public enum GOPaidMode implements PaidMode
+@Value
+@Builder
+public class PackageLabel
 {
-	/** Prepaid (the sender will pay for it) */
-	Prepaid("0"),
-	/** Unpaid (the receiver will pay for it) */
-	Unpaid("1");
+	public static final String CONTENTTYPE_PDF = "application/pdf";
 
-	@Getter
-	private final String code;
-
-	private GOPaidMode(final String code)
-	{
-		this.code = code;
-	}
+	@NonNull
+	PackageLabelType type;
+	@NonNull
+	String contentType;
+	@NonNull
+	byte[] labelData;
 }

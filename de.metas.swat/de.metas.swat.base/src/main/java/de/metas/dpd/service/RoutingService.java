@@ -247,7 +247,7 @@ public class RoutingService implements IDPDRoutingservice
 	private void validateQuery(final RoutingQuery query)
 	{
 
-		final Map<String, String> invalidFields = new HashMap<String, String>();
+		final Map<String, String> invalidFields = new HashMap<>();
 
 		if (Check.isEmpty(query.dPostCode))
 		{
@@ -474,7 +474,7 @@ public class RoutingService implements IDPDRoutingservice
 	 * @param packg
 	 *            this is the parmater from table M_Package; if the process is started from M_InOut, this will be null
 	 */
-	public void createPackageInfos(
+	private void createPackageInfos(
 			final Properties ctx,
 			final I_M_InOut inOut,
 			final String serviceOverride,

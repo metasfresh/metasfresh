@@ -1,11 +1,10 @@
 package de.metas.shipper.gateway.go.schema;
 
-import de.metas.shipper.gateway.api.model.PaidMode;
-import lombok.Getter;
+import de.metas.shipper.gateway.api.model.PackageLabelType;
 
 /*
  * #%L
- * de.metas.shipper.go
+ * de.metas.shipper.gateway.go
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -25,18 +24,12 @@ import lombok.Getter;
  * #L%
  */
 
-public enum GOPaidMode implements PaidMode
+public enum GOPackageLabelType implements PackageLabelType
 {
-	/** Prepaid (the sender will pay for it) */
-	Prepaid("0"),
-	/** Unpaid (the receiver will pay for it) */
-	Unpaid("1");
-
-	@Getter
-	private final String code;
-
-	private GOPaidMode(final String code)
-	{
-		this.code = code;
-	}
+	/** DIN A4 HWB (Tag Frachtbrief) */
+	DIN_A4_HWB,
+	/** DIN A6 routerlabel, optimized for Citizen and Zebra labelprinters (Tag RouterlabelZebra) */
+	DIN_A6_ROUTER_LABEL,
+	/** DIN A6 routerlabel for any other labelprinters (Tag Routerlabel) */
+	DIN_A6_ROUTER_LABEL_ZEBRA,
 }
