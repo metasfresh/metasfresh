@@ -101,12 +101,17 @@ Here come the actual release notes:
   * [#731](https://github.com/metasfresh/metasfresh-webui-api/issues/731) Introduce process parameters callout minimal functionality
     * New functionality that allows to trigger callouts for action parms in webui.
   * [#746](https://github.com/metasfresh/metasfresh-webui-api/issues/746) Picking Tray Clearing: Scan picking slot barcode filter
+    * New Functionality in Picking Tray clearing, allowing to filter the picking slot be scanning a barcode.
   * [#747](https://github.com/metasfresh/metasfresh-webui-api/issues/747) Picking Tray Clearing: filter picking slots by Partner
+    * New Functionality in Picking Tray clearing, allowing to filter by Business Partner.
   * [#751](https://github.com/metasfresh/metasfresh-webui-api/issues/751) Picking Tray Clearing: packing HUs: Add to Transportation Order action
+    * New Action in Picking Tray Window allowing to add Handling Units to a Transporation Order.
   * [#755](https://github.com/metasfresh/metasfresh-webui-api/issues/755) Processes: support for parentViewSelectedIds and childViewSelectedIds
+    * New Functionality for record selections in WebUI, now allowing the frontend to provide selected Parent and Child Row Indentifier to be uses in Actions/ Processes.
 
 * metasfresh-webui-frontend
   * [#1206](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1206) Use automatic code style enforcement
+    * Automatically transforming code to match code styling rules.
   * [#1375](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1375) Navigation Menu arrow down directly scrolls menu
     * Improving the behavior of scrolling in Navigation Menu with a lot of bookmarks.
   * [#1407](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1407) Process result: open included view: handle profileId property
@@ -116,7 +121,9 @@ Here come the actual release notes:
   * [#1425](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1425) Eslint: increase line max-len from 80 to 120.
     * Internal House Keeping issue that shall improve the Code Quality.
   * [#1433](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1433) Support Lookup view attributes
+    * Adding Lookup widget support for the Attributes Panel in WebUI. Now it's able to add autocomplete and search Functionality there.
   * [#1436](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1436) Remove legacy docs
+    * Removing legacy aoutdated documents from WebUI Frontend docs folder.
 
 #Fixes
 * metasfresh-app
@@ -143,6 +150,7 @@ Here come the actual release notes:
   * [#3183](https://github.com/metasfresh/metasfresh/issues/3183) Jenkins misinterprets positive downstream build result
     * Solving an internal housekeepinmg issue in Build System.
   * [#3202](https://github.com/metasfresh/metasfresh/issues/3202) Error in Paymentjournal Process/ Report in Payselection
+    * Fixes en error in Payselection when starting the Paymentjournal.
   * [#3206](https://github.com/metasfresh/metasfresh/issues/3206) Relation sales order - flatrate term is missing
     * Fixes a missing relation for flatrate term in sales order
   * [#3207](https://github.com/metasfresh/metasfresh/issues/3207) Cannot save an attribute in orderline
