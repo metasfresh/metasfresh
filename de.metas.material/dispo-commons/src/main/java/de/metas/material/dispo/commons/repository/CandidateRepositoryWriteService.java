@@ -265,7 +265,6 @@ public class CandidateRepositoryWriteService
 		detailRecordToUpdate.setPP_Plant_ID(productionDetail.getPlantId());
 		detailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
 		detailRecordToUpdate.setPP_Product_Planning_ID(productionDetail.getProductPlanningId());
-		detailRecordToUpdate.setC_UOM_ID(productionDetail.getUomId());
 		detailRecordToUpdate.setPP_Order_ID(productionDetail.getPpOrderId());
 		detailRecordToUpdate.setPP_Order_BOMLine_ID(productionDetail.getPpOrderLineId());
 		detailRecordToUpdate.setPP_Order_DocStatus(productionDetail.getPpOrderDocStatus());

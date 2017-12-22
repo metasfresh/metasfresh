@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.event.handler;
+package de.metas.material.dispo.service.event.handler.pporder;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
@@ -80,7 +80,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private PPOrderAdvisedOrCreatedHandler ppOrderAdvisedOrCreatedHandler;
+	private PPOrderCreatedHandler ppOrderAdvisedOrCreatedHandler;
 
 	private StockRepository stockRepository;
 
@@ -111,7 +111,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				candidateRepository,
 				MaterialEventService.createLocalServiceThatIsReadyToUse(ImmutableList.of()));
 
-		ppOrderAdvisedOrCreatedHandler = new PPOrderAdvisedOrCreatedHandler(candidateChangeHandler, candidateService);
+		ppOrderAdvisedOrCreatedHandler = new PPOrderCreatedHandler(candidateChangeHandler, candidateService);
 	}
 
 	@Test
@@ -129,7 +129,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 	private void perform_testPPOrderCreatedEvent(final PPOrderCreatedEvent ppOrderCreatedEvent)
 	{
-		ppOrderAdvisedOrCreatedHandler.handlePPOrderCreatedEvent(ppOrderCreatedEvent);
+		ppOrderAdvisedOrCreatedHandler.handleEvent(ppOrderCreatedEvent);
 
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1); //
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // we have two different inputs
@@ -216,7 +216,6 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				.warehouseId(intermediateWarehouseId)
 				.bPartnerId(BPARTNER_ID)
 				.plantId(120)
-				.uomId(130)
 				.productPlanningId(140)
 				.line(PPOrderLine.builder()
 						.description("descr1")

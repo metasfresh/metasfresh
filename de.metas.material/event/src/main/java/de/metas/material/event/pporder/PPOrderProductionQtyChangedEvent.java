@@ -1,13 +1,10 @@
 package de.metas.material.event.pporder;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -32,41 +29,20 @@ import lombok.Value;
  * #L%
  */
 
-// TODO: handle/test handling
 @Value
 @Builder
-public class PPOrderQtyEnteredChangedEvent implements MaterialEvent
+public class PPOrderProductionQtyChangedEvent implements MaterialEvent
 {
-	public static final String TYPE = "PPOrderQtyEnteredChangedEvent";
+	public static final String TYPE = "PPOrderProductionQtyChangedEvent";
 
-	@NonNull
-	private final EventDescriptor eventDescriptor;
+	EventDescriptor eventDescriptor;
 
 	int ppOrderId;
+
+	/** used if we "received" a CO- or BY-product */
+	int ppOrderLineId;
 
 	BigDecimal oldQuantity;
 
 	BigDecimal newQuantity;
-
-	@Singular
-	List<PPOrderLineChangeDescriptor> ppOrderLineChanges;
-
-	@Singular
-	List<Integer> deletedPPOrderLineIDs;
-
-	@Singular
-	List<PPOrderLine> newPPOrderLines;
-
-	@Value
-	@Builder
-	public static class PPOrderLineChangeDescriptor
-	{
-		int oldPPOrderLineId;
-
-		int newPPOrderLineId;
-
-		BigDecimal oldQuantity;
-
-		BigDecimal newQuantity;
-	}
 }

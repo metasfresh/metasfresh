@@ -1,6 +1,4 @@
-package de.metas.material.dispo.service.event.handler;
-
-import org.springframework.stereotype.Service;
+package de.metas.material.dispo.service.event.handler.pporder;
 
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -12,11 +10,10 @@ import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
+import de.metas.material.dispo.service.event.handler.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderAdvisedEvent;
-import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import lombok.NonNull;
 
@@ -41,8 +38,9 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Service
-public class PPOrderAdvisedOrCreatedHandler
+
+public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent>
+		implements MaterialEventHandler<T>
 {
 	private final CandidateChangeService candidateChangeHandler;
 	private final RequestMaterialOrderService requestMaterialOrderService;
@@ -60,17 +58,7 @@ public class PPOrderAdvisedOrCreatedHandler
 		this.requestMaterialOrderService = candidateService;
 	}
 
-	public void handlePPOrderCreatedEvent(@NonNull final PPOrderCreatedEvent productionAdvisedEvent)
-	{
-		handlePPOrderAdvisedOrCreatedEvent(productionAdvisedEvent, false);
-	}
-
-	public void handlePPOrderAdvisedEvent(@NonNull final PPOrderAdvisedEvent productionAdvisedEvent)
-	{
-		handlePPOrderAdvisedOrCreatedEvent(productionAdvisedEvent, true);
-	}
-
-	private void handlePPOrderAdvisedOrCreatedEvent(
+	protected void handlePPOrderAdvisedOrCreatedEvent(
 			@NonNull final AbstractPPOrderEvent ppOrderEvent,
 			final boolean advised)
 	{
@@ -164,7 +152,6 @@ public class PPOrderAdvisedOrCreatedHandler
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.ppOrderId(ppOrder.getPpOrderId())
 				.ppOrderDocStatus(ppOrder.getDocStatus())
-				.uomId(ppOrder.getUomId())
 				.build();
 		return productionCandidateDetail;
 	}

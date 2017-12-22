@@ -29,8 +29,9 @@ import de.metas.material.event.pporder.PPOrderChangedDocStatusEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent;
-import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent.PPOrderLineChangeDescriptor;
+import de.metas.material.event.pporder.PPOrderProductionQtyChangedEvent;
+import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
+import de.metas.material.event.pporder.PPOrderQtyChangedEvent.PPOrderLineChangeDescriptor;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
@@ -134,7 +135,6 @@ public class MaterialEventSerializerTests
 						.productDescriptor(createProductDescriptor())
 						.productPlanningId(130)
 						.quantity(BigDecimal.TEN)
-						.uomId(140)
 						.warehouseId(WAREHOUSE_ID)
 						.line(createPPOrderLine())
 						.line(PPOrderLine.builder()
@@ -187,6 +187,20 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
+	public void ppOrderProductionQtyChangedEvent()
+	{
+		final PPOrderProductionQtyChangedEvent event = PPOrderProductionQtyChangedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.ppOrderId(10)
+				.ppOrderLineId(20)
+				.oldQuantity(new BigDecimal("30"))
+				.newQuantity(new BigDecimal("40"))
+				.build();
+
+		assertEventEqualAfterSerializeDeserialize(event);
+	}
+
+	@Test
 	public void ppOrderDeletedEvent()
 	{
 		final PPOrderDeletedEvent event = PPOrderDeletedEvent.builder()
@@ -200,7 +214,7 @@ public class MaterialEventSerializerTests
 	@Test
 	public void ppOrderQtyEnteredChangedEvent()
 	{
-		final PPOrderQtyEnteredChangedEvent event = PPOrderQtyEnteredChangedEvent.builder()
+		final PPOrderQtyChangedEvent event = PPOrderQtyChangedEvent.builder()
 				.ppOrderId(10)
 				.deletedPPOrderLineID(20)
 				.deletedPPOrderLineID(30)
@@ -226,7 +240,6 @@ public class MaterialEventSerializerTests
 				.productDescriptor(createProductDescriptor())
 				.productPlanningId(130)
 				.quantity(BigDecimal.TEN)
-				.uomId(140)
 				.warehouseId(150)
 				.line(createPPOrderLine())
 				.line(PPOrderLine.builder()

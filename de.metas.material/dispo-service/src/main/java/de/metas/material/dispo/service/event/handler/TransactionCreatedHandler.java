@@ -2,12 +2,14 @@ package de.metas.material.dispo.service.event.handler;
 
 import java.math.BigDecimal;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
+import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -42,7 +44,8 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class TransactionCreatedHandler
+@Profile(Profiles.PROFILE_MaterialDispo)
+public class TransactionCreatedHandler implements MaterialEventHandler<TransactionCreatedEvent>
 {
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepository;
@@ -55,7 +58,14 @@ public class TransactionCreatedHandler
 		this.candidateRepository = candidateRepository;
 	}
 
-	public void handleTransactionCreatedEvent(@NonNull final TransactionCreatedEvent event)
+	@Override
+	public Class<TransactionCreatedEvent> getHandeledEventType()
+	{
+		return TransactionCreatedEvent.class;
+	}
+
+	@Override
+	public void handleEvent(@NonNull final TransactionCreatedEvent event)
 	{
 		final Candidate candidate = createCandidateForTransactionEvent(event);
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
@@ -160,5 +170,4 @@ public class TransactionCreatedHandler
 					.materialDescriptor(event.getMaterialDescriptor());
 		}
 	}
-
 }

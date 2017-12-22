@@ -13,10 +13,10 @@ import org.eevolution.model.I_PP_Order;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent;
-import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent.PPOrderLineChangeDescriptor;
-import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent.PPOrderLineChangeDescriptor.PPOrderLineChangeDescriptorBuilder;
-import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent.PPOrderQtyEnteredChangedEventBuilder;
+import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
+import de.metas.material.event.pporder.PPOrderQtyChangedEvent.PPOrderLineChangeDescriptor;
+import de.metas.material.event.pporder.PPOrderQtyChangedEvent.PPOrderLineChangeDescriptor.PPOrderLineChangeDescriptorBuilder;
+import de.metas.material.event.pporder.PPOrderQtyChangedEvent.PPOrderQtyChangedEventBuilder;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import lombok.NonNull;
 
@@ -49,7 +49,7 @@ public class PPOrderQtyEnteredChangeEventFactory
 		return new PPOrderQtyEnteredChangeEventFactory(ppOrderRecord);
 	}
 
-	private final PPOrderQtyEnteredChangedEventBuilder eventBuilder;
+	private final PPOrderQtyChangedEventBuilder eventBuilder;
 	private final PPOrderPojoConverter ppOrderConverter;
 	private final I_PP_Order ppOrderRecord;
 
@@ -83,11 +83,11 @@ public class PPOrderQtyEnteredChangeEventFactory
 				});
 	}
 
-	private PPOrderQtyEnteredChangedEventBuilder createAndInitEventBuilder(@NonNull final I_PP_Order ppOrderRecord)
+	private PPOrderQtyChangedEventBuilder createAndInitEventBuilder(@NonNull final I_PP_Order ppOrderRecord)
 	{
 		final I_PP_Order oldPPOrderRecord = createOld(ppOrderRecord, I_PP_Order.class);
 
-		final PPOrderQtyEnteredChangedEventBuilder eventBuilder = PPOrderQtyEnteredChangedEvent
+	final PPOrderQtyChangedEventBuilder eventBuilder = PPOrderQtyChangedEvent
 				.builder()
 				.eventDescriptor(EventDescriptor.createNew(ppOrderRecord))
 				.ppOrderId(ppOrderRecord.getPP_Order_ID())
@@ -104,7 +104,7 @@ public class PPOrderQtyEnteredChangeEventFactory
 		return collect;
 	}
 
-	public PPOrderQtyEnteredChangedEvent inspectPPOrderAfterChange()
+	public PPOrderQtyChangedEvent inspectPPOrderAfterChange()
 	{
 		final PPOrder updatedPPOrder = ppOrderConverter.asPPOrderPojo(ppOrderRecord);
 
@@ -131,7 +131,7 @@ public class PPOrderQtyEnteredChangeEventFactory
 		final List<PPOrderLineChangeDescriptor> deletedPPOrderLines = collect.get(false);
 		deletedPPOrderLines.forEach(descriptor -> eventBuilder.deletedPPOrderLineID(descriptor.getOldPPOrderLineId()));
 
-		final PPOrderQtyEnteredChangedEvent event = eventBuilder.build();
+		final PPOrderQtyChangedEvent event = eventBuilder.build();
 		return event;
 	}
 

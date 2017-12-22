@@ -55,7 +55,7 @@ import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.X_PP_Order;
 
 import de.metas.material.event.MaterialEventService;
-import de.metas.material.event.pporder.PPOrderQtyEnteredChangedEvent;
+import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
@@ -198,7 +198,7 @@ public class PP_Order
 		deleteWorkflowAndBOM(ppOrderRecord);
 		createWorkflowAndBOM(ppOrderRecord);
 
-		final PPOrderQtyEnteredChangedEvent event = eventfactory.inspectPPOrderAfterChange();
+		final PPOrderQtyChangedEvent event = eventfactory.inspectPPOrderAfterChange();
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
 		materialEventService.fireEventAfterNextCommit(event, getTrxName(ppOrderRecord));

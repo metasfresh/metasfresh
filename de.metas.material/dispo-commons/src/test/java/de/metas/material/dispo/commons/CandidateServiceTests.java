@@ -70,7 +70,6 @@ public class CandidateServiceTests
 				.productionDetail(ProductionDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
-						.uomId(230)
 						.build())
 				.build();
 

@@ -176,7 +176,7 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 						.build())
 				.build();
 
-		ddOrderAdvisedOrCreatedHandler.handleDDOrderAdvisedOrCreatedEvent(event);
+		ddOrderAdvisedOrCreatedHandler.handleEvent(event);
 
 		final List<I_MD_Candidate> allNonStockRecords = DispoTestUtils.filterExclStock();
 		final int groupIdOfFirstRecord = allNonStockRecords.get(0).getMD_Candidate_GroupId();
@@ -391,6 +391,6 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 								.build())
 						.build())
 				.build();
-		distributionAdvisedHandler.handleDDOrderAdvisedOrCreatedEvent(event1);
+		distributionAdvisedHandler.handleEvent(event1);
 	}
 }

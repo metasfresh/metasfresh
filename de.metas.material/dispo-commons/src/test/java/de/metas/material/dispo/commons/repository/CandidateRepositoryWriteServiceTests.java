@@ -211,7 +211,6 @@ public class CandidateRepositoryWriteServiceTests
 						.plantId(60)
 						.productBomLineId(70)
 						.productPlanningId(80)
-						.uomId(90)
 						.ppOrderId(100)
 						.ppOrderLineId(110)
 						.ppOrderDocStatus("ppOrderDocStatus")
@@ -233,7 +232,6 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(productionDetailRecord.getPP_Plant_ID()).isEqualTo(60);
 		assertThat(productionDetailRecord.getPP_Product_BOMLine_ID()).isEqualTo(70);
 		assertThat(productionDetailRecord.getPP_Product_Planning_ID()).isEqualTo(80);
-		assertThat(productionDetailRecord.getC_UOM_ID()).isEqualTo(90);
 		assertThat(productionDetailRecord.getPP_Order_ID()).isEqualTo(100);
 		assertThat(productionDetailRecord.getPP_Order_BOMLine_ID()).isEqualTo(110);
 		assertThat(productionDetailRecord.getPP_Order_DocStatus()).isEqualTo("ppOrderDocStatus");

@@ -94,7 +94,6 @@ public class PPOrderPojoConverter
 				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrder))
 				.productPlanningId(ppOrder.getPP_Product_Planning_ID())
 				.quantity(ppOrder.getQtyOrdered())
-				.uomId(ppOrder.getC_UOM_ID())
 				.warehouseId(ppOrder.getM_Warehouse_ID())
 				.bPartnerId(ppOrder.getC_BPartner_ID())
 				.orderLineId(ppOrder.getC_OrderLine_ID());

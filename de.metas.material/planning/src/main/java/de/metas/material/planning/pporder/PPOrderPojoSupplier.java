@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_M_Product;
@@ -91,8 +92,6 @@ public class PPOrderPojoSupplier
 		final Timestamp demandDateStartSchedule = TimeUtil.asTimestamp(request.getDemandDate());
 		final Quantity qtyToSupply = request.getQtyToSupply();
 
-
-		//
 		// BOM
 		if (productPlanningData.getPP_Product_BOM_ID() <= 0)
 		{
@@ -116,6 +115,9 @@ public class PPOrderPojoSupplier
 
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(productPlanningData);
 
+		final BigDecimal ppOrderQuantity = Services.get(IUOMConversionBL.class)
+				.convertToProductUOM(qtyToSupply, mrpContext.getM_Product());
+
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
 				.orgId(mrpContext.getAD_Org_ID())
 
@@ -126,14 +128,12 @@ public class PPOrderPojoSupplier
 
 				// Product, UOM, ASI
 				.productDescriptor(productDescriptor)
-				.uomId(qtyToSupply.getUOM().getC_UOM_ID())
 
 				// Dates
 				.datePromised(dateFinishSchedule)
 				.dateStartSchedule(dateStartSchedule)
 
-				// Qtys
-				.quantityInUOM(qtyToSupply.getQty())
+				.quantity(ppOrderQuantity)
 
 				.orderLineId(request.getMrpDemandOrderLineSOId())
 				.bPartnerId(request.getMrpDemandBPartnerId())

@@ -35,10 +35,11 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.handler.DDOrderAdvisedOrCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
-import de.metas.material.dispo.service.event.handler.PPOrderAdvisedOrCreatedHandler;
+import de.metas.material.dispo.service.event.handler.MaterialEventHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.dispo.service.event.handler.TransactionCreatedHandler;
+import de.metas.material.dispo.service.event.handler.pporder.PPOrderAdvisedHandler;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -131,7 +132,7 @@ public class MaterialDispoEventListenerFacadeTests
 				supplyProposalEvaluator,
 				new RequestMaterialOrderService(candidateRepositoryRetrieval, materialEventService));
 
-		final PPOrderAdvisedOrCreatedHandler productionAdvisedEventHandler = new PPOrderAdvisedOrCreatedHandler(candidateChangeHandler, candidateService);
+		final PPOrderAdvisedHandler productionAdvisedEventHandler = new PPOrderAdvisedHandler(candidateChangeHandler, candidateService);
 
 		final ForecastCreatedHandler forecastCreatedEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
 
@@ -139,12 +140,13 @@ public class MaterialDispoEventListenerFacadeTests
 
 		final ShipmentScheduleCreatedHandler shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(candidateChangeHandler);
 
-		mdEventListener = new MaterialDispoEventListenerFacade(
+		final ImmutableList<MaterialEventHandler> handlers = ImmutableList.of(
 				distributionAdvisedEventHandler,
 				productionAdvisedEventHandler,
 				forecastCreatedEventHandler,
 				transactionEventHandler,
 				shipmentScheduleEventHandler);
+		mdEventListener = new MaterialDispoEventListenerFacade(handlers);
 	}
 
 	/**

@@ -1,22 +1,17 @@
-package de.metas.material.dispo.service.event;
-
-import java.util.Collection;
+package de.metas.material.dispo.service.event.handler.pporder;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-
 import de.metas.Profiles;
-import de.metas.material.dispo.service.event.handler.MaterialEventHandler;
-import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.MaterialEventListener;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import lombok.NonNull;
 
 /*
  * #%L
- * metasfresh-manufacturing-dispo
+ * metasfresh-material-dispo-service
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -35,24 +30,31 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
-@SuppressWarnings(value = { "unchecked", "rawtypes" })
-public class MaterialDispoEventListenerFacade implements MaterialEventListener
+public class PPOrderAdvisedHandler
+		extends PPOrderAdvisedOrCreatedHandler<PPOrderAdvisedEvent>
 {
 
-	final ImmutableMap<Class, MaterialEventHandler> eventType2Handler;
-
-	public MaterialDispoEventListenerFacade(
-			@NonNull final Collection<MaterialEventHandler> handlers)
+	public PPOrderAdvisedHandler(
+			@NonNull final CandidateChangeService candidateChangeHandler,
+			@NonNull final RequestMaterialOrderService candidateService)
 	{
-		eventType2Handler = Maps.uniqueIndex(handlers, MaterialEventHandler::getHandeledEventType);
+		super(candidateChangeHandler, candidateService);
 	}
 
 	@Override
-	public void onEvent(@NonNull final MaterialEvent event)
+	public Class<PPOrderAdvisedEvent> getHandeledEventType()
 	{
-		final MaterialEventHandler<MaterialEvent> handler = eventType2Handler.get(event.getClass());
-		handler.handleEvent(event);
+		return PPOrderAdvisedEvent.class;
 	}
+
+	@Override
+	public void handleEvent(@NonNull final PPOrderAdvisedEvent event)
+	{
+		final boolean advised = true;
+		handlePPOrderAdvisedOrCreatedEvent(event, advised);
+	}
+
 }

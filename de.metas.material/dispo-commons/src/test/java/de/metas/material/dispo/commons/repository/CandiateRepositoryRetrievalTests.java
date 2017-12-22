@@ -182,7 +182,6 @@ public class CandiateRepositoryRetrievalTests
 		productionDetailRecord.setPP_Plant_ID(61);
 		productionDetailRecord.setPP_Product_BOMLine_ID(71);
 		productionDetailRecord.setPP_Product_Planning_ID(81);
-		productionDetailRecord.setC_UOM_ID(91);
 		productionDetailRecord.setMD_Candidate(record);
 		productionDetailRecord.setPP_Order_ID(101);
 		productionDetailRecord.setPP_Order_BOMLine_ID(111);
@@ -198,7 +197,6 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(cand.getProductionDetail().getDescription()).isEqualTo("description1");
 		assertThat(cand.getProductionDetail().getProductBomLineId()).isEqualTo(71);
 		assertThat(cand.getProductionDetail().getProductPlanningId()).isEqualTo(81);
-		assertThat(cand.getProductionDetail().getUomId()).isEqualTo(91);
 		assertThat(cand.getProductionDetail().getPpOrderId()).isEqualTo(101);
 		assertThat(cand.getProductionDetail().getPpOrderLineId()).isEqualTo(111);
 		assertThat(cand.getProductionDetail().getPpOrderDocStatus()).isEqualTo("ppOrderDocStatus1");

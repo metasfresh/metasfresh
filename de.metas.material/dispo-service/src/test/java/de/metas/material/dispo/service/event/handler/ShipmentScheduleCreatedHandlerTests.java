@@ -111,7 +111,7 @@ public class ShipmentScheduleCreatedHandlerTests
 				event.getOrderedMaterial(),
 				"0");
 
-		shipmentScheduleEventHandler.handleShipmentScheduleCreatedEvent(event);
+		shipmentScheduleEventHandler.handleEvent(event);
 
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
 		assertThat(allRecords).hasSize(2);

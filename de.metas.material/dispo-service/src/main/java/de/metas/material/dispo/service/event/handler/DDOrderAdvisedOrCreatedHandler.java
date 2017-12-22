@@ -5,8 +5,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import de.metas.Profiles;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -48,8 +50,10 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 @Service
-public class DDOrderAdvisedOrCreatedHandler
+@Profile(Profiles.PROFILE_MaterialDispo)
+public class DDOrderAdvisedOrCreatedHandler implements MaterialEventHandler<DDOrderAdvisedOrCreatedEvent>
 {
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final CandidateRepositoryWriteService candidateRepositoryWrite;
@@ -64,14 +68,21 @@ public class DDOrderAdvisedOrCreatedHandler
 			@NonNull final SupplyProposalEvaluator supplyProposalEvaluator,
 			@NonNull final RequestMaterialOrderService candidateService)
 	{
-		requestMaterialOrderService = candidateService;
+		this.requestMaterialOrderService = candidateService;
 		this.candidateChangeHandler = candidateChangeHandler;
-		candidateRepositoryRetrieval = candidateRepository;
-		candidateRepositoryWrite = candidateRepositoryCommands;
+		this.candidateRepositoryRetrieval = candidateRepository;
+		this.candidateRepositoryWrite = candidateRepositoryCommands;
 		this.supplyProposalEvaluator = supplyProposalEvaluator;
 	}
 
-	public void handleDDOrderAdvisedOrCreatedEvent(final DDOrderAdvisedOrCreatedEvent event)
+	@Override
+	public Class<DDOrderAdvisedOrCreatedEvent> getHandeledEventType()
+	{
+		return DDOrderAdvisedOrCreatedEvent.class;
+	}
+
+	@Override
+	public void handleEvent(final DDOrderAdvisedOrCreatedEvent event)
 	{
 		final DDOrder ddOrder = event.getDdOrder();
 

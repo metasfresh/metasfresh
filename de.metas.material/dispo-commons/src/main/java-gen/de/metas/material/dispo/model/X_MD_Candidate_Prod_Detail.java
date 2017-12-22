@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.material.dispo.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1853581234L;
+	private static final long serialVersionUID = -1367973658L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Prod_Detail (Properties ctx, int MD_Candidate_Prod_Detail_ID, String trxName)
@@ -42,41 +43,42 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
       return poi;
     }
 
+	/** Set Istmenge.
+		@param ActualQty Istmenge	  */
 	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	public void setActualQty (java.math.BigDecimal ActualQty)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+		set_Value (COLUMNNAME_ActualQty, ActualQty);
 	}
 
+	/** Get Istmenge.
+		@return Istmenge	  */
 	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	public java.math.BigDecimal getActualQty () 
 	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
-	/** Set Maßeinheit.
-		@param C_UOM_ID 
-		Maßeinheit
-	  */
+	/** Set Geplante Menge.
+		@param AdvisedQty Geplante Menge	  */
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setAdvisedQty (java.math.BigDecimal AdvisedQty)
 	{
-		if (C_UOM_ID < 1) 
-			set_Value (COLUMNNAME_C_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+		set_Value (COLUMNNAME_AdvisedQty, AdvisedQty);
 	}
 
-	/** Get Maßeinheit.
-		@return Maßeinheit
-	  */
+	/** Get Geplante Menge.
+		@return Geplante Menge	  */
 	@Override
-	public int getC_UOM_ID () 
+	public java.math.BigDecimal getAdvisedQty () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AdvisedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Beschreibung.

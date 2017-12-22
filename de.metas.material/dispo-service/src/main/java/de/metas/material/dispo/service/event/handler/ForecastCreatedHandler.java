@@ -1,7 +1,9 @@
 package de.metas.material.dispo.service.event.handler;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -37,21 +39,24 @@ import lombok.NonNull;
  */
 
 @Service
-public class ForecastCreatedHandler
+@Profile(Profiles.PROFILE_MaterialDispo)
+public class ForecastCreatedHandler implements MaterialEventHandler<ForecastCreatedEvent>
 {
 	private final CandidateChangeService candidateChangeHandler;
 
-	/**
-	 *
-	 * @param candidateChangeHandler
-	 *
-	 */
 	public ForecastCreatedHandler(@NonNull final CandidateChangeService candidateChangeHandler)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
 	}
 
-	public void handleForecastCreatedEvent(@NonNull final ForecastCreatedEvent event)
+	@Override
+	public Class<ForecastCreatedEvent> getHandeledEventType()
+	{
+		return ForecastCreatedEvent.class;
+	}
+
+	@Override
+	public void handleEvent(@NonNull final ForecastCreatedEvent event)
 	{
 		final Forecast forecast = event.getForecast();
 

@@ -216,7 +216,6 @@ public class CandidateRepositoryRetrieval
 				.plantId(productionDetail.getPP_Plant_ID())
 				.productBomLineId(productionDetail.getPP_Product_BOMLine_ID())
 				.productPlanningId(productionDetail.getPP_Product_Planning_ID())
-				.uomId(productionDetail.getC_UOM_ID())
 				.ppOrderId(productionDetail.getPP_Order_ID())
 				.ppOrderLineId(productionDetail.getPP_Order_BOMLine_ID())
 				.ppOrderDocStatus(productionDetail.getPP_Order_DocStatus())

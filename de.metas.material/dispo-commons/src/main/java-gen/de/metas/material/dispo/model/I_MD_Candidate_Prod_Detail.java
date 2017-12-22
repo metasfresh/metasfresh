@@ -23,6 +23,29 @@ public interface I_MD_Candidate_Prod_Detail
     /** Load Meta Data */
 
 	/**
+	 * Set Istmenge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setActualQty (java.math.BigDecimal ActualQty);
+
+	/**
+	 * Get Istmenge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getActualQty();
+
+    /** Column definition for ActualQty */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, Object> COLUMN_ActualQty = new org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, Object>(I_MD_Candidate_Prod_Detail.class, "ActualQty", null);
+    /** Column name ActualQty */
+    public static final String COLUMNNAME_ActualQty = "ActualQty";
+
+	/**
 	 * Get Mandant.
 	 * Mandant für diese Installation.
 	 *
@@ -69,6 +92,29 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Geplante Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAdvisedQty (java.math.BigDecimal AdvisedQty);
+
+	/**
+	 * Get Geplante Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getAdvisedQty();
+
+    /** Column definition for AdvisedQty */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, Object> COLUMN_AdvisedQty = new org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, Object>(I_MD_Candidate_Prod_Detail.class, "AdvisedQty", null);
+    /** Column name AdvisedQty */
+    public static final String COLUMNNAME_AdvisedQty = "AdvisedQty";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -97,35 +143,6 @@ public interface I_MD_Candidate_Prod_Detail
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, org.compiere.model.I_AD_User>(I_MD_Candidate_Prod_Detail.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, org.compiere.model.I_C_UOM>(I_MD_Candidate_Prod_Detail.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Beschreibung.

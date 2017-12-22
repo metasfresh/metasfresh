@@ -127,7 +127,6 @@ public class RequestMaterialOrderService
 						.productDescriptor(materialDescriptor)
 						.bPartnerId(materialDescriptor.getBPartnerId())
 						.quantity(groupMember.getQuantity())
-						.uomId(prodDetail.getUomId())
 						.warehouseId(groupMember.getWarehouseId());
 			}
 			else

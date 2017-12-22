@@ -120,7 +120,7 @@ public class ForecastCreatedHandlerTest
 			times = 1;
 		}}; // @formatter:on
 
-		forecastCreatedHandler.handleForecastCreatedEvent(forecastCreatedEvent);
+		forecastCreatedHandler.handleEvent(forecastCreatedEvent);
 		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords().stream().sorted(Comparator.comparing(I_MD_Candidate::getSeqNo)).collect(Collectors.toList());
 
 		assertThat(result).hasSize(1);
@@ -158,7 +158,7 @@ public class ForecastCreatedHandlerTest
 			times = 1;
 		}};	// @formatter:on
 
-		forecastCreatedHandler.handleForecastCreatedEvent(forecastCreatedEvent);
+		forecastCreatedHandler.handleEvent(forecastCreatedEvent);
 		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords().stream().sorted(Comparator.comparing(I_MD_Candidate::getSeqNo)).collect(Collectors.toList());
 
 		assertThat(result).hasSize(1);
