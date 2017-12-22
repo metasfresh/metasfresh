@@ -1,11 +1,12 @@
-package de.metas.shipper.gateway.go.schema;
+package de.metas.shipper.gateway.api.model;
 
-import de.metas.shipper.gateway.api.model.PaidMode;
-import lombok.Getter;
+import org.adempiere.util.Check;
+
+import lombok.EqualsAndHashCode;
 
 /*
  * #%L
- * de.metas.shipper.go
+ * de.metas.shipper.gateway.api
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -13,30 +14,42 @@ import lombok.Getter;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public enum GOPaidMode implements PaidMode
+@EqualsAndHashCode
+public final class OrderId
 {
-	/** Prepaid (the sender will pay for it) */
-	Prepaid("0"),
-	/** Unpaid (the receiver will pay for it) */
-	Unpaid("1");
-
-	@Getter
-	private final String code;
-
-	private GOPaidMode(final String code)
+	public static final OrderId of(final String orderIdStr)
 	{
-		this.code = code;
+		return new OrderId(orderIdStr);
+	}
+
+	private final String orderIdStr;
+
+	private OrderId(final String orderIdStr)
+	{
+		Check.assumeNotEmpty(orderIdStr, "orderIdStr is not empty");
+		this.orderIdStr = orderIdStr;
+	}
+
+	@Override
+	public String toString()
+	{
+		return getAsString();
+	}
+
+	public String getAsString()
+	{
+		return orderIdStr;
 	}
 }

@@ -1,11 +1,19 @@
-package de.metas.shipper.gateway.go.schema;
+package de.metas.shipper.gateway.api.model;
 
-import de.metas.shipper.gateway.api.model.PaidMode;
-import lombok.Getter;
+import java.time.LocalDate;
+
+import javax.annotation.Nullable;
+
+import com.google.common.collect.ImmutableList;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.shipper.go
+ * de.metas.shipper.gateway.api
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -25,18 +33,32 @@ import lombok.Getter;
  * #L%
  */
 
-public enum GOPaidMode implements PaidMode
+@Builder
+@Value
+public class DeliveryOrderResponse
 {
-	/** Prepaid (the sender will pay for it) */
-	Prepaid("0"),
-	/** Unpaid (the receiver will pay for it) */
-	Unpaid("1");
+	@NonNull
+	OrderId orderId;
+	@NonNull
+	HWBNumber hwbNumber;
 
-	@Getter
-	private final String code;
+	@NonNull
+	LocalDate pickupDate;
 
-	private GOPaidMode(final String code)
+	@Nullable
+	String note;
+
+	@Singular
+	ImmutableList<ResponseDeliveryPosition> deliveryPositions;
+
+	@lombok.Builder
+	@lombok.Value
+	public static class ResponseDeliveryPosition
 	{
-		this.code = code;
+		String positionNo;
+		String numberOfPackages;
+
+		@lombok.Singular
+		ImmutableList<String> barcodes;
 	}
 }

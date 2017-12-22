@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.go;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -10,16 +11,27 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.shipper.gateway.api.ShipperGatewayClient;
+import de.metas.shipper.gateway.api.exceptions.ShipperErrorMessage;
+import de.metas.shipper.gateway.api.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.api.model.Address;
 import de.metas.shipper.gateway.api.model.ContactPerson;
-import de.metas.shipper.gateway.api.model.CreatePickupOrderRequest;
+import de.metas.shipper.gateway.api.model.CreateDeliveryOrderRequest;
+import de.metas.shipper.gateway.api.model.DeliveryOrderResponse;
+import de.metas.shipper.gateway.api.model.DeliveryOrderResponse.ResponseDeliveryPosition;
 import de.metas.shipper.gateway.api.model.DeliveryPosition;
+import de.metas.shipper.gateway.api.model.HWBNumber;
+import de.metas.shipper.gateway.api.model.OrderId;
 import de.metas.shipper.gateway.api.model.PackageDimensions;
+import de.metas.shipper.gateway.api.model.PackageLabel;
+import de.metas.shipper.gateway.api.model.PackageLabels;
 import de.metas.shipper.gateway.api.model.PhoneNumber;
 import de.metas.shipper.gateway.api.model.PickupDate;
-import de.metas.shipper.gateway.api.model.PickupOrderResponse;
-import de.metas.shipper.gateway.api.model.PickupOrderResponse.ResponseDeliveryPosition;
+import de.metas.shipper.gateway.api.model.UpdateDeliveryOrderRequest;
+import de.metas.shipper.gateway.go.schema.Fehlerbehandlung;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;
+import de.metas.shipper.gateway.go.schema.GOPackageLabelType;
+import de.metas.shipper.gateway.go.schema.Label;
+import de.metas.shipper.gateway.go.schema.Label.Sendung.PDFs;
 import de.metas.shipper.gateway.go.schema.ObjectFactory;
 import de.metas.shipper.gateway.go.schema.Sendung;
 import de.metas.shipper.gateway.go.schema.Sendung.Abholadresse;
@@ -30,6 +42,7 @@ import de.metas.shipper.gateway.go.schema.Sendung.Empfaenger.Ansprechpartner.Tel
 import de.metas.shipper.gateway.go.schema.Sendung.SendungsPosition;
 import de.metas.shipper.gateway.go.schema.Sendung.SendungsPosition.Abmessungen;
 import de.metas.shipper.gateway.go.schema.SendungsRueckmeldung;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -69,23 +82,90 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 	}
 
 	@Override
-	public PickupOrderResponse createPickupOrder(final CreatePickupOrderRequest request)
+	public DeliveryOrderResponse createDeliveryOrder(@NonNull final CreateDeliveryOrderRequest request)
 	{
 		final Sendung goRequest = createGOPickupRequest(request);
-		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)getWebServiceTemplate().marshalSendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
-		final PickupOrderResponse response = createPickupOrderResponse(goResponse);
-		return response;
+		final Object goResponseObj = getWebServiceTemplate().marshalSendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
+		return extractDeliveryOrderResponse(goResponseObj);
 	}
 
-	private Sendung createGOPickupRequest(final CreatePickupOrderRequest request)
+	@Override
+	public DeliveryOrderResponse updateDeliveryOrder(@NonNull final UpdateDeliveryOrderRequest request)
+	{
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public DeliveryOrderResponse completePickupOrder(@NonNull final OrderId orderId)
+	{
+		final Sendung goRequest = objectFactory.createSendung();
+		goRequest.setSendungsnummerAX4(orderId.getAsString());
+		goRequest.setStatus(GOOrderStatus.APPROVED.getCode());
+
+		final Object goResponseObj = getWebServiceTemplate().marshalSendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
+		return extractDeliveryOrderResponse(goResponseObj);
+	}
+
+	@Override
+	public DeliveryOrderResponse voidPickupOrder(final OrderId orderId)
+	{
+		final Sendung goRequest = objectFactory.createSendung();
+		goRequest.setSendungsnummerAX4(orderId.getAsString());
+		goRequest.setStatus(GOOrderStatus.CANCELLATION.getCode());
+
+		final Object goResponseObj = getWebServiceTemplate().marshalSendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
+		return extractDeliveryOrderResponse(goResponseObj);
+	}
+
+	private DeliveryOrderResponse extractDeliveryOrderResponse(@NonNull final Object goResponseObj)
+	{
+		if (goResponseObj instanceof SendungsRueckmeldung)
+		{
+			final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
+			final DeliveryOrderResponse response = createPickupOrderResponse(goResponse);
+			return response;
+		}
+		else if (goResponseObj instanceof Fehlerbehandlung)
+		{
+			throw extractException((Fehlerbehandlung)goResponseObj);
+		}
+		else
+		{
+			throw new IllegalArgumentException("Unknown reponse type: " + goResponseObj.getClass());
+		}
+	}
+
+	private ShipperGatewayException extractException(final Fehlerbehandlung errorResponse)
+	{
+		final Fehlerbehandlung.Fehlermeldungen goErrorMessages = errorResponse.getFehlermeldungen();
+		final List<ShipperErrorMessage> shipperErrorMessages = goErrorMessages.getFehler()
+				.stream()
+				.map(this::createShipperErrorMessage)
+				.collect(ImmutableList.toImmutableList());
+
+		return new ShipperGatewayException(shipperErrorMessages);
+	}
+
+	private ShipperErrorMessage createShipperErrorMessage(final Fehlerbehandlung.Fehlermeldungen.Fehler goError)
+	{
+		return ShipperErrorMessage.builder()
+				.code(goError.getFehlerNr())
+				.message(goError.getBeschreibung())
+				.fieldName(goError.getFeld())
+				.stackTrace(goError.getStackTrace())
+				.build();
+	}
+
+	private Sendung createGOPickupRequest(final CreateDeliveryOrderRequest request)
 	{
 		final Abholadresse pickupAddress = createGOPickupAddress(request.getPickupAddress());
 		final Abholdatum pickupDate = createGOPickupDate(request.getPickupDate());
 
 		final Empfaenger deliveryAddress = createGODeliveryAddress(request.getDeliveryAddress(), request.getDeliveryContact());
 		final SendungsPosition deliveryPosition = createGODeliveryPosition(request.getDeliveryPosition());
-		final Sendung goRequest = objectFactory.createSendung();
 
+		final Sendung goRequest = objectFactory.createSendung();
 		goRequest.setSendungsnummerAX4(null); // AX4 shipment no. (n15, mandatory for update and cancellation)
 		goRequest.setFrachtbriefnummer(null); // HWB no. (N18, not mandatory). If you provide a HWB no. in this field, AX4 will not generate a new HWB no.
 		goRequest.setVersender(null); // AX4 ID shipper (n30, not mandatory). This is the AX4 ID to be booked for this order
@@ -94,9 +174,11 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		goRequest.setKundenreferenz(null); // Customer reference no (an40, i guess it's not mandatory)
 		goRequest.setAbholadresse(pickupAddress); // Pickup address (mandatory)
 		goRequest.setAbholdatum(pickupDate); // Pickup date (mandatory)
+		goRequest.setAbholhinweise(request.getPickupNote()); // Pickup note (an128, not mandatory)
 
 		goRequest.setEmpfaenger(deliveryAddress); // Delivery address (mandatory)
 		goRequest.setZustelldatum(null); // Delivery date (not mandatory)
+		goRequest.setZustellhinweise(request.getDeliveryNote()); // Delivery note (an128, not mandatory)
 
 		goRequest.setService(request.getServiceType().getCode()); // Service type (mandatory)
 		goRequest.setUnfrei(request.getPaidMode().getCode()); // Flag unpaid (mandatory)
@@ -105,11 +187,10 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		goRequest.setWarenwert(null); // Value of goods (not mandatory)
 		goRequest.setSonderversicherung(null); // Special insurance (not mandatory)
 		goRequest.setNachnahme(null); // Cash on delivery (not mandatory)
-		goRequest.setAbholhinweise(null); // Pickup note (an128, not mandatory)
-		goRequest.setZustellhinweise(null); // Delivery note (an128, not mandatory)
 		goRequest.setTelefonEmpfangsbestaetigung(request.getReceiptConfirmationPhoneNumber()); // Phone no. for confirmation of receipt (an25, mandatory)
 
 		goRequest.setSendungsPosition(deliveryPosition); // Shipment position (mandatory, max. 1)
+
 		return goRequest;
 	}
 
@@ -196,25 +277,62 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		return goDeliveryAddress;
 	}
 
-	private PickupOrderResponse createPickupOrderResponse(SendungsRueckmeldung goResponse)
+	private DeliveryOrderResponse createPickupOrderResponse(final SendungsRueckmeldung goResponse)
 	{
 		final SendungsRueckmeldung.Sendung goResponseContent = goResponse.getSendung();
 
+		// NOTE: based on protocol v1.3 i understand there will be only one position, always
 		final List<ResponseDeliveryPosition> deliveryPositions = goResponseContent.getPosition()
 				.stream()
-				.map(goDeliveryPosition -> PickupOrderResponse.ResponseDeliveryPosition.builder()
+				.map(goDeliveryPosition -> DeliveryOrderResponse.ResponseDeliveryPosition.builder()
 						.positionNo(goDeliveryPosition.getPositionsNr())
 						.numberOfPackages(goDeliveryPosition.getAnzahlPackstuecke())
 						.barcodes(goDeliveryPosition.getBarcodes().getBarcodeNr())
 						.build())
 				.collect(ImmutableList.toImmutableList());
 
-		return PickupOrderResponse.builder()
-				.orderId(goResponseContent.getSendungsnummerAX4())
-				.hwbNumber(goResponseContent.getFrachtbriefnummer())
-				.pickupDate(goResponseContent.getAbholdatum())
+		final LocalDate pickupDate = LocalDate.parse(goResponseContent.getAbholdatum(), dateFormatter);
+
+		return DeliveryOrderResponse.builder()
+				.orderId(OrderId.of(goResponseContent.getSendungsnummerAX4()))
+				.hwbNumber(HWBNumber.of(goResponseContent.getFrachtbriefnummer()))
+				.pickupDate(pickupDate)
 				.note(goResponseContent.getHinweis())
 				.deliveryPositions(deliveryPositions)
+				.build();
+	}
+
+	private List<PackageLabels> createDeliveryPackageLabels(final Label goLabels)
+	{
+		return goLabels.getSendung()
+				.stream()
+				.map(goPackageLabels -> createPackageLabels(goPackageLabels))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private PackageLabels createPackageLabels(final Label.Sendung goPackageLabels)
+	{
+		final PDFs pdfs = goPackageLabels.getPDFs();
+
+		return PackageLabels.builder()
+				.orderId(OrderId.of(goPackageLabels.getSendungsnummerAX4()))
+				.hwbNumber(HWBNumber.of(goPackageLabels.getFrachtbriefnummer()))
+				.defaultLabelType(GOPackageLabelType.DIN_A6_ROUTER_LABEL)
+				.label(PackageLabel.builder()
+						.type(GOPackageLabelType.DIN_A4_HWB)
+						.contentType(PackageLabel.CONTENTTYPE_PDF)
+						.labelData(pdfs.getFrachtbrief())
+						.build())
+				.label(PackageLabel.builder()
+						.type(GOPackageLabelType.DIN_A6_ROUTER_LABEL)
+						.contentType(PackageLabel.CONTENTTYPE_PDF)
+						.labelData(pdfs.getRouterlabel())
+						.build())
+				.label(PackageLabel.builder()
+						.type(GOPackageLabelType.DIN_A4_HWB)
+						.contentType(PackageLabel.CONTENTTYPE_PDF)
+						.labelData(pdfs.getRouterlabelZebra())
+						.build())
 				.build();
 	}
 }

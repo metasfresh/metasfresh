@@ -10,10 +10,10 @@ import org.springframework.context.annotation.Bean;
 
 import de.metas.shipper.gateway.api.ShipperGatewayClient;
 import de.metas.shipper.gateway.api.model.Address;
-import de.metas.shipper.gateway.api.model.CountryCode;
-import de.metas.shipper.gateway.api.model.CreatePickupOrderRequest;
+import de.metas.shipper.gateway.api.model.CreateDeliveryOrderRequest;
 import de.metas.shipper.gateway.api.model.DeliveryPosition;
 import de.metas.shipper.gateway.api.model.PickupDate;
+import de.metas.shipper.gateway.api.service.CountryCodeFactory;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
@@ -50,18 +50,18 @@ public class Application
 	}
 
 	@Bean
-	CommandLineRunner test(final ShipperGatewayClient shipperGatewayClient)
+	CommandLineRunner test(final ShipperGatewayClient shipperGatewayClient, final CountryCodeFactory countryCodeFactory)
 	{
 		System.out.println("Using: " + shipperGatewayClient);
-		
-		final CreatePickupOrderRequest request = CreatePickupOrderRequest.builder()
+
+		final CreateDeliveryOrderRequest request = CreateDeliveryOrderRequest.builder()
 				.pickupAddress(Address.builder()
 						.companyName1("from company")
 						.street1("street 1")
 						.houseNo("1")
 						.zipCode("12345")
 						.city("Bonn")
-						.country(CountryCode.builder().alpha2("DE").alpha3("DEU").build())
+						.country(countryCodeFactory.getCountryCodeByAlpha2("DE"))
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.of(2017, Month.DECEMBER, 30))
@@ -72,7 +72,7 @@ public class Application
 						.houseNo("1")
 						.zipCode("54321")
 						.city("Koln")
-						.country(CountryCode.builder().alpha2("DE").alpha3("DEU").build())
+						.country(countryCodeFactory.getCountryCodeByAlpha2("DE"))
 						.build())
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(1)
@@ -80,14 +80,14 @@ public class Application
 						.content("some products")
 						.build())
 				.serviceType(GOServiceType.Overnight)
-				.paidMode(GOPaidMode.Unpaid)
+				.paidMode(GOPaidMode.Prepaid)
 				.selfDelivery(GOSelfDelivery.Pickup)
 				.selfPickup(GOSelfPickup.Delivery)
 				.receiptConfirmationPhoneNumber("+40-746-010203")
 				.build();
 		return args -> {
 			System.out.println("Request: " + request);
-			shipperGatewayClient.createPickupOrder(request);
+			shipperGatewayClient.createDeliveryOrder(request);
 		};
 	}
 }

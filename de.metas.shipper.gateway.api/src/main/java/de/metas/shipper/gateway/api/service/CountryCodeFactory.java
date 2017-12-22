@@ -1,11 +1,10 @@
-package de.metas.shipper.gateway.go.schema;
+package de.metas.shipper.gateway.api.service;
 
-import de.metas.shipper.gateway.api.model.PaidMode;
-import lombok.Getter;
+import de.metas.shipper.gateway.api.model.CountryCode;
 
 /*
  * #%L
- * de.metas.shipper.go
+ * de.metas.shipper.gateway.api
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -16,27 +15,20 @@ import lombok.Getter;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public enum GOPaidMode implements PaidMode
+public interface CountryCodeFactory
 {
-	/** Prepaid (the sender will pay for it) */
-	Prepaid("0"),
-	/** Unpaid (the receiver will pay for it) */
-	Unpaid("1");
 
-	@Getter
-	private final String code;
+	CountryCode getCountryCodeByAlpha2(String countryCodeAlpha2);
 
-	private GOPaidMode(final String code)
-	{
-		this.code = code;
-	}
+	CountryCode getCountryCodeByAlpha3(String countryCodeAlpha3);
+
 }

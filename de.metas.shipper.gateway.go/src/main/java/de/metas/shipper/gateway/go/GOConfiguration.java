@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.transport.http.HttpComponentsMessageSender;
 
+import de.metas.shipper.gateway.api.service.CountryCodeFactory;
+import de.metas.shipper.gateway.api.service.DefaultCountryCodeFactory;
 import de.metas.shipper.gateway.go.schema.ObjectFactory;
 
 /*
@@ -86,5 +88,11 @@ public class GOConfiguration
 		logger.info("Using GO credentials: {}", credentials);
 
 		return credentials;
+	}
+
+	@Bean
+	public CountryCodeFactory countryCodeFactory()
+	{
+		return new DefaultCountryCodeFactory();
 	}
 }

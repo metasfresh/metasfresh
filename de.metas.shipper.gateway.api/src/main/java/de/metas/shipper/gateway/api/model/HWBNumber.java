@@ -1,11 +1,12 @@
-package de.metas.shipper.gateway.go.schema;
+package de.metas.shipper.gateway.api.model;
 
-import de.metas.shipper.gateway.api.model.SelfPickup;
-import lombok.Getter;
+import org.adempiere.util.Check;
+
+import lombok.EqualsAndHashCode;
 
 /*
  * #%L
- * de.metas.shipper.go
+ * de.metas.shipper.gateway.api
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -13,12 +14,12 @@ import lombok.Getter;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,23 +27,35 @@ import lombok.Getter;
  */
 
 /**
- * Self pickup: does the Recipient fetch the packages from Shipper or the Shipper is delivering the packages to Recipient
+ * House Way Bill (HWB)
  * 
  * @author metas-dev <dev@metasfresh.com>
- *
+ * @see https://en.wikipedia.org/wiki/Global_Identification_Number_for_Consignment
  */
-public enum GOSelfPickup implements SelfPickup
+@EqualsAndHashCode
+public final class HWBNumber
 {
-	/** Shipper will deliver packages to Recipient */
-	Delivery("0"),
-	/** Recipient will fetch packages from Shipper */
-	SelfDelivery("1");
-
-	@Getter
-	private final String code;
-
-	private GOSelfPickup(final String code)
+	public static final HWBNumber of(final String hwbNumberStr)
 	{
-		this.code = code;
+		return new HWBNumber(hwbNumberStr);
+	}
+
+	private final String hwbNumberStr;
+
+	private HWBNumber(final String hwbNumberStr)
+	{
+		Check.assumeNotEmpty(hwbNumberStr, "hwbNumberStr is not empty");
+		this.hwbNumberStr = hwbNumberStr;
+	}
+
+	@Override
+	public String toString()
+	{
+		return getAsString();
+	}
+
+	public String getAsString()
+	{
+		return hwbNumberStr;
 	}
 }

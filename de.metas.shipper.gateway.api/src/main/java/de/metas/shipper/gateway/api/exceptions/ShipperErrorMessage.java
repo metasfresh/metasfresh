@@ -1,11 +1,11 @@
-package de.metas.shipper.gateway.go.schema;
+package de.metas.shipper.gateway.api.exceptions;
 
-import de.metas.shipper.gateway.api.model.PaidMode;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.shipper.go
+ * de.metas.shipper.gateway.api
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -25,18 +25,12 @@ import lombok.Getter;
  * #L%
  */
 
-public enum GOPaidMode implements PaidMode
+@Builder
+@Value
+public class ShipperErrorMessage
 {
-	/** Prepaid (the sender will pay for it) */
-	Prepaid("0"),
-	/** Unpaid (the receiver will pay for it) */
-	Unpaid("1");
-
-	@Getter
-	private final String code;
-
-	private GOPaidMode(final String code)
-	{
-		this.code = code;
-	}
+	String code;
+	String message;
+	String fieldName;
+	String stackTrace;
 }
