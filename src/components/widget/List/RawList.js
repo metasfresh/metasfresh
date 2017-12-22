@@ -1,8 +1,11 @@
 import React, { Component } from "react";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 
+let lastKeyWasTab = false;
+
 class RawList extends Component {
   isFocused = false;
+  considerBlur = false;
 
   constructor(props) {
     super(props);
@@ -12,6 +15,11 @@ class RawList extends Component {
       dropdownList: props.list || [],
       isOpen: false
     };
+  }
+
+  componentWillMount() {
+    window.addEventListener("keydown", this.handleTab);
+    window.addEventListener("click", this.handleTab);
   }
 
   componentDidMount = () => {
@@ -166,6 +174,11 @@ class RawList extends Component {
     }
   };
 
+  componentWillUnmount() {
+    window.removeEventListener("keydown", this.handleTab);
+    window.removeEventListener("click", this.handleTab);
+  }
+
   focus = () => {
     if (this.dropdown) {
       this.dropdown.focus();
@@ -265,6 +278,12 @@ class RawList extends Component {
   };
 
   handleBlur = () => {
+    if (!this.considerBlur) {
+      return;
+    }
+
+    this.considerBlur = false;
+
     const { selected, doNotOpenOnFocus } = this.props;
 
     this.isFocused = false;
@@ -284,6 +303,8 @@ class RawList extends Component {
      * on focus.
      */
   handleClick = e => {
+    this.considerBlur = true;
+
     e.preventDefault();
 
     const { onFocus } = this.props;
@@ -295,11 +316,12 @@ class RawList extends Component {
     });
   };
 
-  handleFocus = e => {
+  handleFocus = event => {
+    this.considerBlur = this.considerBlur || lastKeyWasTab;
     this.isFocused = true;
 
-    if (e) {
-      e.preventDefault();
+    if (event) {
+      event.preventDefault();
     }
 
     const { onFocus, doNotOpenOnFocus, autofocus } = this.props;
@@ -383,6 +405,10 @@ class RawList extends Component {
           break;
       }
     }
+  };
+
+  handleTab = event => {
+    lastKeyWasTab = event.key == "Tab";
   };
 
   getRow = (option, index) => {
