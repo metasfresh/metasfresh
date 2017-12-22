@@ -1,5 +1,7 @@
 import axios from "axios";
 
+import { getQueryString } from "./GenericActions";
+
 export function getViewLayout(windowId, viewType, viewProfileId = null) {
   return axios.get(
     config.API_URL +
@@ -104,7 +106,21 @@ export function deleteStaticFilter(windowId, viewId, filterId) {
   );
 }
 
-export function quickActionsRequest(windowId, viewId, selectedIds) {
+export function quickActionsRequest(
+  windowId,
+  viewId,
+  selectedIds,
+  childView,
+  parentView
+) {
+  const query = getQueryString({
+    selectedIds,
+    childViewId: childView.viewId,
+    childViewSelectedIds: childView.viewSelectedIds,
+    parentViewId: parentView.viewId,
+    parentViewSelectedIds: parentView.viewSelectedIds
+  });
+
   return axios.get(
     config.API_URL +
       "/documentView/" +
@@ -112,6 +128,6 @@ export function quickActionsRequest(windowId, viewId, selectedIds) {
       "/" +
       viewId +
       "/quickActions" +
-      (selectedIds && selectedIds.length ? "?selectedIds=" + selectedIds : "")
+      (query ? "?" + query : "")
   );
 }

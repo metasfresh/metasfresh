@@ -18,14 +18,30 @@ const initialState = {
 };
 
 class QuickActions extends Component {
+  static propTypes = {
+    // from @connect
+    dispatch: PropTypes.func.isRequired,
+
+    // from <DocumentList>
+    childView: PropTypes.object.isRequired,
+    parentView: PropTypes.object.isRequired
+  };
+
   constructor(props) {
     super(props);
 
-    const { fetchOnInit, selected, windowType, viewId } = props;
+    const {
+      fetchOnInit,
+      selected,
+      windowType,
+      viewId,
+      childView,
+      parentView
+    } = props;
     this.state = initialState;
 
     if (fetchOnInit) {
-      this.fetchActions(windowType, viewId, selected);
+      this.fetchActions(windowType, viewId, selected, childView, parentView);
     }
   }
 
@@ -50,7 +66,9 @@ class QuickActions extends Component {
       this.fetchActions(
         nextProps.windowType,
         nextProps.viewId,
-        nextProps.selected
+        nextProps.selected,
+        nextProps.childView,
+        nextProps.parentView
       );
     }
   };
@@ -59,9 +77,15 @@ class QuickActions extends Component {
     return nextProps.shouldNotUpdate !== true;
   }
 
-  updateActions = () => {
-    const { windowType, viewId, selected } = this.props;
-    this.fetchActions(windowType, viewId, selected);
+  updateActions = (childSelection = this.props.childView.viewSelectedIds) => {
+    const { windowType, viewId, selected, childView, parentView } = this.props;
+    this.fetchActions(
+      windowType,
+      viewId,
+      selected,
+      { ...childView, viewSelectedIds: childSelection },
+      parentView
+    );
   };
 
   componentDidUpdate = prevProps => {
@@ -87,7 +111,7 @@ class QuickActions extends Component {
   };
 
   handleClick = action => {
-    const { dispatch, viewId, selected } = this.props;
+    const { dispatch, viewId, selected, childView, parentView } = this.props;
 
     if (action.disabled) {
       return;
@@ -106,22 +130,28 @@ class QuickActions extends Component {
         null,
         false,
         viewId,
-        selected
+        selected,
+        null,
+        null,
+        parentView.viewId,
+        parentView.viewSelectedIds,
+        childView.viewId,
+        childView.viewSelectedIds
       )
     );
 
     this.toggleDropdown();
   };
 
-  fetchActions = (windowType, viewId, selected) => {
+  fetchActions = (windowType, viewId, selected, childView, parentView) => {
     /*
         this.setState({
             loading: true
         });
 */
 
-    if (windowType && viewId && selected) {
-      quickActionsRequest(windowType, viewId, selected)
+    if (windowType && viewId && selected && childView && parentView) {
+      quickActionsRequest(windowType, viewId, selected, childView, parentView)
         .then(response => {
           this.setState({
             actions: response.data.actions,
@@ -229,9 +259,5 @@ class QuickActions extends Component {
     }
   }
 }
-
-QuickActions.propTypes = {
-  dispatch: PropTypes.func.isRequired
-};
 
 export default connect(false, false, false, { withRef: true })(QuickActions);

@@ -64,6 +64,7 @@
     "moment": "~2.16.0",
     "numeral": "^2.0.6",
     "prop-types": "^15.5.6",
+    "query-string": "^5.0.1",
     "react": "^16.2.0",
     "react-addons-css-transition-group": "~15.6.2",
     "react-addons-transition-group": "~15.6.2",
