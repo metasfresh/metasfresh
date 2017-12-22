@@ -22,6 +22,8 @@ Here come the actual release notes:
     * Improving the Material Tracking ID Lookup widget. It is now an autocomplete search field instead of a dropdown list.
   * [#3239](https://github.com/metasfresh/metasfresh/issues/3239) WebUI: Material Receipt Candidates Fields not readonly
     * Improvement of the Material Receipt Candidates Window in WebUI. Now Fields are readonly that should not be changes by the user after creation.
+  * [#3242](https://github.com/metasfresh/metasfresh/issues/3242) WebUI: Create new Customer Accounts Window
+    * New Window for Customer Accounts, allowing the user to define customer relevant accounting information.
 
 #Fixes
 * metasfresh-app
