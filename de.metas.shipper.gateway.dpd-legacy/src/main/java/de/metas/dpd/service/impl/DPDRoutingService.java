@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -44,7 +45,6 @@ import javax.print.attribute.standard.PrinterName;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.inout.service.IInOutPA;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MPackageInfo;
 import org.adempiere.model.MPackagingContainer;
@@ -52,6 +52,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.CustomColNames;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.MPackage;
 import org.compiere.model.MSysConfig;
@@ -492,9 +493,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			return;
 		}
 
-		final IInOutPA inOutPA = Services.get(IInOutPA.class);
-
-		final Collection<MPackage> packages = inOutPA.retrieve(ctx, inOut, trxName);
+		final Collection<MPackage> packages = retrievePackagesForInOut(ctx, inOut, trxName);
 
 		if (packages.isEmpty())
 		{
@@ -665,8 +664,6 @@ public class DPDRoutingService implements IDPDRoutingService
 			final I_M_InOut inOut, final MPackage packg, final BigDecimal M_Shipper_ID,
 			final String trxName)
 	{
-		final IInOutPA inOutPA = Services.get(IInOutPA.class);
-
 		if (packg != null)
 		{
 			String docNo = fetchgetShipperTransportationDoc(packg);
@@ -689,7 +686,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			return;
 		}
 
-		for (final MPackage pack : inOutPA.retrieve(ctx, inOut, trxName))
+		for (final MPackage pack : retrievePackagesForInOut(ctx, inOut, trxName))
 		{
 			String docNo = fetchgetShipperTransportationDoc(pack);
 			if (!Check.isEmpty(docNo, true))
@@ -722,4 +719,20 @@ public class DPDRoutingService implements IDPDRoutingService
 			return sp.getM_ShipperTransportation().getDocumentNo();
 		return null;
 	}
+	
+	private List<MPackage> retrievePackagesForInOut(
+			final Properties ctx,
+			final I_M_InOut inOut,
+			final String trxName)
+	{
+		final String whereClause = I_M_Package.COLUMNNAME_M_InOut_ID + "=?";
+
+		return new Query(ctx, I_M_Package.Table_Name, whereClause, trxName)
+				.setParameters(inOut.getM_InOut_ID())
+				.setOnlyActiveRecords(true)
+				.setClient_ID()
+				.setOrderBy(I_M_Package.COLUMNNAME_M_Package_ID)
+				.list();
+	}
+
 }
