@@ -1,4 +1,4 @@
-package de.metas.dpd.service;
+package de.metas.dpd.service.impl;
 
 /*
  * #%L
@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -44,7 +45,6 @@ import javax.print.attribute.standard.PrinterName;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.inout.service.IInOutPA;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MPackageInfo;
 import org.adempiere.model.MPackagingContainer;
@@ -52,6 +52,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.CustomColNames;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.MPackage;
 import org.compiere.model.MSysConfig;
@@ -72,6 +73,10 @@ import de.metas.dpd.model.MDPDFileInfo;
 import de.metas.dpd.model.MDPDRoute;
 import de.metas.dpd.model.MDPDService;
 import de.metas.dpd.model.MDPDServiceInfo;
+import de.metas.dpd.service.IDPDRoutingService;
+import de.metas.dpd.service.Iso7064;
+import de.metas.dpd.service.RoutingQuery;
+import de.metas.dpd.service.RoutingResult;
 import de.metas.i18n.Msg;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.logging.LogManager;
@@ -90,7 +95,7 @@ import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</a>"
  */
-public class RoutingService implements IDPDRoutingservice
+public class DPDRoutingService implements IDPDRoutingService
 {
 
 	private static final String AD_SYSCONFIG_DPD_INDENTIFIER = "DPD-Indentifier";
@@ -113,7 +118,7 @@ public class RoutingService implements IDPDRoutingservice
 	// public static final String REPORT_RESOURCE = "de/metas/docs/sales/dpdlabel/report.jasper";
 	// public static final String REPORT_RESOURCE1 = "de/metas/docs/sales/dpdlabel/report1.jasper";
 
-	private static final Logger logger = LogManager.getLogger(RoutingService.class);
+	private static final Logger logger = LogManager.getLogger(DPDRoutingService.class);
 
 	static
 	{
@@ -122,7 +127,7 @@ public class RoutingService implements IDPDRoutingservice
 		try
 		{
 			final Font crystal = Font.createFont(Font.TRUETYPE_FONT,
-					RoutingService.class.getResourceAsStream("/CRYSRG__.TTF"));
+					DPDRoutingService.class.getResourceAsStream("/CRYSRG__.TTF"));
 			GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(
 					crystal);
 			logger.info("Registered font " + crystal);
@@ -488,9 +493,7 @@ public class RoutingService implements IDPDRoutingservice
 			return;
 		}
 
-		final IInOutPA inOutPA = Services.get(IInOutPA.class);
-
-		final Collection<MPackage> packages = inOutPA.retrieve(ctx, inOut, trxName);
+		final Collection<MPackage> packages = retrievePackagesForInOut(ctx, inOut, trxName);
 
 		if (packages.isEmpty())
 		{
@@ -661,8 +664,6 @@ public class RoutingService implements IDPDRoutingservice
 			final I_M_InOut inOut, final MPackage packg, final BigDecimal M_Shipper_ID,
 			final String trxName)
 	{
-		final IInOutPA inOutPA = Services.get(IInOutPA.class);
-
 		if (packg != null)
 		{
 			String docNo = fetchgetShipperTransportationDoc(packg);
@@ -685,7 +686,7 @@ public class RoutingService implements IDPDRoutingservice
 			return;
 		}
 
-		for (final MPackage pack : inOutPA.retrieve(ctx, inOut, trxName))
+		for (final MPackage pack : retrievePackagesForInOut(ctx, inOut, trxName))
 		{
 			String docNo = fetchgetShipperTransportationDoc(pack);
 			if (!Check.isEmpty(docNo, true))
@@ -718,4 +719,20 @@ public class RoutingService implements IDPDRoutingservice
 			return sp.getM_ShipperTransportation().getDocumentNo();
 		return null;
 	}
+	
+	private List<MPackage> retrievePackagesForInOut(
+			final Properties ctx,
+			final I_M_InOut inOut,
+			final String trxName)
+	{
+		final String whereClause = I_M_Package.COLUMNNAME_M_InOut_ID + "=?";
+
+		return new Query(ctx, I_M_Package.Table_Name, whereClause, trxName)
+				.setParameters(inOut.getM_InOut_ID())
+				.setOnlyActiveRecords(true)
+				.setClient_ID()
+				.setOrderBy(I_M_Package.COLUMNNAME_M_Package_ID)
+				.list();
+	}
+
 }

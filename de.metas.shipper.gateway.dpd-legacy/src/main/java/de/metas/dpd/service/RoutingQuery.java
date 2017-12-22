@@ -23,23 +23,63 @@ package de.metas.dpd.service;
  */
 
 
-import java.util.Properties;
-
-import org.compiere.model.MPackage;
-
-import de.metas.adempiere.service.IPackageInfoService;
-import de.metas.inout.model.I_M_InOut;
+import java.sql.Timestamp;
 
 /**
  * 
  * @author ts
+ * @see RoutingResult
  * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</a>"
  */
-public interface IDPDRoutingservice extends IPackageInfoService
+public class RoutingQuery
 {
-	RoutingResult retrieveData(Properties ctx, RoutingQuery query, String trxName);
 
-	void createPackageInfo(MPackage pack, RoutingResult routingResult, RoutingQuery routingQuery);
+	/**
+	 * R-Depot
+	 */
+	public final String rDepot;
 
-	void createPackageInfo(Properties ctx, MPackage pack, I_M_InOut inOut, String serviceCode, String trxName);
+	/**
+	 * Date and Time
+	 */
+	public final Timestamp date;
+
+	/**
+	 * Service
+	 */
+	public final String service;
+
+	/**
+	 * D-Country
+	 */
+	public final String dCountry;
+
+	/**
+	 * D-Postcode
+	 */
+	public final String dPostCode;
+
+	/**
+	 * D-Area
+	 */
+	public final String dArea;
+
+	/**
+	 * D-City
+	 */
+	public final String dCity;
+
+	public RoutingQuery(String rDepot, Timestamp date, String service,
+			String dCountry, String dPostCode, String dArea, String dCity)
+	{
+
+		this.rDepot = rDepot;
+		this.date = date;
+		this.service = service;
+		this.dCountry = dCountry;
+		this.dPostCode = dPostCode;
+		this.dArea = dArea;
+		this.dCity = dCity;
+	}
+
 }

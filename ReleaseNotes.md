@@ -41,6 +41,7 @@ Here come the actual release notes:
   * [#2340](https://github.com/metasfresh/metasfresh/issues/2340) Relation Type: changelog
     * New Relation Type that allows to show the Changelog quickly for a given record.
   * [#2646](https://github.com/metasfresh/metasfresh/issues/2646) MRP Product Info Just in Time
+    * New Material Cockpit functionality that provides fast infomormation about material availability triggered by material transactions and reservations/ ordered quantities.
   * [#2715](https://github.com/metasfresh/metasfresh/issues/2715) Create webui window for C_Invoice_Candidate_Agg
     * New Window in WebUI for the maintenance of Invoice Candidate Aggregation rules.
   * [#3058](https://github.com/metasfresh/metasfresh/issues/3058) TableRecordId relation types to support Prefix_AD_Table_ID and Prefix_Record_ID
@@ -70,24 +71,27 @@ Here come the actual release notes:
   * [#3164](https://github.com/metasfresh/metasfresh/issues/3164) WebUI: Import BPartner Translations
     * Translating the Import Business Partner window to en_US and improving advanced edit view.
   * [#3166](https://github.com/metasfresh/metasfresh/issues/3166) Businesspartner Window shows Fields that should be in Advanced edit mode
-    * Improved Business Partner window, moved Fields to andvanced edit that are not mainly in user focus.
-  * [#3169](https://github.com/metasfresh/metasfresh/issues/3169) Updating PMM_Week availability trend fails
+    * Improved Business Partner window, moved Fields to advanced edit that are not mainly in user focus.
   * [#3171](https://github.com/metasfresh/metasfresh/issues/3171) Add view to keep track of unprocessed async work packages
     * New view to keep tracking the qty of unprocessed
   * [#3176](https://github.com/metasfresh/metasfresh/issues/3176) Translate Sales Order Actions
     * Improvement of translations in sales order action menu.
   * [#3193](https://github.com/metasfresh/metasfresh/issues/3193) Improve Window for manual OnHand Qty in WebUI
+    * Improved Window for the recording of manual on Hand Quanitities,
   * [#3211](https://github.com/metasfresh/metasfresh/issues/3211) Picking Tray Clearing: right side view shall display only the HUs for current BP/Location
+    * Improved included View in Picking
 
 * metasfresh-webui-api
-  * [#706](https://github.com/metasfresh/metasfresh-webui-api/issues/706) Port current MRP Product Info Window to the webui
+  * [#706](https://github.com/metasfresh/metasfresh-webui-api/issues/706) Port current MRP Product Info Window to the WebUI
+    * Portation of the Swing MRP Product info functionality to WebUI, there now called Material Cockpit.
   * [#711](https://github.com/metasfresh/metasfresh-webui-api/issues/711) Picking terminal: additional shall support grouping lines by order
     * Introducing new Picking Terminal Workflow Pattern. Now allowing to group the Picking Lines by Sales Order instead of Product.
   * [#714](https://github.com/metasfresh/metasfresh-webui-api/issues/714) Login authenticate: provide an unique key for each JSONLoginRole
-    * Improvement of JSON endpoint for the Login authentication. Now haviung a unique key for each Login Roles.
+    * Improvement of JSON endpoint for the Login authentication. Now having a unique key for each Login Roles.
   * [#716](https://github.com/metasfresh/metasfresh-webui-api/issues/716) Picking terminal: scan picking slot by barcode
     * New Feature in Picking Terminal allowing to scan and identify the Picking Tray.
-  * [#717](https://github.com/metasfresh/metasfresh-webui-api/issues/717) picking terminal: open HUs to pick shall display Best Before date and Locator
+  * [#717](https://github.com/metasfresh/metasfresh-webui-api/issues/717) Picking terminal: Open HUs to pick shall display Best Before date and Locator
+    * Adding the Open HUs included view allowing to see the best before date and locator.
   * [#721](https://github.com/metasfresh/metasfresh-webui-api/issues/721) Picking terminal: HUs to pick: scan/filter by Locator
     * New Filter Feature in Picking Terminla window, allowing to scan Locators and filter by them in Handlign Unit selection view.
   * [#723](https://github.com/metasfresh/metasfresh-webui-api/issues/723) Picking terminal: HUs to pick: Pick CUs process
@@ -132,6 +136,8 @@ Here come the actual release notes:
     * Fix for the Product Translation Tab. Now showing the Translations again.
   * [#3160](https://github.com/metasfresh/metasfresh/issues/3160) C_Printing_Queue_ReEnqueue with IsSelected doesn't work
     * Fix for the Reqnqueue action in the Printing Queue Window.
+  * [#3169](https://github.com/metasfresh/metasfresh/issues/3169) Updating PMM_Week availability trend fails
+    * Fix fir the Procurement Candidates for week availability Trend.
   * [#3174](https://github.com/metasfresh/metasfresh/issues/3174) Material Receipt Candidates not generated when using Purchase Order from Sales Order action
     * Fix for the new Purchase Order from Sales Order action, now also creating Material Receipt candidates for these kind of Purchase Orders.
   * [#3183](https://github.com/metasfresh/metasfresh/issues/3183) Jenkins misinterprets positive downstream build result

@@ -31,10 +31,11 @@ import java.util.Iterator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Postal;
 import de.metas.adempiere.service.ICountryDAO;
-import de.metas.adempiere.service.ILocationBL;
+import de.metas.dpd.model.I_DPD_Route;
 import de.metas.process.JavaProcess;
 
 /**
@@ -43,6 +44,12 @@ import de.metas.process.JavaProcess;
  */
 public class C_Postal_DPD_Validate extends JavaProcess
 {
+	private static final String SQL_WhereClause_DPD_Route_ByCountryAndPostal =
+			I_DPD_Route.COLUMNNAME_CountryCode + "=?"
+					+ " AND " + I_DPD_Route.COLUMNNAME_BeginPostCode + " IS NOT NULL"
+					+ " AND LPAD(?, 20, '0') BETWEEN LPAD(" + I_DPD_Route.COLUMNNAME_BeginPostCode + ", 20, '0')"
+					+ " AND LPAD(COALESCE(" + I_DPD_Route.COLUMNNAME_EndPostCode + ", " + I_DPD_Route.COLUMNNAME_BeginPostCode + "), 20, '0')";
+
 	private int cnt_all = 0;
 	private int cnt_ok = 0;
 	private int cnt_err = 0;
@@ -96,10 +103,33 @@ public class C_Postal_DPD_Validate extends JavaProcess
 	{
 		final String countryCode = Services.get(ICountryDAO.class).get(getCtx(), postal.getC_Country_ID()).getCountryCode();
 		final String postalCode = postal.getPostal();
-		boolean found = Services.get(ILocationBL.class).checkOnDPDRoute(countryCode, postalCode);
+		boolean found = checkOnDPDRoute(countryCode, postalCode);
 		if (found)
 		{
 			postal.setIsValidDPD(true);
 		}
 	}
+	
+	/**
+	 * Check if given country/postal code exists in DPD_Route table
+	 * 
+	 * @param countryCode
+	 * @param postal
+	 * @return
+	 */
+	private boolean checkOnDPDRoute(String countryCode, String postal)
+	{
+		if (postal == null)
+			return false;
+
+		postal = postal.trim();
+		log.debug("Checking: postal=" + postal + ", countryCode=" + countryCode);
+
+		boolean found = new Query(Env.getCtx(), I_DPD_Route.Table_Name, SQL_WhereClause_DPD_Route_ByCountryAndPostal, null)
+				.setParameters(countryCode, postal)
+				.match();
+		log.debug("Found: " + found);
+		return found;
+	}
+
 }

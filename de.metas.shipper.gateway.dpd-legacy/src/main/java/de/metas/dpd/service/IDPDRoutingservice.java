@@ -1,4 +1,6 @@
-package de.metas.adempiere.service;
+package de.metas.dpd.service;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -13,17 +15,15 @@ package de.metas.adempiere.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
@@ -32,39 +32,25 @@ import org.compiere.model.MPackage;
 import de.metas.inout.model.I_M_InOut;
 
 /**
- * Interface for creation of extended package info for a package and inOut.
  * 
  * @author ts
- * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</>"
+ * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</a>"
  */
-public interface IPackageInfoService extends ISingletonService
+public interface IDPDRoutingService extends ISingletonService
 {
+	RoutingResult retrieveData(Properties ctx, RoutingQuery query, String trxName);
 
-	/**
-	 * create label
-	 * @param ctx
-	 * @param inOut
-	 * @param serviceCode
-	 * @param pack
-	 * @param trxName
-	 * @return
-	 */
+	void createPackageInfo(MPackage pack, RoutingResult routingResult, RoutingQuery routingQuery);
+
+	void createPackageInfo(Properties ctx, MPackage pack, I_M_InOut inOut, String serviceCode, String trxName);
+
 	void createLabel(
 			Properties ctx,
 			I_M_InOut inOut,
 			String serviceCode,
 			MPackage pack,
 			String trxName);
-	
-	/**
-	 * print label
-	 * @param ctx
-	 * @param inOut
-	 * @param pack
-	 * @param M_Shipper_ID
-	 * @param trxName
-	 * @return
-	 */
+
 	boolean printLabel(
 			Properties ctx,
 			I_M_InOut inOut,
@@ -78,5 +64,4 @@ public interface IPackageInfoService extends ISingletonService
 			MPackage pack,
 			BigDecimal M_Shipper_ID,
 			String trxName);
-
 }

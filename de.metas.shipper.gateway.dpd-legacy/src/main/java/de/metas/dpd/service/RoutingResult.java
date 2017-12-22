@@ -89,7 +89,7 @@ public class RoutingResult
 
 	public final int numCountryCode;
 
-	RoutingResult(String country, String serviceText, String dDepot,
+	public RoutingResult(String country, String serviceText, String dDepot,
 			String lotDAcheminement, String serviceMark, String serviceInfo,
 			String oSort, String dSort, String groupingPriority,
 			String barcodeId, String routingVersion, int numCountryCode)

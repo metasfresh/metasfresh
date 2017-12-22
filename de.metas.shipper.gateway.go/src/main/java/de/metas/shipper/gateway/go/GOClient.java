@@ -5,7 +5,11 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import javax.xml.bind.JAXBElement;
+
+import org.springframework.oxm.Marshaller;
 import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
+import org.springframework.xml.transform.StringResult;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -88,12 +92,15 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 	{
 		return SHIPPER_GATEWAY_ID;
 	}
-	
+
 	@Override
 	public DeliveryOrderResponse createDeliveryOrder(@NonNull final CreateDeliveryOrderRequest request)
 	{
 		final Sendung goRequest = createGOPickupRequest(request);
-		final Object goResponseObj = getWebServiceTemplate().marshalSendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
+		final JAXBElement<Sendung> goRequestElement = objectFactory.createGOWebServiceSendungsErstellung(goRequest);
+		System.out.println("GO Request: " + toString(goRequestElement));
+
+		final Object goResponseObj = getWebServiceTemplate().marshalSendAndReceive(goRequestElement);
 		return extractDeliveryOrderResponse(goResponseObj);
 	}
 
@@ -125,7 +132,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		final Object goResponseObj = getWebServiceTemplate().marshalSendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
 		return extractDeliveryOrderResponse(goResponseObj);
 	}
-	
+
 	private static final OrderId createOrderId(final String orderIdStr)
 	{
 		return OrderId.of(SHIPPER_GATEWAY_ID, orderIdStr);
@@ -347,5 +354,20 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 						.labelData(pdfs.getRouterlabelZebra())
 						.build())
 				.build();
+	}
+
+	private String toString(final JAXBElement<?> jaxbElement)
+	{
+		final Marshaller marshaller = getMarshaller();
+		try
+		{
+			final StringResult result = new StringResult();
+			marshaller.marshal(jaxbElement, result);
+			return result.toString();
+		}
+		catch (Exception ex)
+		{
+			throw new RuntimeException("Failed converting " + jaxbElement + " to String", ex);
+		}
 	}
 }
