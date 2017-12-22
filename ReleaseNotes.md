@@ -182,16 +182,23 @@ Here come the actual release notes:
   * [#1421](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1421) Drop down lists remain displayed when using tab several times
     * Closing opened dropdown lists again when navigating through fields in webUI and the field is losing focus.
   * [#1426](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1426) Connection lost displayed when unchecking a checkbox in Filter
+    * Fix for Filter checkboxes. Avoiding connection lost issue.
   * [#1427](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1427) d3 errors on dashboard
+    * Fixes D3JS Issues in metasfresh Dashboard for calculatesd negative values.
   * [#1435](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1435) Problem regarding multiple filters
+    * Fixing an issue with multiple Filters interfering each other in main and included views.
   * [#1437](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1437) Language bug: The language in Settings is not respected
+    * Fixes an issue in User Configuration about language Settings that were not respected.
   * [#1440](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1440) Dropdown in Grid view needs two-time click again
     * Fixes the dropdown selection. Now selections are able to be done with first cklick.
   * [#1444](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1444) Attributes are empty in material receipt candidate
+    * Fix for material receipt candidates that were wrongly created with empty attributes.
   * [#1448](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1448) jenkins: fix current lint issues
+    * Internal Housekeeping issue fixed according to lint.
   * [#1451](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1451) Batch entry: cursor jumps directly to HU
     * Fix for the Batch entry focus after opening via alt+q or alt++. Now focussing on Product field again.
-  * [#1455](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1455) error when updating an attribute multiple times
+  * [#1455](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1455) Error when updating an attribute multiple times
+    * Fixes an error that ocurred when changing an attribute multiple times.
 
 # metasfresh 5.38 (2017-49)
 
