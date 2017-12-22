@@ -378,7 +378,7 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 			result.setValue(command.execute());
 		});
 
-		final ImmutableSet<Integer> huIdsToAddToView = result.getValue().getHuIdsToAddToView();
+		final ImmutableSet<Integer> huIdsToAddToView = result.getValue().getHuIdsCreated();
 
 		Check.assume(huIdsToAddToView.size() <= 1, "Only one or no CU should be created");
 

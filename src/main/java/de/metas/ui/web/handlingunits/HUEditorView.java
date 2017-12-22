@@ -222,14 +222,9 @@ public class HUEditorView implements IView
 
 	public HUEditorRow getParentRowByChildIdOrNull(final DocumentId childId) throws EntityNotFoundException
 	{
-		try
-		{
-			return rowsBuffer.getParentRowByChildId(childId);
-		}
-		catch (Exception e)
-		{
-			return null;
-		}
+
+		return rowsBuffer.getParentRowByChildIdOrNull(childId).orElse(null);
+
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -85,16 +86,16 @@ interface HUEditorViewBuffer
 
 	HUEditorRow getById(DocumentId rowId) throws EntityNotFoundException;
 
-	default HUEditorRow getParentRowByChildId(final DocumentId childId) throws EntityNotFoundException
+	default Optional<HUEditorRow> getParentRowByChildIdOrNull(final DocumentId childId) throws EntityNotFoundException
 	{
 		final HUEditorRowId childRowId = HUEditorRowId.ofDocumentId(childId);
 		final HUEditorRowId topLevelRowId = childRowId.toTopLevelRowId();
 		final HUEditorRow topLevelRow = getById(topLevelRowId.toDocumentId());
 		return topLevelRow
 				.streamRecursive()
-				.filter(row -> row.hasDirectChild(childId).isPresent())
-				.findFirst()
-				.orElseThrow(() -> new EntityNotFoundException("No parent row found for " + childId).setParameter("topLevelRow", topLevelRow));
+				.filter(row -> row.hasDirectChild(childId))
+				.findFirst();
+			
 	}
 
 	/** @return SQL where clause using fully qualified table name (i.e. not table alias) */
