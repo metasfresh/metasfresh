@@ -20,6 +20,10 @@ Here come the actual release notes:
     * New Field for Activity in Purchase Orderlines.
   * [#3234](https://github.com/metasfresh/metasfresh/issues/3234) Material Tracking ID in Invoice Candidates Filter shall be search
     * Improving the Material Tracking ID Lookup widget. It is now an autocomplete search field instead of a dropdown list.
+  * [#3239](https://github.com/metasfresh/metasfresh/issues/3239) WebUI: Material Receipt Candidates Fields not readonly
+    * Improvement of the Material Receipt Candidates Window in WebUI. Now Fields are readonly that should not be changes by the user after creation.
+  * [#3242](https://github.com/metasfresh/metasfresh/issues/3242) WebUI: Create new Customer Accounts Window
+    * New Window for Customer Accounts, allowing the user to define customer relevant accounting information.
 
 #Fixes
 * metasfresh-app
@@ -167,6 +171,8 @@ Here come the actual release notes:
   * [#1427](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1427) d3 errors on dashboard
   * [#1435](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1435) Problem regarding multiple filters
   * [#1437](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1437) Language bug: The language in Settings is not respected
+  * [#1440](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1440) Dropdown in Grid view needs two-time click again
+    * Fixes the dropdown selection. Now selections are able to be done with first cklick.
   * [#1444](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1444) Attributes are empty in material receipt candidate
   * [#1448](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1448) jenkins: fix current lint issues
   * [#1451](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1451) Batch entry: cursor jumps directly to HU

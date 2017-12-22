@@ -1,0 +1,1156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="https://wsdemo.ax4.com/ws/GeneralOvernight" xmlns:tns="https://wsdemo.ax4.com/ws/GeneralOvernight" xmlns:exc="https://wsdemo.ax4.com/ws/GeneralOvernight/exception" xmlns:data="https://wsdemo.ax4.com/ws/GeneralOvernight/data" xmlns:prob="https://wsdemo.ax4.com/ws/GeneralOvernight/exception/problems" name="SendungsDatenPort">
+	<wsdl:types>
+
+		<!-- Sendungserstellung -->
+		<xsd:schema id="operationDocsSchema" xmlns:data="https://wsdemo.ax4.com/ws/GeneralOvernight/data" targetNamespace="https://wsdemo.ax4.com/ws/GeneralOvernight">
+
+			<!-- Sendungsdaten -->
+			<xsd:complexType name="Sendung">
+				<xsd:sequence>
+					<!-- AX4 Sendungsnummer -->
+					<xsd:element name="SendungsnummerAX4" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">AX4 Sendungsnummer (Pflicht bei Update und Storno)</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:pattern value="[0-9]{1,15}"/>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+					<!-- GO Frachtbriefnummer -->
+					<xsd:element name="Frachtbriefnummer" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">Frachtbriefnummer</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:minLength value="1"/>
+								<xsd:maxLength value="18"/>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+					<!-- Versender -->
+					<xsd:element name="Versender" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">AX4 ID Versender</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:pattern value="[0-9]{1,30}"/>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+					<!-- Benutzername -->
+					<xsd:element name="Benutzername" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">AX4 Benutzer-/Loginname</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:minLength value="1"/>
+								<xsd:maxLength value="100"/>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+					<!-- Status -->
+					<xsd:element name="Status" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">Status</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:enumeration value="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Neu (Updates möglich)</xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="3">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Freigegeben (keine Updates möglich)</xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="20">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Storno</xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+					<!-- Kundenreferenz -->
+					<xsd:element name="Kundenreferenz" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">Kundenreferenz</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:minLength value="1"/>
+								<xsd:maxLength value="40"/>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+					<!-- Abholadresse -->
+					<xsd:element name="Abholadresse" minOccurs="1" maxOccurs="1">
+						<xsd:complexType>
+							<xsd:sequence>
+								<!-- Firmenname 1 -->
+								<xsd:element name="Firmenname1" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Firmenname 1</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="60"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Firmenname 2 -->
+								<xsd:element name="Firmenname2" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Firmenname 2</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="60"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Abteilung -->
+								<xsd:element name="Abteilung" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Abteilung</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="40"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Strasse 1 -->
+								<xsd:element name="Strasse1" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Strasse 1</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="35"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Hausnummer -->
+								<xsd:element name="Hausnummer" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Hausnummer (Pflicht in DE)</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="10"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Strasse 2 -->
+								<xsd:element name="Strasse2" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Strasse 2</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="25"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Land -->
+								<xsd:element name="Land" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Land (ISO Codes)</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="[A-Za-z]{1,3}"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Postleitzahl -->
+								<xsd:element name="Postleitzahl" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Postleitzahl</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="9"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Stadt -->
+								<xsd:element name="Stadt" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Stadt</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="30"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+					<!-- Empf&#228;ngeradresse -->
+					<xsd:element name="Empfaenger" minOccurs="1" maxOccurs="1">
+						<xsd:complexType>
+							<xsd:sequence>
+								<!-- Firmenname 1 -->
+								<xsd:element name="Firmenname1" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Firmenname 1</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="60"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Firmenname 2 -->
+								<xsd:element name="Firmenname2" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Firmenname 2</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="60"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Abteilung -->
+								<xsd:element name="Abteilung" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Abteilung</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="40"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Strasse 1 -->
+								<xsd:element name="Strasse1" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Strasse 1</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="35"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Hausnummer -->
+								<xsd:element name="Hausnummer" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Hausnummer (Pflicht in DE)</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="10"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Strasse 2 -->
+								<xsd:element name="Strasse2" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Strasse 2</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="35"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Land -->
+								<xsd:element name="Land" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Land (ISO Codes)</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="[A-Za-z]{1,3}"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Postleitzahl -->
+								<xsd:element name="Postleitzahl" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Postleitzahl</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="9"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Stadt -->
+								<xsd:element name="Stadt" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Stadt</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="30"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Ansprechpartner -->
+								<xsd:element name="Ansprechpartner" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Ansprechpartner</xsd:documentation>
+									</xsd:annotation>
+									<xsd:complexType>
+										<xsd:sequence>
+											<xsd:element name="Telefon" minOccurs="1" maxOccurs="1">
+												<xsd:annotation>
+													<xsd:documentation xml:lang="de">Ansprechpartner Telefon</xsd:documentation>
+												</xsd:annotation>
+												<xsd:complexType>
+													<xsd:sequence>
+														<!-- L&#228;nderprefix -->
+														<xsd:element name="LaenderPrefix" minOccurs="1" maxOccurs="1">
+															<xsd:annotation>
+																<xsd:documentation xml:lang="de">L&#228;nderprefix</xsd:documentation>
+															</xsd:annotation>
+															<xsd:simpleType>
+																<xsd:restriction base="xsd:string">
+																	<xsd:pattern value="[0]{2}[1-9]{1,2}"/>
+																</xsd:restriction>
+															</xsd:simpleType>
+														</xsd:element>
+														<!-- Ortsvorwahl -->
+														<xsd:element name="Ortsvorwahl" minOccurs="1" maxOccurs="1">
+															<xsd:annotation>
+																<xsd:documentation xml:lang="de">Ortsvorwahl</xsd:documentation>
+															</xsd:annotation>
+															<xsd:simpleType>
+																<xsd:restriction base="xsd:string">
+																	<xsd:pattern value="[0-9]{1,7}"/>
+																</xsd:restriction>
+															</xsd:simpleType>
+														</xsd:element>
+														<!-- Telefonnummer -->
+														<xsd:element name="Telefonnummer" minOccurs="1" maxOccurs="1">
+															<xsd:annotation>
+																<xsd:documentation xml:lang="de">Telefonnummer</xsd:documentation>
+															</xsd:annotation>
+															<xsd:simpleType>
+																<xsd:restriction base="xsd:string">
+																	<xsd:pattern value="[0-9]{1,10}"/>
+																</xsd:restriction>
+															</xsd:simpleType>
+														</xsd:element>
+													</xsd:sequence>
+												</xsd:complexType>
+											</xsd:element>
+										</xsd:sequence>
+									</xsd:complexType>
+								</xsd:element>
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+					<!-- Service -->
+					<xsd:element name="Service" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">Service</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:enumeration value="0">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Overnight</xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Overnight Letter</xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="2">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">International</xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="3">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">International Letter</xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="4">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Overnight Basis</xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+					<!-- Abholdatum -->
+					<xsd:element name="Abholdatum" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">Abholdatum</xsd:documentation>
+						</xsd:annotation>
+						<xsd:complexType>
+							<xsd:sequence>
+								<!-- Datum -->
+								<xsd:element name="Datum" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Datum</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="(0[1-9]|[12][0-9]|3[01]).(0[1-9]|1[012]).(19|20)[0-9]{2}"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Uhrzeit von -->
+								<xsd:element name="UhrzeitVon" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Uhrzeit von</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="([01][0-9]|2[0-3]):[0-5][0-9]"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Uhrzeit bis -->
+								<xsd:element name="UhrzeitBis" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Uhrzeit bis</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="([01][0-9]|2[0-3]):[0-5][0-9]"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+					<!-- Zustelldatum -->
+					<xsd:element name="Zustelldatum" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">Zustelldatum</xsd:documentation>
+						</xsd:annotation>
+						<xsd:complexType>
+							<xsd:sequence>
+								<!-- Datum -->
+								<xsd:element name="Datum" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Datum</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="(0[1-9]|[12][0-9]|3[01]).(0[1-9]|1[012]).(19|20)[0-9]{2}"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Uhrzeit von -->
+								<xsd:element name="UhrzeitVon" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Uhrzeit von</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="([01][0-9]|2[0-3]):[0-5][0-9]"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Uhrzeit bis -->
+								<xsd:element name="UhrzeitBis" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Uhrzeit bis</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="([01][0-9]|2[0-3]):[0-5][0-9]"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+					<!-- Kennzeichen Unfrei -->
+					<xsd:element name="unfrei" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">Kennzeichen Unfrei</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:enumeration value="0">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">frei</xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">unfrei</xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+					<!-- Kennzeichen Selbstanlieferung -->
+					<xsd:element name="Selbstanlieferung" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">Kennzeichen Selbstanlieferung</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:enumeration value="0">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Abholung</xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Selbstanlieferung</xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+					<!-- Kennzeichen Selbstabholung -->
+					<xsd:element name="Selbstabholung" minOccurs="1" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">Kennzeichen Selbstabholung</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:enumeration value="0">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Zustellung</xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+								<xsd:enumeration value="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Selbstabholung</xsd:documentation>
+									</xsd:annotation>
+								</xsd:enumeration>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+					<!-- Warenwert -->
+					<xsd:element name="Warenwert" minOccurs="0" maxOccurs="1">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="Betrag" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Warenwert Betrag</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="[1-9][0-9]{0,4}\.[0-9]{2}"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<xsd:element name="Waehrung" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">W&#228;hrung</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="3"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+					<!-- Sonderversicherung -->
+					<xsd:element name="Sonderversicherung" minOccurs="0" maxOccurs="1">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="Betrag" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Sonderversicherung Betrag</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="[1-9][0-9]{0,4}\.[0-9]{2}"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<xsd:element name="Waehrung" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">W&#228;hrung</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="3"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+					<!-- Nachnahme -->
+					<xsd:element name="Nachnahme" minOccurs="0" maxOccurs="1">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="Betrag" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Nachnahme Betrag</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="[1-9][0-9]{0,4}\.[0-9]{2}"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<xsd:element name="Waehrung" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">W&#228;hrung</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="3"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Zahlungsart -->
+								<xsd:element name="Zahlungsart" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Zahlungsart</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:enumeration value="1">
+												<xsd:annotation>
+													<xsd:documentation xml:lang="de">Barzahlung</xsd:documentation>
+												</xsd:annotation>
+											</xsd:enumeration>
+											<xsd:enumeration value="2">
+												<xsd:annotation>
+													<xsd:documentation xml:lang="de">Scheck</xsd:documentation>
+												</xsd:annotation>
+											</xsd:enumeration>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+					<!-- Abholhinweise -->
+					<xsd:element name="Abholhinweise" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">Abholhinweise</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:minLength value="1"/>
+								<xsd:maxLength value="128"/>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+					<!-- Zustellhinweise -->
+					<xsd:element name="Zustellhinweise" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">Zustellhinweise</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:minLength value="1"/>
+								<xsd:maxLength value="128"/>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+					<!-- Telefon Empfangsbest&#228;tigung -->
+					<xsd:element name="TelefonEmpfangsbestaetigung" minOccurs="0" maxOccurs="1">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">Telefon Empfangsbest&#228;tigung</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:minLength value="0"/>
+								<xsd:maxLength value="25"/>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+					<!-- Sendungspositionen -->
+					<xsd:element name="SendungsPosition" minOccurs="1" maxOccurs="1">
+						<xsd:complexType>
+							<xsd:sequence>
+								<!-- Anzahl Packst&#252;cke -->
+								<xsd:element name="AnzahlPackstuecke" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Anzahl Packst&#252;cke</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="[1-9][0-9]?"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Gewicht -->
+								<xsd:element name="Gewicht" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Gewicht in kg</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="[1-9][0-9]{0,2}\.[0-9]{2}"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Inhalt -->
+								<xsd:element name="Inhalt" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Inhalt</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="40"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Abmessungen -->
+								<xsd:element name="Abmessungen" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Abmessungen</xsd:documentation>
+									</xsd:annotation>
+									<xsd:complexType>
+										<xsd:sequence>
+											<xsd:element name="Laenge" minOccurs="1" maxOccurs="1">
+												<xsd:annotation>
+													<xsd:documentation xml:lang="de">L&#228;nge in cm</xsd:documentation>
+												</xsd:annotation>
+												<xsd:simpleType>
+													<xsd:restriction base="xsd:string">
+														<xsd:pattern value="[0-9]{1,5}\.[0-9]{1}"/>
+													</xsd:restriction>
+												</xsd:simpleType>
+											</xsd:element>
+											<xsd:element name="Breite" minOccurs="1" maxOccurs="1">
+												<xsd:annotation>
+													<xsd:documentation xml:lang="de">Breite in cm</xsd:documentation>
+												</xsd:annotation>
+												<xsd:simpleType>
+													<xsd:restriction base="xsd:string">
+														<xsd:pattern value="[0-9]{1,5}\.[0-9]{1}"/>
+													</xsd:restriction>
+												</xsd:simpleType>
+											</xsd:element>
+											<xsd:element name="Hoehe" minOccurs="1" maxOccurs="1">
+												<xsd:annotation>
+													<xsd:documentation xml:lang="de">H&#246;he in cm</xsd:documentation>
+												</xsd:annotation>
+												<xsd:simpleType>
+													<xsd:restriction base="xsd:string">
+														<xsd:pattern value="[0-9]{1,5}\.[0-9]{1}"/>
+													</xsd:restriction>
+												</xsd:simpleType>
+											</xsd:element>
+										</xsd:sequence>
+									</xsd:complexType>
+								</xsd:element>
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:complexType>
+
+			<!-- Sendungsrückmeldung -->
+			<xsd:complexType name="SendungsRueckmeldung">
+				<xsd:sequence>
+					<!-- Sendung -->
+					<xsd:element name="Sendung">
+						<xsd:complexType>
+							<xsd:sequence>
+								<!-- AX4 Sendungsnummer -->
+								<xsd:element name="SendungsnummerAX4" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">AX4 Sendungsnummer</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="15"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- GO Frachtbriefnummer -->
+								<xsd:element name="Frachtbriefnummer" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Frachtbriefnummer</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="18"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Abholdatum -->
+								<xsd:element name="Abholdatum" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Abholdatum</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="(0[1-9]|[12][0-9]|3[01]).(0[1-9]|1[012]).(19|20)[0-9]{2}"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Zustelldatum -->
+								<xsd:element name="Zustelldatum" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Zustelldatum</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="(0[1-9]|[12][0-9]|3[01]).(0[1-9]|1[012]).(19|20)[0-9]{2}"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- ZustellUhrzeit von -->
+								<xsd:element name="ZustellUhrzeitVon" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Uhrzeit von</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="([01][0-9]|2[0-3]):[0-5][0-9]"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- ZustellUhrzeit bis -->
+								<xsd:element name="ZustellUhrzeitBis" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Uhrzeit bis</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:pattern value="([01][0-9]|2[0-3]):[0-5][0-9]"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- Position -->
+								<xsd:element name="Position" minOccurs="0" maxOccurs="unbounded">
+									<xsd:complexType>
+										<xsd:sequence>
+											<!-- fortlaufende Positionsnummer -->
+											<xsd:element name="PositionsNr" minOccurs="1" maxOccurs="1">
+												<xsd:annotation>
+													<xsd:documentation xml:lang="de">Positionsnummer</xsd:documentation>
+												</xsd:annotation>
+												<xsd:simpleType>
+													<xsd:restriction base="xsd:string">
+														<xsd:minLength value="1"/>
+														<xsd:maxLength value="10"/>
+													</xsd:restriction>
+												</xsd:simpleType>
+											</xsd:element>
+											<!-- Packst&#252;anzahl -->
+											<xsd:element name="AnzahlPackstuecke" minOccurs="1" maxOccurs="1">
+												<xsd:annotation>
+													<xsd:documentation xml:lang="de">Anzahl Packst&#252;cke</xsd:documentation>
+												</xsd:annotation>
+												<xsd:simpleType>
+													<xsd:restriction base="xsd:string">
+														<xsd:minLength value="1"/>
+														<xsd:maxLength value="9"/>
+													</xsd:restriction>
+												</xsd:simpleType>
+											</xsd:element>
+											<!-- generierte Barcodes -->
+											<xsd:element name="Barcodes" minOccurs="0" maxOccurs="1">
+												<xsd:complexType>
+													<xsd:sequence>
+														<!-- Barcodenummer -->
+														<xsd:element name="BarcodeNr" minOccurs="0" maxOccurs="unbounded">
+															<xsd:annotation>
+																<xsd:documentation xml:lang="de">Barcodenummer</xsd:documentation>
+															</xsd:annotation>
+															<xsd:simpleType>
+																<xsd:restriction base="xsd:string">
+																	<xsd:minLength value="1"/>
+																	<xsd:maxLength value="35"/>
+																</xsd:restriction>
+															</xsd:simpleType>
+														</xsd:element>
+													</xsd:sequence>
+												</xsd:complexType>
+											</xsd:element>
+										</xsd:sequence>
+									</xsd:complexType>
+								</xsd:element>
+								<!-- Hinweistext -->
+								<xsd:element name="Hinweis" minOccurs="0" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Hinweistext</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="255"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:complexType>
+
+			<xsd:element name="GOWebService_SendungsErstellung" type="tns:Sendung"/>
+
+			<xsd:element name="GOWebService_SendungsRueckmeldung" type="tns:SendungsRueckmeldung"/>
+
+		</xsd:schema>
+
+		<!-- Fehlerbehandlung -->
+		<xsd:schema id="exceptionsDocsSchema" xmlns:data="https://wsdemo.ax4.com/ws/GeneralOvernight/exceptions" targetNamespace="https://wsdemo.ax4.com/ws/GeneralOvernight">
+
+			<!-- Fehlerbehandlung -->
+			<xsd:complexType name="Fehlerbehandlung">
+				<xsd:sequence>
+					<!-- Fehlermeldungen -->
+					<xsd:element name="Fehlermeldungen" minOccurs="1" maxOccurs="1">
+						<xsd:complexType>
+							<xsd:sequence>
+								<!-- Fehler -->
+								<xsd:element name="Fehler" minOccurs="1" maxOccurs="unbounded">
+									<xsd:complexType>
+										<xsd:sequence>
+											<!-- forlaufende Fehlernummer -->
+											<xsd:element name="FehlerNr" minOccurs="1" maxOccurs="1">
+												<xsd:annotation>
+													<xsd:documentation xml:lang="de">forlaufende Fehlernummer</xsd:documentation>
+												</xsd:annotation>
+												<xsd:simpleType>
+													<xsd:restriction base="xsd:string">
+														<xsd:minLength value="1"/>
+														<xsd:maxLength value="10"/>
+													</xsd:restriction>
+												</xsd:simpleType>
+											</xsd:element>
+											<!-- Feldname -->
+											<xsd:element name="Feld" minOccurs="0" maxOccurs="1">
+												<xsd:annotation>
+													<xsd:documentation xml:lang="de">Feldbeschreibung</xsd:documentation>
+												</xsd:annotation>
+												<xsd:simpleType>
+													<xsd:restriction base="xsd:string">
+														<xsd:minLength value="1"/>
+														<xsd:maxLength value="255"/>
+													</xsd:restriction>
+												</xsd:simpleType>
+											</xsd:element>
+											<!-- StackTrace -->
+											<xsd:element name="StackTrace" minOccurs="0" maxOccurs="1">
+												<xsd:annotation>
+													<xsd:documentation xml:lang="de">StackTrace</xsd:documentation>
+												</xsd:annotation>
+												<xsd:simpleType>
+													<xsd:restriction base="xsd:string">
+														<xsd:minLength value="1"/>
+														<xsd:maxLength value="255"/>
+													</xsd:restriction>
+												</xsd:simpleType>
+											</xsd:element>
+											<!-- Fehlerbeschreibung -->
+											<xsd:element name="Beschreibung" minOccurs="1" maxOccurs="1">
+												<xsd:annotation>
+													<xsd:documentation xml:lang="de">Fehlerbeschreibung</xsd:documentation>
+												</xsd:annotation>
+												<xsd:simpleType>
+													<xsd:restriction base="xsd:string">
+														<xsd:minLength value="1"/>
+														<xsd:maxLength value="255"/>
+													</xsd:restriction>
+												</xsd:simpleType>
+											</xsd:element>
+										</xsd:sequence>
+									</xsd:complexType>
+								</xsd:element>
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:complexType>
+
+			<xsd:element name="GOWebService_Fehlerbehandlung" type="tns:Fehlerbehandlung"/>
+
+		</xsd:schema>
+
+		<!-- PDF Label -->
+		<xsd:schema id="labelDocsSchema" xmlns:data="https://wsdemo.ax4.com/ws/GeneralOvernight/label" targetNamespace="https://wsdemo.ax4.com/ws/GeneralOvernight">
+
+			<!-- Sendungsnummern -->
+			<xsd:complexType name="Sendungsnummern">
+				<xsd:sequence>
+					<xsd:element name="Seitengroesse" minOccurs="1" maxOccurs="1">
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:enumeration value="A4"/>
+								<xsd:enumeration value="A5"/>
+								<xsd:enumeration value="A6"/>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+					<xsd:element name="SendungsnummerAX4" minOccurs="1" maxOccurs="unbounded">
+						<xsd:annotation>
+							<xsd:documentation xml:lang="de">AX4 Sendungsnummer</xsd:documentation>
+						</xsd:annotation>
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:integer">
+								<xsd:minInclusive value="1"/>
+								<xsd:maxInclusive value="15"/>
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:complexType>
+
+			<!-- PDF -->
+			<xsd:complexType name="Label">
+				<xsd:sequence>
+					<!-- Sendung -->
+					<xsd:element name="Sendung" minOccurs="1" maxOccurs="unbounded">
+						<xsd:complexType>
+							<xsd:sequence>
+								<!-- AX4 Sendungsnummer -->
+								<xsd:element name="SendungsnummerAX4" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">AX4 Sendungsnummer</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="15"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<!-- GO Frachtbriefnummer -->
+								<xsd:element name="Frachtbriefnummer" minOccurs="1" maxOccurs="1">
+									<xsd:annotation>
+										<xsd:documentation xml:lang="de">Frachtbriefnummer</xsd:documentation>
+									</xsd:annotation>
+									<xsd:simpleType>
+										<xsd:restriction base="xsd:string">
+											<xsd:minLength value="1"/>
+											<xsd:maxLength value="18"/>
+										</xsd:restriction>
+									</xsd:simpleType>
+								</xsd:element>
+								<xsd:element name="PDFs" minOccurs="1" maxOccurs="1">
+									<xsd:complexType>
+										<xsd:sequence>
+											<xsd:element name="Frachtbrief" minOccurs="0" maxOccurs="1">
+												<xsd:simpleType>
+													<xsd:restriction base="xsd:base64Binary"/>
+												</xsd:simpleType>
+											</xsd:element>
+											<xsd:element name="Routerlabel" minOccurs="0" maxOccurs="1">
+												<xsd:simpleType>
+													<xsd:restriction base="xsd:base64Binary"/>
+												</xsd:simpleType>
+											</xsd:element>
+											<xsd:element name="RouterlabelZebra" minOccurs="0" maxOccurs="1">
+												<xsd:simpleType>
+													<xsd:restriction base="xsd:base64Binary"/>
+												</xsd:simpleType>
+											</xsd:element>
+										</xsd:sequence>
+									</xsd:complexType>
+								</xsd:element>
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:complexType>
+
+			<xsd:element name="GOWebService_Sendungsnummern" type="tns:Sendungsnummern"/>
+
+			<xsd:element name="GOWebService_Label" type="tns:Label"/>
+
+		</xsd:schema>
+
+	</wsdl:types>
+
+	<wsdl:message name="SendungsDatenRequest">
+		<wsdl:part name="ShipmentCreate" element="tns:GOWebService_SendungsErstellung"/>
+	</wsdl:message>
+	<wsdl:message name="SendungsDatenResponse">
+		<wsdl:part name="ShipmentCreateResponse" element="tns:GOWebService_SendungsRueckmeldung"/>
+	</wsdl:message>
+	<wsdl:message name="ShipmentValidationException">
+		<wsdl:part name="ShipmentValidationException" element="tns:GOWebService_Fehlerbehandlung"/>
+	</wsdl:message>
+	<wsdl:message name="PDFSendungsnummern">
+		<wsdl:part name="PDFSendungsnummern" element="tns:GOWebService_Sendungsnummern"/>
+	</wsdl:message>
+	<wsdl:message name="PDFLabel">
+		<wsdl:part name="PDFLabel" element="tns:GOWebService_Label"/>
+	</wsdl:message>
+
+	<wsdl:portType name="SendungsDatenPort">
+		<wsdl:operation name="SendungsDaten">
+			<wsdl:input message="tns:SendungsDatenRequest"/>
+			<wsdl:output message="tns:SendungsDatenResponse"/>
+			<wsdl:fault name="ShipmentValidationException" message="tns:ShipmentValidationException"/>
+		</wsdl:operation>
+		<wsdl:operation name="PDFLabel">
+			<wsdl:input message="tns:PDFSendungsnummern"/>
+			<wsdl:output message="tns:PDFLabel"/>
+		</wsdl:operation>
+	</wsdl:portType>
+
+	<wsdl:binding name="SOAP" type="tns:SendungsDatenPort">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="SendungsDaten">
+			<soap:operation soapAction="https://wsdemo.ax4.com/ws/4020/GoMedios/SendungsDaten/"/>
+			<wsdl:input>
+				<soap:body use="literal" namespace="https://wsdemo.ax4.com/ws/GeneralOvernight"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" namespace="https://wsdemo.ax4.com/ws/GeneralOvernight"/>
+			</wsdl:output>
+			<wsdl:fault name="ShipmentValidationException">
+				<soap:fault name="ShipmentValidationException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="PDFLabel">
+			<soap:operation soapAction="https://wsdemo.ax4.com/ws/4020/GoMedios/PDFLabel/"/>
+			<wsdl:input>
+				<soap:body use="literal" namespace="https://wsdemo.ax4.com/ws/GeneralOvernight"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal" namespace="https://wsdemo.ax4.com/ws/GeneralOvernight"/>
+			</wsdl:output>
+		</wsdl:operation>
+	</wsdl:binding>
+
+	<wsdl:service name="SendungsDaten">
+		<wsdl:port binding="tns:SOAP" name="MainPort">
+			<soap:address location="https://wsdemo.ax4.com/ws/4020/GoMedios/SendungsDaten"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

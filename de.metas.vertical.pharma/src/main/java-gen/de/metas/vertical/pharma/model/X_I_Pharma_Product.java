@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.vertical.pharma.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1130429278L;
+	private static final long serialVersionUID = 1970459605L;
 
     /** Standard Constructor */
     public X_I_Pharma_Product (Properties ctx, int I_Pharma_Product_ID, String trxName)
@@ -75,11 +76,25 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A00ARTNR);
 	}
 
+	/** 
+	 * A00ATYP AD_Reference_ID=540791
+	 * Reference name: Pharma_ArticleType
+	 */
+	public static final int A00ATYP_AD_Reference_ID=540791;
+	/** 0 = 0 */
+	public static final String A00ATYP_0 = "0";
+	/** 1 = 1 */
+	public static final String A00ATYP_1 = "1";
+	/** 3 = 3 */
+	public static final String A00ATYP_3 = "3";
+	/** 4 = 4 */
+	public static final String A00ATYP_4 = "4";
 	/** Set A00ATYP.
 		@param A00ATYP A00ATYP	  */
 	@Override
 	public void setA00ATYP (java.lang.String A00ATYP)
 	{
+
 		set_Value (COLUMNNAME_A00ATYP, A00ATYP);
 	}
 
@@ -190,11 +205,39 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A00PBEZ);
 	}
 
+	/** 
+	 * A00PGEINH AD_Reference_ID=540790
+	 * Reference name: Pharma_UOM
+	 */
+	public static final int A00PGEINH_AD_Reference_ID=540790;
+	/** CM = CM */
+	public static final String A00PGEINH_CM = "CM";
+	/** FL = FL */
+	public static final String A00PGEINH_FL = "FL";
+	/** G = G */
+	public static final String A00PGEINH_G = "G";
+	/** KG = KG */
+	public static final String A00PGEINH_KG = "KG";
+	/** L = L */
+	public static final String A00PGEINH_L = "L";
+	/** M = M */
+	public static final String A00PGEINH_M = "M";
+	/** MG = MG */
+	public static final String A00PGEINH_MG = "MG";
+	/** ML = ML */
+	public static final String A00PGEINH_ML = "ML";
+	/** P = P */
+	public static final String A00PGEINH_P = "P";
+	/** ST = ST */
+	public static final String A00PGEINH_ST = "ST";
+	/** UG = UG */
+	public static final String A00PGEINH_UG = "UG";
 	/** Set A00PGEINH.
 		@param A00PGEINH A00PGEINH	  */
 	@Override
 	public void setA00PGEINH (java.lang.String A00PGEINH)
 	{
+
 		set_Value (COLUMNNAME_A00PGEINH, A00PGEINH);
 	}
 
@@ -289,11 +332,37 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A00SSATZ);
 	}
 
+	/** 
+	 * A00WGA AD_Reference_ID=540792
+	 * Reference name: Pharma_Group
+	 */
+	public static final int A00WGA_AD_Reference_ID=540792;
+	/** 0 = 0 */
+	public static final String A00WGA_0 = "0";
+	/** 1 = 1 */
+	public static final String A00WGA_1 = "1";
+	/** 2 = 2 */
+	public static final String A00WGA_2 = "2";
+	/** 3 = 3 */
+	public static final String A00WGA_3 = "3";
+	/** 4 = 4 */
+	public static final String A00WGA_4 = "4";
+	/** 5 = 5 */
+	public static final String A00WGA_5 = "5";
+	/** 6 = 6 */
+	public static final String A00WGA_6 = "6";
+	/** 7 = 7 */
+	public static final String A00WGA_7 = "7";
+	/** 8 = 8 */
+	public static final String A00WGA_8 = "8";
+	/** 55 = 55 */
+	public static final String A00WGA_55 = "55";
 	/** Set A00WGA.
 		@param A00WGA A00WGA	  */
 	@Override
 	public void setA00WGA (java.lang.String A00WGA)
 	{
+
 		set_Value (COLUMNNAME_A00WGA, A00WGA);
 	}
 
@@ -327,20 +396,20 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/** Set A01AEP.
 		@param A01AEP A01AEP	  */
 	@Override
-	public void setA01AEP (int A01AEP)
+	public void setA01AEP (java.math.BigDecimal A01AEP)
 	{
-		set_Value (COLUMNNAME_A01AEP, Integer.valueOf(A01AEP));
+		set_Value (COLUMNNAME_A01AEP, A01AEP);
 	}
 
 	/** Get A01AEP.
 		@return A01AEP	  */
 	@Override
-	public int getA01AEP () 
+	public java.math.BigDecimal getA01AEP () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A01AEP);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A01AEP);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set A01AEPPPU.
@@ -397,20 +466,20 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/** Set A01APU.
 		@param A01APU A01APU	  */
 	@Override
-	public void setA01APU (int A01APU)
+	public void setA01APU (java.math.BigDecimal A01APU)
 	{
-		set_Value (COLUMNNAME_A01APU, Integer.valueOf(A01APU));
+		set_Value (COLUMNNAME_A01APU, A01APU);
 	}
 
 	/** Get A01APU.
 		@return A01APU	  */
 	@Override
-	public int getA01APU () 
+	public java.math.BigDecimal getA01APU () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A01APU);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A01APU);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set A01APU783A.
@@ -435,20 +504,20 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/** Set A01AVP.
 		@param A01AVP A01AVP	  */
 	@Override
-	public void setA01AVP (int A01AVP)
+	public void setA01AVP (java.math.BigDecimal A01AVP)
 	{
-		set_Value (COLUMNNAME_A01AVP, Integer.valueOf(A01AVP));
+		set_Value (COLUMNNAME_A01AVP, A01AVP);
 	}
 
 	/** Get A01AVP.
 		@return A01AVP	  */
 	@Override
-	public int getA01AVP () 
+	public java.math.BigDecimal getA01AVP () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A01AVP);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A01AVP);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set A01AVPPPU.
@@ -505,27 +574,39 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/** Set A01KAEP.
 		@param A01KAEP A01KAEP	  */
 	@Override
-	public void setA01KAEP (int A01KAEP)
+	public void setA01KAEP (java.math.BigDecimal A01KAEP)
 	{
-		set_Value (COLUMNNAME_A01KAEP, Integer.valueOf(A01KAEP));
+		set_Value (COLUMNNAME_A01KAEP, A01KAEP);
 	}
 
 	/** Get A01KAEP.
 		@return A01KAEP	  */
 	@Override
-	public int getA01KAEP () 
+	public java.math.BigDecimal getA01KAEP () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A01KAEP);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A01KAEP);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** 
+	 * A01MWST AD_Reference_ID=540801
+	 * Reference name: Pharma_Tax
+	 */
+	public static final int A01MWST_AD_Reference_ID=540801;
+	/** 0 = 0 */
+	public static final String A01MWST_0 = "0";
+	/** 1 = 1 */
+	public static final String A01MWST_1 = "1";
+	/** 2 = 2 */
+	public static final String A01MWST_2 = "2";
 	/** Set A01MWST.
 		@param A01MWST A01MWST	  */
 	@Override
 	public void setA01MWST (java.lang.String A01MWST)
 	{
+
 		set_Value (COLUMNNAME_A01MWST, A01MWST);
 	}
 
@@ -728,46 +809,56 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	/** Set A01UVP.
 		@param A01UVP A01UVP	  */
 	@Override
-	public void setA01UVP (int A01UVP)
+	public void setA01UVP (java.math.BigDecimal A01UVP)
 	{
-		set_Value (COLUMNNAME_A01UVP, Integer.valueOf(A01UVP));
+		set_Value (COLUMNNAME_A01UVP, A01UVP);
 	}
 
 	/** Get A01UVP.
 		@return A01UVP	  */
 	@Override
-	public int getA01UVP () 
+	public java.math.BigDecimal getA01UVP () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A01UVP);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A01UVP);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set A01ZBV.
 		@param A01ZBV A01ZBV	  */
 	@Override
-	public void setA01ZBV (int A01ZBV)
+	public void setA01ZBV (java.math.BigDecimal A01ZBV)
 	{
-		set_Value (COLUMNNAME_A01ZBV, Integer.valueOf(A01ZBV));
+		set_Value (COLUMNNAME_A01ZBV, A01ZBV);
 	}
 
 	/** Get A01ZBV.
 		@return A01ZBV	  */
 	@Override
-	public int getA01ZBV () 
+	public java.math.BigDecimal getA01ZBV () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A01ZBV);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A01ZBV);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** 
+	 * A02130A18 AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02130A18_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02130A18_0 = "0";
+	/** 1 = 1 */
+	public static final String A02130A18_1 = "1";
 	/** Set A02130A18.
 		@param A02130A18 A02130A18	  */
 	@Override
 	public void setA02130A18 (java.lang.String A02130A18)
 	{
+
 		set_Value (COLUMNNAME_A02130A18, A02130A18);
 	}
 
@@ -779,11 +870,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02130A18);
 	}
 
+	/** 
+	 * A02130A1A8 AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02130A1A8_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02130A1A8_0 = "0";
+	/** 1 = 1 */
+	public static final String A02130A1A8_1 = "1";
 	/** Set A02130A1A8.
 		@param A02130A1A8 A02130A1A8	  */
 	@Override
 	public void setA02130A1A8 (java.lang.String A02130A1A8)
 	{
+
 		set_Value (COLUMNNAME_A02130A1A8, A02130A1A8);
 	}
 
@@ -795,11 +896,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02130A1A8);
 	}
 
+	/** 
+	 * A0247AMG AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A0247AMG_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A0247AMG_0 = "0";
+	/** 1 = 1 */
+	public static final String A0247AMG_1 = "1";
 	/** Set A0247AMG.
 		@param A0247AMG A0247AMG	  */
 	@Override
 	public void setA0247AMG (java.lang.String A0247AMG)
 	{
+
 		set_Value (COLUMNNAME_A0247AMG, A0247AMG);
 	}
 
@@ -811,11 +922,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A0247AMG);
 	}
 
+	/** 
+	 * A0252B AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A0252B_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A0252B_0 = "0";
+	/** 1 = 1 */
+	public static final String A0252B_1 = "1";
 	/** Set A0252B.
 		@param A0252B A0252B	  */
 	@Override
 	public void setA0252B (java.lang.String A0252B)
 	{
+
 		set_Value (COLUMNNAME_A0252B, A0252B);
 	}
 
@@ -832,10 +953,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02AM_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02AM_00 = "00";
-	/** 01 = 01 */
-	public static final String A02AM_01 = "01";
+	/** 0 = 0 */
+	public static final String A02AM_0 = "0";
+	/** 1 = 1 */
+	public static final String A02AM_1 = "1";
 	/** Set A02AM.
 		@param A02AM A02AM	  */
 	@Override
@@ -853,11 +974,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02AM);
 	}
 
+	/** 
+	 * A02ANTHRO AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02ANTHRO_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02ANTHRO_0 = "0";
+	/** 1 = 1 */
+	public static final String A02ANTHRO_1 = "1";
 	/** Set A02ANTHRO.
 		@param A02ANTHRO A02ANTHRO	  */
 	@Override
 	public void setA02ANTHRO (java.lang.String A02ANTHRO)
 	{
+
 		set_Value (COLUMNNAME_A02ANTHRO, A02ANTHRO);
 	}
 
@@ -874,12 +1005,12 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_IsPharmacy
 	 */
 	public static final int A02APPFL_AD_Reference_ID=540789;
-	/** 00 = 00 */
-	public static final String A02APPFL_00 = "00";
-	/** 01 = 01 */
-	public static final String A02APPFL_01 = "01";
-	/** 02 = 02 */
-	public static final String A02APPFL_02 = "02";
+	/** 0 = 0 */
+	public static final String A02APPFL_0 = "0";
+	/** 1 = 1 */
+	public static final String A02APPFL_1 = "1";
+	/** 2 = 2 */
+	public static final String A02APPFL_2 = "2";
 	/** Set A02APPFL.
 		@param A02APPFL A02APPFL	  */
 	@Override
@@ -897,11 +1028,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02APPFL);
 	}
 
+	/** 
+	 * A02AUSNREI AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02AUSNREI_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02AUSNREI_0 = "0";
+	/** 1 = 1 */
+	public static final String A02AUSNREI_1 = "1";
 	/** Set A02AUSNREI.
 		@param A02AUSNREI A02AUSNREI	  */
 	@Override
 	public void setA02AUSNREI (java.lang.String A02AUSNREI)
 	{
+
 		set_Value (COLUMNNAME_A02AUSNREI, A02AUSNREI);
 	}
 
@@ -913,11 +1054,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02AUSNREI);
 	}
 
+	/** 
+	 * A02BATTG AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02BATTG_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02BATTG_0 = "0";
+	/** 1 = 1 */
+	public static final String A02BATTG_1 = "1";
 	/** Set A02BATTG.
 		@param A02BATTG A02BATTG	  */
 	@Override
 	public void setA02BATTG (java.lang.String A02BATTG)
 	{
+
 		set_Value (COLUMNNAME_A02BATTG, A02BATTG);
 	}
 
@@ -929,11 +1080,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02BATTG);
 	}
 
+	/** 
+	 * A02BIOSIEG AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02BIOSIEG_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02BIOSIEG_0 = "0";
+	/** 1 = 1 */
+	public static final String A02BIOSIEG_1 = "1";
 	/** Set A02BIOSIEG.
 		@param A02BIOSIEG A02BIOSIEG	  */
 	@Override
 	public void setA02BIOSIEG (java.lang.String A02BIOSIEG)
 	{
+
 		set_Value (COLUMNNAME_A02BIOSIEG, A02BIOSIEG);
 	}
 
@@ -945,11 +1106,25 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02BIOSIEG);
 	}
 
+	/** 
+	 * A02BIOTECH AD_Reference_ID=540797
+	 * Reference name: Pharma_Biotech
+	 */
+	public static final int A02BIOTECH_AD_Reference_ID=540797;
+	/** 0 = 0 */
+	public static final String A02BIOTECH_0 = "0";
+	/** 1 = 1 */
+	public static final String A02BIOTECH_1 = "1";
+	/** 2 = 2 */
+	public static final String A02BIOTECH_2 = "2";
+	/** 3 = 3 */
+	public static final String A02BIOTECH_3 = "3";
 	/** Set A02BIOTECH.
 		@param A02BIOTECH A02BIOTECH	  */
 	@Override
 	public void setA02BIOTECH (java.lang.String A02BIOTECH)
 	{
+
 		set_Value (COLUMNNAME_A02BIOTECH, A02BIOTECH);
 	}
 
@@ -961,11 +1136,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02BIOTECH);
 	}
 
+	/** 
+	 * A02BIOZID AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02BIOZID_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02BIOZID_0 = "0";
+	/** 1 = 1 */
+	public static final String A02BIOZID_1 = "1";
 	/** Set A02BIOZID.
 		@param A02BIOZID A02BIOZID	  */
 	@Override
 	public void setA02BIOZID (java.lang.String A02BIOZID)
 	{
+
 		set_Value (COLUMNNAME_A02BIOZID, A02BIOZID);
 	}
 
@@ -1001,12 +1186,12 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_IsNarcotic
 	 */
 	public static final int A02BTM_AD_Reference_ID=540785;
-	/** 00 = 00 */
-	public static final String A02BTM_00 = "00";
-	/** 01 = 01 */
-	public static final String A02BTM_01 = "01";
-	/** 02 = 02 */
-	public static final String A02BTM_02 = "02";
+	/** 0 = 0 */
+	public static final String A02BTM_0 = "0";
+	/** 1 = 1 */
+	public static final String A02BTM_1 = "1";
+	/** 2 = 2 */
+	public static final String A02BTM_2 = "2";
 	/** Set A02BTM.
 		@param A02BTM A02BTM	  */
 	@Override
@@ -1024,11 +1209,23 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02BTM);
 	}
 
+	/** 
+	 * A02DIAET AD_Reference_ID=540796
+	 * Reference name: Pharma_Dietetic
+	 */
+	public static final int A02DIAET_AD_Reference_ID=540796;
+	/** 0 = 0 */
+	public static final String A02DIAET_0 = "0";
+	/** 1 = 1 */
+	public static final String A02DIAET_1 = "1";
+	/** 99 = 99 */
+	public static final String A02DIAET_99 = "99";
 	/** Set A02DIAET.
 		@param A02DIAET A02DIAET	  */
 	@Override
 	public void setA02DIAET (java.lang.String A02DIAET)
 	{
+
 		set_Value (COLUMNNAME_A02DIAET, A02DIAET);
 	}
 
@@ -1072,11 +1269,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02EB130B);
 	}
 
+	/** 
+	 * A02ELEKEAR AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02ELEKEAR_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02ELEKEAR_0 = "0";
+	/** 1 = 1 */
+	public static final String A02ELEKEAR_1 = "1";
 	/** Set A02ELEKEAR.
 		@param A02ELEKEAR A02ELEKEAR	  */
 	@Override
 	public void setA02ELEKEAR (java.lang.String A02ELEKEAR)
 	{
+
 		set_Value (COLUMNNAME_A02ELEKEAR, A02ELEKEAR);
 	}
 
@@ -1088,11 +1295,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02ELEKEAR);
 	}
 
+	/** 
+	 * A02ELEKTRO AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02ELEKTRO_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02ELEKTRO_0 = "0";
+	/** 1 = 1 */
+	public static final String A02ELEKTRO_1 = "1";
 	/** Set A02ELEKTRO.
 		@param A02ELEKTRO A02ELEKTRO	  */
 	@Override
 	public void setA02ELEKTRO (java.lang.String A02ELEKTRO)
 	{
+
 		set_Value (COLUMNNAME_A02ELEKTRO, A02ELEKTRO);
 	}
 
@@ -1104,11 +1321,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02ELEKTRO);
 	}
 
+	/** 
+	 * A02EXPLOS AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02EXPLOS_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02EXPLOS_0 = "0";
+	/** 1 = 1 */
+	public static final String A02EXPLOS_1 = "1";
 	/** Set A02EXPLOS.
 		@param A02EXPLOS A02EXPLOS	  */
 	@Override
 	public void setA02EXPLOS (java.lang.String A02EXPLOS)
 	{
+
 		set_Value (COLUMNNAME_A02EXPLOS, A02EXPLOS);
 	}
 
@@ -1136,11 +1363,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_A02GDAT);
 	}
 
+	/** 
+	 * A02GENER AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02GENER_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02GENER_0 = "0";
+	/** 1 = 1 */
+	public static final String A02GENER_1 = "1";
 	/** Set A02GENER.
 		@param A02GENER A02GENER	  */
 	@Override
 	public void setA02GENER (java.lang.String A02GENER)
 	{
+
 		set_Value (COLUMNNAME_A02GENER, A02GENER);
 	}
 
@@ -1168,11 +1405,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02HMZV);
 	}
 
+	/** 
+	 * A02HOMOEO AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02HOMOEO_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02HOMOEO_0 = "0";
+	/** 1 = 1 */
+	public static final String A02HOMOEO_1 = "1";
 	/** Set A02HOMOEO.
 		@param A02HOMOEO A02HOMOEO	  */
 	@Override
 	public void setA02HOMOEO (java.lang.String A02HOMOEO)
 	{
+
 		set_Value (COLUMNNAME_A02HOMOEO, A02HOMOEO);
 	}
 
@@ -1184,11 +1431,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02HOMOEO);
 	}
 
+	/** 
+	 * A02KOSMET AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02KOSMET_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02KOSMET_0 = "0";
+	/** 1 = 1 */
+	public static final String A02KOSMET_1 = "1";
 	/** Set A02KOSMET.
 		@param A02KOSMET A02KOSMET	  */
 	@Override
 	public void setA02KOSMET (java.lang.String A02KOSMET)
 	{
+
 		set_Value (COLUMNNAME_A02KOSMET, A02KOSMET);
 	}
 
@@ -1200,11 +1457,23 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02KOSMET);
 	}
 
+	/** 
+	 * A02LEBENSM AD_Reference_ID=540795
+	 * Reference name: Pharma_Food
+	 */
+	public static final int A02LEBENSM_AD_Reference_ID=540795;
+	/** 0 = 0 */
+	public static final String A02LEBENSM_0 = "0";
+	/** 1 = 1 */
+	public static final String A02LEBENSM_1 = "1";
+	/** 99 = 99 */
+	public static final String A02LEBENSM_99 = "99";
 	/** Set A02LEBENSM.
 		@param A02LEBENSM A02LEBENSM	  */
 	@Override
 	public void setA02LEBENSM (java.lang.String A02LEBENSM)
 	{
+
 		set_Value (COLUMNNAME_A02LEBENSM, A02LEBENSM);
 	}
 
@@ -1216,11 +1485,23 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02LEBENSM);
 	}
 
+	/** 
+	 * A02LIFSTYL AD_Reference_ID=540794
+	 * Reference name: Pharma_LifeStyle
+	 */
+	public static final int A02LIFSTYL_AD_Reference_ID=540794;
+	/** 0 = 0 */
+	public static final String A02LIFSTYL_0 = "0";
+	/** 1 = 1 */
+	public static final String A02LIFSTYL_1 = "1";
+	/** 2 = 2 */
+	public static final String A02LIFSTYL_2 = "2";
 	/** Set A02LIFSTYL.
 		@param A02LIFSTYL A02LIFSTYL	  */
 	@Override
 	public void setA02LIFSTYL (java.lang.String A02LIFSTYL)
 	{
+
 		set_Value (COLUMNNAME_A02LIFSTYL, A02LIFSTYL);
 	}
 
@@ -1251,11 +1532,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return ii.intValue();
 	}
 
+	/** 
+	 * A02MP AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02MP_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02MP_0 = "0";
+	/** 1 = 1 */
+	public static final String A02MP_1 = "1";
 	/** Set A02MP.
 		@param A02MP A02MP	  */
 	@Override
 	public void setA02MP (java.lang.String A02MP)
 	{
+
 		set_Value (COLUMNNAME_A02MP, A02MP);
 	}
 
@@ -1283,11 +1574,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02NEGLIS);
 	}
 
+	/** 
+	 * A02NEM AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02NEM_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02NEM_0 = "0";
+	/** 1 = 1 */
+	public static final String A02NEM_1 = "1";
 	/** Set A02NEM.
 		@param A02NEM A02NEM	  */
 	@Override
 	public void setA02NEM (java.lang.String A02NEM)
 	{
+
 		set_Value (COLUMNNAME_A02NEM, A02NEM);
 	}
 
@@ -1299,11 +1600,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02NEM);
 	}
 
+	/** 
+	 * A02PHYTO AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02PHYTO_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02PHYTO_0 = "0";
+	/** 1 = 1 */
+	public static final String A02PHYTO_1 = "1";
 	/** Set A02PHYTO.
 		@param A02PHYTO A02PHYTO	  */
 	@Override
 	public void setA02PHYTO (java.lang.String A02PHYTO)
 	{
+
 		set_Value (COLUMNNAME_A02PHYTO, A02PHYTO);
 	}
 
@@ -1315,11 +1626,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02PHYTO);
 	}
 
+	/** 
+	 * A02PSM AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02PSM_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02PSM_0 = "0";
+	/** 1 = 1 */
+	public static final String A02PSM_1 = "1";
 	/** Set A02PSM.
 		@param A02PSM A02PSM	  */
 	@Override
 	public void setA02PSM (java.lang.String A02PSM)
 	{
+
 		set_Value (COLUMNNAME_A02PSM, A02PSM);
 	}
 
@@ -1379,11 +1700,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02RESERV3);
 	}
 
+	/** 
+	 * A02SDB AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02SDB_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02SDB_0 = "0";
+	/** 1 = 1 */
+	public static final String A02SDB_1 = "1";
 	/** Set A02SDB.
 		@param A02SDB A02SDB	  */
 	@Override
 	public void setA02SDB (java.lang.String A02SDB)
 	{
+
 		set_Value (COLUMNNAME_A02SDB, A02SDB);
 	}
 
@@ -1395,11 +1726,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02SDB);
 	}
 
+	/** 
+	 * A02STERIL AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02STERIL_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02STERIL_0 = "0";
+	/** 1 = 1 */
+	public static final String A02STERIL_1 = "1";
 	/** Set A02STERIL.
 		@param A02STERIL A02STERIL	  */
 	@Override
 	public void setA02STERIL (java.lang.String A02STERIL)
 	{
+
 		set_Value (COLUMNNAME_A02STERIL, A02STERIL);
 	}
 
@@ -1416,10 +1757,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A02TFG_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A02TFG_00 = "00";
-	/** 01 = 01 */
-	public static final String A02TFG_01 = "01";
+	/** 0 = 0 */
+	public static final String A02TFG_0 = "0";
+	/** 1 = 1 */
+	public static final String A02TFG_1 = "1";
 	/** Set A02TFG.
 		@param A02TFG A02TFG	  */
 	@Override
@@ -1453,11 +1794,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A02TIERAM);
 	}
 
+	/** 
+	 * A02TREZEP AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02TREZEP_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02TREZEP_0 = "0";
+	/** 1 = 1 */
+	public static final String A02TREZEP_1 = "1";
 	/** Set A02TREZEP.
 		@param A02TREZEP A02TREZEP	  */
 	@Override
 	public void setA02TREZEP (java.lang.String A02TREZEP)
 	{
+
 		set_Value (COLUMNNAME_A02TREZEP, A02TREZEP);
 	}
 
@@ -1474,14 +1825,14 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_IsPrescription
 	 */
 	public static final int A02VSPFL_AD_Reference_ID=540783;
-	/** 00 = 00 */
-	public static final String A02VSPFL_00 = "00";
-	/** 01 = 01 */
-	public static final String A02VSPFL_01 = "01";
-	/** 02 = 02 */
-	public static final String A02VSPFL_02 = "02";
-	/** nein / Ausnahmeregel = 03 */
-	public static final String A02VSPFL_NeinAusnahmeregel = "03";
+	/** 0 = 0 */
+	public static final String A02VSPFL_0 = "0";
+	/** 1 = 1 */
+	public static final String A02VSPFL_1 = "1";
+	/** 2 = 2 */
+	public static final String A02VSPFL_2 = "2";
+	/** 3 = 3 */
+	public static final String A02VSPFL_3 = "3";
 	/** Set A02VSPFL.
 		@param A02VSPFL A02VSPFL	  */
 	@Override
@@ -1518,11 +1869,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return ii.intValue();
 	}
 
+	/** 
+	 * A02WIRKSTO AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A02WIRKSTO_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A02WIRKSTO_0 = "0";
+	/** 1 = 1 */
+	public static final String A02WIRKSTO_1 = "1";
 	/** Set A02WIRKSTO.
 		@param A02WIRKSTO A02WIRKSTO	  */
 	@Override
 	public void setA02WIRKSTO (java.lang.String A02WIRKSTO)
 	{
+
 		set_Value (COLUMNNAME_A02WIRKSTO, A02WIRKSTO);
 	}
 
@@ -1598,11 +1959,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A03VTSTAT);
 	}
 
+	/** 
+	 * A03VWGAPO AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A03VWGAPO_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A03VWGAPO_0 = "0";
+	/** 1 = 1 */
+	public static final String A03VWGAPO_1 = "1";
 	/** Set A03VWGAPO.
 		@param A03VWGAPO A03VWGAPO	  */
 	@Override
 	public void setA03VWGAPO (java.lang.String A03VWGAPO)
 	{
+
 		set_Value (COLUMNNAME_A03VWGAPO, A03VWGAPO);
 	}
 
@@ -1614,11 +1985,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A03VWGAPO);
 	}
 
+	/** 
+	 * A03VWGGH AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A03VWGGH_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A03VWGGH_0 = "0";
+	/** 1 = 1 */
+	public static final String A03VWGGH_1 = "1";
 	/** Set A03VWGGH.
 		@param A03VWGGH A03VWGGH	  */
 	@Override
 	public void setA03VWGGH (java.lang.String A03VWGGH)
 	{
+
 		set_Value (COLUMNNAME_A03VWGGH, A03VWGGH);
 	}
 
@@ -1630,11 +2011,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A03VWGGH);
 	}
 
+	/** 
+	 * A03VWGKAP AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A03VWGKAP_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A03VWGKAP_0 = "0";
+	/** 1 = 1 */
+	public static final String A03VWGKAP_1 = "1";
 	/** Set A03VWGKAP.
 		@param A03VWGKAP A03VWGKAP	  */
 	@Override
 	public void setA03VWGKAP (java.lang.String A03VWGKAP)
 	{
+
 		set_Value (COLUMNNAME_A03VWGKAP, A03VWGKAP);
 	}
 
@@ -1646,11 +2037,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A03VWGKAP);
 	}
 
+	/** 
+	 * A03VWGSEH AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A03VWGSEH_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A03VWGSEH_0 = "0";
+	/** 1 = 1 */
+	public static final String A03VWGSEH_1 = "1";
 	/** Set A03VWGSEH.
 		@param A03VWGSEH A03VWGSEH	  */
 	@Override
 	public void setA03VWGSEH (java.lang.String A03VWGSEH)
 	{
+
 		set_Value (COLUMNNAME_A03VWGSEH, A03VWGSEH);
 	}
 
@@ -1758,11 +2159,63 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.lang.String)get_Value(COLUMNNAME_A04MBEST);
 	}
 
+	/** 
+	 * A04VPART AD_Reference_ID=540793
+	 * Reference name: Pharma_PackageType
+	 */
+	public static final int A04VPART_AD_Reference_ID=540793;
+	/** 1 = 1 */
+	public static final String A04VPART_1 = "1";
+	/** 2 = 2 */
+	public static final String A04VPART_2 = "2";
+	/** 3 = 3 */
+	public static final String A04VPART_3 = "3";
+	/** 4 = 4 */
+	public static final String A04VPART_4 = "4";
+	/** 5 = 5 */
+	public static final String A04VPART_5 = "5";
+	/** 6 = 6 */
+	public static final String A04VPART_6 = "6";
+	/** 7 = 7 */
+	public static final String A04VPART_7 = "7";
+	/** 8 = 8 */
+	public static final String A04VPART_8 = "8";
+	/** 9 = 9 */
+	public static final String A04VPART_9 = "9";
+	/** 10 = 10 */
+	public static final String A04VPART_10 = "10";
+	/** 11 = 11 */
+	public static final String A04VPART_11 = "11";
+	/** 12 = 12 */
+	public static final String A04VPART_12 = "12";
+	/** 13 = 13 */
+	public static final String A04VPART_13 = "13";
+	/** 14 = 14 */
+	public static final String A04VPART_14 = "14";
+	/** 15 = 15 */
+	public static final String A04VPART_15 = "15";
+	/** 16 = 16 */
+	public static final String A04VPART_16 = "16";
+	/** 17 = 17 */
+	public static final String A04VPART_17 = "17";
+	/** 18 = 18 */
+	public static final String A04VPART_18 = "18";
+	/** 19 = 19 */
+	public static final String A04VPART_19 = "19";
+	/** 20 = 20 */
+	public static final String A04VPART_20 = "20";
+	/** 21 = 21 */
+	public static final String A04VPART_21 = "21";
+	/** 22 = 22 */
+	public static final String A04VPART_22 = "22";
+	/** 99 = 99 */
+	public static final String A04VPART_99 = "99";
 	/** Set A04VPART.
 		@param A04VPART A04VPART	  */
 	@Override
 	public void setA04VPART (java.lang.String A04VPART)
 	{
+
 		set_Value (COLUMNNAME_A04VPART, A04VPART);
 	}
 
@@ -1779,10 +2232,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A05EICH_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A05EICH_00 = "00";
-	/** 01 = 01 */
-	public static final String A05EICH_01 = "01";
+	/** 0 = 0 */
+	public static final String A05EICH_0 = "0";
+	/** 1 = 1 */
+	public static final String A05EICH_1 = "1";
 	/** Set A05EICH.
 		@param A05EICH A05EICH	  */
 	@Override
@@ -1805,10 +2258,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A05FEUCHT_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A05FEUCHT_00 = "00";
-	/** 01 = 01 */
-	public static final String A05FEUCHT_01 = "01";
+	/** 0 = 0 */
+	public static final String A05FEUCHT_0 = "0";
+	/** 1 = 1 */
+	public static final String A05FEUCHT_1 = "1";
 	/** Set A05FEUCHT.
 		@param A05FEUCHT A05FEUCHT	  */
 	@Override
@@ -1847,10 +2300,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A05KKETTE_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A05KKETTE_00 = "00";
-	/** 01 = 01 */
-	public static final String A05KKETTE_01 = "01";
+	/** 0 = 0 */
+	public static final String A05KKETTE_0 = "0";
+	/** 1 = 1 */
+	public static final String A05KKETTE_1 = "1";
 	/** Set A05KKETTE.
 		@param A05KKETTE A05KKETTE	  */
 	@Override
@@ -1873,12 +2326,12 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_PositionSenstive
 	 */
 	public static final int A05LAGE_AD_Reference_ID=540788;
-	/** 00 = 00 */
-	public static final String A05LAGE_00 = "00";
-	/** 01 = 01 */
-	public static final String A05LAGE_01 = "01";
-	/** 02 = 02 */
-	public static final String A05LAGE_02 = "02";
+	/** 0 = 0 */
+	public static final String A05LAGE_0 = "0";
+	/** 1 = 1 */
+	public static final String A05LAGE_1 = "1";
+	/** 2 = 2 */
+	public static final String A05LAGE_2 = "2";
 	/** Set A05LAGE.
 		@param A05LAGE A05LAGE	  */
 	@Override
@@ -1901,12 +2354,12 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_Photosensitive
 	 */
 	public static final int A05LICHT_AD_Reference_ID=540786;
-	/** 00 = 00 */
-	public static final String A05LICHT_00 = "00";
-	/** 01 = 01 */
-	public static final String A05LICHT_01 = "01";
-	/** 02 = 02 */
-	public static final String A05LICHT_02 = "02";
+	/** 0 = 0 */
+	public static final String A05LICHT_0 = "0";
+	/** 1 = 1 */
+	public static final String A05LICHT_1 = "1";
+	/** 2 = 2 */
+	public static final String A05LICHT_2 = "2";
 	/** Set A05LICHT.
 		@param A05LICHT A05LICHT	  */
 	@Override
@@ -1999,10 +2452,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A05VFDAT_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A05VFDAT_00 = "00";
-	/** 01 = 01 */
-	public static final String A05VFDAT_01 = "01";
+	/** 0 = 0 */
+	public static final String A05VFDAT_0 = "0";
+	/** 1 = 1 */
+	public static final String A05VFDAT_1 = "1";
 	/** Set A05VFDAT.
 		@param A05VFDAT A05VFDAT	  */
 	@Override
@@ -2025,10 +2478,10 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	 * Reference name: Pharma_YesNo
 	 */
 	public static final int A05ZERBR_AD_Reference_ID=540782;
-	/** 00 = 00 */
-	public static final String A05ZERBR_00 = "00";
-	/** 01 = 01 */
-	public static final String A05ZERBR_01 = "01";
+	/** 0 = 0 */
+	public static final String A05ZERBR_0 = "0";
+	/** 1 = 1 */
+	public static final String A05ZERBR_1 = "1";
 	/** Set A05ZERBR.
 		@param A05ZERBR A05ZERBR	  */
 	@Override
@@ -2116,11 +2569,27 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_A09GDAT);
 	}
 
+	/** 
+	 * A09THGP AD_Reference_ID=540798
+	 * Reference name: Pharma_PackSize
+	 */
+	public static final int A09THGP_AD_Reference_ID=540798;
+	/** 0 = 0 */
+	public static final String A09THGP_0 = "0";
+	/** 1 = 1 */
+	public static final String A09THGP_1 = "1";
+	/** 2 = 2 */
+	public static final String A09THGP_2 = "2";
+	/** 3 = 3 */
+	public static final String A09THGP_3 = "3";
+	/** 4 = 4 */
+	public static final String A09THGP_4 = "4";
 	/** Set A09THGP.
 		@param A09THGP A09THGP	  */
 	@Override
 	public void setA09THGP (java.lang.String A09THGP)
 	{
+
 		set_Value (COLUMNNAME_A09THGP, A09THGP);
 	}
 
@@ -2148,11 +2617,21 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_A11GDAT);
 	}
 
+	/** 
+	 * A11VERIFIZ AD_Reference_ID=540782
+	 * Reference name: Pharma_YesNo
+	 */
+	public static final int A11VERIFIZ_AD_Reference_ID=540782;
+	/** 0 = 0 */
+	public static final String A11VERIFIZ_0 = "0";
+	/** 1 = 1 */
+	public static final String A11VERIFIZ_1 = "1";
 	/** Set A11VERIFIZ.
 		@param A11VERIFIZ A11VERIFIZ	  */
 	@Override
 	public void setA11VERIFIZ (java.lang.String A11VERIFIZ)
 	{
+
 		set_Value (COLUMNNAME_A11VERIFIZ, A11VERIFIZ);
 	}
 
@@ -2216,6 +2695,108 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	public int getA11VERITES () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_A11VERITES);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_PriceList getAEP_Price_List() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AEP_Price_List_ID, org.compiere.model.I_M_PriceList.class);
+	}
+
+	@Override
+	public void setAEP_Price_List(org.compiere.model.I_M_PriceList AEP_Price_List)
+	{
+		set_ValueFromPO(COLUMNNAME_AEP_Price_List_ID, org.compiere.model.I_M_PriceList.class, AEP_Price_List);
+	}
+
+	/** Set Price List AEP.
+		@param AEP_Price_List_ID Price List AEP	  */
+	@Override
+	public void setAEP_Price_List_ID (int AEP_Price_List_ID)
+	{
+		if (AEP_Price_List_ID < 1) 
+			set_Value (COLUMNNAME_AEP_Price_List_ID, null);
+		else 
+			set_Value (COLUMNNAME_AEP_Price_List_ID, Integer.valueOf(AEP_Price_List_ID));
+	}
+
+	/** Get Price List AEP.
+		@return Price List AEP	  */
+	@Override
+	public int getAEP_Price_List_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AEP_Price_List_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_PriceList getAPU_Price_List() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_APU_Price_List_ID, org.compiere.model.I_M_PriceList.class);
+	}
+
+	@Override
+	public void setAPU_Price_List(org.compiere.model.I_M_PriceList APU_Price_List)
+	{
+		set_ValueFromPO(COLUMNNAME_APU_Price_List_ID, org.compiere.model.I_M_PriceList.class, APU_Price_List);
+	}
+
+	/** Set Price List APU.
+		@param APU_Price_List_ID Price List APU	  */
+	@Override
+	public void setAPU_Price_List_ID (int APU_Price_List_ID)
+	{
+		if (APU_Price_List_ID < 1) 
+			set_Value (COLUMNNAME_APU_Price_List_ID, null);
+		else 
+			set_Value (COLUMNNAME_APU_Price_List_ID, Integer.valueOf(APU_Price_List_ID));
+	}
+
+	/** Get Price List APU.
+		@return Price List APU	  */
+	@Override
+	public int getAPU_Price_List_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_APU_Price_List_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_PriceList getAVP_Price_List() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AVP_Price_List_ID, org.compiere.model.I_M_PriceList.class);
+	}
+
+	@Override
+	public void setAVP_Price_List(org.compiere.model.I_M_PriceList AVP_Price_List)
+	{
+		set_ValueFromPO(COLUMNNAME_AVP_Price_List_ID, org.compiere.model.I_M_PriceList.class, AVP_Price_List);
+	}
+
+	/** Set Price List AVP.
+		@param AVP_Price_List_ID Price List AVP	  */
+	@Override
+	public void setAVP_Price_List_ID (int AVP_Price_List_ID)
+	{
+		if (AVP_Price_List_ID < 1) 
+			set_Value (COLUMNNAME_AVP_Price_List_ID, null);
+		else 
+			set_Value (COLUMNNAME_AVP_Price_List_ID, Integer.valueOf(AVP_Price_List_ID));
+	}
+
+	/** Get Price List AVP.
+		@return Price List AVP	  */
+	@Override
+	public int getAVP_Price_List_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AVP_Price_List_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -2288,6 +2869,40 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 	public int getI_Pharma_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_I_Pharma_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_PriceList getKAEP_Price_List() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_KAEP_Price_List_ID, org.compiere.model.I_M_PriceList.class);
+	}
+
+	@Override
+	public void setKAEP_Price_List(org.compiere.model.I_M_PriceList KAEP_Price_List)
+	{
+		set_ValueFromPO(COLUMNNAME_KAEP_Price_List_ID, org.compiere.model.I_M_PriceList.class, KAEP_Price_List);
+	}
+
+	/** Set Price List KAEP.
+		@param KAEP_Price_List_ID Price List KAEP	  */
+	@Override
+	public void setKAEP_Price_List_ID (int KAEP_Price_List_ID)
+	{
+		if (KAEP_Price_List_ID < 1) 
+			set_Value (COLUMNNAME_KAEP_Price_List_ID, null);
+		else 
+			set_Value (COLUMNNAME_KAEP_Price_List_ID, Integer.valueOf(KAEP_Price_List_ID));
+	}
+
+	/** Get Price List KAEP.
+		@return Price List KAEP	  */
+	@Override
+	public int getKAEP_Price_List_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_KAEP_Price_List_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -2425,5 +3040,73 @@ public class X_I_Pharma_Product extends org.compiere.model.PO implements I_I_Pha
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	@Override
+	public org.compiere.model.I_M_PriceList getUVP_Price_List() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_UVP_Price_List_ID, org.compiere.model.I_M_PriceList.class);
+	}
+
+	@Override
+	public void setUVP_Price_List(org.compiere.model.I_M_PriceList UVP_Price_List)
+	{
+		set_ValueFromPO(COLUMNNAME_UVP_Price_List_ID, org.compiere.model.I_M_PriceList.class, UVP_Price_List);
+	}
+
+	/** Set Price List UVP.
+		@param UVP_Price_List_ID Price List UVP	  */
+	@Override
+	public void setUVP_Price_List_ID (int UVP_Price_List_ID)
+	{
+		if (UVP_Price_List_ID < 1) 
+			set_Value (COLUMNNAME_UVP_Price_List_ID, null);
+		else 
+			set_Value (COLUMNNAME_UVP_Price_List_ID, Integer.valueOf(UVP_Price_List_ID));
+	}
+
+	/** Get Price List UVP.
+		@return Price List UVP	  */
+	@Override
+	public int getUVP_Price_List_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_UVP_Price_List_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_PriceList getZBV_Price_List() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_ZBV_Price_List_ID, org.compiere.model.I_M_PriceList.class);
+	}
+
+	@Override
+	public void setZBV_Price_List(org.compiere.model.I_M_PriceList ZBV_Price_List)
+	{
+		set_ValueFromPO(COLUMNNAME_ZBV_Price_List_ID, org.compiere.model.I_M_PriceList.class, ZBV_Price_List);
+	}
+
+	/** Set Price List ZBV.
+		@param ZBV_Price_List_ID Price List ZBV	  */
+	@Override
+	public void setZBV_Price_List_ID (int ZBV_Price_List_ID)
+	{
+		if (ZBV_Price_List_ID < 1) 
+			set_Value (COLUMNNAME_ZBV_Price_List_ID, null);
+		else 
+			set_Value (COLUMNNAME_ZBV_Price_List_ID, Integer.valueOf(ZBV_Price_List_ID));
+	}
+
+	/** Get Price List ZBV.
+		@return Price List ZBV	  */
+	@Override
+	public int getZBV_Price_List_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_ZBV_Price_List_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }
