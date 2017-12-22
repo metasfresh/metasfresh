@@ -340,6 +340,8 @@ class RawList extends Component {
   };
 
   handleSelect = option => {
+    this.considerBlur = true;
+
     const { onSelect } = this.props;
 
     if (option.key === null) {
