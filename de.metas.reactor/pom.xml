@@ -97,6 +97,12 @@
 		<module>../de.metas.purchasecandidate.base</module>
 		
 		<module>../de.metas.vertical.pharma</module>
+		
+		<module>../de.metas.shipper.gateway.api</module>
+		<module>../de.metas.shipper.gateway.go</module>
+		<!-- commented out because we don't include it in any distribution
+		<module>../de.metas.shipper.gateway.dpd-legacy</module>
+		-->
 	</modules>
 			
 	  <build>
