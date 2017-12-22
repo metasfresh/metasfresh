@@ -69,7 +69,7 @@ public class RoutingQuery
 	 */
 	public final String dCity;
 
-	RoutingQuery(String rDepot, Timestamp date, String service,
+	public RoutingQuery(String rDepot, Timestamp date, String service,
 			String dCountry, String dPostCode, String dArea, String dCity)
 	{
 

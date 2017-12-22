@@ -38,7 +38,7 @@ import org.compiere.model.MPackage;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_Package;
 
-import de.metas.dpd.service.IDPDRoutingservice;
+import de.metas.dpd.service.IDPDRoutingService;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -66,7 +66,7 @@ public class PackageLabel extends JavaProcess
 	{
 
 		final I_M_InOut inOut = InterfaceWrapperHelper.create(retrieveInOut(), I_M_InOut.class);
-		final IDPDRoutingservice packageInfoService = Services.get(IDPDRoutingservice.class);
+		final IDPDRoutingService packageInfoService = Services.get(IDPDRoutingService.class);
 
 		if (M_Shipper_ID != null && pack != null)
 		{

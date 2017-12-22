@@ -1,4 +1,4 @@
-package de.metas.dpd.service;
+package de.metas.dpd.service.impl;
 
 /*
  * #%L
@@ -72,6 +72,10 @@ import de.metas.dpd.model.MDPDFileInfo;
 import de.metas.dpd.model.MDPDRoute;
 import de.metas.dpd.model.MDPDService;
 import de.metas.dpd.model.MDPDServiceInfo;
+import de.metas.dpd.service.IDPDRoutingService;
+import de.metas.dpd.service.Iso7064;
+import de.metas.dpd.service.RoutingQuery;
+import de.metas.dpd.service.RoutingResult;
 import de.metas.i18n.Msg;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.logging.LogManager;
@@ -90,7 +94,7 @@ import net.sf.jasperreports.engine.export.JRPrintServiceExporterParameter;
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</a>"
  */
-public class RoutingService implements IDPDRoutingservice
+public class DPDRoutingService implements IDPDRoutingService
 {
 
 	private static final String AD_SYSCONFIG_DPD_INDENTIFIER = "DPD-Indentifier";
@@ -113,7 +117,7 @@ public class RoutingService implements IDPDRoutingservice
 	// public static final String REPORT_RESOURCE = "de/metas/docs/sales/dpdlabel/report.jasper";
 	// public static final String REPORT_RESOURCE1 = "de/metas/docs/sales/dpdlabel/report1.jasper";
 
-	private static final Logger logger = LogManager.getLogger(RoutingService.class);
+	private static final Logger logger = LogManager.getLogger(DPDRoutingService.class);
 
 	static
 	{
@@ -122,7 +126,7 @@ public class RoutingService implements IDPDRoutingservice
 		try
 		{
 			final Font crystal = Font.createFont(Font.TRUETYPE_FONT,
-					RoutingService.class.getResourceAsStream("/CRYSRG__.TTF"));
+					DPDRoutingService.class.getResourceAsStream("/CRYSRG__.TTF"));
 			GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(
 					crystal);
 			logger.info("Registered font " + crystal);
