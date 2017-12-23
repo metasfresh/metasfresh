@@ -256,3 +256,76 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000072, SeqNo=11, Updated=now(), UpdatedBy=1
 UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 10:25:29','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Warehouse Accounts',WEBUI_NameBrowse='Warehouse Accounts' WHERE AD_Menu_ID=541002 AND AD_Language='en_US'
 ;
 
+-- 2017-12-23T10:30:41.915
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,540977,540575,TO_TIMESTAMP('2017-12-23 10:30:41','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-12-23 10:30:41','YYYY-MM-DD HH24:MI:SS'),100,'main')
+;
+
+-- 2017-12-23T10:30:41.916
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_UI_Section_ID=540575 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- 2017-12-23T10:30:41.947
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,540771,540575,TO_TIMESTAMP('2017-12-23 10:30:41','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-12-23 10:30:41','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-12-23T10:30:41.974
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,540772,540575,TO_TIMESTAMP('2017-12-23 10:30:41','YYYY-MM-DD HH24:MI:SS'),100,'Y',20,TO_TIMESTAMP('2017-12-23 10:30:41','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-12-23T10:30:42.020
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,540771,541325,TO_TIMESTAMP('2017-12-23 10:30:41','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',10,'primary',TO_TIMESTAMP('2017-12-23 10:30:41','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-12-23T10:30:42.081
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,561255,0,540977,541325,549870,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100,'Rules for accounting','An Accounting Schema defines the rules used in accounting such as costing method, currency and calendar','Y','N','Y','Y','N','Buchführungs-Schema',10,10,0,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-12-23T10:30:42.114
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,561256,0,540977,541325,549871,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100,'Storage Warehouse and Service Point','The Warehouse identifies a unique Warehouse where products are stored or Services are provided.','Y','N','Y','Y','N','Lager',20,20,0,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-12-23T10:30:42.151
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,561257,0,540977,541325,549872,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100,'Client/Tenant for this installation.','A Client is a company or a legal entity. You cannot share data between Clients. Tenant is a synonym for Client.','Y','N','Y','Y','N','Mandant',30,30,0,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-12-23T10:30:42.181
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,561258,0,540977,541325,549873,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','Y','Y','N','Sektion',40,40,0,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-12-23T10:30:42.206
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,561259,0,540977,541325,549874,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100,'The record is active in the system','There are two methods of making records unavailable in the system: One is to delete the record, the other is to de-activate the record. A de-activated record is not available for selection, but available for reports.
+There are two reasons for de-activating and not deleting records:
+(1) The system requires the record for audit purposes.
+(2) The record is referenced by other records. E.g., you cannot delete a Business Partner, if there are invoices for this partner record existing. You de-activate the Business Partner and prevent that this record is used for future entries.','Y','N','Y','Y','N','Aktiv',50,50,0,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-12-23T10:30:42.233
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,561260,0,540977,541325,549875,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100,'Warehouse Inventory Asset Account - Currently not used','The Warehouse Inventory Asset Account identifies the account used for recording the value of your inventory. This is the counter account for inventory revaluation differences. The Product Asset account maintains the product asset value.','Y','N','Y','Y','N','(Not Used)',60,60,0,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-12-23T10:30:42.259
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,561261,0,540977,541325,549876,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100,'Konto für Differenzen im Lagerbestand (erfasst durch Inventur)','The Warehouse Differences Account indicates the account used recording differences identified during inventory counts.','Y','N','Y','Y','N','Lager Bestand Korrektur',70,70,0,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-12-23T10:30:42.287
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,561262,0,540977,541325,549877,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100,'Konto für Lager Wert Korrektur Währungsdifferenz','The Inventory Revaluation Account identifies the account used to records changes in inventory value due to currency revaluation.','Y','N','Y','Y','N','Lager Wert Korrektur Währungsdifferenz',80,80,0,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-12-23T10:30:42.311
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,561263,0,540977,541325,549878,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100,'Konto für Korrekturen am Lager Wert (i.d.R. mit Konto Warenbestand identisch)','In actual costing systems, this account is used to post Inventory value adjustments. You could set it to the standard Inventory Asset account.','Y','N','Y','Y','N','Lager Wert Korrektur',90,90,0,TO_TIMESTAMP('2017-12-23 10:30:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
