@@ -468,3 +468,94 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 10:39:24'
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Table SET AD_Window_ID=540391,Updated=TO_TIMESTAMP('2017-12-23 10:41:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=191
 ;
+
+-- 2017-12-23T10:44:34.029
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Section SET IsActive='N',Updated=TO_TIMESTAMP('2017-12-23 10:44:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Section_ID=540495
+;
+
+-- 2017-12-23T10:45:52.894
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548741
+;
+
+-- 2017-12-23T10:45:52.932
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548738
+;
+
+-- 2017-12-23T10:45:52.960
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548736
+;
+
+-- 2017-12-23T10:45:52.976
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548739
+;
+
+-- 2017-12-23T10:45:52.991
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548740
+;
+
+-- 2017-12-23T10:45:53.005
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548742
+;
+
+-- 2017-12-23T10:45:53.021
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548743
+;
+
+-- 2017-12-23T10:45:53.034
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548744
+;
+
+-- 2017-12-23T10:45:53.051
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=548737
+;
+
+-- 2017-12-23T10:45:56.581
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=541167
+;
+
+-- 2017-12-23T10:46:09.067
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Section SET IsActive='Y',Updated=TO_TIMESTAMP('2017-12-23 10:46:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Section_ID=540495
+;
+
+-- 2017-12-23T10:46:12.610
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Column WHERE AD_UI_Column_ID=540665
+;
+
+-- 2017-12-23T10:46:16.577
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_UI_Section_Trl WHERE AD_UI_Section_ID=540495
+;
+
+-- 2017-12-23T10:46:16.581
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Section WHERE AD_UI_Section_ID=540495
+;
+
+-- 2017-12-23T10:47:29.475
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET TabLevel=2,Updated=TO_TIMESTAMP('2017-12-23 10:47:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=209
+;
+
+-- 2017-12-23T10:50:00.595
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET TabLevel=1,Updated=TO_TIMESTAMP('2017-12-23 10:50:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=209
+;
+
+-- 2017-12-23T10:50:39.098
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AD_Window_ID=540392,Updated=TO_TIMESTAMP('2017-12-23 10:50:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=191
+;
+
