@@ -89,8 +89,10 @@ import com.google.common.collect.ImmutableSet;
 		this.isParameter2 = operand2 instanceof CtxName;
 
 		this.constantValue = constantValue;
-		
-		expressionStr = operand1 + operator + operand2;
+
+		expressionStr = (operand1 instanceof CtxName ? ((CtxName)operand1).toStringWithMarkers() : operand1.toString())
+				+ operator
+				+ (operand2 instanceof CtxName ? ((CtxName)operand2).toStringWithMarkers() : operand2.toString());
 	}
 
 	/** Constant LogicTuple constructor */
