@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
@@ -48,7 +47,7 @@ public class DD_OrderFireMaterialEvent
 		final List<DDOrderAdvisedOrCreatedEvent> events = createEvents(ddOrder);
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		events.forEach(event -> materialEventService.fireEventAfterNextCommit(event, InterfaceWrapperHelper.getTrxName(ddOrder)));
+		events.forEach(event -> materialEventService.fireEventAfterNextCommit(event));
 	}
 
 	private DDOrderBuilder createAndInitPPOrderPojoBuilder(@NonNull final I_DD_Order ddOrder)

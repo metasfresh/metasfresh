@@ -175,11 +175,11 @@ public class MaterialEventService
 	 * @param event
 	 * @param trxName
 	 */
-	public void fireEventAfterNextCommit(final MaterialEvent event, final String trxName)
+	public void fireEventAfterNextCommit(@NonNull final MaterialEvent event)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		trxManager.getTrxListenerManager(trxName)
+		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
 				.registerWeakly(false) // register "hard", because that's how it was before
 				.registerHandlingMethod(innerTrx -> fireEvent(event));

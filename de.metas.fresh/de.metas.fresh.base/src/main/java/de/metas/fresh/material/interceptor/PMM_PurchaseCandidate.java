@@ -1,7 +1,5 @@
 package de.metas.fresh.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-
 import java.math.BigDecimal;
 
 import org.adempiere.ad.modelvalidator.InterceptorUtil;
@@ -98,6 +96,6 @@ public class PMM_PurchaseCandidate
 		}
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event, getTrxName(purchaseCandidate));
+		materialEventService.fireEventAfterNextCommit(event);
 	}
 }

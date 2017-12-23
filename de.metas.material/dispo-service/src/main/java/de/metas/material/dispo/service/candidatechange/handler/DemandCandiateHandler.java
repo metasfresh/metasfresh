@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -214,7 +213,7 @@ public class DemandCandiateHandler implements CandidateHandler
 
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
 					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty);
-			materialEventService.fireEventAfterNextCommit(supplyRequiredEvent, ITrx.TRXNAME_ThreadInherited);
+			materialEventService.fireEventAfterNextCommit(supplyRequiredEvent);
 		}
 	}
 }

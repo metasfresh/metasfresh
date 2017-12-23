@@ -1,7 +1,5 @@
 package de.metas.handlingunits.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
@@ -93,7 +91,7 @@ public class M_Transaction
 		final Collection<AbstractTransactionEvent> events = createTransactionEvents(transaction, type);
 		for (final AbstractTransactionEvent event : events)
 		{
-			materialEventService.fireEventAfterNextCommit(event, getTrxName(transaction));
+			materialEventService.fireEventAfterNextCommit(event);
 		}
 	}
 

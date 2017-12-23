@@ -1,7 +1,5 @@
 package org.eevolution.model.validator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-
 import org.adempiere.ad.modelvalidator.InterceptorUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -54,7 +52,7 @@ public class PP_OrderFireMaterialEvent
 				.build();
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event, getTrxName(ppOrder));
+		materialEventService.fireEventAfterNextCommit(event);
 	}
 
 	@ModelChange(//
@@ -75,7 +73,7 @@ public class PP_OrderFireMaterialEvent
 				.build();
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event, getTrxName(ppOrder));
+		materialEventService.fireEventAfterNextCommit(event);
 	}
 
 	@ModelChange(//
@@ -90,7 +88,7 @@ public class PP_OrderFireMaterialEvent
 				.build();
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event, getTrxName(ppOrder));
+		materialEventService.fireEventAfterNextCommit(event);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_CLOSE)

@@ -38,6 +38,7 @@ import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.stock.OnHandQuantityChangedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 import mockit.Expectations;
@@ -201,7 +202,7 @@ public class DemandCandiateCangeHandlerTest
 		new Verifications()
 		{{
 			MaterialEvent event;
-			materialEventService.fireEvent(event = withCapture());
+			materialEventService.fireEventAfterNextCommit(event = withCapture());
 
 			assertThat(event).isInstanceOf(SupplyRequiredEvent.class);
 			final SupplyRequiredEvent materialDemandEvent = (SupplyRequiredEvent)event;
@@ -235,11 +236,14 @@ public class DemandCandiateCangeHandlerTest
 		assertThat(stockCandidate.getQty()).isEqualByComparingTo("-10");
 		assertThat(stockCandidate.getMD_Candidate_Parent_ID()).isEqualTo(unrelatedTransactionCandidate.getMD_Candidate_ID());
 
-		// @formatter:off verify that *no* event was fired
+		// @formatter:off verify that only one OnHandQuantityChangedEvent was fired
 		new Verifications()
 		{{
-			materialEventService.fireEvent((MaterialEvent)any); times = 0;
-			materialEventService.fireEventAfterNextCommit((MaterialEvent)any, anyString); times = 0;
+			materialEventService.fireEvent((OnHandQuantityChangedEvent)any); times = 0;
+
+			MaterialEvent event;
+			materialEventService.fireEventAfterNextCommit(event = withCapture()); times = 1;
+			assertThat(event).isInstanceOf(OnHandQuantityChangedEvent.class);
 		}}; // @formatter:on
 	}
 

@@ -1,7 +1,5 @@
 package de.metas.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
@@ -66,7 +64,7 @@ public class M_ShipmentSchedule
 		final AbstractShipmentScheduleEvent event = createShipmentScheduleEvent(schedule, timing);
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event, getTrxName(schedule));
+		materialEventService.fireEventAfterNextCommit(event);
 	}
 
 	@VisibleForTesting

@@ -1,7 +1,6 @@
 package org.eevolution.model.validator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.createOld;
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 
 import java.math.BigDecimal;
 
@@ -107,7 +106,7 @@ public class PP_Cost_Collector
 		}
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(eventBuilder.build(), getTrxName(costCollector));
+		materialEventService.fireEventAfterNextCommit(eventBuilder.build());
 	}
 
 	/**

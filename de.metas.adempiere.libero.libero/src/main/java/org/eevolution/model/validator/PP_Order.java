@@ -1,7 +1,5 @@
 package org.eevolution.model.validator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -201,7 +199,7 @@ public class PP_Order
 		final PPOrderQtyChangedEvent event = eventfactory.inspectPPOrderAfterChange();
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event, getTrxName(ppOrderRecord));
+		materialEventService.fireEventAfterNextCommit(event);
 	}
 
 	private void deleteWorkflowAndBOM(final I_PP_Order ppOrder)

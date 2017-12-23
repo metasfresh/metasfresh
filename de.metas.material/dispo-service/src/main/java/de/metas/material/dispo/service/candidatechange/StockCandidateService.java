@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -213,11 +212,13 @@ public class StockCandidateService
 		if (stockWithQuantityDelta.getQuantity().signum() != 0)
 		{
 			final OnHandQuantityChangedEvent stockChangedEvent = OnHandQuantityChangedEvent.builder()
-					.eventDescriptor(new EventDescriptor(stockWithQuantityDelta.getClientId(), stockWithQuantityDelta.getOrgId()))
+					.eventDescriptor(new EventDescriptor(
+							stockWithQuantityDelta.getClientId(),
+							stockWithQuantityDelta.getOrgId()))
 					.materialdescriptor(stockWithQuantityDelta.getMaterialDescriptor())
 					.quantityDelta(stockWithQuantityDelta.getQuantity())
 					.build();
-			materialEventService.fireEventAfterNextCommit(stockChangedEvent, ITrx.TRXNAME_ThreadInherited);
+			materialEventService.fireEventAfterNextCommit(stockChangedEvent);
 		}
 	}
 }

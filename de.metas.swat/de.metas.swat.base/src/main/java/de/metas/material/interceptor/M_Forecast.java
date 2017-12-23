@@ -1,6 +1,5 @@
 package de.metas.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
@@ -76,7 +75,7 @@ public class M_Forecast
 				timing);
 
 		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(forecastCreatedEvent, getTrxName(forecast));
+		materialEventService.fireEventAfterNextCommit(forecastCreatedEvent);
 	}
 
 	private List<I_M_ForecastLine> retrieveForecastLines(@NonNull final I_M_Forecast forecast)
