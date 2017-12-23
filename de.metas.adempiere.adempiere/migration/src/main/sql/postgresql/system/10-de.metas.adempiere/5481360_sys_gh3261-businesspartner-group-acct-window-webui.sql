@@ -629,3 +629,103 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,C
 DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=549896
 ;
 
+-- 2017-12-23T12:53:04.368
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:53:04','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Accounting Schema' WHERE AD_Field_ID=561265 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:53:19.518
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:53:19','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Business Partner Group' WHERE AD_Field_ID=561266 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:53:27.267
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:53:27','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Client' WHERE AD_Field_ID=561267 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:53:37.581
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:53:37','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Organisation',Description='' WHERE AD_Field_ID=561268 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:53:45.204
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:53:45','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Active' WHERE AD_Field_ID=561269 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:54:19.253
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:54:19','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Receiveable Account',Description='' WHERE AD_Field_ID=561270 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:54:38.258
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:54:38','YYYY-MM-DD HH24:MI:SS'),Name='Prepayment Account',Description='' WHERE AD_Field_ID=561271 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:54:52.477
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:54:52','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Liability Account',Description='' WHERE AD_Field_ID=561272 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:55:08.966
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:55:08','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Services Liability Account',Description='' WHERE AD_Field_ID=561273 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:55:35.406
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:55:35','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Vendor Prepayment Account',Description='' WHERE AD_Field_ID=561274 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:56:16.786
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:56:16','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Payment Discount Account',Description='' WHERE AD_Field_ID=561275 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:56:35.364
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:56:35','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Received Discount Account',Description='' WHERE AD_Field_ID=561276 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:56:58.241
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:56:58','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Receiveables Writeoff Account',Description='' WHERE AD_Field_ID=561277 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:57:19.200
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:57:19','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Not Invoiced Receipts' WHERE AD_Field_ID=561278 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:57:36.036
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:57:36','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Unearned Revenue Account',Description='' WHERE AD_Field_ID=561279 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:57:55.917
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:57:55','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Not Invoiced Revenue Account',Description='' WHERE AD_Field_ID=561280 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:58:16.197
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:58:16','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Not Invoices Receivables Account',Description='' WHERE AD_Field_ID=561281 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:58:28.997
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:58:28','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Processing' WHERE AD_Field_ID=561282 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:58:47.854
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:58:47','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Services Receivables Account',Description='' WHERE AD_Field_ID=561283 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T12:58:59.258
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 12:58:59','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Business Partner Group Account' WHERE AD_Field_ID=561284 AND AD_Language='en_US'
+;
+
