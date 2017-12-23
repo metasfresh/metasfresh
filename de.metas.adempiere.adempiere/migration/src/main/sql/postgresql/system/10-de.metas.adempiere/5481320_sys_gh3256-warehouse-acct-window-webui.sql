@@ -419,3 +419,48 @@ UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=30,Updated=TO_
 UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=40,Updated=TO_TIMESTAMP('2017-12-23 10:35:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549873
 ;
 
+-- 2017-12-23T10:36:55.077
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 10:36:55','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Accounting Schema' WHERE AD_Field_ID=561255 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T10:37:08.998
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 10:37:08','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Warehouse' WHERE AD_Field_ID=561256 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T10:37:20.031
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 10:37:20','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Client' WHERE AD_Field_ID=561257 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T10:37:32.727
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 10:37:32','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Organisation',Description='',Help='' WHERE AD_Field_ID=561258 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T10:37:41.814
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 10:37:41','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Active' WHERE AD_Field_ID=561259 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T10:38:06.232
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 10:38:06','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Differences Account',Description='' WHERE AD_Field_ID=561261 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T10:38:28.305
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 10:38:28','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Revaluation Account',Description='' WHERE AD_Field_ID=561262 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T10:38:59.152
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 10:38:59','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Adjust Value Account',Description='' WHERE AD_Field_ID=561263 AND AD_Language='en_US'
+;
+
+-- 2017-12-23T10:39:24.465
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 10:39:24','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Warehouse Accounts' WHERE AD_Field_ID=561264 AND AD_Language='en_US'
+;
+
