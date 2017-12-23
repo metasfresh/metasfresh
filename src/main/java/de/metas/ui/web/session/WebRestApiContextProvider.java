@@ -29,11 +29,11 @@ import de.metas.ui.web.WebRestApiApplication;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -67,6 +67,7 @@ public final class WebRestApiContextProvider implements ContextProvider, Seriali
 		// Create the server context
 		serverCtx = new Properties();
 		Env.setContext(serverCtx, InternalUserSessionData.CTXNAME_IsServerContext, true);
+		Env.setContext(serverCtx, InternalUserSessionData.CTXNAME_IsWebUI, true);
 	}
 
 	@Override
@@ -153,7 +154,7 @@ public final class WebRestApiContextProvider implements ContextProvider, Seriali
 				}
 
 				closed = true;
-				
+
 				logger.trace("Switched back from temporary context");
 			}
 		};
@@ -164,7 +165,7 @@ public final class WebRestApiContextProvider implements ContextProvider, Seriali
 	{
 		temporaryCtxHolder.remove();
 		serverCtx.clear();
-		
+
 		logger.debug("Reset done");
 	}
 }
