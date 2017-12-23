@@ -58,9 +58,6 @@ import de.metas.ui.web.base.session.UserPreference;
 {
 	private static final long serialVersionUID = 4046535476486036184L;
 
-	static final String CTXNAME_IsServerContext = "#IsWebuiServerContext";
-	static final String CTXNAME_IsWebUI = "#IsWebUI";
-
 	// ---------------------------------------------------------------------------------------------
 	// NOTE: make sure none of those fields are "final" because this will prevent deserialization
 	// ---------------------------------------------------------------------------------------------
@@ -110,8 +107,8 @@ import de.metas.ui.web.base.session.UserPreference;
 
 		// Context
 		ctx = new Properties();
-		Env.setContext(ctx, CTXNAME_IsServerContext, false);
-		Env.setContext(ctx, CTXNAME_IsWebUI, true);
+		Env.setContext(ctx, WebRestApiContextProvider.CTXNAME_IsServerContext, false);
+		Env.setContext(ctx, WebRestApiContextProvider.CTXNAME_IsWebUI, true);
 
 		UserSession.logger.trace("User session created: {}", this);
 	}

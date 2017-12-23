@@ -43,6 +43,9 @@ import de.metas.ui.web.WebRestApiApplication;
 @Profile(WebRestApiApplication.PROFILE_Webui)
 public final class WebRestApiContextProvider implements ContextProvider, Serializable
 {
+	public static final String CTXNAME_IsServerContext = "#IsWebuiServerContext";
+	public static final String CTXNAME_IsWebUI = "#IsWebUI";
+	
 	private static final Logger logger = LogManager.getLogger(WebRestApiContextProvider.class);
 
 	private final InheritableThreadLocal<Properties> temporaryCtxHolder = new InheritableThreadLocal<>();
@@ -66,8 +69,8 @@ public final class WebRestApiContextProvider implements ContextProvider, Seriali
 		//
 		// Create the server context
 		serverCtx = new Properties();
-		Env.setContext(serverCtx, InternalUserSessionData.CTXNAME_IsServerContext, true);
-		Env.setContext(serverCtx, InternalUserSessionData.CTXNAME_IsWebUI, true);
+		Env.setContext(serverCtx, CTXNAME_IsServerContext, true);
+		Env.setContext(serverCtx, CTXNAME_IsWebUI, true);
 	}
 
 	@Override
