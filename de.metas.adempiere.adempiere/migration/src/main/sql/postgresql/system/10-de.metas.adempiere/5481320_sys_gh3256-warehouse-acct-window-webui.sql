@@ -464,3 +464,7 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 10:38:59'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-23 10:39:24','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Warehouse Accounts' WHERE AD_Field_ID=561264 AND AD_Language='en_US'
 ;
 
+-- 2017-12-23T10:41:26.435
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AD_Window_ID=540391,Updated=TO_TIMESTAMP('2017-12-23 10:41:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=191
+;
