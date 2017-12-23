@@ -24,6 +24,12 @@ Here come the actual release notes:
     * Improvement of the Material Receipt Candidates Window in WebUI. Now Fields are readonly that should not be changes by the user after creation.
   * [#3242](https://github.com/metasfresh/metasfresh/issues/3242) WebUI: Create new Customer Accounts Window
     * New Window for Customer Accounts, allowing the user to define customer relevant accounting information.
+  * [#3256](https://github.com/metasfresh/metasfresh/issues/3256) WebUI: Window for Warehouse Accounting
+    * New Window for Vendor Accounts, allowing the user to define warehouse relevant accounting information.
+  * [#3257](https://github.com/metasfresh/metasfresh/issues/3257) WebUI: Window for Vendor Accounting
+    * New Window for Vendor Accounts, allowing the user to define vendor relevant accounting information.
+  * [#3261](https://github.com/metasfresh/metasfresh/issues/3261) WebUI: New Window for BPartner Group Accounts
+    * New Window for Business Partner Group Accounts, allowing the user to define relevant accounting information for Business Partner Groups.
 
 #Fixes
 * metasfresh-app

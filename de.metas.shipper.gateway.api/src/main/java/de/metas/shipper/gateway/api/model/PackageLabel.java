@@ -2,6 +2,7 @@ package de.metas.shipper.gateway.api.model;
 
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -28,6 +29,7 @@ import lombok.Value;
 
 @Value
 @Builder
+@ToString(exclude = "labelData")
 public class PackageLabel
 {
 	public static final String CONTENTTYPE_PDF = "application/pdf";

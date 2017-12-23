@@ -1,5 +1,8 @@
 package de.metas.shipper.gateway.api.model;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 import javax.annotation.Nullable;
 
 import lombok.Builder;
@@ -19,47 +22,30 @@ import lombok.Value;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @Value
-@Builder
-public class CreateDeliveryOrderRequest
+public class DeliveryDate
 {
-	@NonNull
-	private Address pickupAddress;
-	@NonNull
-	private PickupDate pickupDate;
-	@Nullable
-	private String pickupNote;
+	LocalDate date;
+	LocalTime timeFrom;
+	LocalTime timeTo;
 
-	@NonNull
-	private Address deliveryAddress;
-	@Nullable
-	private ContactPerson deliveryContact;
-	@Nullable
-	private String deliveryNote;
-
-	@NonNull
-	private DeliveryPosition deliveryPosition;
-
-	@NonNull
-	private ServiceType serviceType;
-
-	@NonNull
-	private PaidMode paidMode;
-
-	@NonNull
-	private SelfDelivery selfDelivery;
-	@NonNull
-	private SelfPickup selfPickup;
-
-	@NonNull
-	private String receiptConfirmationPhoneNumber;
+	@Builder
+	private DeliveryDate(
+			@NonNull final LocalDate date,
+			@Nullable final LocalTime timeFrom,
+			@Nullable final LocalTime timeTo)
+	{
+		this.date = date;
+		this.timeFrom = timeFrom;
+		this.timeTo = timeTo;
+	}
 }

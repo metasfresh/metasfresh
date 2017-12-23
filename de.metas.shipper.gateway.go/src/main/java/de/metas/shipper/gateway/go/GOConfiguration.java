@@ -43,21 +43,27 @@ public class GOConfiguration
 
 	@Value("${de.metas.shipper.go.url}")
 	private String url;
-	@Value("${de.metas.shipper.go.username}")
-	private String username;
-	@Value("${de.metas.shipper.go.password}")
-	private String password;
+	@Value("${de.metas.shipper.go.auth.username}")
+	private String authUsername;
+	@Value("${de.metas.shipper.go.auth.password}")
+	private String authPassword;
+	@Value("${de.metas.shipper.go.request.username}")
+	private String requestUsername;
+	@Value("${de.metas.shipper.go.request.senderId}")
+	private String requestSenderId;
 
 	@Bean
 	public GOClient goClient(final Jaxb2Marshaller marshaller)
 	{
 		Check.assumeNotEmpty(url, "url is not empty");
 
-		final GOClient client = new GOClient();
-		client.setDefaultUri(url);
-		client.setMarshaller(marshaller);
-		client.setUnmarshaller(marshaller);
-		client.setMessageSender(goClientMessageSender());
+		final GOClient client = GOClient.builder()
+				.url(url)
+				.messageSender(goClientMessageSender())
+				.marshaller(marshaller)
+				.requestUsername(requestUsername)
+				.requestSenderId(requestSenderId)
+				.build();
 		logger.info("GO Client initialized: {}", client);
 		return client;
 	}
@@ -81,10 +87,10 @@ public class GOConfiguration
 	@Bean
 	public UsernamePasswordCredentials goUsernamePasswordCredentials()
 	{
-		Check.assumeNotEmpty(username, "username is not empty");
-		Check.assumeNotEmpty(password, "password is not empty");
+		Check.assumeNotEmpty(authUsername, "username is not empty");
+		Check.assumeNotEmpty(authPassword, "password is not empty");
 
-		final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
+		final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(authUsername, authPassword);
 		logger.info("Using GO credentials: {}", credentials);
 
 		return credentials;

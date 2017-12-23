@@ -37,7 +37,7 @@ public class DeliveryPosition
 	String content;
 	PackageDimensions packageDimensions;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private DeliveryPosition(
 			final int numberOfPackages,
 			final int grossWeightKg,

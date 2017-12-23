@@ -1,14 +1,9 @@
 package de.metas.shipper.gateway.api.model;
 
-import java.time.LocalDate;
-
 import javax.annotation.Nullable;
-
-import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -35,30 +30,45 @@ import lombok.Value;
 
 @Builder
 @Value
-public class DeliveryOrderResponse
+public class DeliveryOrder
 {
-	@NonNull
+	@Nullable
 	OrderId orderId;
-	@NonNull
+	@Nullable
 	HWBNumber hwbNumber;
 
 	@NonNull
-	LocalDate pickupDate;
-
+	private Address pickupAddress;
+	@NonNull
+	private PickupDate pickupDate;
 	@Nullable
-	String note;
+	private String pickupNote;
 
-	@Singular
-	ImmutableList<ResponseDeliveryPosition> deliveryPositions;
+	@NonNull
+	private Address deliveryAddress;
+	@Nullable
+	private ContactPerson deliveryContact;
+	@Nullable
+	private DeliveryDate deliveryDate;
+	@Nullable
+	private String deliveryNote;
+	@Nullable
+	private String customerReference;
 
-	@lombok.Builder
-	@lombok.Value
-	public static class ResponseDeliveryPosition
-	{
-		String positionNo;
-		String numberOfPackages;
+	@NonNull
+	private DeliveryPosition deliveryPosition;
 
-		@lombok.Singular
-		ImmutableList<String> barcodes;
-	}
+	@NonNull
+	private ServiceType serviceType;
+
+	@NonNull
+	private PaidMode paidMode;
+
+	@NonNull
+	private SelfDelivery selfDelivery;
+	@NonNull
+	private SelfPickup selfPickup;
+
+	@NonNull
+	private String receiptConfirmationPhoneNumber;
 }
