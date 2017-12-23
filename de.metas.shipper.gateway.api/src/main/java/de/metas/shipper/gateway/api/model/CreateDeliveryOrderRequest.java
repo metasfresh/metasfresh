@@ -44,7 +44,11 @@ public class CreateDeliveryOrderRequest
 	@Nullable
 	private ContactPerson deliveryContact;
 	@Nullable
+	private DeliveryDate deliveryDate;
+	@Nullable
 	private String deliveryNote;
+	@Nullable
+	private String customerReference;
 
 	@NonNull
 	private DeliveryPosition deliveryPosition;
@@ -60,6 +64,7 @@ public class CreateDeliveryOrderRequest
 	@NonNull
 	private SelfPickup selfPickup;
 
-	@NonNull
+	// NOTE: this option might cost money
+	@Nullable
 	private String receiptConfirmationPhoneNumber;
 }

@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -44,12 +43,14 @@ public class DeliveryOrderResponse
 
 	@NonNull
 	LocalDate pickupDate;
+	@NonNull
+	DeliveryDate deliveryDate;
 
 	@Nullable
 	String note;
 
-	@Singular
-	ImmutableList<ResponseDeliveryPosition> deliveryPositions;
+	@NonNull
+	ResponseDeliveryPosition deliveryPosition;
 
 	@lombok.Builder
 	@lombok.Value
