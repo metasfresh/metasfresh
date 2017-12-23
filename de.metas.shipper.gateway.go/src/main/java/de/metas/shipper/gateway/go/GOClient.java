@@ -7,8 +7,13 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
+import org.adempiere.util.Check;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.oxm.Marshaller;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
+import org.springframework.ws.transport.WebServiceMessageSender;
 import org.springframework.xml.transform.StringResult;
 
 import com.google.common.base.MoreObjects;
@@ -46,6 +51,8 @@ import de.metas.shipper.gateway.go.schema.Sendung.Empfaenger.Ansprechpartner.Tel
 import de.metas.shipper.gateway.go.schema.Sendung.SendungsPosition;
 import de.metas.shipper.gateway.go.schema.Sendung.SendungsPosition.Abmessungen;
 import de.metas.shipper.gateway.go.schema.SendungsRueckmeldung;
+import de.metas.shipper.gateway.go.schema.Sendungsnummern;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -77,7 +84,32 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 	private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 	private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
+	private static final Logger logger = LoggerFactory.getLogger(GOClient.class);
 	private final ObjectFactory objectFactory = new ObjectFactory();
+
+	private final String requestUsername;
+	private final String requestSenderId;
+
+	@Builder
+	private GOClient(
+			final String url,
+			@NonNull final WebServiceMessageSender messageSender,
+			@NonNull final Jaxb2Marshaller marshaller,
+			final String requestUsername,
+			final String requestSenderId)
+	{
+		Check.assumeNotEmpty(url, "url is not empty");
+		Check.assumeNotEmpty(requestUsername, "requestUsername is not empty");
+		Check.assumeNotEmpty(requestSenderId, "requestSenderId is not empty");
+
+		setDefaultUri(url);
+		setMessageSender(messageSender);
+		setMarshaller(marshaller);
+		setUnmarshaller(marshaller);
+
+		this.requestUsername = requestUsername;
+		this.requestSenderId = requestSenderId;
+	}
 
 	@Override
 	public String toString()
@@ -96,12 +128,31 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 	@Override
 	public DeliveryOrderResponse createDeliveryOrder(@NonNull final CreateDeliveryOrderRequest request)
 	{
-		final Sendung goRequest = createGOPickupRequest(request);
-		final JAXBElement<Sendung> goRequestElement = objectFactory.createGOWebServiceSendungsErstellung(goRequest);
-		System.out.println("GO Request: " + toString(goRequestElement));
+		logger.trace("createDeliveryOrder: {}", request);
+		final Sendung goRequest = createGODeliveryRequest(request);
+		final Object goResponseObj = sendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
+		final DeliveryOrderResponse response = extractDeliveryOrderResponse(goResponseObj);
+		logger.trace("createDeliveryOrder: {}", response);
 
-		final Object goResponseObj = getWebServiceTemplate().marshalSendAndReceive(goRequestElement);
-		return extractDeliveryOrderResponse(goResponseObj);
+		return response;
+	}
+
+	private Object sendAndReceive(final JAXBElement<?> goRequestElement)
+	{
+		if (logger.isTraceEnabled())
+		{
+			logger.trace("Sending GO Request: {}", toString(goRequestElement));
+		}
+
+		final JAXBElement<?> goResponseElement = (JAXBElement<?>)getWebServiceTemplate().marshalSendAndReceive(goRequestElement);
+		if (logger.isTraceEnabled())
+		{
+			logger.trace("Got GO Response: {}", toString(goResponseElement));
+		}
+
+		final Object goResponseObj = goResponseElement.getValue();
+		return goResponseObj;
+
 	}
 
 	@Override
@@ -112,25 +163,51 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 	}
 
 	@Override
-	public DeliveryOrderResponse completePickupOrder(@NonNull final OrderId orderId)
+	public DeliveryOrderResponse completeDeliveryOrder(@NonNull final OrderId orderId)
 	{
-		final Sendung goRequest = objectFactory.createSendung();
+		final Sendung goRequest = newGODeliveryRequest();
 		goRequest.setSendungsnummerAX4(orderId.getOrderIdAsString());
 		goRequest.setStatus(GOOrderStatus.APPROVED.getCode());
 
-		final Object goResponseObj = getWebServiceTemplate().marshalSendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
+		final Object goResponseObj = sendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
 		return extractDeliveryOrderResponse(goResponseObj);
 	}
 
 	@Override
-	public DeliveryOrderResponse voidPickupOrder(final OrderId orderId)
+	public DeliveryOrderResponse voidDeliveryOrder(final OrderId orderId)
 	{
-		final Sendung goRequest = objectFactory.createSendung();
+		final Sendung goRequest = newGODeliveryRequest();
 		goRequest.setSendungsnummerAX4(orderId.getOrderIdAsString());
 		goRequest.setStatus(GOOrderStatus.CANCELLATION.getCode());
 
-		final Object goResponseObj = getWebServiceTemplate().marshalSendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
+		final Object goResponseObj = sendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
 		return extractDeliveryOrderResponse(goResponseObj);
+	}
+
+	@Override
+	public List<PackageLabels> getPackageLabelsList(@NonNull final OrderId orderId) throws ShipperGatewayException
+	{
+		logger.trace("getPackageLabelsList: orderId={}", orderId);
+		final Sendungsnummern goRequest = objectFactory.createSendungsnummern();
+		goRequest.getSendungsnummerAX4().add(orderId.getOrderIdAsInt());
+
+		final Object goResponseObj = sendAndReceive(objectFactory.createGOWebServiceSendungsnummern(goRequest));
+		if (goResponseObj instanceof Label)
+		{
+			final Label goLabels = (Label)goResponseObj;
+			final List<PackageLabels> packageLabels = createDeliveryPackageLabels(goLabels);
+			logger.trace("getPackageLabelsList: got packageLabels={}", packageLabels);
+			return packageLabels;
+		}
+		else if (goResponseObj instanceof Fehlerbehandlung)
+		{
+			final Fehlerbehandlung errorResponse = (Fehlerbehandlung)goResponseObj;
+			throw extractException(errorResponse);
+		}
+		else
+		{
+			throw new IllegalArgumentException("Unknown reponse type: " + goResponseObj.getClass());
+		}
 	}
 
 	private static final OrderId createOrderId(final String orderIdStr)
@@ -143,7 +220,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		if (goResponseObj instanceof SendungsRueckmeldung)
 		{
 			final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
-			final DeliveryOrderResponse response = createPickupOrderResponse(goResponse);
+			final DeliveryOrderResponse response = createDeliveryOrderResponse(goResponse);
 			return response;
 		}
 		else if (goResponseObj instanceof Fehlerbehandlung)
@@ -177,7 +254,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 				.build();
 	}
 
-	private Sendung createGOPickupRequest(final CreateDeliveryOrderRequest request)
+	private Sendung createGODeliveryRequest(final CreateDeliveryOrderRequest request)
 	{
 		final Abholadresse pickupAddress = createGOPickupAddress(request.getPickupAddress());
 		final Abholdatum pickupDate = createGOPickupDate(request.getPickupDate());
@@ -185,10 +262,9 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		final Empfaenger deliveryAddress = createGODeliveryAddress(request.getDeliveryAddress(), request.getDeliveryContact());
 		final SendungsPosition deliveryPosition = createGODeliveryPosition(request.getDeliveryPosition());
 
-		final Sendung goRequest = objectFactory.createSendung();
+		final Sendung goRequest = newGODeliveryRequest();
 		goRequest.setSendungsnummerAX4(null); // AX4 shipment no. (n15, mandatory for update and cancellation)
 		goRequest.setFrachtbriefnummer(null); // HWB no. (N18, not mandatory). If you provide a HWB no. in this field, AX4 will not generate a new HWB no.
-		goRequest.setVersender(null); // AX4 ID shipper (n30, not mandatory). This is the AX4 ID to be booked for this order
 		goRequest.setStatus(GOOrderStatus.NEW.getCode()); // Order status
 
 		goRequest.setKundenreferenz(null); // Customer reference no (an40, i guess it's not mandatory)
@@ -211,6 +287,14 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 
 		goRequest.setSendungsPosition(deliveryPosition); // Shipment position (mandatory, max. 1)
 
+		return goRequest;
+	}
+
+	private Sendung newGODeliveryRequest()
+	{
+		final Sendung goRequest = objectFactory.createSendung();
+		goRequest.setVersender(requestSenderId);
+		goRequest.setBenutzername(requestUsername);
 		return goRequest;
 	}
 
@@ -243,7 +327,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		goPickupAddress.setStrasse1(pickupAddress.getStreet1()); // Street 1 (an35, mandatory)
 		goPickupAddress.setHausnummer(pickupAddress.getHouseNo()); // House no. (an10, mandatory in DE)
 		goPickupAddress.setStrasse2(pickupAddress.getStreet2()); // Street 2 (an25, not mandatory)
-		goPickupAddress.setLand(pickupAddress.getCountry().getAlpha3()); // Country (an3, mandatory)
+		goPickupAddress.setLand(pickupAddress.getCountry().getAlpha2()); // Country (an3, mandatory) // IMPORTANT: it's alpha2
 		goPickupAddress.setPostleitzahl(pickupAddress.getZipCode()); // ZIP code (an9, mandatory)
 		goPickupAddress.setStadt(pickupAddress.getCity()); // City (an30, mandatory)
 
@@ -273,11 +357,11 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		final Empfaenger goDeliveryAddress = objectFactory.createSendungEmpfaenger(); // Consginee address
 		goDeliveryAddress.setFirmenname1(deliveryAddress.getCompanyName1()); // Name 1 (an60, mandatory)
 		goDeliveryAddress.setFirmenname2(deliveryAddress.getCompanyName2()); // Name 2 (an60, not mandatory)
-		goDeliveryAddress.setAbteilung(deliveryAddress.getCompanyDepartment()); // Department (an40, not mandatory)
+		goDeliveryAddress.setAbteilung(deliveryAddress.getCompanyDepartment()); // Department (an40, mandatory)
 		goDeliveryAddress.setStrasse1(deliveryAddress.getStreet1()); // Street 1 (an35, mandatory)
 		goDeliveryAddress.setHausnummer(deliveryAddress.getHouseNo()); // House no. (an10, mandatory in DE)
 		goDeliveryAddress.setStrasse2(deliveryAddress.getStreet2()); // Street 2 (an25, not mandatory)
-		goDeliveryAddress.setLand(deliveryAddress.getCountry().getAlpha3()); // Country (an3, mandatory)
+		goDeliveryAddress.setLand(deliveryAddress.getCountry().getAlpha2()); // Country (an3, mandatory) // IMPORTANT: it's alpha2
 		goDeliveryAddress.setPostleitzahl(deliveryAddress.getZipCode()); // ZIP code (an9, mandatory)
 		goDeliveryAddress.setStadt(deliveryAddress.getCity()); // City (an30, mandatory)
 
@@ -297,7 +381,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		return goDeliveryAddress;
 	}
 
-	private DeliveryOrderResponse createPickupOrderResponse(final SendungsRueckmeldung goResponse)
+	private DeliveryOrderResponse createDeliveryOrderResponse(final SendungsRueckmeldung goResponse)
 	{
 		final SendungsRueckmeldung.Sendung goResponseContent = goResponse.getSendung();
 
@@ -349,7 +433,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 						.labelData(pdfs.getRouterlabel())
 						.build())
 				.label(PackageLabel.builder()
-						.type(GOPackageLabelType.DIN_A4_HWB)
+						.type(GOPackageLabelType.DIN_A6_ROUTER_LABEL_ZEBRA)
 						.contentType(PackageLabel.CONTENTTYPE_PDF)
 						.labelData(pdfs.getRouterlabelZebra())
 						.build())
@@ -365,7 +449,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 			marshaller.marshal(jaxbElement, result);
 			return result.toString();
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new RuntimeException("Failed converting " + jaxbElement + " to String", ex);
 		}

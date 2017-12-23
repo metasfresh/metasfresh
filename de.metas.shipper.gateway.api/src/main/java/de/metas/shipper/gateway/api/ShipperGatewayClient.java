@@ -1,9 +1,12 @@
 package de.metas.shipper.gateway.api;
 
+import java.util.List;
+
 import de.metas.shipper.gateway.api.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.api.model.CreateDeliveryOrderRequest;
 import de.metas.shipper.gateway.api.model.DeliveryOrderResponse;
 import de.metas.shipper.gateway.api.model.OrderId;
+import de.metas.shipper.gateway.api.model.PackageLabels;
 import de.metas.shipper.gateway.api.model.UpdateDeliveryOrderRequest;
 
 /*
@@ -36,7 +39,9 @@ public interface ShipperGatewayClient
 
 	DeliveryOrderResponse updateDeliveryOrder(UpdateDeliveryOrderRequest request) throws ShipperGatewayException;
 
-	DeliveryOrderResponse completePickupOrder(OrderId orderId) throws ShipperGatewayException;
+	DeliveryOrderResponse completeDeliveryOrder(OrderId orderId) throws ShipperGatewayException;
 
-	DeliveryOrderResponse voidPickupOrder(OrderId orderId) throws ShipperGatewayException;
+	DeliveryOrderResponse voidDeliveryOrder(OrderId orderId) throws ShipperGatewayException;
+	
+	List<PackageLabels> getPackageLabelsList(OrderId orderId) throws ShipperGatewayException;;
 }
