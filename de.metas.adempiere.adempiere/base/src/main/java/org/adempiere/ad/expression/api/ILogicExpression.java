@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.LogicExpressionBuilder;
+import org.adempiere.ad.expression.api.impl.LogicExpressionEvaluator;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonLogicExpressionDeserializer;
 import org.compiere.util.Evaluatee;
@@ -66,6 +67,17 @@ public interface ILogicExpression extends IExpression<Boolean>
 	@Override
 	String getFormatedExpressionString();
 
+	/**
+	 * Tries to partially evaluate this expression.
+	 * 
+	 * @param ctx
+	 * @return partially evaluated expression.
+	 */
+	default ILogicExpression evaluatePartial(final Evaluatee ctx)
+	{
+		return LogicExpressionEvaluator.instance.evaluatePartial(ctx, this);
+	}
+
 	@Override
 	default Boolean evaluate(final Evaluatee ctx, final boolean ignoreUnparsable)
 	{
@@ -73,7 +85,7 @@ public interface ILogicExpression extends IExpression<Boolean>
 		final OnVariableNotFound onVariableNotFound = ignoreUnparsable ? OnVariableNotFound.ReturnNoResult : OnVariableNotFound.Fail;
 		return evaluate(ctx, onVariableNotFound);
 	}
-
+	
 	/**
 	 * Evaluates given expression and returns {@link LogicExpressionResult}.
 	 *
