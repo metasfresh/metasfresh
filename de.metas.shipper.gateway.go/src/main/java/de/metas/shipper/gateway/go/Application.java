@@ -14,10 +14,8 @@ import org.springframework.context.annotation.Bean;
 
 import de.metas.shipper.gateway.api.ShipperGatewayClient;
 import de.metas.shipper.gateway.api.model.Address;
-import de.metas.shipper.gateway.api.model.CreateDeliveryOrderRequest;
-import de.metas.shipper.gateway.api.model.DeliveryOrderResponse;
+import de.metas.shipper.gateway.api.model.DeliveryOrder;
 import de.metas.shipper.gateway.api.model.DeliveryPosition;
-import de.metas.shipper.gateway.api.model.OrderId;
 import de.metas.shipper.gateway.api.model.PackageLabel;
 import de.metas.shipper.gateway.api.model.PackageLabels;
 import de.metas.shipper.gateway.api.model.PickupDate;
@@ -62,7 +60,7 @@ public class Application
 	{
 		System.out.println("Using: " + shipperGatewayClient);
 
-		final CreateDeliveryOrderRequest deliveryOrderCreateRequest = CreateDeliveryOrderRequest.builder()
+		final DeliveryOrder deliveryOrderCreateRequest = DeliveryOrder.builder()
 				.pickupAddress(Address.builder()
 						.companyName1("from company")
 						.street1("street 1")
@@ -84,10 +82,11 @@ public class Application
 						.country(countryCodeFactory.getCountryCodeByAlpha2("DE"))
 						.build())
 				.deliveryPosition(DeliveryPosition.builder()
-						.numberOfPackages(1)
+						.numberOfPackages(5)
 						.grossWeightKg(1)
 						.content("some products")
 						.build())
+				.customerReference("some info for customer")
 				.serviceType(GOServiceType.Overnight)
 				.paidMode(GOPaidMode.Prepaid)
 				.selfDelivery(GOSelfDelivery.Pickup)
@@ -95,11 +94,10 @@ public class Application
 				.receiptConfirmationPhoneNumber("+40-746-010203")
 				.build();
 		return args -> {
-			final DeliveryOrderResponse deliveryOrderResponse = shipperGatewayClient.createDeliveryOrder(deliveryOrderCreateRequest);
-			final OrderId orderId = deliveryOrderResponse.getOrderId();
-//			shipperGatewayClient.completeDeliveryOrder(orderId);
+			final DeliveryOrder deliveryOrder = shipperGatewayClient.createDeliveryOrder(deliveryOrderCreateRequest);
+			shipperGatewayClient.completeDeliveryOrder(deliveryOrder);
 
-			final List<PackageLabels> packageLabels = shipperGatewayClient.getPackageLabelsList(orderId);
+			final List<PackageLabels> packageLabels = shipperGatewayClient.getPackageLabelsList(deliveryOrder.getOrderId());
 			System.out.println("Labels: " + packageLabels);
 			savePDFs(packageLabels);
 		};

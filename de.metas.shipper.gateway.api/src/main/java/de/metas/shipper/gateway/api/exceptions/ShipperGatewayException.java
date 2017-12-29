@@ -33,10 +33,15 @@ public class ShipperGatewayException extends RuntimeException
 {
 	private final ImmutableList<ShipperErrorMessage> shipperErrorMessages;
 
+	public ShipperGatewayException(final String message)
+	{
+		super(message);
+		this.shipperErrorMessages = ImmutableList.of();
+	}
+
 	public ShipperGatewayException(final List<ShipperErrorMessage> shipperErrorMessages)
 	{
 		super(extractMessage(shipperErrorMessages));
-
 		this.shipperErrorMessages = shipperErrorMessages != null ? ImmutableList.copyOf(shipperErrorMessages) : ImmutableList.of();
 	}
 
