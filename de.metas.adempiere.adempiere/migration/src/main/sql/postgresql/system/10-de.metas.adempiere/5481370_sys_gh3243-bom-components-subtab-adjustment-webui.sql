@@ -188,3 +188,28 @@ UPDATE AD_Field SET Name='Ist %',Updated=TO_TIMESTAMP('2017-12-29 13:56:37','YYY
 UPDATE AD_Field SET Name='% Menge',Updated=TO_TIMESTAMP('2017-12-29 13:56:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53499
 ;
 
+-- 2017-12-29T13:59:26.001
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-29 13:59:26','YYYY-MM-DD HH24:MI:SS'),Name='Line' WHERE AD_Field_ID=53485 AND AD_Language='en_US'
+;
+
+-- 2017-12-29T13:59:42.571
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-29 13:59:42','YYYY-MM-DD HH24:MI:SS'),Name='Is %' WHERE AD_Field_ID=53496 AND AD_Language='en_US'
+;
+
+-- 2017-12-29T13:59:57.018
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-29 13:59:57','YYYY-MM-DD HH24:MI:SS'),Name='% Qty' WHERE AD_Field_ID=53499 AND AD_Language='en_US'
+;
+
+-- 2017-12-29T14:00:12.111
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-29 14:00:12','YYYY-MM-DD HH24:MI:SS'),Name='% Scrap' WHERE AD_Field_ID=53502 AND AD_Language='en_US'
+;
+
+-- 2017-12-29T14:00:25.044
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-12-29 14:00:25','YYYY-MM-DD HH24:MI:SS'),Name='Qty' WHERE AD_Field_ID=53498 AND AD_Language='en_US'
+;
+
