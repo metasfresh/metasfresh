@@ -138,3 +138,53 @@ UPDATE AD_UI_Element SET SeqNo=220,Updated=TO_TIMESTAMP('2017-12-29 13:50:35','Y
 UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2017-12-29 13:51:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544413
 ;
 
+-- 2017-12-29T13:54:42.787
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Zeile',Updated=TO_TIMESTAMP('2017-12-29 13:54:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53485
+;
+
+-- 2017-12-29T13:54:56.194
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Zeile',Updated=TO_TIMESTAMP('2017-12-29 13:54:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544397
+;
+
+-- 2017-12-29T13:55:09.345
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2017-12-29 13:55:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544400
+;
+
+-- 2017-12-29T13:56:00.160
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Ist %',Updated=TO_TIMESTAMP('2017-12-29 13:56:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544408
+;
+
+-- 2017-12-29T13:56:05.700
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Menge %',Updated=TO_TIMESTAMP('2017-12-29 13:56:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544410
+;
+
+-- 2017-12-29T13:56:14.459
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='% Menge',Updated=TO_TIMESTAMP('2017-12-29 13:56:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544410
+;
+
+-- 2017-12-29T13:56:22.925
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2017-12-29 13:56:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544410
+;
+
+-- 2017-12-29T13:56:26.558
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2017-12-29 13:56:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544412
+;
+
+-- 2017-12-29T13:56:37.807
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Ist %',Updated=TO_TIMESTAMP('2017-12-29 13:56:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53496
+;
+
+-- 2017-12-29T13:56:52.306
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='% Menge',Updated=TO_TIMESTAMP('2017-12-29 13:56:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53499
+;
+
