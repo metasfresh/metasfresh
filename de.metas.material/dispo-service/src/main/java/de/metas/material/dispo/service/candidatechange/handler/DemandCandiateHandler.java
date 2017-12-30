@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
 
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
@@ -19,7 +18,7 @@ import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.StockMultiQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 
@@ -52,7 +51,7 @@ public class DemandCandiateHandler implements CandidateHandler
 
 	private final StockRepository stockRepository;
 
-	private final MaterialEventService materialEventService;
+	private final FireMaterialEventService materialEventService;
 
 	private final StockCandidateService stockCandidateService;
 
@@ -61,7 +60,7 @@ public class DemandCandiateHandler implements CandidateHandler
 	public DemandCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
-			@NonNull @Lazy final MaterialEventService materialEventService,
+			@NonNull final FireMaterialEventService materialEventService,
 			@NonNull final StockRepository stockRepository,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
@@ -204,7 +203,9 @@ public class DemandCandiateHandler implements CandidateHandler
 
 	private void fireSupplyRequiredEventIfQtyBelowZero(@NonNull final Candidate demandCandidateWithId)
 	{
-		final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(demandCandidateWithId.getMaterialDescriptor());
+		final StockMultiQuery query = StockMultiQuery
+				.forDescriptorAndAllPossibleBPartnerIds(demandCandidateWithId.getMaterialDescriptor());
+
 		final BigDecimal availableQuantityAfterDemandWasApplied = stockRepository.retrieveAvailableStockQtySum(query);
 
 		if (availableQuantityAfterDemandWasApplied.signum() < 0)

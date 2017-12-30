@@ -2,11 +2,13 @@ package de.metas.material.dispo.service.event.handler.pporder;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -15,7 +17,7 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.event.handler.MaterialEventHandler;
+import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
 import de.metas.material.event.pporder.PPOrderQtyChangedEvent.PPOrderLineChangeDescriptor;
 import lombok.NonNull;
@@ -59,11 +61,10 @@ public class PPOrderQtyChangedHandler implements MaterialEventHandler<PPOrderQty
 	}
 
 	@Override
-	public Class<PPOrderQtyChangedEvent> getHandeledEventType()
+	public Collection<Class<? extends PPOrderQtyChangedEvent>> getHandeledEventType()
 	{
-		return PPOrderQtyChangedEvent.class;
+		return ImmutableList.of(PPOrderQtyChangedEvent.class);
 	}
-
 
 	@Override
 	public void handleEvent(@NonNull final PPOrderQtyChangedEvent ppOrderQtyChangedEvent)

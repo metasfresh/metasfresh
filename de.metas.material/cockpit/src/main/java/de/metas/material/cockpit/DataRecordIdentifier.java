@@ -2,6 +2,9 @@ package de.metas.material.cockpit;
 
 import java.util.Date;
 
+import org.compiere.util.TimeUtil;
+
+import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -20,11 +23,11 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -33,6 +36,17 @@ import lombok.Value;
 @Builder
 public class DataRecordIdentifier
 {
+	public static DataRecordIdentifier createForMaterial(
+			@NonNull final MaterialDescriptor material)
+	{
+		final DataRecordIdentifier identifier = DataRecordIdentifier.builder()
+				.productDescriptor(material)
+				.date(TimeUtil.getDay(material.getDate()))
+				.plantId(0)
+				.build();
+		return identifier;
+	}
+
 	ProductDescriptor productDescriptor;
 
 	Date date;

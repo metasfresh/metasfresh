@@ -1,6 +1,6 @@
-package de.metas.material.dispo.service.event.handler;
+package de.metas.material.event;
 
-import de.metas.material.event.MaterialEvent;
+import java.util.Collection;
 
 /*
  * #%L
@@ -24,9 +24,22 @@ import de.metas.material.event.MaterialEvent;
  * #L%
  */
 
+/**
+ * Implementors if this interface are registered to {@link MaterialEventHandlerRegistry}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ * @param <T> the sort of materialevent which the handler shall handle in its {@link #handleEvent(MaterialEvent)} method. <br>
+ *            May also be an abstract type.
+ */
 public interface MaterialEventHandler<T extends MaterialEvent>
 {
-	Class<T> getHandeledEventType();
+	/**
+	 * @return The classes the respecitve implementation will be invoked with.
+	 *         <p>
+	 * 		Note that the actual events' respective class will be {@code equal}ed against the returned class(es), so returning an abstract class here seems to be pointless.
+	 */
+	Collection<Class<? extends T>> getHandeledEventType();
 
 	void handleEvent(T event);
 }

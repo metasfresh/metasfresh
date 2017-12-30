@@ -25,7 +25,7 @@ import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -86,7 +86,7 @@ public class M_Transaction
 			return; // they are handled in dedicated interceptors
 		}
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
 
 		final Collection<AbstractTransactionEvent> events = createTransactionEvents(transaction, type);
 		for (final AbstractTransactionEvent event : events)

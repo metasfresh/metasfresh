@@ -10,8 +10,9 @@ import org.compiere.model.ModelValidator;
 import org.eevolution.event.PPOrderRequestedEventHandler;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderChangedDocStatusEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
@@ -20,7 +21,7 @@ import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import lombok.NonNull;
 
 /**
- * A dedicated model interceptor whose job it is to fire events on the {@link MaterialEventService}.<br>
+ * A dedicated model interceptor whose job it is to fire events on the {@link MetasfreshEventBusService}.<br>
  * I add this into a dedicated interceptor (as opposed to adding the method to {@link PP_Order}) because there is at least one test case where I want {@link PP_Order} to be invoked without events being fired.
  *
  * @author metas-dev <dev@metasfresh.com>
@@ -51,7 +52,7 @@ public class PP_OrderFireMaterialEvent
 				.groupId(groupIdFromPPOrderRequestedEvent)
 				.build();
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
 		materialEventService.fireEventAfterNextCommit(event);
 	}
 
@@ -72,7 +73,7 @@ public class PP_OrderFireMaterialEvent
 				.ppOrderId(ppOrder.getPP_Order_ID())
 				.build();
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
 		materialEventService.fireEventAfterNextCommit(event);
 	}
 
@@ -87,7 +88,7 @@ public class PP_OrderFireMaterialEvent
 				.newDocStatus(ppOrder.getDocStatus())
 				.build();
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
 		materialEventService.fireEventAfterNextCommit(event);
 	}
 

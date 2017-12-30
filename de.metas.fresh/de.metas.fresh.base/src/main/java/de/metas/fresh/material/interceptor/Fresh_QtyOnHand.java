@@ -37,7 +37,7 @@ import org.compiere.model.ModelValidator;
 import de.metas.fresh.freshQtyOnHand.api.IFreshQtyOnHandDAO;
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -89,7 +89,7 @@ public class Fresh_QtyOnHand
 			events.add(event);
 		}
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
 		events.forEach(event -> materialEventService.fireEventAfterNextCommit(event));
 	}
 

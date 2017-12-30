@@ -3,6 +3,7 @@ package de.metas.material.planning.event;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -16,16 +17,21 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.Profiles;
 import de.metas.material.event.DemandHandlerAuditEvent;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.IProductPlanningDAO;
@@ -55,22 +61,35 @@ import lombok.NonNull;
  */
 
 @Service
-public class SupplyRequiredHandler
+@Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvent
+public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequiredEvent>
 {
 	private final DDOrderAdvisedOrCreatedEventCreator dDOrderAdvisedOrCreatedEventCreator;
 
 	private final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator;
 
-	private final MaterialEventService materialEventService;
+	private final FireMaterialEventService fireMaterialEventService;
 
 	public SupplyRequiredHandler(
 			@NonNull final DDOrderAdvisedOrCreatedEventCreator dDOrderAdvisedOrCreatedEventCreator,
 			@NonNull final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator,
-			@NonNull @Lazy final MaterialEventService materialEventService)
+			@NonNull final FireMaterialEventService fireMaterialEventService)
 	{
 		this.dDOrderAdvisedOrCreatedEventCreator = dDOrderAdvisedOrCreatedEventCreator;
 		this.ppOrderAdvisedEventCreator = ppOrderAdvisedEventCreator;
-		this.materialEventService = materialEventService;
+		this.fireMaterialEventService = fireMaterialEventService;
+	}
+
+	@Override
+	public Collection<Class<? extends SupplyRequiredEvent>> getHandeledEventType()
+	{
+		return ImmutableList.of(SupplyRequiredEvent.class);
+	}
+
+	@Override
+	public void handleEvent(@NonNull final SupplyRequiredEvent event)
+	{
+		handleSupplyRequiredEvent(event.getSupplyRequiredDescriptor());
 	}
 
 	/**
@@ -97,7 +116,7 @@ public class SupplyRequiredHandler
 					.messages(singleMessages)
 					.build();
 
-			materialEventService.fireEvent(demandHandlerAuditEvent);
+			fireMaterialEventService.fireEvent(demandHandlerAuditEvent);
 		}
 	}
 
@@ -109,7 +128,7 @@ public class SupplyRequiredHandler
 		events.addAll(dDOrderAdvisedOrCreatedEventCreator.createDistributionAdvisedEvents(supplyRequiredDescriptor, mrpContext));
 		events.addAll(ppOrderAdvisedEventCreator.createPPOrderAdvisedEvents(supplyRequiredDescriptor, mrpContext));
 
-		events.forEach(e -> materialEventService.fireEvent(e));
+		events.forEach(e -> fireMaterialEventService.fireEvent(e));
 	}
 
 	private IMutableMRPContext mkMRPContext(@NonNull final SupplyRequiredDescriptor materialDemandEvent)

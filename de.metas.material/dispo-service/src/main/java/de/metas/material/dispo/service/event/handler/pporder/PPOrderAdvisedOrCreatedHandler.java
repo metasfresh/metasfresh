@@ -1,5 +1,13 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
+import java.util.Collection;
+
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.Profiles;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
@@ -10,10 +18,12 @@ import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
-import de.metas.material.dispo.service.event.handler.MaterialEventHandler;
+import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import lombok.NonNull;
 
@@ -39,8 +49,10 @@ import lombok.NonNull;
  * #L%
  */
 
-public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent>
-		implements MaterialEventHandler<T>
+@Service
+@Profile(Profiles.PROFILE_MaterialDispo)
+public final class PPOrderAdvisedOrCreatedHandler
+		implements MaterialEventHandler<AbstractPPOrderEvent>
 {
 	private final CandidateChangeService candidateChangeHandler;
 	private final RequestMaterialOrderService requestMaterialOrderService;
@@ -58,7 +70,20 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		this.requestMaterialOrderService = candidateService;
 	}
 
-	protected void handlePPOrderAdvisedOrCreatedEvent(
+	@Override
+	public Collection<Class<? extends AbstractPPOrderEvent>> getHandeledEventType()
+	{
+		return ImmutableList.of(PPOrderAdvisedEvent.class, PPOrderCreatedEvent.class);
+	}
+
+	@Override
+	public void handleEvent(@NonNull final AbstractPPOrderEvent event)
+	{
+		final boolean advised = event instanceof PPOrderAdvisedEvent;
+		handlePPOrderAdvisedOrCreatedEvent(event, advised);
+	}
+
+	private void handlePPOrderAdvisedOrCreatedEvent(
 			@NonNull final AbstractPPOrderEvent ppOrderEvent,
 			final boolean advised)
 	{

@@ -2,13 +2,13 @@ package de.metas.material.planning;
 
 import java.util.Date;
 
-import de.metas.material.planning.event.SupplyRequiredEventListener;
+import de.metas.material.planning.event.SupplyRequiredHandler;
 import de.metas.quantity.Quantity;
 
 /**
  * Instances of this interface specify a material demand. Currently there is no "real" service from which an instance can be obtained.
  * <p>
- * See {@link SupplyRequiredEventListener}.
+ * See {@link SupplyRequiredHandler}.
  *
  * Note that there is a sub interface in libero which contains additional fields and it therefore more tightly coupled to libero.
  *

@@ -33,7 +33,7 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
@@ -78,9 +78,9 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 	private final BigDecimal eleven = BigDecimal.TEN.add(BigDecimal.ONE);
 
 	@Mocked
-	private MaterialEventService materialEventService;
+	private FireMaterialEventService fireMaterialEventService;
 
-	private PPOrderCreatedHandler ppOrderAdvisedOrCreatedHandler;
+	private PPOrderAdvisedOrCreatedHandler ppOrderAdvisedOrCreatedHandler;
 
 	private StockRepository stockRepository;
 
@@ -94,7 +94,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryCommands,
-				materialEventService);
+				fireMaterialEventService);
 
 		stockRepository = new StockRepository();
 
@@ -103,15 +103,15 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				new DemandCandiateHandler(
 						candidateRepository,
 						candidateRepositoryCommands,
-						materialEventService,
+						fireMaterialEventService,
 						stockRepository,
 						stockCandidateService)));
 
 		final RequestMaterialOrderService candidateService = new RequestMaterialOrderService(
 				candidateRepository,
-				MaterialEventService.createLocalServiceThatIsReadyToUse(ImmutableList.of()));
+				fireMaterialEventService);
 
-		ppOrderAdvisedOrCreatedHandler = new PPOrderCreatedHandler(candidateChangeHandler, candidateService);
+		ppOrderAdvisedOrCreatedHandler = new PPOrderAdvisedOrCreatedHandler(candidateChangeHandler, candidateService);
 	}
 
 	@Test

@@ -16,7 +16,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -63,7 +63,7 @@ public class M_ShipmentSchedule
 	{
 		final AbstractShipmentScheduleEvent event = createShipmentScheduleEvent(schedule, timing);
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
 		materialEventService.fireEventAfterNextCommit(event);
 	}
 

@@ -1,7 +1,11 @@
 package de.metas.material.dispo.service.event.handler;
 
+import java.util.Collection;
+
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -11,6 +15,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
+import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
@@ -50,9 +55,9 @@ public class ForecastCreatedHandler implements MaterialEventHandler<ForecastCrea
 	}
 
 	@Override
-	public Class<ForecastCreatedEvent> getHandeledEventType()
+	public Collection<Class<? extends ForecastCreatedEvent>> getHandeledEventType()
 	{
-		return ForecastCreatedEvent.class;
+		return ImmutableList.of(ForecastCreatedEvent.class);
 	}
 
 	@Override

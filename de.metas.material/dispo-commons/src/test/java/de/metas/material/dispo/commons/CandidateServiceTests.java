@@ -17,10 +17,11 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 
@@ -55,7 +56,8 @@ public class CandidateServiceTests
 	{
 		requestMaterialOrderService = new RequestMaterialOrderService(
 				new CandidateRepositoryRetrieval(),
-				MaterialEventService.createLocalServiceThatIsReadyToUse(ImmutableList.of()));
+				new FireMaterialEventService(
+						MetasfreshEventBusService.createLocalServiceThatIsReadyToUse()));
 	}
 
 	@Test

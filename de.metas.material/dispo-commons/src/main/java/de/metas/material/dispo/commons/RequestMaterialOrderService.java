@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.compiere.util.TimeUtil;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -16,7 +15,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
@@ -55,11 +54,11 @@ import lombok.NonNull;
 public class RequestMaterialOrderService
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
-	private final MaterialEventService materialEventService;
+	private final FireMaterialEventService materialEventService;
 
 	public RequestMaterialOrderService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull @Lazy final MaterialEventService materialEventService)
+			@NonNull final FireMaterialEventService materialEventService)
 	{
 		this.materialEventService = materialEventService;
 		this.candidateRepository = candidateRepository;

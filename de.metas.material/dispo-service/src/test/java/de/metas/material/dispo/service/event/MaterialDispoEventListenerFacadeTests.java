@@ -7,8 +7,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -35,12 +37,13 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.handler.DDOrderAdvisedOrCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
-import de.metas.material.dispo.service.event.handler.MaterialEventHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandlerTests;
 import de.metas.material.dispo.service.event.handler.TransactionCreatedHandler;
-import de.metas.material.dispo.service.event.handler.pporder.PPOrderAdvisedHandler;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.dispo.service.event.handler.pporder.PPOrderAdvisedOrCreatedHandler;
+import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.MaterialEventHandlerRegistry;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
@@ -88,10 +91,10 @@ public class MaterialDispoEventListenerFacadeTests
 	public static final int intermediateWarehouseId = 20;
 	public static final int toWarehouseId = 30;
 
-	private MaterialDispoEventListenerFacade mdEventListener;
+	private MaterialEventHandlerRegistry materialEventListener;
 
 	@Mocked
-	private MaterialEventService materialEventService;
+	private FireMaterialEventService fireMaterialEventService;
 
 	private StockRepository stockRepository;
 
@@ -110,29 +113,32 @@ public class MaterialDispoEventListenerFacadeTests
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
-				materialEventService);
+				fireMaterialEventService);
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
-						materialEventService,
+						fireMaterialEventService,
 						stockRepository,
 						stockCandidateService),
-				new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService)));
+				new SupplyCandiateHandler(
+						candidateRepositoryRetrieval,
+						candidateRepositoryCommands,
+						stockCandidateService)));
 
 		final RequestMaterialOrderService candidateService = new RequestMaterialOrderService(
 				candidateRepositoryRetrieval,
-				MaterialEventService.createLocalServiceThatIsReadyToUse(ImmutableList.of()));
+				fireMaterialEventService);
 
 		final DDOrderAdvisedOrCreatedHandler distributionAdvisedEventHandler = new DDOrderAdvisedOrCreatedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepositoryRetrieval, materialEventService));
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, fireMaterialEventService));
 
-		final PPOrderAdvisedHandler productionAdvisedEventHandler = new PPOrderAdvisedHandler(candidateChangeHandler, candidateService);
+		final PPOrderAdvisedOrCreatedHandler productionAdvisedEventHandler = new PPOrderAdvisedOrCreatedHandler(candidateChangeHandler, candidateService);
 
 		final ForecastCreatedHandler forecastCreatedEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
 
@@ -140,13 +146,13 @@ public class MaterialDispoEventListenerFacadeTests
 
 		final ShipmentScheduleCreatedHandler shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(candidateChangeHandler);
 
-		final ImmutableList<MaterialEventHandler> handlers = ImmutableList.of(
+		final Optional<Collection<MaterialEventHandler>> handlers = Optional.of(ImmutableList.of(
 				distributionAdvisedEventHandler,
 				productionAdvisedEventHandler,
 				forecastCreatedEventHandler,
 				transactionEventHandler,
-				shipmentScheduleEventHandler);
-		mdEventListener = new MaterialDispoEventListenerFacade(handlers);
+				shipmentScheduleEventHandler));
+		materialEventListener = new MaterialEventHandlerRegistry(handlers);
 	}
 
 	/**
@@ -162,7 +168,7 @@ public class MaterialDispoEventListenerFacadeTests
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(stockRepository, orderedMaterial, "0");
 
-		mdEventListener.onEvent(shipmentScheduleEvent);
+		materialEventListener.onEvent(shipmentScheduleEvent);
 
 		// create a distributionAdvisedEvent event which matches the shipmentscheduleEvent that we processed in testShipmentScheduleEvent()
 		final DDOrderAdvisedOrCreatedEvent event = DDOrderAdvisedOrCreatedEvent.builder()
@@ -184,7 +190,7 @@ public class MaterialDispoEventListenerFacadeTests
 								.build())
 						.build())
 				.build();
-		mdEventListener.onEvent(event);
+		materialEventListener.onEvent(event);
 
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(5); // one for the shipment-schedule demand, two for the distribution demand + supply and 2 stocks (one of them shared between shipment-demand and distr-supply)
 		final I_MD_Candidate toWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, toWarehouseId).get(0);
@@ -219,14 +225,14 @@ public class MaterialDispoEventListenerFacadeTests
 		final Date shipmentScheduleEventTime = orderedMaterial.getDate();
 		final Timestamp twoHoursAfterShipmentSched = TimeUtil.addHours(shipmentScheduleEventTime, 2);
 
-		mdEventListener.onEvent(shipmentScheduleEvent);
+		materialEventListener.onEvent(shipmentScheduleEvent);
 
 		final TransactionCreatedEvent transactionEvent = TransactionCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
 				.materialDescriptor(orderedMaterial.withDate(twoHoursAfterShipmentSched))
 				.build();
 
-		mdEventListener.onEvent(transactionEvent);
+		materialEventListener.onEvent(transactionEvent);
 
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(1);
 		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(2);

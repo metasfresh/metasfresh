@@ -29,7 +29,7 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
@@ -70,7 +70,7 @@ public class ShipmentScheduleCreatedHandlerTests
 	private static final int toWarehouseId = 30;
 
 	@Mocked
-	private MaterialEventService materialEventService;
+	private FireMaterialEventService fireMaterialEventService;
 
 	private ShipmentScheduleCreatedHandler shipmentScheduleEventHandler;
 
@@ -91,12 +91,12 @@ public class ShipmentScheduleCreatedHandlerTests
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
-						materialEventService,
+						fireMaterialEventService,
 						stockRepository,
 						new StockCandidateService(
 								candidateRepositoryRetrieval,
 								candidateRepositoryCommands,
-								materialEventService))));
+								fireMaterialEventService))));
 
 		shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(candidateChangeHandler);
 	}

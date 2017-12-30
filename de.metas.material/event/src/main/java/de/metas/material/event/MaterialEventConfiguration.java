@@ -1,8 +1,5 @@
 package de.metas.material.event;
 
-import java.util.Collection;
-import java.util.Optional;
-
 import org.compiere.Adempiere;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -10,10 +7,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
-import lombok.NonNull;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
 
 /*
  * #%L
@@ -41,23 +36,26 @@ import lombok.NonNull;
 @ComponentScan(basePackageClasses = MaterialEventConfiguration.class)
 public class MaterialEventConfiguration
 {
-	@Bean(name = "materialEventService")
+	public static final String BEAN_NAME = "materialEventBusService";
+
+	@Bean(name = BEAN_NAME)
 	@Profile(Profiles.PROFILE_Test)
-	public MaterialEventService createLocalMaterialEventService(@NonNull final Optional<Collection<MaterialEventListener>> listeners)
+	public MetasfreshEventBusService createLocalMaterialEventService()
 	{
-		return MaterialEventService
-				.createLocalServiceThatIsReadyToUse(listeners.orElse(ImmutableList.of()));
+		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService
+				.createLocalServiceThatIsReadyToUse();
+
+		return materialEventService;
 	}
 
-	@Bean(name = "materialEventService")
+	@Bean(name = BEAN_NAME)
 	@DependsOn(Adempiere.BEAN_NAME)
 	@Profile(Profiles.PROFILE_NotTest)
-	public MaterialEventService createDistributedMaterialEventService(@NonNull final Optional<Collection<MaterialEventListener>> listeners)
+	public MetasfreshEventBusService createDistributedMaterialEventService()
 	{
-		final MaterialEventService materialEventService = MaterialEventService
-				.createDistributedServiceThatNeedsToSubscribe(listeners.orElse(ImmutableList.of()));
+		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService
+				.createDistributedServiceThatNeedsToSubscribe();
 
-		materialEventService.subscribeToEventBus();
 		return materialEventService;
 	}
 }

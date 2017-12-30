@@ -10,7 +10,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -95,7 +95,7 @@ public class PMM_PurchaseCandidate
 					.build();
 		}
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
 		materialEventService.fireEventAfterNextCommit(event);
 	}
 }

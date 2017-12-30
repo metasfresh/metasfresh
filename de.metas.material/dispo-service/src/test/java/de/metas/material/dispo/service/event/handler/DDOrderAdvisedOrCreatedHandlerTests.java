@@ -36,9 +36,8 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
-import de.metas.material.dispo.service.event.MaterialDispoEventListenerFacade;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
@@ -108,7 +107,7 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 	private DDOrderAdvisedOrCreatedHandler ddOrderAdvisedOrCreatedHandler;
 
 	@Mocked
-	private MaterialEventService materialEventService;
+	private FireMaterialEventService fireMaterialEventService;
 
 	private StockRepository stockRepository;
 
@@ -125,12 +124,12 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryCommands,
-				materialEventService);
+				fireMaterialEventService);
 
 		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(
 				candidateRepository,
 				candidateRepositoryCommands,
-				materialEventService,
+				fireMaterialEventService,
 				stockRepository,
 				stockCandidateService);
 		final SupplyCandiateHandler supplyCandiateHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService);
@@ -143,7 +142,7 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 				candidateRepositoryCommands,
 				candidateChangeService,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepository, materialEventService));
+				new RequestMaterialOrderService(candidateRepository, fireMaterialEventService));
 	}
 
 	/**
@@ -236,7 +235,7 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 	}
 
 	/**
-	 * Submits two distributionAdvisedEvent to the {@link MaterialDispoEventListenerFacade}.
+	 * Submits two distributionAdvisedEvent to the {@link MaterialEventHandlerRegistry}.
 	 */
 	@Test
 	public void handleDistributionAdvisedEvent_with_two_events_chronological()

@@ -14,18 +14,19 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
+import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.ddorder.DDOrderUtil;
 import lombok.NonNull;
 
 /**
- * A dedicated model interceptor whose job it is to fire events on the {@link MaterialEventService}.<br>
+ * A dedicated model interceptor whose job it is to fire events on the {@link MetasfreshEventBusService}.<br>
  * I add this into a dedicated interceptor (as opposed to adding the method to {@link DD_Order}) because there is at least one test case where I want {@link PP_Order} to be invoked without events being fired.
  *
  * @author metas-dev <dev@metasfresh.com>
@@ -46,7 +47,7 @@ public class DD_OrderFireMaterialEvent
 
 		final List<DDOrderAdvisedOrCreatedEvent> events = createEvents(ddOrder);
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
 		events.forEach(event -> materialEventService.fireEventAfterNextCommit(event));
 	}
 

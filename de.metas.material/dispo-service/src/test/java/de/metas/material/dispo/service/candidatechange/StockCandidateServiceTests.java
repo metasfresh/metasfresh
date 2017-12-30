@@ -26,17 +26,16 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -70,17 +69,22 @@ public class StockCandidateServiceTests
 	private StockCandidateService stockCandidateService;
 	private CandidateRepositoryWriteService candidateRepositoryCommands;
 
+	@Mocked
+	private FireMaterialEventService fireMaterialEvenService;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
+
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
+
 		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 		stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryCommands,
-				MaterialEventService.createLocalServiceThatIsReadyToUse(ImmutableList.of()));
+				fireMaterialEvenService);
 	}
 
 	private void createStockRecordAtTimeNOW()

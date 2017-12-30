@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
@@ -19,7 +18,7 @@ import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.stock.OnHandQuantityChangedEvent;
@@ -53,16 +52,16 @@ public class StockCandidateService
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
-	private final MaterialEventService materialEventService;
+	private final FireMaterialEventService fireMaterialEventService;
 
 	public StockCandidateService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
-			@NonNull @Lazy final MaterialEventService materialEventService)
+			@NonNull final FireMaterialEventService fireMaterialEventService)
 	{
 		this.candidateRepositoryRetrieval = candidateRepository;
 		this.candidateRepositoryWriteService = candidateRepositoryCommands;
-		this.materialEventService = materialEventService;
+		this.fireMaterialEventService = fireMaterialEventService;
 	}
 
 	/**
@@ -218,7 +217,7 @@ public class StockCandidateService
 					.materialdescriptor(stockWithQuantityDelta.getMaterialDescriptor())
 					.quantityDelta(stockWithQuantityDelta.getQuantity())
 					.build();
-			materialEventService.fireEventAfterNextCommit(stockChangedEvent);
+			fireMaterialEventService.fireEventAfterNextCommit(stockChangedEvent);
 		}
 	}
 }

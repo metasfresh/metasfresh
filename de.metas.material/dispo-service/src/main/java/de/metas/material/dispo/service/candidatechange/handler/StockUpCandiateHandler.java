@@ -3,7 +3,6 @@ package de.metas.material.dispo.service.candidatechange.handler;
 import java.math.BigDecimal;
 import java.util.Collection;
 
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
@@ -15,7 +14,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.StockMultiQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 
@@ -53,7 +52,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 	@NonNull
 	private final CandidateRepositoryRetrieval candidateRepository;
 
-	private final MaterialEventService materialEventService;
+	private final FireMaterialEventService materialEventService;
 
 	private final CandidateRepositoryWriteService candidateRepositoryCommands;
 
@@ -62,7 +61,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 	public StockUpCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
-			@NonNull @Lazy final MaterialEventService materialEventService,
+			@NonNull final FireMaterialEventService materialEventService,
 			@NonNull final StockRepository stockRepository)
 	{
 		this.stockRepository = stockRepository;

@@ -34,8 +34,8 @@ import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.stock.OnHandQuantityChangedEvent;
@@ -74,7 +74,7 @@ public class DemandCandiateCangeHandlerTest
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
 	@Mocked
-	private MaterialEventService materialEventService;
+	private FireMaterialEventService materialEventService;
 
 	private DemandCandiateHandler demandCandidateHandler;
 

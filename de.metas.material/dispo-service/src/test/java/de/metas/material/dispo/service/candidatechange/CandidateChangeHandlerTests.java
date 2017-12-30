@@ -48,7 +48,7 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
 import mockit.Mocked;
@@ -95,7 +95,7 @@ public class CandidateChangeHandlerTests
 	private CandidateChangeService candidateChangeHandler;
 
 	@Mocked
-	private MaterialEventService materialEventService;
+	private FireMaterialEventService fireMaterialEventService;
 
 	private StockCandidateService stockCandidateService;
 
@@ -113,11 +113,11 @@ public class CandidateChangeHandlerTests
 		stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
-				materialEventService);
+				fireMaterialEventService);
 
 		candidateChangeHandler = new CandidateChangeService(
 				ImmutableList.of(
-						new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, materialEventService, stockRepository, stockCandidateService),
+						new DemandCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, fireMaterialEventService, stockRepository, stockCandidateService),
 						new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService)));
 	}
 

@@ -1,12 +1,15 @@
 package de.metas.material.dispo.service.event.handler;
 
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
@@ -23,6 +26,7 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
+import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
@@ -53,7 +57,8 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
-public class DDOrderAdvisedOrCreatedHandler implements MaterialEventHandler<DDOrderAdvisedOrCreatedEvent>
+public class DDOrderAdvisedOrCreatedHandler
+		implements MaterialEventHandler<DDOrderAdvisedOrCreatedEvent>
 {
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final CandidateRepositoryWriteService candidateRepositoryWrite;
@@ -76,9 +81,9 @@ public class DDOrderAdvisedOrCreatedHandler implements MaterialEventHandler<DDOr
 	}
 
 	@Override
-	public Class<DDOrderAdvisedOrCreatedEvent> getHandeledEventType()
+	public Collection<Class<? extends DDOrderAdvisedOrCreatedEvent>> getHandeledEventType()
 	{
-		return DDOrderAdvisedOrCreatedEvent.class;
+		return ImmutableList.of(DDOrderAdvisedOrCreatedEvent.class);
 	}
 
 	@Override
