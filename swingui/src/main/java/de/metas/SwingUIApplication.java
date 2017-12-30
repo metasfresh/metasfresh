@@ -33,9 +33,9 @@ import org.springframework.context.annotation.Profile;
 
 /**
  * Swing application starter.
- * 
+ *
  * WARNING: please keep in sync with all other SwingUIApplications
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -44,7 +44,7 @@ import org.springframework.context.annotation.Profile;
 public class SwingUIApplication
 {
 	public static final String PROFILE = "metasfresh-swingui";
-	
+
 	@Autowired
 	private ApplicationContext applicationContext;
 
@@ -67,7 +67,7 @@ public class SwingUIApplication
 	 *
 	 * @return
 	 */
-	@Bean
+	@Bean(Adempiere.BEAN_NAME)
 	public Adempiere adempiere()
 	{
 		Adempiere.main(applicationContext);
