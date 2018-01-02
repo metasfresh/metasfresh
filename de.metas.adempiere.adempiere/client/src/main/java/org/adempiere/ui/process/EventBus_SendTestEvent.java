@@ -10,12 +10,12 @@ package org.adempiere.ui.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,12 +30,12 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.event.Type;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Process used to test the distributed event bus by sending events to a given topic.
- * 
+ *
  * @author tsa
  *
  */
@@ -81,10 +81,10 @@ public class EventBus_SendTestEvent extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final Topic topic = Topic.builder()
-				.setName(p_TopicName)
-				.setType(Type.REMOTE)
+				.name(p_TopicName)
+				.type(Type.REMOTE)
 				.build();
-		
+
 		final IEventBus eventBus = Services.get(IEventBusFactory.class)
 				.getEventBus(topic);
 

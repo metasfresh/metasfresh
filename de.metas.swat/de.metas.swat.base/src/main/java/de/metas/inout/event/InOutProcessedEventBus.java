@@ -10,12 +10,12 @@ package de.metas.inout.event;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,8 +56,8 @@ public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.setName("de.metas.inout.InOut.ProcessedEvents")
-			.setType(Type.REMOTE)
+			.name("de.metas.inout.InOut.ProcessedEvents")
+			.type(Type.REMOTE)
 			.build();
 
 	// services
@@ -124,7 +124,7 @@ public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 	 * <li>if inout's DocStatus is Completed, a "generated" notification will be sent
 	 * <li>if inout's DocStatus is Voided or Reversed, a "reversed" notification will be sent
 	 * </ul>
-	 * 
+	 *
 	 * @param inout
 	 * @return
 	 */
@@ -191,7 +191,7 @@ public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 	public InOutProcessedEventBus notifyShipmentError(final String sourceInfo, final String errorMessage)
 	{
 		final int recipientUserId = Env.getAD_User_ID(Env.getCtx());
-		
+
 		final Event event = Event.builder()
 				.setDetailADMessage(MSG_Event_ShipmentError, sourceInfo, errorMessage)
 				.addRecipient_User_ID(recipientUserId)

@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.material.event.DemandHandlerAuditEvent;
+import de.metas.event.log.EventLogUserTools;
 import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
@@ -108,15 +108,11 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		if (!plainStringLoggable.isEmpty())
 		{
 			final List<String> singleMessages = plainStringLoggable.getSingleMessages();
-
-			final DemandHandlerAuditEvent demandHandlerAuditEvent = DemandHandlerAuditEvent.builder()
-					.eventDescriptor(descriptor.getEventDescriptor().createNew())
-					.descr(descriptor.getMaterialDescriptor())
-					.orderLineId(descriptor.getOrderLineId())
-					.messages(singleMessages)
-					.build();
-
-			fireMaterialEventService.fireEvent(demandHandlerAuditEvent);
+			singleMessages.forEach(message -> {
+				EventLogUserTools.newEventLogRequest(this.getClass())
+						.message(message)
+						.storeEventLog();
+			});
 		}
 	}
 

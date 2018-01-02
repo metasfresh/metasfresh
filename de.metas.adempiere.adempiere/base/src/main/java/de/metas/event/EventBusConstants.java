@@ -80,8 +80,8 @@ public final class EventBusConstants
 	 * Topic used for general notifications. To be used mainly for broadcasting messages to everybody.
 	 */
 	public static final Topic TOPIC_GeneralNotifications = Topic.builder()
-			.setName("de.metas.event.GeneralNotifications")
-			.setType(Type.REMOTE)
+			.name("de.metas.event.GeneralNotifications")
+			.type(Type.REMOTE)
 			.build();
 	/**
 	 * Topic used for general notifications inside this JVM instance.
@@ -89,8 +89,8 @@ public final class EventBusConstants
 	 * Compared to {@link #TOPIC_GeneralNotifications}, this topic is NOT broadcasting the events remotely.
 	 */
 	public static final Topic TOPIC_GeneralNotificationsLocal = Topic.builder()
-			.setName("de.metas.event.GeneralNotifications")
-			.setType(Type.LOCAL)
+			.name("de.metas.event.GeneralNotifications")
+			.type(Type.LOCAL)
 			.build();
 
 	public static final String JMX_BASE_NAME = "de.metas.event.EventBus";

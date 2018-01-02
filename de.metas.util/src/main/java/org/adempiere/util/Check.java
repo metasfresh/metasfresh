@@ -288,15 +288,13 @@ public final class Check
 	/**
 	 * Assumes that given <code>str</code> string is not empty. When checking, whitespaces will be discarded, so a string which contains only whitespaces will be considered as empty.
 	 *
-	 * @param object
-	 * @param assumptionMessage message
 	 * @param params message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 * @see #isEmpty(String, boolean)
 	 */
-	public static void assumeNotEmpty(final String str, final String assumptionMessage, final Object... params)
+	public static String assumeNotEmpty(final String str, final String assumptionMessage, final Object... params)
 	{
-		assumeNotEmpty(str, defaultExClazz, assumptionMessage, params);
+		return assumeNotEmpty(str, defaultExClazz, assumptionMessage, params);
 	}
 
 	/**
@@ -307,12 +305,13 @@ public final class Check
 	 * @param assumptionMessage
 	 * @param params
 	 */
-	public static void assumeNotEmpty(final String str, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	public static String assumeNotEmpty(final String str, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean trimWhitespaces = true;
 		final boolean cond = !isEmpty(str, trimWhitespaces);
 
 		assume(cond, exceptionClass, assumptionMessage, params);
+		return str;
 	}
 
 	/**
