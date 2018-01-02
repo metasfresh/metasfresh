@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -93,7 +95,7 @@ public class DDOrderProducer
 	private I_DD_Order createDDOrder(
 			@NonNull final DDOrder pojo,
 			@NonNull final Date dateOrdered,
-			final IMRPCreateSupplyRequest request)
+			@Nullable final IMRPCreateSupplyRequest request)
 	{
 		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper.create(Env.getCtx(), pojo.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_ThreadInherited);
 

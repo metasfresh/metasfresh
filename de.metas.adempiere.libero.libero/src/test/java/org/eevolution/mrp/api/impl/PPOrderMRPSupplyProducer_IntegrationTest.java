@@ -58,7 +58,10 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.MaterialEventConfiguration;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 
 /**
@@ -71,9 +74,15 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 @SpringBootTest(classes = { StartupListener.class,
 		ShutdownListener.class,
 		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class,
+
+		PPOrderPojoConverter.class,
+		FireMaterialEventService.class,
+		MaterialEventConfiguration.class,
+
 		OrderGroupRepository.class
 })
-public class PPOrderMRPSupplyProducer_IntegrationTest extends AbstractMRPTestBase
+public class PPOrderMRPSupplyProducer_IntegrationTest
+extends AbstractMRPTestBase
 {
 	// services
 	private IQueryBL queryBL;

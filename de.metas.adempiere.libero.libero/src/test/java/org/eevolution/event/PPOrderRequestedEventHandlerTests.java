@@ -173,6 +173,7 @@ public class PPOrderRequestedEventHandlerTests
 	{
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(0, 10))
+				.dateOrdered(SystemTime.asDate())
 				.groupId(33)
 				.ppOrder(ppOrderPojo).build();
 
@@ -212,6 +213,7 @@ public class PPOrderRequestedEventHandlerTests
 
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(0, 10))
+				.dateOrdered(SystemTime.asDate())
 				.groupId(33)
 				.ppOrder(ppOrderPojo).build();
 

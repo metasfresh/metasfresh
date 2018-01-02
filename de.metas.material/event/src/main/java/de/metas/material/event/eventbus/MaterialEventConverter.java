@@ -2,6 +2,7 @@ package de.metas.material.event.eventbus;
 
 import de.metas.event.Event;
 import de.metas.event.SimpleObjectSerializer;
+import de.metas.event.log.EventLogUserTools;
 import de.metas.material.event.MaterialEvent;
 import lombok.NonNull;
 
@@ -29,23 +30,32 @@ import lombok.NonNull;
 
 public class MaterialEventConverter
 {
-	public static final String MATERIAL_DISPOSITION_EVENT = "MaterialDispositionEvent";
+	public static final String PROPERTY_MATERIAL_EVENT = "MaterialEvent";
 
 	public static MaterialEvent toMaterialEvent(@NonNull final Event metasfreshEvent)
 	{
-		final String lightWeigthEventStr = metasfreshEvent.getProperty(MATERIAL_DISPOSITION_EVENT);
+		final String lightWeigthEventStr = metasfreshEvent.getProperty(PROPERTY_MATERIAL_EVENT);
 
 		final MaterialEvent lightWeightEvent = SimpleObjectSerializer.get()
 				.deserialize(lightWeigthEventStr, MaterialEvent.class);
 		return lightWeightEvent;
 	}
 
+	/**
+	 * Note: the returned metasfresh event shall be logged.
+	 *
+	 * @param event
+	 * @return
+	 */
 	public static Event fromMaterialEvent(@NonNull final MaterialEvent event)
 	{
 		final String eventStr = SimpleObjectSerializer.get().serialize(event);
 
-		final Event metasfreshEvent = Event.builder()
-				.putProperty(MATERIAL_DISPOSITION_EVENT, eventStr)
+		final Event.Builder metasfreshEventBuilder = Event.builder()
+				.putProperty(PROPERTY_MATERIAL_EVENT, eventStr);
+
+		final Event metasfreshEvent = EventLogUserTools
+				.addStoreEventAdvise(metasfreshEventBuilder, true)
 				.build();
 
 		return metasfreshEvent;

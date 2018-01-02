@@ -97,14 +97,14 @@ public class CandidateServiceTests
 						.productBomLineId(600)
 						.build());
 
-		final PPOrderRequestedEvent productionRequestedEvent = requestMaterialOrderService.createPPOrderRequestedEvent(ImmutableList.of(candidate, candidate2, candidate3));
-		assertThat(productionRequestedEvent).isNotNull();
-		assertThat(productionRequestedEvent.getEventDescriptor()).isNotNull();
+		final PPOrderRequestedEvent ppOrderRequestedEvent = requestMaterialOrderService.createPPOrderRequestedEvent(ImmutableList.of(candidate, candidate2, candidate3));
+		assertThat(ppOrderRequestedEvent).isNotNull();
+		assertThat(ppOrderRequestedEvent.getEventDescriptor()).isNotNull();
 
-		assertThat(productionRequestedEvent.getEventDescriptor().getClientId()).isEqualTo(20);
-		assertThat(productionRequestedEvent.getEventDescriptor().getOrgId()).isEqualTo(30);
+		assertThat(ppOrderRequestedEvent.getEventDescriptor().getClientId()).isEqualTo(20);
+		assertThat(ppOrderRequestedEvent.getEventDescriptor().getOrgId()).isEqualTo(30);
 
-		final PPOrder ppOrder = productionRequestedEvent.getPpOrder();
+		final PPOrder ppOrder = ppOrderRequestedEvent.getPpOrder();
 		assertThat(ppOrder).isNotNull();
 		assertThat(ppOrder.getOrgId()).isEqualTo(30);
 		assertThat(ppOrder.getProductDescriptor().getProductId()).isEqualTo(PRODUCT_ID);

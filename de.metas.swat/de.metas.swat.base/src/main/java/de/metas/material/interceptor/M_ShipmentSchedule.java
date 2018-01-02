@@ -63,8 +63,16 @@ public class M_ShipmentSchedule
 	{
 		final AbstractShipmentScheduleEvent event = createShipmentScheduleEvent(schedule, timing);
 
-		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event);
+		final boolean nothingActuallyChanged = //
+				event.getOrderedQuantityDelta().signum() == 0
+						&& event.getReservedQuantityDelta().signum() == 0;
+		if (nothingActuallyChanged)
+		{
+			 return;
+		}
+
+		final FireMaterialEventService fireMaterialEventService = Adempiere.getBean(FireMaterialEventService.class);
+		fireMaterialEventService.fireEventAfterNextCommit(event);
 	}
 
 	@VisibleForTesting

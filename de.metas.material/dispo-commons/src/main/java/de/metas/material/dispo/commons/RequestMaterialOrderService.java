@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -156,6 +157,7 @@ public class RequestMaterialOrderService
 
 		return PPOrderRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
+				.dateOrdered(SystemTime.asDate())
 				.ppOrder(ppOrderBuilder.build())
 				.groupId(firstGroupMember.getEffectiveGroupId())
 				.build();
@@ -219,6 +221,7 @@ public class RequestMaterialOrderService
 
 		return DDOrderRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
+				.dateOrdered(SystemTime.asDate())
 				.ddOrder(ddOrderBuilder
 						.line(ddOrderLineBuilder
 								.durationDays(durationDays)

@@ -7,6 +7,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
@@ -38,6 +39,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 public class MetasfreshEventListener
 {
 	private static final Logger logger = LogManager.getLogger(MetasfreshEventListener.class);
@@ -63,11 +65,11 @@ public class MetasfreshEventListener
 
 			try (final IAutoCloseable c = Env.switchContext(temporaryCtx))
 			{
-				invokeListnerInTrx(lightWeightEvent);
+				invokeListenerInTrx(lightWeightEvent);
 			}
 		}
 
-		private void invokeListnerInTrx(@NonNull final MaterialEvent materialEvent)
+		private void invokeListenerInTrx(@NonNull final MaterialEvent materialEvent)
 		{
 			Services.get(ITrxManager.class).run(() -> {
 				materialEventHandlerRegistry.onEvent(materialEvent);

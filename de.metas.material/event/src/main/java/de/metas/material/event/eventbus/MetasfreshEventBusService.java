@@ -13,7 +13,6 @@ import de.metas.event.Type;
 import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventConfiguration;
-import de.metas.material.event.impl.MaterialEventBus;
 import lombok.NonNull;
 
 /*
@@ -71,8 +70,8 @@ public final class MetasfreshEventBusService
 	private MetasfreshEventBusService(@NonNull final Type eventType)
 	{
 		eventBusTopic = Topic.builder()
-				.setName(MaterialEventBus.EVENTBUS_TOPIC_NAME)
-				.setType(eventType)
+				.name("de.metas.material")
+				.type(eventType)
 				.build();
 	}
 

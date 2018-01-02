@@ -78,6 +78,7 @@ public class MaterialEventSerializerTests
 	{
 		final DDOrderRequestedEvent event = DDOrderRequestedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
+				.dateOrdered(NOW)
 				.groupId(20)
 				.ddOrder(createDdOrder())
 				.build();
@@ -126,6 +127,7 @@ public class MaterialEventSerializerTests
 	{
 		final PPOrderRequestedEvent event = PPOrderRequestedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
+				.dateOrdered(NOW)
 				.groupId(30)
 				.ppOrder(PPOrder.builder()
 						.datePromised(NOW)

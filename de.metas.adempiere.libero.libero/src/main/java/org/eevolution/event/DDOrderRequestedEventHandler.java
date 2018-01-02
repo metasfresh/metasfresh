@@ -75,7 +75,7 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 	I_DD_Order createDDOrder(@NonNull final DDOrderRequestedEvent ddOrderRequestedEvent)
 	{
 		final DDOrder ddOrder = ddOrderRequestedEvent.getDdOrder();
-		final Date dateOrdered = Date.from(ddOrderRequestedEvent.getEventDescriptor().getWhen());
+		final Date dateOrdered = ddOrderRequestedEvent.getDateOrdered();
 
 		final I_DD_Order ddOrderRecord = ddOrderProducer.createDDOrder(ddOrder, dateOrdered);
 		ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.setValue(ddOrderRecord, ddOrderRequestedEvent.getGroupId());

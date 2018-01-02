@@ -29,15 +29,18 @@ import java.util.Collection;
  *
  * @author metas-dev <dev@metasfresh.com>
  *
- * @param <T> the sort of materialevent which the handler shall handle in its {@link #handleEvent(MaterialEvent)} method. <br>
- *            May also be an abstract type.
+ * @param <T> the sort of {@link MaterialEvent} which the handler shall handle in its {@link #handleEvent(MaterialEvent)} method. <br>
+ *            May be an abstract type.
  */
 public interface MaterialEventHandler<T extends MaterialEvent>
 {
 	/**
-	 * @return The classes the respecitve implementation will be invoked with.
+	 * @return The event classes the respective implementation will be invoked on.
 	 *         <p>
-	 * 		Note that the actual events' respective class will be {@code equal}ed against the returned class(es), so returning an abstract class here seems to be pointless.
+	 *         Note that:
+	 *         <li>please don't return {@code null}
+	 *         <li>the actual events' respective class will be {@code equal}ed against the returned class(es), so returning an abstract class here seems to be pointless.
+	 *         <li>An empty result means "invoke on every event type"
 	 */
 	Collection<Class<? extends T>> getHandeledEventType();
 

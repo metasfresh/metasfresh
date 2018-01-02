@@ -1,5 +1,8 @@
 package de.metas.material.event.ddorder;
 
+
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.MaterialEvent;
@@ -21,6 +24,8 @@ public class DDOrderRequestedEvent implements MaterialEvent
 	int groupId;
 
 	@NonNull
-	DDOrder ddOrder;
+	Date dateOrdered;
 
+	@NonNull
+	DDOrder ddOrder;
 }

@@ -267,8 +267,8 @@
 			<version>4.0</version>
 		</dependency>
 
+		<!-- needed for org.adempiere.plaf.UIDefaultsSerializer -->
 		<dependency>
-			<!-- Initially was needed for org.adempiere.plaf.UIDefaultsSerializer but in future we would use it for many other things -->
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 		</dependency>

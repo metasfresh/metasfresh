@@ -83,7 +83,7 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 	I_PP_Order createProductionOrder(@NonNull final PPOrderRequestedEvent ppOrderRequestedEvent)
 	{
 		final PPOrder ppOrder = ppOrderRequestedEvent.getPpOrder();
-		final Date dateOrdered = Date.from(ppOrderRequestedEvent.getEventDescriptor().getWhen());
+		final Date dateOrdered = ppOrderRequestedEvent.getDateOrdered();
 
 		final I_PP_Order ppOrderRecord = ppOrderProducer.createPPOrder(ppOrder, dateOrdered);
 		ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.setValue(ppOrderRecord, ppOrderRequestedEvent.getGroupId());

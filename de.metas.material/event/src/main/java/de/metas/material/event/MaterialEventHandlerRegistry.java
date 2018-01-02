@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableMultimap.Builder;
 
+import de.metas.event.log.EventLogUserTools;
 import lombok.NonNull;
 
 /*
@@ -62,7 +63,24 @@ public class MaterialEventHandlerRegistry
 				eventType2Handler.get(event.getClass());
 
 		handlersForEventClass.forEach(handler -> {
-			handler.handleEvent(event);
+			invokeHandlerAndLog(event, handler);
 		});
+	}
+
+	private void invokeHandlerAndLog(
+			@NonNull final MaterialEvent event,
+			@NonNull final MaterialEventHandler handler)
+	{
+		final Class<? extends MaterialEventHandler> handlerClass = handler.getClass();
+		if (EventLogUserTools.wasEventProcessedbyHandler(handlerClass))
+		{
+			return;
+		}
+
+		handler.handleEvent(event);
+
+		EventLogUserTools.newEventLogRequest(handlerClass)
+				.processed(true)
+				.storeEventLog();
 	}
 }

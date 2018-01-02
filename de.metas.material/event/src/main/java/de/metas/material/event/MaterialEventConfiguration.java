@@ -36,7 +36,7 @@ import de.metas.material.event.eventbus.MetasfreshEventBusService;
 @ComponentScan(basePackageClasses = MaterialEventConfiguration.class)
 public class MaterialEventConfiguration
 {
-	public static final String BEAN_NAME = "materialEventBusService";
+	public static final String BEAN_NAME = "metasfreshEventBusService";
 
 	@Bean(name = BEAN_NAME)
 	@Profile(Profiles.PROFILE_Test)
