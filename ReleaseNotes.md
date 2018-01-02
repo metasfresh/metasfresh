@@ -34,6 +34,8 @@ Here come the actual release notes:
     * Hiding Accounts Tab in Warehouse Window, now available via Document Reference.
   * [#3261](https://github.com/metasfresh/metasfresh/issues/3261) WebUI: New Window for BPartner Group Accounts
     * New Window for Business Partner Group Accounts, allowing the user to define relevant accounting information for Business Partner Groups.
+  * [#3267](https://github.com/metasfresh/metasfresh/issues/3267) WebUI: Add Create Periods to Action menu in Calendar Window
+    * Improving teh Calender and Period Window in WebUI, adding the Create Periods action to action menu.
 
 #Fixes
 * metasfresh-app
