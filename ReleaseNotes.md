@@ -30,6 +30,8 @@ Here come the actual release notes:
     * New Window for Vendor Accounts, allowing the user to define warehouse relevant accounting information.
   * [#3257](https://github.com/metasfresh/metasfresh/issues/3257) WebUI: Window for Vendor Accounting
     * New Window for Vendor Accounts, allowing the user to define vendor relevant accounting information.
+  * [#3260](https://github.com/metasfresh/metasfresh/issues/3260) Hide Accounts Tab from Warehouse Window in WebUI
+    * Hiding Accounts Tab in Warehouse Window, now available via Document Reference.
   * [#3261](https://github.com/metasfresh/metasfresh/issues/3261) WebUI: New Window for BPartner Group Accounts
     * New Window for Business Partner Group Accounts, allowing the user to define relevant accounting information for Business Partner Groups.
 
