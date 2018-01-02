@@ -111,7 +111,7 @@ export const drawData = (
       if (yChanged || reRender) {
         return 0;
       } else {
-        return dimensions.height - ranges.y(d.valuePrev);
+        return Math.abs(ranges.y(d.value) - ranges.y(0));
       }
     })
     .transition()
