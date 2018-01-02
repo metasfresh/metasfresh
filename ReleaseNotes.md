@@ -36,6 +36,8 @@ Here come the actual release notes:
     * New Window for Business Partner Group Accounts, allowing the user to define relevant accounting information for Business Partner Groups.
   * [#3267](https://github.com/metasfresh/metasfresh/issues/3267) WebUI: Add Create Periods to Action menu in Calendar Window
     * Improving teh Calender and Period Window in WebUI, adding the Create Periods action to action menu.
+  * [#3269](https://github.com/metasfresh/metasfresh/issues/3269) WebUI: Add Shortcut Filter from Calendar Year to Periods Window
+    * Improving the Usability of Calendar and Period Window, now allowing to directly zoom to filtered Periods for a given year.
 
 #Fixes
 * metasfresh-app
