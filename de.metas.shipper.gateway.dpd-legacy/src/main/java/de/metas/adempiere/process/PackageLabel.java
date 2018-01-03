@@ -34,7 +34,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.MInOut;
-import org.compiere.model.MPackage;
 import org.compiere.model.Query;
 import org.compiere.model.X_M_Package;
 
@@ -59,7 +58,7 @@ public class PackageLabel extends JavaProcess
 
 	private BigDecimal M_Shipper_ID = null;
 
-	private MPackage pack = null;
+	private I_M_Package pack = null;
 
 	@Override
 	protected String doIt() throws Exception
@@ -71,7 +70,7 @@ public class PackageLabel extends JavaProcess
 		if (M_Shipper_ID != null && pack != null)
 		{
 			pack.setM_Shipper_ID(M_Shipper_ID.intValue());
-			pack.saveEx();
+			InterfaceWrapperHelper.save(pack);
 		}
 
 		final Properties ctx = getCtx();
@@ -128,8 +127,7 @@ public class PackageLabel extends JavaProcess
 		if (tableId == I_M_Package.Table_ID)
 		{
 
-			pack = new MPackage(getCtx(), getRecord_ID(),
-					get_TrxName());
+			pack = getRecord(I_M_Package.class);
 
 			return new MInOut(getCtx(), pack.getM_InOut_ID(), get_TrxName());
 

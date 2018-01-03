@@ -27,7 +27,7 @@ import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.Properties;
 
-import org.compiere.model.MPackage;
+import org.compiere.model.I_M_Package;
 import org.compiere.model.Query;
 
 public class MPackageInfo extends X_M_PackageInfo {
@@ -45,14 +45,14 @@ public class MPackageInfo extends X_M_PackageInfo {
 		super(ctx, rs, trxName);
 	}
 
-	public static Collection<MPackageInfo> retrieveForPackage(
-			final MPackage pack) {
+	public static Collection<MPackageInfo> retrieveForPackage(final I_M_Package pack) {
 
 		final String whereClause = COLUMNNAME_M_Package_ID + "=?";
-		final Object[] parameters = { pack.get_ID() };
+		final Object[] parameters = { pack.getM_Package_ID() };
 
-		return new Query(pack.getCtx(), Table_Name, whereClause, pack
-				.get_TrxName()).setParameters(parameters).list();
+		Properties ctx = InterfaceWrapperHelper.getCtx(pack);
+		String trxName = InterfaceWrapperHelper.getTrxName(pack);
+		return new Query(ctx, Table_Name, whereClause, trxName).setParameters(parameters).list();
 	}
 
 }

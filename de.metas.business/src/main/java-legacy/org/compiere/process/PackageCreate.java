@@ -16,22 +16,27 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
+import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_PackageLine;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.MInOut;
-import org.compiere.model.MPackage;
+import org.compiere.model.MInOutLine;
+
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
  
 /**
  *	Create Package from Shipment for Shipper
  *	
  *  @author Jorg Janke
  *  @version $Id: PackageCreate.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
+ *  
+ *  @deprecated not used, to be deleted
  */
+@Deprecated
 public class PackageCreate extends JavaProcess
 {
 	/**	Shipper				*/
@@ -43,6 +48,7 @@ public class PackageCreate extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -71,6 +77,7 @@ public class PackageCreate extends JavaProcess
 	 *	@return message
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		log.info("doIt - M_InOut_ID=" + p_M_InOut_ID + ", M_Shipper_ID=" + p_M_Shipper_ID);
@@ -87,9 +94,43 @@ public class PackageCreate extends JavaProcess
 			throw new IllegalArgumentException("Cannot find Shipper ID=" + p_M_InOut_ID);
 		//
 		
-		MPackage pack = MPackage.create (shipment, shipper, null);
+		I_M_Package pack = createPackage(shipment, shipper, null);
 		
 		return pack.getDocumentNo();
 	}	//	doIt
+	
+	/**
+	 * 	Create one Package for Shipment 
+	 *	@param shipment shipment
+	 *	@param shipper shipper
+	 *	@param shipDate null for today
+	 *	@return package
+	 */
+	private static I_M_Package createPackage(MInOut shipment, I_M_Shipper shipper, Timestamp shipDate)
+	{
+		final I_M_Package retValue = InterfaceWrapperHelper.newInstance(I_M_Package.class);
+		retValue.setAD_Org_ID(shipment.getAD_Org_ID());
+		retValue.setM_InOut_ID(shipment.getM_InOut_ID());
+		retValue.setM_Shipper_ID(shipper.getM_Shipper_ID());
+		if (shipDate != null)
+			retValue.setShipDate(shipDate);
+		InterfaceWrapperHelper.save(retValue);
+		
+		//	Lines
+		MInOutLine[] lines = shipment.getLines(false);
+		for (int i = 0; i < lines.length; i++)
+		{
+			MInOutLine sLine = lines[i];
+			I_M_PackageLine pLine = InterfaceWrapperHelper.newInstance(I_M_PackageLine.class);
+			pLine.setAD_Org_ID(retValue.getAD_Org_ID());
+			pLine.setM_Package_ID(retValue.getM_Package_ID());
+			pLine.setM_InOutLine_ID(sLine.getM_InOutLine_ID());
+			pLine.setQty(sLine.getMovementQty());
+
+			InterfaceWrapperHelper.save(pLine);
+		}	//	lines
+		return retValue;
+	}	//	create
+
 	
 }	//	PackageCreate
