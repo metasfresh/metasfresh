@@ -1201,3 +1201,13 @@ UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541339, SeqNo=70,Updated=TO_TIMES
 UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541339, SeqNo=80,Updated=TO_TIMESTAMP('2018-01-03 08:22:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549904
 ;
 
+-- 2018-01-03T08:24:45.864
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,338,265,TO_TIMESTAMP('2018-01-03 08:24:45','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2018-01-03 08:24:45','YYYY-MM-DD HH24:MI:SS'),100,'N','N')
+;
+
+-- 2018-01-03T08:25:09.178
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=549924
+;
+
