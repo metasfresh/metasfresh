@@ -47,7 +47,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_PackageInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MPackageInfo;
 import org.adempiere.model.MPackagingContainer;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -520,7 +519,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			return;
 		}
 
-		final boolean existingInfo = !MPackageInfo.retrieveForPackage(pack).isEmpty();
+		final boolean existingInfo = !retrievePackageInfosForPackage(pack).isEmpty();
 		if (existingInfo)
 		{
 			return;
@@ -677,7 +676,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			}
 			InterfaceWrapperHelper.save(packg);
 
-			for (final I_M_PackageInfo packageInfo : MPackageInfo.retrieveForPackage(packg))
+			for (final I_M_PackageInfo packageInfo : retrievePackageInfosForPackage(packg))
 			{
 				InterfaceWrapperHelper.delete(packageInfo);
 			}
@@ -699,7 +698,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			}
 			InterfaceWrapperHelper.save(pack);
 
-			for (final I_M_PackageInfo packageInfo : MPackageInfo.retrieveForPackage(pack))
+			for (final I_M_PackageInfo packageInfo : retrievePackageInfosForPackage(pack))
 			{
 				InterfaceWrapperHelper.delete(packageInfo);
 			}
@@ -731,6 +730,16 @@ public class DPDRoutingService implements IDPDRoutingService
 				.setClient_ID()
 				.setOrderBy(I_M_Package.COLUMNNAME_M_Package_ID)
 				.list(I_M_Package.class);
+	}
+
+	private static Collection<I_M_PackageInfo> retrievePackageInfosForPackage(final I_M_Package pack) {
+
+		final String whereClause = I_M_PackageInfo.COLUMNNAME_M_Package_ID + "=?";
+		final Object[] parameters = { pack.getM_Package_ID() };
+
+		Properties ctx = InterfaceWrapperHelper.getCtx(pack);
+		String trxName = InterfaceWrapperHelper.getTrxName(pack);
+		return new Query(ctx, I_M_PackageInfo.Table_Name, whereClause, trxName).setParameters(parameters).list();
 	}
 
 }
