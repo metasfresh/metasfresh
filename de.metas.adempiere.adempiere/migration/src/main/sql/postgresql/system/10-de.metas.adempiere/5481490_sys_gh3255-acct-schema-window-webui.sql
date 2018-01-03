@@ -1211,3 +1211,13 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,C
 DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=549924
 ;
 
+-- 2018-01-03T08:27:15.067
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Schema kopieren',Updated=TO_TIMESTAMP('2018-01-03 08:27:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=338
+;
+
+-- 2018-01-03T08:27:41.130
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Buchführungs Schema kopieren',Updated=TO_TIMESTAMP('2018-01-03 08:27:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=338
+;
+
