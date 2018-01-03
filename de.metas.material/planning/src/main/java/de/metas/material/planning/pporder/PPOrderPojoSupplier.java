@@ -201,17 +201,24 @@ public class PPOrderPojoSupplier
 
 			final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(productBomLine);
 
-			final PPOrderLine ppOrderLine = PPOrderLine.builder()
+			final boolean receipt = PPOrderUtil.isReceipt(productBomLine.getComponentType());
+
+			final PPOrderLine intermedidatePPOrderLine = PPOrderLine.builder()
 					.productBomLineId(productBomLine.getPP_Product_BOMLine_ID())
 					.description(productBomLine.getDescription())
 					.productDescriptor(productDescriptor)
+					.receipt(receipt)
+					.issueOrReceiveDate(receipt ? ppOrder.getDatePromised() : ppOrder.getDateStartSchedule())
 					.qtyRequired(BigDecimal.ZERO) // is computed in the next step
 					.build();
 
 			final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-			final BigDecimal qtyRequired = ppOrderBOMBL.calculateQtyRequired(ppOrderLine, ppOrder, ppOrder.getQuantity());
+			final BigDecimal qtyRequired = ppOrderBOMBL.calculateQtyRequired(intermedidatePPOrderLine, ppOrder, ppOrder.getQuantity());
 
-			result.add(ppOrderLine.withQtyRequired(qtyRequired));
+			final PPOrderLine ppOrderLine = intermedidatePPOrderLine.toBuilder()
+					.qtyRequired(qtyRequired).build();
+
+			result.add(ppOrderLine);
 		}
 
 		return result;

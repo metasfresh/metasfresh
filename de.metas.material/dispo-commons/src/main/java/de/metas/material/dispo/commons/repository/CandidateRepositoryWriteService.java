@@ -248,27 +248,30 @@ public class CandidateRepositoryWriteService
 			return;
 		}
 
-		final I_MD_Candidate_Prod_Detail detailRecordToUpdate;
+		final I_MD_Candidate_Prod_Detail productionDetailRecordToUpdate;
 		final I_MD_Candidate_Prod_Detail existingDetail = RepositoryCommons.retrieveSingleCandidateDetail(synchedRecord, I_MD_Candidate_Prod_Detail.class);
 		if (existingDetail == null)
 		{
-			detailRecordToUpdate = newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
-			detailRecordToUpdate.setMD_Candidate(synchedRecord);
+			productionDetailRecordToUpdate = newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
+			productionDetailRecordToUpdate.setMD_Candidate(synchedRecord);
 		}
 		else
 		{
-			detailRecordToUpdate = existingDetail;
+			productionDetailRecordToUpdate = existingDetail;
 		}
 
-		detailRecordToUpdate.setIsAdvised(productionDetail.isAdvised());
-		detailRecordToUpdate.setDescription(productionDetail.getDescription());
-		detailRecordToUpdate.setPP_Plant_ID(productionDetail.getPlantId());
-		detailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
-		detailRecordToUpdate.setPP_Product_Planning_ID(productionDetail.getProductPlanningId());
-		detailRecordToUpdate.setPP_Order_ID(productionDetail.getPpOrderId());
-		detailRecordToUpdate.setPP_Order_BOMLine_ID(productionDetail.getPpOrderLineId());
-		detailRecordToUpdate.setPP_Order_DocStatus(productionDetail.getPpOrderDocStatus());
-		save(detailRecordToUpdate);
+		productionDetailRecordToUpdate.setIsAdvised(productionDetail.isAdvised());
+		productionDetailRecordToUpdate.setDescription(productionDetail.getDescription());
+		productionDetailRecordToUpdate.setPP_Plant_ID(productionDetail.getPlantId());
+		productionDetailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
+		productionDetailRecordToUpdate.setPP_Product_Planning_ID(productionDetail.getProductPlanningId());
+		productionDetailRecordToUpdate.setPP_Order_ID(productionDetail.getPpOrderId());
+		productionDetailRecordToUpdate.setPP_Order_BOMLine_ID(productionDetail.getPpOrderLineId());
+		productionDetailRecordToUpdate.setPP_Order_DocStatus(productionDetail.getPpOrderDocStatus());
+		productionDetailRecordToUpdate.setPlannedQty(productionDetail.getPlannedQty());
+		productionDetailRecordToUpdate.setActualQty(productionDetail.getActualQty());
+
+		save(productionDetailRecordToUpdate);
 	}
 
 	private void addOrReplaceDistributionDetail(
@@ -300,6 +303,9 @@ public class CandidateRepositoryWriteService
 		detailRecordToUpdate.setDD_OrderLine_ID(distributionDetail.getDdOrderLineId());
 		detailRecordToUpdate.setDD_Order_DocStatus(distributionDetail.getDdOrderDocStatus());
 		detailRecordToUpdate.setM_Shipper_ID(distributionDetail.getShipperId());
+		detailRecordToUpdate.setPlannedQty(distributionDetail.getPlannedQty());
+		detailRecordToUpdate.setActualQty(distributionDetail.getPlannedQty());
+
 		save(detailRecordToUpdate);
 	}
 

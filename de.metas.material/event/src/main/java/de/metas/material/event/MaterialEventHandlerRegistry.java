@@ -10,7 +10,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableMultimap.Builder;
 
-import de.metas.event.log.EventLogUserTools;
+import de.metas.event.log.EventLogUserService;
+import de.metas.event.log.EventLogUserService.InvokeHandlerandLogRequest;
 import lombok.NonNull;
 
 /*
@@ -40,12 +41,22 @@ import lombok.NonNull;
 public class MaterialEventHandlerRegistry
 {
 	private final ImmutableMultimap<Class, MaterialEventHandler> eventType2Handler;
+	private final EventLogUserService eventLogUserService;
 
 	public MaterialEventHandlerRegistry(
+			@NonNull final Optional<Collection<MaterialEventHandler>> handlers,
+			@NonNull final EventLogUserService eventLogUserService)
+	{
+		this.eventLogUserService = eventLogUserService;
+
+		final Builder<Class, MaterialEventHandler> builder = createEventHandlerMapping(handlers);
+		eventType2Handler = builder.build();
+	}
+
+	private Builder<Class, MaterialEventHandler> createEventHandlerMapping(
 			@NonNull final Optional<Collection<MaterialEventHandler>> handlers)
 	{
 		final Builder<Class, MaterialEventHandler> builder = ImmutableMultimap.builder();
-
 		for (final MaterialEventHandler handler : handlers.orElse(ImmutableList.of()))
 		{
 			final Collection<Class<? extends MaterialEventHandler>> handeledEventType = //
@@ -53,8 +64,7 @@ public class MaterialEventHandlerRegistry
 
 			handeledEventType.forEach(type -> builder.put(type, handler));
 		}
-
-		eventType2Handler = builder.build();
+		return builder;
 	}
 
 	public final void onEvent(@NonNull final MaterialEvent event)
@@ -63,24 +73,13 @@ public class MaterialEventHandlerRegistry
 				eventType2Handler.get(event.getClass());
 
 		handlersForEventClass.forEach(handler -> {
-			invokeHandlerAndLog(event, handler);
+
+			final InvokeHandlerandLogRequest request = InvokeHandlerandLogRequest.builder()
+					.handlerClass(handler.getClass())
+					.invokaction(() -> handler.handleEvent(event))
+					.build();
+
+			eventLogUserService.invokeHandlerAndLog(request);
 		});
-	}
-
-	private void invokeHandlerAndLog(
-			@NonNull final MaterialEvent event,
-			@NonNull final MaterialEventHandler handler)
-	{
-		final Class<? extends MaterialEventHandler> handlerClass = handler.getClass();
-		if (EventLogUserTools.wasEventProcessedbyHandler(handlerClass))
-		{
-			return;
-		}
-
-		handler.handleEvent(event);
-
-		EventLogUserTools.newEventLogRequest(handlerClass)
-				.processed(true)
-				.storeEventLog();
 	}
 }

@@ -219,6 +219,8 @@ public class CandidateRepositoryRetrieval
 				.ppOrderId(productionDetail.getPP_Order_ID())
 				.ppOrderLineId(productionDetail.getPP_Order_BOMLine_ID())
 				.ppOrderDocStatus(productionDetail.getPP_Order_DocStatus())
+				.plannedQty(productionDetail.getPlannedQty())
+				.actualQty(productionDetail.getActualQty())
 				.build();
 		return productionCandidateDetail;
 	}
@@ -238,6 +240,8 @@ public class CandidateRepositoryRetrieval
 				.ddOrderId(distributionDetail.getDD_Order_ID())
 				.ddOrderLineId(distributionDetail.getDD_OrderLine_ID())
 				.ddOrderDocStatus(distributionDetail.getDD_Order_DocStatus())
+				.plannedQty(distributionDetail.getPlannedQty())
+				.actualQty(distributionDetail.getActualQty())
 				.shipperId(distributionDetail.getM_Shipper_ID())
 				.build();
 		return distributionCandidateDetail;

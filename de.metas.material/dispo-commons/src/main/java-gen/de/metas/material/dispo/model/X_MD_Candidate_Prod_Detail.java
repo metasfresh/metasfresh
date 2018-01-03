@@ -15,7 +15,7 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1367973658L;
+	private static final long serialVersionUID = 1943424038L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Prod_Detail (Properties ctx, int MD_Candidate_Prod_Detail_ID, String trxName)
@@ -62,25 +62,6 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 		return bd;
 	}
 
-	/** Set Geplante Menge.
-		@param AdvisedQty Geplante Menge	  */
-	@Override
-	public void setAdvisedQty (java.math.BigDecimal AdvisedQty)
-	{
-		set_Value (COLUMNNAME_AdvisedQty, AdvisedQty);
-	}
-
-	/** Get Geplante Menge.
-		@return Geplante Menge	  */
-	@Override
-	public java.math.BigDecimal getAdvisedQty () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AdvisedQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Beschreibung.
 		@param Description Beschreibung	  */
 	@Override
@@ -97,16 +78,19 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Geplant.
-		@param IsAdvised Geplant	  */
+	/** Set Vom System vorgeschlagen.
+		@param IsAdvised 
+		Ja bedeutet, dass es zumindest ursprünglich kein entsprechendes Dokument (z.B. Produktionsauftrag) gab, sondern dass das System einen Beleg vorgeschlagen hatte.
+	  */
 	@Override
 	public void setIsAdvised (boolean IsAdvised)
 	{
 		set_Value (COLUMNNAME_IsAdvised, Boolean.valueOf(IsAdvised));
 	}
 
-	/** Get Geplant.
-		@return Geplant	  */
+	/** Get Vom System vorgeschlagen.
+		@return Ja bedeutet, dass es zumindest ursprünglich kein entsprechendes Dokument (z.B. Produktionsauftrag) gab, sondern dass das System einen Beleg vorgeschlagen hatte.
+	  */
 	@Override
 	public boolean isAdvised () 
 	{
@@ -174,6 +158,25 @@ public class X_MD_Candidate_Prod_Detail extends org.compiere.model.PO implements
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Geplante Menge.
+		@param PlannedQty Geplante Menge	  */
+	@Override
+	public void setPlannedQty (java.math.BigDecimal PlannedQty)
+	{
+		set_Value (COLUMNNAME_PlannedQty, PlannedQty);
+	}
+
+	/** Get Geplante Menge.
+		@return Geplante Menge	  */
+	@Override
+	public java.math.BigDecimal getPlannedQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PlannedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	@Override

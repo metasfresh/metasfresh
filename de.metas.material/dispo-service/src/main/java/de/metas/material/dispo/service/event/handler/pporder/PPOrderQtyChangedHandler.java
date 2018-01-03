@@ -19,7 +19,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent.PPOrderLineChangeDescriptor;
+import de.metas.material.event.pporder.PPOrderQtyChangedEvent.ChangedPPOrderLineDescriptor;
 import lombok.NonNull;
 
 /*
@@ -83,9 +83,10 @@ public class PPOrderQtyChangedHandler implements MaterialEventHandler<PPOrderQty
 		updatedCandidatesToPersist.forEach(candidate -> candidateChangeService.onCandidateNewOrChange(candidate));
 	}
 
-	private List<Candidate> processPPOrderChange(final List<Candidate> candidatesToUpdate, final PPOrderQtyChangedEvent ppOrderQtyChangedEvent)
+	private List<Candidate> processPPOrderChange(
+			@NonNull final List<Candidate> candidatesToUpdate,
+			@NonNull final PPOrderQtyChangedEvent ppOrderQtyChangedEvent)
 	{
-
 		final List<Candidate> updatedCandidates = new ArrayList<>();
 		for (final Candidate candidateToUpdate : candidatesToUpdate)
 		{
@@ -112,13 +113,12 @@ public class PPOrderQtyChangedHandler implements MaterialEventHandler<PPOrderQty
 	}
 
 	private List<Candidate> processPPOrderLineChanges(
-			// final PPOrderQtyChangedEvent ppOrderQtyChangedEvent,
-			final List<Candidate> candidatesToUpdate,
-			final List<PPOrderLineChangeDescriptor> ppOrderLineChanges)
+			@NonNull final List<Candidate> candidatesToUpdate,
+			@NonNull final List<ChangedPPOrderLineDescriptor> ppOrderLineChanges)
 	{
 		final List<Candidate> updatedCandidates = new ArrayList<>();
 
-		final ImmutableMap<Integer, PPOrderLineChangeDescriptor> uniqueIndex = Maps.uniqueIndex(ppOrderLineChanges, PPOrderLineChangeDescriptor::getOldPPOrderLineId);
+		final ImmutableMap<Integer, ChangedPPOrderLineDescriptor> oldPPOrderLineId2ChangeDescriptor = Maps.uniqueIndex(ppOrderLineChanges, ChangedPPOrderLineDescriptor::getOldPPOrderLineId);
 
 		for (final Candidate candidateToUpdate : candidatesToUpdate)
 		{
@@ -129,7 +129,8 @@ public class PPOrderQtyChangedHandler implements MaterialEventHandler<PPOrderQty
 				continue;
 			}
 
-			final PPOrderLineChangeDescriptor changeDescriptor = uniqueIndex.get(productionDetailToUpdate.getPpOrderLineId());
+			final ChangedPPOrderLineDescriptor changeDescriptor = oldPPOrderLineId2ChangeDescriptor
+					.get(productionDetailToUpdate.getPpOrderLineId());
 
 			final BigDecimal newPlannedQty = changeDescriptor.getNewQuantity();
 

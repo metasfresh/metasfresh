@@ -101,11 +101,11 @@ public class RequestMaterialOrderService
 	}
 
 	@VisibleForTesting
-	PPOrderRequestedEvent createPPOrderRequestedEvent(final List<Candidate> group)
+	PPOrderRequestedEvent createPPOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
-		PPOrderBuilder ppOrderBuilder = PPOrder.builder();
+		final PPOrderBuilder ppOrderBuilder = PPOrder.builder();
 
 		for (final Candidate groupMember : group)
 		{
@@ -145,6 +145,7 @@ public class RequestMaterialOrderService
 						PPOrderLine.builder()
 								.description(prodDetail.getDescription())
 								.productBomLineId(prodDetail.getProductBomLineId())
+								.issueOrReceiveDate(groupMember.getDate())
 								.productDescriptor(materialDescriptor)
 								.qtyRequired(groupMember.getQuantity())
 								.productBomLineId(prodDetail.getProductBomLineId())

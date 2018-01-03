@@ -194,6 +194,8 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(cand.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(cand.getMaterialDescriptor().getDate()).isEqualTo(NOW);
 		assertThat(cand.getProductionDetail()).isNotNull();
+		assertThat(cand.getProductionDetail().getActualQty()).isZero();
+		assertThat(cand.getProductionDetail().getPlannedQty()).isZero();
 		assertThat(cand.getProductionDetail().getDescription()).isEqualTo("description1");
 		assertThat(cand.getProductionDetail().getProductBomLineId()).isEqualTo(71);
 		assertThat(cand.getProductionDetail().getProductPlanningId()).isEqualTo(81);
@@ -215,7 +217,7 @@ public class CandiateRepositoryRetrievalTests
 		final Candidate cand = pair.getLeft();
 		final I_MD_Candidate record = pair.getRight();
 
-		// make another record, just like "record", but without a proeductionDetailRecord
+		// make another record, just like "record", but without a productionDetailRecord
 		final I_MD_Candidate otherRecord = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		otherRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		otherRecord.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION);
@@ -227,8 +229,7 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(expectedRecordWithProdDetails.getId()).isEqualTo(record.getMD_Candidate_ID());
 
 		final CandidatesQuery querqWithoutProdDetails = CandidatesQuery
-				.fromCandidate(cand, false)
-				.withId(0)
+				.fromCandidate(cand.withId(0), false)
 				.withProductionDetail(CandidatesQuery.NO_PRODUCTION_DETAIL);
 		final Candidate expectedRecordWithoutProdDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(querqWithoutProdDetails);
@@ -278,14 +279,15 @@ public class CandiateRepositoryRetrievalTests
 
 	/**
 	 * Verifies that demand details are also used as filter criterion
-	 * If this one fails, i recommend to first check if {@link #retrieve_with_DistributionDetail()} works.
+	 * If this one fails, I recommend to first check if {@link #retrieve_with_DistributionDetail()} works.
 	 */
 	@Test
 	public void retrieveExact_with_DistributionDetail_filtered()
 	{
 		final IPair<Candidate, I_MD_Candidate> pair = perform_retrieve_with_DistributionDetail();
-		final Candidate cand = pair.getLeft();
-		assertThat(cand.getDistributionDetail()).isNotNull();
+
+		final Candidate candidateWithDistributionDetail = pair.getLeft();
+		assertThat(candidateWithDistributionDetail.getDistributionDetail()).isNotNull();
 
 		final I_MD_Candidate record = pair.getRight();
 
@@ -295,15 +297,14 @@ public class CandiateRepositoryRetrievalTests
 		otherRecord.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION);
 		save(otherRecord);
 
-		final Candidate expectedRecordWithDistDetails = candidateRepositoryRetrieval
-				.retrieveLatestMatchOrNull(CandidatesQuery.fromCandidate(cand, false));
-		assertThat(expectedRecordWithDistDetails).isNotNull();
-		assertThat(expectedRecordWithDistDetails.getDistributionDetail()).isNotNull();
-		assertThat(expectedRecordWithDistDetails.getId()).isEqualTo(record.getMD_Candidate_ID());
+		final Candidate expectedResultWithDistDetails = candidateRepositoryRetrieval
+				.retrieveLatestMatchOrNull(CandidatesQuery.fromCandidate(candidateWithDistributionDetail, false));
+		assertThat(expectedResultWithDistDetails).isNotNull();
+		assertThat(expectedResultWithDistDetails.getDistributionDetail()).isNotNull();
+		assertThat(expectedResultWithDistDetails.getId()).isEqualTo(record.getMD_Candidate_ID());
 
 		final CandidatesQuery withoutdistDetailsQuery = CandidatesQuery
-				.fromCandidate(cand, false)
-				.withId(0)
+				.fromCandidate(candidateWithDistributionDetail.withId(0), false)
 				.withDistributionDetail(CandidatesQuery.NO_DISTRIBUTION_DETAIL);
 		final Candidate expectedRecordWithoutDistDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(withoutdistDetailsQuery);

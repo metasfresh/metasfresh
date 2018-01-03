@@ -58,22 +58,25 @@ public class PPOrderPojoConverter
 				.build();
 	}
 
-	public PPOrder asPPOrderPojo(@NonNull final I_PP_Order ppOrder)
+	public PPOrder asPPOrderPojo(@NonNull final I_PP_Order ppOrderRecord)
 	{
-		final PPOrderBuilder ppOrderPojoBuilder = createPPorderPojoBuilder(ppOrder);
+		final PPOrderBuilder ppOrderPojoBuilder = createPPorderPojoBuilder(ppOrderRecord);
 
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 
-		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);
+		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrderRecord);
 		for (final I_PP_Order_BOMLine line : orderBOMLines)
 		{
+			final boolean receipt = PPOrderUtil.isReceipt(line.getComponentType());
+
 			ppOrderPojoBuilder.line(PPOrderLine.builder()
 					.productDescriptor(productDescriptorFactory.createProductDescriptor(line))
 					.description(line.getDescription())
 					.ppOrderLineId(line.getPP_Order_BOMLine_ID())
 					.productBomLineId(line.getPP_Product_BOMLine_ID())
 					.qtyRequired(line.getQtyRequiered())
-					.receipt(PPOrderUtil.isReceipt(line.getComponentType()))
+					.issueOrReceiveDate(receipt ? ppOrderRecord.getDatePromised() : ppOrderRecord.getDateStartSchedule())
+					.receipt(receipt)
 					.build());
 		}
 		return ppOrderPojoBuilder.build();

@@ -1,5 +1,6 @@
 package de.metas.material.cockpit.eventhandler;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 
 import org.springframework.context.annotation.Profile;
@@ -74,13 +75,15 @@ public class AbstractTransactionEventHandler
 		final DataRecordIdentifier identifier = DataRecordIdentifier
 				.createForMaterial(transactionEvent.getMaterialDescriptor());
 
+		final BigDecimal eventQuantity = transactionEvent.getQuantityDelta();
+
 		final DataUpdateRequestBuilder dataRequestBuilder = DataUpdateRequest.builder()
 				.identifier(identifier)
-				.onHandQtyChange(transactionEvent.getQuantityDelta());
+				.onHandQtyChange(eventQuantity);
 
 		if (transactionEvent.isDirectMovementWarehouse())
 		{
-			dataRequestBuilder.directMovementQty(transactionEvent.getQuantityDelta());
+			dataRequestBuilder.directMovementQty(eventQuantity);
 		}
 		return dataRequestBuilder.build();
 	}

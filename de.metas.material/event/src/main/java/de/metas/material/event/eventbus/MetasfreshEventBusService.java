@@ -43,10 +43,13 @@ public final class MetasfreshEventBusService
 
 	private final Topic eventBusTopic;
 
-	public static MetasfreshEventBusService createLocalServiceThatIsReadyToUse()
+	private final MaterialEventConverter materialEventConverter;
+
+	public static MetasfreshEventBusService createLocalServiceThatIsReadyToUse(
+			@NonNull final MaterialEventConverter materialEventConverter)
 	{
 		logger.info("Creating MaterialEventBusService for local-only event dispatching");
-		return new MetasfreshEventBusService(Type.LOCAL);
+		return new MetasfreshEventBusService(Type.LOCAL, materialEventConverter);
 	}
 
 	/**
@@ -54,10 +57,11 @@ public final class MetasfreshEventBusService
 	 *
 	 * @return
 	 */
-	public static MetasfreshEventBusService createDistributedServiceThatNeedsToSubscribe()
+	public static MetasfreshEventBusService createDistributedServiceThatNeedsToSubscribe(
+			@NonNull final MaterialEventConverter materialEventConverter)
 	{
 		logger.info("Creating MaterialEventBusService for distributed event dispatching");
-		return new MetasfreshEventBusService(Type.REMOTE);
+		return new MetasfreshEventBusService(Type.REMOTE, materialEventConverter);
 	}
 
 	/**
@@ -67,12 +71,15 @@ public final class MetasfreshEventBusService
 	 *
 	 * @param eventType
 	 */
-	private MetasfreshEventBusService(@NonNull final Type eventType)
+	private MetasfreshEventBusService(@NonNull final Type eventType,
+			@NonNull final MaterialEventConverter materialEventConverter)
 	{
-		eventBusTopic = Topic.builder()
+		this.eventBusTopic = Topic.builder()
 				.name("de.metas.material")
 				.type(eventType)
 				.build();
+
+		this.materialEventConverter = materialEventConverter;
 	}
 
 	public IEventBus getEventBus()
@@ -85,7 +92,7 @@ public final class MetasfreshEventBusService
 
 	public void postEvent(@NonNull final MaterialEvent event)
 	{
-		final Event realEvent = MaterialEventConverter.fromMaterialEvent(event);
+		final Event realEvent = materialEventConverter.fromMaterialEvent(event);
 		getEventBus().postEvent(realEvent);
 	}
 

@@ -45,11 +45,11 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
-public class PPOrderCreatedEventHandler implements MaterialEventHandler<AbstractPPOrderEvent>
+public class PPOrderCreatedOrAdvisedEventHandler implements MaterialEventHandler<AbstractPPOrderEvent>
 {
 	private final DataUpdateRequestHandler dataUpdateRequestHandler;
 
-	public PPOrderCreatedEventHandler(@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler)
+	public PPOrderCreatedOrAdvisedEventHandler(@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
 	}

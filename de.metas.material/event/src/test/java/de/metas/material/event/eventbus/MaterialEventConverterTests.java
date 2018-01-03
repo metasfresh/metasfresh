@@ -7,6 +7,7 @@ import org.junit.Test;
 import de.metas.event.Event;
 import de.metas.event.jms.ActiveMQJMSEndpoint;
 import de.metas.event.jms.IEventSerializer;
+import de.metas.event.log.EventLogUserService;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventSerializerTests;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
@@ -47,13 +48,17 @@ public class MaterialEventConverterTests
 	public void serialize_and_deserialize_event_with_json_payload()
 	{
 		final TransactionCreatedEvent transactionEvent = MaterialEventSerializerTests.createSampleTransactionEvent();
-		final Event metasfreshEvent = MaterialEventConverter.fromMaterialEvent(transactionEvent);
+		final MaterialEventConverter materialEventConverter = new MaterialEventConverter(new EventLogUserService());
+
+		final Event metasfreshEvent = materialEventConverter
+				.fromMaterialEvent(transactionEvent);
 
 		final IEventSerializer eventSerializer = ActiveMQJMSEndpoint.DEFAULT_EVENT_SERIALIZER;
 		final String eventStr = eventSerializer.toString(metasfreshEvent);
 
 		final Event deserialisedMetasfreshEvent = eventSerializer.fromString(eventStr);
-		final MaterialEvent deserializedTransactionEvent = MaterialEventConverter.toMaterialEvent(deserialisedMetasfreshEvent);
+		final MaterialEvent deserializedTransactionEvent = materialEventConverter
+				.toMaterialEvent(deserialisedMetasfreshEvent);
 
 		assertThat(deserializedTransactionEvent).isInstanceOf(TransactionCreatedEvent.class);
 		assertThat(((TransactionCreatedEvent)deserializedTransactionEvent)

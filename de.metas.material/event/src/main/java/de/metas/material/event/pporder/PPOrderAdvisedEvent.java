@@ -42,9 +42,8 @@ public class PPOrderAdvisedEvent extends AbstractPPOrderEvent
 	public PPOrderAdvisedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("ppOrder") final PPOrder ppOrder,
-			@JsonProperty("groupId") final int groupId,
 			@JsonProperty("supplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
-		super(eventDescriptor, ppOrder, groupId, supplyRequiredDescriptor);
+		super(eventDescriptor, ppOrder, supplyRequiredDescriptor);
 	}
 }

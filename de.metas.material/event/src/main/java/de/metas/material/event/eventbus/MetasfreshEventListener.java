@@ -48,12 +48,14 @@ public class MetasfreshEventListener
 
 	private final MetasfreshEventBusService metasfreshEventBusService;
 
+	private final MaterialEventConverter materialEventConverter;
+
 	private final IEventListener internalListener = new IEventListener()
 	{
 		@Override
 		public void onEvent(@NonNull final IEventBus eventBus, @NonNull final Event event)
 		{
-			final MaterialEvent lightWeightEvent = MaterialEventConverter.toMaterialEvent(event);
+			final MaterialEvent lightWeightEvent = materialEventConverter.toMaterialEvent(event);
 			logger.info("Received MaterialEvent={}", lightWeightEvent);
 
 			//
@@ -85,8 +87,10 @@ public class MetasfreshEventListener
 
 	public MetasfreshEventListener(
 			@NonNull final MaterialEventHandlerRegistry materialEventHandlerRegistry,
-			@NonNull final MetasfreshEventBusService metasfreshEventBusService)
+			@NonNull final MetasfreshEventBusService metasfreshEventBusService,
+			@NonNull final MaterialEventConverter materialEventConverter)
 	{
+		this.materialEventConverter = materialEventConverter;
 		this.materialEventHandlerRegistry = materialEventHandlerRegistry;
 		this.metasfreshEventBusService = metasfreshEventBusService;
 

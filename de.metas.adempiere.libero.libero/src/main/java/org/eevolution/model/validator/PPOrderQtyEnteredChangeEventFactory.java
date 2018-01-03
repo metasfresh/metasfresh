@@ -14,8 +14,9 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent.PPOrderLineChangeDescriptor;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent.PPOrderLineChangeDescriptor.PPOrderLineChangeDescriptorBuilder;
+import de.metas.material.event.pporder.PPOrderQtyChangedEvent.ChangedPPOrderLineDescriptor;
+import de.metas.material.event.pporder.PPOrderQtyChangedEvent.ChangedPPOrderLineDescriptor.ChangedPPOrderLineDescriptorBuilder;
+import de.metas.material.event.pporder.PPOrderQtyChangedEvent.DeletedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderQtyChangedEvent.PPOrderQtyChangedEventBuilder;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import lombok.NonNull;
@@ -53,46 +54,53 @@ public class PPOrderQtyEnteredChangeEventFactory
 	private final PPOrderPojoConverter ppOrderConverter;
 	private final I_PP_Order ppOrderRecord;
 
-	final Map<Integer, PPOrderLineChangeDescriptorBuilder> map = new HashMap<>();
+	private final Map<Integer, ChangedPPOrderLineDescriptorBuilder> productBomLineId2ChangeBuilder = new HashMap<>();
 
 	private PPOrderQtyEnteredChangeEventFactory(@NonNull final I_PP_Order ppOrderRecord)
 	{
-		this.eventBuilder = createAndInitEventBuilder(ppOrderRecord);
 		this.ppOrderConverter = Adempiere.getBean(PPOrderPojoConverter.class);
+
+		this.eventBuilder = createAndInitEventBuilderWithOldValues(ppOrderRecord);
 		this.ppOrderRecord = ppOrderRecord;
 
-		final PPOrder oldPPOrder = ppOrderConverter.asPPOrderPojo(ppOrderRecord);
+		final PPOrder ppOrderPojo = ppOrderConverter.asPPOrderPojo(ppOrderRecord);
+		this.eventBuilder.newQuantity(ppOrderPojo.getQuantity());
+
 		final Map<Boolean, List<PPOrderLine>> linesWithAndWithoutProductBomLineId = //
-				collectLinesWithAndWithoutProductBomLineId(oldPPOrder);
+				collectLinesWithAndWithoutProductBomLineId(ppOrderPojo);
 
 		final List<PPOrderLine> linesWithoutProductBomLine = linesWithAndWithoutProductBomLineId.get(false);
 		linesWithoutProductBomLine
 				.forEach(line -> {
-
-					eventBuilder.deletedPPOrderLineID(line.getPpOrderLineId());
+					eventBuilder.deletedPPOrderLine(DeletedPPOrderLineDescriptor.ofPPOrderLine(line));
 				});
 
 		final List<PPOrderLine> linesWithProductBomLine = linesWithAndWithoutProductBomLineId.get(true);
 		linesWithProductBomLine
 				.forEach(line -> {
 
-					final PPOrderLineChangeDescriptorBuilder builder = PPOrderLineChangeDescriptor.builder()
+					final ChangedPPOrderLineDescriptorBuilder builder = ChangedPPOrderLineDescriptor.builder()
+							.issueOrReceiveDate(line.getIssueOrReceiveDate())
+							.productDescriptor(line.getProductDescriptor())
 							.oldPPOrderLineId(line.getPpOrderLineId())
 							.oldQuantity(line.getQtyRequired());
-					map.put(line.getProductBomLineId(), builder);
+					productBomLineId2ChangeBuilder.put(line.getProductBomLineId(), builder);
 				});
 	}
 
-	private PPOrderQtyChangedEventBuilder createAndInitEventBuilder(@NonNull final I_PP_Order ppOrderRecord)
+	private PPOrderQtyChangedEventBuilder createAndInitEventBuilderWithOldValues(@NonNull final I_PP_Order ppOrderRecord)
 	{
 		final I_PP_Order oldPPOrderRecord = createOld(ppOrderRecord, I_PP_Order.class);
+		final PPOrder oldPPOrderPojo = this.ppOrderConverter.asPPOrderPojo(oldPPOrderRecord);
 
-	final PPOrderQtyChangedEventBuilder eventBuilder = PPOrderQtyChangedEvent
+		final PPOrderQtyChangedEventBuilder eventBuilder = PPOrderQtyChangedEvent
 				.builder()
 				.eventDescriptor(EventDescriptor.createNew(ppOrderRecord))
-				.ppOrderId(ppOrderRecord.getPP_Order_ID())
-				.oldQuantity(oldPPOrderRecord.getQtyEntered())
-				.newQuantity(ppOrderRecord.getQtyEntered());
+				.datePromised(oldPPOrderPojo.getDatePromised())
+				.productDescriptor(oldPPOrderPojo.getProductDescriptor())
+				.ppOrderId(oldPPOrderPojo.getPpOrderId())
+				.oldQuantity(oldPPOrderPojo.getQuantity());
+
 		return eventBuilder;
 	}
 
@@ -111,34 +119,43 @@ public class PPOrderQtyEnteredChangeEventFactory
 		for (final PPOrderLine updatedPPOrderLine : updatedPPOrder.getLines())
 		{
 			final int productBomLineId = updatedPPOrderLine.getProductBomLineId();
-			if (!map.containsKey(productBomLineId))
+			if (!productBomLineId2ChangeBuilder.containsKey(productBomLineId))
 			{
 				eventBuilder.newPPOrderLine(updatedPPOrderLine);
 			}
 			else
 			{
-				map.get(productBomLineId)
+				productBomLineId2ChangeBuilder.get(productBomLineId)
 						.newPPOrderLineId(updatedPPOrderLine.getPpOrderLineId())
 						.newQuantity(updatedPPOrderLine.getQtyRequired());
 			}
 		}
 
-		final Map<Boolean, List<PPOrderLineChangeDescriptor>> collect = collectMapEntriesWithAndWithoutNewPPorderLineId();
+		final Map<Boolean, List<ChangedPPOrderLineDescriptor>> collection = collectMapEntriesWithAndWithoutNewPPorderLineId();
 
-		final List<PPOrderLineChangeDescriptor> updatedPPOrderLines = collect.get(true);
+		final List<ChangedPPOrderLineDescriptor> updatedPPOrderLines = collection.get(true);
 		eventBuilder.ppOrderLineChanges(updatedPPOrderLines);
 
-		final List<PPOrderLineChangeDescriptor> deletedPPOrderLines = collect.get(false);
-		deletedPPOrderLines.forEach(descriptor -> eventBuilder.deletedPPOrderLineID(descriptor.getOldPPOrderLineId()));
+		final List<ChangedPPOrderLineDescriptor> deletedPPOrderLines = collection.get(false);
+		deletedPPOrderLines.forEach(descriptor -> {
+
+			final DeletedPPOrderLineDescriptor deletedDescriptor = DeletedPPOrderLineDescriptor.builder()
+					.issueOrReceiveDate(descriptor.getIssueOrReceiveDate())
+					.ppOrderLineId(descriptor.getOldPPOrderLineId())
+					.productDescriptor(descriptor.getProductDescriptor())
+					.quantity(descriptor.getOldQuantity())
+					.build();
+			eventBuilder.deletedPPOrderLine(deletedDescriptor);
+		});
 
 		final PPOrderQtyChangedEvent event = eventBuilder.build();
 		return event;
 	}
 
-	private Map<Boolean, List<PPOrderLineChangeDescriptor>> collectMapEntriesWithAndWithoutNewPPorderLineId()
+	private Map<Boolean, List<ChangedPPOrderLineDescriptor>> collectMapEntriesWithAndWithoutNewPPorderLineId()
 	{
-		final Map<Boolean, List<PPOrderLineChangeDescriptor>> collect = map.values().stream()
-				.map(PPOrderLineChangeDescriptorBuilder::build)
+		final Map<Boolean, List<ChangedPPOrderLineDescriptor>> collect = productBomLineId2ChangeBuilder.values().stream()
+				.map(ChangedPPOrderLineDescriptorBuilder::build)
 				.collect(Collectors.partitioningBy(descriptor -> descriptor.getNewPPOrderLineId() > 0));
 		return collect;
 	}

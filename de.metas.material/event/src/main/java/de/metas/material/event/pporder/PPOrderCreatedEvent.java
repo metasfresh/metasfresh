@@ -7,6 +7,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 
 /*
@@ -37,6 +38,9 @@ public class PPOrderCreatedEvent extends AbstractPPOrderEvent
 {
 	public static final String TYPE = "PPOrderCreatedEvent";
 
+	@Getter
+	private final int groupId;
+
 	@JsonCreator
 	@Builder
 	public PPOrderCreatedEvent(
@@ -45,6 +49,8 @@ public class PPOrderCreatedEvent extends AbstractPPOrderEvent
 			@JsonProperty("groupId") final int groupId,
 			@JsonProperty("supplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
-		super(eventDescriptor, ppOrder, groupId, supplyRequiredDescriptor);
+		super(eventDescriptor, ppOrder, supplyRequiredDescriptor);
+
+		this.groupId = groupId;
 	}
 }

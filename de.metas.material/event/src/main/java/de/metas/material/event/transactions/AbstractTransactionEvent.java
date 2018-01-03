@@ -51,10 +51,22 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 	private final boolean directMovementWarehouse;
 
+	private final int ppOrderId;
+
+	private final int ppOrderLineId;
+
+	private int ddOrderId;
+
+	private int ddOrderLineId;
+
 	public AbstractTransactionEvent(
 			@NonNull final EventDescriptor eventDescriptor,
 			@NonNull final MaterialDescriptor materialDescriptor,
 			final int shipmentScheduleId,
+			final int ppOrderId,
+			final int ppOrderLineId,
+			final int ddOrderId,
+			final int ddOrderLineId,
 			final int transactionId,
 			final boolean directMovementWarehouse)
 	{
@@ -67,8 +79,15 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 		this.shipmentScheduleId = shipmentScheduleId;
 
+		this.ddOrderLineId = ddOrderLineId;
+		this.ddOrderId = ddOrderId;
+
+		this.ppOrderLineId = ppOrderLineId;
+		this.ppOrderId = ppOrderId;
+
 		this.directMovementWarehouse = directMovementWarehouse;
 	}
 
+	public abstract BigDecimal getQuantity();
 	public abstract BigDecimal getQuantityDelta();
 }

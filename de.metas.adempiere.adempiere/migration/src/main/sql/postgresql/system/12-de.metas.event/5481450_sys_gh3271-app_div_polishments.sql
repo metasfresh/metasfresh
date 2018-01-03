@@ -1044,8 +1044,8 @@ CREATE UNIQUE INDEX ad_eventlog_uc_uuid ON AD_EventLog (Event_UUID) WHERE IsActi
 
 -- 2018-01-02T13:49:48.994
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET Description='The event will be posted with the same UUID, so any event loggin will be done to this event log record.
-The reposted event will carry the additional information which event handlers already processed it successfulle in the past. This allows those handlers to skip it.
-If the the event was posted to a local topic, it will once again be posted to a local topic, but this time local to the machine this process runs on.',Updated=TO_TIMESTAMP('2018-01-02 13:49:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540905
+UPDATE AD_Process SET Description='The event will be posted with the same UUID, so any event logging will be done to this event log record.
+The reposted event will carry the additional information which event handlers already processed it successfully in the past. This allows those handlers to avoid processing it again.
+If the the event was posted to a local topic, it will once again be posted to a local topic, but this time local on the machine this process runs on.',Updated=TO_TIMESTAMP('2018-01-02 13:49:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540905
 ;
 

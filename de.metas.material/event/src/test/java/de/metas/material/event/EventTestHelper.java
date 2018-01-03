@@ -75,7 +75,10 @@ public class EventTestHelper
 
 	public static ProductDescriptor createProductDescriptor()
 	{
-		return ProductDescriptor.forProductAndAttributes(PRODUCT_ID, STORAGE_ATTRIBUTES_KEY, ATTRIBUTE_SET_INSTANCE_ID);
+		return ProductDescriptor.forProductAndAttributes(
+				PRODUCT_ID,
+				STORAGE_ATTRIBUTES_KEY,
+				ATTRIBUTE_SET_INSTANCE_ID);
 	}
 
 	public static ProductDescriptor createProductDescriptorWithOffSet(final int offset)

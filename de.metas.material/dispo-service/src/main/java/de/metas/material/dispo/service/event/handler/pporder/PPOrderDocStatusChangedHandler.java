@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import org.adempiere.util.Check;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -73,7 +74,12 @@ public class PPOrderDocStatusChangedHandler implements MaterialEventHandler<PPOr
 						candidateRepositoryRetrieval,
 						ppOrderChangedDocStatusEvent.getPpOrderId());
 
-		final CandidateStatus newCandidateStatus = EventUtil.getCandidateStatus(ppOrderChangedDocStatusEvent.getNewDocStatus());
+		Check.errorIf(candidatesForPPOrderId.isEmpty(),
+				"unknown PP_Order_ID={} ",
+				ppOrderChangedDocStatusEvent.getPpOrderId());
+
+		final CandidateStatus newCandidateStatus = EventUtil
+				.getCandidateStatus(ppOrderChangedDocStatusEvent.getNewDocStatus());
 
 		final Function<ProductionDetail, BigDecimal> provider = createdQtyProvider(newCandidateStatus);
 
@@ -92,7 +98,8 @@ public class PPOrderDocStatusChangedHandler implements MaterialEventHandler<PPOr
 		updatedCandidatesToPersist.forEach(candidate -> candidateChangeService.onCandidateNewOrChange(candidate));
 	}
 
-	private Function<ProductionDetail, BigDecimal> createdQtyProvider(final CandidateStatus candidateStatus)
+	private Function<ProductionDetail, BigDecimal> createdQtyProvider(
+			@NonNull final CandidateStatus candidateStatus)
 	{
 		final Function<ProductionDetail, BigDecimal> provider;
 

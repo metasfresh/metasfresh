@@ -92,29 +92,6 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Geplante Menge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAdvisedQty (java.math.BigDecimal AdvisedQty);
-
-	/**
-	 * Get Geplante Menge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getAdvisedQty();
-
-    /** Column definition for AdvisedQty */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, Object> COLUMN_AdvisedQty = new org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, Object>(I_MD_Candidate_Prod_Detail.class, "AdvisedQty", null);
-    /** Column name AdvisedQty */
-    public static final String COLUMNNAME_AdvisedQty = "AdvisedQty";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -193,7 +170,8 @@ public interface I_MD_Candidate_Prod_Detail
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Geplant.
+	 * Set Vom System vorgeschlagen.
+	 * Ja bedeutet, dass es zumindest ursprünglich kein entsprechendes Dokument (z.B. Produktionsauftrag) gab, sondern dass das System einen Beleg vorgeschlagen hatte.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -202,7 +180,8 @@ public interface I_MD_Candidate_Prod_Detail
 	public void setIsAdvised (boolean IsAdvised);
 
 	/**
-	 * Get Geplant.
+	 * Get Vom System vorgeschlagen.
+	 * Ja bedeutet, dass es zumindest ursprünglich kein entsprechendes Dokument (z.B. Produktionsauftrag) gab, sondern dass das System einen Beleg vorgeschlagen hatte.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -264,6 +243,29 @@ public interface I_MD_Candidate_Prod_Detail
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, Object> COLUMN_MD_Candidate_Prod_Detail_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, Object>(I_MD_Candidate_Prod_Detail.class, "MD_Candidate_Prod_Detail_ID", null);
     /** Column name MD_Candidate_Prod_Detail_ID */
     public static final String COLUMNNAME_MD_Candidate_Prod_Detail_ID = "MD_Candidate_Prod_Detail_ID";
+
+	/**
+	 * Set Geplante Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPlannedQty (java.math.BigDecimal PlannedQty);
+
+	/**
+	 * Get Geplante Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPlannedQty();
+
+    /** Column definition for PlannedQty */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, Object> COLUMN_PlannedQty = new org.adempiere.model.ModelColumn<I_MD_Candidate_Prod_Detail, Object>(I_MD_Candidate_Prod_Detail.class, "PlannedQty", null);
+    /** Column name PlannedQty */
+    public static final String COLUMNNAME_PlannedQty = "PlannedQty";
 
 	/**
 	 * Set Manufacturing Order BOM Line.

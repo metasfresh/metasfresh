@@ -1,10 +1,12 @@
 package de.metas.material.event.pporder;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -42,6 +44,12 @@ public class PPOrderQtyChangedEvent implements MaterialEvent
 	@NonNull
 	private final EventDescriptor eventDescriptor;
 
+	@NonNull
+	Date datePromised;
+
+	@NonNull
+	ProductDescriptor productDescriptor;
+
 	int ppOrderId;
 
 	BigDecimal oldQuantity;
@@ -49,24 +57,64 @@ public class PPOrderQtyChangedEvent implements MaterialEvent
 	BigDecimal newQuantity;
 
 	@Singular
-	List<PPOrderLineChangeDescriptor> ppOrderLineChanges;
+	List<ChangedPPOrderLineDescriptor> ppOrderLineChanges;
 
 	@Singular
-	List<Integer> deletedPPOrderLineIDs;
+	List<DeletedPPOrderLineDescriptor> deletedPPOrderLines;
 
 	@Singular
 	List<PPOrderLine> newPPOrderLines;
 
 	@Value
 	@Builder
-	public static class PPOrderLineChangeDescriptor
+	public static class ChangedPPOrderLineDescriptor
 	{
 		int oldPPOrderLineId;
 
 		int newPPOrderLineId;
 
+		@NonNull
+		ProductDescriptor productDescriptor;
+
+		@NonNull
+		Date issueOrReceiveDate;
+
+		@NonNull
 		BigDecimal oldQuantity;
 
+		@NonNull
 		BigDecimal newQuantity;
+
+		public BigDecimal getQtyDelta()
+		{
+			return newQuantity.subtract(oldQuantity);
+		}
+	}
+
+	@Value
+	@Builder
+	public static class DeletedPPOrderLineDescriptor
+	{
+		public static DeletedPPOrderLineDescriptor ofPPOrderLine(
+				@NonNull final PPOrderLine ppOrderLine)
+		{
+			return DeletedPPOrderLineDescriptor.builder()
+					.issueOrReceiveDate(ppOrderLine.getIssueOrReceiveDate())
+					.ppOrderLineId(ppOrderLine.getPpOrderLineId())
+					.productDescriptor(ppOrderLine.getProductDescriptor())
+					.quantity(ppOrderLine.getQtyRequired())
+					.build();
+		}
+
+		int ppOrderLineId;
+
+		@NonNull
+		ProductDescriptor productDescriptor;
+
+		@NonNull
+		Date issueOrReceiveDate;
+
+		@NonNull
+		BigDecimal quantity;
 	}
 }

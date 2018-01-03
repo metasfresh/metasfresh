@@ -31,7 +31,8 @@ import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderProductionQtyChangedEvent;
 import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent.PPOrderLineChangeDescriptor;
+import de.metas.material.event.pporder.PPOrderQtyChangedEvent.ChangedPPOrderLineDescriptor;
+import de.metas.material.event.pporder.PPOrderQtyChangedEvent.DeletedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
@@ -141,6 +142,7 @@ public class MaterialEventSerializerTests
 						.line(createPPOrderLine())
 						.line(PPOrderLine.builder()
 								.productDescriptor(createProductDescriptorWithOffSet(20))
+								.issueOrReceiveDate(NOW)
 								.description("desc2")
 								.productBomLineId(380)
 								.qtyRequired(BigDecimal.valueOf(320))
@@ -217,12 +219,26 @@ public class MaterialEventSerializerTests
 	public void ppOrderQtyEnteredChangedEvent()
 	{
 		final PPOrderQtyChangedEvent event = PPOrderQtyChangedEvent.builder()
+				.productDescriptor(createProductDescriptor())
+				.datePromised(NOW)
 				.ppOrderId(10)
-				.deletedPPOrderLineID(20)
-				.deletedPPOrderLineID(30)
+				.deletedPPOrderLine(DeletedPPOrderLineDescriptor.builder()
+						.productDescriptor(createProductDescriptorWithOffSet(1))
+						.issueOrReceiveDate(NOW)
+						.ppOrderLineId(20)
+						.quantity(new BigDecimal("40"))
+						.build())
+				.deletedPPOrderLine(DeletedPPOrderLineDescriptor.builder()
+						.productDescriptor(createProductDescriptorWithOffSet(2))
+						.issueOrReceiveDate(NOW)
+						.ppOrderLineId(30)
+						.quantity(new BigDecimal("50"))
+						.build())
 				.eventDescriptor(createEventDescriptor())
 				.newPPOrderLine(createPPOrderLine())
-				.ppOrderLineChange(PPOrderLineChangeDescriptor.builder()
+				.ppOrderLineChange(ChangedPPOrderLineDescriptor.builder()
+						.productDescriptor(createProductDescriptorWithOffSet(3))
+						.issueOrReceiveDate(NOW)
 						.oldPPOrderLineId(40)
 						.newPPOrderLineId(50)
 						.oldQuantity(new BigDecimal("60"))
@@ -246,6 +262,7 @@ public class MaterialEventSerializerTests
 				.line(createPPOrderLine())
 				.line(PPOrderLine.builder()
 						.productDescriptor(createProductDescriptorWithOffSet(20))
+						.issueOrReceiveDate(NOW)
 						.description("desc2")
 						.productBomLineId(380)
 						.qtyRequired(BigDecimal.valueOf(320))
@@ -258,6 +275,7 @@ public class MaterialEventSerializerTests
 	{
 		return PPOrderLine.builder()
 				.productDescriptor(createProductDescriptorWithOffSet(10))
+				.issueOrReceiveDate(NOW)
 				.description("desc1")
 				.productBomLineId(280)
 				.qtyRequired(BigDecimal.valueOf(220))

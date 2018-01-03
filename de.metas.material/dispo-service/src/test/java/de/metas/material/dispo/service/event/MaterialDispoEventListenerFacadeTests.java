@@ -23,6 +23,8 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.event.log.EventLogUserService;
+import de.metas.event.log.EventLogUserService.InvokeHandlerandLogRequest;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
@@ -35,12 +37,12 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
-import de.metas.material.dispo.service.event.handler.DDOrderAdvisedOrCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandlerTests;
-import de.metas.material.dispo.service.event.handler.TransactionCreatedHandler;
-import de.metas.material.dispo.service.event.handler.pporder.PPOrderAdvisedOrCreatedHandler;
+import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
+import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedOrCreatedHandler;
+import de.metas.material.dispo.service.event.handler.pporder.PPOrderAdvisedHandler;
 import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.MaterialEventHandlerRegistry;
@@ -51,6 +53,8 @@ import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
+import mockit.Delegate;
+import mockit.Expectations;
 import mockit.Mocked;
 
 /*
@@ -96,6 +100,9 @@ public class MaterialDispoEventListenerFacadeTests
 	@Mocked
 	private FireMaterialEventService fireMaterialEventService;
 
+	@Mocked
+	private EventLogUserService eventLogUserService;
+
 	private StockRepository stockRepository;
 
 	@Before
@@ -138,21 +145,49 @@ public class MaterialDispoEventListenerFacadeTests
 				supplyProposalEvaluator,
 				new RequestMaterialOrderService(candidateRepositoryRetrieval, fireMaterialEventService));
 
-		final PPOrderAdvisedOrCreatedHandler productionAdvisedEventHandler = new PPOrderAdvisedOrCreatedHandler(candidateChangeHandler, candidateService);
+		final PPOrderAdvisedHandler ppOrderAdvisedHandler = new PPOrderAdvisedHandler(
+				candidateChangeHandler,
+				candidateRepositoryRetrieval,
+				candidateService);
 
 		final ForecastCreatedHandler forecastCreatedEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
 
-		final TransactionCreatedHandler transactionEventHandler = new TransactionCreatedHandler(candidateChangeHandler, candidateRepositoryRetrieval);
+		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(candidateChangeHandler, candidateRepositoryRetrieval);
 
 		final ShipmentScheduleCreatedHandler shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(candidateChangeHandler);
 
+		@SuppressWarnings("rawtypes")
 		final Optional<Collection<MaterialEventHandler>> handlers = Optional.of(ImmutableList.of(
 				distributionAdvisedEventHandler,
-				productionAdvisedEventHandler,
+				ppOrderAdvisedHandler,
 				forecastCreatedEventHandler,
 				transactionEventHandler,
 				shipmentScheduleEventHandler));
-		materialEventListener = new MaterialEventHandlerRegistry(handlers);
+
+		setupEventLogUserServiceOnlyInvokesHandler();
+
+		materialEventListener = new MaterialEventHandlerRegistry(handlers, eventLogUserService);
+	}
+
+	/**
+	 * For these tests, {@link EventLogUserService} shall not do any actual logging.
+	 */
+	@SuppressWarnings("rawtypes")
+	private void setupEventLogUserServiceOnlyInvokesHandler()
+	{
+		// @formatter:off
+		new Expectations()
+		{{
+			eventLogUserService.invokeHandlerAndLog((InvokeHandlerandLogRequest)any);
+			result = new Delegate()
+			{
+				@SuppressWarnings("unused")
+				void delegateMethod(final InvokeHandlerandLogRequest request)
+				{
+					request.getInvokaction().run();
+				}
+			};
+		}};	// @formatter:on
 	}
 
 	/**

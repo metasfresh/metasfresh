@@ -16,8 +16,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
+import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.ModelValidator;
+import org.eevolution.model.I_PP_Cost_Collector;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -81,11 +83,6 @@ public class M_Transaction
 			@NonNull final I_M_Transaction transaction,
 			@NonNull final ModelChangeType type)
 	{
-		if (transaction.getPP_Cost_Collector_ID() > 0 || transaction.getM_MovementLine_ID() > 0)
-		{
-			return; // they are handled in dedicated interceptors
-		}
-
 		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
 
 		final Collection<AbstractTransactionEvent> events = createTransactionEvents(transaction, type);
@@ -100,25 +97,37 @@ public class M_Transaction
 			@NonNull final I_M_Transaction transaction,
 			@NonNull final ModelChangeType type)
 	{
-
-		final Map<Integer, BigDecimal> shipmentScheduleId2qty = retrieveShipmentScheduleId(transaction);
-
+		final Builder<AbstractTransactionEvent> result = ImmutableList.builder();
 		final boolean deleted = type.isDelete() || InterceptorUtil.isJustDeactivated(transaction);
 
-		final Builder<AbstractTransactionEvent> result = ImmutableList.builder();
-		for (final Entry<Integer, BigDecimal> entry : shipmentScheduleId2qty.entrySet())
+		if (transaction.getM_InOutLine_ID() > 0)
 		{
-			final AbstractTransactionEvent event = createEventForShipmentScheduleToQtyMapping(transaction, entry, deleted);
+			final Map<Integer, BigDecimal> shipmentScheduleId2qty = retrieveShipmentScheduleId(transaction);
+
+			for (final Entry<Integer, BigDecimal> entry : shipmentScheduleId2qty.entrySet())
+			{
+				final AbstractTransactionEvent event = createEventForShipmentScheduleToQtyMapping(transaction, entry, deleted);
+				result.add(event);
+			}
+		}
+		else if (transaction.getPP_Cost_Collector_ID() > 0)
+		{
+			final AbstractTransactionEvent event = createEventForCostCollector(transaction, deleted);
 			result.add(event);
 		}
+		else if (transaction.getM_MovementLine_ID() > 0)
+		{
+			final AbstractTransactionEvent event = createEventForMovementLine(transaction, deleted);
+			result.add(event);
+		}
+
 		return result.build();
 	}
 
 	private static AbstractTransactionEvent createEventForShipmentScheduleToQtyMapping(
 			@NonNull final I_M_Transaction transaction,
 			@NonNull final Entry<Integer, BigDecimal> entry,
-			final boolean deleted
-			)
+			final boolean deleted)
 	{
 		final BigDecimal quantity = entry.getValue();
 		final EventDescriptor eventDescriptor = EventDescriptor.createNew(transaction);
@@ -220,6 +229,89 @@ public class M_Transaction
 						.setParameter("movementQty", movementQty)
 						.setParameter("shipmentScheduleQtyPicked", shipmentScheduleQtyPicked)
 						.setParameter("transaction", transaction);
+	}
+
+	private static AbstractTransactionEvent createEventForCostCollector(
+			@NonNull final I_M_Transaction transaction,
+			final boolean deleted)
+	{
+		final EventDescriptor eventDescriptor = EventDescriptor.createNew(transaction);
+		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(
+				transaction,
+				transaction.getMovementQty());
+
+		final boolean directMovementWarehouse = isDirectMovementWarehouse(extractTransactionWarehouseId(transaction));
+
+		final AbstractTransactionEvent event;
+		final I_PP_Cost_Collector costCollector = transaction.getPP_Cost_Collector();
+		if (deleted)
+		{
+			event = TransactionDeletedEvent.builder()
+					.eventDescriptor(eventDescriptor)
+					.transactionId(transaction.getM_Transaction_ID())
+					.materialDescriptor(materialDescriptor)
+					.shipmentScheduleId(0)
+					.directMovementWarehouse(directMovementWarehouse)
+					.ppOrderId(costCollector.getPP_Order_ID())
+					.ppOrderLineId(costCollector.getPP_Order_BOMLine_ID())
+					.build();
+		}
+		else
+		{
+			event = TransactionCreatedEvent.builder()
+					.eventDescriptor(eventDescriptor)
+					.transactionId(transaction.getM_Transaction_ID())
+					.materialDescriptor(materialDescriptor)
+					.shipmentScheduleId(0)
+					.directMovementWarehouse(directMovementWarehouse)
+					.ppOrderId(costCollector.getPP_Order_ID())
+					.ppOrderLineId(costCollector.getPP_Order_BOMLine_ID())
+					.build();
+		}
+		return event;
+	}
+
+	private static AbstractTransactionEvent createEventForMovementLine(I_M_Transaction transaction, boolean deleted)
+	{
+		final boolean directMovementWarehouse = isDirectMovementWarehouse(extractTransactionWarehouseId(transaction));
+
+		final EventDescriptor eventDescriptor = EventDescriptor.createNew(transaction);
+		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(
+				transaction,
+				transaction.getMovementQty());
+
+		final AbstractTransactionEvent event;
+		final I_M_MovementLine movementLine = transaction.getM_MovementLine();
+
+		final int ddOrderId = movementLine.getDD_OrderLine_ID() > 0
+				? movementLine.getDD_OrderLine().getDD_Order_ID()
+				: 0;
+
+		if (deleted)
+		{
+			event = TransactionDeletedEvent.builder()
+					.eventDescriptor(eventDescriptor)
+					.transactionId(transaction.getM_Transaction_ID())
+					.materialDescriptor(materialDescriptor)
+					.directMovementWarehouse(directMovementWarehouse)
+					.ddOrderId(ddOrderId)
+					.ddOrderLineId(movementLine.getDD_OrderLine_ID())
+					.build();
+		}
+		else
+		{
+			event = TransactionCreatedEvent.builder()
+					.eventDescriptor(eventDescriptor)
+					.transactionId(transaction.getM_Transaction_ID())
+					.materialDescriptor(materialDescriptor)
+					.shipmentScheduleId(0)
+					.directMovementWarehouse(directMovementWarehouse)
+					.ddOrderId(ddOrderId)
+					.ddOrderLineId(movementLine.getDD_OrderLine_ID())
+					.build();
+		}
+
+		return event;
 	}
 
 	private static MaterialDescriptor createMaterialDescriptor(

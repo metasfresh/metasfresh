@@ -255,6 +255,7 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(result1.getGroupId()).isEqualTo(result1.getId());
 
 		final Candidate candidateWithGroupId = candidateWithOutGroupId
+				.withId(0)
 				.withDate(TimeUtil.addMinutes(AFTER_NOW, 2)) // pick a different time from the other candidates
 				.withGroupId(result1.getGroupId());
 

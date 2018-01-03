@@ -21,9 +21,9 @@ import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
-import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -51,13 +51,15 @@ public class CandidateServiceTests
 {
 	private RequestMaterialOrderService requestMaterialOrderService;
 
+	@Mocked
+	private FireMaterialEventService fireMaterialEventService;
+
 	@Before
 	public void init()
 	{
 		requestMaterialOrderService = new RequestMaterialOrderService(
 				new CandidateRepositoryRetrieval(),
-				new FireMaterialEventService(
-						MetasfreshEventBusService.createLocalServiceThatIsReadyToUse()));
+				fireMaterialEventService);
 	}
 
 	@Test
@@ -97,7 +99,10 @@ public class CandidateServiceTests
 						.productBomLineId(600)
 						.build());
 
-		final PPOrderRequestedEvent ppOrderRequestedEvent = requestMaterialOrderService.createPPOrderRequestedEvent(ImmutableList.of(candidate, candidate2, candidate3));
+		final PPOrderRequestedEvent ppOrderRequestedEvent = requestMaterialOrderService
+				.createPPOrderRequestedEvent(
+						ImmutableList.of(candidate, candidate2, candidate3));
+
 		assertThat(ppOrderRequestedEvent).isNotNull();
 		assertThat(ppOrderRequestedEvent.getEventDescriptor()).isNotNull();
 

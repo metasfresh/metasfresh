@@ -14,9 +14,9 @@ import org.junit.Test;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.Type;
-import de.metas.event.log.EventLogEntry;
 import de.metas.event.log.EventLogService;
-import de.metas.event.log.EventLogUserTools;
+import de.metas.event.log.EventLogUserService;
+import de.metas.event.log.impl.EventLogEntry;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import mockit.Expectations;
@@ -44,7 +44,7 @@ import mockit.Mocked;
  * #L%
  */
 
-public class EventStoreServiceTest
+public class EventLogServiceTest
 {
 	private static final Type MOCKED_EVENT_BUS_TYPE = Type.REMOTE;
 
@@ -59,7 +59,7 @@ public class EventStoreServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		eventLogService = new EventLogService();
+		eventLogService = new EventLogService(new EventLogUserService());
 
 		// @formatter:off
 		new Expectations()
@@ -143,8 +143,8 @@ public class EventStoreServiceTest
 		final List<I_AD_EventLog> eventLogRecords = pojoLookupMap.getRecords(I_AD_EventLog.class);
 		assertThat(eventLogRecords).hasSize(1);
 
-		final Event loadedEvent = eventLogService.loadEvent(eventLogRecords.get(0));
-		final List<Object> processedbyHandlerInfo = loadedEvent.getProperty(EventLogUserTools.PROPERTY_PROCESSED_BY_HANDLER_CLASS_NAMES);
+		final Event loadedEvent = eventLogService.loadEventForReposting(eventLogRecords.get(0));
+		final List<Object> processedbyHandlerInfo = loadedEvent.getProperty(EventLogUserService.PROPERTY_PROCESSED_BY_HANDLER_CLASS_NAMES);
 		assertThat(processedbyHandlerInfo).isNotNull();
 		assertThat(processedbyHandlerInfo).isInstanceOf(List.class);
 		assertThat((List)processedbyHandlerInfo).containsOnly(Integer.class.getName(), String.class.getName());

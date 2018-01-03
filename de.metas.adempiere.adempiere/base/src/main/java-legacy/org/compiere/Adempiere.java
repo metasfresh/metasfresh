@@ -184,8 +184,15 @@ public class Adempiere
 	public static final <T> T getBean(final Class<T> requiredType)
 	{
 		final ApplicationContext springApplicationContext = getSpringApplicationContext();
-		throwExceptionIfNull(springApplicationContext);
-
+		try
+		{
+			throwExceptionIfNull(springApplicationContext);
+		}
+		catch (final AdempiereException e)
+		{
+			throw e.appendParametersToMessage()
+					.setParameter("requiredType", requiredType);
+		}
 		return springApplicationContext.getBean(requiredType);
 	}
 
@@ -211,7 +218,7 @@ public class Adempiere
 		{
 			message = "SpringApplicationContext not configured yet";
 		}
-		throw new IllegalStateException(message);
+		throw new AdempiereException(message);
 	}
 
 	//

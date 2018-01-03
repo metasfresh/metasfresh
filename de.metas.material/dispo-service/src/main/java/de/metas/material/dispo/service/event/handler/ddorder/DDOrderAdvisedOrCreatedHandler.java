@@ -1,4 +1,4 @@
-package de.metas.material.dispo.service.event.handler;
+package de.metas.material.dispo.service.event.handler.ddorder;
 
 import java.sql.Timestamp;
 import java.util.Collection;

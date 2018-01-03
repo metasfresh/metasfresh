@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.event.log.EventLogUserTools;
+import de.metas.event.log.EventLogUserService;
 import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
@@ -70,14 +70,18 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 
 	private final FireMaterialEventService fireMaterialEventService;
 
+	private final EventLogUserService eventLogUserService;
+
 	public SupplyRequiredHandler(
 			@NonNull final DDOrderAdvisedOrCreatedEventCreator dDOrderAdvisedOrCreatedEventCreator,
 			@NonNull final PPOrderAdvisedEventCreator ppOrderAdvisedEventCreator,
-			@NonNull final FireMaterialEventService fireMaterialEventService)
+			@NonNull final FireMaterialEventService fireMaterialEventService,
+			@NonNull final EventLogUserService eventLogUserService			)
 	{
 		this.dDOrderAdvisedOrCreatedEventCreator = dDOrderAdvisedOrCreatedEventCreator;
 		this.ppOrderAdvisedEventCreator = ppOrderAdvisedEventCreator;
 		this.fireMaterialEventService = fireMaterialEventService;
+		this.eventLogUserService = eventLogUserService;
 	}
 
 	@Override
@@ -109,7 +113,8 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		{
 			final List<String> singleMessages = plainStringLoggable.getSingleMessages();
 			singleMessages.forEach(message -> {
-				EventLogUserTools.newEventLogRequest(this.getClass())
+
+				eventLogUserService.newEventLogRequest(this.getClass())
 						.message(message)
 						.storeEventLog();
 			});

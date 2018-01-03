@@ -45,4 +45,12 @@ public interface MaterialEventHandler<T extends MaterialEvent>
 	Collection<Class<? extends T>> getHandeledEventType();
 
 	void handleEvent(T event);
+
+	/**
+	 * Implementors may validate the event before handling it. This allows for "dump" events that can be successfully posted even if the posting code is buggy etc.<br>
+	 * Errors can be logged to the event log.
+	 */
+	default void validateEvent(T event)
+	{
+	}
 }

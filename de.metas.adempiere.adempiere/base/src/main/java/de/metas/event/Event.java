@@ -73,6 +73,12 @@ public final class Event
 	private static final String PROPERTY_Record = "record";
 	public static final String PROPERTY_SuggestedWindowId = "suggestedWindowId";
 
+	// put this first, because this is imho the most interesting part of the event's json representation, at least when shown in the event log
+	@JsonProperty("properties")
+	@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final ImmutableMap<String, Object> properties;
+
 	@JsonProperty("uuid")
 	@NonNull
 	private final UUID uuid;
@@ -101,12 +107,6 @@ public final class Event
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final ImmutableSet<Integer> recipientUserIds;
 
-	@JsonProperty("properties")
-	@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final ImmutableMap<String, Object> properties;
-
-	//
 	@JsonIgnore
 	@Getter(AccessLevel.NONE)
 	private final transient Set<String> receivedByEventBusIds = Sets.newConcurrentHashSet();

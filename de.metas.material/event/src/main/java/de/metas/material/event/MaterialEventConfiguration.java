@@ -8,7 +8,9 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
+import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -40,10 +42,11 @@ public class MaterialEventConfiguration
 
 	@Bean(name = BEAN_NAME)
 	@Profile(Profiles.PROFILE_Test)
-	public MetasfreshEventBusService createLocalMaterialEventService()
+	public MetasfreshEventBusService createLocalMaterialEventService(
+			@NonNull final MaterialEventConverter materialEventConverter)
 	{
 		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService
-				.createLocalServiceThatIsReadyToUse();
+				.createLocalServiceThatIsReadyToUse(materialEventConverter);
 
 		return materialEventService;
 	}
@@ -51,10 +54,11 @@ public class MaterialEventConfiguration
 	@Bean(name = BEAN_NAME)
 	@DependsOn(Adempiere.BEAN_NAME)
 	@Profile(Profiles.PROFILE_NotTest)
-	public MetasfreshEventBusService createDistributedMaterialEventService()
+	public MetasfreshEventBusService createDistributedMaterialEventService(
+			@NonNull final MaterialEventConverter materialEventConverter)
 	{
 		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService
-				.createDistributedServiceThatNeedsToSubscribe();
+				.createDistributedServiceThatNeedsToSubscribe(materialEventConverter);
 
 		return materialEventService;
 	}

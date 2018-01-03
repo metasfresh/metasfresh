@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 import org.adempiere.util.Check;
+import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -40,8 +41,8 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
 import de.metas.event.Type;
 import de.metas.event.log.EventLogSystemBusTools;
-import de.metas.event.log.EventLogSystemBusTools.EventLogEntryCollector;
-import de.metas.event.log.EventLogUserTools;
+import de.metas.event.log.EventLogUserService;
+import de.metas.event.log.impl.EventLogEntryCollector;
 import lombok.NonNull;
 
 final class EventBus implements IEventBus
@@ -259,9 +260,11 @@ final class EventBus implements IEventBus
 		{
 			eventListener.onEvent(this, event);
 		}
-		catch (RuntimeException e)
+		catch (final RuntimeException e)
 		{
-			EventLogUserTools.newEventErrorLogRequest(eventListener.getClass(), e)
+			final EventLogUserService eventLogUserService = Adempiere.getBean(EventLogUserService.class);
+			eventLogUserService
+					.newEventErrorLogRequest(eventListener.getClass(), e)
 					.storeEventLog();
 		}
 		finally
