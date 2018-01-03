@@ -3396,3 +3396,13 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-03 14:12:10'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-03 14:12:27','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Accounting Schema',Description='',Help='' WHERE AD_Field_ID=556601 AND AD_Language='en_US'
 ;
 
+-- 2018-01-03T14:17:55.309
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-03 14:17:55','YYYY-MM-DD HH24:MI:SS'),Name='Organisation',Description='Organiaational entity within client',Help='An organisation is a unit of your client or legal entity - examples are store, department.' WHERE AD_Field_ID=1534 AND AD_Language='en_US'
+;
+
+-- 2018-01-03T14:18:49.669
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-03 14:18:49','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='VAT Codes' WHERE AD_Tab_ID=540720 AND AD_Language='en_US'
+;
+
