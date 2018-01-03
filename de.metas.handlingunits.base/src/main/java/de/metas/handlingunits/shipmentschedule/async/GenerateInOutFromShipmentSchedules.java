@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -44,6 +43,8 @@ import org.adempiere.util.api.IParams;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
 import de.metas.async.api.IQueueDAO;
@@ -351,7 +352,18 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final List<I_M_ShipmentSchedule_QtyPicked> unshippedHUs = shipmentScheduleAllocDAO.retrievePickedNotDeliveredRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class)
 				.stream()
 				.filter(r -> isPickedOrShippedOrNoHU(r))
-				.collect(Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
+
+		// if we have an "undone" picking, i.e. positive and negative values sum up to zero, then return an empty list
+		// this supports the case that something went wrong with picking, and the user needs to get out the shipment asap
+		final BigDecimal qtySumOfUnshippedHUs = unshippedHUs.stream()
+				.map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		if (qtySumOfUnshippedHUs.signum() <= 0)
+		{
+			return ImmutableList.of();
+		}
 
 		return unshippedHUs;
 	}
