@@ -27,7 +27,7 @@ import java.math.BigDecimal;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.MPackage;
+import org.compiere.model.I_M_Package;
 
 import de.metas.inout.model.I_M_InOut;
 
@@ -40,28 +40,28 @@ public interface IDPDRoutingService extends ISingletonService
 {
 	RoutingResult retrieveData(Properties ctx, RoutingQuery query, String trxName);
 
-	void createPackageInfo(MPackage pack, RoutingResult routingResult, RoutingQuery routingQuery);
+	void createPackageInfo(I_M_Package pack, RoutingResult routingResult, RoutingQuery routingQuery);
 
-	void createPackageInfo(Properties ctx, MPackage pack, I_M_InOut inOut, String serviceCode, String trxName);
+	void createPackageInfo(Properties ctx, I_M_Package pack, I_M_InOut inOut, String serviceCode, String trxName);
 
 	void createLabel(
 			Properties ctx,
 			I_M_InOut inOut,
 			String serviceCode,
-			MPackage pack,
+			I_M_Package pack,
 			String trxName);
 
 	boolean printLabel(
 			Properties ctx,
 			I_M_InOut inOut,
-			MPackage pack,
+			I_M_Package pack,
 			BigDecimal M_Shipper_ID,
 			String trxName);
 
 	void discardLabel(
 			Properties ctx,
 			I_M_InOut inOut,
-			MPackage pack,
+			I_M_Package pack,
 			BigDecimal M_Shipper_ID,
 			String trxName);
 }

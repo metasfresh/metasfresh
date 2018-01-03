@@ -13,15 +13,14 @@ package de.metas.payment.sepa.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.File;
 
@@ -31,13 +30,17 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.sepa.api.IPaymentBL;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.interfaces.I_C_PaySelection;
 import de.metas.payment.sepa.model.I_SEPA_Export;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessPreconditionsResolution;
 
 /**
  * Process that creates SEPA xmls in 3 steps:
@@ -47,7 +50,9 @@ import de.metas.process.JavaProcess;
  * @author ad
  *
  */
-public class SEPACreditFromPaySelectionXmlExport extends JavaProcess
+public class C_PaySelection_SEPA_XmlExport
+		extends JavaProcess
+		implements IProcessPrecondition
 {
 
 	private static final String MSG_NO_SELECTION = "de.metas.payment.sepa.noPaySelection";
@@ -121,7 +126,29 @@ public class SEPACreditFromPaySelectionXmlExport extends JavaProcess
 		paySelection.setLastExportBy_ID(getAD_User_ID());
 		InterfaceWrapperHelper.save(paySelection);
 
-		return "OK";
+		return MSG_OK;
 	}
 
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	{
+		if (context == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Process " + SEPA_Export_GenerateXML.class + "only works with context != null");
+		}
+
+		final String tableName = context.getTableName();
+		if (!I_C_PaySelection.Table_Name.equals(tableName))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Process " + SEPA_Export_GenerateXML.class + " only works for C_PaySelection");
+		}
+
+		final I_C_PaySelection paySelectionHeader = context.getSelectedModel(I_C_PaySelection.class);
+		if (!Services.get(IDocumentBL.class).isDocumentCompletedOrClosed(paySelectionHeader))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason(
+					"Process " + SEPA_Export_GenerateXML.class + " only works for completed or closed C_PaySelections; C_PaySelection_ID=" + paySelectionHeader.getC_PaySelection_ID());
+		}
+		return ProcessPreconditionsResolution.accept();
+	}
 }
