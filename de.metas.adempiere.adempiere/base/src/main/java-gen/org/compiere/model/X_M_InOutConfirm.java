@@ -1,38 +1,21 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for M_InOutConfirm
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_M_InOutConfirm extends org.compiere.model.PO implements I_M_InOutConfirm, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 2042844117L;
 
     /** Standard Constructor */
     public X_M_InOutConfirm (Properties ctx, int M_InOutConfirm_ID, String trxName)
@@ -41,17 +24,14 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
       /** if (M_InOutConfirm_ID == 0)
         {
 			setConfirmType (null);
-			setDocAction (null);
-// CO
-			setDocStatus (null);
-// DR
+			setDocAction (null); // CO
+			setDocStatus (null); // DR
 			setDocumentNo (null);
 			setIsApproved (false);
 			setIsCancelled (false);
-			setIsInDispute (false);
-// N
-			setM_InOutConfirm_ID (0);
+			setIsInDispute (false); // N
 			setM_InOut_ID (0);
+			setM_InOutConfirm_ID (0);
 			setProcessed (false);
         } */
     }
@@ -62,57 +42,54 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 1 - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_M_InOutConfirm[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** Set Approval Amount.
+	/** Set Freigabe-Betrag.
 		@param ApprovalAmt 
 		Document Approval Amount
 	  */
-	public void setApprovalAmt (BigDecimal ApprovalAmt)
+	@Override
+	public void setApprovalAmt (java.math.BigDecimal ApprovalAmt)
 	{
 		set_Value (COLUMNNAME_ApprovalAmt, ApprovalAmt);
 	}
 
-	/** Get Approval Amount.
+	/** Get Freigabe-Betrag.
 		@return Document Approval Amount
 	  */
-	public BigDecimal getApprovalAmt () 
+	@Override
+	public java.math.BigDecimal getApprovalAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ApprovalAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	public I_C_Invoice getC_Invoice() throws RuntimeException
-    {
-		return (I_C_Invoice)MTable.get(getCtx(), I_C_Invoice.Table_Name)
-			.getPO(getC_Invoice_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
+	}
 
-	/** Set Invoice.
+	@Override
+	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
+	}
+
+	/** Set Rechnung.
 		@param C_Invoice_ID 
 		Invoice Identifier
 	  */
+	@Override
 	public void setC_Invoice_ID (int C_Invoice_ID)
 	{
 		if (C_Invoice_ID < 1) 
@@ -121,9 +98,10 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
 	}
 
-	/** Get Invoice.
+	/** Get Rechnung.
 		@return Invoice Identifier
 	  */
+	@Override
 	public int getC_Invoice_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
@@ -132,85 +110,80 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 		return ii.intValue();
 	}
 
-	/** Set Confirmation No.
+	/** Set Bestätigungs-Nr..
 		@param ConfirmationNo 
 		Confirmation Number
 	  */
-	public void setConfirmationNo (String ConfirmationNo)
+	@Override
+	public void setConfirmationNo (java.lang.String ConfirmationNo)
 	{
 		set_Value (COLUMNNAME_ConfirmationNo, ConfirmationNo);
 	}
 
-	/** Get Confirmation No.
+	/** Get Bestätigungs-Nr..
 		@return Confirmation Number
 	  */
-	public String getConfirmationNo () 
+	@Override
+	public java.lang.String getConfirmationNo () 
 	{
-		return (String)get_Value(COLUMNNAME_ConfirmationNo);
+		return (java.lang.String)get_Value(COLUMNNAME_ConfirmationNo);
 	}
 
-	/** ConfirmType AD_Reference_ID=320 */
+	/** 
+	 * ConfirmType AD_Reference_ID=320
+	 * Reference name: M_InOutConfirm Type
+	 */
 	public static final int CONFIRMTYPE_AD_Reference_ID=320;
-	/** Vendor Confirmation = XV */
+	/** VendorConfirmation = XV */
 	public static final String CONFIRMTYPE_VendorConfirmation = "XV";
-	/** Customer Confirmation = XC */
+	/** CustomerConfirmation = XC */
 	public static final String CONFIRMTYPE_CustomerConfirmation = "XC";
-	/** Drop Ship Confirm = DS */
+	/** DropShipConfirm = DS */
 	public static final String CONFIRMTYPE_DropShipConfirm = "DS";
-	/** Ship/Receipt Confirm = SC */
+	/** ShipReceiptConfirm = SC */
 	public static final String CONFIRMTYPE_ShipReceiptConfirm = "SC";
-	/** Pick/QA Confirm = PC */
+	/** PickQAConfirm = PC */
 	public static final String CONFIRMTYPE_PickQAConfirm = "PC";
-	/** Set Confirmation Type.
+	/** Set Bestätigungs-Art.
 		@param ConfirmType 
 		Type of confirmation
 	  */
-	public void setConfirmType (String ConfirmType)
+	@Override
+	public void setConfirmType (java.lang.String ConfirmType)
 	{
 
 		set_Value (COLUMNNAME_ConfirmType, ConfirmType);
 	}
 
-	/** Get Confirmation Type.
+	/** Get Bestätigungs-Art.
 		@return Type of confirmation
 	  */
-	public String getConfirmType () 
+	@Override
+	public java.lang.String getConfirmType () 
 	{
-		return (String)get_Value(COLUMNNAME_ConfirmType);
+		return (java.lang.String)get_Value(COLUMNNAME_ConfirmType);
 	}
 
-	/** Set Create Package.
-		@param CreatePackage Create Package	  */
-	public void setCreatePackage (String CreatePackage)
-	{
-		set_Value (COLUMNNAME_CreatePackage, CreatePackage);
-	}
-
-	/** Get Create Package.
-		@return Create Package	  */
-	public String getCreatePackage () 
-	{
-		return (String)get_Value(COLUMNNAME_CreatePackage);
-	}
-
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** DocAction AD_Reference_ID=135 */
+	/** 
+	 * DocAction AD_Reference_ID=135
+	 * Reference name: _Document Action
+	 */
 	public static final int DOCACTION_AD_Reference_ID=135;
 	/** Complete = CO */
 	public static final String DOCACTION_Complete = "CO";
@@ -224,41 +197,48 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 	public static final String DOCACTION_Void = "VO";
 	/** Close = CL */
 	public static final String DOCACTION_Close = "CL";
-	/** Reverse - Correct = RC */
+	/** Reverse_Correct = RC */
 	public static final String DOCACTION_Reverse_Correct = "RC";
-	/** Reverse - Accrual = RA */
+	/** Reverse_Accrual = RA */
 	public static final String DOCACTION_Reverse_Accrual = "RA";
 	/** Invalidate = IN */
 	public static final String DOCACTION_Invalidate = "IN";
-	/** Re-activate = RE */
+	/** Re_Activate = RE */
 	public static final String DOCACTION_Re_Activate = "RE";
-	/** <None> = -- */
+	/** None = -- */
 	public static final String DOCACTION_None = "--";
 	/** Prepare = PR */
 	public static final String DOCACTION_Prepare = "PR";
 	/** Unlock = XL */
 	public static final String DOCACTION_Unlock = "XL";
-	/** Wait Complete = WC */
+	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
-	/** Set Document Action.
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
+	/** Set Belegverarbeitung.
 		@param DocAction 
 		The targeted status of the document
 	  */
-	public void setDocAction (String DocAction)
+	@Override
+	public void setDocAction (java.lang.String DocAction)
 	{
 
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
-	/** Get Document Action.
+	/** Get Belegverarbeitung.
 		@return The targeted status of the document
 	  */
-	public String getDocAction () 
+	@Override
+	public java.lang.String getDocAction () 
 	{
-		return (String)get_Value(COLUMNNAME_DocAction);
+		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
 
-	/** DocStatus AD_Reference_ID=131 */
+	/** 
+	 * DocStatus AD_Reference_ID=131
+	 * Reference name: _Document Status
+	 */
 	public static final int DOCSTATUS_AD_Reference_ID=131;
 	/** Drafted = DR */
 	public static final String DOCSTATUS_Drafted = "DR";
@@ -266,7 +246,7 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 	public static final String DOCSTATUS_Completed = "CO";
 	/** Approved = AP */
 	public static final String DOCSTATUS_Approved = "AP";
-	/** Not Approved = NA */
+	/** NotApproved = NA */
 	public static final String DOCSTATUS_NotApproved = "NA";
 	/** Voided = VO */
 	public static final String DOCSTATUS_Voided = "VO";
@@ -278,67 +258,65 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 	public static final String DOCSTATUS_Closed = "CL";
 	/** Unknown = ?? */
 	public static final String DOCSTATUS_Unknown = "??";
-	/** In Progress = IP */
+	/** InProgress = IP */
 	public static final String DOCSTATUS_InProgress = "IP";
-	/** Waiting Payment = WP */
+	/** WaitingPayment = WP */
 	public static final String DOCSTATUS_WaitingPayment = "WP";
-	/** Waiting Confirmation = WC */
+	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Document Status.
+	/** Set Belegstatus.
 		@param DocStatus 
 		The current status of the document
 	  */
-	public void setDocStatus (String DocStatus)
+	@Override
+	public void setDocStatus (java.lang.String DocStatus)
 	{
 
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
-	/** Get Document Status.
+	/** Get Belegstatus.
 		@return The current status of the document
 	  */
-	public String getDocStatus () 
+	@Override
+	public java.lang.String getDocStatus () 
 	{
-		return (String)get_Value(COLUMNNAME_DocStatus);
+		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Document No.
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
-	public void setDocumentNo (String DocumentNo)
+	@Override
+	public void setDocumentNo (java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Document No.
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
-	public String getDocumentNo () 
+	@Override
+	public java.lang.String getDocumentNo () 
 	{
-		return (String)get_Value(COLUMNNAME_DocumentNo);
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getDocumentNo());
-    }
-
-	/** Set Approved.
+	/** Set Freigegeben.
 		@param IsApproved 
 		Indicates if this document requires approval
 	  */
+	@Override
 	public void setIsApproved (boolean IsApproved)
 	{
 		set_Value (COLUMNNAME_IsApproved, Boolean.valueOf(IsApproved));
 	}
 
-	/** Get Approved.
+	/** Get Freigegeben.
 		@return Indicates if this document requires approval
 	  */
+	@Override
 	public boolean isApproved () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
@@ -355,6 +333,7 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 		@param IsCancelled 
 		The transaction was cancelled
 	  */
+	@Override
 	public void setIsCancelled (boolean IsCancelled)
 	{
 		set_Value (COLUMNNAME_IsCancelled, Boolean.valueOf(IsCancelled));
@@ -363,6 +342,7 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 	/** Get Cancelled.
 		@return The transaction was cancelled
 	  */
+	@Override
 	public boolean isCancelled () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsCancelled);
@@ -379,6 +359,7 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 		@param IsInDispute 
 		Document is in dispute
 	  */
+	@Override
 	public void setIsInDispute (boolean IsInDispute)
 	{
 		set_Value (COLUMNNAME_IsInDispute, Boolean.valueOf(IsInDispute));
@@ -387,6 +368,7 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 	/** Get In Dispute.
 		@return Document is in dispute
 	  */
+	@Override
 	public boolean isInDispute () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsInDispute);
@@ -399,38 +381,23 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 		return false;
 	}
 
-	/** Set Ship/Receipt Confirmation.
-		@param M_InOutConfirm_ID 
-		Material Shipment or Receipt Confirmation
-	  */
-	public void setM_InOutConfirm_ID (int M_InOutConfirm_ID)
+	@Override
+	public org.compiere.model.I_M_InOut getM_InOut() throws RuntimeException
 	{
-		if (M_InOutConfirm_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_InOutConfirm_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_InOutConfirm_ID, Integer.valueOf(M_InOutConfirm_ID));
+		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
 	}
 
-	/** Get Ship/Receipt Confirmation.
-		@return Material Shipment or Receipt Confirmation
-	  */
-	public int getM_InOutConfirm_ID () 
+	@Override
+	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut)
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOutConfirm_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
 	}
 
-	public I_M_InOut getM_InOut() throws RuntimeException
-    {
-		return (I_M_InOut)MTable.get(getCtx(), I_M_InOut.Table_Name)
-			.getPO(getM_InOut_ID(), get_TrxName());	}
-
-	/** Set Shipment/Receipt.
+	/** Set Lieferung/Wareneingang.
 		@param M_InOut_ID 
 		Material Shipment Document
 	  */
+	@Override
 	public void setM_InOut_ID (int M_InOut_ID)
 	{
 		if (M_InOut_ID < 1) 
@@ -439,9 +406,10 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 			set_ValueNoCheck (COLUMNNAME_M_InOut_ID, Integer.valueOf(M_InOut_ID));
 	}
 
-	/** Get Shipment/Receipt.
+	/** Get Lieferung/Wareneingang.
 		@return Material Shipment Document
 	  */
+	@Override
 	public int getM_InOut_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_ID);
@@ -450,15 +418,48 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 		return ii.intValue();
 	}
 
-	public I_M_Inventory getM_Inventory() throws RuntimeException
-    {
-		return (I_M_Inventory)MTable.get(getCtx(), I_M_Inventory.Table_Name)
-			.getPO(getM_Inventory_ID(), get_TrxName());	}
+	/** Set Bestätigung Versand/Wareneingang.
+		@param M_InOutConfirm_ID 
+		Material Shipment or Receipt Confirmation
+	  */
+	@Override
+	public void setM_InOutConfirm_ID (int M_InOutConfirm_ID)
+	{
+		if (M_InOutConfirm_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_InOutConfirm_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_InOutConfirm_ID, Integer.valueOf(M_InOutConfirm_ID));
+	}
 
-	/** Set Phys.Inventory.
+	/** Get Bestätigung Versand/Wareneingang.
+		@return Material Shipment or Receipt Confirmation
+	  */
+	@Override
+	public int getM_InOutConfirm_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOutConfirm_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Inventory getM_Inventory() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class);
+	}
+
+	@Override
+	public void setM_Inventory(org.compiere.model.I_M_Inventory M_Inventory)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class, M_Inventory);
+	}
+
+	/** Set Inventur.
 		@param M_Inventory_ID 
 		Parameters for a Physical Inventory
 	  */
+	@Override
 	public void setM_Inventory_ID (int M_Inventory_ID)
 	{
 		if (M_Inventory_ID < 1) 
@@ -467,9 +468,10 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 			set_Value (COLUMNNAME_M_Inventory_ID, Integer.valueOf(M_Inventory_ID));
 	}
 
-	/** Get Phys.Inventory.
+	/** Get Inventur.
 		@return Parameters for a Physical Inventory
 	  */
+	@Override
 	public int getM_Inventory_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Inventory_ID);
@@ -478,18 +480,20 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 		return ii.intValue();
 	}
 
-	/** Set Processed.
+	/** Set Verarbeitet.
 		@param Processed 
-		The document has been processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
+	@Override
 	public void setProcessed (boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
-	/** Get Processed.
-		@return The document has been processed
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
+	@Override
 	public boolean isProcessed () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
@@ -502,15 +506,17 @@ public class X_M_InOutConfirm extends PO implements I_M_InOutConfirm, I_Persiste
 		return false;
 	}
 
-	/** Set Process Now.
-		@param Processing Process Now	  */
+	/** Set Verarbeiten.
+		@param Processing Verarbeiten	  */
+	@Override
 	public void setProcessing (boolean Processing)
 	{
 		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
 	}
 
-	/** Get Process Now.
-		@return Process Now	  */
+	/** Get Verarbeiten.
+		@return Verarbeiten	  */
+	@Override
 	public boolean isProcessing () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);

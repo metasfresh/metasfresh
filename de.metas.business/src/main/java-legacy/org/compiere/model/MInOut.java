@@ -142,14 +142,11 @@ public class MInOut extends X_M_InOut implements IDocument
 		to.setDatePrinted(null);
 		to.setIsPrinted(false);
 		to.setDateReceived(null);
-		to.setNoPackages(0);
-		to.setShipDate(null);
 		to.setPickDate(null);
 		to.setIsInTransit(false);
 		//
 		to.setIsApproved(false);
 		to.setC_Invoice_ID(0);
-		to.setTrackingNo(null);
 		to.setIsInDispute(false);
 		//
 		to.setPosted(false);
@@ -232,7 +229,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	public MInOut(Properties ctx, int M_InOut_ID, String trxName)
 	{
 		super(ctx, M_InOut_ID, trxName);
-		if (M_InOut_ID == 0)
+		if (is_new())
 		{
 			// setDocumentNo (null);
 			// setC_BPartner_ID (0);
@@ -249,7 +246,6 @@ public class MInOut extends X_M_InOut implements IDocument
 			setDocStatus(DOCSTATUS_Drafted);
 			setDocAction(DOCACTION_Complete);
 			setPriorityRule(PRIORITYRULE_Medium);
-			setNoPackages(0);
 			setIsInTransit(false);
 			setIsPrinted(false);
 			setSendEMail(false);
