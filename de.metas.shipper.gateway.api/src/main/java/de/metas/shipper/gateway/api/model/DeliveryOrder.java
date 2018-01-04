@@ -71,6 +71,6 @@ public class DeliveryOrder
 	@NonNull
 	private SelfPickup selfPickup;
 
-	@NonNull
+	@Nullable // might cost money
 	private String receiptConfirmationPhoneNumber;
 }
