@@ -36,6 +36,8 @@ public class DeliveryOrder
 	OrderId orderId;
 	@Nullable
 	HWBNumber hwbNumber;
+	@Nullable
+	OrderStatus orderStatus;
 
 	@NonNull
 	private Address pickupAddress;

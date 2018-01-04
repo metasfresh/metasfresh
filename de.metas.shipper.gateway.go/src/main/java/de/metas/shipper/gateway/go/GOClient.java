@@ -133,7 +133,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 
 		final Object goResponseObj = sendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
-		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromCreateResponse(goResponse, draftDeliveryOrder);
+		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromCreateResponse(goResponse, draftDeliveryOrder, GOOrderStatus.NEW);
 		logger.trace("Delivery order created: {}", deliveryOrderResponse);
 
 		return deliveryOrderResponse;
@@ -154,7 +154,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 
 		final Object goResponseObj = sendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
-		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromCreateResponse(goResponse, deliveryOrderRequest);
+		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromCreateResponse(goResponse, deliveryOrderRequest, GOOrderStatus.APPROVED);
 		logger.trace("Delivery order completed: {}", deliveryOrderResponse);
 
 		return deliveryOrderResponse;
@@ -168,7 +168,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 
 		final Object goResponseObj = sendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
-		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromCreateResponse(goResponse, deliveryOrderRequest);
+		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromCreateResponse(goResponse, deliveryOrderRequest, GOOrderStatus.CANCELLATION);
 		logger.trace("Delivery order completed: {}", deliveryOrderResponse);
 
 		return deliveryOrderResponse;
@@ -396,7 +396,10 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		return goDeliveryDate;
 	}
 
-	private DeliveryOrder createDeliveryOrderFromCreateResponse(final SendungsRueckmeldung goResponse, final DeliveryOrder deliveryOrderRequest)
+	private DeliveryOrder createDeliveryOrderFromCreateResponse(
+			final SendungsRueckmeldung goResponse,
+			final DeliveryOrder deliveryOrderRequest,
+			final GOOrderStatus newStatus)
 	{
 		final SendungsRueckmeldung.Sendung goResponseContent = goResponse.getSendung();
 
@@ -411,6 +414,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		return DeliveryOrder.builder()
 				.orderId(createOrderId(goResponseContent.getSendungsnummerAX4()))
 				.hwbNumber(HWBNumber.of(goResponseContent.getFrachtbriefnummer()))
+				.orderStatus(newStatus)
 				//
 				.pickupAddress(deliveryOrderRequest.getPickupAddress())
 				.pickupDate(PickupDate.builder()
