@@ -44,9 +44,13 @@ public class PhoneNumber
 		Check.assumeNotEmpty(areaCode, "areaCode is not empty");
 		Check.assumeNotEmpty(phoneNumber, "phoneNumber is not empty");
 
-		this.countryCode = countryCode;
-		this.areaCode = areaCode;
-		this.phoneNumber = phoneNumber;
+		this.countryCode = countryCode.trim();
+		this.areaCode = areaCode.trim();
+		this.phoneNumber = phoneNumber.trim();
 	}
 
+	public String getAsString()
+	{
+		return "+" + countryCode + "" + areaCode + "" + phoneNumber;
+	}
 }
