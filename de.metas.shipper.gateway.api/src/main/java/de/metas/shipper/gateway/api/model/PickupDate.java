@@ -1,6 +1,7 @@
 package de.metas.shipper.gateway.api.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import javax.annotation.Nullable;
@@ -47,5 +48,15 @@ public class PickupDate
 		this.date = date;
 		this.timeFrom = timeFrom;
 		this.timeTo = timeTo;
+	}
+
+	public LocalDateTime getDateTimeFrom()
+	{
+		return timeFrom != null ? date.atTime(timeFrom) : null;
+	}
+
+	public LocalDateTime getDateTimeTo()
+	{
+		return timeTo != null ? date.atTime(timeTo) : null;
 	}
 }
