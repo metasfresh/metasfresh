@@ -185,7 +185,14 @@ class TableCell extends Component {
             }}
           />
         ) : (
-          <div className="cell-text-wrapper" title={tdValue}>
+          <div
+            className="cell-text-wrapper"
+            title={
+              item.widgetType === "YesNo" || item.widgetType === "Switch"
+                ? ""
+                : tdValue
+            }
+          >
             {tdValue}
           </div>
         )}
