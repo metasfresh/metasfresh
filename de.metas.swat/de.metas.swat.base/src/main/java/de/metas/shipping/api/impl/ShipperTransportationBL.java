@@ -12,13 +12,19 @@ import lombok.NonNull;
 
 public class ShipperTransportationBL implements IShipperTransportationBL
 {
-	/**
-	 * Update {@link I_M_ShippingPackage} by using common values from {@link I_M_Package}.
-	 *
-	 * @param shippingPackage
-	 * @param package package
-	 */
-	private void setPackage(final I_M_ShippingPackage shippingPackage, final I_M_Package mpackage)
+	@Override
+	public I_M_ShippingPackage createShippingPackage(final I_M_ShipperTransportation shipperTransportation, final I_M_Package mpackage)
+	{
+		final I_M_ShippingPackage shippingPackage = InterfaceWrapperHelper.newInstance(I_M_ShippingPackage.class, shipperTransportation);
+		shippingPackage.setM_ShipperTransportation_ID(shipperTransportation.getM_ShipperTransportation_ID());
+
+		updateShippingPackageFromPackage(shippingPackage, mpackage);
+		InterfaceWrapperHelper.save(shippingPackage);
+
+		return shippingPackage;
+	}
+	
+	private void updateShippingPackageFromPackage(final I_M_ShippingPackage shippingPackage, final I_M_Package mpackage)
 	{
 		shippingPackage.setM_Package_ID(mpackage.getM_Package_ID());
 		shippingPackage.setC_BPartner_ID(mpackage.getC_BPartner_ID());
@@ -34,18 +40,6 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 		// @TODO: Calculate PackageNetTotal and PackageWeight ??
 		shippingPackage.setPackageNetTotal(mpackage.getPackageNetTotal());
 		shippingPackage.setPackageWeight(mpackage.getPackageWeight());
-	}	// setPackage
-
-	@Override
-	public I_M_ShippingPackage createShippingPackage(final I_M_ShipperTransportation shipperTransportation, final I_M_Package mpackage)
-	{
-		final I_M_ShippingPackage shippingPackage = InterfaceWrapperHelper.newInstance(I_M_ShippingPackage.class, shipperTransportation);
-		shippingPackage.setM_ShipperTransportation_ID(shipperTransportation.getM_ShipperTransportation_ID());
-
-		setPackage(shippingPackage, mpackage);
-		InterfaceWrapperHelper.save(shippingPackage);
-
-		return shippingPackage;
 	}
 
 	@Override
