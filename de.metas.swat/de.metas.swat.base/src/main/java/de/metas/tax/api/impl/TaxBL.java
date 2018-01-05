@@ -175,7 +175,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		final boolean hasTaxCertificate = !Check.isEmpty(bPartner.getVATaxID());
 
-		final I_C_Location locationTo = InterfaceWrapperHelper.create(ctx, bpLocTo.getC_Location_ID(), I_C_Location.class, trxName); 
+		final I_C_Location locationTo = InterfaceWrapperHelper.create(ctx, bpLocTo.getC_Location_ID(), I_C_Location.class, trxName);
 
 		final boolean toEULocation = Services.get(ICountryAreaBL.class).isMemberOf(ctx,
 				ICountryAreaBL.COUNTRYAREAKEY_EU,
@@ -190,7 +190,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				.createQueryBuilder(I_C_Tax.class, ctx, ITrx.TRXNAME_None)
 				.addCompareFilter(I_C_Tax.COLUMNNAME_ValidFrom, Operator.LESS, date)
 				.addOnlyActiveRecordsFilter();
-		
+
 
 		if (countryFromId > 0)
 		{
@@ -248,7 +248,6 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				.addColumnDescending(I_C_Tax.COLUMNNAME_ValidFrom)
 				.endOrderBy()
 				.create()
-				.setClient_ID()
 				.firstId();
 
 		if (taxId <= 0)
