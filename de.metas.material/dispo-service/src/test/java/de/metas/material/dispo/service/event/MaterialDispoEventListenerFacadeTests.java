@@ -197,7 +197,7 @@ public class MaterialDispoEventListenerFacadeTests
 	public void test_shipmentScheduleCreatedEvent_then_distributionAdvisedEvent()
 	{
 		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedHandlerTests.createShipmentScheduleTestEvent();
-		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getOrderedMaterial();
+		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getMaterialDescriptor();
 
 		final Date shipmentScheduleEventTime = orderedMaterial.getDate();
 
@@ -256,7 +256,7 @@ public class MaterialDispoEventListenerFacadeTests
 	{
 		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedHandlerTests.createShipmentScheduleTestEvent();
 
-		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getOrderedMaterial();
+		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getMaterialDescriptor();
 		final Date shipmentScheduleEventTime = orderedMaterial.getDate();
 		final Timestamp twoHoursAfterShipmentSched = TimeUtil.addHours(shipmentScheduleEventTime, 2);
 

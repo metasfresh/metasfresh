@@ -58,11 +58,16 @@ public class ShipmentScheduleCreatedHandler implements MaterialEventHandler<Ship
 	@Override
 	public void handleEvent(@NonNull final ShipmentScheduleCreatedEvent event)
 	{
+
+		final DemandDetail demandDetail = DemandDetail.forDocumentDescriptor(
+				event.getShipmentScheduleId(),
+				event.getDocumentDescriptor());
+
 		final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescriptor())
-				.materialDescriptor(event.getOrderedMaterial())
+				.materialDescriptor(event.getMaterialDescriptor())
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.SHIPMENT)
-				.demandDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), event.getOrderLineId()))
+				.demandDetail(demandDetail)
 				.build();
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}

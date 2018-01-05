@@ -32,6 +32,7 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import mockit.Mocked;
 
@@ -108,7 +109,7 @@ public class ShipmentScheduleCreatedHandlerTests
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
 				stockRepository,
-				event.getOrderedMaterial(),
+				event.getMaterialDescriptor(),
 				"0");
 
 		shipmentScheduleEventHandler.handleEvent(event);
@@ -135,7 +136,7 @@ public class ShipmentScheduleCreatedHandlerTests
 	{
 		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
-				.orderedMaterial(MaterialDescriptor.builder()
+				.materialDescriptor(MaterialDescriptor.builder()
 						.date(NOW)
 						.productDescriptor(createProductDescriptor())
 						.bPartnerId(BPARTNER_ID)
@@ -144,7 +145,10 @@ public class ShipmentScheduleCreatedHandlerTests
 						.build())
 				.reservedQuantity(new BigDecimal("20"))
 				.shipmentScheduleId(shipmentScheduleId)
-				.orderLineId(orderLineId)
+				.documentDescriptor(OrderLineDescriptor.builder()
+						.orderLineId(orderLineId)
+						.orderId(30)
+						.build())
 				.build();
 		return event;
 	}

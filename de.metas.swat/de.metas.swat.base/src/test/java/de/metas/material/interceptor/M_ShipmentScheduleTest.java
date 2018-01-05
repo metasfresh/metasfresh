@@ -19,11 +19,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.material.event.commons.DocumentLineDescriptor;
+import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
-import de.metas.material.interceptor.M_ShipmentSchedule;
 import mockit.Expectations;
 
 /*
@@ -102,11 +103,15 @@ public class M_ShipmentScheduleTest
 
 		final ShipmentScheduleCreatedEvent createdEvent = (ShipmentScheduleCreatedEvent)result;
 		assertThat(createdEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
-		assertThat(createdEvent.getOrderLineId()).isLessThanOrEqualTo(0);
-		assertThat(createdEvent.getOrderedMaterial().getBPartnerId()).isEqualTo(45);
-		assertThat(createdEvent.getOrderedMaterial().getQuantity()).isEqualByComparingTo(TEN);
-		assertThat(createdEvent.getOrderedMaterial().getProductId()).isEqualTo(20);
-		assertThat(createdEvent.getOrderedMaterial().getWarehouseId()).isEqualTo(30);
+
+		final DocumentLineDescriptor documentDescriptor = createdEvent.getDocumentDescriptor();
+		assertThat(documentDescriptor).isInstanceOf(OrderLineDescriptor.class);
+		assertThat(((OrderLineDescriptor)documentDescriptor).getOrderLineId()).isLessThanOrEqualTo(0);
+
+		assertThat(createdEvent.getMaterialDescriptor().getBPartnerId()).isEqualTo(45);
+		assertThat(createdEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
+		assertThat(createdEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
+		assertThat(createdEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);
 		assertThat(createdEvent.getReservedQuantity()).isEqualByComparingTo(FIVE);
 	}
 
@@ -128,10 +133,10 @@ public class M_ShipmentScheduleTest
 
 		final ShipmentScheduleUpdatedEvent updatedEvent = (ShipmentScheduleUpdatedEvent)result;
 		assertThat(updatedEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
-		assertThat(updatedEvent.getOrderedMaterial().getBPartnerId()).isEqualTo(45);
-		assertThat(updatedEvent.getOrderedMaterial().getQuantity()).isEqualByComparingTo(TEN);
-		assertThat(updatedEvent.getOrderedMaterial().getProductId()).isEqualTo(20);
-		assertThat(updatedEvent.getOrderedMaterial().getWarehouseId()).isEqualTo(30);
+		assertThat(updatedEvent.getMaterialDescriptor().getBPartnerId()).isEqualTo(45);
+		assertThat(updatedEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
+		assertThat(updatedEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
+		assertThat(updatedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);
 		assertThat(updatedEvent.getReservedQuantity()).isEqualByComparingTo(FIVE);
 		assertThat(updatedEvent.getReservedQuantityDelta()).isEqualByComparingTo(ONE);
 		assertThat(updatedEvent.getOrderedQuantityDelta()).isEqualByComparingTo(TEN.negate());
@@ -148,10 +153,10 @@ public class M_ShipmentScheduleTest
 
 		final ShipmentScheduleDeletedEvent deletedEvent = (ShipmentScheduleDeletedEvent)result;
 		assertThat(deletedEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
-		assertThat(deletedEvent.getOrderedMaterial().getBPartnerId()).isEqualTo(45);
-		assertThat(deletedEvent.getOrderedMaterial().getQuantity()).isEqualByComparingTo(TEN);
-		assertThat(deletedEvent.getOrderedMaterial().getProductId()).isEqualTo(20);
-		assertThat(deletedEvent.getOrderedMaterial().getWarehouseId()).isEqualTo(30);
+		assertThat(deletedEvent.getMaterialDescriptor().getBPartnerId()).isEqualTo(45);
+		assertThat(deletedEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
+		assertThat(deletedEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
+		assertThat(deletedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);
 		assertThat(deletedEvent.getReservedQuantity()).isEqualByComparingTo(FIVE);
 	}
 }

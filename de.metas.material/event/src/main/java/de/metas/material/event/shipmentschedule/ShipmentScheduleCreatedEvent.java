@@ -2,8 +2,11 @@ package de.metas.material.event.shipmentschedule;
 
 import java.math.BigDecimal;
 
+import org.adempiere.util.Check;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
@@ -41,34 +44,42 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 {
 	public static final String TYPE = "ShipmentScheduleCreatedEvent";
 
-	private final int orderLineId;
+	private final DocumentLineDescriptor documentDescriptor;
 
 	@Builder
 	public ShipmentScheduleCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("orderedMaterial") final MaterialDescriptor orderedMaterial,
+			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("reservedQuantity") @NonNull final BigDecimal reservedQuantity,
-			@JsonProperty("shipmentScheduleId") int shipmentScheduleId,
-			@JsonProperty("orderLineId") int orderLineId)
+			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
+			@JsonProperty("documentDescriptor") final DocumentLineDescriptor documentDescriptor)
 	{
 		super(
 				eventDescriptor,
-				orderedMaterial,
+				materialDescriptor,
 				reservedQuantity,
 				shipmentScheduleId);
 
-		this.orderLineId = orderLineId;
+		this.documentDescriptor = documentDescriptor;
 	}
 
 	@Override
 	public BigDecimal getOrderedQuantityDelta()
 	{
-		return getOrderedMaterial().getQuantity();
+		return getMaterialDescriptor().getQuantity();
 	}
 
 	@Override
 	public BigDecimal getReservedQuantityDelta()
 	{
 		return getReservedQuantity();
+	}
+
+	@Override
+	public void validate()
+	{
+		super.validate();
+		Check.errorIf(documentDescriptor == null, "documentDescriptor may not be null");
+		documentDescriptor.validate();
 	}
 }

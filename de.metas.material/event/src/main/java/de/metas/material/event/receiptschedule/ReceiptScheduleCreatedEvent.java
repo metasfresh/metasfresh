@@ -2,6 +2,8 @@ package de.metas.material.event.receiptschedule;
 
 import java.math.BigDecimal;
 
+import org.adempiere.util.Check;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
@@ -41,6 +43,8 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 {
 	public static final String TYPE = "ReceiptScheduleCreatedEvent";
 
+	private final OrderLineDescriptor orderLineDescriptor;
+
 	@Builder
 	public ReceiptScheduleCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
@@ -49,12 +53,12 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
 			@JsonProperty("receiptScheduleId") int receiptScheduleId)
 	{
-		super(
-				orderLineDescriptor,
-				eventDescriptor,
+		super(eventDescriptor,
 				materialDescriptor,
 				reservedQuantity,
 				receiptScheduleId);
+
+		this.orderLineDescriptor = orderLineDescriptor;
 	}
 
 	@Override
@@ -67,6 +71,14 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 	public BigDecimal getReservedQuantityDelta()
 	{
 		return getReservedQuantity();
+	}
+
+	@Override
+	public void validate()
+	{
+		super.validate();
+		Check.errorIf(orderLineDescriptor == null, "orderLineDescriptor may not be null");
+		orderLineDescriptor.validate();
 	}
 
 }

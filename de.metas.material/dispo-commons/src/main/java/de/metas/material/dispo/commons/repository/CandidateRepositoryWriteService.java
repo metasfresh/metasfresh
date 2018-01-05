@@ -334,6 +334,8 @@ public class CandidateRepositoryWriteService
 		detailRecordToUpdate.setM_ForecastLine_ID(demandDetail.getForecastLineId());
 		detailRecordToUpdate.setM_ShipmentSchedule_ID(demandDetail.getShipmentScheduleId());
 		detailRecordToUpdate.setC_OrderLine_ID(demandDetail.getOrderLineId());
+		detailRecordToUpdate.setC_SubscriptionProgress_ID(demandDetail.getSubscriptionProgressId());
+
 		save(detailRecordToUpdate);
 	}
 

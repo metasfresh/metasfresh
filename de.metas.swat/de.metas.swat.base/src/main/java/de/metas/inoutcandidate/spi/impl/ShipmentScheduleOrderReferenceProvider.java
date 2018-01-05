@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineProvider;
+import de.metas.material.event.commons.DocumentLineDescriptor;
+import de.metas.material.event.commons.OrderLineDescriptor;
 import lombok.NonNull;
 
 /*
@@ -24,12 +26,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,7 +39,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class ShipmentScheduleOrderDocForOrderLine implements ShipmentScheduleReferencedLineProvider
+public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleReferencedLineProvider
 {
 	/**
 	 * @return {@link I_C_OrderLine#Table_Name}
@@ -57,12 +59,13 @@ public class ShipmentScheduleOrderDocForOrderLine implements ShipmentScheduleRef
 				.deliveryDate(getOrderLineDeliveryDate(shipmentSchedule))
 				.warehouseId(getWarehouseId(shipmentSchedule))
 				.shipperId(shipmentSchedule.getC_OrderLine().getM_Shipper_ID())
+				.documentLineDescriptor(getDocumentLineDescriptor(shipmentSchedule))
 				.build();
 	}
 
 	/**
 	 * Fetch it from order header if possible.
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 * @return
 	 */
@@ -91,10 +94,11 @@ public class ShipmentScheduleOrderDocForOrderLine implements ShipmentScheduleRef
 		}
 
 		// Fail miserably...
-		throw new AdempiereException("@NotFound@ @DeliveryDate@"
-				+ "\n @M_ShipmentSchedule_ID@: " + shipmentSchedule
-				+ "\n @C_OrderLine_ID@: " + shipmentSchedule.getC_OrderLine()
-				+ "\n @C_Order_ID@: " + shipmentSchedule.getC_Order());
+		throw new AdempiereException("@NotFound@ @DeliveryDate@")
+				.appendParametersToMessage()
+				.setParameter("shipmentSchedule", shipmentSchedule)
+				.setParameter("oderLine", shipmentSchedule.getC_OrderLine())
+				.setParameter("order", shipmentSchedule.getC_Order());
 	}
 
 	private int getWarehouseId(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
@@ -102,6 +106,14 @@ public class ShipmentScheduleOrderDocForOrderLine implements ShipmentScheduleRef
 		return Services.get(IWarehouseAdvisor.class)
 				.evaluateWarehouse(shipmentSchedule.getC_OrderLine())
 				.getM_Warehouse_ID();
+	}
+
+	private DocumentLineDescriptor getDocumentLineDescriptor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return OrderLineDescriptor.builder()
+				.orderId(shipmentSchedule.getC_Order_ID())
+				.orderLineId(shipmentSchedule.getC_OrderLine_ID())
+				.build();
 	}
 
 }

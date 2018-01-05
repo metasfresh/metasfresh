@@ -333,10 +333,10 @@ public class MaterialEventSerializerTests
 	{
 		final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent = ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
-				.orderedMaterial(createMaterialDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.reservedQuantity(new BigDecimal("3"))
 				.shipmentScheduleId(4)
-				.orderLineId(5)
+				.documentDescriptor(createOrderLineDescriptor())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(shipmentScheduleCreatedEvent);
@@ -362,7 +362,7 @@ public class MaterialEventSerializerTests
 	{
 		final ShipmentScheduleDeletedEvent shipmentScheduleDeletedEvent = ShipmentScheduleDeletedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
-				.orderedMaterial(createMaterialDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.reservedQuantity(new BigDecimal("3"))
 				.shipmentScheduleId(5)
 				.build();
@@ -419,7 +419,6 @@ public class MaterialEventSerializerTests
 		final ReceiptScheduleUpdatedEvent event = ReceiptScheduleUpdatedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
-				.orderLineDescriptor(createOrderLineDescriptor())
 				.orderedQuantityDelta(new BigDecimal("2"))
 				.reservedQuantity(new BigDecimal("3"))
 				.reservedQuantityDelta(new BigDecimal("4"))
@@ -436,7 +435,6 @@ public class MaterialEventSerializerTests
 		final ReceiptScheduleDeletedEvent receiptScheduleCreatedEvent = ReceiptScheduleDeletedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
-				.orderLineDescriptor(createOrderLineDescriptor())
 				.reservedQuantity(new BigDecimal("2"))
 				.receiptScheduleId(3)
 				.build();
@@ -449,7 +447,6 @@ public class MaterialEventSerializerTests
 		return OrderLineDescriptor.builder()
 				.orderLineId(4)
 				.orderId(5)
-				.documentNo("orderDocumentNo")
 				.build();
 	}
 

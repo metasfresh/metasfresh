@@ -72,7 +72,7 @@ public class AbstractShipmentScheduleEventHandler
 	private DataUpdateRequest createDataUpdateRequestForEvent(
 			@NonNull final AbstractShipmentScheduleEvent shipmentScheduleEvent)
 	{
-		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getOrderedMaterial();
+		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getMaterialDescriptor();
 
 		final DataRecordIdentifier identifier = DataRecordIdentifier.createForMaterial(orderedMaterial);
 

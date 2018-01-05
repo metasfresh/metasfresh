@@ -42,11 +42,11 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -123,19 +123,16 @@ public class M_ReceiptSchedule
 	protected OrderLineDescriptor createOrderLineDescriptor(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		return OrderLineDescriptor.builder()
-		.orderLineId(receiptSchedule.getC_OrderLine_ID())
-		.orderId(receiptSchedule.getC_Order_ID())
-		.documentNo(receiptSchedule.getC_Order().getDocumentNo())
-		.build();
+				.orderLineId(receiptSchedule.getC_OrderLine_ID())
+				.orderId(receiptSchedule.getC_Order_ID())
+				.build();
 	}
 
 	private AbstractReceiptScheduleEvent createUpdatedEvent(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(receiptSchedule);
-		final OrderLineDescriptor orderLineDescriptor = createOrderLineDescriptor(receiptSchedule);
 
 		final I_M_ReceiptSchedule oldReceiptSchedule = InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class);
-
 		final BigDecimal oldOrderedQuantity = extractQtyOrdered(oldReceiptSchedule);
 
 		final BigDecimal qtyReserved = extractQtyReserved(receiptSchedule);
@@ -143,7 +140,6 @@ public class M_ReceiptSchedule
 		final ReceiptScheduleUpdatedEvent event = ReceiptScheduleUpdatedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(receiptSchedule))
 				.materialDescriptor(orderedMaterial)
-				.orderLineDescriptor(orderLineDescriptor)
 				.reservedQuantity(qtyReserved)
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.reservedQuantityDelta(qtyReserved.subtract(extractQtyReserved(oldReceiptSchedule)))
@@ -167,11 +163,9 @@ public class M_ReceiptSchedule
 	private AbstractReceiptScheduleEvent createDeletedEvent(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(receiptSchedule);
-		final OrderLineDescriptor orderLineDescriptor = createOrderLineDescriptor(receiptSchedule);
 
 		final ReceiptScheduleDeletedEvent event = ReceiptScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(receiptSchedule))
-				.orderLineDescriptor(orderLineDescriptor)
 				.materialDescriptor(orderedMaterial)
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())

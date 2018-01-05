@@ -16,13 +16,16 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent.ShipmentScheduleCreatedEventBuilder;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import lombok.NonNull;
@@ -68,7 +71,7 @@ public class M_ShipmentSchedule
 						&& event.getReservedQuantityDelta().signum() == 0;
 		if (nothingActuallyChanged)
 		{
-			 return;
+			return;
 		}
 
 		final FireMaterialEventService fireMaterialEventService = Adempiere.getBean(FireMaterialEventService.class);
@@ -97,15 +100,20 @@ public class M_ShipmentSchedule
 
 	private AbstractShipmentScheduleEvent createCreatedEvent(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(shipmentSchedule);
+		final MaterialDescriptor materialDescriptor = createOrdereMaterialDescriptor(shipmentSchedule);
 
-		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
+		final ShipmentScheduleCreatedEventBuilder builder = ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
-				.orderedMaterial(orderedMaterial)
+				.materialDescriptor(materialDescriptor)
 				.reservedQuantity(shipmentSchedule.getQtyReserved())
-				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
-				.orderLineId(shipmentSchedule.getC_OrderLine_ID())
-				.build();
+				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID());
+
+		final ShipmentScheduleReferencedLineFactory referencedLineFactory = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class);
+		final DocumentLineDescriptor documentLineDescriptor = referencedLineFactory.createFor(shipmentSchedule)
+				.getDocumentLineDescriptor();
+		builder.documentDescriptor(documentLineDescriptor);
+
+		final ShipmentScheduleCreatedEvent event = builder.build();
 		return event;
 	}
 
@@ -135,7 +143,7 @@ public class M_ShipmentSchedule
 
 		final ShipmentScheduleDeletedEvent event = ShipmentScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
-				.orderedMaterial(orderedMaterial)
+				.materialDescriptor(orderedMaterial)
 				.reservedQuantity(shipmentSchedule.getQtyReserved())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.build();

@@ -72,7 +72,8 @@ public class SupplyRequiredEventCreator
 			descriptorBuilder
 					.forecastLineId(demandDetail.getForecastLineId())
 					.shipmentScheduleId(demandDetail.getShipmentScheduleId())
-					.orderLineId(demandDetail.getOrderLineId());
+					.orderLineId(demandDetail.getOrderLineId())
+					.subscriptionProgressId(demandDetail.getSubscriptionProgressId());
 		}
 		return descriptorBuilder.build();
 	}

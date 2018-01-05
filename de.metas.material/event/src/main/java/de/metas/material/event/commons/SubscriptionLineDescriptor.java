@@ -29,15 +29,15 @@ import lombok.Value;
 
 @Value
 @Builder
-public class OrderLineDescriptor implements DocumentLineDescriptor
+public class SubscriptionLineDescriptor  implements DocumentLineDescriptor
 {
-	int orderLineId;
-	int orderId;
+	int subscriptionProgressId;
+	int flatrateTermId;
 
 	@Override
 	public void validate()
 	{
-		checkIdGreaterThanZero("orderLineId", orderLineId);
-		checkIdGreaterThanZero("orderId", orderId);
+		checkIdGreaterThanZero("subscriptionProgressId", subscriptionProgressId);
+		checkIdGreaterThanZero("flatrateTermId", flatrateTermId);
 	}
 }

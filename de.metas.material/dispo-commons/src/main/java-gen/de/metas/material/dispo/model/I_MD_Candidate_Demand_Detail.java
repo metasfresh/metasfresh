@@ -128,6 +128,29 @@ public interface I_MD_Candidate_Demand_Detail
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Abo-Verlauf.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID);
+
+	/**
+	 * Get Abo-Verlauf.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_SubscriptionProgress_ID();
+
+    /** Column definition for C_SubscriptionProgress_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object> COLUMN_C_SubscriptionProgress_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object>(I_MD_Candidate_Demand_Detail.class, "C_SubscriptionProgress_ID", null);
+    /** Column name C_SubscriptionProgress_ID */
+    public static final String COLUMNNAME_C_SubscriptionProgress_ID = "C_SubscriptionProgress_ID";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
