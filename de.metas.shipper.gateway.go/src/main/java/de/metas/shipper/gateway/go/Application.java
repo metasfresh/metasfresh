@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
 import de.metas.shipper.gateway.api.model.Address;
 import de.metas.shipper.gateway.api.model.CountryCode;
 import de.metas.shipper.gateway.api.model.DeliveryOrder;
@@ -51,7 +52,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "de.metas.shipper.gateway")
 public class Application
 {
 	public static void main(final String[] args)
@@ -60,7 +61,10 @@ public class Application
 	}
 
 	@Bean
-	CommandLineRunner test(final GOClient goClient)
+	CommandLineRunner test(
+			final GOClient goClient,
+			final ShipperGatewayRegistry shipperGatewayRegistry // not used, but just to make sure it loads OK
+	)
 	{
 		System.out.println("Using: " + goClient);
 
