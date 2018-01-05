@@ -1,20 +1,10 @@
 package de.metas.shipper.gateway.api.model;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-
-import javax.annotation.Nullable;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.shipper.gateway.api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,31 +22,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class DeliveryDate
+public interface OrderStatus
 {
-	LocalDate date;
-	LocalTime timeFrom;
-	LocalTime timeTo;
-
-	@Builder
-	private DeliveryDate(
-			@NonNull final LocalDate date,
-			@Nullable final LocalTime timeFrom,
-			@Nullable final LocalTime timeTo)
-	{
-		this.date = date;
-		this.timeFrom = timeFrom;
-		this.timeTo = timeTo;
-	}
-	
-	public LocalDateTime getDateTimeFrom()
-	{
-		return timeFrom != null ? date.atTime(timeFrom) : null;
-	}
-
-	public LocalDateTime getDateTimeTo()
-	{
-		return timeTo != null ? date.atTime(timeTo) : null;
-	}
+	String getCode();
 }

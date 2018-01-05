@@ -40,7 +40,13 @@ Here come the actual release notes:
     * Improving teh Calender and Period Window in WebUI, adding the Create Periods action to action menu.
   * [#3269](https://github.com/metasfresh/metasfresh/issues/3269) WebUI: Add Shortcut Filter from Calendar Year to Periods Window
     * Improving the Usability of Calendar and Period Window, now allowing to directly zoom to filtered Periods for a given year.
+  * [#3275](https://github.com/metasfresh/metasfresh/issues/3275) New Filter for datepromised in Sales/ Purchase Order
+    * Adding the Filter for datepromised in Sales Order and Purchase order Window in WebUI.
 
+* metasfresh-webui-frontend
+  * [#1475](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1475) Hover showing Element Content for flags wrongly
+    * Improvement of the tablecell tooltips in Grid Views. Not not showing a tooltip for checkboxes and switches anymore.
+	
 #Fixes
 * metasfresh-app
 

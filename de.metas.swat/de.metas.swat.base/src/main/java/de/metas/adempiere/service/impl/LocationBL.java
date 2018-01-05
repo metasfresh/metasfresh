@@ -288,14 +288,7 @@ public class LocationBL implements ILocationBL
 		if (countryCode == null)
 			return null;
 
-		for (I_C_Country country : Services.get(ICountryDAO.class).getCountries(ctx))
-		{
-			if (countryCode.equals(country.getCountryCode()))
-			{
-				return country;
-			}
-		}
-		return null;
+		return Services.get(ICountryDAO.class).retrieveCountryByCountryCode(countryCode);
 	}
 
 	public static class LocationAddressAdapter implements com.akunagroup.uk.postcode.AddressInterface

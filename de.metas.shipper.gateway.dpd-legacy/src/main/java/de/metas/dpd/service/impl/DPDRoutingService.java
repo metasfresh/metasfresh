@@ -46,8 +46,8 @@ import javax.print.attribute.standard.PrinterName;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_PackageInfo;
+import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MPackagingContainer;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
@@ -320,7 +320,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			throw DPDException.invalidPackage(pack, "Verpackungsabmessungen fehlen");
 		}
 
-		final MPackagingContainer container = new MPackagingContainer(Env.getCtx(), containerId, ITrx.TRXNAME_ThreadInherited);
+		final I_M_PackagingContainer container = InterfaceWrapperHelper.newInstance(I_M_PackagingContainer.class); 
 		BigDecimal lengthAmt = container.getLength();
 		BigDecimal widthAmt = container.getWidth();
 		BigDecimal heightAmt = container.getHeight();

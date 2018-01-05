@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.go.schema;
 
+import de.metas.shipper.gateway.api.model.OrderStatus;
 import lombok.Getter;
 
 /*
@@ -33,7 +34,7 @@ import lombok.Getter;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public enum GOOrderStatus
+public enum GOOrderStatus implements OrderStatus
 {
 	/**
 	 * New: if you transmit status "1", the shipment will be generated with status "new".

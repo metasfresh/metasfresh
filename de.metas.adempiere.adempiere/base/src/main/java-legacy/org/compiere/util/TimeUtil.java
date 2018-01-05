@@ -20,6 +20,10 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
@@ -1227,6 +1231,44 @@ public class TimeUtil
 		}
 		return new Timestamp(Date.from(instant).getTime());
 	}
+
+	public static Timestamp asTimestamp(final LocalDate localDate)
+	{
+		if (localDate == null)
+		{
+			return null;
+		}
+		final Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+		return new Timestamp(instant.getEpochSecond());
+	}
+
+	public static Timestamp asTimestamp(final LocalDate localDate, final LocalTime localTime)
+	{
+		final LocalDate localDateEff = localDate != null ? localDate : LocalDate.now();
+		final Instant instant;
+		if (localTime == null)
+		{
+			instant = localDateEff.atStartOfDay(ZoneId.systemDefault()).toInstant();
+		}
+		else
+		{
+			instant = localDateEff.atTime(localTime).atZone(ZoneId.systemDefault()).toInstant();
+		}
+		
+		return new Timestamp(instant.getEpochSecond());
+	}
+	
+	public static Timestamp asTimestamp(final LocalDateTime localDateTime)
+	{
+		if(localDateTime == null)
+		{
+			return null;
+		}
+		
+		final Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
+		return new Timestamp(instant.getEpochSecond());
+	}
+
 
 	/**
 	 * Get last date in year

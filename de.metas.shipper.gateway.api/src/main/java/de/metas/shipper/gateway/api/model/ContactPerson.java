@@ -37,4 +37,9 @@ public class ContactPerson
 	{
 		this.phone = phone;
 	}
+	
+	public String getPhoneAsString()
+	{
+		return phone.getAsString();
+	}
 }
