@@ -56,16 +56,36 @@ public class EventTestHelper
 
 	public static final int PRODUCT_ID = 24;
 
-	public static final int BPARTNER_ID= 25;
+	public static final int BPARTNER_ID = 25;
 
 	public static final int ATTRIBUTE_SET_INSTANCE_ID = 28;
 
 	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1);
 
+	public static SupplyRequiredDescriptor createSupplyRequiredDescriptor()
+	{
+		return createSupplyRequiredDescriptorWithProductId(PRODUCT_ID);
+	}
+
+	public static SupplyRequiredDescriptor createSupplyRequiredDescriptorWithProductId(final int productId)
+	{
+		return SupplyRequiredDescriptor.builder()
+				.shipmentScheduleId(21)
+				.demandCandidateId(41)
+				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.materialDescriptor(createMaterialDescriptorWithProductId(productId))
+				.build();
+	}
+
 	public static MaterialDescriptor createMaterialDescriptor()
 	{
+		return createMaterialDescriptorWithProductId(PRODUCT_ID);
+	}
+
+	public static MaterialDescriptor createMaterialDescriptorWithProductId(final int productId)
+	{
 		return MaterialDescriptor.builder()
-				.productDescriptor(createProductDescriptor())
+				.productDescriptor(createProductDescriptorWithProductId(productId))
 				.warehouseId(WAREHOUSE_ID)
 				.bPartnerId(BPARTNER_ID)
 				.quantity(BigDecimal.TEN)
@@ -75,8 +95,13 @@ public class EventTestHelper
 
 	public static ProductDescriptor createProductDescriptor()
 	{
+		return createProductDescriptorWithProductId(PRODUCT_ID);
+	}
+
+	public static ProductDescriptor createProductDescriptorWithProductId(final int productId)
+	{
 		return ProductDescriptor.forProductAndAttributes(
-				PRODUCT_ID,
+				productId,
 				STORAGE_ATTRIBUTES_KEY,
 				ATTRIBUTE_SET_INSTANCE_ID);
 	}
@@ -87,15 +112,5 @@ public class EventTestHelper
 				PRODUCT_ID + offset,
 				AttributesKey.ofAttributeValueIds(STORAGE_ATTRIBUTES_KEY.getAttributeValueIds().get(0) + 1 + offset),
 				ATTRIBUTE_SET_INSTANCE_ID + offset);
-	}
-
-	public static SupplyRequiredDescriptor createSupplyRequiredDescriptor()
-	{
-		return SupplyRequiredDescriptor.builder()
-				.shipmentScheduleId(21)
-				.demandCandidateId(41)
-				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
-				.materialDescriptor(createMaterialDescriptor())
-				.build();
 	}
 }

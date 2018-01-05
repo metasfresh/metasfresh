@@ -32,7 +32,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value // includes @AllArgsConstructor which is used by jackson when it deserializes a string
+@Value
 public class SupplyRequiredDescriptor
 {
 	EventDescriptor eventDescriptor;

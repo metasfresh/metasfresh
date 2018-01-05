@@ -49,8 +49,10 @@ public class SupplyRequiredHandlerUtils
 	{
 		final int descriptorBPartnerId = supplyRequiredDescriptor.getMaterialDescriptor().getBPartnerId();
 
+		final int productId = supplyRequiredDescriptor.getMaterialDescriptor().getProductId();
+		final I_M_Product product = load(productId, I_M_Product.class);
+
 		final BigDecimal qtyToSupply = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
-		final I_M_Product product = load(supplyRequiredDescriptor.getMaterialDescriptor().getProductId(), I_M_Product.class);
 
 		return MaterialRequest.builder()
 				.qtyToSupply(Quantity.of(qtyToSupply, product.getC_UOM()))
