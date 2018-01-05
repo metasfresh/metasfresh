@@ -10,6 +10,9 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.41 (2018-03)
+**release for week 2018-03**
+
 # metasfresh 5.40 (2018-02)
 
 **release for week 2018-02**
@@ -46,7 +49,7 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1475](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1475) Hover showing Element Content for flags wrongly
     * Improvement of the tablecell tooltips in Grid Views. Not not showing a tooltip for checkboxes and switches anymore.
-	
+
 #Fixes
 * metasfresh-app
 
