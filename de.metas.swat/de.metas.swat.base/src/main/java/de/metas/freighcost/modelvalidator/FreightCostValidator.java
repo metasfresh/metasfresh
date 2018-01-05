@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.inout.service.IInOutPA;
 import org.adempiere.model.I_M_FreightCost;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
@@ -50,13 +49,14 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_Order;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.document.engine.IDocument;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.freighcost.api.impl.FreightCostBL;
+import de.metas.logging.LogManager;
 
 /**
  * This model validator checks for each new invoice line if there needs to be an additional invoice line for freight
@@ -70,15 +70,17 @@ public class FreightCostValidator implements ModelValidator
 {
 	private static final Logger logger = LogManager.getLogger(FreightCostValidator.class);
 
-	private Map<Integer, Set<Integer>> invoiceId2inOutIds = new HashMap<Integer, Set<Integer>>();
+	private Map<Integer, Set<Integer>> invoiceId2inOutIds = new HashMap<>();
 
 	private int ad_Client_ID = -1;
 
+	@Override
 	public int getAD_Client_ID()
 	{
 		return ad_Client_ID;
 	}
 
+	@Override
 	public final void initialize(final ModelValidationEngine engine, final MClient client)
 	{
 		if (client != null)
@@ -96,12 +98,14 @@ public class FreightCostValidator implements ModelValidator
 		engine.addModelChange(I_C_Order.Table_Name, this);
 	}
 
+	@Override
 	public String login(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		// nothing to do
 		return null;
 	}
 
+	@Override
 	public String docValidate(final PO po, final int timing)
 	{
 		if (po instanceof I_C_Invoice)
@@ -174,6 +178,7 @@ public class FreightCostValidator implements ModelValidator
 		return false;
 	}
 
+	@Override
 	public String modelChange(final PO po, int type) throws Exception
 	{
 		if (po instanceof MInvoiceLine)
@@ -239,12 +244,11 @@ public class FreightCostValidator implements ModelValidator
 		Set<Integer> inOutIds = invoiceId2inOutIds.get(invoiceId);
 		if (inOutIds == null)
 		{
-			inOutIds = new HashSet<Integer>();
+			inOutIds = new HashSet<>();
 			invoiceId2inOutIds.put(invoiceId, inOutIds);
 		}
 
-		final IInOutPA inOutPA = Services.get(IInOutPA.class);
-		final I_M_InOutLine iol = inOutPA.retrieveInOutLine(iolId, trxName);
+		final I_M_InOutLine iol = InterfaceWrapperHelper.create(Env.getCtx(), iolId, I_M_InOutLine.class, trxName);
 		final int inOutId = iol.getM_InOut_ID();
 		if (!inOutIds.add(inOutId))
 		{

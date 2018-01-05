@@ -4,11 +4,14 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.impl.LogicExpressionEvaluator.BooleanEvaluator;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
 import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
+import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableSet;
@@ -18,6 +21,15 @@ import lombok.NonNull;
 @JsonSerialize(using = JsonLogicExpressionSerializer.class)
 /* package */final class LogicExpression extends AbstractLogicExpression
 {
+	public static LogicExpression of(
+			@NonNull final ILogicExpression left,
+			@NonNull final String operator,
+			@NonNull final ILogicExpression right)
+	{
+		final Boolean constantValue = null;
+		return new LogicExpression(constantValue, left, operator, right);
+	}
+
 	private final ILogicExpression left;
 	private final ILogicExpression right;
 	private final String operator;
@@ -255,5 +267,38 @@ import lombok.NonNull;
 	public String toString()
 	{
 		return getExpressionString();
+	}
+
+	@Override
+	public ILogicExpression evaluatePartial(final Evaluatee ctx)
+	{
+		if (isConstant())
+		{
+			return this;
+		}
+
+		final ILogicExpression leftExpression = getLeft();
+		final ILogicExpression newLeftExpression = leftExpression.evaluatePartial(ctx);
+
+		final ILogicExpression rightExpression = getRight();
+		final ILogicExpression newRightExpression = rightExpression.evaluatePartial(ctx);
+
+		final String logicOperator = getOperator();
+
+		if (newLeftExpression.isConstant() && newRightExpression.isConstant())
+		{
+			final BooleanEvaluator logicExprEvaluator = LogicExpressionEvaluator.getBooleanEvaluatorByOperator(logicOperator);
+			final boolean result = logicExprEvaluator.evaluateOrNull(newLeftExpression::constantValue, newRightExpression::constantValue);
+			return ConstantLogicExpression.of(result);
+		}
+		else if (Objects.equals(leftExpression, newLeftExpression)
+				&& Objects.equals(rightExpression, newRightExpression))
+		{
+			return this;
+		}
+		else
+		{
+			return LogicExpression.of(newLeftExpression, logicOperator, newRightExpression);
+		}
 	}
 }

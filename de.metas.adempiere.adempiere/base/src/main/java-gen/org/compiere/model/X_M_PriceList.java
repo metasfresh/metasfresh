@@ -14,7 +14,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -281813282L;
+	private static final long serialVersionUID = 1250174837L;
 
     /** Standard Constructor */
     public X_M_PriceList (Properties ctx, int M_PriceList_ID, String trxName)
@@ -30,8 +30,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 			setM_PriceList_ID (0);
 			setM_PricingSystem_ID (0);
 			setName (null);
-			setPricePrecision (0);
-// 2
+			setPricePrecision (0); // 2
         } */
     }
 
@@ -62,7 +61,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 		set_ValueFromPO(COLUMNNAME_BasePriceList_ID, org.compiere.model.I_M_PriceList.class, BasePriceList);
 	}
 
-	/** Set Base Pricelist.
+	/** Set Basis Preisliste.
 		@param BasePriceList_ID 
 		Pricelist to be used, if product not found on this pricelist
 	  */
@@ -75,7 +74,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 			set_Value (COLUMNNAME_BasePriceList_ID, Integer.valueOf(BasePriceList_ID));
 	}
 
-	/** Get Base Pricelist.
+	/** Get Basis Preisliste.
 		@return Pricelist to be used, if product not found on this pricelist
 	  */
 	@Override
@@ -177,7 +176,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Enforce price limit.
+	/** Set Preislimit erzwingen.
 		@param EnforcePriceLimit 
 		Do not allow prices below the limit price
 	  */
@@ -187,7 +186,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 		set_Value (COLUMNNAME_EnforcePriceLimit, Boolean.valueOf(EnforcePriceLimit));
 	}
 
-	/** Get Enforce price limit.
+	/** Get Preislimit erzwingen.
 		@return Do not allow prices below the limit price
 	  */
 	@Override
@@ -201,6 +200,25 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Interner Name.
+		@param InternalName 
+		Generally used to give records a name that can be safely referenced from code.
+	  */
+	@Override
+	public void setInternalName (java.lang.String InternalName)
+	{
+		set_Value (COLUMNNAME_InternalName, InternalName);
+	}
+
+	/** Get Interner Name.
+		@return Generally used to give records a name that can be safely referenced from code.
+	  */
+	@Override
+	public java.lang.String getInternalName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InternalName);
 	}
 
 	/** Set Standard.
@@ -411,7 +429,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-	/** Set Price Precision.
+	/** Set Preis Präzision.
 		@param PricePrecision 
 		Precision (number of decimals) for the Price
 	  */
@@ -421,7 +439,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 		set_Value (COLUMNNAME_PricePrecision, Integer.valueOf(PricePrecision));
 	}
 
-	/** Get Price Precision.
+	/** Get Preis Präzision.
 		@return Precision (number of decimals) for the Price
 	  */
 	@Override

@@ -26,6 +26,8 @@ import java.util.Properties;
 
 
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.event.Topic;
+import de.metas.event.Type;
 
 public final class Async_Constants
 {
@@ -41,4 +43,9 @@ public final class Async_Constants
 	public static final int DEFAULT_RETRY_TIMEOUT_MILLIS = 5000;
 	
 	public static final String C_Async_Batch = "C_Async_Batch";
+	
+	public static final Topic EVENTBUS_WORKPACKAGE_PROCESSING_ERRORS = Topic.builder()
+			.setName("de.metas.async.WorkpackageProcessingErrors")
+			.setType(Type.REMOTE)
+			.build();
 }

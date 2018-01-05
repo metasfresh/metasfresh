@@ -336,7 +336,7 @@ public final class Evaluatees
 	@VisibleForTesting
 	static final class CompositeEvaluatee implements Evaluatee2
 	{
-		private final List<Evaluatee> sources = new ArrayList<Evaluatee>();
+		private final List<Evaluatee> sources = new ArrayList<>();
 
 		private CompositeEvaluatee(final Evaluatee source)
 		{
@@ -443,6 +443,14 @@ public final class Evaluatees
 			this.variableName = variableName;
 			this.value = value;
 			valueStr = value == null ? null : String.valueOf(value); // precompute because it's the most used one
+		}
+		
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add(variableName, value)
+					.toString();
 		}
 
 		@Override

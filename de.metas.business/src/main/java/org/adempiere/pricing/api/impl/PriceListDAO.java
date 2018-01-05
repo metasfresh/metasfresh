@@ -145,6 +145,24 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	@Cached(cacheName = I_M_PriceList_Version.Table_Name + "#By#M_PriceList_ID#Date")
+	public I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(final int priceListId, @NonNull final Date date)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_PriceList_Version.class)
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceListId)
+				.addCompareFilter(
+						I_M_PriceList_Version.COLUMNNAME_ValidFrom,
+						CompareQueryFilter.Operator.EQUAL,
+						new Timestamp(date.getTime()),
+						DateTruncQueryFilterModifier.DAY)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
+				.create()
+				.first();
+	}
+
+	@Override
 	public I_M_PriceList_Version retrieveNextVersionOrNull(final I_M_PriceList_Version plv)
 	{
 		// we want the PLV with the lowest ValidFrom that is just greater than plv's
