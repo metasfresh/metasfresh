@@ -1,8 +1,13 @@
 package de.metas.shipper.gateway.api.model;
 
+import java.util.List;
+
 import org.adempiere.util.Check;
 
+import com.google.common.base.Splitter;
+
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -30,6 +35,30 @@ import lombok.Value;
 @Value
 public class PhoneNumber
 {
+	public static PhoneNumber fromString(@NonNull final String phoneNoAsStr)
+	{
+		final List<String> parts = Splitter.on("-").splitToList(phoneNoAsStr.trim());
+		if (parts.size() != 3)
+		{
+			throw new IllegalArgumentException("Invalid PhoneNo string: " + phoneNoAsStr);
+		}
+
+		String countryCode = parts.get(0);
+		if (countryCode.startsWith("+"))
+		{
+			countryCode = countryCode.substring(1);
+		}
+
+		String areaCode = parts.get(1);
+		String phoneNumber = parts.get(2);
+
+		return builder()
+				.countryCode(countryCode)
+				.areaCode(areaCode)
+				.phoneNumber(phoneNumber)
+				.build();
+	}
+
 	String countryCode;
 	String areaCode;
 	String phoneNumber;
@@ -51,6 +80,6 @@ public class PhoneNumber
 
 	public String getAsString()
 	{
-		return "+" + countryCode + "" + areaCode + "" + phoneNumber;
+		return "+" + countryCode + "-" + areaCode + "-" + phoneNumber;
 	}
 }
