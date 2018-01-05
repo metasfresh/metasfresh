@@ -1,18 +1,28 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
+import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_Shipper;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -23,6 +33,8 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
+import de.metas.shipper.gateway.api.ShipperGatewayService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -63,6 +75,7 @@ public class HUShippingFacade
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final ShipperGatewayRegistry shipperGatewayRegistry = Adempiere.getBean(ShipperGatewayRegistry.class);
 
 	//
 	// Parameters
@@ -71,11 +84,13 @@ public class HUShippingFacade
 	private final int addToShipperTransportationId;
 	private final boolean completeShipments;
 	private final InvoiceMode invoiceMode;
+	private final boolean createShipperDeliveryOrders;
 
 	//
 	// State
 	private List<IShipmentScheduleWithHU> _candidates; // lazy
 	private InOutGenerateResult shipmentsGenerateResult;
+	private final ArrayList<I_M_Package> mpackagesCreated = new ArrayList<>();
 
 	@Builder
 	private HUShippingFacade(
@@ -83,6 +98,7 @@ public class HUShippingFacade
 			final int addToShipperTransportationId,
 			final boolean completeShipments,
 			@Nullable final InvoiceMode invoiceMode,
+			final boolean createShipperDeliveryOrders,
 			@Nullable final ILoggable loggable)
 	{
 		Check.assumeNotEmpty(hus, "hus is not empty");
@@ -91,7 +107,25 @@ public class HUShippingFacade
 		this.addToShipperTransportationId = addToShipperTransportationId;
 		this.completeShipments = completeShipments;
 		this.invoiceMode = invoiceMode;
+		this.createShipperDeliveryOrders = createShipperDeliveryOrders;
 		this.loggable = loggable != null ? loggable : Loggables.getNullLoggable();
+	}
+
+	@VisibleForTesting
+	public List<IShipmentScheduleWithHU> getCandidates()
+	{
+		if (_candidates == null)
+		{
+			_candidates = huShipmentScheduleDAO.retrieveShipmentSchedulesWithHUsFromHUs(hus);
+		}
+		return _candidates;
+	}
+
+	@VisibleForTesting
+	public List<I_M_InOut> getGeneratedShipments()
+	{
+		Check.assumeNotNull(shipmentsGenerateResult, "shipments were generated");
+		return shipmentsGenerateResult.getInOuts();
 	}
 
 	public InOutGenerateResult generateShippingDocuments()
@@ -102,38 +136,44 @@ public class HUShippingFacade
 
 	private void generateShippingDocuments0()
 	{
-		//
-		// Add HUs to shipper transportation if needed
-		if (addToShipperTransportationId > 0)
-		{
-			huShipperTransportationBL.addHUsToShipperTransportation(addToShipperTransportationId, hus);
-			loggable.addLog("HUs added to M_ShipperTransportation_ID={}", addToShipperTransportationId);
-		}
-
-		//
-		// Generate shipments
-		{
-			final List<IShipmentScheduleWithHU> candidates = getCandidates();
-			shipmentsGenerateResult = huShipmentScheduleBL
-					.createInOutProducerFromShipmentSchedule()
-					.setProcessShipments(completeShipments)
-					.setCreatePackingLines(false) // the packing lines shall only be created when the shipments are completed
-					.setManualPackingMaterial(false) // use the HUs!
-					.computeShipmentDate(true) // if this is ever used, it should be on true to keep legacy
-					// Fail on any exception, because we cannot create just a part of those shipments.
-					// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
-					.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
-					.createShipments(candidates);
-			loggable.addLog("Generated {}", shipmentsGenerateResult.toString());
-		}
-
-		//
-		// Generate invoices
-		generateInvoicesIfNeeded(shipmentsGenerateResult.getInOuts());
+		addHUsToShipperTransportationIfNeeded();
+		generateShipments();
+		generateInvoicesIfNeeded();
+		generateShipperDeliveryOrdersIfNeeded();
 	}
 
-	private void generateInvoicesIfNeeded(final List<I_M_InOut> shipments)
+	private void addHUsToShipperTransportationIfNeeded()
 	{
+		if (addToShipperTransportationId > 0)
+		{
+			final List<I_M_Package> result = huShipperTransportationBL.addHUsToShipperTransportation(addToShipperTransportationId, hus);
+			mpackagesCreated.addAll(result);
+			loggable.addLog("HUs added to M_ShipperTransportation_ID={}", addToShipperTransportationId);
+		}
+	}
+
+	private void generateShipments()
+	{
+		final List<IShipmentScheduleWithHU> candidates = getCandidates();
+		shipmentsGenerateResult = huShipmentScheduleBL
+				.createInOutProducerFromShipmentSchedule()
+				.setProcessShipments(completeShipments)
+				.setCreatePackingLines(false) // the packing lines shall only be created when the shipments are completed
+				.setManualPackingMaterial(false) // use the HUs!
+				.computeShipmentDate(true) // if this is ever used, it should be on true to keep legacy
+				// Fail on any exception, because we cannot create just a part of those shipments.
+				// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
+				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
+				.createShipments(candidates);
+		loggable.addLog("Generated {}", shipmentsGenerateResult);
+
+	}
+
+	private void generateInvoicesIfNeeded()
+	{
+		Check.assumeNotNull(shipmentsGenerateResult, "shipments generated");
+
+		final List<I_M_InOut> shipments = shipmentsGenerateResult.getInOuts();
 		if (shipments.isEmpty())
 		{
 			return;
@@ -158,20 +198,35 @@ public class HUShippingFacade
 		loggable.addLog("Invoice candidates enqueued: {}", enqueueResult);
 	}
 
-	@VisibleForTesting
-	public List<IShipmentScheduleWithHU> getCandidates()
+	private void generateShipperDeliveryOrdersIfNeeded()
 	{
-		if(_candidates == null)
+		if (!createShipperDeliveryOrders)
 		{
-			_candidates = huShipmentScheduleDAO.retrieveShipmentSchedulesWithHUsFromHUs(hus);
+			return;
 		}
-		return _candidates;
+
+		mpackagesCreated
+				.stream()
+				.collect(GuavaCollectors.toImmutableListMultimap(I_M_Package::getM_Shipper_ID))
+				.asMap()
+				.forEach(this::generateShipperDeliveryOrderIfNeeded);
 	}
 
-	@VisibleForTesting
-	public List<I_M_InOut> getGeneratedShipments()
+	private void generateShipperDeliveryOrderIfNeeded(final int shipperId, final Collection<I_M_Package> mpackages)
 	{
-		Check.assumeNotNull(shipmentsGenerateResult, "shipments were generated");
-		return shipmentsGenerateResult.getInOuts();
+		final I_M_Shipper shipper = loadOutOfTrx(shipperId, I_M_Shipper.class);
+		final String shipperGatewayId = shipper.getShipperGateway();
+		if (Check.isEmpty(shipperGatewayId, true))
+		{
+			return;
+		}
+		if (!shipperGatewayRegistry.hasServiceSupport(shipperGatewayId))
+		{
+			return;
+		}
+
+		final ShipperGatewayService shipperGatewayService = shipperGatewayRegistry.getShipperGatewayService(shipperGatewayId);
+		final Set<Integer> mpackageIds = mpackages.stream().map(I_M_Package::getM_Package_ID).collect(ImmutableSet.toImmutableSet());
+		shipperGatewayService.createAndSendDeliveryOrdersForPackages(mpackageIds);
 	}
 }

@@ -21,10 +21,15 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
 			<version>10.0.0</version>
 		</dependency>
+		<!-- Avoid any other metasfresh/adempiere dependencies -->
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>

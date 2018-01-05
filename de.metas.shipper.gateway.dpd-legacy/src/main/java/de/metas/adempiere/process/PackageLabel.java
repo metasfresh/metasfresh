@@ -122,9 +122,9 @@ public class PackageLabel extends JavaProcess
 	private MInOut retrieveInOut()
 	{
 
-		final int tableId = getTable_ID();
+		final String tableName = getTableName();
 
-		if (tableId == I_M_Package.Table_ID)
+		if (I_M_Package.Table_Name.equals(tableName))
 		{
 
 			pack = getRecord(I_M_Package.class);
@@ -132,7 +132,7 @@ public class PackageLabel extends JavaProcess
 			return new MInOut(getCtx(), pack.getM_InOut_ID(), get_TrxName());
 
 		}
-		else if (tableId == I_M_InOut.Table_ID)
+		else if (I_M_InOut.Table_Name.equals(tableName))
 		{
 			MInOut io = new MInOut(getCtx(), getRecord_ID(), get_TrxName());
 			if (M_Shipper_ID != null)
@@ -151,8 +151,7 @@ public class PackageLabel extends JavaProcess
 			return io;
 		}
 
-		throw new AdempiereException("illegal Table_ID id for this process: "
-				+ tableId + "; Expecting M_Inout or M_Package");
+		throw new AdempiereException("illegal Table_ID id for this process: " + tableName + "; Expecting M_Inout or M_Package");
 	}
 
 	@Override
