@@ -3,6 +3,8 @@
  */
 package de.metas.adempiere.service.impl;
 
+import java.util.Comparator;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -52,5 +54,14 @@ public class PlainCountryDAO extends CountryDAO
 	public List<I_C_Country> getCountries(Properties ctx)
 	{
 		return POJOLookupMap.get().getRecords(I_C_Country.class, country -> true);
+	}
+
+	@Override
+	public I_C_Country getDefault(final Properties ctx)
+	{
+		// NOTE: we need to override the default implementation because that one is assuming that we have AD_Client records... and in some tests we don't have it.
+		// So for now, we are just returning first country which was created.
+		final Comparator<I_C_Country> orderByComparator = Comparator.comparing(I_C_Country::getC_Country_ID);
+		return POJOLookupMap.get().getFirst(I_C_Country.class, country -> true, orderByComparator);
 	}
 }
