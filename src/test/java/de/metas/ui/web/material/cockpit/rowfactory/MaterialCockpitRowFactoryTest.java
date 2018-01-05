@@ -62,6 +62,10 @@ import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.Cre
 
 public class MaterialCockpitRowFactoryTest
 {
+	private static final BigDecimal TWELVE = new BigDecimal("12");
+	private static final BigDecimal TEN = BigDecimal.TEN;
+	private static final BigDecimal ONE = BigDecimal.ONE;
+	private static final BigDecimal ELEVEN = new BigDecimal("11");
 	private AttributesTestHelper attributesTestHelper;
 	private MaterialCockpitRowFactory materialCockpitRowFactory;
 	private I_M_Product product;
@@ -174,7 +178,7 @@ public class MaterialCockpitRowFactoryTest
 		cockpitRecord1.setM_Product(product);
 		cockpitRecord1.setDateGeneral(SystemTime.asTimestamp());
 		cockpitRecord1.setAttributesKey(attributesKeyWithAttr1_and_attr2.getAsString());
-		cockpitRecord1.setQtyReserved_Purchase(BigDecimal.TEN);
+		cockpitRecord1.setQtyReserved_Purchase(TEN);
 		save(cockpitRecord1);
 
 		final AttributesKey attributesKey2 = AttributesKey.NONE;
@@ -183,21 +187,21 @@ public class MaterialCockpitRowFactoryTest
 		cockpitRecordWithEmptyAttributesKey.setM_Product(product);
 		cockpitRecordWithEmptyAttributesKey.setDateGeneral(SystemTime.asTimestamp());
 		cockpitRecordWithEmptyAttributesKey.setAttributesKey(attributesKey2.getAsString());
-		cockpitRecordWithEmptyAttributesKey.setQtyReserved_Purchase(BigDecimal.ONE);
+		cockpitRecordWithEmptyAttributesKey.setQtyReserved_Purchase(ONE);
 		save(cockpitRecordWithEmptyAttributesKey);
 
 		final I_MD_Stock stockRecord1 = newInstance(I_MD_Stock.class);
 		stockRecord1.setM_Product(product);
 		stockRecord1.setAttributesKey(attributesKeyWithAttr1_and_attr2.getAsString());
 		stockRecord1.setM_Warehouse_ID(30);
-		stockRecord1.setQtyOnHand(new BigDecimal("11"));
+		stockRecord1.setQtyOnHand(ELEVEN);
 		save(stockRecord1);
 
 		final I_MD_Stock stockRecordWithEmptyAttributesKey = newInstance(I_MD_Stock.class);
 		stockRecordWithEmptyAttributesKey.setM_Product(product);
 		stockRecordWithEmptyAttributesKey.setAttributesKey(attributesKey2.getAsString());
 		stockRecordWithEmptyAttributesKey.setM_Warehouse_ID(20);
-		stockRecordWithEmptyAttributesKey.setQtyOnHand(new BigDecimal("12"));
+		stockRecordWithEmptyAttributesKey.setQtyOnHand(TWELVE);
 		save(stockRecordWithEmptyAttributesKey);
 
 		final Timestamp today = TimeUtil.getDay(SystemTime.asTimestamp());
@@ -214,8 +218,8 @@ public class MaterialCockpitRowFactoryTest
 
 		assertThat(result).hasSize(1);
 		final MaterialCockpitRow mainRow = result.get(0);
-		assertThat(mainRow.getQtyOnHandStock()).isEqualByComparingTo("23");
-		assertThat(mainRow.getQtyReservedPurchase()).isEqualByComparingTo("11");
+		assertThat(mainRow.getQtyOnHandStock()).isEqualByComparingTo(ELEVEN.add(TWELVE));
+		assertThat(mainRow.getQtyReservedPurchase()).isEqualByComparingTo(TEN.add(ONE));
 
 
 		final List<MaterialCockpitRow> includedRows = mainRow.getIncludedRows();
@@ -224,16 +228,16 @@ public class MaterialCockpitRowFactoryTest
 		assertThat(includedRows).hasSize(3);
 
 		final MaterialCockpitRow emptyGroupRow = filterForRowBy(includedRows, dimensionspecGroup_empty);
-		assertThat(emptyGroupRow.getQtyOnHandStock()).isEqualByComparingTo("12");
-		assertThat(emptyGroupRow.getQtyReservedPurchase()).isEqualByComparingTo("1");
+		assertThat(emptyGroupRow.getQtyOnHandStock()).isEqualByComparingTo(TWELVE);
+		assertThat(emptyGroupRow.getQtyReservedPurchase()).isEqualByComparingTo(ONE);
 
 		final MaterialCockpitRow attr1GroupRow = filterForRowBy(includedRows, dimensionspecGroup_attr1_value1);
-		assertThat(attr1GroupRow.getQtyOnHandStock()).isEqualByComparingTo("11");
-		assertThat(attr1GroupRow.getQtyReservedPurchase()).isEqualByComparingTo("10");
+		assertThat(attr1GroupRow.getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
+		assertThat(attr1GroupRow.getQtyReservedPurchase()).isEqualByComparingTo(TEN);
 
 		final MaterialCockpitRow attr2GroupRow = filterForRowBy(includedRows, dimensionspecGroup_attr2_value1);
-		assertThat(attr2GroupRow.getQtyOnHandStock()).isEqualByComparingTo("11");
-		assertThat(attr2GroupRow.getQtyReservedPurchase()).isEqualByComparingTo("10");
+		assertThat(attr2GroupRow.getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
+		assertThat(attr2GroupRow.getQtyReservedPurchase()).isEqualByComparingTo(TEN);
 
 	}
 

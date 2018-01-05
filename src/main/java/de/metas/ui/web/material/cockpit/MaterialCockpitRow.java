@@ -31,6 +31,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Singular;
 import lombok.ToString;
@@ -58,6 +59,7 @@ import lombok.ToString;
  */
 
 @ToString
+@EqualsAndHashCode(of = "documentId")
 public class MaterialCockpitRow implements IViewRow
 {
 	private static final String SEPARATOR = "-";
@@ -158,6 +160,7 @@ public class MaterialCockpitRow implements IViewRow
 		this.productId = extractProductId(includedRows);
 
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
+				"main",
 				date,
 				productId));
 
@@ -216,6 +219,7 @@ public class MaterialCockpitRow implements IViewRow
 		final String dimensionGroupName = dimensionGroup.getGroupName().translate(Env.getAD_Language());
 
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
+				"attributes",
 				date,
 				productId,
 				dimensionGroupName));
@@ -265,6 +269,7 @@ public class MaterialCockpitRow implements IViewRow
 			plantName = "";
 		}
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
+				"countingRow",
 				date,
 				productId,
 				plantName));

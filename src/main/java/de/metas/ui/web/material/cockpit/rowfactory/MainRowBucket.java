@@ -56,7 +56,7 @@ public class MainRowBucket
 		pmmQtyPromised = pmmQtyPromised.add(dataRecord.getPMM_QtyPromised_OnDate());
 		qtyMaterialentnahme = qtyMaterialentnahme.add(dataRecord.getQtyMaterialentnahme());
 		qtyRequiredForProduction = qtyRequiredForProduction.add(dataRecord.getQtyRequiredForProduction());
-		qtyReservedPurchase = qtyReservedSale.add(dataRecord.getQtyReserved_Purchase());
+		qtyReservedPurchase = qtyReservedPurchase.add(dataRecord.getQtyReserved_Purchase());
 		qtyReservedSale = qtyReservedSale.add(dataRecord.getQtyReserved_Sale());
 		qtyAvailableToPromise = qtyAvailableToPromise.add(dataRecord.getQtyAvailableToPromise());
 
