@@ -215,11 +215,6 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		return goResponseObj;
 	}
 
-	private static final OrderId createOrderId(final String orderIdStr)
-	{
-		return OrderId.of(SHIPPER_GATEWAY_ID, orderIdStr);
-	}
-
 	private ShipperGatewayException extractException(final Fehlerbehandlung errorResponse)
 	{
 		final Fehlerbehandlung.Fehlermeldungen goErrorMessages = errorResponse.getFehlermeldungen();
