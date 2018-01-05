@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -411,7 +412,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		newCand.setC_Activity(activity);
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
-		
+
 		final int taxCategoryId = term.getC_TaxCategory_ID();
 		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
@@ -533,7 +534,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		newCand.setC_Activity(activity);
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
-		
+
 		final int taxCategoryId = term.getC_TaxCategory_ID();
 		final I_M_Warehouse warehouse = null;
 		final boolean isSOTrx = true;
@@ -611,8 +612,8 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	private void validatePricingForProduct(
-			@NonNull final I_C_Flatrate_Term term, 
-			@NonNull final I_M_Product product, 
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final I_M_Product product,
 			@NonNull final Timestamp date)
 	{
 		FlatrateTermPricing.builder()
@@ -1006,45 +1007,28 @@ public class FlatrateBL implements IFlatrateBL
 		dataEntry.setActualQtyDiffPercentEff(effectiveDiffPercent);
 		dataEntry.setC_Currency_ID(currencyId);
 		dataEntry.setFlatrateAmtCorr(amtCorrection);
-
-		// System.out.println("--updateEntry--");
-		// System.out.println("AuxEntry=" + auxEntry);
-		// System.out.println("PricePerUnit=" + pricePerUnit);
-		// System.out.println("ActualQtyDiffAbs=" + actualQtyDiffAbs);
-		// System.out.println("ActualQtyPerUnit=" + actualQtyPerUnit);
-		// System.out.println("Qty_Reported=" + dataEntry.getQty_Reported());
-		// System.out.println("FlatrateAmt=" + flatrateAmt);
-		// System.out.println("FlatrateAmtCorr=" + amtCorrection);
 	}
 
 	@Override
-	public void extendContract(
-			final I_C_Flatrate_Term currentTerm,
-			final boolean forceExtend,
-			final Boolean forceComplete,
-			final Timestamp nextTermStartDate,
-			final I_C_OrderLine ol)
+	public void extendContract(final @NonNull ContractExtendingRequest context)
 	{
+		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, (TrxRunnable)localTrxName -> {
+			extendContract0(context, localTrxName);
 
-		Services.get(ITrxManager.class).run(
-				new TrxRunnable()
-				{
-					@Override
-					public void run(final String localTrxName) throws Exception
-					{
-						extendContract0(currentTerm, forceExtend, forceComplete, nextTermStartDate, ol, localTrxName);
-					}
-				});
+			final I_C_Flatrate_Term currentTerm = context.getContract();
+			currentTerm.setAD_PInstance_EndOfTerm_ID(context.getAD_PInstance_ID());
+			InterfaceWrapperHelper.save(currentTerm, localTrxName);
+		});
 	}
 
-	private void extendContract0(
-			final I_C_Flatrate_Term currentTerm,
-			final boolean forceExtend,
-			final Boolean forceComplete,
-			final Timestamp nextTermStartDate,
-			final I_C_OrderLine ol,
-			final String trxName)
+	private void extendContract0(final @NonNull ContractExtendingRequest context, final String trxName)
 	{
+		final I_C_Flatrate_Term currentTerm = context.getContract();
+		final boolean forceExtend = context.isForceExtend();
+		final boolean forceComplete = context.isForceComplete();
+		final Timestamp nextTermStartDate = context.getNextTermStartDate();
+		final I_C_OrderLine ol = context.getOrderLine();
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
 
 		final I_C_Flatrate_Conditions conditions = currentTerm.getC_Flatrate_Conditions();
@@ -1107,7 +1091,7 @@ public class FlatrateBL implements IFlatrateBL
 			nextTerm.setDropShip_User_ID(currentTerm.getDropShip_User_ID());
 			nextTerm.setDeliveryRule(currentTerm.getDeliveryRule());
 			nextTerm.setDeliveryViaRule(currentTerm.getDeliveryViaRule());
-			
+
 			nextTerm.setC_UOM_ID(currentTerm.getC_UOM_ID());
 
 			final IFlatrateTermEventService flatrateHandlersService = Services.get(IFlatrateTermEventService.class);
@@ -1117,7 +1101,7 @@ public class FlatrateBL implements IFlatrateBL
 
 			nextTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Prepare);
 			nextTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
-			
+
 			InterfaceWrapperHelper.save(nextTerm);
 
 			// the conditions were set via de.metas.flatrate.modelvalidator.C_Flatrate_Term.copyFromConditions(term)
@@ -1208,8 +1192,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		return dayAfterEndDate;
 	}
-	
-	
+
 	@Override
 	public void updateNoticeDateAndEndDate(final I_C_Flatrate_Term term)
 	{
@@ -1539,14 +1522,14 @@ public class FlatrateBL implements IFlatrateBL
 
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Prepare);
 		newTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
-		
+
 		InterfaceWrapperHelper.save(newTerm);
 
 		if (completeIt)
 		{
 			complete(newTerm);
 		}
-	
+
 		return newTerm;
 	}
 
@@ -1621,7 +1604,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	/**
 	 * Check if 2 flatrate terms overlap in product or product category
-	 * 
+	 *
 	 * @param newTerm
 	 * @param term
 	 * @return
@@ -1742,7 +1725,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	/**
 	 * Check if the startDate and endDate of 2 terms overlap.
-	 * 
+	 *
 	 * @param term1
 	 * @param term2
 	 * @return
@@ -1759,12 +1742,12 @@ public class FlatrateBL implements IFlatrateBL
 
 		return overlaps;
 	}
-	
+
 	@Override
 	public I_C_Flatrate_Term getInitialFlatrateTerm(@NonNull final I_C_Flatrate_Term term)
 	{
 		I_C_Flatrate_Term ancestor = flatrateDAO.retrieveAncestorFlatrateTerm(term);
-		
+
 		if (ancestor != null)
 		{
 			I_C_Flatrate_Term nextAncestor = getInitialFlatrateTerm(ancestor);
@@ -1773,7 +1756,7 @@ public class FlatrateBL implements IFlatrateBL
 				ancestor = nextAncestor;
 			}
 		}
-		
+
 		return ancestor;
 	}
 }
