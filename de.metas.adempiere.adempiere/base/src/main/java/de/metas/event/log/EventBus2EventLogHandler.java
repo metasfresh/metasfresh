@@ -1,6 +1,6 @@
 package de.metas.event.log;
 
-import org.springframework.stereotype.Service;
+import org.compiere.Adempiere;
 
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
@@ -29,14 +29,12 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
 public class EventBus2EventLogHandler implements IEventListener
 {
-	private final EventLogService eventStoreService;
+	public static EventBus2EventLogHandler INSTANCE = new EventBus2EventLogHandler();
 
-	public EventBus2EventLogHandler(@NonNull final EventLogService eventStoreService)
+	private EventBus2EventLogHandler()
 	{
-		this.eventStoreService = eventStoreService;
 	}
 
 	@Override
@@ -44,7 +42,8 @@ public class EventBus2EventLogHandler implements IEventListener
 	{
 		if (EventLogSystemBusTools.isAdvisedToStoreEvent(event))
 		{
-			eventStoreService.storeEvent(event, eventBus);
+			final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
+			eventLogService.storeEvent(event, eventBus);
 		}
 	}
 }

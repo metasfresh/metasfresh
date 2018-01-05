@@ -33,7 +33,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
-import org.compiere.Adempiere;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -151,8 +150,7 @@ public class EventBusFactory implements IEventBusFactory
 		final EventBus eventBus = new EventBus(topic.getName(), eventBusExecutor);
 
 		// whether the event is really stored is determined for each individual event
-		final EventBus2EventLogHandler eventBus2EventStoreHandler = Adempiere.getBean(EventBus2EventLogHandler.class);
-		eventBus.subscribe(eventBus2EventStoreHandler);
+		eventBus.subscribe(EventBus2EventLogHandler.INSTANCE);
 
 		// Bind the EventBus to JMS (only if the system is enabled).
 		// If is not enabled we will use only local event buses,
