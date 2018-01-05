@@ -75,13 +75,14 @@ public class M_Transaction_TransactionEventCreatorTest
 	}
 
 	@Test
-	public void createTransactionEvent()
+	public void createEventsForTransaction()
 	{
 		final I_M_Transaction transaction = createShipmentTransaction();
 
 		// invoke the method under test
 		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
 				.createEventsForTransaction(transaction, false);
+		assertThat(events).hasSize(1);
 
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
@@ -90,7 +91,7 @@ public class M_Transaction_TransactionEventCreatorTest
 	}
 
 	@Test
-	public void createTransactionEvent_single_shipmentSchedule()
+	public void createEventsForTransaction_single_shipmentSchedule()
 	{
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
 		shipmentScheduleQtyPicked.setM_ShipmentSchedule_ID(20);
@@ -112,7 +113,7 @@ public class M_Transaction_TransactionEventCreatorTest
 	}
 
 	@Test
-	public void createTransactionEvent_single_shipmentSchedule_with_partial_quantity()
+	public void createEventsForTransaction_single_shipmentSchedule_with_partial_quantity()
 	{
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
 		shipmentScheduleQtyPicked.setM_ShipmentSchedule_ID(20);
@@ -142,7 +143,7 @@ public class M_Transaction_TransactionEventCreatorTest
 	}
 
 	@Test
-	public void createTransactionEvent_multiple_shipmentSchedules_with_partial_quantity()
+	public void createEventsForTransaction_multiple_shipmentSchedules_with_partial_quantity()
 	{
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
 		shipmentScheduleQtyPicked.setM_ShipmentSchedule_ID(20);
@@ -195,6 +196,7 @@ public class M_Transaction_TransactionEventCreatorTest
 		transaction.setMovementType(X_M_Transaction.MOVEMENTTYPE_CustomerShipment);
 		transaction.setM_Product(product);
 		transaction.setMovementDate(movementDate);
+		transaction.setM_InOutLine_ID(30);
 		transaction.setMovementQty(BigDecimal.TEN.negate());
 		save(transaction);
 		return transaction;
