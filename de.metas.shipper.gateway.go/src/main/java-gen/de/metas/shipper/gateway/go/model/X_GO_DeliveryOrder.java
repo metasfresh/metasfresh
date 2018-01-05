@@ -14,7 +14,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2141825700L;
+	private static final long serialVersionUID = -1016700092L;
 
     /** Standard Constructor */
     public X_GO_DeliveryOrder (Properties ctx, int GO_DeliveryOrder_ID, String trxName)
@@ -22,6 +22,8 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
       super (ctx, GO_DeliveryOrder_ID, trxName);
       /** if (GO_DeliveryOrder_ID == 0)
         {
+			setGO_DeliverToBPartner_ID (0);
+			setGO_DeliverToBPLocation_ID (0);
 			setGO_DeliverToCompanyName (null);
 			setGO_DeliverToCompanyName2 (null);
 			setGO_DeliverToDepartment (null);
@@ -36,6 +38,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 			setGO_SelfDelivery (null);
 			setGO_SelfPickup (null);
 			setGO_ServiceType (null);
+			setProcessed (false); // N
         } */
     }
 
@@ -84,6 +87,74 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	public java.lang.String getGO_CustomerReference () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_CustomerReference);
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner getGO_DeliverToBPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_GO_DeliverToBPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setGO_DeliverToBPartner(org.compiere.model.I_C_BPartner GO_DeliverToBPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_GO_DeliverToBPartner_ID, org.compiere.model.I_C_BPartner.class, GO_DeliverToBPartner);
+	}
+
+	/** Set Deliver To BPartner.
+		@param GO_DeliverToBPartner_ID Deliver To BPartner	  */
+	@Override
+	public void setGO_DeliverToBPartner_ID (int GO_DeliverToBPartner_ID)
+	{
+		if (GO_DeliverToBPartner_ID < 1) 
+			set_Value (COLUMNNAME_GO_DeliverToBPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_GO_DeliverToBPartner_ID, Integer.valueOf(GO_DeliverToBPartner_ID));
+	}
+
+	/** Get Deliver To BPartner.
+		@return Deliver To BPartner	  */
+	@Override
+	public int getGO_DeliverToBPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_GO_DeliverToBPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner_Location getGO_DeliverToBPLocation() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_GO_DeliverToBPLocation_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setGO_DeliverToBPLocation(org.compiere.model.I_C_BPartner_Location GO_DeliverToBPLocation)
+	{
+		set_ValueFromPO(COLUMNNAME_GO_DeliverToBPLocation_ID, org.compiere.model.I_C_BPartner_Location.class, GO_DeliverToBPLocation);
+	}
+
+	/** Set Deliver To BPartner Location.
+		@param GO_DeliverToBPLocation_ID Deliver To BPartner Location	  */
+	@Override
+	public void setGO_DeliverToBPLocation_ID (int GO_DeliverToBPLocation_ID)
+	{
+		if (GO_DeliverToBPLocation_ID < 1) 
+			set_Value (COLUMNNAME_GO_DeliverToBPLocation_ID, null);
+		else 
+			set_Value (COLUMNNAME_GO_DeliverToBPLocation_ID, Integer.valueOf(GO_DeliverToBPLocation_ID));
+	}
+
+	/** Get Deliver To BPartner Location.
+		@return Deliver To BPartner Location	  */
+	@Override
+	public int getGO_DeliverToBPLocation_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_GO_DeliverToBPLocation_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Deliver To Company Name.
@@ -610,5 +681,31 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Verarbeitet.
+		@param Processed 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
+	@Override
+	public void setProcessed (boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+	}
+
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
+	@Override
+	public boolean isProcessed () 
+	{
+		Object oo = get_Value(COLUMNNAME_Processed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 }

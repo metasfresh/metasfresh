@@ -145,6 +145,60 @@ public interface I_GO_DeliveryOrder
     public static final String COLUMNNAME_GO_CustomerReference = "GO_CustomerReference";
 
 	/**
+	 * Set Deliver To BPartner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setGO_DeliverToBPartner_ID (int GO_DeliverToBPartner_ID);
+
+	/**
+	 * Get Deliver To BPartner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getGO_DeliverToBPartner_ID();
+
+	public org.compiere.model.I_C_BPartner getGO_DeliverToBPartner();
+
+	public void setGO_DeliverToBPartner(org.compiere.model.I_C_BPartner GO_DeliverToBPartner);
+
+    /** Column definition for GO_DeliverToBPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_BPartner> COLUMN_GO_DeliverToBPartner_ID = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_BPartner>(I_GO_DeliveryOrder.class, "GO_DeliverToBPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name GO_DeliverToBPartner_ID */
+    public static final String COLUMNNAME_GO_DeliverToBPartner_ID = "GO_DeliverToBPartner_ID";
+
+	/**
+	 * Set Deliver To BPartner Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setGO_DeliverToBPLocation_ID (int GO_DeliverToBPLocation_ID);
+
+	/**
+	 * Get Deliver To BPartner Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getGO_DeliverToBPLocation_ID();
+
+	public org.compiere.model.I_C_BPartner_Location getGO_DeliverToBPLocation();
+
+	public void setGO_DeliverToBPLocation(org.compiere.model.I_C_BPartner_Location GO_DeliverToBPLocation);
+
+    /** Column definition for GO_DeliverToBPLocation_ID */
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_BPartner_Location> COLUMN_GO_DeliverToBPLocation_ID = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_C_BPartner_Location>(I_GO_DeliveryOrder.class, "GO_DeliverToBPLocation_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name GO_DeliverToBPLocation_ID */
+    public static final String COLUMNNAME_GO_DeliverToBPLocation_ID = "GO_DeliverToBPLocation_ID";
+
+	/**
 	 * Set Deliver To Company Name.
 	 *
 	 * <br>Type: String
@@ -774,6 +828,31 @@ public interface I_GO_DeliveryOrder
     public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_M_ShipperTransportation_ID = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "M_ShipperTransportation_ID", null);
     /** Column name M_ShipperTransportation_ID */
     public static final String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
+
+	/**
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setProcessed (boolean Processed);
+
+	/**
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isProcessed();
+
+    /** Column definition for Processed */
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "Processed", null);
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Get Aktualisiert.
