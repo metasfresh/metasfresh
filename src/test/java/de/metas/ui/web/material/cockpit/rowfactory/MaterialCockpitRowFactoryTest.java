@@ -33,6 +33,7 @@ import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
@@ -69,6 +70,10 @@ public class MaterialCockpitRowFactoryTest
 	private I_M_AttributeValue attr1_value1;
 	private I_M_AttributeValue attr2_value1;
 	private DimensionSpec dimensionSpec;
+	private DimensionSpecGroup dimensionspecGroup_attr1_value1;
+	private DimensionSpecGroup dimensionspecGroup_attr2_value1;
+	private DimensionSpecGroup dimensionspecGroup_empty;
+	private I_M_AttributeValue attr2_value2;
 
 	@Before
 	public void init()
@@ -92,76 +97,33 @@ public class MaterialCockpitRowFactoryTest
 
 		attr2 = attributesTestHelper.createM_Attribute("test21", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		attr2_value1 = attributesTestHelper.createM_AttributeValue(attr2, "test2_value1");
-		attributesTestHelper.createM_AttributeValue(attr2, "test2_value2");
+		attr2_value2 = attributesTestHelper.createM_AttributeValue(attr2, "test2_value2");
 
-		dimensionSpec = createDimensionSpec(attr1, attr1_value1, attr2);
+		initDimenstionSpec();
 
 		materialCockpitRowFactory = new MaterialCockpitRowFactory();
 	}
 
-	@Test
-	public void createRows_contains_attribute_groups()
+	protected void initDimenstionSpec()
 	{
-		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
-		save(asi1);
+		dimensionSpec = createDimensionSpec(attr1, attr1_value1, attr2);
+		final List<DimensionSpecGroup> groups = dimensionSpec.retrieveGroups();
 
-		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr1_value1);
-		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr2_value1);
+		assertThat(groups).hasSize(4);
 
-		final AttributesKey attributesKey1 = AttributesKeys.createAttributesKeyFromASIAllAttributeValues(asi1.getM_AttributeSetInstance_ID()).get();
+		dimensionspecGroup_empty = groups.get(0);
+		assertThat(dimensionspecGroup_empty.isEmptyGroup()).isTrue();
 
-		final I_MD_Cockpit record1 = newInstance(I_MD_Cockpit.class);
-		record1.setM_Product(product);
-		record1.setDateGeneral(SystemTime.asTimestamp());
-		record1.setAttributesKey(attributesKey1.getAsString());
-		record1.setQtyReserved_Purchase(BigDecimal.TEN);
-		save(record1);
+		dimensionspecGroup_attr1_value1 = groups.get(1);
+		assertThat(dimensionspecGroup_attr1_value1.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr1_value1.getM_AttributeValue_ID()));
 
-		final AttributesKey attributesKey2 = AttributesKey.NONE;
+		dimensionspecGroup_attr2_value1 = groups.get(2);
+		assertThat(dimensionspecGroup_attr2_value1.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr2_value1.getM_AttributeValue_ID()));
 
-		final I_MD_Cockpit record2 = newInstance(I_MD_Cockpit.class);
-		record2.setM_Product(product);
-		record2.setDateGeneral(SystemTime.asTimestamp());
-		record2.setAttributesKey(attributesKey2.getAsString());
-		record2.setQtyReserved_Purchase(BigDecimal.ONE);
-		save(record2);
-
-		final Timestamp today = TimeUtil.getDay(SystemTime.asTimestamp());
-
-		final CreateRowsRequest request = CreateRowsRequest.builder()
-				.date(today)
-				.productsToListEvenIfEmpty(ImmutableList.of())
-				.dataRecords(ImmutableList.of(record1, record2))
-				.build();
-
-		// invoke method under test
-		final List<MaterialCockpitRow> result = materialCockpitRowFactory.createRows(request);
-
-		assertThat(result).hasSize(1);
-		assertThat(result.get(0).getIncludedRows()).hasSize(3); // record1 is added to both non-empty groups of the dimension spec; record2 is added to the emtpy one
+		final DimensionSpecGroup dimensionspecGroup_attr2_value2 = groups.get(3);
+		assertThat(dimensionspecGroup_attr2_value2.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr2_value2.getM_AttributeValue_ID()));
 	}
 
-	@Test
-	public void createEmptyRowBuckets()
-	{
-		final Timestamp today = TimeUtil.getDay(SystemTime.asTimestamp());
-
-		// invoke method under test
-		final Map<MainRowBucketId, MainRowWithSubRows> result = materialCockpitRowFactory.createEmptyRowBuckets(
-				ImmutableList.of(product),
-				today);
-
-		assertThat(result).hasSize(1);
-		final MainRowBucketId productIdAndDate = MainRowBucketId.createPlainInstance(product.getM_Product_ID(), today);
-		assertThat(result).containsKey(productIdAndDate);
-		final MainRowWithSubRows mainRowBucket = result.get(productIdAndDate);
-		assertThat(mainRowBucket.getProductIdAndDate()).isEqualTo(productIdAndDate);
-
-		final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> subRowBuckets = mainRowBucket.getDimensionGroupSubRows();
-		assertThat(subRowBuckets).hasSize(dimensionSpec.retrieveGroups().size());
-		assertThat(subRowBuckets.keySet()).containsOnlyElementsOf(dimensionSpec.retrieveGroups());
-	}
 
 	private DimensionSpec createDimensionSpec(
 			final I_M_Attribute attr1,
@@ -190,5 +152,116 @@ public class MaterialCockpitRowFactoryTest
 		save(dimSpecAttr2);
 
 		return DimensionSpec.ofRecord(dimSpec);
+	}
+
+	/**
+	 * Verifies that the {@link I_MD_Cockpit} and {@link I_MD_Stock} data rows are correctly applied to {@link MaterialCockpitRow}s based on the given dimension spec.
+	 * In this test, we have a dimension spec with tree groups, on of them is empty.
+	 */
+	@Test
+	public void createRows_contains_attribute_groups()
+	{
+		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
+		save(asi1);
+
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr1_value1);
+		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attr2_value1);
+
+		final AttributesKey attributesKeyWithAttr1_and_attr2 = AttributesKeys.createAttributesKeyFromASIAllAttributeValues(asi1.getM_AttributeSetInstance_ID()).get();
+
+		final I_MD_Cockpit cockpitRecord1 = newInstance(I_MD_Cockpit.class);
+		cockpitRecord1.setM_Product(product);
+		cockpitRecord1.setDateGeneral(SystemTime.asTimestamp());
+		cockpitRecord1.setAttributesKey(attributesKeyWithAttr1_and_attr2.getAsString());
+		cockpitRecord1.setQtyReserved_Purchase(BigDecimal.TEN);
+		save(cockpitRecord1);
+
+		final AttributesKey attributesKey2 = AttributesKey.NONE;
+
+		final I_MD_Cockpit cockpitRecordWithEmptyAttributesKey = newInstance(I_MD_Cockpit.class);
+		cockpitRecordWithEmptyAttributesKey.setM_Product(product);
+		cockpitRecordWithEmptyAttributesKey.setDateGeneral(SystemTime.asTimestamp());
+		cockpitRecordWithEmptyAttributesKey.setAttributesKey(attributesKey2.getAsString());
+		cockpitRecordWithEmptyAttributesKey.setQtyReserved_Purchase(BigDecimal.ONE);
+		save(cockpitRecordWithEmptyAttributesKey);
+
+		final I_MD_Stock stockRecord1 = newInstance(I_MD_Stock.class);
+		stockRecord1.setM_Product(product);
+		stockRecord1.setAttributesKey(attributesKeyWithAttr1_and_attr2.getAsString());
+		stockRecord1.setM_Warehouse_ID(30);
+		stockRecord1.setQtyOnHand(new BigDecimal("11"));
+		save(stockRecord1);
+
+		final I_MD_Stock stockRecordWithEmptyAttributesKey = newInstance(I_MD_Stock.class);
+		stockRecordWithEmptyAttributesKey.setM_Product(product);
+		stockRecordWithEmptyAttributesKey.setAttributesKey(attributesKey2.getAsString());
+		stockRecordWithEmptyAttributesKey.setM_Warehouse_ID(20);
+		stockRecordWithEmptyAttributesKey.setQtyOnHand(new BigDecimal("12"));
+		save(stockRecordWithEmptyAttributesKey);
+
+		final Timestamp today = TimeUtil.getDay(SystemTime.asTimestamp());
+
+		final CreateRowsRequest request = CreateRowsRequest.builder()
+				.date(today)
+				.productsToListEvenIfEmpty(ImmutableList.of())
+				.cockpitRecords(ImmutableList.of(cockpitRecord1, cockpitRecordWithEmptyAttributesKey))
+				.stockRecords(ImmutableList.of(stockRecord1, stockRecordWithEmptyAttributesKey))
+				.build();
+
+		// invoke method under test
+		final List<MaterialCockpitRow> result = materialCockpitRowFactory.createRows(request);
+
+		assertThat(result).hasSize(1);
+		final MaterialCockpitRow mainRow = result.get(0);
+		assertThat(mainRow.getQtyOnHandStock()).isEqualByComparingTo("23");
+		assertThat(mainRow.getQtyReservedPurchase()).isEqualByComparingTo("11");
+
+
+		final List<MaterialCockpitRow> includedRows = mainRow.getIncludedRows();
+		// the cockpit and stock record with "attributesKeyWithAttr1_and_attr2" are added to matching non-empty groups of the dimension spec;
+		// the cockpit and stock record with the empty attributesKey is added to the empty dimension spec group
+		assertThat(includedRows).hasSize(3);
+
+		final MaterialCockpitRow emptyGroupRow = filterForRowBy(includedRows, dimensionspecGroup_empty);
+		assertThat(emptyGroupRow.getQtyOnHandStock()).isEqualByComparingTo("12");
+		assertThat(emptyGroupRow.getQtyReservedPurchase()).isEqualByComparingTo("1");
+
+		final MaterialCockpitRow attr1GroupRow = filterForRowBy(includedRows, dimensionspecGroup_attr1_value1);
+		assertThat(attr1GroupRow.getQtyOnHandStock()).isEqualByComparingTo("11");
+		assertThat(attr1GroupRow.getQtyReservedPurchase()).isEqualByComparingTo("10");
+
+		final MaterialCockpitRow attr2GroupRow = filterForRowBy(includedRows, dimensionspecGroup_attr2_value1);
+		assertThat(attr2GroupRow.getQtyOnHandStock()).isEqualByComparingTo("11");
+		assertThat(attr2GroupRow.getQtyReservedPurchase()).isEqualByComparingTo("10");
+
+	}
+
+	protected MaterialCockpitRow filterForRowBy(final List<MaterialCockpitRow> includedRows, final DimensionSpecGroup dimensionspecGroup_empty2)
+	{
+		final MaterialCockpitRow emptyGroupRow = includedRows.stream().filter(row ->
+			row.getProductCategoryOrSubRowName().equals(dimensionspecGroup_empty2.getGroupName().getDefaultValue())).findFirst().get();
+		return emptyGroupRow;
+	}
+
+	@Test
+	public void createEmptyRowBuckets()
+	{
+		final Timestamp today = TimeUtil.getDay(SystemTime.asTimestamp());
+
+		// invoke method under test
+		final Map<MainRowBucketId, MainRowWithSubRows> result = materialCockpitRowFactory.createEmptyRowBuckets(
+				ImmutableList.of(product),
+				today);
+
+		assertThat(result).hasSize(1);
+		final MainRowBucketId productIdAndDate = MainRowBucketId.createPlainInstance(product.getM_Product_ID(), today);
+		assertThat(result).containsKey(productIdAndDate);
+		final MainRowWithSubRows mainRowBucket = result.get(productIdAndDate);
+		assertThat(mainRowBucket.getProductIdAndDate()).isEqualTo(productIdAndDate);
+
+		final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> subRowBuckets = mainRowBucket.getDimensionGroupSubRows();
+		assertThat(subRowBuckets).hasSize(dimensionSpec.retrieveGroups().size());
+		assertThat(subRowBuckets.keySet()).containsOnlyElementsOf(dimensionSpec.retrieveGroups());
 	}
 }

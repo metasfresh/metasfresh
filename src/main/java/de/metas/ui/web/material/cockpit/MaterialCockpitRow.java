@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
@@ -30,7 +31,9 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import lombok.Getter;
 import lombok.Singular;
+import lombok.ToString;
 
 /*
  * #%L
@@ -54,9 +57,9 @@ import lombok.Singular;
  * #L%
  */
 
+@ToString
 public class MaterialCockpitRow implements IViewRow
 {
-
 	private static final String SEPARATOR = "-";
 	private static final Joiner DOCUMENT_ID_JOINER = Joiner.on(SEPARATOR).skipNulls();
 
@@ -76,6 +79,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_M_Product_Category_ID, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30) })
+	@Getter // note that we use the getter for testing
 	private final String productCategoryOrSubRowName;
 
 	// Zusage Lieferant
@@ -92,6 +96,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_QtyReserved_Purchase, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60) })
+	@Getter // note that we use the getter for testing
 	private final BigDecimal qtyReservedPurchase;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
@@ -118,8 +123,9 @@ public class MaterialCockpitRow implements IViewRow
 	private final BigDecimal qtyAvailableToPromise;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
-			captionKey = I_MD_Cockpit.COLUMNNAME_QtyOnHandStock, //
+			captionKey = I_MD_Stock.COLUMNNAME_QtyOnHand, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
+	@Getter // note that we use the getter for testing
 	private final BigDecimal qtyOnHandStock;
 
 	private final DocumentId documentId;
@@ -288,7 +294,7 @@ public class MaterialCockpitRow implements IViewRow
 	}
 
 	@Override
-	public List<? extends IViewRow> getIncludedRows()
+	public List<MaterialCockpitRow> getIncludedRows()
 	{
 		return includedRows;
 	}

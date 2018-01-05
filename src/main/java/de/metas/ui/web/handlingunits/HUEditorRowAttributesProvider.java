@@ -9,8 +9,6 @@ import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.Env;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.IHUAttributesDAO;
-import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -115,11 +113,9 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
-		final IHUAttributesDAO huAttributesDAO = HUAttributesDAO.instance;
-		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(huAttributesDAO);
-
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
-		huAttributeStorageFactory.setHUStorageFactory(storageFactory);
+		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService
+				.createHUAttributeStorageFactory(storageFactory);
 
 		return huAttributeStorageFactory;
 	}

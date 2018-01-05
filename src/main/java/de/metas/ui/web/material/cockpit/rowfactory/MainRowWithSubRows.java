@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
@@ -71,34 +72,35 @@ public class MainRowWithSubRows
 		countingSubRows.computeIfAbsent(plantId, CountingSubRowBucket::create);
 	}
 
-	public void addDataRecord(
-			@NonNull final I_MD_Cockpit dataRecord,
+	public void addCockpitRecord(
+			@NonNull final I_MD_Cockpit cockpitRecord,
 			@NonNull final DimensionSpec dimensionSpec)
 	{
-		if (dataRecord.getQtyOnHandEstimate().signum() != 0 || dataRecord.getPP_Plant_ID() > 0)
+		if (cockpitRecord.getQtyOnHandCount().signum() != 0 || cockpitRecord.getPP_Plant_ID() > 0)
 		{
-			addDataRecordToStockEstimates(dataRecord);
+			addDataRecordToCounting(cockpitRecord);
 		}
 		else
 		{
-			addDataRecordToDimensionGroups(dataRecord, dimensionSpec);
+			addCockpitRecordToDimensionGroups(cockpitRecord, dimensionSpec);
 		}
-		mainRow.addDataRecord(dataRecord);
+		mainRow.addDataRecord(cockpitRecord);
 	}
 
-	private void addDataRecordToDimensionGroups(
+	private void addCockpitRecordToDimensionGroups(
 			@NonNull final I_MD_Cockpit dataRecord,
 			@NonNull final DimensionSpec dimensionSpec)
 	{
 		assertProductIdAndDateOfDataRecord(dataRecord);
 
-		final List<DimensionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(dataRecord, dimensionSpec);
+		final AttributesKey attributesKey = AttributesKey.ofString(dataRecord.getAttributesKey());
+		final List<DimensionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(attributesKey, dimensionSpec);
 		subRowBuckets.forEach(bucket -> bucket.addDataRecord(dataRecord));
 	}
 
 	private void assertProductIdAndDateOfDataRecord(@NonNull final I_MD_Cockpit dataRecord)
 	{
-		final MainRowBucketId key = MainRowBucketId.createInstanceForDataRecord(dataRecord);
+		final MainRowBucketId key = MainRowBucketId.createInstanceForCockpitRecord(dataRecord);
 
 		Check.errorUnless(
 				productIdAndDate.equals(key),
@@ -107,12 +109,10 @@ public class MainRowWithSubRows
 	}
 
 	private List<DimensionGroupSubRowBucket> findOrCreateSubRowBucket(
-			@NonNull final I_MD_Cockpit dataRecord,
+			@NonNull final AttributesKey dataRecordAttributesKey,
 			@NonNull final DimensionSpec dimensionSpec)
 	{
 		final ImmutableList.Builder<DimensionGroupSubRowBucket> result = ImmutableList.builder();
-
-		final AttributesKey dataRecordAttributesKey = AttributesKey.ofString(dataRecord.getAttributesKey());
 
 		DimensionSpecGroup otherGroup = null;
 		boolean addedToAnyGroup = false;
@@ -148,10 +148,28 @@ public class MainRowWithSubRows
 		return result.build();
 	}
 
-	private void addDataRecordToStockEstimates(@NonNull final I_MD_Cockpit stockEstimate)
+	private void addDataRecordToCounting(@NonNull final I_MD_Cockpit stockEstimate)
 	{
 		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(stockEstimate.getPP_Plant_ID(), CountingSubRowBucket::create);
 		countingSubRow.addDataRecord(stockEstimate);
+	}
+
+	public void addStockRecord(
+			@NonNull final I_MD_Stock stockRecord,
+			@NonNull final DimensionSpec dimensionSpec)
+	{
+		addStockRecordToDimensionGroups(stockRecord, dimensionSpec);
+
+		mainRow.addStockRecord(stockRecord);
+	}
+
+	private void addStockRecordToDimensionGroups(
+			@NonNull final I_MD_Stock dataRecord,
+			@NonNull final DimensionSpec dimensionSpec)
+	{
+		final AttributesKey attributesKey = AttributesKey.ofString(dataRecord.getAttributesKey());
+		final List<DimensionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(attributesKey, dimensionSpec);
+		subRowBuckets.forEach(bucket -> bucket.addStockRecord(dataRecord));
 	}
 
 	public MaterialCockpitRow createMainRowWithSubRows()
@@ -160,7 +178,7 @@ public class MainRowWithSubRows
 				.qtyMaterialentnahme(mainRow.getQtyMaterialentnahme())
 				.qtyRequiredForProduction(mainRow.getQtyRequiredForProduction())
 				.qtyOnHandEstimate(mainRow.getQtyOnHandEstimate())
-				.qtyOnHandStock(mainRow.getQtyOnHandStock())
+				.qtyOnHandStock(mainRow.getQtyOnHand())
 				.qtyReservedPurchase(mainRow.getQtyReservedPurchase())
 				.qtyAvailableToPromise(mainRow.getQtyAvailableToPromise())
 				.qtyReservedSale(mainRow.getQtyReservedSale())
@@ -180,5 +198,4 @@ public class MainRowWithSubRows
 		return mainRowBuilder.build();
 
 	}
-
 }

@@ -2,6 +2,7 @@ package de.metas.ui.web.material.cockpit;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -10,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.ViewId;
@@ -54,10 +56,13 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 		this.filters = filters;
 	}
 
+	/**
+	 * Each record of this view is based on > 1 tables.
+	 */
 	@Override
 	public String getTableNameOrNull(DocumentId documentId)
 	{
-		return I_MD_Cockpit.Table_Name;
+		return null;
 	}
 
 	@Override
@@ -69,10 +74,14 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 	@Override
 	public void notifyRecordsChanged(@NonNull final Set<TableRecordReference> recordRefs)
 	{
+		Predicate<TableRecordReference> isRelatedTable = //
+				ref -> I_MD_Cockpit.Table_Name.equals(ref.getTableName())
+						|| I_MD_Stock.Table_Name.equals(ref.getTableName());
+
 		// TODO refine this, to check if any of the particular is currently loaded in here,
 		// and also to not invalidate everything
 		recordRefs.stream()
-				.filter(ref -> I_MD_Cockpit.Table_Name.equals(ref.getTableName()))
+				.filter(isRelatedTable)
 				.findFirst()
 				.ifPresent(ref -> invalidateAll());
 	}

@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 import org.compiere.util.TimeUtil;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Stock;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -34,11 +35,21 @@ import lombok.Value;
 @Value
 public class MainRowBucketId
 {
-	public static MainRowBucketId createInstanceForDataRecord(@NonNull final I_MD_Cockpit dataRecord)
+	public static MainRowBucketId createInstanceForCockpitRecord(
+			@NonNull final I_MD_Cockpit dataRecord)
 	{
 		return new MainRowBucketId(
 				dataRecord.getM_Product_ID(),
 				TimeUtil.getDay(dataRecord.getDateGeneral()));
+	}
+
+	public static MainRowBucketId createInstanceForStockRecord(
+			@NonNull final I_MD_Stock stockRecord,
+			@NonNull final Timestamp date)
+	{
+		return new MainRowBucketId(
+				stockRecord.getM_Product_ID(),
+				TimeUtil.getDay(date));
 	}
 
 	public static MainRowBucketId createPlainInstance(final int productId, @NonNull final Timestamp date)
@@ -48,7 +59,6 @@ public class MainRowBucketId
 
 	int productId;
 	Timestamp date;
-
 
 	private BigDecimal pmmQtyPromised = BigDecimal.ZERO;
 

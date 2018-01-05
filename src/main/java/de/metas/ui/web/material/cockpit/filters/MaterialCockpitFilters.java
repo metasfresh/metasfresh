@@ -1,4 +1,4 @@
-package de.metas.ui.web.material.cockpit;
+package de.metas.ui.web.material.cockpit.filters;
 
 import java.sql.Timestamp;
 import java.util.Date;

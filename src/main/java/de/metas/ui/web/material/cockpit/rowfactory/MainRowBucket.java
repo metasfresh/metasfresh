@@ -3,6 +3,7 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 import java.math.BigDecimal;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Stock;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -33,7 +34,7 @@ public class MainRowBucket
 {
 	private BigDecimal qtyOnHandEstimate = BigDecimal.ZERO;
 
-	private BigDecimal qtyOnHandStock = BigDecimal.ZERO;
+	private BigDecimal qtyOnHand = BigDecimal.ZERO;
 
 	// Zusage Lieferant
 	private BigDecimal pmmQtyPromised = BigDecimal.ZERO;
@@ -55,11 +56,15 @@ public class MainRowBucket
 		pmmQtyPromised = pmmQtyPromised.add(dataRecord.getPMM_QtyPromised_OnDate());
 		qtyMaterialentnahme = qtyMaterialentnahme.add(dataRecord.getQtyMaterialentnahme());
 		qtyRequiredForProduction = qtyRequiredForProduction.add(dataRecord.getQtyRequiredForProduction());
-		qtyReservedSale = qtyReservedSale.add(dataRecord.getQtyReserved_Purchase());
+		qtyReservedPurchase = qtyReservedSale.add(dataRecord.getQtyReserved_Purchase());
 		qtyReservedSale = qtyReservedSale.add(dataRecord.getQtyReserved_Sale());
 		qtyAvailableToPromise = qtyAvailableToPromise.add(dataRecord.getQtyAvailableToPromise());
 
 		qtyOnHandEstimate = qtyOnHandEstimate.add(dataRecord.getQtyOnHandEstimate());
-		qtyOnHandStock = qtyOnHandStock.add(dataRecord.getQtyOnHandStock());
+	}
+
+	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
+	{
+		qtyOnHand = qtyOnHand.add(stockRecord.getQtyOnHand());
 	}
 }

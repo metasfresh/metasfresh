@@ -22,6 +22,7 @@ import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import lombok.NonNull;
 import lombok.Value;
@@ -62,8 +63,12 @@ public class MaterialCockpitRowFactory
 
 		@NonNull
 		List<I_M_Product> productsToListEvenIfEmpty;
+
 		@NonNull
-		List<I_MD_Cockpit> dataRecords;
+		List<I_MD_Cockpit> cockpitRecords;
+
+		@NonNull
+		List<I_MD_Stock> stockRecords;
 	}
 
 	public List<MaterialCockpitRow> createRows(@NonNull final CreateRowsRequest request)
@@ -77,12 +82,20 @@ public class MaterialCockpitRowFactory
 
 		final Map<MainRowBucketId, MainRowWithSubRows> result = new HashMap<>(emptyRowBuckets);
 
-		for (final I_MD_Cockpit dbRow : request.getDataRecords())
+		for (final I_MD_Cockpit cockpitRecord : request.getCockpitRecords())
 		{
-			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForDataRecord(dbRow);
+			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForCockpitRecord(cockpitRecord);
 
 			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowWithSubRows.create(key));
-			mainRowBucket.addDataRecord(dbRow, dimensionSpec);
+			mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec);
+		}
+
+		for (final I_MD_Stock stockRecord : request.getStockRecords())
+		{
+			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForStockRecord(stockRecord, request.getDate());
+
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowWithSubRows.create(key));
+			mainRowBucket.addStockRecord(stockRecord, dimensionSpec);
 		}
 
 		return result.values()

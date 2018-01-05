@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import lombok.Data;
 import lombok.NonNull;
@@ -76,7 +77,11 @@ public class DimensionGroupSubRowBucket
 		qtyReservedPurchase = qtyReservedPurchase.add(dataRecord.getQtyReserved_Purchase());
 		qtyReservedSale = qtyReservedSale.add(dataRecord.getQtyReserved_Sale());
 		qtyAvailableToPromise = qtyAvailableToPromise.add(dataRecord.getQtyAvailableToPromise());
-		qtyOnHandStock = qtyOnHandStock.add(dataRecord.getQtyOnHandStock());
+	}
+
+	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
+	{
+		qtyOnHandStock = qtyOnHandStock.add(stockRecord.getQtyOnHand());
 	}
 
 	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowWithSubRows mainRowBucket)
