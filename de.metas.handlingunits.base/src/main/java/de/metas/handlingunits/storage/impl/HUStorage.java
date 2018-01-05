@@ -10,12 +10,12 @@ package de.metas.handlingunits.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -62,7 +62,7 @@ import lombok.NonNull;
 	private final boolean virtualHU;
 
 	public HUStorage(
-			@NonNull final IHUStorageFactory storageFactory, 
+			@NonNull final IHUStorageFactory storageFactory,
 			@NonNull final I_M_HU hu)
 	{
 		this.storageFactory = storageFactory;
@@ -81,7 +81,7 @@ import lombok.NonNull;
 		return storageFactory;
 	}
 
-	private I_M_HU_Storage getCreateStorageLine(final I_M_Product product, final I_C_UOM uomIfNew)
+	private I_M_HU_Storage getCreateStorageLine(final I_M_Product product)
 	{
 		I_M_HU_Storage storage = dao.retrieveStorage(hu, product.getM_Product_ID());
 		if (storage == null)
@@ -89,7 +89,11 @@ import lombok.NonNull;
 			storage = dao.newInstance(I_M_HU_Storage.class, hu);
 			storage.setM_HU(hu);
 			storage.setM_Product(product);
-			storage.setC_UOM(uomIfNew);
+
+			// this uom used to be set via a method parameter, so there might be existing records with a deviating UOM
+			// TODO Get rid of M_HU_Storage.C_UOM_ID column https://github.com/metasfresh/metasfresh/issues/3278
+			storage.setC_UOM(product.getC_UOM());
+
 			storage.setQty(BigDecimal.ZERO);
 
 			// don't save it; it will be saved after Qty update
@@ -128,7 +132,7 @@ import lombok.NonNull;
 	@Override
 	public BigDecimal getQty(final I_M_Product product, final I_C_UOM uom)
 	{
-		final I_M_HU_Storage storageLine = getCreateStorageLine(product, uom);
+		final I_M_HU_Storage storageLine = getCreateStorageLine(product);
 		final BigDecimal qty = storageLine.getQty();
 		final BigDecimal qtyConv = uomConversionBL.convertQty(product, qty, storageLine.getC_UOM(), uom);
 		return qtyConv;
@@ -142,7 +146,7 @@ import lombok.NonNull;
 			return;
 		}
 
-		final I_M_HU_Storage storageLine = getCreateStorageLine(product, uom);
+		final I_M_HU_Storage storageLine = getCreateStorageLine(product);
 
 		final I_C_UOM uomStorage = storageLine.getC_UOM();
 		final BigDecimal qtyConv = uomConversionBL.convertQty(product, qty, uom, uomStorage);
