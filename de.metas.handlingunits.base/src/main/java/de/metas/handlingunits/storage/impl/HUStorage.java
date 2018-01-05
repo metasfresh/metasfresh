@@ -81,7 +81,9 @@ import lombok.NonNull;
 		return storageFactory;
 	}
 
-	private I_M_HU_Storage getCreateStorageLine(final I_M_Product product)
+	private I_M_HU_Storage retrieveOrCreateStorageLine(
+			final I_M_Product product,
+			final I_C_UOM uomIfNew)
 	{
 		I_M_HU_Storage storage = dao.retrieveStorage(hu, product.getM_Product_ID());
 		if (storage == null)
@@ -89,11 +91,7 @@ import lombok.NonNull;
 			storage = dao.newInstance(I_M_HU_Storage.class, hu);
 			storage.setM_HU(hu);
 			storage.setM_Product(product);
-
-			// this uom used to be set via a method parameter, so there might be existing records with a deviating UOM
-			// TODO Get rid of M_HU_Storage.C_UOM_ID column https://github.com/metasfresh/metasfresh/issues/3278
-			storage.setC_UOM(product.getC_UOM());
-
+			storage.setC_UOM(uomIfNew);
 			storage.setQty(BigDecimal.ZERO);
 
 			// don't save it; it will be saved after Qty update
@@ -132,7 +130,7 @@ import lombok.NonNull;
 	@Override
 	public BigDecimal getQty(final I_M_Product product, final I_C_UOM uom)
 	{
-		final I_M_HU_Storage storageLine = getCreateStorageLine(product);
+		final I_M_HU_Storage storageLine = retrieveOrCreateStorageLine(product, uom);
 		final BigDecimal qty = storageLine.getQty();
 		final BigDecimal qtyConv = uomConversionBL.convertQty(product, qty, storageLine.getC_UOM(), uom);
 		return qtyConv;
@@ -146,7 +144,7 @@ import lombok.NonNull;
 			return;
 		}
 
-		final I_M_HU_Storage storageLine = getCreateStorageLine(product);
+		final I_M_HU_Storage storageLine = retrieveOrCreateStorageLine(product, uom);
 
 		final I_C_UOM uomStorage = storageLine.getC_UOM();
 		final BigDecimal qtyConv = uomConversionBL.convertQty(product, qty, uom, uomStorage);

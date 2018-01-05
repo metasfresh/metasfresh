@@ -40,6 +40,11 @@ begin
 	return v_QtyConv;
 end;
 $BODY$
-LANGUAGE plpgsql VOLATILE
+LANGUAGE plpgsql STABLE
 COST 100;
-ALTER FUNCTION uomConvert(numeric, numeric, numeric, numeric) OWNER TO adempiere;
+
+COMMENT ON FUNCTION public.uomconvert(numeric, numeric, numeric, numeric) 
+IS 'Attempts to convert between two UOMs by first calling the function uomconvertdirect with the given p_c_uom_from_id and p_c_uom_to_id. 
+If uomconvertdirect returns null, it  makes another try, this time with two hops, with the given product''s ID in the middle.
+In other woths if there is not conversion rule to convert between "A" and "C" and if the given product has the uom "B", the function tries to convert "A" => "B" and then "B" => "C" in two steps';
+

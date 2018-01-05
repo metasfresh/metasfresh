@@ -55,6 +55,10 @@ begin
 	return v_QtyConv;
 end;
 $BODY$
-LANGUAGE plpgsql VOLATILE
+LANGUAGE plpgsql STABLE
 COST 100;
-ALTER FUNCTION uomConvertDirect(numeric, numeric, numeric, numeric) OWNER TO adempiere;
+
+COMMENT ON FUNCTION public.uomconvertdirect(numeric, numeric, numeric, numeric) 
+IS 'Attempts to convert between two UOMs by using the C_UOM_Conversion table. If there is no conversion table record it can use, the function returns null.
+Note that the function tries both "directions" so we need just one C_UOM_Conversion record to convert both from "A" to "B" and from "B" to "A".';
+
