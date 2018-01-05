@@ -11,7 +11,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Product;
@@ -75,7 +74,6 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 	@Before
 	public void before()
 	{
-		AdempiereTestHelper.get().init();
 		helper.setupModuleInterceptors_Contracts_Full();
 	}
 
