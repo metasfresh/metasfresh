@@ -87,4 +87,8 @@ public interface ICountryDAO extends ISingletonService
 	I_C_Country_Sequence retrieveCountrySequence(I_C_Country country, int orgId, String language);
 
 	I_C_Country retrieveCountryByCountryCode(String countryCode);
+
+	String retrieveCountryCode2ByCountryId(int countryId);
+
+	String retrieveCountryCode3ByCountryId(int countryId);
 }

@@ -4,10 +4,10 @@
 package de.metas.adempiere.service.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -18,6 +18,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Client;
@@ -31,6 +32,8 @@ import org.compiere.model.Query;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -53,6 +56,21 @@ public class CountryDAO implements ICountryDAO
 			.addResetForTableName(I_AD_Client.Table_Name);
 
 	private static final int DEFAULT_C_Country_ID = 101; // Germany
+
+	private static final ImmutableBiMap<String, String> alpha2to3CountryCodes = buildAlpha2to3CountryCodes();
+
+	private static final ImmutableBiMap<String, String> buildAlpha2to3CountryCodes()
+	{
+		final ImmutableBiMap.Builder<String, String> alpha2to3CountryCodesBuilder = ImmutableBiMap.builder();
+		for (final String countryCodeAlpha2 : Locale.getISOCountries())
+		{
+			final Locale locale = new Locale("", countryCodeAlpha2);
+			final String countryCodeAlpha3 = locale.getISO3Country();
+			alpha2to3CountryCodesBuilder.put(countryCodeAlpha2, countryCodeAlpha3);
+		}
+
+		return alpha2to3CountryCodesBuilder.build();
+	}
 
 	@Override
 	public ICountryCustomInfo retriveCountryCustomInfo(final Properties ctx, final String trxName)
@@ -92,13 +110,13 @@ public class CountryDAO implements ICountryDAO
 	@Override
 	public I_C_Country get(final Properties ctx_NOTNUSED, final int C_Country_ID)
 	{
-		return getIndexedCountries().getById(C_Country_ID);
+		return getIndexedCountries().getByIdOrNull(C_Country_ID);
 	} // get
 
 	@Override
 	public List<I_C_Country> getCountries(final Properties ctx)
 	{
-		final List<I_C_Country> countries = new ArrayList<>(getIndexedCountries().toCollection());
+		final List<I_C_Country> countries = new ArrayList<>(getIndexedCountries().getAll());
 
 		final Comparator<Object> cmp = new MCountry(ctx, 0, null);
 		Collections.sort(countries, cmp);
@@ -204,25 +222,57 @@ public class CountryDAO implements ICountryDAO
 		return getIndexedCountries().getByCountryCode(countryCode);
 	}
 
+	@Override
+	public String retrieveCountryCode2ByCountryId(final int countryId)
+	{
+		return getIndexedCountries().getById(countryId).getCountryCode();
+	}
+
+	@Override
+	public String retrieveCountryCode3ByCountryId(final int countryId)
+	{
+		final String countryCode2 = retrieveCountryCode2ByCountryId(countryId);
+		final String countryCode3 = alpha2to3CountryCodes.get(countryCode2);
+		if (countryCode3 == null)
+		{
+			throw new AdempiereException("No country code alpha3 found for '" + countryCode2 + "'");
+		}
+		return countryCode3;
+	}
+
 	private static final class IndexedCountries
 	{
+		private final ImmutableList<I_C_Country> countries;
 		private final ImmutableMap<Integer, I_C_Country> countriesById;
 		private final ImmutableMap<String, I_C_Country> countriesByCountryCode;
 
 		private IndexedCountries(final List<I_C_Country> countries)
 		{
+			this.countries = ImmutableList.copyOf(countries);
 			countriesById = Maps.uniqueIndex(countries, I_C_Country::getC_Country_ID);
-			countriesByCountryCode = Maps.uniqueIndex(countries, I_C_Country::getCountryCode);
+			countriesByCountryCode = countries.stream()
+					.filter(country -> !Check.isEmpty(country.getCountryCode(), true)) // NOTE: in DB the CountryCode is mandatory but not in some unit tests
+					.collect(GuavaCollectors.toImmutableMapByKey(I_C_Country::getCountryCode));
 		}
 
-		public Collection<I_C_Country> toCollection()
+		public List<I_C_Country> getAll()
 		{
-			return countriesById.values();
+			return countries;
+		}
+
+		public I_C_Country getByIdOrNull(final int countryId)
+		{
+			return countriesById.get(countryId);
 		}
 
 		public I_C_Country getById(final int countryId)
 		{
-			return countriesById.get(countryId);
+			final I_C_Country country = getByIdOrNull(countryId);
+			if (country == null)
+			{
+				throw new AdempiereException("No country found for countryId=" + countryId);
+			}
+			return country;
 		}
 
 		public I_C_Country getByCountryCodeOrNull(final String countryCode)
@@ -233,12 +283,11 @@ public class CountryDAO implements ICountryDAO
 		public I_C_Country getByCountryCode(final String countryCode)
 		{
 			final I_C_Country country = getByCountryCodeOrNull(countryCode);
-			if (countryCode == null)
+			if (country == null)
 			{
 				throw new AdempiereException("No country found for countryCode=" + countryCode);
 			}
 			return country;
 		}
-
 	}
 }
