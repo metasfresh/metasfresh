@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -57,12 +58,16 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.Profiles;
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUAssert;
@@ -74,18 +79,26 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
+import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
+		StartupListener.class, ShutdownListener.class,
 		/* needed because in MRPTestHelper, we register AdempiereBaseValidator which in turn registers a C_OrderLine interceptor the needs this class. */
-		OrderGroupRepository.class
+		OrderGroupRepository.class,
+		PPOrderPojoConverter.class,
+		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class
 		})
-@ActiveProfiles("test")
+@ActiveProfiles(Profiles.PROFILE_Test)
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
+	@MockBean
+	private FireMaterialEventService postMaterialEventService;
+
 	private MRPTestDataSimple masterData;
 
 	private IPPOrderBOMDAO ppOrderBOMDAO;
