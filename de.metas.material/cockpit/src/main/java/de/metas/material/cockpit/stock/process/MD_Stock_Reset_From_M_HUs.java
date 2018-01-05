@@ -1,5 +1,6 @@
 package de.metas.material.cockpit.stock.process;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.Adempiere;
@@ -21,6 +23,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -45,8 +48,17 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Reset the {@link I_MD_Stock} table.
+ * May be run in parallel to "normal" production stock changes.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 {
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
@@ -61,9 +73,15 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 		return MSG_OK;
 	}
 
+	/**
+	 * Truncate an retrieve within one transaction.
+	 * That way, the new stock are data is from the time the table was emptied.
+	 * New stock changes that occur when the select runs won't be lost.
+	 */
 	private List<I_MD_Stock_From_HUs_V> truncateStockTableAndRetrieveHuData()
 	{
 		final Mutable<List<I_MD_Stock_From_HUs_V>> result = new Mutable<>();
+
 		Services.get(ITrxManager.class).run(() -> {
 			addLog("Truncating MD_Stock table");
 			try
@@ -87,7 +105,7 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 		return result.getValue();
 	}
 
-	private static void createAndHandleDataUpdateRequests(
+	private void createAndHandleDataUpdateRequests(
 			@NonNull final List<I_MD_Stock_From_HUs_V> huBasedDataRecords)
 	{
 		final StockDataUpdateRequestHandler dataUpdateRequestHandler = //
@@ -100,14 +118,17 @@ public class MD_Stock_Reset_From_M_HUs extends JavaProcess
 		}
 	}
 
-	private static StockDataUpdateRequest createDataUpdatedRequest(
+	private StockDataUpdateRequest createDataUpdatedRequest(
 			@NonNull final I_MD_Stock_From_HUs_V huBasedDataRecord)
 	{
 		final StockDataRecordIdentifier recordIdentifier = createDataRecordIdentifier(huBasedDataRecord);
 
+		final Quantity qtyInStorageUOM = Quantity.of(huBasedDataRecord.getQtyOnHand(), huBasedDataRecord.getC_UOM());
+		final BigDecimal qtyInStockingUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, huBasedDataRecord.getM_Product());
+
 		final StockDataUpdateRequest dataUpdateRequest = StockDataUpdateRequest.builder()
 				.identifier(recordIdentifier)
-				.onHandQtyChange(huBasedDataRecord.getQtyOnHand())
+				.onHandQtyChange(qtyInStockingUOM)
 				.build();
 		return dataUpdateRequest;
 	}

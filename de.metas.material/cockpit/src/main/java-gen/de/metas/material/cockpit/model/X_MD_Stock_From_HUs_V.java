@@ -15,7 +15,7 @@ public class X_MD_Stock_From_HUs_V extends org.compiere.model.PO implements I_MD
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -171722810L;
+	private static final long serialVersionUID = 1198473929L;
 
     /** Standard Constructor */
     public X_MD_Stock_From_HUs_V (Properties ctx, int MD_Stock_From_HUs_V_ID, String trxName)
@@ -55,6 +55,43 @@ public class X_MD_Stock_From_HUs_V extends org.compiere.model.PO implements I_MD
 	public java.lang.String getAttributesKey () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_AttributesKey);
+	}
+
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override

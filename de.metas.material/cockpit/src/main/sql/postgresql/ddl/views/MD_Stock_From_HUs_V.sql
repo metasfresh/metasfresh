@@ -3,6 +3,7 @@ CREATE OR REPLACE VIEW MD_Stock_From_HUs_V AS
 SELECT 
 	l.M_Warehouse_ID,
 	hus.M_Product_ID,
+	hus.C_UOM_ID,
 	GenerateHUAttributesKey(hu.m_hu_id) as AttributesKey,
 	SUM(hus.Qty) as QtyOnHand
 FROM m_hu hu
