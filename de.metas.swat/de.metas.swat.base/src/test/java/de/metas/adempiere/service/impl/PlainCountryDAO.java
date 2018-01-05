@@ -3,6 +3,8 @@
  */
 package de.metas.adempiere.service.impl;
 
+import java.util.Comparator;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -16,20 +18,18 @@ package de.metas.adempiere.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.compiere.model.I_C_Country;
 import org.junit.Ignore;
@@ -44,13 +44,6 @@ import de.metas.adempiere.service.ICountryCustomInfo;
 @Ignore
 public class PlainCountryDAO extends CountryDAO
 {
-	private final POJOLookupMap lookupMap = POJOLookupMap.get();
-
-	public POJOLookupMap getLookupMap()
-	{
-		return lookupMap;
-	}
-
 	@Override
 	public ICountryCustomInfo retriveCountryCustomInfo(Properties ctx, String trxName)
 	{
@@ -58,42 +51,17 @@ public class PlainCountryDAO extends CountryDAO
 	}
 
 	@Override
-	public I_C_Country getDefault(Properties ctx)
-	{
-		return lookupMap.getFirstOnly(I_C_Country.class, new IQueryFilter<I_C_Country>()
-		{
-			@Override
-			public boolean accept(final I_C_Country pojo)
-			{
-				return true;
-			}
-		});
-	}
-
-	@Override
-	public I_C_Country get(final Properties ctx, final int C_Country_ID)
-	{
-		return lookupMap.getFirstOnly(I_C_Country.class, new IQueryFilter<I_C_Country>()
-		{
-			@Override
-			public boolean accept(final I_C_Country pojo)
-			{
-				return pojo.getC_Country_ID() == C_Country_ID;
-			}
-		});
-	}
-
-	@Override
 	public List<I_C_Country> getCountries(Properties ctx)
 	{
-		return lookupMap.getRecords(I_C_Country.class, new IQueryFilter<I_C_Country>()
-		{
+		return POJOLookupMap.get().getRecords(I_C_Country.class, country -> true);
+	}
 
-			@Override
-			public boolean accept(final I_C_Country pojo)
-			{
-				return true;
-			}
-		});
+	@Override
+	public I_C_Country getDefault(final Properties ctx)
+	{
+		// NOTE: we need to override the default implementation because that one is assuming that we have AD_Client records... and in some tests we don't have it.
+		// So for now, we are just returning first country which was created.
+		final Comparator<I_C_Country> orderByComparator = Comparator.comparing(I_C_Country::getC_Country_ID);
+		return POJOLookupMap.get().getFirst(I_C_Country.class, country -> true, orderByComparator);
 	}
 }

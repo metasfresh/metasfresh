@@ -16,15 +16,14 @@ package de.metas.adempiere.service;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -40,7 +39,6 @@ import org.compiere.model.I_C_Region;
  */
 public interface ICountryDAO extends ISingletonService
 {
-
 
 	/**
 	 * retrieve custom user info
@@ -61,10 +59,11 @@ public interface ICountryDAO extends ISingletonService
 	I_C_Country getDefault(Properties ctx);
 
 	/**
-	 * 	Get Country (cached)
-	 * 	@param ctx context
-	 *	@param C_Country_ID ID
-	 *	@return Country
+	 * Get Country (cached)
+	 * 
+	 * @param ctx context
+	 * @param C_Country_ID ID
+	 * @return Country
 	 */
 	public I_C_Country get(Properties ctx, int C_Country_ID);
 
@@ -78,7 +77,7 @@ public interface ICountryDAO extends ISingletonService
 	public List<I_C_Country> getCountries(Properties ctx);
 
 	List<I_C_Region> retrieveRegions(Properties ctx, int countryId);
-	
+
 	/**
 	 * @param country
 	 * @param orgId
@@ -86,4 +85,10 @@ public interface ICountryDAO extends ISingletonService
 	 * @return country sequence or null
 	 */
 	I_C_Country_Sequence retrieveCountrySequence(I_C_Country country, int orgId, String language);
+
+	I_C_Country retrieveCountryByCountryCode(String countryCode);
+
+	String retrieveCountryCode2ByCountryId(int countryId);
+
+	String retrieveCountryCode3ByCountryId(int countryId);
 }

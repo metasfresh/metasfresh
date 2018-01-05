@@ -26,6 +26,8 @@ Here come the actual release notes:
     * New Window for Customer Accounts, allowing the user to define customer relevant accounting information.
   * [#3243](https://github.com/metasfresh/metasfresh/issues/3243) WebUI: Adjust the BOM Configuration window in Subtab for components
     * Improvement of the BOM Configuration Window and Forumula. Now showing most important columns in grid view for components. Renaming Fields and translations for better understanding.
+  * [#3255](https://github.com/metasfresh/metasfresh/issues/3255) WebUI: Accounting Schema Window
+    * New Window in WebUI for Accounting Schema, allowing the user to maintain the default Accounting properties.
   * [#3256](https://github.com/metasfresh/metasfresh/issues/3256) WebUI: Window for Warehouse Accounting
     * New Window for Vendor Accounts, allowing the user to define warehouse relevant accounting information.
   * [#3257](https://github.com/metasfresh/metasfresh/issues/3257) WebUI: Window for Vendor Accounting
@@ -38,7 +40,13 @@ Here come the actual release notes:
     * Improving teh Calender and Period Window in WebUI, adding the Create Periods action to action menu.
   * [#3269](https://github.com/metasfresh/metasfresh/issues/3269) WebUI: Add Shortcut Filter from Calendar Year to Periods Window
     * Improving the Usability of Calendar and Period Window, now allowing to directly zoom to filtered Periods for a given year.
+  * [#3275](https://github.com/metasfresh/metasfresh/issues/3275) New Filter for datepromised in Sales/ Purchase Order
+    * Adding the Filter for datepromised in Sales Order and Purchase order Window in WebUI.
 
+* metasfresh-webui-frontend
+  * [#1475](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1475) Hover showing Element Content for flags wrongly
+    * Improvement of the tablecell tooltips in Grid Views. Not not showing a tooltip for checkboxes and switches anymore.
+	
 #Fixes
 * metasfresh-app
 

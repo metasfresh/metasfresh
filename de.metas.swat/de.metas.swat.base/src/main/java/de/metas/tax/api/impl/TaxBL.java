@@ -188,7 +188,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 		final IQueryBuilder<I_C_Tax> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Tax.class, ctx, ITrx.TRXNAME_None)
-				.addCompareFilter(I_C_Tax.COLUMNNAME_ValidFrom, Operator.LESS, date)
+				.addCompareFilter(I_C_Tax.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, date)
 				.addOnlyActiveRecordsFilter();
 
 

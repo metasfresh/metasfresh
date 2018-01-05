@@ -1,6 +1,16 @@
 package de.metas.shipper.gateway.go.schema;
 
+import java.util.NoSuchElementException;
+import java.util.stream.Stream;
+
+import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
+
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.shipper.gateway.api.model.OrderStatus;
 import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -33,7 +43,7 @@ import lombok.Getter;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public enum GOOrderStatus
+public enum GOOrderStatus implements OrderStatus
 {
 	/**
 	 * New: if you transmit status "1", the shipment will be generated with status "new".
@@ -62,4 +72,32 @@ public enum GOOrderStatus
 	{
 		this.code = code;
 	}
+
+	public static GOOrderStatus forCode(@NonNull final String code)
+	{
+		final GOOrderStatus type = code2type.get(code);
+		if (type == null)
+		{
+			throw new NoSuchElementException("No element found for code=" + code);
+		}
+		return type;
+	}
+
+	public static GOOrderStatus forNullableCode(@NonNull final String code)
+	{
+		if (Check.isEmpty(code, true))
+		{
+			return null;
+		}
+		return forCode(code);
+	}
+
+	@Override
+	public boolean isFinalState()
+	{
+		return this == APPROVED || this == CANCELLATION;
+	}
+
+	private static final ImmutableMap<String, GOOrderStatus> code2type = Stream.of(values())
+			.collect(GuavaCollectors.toImmutableMapByKey(GOOrderStatus::getCode));
 }

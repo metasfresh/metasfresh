@@ -28,7 +28,7 @@ import lombok.Value;
  * #L%
  */
 
-@Builder
+@Builder(toBuilder = true)
 @Value
 public class DeliveryOrder
 {
@@ -36,6 +36,8 @@ public class DeliveryOrder
 	OrderId orderId;
 	@Nullable
 	HWBNumber hwbNumber;
+	@Nullable
+	OrderStatus orderStatus;
 
 	@NonNull
 	private Address pickupAddress;
@@ -69,6 +71,9 @@ public class DeliveryOrder
 	@NonNull
 	private SelfPickup selfPickup;
 
-	@NonNull
+	@Nullable // might cost money
 	private String receiptConfirmationPhoneNumber;
+
+	/** ID in external repository */
+	private int repoId;
 }

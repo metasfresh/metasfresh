@@ -1,12 +1,10 @@
-package de.metas.shipper.gateway.api.service;
-
-import de.metas.shipper.gateway.api.model.CountryCode;
+package de.metas.shipper.gateway.api.model;
 
 /*
  * #%L
  * de.metas.shipper.gateway.api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,11 +22,9 @@ import de.metas.shipper.gateway.api.model.CountryCode;
  * #L%
  */
 
-public interface CountryCodeFactory
+public interface OrderStatus
 {
+	String getCode();
 
-	CountryCode getCountryCodeByAlpha2(String countryCodeAlpha2);
-
-	CountryCode getCountryCodeByAlpha3(String countryCodeAlpha3);
-
+	boolean isFinalState();
 }
