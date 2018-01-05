@@ -1,6 +1,7 @@
 package de.metas.shipper.gateway.api;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.util.Check;
 import org.springframework.stereotype.Service;
@@ -37,9 +38,16 @@ public class ShipperGatewayRegistry
 {
 	private final ImmutableMap<String, ShipperGatewayService> servicesByGatewayId;
 
-	public ShipperGatewayRegistry(final List<ShipperGatewayService> services)
+	public ShipperGatewayRegistry(final Optional<List<ShipperGatewayService>> services)
 	{
-		servicesByGatewayId = Maps.uniqueIndex(services, ShipperGatewayService::getShipperGatewayId);
+		if (services.isPresent())
+		{
+			servicesByGatewayId = Maps.uniqueIndex(services.get(), ShipperGatewayService::getShipperGatewayId);
+		}
+		else
+		{
+			servicesByGatewayId = ImmutableMap.of();
+		}
 	}
 
 	public boolean hasServiceSupport(@NonNull final String shipperGatewayId)
