@@ -79,8 +79,6 @@ import lombok.NonNull;
 
 public class GOClient extends WebServiceGatewaySupport implements ShipperGatewayClient
 {
-	public static final String SHIPPER_GATEWAY_ID = "go";
-
 	private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 	private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -122,7 +120,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 	@Override
 	public String getShipperGatewayId()
 	{
-		return SHIPPER_GATEWAY_ID;
+		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
 
 	@Override
