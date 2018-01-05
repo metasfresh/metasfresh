@@ -104,7 +104,7 @@ public interface IFlatrateBL extends ISingletonService
 	{
 		@NonNull final I_C_Flatrate_Term contract;
 		final boolean forceExtend;
-		final boolean forceComplete;
+		final Boolean forceComplete;
 		final Timestamp nextTermStartDate;
 		@Default I_C_OrderLine orderLine = null;
 		final int AD_PInstance_ID;

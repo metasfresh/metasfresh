@@ -1025,7 +1025,7 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		final I_C_Flatrate_Term currentTerm = context.getContract();
 		final boolean forceExtend = context.isForceExtend();
-		final boolean forceComplete = context.isForceComplete();
+		final Boolean forceComplete = context.getForceComplete();
 		final Timestamp nextTermStartDate = context.getNextTermStartDate();
 		final I_C_OrderLine ol = context.getOrderLine();
 
