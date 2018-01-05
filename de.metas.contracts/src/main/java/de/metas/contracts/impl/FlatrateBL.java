@@ -1017,7 +1017,7 @@ public class FlatrateBL implements IFlatrateBL
 
 			final I_C_Flatrate_Term currentTerm = context.getContract();
 			currentTerm.setAD_PInstance_EndOfTerm_ID(context.getAD_PInstance_ID());
-			InterfaceWrapperHelper.save(currentTerm, localTrxName);
+			InterfaceWrapperHelper.save(currentTerm);
 		});
 	}
 
