@@ -49,6 +49,7 @@ import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
@@ -83,7 +84,6 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
-import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -1026,10 +1026,6 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Flatrate_Term currentTerm = context.getContract();
 		final boolean forceExtend = context.isForceExtend();
 		final Boolean forceComplete = context.getForceComplete();
-		final Timestamp nextTermStartDate = context.getNextTermStartDate();
-		final I_C_OrderLine ol = context.getOrderLine();
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
 
 		final I_C_Flatrate_Conditions conditions = currentTerm.getC_Flatrate_Conditions();
 		final I_C_Flatrate_Transition currentTransition = conditions.getC_Flatrate_Transition();
@@ -1039,70 +1035,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		if (currentTerm.isAutoRenew() || forceExtend)
 		{
-			Check.errorIf(currentTerm.getC_FlatrateTerm_Next_ID() > 0,
-					"{} has C_FlatrateTerm_Next_ID = {} (should be <= 0)", currentTerm, currentTerm.getC_FlatrateTerm_Next_ID());
-
-			final I_C_Flatrate_Conditions nextConditions;
-			if (currentTransition.getC_Flatrate_Conditions_Next_ID() > 0)
-			{
-				nextConditions = currentTransition.getC_Flatrate_Conditions_Next();
-			}
-			else
-			{
-				nextConditions = currentTerm.getC_Flatrate_Conditions(); // just use the same conditions again
-			}
-
-			final I_C_Flatrate_Term nextTerm = InterfaceWrapperHelper.create(ctx, I_C_Flatrate_Term.class, trxName);
-			nextTerm.setAD_Org_ID(currentTerm.getAD_Org_ID());
-
-			nextTerm.setC_Flatrate_Data_ID(currentTerm.getC_Flatrate_Data_ID());
-			nextTerm.setC_Flatrate_Conditions_ID(nextConditions.getC_Flatrate_Conditions_ID());
-			nextTerm.setPlannedQtyPerUnit(currentTerm.getPlannedQtyPerUnit());
-			nextTerm.setIsSimulation(currentTerm.isSimulation());
-
-			nextTerm.setBill_BPartner_ID(currentTerm.getBill_BPartner_ID());
-			nextTerm.setBill_Location_ID(currentTerm.getBill_Location_ID());
-			nextTerm.setBill_User_ID(currentTerm.getBill_User_ID());
-
-			nextTerm.setAD_User_InCharge_ID(currentTerm.getAD_User_InCharge_ID());
-			final I_C_Flatrate_Transition nextTransition = nextConditions.getC_Flatrate_Transition();
-
-			final Timestamp firstDayOfNewTerm = computeStartDate(currentTerm, nextTermStartDate);
-			nextTerm.setStartDate(firstDayOfNewTerm);
-			nextTerm.setMasterStartDate(currentTerm.getMasterStartDate());
-
-			if (ol != null)
-			{
-				nextTerm.setC_OrderLine_Term(ol);
-			}
-			updateEndDate(nextTransition, nextTerm);
-			updateNoticeDate(nextTransition, nextTerm);
-
-			// 03786: set the newly added fields
-			// Preissystem, Lieferempfaenger, Lieferadresse, Produkt
-
-			nextTerm.setM_PricingSystem(currentTerm.getM_PricingSystem());
-			nextTerm.setDropShip_BPartner_ID(currentTerm.getDropShip_BPartner_ID());
-			nextTerm.setDropShip_Location_ID(currentTerm.getDropShip_Location_ID());
-
-			nextTerm.setM_Product_ID(currentTerm.getM_Product_ID());
-			Services.get(IAttributeSetInstanceBL.class).cloneASI(currentTerm, nextTerm);
-
-			nextTerm.setDropShip_User_ID(currentTerm.getDropShip_User_ID());
-			nextTerm.setDeliveryRule(currentTerm.getDeliveryRule());
-			nextTerm.setDeliveryViaRule(currentTerm.getDeliveryViaRule());
-
-			nextTerm.setC_UOM_ID(currentTerm.getC_UOM_ID());
-
-			final IFlatrateTermEventService flatrateHandlersService = Services.get(IFlatrateTermEventService.class);
-			flatrateHandlersService
-					.getHandler(nextConditions.getType_Conditions()) // nextterm is not saved yet, so type will be null in this moment
-					.beforeSaveOfNextTermForPredecessor(nextTerm, currentTerm);
-
-			nextTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Prepare);
-			nextTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
-
-			InterfaceWrapperHelper.save(nextTerm);
+			final I_C_Flatrate_Term nextTerm = createNewTerm(context, trxName);
 
 			// the conditions were set via de.metas.flatrate.modelvalidator.C_Flatrate_Term.copyFromConditions(term)
 			Check.errorUnless(currentTerm.getType_Conditions().equals(nextTerm.getType_Conditions()),
@@ -1112,6 +1045,7 @@ public class FlatrateBL implements IFlatrateBL
 			currentTerm.setC_FlatrateTerm_Next_ID(nextTerm.getC_Flatrate_Term_ID());
 
 			// gh #549: notify that handler so it might do additional things. In the case of this task, it shall create C_Flatrate_DataEntry records
+			final IFlatrateTermEventService flatrateHandlersService = Services.get(IFlatrateTermEventService.class);
 			flatrateHandlersService
 					.getHandler(nextTerm.getType_Conditions())
 					.afterSaveOfNextTermForPredecessor(nextTerm, currentTerm);
@@ -1160,6 +1094,7 @@ public class FlatrateBL implements IFlatrateBL
 			Check.assume(currentTerm.getAD_User_InCharge_ID() > 0, conditions + " has AD_User_InCharge_ID > 0");
 			Check.assume(termToReferenceInNote != null, "");
 
+			final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
 			final MNote note = new MNote(
 					ctx,
 					msgValue,
@@ -1170,6 +1105,80 @@ public class FlatrateBL implements IFlatrateBL
 			note.setTextMsg(msgBL.getMsg(ctx, msgValue));
 			note.saveEx();
 		}
+	}
+
+	private I_C_Flatrate_Term createNewTerm(final @NonNull ContractExtendingRequest context, final String trxName)
+	{
+		final I_C_Flatrate_Term currentTerm = context.getContract();
+		final Timestamp nextTermStartDate = context.getNextTermStartDate();
+		final I_C_OrderLine ol = context.getOrderLine();
+
+		Check.errorIf(currentTerm.getC_FlatrateTerm_Next_ID() > 0,
+				"{} has C_FlatrateTerm_Next_ID = {} (should be <= 0)", currentTerm, currentTerm.getC_FlatrateTerm_Next_ID());
+
+		final I_C_Flatrate_Conditions conditions = currentTerm.getC_Flatrate_Conditions();
+		final I_C_Flatrate_Transition currentTransition = conditions.getC_Flatrate_Transition();
+
+		final I_C_Flatrate_Conditions nextConditions;
+		if (currentTransition.getC_Flatrate_Conditions_Next_ID() > 0)
+		{
+			nextConditions = currentTransition.getC_Flatrate_Conditions_Next();
+		}
+		else
+		{
+			nextConditions = currentTerm.getC_Flatrate_Conditions();
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(currentTerm);
+		final I_C_Flatrate_Term nextTerm = InterfaceWrapperHelper.create(ctx, I_C_Flatrate_Term.class, trxName);
+		nextTerm.setAD_Org_ID(currentTerm.getAD_Org_ID());
+
+		nextTerm.setC_Flatrate_Data_ID(currentTerm.getC_Flatrate_Data_ID());
+		nextTerm.setC_Flatrate_Conditions_ID(nextConditions.getC_Flatrate_Conditions_ID());
+		nextTerm.setPlannedQtyPerUnit(currentTerm.getPlannedQtyPerUnit());
+		nextTerm.setIsSimulation(currentTerm.isSimulation());
+
+		nextTerm.setBill_BPartner_ID(currentTerm.getBill_BPartner_ID());
+		nextTerm.setBill_Location_ID(currentTerm.getBill_Location_ID());
+		nextTerm.setBill_User_ID(currentTerm.getBill_User_ID());
+
+		nextTerm.setAD_User_InCharge_ID(currentTerm.getAD_User_InCharge_ID());
+		final I_C_Flatrate_Transition nextTransition = nextConditions.getC_Flatrate_Transition();
+
+		final Timestamp firstDayOfNewTerm = computeStartDate(currentTerm, nextTermStartDate);
+		nextTerm.setStartDate(firstDayOfNewTerm);
+		nextTerm.setMasterStartDate(currentTerm.getMasterStartDate());
+
+		if (ol != null)
+		{
+			nextTerm.setC_OrderLine_Term(ol);
+		}
+		updateEndDate(nextTransition, nextTerm);
+		updateNoticeDate(nextTransition, nextTerm);
+
+		nextTerm.setM_PricingSystem(currentTerm.getM_PricingSystem());
+		nextTerm.setDropShip_BPartner_ID(currentTerm.getDropShip_BPartner_ID());
+		nextTerm.setDropShip_Location_ID(currentTerm.getDropShip_Location_ID());
+
+		nextTerm.setM_Product_ID(currentTerm.getM_Product_ID());
+		Services.get(IAttributeSetInstanceBL.class).cloneASI(currentTerm, nextTerm);
+
+		nextTerm.setDropShip_User_ID(currentTerm.getDropShip_User_ID());
+		nextTerm.setDeliveryRule(currentTerm.getDeliveryRule());
+		nextTerm.setDeliveryViaRule(currentTerm.getDeliveryViaRule());
+
+		nextTerm.setC_UOM_ID(currentTerm.getC_UOM_ID());
+
+		final IFlatrateTermEventService flatrateHandlersService = Services.get(IFlatrateTermEventService.class);
+		flatrateHandlersService
+				.getHandler(nextConditions.getType_Conditions()) // nextterm is not saved yet, so type will be null in this moment
+				.beforeSaveOfNextTermForPredecessor(nextTerm, currentTerm);
+
+		nextTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Prepare);
+		nextTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
+		InterfaceWrapperHelper.save(nextTerm);
+
+		return nextTerm;
 	}
 
 	private Timestamp computeStartDate(@NonNull final I_C_Flatrate_Term contract, final Timestamp nextTermStartDate)
