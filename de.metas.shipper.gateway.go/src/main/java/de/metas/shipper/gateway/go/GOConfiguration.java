@@ -10,10 +10,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.transport.http.HttpComponentsMessageSender;
 
-import de.metas.shipper.gateway.api.service.CountryCodeFactory;
-import de.metas.shipper.gateway.api.service.DefaultCountryCodeFactory;
-import de.metas.shipper.gateway.go.schema.ObjectFactory;
-
 /*
  * #%L
  * de.metas.shipper.go
@@ -41,26 +37,30 @@ public class GOConfiguration
 {
 	private static final Logger logger = LoggerFactory.getLogger(GOConfiguration.class);
 
-	@Value("${de.metas.shipper.go.url}")
+	@Value("${de.metas.shipper.go.url:}")
 	private String url;
-	@Value("${de.metas.shipper.go.auth.username}")
+	@Value("${de.metas.shipper.go.auth.username:}")
 	private String authUsername;
-	@Value("${de.metas.shipper.go.auth.password}")
+	@Value("${de.metas.shipper.go.auth.password:}")
 	private String authPassword;
-	@Value("${de.metas.shipper.go.request.username}")
+	@Value("${de.metas.shipper.go.request.username:}")
 	private String requestUsername;
-	@Value("${de.metas.shipper.go.request.senderId}")
+	@Value("${de.metas.shipper.go.request.senderId:}")
 	private String requestSenderId;
 
 	@Bean
-	public GOClient goClient(final Jaxb2Marshaller marshaller)
+	public GOClient goClient()
 	{
-		Check.assumeNotEmpty(url, "url is not empty");
+		if (Check.isEmpty(url, true))
+		{
+			logger.info("GO URL not defined. Skip inializing GO client");
+			return null;
+		}
 
 		final GOClient client = GOClient.builder()
 				.url(url)
 				.messageSender(goClientMessageSender())
-				.marshaller(marshaller)
+				.marshaller(goClientMarshaller())
 				.requestUsername(requestUsername)
 				.requestSenderId(requestSenderId)
 				.build();
@@ -68,11 +68,10 @@ public class GOConfiguration
 		return client;
 	}
 
-	@Bean
 	public Jaxb2Marshaller goClientMarshaller()
 	{
 		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-		marshaller.setPackagesToScan(ObjectFactory.class.getPackage().getName());
+		marshaller.setPackagesToScan(de.metas.shipper.gateway.go.schema.ObjectFactory.class.getPackage().getName());
 		return marshaller;
 	}
 
@@ -84,7 +83,6 @@ public class GOConfiguration
 		return messageSender;
 	}
 
-	@Bean
 	public UsernamePasswordCredentials goUsernamePasswordCredentials()
 	{
 		Check.assumeNotEmpty(authUsername, "username is not empty");
@@ -94,11 +92,5 @@ public class GOConfiguration
 		logger.info("Using GO credentials: {}", credentials);
 
 		return credentials;
-	}
-
-	@Bean
-	public CountryCodeFactory countryCodeFactory()
-	{
-		return new DefaultCountryCodeFactory();
 	}
 }
