@@ -14,6 +14,7 @@ WHERE hu.isactive='Y'
 GROUP BY 
 	l.M_Warehouse_ID,
 	hus.M_Product_ID,
+	hus.C_UOM_ID,
 	GenerateHUAttributesKey(hu.m_hu_id)
 ;
 COMMENT ON VIEW MD_Stock_From_HUs_V IS 
