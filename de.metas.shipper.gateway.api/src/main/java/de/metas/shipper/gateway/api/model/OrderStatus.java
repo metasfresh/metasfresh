@@ -25,4 +25,6 @@ package de.metas.shipper.gateway.api.model;
 public interface OrderStatus
 {
 	String getCode();
+
+	boolean isFinalState();
 }
