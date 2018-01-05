@@ -34,6 +34,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
@@ -81,6 +82,8 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	@Before
 	public void before()
 	{
+		AdempiereTestHelper.get().init();
+
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
