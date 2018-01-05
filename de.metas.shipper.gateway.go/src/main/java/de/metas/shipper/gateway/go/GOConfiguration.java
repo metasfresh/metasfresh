@@ -69,4 +69,16 @@ public class GOConfiguration
 		logger.info("GO Client initialized: {}", client);
 		return client;
 	}
+
+	@Bean
+	public GOShipperGatewayService goShipperGatewayService(final GODeliveryOrderRepository deliveryOrderRepository)
+	{
+		if (!isEnabled())
+		{
+			logger.info("GO not configured. Skip inializing {}", GOShipperGatewayService.class);
+			return null;
+		}
+
+		return new GOShipperGatewayService(deliveryOrderRepository);
+	}
 }
