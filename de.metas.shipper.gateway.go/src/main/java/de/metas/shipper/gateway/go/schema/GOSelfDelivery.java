@@ -1,7 +1,15 @@
 package de.metas.shipper.gateway.go.schema;
 
+import java.util.NoSuchElementException;
+import java.util.stream.Stream;
+
+import org.adempiere.util.GuavaCollectors;
+
+import com.google.common.collect.ImmutableMap;
+
 import de.metas.shipper.gateway.api.model.SelfDelivery;
 import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,4 +53,17 @@ public enum GOSelfDelivery implements SelfDelivery
 	{
 		this.code = code;
 	}
+
+	public static GOSelfDelivery forCode(@NonNull final String code)
+	{
+		final GOSelfDelivery type = code2type.get(code);
+		if (type == null)
+		{
+			throw new NoSuchElementException("No element found for code=" + code);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, GOSelfDelivery> code2type = Stream.of(values())
+			.collect(GuavaCollectors.toImmutableMapByKey(GOSelfDelivery::getCode));
 }
