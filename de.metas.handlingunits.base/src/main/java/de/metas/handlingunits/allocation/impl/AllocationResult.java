@@ -32,7 +32,7 @@ import javax.annotation.concurrent.Immutable;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 
 @Immutable
@@ -41,19 +41,19 @@ import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 	private final BigDecimal qtyToAllocate;
 	private final BigDecimal qtyAllocated;
 	private final boolean completed;
-	private final List<IHUTransaction> transactions;
+	private final List<IHUTransactionCandidate> transactions;
 	private final List<IHUTransactionAttribute> attributeTransactions;
 
 	public AllocationResult(final BigDecimal qtyToAllocate,
 			final BigDecimal qtyAllocated,
-			final List<IHUTransaction> trxs,
+			final List<IHUTransactionCandidate> trxs,
 			final List<IHUTransactionAttribute> attributeTrxs)
 	{
 		this.qtyToAllocate = qtyToAllocate;
 		this.qtyAllocated = qtyAllocated;
 		this.completed = qtyToAllocate.compareTo(qtyAllocated) == 0;
 		this.attributeTransactions = Collections.unmodifiableList(new ArrayList<IHUTransactionAttribute>(attributeTrxs));
-		this.transactions = Collections.unmodifiableList(new ArrayList<IHUTransaction>(trxs));
+		this.transactions = Collections.unmodifiableList(new ArrayList<IHUTransactionCandidate>(trxs));
 	}
 
 	@Override
@@ -87,7 +87,7 @@ import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 	}
 
 	@Override
-	public List<IHUTransaction> getTransactions()
+	public List<IHUTransactionCandidate> getTransactions()
 	{
 		return ImmutableList.copyOf(transactions);
 	}

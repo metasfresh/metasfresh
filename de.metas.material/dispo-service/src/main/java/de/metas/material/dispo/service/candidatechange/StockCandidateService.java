@@ -19,9 +19,7 @@ import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.FireMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.stock.OnHandQuantityChangedEvent;
 import lombok.NonNull;
 
 /*
@@ -203,21 +201,6 @@ public class StockCandidateService
 			candidateRepositoryWriteService.updateCandidate(candidate
 					.withQuantity(newQty)
 					.withGroupId(groupId));
-		}
-	}
-
-	public void fireStockChangeEvent(@NonNull final Candidate stockWithQuantityDelta)
-	{
-		if (stockWithQuantityDelta.getQuantity().signum() != 0)
-		{
-			final OnHandQuantityChangedEvent stockChangedEvent = OnHandQuantityChangedEvent.builder()
-					.eventDescriptor(new EventDescriptor(
-							stockWithQuantityDelta.getClientId(),
-							stockWithQuantityDelta.getOrgId()))
-					.materialdescriptor(stockWithQuantityDelta.getMaterialDescriptor())
-					.quantityDelta(stockWithQuantityDelta.getQuantity())
-					.build();
-			fireMaterialEventService.fireEventAfterNextCommit(stockChangedEvent);
 		}
 	}
 }

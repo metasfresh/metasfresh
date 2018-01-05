@@ -1,6 +1,6 @@
 package de.metas.handlingunits.allocation;
 
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 
 /*
  * #%L
@@ -28,7 +28,7 @@ import de.metas.handlingunits.model.I_M_HU;
 
 /**
  * Implementors are responsible to allocate <b>or deallocate</b> from/to a given hu, according to a given request.
- * Actually, in both cases, their job is to create and return an {@link IAllocationResult} that contains a bunch of {@link IHUTransaction}s 
+ * Actually, in both cases, their job is to create and return an {@link IAllocationResult} that contains a bunch of {@link IHUTransactionCandidate}s 
  * 
  * @author metas-dev <dev@metasfresh.com>
  *

@@ -264,8 +264,8 @@ final class EventBus implements IEventBus
 		{
 			final EventLogUserService eventLogUserService = Adempiere.getBean(EventLogUserService.class);
 			eventLogUserService
-					.newEventErrorLogRequest(eventListener.getClass(), e)
-					.storeEventLog();
+					.newErrorLogEntry(eventListener.getClass(), e)
+					.storeEntry();
 		}
 		finally
 		{

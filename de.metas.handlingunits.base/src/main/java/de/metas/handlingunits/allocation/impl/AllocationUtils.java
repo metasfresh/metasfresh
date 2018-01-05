@@ -42,7 +42,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.interfaces.I_C_BPartner;
@@ -90,7 +90,7 @@ public final class AllocationUtils
 
 	public static IAllocationRequestBuilder createQtyLoadRequestBuilder(
 			final IAllocationRequest originalRequest,
-			final IHUTransaction unloadTrx)
+			final IHUTransactionCandidate unloadTrx)
 	{
 		final Quantity qtyAbs = unloadTrx.getQuantity();
 		Check.assume(qtyAbs.signum() <= 0, "Qty <= 0 ({})", unloadTrx);
@@ -275,7 +275,7 @@ public final class AllocationUtils
 	 */
 	public static IAllocationResult createQtyAllocationResult(final BigDecimal qtyToAllocate,
 			final BigDecimal qtyAllocated,
-			final List<IHUTransaction> trxs,
+			final List<IHUTransactionCandidate> trxs,
 			final List<IHUTransactionAttribute> attributeTrxs
 			)
 	{

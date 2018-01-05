@@ -102,12 +102,19 @@ public interface ITrxListenerManager
 			this.timing = timing;
 		}
 
+		/**
+		 * The default is {@code false}; call this method with {@code true} if know what you do.
+		 * Might introduce hard to track unit test problems.
+		 */
 		public RegisterListenerRequest registerWeakly(final boolean registerWeakly)
 		{
 			this.registerWeakly = registerWeakly;
 			return this;
 		}
 
+		/**
+		 * The default is {@code true}; call this method with {@code false} if you want the method to be invoked e.g. on *every* commit.
+		 */
 		public RegisterListenerRequest invokeMethodJustOnce(final boolean invokeMethodJustOnce)
 		{
 			this.invokeMethodJustOnce = invokeMethodJustOnce;

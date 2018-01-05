@@ -23,7 +23,7 @@ import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
-import de.metas.material.event.stock.OnHandQuantityChangedEvent;
+import de.metas.material.event.stock.OnHandQtyChangedEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
@@ -66,6 +66,11 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 		@JsonSubTypes.Type(name = SupplyRequiredEvent.TYPE, value = SupplyRequiredEvent.class),
 
 		@JsonSubTypes.Type(name = DDOrderAdvisedOrCreatedEvent.TYPE, value = DDOrderAdvisedOrCreatedEvent.class),
+		@JsonSubTypes.Type(name = DDOrderRequestedEvent.TYPE, value = DDOrderRequestedEvent.class),
+
+		@JsonSubTypes.Type(name = ForecastCreatedEvent.TYPE, value = ForecastCreatedEvent.class),
+
+		@JsonSubTypes.Type(name = OnHandQtyChangedEvent.TYPE, value = OnHandQtyChangedEvent.class),
 
 		@JsonSubTypes.Type(name = PPOrderAdvisedEvent.TYPE, value = PPOrderAdvisedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderCreatedEvent.TYPE, value = PPOrderCreatedEvent.class),
@@ -74,24 +79,19 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 		@JsonSubTypes.Type(name = PPOrderChangedDocStatusEvent.TYPE, value = PPOrderChangedDocStatusEvent.class),
 		@JsonSubTypes.Type(name = PPOrderQtyChangedEvent.TYPE, value = PPOrderQtyChangedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderProductionQtyChangedEvent.TYPE, value = PPOrderProductionQtyChangedEvent.class),
-
 		@JsonSubTypes.Type(name = PPOrderRequestedEvent.TYPE, value = PPOrderRequestedEvent.class),
-		@JsonSubTypes.Type(name = DDOrderRequestedEvent.TYPE, value = DDOrderRequestedEvent.class),
-		@JsonSubTypes.Type(name = ForecastCreatedEvent.TYPE, value = ForecastCreatedEvent.class),
-
-		@JsonSubTypes.Type(name = OnHandQuantityChangedEvent.TYPE, value = OnHandQuantityChangedEvent.class),
 
 		@JsonSubTypes.Type(name = PurchaseOfferCreatedEvent.TYPE, value = PurchaseOfferCreatedEvent.class),
 		@JsonSubTypes.Type(name = PurchaseOfferUpdatedEvent.TYPE, value = PurchaseOfferUpdatedEvent.class),
 		@JsonSubTypes.Type(name = PurchaseOfferDeletedEvent.TYPE, value = PurchaseOfferDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = ReceiptScheduleCreatedEvent.TYPE, value = ReceiptScheduleCreatedEvent.class),
-		@JsonSubTypes.Type(name = ReceiptScheduleUpdatedEvent.TYPE, value = ReceiptScheduleUpdatedEvent.class),
 		@JsonSubTypes.Type(name = ReceiptScheduleDeletedEvent.TYPE, value = ReceiptScheduleDeletedEvent.class),
+		@JsonSubTypes.Type(name = ReceiptScheduleUpdatedEvent.TYPE, value = ReceiptScheduleUpdatedEvent.class),
 
 		@JsonSubTypes.Type(name = ShipmentScheduleCreatedEvent.TYPE, value = ShipmentScheduleCreatedEvent.class),
-		@JsonSubTypes.Type(name = ShipmentScheduleUpdatedEvent.TYPE, value = ShipmentScheduleUpdatedEvent.class),
 		@JsonSubTypes.Type(name = ShipmentScheduleDeletedEvent.TYPE, value = ShipmentScheduleDeletedEvent.class),
+		@JsonSubTypes.Type(name = ShipmentScheduleUpdatedEvent.TYPE, value = ShipmentScheduleUpdatedEvent.class),
 
 		@JsonSubTypes.Type(name = StockEstimateCreatedEvent.TYPE, value = StockEstimateCreatedEvent.class),
 		@JsonSubTypes.Type(name = StockEstimateDeletedEvent.TYPE, value = StockEstimateDeletedEvent.class),

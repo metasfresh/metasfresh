@@ -1,4 +1,4 @@
-package de.metas.material.cockpit.eventhandler;
+package de.metas.material.cockpit.view.eventhandler;
 
 import java.util.Collection;
 
@@ -8,9 +8,10 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.material.cockpit.DataRecordIdentifier;
-import de.metas.material.cockpit.DataUpdateRequest;
-import de.metas.material.cockpit.DataUpdateRequestHandler;
+import de.metas.event.log.EventLogUserService;
+import de.metas.material.cockpit.view.DataRecordIdentifier;
+import de.metas.material.cockpit.view.DataUpdateRequest;
+import de.metas.material.cockpit.view.DataUpdateRequestHandler;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
@@ -43,15 +44,19 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
-public class AbstractReceiptScheduleEventHandler
+public class ReceiptScheduleEventHandler
 		implements MaterialEventHandler<AbstractReceiptScheduleEvent>
 {
 
 	private final DataUpdateRequestHandler dataUpdateRequestHandler;
+	private final EventLogUserService eventLogUserService;
 
-	public AbstractReceiptScheduleEventHandler(DataUpdateRequestHandler dataUpdateRequestHandler)
+	public ReceiptScheduleEventHandler(
+			@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler,
+			@NonNull final EventLogUserService eventLogUserService)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
+		this.eventLogUserService = eventLogUserService;
 
 	}
 
@@ -65,16 +70,30 @@ public class AbstractReceiptScheduleEventHandler
 	}
 
 	@Override
-	public void handleEvent(
-			@NonNull final AbstractReceiptScheduleEvent abstractReceiptScheduleEvent)
+	public void validateEvent(@NonNull final AbstractReceiptScheduleEvent event)
 	{
-		final MaterialDescriptor orderedMaterial = abstractReceiptScheduleEvent.getOrderedMaterial();
+		event.validate();
+	}
+
+	@Override
+	public void handleEvent(@NonNull final AbstractReceiptScheduleEvent event)
+	{
+		final MaterialDescriptor orderedMaterial = event.getMaterialDescriptor();
 		final DataRecordIdentifier identifier = DataRecordIdentifier.createForMaterial(orderedMaterial);
+
+		if (event.getOrderedQuantityDelta().signum() == 0
+				&& event.getReservedQuantityDelta().signum() == 0)
+		{
+			eventLogUserService.newLogEntry(this.getClass())
+					.message("Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero")
+					.storeEntry();
+			return;
+		}
 
 		final DataUpdateRequest request = DataUpdateRequest.builder()
 				.identifier(identifier)
-				.orderedPurchaseQty(abstractReceiptScheduleEvent.getOrderedQuantityDelta())
-				.reservedPurchaseQty(abstractReceiptScheduleEvent.getReservedQuantityDelta())
+				.orderedPurchaseQty(event.getOrderedQuantityDelta())
+				.reservedPurchaseQty(event.getReservedQuantityDelta())
 				.build();
 
 		dataUpdateRequestHandler.handleDataUpdateRequest(request);

@@ -449,31 +449,6 @@ public interface I_MD_Cockpit
     public static final String COLUMNNAME_QtyOnHandEstimate = "QtyOnHandEstimate";
 
 	/**
-	 * Set Lagerbestand.
-	 * Aktueller oder geplanter Lagerbestand
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyOnHandStock (java.math.BigDecimal QtyOnHandStock);
-
-	/**
-	 * Get Lagerbestand.
-	 * Aktueller oder geplanter Lagerbestand
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyOnHandStock();
-
-    /** Column definition for QtyOnHandStock */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit, Object> COLUMN_QtyOnHandStock = new org.adempiere.model.ModelColumn<I_MD_Cockpit, Object>(I_MD_Cockpit.class, "QtyOnHandStock", null);
-    /** Column name QtyOnHandStock */
-    public static final String COLUMNNAME_QtyOnHandStock = "QtyOnHandStock";
-
-	/**
 	 * Set Benötigte Menge für Produktion.
 	 *
 	 * <br>Type: Quantity

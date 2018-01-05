@@ -31,7 +31,7 @@ import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
@@ -160,7 +160,7 @@ public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 	 * After that, we relly on {@link #trxLineProcessed(IHUContext, I_M_HU_Trx_Line)} business logic, to create the proper {@link I_M_ReceiptSchedule_Alloc}s.
 	 */
 	@Override
-	public void onSplitTransaction(final IHUContext huContext, final IHUTransaction unloadTrx, final IHUTransaction loadTrx)
+	public void onSplitTransaction(final IHUContext huContext, final IHUTransactionCandidate unloadTrx, final IHUTransactionCandidate loadTrx)
 	{
 		final I_M_ReceiptSchedule referencedModel = findReceiptScheduleFromSplitTransactions(huContext, unloadTrx, loadTrx);
 		if (referencedModel == null)
@@ -172,7 +172,7 @@ public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 		loadTrx.setReferencedModel(referencedModel);
 	}
 
-	private I_M_ReceiptSchedule findReceiptScheduleFromSplitTransactions(final IHUContext huContext, final IHUTransaction unloadTrx, final IHUTransaction loadTrx)
+	private I_M_ReceiptSchedule findReceiptScheduleFromSplitTransactions(final IHUContext huContext, final IHUTransactionCandidate unloadTrx, final IHUTransactionCandidate loadTrx)
 	{
 		//
 		// If referenced model of the load transaction is a Receipt Schedule, use that

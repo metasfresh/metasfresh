@@ -1,4 +1,4 @@
-package de.metas.material.cockpit;
+package de.metas.material.cockpit.view;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -118,8 +118,6 @@ public class DataUpdateRequestHandler
 
 		// was Fresh_QtyMRP
 		dataRecord.setQtyRequiredForProduction(dataRecord.getQtyRequiredForProduction().add(dataUpdateRequest.getRequiredForProductionQty()));
-
-		dataRecord.setQtyOnHandStock(dataRecord.getQtyOnHandStock().add(dataUpdateRequest.getStockQuantity()));
 
 		// was Fresh_QtyOnHand_OnDate
 		dataRecord.setQtyOnHandEstimate(

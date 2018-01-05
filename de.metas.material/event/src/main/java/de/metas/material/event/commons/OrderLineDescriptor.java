@@ -1,19 +1,17 @@
-package de.metas.material.event.stock;
+package de.metas.material.event.commons;
 
-import java.math.BigDecimal;
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
-import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
+import org.adempiere.util.Check;
+
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
  * metasfresh-material-event
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,16 +31,17 @@ import lombok.Value;
 
 @Value
 @Builder
-public class OnHandQuantityChangedEvent implements MaterialEvent
+public class OrderLineDescriptor
 {
-	public static final String TYPE = "OnHandQunatityChangedEvent";
+	int orderLineId;
+	int orderId;
+	String documentNo;
 
-	@NonNull
-	EventDescriptor eventDescriptor;
+	public void validate()
+	{
+		checkIdGreaterThanZero("orderLineId", orderLineId);
+		checkIdGreaterThanZero("orderId", orderId);
 
-	@NonNull
-	MaterialDescriptor materialdescriptor;
-
-	@NonNull
-	BigDecimal quantityDelta;
+		Check.errorIf(Check.isEmpty(documentNo, true), "documentNo may not be empty");
+	}
 }

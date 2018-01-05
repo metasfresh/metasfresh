@@ -868,8 +868,8 @@ UPDATE AD_Field SET Name='Event log', Description=NULL, Help=NULL WHERE (AD_Colu
 UPDATE AD_PrintFormatItem pi SET PrintName='Event log', Name='Event log' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=543706)
 ;
 
-DROP TABLE ad_eventstore;
 DROP TABLE ad_eventlog;
+DROP TABLE ad_eventstore;
 
 -- 2018-01-02T10:59:42.669
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

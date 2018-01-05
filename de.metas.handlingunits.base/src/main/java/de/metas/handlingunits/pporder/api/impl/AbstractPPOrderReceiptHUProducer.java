@@ -63,9 +63,9 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
-import de.metas.handlingunits.hutransaction.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -374,7 +374,7 @@ import lombok.NonNull;
 	}
 
 	/**
-	 * Aggregates {@link HUTransaction}s and creates manufacturing receipt candidates requests.
+	 * Aggregates {@link HUTransactionCandidate}s and creates manufacturing receipt candidates requests.
 	 */
 	private static final class CreateReceiptCandidateRequestCollector
 	{
@@ -394,7 +394,7 @@ import lombok.NonNull;
 					.forEach(this::addHUTransaction);
 		}
 
-		private void addHUTransaction(final IHUTransaction huTransaction)
+		private void addHUTransaction(final IHUTransactionCandidate huTransaction)
 		{
 			final I_M_HU hu = huTransaction.getM_HU();
 			if (hu == null)

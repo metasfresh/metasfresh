@@ -44,7 +44,7 @@ import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.allocation.transfer.IHUSplitDefinition;
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -486,7 +486,7 @@ public class LUTUProducerDestination extends AbstractProducerDestination impleme
 
 		// 06647: create and add a HU-trx just so that HULoader.load0() will later on transfer the source's attributes also to the LU and not just to the TUs
 		final I_M_HU_PI_Item luItemPI = getLUItemPI();
-		final IHUTransaction luTrx = huTransactionBL.createLUTransactionForAttributeTransfer(luHU, luItemPI, request);
+		final IHUTransactionCandidate luTrx = huTransactionBL.createLUTransactionForAttributeTransfer(luHU, luItemPI, request);
 		result.addTransaction(luTrx);
 
 		final TUProducerDestination tuProducer = getCreateTUProducerDestination(luHU);

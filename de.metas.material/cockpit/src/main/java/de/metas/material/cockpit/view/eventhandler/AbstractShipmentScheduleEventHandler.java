@@ -1,22 +1,22 @@
-package de.metas.material.cockpit.eventhandler;
+package de.metas.material.cockpit.view.eventhandler;
 
 import java.util.Collection;
 
-import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.material.cockpit.DataRecordIdentifier;
-import de.metas.material.cockpit.DataUpdateRequest;
-import de.metas.material.cockpit.DataUpdateRequestHandler;
+import de.metas.material.cockpit.view.DataRecordIdentifier;
+import de.metas.material.cockpit.view.DataUpdateRequest;
+import de.metas.material.cockpit.view.DataUpdateRequestHandler;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.procurement.AbstractPurchaseOfferEvent;
-import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
-import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
-import de.metas.material.event.procurement.PurchaseOfferUpdatedEvent;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import lombok.NonNull;
 
 /*
@@ -43,44 +43,43 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
-public class AbstractPurchaseOfferEventHandler
-		implements MaterialEventHandler<AbstractPurchaseOfferEvent>
+public class AbstractShipmentScheduleEventHandler
+		implements MaterialEventHandler<AbstractShipmentScheduleEvent>
 {
 	private final DataUpdateRequestHandler dataUpdateRequestHandler;
 
-	public AbstractPurchaseOfferEventHandler(
+	public AbstractShipmentScheduleEventHandler(
 			@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
 	}
 
 	@Override
-	public Collection<Class<? extends AbstractPurchaseOfferEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractShipmentScheduleEvent>> getHandeledEventType()
 	{
-		return ImmutableList.of(
-				PurchaseOfferCreatedEvent.class,
-				PurchaseOfferUpdatedEvent.class,
-				PurchaseOfferDeletedEvent.class);
+		return ImmutableList.of(ShipmentScheduleCreatedEvent.class,
+				ShipmentScheduleUpdatedEvent.class,
+				ShipmentScheduleDeletedEvent.class);
 	}
 
 	@Override
-	public void handleEvent(@NonNull final AbstractPurchaseOfferEvent event)
+	public void handleEvent(@NonNull final AbstractShipmentScheduleEvent event)
 	{
-		final DataUpdateRequest dataUpdateRequest = createDataUpdateRequestForEvent(event);
+		final DataUpdateRequest dataUpdateRequest= createDataUpdateRequestForEvent(event);
 		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
 	}
 
 	private DataUpdateRequest createDataUpdateRequestForEvent(
-			@NonNull final AbstractPurchaseOfferEvent purchaseOfferedEvent)
+			@NonNull final AbstractShipmentScheduleEvent shipmentScheduleEvent)
 	{
-		final DataRecordIdentifier identifier = DataRecordIdentifier.builder()
-				.productDescriptor(purchaseOfferedEvent.getProductDescriptor())
-				.date(TimeUtil.getDay(purchaseOfferedEvent.getDate()))
-				.build();
+		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getOrderedMaterial();
+
+		final DataRecordIdentifier identifier = DataRecordIdentifier.createForMaterial(orderedMaterial);
 
 		final DataUpdateRequest request = DataUpdateRequest.builder()
 				.identifier(identifier)
-				.offeredQty(purchaseOfferedEvent.getQtyDelta())
+				.orderedSalesQty(shipmentScheduleEvent.getOrderedQuantityDelta())
+				.reservedSalesQty(shipmentScheduleEvent.getReservedQuantityDelta())
 				.build();
 		return request;
 	}

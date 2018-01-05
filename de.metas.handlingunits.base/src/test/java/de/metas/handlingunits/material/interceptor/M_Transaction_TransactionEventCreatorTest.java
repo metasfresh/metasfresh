@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
@@ -27,6 +26,7 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.business.BusinessTestHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 
 /*
@@ -52,10 +52,9 @@ import de.metas.material.event.transactions.AbstractTransactionEvent;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class,
-		ShutdownListener.class,
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
 		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
-public class M_TransactionTest
+public class M_Transaction_TransactionEventCreatorTest
 {
 
 	private static final int INOUT_LINE_ID = 30;
@@ -80,8 +79,11 @@ public class M_TransactionTest
 	{
 		final I_M_Transaction transaction = createShipmentTransaction();
 
-		final List<AbstractTransactionEvent> events = M_Transaction.createTransactionEvents(transaction, ModelChangeType.AFTER_NEW);
-		final AbstractTransactionEvent event = events.get(0);
+		// invoke the method under test
+		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
+				.createEventsForTransaction(transaction, false);
+
+		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-10");
 		assertThat(event.getShipmentScheduleId()).isZero();
@@ -100,8 +102,10 @@ public class M_TransactionTest
 		transaction.setM_InOutLine_ID(INOUT_LINE_ID);
 		save(transaction);
 
-		final List<AbstractTransactionEvent> events = M_Transaction.createTransactionEvents(transaction, ModelChangeType.AFTER_NEW);
-		final AbstractTransactionEvent event = events.get(0);
+		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
+				.createEventsForTransaction(transaction, false);
+
+		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-10");
 		assertThat(event.getShipmentScheduleId()).isEqualTo(20);
@@ -120,15 +124,18 @@ public class M_TransactionTest
 		transaction.setM_InOutLine_ID(INOUT_LINE_ID);
 		save(transaction);
 
-		final List<AbstractTransactionEvent> events = M_Transaction.createTransactionEvents(transaction, ModelChangeType.AFTER_NEW);
+		// invoke the method under test
+		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
+				.createEventsForTransaction(transaction, false);
+
 		assertThat(events).hasSize(2);
 
-		final AbstractTransactionEvent event = events.get(0);
+		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-9");
 		assertThat(event.getShipmentScheduleId()).isZero();
 
-		final AbstractTransactionEvent event1 = events.get(1);
+		final AbstractTransactionEvent event1 = (AbstractTransactionEvent)events.get(1);
 		assertCommon(transaction, event1);
 		assertThat(event1.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-1");
 		assertThat(event1.getShipmentScheduleId()).isEqualTo(20);
@@ -159,20 +166,23 @@ public class M_TransactionTest
 		transaction.setM_InOutLine_ID(INOUT_LINE_ID);
 		save(transaction);
 
-		final List<AbstractTransactionEvent> events = M_Transaction.createTransactionEvents(transaction, ModelChangeType.AFTER_NEW);
+		// invoke the method under test
+		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
+				.createEventsForTransaction(transaction, false);
+
 		assertThat(events).hasSize(3);
 
-		final AbstractTransactionEvent event = events.get(0);
+		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-7");
 		assertThat(event.getShipmentScheduleId()).isZero();
 
-		final AbstractTransactionEvent event1 = events.get(1);
+		final AbstractTransactionEvent event1 = (AbstractTransactionEvent)events.get(1);
 		assertCommon(transaction, event1);
 		assertThat(event1.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-1");
 		assertThat(event1.getShipmentScheduleId()).isEqualTo(20);
 
-		final AbstractTransactionEvent event2 = events.get(2);
+		final AbstractTransactionEvent event2 = (AbstractTransactionEvent)events.get(2);
 		assertCommon(transaction, event2);
 		assertThat(event2.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-2");
 		assertThat(event2.getShipmentScheduleId()).isEqualTo(21);

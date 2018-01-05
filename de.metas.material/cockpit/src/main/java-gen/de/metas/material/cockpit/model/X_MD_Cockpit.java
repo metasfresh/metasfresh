@@ -15,7 +15,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1228933274L;
+	private static final long serialVersionUID = 1853514962L;
 
     /** Standard Constructor */
     public X_MD_Cockpit (Properties ctx, int MD_Cockpit_ID, String trxName)
@@ -343,28 +343,6 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	public java.math.BigDecimal getQtyOnHandEstimate () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOnHandEstimate);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Lagerbestand.
-		@param QtyOnHandStock 
-		Aktueller oder geplanter Lagerbestand
-	  */
-	@Override
-	public void setQtyOnHandStock (java.math.BigDecimal QtyOnHandStock)
-	{
-		set_Value (COLUMNNAME_QtyOnHandStock, QtyOnHandStock);
-	}
-
-	/** Get Lagerbestand.
-		@return Aktueller oder geplanter Lagerbestand
-	  */
-	@Override
-	public java.math.BigDecimal getQtyOnHandStock () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOnHandStock);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

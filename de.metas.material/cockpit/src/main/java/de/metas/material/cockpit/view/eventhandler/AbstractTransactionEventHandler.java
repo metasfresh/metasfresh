@@ -1,5 +1,6 @@
-package de.metas.material.cockpit.eventhandler;
+package de.metas.material.cockpit.view.eventhandler;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 
 import org.springframework.context.annotation.Profile;
@@ -8,11 +9,14 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.material.cockpit.DataRecordIdentifier;
-import de.metas.material.cockpit.DataUpdateRequest;
-import de.metas.material.cockpit.DataUpdateRequestHandler;
+import de.metas.material.cockpit.view.DataRecordIdentifier;
+import de.metas.material.cockpit.view.DataUpdateRequest;
+import de.metas.material.cockpit.view.DataUpdateRequestHandler;
+import de.metas.material.cockpit.view.DataUpdateRequest.DataUpdateRequestBuilder;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.stock.OnHandQuantityChangedEvent;
+import de.metas.material.event.transactions.AbstractTransactionEvent;
+import de.metas.material.event.transactions.TransactionCreatedEvent;
+import de.metas.material.event.transactions.TransactionDeletedEvent;
 import lombok.NonNull;
 
 /*
@@ -39,40 +43,49 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
-public class OnHandQuantityChangedHandler
-		implements MaterialEventHandler<OnHandQuantityChangedEvent>
+public class AbstractTransactionEventHandler
+		implements MaterialEventHandler<AbstractTransactionEvent>
 {
 	private final DataUpdateRequestHandler dataUpdateRequestHandler;
 
-	public OnHandQuantityChangedHandler(
+	public AbstractTransactionEventHandler(
 			@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
 	}
 
 	@Override
-	public Collection<Class<? extends OnHandQuantityChangedEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractTransactionEvent>> getHandeledEventType()
 	{
-		return ImmutableList.of(OnHandQuantityChangedEvent.class);
+		return ImmutableList.of(
+				TransactionCreatedEvent.class,
+				TransactionDeletedEvent.class);
 	}
 
 	@Override
-	public void handleEvent(@NonNull final OnHandQuantityChangedEvent event)
+	public void handleEvent(@NonNull final AbstractTransactionEvent event)
 	{
-		final DataUpdateRequest dataUpdateRequest =  createDataUpdateRequestForEvent(event);
+		final DataUpdateRequest dataUpdateRequest = createDataUpdateRequestForEvent(event);
 		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
 	}
 
 	private DataUpdateRequest createDataUpdateRequestForEvent(
-			@NonNull final OnHandQuantityChangedEvent event)
+			@NonNull final AbstractTransactionEvent transactionEvent)
 	{
-		final DataRecordIdentifier identifier = DataRecordIdentifier.createForMaterial(event.getMaterialdescriptor());
+		final DataRecordIdentifier identifier = DataRecordIdentifier
+				.createForMaterial(transactionEvent.getMaterialDescriptor());
 
-		final DataUpdateRequest request = DataUpdateRequest.builder()
+		final BigDecimal eventQuantity = transactionEvent.getQuantityDelta();
+
+		final DataUpdateRequestBuilder dataRequestBuilder = DataUpdateRequest.builder()
 				.identifier(identifier)
-				.stockQuantity(event.getQuantityDelta())
-				.build();
-		return request;
+				.onHandQtyChange(eventQuantity);
+
+		if (transactionEvent.isDirectMovementWarehouse())
+		{
+			dataRequestBuilder.directMovementQty(eventQuantity);
+		}
+		return dataRequestBuilder.build();
 	}
 
 }

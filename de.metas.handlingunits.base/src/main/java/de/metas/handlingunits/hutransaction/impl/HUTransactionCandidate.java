@@ -10,12 +10,12 @@ package de.metas.handlingunits.hutransaction.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,36 +34,53 @@ import org.slf4j.Logger;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
-public final class HUTransaction implements IHUTransaction
+public final class HUTransactionCandidate implements IHUTransactionCandidate
 {
-	private static final transient Logger logger = LogManager.getLogger(HUTransaction.class);
+	private static final transient Logger logger = LogManager.getLogger(HUTransactionCandidate.class);
 
 	// Dimension
-	private Object model;
+	@Getter
+	@Setter
+	private Object referencedModel;
+
 	private final I_M_HU_Item huItem;
+
 	private final I_M_HU_Item vhuItem;
 	// Product/Qty/UOM
+
+	@Getter
 	private final I_M_Product product;
+
+	@Getter
 	private final Quantity quantity;
 
 	// Physical position and status
 	private final I_M_Locator locator;
+
 	private final String huStatus;
 
 	// Reference
 	private final String id;
-	private final Date date;
-	private IHUTransaction counterpartTrx;
 
+	@Getter
+	private final Date date;
+
+	private IHUTransactionCandidate counterpartTrx;
+
+	@Getter
 	private boolean skipProcessing = false;
 
-	public HUTransaction(final Object referencedModel,
+	public HUTransactionCandidate(
+			final Object referencedModel,
 			final I_M_HU_Item huItem,
 			final I_M_HU_Item vhuItem,
 			final IAllocationRequest request,
@@ -79,12 +96,10 @@ public final class HUTransaction implements IHUTransaction
 				// to avoid precision errors while converting again from working UOM to internal storage UOM
 				request.getQuantity().switchToSource().negateIf(outTrx),
 				// Transaction Date:
-				request.getDate()
-		//
-		);
+				request.getDate());
 	}
 
-	public HUTransaction(final Object model,
+	public HUTransactionCandidate(final Object model,
 			final I_M_HU_Item huItem,
 			final I_M_HU_Item vhuItem,
 			final I_M_Product product,
@@ -101,12 +116,12 @@ public final class HUTransaction implements IHUTransaction
 				null); // huStatus, will be handled
 	}
 
-	public HUTransaction(final Object model,
+	public HUTransactionCandidate(final Object model,
 			final I_M_HU_Item huItem,
 			final I_M_HU_Item vhuItem,
-			final I_M_Product product,
-			final Quantity quantity,
-			final Date date,
+			@NonNull final I_M_Product product,
+			@NonNull final Quantity quantity,
+			@NonNull final Date date,
 			final I_M_Locator locator,
 			final String huStatus)
 	{
@@ -117,7 +132,7 @@ public final class HUTransaction implements IHUTransaction
 		// Known cases:
 		// * in picking terminal when we move materials to an handling unit
 		// * methods like HUTrxBL.transferMaterialToNewHUs are assuming this, but are used only in tests
-		this.model = model;
+		this.referencedModel = model;
 
 		//
 		// huItem
@@ -132,7 +147,6 @@ public final class HUTransaction implements IHUTransaction
 			logger.warn(ex.getLocalizedMessage(), ex);
 
 			this.huItem = null;
-
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_M_HU_Item.class))
 		{
@@ -153,15 +167,12 @@ public final class HUTransaction implements IHUTransaction
 		this.vhuItem = vhuItem;
 
 		// Product
-		Check.assumeNotNull(product, "product not null");
 		this.product = product;
 
 		// Qty/UOM
-		Check.assumeNotNull(quantity, "quantity not null");
 		this.quantity = quantity;
 
 		// Transaction date
-		Check.assumeNotNull(date, "date not null");
 		this.date = date;
 
 		final I_M_HU effectiveHU = getEffectiveHU();
@@ -204,10 +215,10 @@ public final class HUTransaction implements IHUTransaction
 				+ ", qty=" + quantity
 				+ ", date=" + date);
 
-		if (model != null)
+		if (referencedModel != null)
 		{
-			final String modelTableName = InterfaceWrapperHelper.getModelTableName(model);
-			final int modelRecordId = InterfaceWrapperHelper.getId(model);
+			final String modelTableName = InterfaceWrapperHelper.getModelTableName(referencedModel);
+			final int modelRecordId = InterfaceWrapperHelper.getId(referencedModel);
 			sb.append(", model=" + modelTableName + "/" + modelRecordId);
 		}
 
@@ -264,18 +275,6 @@ public final class HUTransaction implements IHUTransaction
 	}
 
 	@Override
-	public Object getReferencedModel()
-	{
-		return model;
-	}
-
-	@Override
-	public void setReferencedModel(final Object referencedModel)
-	{
-		model = referencedModel;
-	}
-
-	@Override
 	public I_M_HU getM_HU()
 	{
 		if (huItem == null)
@@ -318,26 +317,13 @@ public final class HUTransaction implements IHUTransaction
 	}
 
 	@Override
-	public I_M_Product getProduct()
-	{
-		return product;
-	}
-
-	@Override
-	public Quantity getQuantity()
-	{
-		return quantity;
-	}
-
-	@Override
-	public IHUTransaction getCounterpart()
+	public IHUTransactionCandidate getCounterpart()
 	{
 		return counterpartTrx;
 	}
 
-	private void setCounterpart(final IHUTransaction counterpartTrx)
+	private void setCounterpart(@NonNull final IHUTransactionCandidate counterpartTrx)
 	{
-		Check.assumeNotNull(counterpartTrx, "counterpartTrx not null");
 		Check.assume(this != counterpartTrx, "counterpartTrx != this");
 
 		if (this.counterpartTrx == null)
@@ -358,22 +344,16 @@ public final class HUTransaction implements IHUTransaction
 	}
 
 	@Override
-	public void pair(final IHUTransaction counterpartTrx)
+	public void pair(final IHUTransactionCandidate counterpartTrx)
 	{
-		Check.errorUnless(counterpartTrx instanceof HUTransaction,
+		Check.errorUnless(counterpartTrx instanceof HUTransactionCandidate,
 				"Param counterPartTrx needs to be a HUTransaction counterPartTrx={}",
 				counterpartTrx);
 
 		this.setCounterpart(counterpartTrx);
-		
-		// by casting to HUTransaction (which currently is the only implementation of IHUTransaction), we don't have to make setCounterpart() public.
-		((HUTransaction)counterpartTrx).setCounterpart(this);
-	}
 
-	@Override
-	public Date getDate()
-	{
-		return date;
+		// by casting to HUTransaction (which currently is the only implementation of IHUTransaction), we don't have to make setCounterpart() public.
+		((HUTransactionCandidate)counterpartTrx).setCounterpart(this);
 	}
 
 	@Override
@@ -383,20 +363,14 @@ public final class HUTransaction implements IHUTransaction
 	}
 
 	@Override
-	public String getHUStatus()
-	{
-		return huStatus;
-	}
-
-	@Override
 	public void setSkipProcessing()
 	{
 		skipProcessing = true;
 	}
 
 	@Override
-	public boolean isSkipProcessing()
+	public String getHUStatus()
 	{
-		return skipProcessing;
+		return huStatus;
 	}
 }

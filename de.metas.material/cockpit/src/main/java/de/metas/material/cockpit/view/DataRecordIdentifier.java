@@ -1,4 +1,4 @@
-package de.metas.material.cockpit;
+package de.metas.material.cockpit.view;
 
 import java.util.Date;
 

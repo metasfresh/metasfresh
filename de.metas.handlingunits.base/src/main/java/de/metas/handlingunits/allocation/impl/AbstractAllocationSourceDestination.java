@@ -38,9 +38,9 @@ import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
-import de.metas.handlingunits.hutransaction.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.logging.LogManager;
@@ -141,7 +141,7 @@ public abstract class AbstractAllocationSourceDestination implements IAllocation
 			final boolean outTrx)
 	{
 		
-		final IHUTransaction trx = createHUTransaction(requestActual, outTrx);
+		final IHUTransactionCandidate trx = createHUTransaction(requestActual, outTrx);
 		
 		return AllocationUtils.createQtyAllocationResult(
 				request.getQty(), // qtyToAllocate
@@ -151,9 +151,9 @@ public abstract class AbstractAllocationSourceDestination implements IAllocation
 				);
 	}
 
-	private IHUTransaction createHUTransaction(final IAllocationRequest request, final boolean outTrx)
+	private IHUTransactionCandidate createHUTransaction(final IAllocationRequest request, final boolean outTrx)
 	{
-		final HUTransaction trx = new HUTransaction(getReferenceModel(),
+		final HUTransactionCandidate trx = new HUTransactionCandidate(getReferenceModel(),
 				getM_HU_Item(),
 				getVHU_Item(),
 				request,

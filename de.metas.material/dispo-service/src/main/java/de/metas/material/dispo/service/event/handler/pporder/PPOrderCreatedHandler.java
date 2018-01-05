@@ -105,9 +105,9 @@ public final class PPOrderCreatedHandler
 		final PPOrderCreatedEvent ppOrderCreatedEvent = (PPOrderCreatedEvent)ppOrderEvent;
 		if (ppOrderCreatedEvent.getGroupId() <= 0)
 		{
-			eventLogUserService.newEventLogRequest(this.getClass())
+			eventLogUserService.newLogEntry(this.getClass())
 					.message("The given ppOrderCreatedEvent has no groupId, so it was created by a user and not via material-dispo. Going to create new candidate records.")
-					.storeEventLog();
+					.storeEntry();
 			return CandidatesQuery.FALSE;
 		}
 

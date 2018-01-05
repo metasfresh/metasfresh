@@ -114,9 +114,9 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 			final List<String> singleMessages = plainStringLoggable.getSingleMessages();
 			singleMessages.forEach(message -> {
 
-				eventLogUserService.newEventLogRequest(this.getClass())
+				eventLogUserService.newLogEntry(this.getClass())
 						.message(message)
-						.storeEventLog();
+						.storeEntry();
 			});
 		}
 	}

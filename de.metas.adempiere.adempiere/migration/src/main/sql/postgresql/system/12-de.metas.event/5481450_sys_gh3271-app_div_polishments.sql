@@ -1004,15 +1004,20 @@ Records with an error are ignored, unless isErrorAcknowledged was set to "yes".'
 
 CREATE INDEX IF NOT EXISTS ad_eventlog_updated
    ON public.ad_eventlog (updated ASC NULLS LAST);
-
-CREATE INDEX IF NOT EXISTS ad_eventlog_updated
-   ON public.ad_eventlog (updated ASC NULLS LAST);
    
+COMMENT ON INDEX ad_eventlog_updated IS
+'This index is here to support the process that deletes on event log records';
+   
+ALTER TABLE public.ad_eventlog_entry DROP CONSTRAINT adeventlog_adeventlogentry;
 ALTER TABLE public.ad_eventlog_entry
   ADD CONSTRAINT adeventlog_adeventlogentry FOREIGN KEY (ad_eventlog_id)
       REFERENCES public.ad_eventlog (ad_eventlog_id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+COMMENT ON CONSTRAINT adeventlog_adeventlogentry ON public.ad_eventlog_entry
+  IS 'This constraint has "ON DELETE CASCADE" to support the process that deletes old event log records';
 
+	  
+	  
 -- 2018-01-02T13:41:57.341
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2018-01-02 13:41:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558429

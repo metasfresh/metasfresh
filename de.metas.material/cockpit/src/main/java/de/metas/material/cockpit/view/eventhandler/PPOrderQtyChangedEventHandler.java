@@ -1,4 +1,4 @@
-package de.metas.material.cockpit.eventhandler;
+package de.metas.material.cockpit.view.eventhandler;
 
 import java.util.Collection;
 import java.util.List;
@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.material.cockpit.DataRecordIdentifier;
-import de.metas.material.cockpit.DataUpdateRequest;
-import de.metas.material.cockpit.DataUpdateRequestHandler;
+import de.metas.material.cockpit.view.DataRecordIdentifier;
+import de.metas.material.cockpit.view.DataUpdateRequest;
+import de.metas.material.cockpit.view.DataUpdateRequestHandler;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderQtyChangedEvent;

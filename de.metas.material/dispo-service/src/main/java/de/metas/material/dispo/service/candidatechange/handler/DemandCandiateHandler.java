@@ -129,8 +129,6 @@ public class DemandCandiateHandler implements CandidateHandler
 			}
 		}
 
-		stockCandidateService.fireStockChangeEvent(childStockWithDemandDelta);
-
 		candidateRepositoryWriteService.updateCandidate(childStockWithDemand
 				.withParentId(demandCandidateWithId.getId()));
 

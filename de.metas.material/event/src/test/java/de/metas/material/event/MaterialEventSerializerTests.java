@@ -15,6 +15,7 @@ import org.junit.Test;
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
@@ -43,7 +44,7 @@ import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
-import de.metas.material.event.stock.OnHandQuantityChangedEvent;
+import de.metas.material.event.stock.OnHandQtyChangedEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
@@ -307,18 +308,6 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
-	public void onHandQunatityChangedEvent()
-	{
-		OnHandQuantityChangedEvent onHandQunatityChangedEvent = OnHandQuantityChangedEvent.builder()
-				.eventDescriptor(createEventDescriptor())
-				.materialdescriptor(createMaterialDescriptor())
-				.quantityDelta(BigDecimal.TEN)
-				.build();
-
-		assertEventEqualAfterSerializeDeserialize(onHandQunatityChangedEvent);
-	}
-
-	@Test
 	public void supplyRequiredEvent()
 	{
 		final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEvent.builder()
@@ -412,30 +401,33 @@ public class MaterialEventSerializerTests
 	@Test
 	public void receiptScheduleCreatedEvent()
 	{
-		final ReceiptScheduleCreatedEvent receiptScheduleCreatedEvent = ReceiptScheduleCreatedEvent.builder()
+		final ReceiptScheduleCreatedEvent event = ReceiptScheduleCreatedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
-				.orderedMaterial(createMaterialDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
+				.orderLineDescriptor(createOrderLineDescriptor())
 				.reservedQuantity(new BigDecimal("2"))
 				.receiptScheduleId(3)
-				.orderLineId(4)
 				.build();
+		event.validate();
 
-		assertEventEqualAfterSerializeDeserialize(receiptScheduleCreatedEvent);
+		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
 	@Test
 	public void receiptScheduleUpdatedEvent()
 	{
-		final ReceiptScheduleUpdatedEvent receiptScheduleCreatedEvent = ReceiptScheduleUpdatedEvent.builder()
+		final ReceiptScheduleUpdatedEvent event = ReceiptScheduleUpdatedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
-				.orderedMaterial(createMaterialDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
+				.orderLineDescriptor(createOrderLineDescriptor())
 				.orderedQuantityDelta(new BigDecimal("2"))
 				.reservedQuantity(new BigDecimal("3"))
 				.reservedQuantityDelta(new BigDecimal("4"))
 				.receiptScheduleId(5)
 				.build();
+		event.validate();
 
-		assertEventEqualAfterSerializeDeserialize(receiptScheduleCreatedEvent);
+		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
 	@Test
@@ -443,12 +435,22 @@ public class MaterialEventSerializerTests
 	{
 		final ReceiptScheduleDeletedEvent receiptScheduleCreatedEvent = ReceiptScheduleDeletedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
-				.orderedMaterial(createMaterialDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
+				.orderLineDescriptor(createOrderLineDescriptor())
 				.reservedQuantity(new BigDecimal("2"))
 				.receiptScheduleId(3)
 				.build();
-
+		receiptScheduleCreatedEvent.validate();
 		assertEventEqualAfterSerializeDeserialize(receiptScheduleCreatedEvent);
+	}
+
+	private static OrderLineDescriptor createOrderLineDescriptor()
+	{
+		return OrderLineDescriptor.builder()
+				.orderLineId(4)
+				.orderId(5)
+				.documentNo("orderDocumentNo")
+				.build();
 	}
 
 	@Test
@@ -481,6 +483,21 @@ public class MaterialEventSerializerTests
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(evt);
+	}
+
+	@Test
+	public void onHandQtyChangedEvent()
+	{
+		final OnHandQtyChangedEvent event = OnHandQtyChangedEvent.builder()
+				.eventDescriptor(createEventDescriptor())
+				.huId(10)
+				.productDescriptor(createProductDescriptor())
+				.quantity(BigDecimal.TEN)
+				.quantityDelta(BigDecimal.ONE)
+				.warehouseId(20)
+				.build();
+		event.assertValid();
+		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
 	@Test

@@ -28,21 +28,21 @@ import java.util.Date;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 
-import de.metas.handlingunits.hutransaction.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.quantity.Quantity;
 
 /**
- * Transaction Line Candidate. Use the constructor of {@link HUTransaction} to get instances.
+ * Transaction Line Candidate. Use the constructor of {@link HUTransactionCandidate} to get instances.
  *
  * Based on this object the actual {@link I_M_HU_Trx_Line}s can be created.
  *
  * @author tsa
  *
  */
-public interface IHUTransaction
+public interface IHUTransactionCandidate
 {
 	/**
 	 * @return unique transaction ID
@@ -137,7 +137,7 @@ public interface IHUTransaction
 	 *
 	 * @return counterpart transaction
 	 */
-	IHUTransaction getCounterpart();
+	IHUTransactionCandidate getCounterpart();
 
 	/**
 	 * Cross link this transaction with given transaction by cross setting their {@link #getCounterpart()} properties.
@@ -146,7 +146,7 @@ public interface IHUTransaction
 	 *
 	 * @param counterpartTrx
 	 */
-	void pair(IHUTransaction counterpartTrx);
+	void pair(IHUTransactionCandidate counterpartTrx);
 
 	/**
 	 * @return transaction date

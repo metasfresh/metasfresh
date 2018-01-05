@@ -23,12 +23,12 @@ package de.metas.handlingunits.allocation.transfer.impl;
  */
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 
 /**
  * This listener is added to a {@link IHUContext} before a split or merge or sth similar is executed. 
- * Its job is to invoke the other listeners' {@link IHUTrxListener#onSplitTransaction(IHUContext, IHUTransaction, IHUTransaction)} method if its own {@link #onUnloadLoadTransaction(IHUContext, IHUTransaction, IHUTransaction)} method is invoked.
+ * Its job is to invoke the other listeners' {@link IHUTrxListener#onSplitTransaction(IHUContext, IHUTransactionCandidate, IHUTransactionCandidate)} method if its own {@link #onUnloadLoadTransaction(IHUContext, IHUTransactionCandidate, IHUTransactionCandidate)} method is invoked.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -43,10 +43,10 @@ import de.metas.handlingunits.hutransaction.IHUTrxListener;
 	}
 
 	/**
-	 * Invokes {@link IHUTrxListener#onSplitTransaction(IHUContext, IHUTransaction, IHUTransaction)} on the trxListeners that are registered with the given {@code huContext}.
+	 * Invokes {@link IHUTrxListener#onSplitTransaction(IHUContext, IHUTransactionCandidate, IHUTransactionCandidate)} on the trxListeners that are registered with the given {@code huContext}.
 	 */
 	@Override
-	public void onUnloadLoadTransaction(final IHUContext huContext, final IHUTransaction unloadTrx, final IHUTransaction loadTrx)
+	public void onUnloadLoadTransaction(final IHUContext huContext, final IHUTransactionCandidate unloadTrx, final IHUTransactionCandidate loadTrx)
 	{
 		huContext.getTrxListeners().onSplitTransaction(huContext, unloadTrx, loadTrx);
 	}
@@ -55,7 +55,7 @@ import de.metas.handlingunits.hutransaction.IHUTrxListener;
 	 * Does nothing, because we triggered this event.
 	 */
 	@Override
-	public void onSplitTransaction(final IHUContext huContext, final IHUTransaction unloadTrx, final IHUTransaction loadTrx)
+	public void onSplitTransaction(final IHUContext huContext, final IHUTransactionCandidate unloadTrx, final IHUTransactionCandidate loadTrx)
 	{
 		// nothing, because we triggered this event; let the others do their stuff...
 	}

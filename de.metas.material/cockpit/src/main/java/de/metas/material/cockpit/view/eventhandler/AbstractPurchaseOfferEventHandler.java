@@ -1,4 +1,4 @@
-package de.metas.material.cockpit.eventhandler;
+package de.metas.material.cockpit.view.eventhandler;
 
 import java.util.Collection;
 
@@ -9,13 +9,14 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.material.cockpit.DataRecordIdentifier;
-import de.metas.material.cockpit.DataUpdateRequest;
-import de.metas.material.cockpit.DataUpdateRequestHandler;
+import de.metas.material.cockpit.view.DataRecordIdentifier;
+import de.metas.material.cockpit.view.DataUpdateRequest;
+import de.metas.material.cockpit.view.DataUpdateRequestHandler;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
-import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
-import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
+import de.metas.material.event.procurement.AbstractPurchaseOfferEvent;
+import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
+import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
+import de.metas.material.event.procurement.PurchaseOfferUpdatedEvent;
 import lombok.NonNull;
 
 /*
@@ -42,42 +43,44 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
-public class AbstractStockEstimateHandler
-		implements MaterialEventHandler<AbstractStockEstimateEvent>
+public class AbstractPurchaseOfferEventHandler
+		implements MaterialEventHandler<AbstractPurchaseOfferEvent>
 {
 	private final DataUpdateRequestHandler dataUpdateRequestHandler;
 
-	public AbstractStockEstimateHandler(
+	public AbstractPurchaseOfferEventHandler(
 			@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
 	}
 
 	@Override
-	public Collection<Class<? extends AbstractStockEstimateEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractPurchaseOfferEvent>> getHandeledEventType()
 	{
-		return ImmutableList.of(StockEstimateCreatedEvent.class, StockEstimateDeletedEvent.class);
+		return ImmutableList.of(
+				PurchaseOfferCreatedEvent.class,
+				PurchaseOfferUpdatedEvent.class,
+				PurchaseOfferDeletedEvent.class);
 	}
 
 	@Override
-	public void handleEvent(@NonNull final AbstractStockEstimateEvent event)
+	public void handleEvent(@NonNull final AbstractPurchaseOfferEvent event)
 	{
 		final DataUpdateRequest dataUpdateRequest = createDataUpdateRequestForEvent(event);
 		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
 	}
 
 	private DataUpdateRequest createDataUpdateRequestForEvent(
-			@NonNull final AbstractStockEstimateEvent stockEstimateEvent)
+			@NonNull final AbstractPurchaseOfferEvent purchaseOfferedEvent)
 	{
 		final DataRecordIdentifier identifier = DataRecordIdentifier.builder()
-				.productDescriptor(stockEstimateEvent.getProductDescriptor())
-				.date(TimeUtil.getDay(stockEstimateEvent.getDate()))
-				.plantId(stockEstimateEvent.getPlantId())
+				.productDescriptor(purchaseOfferedEvent.getProductDescriptor())
+				.date(TimeUtil.getDay(purchaseOfferedEvent.getDate()))
 				.build();
 
 		final DataUpdateRequest request = DataUpdateRequest.builder()
 				.identifier(identifier)
-				.countedQty(stockEstimateEvent.getQuantityDelta())
+				.offeredQty(purchaseOfferedEvent.getQtyDelta())
 				.build();
 		return request;
 	}

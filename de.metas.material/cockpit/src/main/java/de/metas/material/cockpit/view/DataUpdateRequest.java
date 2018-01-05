@@ -1,4 +1,4 @@
-package de.metas.material.cockpit;
+package de.metas.material.cockpit.view;
 
 import java.math.BigDecimal;
 
@@ -68,7 +68,4 @@ public class DataUpdateRequest
 
 	@Default
 	BigDecimal requiredForProductionQty = BigDecimal.ZERO;
-
-	@Default
-	BigDecimal stockQuantity = BigDecimal.ZERO;
 }
