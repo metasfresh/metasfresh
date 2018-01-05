@@ -2,10 +2,10 @@ package de.metas.shipping.api.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Package;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.shipping.api.IShipperTransportationBL;
-import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import lombok.NonNull;
