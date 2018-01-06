@@ -13,7 +13,12 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_M_Attribute;
 import org.junit.Assert;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
 import de.metas.handlingunits.model.I_M_HU;
@@ -21,6 +26,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
 
 /*
  * #%L
@@ -50,6 +56,9 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
  * @author metas-dev <dev@metasfresh.com>
  * @task FRESH-578 #275
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
+		ShipperGatewayRegistry.class})
 public abstract class HUShipmentProcess_AttributesAggregation_Base extends AbstractHUShipmentProcessIntegrationTest
 {
 	private ShipmentScheduleQtyPickedExpectations afterPick_ShipmentScheduleQtyPickedExpectations = null;
