@@ -39,6 +39,15 @@ public final class HWBNumber
 	{
 		return new HWBNumber(hwbNumberStr);
 	}
+	
+	public static final HWBNumber ofNullable(final String hwbNumberStr)
+	{
+		if(Check.isEmpty(hwbNumberStr, true))
+		{
+			return null;
+		}
+		return new HWBNumber(hwbNumberStr);
+	}
 
 	private final String hwbNumberStr;
 

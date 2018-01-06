@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.OrgHasNoBPartnerLinkException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -38,6 +39,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.adempiere.model.I_AD_User;
@@ -55,6 +57,13 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 		final int adOrgId = org.getAD_Org_ID();
 		return retrieveLinkedBPartner(ctx, adOrgId, trxName);
 	}
+
+	@Override
+	public I_C_BPartner retrieveLinkedBPartner(final int adOrgId)
+	{
+		return retrieveLinkedBPartner(Env.getCtx(), adOrgId, ITrx.TRXNAME_None);
+	}
+
 
 	@Cached(cacheName = I_C_BPartner.Table_Name + "#By#AD_OrgBP_ID")
 	/* package */ I_C_BPartner retrieveLinkedBPartner(@CacheCtx final Properties ctx, final int adOrgId, @CacheTrx final String trxName)

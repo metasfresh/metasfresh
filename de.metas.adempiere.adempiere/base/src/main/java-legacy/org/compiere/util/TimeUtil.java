@@ -1254,21 +1254,20 @@ public class TimeUtil
 		{
 			instant = localDateEff.atTime(localTime).atZone(ZoneId.systemDefault()).toInstant();
 		}
-		
-		return new Timestamp(instant.getEpochSecond());
-	}
-	
-	public static Timestamp asTimestamp(final LocalDateTime localDateTime)
-	{
-		if(localDateTime == null)
-		{
-			return null;
-		}
-		
-		final Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
+
 		return new Timestamp(instant.getEpochSecond());
 	}
 
+	public static Timestamp asTimestamp(final LocalDateTime localDateTime)
+	{
+		if (localDateTime == null)
+		{
+			return null;
+		}
+
+		final Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
+		return new Timestamp(instant.getEpochSecond());
+	}
 
 	/**
 	 * Get last date in year
@@ -1453,6 +1452,26 @@ public class TimeUtil
 			return 7;
 		}
 		return dayOfWeek - 1;
+	}
+
+	public static LocalDate asLocalDate(final Date date)
+	{
+		if (date == null)
+		{
+			return null;
+		}
+
+		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	}
+
+	public static LocalTime asLocalTime(final Date time)
+	{
+		if (time == null)
+		{
+			return null;
+		}
+
+		return time.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
 	}
 
 }	// TimeUtil
