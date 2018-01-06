@@ -12,6 +12,11 @@ Here come the actual release notes:
 
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**
+# metasfresh-app
+
+# metasfresh-webui-frontend
+  * [#1478](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1478) Attachment in eMail Editor: Show File name/ caption instead of key
+    * Improving the Names for attached Files in eMail Editor. Now showing the caption manes instead of attachment keys.
 
 # metasfresh 5.40 (2018-02)
 
