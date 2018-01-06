@@ -1,14 +1,11 @@
 package de.metas.shipper.gateway.go;
 
 import org.adempiere.util.Check;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.ws.transport.http.HttpComponentsMessageSender;
 
 /*
  * #%L
@@ -48,19 +45,24 @@ public class GOConfiguration
 	@Value("${de.metas.shipper.go.request.senderId:}")
 	private String requestSenderId;
 
-	@Bean
-	public GOClient goClient()
+	public boolean isEnabled()
 	{
-		if (Check.isEmpty(url, true))
+		return !Check.isEmpty(url, true);
+	}
+
+	@Bean
+	public GOClient goClient() throws Exception
+	{
+		if (!isEnabled())
 		{
-			logger.info("GO URL not defined. Skip inializing GO client");
+			logger.info("GO not configured. Skip inializing {}", GOClient.class);
 			return null;
 		}
 
 		final GOClient client = GOClient.builder()
 				.url(url)
-				.messageSender(goClientMessageSender())
-				.marshaller(goClientMarshaller())
+				.authUsername(authUsername)
+				.authPassword(authPassword)
 				.requestUsername(requestUsername)
 				.requestSenderId(requestSenderId)
 				.build();
@@ -68,29 +70,15 @@ public class GOConfiguration
 		return client;
 	}
 
-	public Jaxb2Marshaller goClientMarshaller()
-	{
-		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-		marshaller.setPackagesToScan(de.metas.shipper.gateway.go.schema.ObjectFactory.class.getPackage().getName());
-		return marshaller;
-	}
-
 	@Bean
-	public HttpComponentsMessageSender goClientMessageSender()
+	public GOShipperGatewayService goShipperGatewayService(final GODeliveryOrderRepository deliveryOrderRepository)
 	{
-		final HttpComponentsMessageSender messageSender = new HttpComponentsMessageSender();
-		messageSender.setCredentials(goUsernamePasswordCredentials());
-		return messageSender;
-	}
+		if (!isEnabled())
+		{
+			logger.info("GO not configured. Skip inializing {}", GOShipperGatewayService.class);
+			return null;
+		}
 
-	public UsernamePasswordCredentials goUsernamePasswordCredentials()
-	{
-		Check.assumeNotEmpty(authUsername, "username is not empty");
-		Check.assumeNotEmpty(authPassword, "password is not empty");
-
-		final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(authUsername, authPassword);
-		logger.info("Using GO credentials: {}", credentials);
-
-		return credentials;
+		return new GOShipperGatewayService(deliveryOrderRepository);
 	}
 }

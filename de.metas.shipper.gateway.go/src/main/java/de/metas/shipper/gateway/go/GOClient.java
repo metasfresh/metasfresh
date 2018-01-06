@@ -7,13 +7,15 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
-import org.springframework.ws.transport.WebServiceMessageSender;
+import org.springframework.ws.client.core.WebServiceTemplate;
+import org.springframework.ws.transport.http.HttpComponentsMessageSender;
 import org.springframework.xml.transform.StringResult;
 
 import com.google.common.base.MoreObjects;
@@ -67,13 +69,14 @@ import lombok.NonNull;
  * #L%
  */
 
-public class GOClient extends WebServiceGatewaySupport implements ShipperGatewayClient
+public class GOClient implements ShipperGatewayClient
 {
 	private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 	private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
 	private static final Logger logger = LoggerFactory.getLogger(GOClient.class);
 	private final ObjectFactory objectFactory = new ObjectFactory();
+	private final WebServiceTemplate webServiceTemplate;
 
 	private final String requestUsername;
 	private final String requestSenderId;
@@ -81,8 +84,8 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 	@Builder
 	private GOClient(
 			final String url,
-			@NonNull final WebServiceMessageSender messageSender,
-			@NonNull final Jaxb2Marshaller marshaller,
+			final String authUsername,
+			final String authPassword,
 			final String requestUsername,
 			final String requestSenderId)
 	{
@@ -90,20 +93,43 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 		Check.assumeNotEmpty(requestUsername, "requestUsername is not empty");
 		Check.assumeNotEmpty(requestSenderId, "requestSenderId is not empty");
 
-		setDefaultUri(url);
-		setMessageSender(messageSender);
-		setMarshaller(marshaller);
-		setUnmarshaller(marshaller);
+		final HttpComponentsMessageSender messageSender = createMessageSender(authUsername, authPassword);
+
+		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
+		marshaller.setPackagesToScan(de.metas.shipper.gateway.go.schema.ObjectFactory.class.getPackage().getName());
+
+		webServiceTemplate = new WebServiceTemplate();
+		webServiceTemplate.setDefaultUri(url);
+		webServiceTemplate.setMessageSender(messageSender);
+		webServiceTemplate.setMarshaller(marshaller);
+		webServiceTemplate.setUnmarshaller(marshaller);
 
 		this.requestUsername = requestUsername;
 		this.requestSenderId = requestSenderId;
+	}
+
+	private static HttpComponentsMessageSender createMessageSender(final String authUsername, final String authPassword)
+	{
+		final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(authUsername, authPassword);
+
+		final HttpComponentsMessageSender messageSender = new HttpComponentsMessageSender();
+		messageSender.setCredentials(credentials);
+		try
+		{
+			messageSender.afterPropertiesSet(); // to make sure credentials are set to HttpClient
+		}
+		catch (Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+		return messageSender;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("url", getDefaultUri())
+				.add("url", webServiceTemplate.getDefaultUri())
 				.toString();
 	}
 
@@ -195,7 +221,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 			logger.trace("Sending GO Request: {}", toString(goRequestElement));
 		}
 
-		final JAXBElement<?> goResponseElement = (JAXBElement<?>)getWebServiceTemplate().marshalSendAndReceive(goRequestElement);
+		final JAXBElement<?> goResponseElement = (JAXBElement<?>)webServiceTemplate.marshalSendAndReceive(goRequestElement);
 		if (logger.isTraceEnabled())
 		{
 			logger.trace("Got GO Response: {}", toString(goResponseElement));
@@ -481,7 +507,7 @@ public class GOClient extends WebServiceGatewaySupport implements ShipperGateway
 
 	private String toString(final JAXBElement<?> jaxbElement)
 	{
-		final Marshaller marshaller = getMarshaller();
+		final Marshaller marshaller = webServiceTemplate.getMarshaller();
 		try
 		{
 			final StringResult result = new StringResult();

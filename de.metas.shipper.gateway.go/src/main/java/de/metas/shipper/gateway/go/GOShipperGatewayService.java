@@ -20,7 +20,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.shipper.gateway.api.ShipperGatewayService;
@@ -56,7 +55,6 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
 public class GOShipperGatewayService implements ShipperGatewayService
 {
 	private final GODeliveryOrderRepository deliveryOrderRepository;
