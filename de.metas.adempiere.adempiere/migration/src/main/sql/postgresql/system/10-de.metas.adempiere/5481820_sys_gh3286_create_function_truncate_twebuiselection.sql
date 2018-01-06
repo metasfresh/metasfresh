@@ -1,3 +1,4 @@
+DROP FUNCTION IF EXISTS trunc_twebuiselection();
 CREATE FUNCTION trunc_twebuiselection()  returns integer
 LANGUAGE plpgsql
 AS $$
