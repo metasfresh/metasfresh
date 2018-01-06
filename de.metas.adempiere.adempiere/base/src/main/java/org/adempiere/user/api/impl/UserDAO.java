@@ -172,7 +172,7 @@ public class UserDAO implements IUserDAO
 		}
 		return user;
 	}
-	
+
 	@Override
 	public I_AD_User retrieveDefaultUser(I_C_BPartner bpartner)
 	{

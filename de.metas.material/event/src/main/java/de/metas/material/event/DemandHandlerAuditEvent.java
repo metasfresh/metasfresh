@@ -2,6 +2,8 @@ package de.metas.material.event;
 
 import java.util.List;
 
+import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,15 +37,15 @@ import lombok.NonNull;
 @AllArgsConstructor
 public class DemandHandlerAuditEvent implements MaterialEvent
 {
-	public static final String TYPE = "NoPlanFoundEvent";
+	public static final String TYPE = "DemandHandlerAuditEvent";
 
 	@NonNull
-	private final EventDescr eventDescr;
-	
+	private final EventDescriptor eventDescriptor;
+
 	@NonNull
 	private final MaterialDescriptor descr;
 
 	private int orderLineId;
 
-	private final List<String> messages; 
+	private final List<String> messages;
 }

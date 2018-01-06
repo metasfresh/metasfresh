@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
@@ -73,8 +74,8 @@ public class MaterialEventService
 			// make sure that every record we create has the correct AD_Client_ID and AD_Org_ID
 			final Properties temporaryCtx = Env.copyCtx(Env.getCtx());
 
-			Env.setContext(temporaryCtx, Env.CTXNAME_AD_Client_ID, lightWeightEvent.getEventDescr().getClientId());
-			Env.setContext(temporaryCtx, Env.CTXNAME_AD_Org_ID, lightWeightEvent.getEventDescr().getOrgId());
+			Env.setContext(temporaryCtx, Env.CTXNAME_AD_Client_ID, lightWeightEvent.getEventDescriptor().getClientId());
+			Env.setContext(temporaryCtx, Env.CTXNAME_AD_Org_ID, lightWeightEvent.getEventDescriptor().getOrgId());
 
 			try (final IAutoCloseable c = Env.switchContext(temporaryCtx))
 			{
@@ -101,7 +102,7 @@ public class MaterialEventService
 
 	/**
 	 * Also see {@link #subscribeToEventBus()}.
-	 * 
+	 *
 	 * @return
 	 */
 	public static MaterialEventService createDistributedServiceThatNeedsToSubscribe()
@@ -163,9 +164,10 @@ public class MaterialEventService
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		trxManager
-				.getTrxListenerManager(trxName)
-				.onAfterNextCommit(() -> fireEvent(event));
+		trxManager.getTrxListenerManager(trxName)
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerWeakly(false) // register "hard", because that's how it was before
+				.registerHandlingMethod(innerTrx -> fireEvent(event));
 	}
 
 	/**

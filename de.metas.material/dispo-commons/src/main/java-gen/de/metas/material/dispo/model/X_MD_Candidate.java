@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 846841184L;
+	private static final long serialVersionUID = -123747904L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -29,8 +29,8 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 			setM_Product_ID (0);
 			setM_Warehouse_ID (0);
 			setQty (BigDecimal.ZERO);
-			setQty_Planner (BigDecimal.ZERO);
 			setSeqNo (0);
+			setStorageAttributesKey (null); // EMPTY
         } */
     }
 
@@ -50,37 +50,70 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
     }
 
 	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
 	}
 
 	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
 	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
 	}
 
-	/** Set DB-Tabelle.
-		@param AD_Table_ID 
-		Database Table information
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
 	  */
 	@Override
-	public void setAD_Table_ID (int AD_Table_ID)
+	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
-		if (AD_Table_ID < 1) 
-			set_Value (COLUMNNAME_AD_Table_ID, null);
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
-	/** Get DB-Tabelle.
-		@return Database Table information
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
 	  */
 	@Override
-	public int getAD_Table_ID () 
+	public int getC_BPartner_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order(org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	/** Set Auftrag.
+		@param C_Order_ID 
+		Auftrag
+	  */
+	@Override
+	public void setC_Order_ID (int C_Order_ID)
+	{
+		throw new IllegalArgumentException ("C_Order_ID is virtual column");	}
+
+	/** Get Auftrag.
+		@return Auftrag
+	  */
+	@Override
+	public int getC_Order_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -137,6 +170,38 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * MD_Candidate_BusinessCase AD_Reference_ID=540709
+	 * Reference name: MD_Candidate_BusinessCase
+	 */
+	public static final int MD_CANDIDATE_BUSINESSCASE_AD_Reference_ID=540709;
+	/** DISTRIBUTION = DISTRIBUTION */
+	public static final String MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION = "DISTRIBUTION";
+	/** PRODUCTION = PRODUCTION */
+	public static final String MD_CANDIDATE_BUSINESSCASE_PRODUCTION = "PRODUCTION";
+	/** RECEIPT = RECEIPT */
+	public static final String MD_CANDIDATE_BUSINESSCASE_RECEIPT = "RECEIPT";
+	/** SHIPMENT = SHIPMENT */
+	public static final String MD_CANDIDATE_BUSINESSCASE_SHIPMENT = "SHIPMENT";
+	/** FORECAST = FORECAST */
+	public static final String MD_CANDIDATE_BUSINESSCASE_FORECAST = "FORECAST";
+	/** Set Geschäftsvorfall.
+		@param MD_Candidate_BusinessCase Geschäftsvorfall	  */
+	@Override
+	public void setMD_Candidate_BusinessCase (java.lang.String MD_Candidate_BusinessCase)
+	{
+
+		set_Value (COLUMNNAME_MD_Candidate_BusinessCase, MD_Candidate_BusinessCase);
+	}
+
+	/** Get Geschäftsvorfall.
+		@return Geschäftsvorfall	  */
+	@Override
+	public java.lang.String getMD_Candidate_BusinessCase () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MD_Candidate_BusinessCase);
 	}
 
 	/** Set Gruppen-ID.
@@ -245,38 +310,6 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	/** 
-	 * MD_Candidate_SubType AD_Reference_ID=540709
-	 * Reference name: MD_Candidate_SubType
-	 */
-	public static final int MD_CANDIDATE_SUBTYPE_AD_Reference_ID=540709;
-	/** DISTRIBUTION = DISTRIBUTION */
-	public static final String MD_CANDIDATE_SUBTYPE_DISTRIBUTION = "DISTRIBUTION";
-	/** PRODUCTION = PRODUCTION */
-	public static final String MD_CANDIDATE_SUBTYPE_PRODUCTION = "PRODUCTION";
-	/** RECEIPT = RECEIPT */
-	public static final String MD_CANDIDATE_SUBTYPE_RECEIPT = "RECEIPT";
-	/** SHIPMENT = SHIPMENT */
-	public static final String MD_CANDIDATE_SUBTYPE_SHIPMENT = "SHIPMENT";
-	/** FORECAST = FORECAST */
-	public static final String MD_CANDIDATE_SUBTYPE_FORECAST = "FORECAST";
-	/** Set Untertyp.
-		@param MD_Candidate_SubType Untertyp	  */
-	@Override
-	public void setMD_Candidate_SubType (java.lang.String MD_Candidate_SubType)
-	{
-
-		set_Value (COLUMNNAME_MD_Candidate_SubType, MD_Candidate_SubType);
-	}
-
-	/** Get Untertyp.
-		@return Untertyp	  */
-	@Override
-	public java.lang.String getMD_Candidate_SubType () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_MD_Candidate_SubType);
-	}
-
-	/** 
 	 * MD_Candidate_Type AD_Reference_ID=540707
 	 * Reference name: MD_Candidate_Type
 	 */
@@ -311,6 +344,39 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	}
 
 	@Override
+	public org.compiere.model.I_M_Forecast getM_Forecast() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Forecast_ID, org.compiere.model.I_M_Forecast.class);
+	}
+
+	@Override
+	public void setM_Forecast(org.compiere.model.I_M_Forecast M_Forecast)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Forecast_ID, org.compiere.model.I_M_Forecast.class, M_Forecast);
+	}
+
+	/** Set Prognose.
+		@param M_Forecast_ID 
+		Vorhersagen zu Material-/Produkt-/Artikelentwicklung
+	  */
+	@Override
+	public void setM_Forecast_ID (int M_Forecast_ID)
+	{
+		throw new IllegalArgumentException ("M_Forecast_ID is virtual column");	}
+
+	/** Get Prognose.
+		@return Vorhersagen zu Material-/Produkt-/Artikelentwicklung
+	  */
+	@Override
+	public int getM_Forecast_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Forecast_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
@@ -342,6 +408,24 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Lieferdisposition.
+		@param M_ShipmentSchedule_ID Lieferdisposition	  */
+	@Override
+	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
+	{
+		throw new IllegalArgumentException ("M_ShipmentSchedule_ID is virtual column");	}
+
+	/** Get Lieferdisposition.
+		@return Lieferdisposition	  */
+	@Override
+	public int getM_ShipmentSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -406,69 +490,6 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 		return bd;
 	}
 
-	/** Set Menge Abw..
-		@param Qty_Override Menge Abw.	  */
-	@Override
-	public void setQty_Override (java.math.BigDecimal Qty_Override)
-	{
-		set_Value (COLUMNNAME_Qty_Override, Qty_Override);
-	}
-
-	/** Get Menge Abw..
-		@return Menge Abw.	  */
-	@Override
-	public java.math.BigDecimal getQty_Override () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Override);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Planmenge.
-		@param Qty_Planner Planmenge	  */
-	@Override
-	public void setQty_Planner (java.math.BigDecimal Qty_Planner)
-	{
-		set_Value (COLUMNNAME_Qty_Planner, Qty_Planner);
-	}
-
-	/** Get Planmenge.
-		@return Planmenge	  */
-	@Override
-	public java.math.BigDecimal getQty_Planner () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Planner);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Datensatz-ID.
-		@param Record_ID 
-		Direct internal record ID
-	  */
-	@Override
-	public void setRecord_ID (int Record_ID)
-	{
-		if (Record_ID < 0) 
-			set_Value (COLUMNNAME_Record_ID, null);
-		else 
-			set_Value (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
-	}
-
-	/** Get Datensatz-ID.
-		@return Direct internal record ID
-	  */
-	@Override
-	public int getRecord_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Reihenfolge.
 		@param SeqNo 
 		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
@@ -489,5 +510,21 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set StorageAttributesKey (technical).
+		@param StorageAttributesKey StorageAttributesKey (technical)	  */
+	@Override
+	public void setStorageAttributesKey (java.lang.String StorageAttributesKey)
+	{
+		set_Value (COLUMNNAME_StorageAttributesKey, StorageAttributesKey);
+	}
+
+	/** Get StorageAttributesKey (technical).
+		@return StorageAttributesKey (technical)	  */
+	@Override
+	public java.lang.String getStorageAttributesKey () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_StorageAttributesKey);
 	}
 }

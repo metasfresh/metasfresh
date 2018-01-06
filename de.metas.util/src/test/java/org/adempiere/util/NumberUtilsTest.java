@@ -38,6 +38,15 @@ public class NumberUtilsTest
 	}
 
 	@Test
+	public void test_stripTrailingDecimalZeros_Zeros()
+	{
+		test_stripTrailingDecimalZeros("0", "0");
+		test_stripTrailingDecimalZeros("0", "0.0");
+		test_stripTrailingDecimalZeros("0", "0.00");
+		test_stripTrailingDecimalZeros("0", "0.0000000000000000000000000000000");
+	}
+
+	@Test
 	public void test_stripTrailingDecimalZeros()
 	{
 		test_stripTrailingDecimalZeros("0", "0");

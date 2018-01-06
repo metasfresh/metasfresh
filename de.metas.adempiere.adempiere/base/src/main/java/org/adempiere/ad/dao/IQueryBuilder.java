@@ -85,7 +85,7 @@ public interface IQueryBuilder<T>
 
 	IQueryBuilder<T> filterByClientId();
 
-	ICompositeQueryFilter<T> getFilters();
+	ICompositeQueryFilter<T> getCompositeFilter();
 
 	IQueryBuilder<T> setLimit(int limit);
 
@@ -110,6 +110,11 @@ public interface IQueryBuilder<T>
 	int getLimit();
 
 	IQueryBuilderOrderByClause<T> orderBy();
+	//@formatter:off
+	default IQueryBuilder<T> orderBy(final String columnName) { orderBy().addColumn(columnName); return this; }
+	default IQueryBuilder<T> orderBy(final ModelColumn<T, ?> column) { orderBy().addColumn(column); return this; }
+	default IQueryBuilder<T> orderByDescending(final String columnName) { orderBy().addColumnDescending(columnName); return this; }
+	//@formatter:on
 
 	IQuery<T> create();
 
@@ -132,25 +137,19 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> addEqualsFilter(ModelColumn<T, ?> column, Object value);
 
 	/**
-	 * Adds a substring filter to this instance's internal composite filter.
-	 *
-	 * @param columnname
-	 * @param substring
-	 * @return this
 	 * @see ICompositeQueryFilter#addSubstringFilter(String, String)
-	 *
 	 */
-	IQueryBuilder<T> addSubstringFilter(String columnname, String substring, boolean ignoreCase);
+	IQueryBuilder<T> addStringLikeFilter(String columnname, String substring, boolean ignoreCase);
 
 	/**
-	 * See {@link #addSubstringFilter(String, String, boolean)}.
+	 * See {@link #addStringLikeFilter(String, String, boolean)}.
 	 *
 	 * @param column
 	 * @param substring
 	 * @param ignoreCase
 	 * @return
 	 */
-	IQueryBuilder<T> addSubstringFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
+	IQueryBuilder<T> addStringLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
 
 	IQueryBuilder<T> addCompareFilter(String columnName, Operator operator, Object value);
 

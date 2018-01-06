@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.adempiere.acct.api.IFactAcctDAO;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
@@ -1215,6 +1216,13 @@ public class MOrder extends X_C_Order implements IDocument
 		{
 			line.deleteEx(true);
 		}
+		
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order_CompensationGroup.class)
+				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMN_C_Order_ID, getC_Order_ID())
+				.create()
+				.delete();
+		
 		return true;
 	}	// beforeDelete
 

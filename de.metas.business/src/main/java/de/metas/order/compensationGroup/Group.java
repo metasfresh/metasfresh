@@ -3,6 +3,8 @@ package de.metas.order.compensationGroup;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -45,36 +47,55 @@ public class Group
 	@Getter
 	private final GroupId groupId;
 	private final int precision;
+	@Getter
+	private final int bpartnerId;
+	@Getter
+	private final boolean isSOTrx;
+	
 	private final ImmutableList<GroupRegularLine> regularLines;
 	private final ArrayList<GroupCompensationLine> compensationLines;
 
-	private transient BigDecimal _baseAmt; // lazy
+	private transient BigDecimal _regularLinesNetAmt; // lazy
 
 	@Builder
 	private Group(
 			@NonNull final GroupId groupId,
 			final int precision,
+			final int bpartnerId,
+			@NonNull final Boolean isSOTrx,
 			@NonNull @Singular final List<GroupRegularLine> regularLines,
 			@NonNull @Singular final List<GroupCompensationLine> compensationLines)
 	{
 		this.groupId = groupId;
 		this.precision = precision;
+		this.bpartnerId = bpartnerId > 0 ? bpartnerId : -1;
+		this.isSOTrx = isSOTrx;
 
 		if (regularLines.isEmpty())
 		{
 			throw new AdempiereException("Group shall contain at least one regular line");
 		}
+
 		this.regularLines = ImmutableList.copyOf(regularLines);
 		this.compensationLines = new ArrayList<>(compensationLines);
+		Collections.sort(this.compensationLines, Comparator.comparing(GroupCompensationLine::getSeqNo));
 	}
 
-	public BigDecimal getBaseAmt()
+	private BigDecimal getRegularLinesNetAmt()
 	{
-		if (_baseAmt == null)
+		if (_regularLinesNetAmt == null)
 		{
-			_baseAmt = regularLines.stream().map(GroupRegularLine::getLineNetAmt).reduce(BigDecimal.ZERO, BigDecimal::add);
+			_regularLinesNetAmt = regularLines.stream().map(GroupRegularLine::getLineNetAmt).reduce(BigDecimal.ZERO, BigDecimal::add);
 		}
-		return _baseAmt;
+		return _regularLinesNetAmt;
+	}
+
+	public BigDecimal getTotalNetAmt()
+	{
+		final BigDecimal regularLinesNetAmt = getRegularLinesNetAmt();
+		final BigDecimal compensationLinesNetAmt = compensationLines.stream().map(GroupCompensationLine::getLineNetAmt).reduce(BigDecimal.ZERO, BigDecimal::add);
+		final BigDecimal totalNetAmt = regularLinesNetAmt.add(compensationLinesNetAmt);
+		return totalNetAmt;
 	}
 
 	public List<GroupRegularLine> getRegularLines()
@@ -105,14 +126,21 @@ public class Group
 
 	public void updateAllPercentageLines()
 	{
-		compensationLines.stream()
-				.filter(GroupCompensationLine::isPercentage)
-				.forEach(this::updatePercentageLine);
+		BigDecimal previousNetAmt = getRegularLinesNetAmt();
+
+		for (final GroupCompensationLine compensationLine : compensationLines)
+		{
+			if (compensationLine.isPercentage())
+			{
+				updatePercentageLine(compensationLine, previousNetAmt);
+			}
+
+			previousNetAmt = previousNetAmt.add(compensationLine.getLineNetAmt());
+		}
 	}
 
-	private void updatePercentageLine(final GroupCompensationLine compensationLine)
+	private void updatePercentageLine(final GroupCompensationLine compensationLine, final BigDecimal baseAmt)
 	{
-		final BigDecimal baseAmt = getBaseAmt();
 		compensationLine.setBaseAmt(baseAmt);
 
 		final BigDecimal percentage = compensationLine.getPercentage();
@@ -121,24 +149,28 @@ public class Group
 		final BigDecimal compensationAmt = baseAmt.multiply(percentage).divide(Env.ONEHUNDRED, precision, RoundingMode.HALF_UP);
 		final BigDecimal amt = OrderGroupCompensationUtils.adjustAmtByCompensationType(compensationAmt, compensationType);
 
-		compensationLine.setPriceAntQty(amt, BigDecimal.ONE);
+		compensationLine.setPriceAndQty(amt, BigDecimal.ONE, precision);
 	}
 
 	public void addNewCompensationLine(final GroupCompensationLineCreateRequest request)
 	{
+		final BigDecimal price = request.getPrice();
+		final BigDecimal qty = request.getQty();
+		final BigDecimal lineNetAmt = price != null && qty != null ? price.multiply(qty).setScale(precision, RoundingMode.HALF_UP) : null;
 		final GroupCompensationLine compensationLine = GroupCompensationLine.builder()
 				.productId(request.getProductId())
 				.uomId(request.getUomId())
 				.type(request.getType())
 				.amtType(request.getAmtType())
 				.percentage(request.getPercentage())
-				.price(request.getPrice())
-				.qty(request.getQty())
+				.price(price)
+				.qty(qty)
+				.lineNetAmt(lineNetAmt)
 				.build();
 
 		if (compensationLine.isPercentage())
 		{
-			updatePercentageLine(compensationLine);
+			updatePercentageLine(compensationLine, getTotalNetAmt());
 		}
 
 		compensationLines.add(compensationLine);

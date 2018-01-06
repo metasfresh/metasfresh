@@ -37,7 +37,6 @@ public class Main extends AbstractModuleInterceptor
 	{
 		super.onInit(engine, client);
 
-		//
 		// Enable material tracking module
 		Services.get(IMaterialTrackingBL.class).setEnabled(true);
 	}

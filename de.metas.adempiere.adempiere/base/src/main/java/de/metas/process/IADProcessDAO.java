@@ -26,12 +26,16 @@ import java.util.Collection;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
+import org.compiere.util.Env;
+
+import de.metas.i18n.ITranslatableString;
 
 public interface IADProcessDAO extends ISingletonService
 {
@@ -101,11 +105,11 @@ public interface IADProcessDAO extends ISingletonService
 	 * Similar to {@link #retriveProcessIdByClassIfUnique(Properties, Class)}, but assumes that there is a unique ID and throws an exception if that's not the case.
 	 * This can be beneficial since the exception message contains the class for which no {@code AD_Process_ID} could be fetched.
 	 * 
-	 * @param ctx
 	 * @param processClass
 	 * @return
 	 */
-	int retriveProcessIdByClass(Properties ctx, Class<?> processClass);
+	int retrieveProcessIdByClass(Class<?> processClass);
+
 
 	/**
 	 * Retrieves the ID of the <code>AD_Process</code> whose {@link I_AD_Process#COLUMN_Classname Classname} column matches the given class.
@@ -116,10 +120,17 @@ public interface IADProcessDAO extends ISingletonService
 	 */
 	int retriveProcessIdByClassIfUnique(Properties ctx, Class<?> processClass);
 
+	default int retriveProcessIdByClassIfUnique(final Class<?> processClass)
+	{
+		return retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
+	}
+
 	/**
 	 * @see #retriveProcessIdByClassIfUnique(Properties, Class)
 	 */
 	int retriveProcessIdByClassIfUnique(Properties ctx, String processClassname);
+
+	Optional<ITranslatableString> retrieveProcessNameByClassIfUnique(Class<?> processClass);
 
 	/**
 	 * Retrieves {@link I_AD_Process} by given ID.

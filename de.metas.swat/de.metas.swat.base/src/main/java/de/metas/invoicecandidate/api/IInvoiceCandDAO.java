@@ -42,6 +42,7 @@ import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.adempiere.model.I_C_Invoice;
@@ -294,6 +295,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @return also returns inactive records (intended use is for deletion)
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInOutLineInclInactive(I_M_InOutLine inOutLine);
+
+	IQuery<I_C_Invoice_Candidate> retrieveInvoiceCandidatesQueryForInOuts(Collection<? extends I_M_InOut> inouts);
 
 	/**
 	 * Retrieves those invoice candidates that belong to the given <code>inOutLine</code>.

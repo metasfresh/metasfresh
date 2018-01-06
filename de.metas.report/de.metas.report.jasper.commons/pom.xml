@@ -1,0 +1,102 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+		<artifactId>metasfresh-report</artifactId>
+		<groupId>de.metas.report</groupId>
+		<version>[1,10.0.0]</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<modelVersion>4.0.0</modelVersion>
+	
+	<version>10.0.0</version>
+	<artifactId>de.metas.report.jasper.commons</artifactId>
+	<packaging>jar</packaging>
+
+	<dependencies>
+	
+	  <!-- See https://github.com/metasfresh/metasfresh/issues/1918 -->
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.11.0</version>
+        </dependency>
+		<dependency>
+			<groupId>batik</groupId>
+			<artifactId>batik-bridge</artifactId>
+			<version>1.6-1</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>batik</groupId>
+			<artifactId>batik-svg-dom</artifactId>
+			<version>1.6-1</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>batik</groupId>
+			<artifactId>batik-dom</artifactId>
+			<version>1.6-1</version>
+			<type>jar</type>
+			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>xercesImpl</artifactId>
+					<groupId>xerces</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>batik</groupId>
+			<artifactId>batik-gvt</artifactId>
+			<version>1.6-1</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>batik</groupId>
+			<artifactId>batik-util</artifactId>
+			<version>1.6-1</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>batik</groupId>
+			<artifactId>batik-css</artifactId>
+			<version>1.6-1</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>net.sf.barcode4j</groupId>
+			<artifactId>barcode4j-fop-ext-complete</artifactId>
+			<version>2.0</version>
+			<type>jar</type>			
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+
+<!--
+Our swing client is currently an uber-jar, and by copying this stuff into it, we run into trouble as described here: 
+http://community.jaspersoft.com/questions/542314/problem-fonts-input-stream-not-found-netsfjasperreportsfontsfontsxml
+Therefore we just add this dependency to both
+	metasfresh-report-service and 
+	de.metas.endcustomer.xxxx.swingui
+		<dependency>
+			<groupId>ar.com.fdvs</groupId>
+			<artifactId>DynamicJasper-core-fonts</artifactId>
+			<version>1.0</version>
+		</dependency>
+ -->		
+	</dependencies>
+
+
+</project>

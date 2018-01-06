@@ -33,8 +33,8 @@ import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 public class C_Print_Job_Instructions_Create extends JavaProcess
 {
@@ -111,8 +111,7 @@ public class C_Print_Job_Instructions_Create extends JavaProcess
 		final I_C_Print_Job_Line lastLine = printingDAO.retrievePrintJobLine(printJob, p_SeqNo_To);
 
 		this.jobInstructions = printJobBL
-				.createPrintJobInstructions(printJob,
-						adUserToPrintId,
+				.createPrintJobInstructions(adUserToPrintId,
 						createWithSpecificHostKey,
 						firstLine,
 						lastLine,

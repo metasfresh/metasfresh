@@ -10,12 +10,12 @@ package org.adempiere.ad.trx.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,13 +25,14 @@ package org.adempiere.ad.trx.api.impl;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
-import org.adempiere.ad.trx.spi.ITrxListener;
+
+import lombok.NonNull;
 
 /**
  * Null {@link ITrxListenerManager} implementation
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public final class NullTrxListenerManager implements ITrxListenerManager
 {
@@ -41,42 +42,18 @@ public final class NullTrxListenerManager implements ITrxListenerManager
 	{
 	}
 
-	/**
-	 * @throws UnsupportedOperationException always
-	 */
 	@Override
-	public void registerListener(ITrxListener listener)
+	public void registerListener(final RegisterListenerRequest listener)
 	{
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * @throws UnsupportedOperationException always
-	 */
-	@Override
-	public void registerListener(boolean weak, ITrxListener listener)
-	{
-		throw new UnsupportedOperationException();
+		// nothing
 	}
 	
-	/**
-	 * @throws UnsupportedOperationException always
-	 */
 	@Override
-	public void onAfterCommit(Runnable runnable)
+	public boolean canRegisterOnTiming(@NonNull final TrxEventTiming timing)
 	{
-		throw new UnsupportedOperationException();
+		return false;
 	}
 
-	/**
-	 * @throws UnsupportedOperationException always
-	 */
-	@Override
-	public void onAfterNextCommit(Runnable runnable)
-	{
-		throw new UnsupportedOperationException();
-	}
-	
 	/**
 	 * Does nothing
 	 */
@@ -112,4 +89,6 @@ public final class NullTrxListenerManager implements ITrxListenerManager
 	{
 		// nothing
 	}
+
+
 }

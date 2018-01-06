@@ -91,7 +91,7 @@ public class GridField
 	 *
 	 */
 	private static final long serialVersionUID = 1124123543602986028L;
-	
+
 	public static GridField extractFrom(IProcessDefaultParameter parameter)
 	{
 		return (GridField)parameter;
@@ -295,7 +295,7 @@ public class GridField
 		{
 			return true;
 		}
-		
+
 		//
 		lookup.refresh();
 		return lookup.isValidated();
@@ -308,7 +308,7 @@ public class GridField
 	 */
 	public List<String> getDependentOn()
 	{
-		final List<String> list = new ArrayList<String>();
+		final List<String> list = new ArrayList<>();
 		// Display
 		list.addAll(m_vo.getDisplayLogic().getParameterNames());
 		list.addAll(m_vo.getDisplayLogic().getParameterNames()); // metas: 03093
@@ -457,7 +457,7 @@ public class GridField
 		// Fields always enabled (are usually not updateable and are usually buttons),
 		// even if the parent tab is processed/not active
 		if (m_vo.getColumnName().equals("Posted")
-				|| (columnBL.isRecordColumnName(m_vo.getColumnName()) && getDisplayType() == DisplayType.Button))	// Zoom
+				|| (columnBL.isRecordIdColumnName(m_vo.getColumnName()) && getDisplayType() == DisplayType.Button))	// Zoom
 		{
 			return true;
 		}
@@ -1510,7 +1510,7 @@ public class GridField
 	{
 		return m_oldValue;
 	}   // getOldValue
-	
+
 	public boolean isValueChanged()
 	{
 		final Object valueOld = getOldValue();
@@ -1801,7 +1801,7 @@ public class GridField
 	 */
 	public List<String> getEntries()
 	{
-		ArrayList<String> list = new ArrayList<String>();
+		ArrayList<String> list = new ArrayList<>();
 		PreparedStatement pstmt1 = null;
 		ResultSet rs1 = null;
 		PreparedStatement pstmt2 = null;
@@ -2145,7 +2145,7 @@ public class GridField
 		final int adTableId = getAD_Table_ID();
 		return adTableId <= 0 ? null : Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 	}
-	
+
 	@Override
 	public ICalloutExecutor getCurrentCalloutExecutor()
 	{
@@ -2154,7 +2154,7 @@ public class GridField
 		{
 			return null;
 		}
-		
+
 		return gridTab.getCalloutExecutor();
 	}
 
@@ -2197,7 +2197,7 @@ public class GridField
 
 		return gridTab.isDataNewCopy();
 	}
-	
+
 	@Override
 	public boolean isRecordCopyingModeIncludingDetails()
 	{
@@ -2224,7 +2224,7 @@ public class GridField
 
 		gridTab.fireDataStatusEEvent(AD_Message, info, isError);
 	}
-	
+
 	@Override
 	public void fireDataStatusEEvent(final ValueNamePair errorLog)
 	{
@@ -2234,7 +2234,7 @@ public class GridField
 			log.warn("Could not fire EEvent on {} because gridTab is not set. The event was: errorLog={}, info={}, isError={}", this, errorLog);
 			return;
 		}
-		
+
 		gridTab.fireDataStatusEEvent(errorLog);
 	}
 
@@ -2245,7 +2245,7 @@ public class GridField
 		Check.assumeNotNull(gridTab, "gridTab not null");
 		return gridTab;
 	}
-	
+
 	@Override
 	public int getContextAsInt(String name)
 	{

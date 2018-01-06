@@ -42,8 +42,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -370,12 +368,11 @@ public class ESRImportBLTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine2 = lines.get(1);
 		final I_ESR_ImportLine esrImportLine3 = lines.get(2);
 
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		for (final I_ESR_ImportLine line : lines)
 		{
 			refresh(line, true);
 		}
-		new ESRImportBL().processLinesWithInvoice(lines, ITrx.TRXNAME_None, trxRunConfig);
+		new ESRImportBL().processLinesWithInvoice(lines);
 
 		// check the created payments
 		refresh(esrImportLine1, true);
@@ -416,10 +413,9 @@ public class ESRImportBLTest extends ESRTestBase
 			refresh(line, true);
 		}
 
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine1, esrImportLine2), ITrx.TRXNAME_None, trxRunConfig);
+		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine1, esrImportLine2));
 
-		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine3), ITrx.TRXNAME_None, trxRunConfig);
+		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine3));
 
 		// check the created payments
 		// there is no perfect match (the amount is not matching perfect), so shall be no allocation and no payment match at this moment
@@ -476,9 +472,8 @@ public class ESRImportBLTest extends ESRTestBase
 			refresh(line, true);
 		}
 
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine1), ITrx.TRXNAME_None, trxRunConfig);
-		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine2, esrImportLine3), ITrx.TRXNAME_None, trxRunConfig);
+		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine1));
+		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine2, esrImportLine3));
 
 		// check the created payments
 		// there is no perfect match (the amount is not matching perfect), so shall be no allocation and no payment match at this moment
@@ -531,9 +526,8 @@ public class ESRImportBLTest extends ESRTestBase
 		{
 			refresh(line, true);
 		}
-
-		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
-		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine1, esrImportLine2, esrImportLine3), ITrx.TRXNAME_None, trxRunConfig);
+		
+		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine1, esrImportLine2, esrImportLine3));
 
 		refresh(esrImportLine1, true);
 		refresh(esrImportLine2, true);
@@ -657,7 +651,7 @@ public class ESRImportBLTest extends ESRTestBase
 		final I_ESR_Import esrImport = newInstance(I_ESR_Import.class);
 		save(esrImport);
 
-		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
+		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		if (lineNo1 > 0)
 		{
 			final I_ESR_ImportLine esrImportLine1 = newInstance(I_ESR_ImportLine.class);
@@ -704,7 +698,7 @@ public class ESRImportBLTest extends ESRTestBase
 	private static class AllocationDAOMock extends PlainAllocationDAO
 	{
 		private int invocationCount = 0;
-		private final List<BigDecimal> returnValues = new ArrayList<BigDecimal>();
+		private final List<BigDecimal> returnValues = new ArrayList<>();
 
 		void addResult(final BigDecimal returnValue)
 		{

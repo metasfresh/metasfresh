@@ -306,7 +306,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		pmtInf.setCtrlSum(null);
 
 		// zahlungsart
-		final String paymentMode = getPaymentMode(line);
+		final String paymentMode = getPaymentType(line);
 
 		//
 		// Payment type information.
@@ -432,15 +432,15 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 			cdtTrfTxInf.setAmt(amt);
 		}
 
-		final String paymentMode = getPaymentMode(line);
+		final String paymentType = getPaymentType(line);
 
 		//
 		// Creditor Agent (i.e. Bank)
 		// not allowed for 1, 2.1, 7 and 8, must for the rest
-		if (paymentMode != ZAHLUNGS_ART_1
-				&& paymentMode != ZAHLUNGS_ART_2_1
-				&& paymentMode != ZAHLUNGS_ART_7
-				&& paymentMode != ZAHLUNGS_ART_8)
+		if (paymentType != ZAHLUNGS_ART_1
+				&& paymentType != ZAHLUNGS_ART_2_1
+				&& paymentType != ZAHLUNGS_ART_7
+				&& paymentType != ZAHLUNGS_ART_8)
 		{
 
 			final BranchAndFinancialInstitutionIdentification4CH cdtrAgt = new BranchAndFinancialInstitutionIdentification4CH();
@@ -477,21 +477,21 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 
 			//
 			// Name
-			if (paymentMode == ZAHLUNGS_ART_2_2
-					|| paymentMode == ZAHLUNGS_ART_4
-					|| paymentMode == ZAHLUNGS_ART_6)
+			if (paymentType == ZAHLUNGS_ART_2_2
+					|| paymentType == ZAHLUNGS_ART_4
+					|| paymentType == ZAHLUNGS_ART_6)
 			{
 				final String bankName = getBankNameIfAny(line);
 
 				Check.errorIf(Check.isEmpty(bankName, true), SepaMarshallerException.class,
 						"Zahlart={}, but line {} has no information about the bank name",
-						paymentMode, createInfo(line));
+						paymentType, createInfo(line));
 
 				finInstnId.setNm(bankName);
 			}
 
-			if (paymentMode == ZAHLUNGS_ART_4
-					|| paymentMode == ZAHLUNGS_ART_6)
+			if (paymentType == ZAHLUNGS_ART_4
+					|| paymentType == ZAHLUNGS_ART_6)
 			{
 				// see if we can also export the bank's address
 				if (line.getC_BP_BankAccount_ID() > 0
@@ -507,7 +507,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 
 			//
 			// Other
-			if (paymentMode == ZAHLUNGS_ART_2_2)
+			if (paymentType == ZAHLUNGS_ART_2_2)
 			{
 				final GenericFinancialIdentification1CH othr = new GenericFinancialIdentification1CH();
 				finInstnId.setOthr(othr);
@@ -570,10 +570,13 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 
 		// Remittance Info
 		{
-			final RemittanceInformation5CH rmfInf = new RemittanceInformation5CH();
-			if (Check.isEmpty(line.getStructuredRemittanceInfo(), true) || paymentMode == ZAHLUNGS_ART_5)
+
+			final RemittanceInformation5CH rmtInf = new RemittanceInformation5CH();
+			if (Check.isEmpty(line.getStructuredRemittanceInfo(), true)
+					|| paymentType == ZAHLUNGS_ART_3
+					|| paymentType == ZAHLUNGS_ART_5)
 			{
-				Check.errorIf(paymentMode == ZAHLUNGS_ART_1, SepaMarshallerException.class,
+				Check.errorIf(paymentType == ZAHLUNGS_ART_1, SepaMarshallerException.class,
 						"SEPA_ExportLine {} has to have StructuredRemittanceInfo", createInfo(line));
 
 				// note: we use the structuredRemittanceInfo in ustrd, if we do SEPA (zahlart 5),
@@ -586,25 +589,24 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 				if (Check.isEmpty(reference, true))
 				{
 					// at least add a "." to make sure the node exists.
-					rmfInf.setUstrd(".");
+					rmtInf.setUstrd(".");
 				}
 				else
 				{
-					rmfInf.setUstrd(reference);
+					rmtInf.setUstrd(reference);
 				}
 			}
 			else
 			{
 				// task 07789
 				final StructuredRemittanceInformation7 strd = new StructuredRemittanceInformation7();
-				rmfInf.setStrd(strd);
+				rmtInf.setStrd(strd);
 				final CreditorReferenceInformation2 cdtrRefInf = new CreditorReferenceInformation2();
 				strd.setCdtrRefInf(cdtrRefInf);
 				cdtrRefInf.setRef(line.getStructuredRemittanceInfo());
 			}
-			cdtTrfTxInf.setRmtInf(rmfInf);
+			cdtTrfTxInf.setRmtInf(rmtInf);
 		}
-
 		return cdtTrfTxInf;
 	}
 
@@ -782,7 +784,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 						getPainIdentifier(), isSupportsOtherCurrencies(), isSupportsGenericAccountIdentification(), getSupportedTransactionTypes());
 	}
 
-	private String getPaymentMode(final I_SEPA_Export_Line line)
+	private String getPaymentType(final I_SEPA_Export_Line line)
 	{
 		final String paymentMode;
 		final de.metas.payment.esr.model.I_C_BP_BankAccount bPBankAccount = InterfaceWrapperHelper.create(line.getC_BP_BankAccount(), de.metas.payment.esr.model.I_C_BP_BankAccount.class);

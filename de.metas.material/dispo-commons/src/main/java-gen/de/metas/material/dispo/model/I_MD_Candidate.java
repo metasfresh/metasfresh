@@ -69,33 +69,68 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set DB-Tabelle.
-	 * Database Table information
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Table_ID (int AD_Table_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get DB-Tabelle.
-	 * Database Table information
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Table_ID();
+	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_AD_Table getAD_Table();
+	public org.compiere.model.I_C_BPartner getC_BPartner();
 
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
-    /** Column definition for AD_Table_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_AD_Table>(I_MD_Candidate.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
-    /** Column name AD_Table_ID */
-    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_C_BPartner>(I_MD_Candidate.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Auftrag.
+	 * Auftrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Auftrag.
+	 * Auftrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getC_Order_ID();
+
+	@Deprecated
+	public org.compiere.model.I_C_Order getC_Order();
+
+	@Deprecated
+	public void setC_Order(org.compiere.model.I_C_Order C_Order);
+
+    /** Column definition for C_Order_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_C_Order>(I_MD_Candidate.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+    /** Column name C_Order_ID */
+    public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
 	 * Get Erstellt.
@@ -205,6 +240,29 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
+	 * Set Geschäftsvorfall.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMD_Candidate_BusinessCase (java.lang.String MD_Candidate_BusinessCase);
+
+	/**
+	 * Get Geschäftsvorfall.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMD_Candidate_BusinessCase();
+
+    /** Column definition for MD_Candidate_BusinessCase */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_BusinessCase = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "MD_Candidate_BusinessCase", null);
+    /** Column name MD_Candidate_BusinessCase */
+    public static final String COLUMNNAME_MD_Candidate_BusinessCase = "MD_Candidate_BusinessCase";
+
+	/**
 	 * Set Gruppen-ID.
 	 *
 	 * <br>Type: Integer
@@ -301,29 +359,6 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_MD_Candidate_Status = "MD_Candidate_Status";
 
 	/**
-	 * Set Untertyp.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMD_Candidate_SubType (java.lang.String MD_Candidate_SubType);
-
-	/**
-	 * Get Untertyp.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMD_Candidate_SubType();
-
-    /** Column definition for MD_Candidate_SubType */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_SubType = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "MD_Candidate_SubType", null);
-    /** Column name MD_Candidate_SubType */
-    public static final String COLUMNNAME_MD_Candidate_SubType = "MD_Candidate_SubType";
-
-	/**
 	 * Set Typ.
 	 *
 	 * <br>Type: List
@@ -345,6 +380,41 @@ public interface I_MD_Candidate
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Type = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "MD_Candidate_Type", null);
     /** Column name MD_Candidate_Type */
     public static final String COLUMNNAME_MD_Candidate_Type = "MD_Candidate_Type";
+
+	/**
+	 * Set Prognose.
+	 * Vorhersagen zu Material-/Produkt-/Artikelentwicklung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setM_Forecast_ID (int M_Forecast_ID);
+
+	/**
+	 * Get Prognose.
+	 * Vorhersagen zu Material-/Produkt-/Artikelentwicklung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getM_Forecast_ID();
+
+	@Deprecated
+	public org.compiere.model.I_M_Forecast getM_Forecast();
+
+	@Deprecated
+	public void setM_Forecast(org.compiere.model.I_M_Forecast M_Forecast);
+
+    /** Column definition for M_Forecast_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Forecast> COLUMN_M_Forecast_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Forecast>(I_MD_Candidate.class, "M_Forecast_ID", org.compiere.model.I_M_Forecast.class);
+    /** Column name M_Forecast_ID */
+    public static final String COLUMNNAME_M_Forecast_ID = "M_Forecast_ID";
 
 	/**
 	 * Set Produkt.
@@ -374,6 +444,33 @@ public interface I_MD_Candidate
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Product>(I_MD_Candidate.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Lieferdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+
+	/**
+	 * Get Lieferdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getM_ShipmentSchedule_ID();
+
+    /** Column definition for M_ShipmentSchedule_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "M_ShipmentSchedule_ID", null);
+    /** Column name M_ShipmentSchedule_ID */
+    public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
 	 * Set Lager.
@@ -430,77 +527,6 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_Qty = "Qty";
 
 	/**
-	 * Set Menge Abw..
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQty_Override (java.math.BigDecimal Qty_Override);
-
-	/**
-	 * Get Menge Abw..
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQty_Override();
-
-    /** Column definition for Qty_Override */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Override = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty_Override", null);
-    /** Column name Qty_Override */
-    public static final String COLUMNNAME_Qty_Override = "Qty_Override";
-
-	/**
-	 * Set Planmenge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setQty_Planner (java.math.BigDecimal Qty_Planner);
-
-	/**
-	 * Get Planmenge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQty_Planner();
-
-    /** Column definition for Qty_Planner */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Planner = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty_Planner", null);
-    /** Column name Qty_Planner */
-    public static final String COLUMNNAME_Qty_Planner = "Qty_Planner";
-
-	/**
-	 * Set Datensatz-ID.
-	 * Direct internal record ID
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setRecord_ID (int Record_ID);
-
-	/**
-	 * Get Datensatz-ID.
-	 * Direct internal record ID
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getRecord_ID();
-
-    /** Column definition for Record_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Record_ID", null);
-    /** Column name Record_ID */
-    public static final String COLUMNNAME_Record_ID = "Record_ID";
-
-	/**
 	 * Set Reihenfolge.
 	 * Zur Bestimmung der Reihenfolge der Einträge;
  die kleinste Zahl kommt zuerst
@@ -526,6 +552,29 @@ public interface I_MD_Candidate
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "SeqNo", null);
     /** Column name SeqNo */
     public static final String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
+	 * Set StorageAttributesKey (technical).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setStorageAttributesKey (java.lang.String StorageAttributesKey);
+
+	/**
+	 * Get StorageAttributesKey (technical).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getStorageAttributesKey();
+
+    /** Column definition for StorageAttributesKey */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_StorageAttributesKey = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "StorageAttributesKey", null);
+    /** Column name StorageAttributesKey */
+    public static final String COLUMNNAME_StorageAttributesKey = "StorageAttributesKey";
 
 	/**
 	 * Get Aktualisiert.

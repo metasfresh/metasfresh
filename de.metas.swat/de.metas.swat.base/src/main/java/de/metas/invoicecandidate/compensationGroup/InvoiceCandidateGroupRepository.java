@@ -1,7 +1,6 @@
 package de.metas.invoicecandidate.compensationGroup;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -85,7 +84,9 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 
 		final GroupBuilder groupBuilder = Group.builder()
 				.groupId(groupId)
-				.precision(precision);
+				.precision(precision)
+				.bpartnerId(order.getC_BPartner_ID())
+				.isSOTrx(order.isSOTrx());
 
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{
@@ -118,9 +119,11 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	{
 		final BigDecimal price = invoiceCandidate.getPriceEntered();
 		final BigDecimal qty = invoiceCandidate.getQtyToInvoice();
+		final BigDecimal lineNetAmt = price.multiply(qty);
 
 		return GroupCompensationLine.builder()
 				.repoId(extractLineId(invoiceCandidate))
+				.seqNo(invoiceCandidate.getLine())
 				.productId(invoiceCandidate.getM_Product_ID())
 				.uomId(invoiceCandidate.getC_UOM_ID())
 				.type(GroupCompensationType.ofAD_Ref_List_Value(invoiceCandidate.getGroupCompensationType()))
@@ -129,6 +132,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.baseAmt(invoiceCandidate.getGroupCompensationBaseAmt())
 				.price(price)
 				.qty(qty)
+				.lineNetAmt(lineNetAmt)
 				.build();
 	}
 
@@ -161,7 +165,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	public GroupId extractGroupId(final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		InvoiceCandidateCompensationGroupUtils.assertInGroup(invoiceCandidate);
-		return GroupId.of(I_C_Order.Table_Name, invoiceCandidate.getC_Order_ID(), invoiceCandidate.getGroupNo());
+		return GroupId.of(I_C_Order.Table_Name, invoiceCandidate.getC_Order_ID(), invoiceCandidate.getC_Order_CompensationGroup_ID());
 	}
 
 	@Override
@@ -193,13 +197,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	}
 
 	@Override
-	public Group createNewGroup(final Collection<Integer> regularInvoiceCandidateIds)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Group retrieveOrCreateGroupFromLineIds(final Collection<Integer> orderLineIds)
+	public Group retrieveOrCreateGroup(final RetrieveOrCreateGroupRequest request)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -212,11 +210,11 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	private IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForGroupQuery(final GroupId groupId)
 	{
 		final int orderId = groupId.getDocumentIdAssumingTableName(I_C_Order.Table_Name);
-		final int groupNo = groupId.getGroupNo();
+		final int orderCompensationGroupId = groupId.getOrderCompensationGroupId();
 
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_Order_ID, orderId)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_GroupNo, groupNo);
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_Order_CompensationGroup_ID, orderCompensationGroupId);
 	}
 
 	private InvoiceCandidatesStorage retrieveStorage(final GroupId groupId)

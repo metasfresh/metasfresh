@@ -29,6 +29,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
@@ -65,7 +66,7 @@ import de.metas.logging.LogManager;
 public final class VBPartner extends CDialog implements ActionListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -4130643780412193122L;
 
@@ -81,8 +82,8 @@ public final class VBPartner extends CDialog implements ActionListener
 		super(frame, Msg.translate(Env.getCtx(), "C_BPartner_ID"), true);
 		m_WindowNo = WindowNo;
 		m_readOnly = !Env.getUserRolePermissions().canUpdate(
-			Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()), 
-			MBPartner.Table_ID, 0, false);
+			Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()),
+			Services.get(IADTableDAO.class).retrieveTableId(I_C_BPartner.Table_Name), 0, false);
 		log.info("R/O=" + m_readOnly);
 		try
 		{
@@ -107,7 +108,7 @@ public final class VBPartner extends CDialog implements ActionListener
 	/** Read Only				*/
 	private boolean			m_readOnly = false;
 
-	
+
 	private Insets			m_labelInsets = new Insets(2,15,2,0);		// 	top,left,bottom,right
 	private Insets			m_fieldInsets = new Insets(2,5,2,10);		// 	top,left,bottom,right
 	private GridBagConstraints m_gbc = new GridBagConstraints();
@@ -128,7 +129,7 @@ public final class VBPartner extends CDialog implements ActionListener
 	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 	private BorderLayout southLayout = new BorderLayout();
 
-	
+
 	/**
 	 *	Static Init
 	 * 	@throws Exception
@@ -181,7 +182,7 @@ public final class VBPartner extends CDialog implements ActionListener
 		//	Name2
 		fName2 = new VString("Name2", false, false, true, 30, 60, "", null);
 		createLine (fName2, "Name2", false);
-		
+
 		//	Contact
 		fContact = new VString("Contact", false, false, true, 30, 60, "", null);
 		createLine (fContact, "Contact", true).setFontBold(true);
@@ -194,17 +195,21 @@ public final class VBPartner extends CDialog implements ActionListener
 		//	Email
 		fEMail = new VString("EMail", false, false, true, 30, 40, "", null);
 		createLine (fEMail, "EMail", false);
-		
+
 		//	Location
 		boolean ro = m_readOnly;
 		if (!ro)
+		{
 			ro = !Env.getUserRolePermissions().canUpdate(
-				Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()), 
+				Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()),
 				MBPartnerLocation.Table_ID, 0, false);
+		}
 		if (!ro)
+		{
 			ro = !Env.getUserRolePermissions().canUpdate(
-				Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()), 
+				Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()),
 				MLocation.Table_ID, 0, false);
+		}
 		fAddress = new VLocation ("C_Location_ID", false, ro, true, new MLocationLookup (Env.getCtx(), m_WindowNo));
 		fAddress.setValue (null);
 		createLine (fAddress, "C_Location_ID", true).setFontBold(true);
@@ -255,7 +260,9 @@ public final class VBPartner extends CDialog implements ActionListener
 		m_gbc.fill = GridBagConstraints.HORIZONTAL;
 		centerPanel.add(field, m_gbc);
 		if (m_readOnly)
+		{
 			field.setEnabled(false);
+		}
 		return label;
 	}	//	createLine
 
@@ -281,7 +288,9 @@ public final class VBPartner extends CDialog implements ActionListener
 		{
 			KeyNamePair p = (KeyNamePair)m_greeting[i];
 			if (p.getKey() == key)
+			{
 				return p;
+			}
 		}
 		return new KeyNamePair(-1, " ");
 	}	//	getGreeting
@@ -353,25 +362,33 @@ public final class VBPartner extends CDialog implements ActionListener
 	public void actionPerformed(ActionEvent e)
 	{
 		if (m_readOnly)
+		{
 			dispose();
-		//	copy value
+		}
 		else if (e.getSource() == fValue)
 		{
 			if (fName.getText() == null || fName.getText().length() == 0)
+			{
 				fName.setText(fValue.getText());
+			}
 		}
 		else if (e.getSource() == fName)
 		{
 			if (fContact.getText() == null || fContact.getText().length() == 0)
+			{
 				fContact.setText(fName.getText());
+			}
 		}
 		//	OK pressed
-		else if (e.getActionCommand().equals(ConfirmPanel.A_OK) 
+		else if (e.getActionCommand().equals(ConfirmPanel.A_OK)
 			&& actionSave())
+		{
 			dispose();
-		//	Cancel pressed
+		}
 		else if (e.getActionCommand().equals(ConfirmPanel.A_CANCEL))
+		{
 			dispose();
+		}
 	}	//	actionPerformed
 
 	/**
@@ -390,14 +407,18 @@ public final class VBPartner extends CDialog implements ActionListener
 			return false;
 		}
 		else
+		{
 			fName.setBackground(AdempierePLAF.getFieldBackground_Mandatory());
+		}
 		if (fAddress.getC_Location_ID() == 0)
 		{
 			fAddress.setBackground(AdempierePLAF.getFieldBackground_Error());
 			return false;
 		}
 		else
+		{
 			fAddress.setBackground(AdempierePLAF.getFieldBackground_Mandatory());
+		}
 
 		//	***** Business Partner *****
 		if (m_partner == null)
@@ -427,44 +448,66 @@ public final class VBPartner extends CDialog implements ActionListener
 		m_partner.setName2(fName2.getText());
 		KeyNamePair p = (KeyNamePair)fGreetingBP.getSelectedItem();
 		if (p != null && p.getKey() > 0)
+		{
 			m_partner.setC_Greeting_ID(p.getKey());
+		}
 		else
+		{
 			m_partner.setC_Greeting_ID(0);
+		}
 		if (m_partner.save())
+		{
 			log.debug("C_BPartner_ID=" + m_partner.getC_BPartner_ID());
+		}
 		else
+		{
 			ADialog.error(m_WindowNo, this, "BPartnerNotSaved");
-		
+		}
+
 		//	***** Business Partner - Location *****
 		if (m_pLocation == null)
+		{
 			m_pLocation = new MBPartnerLocation(m_partner);
+		}
 		m_pLocation.setC_Location_ID(fAddress.getC_Location_ID());
 		//
 		m_pLocation.setPhone(fPhone.getText());
 		m_pLocation.setPhone2(fPhone2.getText());
 		m_pLocation.setFax(fFax.getText());
 		if (m_pLocation.save())
+		{
 			log.debug("C_BPartner_Location_ID=" + m_pLocation.getC_BPartner_Location_ID());
+		}
 		else
+		{
 			ADialog.error(m_WindowNo, this, "BPartnerNotSaved", Msg.translate(Env.getCtx(), "C_BPartner_Location_ID"));
-			
+		}
+
 		//	***** Business Partner - User *****
 		String contact = fContact.getText();
 		String email = fEMail.getText();
 		if (m_user == null && (contact.length() > 0 || email.length() > 0))
+		{
 			m_user =Services.get(IBPartnerBL.class).createDraftContact(m_partner);
+		}
 		if (m_user != null)
 		{
 			if (contact.length() == 0)
+			{
 				contact = fName.getText();
+			}
 			m_user.setName(contact);
 			m_user.setEMail(email);
 			m_user.setTitle(fTitle.getText());
 			p = (KeyNamePair)fGreetingC.getSelectedItem();
 			if (p != null && p.getKey() > 0)
+			{
 				m_user.setC_Greeting_ID(p.getKey());
+			}
 			else
+			{
 				m_user.setC_Greeting_ID(0);
+			}
 			//
 			m_user.setPhone(fPhone.getText());
 			m_user.setPhone2(fPhone2.getText());
@@ -482,7 +525,9 @@ public final class VBPartner extends CDialog implements ActionListener
 	public int getC_BPartner_ID()
 	{
 		if (m_partner == null)
+		{
 			return 0;
+		}
 		return m_partner.getC_BPartner_ID();
 	}	//	getBPartner_ID
 

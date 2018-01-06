@@ -13,18 +13,17 @@ package de.metas.invoicecandidate.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -46,7 +45,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ch.qos.logback.classic.Level;
-import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.InvoiceCandidatesTestHelper;
@@ -100,10 +98,9 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 	}
 
 	@Test
-	public void testAllowConsolidateInvoice()
+	public void testSimilarAggregationKeys()
 	{
 		final I_C_BPartner bp = InterfaceWrapperHelper.create(bpartner("Test1"), I_C_BPartner.class);
-		setAllowConsolidateInvoice(bp, true);
 		InterfaceWrapperHelper.save(bp);
 
 		final I_C_Order order1 = order("1");
@@ -140,9 +137,6 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 		final I_C_Invoice_Candidate ic1 = iCands1.get(0);
 		final I_C_Invoice_Candidate ic2 = iCands2.get(0);
-
-		// assertEquals(Services.get(IAggregationBL.class).isAllowConsolidateInvoice(ic1), true);
-		// assertEquals(Services.get(IAggregationBL.class).isAllowConsolidateInvoice(ic2), true);
 
 		ic1.setC_Order(order1);
 		InterfaceWrapperHelper.save(ic1);
@@ -195,67 +189,6 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 	}
 
 	@Test
-	public void testNotAllowConsolidateInvoice()
-	{
-		final I_C_BPartner bp = InterfaceWrapperHelper.create(bpartner("Test2"), I_C_BPartner.class);
-		setAllowConsolidateInvoice(bp, false);
-		InterfaceWrapperHelper.save(bp);
-
-		final I_C_Order order1 = order("11");
-		order1.setAD_Org(org);
-		order1.setBill_BPartner_ID(bp.getC_BPartner_ID());
-		order1.setC_Order_ID(1);
-		InterfaceWrapperHelper.save(order1);
-
-		final I_C_OrderLine oL1 = orderLine("11");
-		oL1.setAD_Org(org);
-		oL1.setC_Order(order1);
-		InterfaceWrapperHelper.save(oL1);
-
-		setUpActivityAndTaxRetrieval(order1, oL1);
-
-		final I_C_Order order2 = order("22");
-		order2.setAD_Org(org);
-		order2.setBill_BPartner_ID(bp.getC_BPartner_ID());
-		InterfaceWrapperHelper.save(order2);
-
-		final I_C_OrderLine oL2 = orderLine("22");
-		oL2.setAD_Org(org);
-		oL2.setC_Order(order2);
-		InterfaceWrapperHelper.save(oL2);
-
-		setUpActivityAndTaxRetrieval(order2, oL2);
-
-		final List<I_C_Invoice_Candidate> iCands1 = oLHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(oLHandler, oL1)).getC_Invoice_Candidates();
-		final List<I_C_Invoice_Candidate> iCands2 = oLHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(oLHandler, oL2)).getC_Invoice_Candidates();
-
-		updateInvalidCandidates();
-
-		assertThat(iCands1.size(), comparesEqualTo(1));
-		assertThat(iCands2.size(), comparesEqualTo(1));
-
-		final I_C_Invoice_Candidate ic1 = iCands1.get(0);
-		final I_C_Invoice_Candidate ic2 = iCands2.get(0);
-
-		// assertEquals(Services.get(IAggregationBL.class).isAllowConsolidateInvoice(ic1), false);
-		// assertEquals(Services.get(IAggregationBL.class).isAllowConsolidateInvoice(ic2), false);
-
-		ic1.setC_Order(order1);
-		InterfaceWrapperHelper.save(ic1);
-		ic2.setC_Order(order2);
-		InterfaceWrapperHelper.save(ic2);
-
-		final String key1 = headerAggregationKeyBuilder.buildKey(ic1);
-		final String key2 = headerAggregationKeyBuilder.buildKey(ic2);
-
-		assertFalse("Header Keys shall be different: "
-				+ "\nkey1=" + key1
-				+ "\nkey2=" + key2
-				, key1.equals(key2));
-
-	}
-
-	@Test
 	public void testCreateMissingCandidates()
 	{
 
@@ -268,7 +201,6 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		InterfaceWrapperHelper.save(bestellung);
 
 		final I_C_BPartner bp = InterfaceWrapperHelper.create(bpartner("Test1"), I_C_BPartner.class);
-		setAllowConsolidateInvoice(bp, true);
 		InterfaceWrapperHelper.save(bp);
 
 		// Taken into consideration: valid Auftrag for creating invoice cand
@@ -357,12 +289,5 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		assertTrue(cand1.isSOTrx() ? cand1.getC_OrderLine_ID() == oL1.getC_OrderLine_ID() : cand2.getC_OrderLine_ID() == oL1.getC_OrderLine_ID());
 		assertTrue(cand2.isSOTrx() ? cand1.getC_OrderLine_ID() == oL2.getC_OrderLine_ID() : cand2.getC_OrderLine_ID() == oL2.getC_OrderLine_ID());
 
-	}
-
-	private final void setAllowConsolidateInvoice(final I_C_BPartner bpartner, final boolean allowConsolidateInvoice)
-	{
-		final I_C_Aggregation headerAggregation = allowConsolidateInvoice ? this.defaultHeaderAggregation : this.defaultHeaderAggregation_NotConsolidated;
-		bpartner.setPO_Invoice_Aggregation(headerAggregation);
-		bpartner.setSO_Invoice_Aggregation(headerAggregation);
 	}
 }

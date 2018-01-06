@@ -24,6 +24,7 @@ package de.metas.invoicecandidate.api;
 
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Properties;
 
 import org.adempiere.util.ILoggable;
@@ -52,6 +53,8 @@ public interface IInvoiceCandidateEnqueuer
 	 * @return enqueueing result
 	 */
 	IInvoiceCandidateEnqueueResult enqueueSelection(final int adPInstanceId);
+
+	IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(Collection<Integer> invoiceCandidateIds);
 
 	/**
 	 * Context/transaction name to be used when enqueueing.

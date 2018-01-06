@@ -15,6 +15,7 @@ package org.compiere.model;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 
@@ -44,11 +45,15 @@ public class Callout_AD_Column extends CalloutEngine
 		if (column.getAD_Element_ID() <= 0)
 			return "";
 		I_AD_Element element = column.getAD_Element();
-		column.setColumnName(element.getColumnName());
+		
+		final String elementColumnName = element.getColumnName();
+		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", element);
+		
+		column.setColumnName(elementColumnName);
 		column.setName(element.getName());
 		column.setDescription(element.getDescription());
 		column.setHelp(element.getHelp());
-		column.setIsCalculated(Services.get(IColumnBL.class).getDefaultIsCalculatedByColumnName(element.getColumnName()));
+		column.setIsCalculated(Services.get(IColumnBL.class).getDefaultIsCalculatedByColumnName(elementColumnName));
 
 		I_AD_Table table = column.getAD_Table();
 		String entityType = table.getEntityType();
@@ -57,9 +62,15 @@ public class Callout_AD_Column extends CalloutEngine
 		
 		column.setEntityType(entityType);
 		setTypeAndLength(column);
+		
+		if("DocumentNo".equals(elementColumnName)
+				|| "Value".equals(elementColumnName))
+		{
+			column.setIsUseDocSequence(true);
+		}
 
 		//
-		return "";
+		return NO_ERROR;
 	}
 
 	/**

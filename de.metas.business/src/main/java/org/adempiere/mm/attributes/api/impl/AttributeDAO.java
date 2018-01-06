@@ -57,6 +57,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
+import lombok.NonNull;
 
 public class AttributeDAO implements IAttributeDAO
 {
@@ -74,7 +75,7 @@ public class AttributeDAO implements IAttributeDAO
 		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(clazz, ctx, ITrx.TRXNAME_None);
 
-		final ICompositeQueryFilter<T> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<T> filters = queryBuilder.getCompositeFilter();
 		filters.addOnlyActiveRecordsFilter();
 		filters.addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, value);
 
@@ -136,11 +137,7 @@ public class AttributeDAO implements IAttributeDAO
 			return false;
 		}
 
-		// NOTE:
-		// * atm we assume if we have a validation rule, we are dealing with high volume lists
-		// * in future, maybe we could add a flag for that (or something)
-		// * atm, the only case/example that we have is the "Karoten ID" from
-		return attribute.getAD_Val_Rule_ID() > 0;
+		return attribute.isHighVolume();
 	}
 
 	@Override
@@ -221,9 +218,8 @@ public class AttributeDAO implements IAttributeDAO
 	 * @param attribute
 	 * @return value to {@link I_M_AttributeValue} map
 	 */
-	private Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(final I_M_Attribute attribute)
+	private Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(@NonNull final I_M_Attribute attribute)
 	{
-		Check.assumeNotNull(attribute, "attribute not null");
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
 
 		final int attributeId = attribute.getM_Attribute_ID();
@@ -259,7 +255,7 @@ public class AttributeDAO implements IAttributeDAO
 		final IQueryBuilder<I_M_AttributeValue> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_AttributeValue.class, ctx, ITrx.TRXNAME_None);
 
-		final ICompositeQueryFilter<I_M_AttributeValue> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_M_AttributeValue> filters = queryBuilder.getCompositeFilter();
 		filters.addOnlyActiveRecordsFilter();
 		filters.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_M_Attribute_ID, attributeId);
 

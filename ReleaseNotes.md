@@ -10,58 +10,665 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.40 (2018-02)
+
+**release for week 2018-02**
+
+## Features
+* metasfresh-app
+  * [#3229](https://github.com/metasfresh/metasfresh/issues/3229) Show c_activity_ID in purchase Orderlines Grid View
+    * New Field for Activity in Purchase Orderlines.
+  * [#3234](https://github.com/metasfresh/metasfresh/issues/3234) Material Tracking ID in Invoice Candidates Filter shall be search
+    * Improving the Material Tracking ID Lookup widget. It is now an autocomplete search field instead of a dropdown list.
+  * [#3239](https://github.com/metasfresh/metasfresh/issues/3239) WebUI: Material Receipt Candidates Fields not readonly
+    * Improvement of the Material Receipt Candidates Window in WebUI. Now Fields are readonly that should not be changes by the user after creation.
+  * [#3242](https://github.com/metasfresh/metasfresh/issues/3242) WebUI: Create new Customer Accounts Window
+    * New Window for Customer Accounts, allowing the user to define customer relevant accounting information.
+  * [#3243](https://github.com/metasfresh/metasfresh/issues/3243) WebUI: Adjust the BOM Configuration window in Subtab for components
+    * Improvement of the BOM Configuration Window and Forumula. Now showing most important columns in grid view for components. Renaming Fields and translations for better understanding.
+  * [#3255](https://github.com/metasfresh/metasfresh/issues/3255) WebUI: Accounting Schema Window
+    * New Window in WebUI for Accounting Schema, allowing the user to maintain the default Accounting properties.
+  * [#3256](https://github.com/metasfresh/metasfresh/issues/3256) WebUI: Window for Warehouse Accounting
+    * New Window for Vendor Accounts, allowing the user to define warehouse relevant accounting information.
+  * [#3257](https://github.com/metasfresh/metasfresh/issues/3257) WebUI: Window for Vendor Accounting
+    * New Window for Vendor Accounts, allowing the user to define vendor relevant accounting information.
+  * [#3260](https://github.com/metasfresh/metasfresh/issues/3260) Hide Accounts Tab from Warehouse Window in WebUI
+    * Hiding Accounts Tab in Warehouse Window, now available via Document Reference.
+  * [#3261](https://github.com/metasfresh/metasfresh/issues/3261) WebUI: New Window for BPartner Group Accounts
+    * New Window for Business Partner Group Accounts, allowing the user to define relevant accounting information for Business Partner Groups.
+  * [#3267](https://github.com/metasfresh/metasfresh/issues/3267) WebUI: Add Create Periods to Action menu in Calendar Window
+    * Improving teh Calender and Period Window in WebUI, adding the Create Periods action to action menu.
+  * [#3269](https://github.com/metasfresh/metasfresh/issues/3269) WebUI: Add Shortcut Filter from Calendar Year to Periods Window
+    * Improving the Usability of Calendar and Period Window, now allowing to directly zoom to filtered Periods for a given year.
+  * [#3275](https://github.com/metasfresh/metasfresh/issues/3275) New Filter for datepromised in Sales/ Purchase Order
+    * Adding the Filter for datepromised in Sales Order and Purchase order Window in WebUI.
+
+* metasfresh-webui-frontend
+  * [#1475](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1475) Hover showing Element Content for flags wrongly
+    * Improvement of the tablecell tooltips in Grid Views. Not not showing a tooltip for checkboxes and switches anymore.
+	
+#Fixes
+* metasfresh-app
+
+* metasfresh-webui-frontend
+
+# metasfresh 5.39 (2017-50)
+
+**release for week 2017-50 / 2017-51**
+
+## Features
+* metasfresh-app
+  * [#2338](https://github.com/metasfresh/metasfresh/issues/2338) Relation Type: fact_accounts
+    * New Relation Type that allows to show the Fact accounts quickly for a given document.
+  * [#2340](https://github.com/metasfresh/metasfresh/issues/2340) Relation Type: changelog
+    * New Relation Type that allows to show the Changelog quickly for a given record.
+  * [#2646](https://github.com/metasfresh/metasfresh/issues/2646) MRP Product Info Just in Time
+    * New Material Cockpit functionality that provides fast infomormation about material availability triggered by material transactions and reservations/ ordered quantities.
+  * [#2715](https://github.com/metasfresh/metasfresh/issues/2715) Create webui window for C_Invoice_Candidate_Agg
+    * New Window in WebUI for the maintenance of Invoice Candidate Aggregation rules.
+  * [#3058](https://github.com/metasfresh/metasfresh/issues/3058) TableRecordId relation types to support Prefix_AD_Table_ID and Prefix_Record_ID
+    * New Functionality that supports the usage of Prefix_Table_ID and Prefix_Record_ID in relations.
+  * [#3079](https://github.com/metasfresh/metasfresh/issues/3079) Warehouse Picking Group
+    * New Functionality that allows to define a group of Warehouses that shall be used as Picking Warehouses.
+  * [#3105](https://github.com/metasfresh/metasfresh/issues/3105) Improve Product Import process
+    * Improvement of Import action for Product data.
+  * [#3107](https://github.com/metasfresh/metasfresh/issues/3107) Warehouse picking group window
+    * New Warehouse Picking Group window in WebUi, allowing the user to define groups of Warehouses that shall be considered as warehouses to be picking sources.
+  * [#3120](https://github.com/metasfresh/metasfresh/issues/3120) Add Netsum to Customer Invoice Document Grid View
+    * Improvement of Customer Invoice Grid View, adding Net Sum.
+  * [#3122](https://github.com/metasfresh/metasfresh/issues/3122) Add Netsum to Vendor Invoice Document Grid View
+    * Improvement of Vendor Invoice Grid View, adding Net Sum.
+  * [#3124](https://github.com/metasfresh/metasfresh/issues/3124) Picking terminal: pimp Picking Configuration window
+    * New Window for Picking Profile Configuration. Allowing to switch the used Picking Profile between Product and Sales Order oriented Picking.
+  * [#3134](https://github.com/metasfresh/metasfresh/issues/3134) Purchase disposition window shall be readonly
+    * Setting Fields Readonly to Puchase Disposition Window.
+  * [#3137](https://github.com/metasfresh/metasfresh/issues/3137) Clean C_PaySelection
+    * Improvement of the Pay selection window. Removing legacy functionality.
+  * [#3140](https://github.com/metasfresh/metasfresh/issues/3140) WebUI: Translate Picking Configuration window to en_US
+    * Improvement of the Translation to en_US of Picking Configuration Window.
+  * [#3149](https://github.com/metasfresh/metasfresh/issues/3149) Automatic Discount for Group Products
+    * New Functionality added to the Group Product lines in sales order, allowing to define and use a discount schema for the group products functionality.
+  * [#3150](https://github.com/metasfresh/metasfresh/issues/3150) Always keep Terms & Conditions equal per Compensation Group
+    * Improved Compensation group feature in sales orderlines, allowing to keep the Terms and conditions equal in a compensation group.
+  * [#3164](https://github.com/metasfresh/metasfresh/issues/3164) WebUI: Import BPartner Translations
+    * Translating the Import Business Partner window to en_US and improving advanced edit view.
+  * [#3166](https://github.com/metasfresh/metasfresh/issues/3166) Businesspartner Window shows Fields that should be in Advanced edit mode
+    * Improved Business Partner window, moved Fields to advanced edit that are not mainly in user focus.
+  * [#3171](https://github.com/metasfresh/metasfresh/issues/3171) Add view to keep track of unprocessed async work packages
+    * New view to keep tracking the qty of unprocessed
+  * [#3176](https://github.com/metasfresh/metasfresh/issues/3176) Translate Sales Order Actions
+    * Improvement of translations in sales order action menu.
+  * [#3193](https://github.com/metasfresh/metasfresh/issues/3193) Improve Window for manual OnHand Qty in WebUI
+    * Improved Window for the recording of manual on Hand Quanitities,
+  * [#3211](https://github.com/metasfresh/metasfresh/issues/3211) Picking Tray Clearing: right side view shall display only the HUs for current BP/Location
+    * Improved included View in Picking
+
+* metasfresh-webui-api
+  * [#706](https://github.com/metasfresh/metasfresh-webui-api/issues/706) Port current MRP Product Info Window to the WebUI
+    * Portation of the Swing MRP Product info functionality to WebUI, there now called Material Cockpit.
+  * [#711](https://github.com/metasfresh/metasfresh-webui-api/issues/711) Picking terminal: additional shall support grouping lines by order
+    * Introducing new Picking Terminal Workflow Pattern. Now allowing to group the Picking Lines by Sales Order instead of Product.
+  * [#714](https://github.com/metasfresh/metasfresh-webui-api/issues/714) Login authenticate: provide an unique key for each JSONLoginRole
+    * Improvement of JSON endpoint for the Login authentication. Now having a unique key for each Login Roles.
+  * [#716](https://github.com/metasfresh/metasfresh-webui-api/issues/716) Picking terminal: scan picking slot by barcode
+    * New Feature in Picking Terminal allowing to scan and identify the Picking Tray.
+  * [#717](https://github.com/metasfresh/metasfresh-webui-api/issues/717) Picking terminal: Open HUs to pick shall display Best Before date and Locator
+    * Adding the Open HUs included view allowing to see the best before date and locator.
+  * [#721](https://github.com/metasfresh/metasfresh-webui-api/issues/721) Picking terminal: HUs to pick: scan/filter by Locator
+    * New Filter Feature in Picking Terminla window, allowing to scan Locators and filter by them in Handlign Unit selection view.
+  * [#723](https://github.com/metasfresh/metasfresh-webui-api/issues/723) Picking terminal: HUs to pick: Pick CUs process
+    * New Action in Picking terminal allowing to pick CU by quantity.
+  * [#727](https://github.com/metasfresh/metasfresh-webui-api/issues/727) Allow search of Subproducer
+    * Improved Subproducer Search in Attributes view of Material Receipt Handling Unit Editor. Now the Subproducer Attribute is a Lookup widget.
+  * [#731](https://github.com/metasfresh/metasfresh-webui-api/issues/731) Introduce process parameters callout minimal functionality
+    * New functionality that allows to trigger callouts for action parms in webui.
+  * [#746](https://github.com/metasfresh/metasfresh-webui-api/issues/746) Picking Tray Clearing: Scan picking slot barcode filter
+    * New Functionality in Picking Tray clearing, allowing to filter the picking slot be scanning a barcode.
+  * [#747](https://github.com/metasfresh/metasfresh-webui-api/issues/747) Picking Tray Clearing: filter picking slots by Partner
+    * New Functionality in Picking Tray clearing, allowing to filter by Business Partner.
+  * [#751](https://github.com/metasfresh/metasfresh-webui-api/issues/751) Picking Tray Clearing: packing HUs: Add to Transportation Order action
+    * New Action in Picking Tray Window allowing to add Handling Units to a Transporation Order.
+  * [#755](https://github.com/metasfresh/metasfresh-webui-api/issues/755) Processes: support for parentViewSelectedIds and childViewSelectedIds
+    * New Functionality for record selections in WebUI, now allowing the frontend to provide selected Parent and Child Row Indentifier to be uses in Actions/ Processes.
+
+* metasfresh-webui-frontend
+  * [#1206](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1206) Use automatic code style enforcement
+    * Automatically transforming code to match code styling rules.
+  * [#1375](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1375) Navigation Menu arrow down directly scrolls menu
+    * Improving the behavior of scrolling in Navigation Menu with a lot of bookmarks.
+  * [#1407](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1407) Process result: open included view: handle profileId property
+    * New functionality that allows to open a window and view after a process/ an action is done.
+  * [#1414](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1414) View: don't allow user to sort by a given column if layout says so
+    * Disabling the sorting feature for columns which are marked as not-sortable.
+  * [#1425](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1425) Eslint: increase line max-len from 80 to 120.
+    * Internal House Keeping issue that shall improve the Code Quality.
+  * [#1433](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1433) Support Lookup view attributes
+    * Adding Lookup widget support for the Attributes Panel in WebUI. Now it's able to add autocomplete and search Functionality there.
+  * [#1436](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1436) Remove legacy docs
+    * Removing legacy aoutdated documents from WebUI Frontend docs folder.
+
+#Fixes
+* metasfresh-app
+  * [#3110](https://github.com/metasfresh/metasfresh/issues/3110) Request All does not show records
+    * Fix for the Request window, now allowing to show all records again without using the filter button.
+  * [#3126](https://github.com/metasfresh/metasfresh/issues/3126) Solve issues around standalone report / jasper service
+    * Fixes issues that occurred in the new Standalone Jasper report service.
+  * [#3138](https://github.com/metasfresh/metasfresh/issues/3138) Import BPartner window: cannot see data
+    * Fix for the Import Businesspartner window and functionality. now showing the imported data again.
+  * [#3139](https://github.com/metasfresh/metasfresh/issues/3139) Cannot edit System Administrator role (AD_Role_ID=0)
+    * Fix in Role Management, now allowed to edit the System Admin Role again.
+  * [#3147](https://github.com/metasfresh/metasfresh/issues/3147) Errors with C_BPartner SQL columns
+    * Fixes an error which appeared with the new SQL columns in Business Partner window, for systems with a lot of Business Partner records.
+  * [#3151](https://github.com/metasfresh/metasfresh/issues/3151) ZoomTo-Performance Issues
+    * Improving the Performance of different Zoom-To Releations.
+  * [#3159](https://github.com/metasfresh/metasfresh/issues/3159) Translation Tab content missing for Product_Trl
+    * Fix for the Product Translation Tab. Now showing the Translations again.
+  * [#3160](https://github.com/metasfresh/metasfresh/issues/3160) C_Printing_Queue_ReEnqueue with IsSelected doesn't work
+    * Fix for the Reqnqueue action in the Printing Queue Window.
+  * [#3169](https://github.com/metasfresh/metasfresh/issues/3169) Updating PMM_Week availability trend fails
+    * Fix fir the Procurement Candidates for week availability Trend.
+  * [#3174](https://github.com/metasfresh/metasfresh/issues/3174) Material Receipt Candidates not generated when using Purchase Order from Sales Order action
+    * Fix for the new Purchase Order from Sales Order action, now also creating Material Receipt candidates for these kind of Purchase Orders.
+  * [#3183](https://github.com/metasfresh/metasfresh/issues/3183) Jenkins misinterprets positive downstream build result
+    * Solving an internal housekeepinmg issue in Build System.
+  * [#3202](https://github.com/metasfresh/metasfresh/issues/3202) Error in Paymentjournal Process/ Report in Payselection
+    * Fixes en error in Payselection when starting the Paymentjournal.
+  * [#3206](https://github.com/metasfresh/metasfresh/issues/3206) Relation sales order - flatrate term is missing
+    * Fixes a missing relation for flatrate term in sales order
+  * [#3207](https://github.com/metasfresh/metasfresh/issues/3207) Cannot save an attribute in orderline
+    * Fix for the recording of attributes in orderline.
+  * [#3208](https://github.com/metasfresh/metasfresh/issues/3208) Console error when copying MDocType
+    * Fixes an error in the clone action of Document Types window.
+
+* metasfresh-webui-api
+  * [#713](https://github.com/metasfresh/metasfresh-webui-api/issues/713) Error creating bean with name 'scopedTarget.internalUserSessionData'
+    * Fixes an issue that occured sometimes when switching the language of the user in WebUI.
+  * [#722](https://github.com/metasfresh/metasfresh-webui-api/issues/722) Picking terminal: Picking slot rows shall NOT have duplicate IDs
+    * Solving the issue of having duplicated IDs in Picking Slot Rows.
+
+* metasfresh-webui-frontend
+  * [#1361](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1361) View field editor: make sure the field value is sent to backend before the view is deleted
+    * Fix for the patching of adjusted values in modal overlay action views. Now patching the field value before closing the modal overlay.
+  * [#1383](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1383) cannot completely delete a numeric field in grid view
+    * Fixes the new Edit mode in main grid views, now allowing to delete recorded numeric field conten completely.
+  * [#1393](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1393) View attributes: consider row's supportAttributes property before querying for attributes
+    * Fixes the querying of Attributes, now only done if the API demands that.
+  * [#1396](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1396) View field editor: Patch request isn't sent after hit enter
+    * A Patch Request is now sent again, after hitting enter.
+  * [#1404](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1404) login form selects 2 items from roles dropdown
+    * Fixes the login form in WebUI, now only selecting 1 role item.
+  * [#1406](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1406) Can not enter "-" into any text field
+    * Allowing to enter "-" character into text fields in WebUI.
+  * [#1415](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1415) View: singleOverlayField filters are half broken
+    * Fix for the Overlay when using Barcode Filter.
+  * [#1421](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1421) Drop down lists remain displayed when using tab several times
+    * Closing opened dropdown lists again when navigating through fields in webUI and the field is losing focus.
+  * [#1426](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1426) Connection lost displayed when unchecking a checkbox in Filter
+    * Fix for Filter checkboxes. Avoiding connection lost issue.
+  * [#1427](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1427) d3 errors on dashboard
+    * Fixes D3JS Issues in metasfresh Dashboard for calculatesd negative values.
+  * [#1435](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1435) Problem regarding multiple filters
+    * Fixing an issue with multiple Filters interfering each other in main and included views.
+  * [#1437](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1437) Language bug: The language in Settings is not respected
+    * Fixes an issue in User Configuration about language Settings that were not respected.
+  * [#1440](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1440) Dropdown in Grid view needs two-time click again
+    * Fixes the dropdown selection. Now selections are able to be done with first cklick.
+  * [#1444](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1444) Attributes are empty in material receipt candidate
+    * Fix for material receipt candidates that were wrongly created with empty attributes.
+  * [#1448](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1448) jenkins: fix current lint issues
+    * Internal Housekeeping issue fixed according to lint.
+  * [#1451](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1451) Batch entry: cursor jumps directly to HU
+    * Fix for the Batch entry focus after opening via alt+q or alt++. Now focussing on Product field again.
+  * [#1455](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1455) Error when updating an attribute multiple times
+    * Fixes an error that ocurred when changing an attribute multiple times.
+
+# metasfresh 5.38 (2017-49)
+
+**release for week 2017-49**
+
+## Features
+* metasfresh-app
+  * [#937](https://github.com/metasfresh/metasfresh/issues/937) Increase Performance by disabling statistics info
+    * Internal Housekeeping Issue, switching off the statistics creation in System Table.
+  * [#1767](https://github.com/metasfresh/metasfresh/issues/1767) New Window Board in WebUI
+    * New Window for Board Configuration in WebUI, allowing to configure new Kanban Boards and Card Layouts.
+  * [#1809](https://github.com/metasfresh/metasfresh/issues/1809) New User Query Window on WebUI
+    * New Window in WebUI that allows the maintenance of User specific Filter criteria for Windows & Tabs.
+  * [#2177](https://github.com/metasfresh/metasfresh/issues/2177) New Window for Attribute Search in WebUI
+    * New Window for Attribute Search in WebUI.
+  * [#2868](https://github.com/metasfresh/metasfresh/issues/2868) Make BOMValidate process to work correctly in webui
+    * Improvement of the BOM Validation Action in WebUI.
+  * [#2956](https://github.com/metasfresh/metasfresh/issues/2956) Drop allowconsolidateinvoice from database
+    * Removing column allowconsolidateinvoice thats not needed in Business Partner anymore.
+  * [#3027](https://github.com/metasfresh/metasfresh/issues/3027) WebUI: New Window for Import BPartner
+    * New Window in WebUI for Import Businesspartner.
+  * [#3040](https://github.com/metasfresh/metasfresh/issues/3040) Implement Clone/ Copy for Forecast Window WebUI
+    * New Copy Action for Forecast records.
+  * [#3041](https://github.com/metasfresh/metasfresh/issues/3041) Forecast Window copy Field content from header to lines when creation
+    * Improvement of Forecast creation, now allowing the user to record data on header and automatically copy that to line level.
+  * [#3042](https://github.com/metasfresh/metasfresh/issues/3042) C_Bpartner: new Additional fields
+    * New pharmacy specific Fields in Business Partner Window.
+  * [#3054](https://github.com/metasfresh/metasfresh/issues/3054) Purchase candidates: document references
+    * Improvement of navigation in Purchase candidates, now having document references to sales and purchase order.
+  * [#3064](https://github.com/metasfresh/metasfresh/issues/3064) Multiple PP Order generation for a materialdispo line
+    * Improvement od the generation of Manufacturing Orders via Materialdispo lines.
+  * [#3072](https://github.com/metasfresh/metasfresh/issues/3072) de_metas_purchasecandidate schema containing some diagnosis views
+    * Adding diagnosis views to purchase candidates DB Schema.
+  * [#3086](https://github.com/metasfresh/metasfresh/issues/3086) HU planned after Purchase Order, destroyed after material receipt
+    * Improvement of Handling Unit behavior after Purchase Order before Material Receipt. Now not preparing Handling Units anymore.
+  * [#3094](https://github.com/metasfresh/metasfresh/issues/3094) Activity ID in Purchase Orderline Grid View
+    * New field in purchase orderline, allowing to see and maintain the activity in grid view.
+  * [#3095](https://github.com/metasfresh/metasfresh/issues/3095) WebUI: new Window for AD_Session in WebUI
+    * New window for session audit in webui, allowing to view session and login information.
+  * [#3117](https://github.com/metasfresh/metasfresh/issues/3117) Disable MStorage.add
+    * Switching off Legacy M_Storage.
+
+* metasfresh-webui-api
+  * [#699](https://github.com/metasfresh/metasfresh-webui-api/issues/699) Implement Batch entry in Forecast Window
+    * New Batch entry functionality in Forecast Window, allowing the rcording of Forecasts much faster.
+  * [#705](https://github.com/metasfresh/metasfresh-webui-api/issues/705) Backend Logic for new Date Filter Widget
+    * Implementation of the Backend Logic for the new Date Filter Widget.
+
+* metasfresh-webui-frontend
+  * [#1354](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1354) DateTimeRangePicker default Time from/to in Filter and Process Parms
+    * Improving the DateRange Picker Filter widget. Now seetting the initial date and time to the whole day of today.
+  * [#1357](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1357) Don't use the legacy view attributes API
+    * Frontend Improvement, now not using the lagacy API view for attributes anymore.
+  * [#1360](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1360) View field editor: override viewEditorRenderMode on row level
+    * New functionality that allows to overwrite the editor render mode on row level.
+  * [#1387](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1387) New widget for date filtering
+    * New Filter widget, that allows to navigate date & date/time filter settings in lower or higher steps.
+
+## Fixes
+* metasfresh-app
+  * [#2946](https://github.com/metasfresh/metasfresh/issues/2946) Product: New Field Endcustomer productname and translation
+    * Adding new fields for endcustomer productname for product labels and translation.
+  * [#2977](https://github.com/metasfresh/metasfresh/issues/2977) Tab Org Access not working in WebUI because of missing primary key
+    * Adding a primary Key to Orgaccess Table, allowing to create records in User Window subtab.
+  * [#3065](https://github.com/metasfresh/metasfresh/issues/3065) PP Order not shown in materialdispo although automatically generated
+    * Fix for PP Orders, now shown in materialdispo too when automatically generated.
+  * [#3087](https://github.com/metasfresh/metasfresh/issues/3087) Get rid of group columns in new window for procurement stock count
+    * Adjusting the window Purchase Stock Control and adding Translation for en_US.
+  * [#3060](https://github.com/metasfresh/metasfresh/issues/3060) TypedSqlQuery Bugs because aggregateList method ignores order
+    * Now allowing to use OrderBy in TypedSQLQuery.
+  * [#3073](https://github.com/metasfresh/metasfresh/issues/3073) Error: Could not find or load main class ${argLine}
+    * Internal housekeeping issue, fixing the local build of metasfresh from command line.
+  * [#3088](https://github.com/metasfresh/metasfresh/issues/3088) Transform in material receipt left destroyed HU behind
+    * Fix for the Transformation action in handling unit Editor, now undisplaying the destroyed HU after Transformation.
+  * [#3089](https://github.com/metasfresh/metasfresh/issues/3089) Not able to start report service with ReportServiceMain.launch
+    * Internal Housekeeping Task allowing to start the report service now with ReportServiceMain.launch.
+  * [#3100](https://github.com/metasfresh/metasfresh/issues/3100) Move UI Element Action broken
+    * Fix for the UI Element (Element, Group) Movement actions.
+  * [#3128](https://github.com/metasfresh/metasfresh/issues/3128) Qtydelivered in PMM_Balance gets doubled
+    * Fix for the Procurement disposition, now not doubleing the PMM Balance anymore.
+
+* metasfresh-webui-frontend
+  * [#1367](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1367) view attributes shall be refreshed when the current selected row is refreshed
+    * Fixed the Frontend refresh of the attributes view.
+  * [#1405](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1405) Lookup dropdown not Closing after selection w/ [enter/CR]
+    * Fix for dropdown lists in Lookupds when confirming a selection with enter/ cr.
+
+# metasfresh 5.37 (2017-48)
+
+**release for week 2017-48**
+
+## Features
+* metasfresh-app
+  * [#2944](https://github.com/metasfresh/metasfresh/issues/2944) Allow more than 1 PostFinanceUserNo per Account
+    * Extended the swiss ESR Postfinance participant No functionality. Now allowing to have more than 1 Postfinance participant No per bank sccount.
+  * [#2945](https://github.com/metasfresh/metasfresh/issues/2945) Adjustment in pain001
+    * Adjustment of the Sepa pain format for bank interchanges transactions in switzerland.
+  * [#2976](https://github.com/metasfresh/metasfresh/issues/2976) Translate Processname to de_DE in Procurement Candidates
+    * Improved Translation and Naming in Procurement Planning window.
+  * [#2982](https://github.com/metasfresh/metasfresh/issues/2982) Filter for Shipment Documentstatus is missing in WebUI
+    * New filter criteria "documentstatus" added to Shipment window.
+  * [#2987](https://github.com/metasfresh/metasfresh/issues/2987) Adjust the Naming of Locators
+    * Improvement of the Locator Naming.
+  * [#2997](https://github.com/metasfresh/metasfresh/issues/2997) Partner Import: Support importing the Org via value
+    * Improved Business Partner Import, allowing to import the Organisation via value instead of name.
+  * [#3002](https://github.com/metasfresh/metasfresh/issues/3002) WebUI: New Window for HU Transaction
+    * New window for Handling Unit transaction in WebUI.
+  * [#3003](https://github.com/metasfresh/metasfresh/issues/3003) WebUI: Adjustments on HU Trace Window
+    * Improvement in Handling Unit Trace Window, rearranging fields, new filter criteria and improved translations for en_US, de_DE.
+  * [#3005](https://github.com/metasfresh/metasfresh/issues/3005) Manufacturing Order add Filter for Planstatus
+    * Additional, new filter criteria in manufacturing order.
+  * [#3010](https://github.com/metasfresh/metasfresh/issues/3010) Inherit c_order_id and orderline_id from flatrate term to invoice candidate
+    * New referenced document in flatrate terms, now allowing to jump directly to referenced invoice candidates directly from there.
+  * [#3032](https://github.com/metasfresh/metasfresh/issues/3032) SSCC Product description Field cut off
+    * Improvement of the SSCC Label, now allowing to have Product Names that extend the width into more than 1 line.
+  * [#3037](https://github.com/metasfresh/metasfresh/issues/3037) WebUI: New Window for Purchase Order Candidates
+    * New Window in WebUI for the transactional data of Purchase Candidates.
+  * [#3039](https://github.com/metasfresh/metasfresh/issues/3039) Forecast Window adjustments
+    * Improvement and extension of the Forecast Window in WebUI, adding new Fields Businesspartner, Date Promised, Warehouse to Forecast Header.
+  * [#3047](https://github.com/metasfresh/metasfresh/issues/3047) WebUI: New Window for Quality Note
+    * New Window for Quality Note in WebUI, allowing to mmaintain the available Quality Notes and Performace Types for Material Receipt.
+  * [#3048](https://github.com/metasfresh/metasfresh/issues/3048) WebUI: Date Filter missing in Material Receipt Dispo
+    * New Date Filter added to material Receipt Dispo.
+  * [#3055](https://github.com/metasfresh/metasfresh/issues/3055) Purchase candidates: notify user when the purchase order was generated
+    * New user notification as soon as purchase candidates were created for the user.
+  * [#3056](https://github.com/metasfresh/metasfresh/issues/3056) Purchase candidates: implement locking mechanism
+    * Locking mechanism implemented for purchase candidates window.
+  * [#3057](https://github.com/metasfresh/metasfresh/issues/3057) Display order, forecast or shipmentschedule in material dispo main window
+    * New fields in material disposition, now showing the Order, Forecast and Shipmentschedule information.
+  * [#3061](https://github.com/metasfresh/metasfresh/issues/3061) Adjust OrderBy in Materialdispo
+    * Improvement of Ordering in Materiadispo.
+  * [#3066](https://github.com/metasfresh/metasfresh/issues/3066) WebUI: Adapt Manufacturing Order window to current guidelines
+    * Improvement of the Manufacturing Order Window, adapted to current WebUI Guidelines and added Translations.
+  * [#3082](https://github.com/metasfresh/metasfresh/issues/3082) New Window for manual OnHand Qty in WebUI
+    * New Window for the maintenance of manual OnHand Qty in metasfresh. This feature is used in fresh produce companies with fast moving consumer goods and raw materials.
+
+* metasfresh-webui-api
+  * [#611](https://github.com/metasfresh/metasfresh-webui-api/issues/611) Destroyed HUs in HU Editor
+    * Improving the filtering of Handling Unit Window now not showing destroyed HU anymore.
+  * [#683](https://github.com/metasfresh/metasfresh-webui-api/issues/683) Source HU Actions shall only be "Drop Source HU"
+    * Hiding Quickactions in Handling Unit Editor. Now only showing the needed Quickactions for Source Handling Units.
+  * [#689](https://github.com/metasfresh/metasfresh-webui-api/issues/689) Picking processed compress to top-level HU
+    * New compression visualisation in Pickign window, now only showing top level HU as soon as processed.
+  * [#695](https://github.com/metasfresh/metasfresh-webui-api/issues/695) Picking terminal: implement dynamic picking slot allocation/release
+    * New Functionality in Picking window, now allowing the dynamic allocation/ clearing of picking slots.
+
+* metasfresh-webui-frontend
+  * [#1347](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1347) Dropdown in Grid view needs two-time click if value in list is more than one
+    * Fixes the need of 2 times click in included grid view dropdown widgets.
+  * [#1363](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1363) Jenkins: run npm test on each build
+    * Internal housekeeping issue, improving build system.
+  * [#1380](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1380) Shortcut for new document  
+    * Adjusted shortcut for the creation of new documents.
+
+## Fixes
+* metasfresh-app
+  * [#2958](https://github.com/metasfresh/metasfresh/issues/2958) 2nd Discount Break is ignored
+    * Bugfix for the 2nd Discount Break that is not ignored anymore.
+  * [#3023](https://github.com/metasfresh/metasfresh/issues/3023) ad_org is ignored when doing quick order entry
+    * Fixes the Filter criteria for products in batch entry, now only showing the products of the sales order org.
+  * [#3034](https://github.com/metasfresh/metasfresh/issues/3034) Solve material dispo regressions
+    * Fixes various issue in the Material Disposition Prototype.
+  * [#3043](https://github.com/metasfresh/metasfresh/issues/3043) A contract shall not be created when completing a quotation
+    * Fixes the contract creation, now not generating a contract when completing a sales order quotation.
+
+* metasfresh-webui-api
+  * [#669](https://github.com/metasfresh/metasfresh-webui-api/issues/669) CU-TU's built name and description is wrong
+    * Fix for the CU-TU name and description generation when adjusting UOM.
+  * [#671](https://github.com/metasfresh/metasfresh-webui-api/issues/671) T_WEBUI_ViewSelection[Line] shall be truncated and not deleted
+    * Internal Housekeeping fix for the temporary WebUI Selection Tables, now using truncate instead of delete.
+  * [#679](https://github.com/metasfresh/metasfresh-webui-api/issues/679) HU taken out in Picking Tray Clearing still displayed in the Picking Slot in Picking Terminal
+    * Fixes the removing of Handling Units in Picking Try Clearing.
+  * [#692](https://github.com/metasfresh/metasfresh-webui-api/issues/692) Error in Quickentry Sales Order when canceling input
+    * Fixes a Bug in the Quickentry workflow when canceling.
+  * [#694](https://github.com/metasfresh/metasfresh-webui-api/issues/694) Purchase view: set modal title as process caption
+    * Fix for the modal overview for processes/ actions. now showing process caption as modal title.
+  * [#697](https://github.com/metasfresh/metasfresh-webui-api/issues/697) New BPartner is not available as SubProducerBPartner in MaterialReceipt BPartner
+    * Improving the time from recording until a Subproducer is available in Material Receipt Subproducer attribute list.
+  * [#700](https://github.com/metasfresh/metasfresh-webui-api/issues/700) Filter error after static filter set
+    * Fixes the static Filter visibility. Now only showing 1 active static Filter.
+  * [#701](https://github.com/metasfresh/metasfresh-webui-api/issues/701) WebUI server is losing session context
+    * Fix for the session context after request to server.
+
+* metasfresh-webui-frontend
+  * [#1293](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1293) Cannot scroll down in a filter with lots of parameters
+    * Now also possible to scroll down long filter lists.
+  * [#1345](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1345) Invalid date was used on dateTime tablecell
+    * Bugfix for DateTiem tablecells, now presenting the content properly.
+  * [#1352](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1352) Cannot clear dropdown fields
+    * Fix for Dropdown Fields, now allowing to select empty values again.
+  * [#1358](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1358) View field editor: number field is behaving weird when using keyboard
+    * Improvement of the behavior of number fields when using keyboard.
+  * [#1365](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1365) Error with alt+space for expand
+    * Fixes the keyboard Hotkey for expand in Document Windows.
+  * [#1366](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1366) Error in Quickentry dropdown List
+    * Fixes the Batch Entry result list, now generating the results properly.
+  * [#1374](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1374) Keyboard alt+u in Sales Order
+    * Fixes the Document Action Shortcut alt+u for complete action in all Document Windows.
+  * [#1376](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1376) Navigation Menu Favorite stars wrong
+    * Fix for the Bookmark Functionality in WebUI Window and Navigation Sitemap.
+  * [#1389](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1389) Alt+a in main Grid View opens Advanced edit mode
+    * Fix for the shortcut of advanced edit in main grid view, that blocked the select-all shortcut from being tiggered.
+
+# metasfresh 5.36 (2017-47)
+
+**release for week 2017-47**
+
+## Features
+* metasfresh-app
+  * [#1964](https://github.com/metasfresh/metasfresh/issues/1964) ESR Import w/o Invoice reference (w/ reversed Invoice)
+    * New Action and workflow in ESR Import now creating the Payment first and providing an action if allocation cannot be done.
+  * [#2871](https://github.com/metasfresh/metasfresh/issues/2871) Window Design Webui: Improve windows with Posted field
+    * Adding missing default Values for Posted columns in various Table Definitions.
+  * [#2872](https://github.com/metasfresh/metasfresh/issues/2872) Window Design Webui : Improve Distribution Order window
+    * Improved Layout and Translations for the Distribution Order Window in WebUI.
+  * [#2908](https://github.com/metasfresh/metasfresh/issues/2908) Provide Doc Action voiding for contract period
+    * New document action in contract period allowing to void now.
+  * [#2911](https://github.com/metasfresh/metasfresh/issues/2911) Create Action for changing price and qty for a contract
+    * New action that allows to adjust the price and qty for an already created contract.
+  * [#2932](https://github.com/metasfresh/metasfresh/issues/2932) Standalone report / jasper service
+    * Moving the Jasper Handling to a standalone Jasperreport service.
+  * [#2937](https://github.com/metasfresh/metasfresh/issues/2937) Jasper Reports: New Purchase Order, Inout and Invoice Layout
+    * Additional new Layouts for Document Jasperreports on purchase side.
+  * [#2940](https://github.com/metasfresh/metasfresh/issues/2940) Shipment Date = Promised Date
+    * Adjustment of the Inout Generate Date when creating from shipment candidates. Now using the promised date as initial shipment date.
+  * [#2942](https://github.com/metasfresh/metasfresh/issues/2942) Fix the message for PrintJob_Done
+    * Adjusted message for finished Print Jobs.
+  * [#2959](https://github.com/metasfresh/metasfresh/issues/2959) Default WebUI Window for Distribution Orderlines Handling
+    * New Window for Distribution Orderlines that allows better Distrbution handling in WebUI.
+  * [#2963](https://github.com/metasfresh/metasfresh/issues/2963) Flatrate: use datepromised instead of order data for master and startdate
+    * Adjustment in Flatrate contract, switching Master Order and Startdate to datepromised.
+  * [#2969](https://github.com/metasfresh/metasfresh/issues/2969) Add SQL Column M_Warehouse to Distribution Orderline
+    * New Field Warehouse and Filter in Distribution Editor.
+  * [#2975](https://github.com/metasfresh/metasfresh/issues/2975) Sales invoice jasper: group products by product category
+    * Adjustment of sales invoice jasperreport, now allowing the grouping by products.
+  * [#2978](https://github.com/metasfresh/metasfresh/issues/2978) New Window in WebUI for EDI DESADV
+    * New Window for EDI DESADV records in WebUI.
+  * [#2980](https://github.com/metasfresh/metasfresh/issues/2980) Date Filter missing in Order Control Window
+    * New Filter in Order Control Window for Date, CreatedBy and more.
+  * [#2981](https://github.com/metasfresh/metasfresh/issues/2981) Action translation in Invoice Candidates Window
+    * Improved Translation for Action Menu in invoice candidate window.
+  * [#2985](https://github.com/metasfresh/metasfresh/issues/2985) Refining Distribution Editor Window in WebUI
+    * Improvements for the Distribution Editor Window in WebUI. Additional Translations for de_DE and en_US Language/ Locale.
+  * [#2989](https://github.com/metasfresh/metasfresh/issues/2989) Filter for GAP No. is missing in Businesspartner window
+    * Adding the GAP Filter to Businesspartner Window.
+  * [#2992](https://github.com/metasfresh/metasfresh/issues/2992) WebUI: Window Shipment Packing Item
+    * Adaption of Field Names to current WebUI Guidelines.
+
+* metasfresh-webui-api
+  * [#670](https://github.com/metasfresh/metasfresh-webui-api/issues/670) Views: backend shall specify which columns are editable and how to render the editor
+    * New functionality in webui api, now specifying the editable fields in grid view to frontend.
+
+* metasfresh-webui-frontend
+  * [#1222](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1222) Keyboard Shortcut for "Select all"/ "Select all x rows"
+    * New Keyboard shortcut for select all/ select all x rows with toggle functioanlity.
+  * [#1335](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1335) Views: backend shall specify which columns are editable and how to render the editor (frontend)
+    * Frontend implementation for the editable fields in main grid view.
+
+## Fixes
+* metasfesh-app
+  * [#2965](https://github.com/metasfresh/metasfresh/issues/2965) Error for HU changing locator if status E
+    * Fix for an issue that appeared when moving handling units in the warehouse and changing the locator.
+  * [#2966](https://github.com/metasfresh/metasfresh/issues/2966) Error in console when creating customer return
+    * Fixes an issue in customer returns.
+  * [#3035](https://github.com/metasfresh/metasfresh/issues/3035) Linenet amount not updated in sales order after setting flatrate condition
+    * Fix for the Linenet Amount in Sales Order after setting a flatrate condition.
+
+* metasfresh-webui-api
+  * [#677](https://github.com/metasfresh/metasfresh-webui-api/issues/677) Close all picking candidates only if the view was closed/removed by user
+    * Picking candidates are only closed when the picking slot belongs to a rack system and the user closes the modal view.
+  * [#678](https://github.com/metasfresh/metasfresh-webui-api/issues/678) HU that was taken out in Picking Try Clearing shall remain Picked
+    * Fix for the status of Handling Units after picking tray clearing. Now the handling units remain in picked status.
+  * [#681](https://github.com/metasfresh/metasfresh-webui-api/issues/681) Picking not possible for >1 orderline in Picking Terminal
+    * Fix for Picking terminal, now allowing to select and pick more than 1 line at once.
+  * [#696](https://github.com/metasfresh/metasfresh-webui-api/issues/696) Material receipt schedule: attributes read-only
+
+* metasfresh-webui-frontend
+  * [#1333](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1333) Process panel is closed even if /start failed
+    * The modal process panel is now remaining open if an error pops up when starting the action.
+  * [#1337](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1337) All values of Dropdown list are highlighted
+    * Now only showing highlighted rows in Role List when the role is selected.
+
+# metasfresh 5.35 (2017-46)
+
+**release for week 2017-46**
+
+## Features
+* metasfresh
+  * [#2407](https://github.com/metasfresh/metasfresh/issues/2407) Translate included subtabs of contract window in WebUI
+    * New Translation for en_US in contract subtab view for subscription history and forecast.
+  * [#2722](https://github.com/metasfresh/metasfresh/issues/2722) WebUI design: Improve window material schedule
+    * Minor additional field translation for en_US added to material schedule window subtab.
+  * [#2754](https://github.com/metasfresh/metasfresh/issues/2754) Cleanup function for old AD_Issue records
+    * New function that allows to cleanup old and not needed issue records.
+  * [#2771](https://github.com/metasfresh/metasfresh/issues/2771) Sales order jasper reports: group products by product category
+    * New grouping functionality in sales order jasper, now able to group by product category.
+  * [#2816](https://github.com/metasfresh/metasfresh/issues/2816) Material dispo - include storage-relevant attributes
+    * Including the attributes into material dispo, now allowing the product planning to be done on detailed attributes level.
+  * [#2894](https://github.com/metasfresh/metasfresh/issues/2894) Sys config to set waiting time for async
+    * Improving the waiting time handling for asynch after backend start. Now able to set the time via sysconfig.
+  * [#2897](https://github.com/metasfresh/metasfresh/issues/2897) Drop out old code related to confirm splitting when printing
+    * Improvement in mass printing functionality and workflow. Removing the user confirmation for printing when splitting.
+  * [#2913](https://github.com/metasfresh/metasfresh/issues/2913) Column-SQL needs lower-case WHERE and FROM
+    * Application dictionary adjustment for AD_Ref_Table, setting lower case statements for the column SQL.
+  * [#2914](https://github.com/metasfresh/metasfresh/issues/2914) Replace org.adempiere.util.collections.Predicate with java.util.function.Predicate
+    * Internal housekeeping issue, replacing legacy code with java class substitute.
+  * [#2919](https://github.com/metasfresh/metasfresh/issues/2919) Trx API: log a warning in case we are registering a ITrxListener which might be never executed because trx is already commit/closed
+    * Internal housekeeping improvement for transaction handling.
+  * [#2920](https://github.com/metasfresh/metasfresh/issues/2920) Create automated test for extending contracts.
+    * Improving the Test coverage for contract extension. Creating automated Tests.
+  * [#2934](https://github.com/metasfresh/metasfresh/issues/2934) Additional Locator Dimensions
+    * New Locator Dimension, now allowing to additionally record a Dimension for Storage Rack.
+  * [#2936](https://github.com/metasfresh/metasfresh/issues/2936) Creating new flatrate condition and transition with autoextension became very tricky
+    * Usage improvement of the new Flatrate condition and transition tothether with autoextension.
+  * [#2947](https://github.com/metasfresh/metasfresh/issues/2947) Adapt Window Role to WebUI Guidelines
+    * Improved Layout of Role Window in WebUI, adapted now to current WebUI Guidelines.
+
+* metasfresh-webui-api
+  * [#662](https://github.com/metasfresh/metasfresh-webui-api/issues/662) Aggregate Storage for Product and Warehouse
+  * [#664](https://github.com/metasfresh/metasfresh-webui-api/issues/664) Create purchase order line by line via sales order lines
+    * New functionality in WebUI, allowing to create purchase orders directly from sales order lines. This feature was wanted from trade companies with very short delivery time requirements.
+  * [#666](https://github.com/metasfresh/metasfresh-webui-api/issues/666) Change the JSONLookupValue format
+    * Internal housekeeping, adjusting the JSON lookup value format.
+  * [#668](https://github.com/metasfresh/metasfresh-webui-api/issues/668) Handling unit editor action internal usage not possible for more than 1 Page
+    * Extended functionality for the Internal usage action in handling unit editor. Now possible to select all rows and start the action.
+  * [#687](https://github.com/metasfresh/metasfresh-webui-api/issues/687) picking terminal: show BPartner instead of DeliveryDate
+
+* metasfresh-webui-frontend
+  * [#1199](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1199) Picking window unselect line in modal overlay
+    * Improved usability/ behavior in picking window WebUI when un-selecting rows in modal overlay.
+  * [#1308](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1308) Closing a document with changes shall discard those changes
+    * New feature that discards uncomplete data rows in WebUI frontend.
+  * [#1327](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1327) Frontend: change the JSONLookupValue format
+    * Adjustment of the JSON lookup value format in WebUI frontend.
+
+## Fixes
+* metasfresh
+  * [#2905](https://github.com/metasfresh/metasfresh/issues/2905) Referenced documents: sales order to invoice candidates
+    * Fixing the missing reference between invoice candidates and sales order when inouts are created before invoice candidate.
+  * [#2917](https://github.com/metasfresh/metasfresh/issues/2917) Allow reactivating procurement contracts
+    * Allowing the document action for reactivation of procurement contracts.
+
+* metasfresh-webui-api
+  * [#649](https://github.com/metasfresh/metasfresh-webui-api/issues/649) Qty delivered and qty picked not updated correctly in shipment schedule
+    * Fix for Qty fields in shipment schedule. Now field contend is updated correctly in WebUI.
+  * [#660](https://github.com/metasfresh/metasfresh-webui-api/issues/660) JSONUserSessionChangesEvent not fired when currently logged in user is changed
+    * Internal housekeeping issue solving the firing of session change events after chainging the login user.
+  * [#665](https://github.com/metasfresh/metasfresh-webui-api/issues/665) Manufacturing order: create source HU is opening same view on right side as we have it on left side
+    * Fix for the source HU View in manufacturing order.
+  * [#693](https://github.com/metasfresh/metasfresh-webui-api/issues/693) Error in create purchase orders from Sales order line
+
+* metasfresh-webui-frontend
+  * [#1279](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1279) Menu actions for included row broken
+    * Fix for the usage of menu actions when opening from included rows.
+  * [#1283](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1283) Revise shortcut handling
+    * Quick fix for the broken shortcut handling in documents.
+  * [#1286](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1286) Error when maximize subtab which does not support quick input
+    * Fixes a bug that occurred for included subtabs when maximizing and not supporting quick input.
+  * [#1324](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1324) Process is started twice when using ctrl-u shortcut
+    * Quick fix for the action handling in material receipt when using keyboard shortcuts.
+  * [#1328](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1328) Date recording w/ wrong date error
+    * Improved error handling and user information when entering an invalif date in date picker via keyboard.
+  * [#1332](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1332) View: Edit field value is broken
+    * Fix for the edit mode in main grid view.
+  * [#1351](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1351) wrong backend api call for grid view editing
+
 # metasfresh 5.34 (2017-45)
 
 **release for week 2017-45**
 
 ## Features
-
 * metasfresh
   * [#2113](https://github.com/metasfresh/metasfresh/issues/2113) Move verify BOM process to BOM window
+    * Improvement of the BOM Verification Process. Now the BOM Verification is done via action in BOM window instead of Product window.
   * [#2273](https://github.com/metasfresh/metasfresh/issues/2273) Payment Selection as real Document
-  * [#2676](https://github.com/metasfresh/metasfresh/issues/2676) flatrate: make subscription progress reflecting progress
-  * [#2803](https://github.com/metasfresh/metasfresh/issues/2803) Set hostkey for printing module when login in webui
+    * Transforming the Payment Selection into a real document.
+  * [#2676](https://github.com/metasfresh/metasfresh/issues/2676) Flatrate: make subscription progress reflecting progress
+    * Further Improvements to Subscription Progress Subtab in Business Partner window subtab, now showing the real progress of subscriptions.
+  * [#2803](https://github.com/metasfresh/metasfresh/issues/2803) Set Hostkey for printing module when login in WebUI
+    * Now setting the Hostkey for a User when logging in via WebUI.
   * [#2854](https://github.com/metasfresh/metasfresh/issues/2854) Save Termination Reason when terminating subscription
+    * Recording the Reason when canceling a subscription.
   * [#2859](https://github.com/metasfresh/metasfresh/issues/2859) Pre-enddate termination of flatrate created compensation sales order
+    * New sysconfig to control if compensation Sales Orders are created.
   * [#2862](https://github.com/metasfresh/metasfresh/issues/2862) Set MasterStartDate for a contract when creating from order
+    * Improvement in Subscription Contract, now setting the Master Start Date initially when creating the Subscription from Sales Order.
   * [#2866](https://github.com/metasfresh/metasfresh/issues/2866) Make sure that 'Print All' is working in webui
+    * Further improvement of the Handling of Printing when using select all in WebUI.
   * [#2874](https://github.com/metasfresh/metasfresh/issues/2874) Create special filters in printing queue
+    * New Filters in Printing Queue Window in WebUI.
   * [#2878](https://github.com/metasfresh/metasfresh/issues/2878) Support for 6 digits AccountNo length in ReferenceNumber
+    * Adjustment of ESR ReferenceNo Handling, extending the allowed Account No to 6 digits.
   * [#2880](https://github.com/metasfresh/metasfresh/issues/2880) Add greeting to partner quick creation from order
+    * Enhancement of the Quick Businesspartner creation in Sales Order, now allowing to record the Greeting.
   * [#2881](https://github.com/metasfresh/metasfresh/issues/2881) Add a process that removes pauses and can be ran from Contract window
+    * New Action in Contract Window that enables the cancellation of Subscription Pauses.
   * [#2887](https://github.com/metasfresh/metasfresh/issues/2887) Make ShipmentSchedule column reference search in C_SubscriptionProgress
+    * New Filter for Shipment Schedule Line in Subscription Progress.
   * [#2895](https://github.com/metasfresh/metasfresh/issues/2895) AD_Ref_Table needs lower-case WHERE and FROM
   * [#2907](https://github.com/metasfresh/metasfresh/issues/2907) set masterenddate correctly when extending contracts
 
 * metasfresh-webui-api
   * [#19](https://github.com/metasfresh/metasfresh-webui-api/issues/19) Cache invalidation
+    * Improvement of Cache Invalidation in WebUI.
   * [#652](https://github.com/metasfresh/metasfresh-webui-api/issues/652) Implement document discardChanges endpoint
+    * Endpoint Implementation for the possibility of discarding document changes. This endpoint will be used by a new cancel button in WebUI.
+  * [#653](https://github.com/metasfresh/metasfresh-webui-api/issues/653) metasfresh.webui.debug.showColumnNamesForCaption shall be false by default
+    * Fix in WebUI API, switching the Developer Mode off by default.
+  * [#656](https://github.com/metasfresh/metasfresh-webui-api/issues/656) Address editor fields are not translated
+    * Improvement of Translations in en_US, de_DE for the Address editor.
 
 * metasfresh-webui-frontend
-  * [#1295](https://github.com/metasfresh/metasfresh-webui-api/issues/653) metasfresh.webui.debug.showColumnNamesForCaption shall be false by default
+  * [#1294](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1294) Window actions shall respect the "disabled" flag
+    * Now only enabled window actions are active in WebUI Frontend, if disabled then the action is greyed out.
+  * [#1295](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1295) Processes: provide current selected tab and rows
+    * Processes now provide the info about the selected Tab and rows when called in WebUI.
   * [#1303](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1303) Change the hostname from config.js.dist to localhost
+    * Internal Housekeeping Issue, switching Hostnames on config.js for easier maintenance.
 
 * other
-  * [metasfresh-dist-orgs#82](https://github.com/metasfresh/metasfresh-dist-orgs/issues/82) Invoice Medium Address Layout Changes
+  * [#82](https://github.com/metasfresh/metasfresh-dist-orgs/issues/82) Invoice Medium Address Layout Changes
+    * Further Layout adjustments in Invoice Document.
 
 ## Fixes
 
 * metasfresh
   * [#2876](https://github.com/metasfresh/metasfresh/issues/2876) Fix Recreate printing queue for webui
+    * Fix for the Process Recreate Printing Queue, and enabling to run in WebUI.
   * [#2885](https://github.com/metasfresh/metasfresh/issues/2885) Test canceling extended contracts and fix if needed
+    * Improvement of the Cancel Action when used on extended contracts.
+  * [#2895](https://github.com/metasfresh/metasfresh/issues/2895) AD_Ref_Table needs lower-case WHERE and FROM
+    * Fix for SQL Validation in Reference Table.
+  * [#2907](https://github.com/metasfresh/metasfresh/issues/2907) Set Master Enddate correctly when extending contracts
+    * Fix for the prolongation Functionality of contracts. Now setting the Master End Date correctly.
 
 * metasfresh-webui-api
   * [#633](https://github.com/metasfresh/metasfresh-webui-api/issues/633) Materialdispo Target Warehouse checks Warehouse Routing
-  * [#650](https://github.com/metasfresh/metasfresh-webui-api/issues/650) flatrate contractstatus not refresh in single view after terminated
+    * Fix for the Warehouse Routing in Material Disposition. Now only validating the Document Reference for Source Warehouse.
+  * [#650](https://github.com/metasfresh/metasfresh-webui-api/issues/650) Flatrate contractstatus not refresh in single view after terminated
+    * Now setting the contractstatus directly when terminating a contract.
   * [#651](https://github.com/metasfresh/metasfresh-webui-api/issues/651) Document references endpoints are not respecting role permissions
+    * The Record Reference List is now respecting the Role Permissions of the user and only showing references which are allowed for the user.
   * [#654](https://github.com/metasfresh/metasfresh-webui-api/issues/654) Address country lookup not working correctly
-  * [#656](https://github.com/metasfresh/metasfresh-webui-api/issues/656) Address editor fields are not translated
+    * Fix for the country Lookup in Location widget.
 
 * metasfresh-webui-frontend
-  * [#1294](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1294) window actions shall respect the "disabled" flag
-  * [#1295](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1295) processes: provide current selected tab and rows
   * [#1312](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1312) Wrong process call
-  * [#1324](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1324) Process is started twice when using ctrl-u shortcut
+    * Improvement for Action calls in WebUI.
 
 # metasfresh 5.33 (2017-44)
 

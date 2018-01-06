@@ -26,8 +26,8 @@ package de.metas.picking.legacy.form;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 
-import org.adempiere.util.collections.Predicate;
 import org.compiere.util.KeyNamePair;
 
 /**
@@ -42,7 +42,7 @@ public class TableRowBPartnersCollector implements Predicate<TableRow>
 	private final Set<KeyNamePair> bpartners = new TreeSet<KeyNamePair>();
 
 	@Override
-	public boolean evaluate(final TableRow currentRow)
+	public boolean test(final TableRow currentRow)
 	{
 		final int bpartnerId = currentRow.getBpartnerId();
 		if (bpartnerId <= 0)

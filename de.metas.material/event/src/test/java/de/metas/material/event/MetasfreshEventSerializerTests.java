@@ -1,8 +1,6 @@
 package de.metas.material.event;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
@@ -10,6 +8,7 @@ import de.metas.event.Event;
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.event.jms.ActiveMQJMSEndpoint;
 import de.metas.event.jms.IEventSerializer;
+import de.metas.material.event.transactions.TransactionCreatedEvent;
 
 /*
  * #%L
@@ -39,12 +38,6 @@ import de.metas.event.jms.IEventSerializer;
  */
 public class MetasfreshEventSerializerTests
 {
-//	@Before
-//	public void init()
-//	{
-//		AdempiereTestHelper.get().init();
-//	}
-
 	/**
 	 * Verifies that {@link ActiveMQJMSEndpoint#DEFAULT_EVENT_SERIALIZER} works, because we put a JSON string into an {@link Event} which is also serialized into JSON,
 	 * so there might be problems down that road if {@link ActiveMQJMSEndpoint#DEFAULT_EVENT_SERIALIZER} get confused about which parts of the string are just payload and which aren't.
@@ -55,22 +48,23 @@ public class MetasfreshEventSerializerTests
 	{
 		final IEventSerializer eventSerializer = ActiveMQJMSEndpoint.DEFAULT_EVENT_SERIALIZER;
 		
-		final TransactionEvent transactionEvent = MaterialEventSerializerTests.createSampleTransactionEvent();
-		final String inOutEventStr = SimpleObjectSerializer.get().serialize(transactionEvent);
+		final TransactionCreatedEvent transactionEvent = MaterialEventSerializerTests.createSampleTransactionEvent();
+		final String transactionEventStr = SimpleObjectSerializer.get().serialize(transactionEvent);
 
 		final Event event = Event.builder()
-				.putProperty(MaterialEventService.MATERIAL_DISPOSITION_EVENT, inOutEventStr)
+				.putProperty(MaterialEventService.MATERIAL_DISPOSITION_EVENT, transactionEventStr)
 				.build();
 
 		final String eventStr = eventSerializer.toString(event);
 
 		final Event deserialisedEvent = eventSerializer.fromString(eventStr);
-		final String deserializedInOutEventStr = deserialisedEvent.getProperty(MaterialEventService.MATERIAL_DISPOSITION_EVENT);
+		final String deserializedTransactionEventStr = deserialisedEvent.getProperty(MaterialEventService.MATERIAL_DISPOSITION_EVENT);
 
-		final MaterialEvent deserializedInOutEvent = SimpleObjectSerializer.get().deserialize(deserializedInOutEventStr, MaterialEvent.class);
+		final MaterialEvent deserializedTransactionEvent = SimpleObjectSerializer.get().deserialize(deserializedTransactionEventStr, MaterialEvent.class);
 
-		assertThat(deserializedInOutEvent).isInstanceOf(TransactionEvent.class);
-		assertThat(((TransactionEvent)deserializedInOutEvent).getMaterialDescr().getProductId()).isEqualTo(20); // "spot check": picking the productId
-		assertThat(deserializedInOutEvent, is(transactionEvent));
+		assertThat(deserializedTransactionEvent).isInstanceOf(TransactionCreatedEvent.class);
+		assertThat(((TransactionCreatedEvent)deserializedTransactionEvent).getMaterialDescriptor().getProductId())
+				.isEqualTo(transactionEvent.getMaterialDescriptor().getProductId()); // "spot check": picking the productId
+		assertThat(deserializedTransactionEvent).isEqualTo(transactionEvent);
 	}
 }

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,7 +21,7 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Process_Stats;
@@ -37,6 +38,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -49,9 +51,9 @@ public class ADProcessDAO implements IADProcessDAO
 	private final RelatedProcessDescriptorMap staticRelatedProcessDescriptors = new RelatedProcessDescriptorMap();
 
 	@Override
-	public int retriveProcessIdByClass(final Properties ctx, final Class<?> processClass)
+	public int retrieveProcessIdByClass(final Class<?> processClass)
 	{
-		final int processId = retriveProcessIdByClassIfUnique(ctx, processClass);
+		final int processId = retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
 		Check.errorIf(processId <= 0, "Could not retrieve a singe AD_Process_ID for processClass={}", processClass);
 		return processId;
 	}
@@ -90,6 +92,22 @@ public class ADProcessDAO implements IADProcessDAO
 			logger.warn("retriveProcessIdByClassIfUnique: More then one AD_Process_ID found for {}: {} => considering {}", processClassname, processIds, adProcessId);
 			return adProcessId;
 		}
+	}
+
+	@Override
+	public Optional<ITranslatableString> retrieveProcessNameByClassIfUnique(final Class<?> processClass)
+	{
+		final Properties ctx = Env.getCtx();
+		final int processId = retriveProcessIdByClassIfUnique(ctx, processClass);
+		if (processId <= 0)
+		{
+			return Optional.empty();
+		}
+
+		final I_AD_Process process = retrieveProcessById(ctx, processId);
+		final ITranslatableString name = InterfaceWrapperHelper.getModelTranslationMap(process)
+				.getColumnTrl(I_AD_Process.COLUMNNAME_Name, process.getName());
+		return Optional.of(name);
 	}
 
 	@Override
@@ -265,7 +283,7 @@ public class ADProcessDAO implements IADProcessDAO
 				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, process.getAD_Process_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.aggregate(I_AD_Process_Para.COLUMNNAME_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_AD_Process_Para.COLUMNNAME_SeqNo, Aggregate.MAX, Integer.class);
 		return lastSeqNo == null ? 0 : lastSeqNo;
 	}
 
@@ -356,7 +374,7 @@ public class ADProcessDAO implements IADProcessDAO
 	 * overwrites existing data
 	 * (including translations)
 	 * and saves
-	 * 
+	 *
 	 * @param sourcePara
 	 */
 	private I_AD_Process_Para copyAD_Process_Para(final I_AD_Process targetProcess, final I_AD_Process_Para sourcePara)

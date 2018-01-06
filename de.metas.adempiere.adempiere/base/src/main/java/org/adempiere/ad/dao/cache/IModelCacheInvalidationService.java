@@ -34,6 +34,8 @@ import lombok.NonNull;
  */
 public interface IModelCacheInvalidationService extends ISingletonService
 {
+	void register(String tableName, ModelCacheInvalidateRequestFactory requestFactory);
+
 	CacheInvalidateRequest createRequest(Object model, ModelCacheInvalidationTiming timing);
 
 	void invalidate(CacheInvalidateRequest request, ModelCacheInvalidationTiming timing);

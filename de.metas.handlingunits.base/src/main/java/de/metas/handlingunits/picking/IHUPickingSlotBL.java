@@ -26,6 +26,8 @@ import java.util.List;
 
 import org.adempiere.util.ISingletonService;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
@@ -129,7 +131,9 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * @param bpartnerId
 	 * @param bpartnerLocationId
 	 */
-	void allocatePickingSlot(I_M_PickingSlot pickingSlot, int bpartnerId, int bpartnerLocationId);
+	void allocatePickingSlotIfPossible(I_M_PickingSlot pickingSlot, int bpartnerId, int bpartnerLocationId);
+
+	void allocatePickingSlotIfPossible(int pickingSlotId, int bpartnerId, int bpartnerLocationId);
 
 	/**
 	 * Release the given dynamic picking slot.<br>
@@ -138,7 +142,9 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 *
 	 * @param pickingSlot
 	 */
-	void releasePickingSlot(I_M_PickingSlot pickingSlot);
+	void releasePickingSlotIfPossible(I_M_PickingSlot pickingSlot);
+
+	void releasePickingSlotIfPossible(int pickingSlotId);
 
 	/**
 	 * Ad-Hoc and simple return type for above methods
@@ -162,6 +168,8 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * @return matching HUs
 	 */
 	List<I_M_HU> retrieveAvailableHUsToPick(PickingHUsQuery request);
+
+	List<Integer> retrieveAvailableHUIdsToPick(PickingHUsQuery request);
 
 	/**
 	 * Search for available fine picking source HUs.<br>
@@ -187,7 +195,8 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		 * ShipmentSchedules for which the HUs shall be picked. Needed to filter by the HUs' product and location and may therefore not be {@code null}.
 		 */
 		@NonNull
-		List<I_M_ShipmentSchedule> shipmentSchedules;
+		@lombok.Singular
+		ImmutableList<I_M_ShipmentSchedule> shipmentSchedules;
 
 		/**
 		 * {@code true} by default, for backwards compatibility.

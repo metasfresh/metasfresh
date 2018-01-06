@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.impexp.IImportValidator;
+import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_BPartner;
@@ -235,7 +235,7 @@ import lombok.NonNull;
 			@NonNull final I_I_BPartner importRecord,
 			@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
-		ModelValidationEngine.get().fireImportValidate(process, importRecord, bpartnerLocation, IImportValidator.TIMING_AFTER_IMPORT);
+		ModelValidationEngine.get().fireImportValidate(process, importRecord, bpartnerLocation, IImportInterceptor.TIMING_AFTER_IMPORT);
 		InterfaceWrapperHelper.save(bpartnerLocation);
 	}
 

@@ -35,7 +35,7 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.eevolution.event.MaterialDocumentListener;
+import org.eevolution.event.MaterialDispoEventListenerFacade;
 import org.eevolution.mrp.jmx.JMXMRPStatus;
 
 import de.metas.material.event.MaterialEventService;
@@ -68,6 +68,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		// Master data
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_BOM(), client);
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Product_BOMLine(), client);
+		engine.addModelValidator(org.eevolution.model.validator.PP_Product_Planning.INSTANCE, client);
 
 		// PP_Order related
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(), client);
@@ -143,7 +144,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		}
 
 		// register ourselves as listeners so we can respond to requests from the disposition framework
-		final MaterialDocumentListener materialDocumentListener = Adempiere.getBean(MaterialDocumentListener.class);
+		final MaterialDispoEventListenerFacade materialDocumentListener = Adempiere.getBean(MaterialDispoEventListenerFacade.class);
 		materialEventService.registerListener(materialDocumentListener);
 	}
 }	// LiberoValidator

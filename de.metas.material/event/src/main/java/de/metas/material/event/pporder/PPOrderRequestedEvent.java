@@ -2,8 +2,8 @@ package de.metas.material.event.pporder;
 
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -42,10 +42,10 @@ import lombok.Value;
 @Builder
 public class PPOrderRequestedEvent implements MaterialEvent
 {
-	public static final String TYPE = "PPOrderRequestedEvent";
+	public static final String TYPE = "ProductionRequestedEvent";
 
 	@NonNull
-	EventDescr eventDescr;
+	EventDescriptor eventDescriptor;
 
 	@NonNull
 	PPOrder ppOrder;

@@ -13,11 +13,11 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -27,9 +27,15 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
@@ -39,6 +45,9 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
+import org.compiere.util.Env;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -51,12 +60,14 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentScheduleWithHU;
+import de.metas.inout.event.InOutProcessedEventBus;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import lombok.NonNull;
 
 /**
  * Create Shipments from {@link IShipmentScheduleWithHU} records.
@@ -64,7 +75,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
  * @author tsa
  *
  */
-public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFromShipmentScheduleWithHU
+public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFromShipmentScheduleWithHU, ITrxItemChunkProcessor<IShipmentScheduleWithHU, InOutGenerateResult>
 {
 	//
 	// Services
@@ -82,6 +93,7 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	private final IAggregationKeyBuilder<IShipmentScheduleWithHU> huShipmentScheduleKeyBuilder;
 
 	private ITrxItemProcessorContext processorCtx;
+	private ITrxItemExceptionHandler trxItemExceptionHandler = FailTrxItemExceptionHandler.instance;
 
 	private I_M_InOut currentShipment;
 	private ShipmentLineBuilder currentShipmentLineBuilder;
@@ -97,11 +109,13 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	private IShipmentScheduleWithHU lastItem;
 
 	//
-	// 07113: constant to know if the document shall be completed or not. Null means "don't process"
-	private String processShipmentDocAction = IDocument.ACTION_Complete;
+	// 07113: constant to know if the document shall be completed or not.
+	private boolean processShipments = true;
 
 	private boolean createPackingLines = false;
 	private boolean manualPackingMaterial = false;
+	private boolean shipmentDateToday = false;
+
 	/**
 	 * A list of TUs which are assigned to different shipment lines.
 	 *
@@ -119,6 +133,66 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 
 		shipmentScheduleKeyBuilder = shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilder();
 		huShipmentScheduleKeyBuilder = huShipmentScheduleBL.mkHUShipmentScheduleHeaderAggregationKeyBuilder();
+	}
+
+	@Override
+	public InOutGenerateResult createShipments(final List<IShipmentScheduleWithHU> candidates)
+	{
+		final InOutProcessedEventBus shipmentGeneratedNotifications = InOutProcessedEventBus.newInstance()
+				.queueEventsUntilCurrentTrxCommit();
+
+		try
+		{
+			final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
+			final InOutGenerateResult result = trxItemProcessorExecutorService
+					.<IShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
+					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+					.setProcessor(this)
+					.setExceptionHandler(trxItemExceptionHandler)
+					.process(candidates);
+
+			//
+			// Send notifications
+			shipmentGeneratedNotifications.notify(result.getInOuts());
+
+			return result;
+		}
+		catch (final Exception ex)
+		{
+			final String sourceInfo = extractSourceInfo(candidates);
+			shipmentGeneratedNotifications.notifyShipmentError(sourceInfo, ex.getLocalizedMessage());
+
+			// propagate
+			throw AdempiereException.wrapIfNeeded(ex)
+					.markUserNotified();
+		}
+
+	}
+
+	private static String extractSourceInfo(final List<IShipmentScheduleWithHU> candidates)
+	{
+		return candidates.stream()
+				.map(candidate -> extractSourceInfo(candidate))
+				.distinct()
+				.collect(Collectors.joining(", "));
+	}
+
+	private static String extractSourceInfo(final IShipmentScheduleWithHU candidate)
+	{
+		I_M_HU luHU = candidate.getM_LU_HU();
+		if (luHU != null)
+		{
+			return luHU.getValue();
+		}
+
+		final I_M_HU tuHU = candidate.getM_TU_HU();
+		if (tuHU != null)
+		{
+			return tuHU.getValue();
+		}
+
+		// default, shall not reach this point
+		return "#" + candidate.getM_ShipmentSchedule().getM_ShipmentSchedule_ID();
 	}
 
 	@Override
@@ -158,27 +232,51 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 
-		final Timestamp movementDate = SystemTime.asTimestamp();
+		final Timestamp shipmentDate = calculateShipmentDate(shipmentSchedule, shipmentDateToday);
 
 		//
 		// Search for existing shipment to consolidate on
 		I_M_InOut shipment = null;
 		if (shipmentScheduleBL.isSchedAllowsConsolidate(shipmentSchedule))
 		{
-			shipment = huShipmentScheduleBL.getOpenShipmentScheduleOrNull(candidate, movementDate);
+			shipment = huShipmentScheduleBL.getOpenShipmentOrNull(candidate, shipmentDate);
 		}
-
 		//
 		// If there was no shipment found, create a new one now
 		if (shipment == null)
 		{
-			shipment = createShipmentHeader(candidate, movementDate);
+			shipment = createShipmentHeader(candidate, shipmentDate);
 		}
 		return shipment;
 	}
 
+	@VisibleForTesting
+	static Timestamp calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, final boolean isShipmentDateToday)
+	{
+		final Timestamp today = SystemTime.asDayTimestamp();
+
+		if (isShipmentDateToday)
+		{
+			return today;
+		}
+
+		final Timestamp deliveryDateEffective = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(schedule);
+
+		if (deliveryDateEffective == null)
+		{
+			return today;
+		}
+
+		if (deliveryDateEffective.before(today))
+		{
+			return today;
+		}
+
+		return deliveryDateEffective;
+	}
+
 	/**
-	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL#getOpenShipmentScheduleOrNull(IShipmentScheduleWithHU)}
+	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL#getOpenShipmentOrNull(IShipmentScheduleWithHU)}
 	 *
 	 * @param candidate
 	 * @param movementDate
@@ -258,32 +356,6 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 		return shipment;
 	}
 
-	private void createUpdateShipmentLine(final IShipmentScheduleWithHU candidate)
-	{
-		//
-		// If we cannot add this "candidate" to current shipment line builder
-		// then create shipment line (if any) and reset the builder
-		if (currentShipmentLineBuilder != null && !currentShipmentLineBuilder.canAdd(candidate))
-		{
-			createShipmentLineIfAny();
-			// => currentShipmentLineBuilder = null;
-		}
-
-		//
-		// If we don't have an active shipment line builder
-		// then create one
-		if (currentShipmentLineBuilder == null)
-		{
-			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
-			currentShipmentLineBuilder.setManualPackingMaterial(manualPackingMaterial);
-			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
-		}
-
-		//
-		// Add current "candidate"
-		currentShipmentLineBuilder.add(candidate);
-	}
-
 	/**
 	 * If {@link #currentShipmentLineBuilder} is set and it can create a shipment line then:
 	 * <ul>
@@ -341,9 +413,9 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 			//
 			// Process current shipment
 			// 07113: if the CompleteShipment is false, we will have them only drafted (as default)
-			if (!Check.isEmpty(processShipmentDocAction, true))
+			if (processShipments)
 			{
-				docActionBL.processEx(currentShipment, processShipmentDocAction, null);
+				docActionBL.processEx(currentShipment, IDocument.ACTION_Complete, null);
 			}
 			result.addInOut(currentShipment);
 
@@ -412,10 +484,88 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(@NonNull final ITrxItemExceptionHandler trxItemExceptionHandler)
+	{
+		this.trxItemExceptionHandler = trxItemExceptionHandler;
+		return this;
+	}
+
+	@Override
 	public void process(final IShipmentScheduleWithHU item) throws Exception
 	{
+		updateShipmentDate(currentShipment, item);
 		createUpdateShipmentLine(item);
 		lastItem = item;
+	}
+
+	private void updateShipmentDate(@NonNull final I_M_InOut shipment, @NonNull final IShipmentScheduleWithHU candidate)
+	{
+		final I_M_ShipmentSchedule schedule = candidate.getM_ShipmentSchedule();
+		final Timestamp candidateShipmentDate = calculateShipmentDate(schedule, shipmentDateToday);
+
+		// the shipment was created before but wasn't yet completed;
+		if (isShipmentDeliveryDateBetterThanMovementDate(shipment, candidateShipmentDate))
+		{
+			shipment.setMovementDate(candidateShipmentDate);
+			shipment.setDateAcct(candidateShipmentDate);
+
+			InterfaceWrapperHelper.save(shipment);
+		}
+	}
+
+	@VisibleForTesting
+	static boolean isShipmentDeliveryDateBetterThanMovementDate(final @NonNull I_M_InOut shipment, final @NonNull Timestamp shipmentDeliveryDate)
+	{
+		final Timestamp today = SystemTime.asDayTimestamp();
+		final Timestamp movementDate = shipment.getMovementDate();
+
+		final boolean isCandidateInThePast = shipmentDeliveryDate.before(today);
+		final boolean isMovementDateInThePast = movementDate.before(today);
+		final boolean isCandidateSoonerThanMovementDate = movementDate.after(shipmentDeliveryDate);
+
+		if (isCandidateInThePast)
+		{
+			return false;
+		}
+
+		if (isMovementDateInThePast)
+		{
+			return true;
+		}
+
+		else if (isCandidateSoonerThanMovementDate)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	private void createUpdateShipmentLine(final IShipmentScheduleWithHU candidate)
+	{
+		//
+		// If we cannot add this "candidate" to current shipment line builder
+		// then create shipment line (if any) and reset the builder
+		if (currentShipmentLineBuilder != null && !currentShipmentLineBuilder.canAdd(candidate))
+		{
+			createShipmentLineIfAny();
+			// => currentShipmentLineBuilder = null;
+		}
+
+		//
+		// If we don't have an active shipment line builder
+		// then create one
+		if (currentShipmentLineBuilder == null)
+		{
+			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
+			currentShipmentLineBuilder.setManualPackingMaterial(manualPackingMaterial);
+			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
+
+		}
+
+		//
+		// Add current "candidate"
+		currentShipmentLineBuilder.add(candidate);
 	}
 
 	@Override
@@ -425,9 +575,9 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	@Override
-	public IInOutProducerFromShipmentScheduleWithHU setProcessShipmentsDocAction(final String docAction)
+	public IInOutProducerFromShipmentScheduleWithHU setProcessShipments(final boolean processShipments)
 	{
-		processShipmentDocAction = docAction;
+		this.processShipments = processShipments;
 		return this;
 	}
 
@@ -446,6 +596,13 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 	}
 
 	@Override
+	public IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(boolean forceDateToday)
+	{
+		this.shipmentDateToday = forceDateToday;
+		return this;
+	}
+
+	@Override
 	public String toString()
 	{
 		return "InOutProducerFromShipmentSchedule [result=" + result
@@ -454,4 +611,5 @@ public class InOutProducerFromShipmentScheduleWithHU implements IInOutProducerFr
 				+ ", currentShipmentLineBuilder=" + currentShipmentLineBuilder + ", currentCandidates=" + currentCandidates
 				+ ", lastItem=" + lastItem + "]";
 	}
+
 }

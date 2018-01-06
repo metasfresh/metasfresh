@@ -19,6 +19,38 @@ import com.google.common.collect.ImmutableSet;
 @JsonSerialize(using = JsonLogicExpressionSerializer.class)
 /* package */final class LogicTuple extends AbstractLogicExpression
 {
+	public static LogicTuple of(final Object operand1, final String operator, final Object operand2)
+	{
+		final Boolean constantValue = null;
+		return new LogicTuple(constantValue, operand1, operator, operand2);
+	}
+
+	public static LogicTuple parseFrom(final String operand1Str, final String operator, final String operand2Str)
+	{
+		final Object operand1;
+		if (operand1Str.indexOf(CtxNames.NAME_Marker) != -1)
+		{
+			operand1 = CtxNames.parseWithMarkers(operand1Str);
+		}
+		else
+		{
+			operand1 = operand1Str;
+		}
+
+		final Object operand2;
+		if (operand2Str.indexOf(CtxNames.NAME_Marker) != -1)
+		{
+			operand2 = CtxNames.parseWithMarkers(operand2Str);
+		}
+		else
+		{
+			operand2 = operand2Str;
+		}
+
+		final Boolean constantValue = null;
+		return new LogicTuple(constantValue, operand1, operator, operand2);
+	}
+
 	public static final String OPERATOR_Equals = "=";
 	public static final String OPERATOR_NotEquals = "!";
 	public static final String OPERATOR_GreaterThan = ">";
@@ -35,46 +67,32 @@ import com.google.common.collect.ImmutableSet;
 
 	private final Boolean constantValue;
 
-	private ImmutableSet<CtxName> _parameters;
+	private ImmutableSet<CtxName> _parameters; // lazy
 
 	private final String expressionStr;
 	private Integer _hashcode; // lazy
 
-	LogicTuple(final Boolean constantValue, final String operand1, final String operator, final String operand2)
+	private LogicTuple(
+			final Boolean constantValue,
+			final Object operand1,
+			final String operator,
+			final Object operand2)
 	{
-		super();
-
 		Check.assumeNotNull(operand1, "operand1 not null");
 		Check.assumeNotEmpty(operator, "operator not empty");
 		Check.assumeNotNull(operand2, "operand2 not null");
 
-		expressionStr = operand1 + operator + operand2;
-
 		this.operator = operator;
-
-		if (operand1.indexOf(CtxNames.NAME_Marker) != -1)
-		{
-			this.operand1 = CtxNames.parseWithMarkers(operand1);
-			isParameter1 = true;
-		}
-		else
-		{
-			this.operand1 = operand1;
-			isParameter1 = false;
-		}
-
-		if (operand2.indexOf(CtxNames.NAME_Marker) != -1)
-		{
-			this.operand2 = CtxNames.parseWithMarkers(operand2);
-			isParameter2 = true;
-		}
-		else
-		{
-			this.operand2 = operand2;
-			isParameter2 = false;
-		}
+		this.operand1 = operand1;
+		this.isParameter1 = operand1 instanceof CtxName;
+		this.operand2 = operand2;
+		this.isParameter2 = operand2 instanceof CtxName;
 
 		this.constantValue = constantValue;
+
+		expressionStr = (operand1 instanceof CtxName ? ((CtxName)operand1).toStringWithMarkers() : operand1.toString())
+				+ operator
+				+ (operand2 instanceof CtxName ? ((CtxName)operand2).toStringWithMarkers() : operand2.toString());
 	}
 
 	/** Constant LogicTuple constructor */

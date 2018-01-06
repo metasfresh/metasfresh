@@ -55,6 +55,7 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MTax;
+import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -77,7 +78,7 @@ public class OrderLineBL implements IOrderLineBL
 	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
 	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
 
-	private final Set<Integer> ignoredOlIds = new HashSet<Integer>();
+	private final Set<Integer> ignoredOlIds = new HashSet<>();
 
 	public static final String CTX_EnforcePriceLimit = "EnforcePriceLimit";
 	public static final String CTX_DiscountSchema = "DiscountSchema";
@@ -157,10 +158,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount
-		if (orderLine.getPriceActual().signum() == 0)
-		{
-			calculatePriceActual(orderLine, pricingResult.getPrecision());
-		}
+		calculatePriceActual(orderLine, pricingResult.getPrecision());
 
 		//
 		// C_Currency_ID, Price_UOM_ID(again?), M_PriceList_Version_ID
@@ -170,7 +168,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		updateLineNetAmt(orderLine, qtyEntered, factor);
 	}
-
+	
 	@Override
 	public void setTaxAmtInfoIfNotIgnored(final Properties ctx, final I_C_OrderLine ol, final String trxName)
 	{
@@ -401,6 +399,15 @@ public class OrderLineBL implements IOrderLineBL
 
 		final int countryId = getCountryIdOrZero(orderLine);
 		pricingCtx.setC_Country_ID(countryId);
+
+		//
+		// Don't calculate the discount in case we are dealing with a percentage discount compensation group line (task 3149)
+		if(orderLine.isGroupCompensationLine()
+				&& X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount.equals(orderLine.getGroupCompensationType())
+				&& X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent.equals(orderLine.getGroupCompensationAmtType()))
+		{
+			pricingCtx.setDisallowDiscount(true);
+		}
 
 		return pricingCtx;
 	}

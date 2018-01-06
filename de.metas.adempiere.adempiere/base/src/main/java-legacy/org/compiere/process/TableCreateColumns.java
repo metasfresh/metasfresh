@@ -21,6 +21,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.Types;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.model.MColumn;
@@ -64,6 +65,7 @@ public class TableCreateColumns extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare ()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -87,6 +89,7 @@ public class TableCreateColumns extends JavaProcess
 	 *	@return info
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		if (p_AD_Table_ID == 0)
@@ -246,7 +249,11 @@ public class TableCreateColumns extends JavaProcess
 				}
 				element.save ();
 			}
-			column.setColumnName (element.getColumnName ());
+			
+			final String elementColumnName = element.getColumnName ();
+			Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", element);
+			
+			column.setColumnName (elementColumnName);
 			column.setName (element.getName ());
 			column.setDescription (element.getDescription ());
 			column.setHelp (element.getHelp ());

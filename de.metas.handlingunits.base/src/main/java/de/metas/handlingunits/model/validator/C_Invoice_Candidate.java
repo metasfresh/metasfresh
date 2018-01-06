@@ -10,18 +10,17 @@ package de.metas.handlingunits.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -33,9 +32,9 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 
+import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.model.I_C_Invoice_Candidate;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -59,7 +58,11 @@ public class C_Invoice_Candidate
 		if (TableRecordCacheLocal.isChildModelType(ic, I_M_InOutLine.class)) // if it's 1-to-1 with shipment line, use the Record_ID
 		{
 			final I_M_InOutLine iol = TableRecordCacheLocal.getReferencedValue(ic, I_M_InOutLine.class);
-			if (iol.isPackagingMaterial())
+			if (!Services.get(IDocumentBL.class).isDocumentCompletedOrClosed(iol.getM_InOut()))
+			{
+				qtyEnteredTU = BigDecimal.ZERO;
+			}
+			else if (iol.isPackagingMaterial())
 			{
 				qtyEnteredTU = iol.getQtyEntered(); // the bound line is the PM line
 			}
@@ -105,14 +108,11 @@ public class C_Invoice_Candidate
 			//
 			// Just to be safe and prevent a possible bug, make sure the IOL IDs are unique
 			final int iolId = iol.getM_InOutLine_ID();
-			if (seenIOLs.contains(iolId))
+			if (!seenIOLs.add(iolId))
 			{
 				continue;
 			}
-			seenIOLs.add(iolId);
-
-			final I_M_InOut io = iol.getM_InOut();
-			if (!io.isProcessed())
+			if (!Services.get(IDocumentBL.class).isDocumentCompletedOrClosed(iol.getM_InOut()))
 			{
 				continue; // skip not-completed shipments
 			}

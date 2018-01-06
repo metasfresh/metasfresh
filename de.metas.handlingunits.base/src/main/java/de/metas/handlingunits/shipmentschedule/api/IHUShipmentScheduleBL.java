@@ -13,19 +13,17 @@ package de.metas.handlingunits.shipmentschedule.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
@@ -63,14 +61,12 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 */
 	IInOutProducerFromShipmentScheduleWithHU createInOutProducerFromShipmentSchedule();
 
-	void generateInOuts(Properties ctx, IInOutProducerFromShipmentScheduleWithHU producer, Iterator<IShipmentScheduleWithHU> schedsEtAll);
-
 	/**
 	 * @param candidate
 	 * @param movementDate shipment's movement date (used to filter only if we have an consolidation period set)
-	 * @return shipment which is still open for the shipment schedule (first) and it's HU specifications or null if none is found
+	 * @return shipment which is still open for the shipment schedule (first) and it's HU specifications (shipper transportation) or null if none is found
 	 */
-	I_M_InOut getOpenShipmentScheduleOrNull(IShipmentScheduleWithHU candidate, Date movementDate);
+	I_M_InOut getOpenShipmentOrNull(IShipmentScheduleWithHU candidate, Date movementDate);
 
 	/**
 	 * Updates all allocations from given TU and call {@link I_M_ShipmentSchedule_QtyPicked#setM_LU_HU(I_M_HU)} by setting the current TU's LU.
@@ -94,9 +90,9 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	/**
 	 * Gets {@link I_M_HU_PI_Item_Product} by checking:
 	 * <ul>
-	 * <li> {@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product_Override()}
-	 * <li> {@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product()}
-	 * <li> {@link de.metas.handlingunits.model.I_C_OrderLine#getM_HU_PI_Item_Product()}
+	 * <li>{@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product_Override()}
+	 * <li>{@link de.metas.handlingunits.model.I_M_ShipmentSchedule#getM_HU_PI_Item_Product()}
+	 * <li>{@link de.metas.handlingunits.model.I_C_OrderLine#getM_HU_PI_Item_Product()}
 	 * </ul>
 	 *
 	 * If no PI item product was found, null will be returned.

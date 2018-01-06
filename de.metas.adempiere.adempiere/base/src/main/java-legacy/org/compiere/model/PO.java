@@ -63,9 +63,9 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
@@ -226,7 +226,7 @@ public abstract class PO
 	 */
 	public PO(final Properties ctx, final int ID, final String trxName, final ResultSet rs)
 	{
-		super();
+
 		if (ctx == null)
 			throw new IllegalArgumentException("No Context");
 		p_ctx = ctx;
@@ -234,6 +234,7 @@ public abstract class PO
 
 		if (ID == ID_NewInstanceNoInit)
 		{
+			// IMPORTANT: m_createNew is false at this point!
 			return;
 		}
 
@@ -956,18 +957,6 @@ public abstract class PO
 	}   // setValue
 
 	/**
-	 * Set Encrypted Value
-	 *
-	 * @param ColumnName column name
-	 * @param value value
-	 * @return true if value set
-	 */
-	protected final boolean set_ValueE(final String ColumnName, final Object value)
-	{
-		return set_Value(ColumnName, value);
-	}   // setValueE
-
-	/**
 	 * Set Value if updatable and correct class.
 	 * (and to NULL if not mandatory)
 	 *
@@ -975,7 +964,7 @@ public abstract class PO
 	 * @param value value
 	 * @return true if value set
 	 */
-	protected final boolean set_Value(final int index, final Object value)
+	private final boolean set_Value(final int index, final Object value)
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
@@ -1166,8 +1155,7 @@ public abstract class PO
 		return set_ValueNoCheck(index, value);
 	}
 
-	// metas: changed from private to public
-	public final boolean set_ValueNoCheck(final int index, final Object value)
+	private final boolean set_ValueNoCheck(final int index, final Object value)
 	{
 		//
 		// Load record if stale (01537)
@@ -1246,38 +1234,13 @@ public abstract class PO
 	}   // set_ValueNoCheck
 
 	/**
-	 * Set Encrypted Value w/o check (update, r/o, ..).
-	 * Used when Column is R/O
-	 * Required for key and parent values
-	 *
-	 * @param ColumnName column name
-	 * @param value value
-	 * @return true if value set
-	 */
-	protected final boolean set_ValueNoCheckE(final String ColumnName, final Object value)
-	{
-		return set_ValueNoCheck(ColumnName, value);
-	}	// set_ValueNoCheckE
-
-	/**
-	 * Set value of Column
-	 *
-	 * @param columnName
-	 * @param value
-	 */
-	public final void set_ValueOfColumn(final String columnName, final Object value)
-	{
-		set_ValueOfColumnReturningBoolean(columnName, value);
-	}
-
-	/**
 	 * Set value of Column returning boolean
 	 *
 	 * @param columnName
 	 * @param value
 	 * @returns boolean indicating success or failure
 	 */
-	public final boolean set_ValueOfColumnReturningBoolean(final String columnName, final Object value)
+	public final boolean set_ValueOfColumn(final String columnName, final Object value)
 	{
 		final int columnIndex = p_info.getColumnIndex(columnName);
 		if (columnIndex < 0)
@@ -1289,26 +1252,7 @@ public abstract class PO
 		return set_ValueReturningBoolean(columnIndex, value);
 	}
 
-	/**
-	 * Set Value of AD_Column_ID
-	 *
-	 * @param AD_Column_ID column
-	 * @param value value
-	 * @returns boolean indicating success or failure
-	 */
-	public final boolean set_ValueOfAD_Column_ID(final int AD_Column_ID, final Object value)
-	{
-		final int columnIndex = p_info.getColumnIndex(AD_Column_ID);
-		if (columnIndex < 0)
-		{
-			log.warn("Column with AD_Column_ID={} not found in method PO.set_ValueOfAD_Column_ID", AD_Column_ID);
-			return false;
-		}
-
-		return set_ValueReturningBoolean(columnIndex, value);
-	}
-
-	public final boolean set_ValueReturningBoolean(final int columnIndex, final Object value)
+	private final boolean set_ValueReturningBoolean(final int columnIndex, final Object value)
 	{
 		final String columnName = p_info.getColumnName(columnIndex);
 		if (COLUMNNAME_IsApproved.equals(columnName))
@@ -1676,8 +1620,7 @@ public abstract class PO
 	 */
 	protected final void load(final int ID, final String trxName)
 	{
-		log.trace("Loading ID={}", ID);
-		if (ID > 0)
+		if (p_info.isSingleKeyColumnName() && ID >= p_info.getFirstValidId())
 		{
 			Check.assume(m_KeyColumns != null && m_KeyColumns.length == 1, "PO {} shall have one single primary key but it has: {}", this, m_KeyColumns);
 			m_IDs = new Object[] { ID };
@@ -1796,7 +1739,7 @@ public abstract class PO
 			success = false;
 			m_IDs = new Object[] { I_ZERO };
 			log.error(msg, e);
-			// throw new DBException(e);
+			throw DBException.wrapIfNeeded(e);
 		}
 		// Finish
 		finally
@@ -2760,7 +2703,6 @@ public abstract class PO
 		final boolean newRecordInitial = m_createNew;
 		trxManager.run(trxNameInitial, new TrxRunnable2()
 		{
-
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
@@ -2773,7 +2715,6 @@ public abstract class PO
 			{
 				// restoring settings and flags before failing
 				m_createNew = newRecordInitial;
-
 				throw e;
 			}
 
@@ -2919,7 +2860,7 @@ public abstract class PO
 				{
 					copyRecordSupport.setParentPO(this);
 					copyRecordSupport.copyRecord(this, get_TrxName());
-					
+
 					copyRecordSupport = null;
 					setDynAttribute(DYNATTR_CopyRecordSupport, null);
 				}
@@ -2989,9 +2930,16 @@ public abstract class PO
 
 		//
 		// Reset model cache
-		if(p_info.isSingleKeyColumnName())
+		if (p_info.isSingleKeyColumnName())
 		{
-			Services.get(IModelCacheInvalidationService.class).invalidateForModel(this, newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
+			try
+			{
+				Services.get(IModelCacheInvalidationService.class).invalidateForModel(this, newRecord ? ModelCacheInvalidationTiming.NEW : ModelCacheInvalidationTiming.CHANGE);
+			}
+			catch (final Exception ex)
+			{
+				log.warn("Cache invalidation on new/change failed for {}. Ignored.", this, ex);
+			}
 		}
 
 		//
@@ -3001,7 +2949,6 @@ public abstract class PO
 			fireModelChange(ModelValidator.TYPE_SUBSEQUENT);
 		}
 
-		//
 		// Return "success"
 		return success;
 	}	// saveFinish
@@ -3389,18 +3336,15 @@ public abstract class PO
 		//
 		// We are registering a fallback trx listener: in case the transaction fails we need to revert IDs to their old values
 		final ITrx trx = get_TrxManager().get(m_trxName, OnTrxMissingPolicy.Fail);
-		trx.getTrxListenerManager().registerListener(
-				true,  // weak because in case the object is not referenced anymore there is no point to update it's status
-				new TrxListenerAdapter()
-				{
 
-					@Override
-					public void afterRollback(final ITrx trx)
-					{
-						// revert ID
-						set_ID(idOld);
-						m_createNew = createNewOld;
-					}
+		trx.getTrxListenerManager()
+				.newEventListener(TrxEventTiming.AFTER_ROLLBACK)
+				.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+				.registerWeakly(true) // weak because in case the object is not referenced anymore there is no point to update it's status
+				.registerHandlingMethod(transaction -> {
+
+					set_ID(idOld); // revert ID
+					m_createNew = createNewOld;
 				});
 
 		return true;
@@ -4006,15 +3950,14 @@ public abstract class PO
 
 		// Save ID
 		m_idOld = get_ID();
-		
+
 		//
 		// Create cache invalidation request
-		// (we have to do it here, before we reset all fields) 
+		// (we have to do it here, before we reset all fields)
 		final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-		final CacheInvalidateRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName() ?
-				cacheInvalidationService.createRequest(this, ModelCacheInvalidationTiming.DELETE)
+		final CacheInvalidateRequest cacheInvalidateRequest = p_info.isSingleKeyColumnName() ? cacheInvalidationService.createRequest(this, ModelCacheInvalidationTiming.DELETE)
 				: null;
-		
+
 		//
 		createChangeLog(X_AD_ChangeLog.EVENTCHANGELOG_Delete);
 		logMigration(X_AD_MigrationStep.ACTION_Delete);
@@ -4046,9 +3989,16 @@ public abstract class PO
 
 		//
 		// Fire cache invalidation event, as last thing
-		if(cacheInvalidateRequest != null)
+		if (cacheInvalidateRequest != null)
 		{
-			cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.DELETE);
+			try
+			{
+				cacheInvalidationService.invalidate(cacheInvalidateRequest, ModelCacheInvalidationTiming.DELETE);
+			}
+			catch (final Exception ex)
+			{
+				log.warn("Cache invalidation on delete failed for {}. Ignored.", cacheInvalidateRequest, ex);
+			}
 		}
 	}
 
@@ -4100,14 +4050,14 @@ public abstract class PO
 	{
 		return success;
 	} 	// afterDelete
-	
+
 	private boolean is_Translatable()
 	{
-		if(!p_info.getTrlInfo().isTranslated())
+		if (!p_info.getTrlInfo().isTranslated())
 		{
 			return false;
 		}
-		
+
 		// Make sure it's single ID key which is integer and which is set
 		if (m_IDs.length > 1 || m_IDs.length == 0
 				|| I_ZERO.equals(m_IDs[0])
@@ -4115,7 +4065,7 @@ public abstract class PO
 		{
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -4131,9 +4081,9 @@ public abstract class PO
 		{
 			return true;
 		}
-		
+
 		final boolean ok = POTrlRepository.instance.insertTranslations(p_info.getTrlInfo(), get_ID());
-		if(ok)
+		if (ok)
 		{
 			m_translations = null; // reset translations cache
 		}
@@ -4152,13 +4102,13 @@ public abstract class PO
 	private boolean updateTranslations()
 	{
 		// Not a translation table
-		if(!is_Translatable())
+		if (!is_Translatable())
 		{
 			return true; // OK
 		}
-		
+
 		final boolean ok = POTrlRepository.instance.updateTranslations(this);
-		if(ok)
+		if (ok)
 		{
 			m_translations = null; // reset cached translations
 		}
@@ -4175,17 +4125,17 @@ public abstract class PO
 	private boolean deleteTranslations()
 	{
 		// Not a translation table
-		if(!is_Translatable())
+		if (!is_Translatable())
 		{
 			return true;
 		}
-		
+
 		final boolean ok = POTrlRepository.instance.deleteTranslations(p_info.getTrlInfo(), get_ID());
-		if(ok)
+		if (ok)
 		{
 			m_translations = NullModelTranslationMap.instance; // reset cached translations
 		}
-		
+
 		//
 		return ok;
 	}	// deleteTranslations

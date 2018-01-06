@@ -53,7 +53,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 		final IQueryBuilder<I_AD_WF_Node> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_WF_Node.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_AD_WF_Node> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_AD_WF_Node> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_AD_WF_Node.COLUMNNAME_AD_Workflow_ID, adWorkflowId);
 		filters.addOnlyActiveRecordsFilter();
 
@@ -108,7 +108,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 		final IQueryBuilder<I_AD_WF_NodeNext> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_WF_NodeNext.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_AD_WF_NodeNext> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_AD_WF_NodeNext> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_AD_WF_NodeNext.COLUMNNAME_AD_WF_Node_ID, adWFNodeId);
 		filters.addOnlyActiveRecordsFilter();
 

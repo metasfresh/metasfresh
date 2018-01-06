@@ -69,10 +69,10 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.i18n.IMsgBL;
-import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
 import net.miginfocom.swing.MigLayout;
@@ -244,14 +244,7 @@ final class SelectPaySelectionDialog
 
 		//
 		// Bind action listener(s) to button(s)
-		createNewPaySelection.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(final ActionEvent e)
-			{
-				createNewPaySelection();
-			}
-		});
+		createNewPaySelection.addActionListener(e -> createNewPaySelection());
 
 		//
 		// Init confirmPanel
@@ -286,14 +279,9 @@ final class SelectPaySelectionDialog
 
 		//
 		// Create C_PaySelection in transaction
-		trxManager.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final I_C_PaySelection paySelection = InterfaceWrapperHelper.create(Env.getCtx(), paySelectionId, I_C_PaySelection.class, localTrxName);
-				handleForPaySelection(paySelection);
-			}
+		trxManager.run((TrxRunnable)localTrxName -> {
+			final I_C_PaySelection paySelection = InterfaceWrapperHelper.create(Env.getCtx(), paySelectionId, I_C_PaySelection.class, localTrxName);
+			handleForPaySelection(paySelection);
 		});
 	}
 
@@ -301,35 +289,30 @@ final class SelectPaySelectionDialog
 	{
 		//
 		// Create C_PaySelection in transaction
-		trxManager.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
+		trxManager.run((TrxRunnable)localTrxName -> {
+			final IContextAware contextProvider = PlainContextAware.newWithTrxName(Env.getCtx(), localTrxName);
+			final I_C_PaySelection paySelection = InterfaceWrapperHelper.newInstance(I_C_PaySelection.class, contextProvider);
+
+			final Timestamp currentTimestamp = SystemTime.asTimestamp();
+			paySelection.setName(currentTimestamp.toString());
+			paySelection.setPayDate(currentTimestamp);
+
+			final int bpBankAccountId = manuallySearchBPBankAccountId();
+			if (bpBankAccountId == RESULT_CANCELLED)
 			{
-				final IContextAware contextProvider = PlainContextAware.newWithTrxName(Env.getCtx(), localTrxName);
-				final I_C_PaySelection paySelection = InterfaceWrapperHelper.newInstance(I_C_PaySelection.class, contextProvider);
-
-				final Timestamp currentTimestamp = SystemTime.asTimestamp();
-				paySelection.setName(currentTimestamp.toString());
-				paySelection.setPayDate(currentTimestamp);
-
-				final int bpBankAccountId = manuallySearchBPBankAccountId();
-				if (bpBankAccountId == RESULT_CANCELLED)
-				{
-					return; // silently exit
-				}
-				else if (bpBankAccountId <= 0) // we REALLY need a bank account for this to work
-				{
-					final Exception ex = new AdempiereException("@NotFound@ @" + org.compiere.model.I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID + "@");
-					ADialog.error(windowNo, getContentPane(), ex);
-					return;
-				}
-
-				paySelection.setC_BP_BankAccount_ID(bpBankAccountId);
-
-				InterfaceWrapperHelper.save(paySelection);
-				handleForPaySelection(paySelection);
+				return; // silently exit
 			}
+			else if (bpBankAccountId <= 0) // we REALLY need a bank account for this to work
+			{
+				final Exception ex = new AdempiereException("@NotFound@ @" + org.compiere.model.I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID + "@");
+				ADialog.error(windowNo, getContentPane(), ex);
+				return;
+			}
+
+			paySelection.setC_BP_BankAccount_ID(bpBankAccountId);
+
+			InterfaceWrapperHelper.save(paySelection);
+			handleForPaySelection(paySelection);
 		});
 	}
 
@@ -375,14 +358,9 @@ final class SelectPaySelectionDialog
 
 		//
 		// Load C_PaySelection window with the given ID
-		SwingUtilities.invokeLater(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				final int paySelectionTableID = InterfaceWrapperHelper.getTableId(I_C_PaySelection.class);
-				AEnv.zoom(paySelectionTableID, paySelection.getC_PaySelection_ID());
-			}
+		SwingUtilities.invokeLater(() -> {
+			final int paySelectionTableID = InterfaceWrapperHelper.getTableId(I_C_PaySelection.class);
+			AEnv.zoom(paySelectionTableID, paySelection.getC_PaySelection_ID());
 		});
 
 		//

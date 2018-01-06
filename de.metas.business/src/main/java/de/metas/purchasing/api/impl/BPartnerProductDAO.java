@@ -40,6 +40,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -88,6 +89,22 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
+	public List<I_C_BPartner_Product> retrieveAllVendors(final int productId, final int orgId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL
+				.createQueryBuilderOutOfTrx(org.compiere.model.I_C_BPartner_Product.class)
+				.addInArrayOrAllFilter(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, orgId, Env.CTXVALUE_AD_Org_ID_Any)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UsedForVendor, true)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMN_M_Product_ID, productId)
+				.orderBy()
+				.addColumn(I_C_BPartner_Product.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.endOrderBy()
+				.create()
+				.list(I_C_BPartner_Product.class);
+	}
+
+	@Override
 	public I_C_BPartner_Product retrieveBPartnerProductAssociation(final I_C_BPartner partner, final I_M_Product product, final int orgId)
 	{
 		Check.assumeNotNull(partner, "partner not null");
@@ -101,7 +118,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 	}
 
 	@Override
-	public I_C_BPartner_Product retrieveBPartnerProductAssociation(@CacheCtx final Properties ctx, final int bpartnerId, final int productId, final int orgId)
+	public I_C_BPartner_Product retrieveBPartnerProductAssociation(final Properties ctx, final int bpartnerId, final int productId, final int orgId)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		return retrieveBPartnerProductAssociation(ctx, bpartnerId, productId, orgId, trxName);
@@ -149,7 +166,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.setJoinOr()
 				.addFilter(customerQueryFilter)
 
-		.addEqualsFilter(org.compiere.model.I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, true);
+				.addEqualsFilter(org.compiere.model.I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, true);
 
 		final ICompositeQueryFilter<I_C_BPartner_Product> queryFilters = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class);
 		queryFilters.addFilter(productQueryFilter);
@@ -165,7 +182,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 				.addOnlyActiveRecordsFilter()
 				.filter(queryFilters)
 
-		.create()
+				.create()
 				.setOrderBy(bppOrderBy)
 				.first(I_C_BPartner_Product.class);
 	}

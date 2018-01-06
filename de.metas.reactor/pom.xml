@@ -32,9 +32,7 @@
 		
 		<module>../de.metas.jax.rs</module>
 		
-		<module>../de.metas.report.jasper.client</module>
-		<module>../de.metas.report.jasper.commons</module>
-		<module>../de.metas.report.jasper.server</module>
+		<module>../de.metas.report</module>
 
 		<module>../de.metas.adempiere.libero.libero</module>
 		<module>../de.metas.adempiere.libero.liberoHR</module>
@@ -95,6 +93,16 @@
 		<module>../de.metas.procurement.base</module>
 		
 		<module>../de.metas.rfq</module>
+		
+		<module>../de.metas.purchasecandidate.base</module>
+		
+		<module>../de.metas.vertical.pharma</module>
+		
+		<module>../de.metas.shipper.gateway.api</module>
+		<module>../de.metas.shipper.gateway.go</module>
+		<!-- commented out because we don't include it in any distribution
+		<module>../de.metas.shipper.gateway.dpd-legacy</module>
+		-->
 	</modules>
 			
 	  <build>

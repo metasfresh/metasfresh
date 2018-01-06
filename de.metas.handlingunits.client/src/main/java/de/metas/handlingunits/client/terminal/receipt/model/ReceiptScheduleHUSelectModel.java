@@ -7,12 +7,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_Order;
 
 import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
@@ -158,7 +158,7 @@ public class ReceiptScheduleHUSelectModel extends AbstractHUSelectModel
 	private final Predicate<IPOSTableRow> rowsFilter = new Predicate<IPOSTableRow>()
 	{
 		@Override
-		public boolean evaluate(final IPOSTableRow row)
+		public boolean test(final IPOSTableRow row)
 		{
 			if (row == null)
 			{

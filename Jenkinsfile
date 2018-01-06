@@ -39,6 +39,8 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: numberOfBuildsToKeepStr)) // keep the last $numberOfBuildsToKeepStr builds
 ]);
 
+final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5'
+
 try
 {
 timestamps
@@ -84,17 +86,18 @@ node('agent && linux')
  				mvnUpdateParentPomVersion mvnConf
 
 				// set the artifact version of everything below ${mvnConf.pomFile}
-				// do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -DprocessPlugins=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} versions:set"
+				// processAllModules=true: also update those modules that have a parent version range!
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DprocessAllModules=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
+
+				// Set the metasfresh.version property from [1,10.0.0] to our current build version
+				// From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is clearly overated
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
 
 				// deploy the de.metas.parent pom.xml to our repo. Other projects that are not build right now on this node will also need it. But don't build the modules that are declared in there
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode --non-recursive ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy";
 
  				final MvnConf mvnReactorConf = mvnConf.withPomFile('de.metas.reactor/pom.xml');
 				echo "mvnReactorConf=${mvnReactorConf}"
-
-				// update the versions of metas dependencies that are external to our reactor modules
-				sh "mvn --settings ${mvnReactorConf.settingsFile} --file ${mvnReactorConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnReactorConf.resolveParams} versions:use-latest-versions"
 
 				// build and deploy
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
@@ -106,32 +109,23 @@ node('agent && linux')
 			{
 				if(params.MF_SKIP_TO_DIST)
 				{
-					echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
+					echo "params.MF_SKIP_TO_DIST=true so don't create docker images"
 				}
 				else
 				{
-				// now create and publish some docker image..well, 1 docker image for starts
-				final dockerWorkDir='docker-build/metasfresh-material-dispo'
-				sh "mkdir -p ${dockerWorkDir}"
-
- 				// copy the files so they can be handled by the docker build
-				sh "cp de.metas.material/dispo-service/target/metasfresh-material-dispo-service-${MF_VERSION}.jar ${dockerWorkDir}/metasfresh-material-dispo-service.jar" // please keep in sync with DockerFile!
-				sh "cp -R de.metas.material/dispo-service/src/main/docker/* ${dockerWorkDir}"
-				sh "cp -R de.metas.material/dispo-service/src/main/configs ${dockerWorkDir}"
-				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
-				{
-					// note: we ommit the "-service" in the docker image name, because we also don't have "-service" in the webui-api and backend and it's pretty clear that it is a service
-					final def app = docker.build 'metasfresh/metasfresh-material-dispo-dev', "${dockerWorkDir}";
-
-          final def misc = new de.metas.jenkins.Misc();
-					app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
-					app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-${MF_VERSION}");
-          if(MF_UPSTREAM_BRANCH=='release')
-          {
-          	echo 'MF_UPSTREAM_BRANCH=release, so we also push this with the "latest" tag'
-          	app.push misc.mkDockerTag('latest');
-          }
-				} // docker.withRegistry
+					// now create and publish some docker images
+					createAndPublishDockerImage(
+						'metasfresh-material-dispo-dev', // publishRepositoryName
+						'de.metas.material/dispo-service',  // dockerModuleDir
+						MF_UPSTREAM_BRANCH, // dockerBranchName
+						MF_VERSION // dockerVersionSuffix
+					)
+					createAndPublishDockerImage(
+						'metasfresh-report-dev', // dockerRepositoryName
+						'de.metas.report/report-service',  // dockerModuleDir
+						MF_UPSTREAM_BRANCH, // dockerBranchName
+						MF_VERSION // dockerVersionSuffix
+					)
 				} // if(params.MF_SKIP_TO_DIST)
       } // stage
 
@@ -151,10 +145,10 @@ node('agent && linux')
  				mvnUpdateParentPomVersion mvnEsbConf
 
 				// set the artifact version of everything below de.metas.esb/pom.xml
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} versions:set"
+				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set"
 
 				// update the versions of metas dependencies that are external to the de.metas.esb reactor modules
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} versions:use-latest-versions"
+				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} ${VERSIONS_PLUGIN}:use-latest-versions"
 
 				// build and deploy
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
@@ -278,11 +272,12 @@ stage('Invoke downstream jobs')
 			  parameters: distJobParameters,
 			  wait: true
 		},
-		metasfresh_dist_orgs: {
-			build job: misc.getEffectiveDownStreamJobName('metasfresh-dist-orgs', MF_UPSTREAM_BRANCH),
-			  parameters: distJobParameters,
-			  wait: true
-		},
+// probaly not neeed anymoree, going to remove it completely
+//		metasfresh_dist_orgs: {
+//			build job: misc.getEffectiveDownStreamJobName('metasfresh-dist-orgs', MF_UPSTREAM_BRANCH),
+//			  parameters: distJobParameters,
+//			  wait: true
+//		},
     zapier: {
       invokeZapier(env.BUILD_NUMBER, // upstreamBuildNo
         MF_UPSTREAM_BRANCH, // upstreamBranch
@@ -311,7 +306,6 @@ stage('Invoke downstream jobs')
   }
   throw all
 }
-
 
 /**
   *	collect the test results for the two preceeding stages. call this once to avoid counting the tests twice.
@@ -383,39 +377,51 @@ void invokeZapier(
   // note: even with "skiptodist=true we do this, because we still want to make the notifcations
 
   echo "Going to notify external systems via zapier webhook"
-  withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'zapier_WEBHOOK_SECRET')])
-  {
-    // the zapier secret contains a trailing slash and one that is somewhere in the middle.
-  	final zapierUrl = "https://hooks.zapier.com/hooks/catch/${zapier_WEBHOOK_SECRET}"
 
-    //input id: 'Zapier-input-ok', message: 'Were the external donstream builds OK?'
     final def hook = registerWebhook()
     echo "Waiting for POST to ${hook.getURL()}"
 
-  	/* we need to make sure we know "our own" MF_METASFRESH_VERSION, also if we were called by e.g. metasfresh-webui-api or metasfresh-webui--frontend */
-  	final jsonPayload = """{
-  			\"MF_UPSTREAM_BUILDNO\":\"${upstreamBuildNo}\",
-  			\"MF_UPSTREAM_BRANCH\":\"${upstreamBranch}\",
-  			\"MF_METASFRESH_VERSION\":\"${metasfreshVersion}\",
-  			\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${metasfreshProcurementWebuiVersion}\",
-  			\"MF_METASFRESH_WEBUI_API_VERSION\":\"${metasfreshWebuiApiVersion}\",
-  			\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${metasfreshWebuiFrontendVersion}\",
-  			\"MF_WEBHOOK_CALLBACK_URL\":\"${hook.getURL()}\"
-  	}"""
+		final jsonPayload = """{
+				\"MF_UPSTREAM_BUILDNO\":\"${upstreamBuildNo}\",
+				\"MF_UPSTREAM_BRANCH\":\"${upstreamBranch}\",
+				\"MF_METASFRESH_VERSION\":\"${metasfreshVersion}\",
+				\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${metasfreshProcurementWebuiVersion}\",
+				\"MF_METASFRESH_WEBUI_API_VERSION\":\"${metasfreshWebuiApiVersion}\",
+				\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${metasfreshWebuiFrontendVersion}\",
+				\"MF_WEBHOOK_CALLBACK_URL\":\"${hook.getURL()}\"
+		}"""
 
+		// invoke zapier to trigger external jobs
   	nodeIfNeeded('linux')
   	{
-  			sh "curl -X POST -d \'${jsonPayload}\' ${zapierUrl}";
+  			sh "curl -X POST -d \'${jsonPayload}\' ${createZapierUrl()}";
   	}
+		waitForWebhookCall(hook);
+}
 
-    echo "Wait 30 minutes for the zapier-triggered downstream jobs to succeed or fail"
-    timeout(time: 30, unit: 'MINUTES')
-    {
-      final def message = waitForWebhook hook // to stop and wait, for someone to do e.g. curl -X POST -d 'OK' <hook-URL>
-      if(message != 'OK')
-      {
-        error "An external job that was invoked by zapier failed; message=${message}; hook-URL=${hook.getURL()}"
-      }
-    }
-  } // withCredentials
+String createZapierUrl()
+{
+	  withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'zapier_WEBHOOK_SECRET')])
+	  {
+	    // the zapier secret contains a trailing slash and another slash that is somewhere in the middle.
+	  	return "https://hooks.zapier.com/hooks/catch/${zapier_WEBHOOK_SECRET}"
+		}
+}
+
+void waitForWebhookCall(final def hook)
+{
+	    echo "Wait 30 minutes for the zapier-triggered downstream jobs to succeed or fail"
+	    timeout(time: 30, unit: 'MINUTES')
+	    {
+				// stop and wait, for someone to do e.g. curl -X POST -d 'OK' <hook-URL>
+	      final def message = waitForWebhook hook ?: '<webhook returned NULL>'
+	      if(message.trim() == 'OK')
+	      {
+					echo "The external jobs that were invoked by zapier succeeeded; message='${message}'; hook-URL=${hook.getURL()}"
+	      }
+				else
+				{
+					error "An external job that was invoked by zapier failed; message='${message}'; hook-URL=${hook.getURL()}"
+				}
+	    }
 }

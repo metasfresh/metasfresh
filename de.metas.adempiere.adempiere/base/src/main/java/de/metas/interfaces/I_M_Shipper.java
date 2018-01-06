@@ -22,12 +22,12 @@ package de.metas.interfaces;
  * #L%
  */
 
-
+@Deprecated
 public interface I_M_Shipper extends org.compiere.model.I_M_Shipper
 {
-	public static final String COLUMNNAME_IsDefault = "IsDefault";
-
+	@Override
 	public void setIsDefault(boolean IsDefault);
 
+	@Override
 	public boolean isDefault();
 }

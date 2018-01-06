@@ -29,6 +29,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
+import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 
 public interface IESRBPBankAccountDAO extends ISingletonService
 {
@@ -50,4 +51,12 @@ public interface IESRBPBankAccountDAO extends ISingletonService
 	 * @return {@link I_C_BP_BankAccount}s corresponding to the ESR accountNo and inner-bank accountNo or an empty list if none was found.
 	 */
 	List<I_C_BP_BankAccount> retrieveESRBPBankAccounts(String postAccountNo, String innerAccountNo);
+
+	/**
+	 * @param bankAcct
+	 * 
+	 * @return All the ESR_PostFinanceUserNumber entries for the bank account
+	 */
+	public List<I_ESR_PostFinanceUserNumber> retrieveESRPostFinanceUserNumbers(I_C_BP_BankAccount bankAcct);
+
 }

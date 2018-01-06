@@ -20,6 +20,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -144,6 +145,24 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	@Cached(cacheName = I_M_PriceList_Version.Table_Name + "#By#M_PriceList_ID#Date")
+	public I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(final int priceListId, @NonNull final Date date)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_PriceList_Version.class)
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceListId)
+				.addCompareFilter(
+						I_M_PriceList_Version.COLUMNNAME_ValidFrom,
+						CompareQueryFilter.Operator.EQUAL,
+						new Timestamp(date.getTime()),
+						DateTruncQueryFilterModifier.DAY)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_PriceList_Version.COLUMNNAME_ValidFrom)
+				.create()
+				.first();
+	}
+
+	@Override
 	public I_M_PriceList_Version retrieveNextVersionOrNull(final I_M_PriceList_Version plv)
 	{
 		// we want the PLV with the lowest ValidFrom that is just greater than plv's
@@ -192,7 +211,7 @@ public class PriceListDAO implements IPriceListDAO
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, productPrice.getM_Product_ID())
 				.addNotEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID, productPrice.getM_ProductPrice_ID())
 				.create()
-				.aggregate(I_M_ProductPrice.COLUMN_MatchSeqNo, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_M_ProductPrice.COLUMN_MatchSeqNo, Aggregate.MAX, Integer.class);
 
 		if (lastMatchSeqNo == null)
 		{

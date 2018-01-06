@@ -1,5 +1,7 @@
 package org.eevolution.mrp.spi.impl.ddorder;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -7,12 +9,14 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -33,6 +37,7 @@ import org.eevolution.mrp.api.IMRPDAO;
 import org.springframework.stereotype.Service;
 
 import de.metas.document.IDocTypeDAO;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.ddorder.DDOrderUtil;
@@ -80,7 +85,7 @@ public class DDOrderProducer
 	}
 
 	/**
-	 * 
+	 *
 	 * @param pojo
 	 * @param request may be {@code null}. If not-null, then the method also does some {@link I_PP_MRP} related stuff that is likely to become obsolete soon.
 	 * @return
@@ -125,12 +130,13 @@ public class DDOrderProducer
 
 		for (final DDOrderLine linePojo : pojo.getLines())
 		{
-			//
 			// Create DD Order Line
 			final I_DD_OrderLine ddOrderline = InterfaceWrapperHelper.newInstance(I_DD_OrderLine.class, ddOrder);
 			ddOrderline.setAD_Org_ID(pojo.getOrgId());
 			ddOrderline.setDD_Order(ddOrder);
 			ddOrderline.setC_OrderLineSO_ID(linePojo.getSalesOrderLineId());
+			ddOrderline.setC_BPartner_ID(linePojo.getBPartnerId());
+
 			if (linePojo.getSalesOrderLineId() > 0)
 			{
 				ddOrderline.setC_BPartner_ID(ddOrderline.getC_OrderLineSO().getC_BPartner_ID());
@@ -156,14 +162,19 @@ public class DDOrderProducer
 			//
 			// Product, UOM, Qty
 			// NOTE: we assume qtyToMove is in "mrpContext.getC_UOM()" which shall be the Product's stocking UOM
+			final ProductDescriptor productDescriptor = linePojo.getProductDescriptor();
+			final I_M_Product product = load(productDescriptor.getProductId(), I_M_Product.class);
 
-			final I_M_Product product = InterfaceWrapperHelper.create(Env.getCtx(), linePojo.getProductId(), I_M_Product.class, ITrx.TRXNAME_ThreadInherited);
+			final I_M_AttributeSetInstance asi = load(productDescriptor.getAttributeSetInstanceId(), I_M_AttributeSetInstance.class);
+			final ASICopy asiCopy = ASICopy.newInstance(asi);
 
-			ddOrderline.setM_Product_ID(linePojo.getProductId());
+			ddOrderline.setM_Product_ID(product.getM_Product_ID());
 			ddOrderline.setC_UOM_ID(product.getC_UOM_ID());
 			ddOrderline.setQtyEntered(linePojo.getQty());
 			ddOrderline.setQtyOrdered(linePojo.getQty());
 			ddOrderline.setTargetQty(linePojo.getQty());
+			ddOrderline.setM_AttributeSetInstance(asiCopy.copy());
+			ddOrderline.setM_AttributeSetInstanceTo(asiCopy.copy());
 
 			//
 			// Dates

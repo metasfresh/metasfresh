@@ -1,5 +1,8 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -10,12 +13,12 @@ package org.adempiere.mm.attributes.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,12 +28,15 @@ package org.adempiere.mm.attributes.api.impl;
 
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.callout.M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Ref_List;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeUse;
@@ -45,7 +51,7 @@ import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 
 /**
  * Base context and helpers for {@link M_Attribute}s related tests.
- * 
+ *
  * @author tsa
  *
  */
@@ -69,7 +75,7 @@ public class AttributesTestHelper
 	public I_M_AttributeSet createM_AttributeSet(final I_M_Attribute... attributes)
 	{
 		final I_M_AttributeSet as = InterfaceWrapperHelper.create(ctx, I_M_AttributeSet.class, ITrx.TRXNAME_None);
-		InterfaceWrapperHelper.save(as);
+		save(as);
 
 		for (final I_M_Attribute attribute : attributes)
 		{
@@ -83,43 +89,47 @@ public class AttributesTestHelper
 		final I_M_AttributeUse attributeUse = InterfaceWrapperHelper.newInstance(I_M_AttributeUse.class, as);
 		attributeUse.setM_AttributeSet_ID(as.getM_AttributeSet_ID());
 		attributeUse.setM_Attribute_ID(attribute.getM_Attribute_ID());
-		InterfaceWrapperHelper.save(attributeUse);
+		save(attributeUse);
 	}
 
 	public I_M_Attribute createM_Attribute(final I_AD_JavaClass javaClass)
 	{
 		final I_M_Attribute attribute = InterfaceWrapperHelper.create(ctx, I_M_Attribute.class, ITrx.TRXNAME_None);
-		attribute.setAD_JavaClass(javaClass);
-		InterfaceWrapperHelper.save(attribute);
+		attribute.setAD_JavaClass_ID(javaClass != null ? javaClass.getAD_JavaClass_ID() : -1);
+		save(attribute);
 		return attribute;
 	}
-	
+
 	public I_M_Attribute createM_Attribute_TypeList(final String name)
 	{
 		final I_M_Attribute attribute = InterfaceWrapperHelper.newInstance(I_M_Attribute.class, context);
 		attribute.setValue(name);
 		attribute.setName(name);
 		attribute.setAttributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_List);
-		InterfaceWrapperHelper.save(attribute);
+		save(attribute);
 		return attribute;
 	}
 
-	public I_M_AttributeValue createM_AttributeValue(final org.compiere.model.I_M_Attribute attribute, final String value)
+	public I_M_AttributeValue createM_AttributeValue(
+			final I_M_Attribute attribute,
+			final String value)
 	{
 		final I_M_AttributeValue attributeValue = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, context);
 		attributeValue.setM_Attribute(attribute);
 		attributeValue.setValue(value);
 		attributeValue.setName("Name_" + value);
-		InterfaceWrapperHelper.save(attributeValue);
+		save(attributeValue);
 		return attributeValue;
 	}
-	
-	public I_M_AttributeValue_Mapping createM_AttributeValue_Mapping(final I_M_AttributeValue attributeValue, final I_M_AttributeValue attributeValueTo)
+
+	public I_M_AttributeValue_Mapping createM_AttributeValue_Mapping(
+			final I_M_AttributeValue attributeValue,
+			final I_M_AttributeValue attributeValueTo)
 	{
 		final I_M_AttributeValue_Mapping attributeValueMapping = InterfaceWrapperHelper.newInstance(I_M_AttributeValue_Mapping.class, context);
 		attributeValueMapping.setM_AttributeValue(attributeValue);
 		attributeValueMapping.setM_AttributeValue_To(attributeValueTo);
-		InterfaceWrapperHelper.save(attributeValueMapping);
+		save(attributeValueMapping);
 		return attributeValueMapping;
 	}
 
@@ -128,7 +138,7 @@ public class AttributesTestHelper
 		final I_AD_JavaClass javaClassDef = InterfaceWrapperHelper.create(ctx, I_AD_JavaClass.class, ITrx.TRXNAME_None);
 		javaClassDef.setAD_JavaClass_Type(attributeGeneratorType);
 		javaClassDef.setClassname(classname);
-		InterfaceWrapperHelper.save(javaClassDef);
+		save(javaClassDef);
 		return javaClassDef;
 	}
 
@@ -141,10 +151,10 @@ public class AttributesTestHelper
 	{
 		final I_AD_JavaClass_Type javaClassTypeDef = InterfaceWrapperHelper.create(ctx, I_AD_JavaClass_Type.class, ITrx.TRXNAME_None);
 		javaClassTypeDef.setClassname(interfaceClassname);
-		InterfaceWrapperHelper.save(javaClassTypeDef);
+		save(javaClassTypeDef);
 		return javaClassTypeDef;
 	}
-	
+
 	public void createAD_Ref_List_Items(final int adReferenceId, final String ...values)
 	{
 		for (final String value : values)
@@ -154,7 +164,100 @@ public class AttributesTestHelper
 			item.setValue(value);
 			item.setName(value);
 			item.setValueName(value);
-			InterfaceWrapperHelper.save(item);
+			save(item);
 		}
+	}
+
+	/**
+	 * Method needed to make sure the attribute was not already created
+	 * Normally, this will never happen anywhere else except testing
+	 *
+	 * @param name
+	 * @return
+	 */
+	public I_M_Attribute retrieveAttributeValue(String name)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Attribute.class).addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Attribute.COLUMNNAME_Value, name)
+				.create()
+				.firstOnly(I_M_Attribute.class);
+	}
+
+	public I_M_Attribute createM_Attribute(final String name,
+			final String valueType,
+			final Class<?> javaClass,
+			final I_C_UOM uom,
+			final boolean isInstanceAttribute)
+	{
+
+		final I_AD_JavaClass javaClassDef;
+		if (javaClass != null)
+		{
+			javaClassDef = newInstanceOutOfTrx(I_AD_JavaClass.class);
+			javaClassDef.setName(javaClass.getName());
+			javaClassDef.setClassname(javaClass.getName());
+			save(javaClassDef);
+		}
+		else
+		{
+			javaClassDef = null;
+		}
+
+		final I_M_Attribute attr;
+
+		// make sure the attribute was not already defined
+		final I_M_Attribute existingAttribute = retrieveAttributeValue(name);
+		if (existingAttribute != null)
+		{
+			attr = existingAttribute;
+		}
+
+		else
+		{
+			attr = newInstanceOutOfTrx(I_M_Attribute.class);
+		}
+		attr.setValue(name);
+		attr.setName(name);
+		attr.setAttributeValueType(valueType);
+
+		//
+		// Assume all attributes active and non-mandatory
+		attr.setIsActive(true);
+		attr.setIsMandatory(false);
+
+		//
+		// Configure ASI usage
+		attr.setIsInstanceAttribute(isInstanceAttribute);
+
+		//
+		// Configure JC
+		attr.setAD_JavaClass_ID(javaClassDef != null ? javaClassDef.getAD_JavaClass_ID() : -1);
+
+		//
+		// Configure UOM
+		attr.setC_UOM(uom);
+
+		save(attr);
+		return attr;
+	}
+
+	public I_M_Attribute createM_Attribute(final String name,
+			final String valueType,
+			final Class<?> javaClass,
+			final boolean isInstanceAttribute)
+	{
+		final I_C_UOM uom = null;
+		return createM_Attribute(name, valueType, javaClass, uom, isInstanceAttribute);
+	}
+
+	public I_M_Attribute createM_Attribute(final String name,
+			final String valueType,
+			final boolean isInstanceAttribute)
+	{
+		final Class<?> javaClass = null;
+		final I_M_Attribute attr = createM_Attribute(name, valueType, javaClass, isInstanceAttribute);
+		save(attr);
+
+		return attr;
 	}
 }

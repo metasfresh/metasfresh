@@ -17,11 +17,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -202,35 +202,20 @@ public final class GuavaCollectors
 
 	public static <K, V> Map.Entry<K, V> entry(final K key, final V value)
 	{
-		return new Map.Entry<K, V>()
+		return new ImmutableMapEntry<>(key, value);
+	}
+
+	@lombok.Value
+	private static final class ImmutableMapEntry<K, V> implements Map.Entry<K, V>
+	{
+		private final K key;
+		private final V value;
+
+		@Override
+		public V setValue(V value)
 		{
-			@Override
-			public String toString()
-			{
-				return MoreObjects.toStringHelper("entry")
-						.add("key", key)
-						.add("value", value)
-						.toString();
-			}
-
-			@Override
-			public K getKey()
-			{
-				return key;
-			}
-
-			@Override
-			public V getValue()
-			{
-				return value;
-			}
-
-			@Override
-			public V setValue(final V value)
-			{
-				throw new UnsupportedOperationException();
-			}
-		};
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	public static <K, V> Collector<Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap()
@@ -283,23 +268,23 @@ public final class GuavaCollectors
 		return ImmutableMap.toImmutableMap(keyMapper, value -> value, (valuePrev, valueNow) -> valuePrev);
 	}
 
-	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toMap(final Supplier<Map<K, V>> mapSupplier)
+	public static <K, V, M extends Map<K, V>> Collector<Entry<K, V>, ?, M> toMap(final Supplier<M> mapSupplier)
 	{
-		final BiConsumer<Map<K, V>, Entry<K, V>> accumulator = (map, entry) -> map.put(entry.getKey(), entry.getValue());
-		final BinaryOperator<Map<K, V>> combiner = (map1, map2) -> {
+		final BiConsumer<M, Map.Entry<K, V>> accumulator = (map, entry) -> map.put(entry.getKey(), entry.getValue());
+		final BinaryOperator<M> combiner = (map1, map2) -> {
 			map1.putAll(map2);
 			return map1;
 		};
-		final Function<Map<K, V>, Map<K, V>> finisher = (map) -> map;
+		final Function<M, M> finisher = (map) -> map;
 		return Collector.of(mapSupplier, accumulator, combiner, finisher);
 	}
 
-	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toHashMap()
+	public static <K, V> Collector<Entry<K, V>, ?, HashMap<K, V>> toHashMap()
 	{
 		return toMap(HashMap::new);
 	}
 
-	public static <K, V> Collector<Entry<K, V>, ?, Map<K, V>> toLinkedHashMap()
+	public static <K, V> Collector<Entry<K, V>, ?, LinkedHashMap<K, V>> toLinkedHashMap()
 	{
 		return toMap(LinkedHashMap::new);
 	}
@@ -312,6 +297,11 @@ public final class GuavaCollectors
 	public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableListMultimap<K, V>> toImmutableListMultimap()
 	{
 		return ImmutableListMultimap.<Map.Entry<K, V>, K, V> toImmutableListMultimap(e -> e.getKey(), e -> e.getValue());
+	}
+
+	public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableSetMultimap<K, V>> toImmutableSetMultimap()
+	{
+		return ImmutableSetMultimap.<Map.Entry<K, V>, K, V> toImmutableSetMultimap(e -> e.getKey(), e -> e.getValue());
 	}
 
 	/**

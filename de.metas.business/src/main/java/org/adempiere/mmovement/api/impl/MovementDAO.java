@@ -51,7 +51,7 @@ public class MovementDAO implements IMovementDAO
 		final IQueryBuilder<MovementLineType> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(movementLineClass, movement);
 
-		queryBuilder.getFilters()
+		queryBuilder.getCompositeFilter()
 				.addEqualsFilter(I_M_MovementLine.COLUMNNAME_M_Movement_ID, movement.getM_Movement_ID());
 
 		queryBuilder.orderBy()

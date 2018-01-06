@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mmovement.api.IMovementDAO;
@@ -37,7 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
-import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.test.ErrorMessage;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_M_Movement;
@@ -147,7 +147,7 @@ public class PackingMaterialsExpectation<ParentExpectationType> extends Abstract
 		{
 
 			@Override
-			public boolean evaluate(final PackingMaterialExpectation<PackingMaterialsExpectation<ParentExpectationType>> e)
+			public boolean test(final PackingMaterialExpectation<PackingMaterialsExpectation<ParentExpectationType>> e)
 			{
 				return product.getM_Product_ID() == e.getM_Product_ID();
 			}

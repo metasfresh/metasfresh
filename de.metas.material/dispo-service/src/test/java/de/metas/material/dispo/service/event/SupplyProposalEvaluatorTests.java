@@ -1,7 +1,8 @@
 package de.metas.material.dispo.service.event;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -10,7 +11,6 @@ import java.util.Date;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.time.SystemTime;
-import org.compiere.model.I_AD_Org;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
@@ -19,19 +19,21 @@ import org.junit.rules.TestWatcher;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.CandidateRepository;
-import de.metas.material.dispo.CandidateService;
-import de.metas.material.dispo.CandidateSpecification.Type;
-import de.metas.material.dispo.candidate.Candidate;
+import de.metas.material.dispo.commons.RequestMaterialOrderService;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
-import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandler;
-import de.metas.material.dispo.service.event.handler.DistributionPlanEventHandlerTests;
-import de.metas.material.event.MaterialDescriptor;
+import de.metas.material.dispo.service.event.handler.DDOrderAdvisedOrCreatedHandler;
+import de.metas.material.dispo.service.event.handler.DDOrderAdvisedOrCreatedHandlerTests;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.commons.MaterialDescriptor;
 import mockit.Mocked;
 
 /*
@@ -74,9 +76,7 @@ public class SupplyProposalEvaluatorTests
 
 	private static final int DEMAND_WAREHOUSE_ID = 6;
 
-	// private MDEventListener mdEventListener;
-
-	private DistributionPlanEventHandler distributionPlanEventHandler;
+	private DDOrderAdvisedOrCreatedHandler distributionAdvisedEventHandler;
 
 	/**
 	 * This is the code under test
@@ -84,35 +84,45 @@ public class SupplyProposalEvaluatorTests
 
 	private SupplyProposalEvaluator supplyProposalEvaluator;
 
-	private CandidateRepository candidateRepository;
+	private CandidateRepositoryWriteService candidateRepositoryCommands;
 
 	@Mocked
 	private MaterialEventService materialEventService;
 
-	private I_AD_Org org;
+
+	private StockRepository stockRepository;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		org = newInstance(I_AD_Org.class);
-		save(org);
+		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
-		candidateRepository = new CandidateRepository();
-		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 
-		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository);
+		final StockCandidateService stockCandidateService = new StockCandidateService(
+				candidateRepositoryRetrieval, candidateRepositoryCommands);
+
+		stockRepository = new StockRepository();
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
-				new SupplyCandiateHandler(candidateRepository, materialEventService, stockCandidateService),
-				new DemandCandiateHandler(candidateRepository, materialEventService, stockCandidateService)));
+				new SupplyCandiateHandler(candidateRepositoryRetrieval, candidateRepositoryCommands, stockCandidateService),
+				new DemandCandiateHandler(
+						candidateRepositoryRetrieval,
+						candidateRepositoryCommands,
+						materialEventService,
+						stockRepository,
+						stockCandidateService
+						)));
 
-		distributionPlanEventHandler = new DistributionPlanEventHandler(
-				candidateRepository,
+		distributionAdvisedEventHandler = new DDOrderAdvisedOrCreatedHandler(
+				candidateRepositoryRetrieval,
+				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new CandidateService(candidateRepository, materialEventService));
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, materialEventService));
 	}
 
 	/**
@@ -125,10 +135,10 @@ public class SupplyProposalEvaluatorTests
 				.date(t1)
 				.destWarehouseId(1)
 				.sourceWarehouseId(2)
-				.productId(3)
+				.productDescriptor(createProductDescriptor())
 				.build();
 
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isTrue();
 	}
 
 	/**
@@ -143,10 +153,10 @@ public class SupplyProposalEvaluatorTests
 				.date(t4)
 				.destWarehouseId(1)
 				.sourceWarehouseId(2)
-				.productId(3)
+				.productDescriptor(createProductDescriptor())
 				.build();
 
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isTrue();
 	}
 
 	@Test
@@ -162,10 +172,10 @@ public class SupplyProposalEvaluatorTests
 				.date(t1)
 				.sourceWarehouseId(DEMAND_WAREHOUSE_ID)
 				.destWarehouseId(SUPPLY_WAREHOUSE_ID)
-				.productId(3)
+				.productDescriptor(createProductDescriptor())
 				.build();
 
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isTrue();
 	}
 
 	@Test
@@ -181,10 +191,10 @@ public class SupplyProposalEvaluatorTests
 				.date(t1)
 				.destWarehouseId(DEMAND_WAREHOUSE_ID)
 				.sourceWarehouseId(SUPPLY_WAREHOUSE_ID)
-				.productId(3)
+				.productDescriptor(createProductDescriptor())
 				.build();
 
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal)).isFalse();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal)).isFalse();
 	}
 
 	/**
@@ -192,38 +202,38 @@ public class SupplyProposalEvaluatorTests
 	 */
 	private void addSimpleSupplyDemand()
 	{
-		final MaterialDescriptor supplyMaterialDescr = MaterialDescriptor.builder()
+		final MaterialDescriptor supplyMaterialDescriptor = MaterialDescriptor.builder()
 				.date(t3)
-				.productId(3)
+				.productDescriptor(createProductDescriptor())
 				.quantity(BigDecimal.TEN)
 				.warehouseId(SUPPLY_WAREHOUSE_ID)
 				.build();
 
 		final Candidate supplyCandidate = Candidate.builder()
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
-				.type(Type.SUPPLY)
-				.materialDescr(supplyMaterialDescr)
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
+				.type(CandidateType.SUPPLY)
+				.materialDescriptor(supplyMaterialDescriptor)
 				.build();
 
-		final Candidate supplyCandidateWithId = candidateRepository.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
+		final Candidate supplyCandidateWithId = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(supplyCandidate);
 
 		final MaterialDescriptor demandDescr = MaterialDescriptor.builder()
 				.date(t2)
-				.productId(3)
+				.productDescriptor(createProductDescriptor())
 				.warehouseId(DEMAND_WAREHOUSE_ID)
 				.quantity(BigDecimal.TEN)
 				.build();
 
 		final Candidate demandCandidate = Candidate.builder()
-				.clientId(org.getAD_Client_ID())
-				.orgId(org.getAD_Org_ID())
+				.clientId(CLIENT_ID)
+				.orgId(ORG_ID)
 				.parentId(supplyCandidateWithId.getId())
-				.type(Type.DEMAND)
-				.materialDescr(demandDescr)
+				.type(CandidateType.DEMAND)
+				.materialDescriptor(demandDescr)
 				.build();
 
-		candidateRepository.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
+		candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(demandCandidate);
 	}
 
 	/**
@@ -232,34 +242,34 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChain()
 	{
-		DistributionPlanEventHandlerTests.performTestTwoDistibutionPlanEvents(distributionPlanEventHandler, org);
+		DDOrderAdvisedOrCreatedHandlerTests.handleDistributionAdvisedEvent_with_two_events_chronological(distributionAdvisedEventHandler);
 
 		// propose what would create an additional demand on A and an additional supply on B. nothing wrong with that
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
 				.date(t1)
 				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.fromWarehouseId)
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.intermediateWarehouseId)
-				.productId(MaterialDispoEventListenerFacadeTests.productId)
+				.productDescriptor(createProductDescriptor())
 				.build();
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal1)).isTrue();
 
 		// propose what would create an additional demand on B and an additional supply on C. nothing wrong with that either
 		final SupplyProposal supplyProposal2 = SupplyProposal.builder()
 				.date(t1)
 				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.intermediateWarehouseId)
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
-				.productId(MaterialDispoEventListenerFacadeTests.productId)
+				.productDescriptor(createProductDescriptor())
 				.build();
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal2)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal2)).isTrue();
 
 		// propose what would create an additional demand on A and an additional supply on C. nothing wrong with that either
 		final SupplyProposal supplyProposal3 = SupplyProposal.builder()
 				.date(t1)
 				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.fromWarehouseId)
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
-				.productId(MaterialDispoEventListenerFacadeTests.productId)
+				.productDescriptor(createProductDescriptor())
 				.build();
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal3)).isTrue();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal3)).isTrue();
 	}
 
 	/**
@@ -268,18 +278,18 @@ public class SupplyProposalEvaluatorTests
 	@Test
 	public void testWithChainOpposite()
 	{
-		DistributionPlanEventHandlerTests.performTestTwoDistibutionPlanEvents(distributionPlanEventHandler, org);
+		DDOrderAdvisedOrCreatedHandlerTests.handleDistributionAdvisedEvent_with_two_events_chronological(distributionAdvisedEventHandler);
 		// we now have an unbalanced demand with a stock of -10 in "fromWarehouseId" (because that's where the "last" demand of the "last" DistibutionPlan is)
 		// and we have a stock of +10 in "toWarehouseId"
 
-		// now assume that the planner would create  another DistibutionPlanEvent that suggests to balance the -10 in "fromWarehouseId" with the +10 in "toWarehouseId"
+		// now assume that the planner would create another DistibutionPlanEvent that suggests to balance the -10 in "fromWarehouseId" with the +10 in "toWarehouseId"
 		// note that we don't need to look at the qty at all
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
 				.date(t0) // the proposal needs to be made for the time before the two DistibutionPlanEvents occured
 				.sourceWarehouseId(MaterialDispoEventListenerFacadeTests.toWarehouseId)
 				.destWarehouseId(MaterialDispoEventListenerFacadeTests.fromWarehouseId)
-				.productId(MaterialDispoEventListenerFacadeTests.productId)
+				.productDescriptor(createProductDescriptor())
 				.build();
-		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1)).isFalse();
+		assertThat(supplyProposalEvaluator.isProposalAccepted(supplyProposal1)).isFalse();
 	}
 }

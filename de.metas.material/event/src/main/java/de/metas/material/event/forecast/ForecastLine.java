@@ -2,7 +2,13 @@ package de.metas.material.event.forecast;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import de.metas.material.event.MaterialDescriptor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import de.metas.material.event.commons.MaterialDescriptor;
+
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -20,11 +26,11 @@ import lombok.Value;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,10 +40,20 @@ import lombok.Value;
 public class ForecastLine
 {
 	private int forecastLineId;
-	
-	@NonNull
+
 	MaterialDescriptor materialDescriptor;
-	
-	@NonNull
+
 	TableRecordReference reference;
+
+	@JsonCreator
+	public ForecastLine(
+			@JsonProperty("forecastLineId") final int forecastLineId,
+			@JsonProperty("materialDescriptor") @NonNull final MaterialDescriptor materialDescriptor,
+			@JsonProperty("reference") @NonNull final TableRecordReference reference)
+	{
+		this.forecastLineId = checkIdGreaterThanZero("forecastLineId", forecastLineId);
+		this.materialDescriptor = materialDescriptor;
+		this.reference = reference;
+	}
+
 }

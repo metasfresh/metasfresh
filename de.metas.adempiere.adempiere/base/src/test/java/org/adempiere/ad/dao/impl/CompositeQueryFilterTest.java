@@ -10,18 +10,17 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +37,7 @@ import org.junit.Test;
 
 /**
  * Unit test for {@link CompositeQueryFilter}
- * 
+ *
  * @author tsa
  *
  */
@@ -131,7 +130,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_Defaults()
+	public void Defaults()
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
 		assertDefaults(filter);
@@ -139,7 +138,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_DefaultAccept_True()
+	public void DefaultAccept_True()
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
 		filter.setDefaultAccept(true);
@@ -148,7 +147,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_DefaultAccept_False()
+	public void DefaultAccept_False()
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
 		filter.setDefaultAccept(false);
@@ -157,7 +156,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_addFilter_Duplicate()
+	public void addFilter_Duplicate()
 	{
 		final CompositeQueryFilter<I_ModelClass> filters = new CompositeQueryFilter<>(I_ModelClass.class);
 		final DummyNonSqlQueryFilter<I_ModelClass> filterToAdd = new DummyNonSqlQueryFilter<I_ModelClass>();
@@ -171,7 +170,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void test_addFilter_NULL()
+	public void addFilter_NULL()
 	{
 		final CompositeQueryFilter<I_ModelClass> filters = new CompositeQueryFilter<>(I_ModelClass.class);
 
@@ -180,30 +179,29 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_addFilters_NullList()
+	public void addFilters_NullList()
 	{
 		final CompositeQueryFilter<I_ModelClass> filters = new CompositeQueryFilter<>(I_ModelClass.class);
 
 		final List<IQueryFilter<I_ModelClass>> filtersToAdd = null;
 		filters.addFilters(filtersToAdd); // shall do nothing
-		
+
 		assertEmpty(filters);
 	}
-	
+
 	@Test
-	public void test_addFilters_EmptyList()
+	public void addFilters_EmptyList()
 	{
 		final CompositeQueryFilter<I_ModelClass> filters = new CompositeQueryFilter<>(I_ModelClass.class);
 
 		final List<IQueryFilter<I_ModelClass>> filtersToAdd = new ArrayList<IQueryFilter<I_ModelClass>>();
 		filters.addFilters(filtersToAdd); // shall do nothing
-		
+
 		assertEmpty(filters);
 	}
 
-
 	@Test(expected = RuntimeException.class)
-	public void test_addFilters_ListWithOneNullValue()
+	public void addFilters_ListWithOneNullValue()
 	{
 		final CompositeQueryFilter<I_ModelClass> filters = new CompositeQueryFilter<>(I_ModelClass.class);
 
@@ -216,7 +214,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_compile_empty()
+	public void compile_empty()
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
 
@@ -226,7 +224,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_empty_IsPureSQL()
+	public void empty_IsPureSQL()
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
 		filter.setJoinAnd();
@@ -235,7 +233,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_compile_PureSQL()
+	public void compile_PureSQL()
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
 
@@ -247,7 +245,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_compile_PureNonSQL()
+	public void compile_PureNonSQL()
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
 
@@ -261,7 +259,7 @@ public class CompositeQueryFilterTest
 
 	// see http://stackoverflow.com/questions/1445233/is-it-possible-to-solve-the-a-generic-array-of-t-is-created-for-a-varargs-param
 	@Test
-	public void test_compile_MixedFiltersWithJoinAND_AddSqlFilter_AddNonSqlFilter()
+	public void compile_MixedFiltersWithJoinAND_AddSqlFilter_AddNonSqlFilter()
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
 
@@ -278,7 +276,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_compile_MixedFiltersWithJoinAND_AddNonSqlFilter_AddSqlFilter()
+	public void compile_MixedFiltersWithJoinAND_AddNonSqlFilter_AddSqlFilter()
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
 
@@ -296,7 +294,7 @@ public class CompositeQueryFilterTest
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void test_compile_MixedFiltersWithJoinAND_Including_MixedFiltersWithJoinAND()
+	public void compile_MixedFiltersWithJoinAND_Including_MixedFiltersWithJoinAND()
 	{
 		//
 		// Included Filter
@@ -326,7 +324,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_compile_MixedFiltersWithJoinAND_Including_MixedFiltersWithJoinOR()
+	public void compile_MixedFiltersWithJoinAND_Including_MixedFiltersWithJoinOR()
 	{
 		//
 		// Included Filter
@@ -356,7 +354,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_compile_MixedFiltersWithJoinOR()
+	public void compile_MixedFiltersWithJoinOR()
 	{
 		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
 
@@ -372,7 +370,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_compile_MixedFiltersWithJoinOR_Including_MixedFiltersWithJoinAND()
+	public void compile_MixedFiltersWithJoinOR_Including_MixedFiltersWithJoinAND()
 	{
 		//
 		// Included Filter
@@ -398,7 +396,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_compile_PureSqlWithJoinOR_Including_PureSqlWithJoinOr()
+	public void compile_PureSqlWithJoinOR_Including_PureSqlWithJoinOr()
 	{
 		//
 		// Included Filter
@@ -420,7 +418,7 @@ public class CompositeQueryFilterTest
 	}
 
 	@Test
-	public void test_compile_MixedFiltersWithJoinOR_Including_MixedFiltersWithJoinOR()
+	public void compile_MixedFiltersWithJoinOR_Including_MixedFiltersWithJoinOR()
 	{
 		//
 		// Included Filter
@@ -443,6 +441,13 @@ public class CompositeQueryFilterTest
 
 		assertPureNonSql(filter);
 		Assert.assertEquals("Invalid NonSqlFilter: " + filter, Arrays.asList(sqlFilter, nonSqlFilter, includedFilter), filter.getNonSqlFilters());
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void filter_mayNotIncludeItself()
+	{
+		final CompositeQueryFilter<I_ModelClass> filter = new CompositeQueryFilter<>(I_ModelClass.class);
+		filter.addFilter(filter);
 	}
 
 	//

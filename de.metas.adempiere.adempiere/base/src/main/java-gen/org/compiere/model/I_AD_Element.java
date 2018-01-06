@@ -98,7 +98,7 @@ public interface I_AD_Element
 	 * Name of the column in the database
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setColumnName (java.lang.String ColumnName);
@@ -108,7 +108,7 @@ public interface I_AD_Element
 	 * Name of the column in the database
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getColumnName();
@@ -431,7 +431,7 @@ public interface I_AD_Element
 	/**
 	 * Set Widget size.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -440,7 +440,7 @@ public interface I_AD_Element
 	/**
 	 * Get Widget size.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

@@ -10,12 +10,12 @@ package org.eevolution.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,7 +37,7 @@ import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
+import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.Query;
 import org.eevolution.api.IPPOrderBOMDAO;
@@ -162,7 +162,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 				.addOnlyActiveRecordsFilter()
 				// Same manufacturing order
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, orderBOMLineAlternative.getPP_Order_ID())
-				// Exclude the alternatives/variants lines 
+				// Exclude the alternatives/variants lines
 				.addNotEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_ComponentType, X_PP_Order_BOMLine.COMPONENTTYPE_Variant)
 				// For our VariantGroup
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_VariantGroup, variantGroup);
@@ -208,12 +208,12 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 		final IQueryBuilder<I_PP_Order_BOMLine> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order_BOMLine.class, order);
 
-		final ICompositeQueryFilter<I_PP_Order_BOMLine> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_PP_Order_BOMLine> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID());
 
 		Integer maxLine = queryBuilder
 				.create()
-				.aggregate(I_PP_Order_BOMLine.COLUMNNAME_Line, IQuery.AGGREGATE_MAX, Integer.class);
+				.aggregate(I_PP_Order_BOMLine.COLUMNNAME_Line, Aggregate.MAX, Integer.class);
 
 		if (maxLine == null)
 		{

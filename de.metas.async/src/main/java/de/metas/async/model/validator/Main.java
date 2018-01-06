@@ -1,5 +1,7 @@
 package de.metas.async.model.validator;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.async
@@ -25,11 +27,11 @@ package de.metas.async.model.validator;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.impl.AsyncImportProcessBuilder;
 import org.adempiere.impexp.spi.impl.AsyncImportWorkpackageProcessor;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
@@ -37,6 +39,9 @@ import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.api.impl.AsyncBatchDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -45,6 +50,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.async.processor.IQueueProcessorExecutorService;
 import de.metas.async.spi.impl.DefaultAsyncBatchListener;
 import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
 
 /**
  * ASync module main validator. This is the entry point for all other stuff.
@@ -57,6 +63,11 @@ import de.metas.event.IEventBusFactory;
  */
 public class Main extends AbstractModuleInterceptor
 {
+	
+	private static final String SYSCONFIG_ASYNC_INIT_DELAY_MILLIS = "de.metas.async.Async_InitDelayMillis";
+
+	private static final int THREE_MINUTES = 3 * 60 * 1000;
+
 	@Override
 	public void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
@@ -95,14 +106,10 @@ public class Main extends AbstractModuleInterceptor
 	 */
 	private final int getInitDelayMillis()
 	{
-		if (Services.get(IDeveloperModeBL.class).isEnabled())
-		{
-			return 10 * 1000; // 10sec, developer is never patient
-		}
-		else
-		{
-			return 3 * 60 * 1000; // wait 3 minutes before starting (task 06295)
-		}
+		// I will leave the default value of 3 minutes, which was the common time until #2894
+		final int delayTimeInMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, THREE_MINUTES);
+
+		return delayTimeInMillis;
 
 	}
 
@@ -144,5 +151,11 @@ public class Main extends AbstractModuleInterceptor
 		}
 
 		Services.get(IQueueProcessorExecutorService.class).removeAllQueueProcessors();
+	}
+	
+	@Override
+	protected List<Topic> getAvailableUserNotificationsTopics()
+	{
+		return ImmutableList.of(Async_Constants.EVENTBUS_WORKPACKAGE_PROCESSING_ERRORS);
 	}
 }

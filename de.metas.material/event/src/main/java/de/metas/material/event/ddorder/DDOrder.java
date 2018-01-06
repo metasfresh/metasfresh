@@ -1,15 +1,19 @@
 package de.metas.material.event.ddorder;
 
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+
 import java.util.Date;
 import java.util.List;
 
 import org.compiere.model.I_S_Resource;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
@@ -32,42 +36,64 @@ import lombok.Singular;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
+@Value
 @Builder
-@AllArgsConstructor // used by jackson when it deserializes a string
 final public class DDOrder
 {
 
 	/**
 	 * {@code AD_Org_ID} of the <b>receiving</b> organization.
 	 */
-	@NonNull
-	private final Integer orgId;
+	int orgId;
 
 	/**
 	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
 	 */
-	@NonNull
-	private final Integer plantId;
 
-	@NonNull
-	private final Integer productPlanningId;
+	int plantId;
 
-	@NonNull
-	private final Date datePromised;
+	int productPlanningId;
 
-	@NonNull
-	private final Integer shipperId;
+	Date datePromised;
+
+	int shipperId;
 
 	/**
 	 * If {@code true}, then this event advises the recipient to directly request an actual DD_Order to be created.
 	 */
-	private final boolean createDDrder;
+	boolean advisedToCreateDDrder;
 
 	@Singular
-	private final List<DDOrderLine> lines;
+	List<DDOrderLine> lines;
 
-	private final int ddOrderId;
+	int ddOrderId;
 
-	private final String docStatus;
+	String docStatus;
+
+	@JsonCreator
+	public DDOrder(
+			@JsonProperty("orgId") final int orgId,
+			@JsonProperty("plantId") final int plantId,
+			@JsonProperty("productPlanningId") final int productPlanningId,
+			@JsonProperty("datePromised") @NonNull final Date datePromised,
+			@JsonProperty("shipperId") final int shipperId,
+			@JsonProperty("createDDrder") final boolean advisedToCreateDDrder,
+			@JsonProperty("lines") final List<DDOrderLine> lines,
+			@JsonProperty("ddOrderId") final int ddOrderId,
+			@JsonProperty("docStatus") final String docStatus)
+	{
+		this.orgId = checkIdGreaterThanZero("orgId", orgId);
+
+		// these two might be zero, if the DDOrder was created manually
+		this.plantId = plantId;
+		this.productPlanningId = productPlanningId;
+
+		this.datePromised = datePromised;
+		this.shipperId = shipperId;
+		this.advisedToCreateDDrder = advisedToCreateDDrder;
+		this.lines = lines;
+		this.ddOrderId = ddOrderId;
+		this.docStatus = docStatus;
+	}
+
 }

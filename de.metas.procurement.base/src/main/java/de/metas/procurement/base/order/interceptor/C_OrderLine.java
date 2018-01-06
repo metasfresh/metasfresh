@@ -5,8 +5,9 @@ import java.math.BigDecimal;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
@@ -31,11 +32,11 @@ import de.metas.procurement.base.order.model.I_C_OrderLine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -51,21 +52,21 @@ public class C_OrderLine
 	{
 		super();
 	}
-	
+
 	private boolean isEligibleForTrackingQtyDelivered(final I_C_OrderLine orderLine)
 	{
 		// NOTE: according to FRESH-191, we shall track the QtyDelivered no matter what.
-		//if (!orderLine.isMFProcurement()) return false;
-		
+		// if (!orderLine.isMFProcurement()) return false;
+
 		// NOTE2: keep in sync with PMM_Balance_Events_v view.
-		
+
 		// Track only purchase orders (FRESH-191)
 		final I_C_Order order = orderLine.getC_Order();
 		if (order == null || order.isSOTrx())
 		{
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -129,16 +130,13 @@ public class C_OrderLine
 		//
 		// Schedule event after commit
 		logger.debug("Scheduling event: {}", event);
-		Services.get(ITrxManager.class)
-				.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-				.registerListener(new TrxListenerAdapter()
-				{
-					@Override
-					public void afterCommit(final ITrx trx)
-					{
-						Services.get(IPMMBalanceChangeEventProcessor.class).addEvent(event);
-						logger.debug("Event sent: {}", event);
-					}
+		final ITrxListenerManager trxListenerManager = Services.get(ITrxManager.class).getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited);
+		trxListenerManager
+				.newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.registerWeakly(false) // register "hard", because that's how it was before
+				.registerHandlingMethod(innerTrx -> {
+					Services.get(IPMMBalanceChangeEventProcessor.class).addEvent(event);
+					logger.debug("Event sent: {}", event);
 				});
 	}
 }

@@ -128,4 +128,10 @@ public final class ConstantLogicExpression implements ILogicExpression
 	{
 		return value ? LogicExpressionResult.TRUE : LogicExpressionResult.FALSE;
 	}
+	
+	@Override
+	public ILogicExpression evaluatePartial(final Evaluatee ctx)
+	{
+		return this;
+	}
 }

@@ -15,7 +15,7 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 576627910L;
+	private static final long serialVersionUID = 1709051512L;
 
     /** Standard Constructor */
     public X_C_PaySelectionLine (Properties ctx, int C_PaySelectionLine_ID, String trxName)
@@ -34,7 +34,6 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 			setOpenAmt (BigDecimal.ZERO);
 			setPayAmt (BigDecimal.ZERO);
 			setPaymentRule (null); // P
-			setProcessed (false); // N
         } */
     }
 
@@ -434,31 +433,5 @@ public class X_C_PaySelectionLine extends org.compiere.model.PO implements I_C_P
 	public java.lang.String getPaymentRule () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PaymentRule);
-	}
-
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
-	@Override
-	public void setProcessed (boolean Processed)
-	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
-	}
-
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
-	@Override
-	public boolean isProcessed () 
-	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 }

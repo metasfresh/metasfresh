@@ -21,6 +21,7 @@ import org.eevolution.model.X_PP_Order;
 import org.springframework.stereotype.Service;
 
 import de.metas.document.IDocTypeDAO;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import lombok.NonNull;
 
@@ -83,10 +84,12 @@ public class PPOrderProducer
 		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
 
 		//
-		// Product, UOM, ASI
-		ppOrder.setM_Product_ID(pojo.getProductId());
+		// Product, ASI, UOM
+		final ProductDescriptor productDescriptor = pojo.getProductDescriptor();
+		ppOrder.setM_Product_ID(productDescriptor.getProductId());
+		ppOrder.setM_AttributeSetInstance_ID(productDescriptor.getAttributeSetInstanceId());
+
 		ppOrder.setC_UOM_ID(pojo.getUomId());
-		ppOrder.setM_AttributeSetInstance_ID(0);
 
 		//
 		// BOM & Workflow
@@ -117,7 +120,11 @@ public class PPOrderProducer
 		//
 		// Inherit values from MRP demand
 		ppOrder.setC_OrderLine_ID(pojo.getOrderLineId());
-		if (pojo.getOrderLineId() > 0)
+		if (pojo.getBPartnerId() > 0)
+		{
+			ppOrder.setC_BPartner_ID(pojo.getBPartnerId());
+		}
+		else if (pojo.getOrderLineId() > 0)
 		{
 			ppOrder.setC_BPartner_ID(ppOrder.getC_OrderLine().getC_BPartner_ID());
 		}

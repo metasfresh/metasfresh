@@ -1,4 +1,4 @@
---DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Sum ( IN c_order_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Sum ( IN c_order_id numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Sum ( IN c_order_id numeric)
 RETURNS TABLE 
@@ -10,7 +10,9 @@ RETURNS TABLE
 	ishuline boolean,
 	taxbaseamt numeric,
 	taxrate numeric,
-	taxamt numeric
+	taxamt numeric,
+	cursymbol character varying(10),
+	vattaxid character varying(60)
 )
 AS
 $$
@@ -31,7 +33,9 @@ SELECT
 		WHEN round(sum.TaxRate,2) = sum.TaxRate THEN round(sum.TaxRate,2)
 	ELSE round(sum.TaxRate,2)
 	END AS TaxRate,
-	sum.TaxAmt
+	sum.TaxAmt,
+	cur.cursymbol,
+	COALESCE(bp.VATaxID, '') as VATaxID
 FROM
 	C_Order o
 	INNER JOIN

@@ -28,31 +28,40 @@ public interface IPickingSlotDAO extends ISingletonService
 	 * @param query
 	 * @return
 	 */
-	List<I_M_PickingSlot> retrivePickingSlots(PickingSlotQuery query);
+	List<I_M_PickingSlot> retrievePickingSlots(PickingSlotQuery query);
+
+	List<Integer> retrievePickingSlotIds(PickingSlotQuery query);
 
 	@Builder
 	@Value
 	public static class PickingSlotQuery
 	{
 		public static final PickingSlotQuery ALL = builder().build();
-		
-		/**
-		 * {@code -1} means "no restriction".
-		 */
-		@Default
-		int bpartnerId = -1;
 
 		/**
 		 * {@code -1} means "no restriction".
 		 */
 		@Default
-		int bpartnerLocationId = -1;
+		int availableForBPartnerId = -1;
+
+		/**
+		 * {@code -1} means "no restriction".
+		 */
+		@Default
+		int availableForBPartnerLocationId = -1;
+		
+		@Default
+		int assignedToBPartnerId = -1;
+
+		@Default
+		int assignedToBPartnerLocationId = -1;
 
 		/**
 		 * {@code -1} means "no restriction".
 		 */
 		@Default
 		int warehouseId = -1;
-	}
 
+		String barcode;
+	}
 }

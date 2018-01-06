@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -56,8 +55,8 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
  */
 public class TestTwoReceiptsOneInvoice_QualityDiscount1 extends AbstractNewAggregationEngineTests
 {
-	protected static final BigDecimal THREE= new BigDecimal("3");
-	protected static final BigDecimal FIVE= new BigDecimal("5");
+	protected static final BigDecimal THREE = new BigDecimal("3");
+	protected static final BigDecimal FIVE = new BigDecimal("5");
 	protected static final BigDecimal TEN = new BigDecimal("10");
 	protected static final BigDecimal TWENTY = new BigDecimal("20");
 
@@ -66,7 +65,7 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount1 extends AbstractNewAggre
 	protected I_M_InOutLine iol11_three;
 	/** Receipt 1 - line 2 (IsInDispute) */
 	protected I_M_InOutLine iol12_five_disp;
-	
+
 	protected I_M_InOut inOut2;
 	/** Receipt 2 - line 1 */
 	protected I_M_InOutLine iol21_ten;
@@ -76,9 +75,8 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount1 extends AbstractNewAggre
 	@Override
 	protected List<I_C_Invoice_Candidate> step_createInvoiceCandidates()
 	{
-		final List<I_C_Invoice_Candidate> ics = test_2StepShipment_CommonSetup_Step01(false, true, null);// isSOTrx, allowConsolidateInvoice, priceEtnered_Override
+		final List<I_C_Invoice_Candidate> ics = test_2StepShipment_CommonSetup_Step01(false, null);// isSOTrx, priceEtnered_Override
 		final I_C_Invoice_Candidate ic = ics.get(0);
-		// ic.setQtyDelivered(new BigDecimal("30")); QtyDelviered will be updated in createInvoiceCandidateInOutLine()
 		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_NachLieferung);
 		ic.setInvoiceRule_Override(null);
 		InterfaceWrapperHelper.save(ic);
@@ -95,11 +93,11 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount1 extends AbstractNewAggre
 			final String inOutDocumentNo = "1";
 			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo);
 			iol11_three = createInvoiceCandidateInOutLine(ic, inOut1, THREE, inOutDocumentNo + "_1");
-			
+
 			iol12_five_disp = createInvoiceCandidateInOutLine(ic, inOut1, FIVE, inOutDocumentNo + "_2");
 			iol12_five_disp.setIsInDispute(true);
 			InterfaceWrapperHelper.save(iol12_five_disp);
-			
+
 			completeInOut(inOut1);
 		}
 
@@ -107,11 +105,11 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount1 extends AbstractNewAggre
 			final String inOutDocumentNo = "2";
 			inOut2 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo);
 			iol21_ten = createInvoiceCandidateInOutLine(ic, inOut2, TEN, inOutDocumentNo + "_1");
-			
+
 			iol22_twenty_disp = createInvoiceCandidateInOutLine(ic, inOut2, TWENTY, inOutDocumentNo + "_2");
 			iol22_twenty_disp.setIsInDispute(true);
 			InterfaceWrapperHelper.save(iol22_twenty_disp);
-			
+
 			completeInOut(inOut2);
 		}
 
@@ -154,21 +152,20 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount1 extends AbstractNewAggre
 		assertThat(il1.getQtyToInvoice(), comparesEqualTo(THREE.add(TEN)));
 
 		assertThat("iol21=" + iol21_ten + " is aggregated into il1=" + il1, getSingleForInOutLine(invoiceLines1, iol21_ten), is(il1));
-		
-		
+
 		final IInvoiceCandidateInOutLineToUpdate icIol11 = retrieveIcIolToUpdateIfExists(il1, iol11_three);
 		assertThat(icIol11.getQtyInvoiced(), comparesEqualTo(THREE));
-		final IInvoiceCandidateInOutLineToUpdate icIol21 =retrieveIcIolToUpdateIfExists(il1, iol21_ten);
+		final IInvoiceCandidateInOutLineToUpdate icIol21 = retrieveIcIolToUpdateIfExists(il1, iol21_ten);
 		assertThat(icIol21.getQtyInvoiced(), comparesEqualTo(TEN));
 
 		//
 		// checking the in-dispute-iols
 		assertNull("Unexpected IInvoiceLineRW for iol12=" + iol12_five_disp, getSingleForInOutLine(invoiceLines1, iol12_five_disp));
-		final IInvoiceCandidateInOutLineToUpdate icIol12 =  retrieveIcIolToUpdateIfExists(il1, iol12_five_disp);
+		final IInvoiceCandidateInOutLineToUpdate icIol12 = retrieveIcIolToUpdateIfExists(il1, iol12_five_disp);
 		assertNull(icIol12);
 
 		assertNull("Unexpected IInvoiceLineRW for iol22=" + iol22_twenty_disp, getSingleForInOutLine(invoiceLines1, iol22_twenty_disp));
-		final IInvoiceCandidateInOutLineToUpdate icIol22 =  retrieveIcIolToUpdateIfExists(il1, iol22_twenty_disp);
+		final IInvoiceCandidateInOutLineToUpdate icIol22 = retrieveIcIolToUpdateIfExists(il1, iol22_twenty_disp);
 		assertNull(icIol22);
 	}
 }

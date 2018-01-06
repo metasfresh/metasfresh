@@ -7,13 +7,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Properties;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.process.AD_Table_CreatePK;
 import org.adempiere.ad.trx.api.ITrx;
@@ -37,8 +34,6 @@ import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IColumnBL;
-import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.Partition;
 import de.metas.dlm.migrator.IMigratorService;
@@ -55,7 +50,6 @@ import de.metas.dlm.partitioner.config.PartitionerConfigLine;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine.LineBuilder;
 import de.metas.dlm.partitioner.config.PartitionerConfigReference;
 import de.metas.dlm.partitioner.config.PartitionerConfigReference.RefBuilder;
-import de.metas.dlm.partitioner.config.TableReferenceDescriptor;
 import de.metas.logging.LogManager;
 
 /*
@@ -143,6 +137,10 @@ public abstract class AbstractDLMService implements IDLMService
 		}
 
 		final I_AD_Element element = adTableDAO.retrieveElement(columnName);
+		
+		final String elementColumnName = element.getColumnName ();
+		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", element);
+		
 		column.setAD_Element(element);
 		column.setAD_Table(table);
 		column.setColumnName(element.getColumnName());
@@ -234,63 +232,6 @@ public abstract class AbstractDLMService implements IDLMService
 	abstract void executeDBFunction_add_table_to_dlm(String tableName, String trxName);
 
 	abstract void executeDBFunction_remove_table_from_dlm(String tableName, String trxName);
-
-	@Override
-	public List<TableReferenceDescriptor> retrieveTableRecordReferences()
-	{
-		return retrieveTableRecordReferences(Env.getCtx(), ITrx.TRXNAME_None);
-	}
-
-	@Cached(cacheName = I_AD_Table.Table_Name + "#and#" + I_AD_Column.Table_Name + "#referencedTableId2TableRecordTableIDs")
-	/* package */ List<TableReferenceDescriptor> retrieveTableRecordReferences(@CacheCtx final Properties ctx, @CacheTrx final String trxName)
-	{
-		//
-		final List<TableReferenceDescriptor> result = new ArrayList<>();
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IColumnBL columnBL = Services.get(IColumnBL.class);
-		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-
-		final PlainContextAware ctxAware = PlainContextAware.newWithTrxName(ctx, trxName);
-
-		// get the list of all columns whose names that end with "Record_ID". They probably belong to a column-record table (but we will make sure).
-		// we could have queried for columns ending with "Table_ID", but there might be more "*Table_ID" columns that don't have a "*Record_ID" column than the other way around.
-		final List<I_AD_Column> recordIdColumns = queryBL.createQueryBuilder(I_AD_Column.class, ctxAware)
-				.addOnlyActiveRecordsFilter()
-				.addEndsWithQueryFilter(I_AD_Column.COLUMNNAME_ColumnName, ITableRecordReference.COLUMNNAME_Record_ID)
-				.orderBy().addColumn(I_AD_Column.COLUMN_AD_Column_ID).endOrderBy()
-				.create()
-				.list(I_AD_Column.class);
-
-		for (final I_AD_Column recordIdColumn : recordIdColumns)
-		{
-			final org.compiere.model.I_AD_Table table = recordIdColumn.getAD_Table();
-			if (table.isView())
-			{
-				continue;
-			}
-			final Optional<String> tableColumnName = columnBL.getTableColumnName(table.getTableName(), recordIdColumn.getColumnName());
-			if (!tableColumnName.isPresent())
-			{
-				continue;
-			}
-
-			// now we know for sure that the records "table" of table can reference other records via Table_ID/Record_ID
-			queryBL
-					.createQueryBuilder(Object.class, table.getTableName(), ctxAware)
-					// .addOnlyActiveRecordsFilter() we also want inactive records, because being active doesn't count when it comes to references
-					.addCompareFilter(tableColumnName.get(), Operator.GREATER, 0)
-					.create()
-					.listDistinct(tableColumnName.get(), Integer.class)
-					.stream()
-					.filter(referencedTableID -> referencedTableID > 0)
-					.map(referencedTableID -> adTableDAO.retrieveTableName(referencedTableID))
-					.forEach(referencedTableName -> result.add(
-							TableReferenceDescriptor.of(table.getTableName(), recordIdColumn.getColumnName(), referencedTableName)));
-		}
-
-		return result;
-	}
 
 	@Override
 	public void updatePartitionSize(final I_DLM_Partition partitionDB)

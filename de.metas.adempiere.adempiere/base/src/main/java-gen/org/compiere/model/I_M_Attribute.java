@@ -57,12 +57,8 @@ public interface I_M_Attribute
 	 */
 	public int getAD_JavaClass_ID();
 
-	public de.metas.javaclasses.model.I_AD_JavaClass getAD_JavaClass();
-
-	public void setAD_JavaClass(de.metas.javaclasses.model.I_AD_JavaClass AD_JavaClass);
-
     /** Column definition for AD_JavaClass_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Attribute, de.metas.javaclasses.model.I_AD_JavaClass> COLUMN_AD_JavaClass_ID = new org.adempiere.model.ModelColumn<I_M_Attribute, de.metas.javaclasses.model.I_AD_JavaClass>(I_M_Attribute.class, "AD_JavaClass_ID", de.metas.javaclasses.model.I_AD_JavaClass.class);
+    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_AD_JavaClass_ID = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "AD_JavaClass_ID", null);
     /** Column name AD_JavaClass_ID */
     public static final String COLUMNNAME_AD_JavaClass_ID = "AD_JavaClass_ID";
 
@@ -125,7 +121,7 @@ public interface I_M_Attribute
     public static final String COLUMNNAME_AD_Val_Rule_ID = "AD_Val_Rule_ID";
 
 	/**
-	 * Set Attribute Value Type.
+	 * Set Merkmals Wert Typ.
 	 * Type of Attribute Value
 	 *
 	 * <br>Type: List
@@ -135,7 +131,7 @@ public interface I_M_Attribute
 	public void setAttributeValueType (java.lang.String AttributeValueType);
 
 	/**
-	 * Get Attribute Value Type.
+	 * Get Merkmals Wert Typ.
 	 * Type of Attribute Value
 	 *
 	 * <br>Type: List
@@ -282,7 +278,32 @@ public interface I_M_Attribute
     public static final String COLUMNNAME_IsAttrDocumentRelevant = "IsAttrDocumentRelevant";
 
 	/**
-	 * Set Instanz-Attribut.
+	 * Set High Volume.
+	 * Use Search instead of Pick list
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsHighVolume (boolean IsHighVolume);
+
+	/**
+	 * Get High Volume.
+	 * Use Search instead of Pick list
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isHighVolume();
+
+    /** Column definition for IsHighVolume */
+    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsHighVolume = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsHighVolume", null);
+    /** Column name IsHighVolume */
+    public static final String COLUMNNAME_IsHighVolume = "IsHighVolume";
+
+	/**
+	 * Set Instanz Merkmal.
 	 * The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	 *
 	 * <br>Type: YesNo
@@ -292,7 +313,7 @@ public interface I_M_Attribute
 	public void setIsInstanceAttribute (boolean IsInstanceAttribute);
 
 	/**
-	 * Get Instanz-Attribut.
+	 * Get Instanz Merkmal.
 	 * The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	 *
 	 * <br>Type: YesNo
@@ -355,7 +376,7 @@ public interface I_M_Attribute
     public static final String COLUMNNAME_IsPricingRelevant = "IsPricingRelevant";
 
 	/**
-	 * Set IsReadOnlyValues.
+	 * Set Read Only.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -364,7 +385,7 @@ public interface I_M_Attribute
 	public void setIsReadOnlyValues (boolean IsReadOnlyValues);
 
 	/**
-	 * Get IsReadOnlyValues.
+	 * Get Read Only.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -376,6 +397,31 @@ public interface I_M_Attribute
     public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsReadOnlyValues = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsReadOnlyValues", null);
     /** Column name IsReadOnlyValues */
     public static final String COLUMNNAME_IsReadOnlyValues = "IsReadOnlyValues";
+
+	/**
+	 * Set Ist Bestandsrelevant.
+	 * Is used to do attibute matching between storage attributes and order line attributes (ASIs).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsStorageRelevant (boolean IsStorageRelevant);
+
+	/**
+	 * Get Ist Bestandsrelevant.
+	 * Is used to do attibute matching between storage attributes and order line attributes (ASIs).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isStorageRelevant();
+
+    /** Column definition for IsStorageRelevant */
+    public static final org.adempiere.model.ModelColumn<I_M_Attribute, Object> COLUMN_IsStorageRelevant = new org.adempiere.model.ModelColumn<I_M_Attribute, Object>(I_M_Attribute.class, "IsStorageRelevant", null);
+    /** Column name IsStorageRelevant */
+    public static final String COLUMNNAME_IsStorageRelevant = "IsStorageRelevant";
 
 	/**
 	 * Set Merkmal.

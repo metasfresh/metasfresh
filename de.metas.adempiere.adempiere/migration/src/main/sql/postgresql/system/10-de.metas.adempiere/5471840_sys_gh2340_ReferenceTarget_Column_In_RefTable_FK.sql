@@ -1,0 +1,5 @@
+
+-- 2017-09-15T17:16:13.223
+-- URL zum Konzept
+ALTER TABLE AD_Ref_Table ADD CONSTRAINT ADColumnReferenceTarget_ADRefT FOREIGN KEY (AD_Column_ReferenceTarget_ID) REFERENCES public.AD_Column DEFERRABLE INITIALLY DEFERRED
+;

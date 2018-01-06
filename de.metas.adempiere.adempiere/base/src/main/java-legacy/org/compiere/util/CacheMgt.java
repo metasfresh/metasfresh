@@ -28,10 +28,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.ad.trx.spi.ITrxListener;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.WeakList;
@@ -39,9 +38,9 @@ import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -57,7 +56,7 @@ public final class CacheMgt
 {
 	/**
 	 * Get Cache Management
-	 * 
+	 *
 	 * @return Cache Manager
 	 */
 	public static final CacheMgt get()
@@ -90,7 +89,7 @@ public final class CacheMgt
 
 	/**
 	 * List of Table Names.
-	 * 
+	 *
 	 * i.e. map of TableName to "how many cache instances do we have for that table name"
 	 */
 	private final Map<String, AtomicInteger> tableNames = new HashMap<>();
@@ -103,7 +102,7 @@ public final class CacheMgt
 	/**
 	 * Enable caches for the given table to be invalidated by remote events. Example: if a user somewhere else opens/closes a period, we can allow the system to invalidate the local cache to avoid it
 	 * becoming stale.
-	 * 
+	 *
 	 * @param tableName
 	 */
 	public final void enableRemoteCacheInvalidationForTableName(final String tableName)
@@ -230,7 +229,7 @@ public final class CacheMgt
 
 	/**
 	 * Extracts the TableName from given cache instance.
-	 * 
+	 *
 	 * @param instance
 	 * @return table name or <code>null</code> if table name could not be extracted
 	 */
@@ -280,7 +279,7 @@ public final class CacheMgt
 
 	/**
 	 * Invalidate ALL cached entries of all registered {@link CacheInterface}s.
-	 * 
+	 *
 	 * @return how many cache entries were invalidated
 	 */
 	public int reset()
@@ -337,35 +336,33 @@ public final class CacheMgt
 
 	/**
 	 * Invalidate all cached entries for given TableName.
-	 * 
+	 *
 	 * @param tableName table name
 	 * @return how many cache entries were invalidated
 	 */
 	public int reset(final String tableName)
 	{
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, RECORD_ID_ALL);
-		final boolean broadcast = true;
-		return reset(request, broadcast);
+		return reset(request, ResetMode.LOCAL_AND_BROADCAST);
 	}	// reset
 
 	/**
 	 * Invalidate all cached entries for given TableName.
-	 * 
+	 *
 	 * The event won't be broadcasted.
-	 * 
+	 *
 	 * @param tableName table name
 	 * @return how many cache entries were invalidated
 	 */
 	public int resetLocal(final String tableName)
 	{
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, RECORD_ID_ALL);
-		final boolean broadcast = false;
-		return reset(request, broadcast);
+		return reset(request, ResetMode.LOCAL);
 	}	// reset
 
 	/**
 	 * Invalidate all cached entries for given TableName/Record_ID.
-	 * 
+	 *
 	 * @param tableName table name
 	 * @param recordId record if applicable or {@link #RECORD_ID_ALL} for all
 	 * @return how many cache entries were invalidated
@@ -373,26 +370,24 @@ public final class CacheMgt
 	public int reset(final String tableName, final int recordId)
 	{
 		final CacheInvalidateMultiRequest request = CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, recordId);
-		final boolean broadcast = true;
-		return reset(request, broadcast);
+		return reset(request, ResetMode.LOCAL_AND_BROADCAST);
 	}
 
 	public int reset(final CacheInvalidateRequest request)
 	{
-		final boolean broadcast = true;
-		return reset(CacheInvalidateMultiRequest.of(request), broadcast);
+		return reset(CacheInvalidateMultiRequest.of(request), ResetMode.LOCAL_AND_BROADCAST);
 	}
 
 	/**
 	 * Reset cache for TableName/Record_ID when given transaction is committed.
-	 * 
+	 *
 	 * If no transaction was given or given transaction was not found, the cache is reset right away.
-	 * 
+	 *
 	 * @param trxName
 	 * @param tableName
 	 * @param recordId
 	 */
-	public void resetOnTrxCommit(final String trxName, final CacheInvalidateRequest request)
+	public void resetLocalNowAndBroadcastOnTrxCommit(final String trxName, final CacheInvalidateRequest request)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
@@ -401,29 +396,55 @@ public final class CacheMgt
 			reset(request);
 			return;
 		}
+		else
+		{
+			reset(CacheInvalidateMultiRequest.of(request), ResetMode.LOCAL);
+			RecordsToResetOnTrxCommitCollector.getCreate(trx).addRecord(request, ResetMode.JUST_BROADCAST);
+		}
+	}
 
-		RecordsToResetOnTrxCommitCollector.getCreate(trx).addRecord(request);
+	static enum ResetMode
+	{
+		LOCAL, LOCAL_AND_BROADCAST, JUST_BROADCAST;
+
+		public boolean isResetLocal()
+		{
+			return this == LOCAL || this == LOCAL_AND_BROADCAST;
+		}
+
+		public boolean isBroadcast()
+		{
+			return this == LOCAL_AND_BROADCAST || this == JUST_BROADCAST;
+		}
 	}
 
 	/**
 	 * Invalidate all cached entries for given TableName/Record_ID.
-	 * 
+	 *
 	 * @param tableName
 	 * @param recordId
 	 * @param broadcast true if we shall also broadcast this remotely.
-	 * @return how many cache entries were invalidated
+	 * @return how many cache entries were invalidated (estimated!)
 	 */
-	final int reset(@NonNull final CacheInvalidateMultiRequest multiRequest, final boolean broadcast)
+	final int reset(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode mode)
 	{
-		final int resetCount = resetCacheInstances(multiRequest);
+		final int resetCount;
+		if (mode.isResetLocal())
+		{
+			resetCount = resetCacheInstances(multiRequest);
 
-		//
-		fireGlobalCacheResetListeners(multiRequest);
+			//
+			fireGlobalCacheResetListeners(multiRequest);
+		}
+		else
+		{
+			resetCount = 0;
+		}
 
 		//
 		// Broadcast cache invalidation.
 		// We do this, even if we don't have any cache interface registered locally, because there might be remotely.
-		if (broadcast)
+		if (mode.isBroadcast())
 		{
 			CacheInvalidationRemoteHandler.instance.postEvent(multiRequest);
 		}
@@ -627,7 +648,7 @@ public final class CacheMgt
 
 	/**
 	 * Adds an listener which will be fired when the cache for given table is about to be reset.
-	 * 
+	 *
 	 * @param tableName
 	 * @param cacheResetListener
 	 */
@@ -692,67 +713,80 @@ public final class CacheMgt
 	}
 
 	/** Collects records that needs to be removed from cache when a given transaction is committed */
-	private static final class RecordsToResetOnTrxCommitCollector extends TrxListenerAdapter
+	private static final class RecordsToResetOnTrxCommitCollector
 	{
 		/** Gets/creates the records collector which needs to be reset when transaction is committed */
 		public static final RecordsToResetOnTrxCommitCollector getCreate(final ITrx trx)
 		{
-			return trx.getProperty(TRX_PROPERTY, new Supplier<RecordsToResetOnTrxCommitCollector>()
-			{
+			return trx.getProperty(TRX_PROPERTY, () -> {
 
-				@Override
-				public RecordsToResetOnTrxCommitCollector get()
-				{
-					final RecordsToResetOnTrxCommitCollector collector = new RecordsToResetOnTrxCommitCollector();
-					trx.getTrxListenerManager().registerListener(ResetCacheOnCommitTrxListener);
-					return collector;
+				final RecordsToResetOnTrxCommitCollector collector = new RecordsToResetOnTrxCommitCollector();
 
-				}
+				// Listens {@link ITrx}'s after-commit and fires enqueued cache invalidation requests
+				trx.getTrxListenerManager()
+						.newEventListener(TrxEventTiming.AFTER_COMMIT)
+						.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+						.registerHandlingMethod(innerTrx -> {
+
+							final RecordsToResetOnTrxCommitCollector innerCollector = innerTrx.getProperty(TRX_PROPERTY);
+							if (innerCollector == null)
+							{
+								return;
+							}
+							innerCollector.sendRequestsAndClear();
+						});
+
+				return collector;
 			});
 		}
 
 		private static final String TRX_PROPERTY = RecordsToResetOnTrxCommitCollector.class.getName();
 
-		/** Listens {@link ITrx}'s after-commit and fires enqueued cache invalidation requests */
-		private static final ITrxListener ResetCacheOnCommitTrxListener = new TrxListenerAdapter()
-		{
-			@Override
-			public void afterCommit(final ITrx trx)
-			{
-				final RecordsToResetOnTrxCommitCollector collector = trx.getProperty(TRX_PROPERTY);
-				if (collector == null)
-				{
-					return;
-				}
-
-				collector.sendRequestsAndClear();
-			}
-		};
-
-		private final Set<CacheInvalidateRequest> requests = Sets.newConcurrentHashSet();
+		private final Map<CacheInvalidateRequest, ResetMode> request2resetMode = Maps.newConcurrentMap();
 
 		/** Enqueues a record */
-		public final void addRecord(@NonNull final CacheInvalidateRequest request)
+		public final void addRecord(@NonNull final CacheInvalidateRequest request, @NonNull ResetMode resetMode)
 		{
-			requests.add(request);
-			log.debug("Scheduled cache invalidation on transaction commit: {}", request);
+			request2resetMode.put(request, resetMode);
+			log.debug("Scheduled cache invalidation on transaction commit: {} ({})", request, resetMode);
 		}
 
 		/** Reset the cache for all enqueued records */
 		private void sendRequestsAndClear()
 		{
-			if (requests.isEmpty())
+			if (request2resetMode.isEmpty())
 			{
 				return;
 			}
 
 			final CacheMgt cacheMgt = CacheMgt.get();
 
-			final CacheInvalidateMultiRequest multiRequest = CacheInvalidateMultiRequest.of(requests);
-			final boolean broadcast = true;
-			cacheMgt.reset(multiRequest, broadcast);
+			final ImmutableList.Builder<CacheInvalidateRequest> resetLocalRequestsBuilder = ImmutableList.builder();
+			final ImmutableList.Builder<CacheInvalidateRequest> broadcastRequestsBuilder = ImmutableList.builder();
+			request2resetMode.forEach((request, resetMode) -> {
+				if (resetMode.isResetLocal())
+				{
+					resetLocalRequestsBuilder.add(request);
+				}
+				if (resetMode.isBroadcast())
+				{
+					broadcastRequestsBuilder.add(request);
+				}
+			});
 
-			requests.clear();
+			final ImmutableList<CacheInvalidateRequest> resetLocalRequests = resetLocalRequestsBuilder.build();
+			if (!resetLocalRequests.isEmpty())
+			{
+				cacheMgt.reset(CacheInvalidateMultiRequest.of(resetLocalRequests), ResetMode.LOCAL);
+			}
+
+			final ImmutableList<CacheInvalidateRequest> broadcastRequests = broadcastRequestsBuilder.build();
+			if (!broadcastRequests.isEmpty())
+			{
+				cacheMgt.reset(CacheInvalidateMultiRequest.of(broadcastRequests), ResetMode.JUST_BROADCAST);
+			}
+
+			request2resetMode.clear();
 		}
 	}
 }

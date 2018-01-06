@@ -114,6 +114,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.api.IMeter;
 import de.metas.monitoring.api.IMonitoringBL;
+import lombok.NonNull;
 
 /**
  * Default XML importer
@@ -857,7 +858,7 @@ public class ImportHelper implements IImportHelper
 			{
 				clazz = Boolean.class;
 			}
-			else if (Services.get(IColumnBL.class).isRecordColumnName(columnName))
+			else if (Services.get(IColumnBL.class).isRecordIdColumnName(columnName))
 			{
 				clazz = Integer.class;
 			}
@@ -884,8 +885,7 @@ public class ImportHelper implements IImportHelper
 			if (DisplayType.DateTime == adReferenceId
 					|| DisplayType.Date == adReferenceId)
 			{
-				//
-				final boolean ok = po.set_ValueOfAD_Column_ID(line.getAD_Column_ID(), value);
+				final boolean ok = setColumnOfPOtoValue(line.getAD_Column_ID(), po, value);
 				log.info("Set value of column [{}]=[{}] (ok={})", columnName, value, ok);
 			}
 			else if (DisplayType.Integer == adReferenceId
@@ -900,7 +900,7 @@ public class ImportHelper implements IImportHelper
 				boolean stringValueAlreadySet = false;
 				if (column.getAD_Reference_Value_ID() <= 0)
 				{
-					// Without an explicit reference value, we assume that the FK is an interger
+					// Without an explicit reference value, we assume that the FK is an integer
 					stringValueAlreadySet = false;
 				}
 
@@ -915,7 +915,7 @@ public class ImportHelper implements IImportHelper
 					final MColumn referencedCol = MColumn.get(ctx, refTable.getAD_Key());
 					if (DisplayType.isText(referencedCol.getAD_Reference_ID()))
 					{
-						final boolean ok = po.set_ValueOfAD_Column_ID(line.getAD_Column_ID(), value);
+						final boolean ok = setColumnOfPOtoValue(line.getAD_Column_ID(), po, value);
 						log.info("Set string value of column [{}]=[{}] (ok={})", columnName, value, ok);
 						stringValueAlreadySet = true;
 					}
@@ -935,7 +935,7 @@ public class ImportHelper implements IImportHelper
 					}
 
 					log.info("About to set int value of column [" + columnName + "]=[" + value + "]");
-					po.set_ValueOfAD_Column_ID(line.getAD_Column_ID(), value);
+					setColumnOfPOtoValue(line.getAD_Column_ID(), po, value);
 					log.info("Set int value of column [" + columnName + "]=[" + value + "]");
 				}
 
@@ -955,9 +955,7 @@ public class ImportHelper implements IImportHelper
 				// value = new Double( doubleValue );
 
 				log.info("About to set BigDecimal value of column [" + columnName + "]=[" + value + "]");
-
-				po.set_ValueOfAD_Column_ID(line.getAD_Column_ID(), value);
-
+				setColumnOfPOtoValue(line.getAD_Column_ID(), po, value);
 				log.info("Set BigDecimal value of column [" + columnName + "]=[" + value + "]");
 			}
 			else if (DisplayType.YesNo == adReferenceId)
@@ -965,7 +963,7 @@ public class ImportHelper implements IImportHelper
 				if (clazz == Boolean.class)
 				{
 					final String v = handleYesNo(value);
-					po.set_ValueOfAD_Column_ID(line.getAD_Column_ID(), v);
+					setColumnOfPOtoValue(line.getAD_Column_ID(), po, v);
 				}
 			}
 			else
@@ -977,11 +975,11 @@ public class ImportHelper implements IImportHelper
 					if (clazz == Boolean.class)
 					{
 						final String v = handleYesNo(value);
-						po.set_ValueOfAD_Column_ID(line.getAD_Column_ID(), v);
+						setColumnOfPOtoValue(line.getAD_Column_ID(), po, v);
 					}
 					else
 					{
-						po.set_ValueOfAD_Column_ID(line.getAD_Column_ID(), clazz.cast(value));
+						setColumnOfPOtoValue(line.getAD_Column_ID(), po, clazz.cast(value));
 					}
 
 					log.info("Set value of column [" + columnName + "]=[" + value + "]");
@@ -995,6 +993,16 @@ public class ImportHelper implements IImportHelper
 			}
 			result.append(columnName).append("=").append(value).append("; ");
 		}// end if TYPE_EmbeddedEXPFormat
+	}
+
+	private boolean setColumnOfPOtoValue(
+			final int columnId ,
+			@NonNull final PO po,
+			final Object value)
+	{
+		final String nodeColumnName= Services.get(IADTableDAO.class).retrieveColumnName(columnId);
+		final boolean ok = po.set_ValueOfColumn(nodeColumnName, value);
+		return ok;
 	}
 
 	private static int getADClientIdByValue(final Properties ctx, final String value, final String trxName)
@@ -1331,7 +1339,7 @@ public class ImportHelper implements IImportHelper
 		{
 			//
 			// Do a lookup to find out if the DB contains a data record for the given XML data
-			
+
 			// further up, this exception might be caught and resolved by getSingleDefaultPO()
 			final String lookupExMsg = MSG_EXPFormatLineDuplicatedObject + " : " + expFormat.getName() + "(" + formatLines + ")";
 			throw  new DuplicateLookupObjectException(lookupExMsg, lookupValues, replicationTrxLine, doLookup)

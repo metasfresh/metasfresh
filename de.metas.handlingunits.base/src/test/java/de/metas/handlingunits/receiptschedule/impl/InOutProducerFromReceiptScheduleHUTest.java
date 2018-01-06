@@ -13,12 +13,12 @@ import static org.junit.Assert.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -62,7 +62,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	@Test
 	public void testNoASIChangeAndNoQualityIssues()
 	{
-		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToReceiptSchedule();
+		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToTheReceiptSchedule();
 
 		//
 		// Generate receipt
@@ -112,7 +112,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	@Test
 	public void testDifferentASIAndQualityIssues()
 	{
-		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToReceiptSchedule();
+		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToTheReceiptSchedule();
 		assertThat(paloxes.size(), is(10)); // guard
 
 		//
@@ -226,7 +226,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.noQualityNote()
 					.inDispute(false)
 					.endExpectation()
-					
+
 				.newInOutLineExpectation() // line 6: packing materials line
 					.referencesPackagingMaterialLineIdx(0) // is packaging material and does not reference another packing material line
 					//
@@ -247,7 +247,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	@Test
 	public void testSameASIAndQualityIssues_TU()
 	{
-		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToReceiptSchedule();
+		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToTheReceiptSchedule();
 
 		//
 		// Setup paloxe attribute structure
@@ -342,7 +342,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	@Test
 	public void test_HU_LotNumberDate_propagated()
 	{
-		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToReceiptSchedule();
+		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToTheReceiptSchedule();
 
 		final Date lotNumberDate1 = TimeUtil.getDay(2016, 01, 22);
 		final Date lotNumberDate2 = TimeUtil.getDay(2016, 01, 23);
@@ -396,11 +396,9 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	}
 
 	/**
-	 * i.e. Create 10 Paloxes and assign them to receipt schedule
-	 *
-	 * @return created HUs
+	 * Create 10 Paloxes and assign them to "the" receipt schedule of this test's base class.
 	 */
-	private List<I_M_HU> createStandardHUsAndAssignThemToReceiptSchedule()
+	private List<I_M_HU> createStandardHUsAndAssignThemToTheReceiptSchedule()
 	{
 		final BigDecimal qtyOrdered = receiptSchedule.getQtyOrdered();
 		Assert.assertThat("precondition: QtyOrdered", qtyOrdered, Matchers.comparesEqualTo(new BigDecimal("4300")));
@@ -432,12 +430,10 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	{
 		final Properties ctx = huContext.getCtx();
 		final List<I_M_ReceiptSchedule> receiptSchedules = Collections.singletonList(receiptSchedule);
-		final Set<I_M_HU> selectedHUsSet = new HashSet<I_M_HU>(selectedHUsToReceive);
+		final Set<I_M_HU> selectedHUsSet = new HashSet<>(selectedHUsToReceive);
 		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(ctx,
 				receiptSchedules,
-				selectedHUsSet,
-				true // storeReceipts
-		);
+				selectedHUsSet);
 		final I_M_InOut receipt = result.getInOuts().get(0);
 		return receipt;
 	}

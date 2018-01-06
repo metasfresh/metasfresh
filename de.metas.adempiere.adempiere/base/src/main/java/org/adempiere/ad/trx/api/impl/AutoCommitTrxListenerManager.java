@@ -13,20 +13,20 @@ package org.adempiere.ad.trx.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.exceptions.TrxException;
-import org.adempiere.ad.trx.spi.ITrxListener;
+
+import lombok.NonNull;
 
 /**
  * An {@link ITrxListenerManager} implementation which directly executes {@link ITrxListener#beforeCommit(ITrx)} and {@link ITrxListener#afterCommit(ITrx)} when a listener is registered.
@@ -40,41 +40,36 @@ import org.adempiere.ad.trx.spi.ITrxListener;
 
 	private AutoCommitTrxListenerManager()
 	{
-		super();
 	}
 
 	@Override
-	public void registerListener(final ITrxListener listener)
+	public void registerListener(@NonNull final RegisterListenerRequest listener)
 	{
 		execute(listener);
-	}
-
-	/**
-	 * Same as {@link #onAfterCommit(Runnable)}.
-	 */
-	@Override
-	public void onAfterNextCommit(Runnable runnable)
-	{
-		onAfterCommit(runnable);
 	}
 	
 	@Override
-	public void registerListener(final boolean weak, final ITrxListener listener)
+	public boolean canRegisterOnTiming(@NonNull final TrxEventTiming timing)
 	{
-		execute(listener);
+		// any timing is accepted because we are executing directly
+		return true;
 	}
 
-	private final void execute(final ITrxListener listener)
+	private final void execute(final RegisterListenerRequest listener)
 	{
-		if(!listener.isActive())
+		if (!listener.isActive())
+		{
+			return; // nothing to do
+		}
+		if (!TrxEventTiming.BEFORE_COMMIT.equals(listener.getTiming())
+				&& !TrxEventTiming.AFTER_COMMIT.equals(listener.getTiming())
+				&& !TrxEventTiming.AFTER_CLOSE.equals(listener.getTiming()))
 		{
 			return; // nothing to do
 		}
 		try
 		{
-			listener.beforeCommit(ITrx.TRX_None);
-			listener.afterCommit(ITrx.TRX_None);
-			listener.afterClose(ITrx.TRX_None);
+			listener.getHandlingMethod().onTransactionEvent(ITrx.TRX_None);
 		}
 		catch (Exception e)
 		{

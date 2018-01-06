@@ -12,6 +12,7 @@ import org.compiere.model.MProduct;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
+import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_M_Product;
@@ -103,6 +104,13 @@ public final class InOutCandidateValidator implements ModelValidator
 				Services.get(IShipmentSchedulePA.class).invalidate(storageSegments);
 			}
 		});
+		
+		setupCaching();
+	}
+
+	private void setupCaching()
+	{
+		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_M_ShipmentSchedule.Table_Name);
 	}
 
 	/**

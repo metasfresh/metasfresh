@@ -9,7 +9,6 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<groupId>de.metas.dlm</groupId>
 	<artifactId>metasfresh-dlm-base</artifactId>
 	<packaging>jar</packaging>
 

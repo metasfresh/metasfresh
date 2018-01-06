@@ -13,15 +13,14 @@ package org.adempiere.acct.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -30,8 +29,8 @@ import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IPostingRequestBuilder;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
@@ -183,8 +182,7 @@ import lombok.NonNull;
 					final String error = server.postImmediate(ctxReduced,
 							AD_Client_ID,
 							AD_Table_ID, Record_ID,
-							force
-							);
+							force);
 					setPostedError(error);
 					log.info("from Server: {}", error == null ? "OK" : error);
 				}
@@ -210,7 +208,6 @@ import lombok.NonNull;
 
 		// NOTE: when you will handle this part, also keep in mind:
 		// * if Client Accounting is Queue => do nothing because there is a manual process which will do the job
-
 
 		// NOTE: we are reaching this method, also when !postingService.isEnabled()
 
@@ -377,8 +374,8 @@ import lombok.NonNull;
 	{
 		assertNotExecuted();
 		Check.assumeNotNull(documentObj, "documentObj not null");
-		
-		if(documentObj instanceof IDocument)
+
+		if (documentObj instanceof IDocument)
 		{
 			final IDocument document = IDocument.cast(documentObj);
 			setDocument(document);
@@ -394,7 +391,7 @@ import lombok.NonNull;
 	private void setDocumentFromModel0(@NonNull final Object documentObj)
 	{
 		assertNotExecuted();
-		
+
 		Properties ctx = InterfaceWrapperHelper.getCtx(documentObj);
 		String trxName = InterfaceWrapperHelper.getTrxName(documentObj);
 		final Optional<Integer> adClientIdOpt = InterfaceWrapperHelper.getValue(documentObj, "AD_Client_ID");
@@ -410,7 +407,7 @@ import lombok.NonNull;
 	public IPostingRequestBuilder setDocument(@NonNull final IDocument document)
 	{
 		assertNotExecuted();
-		
+
 		setContext(document.getCtx(), document.get_TrxName());
 		setAD_Client_ID(document.getAD_Client_ID());
 		setDocumentRef(document.toTableRecordReference());
@@ -589,14 +586,9 @@ import lombok.NonNull;
 		if (!trxManager.isNull(trxName))
 		{
 			trxManager.getTrxListenerManager(trxName)
-					.registerListener(new TrxListenerAdapter()
-					{
-						@Override
-						public void afterCommit(final ITrx trx)
-						{
-							postRunnable.run();
-						}
-					});
+					.newEventListener(TrxEventTiming.AFTER_COMMIT)
+					.invokeMethodJustOnce(false) // invoking the method on *every* commit, because that's how it was and I can't check now if it's really needed
+					.registerHandlingMethod(innerTrx -> postRunnable.run());
 
 			// TODO figure out what shall be the posting status in this case,
 			// or how shall be tell the caller that we don't know the status because the posting will be done async,

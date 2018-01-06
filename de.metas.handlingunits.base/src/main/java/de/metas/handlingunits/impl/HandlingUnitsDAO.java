@@ -53,6 +53,7 @@ import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
@@ -63,6 +64,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
@@ -189,6 +191,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		return VIRTUAL_HU_PI_ID;
 	}
+	
+	@Override
+	public int getVirtual_HU_PI_Version_ID()
+	{
+		return VIRTUAL_HU_PI_Version_ID;
+	}
 
 	@Override
 	public int getVirtual_HU_PI_Item_ID()
@@ -251,7 +259,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		Check.assumeNotNull(hu, "hu not null");
 
-		final List<I_M_HU> result = new ArrayList<I_M_HU>();
+		final List<I_M_HU> result = new ArrayList<>();
 
 		final Set<Integer> seenHUIds = new HashSet<>();
 		for (final I_M_HU_Item huItem : retrieveItems(hu))
@@ -377,7 +385,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final List<I_M_HU_PI_Item> piItemsAll = retrieveAllPIItems(ctx, huPIVersionId, trxName);
 
 		final int bpartnerId = partner == null ? -1 : partner.getC_BPartner_ID();
-		final List<I_M_HU_PI_Item> piItems = new ArrayList<I_M_HU_PI_Item>();
+		final List<I_M_HU_PI_Item> piItems = new ArrayList<>();
 		for (final I_M_HU_PI_Item piItem : piItemsAll)
 		{
 			// Skip inactive lines
@@ -587,7 +595,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class, ctx, trxName);
 
-		final ICompositeQueryFilter<I_M_HU> filters = queryBuilder.getFilters();
+		final ICompositeQueryFilter<I_M_HU> filters = queryBuilder.getCompositeFilter();
 		filters.addInArrayOrAllFilter(I_M_HU.COLUMN_M_Locator_ID, locatorIds);
 
 		// Top Level filter
@@ -664,8 +672,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.create()
 				.list(I_M_HU_PI_Item.class);
 
-		final List<I_M_HU_PI_Item> parentPIItems = new ArrayList<I_M_HU_PI_Item>();
-		final Set<ArrayKey> seen = new HashSet<ArrayKey>();
+		final List<I_M_HU_PI_Item> parentPIItems = new ArrayList<>();
+		final Set<ArrayKey> seen = new HashSet<>();
 		for (final I_M_HU_PI_Item parentItem : parentItems)
 		{
 			// Make sure we are not evaluating again this PI version
@@ -942,5 +950,35 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.distinct()
 				.map(id -> InterfaceWrapperHelper.load(id, I_M_Warehouse.class))
 				.collect(ImmutableList.toImmutableList());
+	}
+	
+	@Override
+	public List<org.compiere.model.I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(final List<I_M_HU> hus)
+	{
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		if (hus.isEmpty())
+		{
+			// should never happen
+			return Collections.emptyList();
+		}
+
+		// used for deciding the org and context
+		final I_M_HU firstHU = hus.get(0);
+
+		final int orgId = firstHU.getAD_Org_ID();
+		final Properties ctx = InterfaceWrapperHelper.getCtx(firstHU);
+
+		final Set<Integer> huWarehouseIds = handlingUnitsDAO.retrieveWarehousesForHUs(hus)
+				.stream()
+				.map(org.compiere.model.I_M_Warehouse::getM_Warehouse_ID)
+				.collect(ImmutableSet.toImmutableSet());
+		
+		 final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(ctx, orgId)
+				 .stream()
+				 .filter(warehouse -> !huWarehouseIds.contains(warehouse.getM_Warehouse_ID()))
+				 .collect(ImmutableList.toImmutableList());
+
+		return warehouses;
 	}
 }

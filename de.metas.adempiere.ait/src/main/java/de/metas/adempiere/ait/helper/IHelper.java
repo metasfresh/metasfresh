@@ -10,12 +10,12 @@ package de.metas.adempiere.ait.helper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,10 +45,10 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.adempiere.model.I_M_Product_Category;
+import de.metas.banking.model.I_C_BP_BankAccount;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_BP_BankAccount;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -63,7 +63,7 @@ public interface IHelper
 
 	/**
 	 * Default Product Category.
-	 * 
+	 *
 	 * ts: 1000001 is the value for "Rabattfaehige Produkte" Product need to have this category,otherwise they will not
 	 * be processed by the  commission system
 	 */
@@ -71,7 +71,7 @@ public interface IHelper
 
 	/**
 	 * Default Bank Account No.
-	 * 
+	 *
 	 * To make sure tests are running ok, we will generate on BankAccount on each run. The main reason are bank
 	 * statements where if we have previous bank statements for a bank account, it can influence the tests.
 	 */
@@ -81,7 +81,7 @@ public interface IHelper
 	public static final String DEFAULT_RoutingNo = "TestRN";
 
 	public void init();
-	
+
 	public TestConfig getConfig();
 
 	public String createAndSetTrxName(String trxNamePrefix);
@@ -112,7 +112,7 @@ public interface IHelper
 	 * @param info
 	 */
 	public void addChatInfoToPO(Object model, String info);
-	
+
 	/**
 	 * Parses the given string and replaces certain placeholders:
 	 * <ul>
@@ -126,9 +126,9 @@ public interface IHelper
 
 	/**
 	 * Create Document Process for given document.
-	 * 
+	 *
 	 * Please note that after processing, the document is refreshed so the PO will contain the current state.
-	 * 
+	 *
 	 * @param doc
 	 *            can be any wrapped PO or GridTab that is a document
 	 * @param docAction
@@ -141,23 +141,23 @@ public interface IHelper
 
 	/**
 	 * Process given document.
-	 * 
+	 *
 	 * @see #mkDocProcess(Object, String, String)
 	 */
 	public void process(Object doc, String docAction, String expectedDocStatus);
 
 	public void processComplete(IDocument doc);
-	
+
 	/**
 	 * Get/Create a Business Partner
-	 * 
+	 *
 	 * @param bpValue
 	 * @return
 	 * @deprecated use {@link #mkBPartnerHelper()}.getC_BPartner(TestConfig) instead
 	 */
 	@Deprecated
 	public I_C_BPartner getC_BPartner(String bpValue);
-	
+
 	public I_M_Product getM_Product();
 
 	public int getC_BP_BankAccount_ID(boolean isCashBank);
@@ -166,7 +166,7 @@ public interface IHelper
 
 	/**
 	 * Get/Create a banks account
-	 * 
+	 *
 	 * @param bankAccount
 	 * @return
 	 */
@@ -176,7 +176,7 @@ public interface IHelper
 
 	/**
 	 * Get/Create a product
-	 * 
+	 *
 	 * @param productKey
 	 * @return
 	 */
@@ -210,7 +210,7 @@ public interface IHelper
 			BigDecimal price, boolean isSO);
 
 	/**
-	 * 
+	 *
 	 * @param pricingSystemValue
 	 * @param currencyCode
 	 * @param countryCode
@@ -223,7 +223,7 @@ public interface IHelper
 	public I_M_ProductPrice setProductPrice(String pricingSystemValue, String currencyCode, String countryCode, String productValue, BigDecimal price, int C_TaxCategory_ID, boolean IsSO);
 
 	/**
-	 * 
+	 *
 	 * @param pl
 	 * @param productValue
 	 * @param price
@@ -231,8 +231,8 @@ public interface IHelper
 	 * @return
 	 */
 	I_M_ProductPrice setProductPrice(I_M_PriceList pl, String productValue, BigDecimal price, int C_TaxCategory_ID);
-	
-	
+
+
 	public I_M_ProductPrice setProductPrice(org.compiere.model.I_M_PriceList pl, String productValue, BigDecimal price);
 
 	public MWarehouse getM_Warehouse();
@@ -250,7 +250,7 @@ public interface IHelper
 	public void runProcess_InvoiceGenerate(String trxName, int... orderIds);
 
 	public void runProcess_InvoiceGenerateFromCands(I_C_Invoice_Candidate... cands);
-	
+
 	public List<I_C_Invoice> retrieveInvoicesForOrders(int[] orderIds, String trxName);
 
 	public List<I_M_InOut> retrieveInOutsForOrders(int[] orderIds, String trxName);
@@ -258,13 +258,13 @@ public interface IHelper
 	public List<I_M_ShipmentSchedule> retrieveShipmentSchedulesForOrders(int... orderIds);
 
 	public void runProcess_UpdateShipmentScheds();
-	
+
 	public void addInventory(String productValue, int qty);
 
 	public List<I_C_InvoiceLine> retrieveLines(I_C_Invoice invoice);
 
 	/**
-	 * 
+	 *
 	 * @param order
 	 * @return
 	 * @deprecated use IOrderPA.retriveLines() instead
@@ -307,12 +307,12 @@ public interface IHelper
 	 * @return
 	 */
 	public I_C_Charge getC_Charge(String chargeName, String taxCategoryName);
-	
+
 	public I_M_PriceList_Version getM_PriceList_Version(String pricingSystemValue, String currencyCode, String countryCode);
 
 	public AcctFactAssert doAccountingAssertions();
-	
-	// public BOMBuilder mkBOMBuilder(); // not yet ported from 
+
+	// public BOMBuilder mkBOMBuilder(); // not yet ported from
 
 	public I_C_TaxCategory getC_TaxCategory(String Name);
 

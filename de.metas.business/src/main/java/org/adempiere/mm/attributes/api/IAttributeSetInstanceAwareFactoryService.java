@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes.api;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,21 +15,27 @@ package org.adempiere.mm.attributes.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.util.ISingletonService;
 
 public interface IAttributeSetInstanceAwareFactoryService extends ISingletonService
 {
-	public void registerFactory(final String tableName, final IAttributeSetInstanceAwareFactory factory);
+	/**
+	 * Register a factory for a given table name.<br>
+	 * For a given input instance, {@link InterfaceWrapperHelper#getModelTableNameOrNull(Object)} will be used to see if is has a table name.<br>
+	 * Factories registered with this method take precedence over factories registered with {@link #registerFactoryForOtherClass(Class, IAttributeSetInstanceAwareFactory)}.
+	 */
+	void registerFactoryForTableName(String tableNameOfInput, IAttributeSetInstanceAwareFactory factory);
+
+	void registerFactoryForOtherClass(Class<?> classOfInput, IAttributeSetInstanceAwareFactory factory);
 
 	IAttributeSetInstanceAware createOrNull(Object referencedObj);
 }

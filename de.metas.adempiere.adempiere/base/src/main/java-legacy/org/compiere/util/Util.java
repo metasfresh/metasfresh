@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.annotation.concurrent.Immutable;
 import javax.mail.internet.MimeUtility;
@@ -238,7 +239,7 @@ public class Util
 
 	/**
 	 * Add 0 digits at the end of a String until it gets to the size given as paraameter.
-	 * 
+	 *
 	 * @param value
 	 * @param size
 	 * @param description
@@ -559,7 +560,7 @@ public class Util
 		if (set.size() == 0)
 			return iter;
 		// Check, if there are unwanted attributes
-		Set<AttributedCharacterIterator.Attribute> unwanted = new HashSet<AttributedCharacterIterator.Attribute>(iter.getAllAttributeKeys());
+		Set<AttributedCharacterIterator.Attribute> unwanted = new HashSet<>(iter.getAllAttributeKeys());
 		for (int i = 0; i < relevantAttributes.length; i++)
 			unwanted.remove(relevantAttributes[i]);
 		if (unwanted.size() == 0)
@@ -838,11 +839,11 @@ public class Util
 
 	/**
 	 * Loads the class with <code>classname</code> and makes sure that it's implementing given <code>interfaceClazz</code>.
-	 * 
+	 *
 	 * @param interfaceClazz
 	 * @param classname
 	 * @return loaded class
-	 * 
+	 *
 	 * @see #setClassInstanceProvider(IClassInstanceProvider)
 	 */
 	public static final <T> Class<? extends T> loadClass(final Class<T> interfaceClazz, final String classname)
@@ -867,7 +868,7 @@ public class Util
 	/**
 	 * Creates a new instance of given <code>instanceClazz</code>.
 	 * Also it makes sure that it's implementing given <code>interfaceClass</code>.
-	 * 
+	 *
 	 * @param interfaceClazz
 	 * @param instanceClazz
 	 * @return instance
@@ -1280,7 +1281,7 @@ public class Util
 	@Deprecated
 	static public void insertSelection(final int[] selection, final int AD_PInstance_ID, final String trxName)
 	{
-		final ArrayList<Integer> results = new ArrayList<Integer>(selection.length);
+		final ArrayList<Integer> results = new ArrayList<>(selection.length);
 
 		for (int i = 0; i < selection.length; i++)
 		{
@@ -1446,14 +1447,38 @@ public class Util
 	 * @return first not null value from list
 	 */
 	@SafeVarargs
-	public static final <T> T coalesce(T... values)
+	public static final <T> T coalesce(final T... values)
 	{
 		if (values == null || values.length == 0)
 		{
 			return null;
 		}
-		for (T value : values)
+		for (final T value : values)
 		{
+			if (value != null)
+			{
+				return value;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Similar to {@link #coalesce(Object...)}, but invokes the given suppliers' get methods one by one.
+	 *
+	 * @param values
+	 * @return
+	 */
+	@SafeVarargs
+	public static final <T> T coalesceSuppliers(final Supplier<T>... values)
+	{
+		if (values == null || values.length == 0)
+		{
+			return null;
+		}
+		for (final Supplier<T> supplier : values)
+		{
+			final T value = supplier.get();
 			if (value != null)
 			{
 				return value;
