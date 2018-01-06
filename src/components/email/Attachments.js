@@ -35,7 +35,7 @@ class Attachments extends Component {
           attachments.map((item, index) => {
             return (
               <div className="attachment" key={index}>
-                <div className="attachnemt-text">
+                <div className="attachment-text">
                   {item[Object.keys(item)[0]]}
                 </div>
                 <div className="input-icon input-icon-lg">
