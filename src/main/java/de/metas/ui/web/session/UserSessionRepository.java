@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.Strings;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.session.json.JSONUserSessionChangesEvent;
 import de.metas.ui.web.session.json.JSONUserSessionChangesEvent.JSONUserSessionChangesEventBuilder;
 import de.metas.ui.web.websocket.WebSocketConfig;
@@ -122,7 +121,7 @@ public class UserSessionRepository
 
 	/**
 	 * Builds user's full name.
-	 * 
+	 *
 	 * @param user
 	 * @return user's full name (e.g. FirstName LastName)
 	 * @task https://github.com/metasfresh/metasfresh-webui-api/issues/468

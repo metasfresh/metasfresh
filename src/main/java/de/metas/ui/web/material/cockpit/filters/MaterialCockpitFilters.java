@@ -77,8 +77,8 @@ public class MaterialCockpitFilters
 
 	private ImmutableList<DocumentFilterDescriptor> createFilterDescriptors()
 	{
-		final de.metas.ui.web.document.filter.DocumentFilterDescriptor dateOnlyfilter = createDateOnlyFilter();
-		final de.metas.ui.web.document.filter.DocumentFilterDescriptor nonParamsFilter = createAllParamsFilter();
+		final DocumentFilterDescriptor dateOnlyfilter = createDateOnlyFilter();
+		final DocumentFilterDescriptor nonParamsFilter = createAllParamsFilter();
 
 		final ImmutableList<DocumentFilterDescriptor> filterDescriptors = ImmutableList.of(
 				dateOnlyfilter,
@@ -86,7 +86,7 @@ public class MaterialCockpitFilters
 		return filterDescriptors;
 	}
 
-	private de.metas.ui.web.document.filter.DocumentFilterDescriptor createDateOnlyFilter()
+	private DocumentFilterDescriptor createDateOnlyFilter()
 	{
 		final Builder standaloneParamDescriptor = DocumentFilterParamDescriptor.builder()
 				.setFieldName(I_MD_Cockpit.COLUMNNAME_DateGeneral)
@@ -105,21 +105,21 @@ public class MaterialCockpitFilters
 		return dateOnlyfilterDescriptor;
 	}
 
-	private de.metas.ui.web.document.filter.DocumentFilterDescriptor createAllParamsFilter()
+	private DocumentFilterDescriptor createAllParamsFilter()
 	{
-		final de.metas.ui.web.document.filter.DocumentFilterParamDescriptor.Builder productNameParameter = DocumentFilterParamDescriptor.builder()
+		final Builder productNameParameter = DocumentFilterParamDescriptor.builder()
 				.setFieldName(I_MD_Cockpit.COLUMNNAME_ProductName)
 				.setDisplayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_ProductName))
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setOperator(Operator.LIKE_I);
 
-		final de.metas.ui.web.document.filter.DocumentFilterParamDescriptor.Builder productValueParameter = DocumentFilterParamDescriptor.builder()
+		final Builder productValueParameter = DocumentFilterParamDescriptor.builder()
 				.setFieldName(I_MD_Cockpit.COLUMNNAME_ProductValue)
 				.setDisplayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_ProductValue))
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setOperator(Operator.LIKE_I);
 
-		final de.metas.ui.web.document.filter.DocumentFilterDescriptor filterDescriptor = DocumentFilterDescriptor.builder()
+		final DocumentFilterDescriptor filterDescriptor = DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)
 				.setFilterId(MATERIAL_COCKPIT_ALL_PARAMS_FILTER)
 				.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_PRODUCT))
@@ -144,7 +144,8 @@ public class MaterialCockpitFilters
 
 	public ImmutableList<DocumentFilter> extractDocumentFilters(@NonNull final CreateViewRequest request)
 	{
-		final ImmutableDocumentFilterDescriptorsProvider provider = ImmutableDocumentFilterDescriptorsProvider.of(getFilterDescriptors());
+		final ImmutableDocumentFilterDescriptorsProvider provider = ImmutableDocumentFilterDescriptorsProvider
+				.of(getFilterDescriptors());
 		final List<DocumentFilter> filters = request.getOrUnwrapFilters(provider);
 		return ImmutableList.copyOf(filters);
 	}
