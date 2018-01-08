@@ -21,12 +21,15 @@ import org.compiere.model.GridTabVO;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Element;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.session.WebRestApiContextProvider;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
@@ -185,7 +188,10 @@ import lombok.NonNull;
 		final ILogicExpression allowCreateNewLogic = allowInsert.andNot(readonlyLogic);
 		final ILogicExpression allowDeleteLogic = allowDelete.andNot(readonlyLogic);
 		//
-		final ILogicExpression displayLogic = gridTabVO.getDisplayLogic();
+		final ILogicExpression displayLogic = gridTabVO.getDisplayLogic()
+				.evaluatePartial(Evaluatees.mapBuilder()
+						.put(WebRestApiContextProvider.CTXNAME_IsWebUI, DisplayType.toBooleanString(true))
+						.build());
 
 		//
 		// Entity descriptor
@@ -428,7 +434,7 @@ import lombok.NonNull;
 		}
 
 		final Object autoFilterInitialValue = extractAutoFilterInitialValue(gridFieldDefaultFilterInfo, fieldName, widgetType);
-		
+
 		return DocumentFieldDefaultFilterDescriptor.builder()
 				.seqNo(gridFieldDefaultFilterInfo.getSeqNo())
 				.rangeFilter(gridFieldDefaultFilterInfo.isRangeFilter())
@@ -440,7 +446,7 @@ import lombok.NonNull;
 	private Object extractAutoFilterInitialValue(final GridFieldDefaultFilterDescriptor gridFieldDefaultFilterInfo, final String fieldName, final DocumentFieldWidgetType widgetType)
 	{
 		final String autoFilterInitialValueStr = gridFieldDefaultFilterInfo.getDefaultValue();
-		
+
 		if (Check.isEmpty(autoFilterInitialValueStr, true))
 		{
 			return null;

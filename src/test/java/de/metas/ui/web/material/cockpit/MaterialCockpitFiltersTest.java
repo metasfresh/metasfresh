@@ -12,7 +12,8 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 
 /*
  * #%L

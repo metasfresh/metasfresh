@@ -15,13 +15,13 @@ import org.springframework.context.annotation.Profile;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.Profiles;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.view.IViewsRepository;
@@ -48,7 +48,7 @@ import de.metas.ui.web.window.model.DocumentCollection;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Profile(WebRestApiApplication.PROFILE_Webui)
+@Profile(Profiles.PROFILE_Webui)
 public class WEBUI_M_HU_CreateMaterialReceipt extends WEBUI_M_HU_Receipt_Base implements IProcessPrecondition
 {
 	@Autowired

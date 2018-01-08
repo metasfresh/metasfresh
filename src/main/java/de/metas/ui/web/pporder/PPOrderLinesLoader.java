@@ -14,7 +14,6 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.Util;
-import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.X_PP_Order;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
@@ -35,6 +34,7 @@ import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;

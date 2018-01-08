@@ -13,6 +13,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
+import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 
 /*

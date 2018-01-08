@@ -33,7 +33,7 @@ import lombok.NonNull;
  */
 
 // NOTE: don't add it to spring context! i.e. don't annotate it with @Component or similar
-/* package */final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
+public final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
 {
 	private final Cache<ViewId, IView> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
