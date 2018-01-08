@@ -61,7 +61,6 @@ import org.compiere.model.MRefList;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
@@ -1012,7 +1011,7 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public void extendContract(final @NonNull ContractExtendingRequest context)
 	{
-		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, (TrxRunnable)localTrxName -> {
+		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, localTrxName -> {
 			extendContract0(context, localTrxName);
 
 			final I_C_Flatrate_Term currentTerm = context.getContract();
