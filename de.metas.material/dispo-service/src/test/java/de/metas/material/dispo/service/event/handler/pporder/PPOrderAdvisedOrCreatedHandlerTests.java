@@ -35,7 +35,7 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
-import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
@@ -82,7 +82,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 	private final BigDecimal eleven = BigDecimal.TEN.add(BigDecimal.ONE);
 
 	@Mocked
-	private FireMaterialEventService fireMaterialEventService;
+	private PostMaterialEventService postMaterialEventService;
 
 	@Mocked
 	private EventLogUserService eventLogUserService;
@@ -102,8 +102,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
-				candidateRepositoryWriteService,
-				fireMaterialEventService);
+				candidateRepositoryWriteService);
 
 		stockRepository = new StockRepository();
 
@@ -112,13 +111,13 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryWriteService,
-						fireMaterialEventService,
+						postMaterialEventService,
 						stockRepository,
 						stockCandidateService)));
 
 		final RequestMaterialOrderService requestMaterialOrderService = new RequestMaterialOrderService(
 				candidateRepositoryRetrieval,
-				fireMaterialEventService);
+				postMaterialEventService);
 
 		ppOrderAdvisedHandler = new PPOrderAdvisedHandler(
 				candidateChangeHandler,

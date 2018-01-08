@@ -14,7 +14,7 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
@@ -47,8 +47,8 @@ public class DD_OrderFireMaterialEvent
 
 		final List<DDOrderAdvisedOrCreatedEvent> events = createEvents(ddOrder);
 
-		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
-		events.forEach(event -> materialEventService.fireEventAfterNextCommit(event));
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		events.forEach(event -> materialEventService.postEventAfterNextCommit(event));
 	}
 
 	private DDOrderBuilder createAndInitPPOrderPojoBuilder(@NonNull final I_DD_Order ddOrder)

@@ -34,8 +34,8 @@ import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
@@ -73,7 +73,7 @@ public class DemandCandiateCangeHandlerTest
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
 	@Mocked
-	private FireMaterialEventService materialEventService;
+	private PostMaterialEventService postMaterialEventService;
 
 	private DemandCandiateHandler demandCandidateHandler;
 
@@ -92,13 +92,12 @@ public class DemandCandiateCangeHandlerTest
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
-				candidateRepositoryCommands,
-				materialEventService);
+				candidateRepositoryCommands);
 
 		demandCandidateHandler = new DemandCandiateHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
-				materialEventService,
+				postMaterialEventService,
 				stockRepository,
 				stockCandidateService);
 	}
@@ -201,7 +200,7 @@ public class DemandCandiateCangeHandlerTest
 		new Verifications()
 		{{
 			MaterialEvent event;
-			materialEventService.fireEventAfterNextCommit(event = withCapture());
+			postMaterialEventService.postEventAfterNextCommit(event = withCapture());
 
 			assertThat(event).isInstanceOf(SupplyRequiredEvent.class);
 			final SupplyRequiredEvent materialDemandEvent = (SupplyRequiredEvent)event;
@@ -238,7 +237,7 @@ public class DemandCandiateCangeHandlerTest
 		// @formatter:off verify that no event was fired
 		new Verifications()
 		{{
-			materialEventService.fireEvent((MaterialEvent)any); times = 0;
+			postMaterialEventService.postEventNow((MaterialEvent)any); times = 0;
 		}}; // @formatter:on
 	}
 

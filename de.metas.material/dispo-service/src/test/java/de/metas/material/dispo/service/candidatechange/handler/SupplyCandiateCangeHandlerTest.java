@@ -30,9 +30,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteServic
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -67,9 +65,6 @@ public class SupplyCandiateCangeHandlerTest
 
 	private CandidateRepositoryWriteService candidateRepositoryWriteService;
 
-	@Mocked
-	private FireMaterialEventService fireMaterialEventService;
-
 	@Before
 	public void init()
 	{
@@ -80,8 +75,7 @@ public class SupplyCandiateCangeHandlerTest
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,
-				candidateRepositoryWriteService,
-				fireMaterialEventService);
+				candidateRepositoryWriteService);
 
 		supplyCandiateHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryWriteService, stockCandidateService);
 	}

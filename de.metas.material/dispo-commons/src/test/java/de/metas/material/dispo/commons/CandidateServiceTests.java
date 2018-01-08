@@ -17,7 +17,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
@@ -52,14 +52,14 @@ public class CandidateServiceTests
 	private RequestMaterialOrderService requestMaterialOrderService;
 
 	@Mocked
-	private FireMaterialEventService fireMaterialEventService;
+	private PostMaterialEventService postMaterialEventService;
 
 	@Before
 	public void init()
 	{
 		requestMaterialOrderService = new RequestMaterialOrderService(
 				new CandidateRepositoryRetrieval(),
-				fireMaterialEventService);
+				postMaterialEventService);
 	}
 
 	@Test

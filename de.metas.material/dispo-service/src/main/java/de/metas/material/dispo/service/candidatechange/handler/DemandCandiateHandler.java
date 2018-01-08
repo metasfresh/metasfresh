@@ -18,7 +18,7 @@ import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.StockMultiQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 
@@ -51,7 +51,7 @@ public class DemandCandiateHandler implements CandidateHandler
 
 	private final StockRepository stockRepository;
 
-	private final FireMaterialEventService materialEventService;
+	private final PostMaterialEventService materialEventService;
 
 	private final StockCandidateService stockCandidateService;
 
@@ -60,7 +60,7 @@ public class DemandCandiateHandler implements CandidateHandler
 	public DemandCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
-			@NonNull final FireMaterialEventService materialEventService,
+			@NonNull final PostMaterialEventService materialEventService,
 			@NonNull final StockRepository stockRepository,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
@@ -212,7 +212,7 @@ public class DemandCandiateHandler implements CandidateHandler
 
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
 					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty);
-			materialEventService.fireEventAfterNextCommit(supplyRequiredEvent);
+			materialEventService.postEventAfterNextCommit(supplyRequiredEvent);
 		}
 	}
 }

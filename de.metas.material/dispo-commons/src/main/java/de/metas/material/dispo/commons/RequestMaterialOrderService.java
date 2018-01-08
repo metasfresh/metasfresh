@@ -16,7 +16,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
@@ -55,11 +55,11 @@ import lombok.NonNull;
 public class RequestMaterialOrderService
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
-	private final FireMaterialEventService materialEventService;
+	private final PostMaterialEventService materialEventService;
 
 	public RequestMaterialOrderService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final FireMaterialEventService materialEventService)
+			@NonNull final PostMaterialEventService materialEventService)
 	{
 		this.materialEventService = materialEventService;
 		this.candidateRepository = candidateRepository;
@@ -97,7 +97,7 @@ public class RequestMaterialOrderService
 	private void createAndFireProductionRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestedEvent(group);
-		materialEventService.fireEvent(ppOrderRequestEvent);
+		materialEventService.postEventNow(ppOrderRequestEvent);
 	}
 
 	@VisibleForTesting
@@ -167,7 +167,7 @@ public class RequestMaterialOrderService
 	private void requestDistributionOrder(@NonNull final List<Candidate> group)
 	{
 		final DDOrderRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group);
-		materialEventService.fireEvent(ddOrderRequestEvent);
+		materialEventService.postEventNow(ddOrderRequestEvent);
 	}
 
 	@VisibleForTesting

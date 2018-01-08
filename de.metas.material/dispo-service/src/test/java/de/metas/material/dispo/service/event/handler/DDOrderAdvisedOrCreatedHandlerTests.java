@@ -38,7 +38,8 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedOrCreatedHandler;
-import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.MaterialEventHandlerRegistry;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
@@ -108,7 +109,7 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 	private DDOrderAdvisedOrCreatedHandler ddOrderAdvisedOrCreatedHandler;
 
 	@Mocked
-	private FireMaterialEventService fireMaterialEventService;
+	private PostMaterialEventService postMaterialEventService;
 
 	private StockRepository stockRepository;
 
@@ -124,13 +125,12 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 		stockRepository = new StockRepository();
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,
-				candidateRepositoryCommands,
-				fireMaterialEventService);
+				candidateRepositoryCommands);
 
 		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(
 				candidateRepository,
 				candidateRepositoryCommands,
-				fireMaterialEventService,
+				postMaterialEventService,
 				stockRepository,
 				stockCandidateService);
 		final SupplyCandiateHandler supplyCandiateHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService);
@@ -143,7 +143,7 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 				candidateRepositoryCommands,
 				candidateChangeService,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepository, fireMaterialEventService));
+				new RequestMaterialOrderService(candidateRepository, postMaterialEventService));
 	}
 
 	/**

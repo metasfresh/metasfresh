@@ -33,31 +33,31 @@ import lombok.NonNull;
  */
 
 @Service
-public class FireMaterialEventService
+public class PostMaterialEventService
 {
 
-	private static final Logger logger = LogManager.getLogger(FireMaterialEventService.class);
+	private static final Logger logger = LogManager.getLogger(PostMaterialEventService.class);
 
 	private final MetasfreshEventBusService materialEventService;
 
-	public FireMaterialEventService(@NonNull final MetasfreshEventBusService materialEventService)
+	public PostMaterialEventService(@NonNull final MetasfreshEventBusService materialEventService)
 	{
 		this.materialEventService = materialEventService;
 	}
 
 	/**
-	 * Adds a trx listener to make sure the given {@code event} will be fired via {@link #fireEvent(MaterialEvent)} when the given {@code trxName} is committed.
+	 * Adds a trx listener to make sure the given {@code event} will be fired via {@link #postEventNow(MaterialEvent)} when the given {@code trxName} is committed.
 	 *
 	 * @param event
 	 * @param trxName
 	 */
-	public void fireEventAfterNextCommit(@NonNull final MaterialEvent event)
+	public void postEventAfterNextCommit(@NonNull final MaterialEvent event)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(innerTrx -> fireEvent(event));
+				.registerHandlingMethod(innerTrx -> postEventNow(event));
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class FireMaterialEventService
 	 *
 	 * @param event
 	 */
-	public void fireEvent(final MaterialEvent event)
+	public void postEventNow(final MaterialEvent event)
 	{
 		materialEventService.postEvent(event);
 		logger.info("Posted MaterialEvent={}", event);

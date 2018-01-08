@@ -28,7 +28,7 @@ import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateHandler;
-import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
@@ -70,7 +70,7 @@ public class ForecastCreatedHandlerTest
 	private ForecastCreatedHandler forecastCreatedHandler;
 
 	@Mocked
-	private FireMaterialEventService fireMaterialEventService;
+	private PostMaterialEventService postMaterialEventService;
 
 	@Mocked
 	private CandidateRepositoryRetrieval candidateRepository;
@@ -89,7 +89,7 @@ public class ForecastCreatedHandlerTest
 						new StockUpCandiateHandler(
 								candidateRepository,
 								candidateRepositoryCommands,
-								fireMaterialEventService,
+								postMaterialEventService,
 								stockRepository))));
 	}
 
@@ -116,7 +116,7 @@ public class ForecastCreatedHandlerTest
 			stockRepository.retrieveAvailableStockQtySum(query);
 			times = 1; result = BigDecimal.ZERO;
 
-			fireMaterialEventService.fireEvent(with(eventQuantity("8")));
+			postMaterialEventService.postEventNow(with(eventQuantity("8")));
 			times = 1;
 		}}; // @formatter:on
 
@@ -154,7 +154,7 @@ public class ForecastCreatedHandlerTest
 			stockRepository.retrieveAvailableStockQtySum(query);
 			times = 1; result = new BigDecimal("3");
 
-			fireMaterialEventService.fireEvent(with(eventQuantity("5")));
+			postMaterialEventService.postEventNow(with(eventQuantity("5")));
 			times = 1;
 		}};	// @formatter:on
 

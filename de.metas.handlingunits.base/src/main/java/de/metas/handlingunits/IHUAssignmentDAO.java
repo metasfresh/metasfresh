@@ -83,7 +83,8 @@ public interface IHUAssignmentDAO extends ISingletonService
 	}
 
 	/**
-	 * This in an "encapsulated" representation of a {@link I_M_HU_Assignment} data record.<br>
+	 * This in an "encapsulated" representation of a {@link I_M_HU_Assignment} data record.
+	 * <p>
 	 * Please prefer using this one over the mere data record, and extend is as needed (also, feel free to extract the class onto another file).
 	 */
 	@Value
