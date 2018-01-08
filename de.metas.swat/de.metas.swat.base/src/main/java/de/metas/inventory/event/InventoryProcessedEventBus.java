@@ -27,12 +27,12 @@ import de.metas.event.Type;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,21 +46,21 @@ public class InventoryProcessedEventBus extends QueueableForwardingEventBus
 	 */
 	private static final int WINDOW_INTERNAL_INVENTORY = 341; // FIXME: HARDCODED
 
-	
+
 	public static final InventoryProcessedEventBus newInstance()
 	{
 		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(EVENTBUS_TOPIC);
 		return new InventoryProcessedEventBus(eventBus);
 	}
-	
+
 
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.setName("de.metas.inventory.Inventory.ProcessedEvents")
-			.setType(Type.REMOTE)
+			.name("de.metas.inventory.Inventory.ProcessedEvents")
+			.type(Type.REMOTE)
 			.build();
-	
+
 	// services
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
@@ -84,7 +84,7 @@ public class InventoryProcessedEventBus extends QueueableForwardingEventBus
 		super.queueEventsUntilTrxCommit(trxName);
 		return this;
 	}
-	
+
 	@Override
 	public InventoryProcessedEventBus queueEventsUntilCurrentTrxCommit()
 	{
@@ -120,7 +120,7 @@ public class InventoryProcessedEventBus extends QueueableForwardingEventBus
 	 * <li>if inout's DocStatus is Completed, a "generated" notification will be sent
 	 * <li>if inout's DocStatus is Voided or Reversed, a "reversed" notification will be sent
 	 * </ul>
-	 * 
+	 *
 	 * @param inout
 	 * @return
 	 */
@@ -146,12 +146,12 @@ public class InventoryProcessedEventBus extends QueueableForwardingEventBus
 				.build();
 		return event;
 	}
-	
+
 	private final String getNotificationAD_Message(final I_M_Inventory inventory)
 	{
 			return  MSG_Event_InventoryGenerated;
 	}
-	
+
 	private final int getNotificationRecipientUserId(final I_M_Inventory inventory)
 	{
 		//
@@ -163,7 +163,7 @@ public class InventoryProcessedEventBus extends QueueableForwardingEventBus
 			{
 				return currentUserId;
 			}
-			
+
 			return inventory.getUpdatedBy(); // last updated
 		}
 		//

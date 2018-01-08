@@ -10,23 +10,83 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.40 (2017-52)
+# metasfresh 5.41 (2018-03)
+**release for week 2018-03**
+# metasfresh-app
+  * [#3284](https://github.com/metasfresh/metasfresh/issues/3284) Translation of eMail Editor in WebUI
+    * Translation of the eMail Editor in WebUI for Language/ Locale de_DE.
 
-**release for week 2017-51**
+# metasfresh-webui-frontend
+  * [#1470](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1470) Bug in long texts with new line
+    * Improving the behavior in LongText Fields. Now only patching the content when leaving the Field.
+  * [#1478](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1478) Attachment in eMail Editor: Show File name/ caption instead of key
+    * Improving the Names for attached Files in eMail Editor. Now showing the caption manes instead of attachment keys.
+
+# metasfresh 5.40 (2018-02)
+
+**release for week 2018-02**
 
 ## Features
 * metasfresh-app
+  * [#1752](https://github.com/metasfresh/metasfresh/issues/1752) System Element overwrite on Window Field
+  * [#3155](https://github.com/metasfresh/metasfresh/issues/3155) Create special pharma import product table
+  * [#3222](https://github.com/metasfresh/metasfresh/issues/3222) refactor trx event listeners
   * [#3229](https://github.com/metasfresh/metasfresh/issues/3229) Show c_activity_ID in purchase Orderlines Grid View
     * New Field for Activity in Purchase Orderlines.
   * [#3234](https://github.com/metasfresh/metasfresh/issues/3234) Material Tracking ID in Invoice Candidates Filter shall be search
     * Improving the Material Tracking ID Lookup widget. It is now an autocomplete search field instead of a dropdown list.
+  * [#3237](https://github.com/metasfresh/metasfresh/issues/3237) New Document "Source of Supply"
+  * [#3238](https://github.com/metasfresh/metasfresh/issues/3238) Create Missing M_Cost records on the fly
+  * [#3230](https://github.com/metasfresh/metasfresh/issues/3230) Pharma: import prices
   * [#3239](https://github.com/metasfresh/metasfresh/issues/3239) WebUI: Material Receipt Candidates Fields not readonly
     * Improvement of the Material Receipt Candidates Window in WebUI. Now Fields are readonly that should not be changes by the user after creation.
   * [#3242](https://github.com/metasfresh/metasfresh/issues/3242) WebUI: Create new Customer Accounts Window
     * New Window for Customer Accounts, allowing the user to define customer relevant accounting information.
+  * [#3243](https://github.com/metasfresh/metasfresh/issues/3243) WebUI: Adjust the BOM Configuration window in Subtab for components
+    * Improvement of the BOM Configuration Window and Forumula. Now showing most important columns in grid view for components. Renaming Fields and translations for better understanding.
+  * [#3255](https://github.com/metasfresh/metasfresh/issues/3255) WebUI: Accounting Schema Window
+    * New Window in WebUI for Accounting Schema, allowing the user to maintain the default Accounting properties.
+  * [#3256](https://github.com/metasfresh/metasfresh/issues/3256) WebUI: Window for Warehouse Accounting
+    * New Window for Vendor Accounts, allowing the user to define warehouse relevant accounting information.
+  * [#3257](https://github.com/metasfresh/metasfresh/issues/3257) WebUI: Window for Vendor Accounting
+    * New Window for Vendor Accounts, allowing the user to define vendor relevant accounting information.
+  * [#3260](https://github.com/metasfresh/metasfresh/issues/3260) Hide Accounts Tab from Warehouse Window in WebUI
+    * Hiding Accounts Tab in Warehouse Window, now available via Document Reference.
+  * [#3261](https://github.com/metasfresh/metasfresh/issues/3261) WebUI: New Window for BPartner Group Accounts
+    * New Window for Business Partner Group Accounts, allowing the user to define relevant accounting information for Business Partner Groups.
+  * [#3267](https://github.com/metasfresh/metasfresh/issues/3267) WebUI: Add Create Periods to Action menu in Calendar Window
+    * Improving teh Calender and Period Window in WebUI, adding the Create Periods action to action menu.
+  * [#3269](https://github.com/metasfresh/metasfresh/issues/3269) WebUI: Add Shortcut Filter from Calendar Year to Periods Window
+    * Improving the Usability of Calendar and Period Window, now allowing to directly zoom to filtered Periods for a given year.
+  * [#3272](https://github.com/metasfresh/metasfresh/issues/3272) Provide Periods for 2018
+  * [#3275](https://github.com/metasfresh/metasfresh/issues/3275) New Filter for datepromised in Sales/ Purchase Order
+    * Adding the Filter for datepromised in Sales Order and Purchase order Window in WebUI.
+
+* metasfresh-webui-api
+  * [#752](https://github.com/metasfresh/metasfresh-webui-api/issues/752) Picking Tray Clearing: picking slot filter no results
+  * [#758](https://github.com/metasfresh/metasfresh-webui-api/issues/758) Picking Tray Clearing: process to take out an HU and add it to existing HU
+  * [#760](https://github.com/metasfresh/metasfresh-webui-api/issues/760) Picking Tray Clearing: process to take out an HU and add it to new HU
+  * [#763](https://github.com/metasfresh/metasfresh-webui-api/issues/763) Picking Tray Clearing: packing HUs: Add to Transportation Order, Ship and Invoice action
+  * [#764](https://github.com/metasfresh/metasfresh-webui-api/issues/764) Receipt candidates: HU editor: cannot call Transform for a CU
+  * [#768](https://github.com/metasfresh/metasfresh-webui-api/issues/768) Picking Tray Clearing: packing HUs: generate shipper's package label
+  * [#769](https://github.com/metasfresh/metasfresh-webui-api/issues/769) New context variable for isWebUI
+
+* metasfresh-webui-frontend
+  * [#1465](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1465) frontend: Processes: when calling a process frontend shall provide which are the selected rows in the left/right view
+  * [#1475](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1475) Hover showing Element Content for flags wrongly
+    * Improvement of the tablecell tooltips in Grid Views. Not not showing a tooltip for checkboxes and switches anymore.
 
 #Fixes
 * metasfresh-app
+  * [#2822](https://github.com/metasfresh/metasfresh/issues/2822) Empty Country in Price List not working
+  * [#3225](https://github.com/metasfresh/metasfresh/issues/3225) Error on unclosing a "manually" created PPOrder
+  * [#3227](https://github.com/metasfresh/metasfresh/issues/3227) Attachment related perf problem in swing client
+  * [#3233](https://github.com/metasfresh/metasfresh/issues/3233) WebUI: Role permission constraints missing in Subtabs
+  * [#3281](https://github.com/metasfresh/metasfresh/issues/3281) C_Tax.ValidFrom bug
+
+* metasfresh-webui-api
+  * [#741](https://github.com/metasfresh/metasfresh-webui-api/issues/741) WebUI window C_Printing_Queue broken
+  * [#757](https://github.com/metasfresh/metasfresh-webui-api/issues/757) elasticsearch shall use slf4j instead of log4j
 
 * metasfresh-webui-frontend
 
@@ -182,16 +242,23 @@ Here come the actual release notes:
   * [#1421](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1421) Drop down lists remain displayed when using tab several times
     * Closing opened dropdown lists again when navigating through fields in webUI and the field is losing focus.
   * [#1426](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1426) Connection lost displayed when unchecking a checkbox in Filter
+    * Fix for Filter checkboxes. Avoiding connection lost issue.
   * [#1427](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1427) d3 errors on dashboard
+    * Fixes D3JS Issues in metasfresh Dashboard for calculatesd negative values.
   * [#1435](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1435) Problem regarding multiple filters
+    * Fixing an issue with multiple Filters interfering each other in main and included views.
   * [#1437](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1437) Language bug: The language in Settings is not respected
+    * Fixes an issue in User Configuration about language Settings that were not respected.
   * [#1440](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1440) Dropdown in Grid view needs two-time click again
     * Fixes the dropdown selection. Now selections are able to be done with first cklick.
   * [#1444](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1444) Attributes are empty in material receipt candidate
+    * Fix for material receipt candidates that were wrongly created with empty attributes.
   * [#1448](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1448) jenkins: fix current lint issues
+    * Internal Housekeeping issue fixed according to lint.
   * [#1451](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1451) Batch entry: cursor jumps directly to HU
     * Fix for the Batch entry focus after opening via alt+q or alt++. Now focussing on Product field again.
-  * [#1455](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1455) error when updating an attribute multiple times
+  * [#1455](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1455) Error when updating an attribute multiple times
+    * Fixes an error that ocurred when changing an attribute multiple times.
 
 # metasfresh 5.38 (2017-49)
 

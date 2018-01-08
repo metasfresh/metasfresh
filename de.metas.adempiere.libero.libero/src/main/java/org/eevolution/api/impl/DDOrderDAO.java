@@ -34,7 +34,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.api.IDDOrderDAO;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
@@ -46,6 +45,7 @@ import org.eevolution.mrp.api.IMRPDAO;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.LiberoException;
 
 public class DDOrderDAO implements IDDOrderDAO
 {
@@ -186,31 +186,6 @@ public class DDOrderDAO implements IDDOrderDAO
 				.andCollect(I_PP_MRP.COLUMN_DD_OrderLine_ID);
 
 		return queryBuilder;
-	}
-
-	@Override
-	public List<I_DD_Order> retrieveBackwardSupplyDDOrders(final I_PP_Order ppOrder)
-	{
-		final IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
-
-		final List<I_DD_Order> ddOrders = mrpDAO
-				// Retrieve MRP Demands for document
-				.retrieveQueryBuilder(ppOrder, X_PP_MRP.TYPEMRP_Demand, X_PP_MRP.ORDERTYPE_ManufacturingOrder)
-				.createQueryBuilder()
-				//
-				// Collect MRP Supplies created to balance these MRP demands
-				.andCollectChildren(I_PP_MRP_Alloc.COLUMN_PP_MRP_Demand_ID, I_PP_MRP_Alloc.class)
-				.andCollect(I_PP_MRP_Alloc.COLUMN_PP_MRP_Supply_ID)
-				.addEqualsFilter(I_PP_MRP.COLUMN_TypeMRP, X_PP_MRP.TYPEMRP_Supply) // just to be sure
-				//
-				// Collect DD_Orders
-				.andCollect(I_PP_MRP.COLUMN_DD_Order_ID)
-				//
-				// Execute
-				.create()
-				.list();
-
-		return ddOrders;
 	}
 
 	@Override

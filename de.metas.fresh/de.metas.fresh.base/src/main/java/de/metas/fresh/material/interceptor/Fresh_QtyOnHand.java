@@ -1,7 +1,5 @@
 package de.metas.fresh.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-
 import java.util.ArrayList;
 
 /*
@@ -39,7 +37,7 @@ import org.compiere.model.ModelValidator;
 import de.metas.fresh.freshQtyOnHand.api.IFreshQtyOnHandDAO;
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -91,8 +89,8 @@ public class Fresh_QtyOnHand
 			events.add(event);
 		}
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		events.forEach(event -> materialEventService.fireEventAfterNextCommit(event, getTrxName(qtyOnHand)));
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		events.forEach(event -> materialEventService.postEventAfterNextCommit(event));
 	}
 
 	private AbstractStockEstimateEvent createCreatedEvent(

@@ -42,7 +42,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Order;
@@ -54,6 +53,8 @@ import org.eevolution.mrp.api.impl.MRPBL;
 import org.eevolution.mrp.api.impl.MRPTracer;
 import org.eevolution.mrp.api.impl.PlainMRPDAO;
 import org.junit.Assert;
+
+import de.metas.material.planning.pporder.LiberoException;
 
 public class MRPExpectation<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>
 {

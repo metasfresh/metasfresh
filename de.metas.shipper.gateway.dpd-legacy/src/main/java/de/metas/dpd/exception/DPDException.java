@@ -28,7 +28,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MPackage;
+import org.compiere.model.I_M_Package;
+import org.compiere.util.Env;
 
 import de.metas.dpd.service.RoutingQuery;
 import de.metas.i18n.Msg;
@@ -84,9 +85,9 @@ public class DPDException extends AdempiereException
 		this.invalidFields = null;
 	}
 
-	private DPDException(final MPackage invalidPack, final String msg, final Object... params)
+	private DPDException(final I_M_Package invalidPack, final String msg, final Object... params)
 	{
-		super(Msg.getMsg(invalidPack.getCtx(), msg, params));
+		super(Msg.getMsg(Env.getCtx(), msg, params));
 
 		this.query = null;
 		this.invalidFields = null;
@@ -97,7 +98,7 @@ public class DPDException extends AdempiereException
 		return new DPDException(query, invalidFields);
 	};
 
-	public static DPDException invalidPackage(final MPackage pack, final String msg)
+	public static DPDException invalidPackage(final I_M_Package pack, final String msg)
 	{
 		return new DPDException(pack, msg);
 	}

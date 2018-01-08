@@ -32,10 +32,10 @@ import java.util.Properties;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.mrp.api.IMRPSegmentBL;
 
 import de.metas.material.planning.IMRPSegment;
+import de.metas.material.planning.pporder.LiberoException;
 
 /* package */class MRPSegmentsCollector
 {

@@ -34,7 +34,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.X_PP_MRP;
@@ -43,6 +42,7 @@ import org.eevolution.mrp.api.impl.MRPTracer;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.LiberoException;
 
 /**
  * 

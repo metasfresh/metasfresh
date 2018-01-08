@@ -28,12 +28,12 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_M_Product;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPSourceEvent;
 
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.pporder.LiberoException;
 
 /**
  * Actually this is a validation rule to not allow user to change product's UOM when there are MRP records

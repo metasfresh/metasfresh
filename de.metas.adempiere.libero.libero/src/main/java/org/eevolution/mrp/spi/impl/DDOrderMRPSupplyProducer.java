@@ -10,12 +10,12 @@ package org.eevolution.mrp.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -179,9 +179,9 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create/Update MRP record based in Distribution Order.
-	 * 
+	 *
 	 * Actally it is calling {@link #createUpdateMRPRecords(I_DD_OrderLine)} for each line.
-	 * 
+	 *
 	 * @param I_DD_Order Distribution Order
 	 */
 	private void createUpdateMRPRecords(final I_DD_Order ddOrder)
@@ -196,7 +196,7 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create/Update MRP record based in Distribution Order Line
-	 * 
+	 *
 	 * @param I_DD_OrderLine Distribution Order Line
 	 */
 	private void createUpdateMRPRecords(final I_DD_OrderLine ddOrderLine)
@@ -447,7 +447,7 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Delete MRP Alternative records for given {@link I_DD_OrderLine_Alternative}.
-	 * 
+	 *
 	 * @param ddOrderLineAlt
 	 */
 	private void deleteMRPAlternatives(final I_DD_OrderLine_Alternative ddOrderLineAlt)
@@ -462,7 +462,7 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Retrieves MRP Alternative record for given {@link I_DD_OrderLine_Alternative}.
-	 * 
+	 *
 	 * @param ddOrderLineAlt
 	 * @param mrp
 	 * @return MRP Alternative or <code>null</code>
@@ -488,7 +488,7 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * If this DD Order's MRP demand record was fully allocated from QOH then complete forward DD Orders
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/07961_Handelsware_DD_Order_automatisieren_%28101259925191%29
 	 */
 	@Override

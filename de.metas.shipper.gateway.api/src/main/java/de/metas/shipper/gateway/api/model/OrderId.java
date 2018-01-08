@@ -5,9 +5,10 @@ import org.adempiere.util.Check;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Value;
+import lombok.Data;
 
 /*
  * #%L
@@ -31,7 +32,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value
+@Data
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class OrderId
 {
@@ -44,6 +45,8 @@ public final class OrderId
 	private final String shipperGatewayId;
 	@JsonProperty("orderId")
 	private final String orderIdAsString;
+	@JsonIgnore
+	private Integer orderIdAsInt = null; // lazy
 
 	@JsonCreator
 	private OrderId(
@@ -54,5 +57,21 @@ public final class OrderId
 		Check.assumeNotEmpty(orderIdAsString, "orderIdAsString is not empty");
 		this.shipperGatewayId = shipperGatewayId;
 		this.orderIdAsString = orderIdAsString;
+	}
+
+	public int getOrderIdAsInt()
+	{
+		if (orderIdAsInt == null)
+		{
+			try
+			{
+				orderIdAsInt = Integer.parseInt(orderIdAsString);
+			}
+			catch (final Exception ex)
+			{
+				throw new IllegalArgumentException("orderId shall be integer but it was: " + orderIdAsString, ex);
+			}
+		}
+		return orderIdAsInt;
 	}
 }

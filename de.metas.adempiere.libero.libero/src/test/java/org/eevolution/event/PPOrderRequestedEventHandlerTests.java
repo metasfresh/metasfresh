@@ -19,10 +19,8 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
-import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -41,6 +39,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 
 /*
  * #%L
@@ -69,8 +68,6 @@ public class PPOrderRequestedEventHandlerTests
 	private I_PP_Product_Planning productPlanning;
 
 	private I_AD_Org org;
-
-	private I_C_UOM uom;
 
 	private I_M_Product bomMainProduct;
 
@@ -117,9 +114,6 @@ public class PPOrderRequestedEventHandlerTests
 
 		org = newInstance(I_AD_Org.class);
 		save(org);
-
-		uom = newInstance(I_C_UOM.class);
-		save(uom);
 
 		warehouse = newInstance(I_M_Warehouse.class);
 		save(warehouse);
@@ -168,7 +162,6 @@ public class PPOrderRequestedEventHandlerTests
 				.productDescriptor(productDescriptor)
 				.productPlanningId(productPlanning.getPP_Product_Planning_ID())
 				.quantity(BigDecimal.TEN)
-				.uomId(uom.getC_UOM_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.build();
 
@@ -180,6 +173,7 @@ public class PPOrderRequestedEventHandlerTests
 	{
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(0, 10))
+				.dateOrdered(SystemTime.asDate())
 				.groupId(33)
 				.ppOrder(ppOrderPojo).build();
 
@@ -198,7 +192,6 @@ public class PPOrderRequestedEventHandlerTests
 		assertThat(ppOrder.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
 		assertThat(ppOrder.getC_BPartner_ID()).isEqualTo(120);
 
-		assertThat(ppOrder.getC_UOM_ID()).isEqualTo(uom.getC_UOM_ID());
 		assertThat(ppOrder.getM_Product_ID()).isEqualTo(bomMainProduct.getM_Product_ID());
 		assertThat(ppOrder.getM_Warehouse_ID()).isEqualTo(warehouse.getM_Warehouse_ID());
 		assertThat(ppOrder.getC_DocType_ID()).isEqualTo(docType.getC_DocType_ID());
@@ -220,6 +213,7 @@ public class PPOrderRequestedEventHandlerTests
 
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(0, 10))
+				.dateOrdered(SystemTime.asDate())
 				.groupId(33)
 				.ppOrder(ppOrderPojo).build();
 

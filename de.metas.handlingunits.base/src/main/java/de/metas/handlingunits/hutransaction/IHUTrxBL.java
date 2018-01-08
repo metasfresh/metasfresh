@@ -73,7 +73,7 @@ public interface IHUTrxBL extends ISingletonService
 	void transfer(IHUContext huContext, IAllocationSource source, IAllocationDestination destination, IAllocationRequest request);
 
 	/**
-	 * Create and <b>process</b> transaction lines for the candidates (i.e. {@link IHUTransaction}s) included in the given {@code result}.
+	 * Create and <b>process</b> transaction lines for the candidates (i.e. {@link IHUTransactionCandidate}s) included in the given {@code result}.
 	 *
 	 * @param huContext
 	 * @param result
@@ -180,8 +180,8 @@ public interface IHUTrxBL extends ISingletonService
 	}
 
 	/**
-	 * Iterate the {@link IHUTransaction}s that were added so far and aggregate those that only differ in their quantity.
+	 * Iterate the {@link IHUTransactionCandidate}s that were added so far and aggregate those that only differ in their quantity.
 	 * In other words, group the them by their properties (besides qty) and store a new list with summed-up qtys. The new candidates have unique properties.
 	 */
-	List<IHUTransaction> aggregateTransactions(List<IHUTransaction> transactions);
+	List<IHUTransactionCandidate> aggregateTransactions(List<IHUTransactionCandidate> transactions);
 }

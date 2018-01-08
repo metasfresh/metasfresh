@@ -10,12 +10,12 @@ package org.eevolution.mrp.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,8 +39,6 @@ import org.adempiere.util.lang.IMutable;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
-import org.eevolution.api.IPPOrderBOMDAO;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alternative;
 import org.eevolution.model.I_PP_Order;
@@ -59,6 +57,8 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderDemandMatcher;
 import de.metas.material.planning.pporder.PPOrderPojoSupplier;
 import de.metas.material.planning.pporder.PPOrderUtil;
@@ -195,7 +195,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	}
 
 	/**
-	 * 
+	 *
 	 * @param ppOrder
 	 * @return all MRP demands for a given manufacturing order
 	 */
@@ -208,7 +208,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	}
 
 	/**
-	 * 
+	 *
 	 * @param ppOrder
 	 * @return MRP supply record for manufacturing order header (i.e. the actual supply and not the co/by products supply)
 	 */
@@ -221,9 +221,9 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Retrieves MRP Alternative record for given BOM Line.
-	 * 
+	 *
 	 * NOTE: this method does not validate if the BOM Line is actually an alternative. Please keep it as it is because we re-use this method also when a BOM Line is deleted.
-	 * 
+	 *
 	 * @param orderBOMLine
 	 * @return MRP Alternative or <code>null</code>.
 	 */
@@ -239,9 +239,9 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Called when {@link I_PP_Order} changed.
-	 * 
+	 *
 	 * It will create MRP supply record for manufacturing order header.
-	 * 
+	 *
 	 * @param I_PP_Order Manufacturing Order
 	 */
 	private final void onPP_Order_Changed(final I_PP_Order ppOrder)
@@ -281,9 +281,9 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Called when {@link I_PP_Order_BOMLine} changed.
-	 * 
+	 *
 	 * It will create MRP demand (or supply in case of by/co-product) for manufacturing order's BOM Line.
-	 * 
+	 *
 	 * @param ppOrderBOMLine
 	 */
 	private final void onPP_Order_BOMLine_Changed(final I_PP_Order_BOMLine ppOrderBOMLine)
@@ -303,7 +303,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create/Update MRP record based in Manufacturing Order BOM Line
-	 * 
+	 *
 	 * @param I_PP_OrderBOMLine Order BOM Line
 	 * @return newly created or update {@link I_PP_MRP} demand record.
 	 */
@@ -393,9 +393,9 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Gets quantity to Receive or to Issue. This quantity will be set to {@link I_PP_MRP}.
-	 * 
+	 *
 	 * NOTE: in case of an over receipt/over issue it will return ZERO instead of negative quantity, because that's the quantity on which we shall plan.
-	 * 
+	 *
 	 * @param ppOrderBOMLine
 	 * @return Quantity to Receive or to Issue
 	 */
@@ -425,7 +425,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create MRP alternative record for given Order BOM Line alternative, only if the MRP record for main component already exists.
-	 * 
+	 *
 	 * @param ppOrderBOMLineAlternative
 	 */
 	private void createUpdateMRPDemandAlternativeIfPossible(final I_PP_Order_BOMLine ppOrderBOMLineAlternative)
@@ -458,7 +458,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Create/Update MRP alternative record for given Order BOM Line alternative
-	 * 
+	 *
 	 * @param ppOrderBOMLineAlternative
 	 * @param mrpComponent MRP record of the main component
 	 */
@@ -526,7 +526,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 				.supplyPPOrderPojo(request,
 						executor.getMRPNotesCollector());
 
-		
+
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 
 		final PPOrderProducer ppOrderProducer = new PPOrderProducer();
@@ -584,7 +584,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Updates MRP record (demand or supply) from given manufacturing order.
-	 * 
+	 *
 	 * @param mrp
 	 * @param ppOrder
 	 */
@@ -611,7 +611,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	/**
 	 * Update depending MRP child supplies.
-	 * 
+	 *
 	 * @param orderBOMLine
 	 * @param mrpDemandOld old MRP demand (or null)
 	 * @param mrpDemandNew new MRP demand (or null)

@@ -1,10 +1,11 @@
 package de.metas.shipper.gateway.api;
 
+import java.util.List;
+
 import de.metas.shipper.gateway.api.exceptions.ShipperGatewayException;
-import de.metas.shipper.gateway.api.model.CreateDeliveryOrderRequest;
-import de.metas.shipper.gateway.api.model.DeliveryOrderResponse;
+import de.metas.shipper.gateway.api.model.DeliveryOrder;
 import de.metas.shipper.gateway.api.model.OrderId;
-import de.metas.shipper.gateway.api.model.UpdateDeliveryOrderRequest;
+import de.metas.shipper.gateway.api.model.PackageLabels;
 
 /*
  * #%L
@@ -32,11 +33,13 @@ public interface ShipperGatewayClient
 {
 	String getShipperGatewayId();
 	
-	DeliveryOrderResponse createDeliveryOrder(CreateDeliveryOrderRequest request) throws ShipperGatewayException;
+	DeliveryOrder createDeliveryOrder(final DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException;
 
-	DeliveryOrderResponse updateDeliveryOrder(UpdateDeliveryOrderRequest request) throws ShipperGatewayException;
+	DeliveryOrder updateDeliveryOrder(DeliveryOrder deliveryOrder) throws ShipperGatewayException;
 
-	DeliveryOrderResponse completePickupOrder(OrderId orderId) throws ShipperGatewayException;
+	DeliveryOrder completeDeliveryOrder(DeliveryOrder deliveryOrder) throws ShipperGatewayException;
 
-	DeliveryOrderResponse voidPickupOrder(OrderId orderId) throws ShipperGatewayException;
+	DeliveryOrder voidDeliveryOrder(DeliveryOrder deliveryOrder) throws ShipperGatewayException;
+	
+	List<PackageLabels> getPackageLabelsList(OrderId orderId) throws ShipperGatewayException;;
 }

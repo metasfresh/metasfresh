@@ -10,12 +10,12 @@ package org.adempiere.uom.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,7 +37,7 @@ public interface IUOMConversionBL extends ISingletonService
 {
 	/**
 	 * Creates conversion context to be used in other conversion BL methods.
-	 * 
+	 *
 	 * @param product
 	 * @return conversion context; never return null
 	 */
@@ -45,7 +45,7 @@ public interface IUOMConversionBL extends ISingletonService
 
 	/**
 	 * Convert quantity from <code>uomFrom</code> to <code>uomTo</code>
-	 * 
+	 *
 	 * @param product
 	 * @param qty
 	 * @param uomFrom
@@ -56,7 +56,7 @@ public interface IUOMConversionBL extends ISingletonService
 
 	/**
 	 * Convert quantity from <code>uomFrom</code> to <code>uomTo</code>
-	 * 
+	 *
 	 * @param conversionCtx conversion context
 	 * @param qty
 	 * @param uomFrom
@@ -66,10 +66,10 @@ public interface IUOMConversionBL extends ISingletonService
 	BigDecimal convertQty(IUOMConversionContext conversionCtx, BigDecimal qty, I_C_UOM uomFrom, I_C_UOM uomTo);
 
 	Quantity convertQuantityTo(Quantity quantity, IUOMConversionContext conversionCtx, I_C_UOM uomTo);
-	
+
 	/**
 	 * Convert quantity from <code>uomFrom</code> to product's stocking UOM.
-	 * 
+	 *
 	 * @param conversionCtx
 	 * @param qty
 	 * @param uomFrom
@@ -79,7 +79,7 @@ public interface IUOMConversionBL extends ISingletonService
 
 	/**
 	 * Convert price from <code>uomFrom</code> to <code>uomTo</code>
-	 * 
+	 *
 	 * @param product
 	 * @param price
 	 * @param uomFrom may not be <code>null</code>.
@@ -91,9 +91,9 @@ public interface IUOMConversionBL extends ISingletonService
 
 	/**
 	 * Rounds given qty to UOM standard precision.
-	 * 
+	 *
 	 * If qty's actual precision is bigger than UOM standard precision then the qty WON'T be rounded.
-	 * 
+	 *
 	 * @param qty
 	 * @param uom
 	 * @return qty rounded to UOM precision
@@ -102,7 +102,7 @@ public interface IUOMConversionBL extends ISingletonService
 
 	/**
 	 * Gets UOM standard precision.
-	 * 
+	 *
 	 * @param ctx
 	 * @param uomId
 	 * @return
@@ -111,7 +111,7 @@ public interface IUOMConversionBL extends ISingletonService
 
 	/**
 	 * Round quantity based on uom's standard precision if stdPrecision = true, uom's costing precision otherwise.
-	 * 
+	 *
 	 * @param uom
 	 * @param qty quantity
 	 * @param useStdPrecision true if standard precision
@@ -123,7 +123,7 @@ public interface IUOMConversionBL extends ISingletonService
 
 	/**
 	 * Get Converted Qty from Server (no cache)
-	 * 
+	 *
 	 * @param qty The quantity to be converted
 	 * @param uomFrom The C_UOM of the qty
 	 * @param uomTo The targeted UOM
@@ -138,7 +138,7 @@ public interface IUOMConversionBL extends ISingletonService
 	 * * Converts the given qty from the given product's stocking UOM to the given destination UOM.
 	 * <p>
 	 * As a rule of thumb, if you want to get QtyEntered from QtOrdered/Moved/Invoiced/Requiered, this is your method.
-	 * 
+	 *
 	 * @param ctx context
 	 * @param product product from whose stocking UOM we want to convert
 	 * @param uomDest the UOM to which we want to convert
@@ -149,7 +149,7 @@ public interface IUOMConversionBL extends ISingletonService
 
 	/**
 	 * Derive Standard Conversions
-	 * 
+	 *
 	 * @param ctx context
 	 * @param uomFrom from UOM
 	 * @param uomTo to UOM
@@ -159,7 +159,7 @@ public interface IUOMConversionBL extends ISingletonService
 
 	/**
 	 * Convert qty to target UOM and round.
-	 * 
+	 *
 	 * @param ctx context
 	 * @param uomFrom from UOM
 	 * @param uomTo to UOM
@@ -170,15 +170,17 @@ public interface IUOMConversionBL extends ISingletonService
 
 	/**
 	 * Converts the given qty from the given source UOM to the given product's stocking UOM.
-	 * 
+	 *
 	 * @param ctx context
 	 * @param product
 	 * @param uomSource the UOM of the given qty
 	 * @param qtyToConvert
-	 * 
+	 *
 	 * @return the converted qty or <code>null</code> if the product's stocking UOM is different from the given <code>C_UOM_Source_ID</code> and if there is no conversion rate to use.
 	 */
 	BigDecimal convertToProductUOM(Properties ctx, I_M_Product product, I_C_UOM uomSource, BigDecimal qtyToConvert);
+
+	BigDecimal convertToProductUOM(Quantity quantity, I_M_Product product);
 
 	/**
 	 * Get Product Conversions (cached). More detailed: gets those <code>C_UOM_Conversion</code>s that
@@ -195,7 +197,7 @@ public interface IUOMConversionBL extends ISingletonService
 
 	/**
 	 * Get Multiplier Rate to target UOM
-	 * 
+	 *
 	 * @param ctx context
 	 * @param uomFrom
 	 * @param uomTo
@@ -206,7 +208,7 @@ public interface IUOMConversionBL extends ISingletonService
 	/**
 	 * Convert the given <code> priceInUOMFrom </code> in price per unit of <code> uomTo </code>.<br>
 	 * Literally, it will multiply the <code> priceInUOMFrom </code> with the division rate of the conversion that fits the <code> product</code> , <code> uomFrom </code> and <code> uomTo </code>
-	 * 
+	 *
 	 * @param ctx
 	 * @param product
 	 * @param priceInUOMFrom

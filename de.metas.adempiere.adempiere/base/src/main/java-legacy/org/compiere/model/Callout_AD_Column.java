@@ -62,9 +62,15 @@ public class Callout_AD_Column extends CalloutEngine
 		
 		column.setEntityType(entityType);
 		setTypeAndLength(column);
+		
+		if("DocumentNo".equals(elementColumnName)
+				|| "Value".equals(elementColumnName))
+		{
+			column.setIsUseDocSequence(true);
+		}
 
 		//
-		return "";
+		return NO_ERROR;
 	}
 
 	/**

@@ -61,8 +61,6 @@ public class PPOrder
 	@NonNull
 	ProductDescriptor productDescriptor;
 
-	int uomId;
-
 	/**
 	 * In a build-to-order scenario, this is the ID of the order line which this all is about.
 	 */
@@ -110,7 +108,6 @@ public class PPOrder
 			@JsonProperty("bPartnerId") final int bPartnerId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
-			@JsonProperty("uomId") final int uomId,
 			@JsonProperty("orderLineId") final int orderLineId,
 			@JsonProperty("ppOrderId") final int ppOrderId,
 			@JsonProperty("docStatus") @Nullable final String docStatus,
@@ -128,7 +125,6 @@ public class PPOrder
 		this.productPlanningId = productPlanningId; // ok to be not set
 		this.productDescriptor = productDescriptor;
 
-		this.uomId = checkIdGreaterThanZero("uomId", uomId);
 		this.orderLineId = orderLineId;
 		this.ppOrderId = ppOrderId;
 		this.docStatus = docStatus;

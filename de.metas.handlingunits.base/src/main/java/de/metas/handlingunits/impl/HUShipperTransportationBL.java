@@ -35,7 +35,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUPackageBL;
@@ -49,7 +52,6 @@ import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
 import de.metas.lock.api.LockOwner;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
-import de.metas.shipping.interfaces.I_M_Package;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 
@@ -58,7 +60,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	private static final LockOwner transportationLockOwner = LockOwner.forOwnerName(HUShipperTransportationBL.class.getName());
 
 	@Override
-	public void addHUsToShipperTransportation(final int shipperTransportationId, final Collection<I_M_HU> hus)
+	public List<I_M_Package> addHUsToShipperTransportation(final int shipperTransportationId, final Collection<I_M_HU> hus)
 	{
 		//
 		// Load Shipper transportation document and validate it
@@ -75,14 +77,17 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 		final I_M_Shipper shipper = shipperTransportation.getM_Shipper();
 
-		//
-		// Iterate HUs and:
-		// * create M_Packages
-		// * assign M_Packages them to Shipper Transportation document
+		// services
 		final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 		final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 		final IHULockBL huLockBL = Services.get(IHULockBL.class);
+		
+		//
+		// Iterate HUs and:
+		// * create M_Packages
+		// * assign M_Packages them to Shipper Transportation document
+		final List<I_M_Package> result = new ArrayList<>();
 		for (final I_M_HU hu : hus)
 		{
 			//
@@ -96,6 +101,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			//
 			// Create M_Package
 			final I_M_Package mpackage = huPackageBL.createM_Package(hu, shipper);
+			result.add(mpackage);
 
 			//
 			// Add M_Package to Shipper Transportation document
@@ -126,6 +132,9 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				InterfaceWrapperHelper.setTrxName(hu, huTrxNameOld);
 			}
 		}
+		
+		//
+		return ImmutableList.copyOf(result);
 	}
 
 	@Override

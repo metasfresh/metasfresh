@@ -1,6 +1,5 @@
 package org.adempiere.ui.notifications.manualtest;
 
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.junit.Ignore;
@@ -15,11 +14,10 @@ import de.metas.logging.LogManager;
 public class SwingEventNotifier_EventProducer
 {
 	public static final Topic EVENTBUS_TOPIC = EventBusConstants.TOPIC_GeneralNotifications;
-	
+
 	public static void main(String[] args)
 	{
 		Adempiere.enableUnitTestMode();
-		Services.get(ISysConfigBL.class).setValue(EventBusConstants.SYSCONFIG_Enabled, true, 0); // we need to manually enable it
 
 		LogManager.initialize(true);
 		//EventBusConstants.getLogger().setLevel(Level.FINEST);

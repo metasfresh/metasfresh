@@ -13,23 +13,21 @@ package de.metas.event;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.lang.management.ManagementFactory;
 import java.util.UUID;
 
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /**
@@ -44,21 +42,20 @@ public final class EventBusConstants
 	{
 		return LogManager.getLogger(clazz);
 	}
-	
-	public static final String SYSCONFIG_Enabled = "de.metas.event.Enabled";
+
 	private static boolean distributedEventsEnabled = true;
+
+
+	private EventBusConstants()
+	{
+	}
 
 	/**
 	 * @return true if distributed event system is enabled
 	 */
 	public static boolean isEnabled()
 	{
-		if (!distributedEventsEnabled)
-		{
-			return false;
-		}
-		final boolean defaultValue = false; // default false, also because we don't want to affect unit tests
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_Enabled, defaultValue);
+		return distributedEventsEnabled;
 	}
 
 	/**
@@ -79,14 +76,12 @@ public final class EventBusConstants
 		getLogger(EventBusConstants.class).info("Distributed events broadcasting disabled");
 	}
 
-
-
 	/**
 	 * Topic used for general notifications. To be used mainly for broadcasting messages to everybody.
 	 */
 	public static final Topic TOPIC_GeneralNotifications = Topic.builder()
-			.setName("de.metas.event.GeneralNotifications")
-			.setType(Type.REMOTE)
+			.name("de.metas.event.GeneralNotifications")
+			.type(Type.REMOTE)
 			.build();
 	/**
 	 * Topic used for general notifications inside this JVM instance.
@@ -94,8 +89,8 @@ public final class EventBusConstants
 	 * Compared to {@link #TOPIC_GeneralNotifications}, this topic is NOT broadcasting the events remotely.
 	 */
 	public static final Topic TOPIC_GeneralNotificationsLocal = Topic.builder()
-			.setName("de.metas.event.GeneralNotifications")
-			.setType(Type.LOCAL)
+			.name("de.metas.event.GeneralNotifications")
+			.type(Type.LOCAL)
 			.build();
 
 	public static final String JMX_BASE_NAME = "de.metas.event.EventBus";
@@ -123,8 +118,4 @@ public final class EventBusConstants
 		return true;
 	}
 
-	private EventBusConstants()
-	{
-		super();
-	}
 }

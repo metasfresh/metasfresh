@@ -17,7 +17,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
@@ -93,7 +93,7 @@ public class UpperBoundsAllocationStrategyTests
 		assertThat(result.getQtyToAllocate(), comparesEqualTo(BigDecimal.ZERO));
 		assertThat(result.getTransactions().size(), is(1));
 
-		final IHUTransaction huTransaction = result.getTransactions().get(0);
+		final IHUTransactionCandidate huTransaction = result.getTransactions().get(0);
 		assertThat(huTransaction.getProduct(), is(helper.pTomato));
 		assertThat(huTransaction.getQuantity().getQty(), is(requestQty));
 		assertThat(huTransaction.getQuantity().getUOM(), is(helper.uomKg));
@@ -121,7 +121,7 @@ public class UpperBoundsAllocationStrategyTests
 		assertThat(result.getQtyToAllocate(), comparesEqualTo(new BigDecimal("0.321")));
 		assertThat(result.getTransactions().size(), is(1));
 
-		final IHUTransaction huTransaction = result.getTransactions().get(0);
+		final IHUTransactionCandidate huTransaction = result.getTransactions().get(0);
 		assertThat(huTransaction.getProduct(), is(helper.pTomato));
 		assertThat(huTransaction.getQuantity().getQty(), is(sixThousand));
 		assertThat(huTransaction.getQuantity().getUOM(), is(helper.uomKg));

@@ -66,7 +66,7 @@ node('agent && linux')
 		// and therefore, the jenkins information would not be added to the build.properties info file.
 		withEnv(["MF_VERSION=${MF_VERSION}"])
 		{
-		withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M')
+		withMaven(jdk: 'java-8', maven: 'maven-3.5.2', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M')
 		{
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
       stage('Set versions and build metasfresh')
@@ -312,7 +312,10 @@ stage('Invoke downstream jobs')
   */
 void collectTestResultsAndReportCoverage()
 {
-  junit '**/target/surefire-reports/*.xml'
+	// after upgrading the "Pipeline Maven Integration Plugin" from 0.7 to 3.1.0, collecting the tests is now done by that plugin.
+	// comment it out to avoid all tests being counted twice
+  // junit '**/target/surefire-reports/*.xml'
+
   jacoco exclusionPattern: '**/src/main/java-gen' // collect coverage results for jenkins
 }
 

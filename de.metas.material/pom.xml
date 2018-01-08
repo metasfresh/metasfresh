@@ -17,6 +17,7 @@
 	<modules>
 		<module>dispo-commons</module>
 		<module>dispo-service</module>
+		<module>cockpit</module>
 		<module>event</module>
 		<module>planning</module>
 	</modules>

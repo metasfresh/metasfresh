@@ -43,7 +43,7 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.expectations.AllocationResultExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -92,7 +92,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, pTomato, new BigDecimal("20"), uomEach, helper.getTodayDate());
 		final IAllocationResult result = source.unload(request);
 
-		final List<IHUTransaction> trxs = new ArrayList<IHUTransaction>(result.getTransactions());
+		final List<IHUTransactionCandidate> trxs = new ArrayList<IHUTransactionCandidate>(result.getTransactions());
 
 		//
 		// Validate result
@@ -115,7 +115,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 		{
 			final I_M_HU_Item dummyItem = createDummyItem();
 
-			final List<IHUTransaction> trxsWithCounterparts = shipmentScheduleHelper.createHUTransactionDummyCounterparts(trxs, dummyItem);
+			final List<IHUTransactionCandidate> trxsWithCounterparts = shipmentScheduleHelper.createHUTransactionDummyCounterparts(trxs, dummyItem);
 			final IAllocationResult allocationResult = AllocationUtils.createQtyAllocationResult(
 					BigDecimal.ZERO, // qtyToAllocate // N/A, not important
 					BigDecimal.ZERO, // qtyAllocated // N/A, not important
@@ -183,7 +183,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 		// Validate result transactions
 		{
 			Assert.assertEquals("Invalid trx count in result: " + result, 6, result.getTransactions().size());
-			final List<IHUTransaction> scheduleTrxs = Arrays.asList(
+			final List<IHUTransactionCandidate> scheduleTrxs = Arrays.asList(
 					result.getTransactions().get(0),
 					// result.getTransactions().get(1), // HU_Item trx
 					result.getTransactions().get(2),

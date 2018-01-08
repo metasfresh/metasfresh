@@ -39,9 +39,9 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
-import de.metas.handlingunits.hutransaction.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -159,7 +159,7 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 
 		//
 		// Create HU Transaction Candidate
-		final IHUTransaction trx = createHUTransaction(requestActual, vhuItem);
+		final IHUTransactionCandidate trx = createHUTransaction(requestActual, vhuItem);
 
 		//
 		// Create Allocation Result
@@ -199,7 +199,7 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 	 * @param vhuItem Virtual HU item on which we actually allocated/deallocated
 	 * @return transaction candidate
 	 */
-	private final IHUTransaction createHUTransaction(final IAllocationRequest requestActual,
+	private final IHUTransactionCandidate createHUTransaction(final IAllocationRequest requestActual,
 			final I_M_HU_Item vhuItem)
 	{
 		//
@@ -215,7 +215,7 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 		final Object referencedModel = AllocationUtils.getReferencedModel(requestActual);
 		final Quantity qtyTrx = AllocationUtils.getQuantity(requestActual, outTrx);
 
-		final IHUTransaction trx = new HUTransaction(
+		final IHUTransactionCandidate trx = new HUTransactionCandidate(
 				referencedModel,
 				itemFirstNotPureVirtual, // HU Item
 				vhuItem, // VHU Item

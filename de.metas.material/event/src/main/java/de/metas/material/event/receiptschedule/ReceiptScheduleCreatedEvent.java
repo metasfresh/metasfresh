@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.OrderLineDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -40,29 +41,26 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 {
 	public static final String TYPE = "ReceiptScheduleCreatedEvent";
 
-	private final int orderLineId;
-
 	@Builder
 	public ReceiptScheduleCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("orderedMaterial") final MaterialDescriptor orderedMaterial,
+			@JsonProperty("orderLineDescriptor") final OrderLineDescriptor orderLineDescriptor,
+			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
-			@JsonProperty("receiptScheduleId") int receiptScheduleId,
-			@JsonProperty("orderLineId") int orderLineId)
+			@JsonProperty("receiptScheduleId") int receiptScheduleId)
 	{
 		super(
+				orderLineDescriptor,
 				eventDescriptor,
-				orderedMaterial,
+				materialDescriptor,
 				reservedQuantity,
 				receiptScheduleId);
-
-		this.orderLineId = orderLineId;
 	}
 
 	@Override
 	public BigDecimal getOrderedQuantityDelta()
 	{
-		return getOrderedMaterial().getQuantity();
+		return getMaterialDescriptor().getQuantity();
 	}
 
 	@Override
@@ -70,4 +68,5 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 	{
 		return getReservedQuantity();
 	}
+
 }

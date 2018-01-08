@@ -45,16 +45,14 @@ import javax.print.attribute.standard.PrinterName;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.I_M_PackageInfo;
+import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MPackageInfo;
-import org.adempiere.model.MPackagingContainer;
 import org.adempiere.util.Check;
-import org.adempiere.util.CustomColNames;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
-import org.compiere.model.MPackage;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MUOM;
 import org.compiere.model.Query;
@@ -269,7 +267,7 @@ public class DPDRoutingService implements IDPDRoutingService
 	public RoutingQuery mkRoutingQuery(
 			final Properties ctx,
 			final I_M_InOut inOut, 
-			final MPackage pack,
+			final I_M_Package pack,
 			final String serviceOverride)
 	{
 
@@ -300,9 +298,10 @@ public class DPDRoutingService implements IDPDRoutingService
 		return new RoutingQuery(rDepot, date, service, dCountry, postCode,				area, city);
 	}
 
-	private String getServiceCode(final MPackage pack)
+	private String getServiceCode(final I_M_Package pack)
 	{
-		final BigDecimal weight = (BigDecimal)pack.get_Value(CustomColNames.M_Package_PACKAGE_WEIGHT);
+		final de.metas.shipping.interfaces.I_M_Package packExt = InterfaceWrapperHelper.create(pack, de.metas.shipping.interfaces.I_M_Package.class);
+		final BigDecimal weight = packExt.getPackageWeight();
 
 		if (weight == null || BigDecimal.ZERO.compareTo(weight) == 0)
 		{
@@ -315,15 +314,13 @@ public class DPDRoutingService implements IDPDRoutingService
 			return DPD_SERVICE_STANDARD;
 		}
 
-		final int containerId = pack
-				.get_ValueAsInt(CustomColNames.M_Package_M_PACKAGING_CONTAINER_ID);
+		final int containerId = packExt.getM_PackagingContainer_ID();
 		if (containerId <= 0)
 		{
 			throw DPDException.invalidPackage(pack, "Verpackungsabmessungen fehlen");
 		}
 
-		final MPackagingContainer container = new MPackagingContainer(pack
-				.getCtx(), containerId, pack.get_TrxName());
+		final I_M_PackagingContainer container = InterfaceWrapperHelper.newInstance(I_M_PackagingContainer.class); 
 		BigDecimal lengthAmt = container.getLength();
 		BigDecimal widthAmt = container.getWidth();
 		BigDecimal heightAmt = container.getHeight();
@@ -363,21 +360,21 @@ public class DPDRoutingService implements IDPDRoutingService
 
 	@Override
 	public void createPackageInfo(
-			final MPackage pack,
+			final I_M_Package pack,
 			final RoutingResult result, 
 			final RoutingQuery query)
 	{
 
-		final Properties ctx = pack.getCtx();
-		final String trxName = pack.get_TrxName();
+		final Properties ctx = Env.getCtx();
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		final String trackingNo = mkTrackingNo(ctx, trxName);
 
 		pack.setTrackingInfo(trackingNo + Iso7064.compute(trackingNo));
-		pack.saveEx();
+		InterfaceWrapperHelper.save(pack);
 
-		final MPackageInfo packInf = new MPackageInfo(ctx, 0, trxName);
-		packInf.setM_Package_ID(pack.get_ID());
+		final I_M_PackageInfo packInf =  InterfaceWrapperHelper.newInstance(I_M_PackageInfo.class);
+		packInf.setM_Package_ID(pack.getM_Package_ID());
 
 		final String barcodeInfo = mkBarcodeInfo(result, query, trackingNo);
 		final char barcodeId = (char)Integer.parseInt(result.barcodeId);
@@ -402,7 +399,7 @@ public class DPDRoutingService implements IDPDRoutingService
 		packInf.setBarcodeInfo(barcodeId + barcodeInfo
 				+ Iso7064.compute(barcodeInfo));
 		packInf.setVersion(result.routingVersion);
-		packInf.saveEx();
+		InterfaceWrapperHelper.save(packInf);
 	}
 
 	private String mkBarcodeInfo(final RoutingResult result,
@@ -483,7 +480,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			final Properties ctx,
 			final I_M_InOut inOut,
 			final String serviceOverride,
-			final MPackage packg,
+			final I_M_Package packg,
 			final String trxName)
 	{
 
@@ -493,7 +490,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			return;
 		}
 
-		final Collection<MPackage> packages = retrievePackagesForInOut(ctx, inOut, trxName);
+		final Collection<I_M_Package> packages = retrievePackagesForInOut(ctx, inOut, trxName);
 
 		if (packages.isEmpty())
 		{
@@ -501,7 +498,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			throw DPDException.invalidInOut(ctx, inOut, "Lieferschein hat keine Packstuecke");
 		}
 
-		for (final MPackage pack : packages)
+		for (final I_M_Package pack : packages)
 		{
 			createPackageInfo(ctx, pack, inOut, serviceOverride, trxName);
 		}
@@ -510,7 +507,7 @@ public class DPDRoutingService implements IDPDRoutingService
 	@Override
 	public void createPackageInfo(
 			final Properties ctx, 
-			final MPackage pack, 
+			final I_M_Package pack, 
 			final I_M_InOut inOut, 
 			final String serviceOverride,
 			final String trxName)
@@ -522,7 +519,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			return;
 		}
 
-		final boolean existingInfo = !MPackageInfo.retrieveForPackage(pack).isEmpty();
+		final boolean existingInfo = !retrievePackageInfosForPackage(pack).isEmpty();
 		if (existingInfo)
 		{
 			return;
@@ -538,7 +535,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			final Properties ctx,
 			final I_M_InOut inOut,
 			final String serviceOverride,
-			MPackage pack,
+			I_M_Package pack,
 			final String trxName)
 	{
 
@@ -557,7 +554,7 @@ public class DPDRoutingService implements IDPDRoutingService
 	public boolean printLabel(
 			final Properties ctx,
 			final I_M_InOut inOut,
-			MPackage pack,
+			I_M_Package pack,
 			BigDecimal M_Shipper_ID,
 			final String trxName) 
 	{
@@ -577,7 +574,7 @@ public class DPDRoutingService implements IDPDRoutingService
 	public boolean printPackageLabel(
 			final Properties ctx,
 			final I_M_InOut inOut,
-			final MPackage pack,
+			final I_M_Package pack,
 			final BigDecimal M_Shipper_ID,
 			final String trxName) throws AdempiereException
 	{
@@ -661,7 +658,7 @@ public class DPDRoutingService implements IDPDRoutingService
 	@Override
 	public void discardLabel(
 			final Properties ctx,
-			final I_M_InOut inOut, final MPackage packg, final BigDecimal M_Shipper_ID,
+			final I_M_InOut inOut, final I_M_Package packg, final BigDecimal M_Shipper_ID,
 			final String trxName)
 	{
 		if (packg != null)
@@ -669,7 +666,7 @@ public class DPDRoutingService implements IDPDRoutingService
 			String docNo = fetchgetShipperTransportationDoc(packg);
 			if (!Check.isEmpty(docNo, true))
 			{
-				String msg = Msg.getMsg(packg.getCtx(), "PackageWithOrder", new Object[] { docNo });
+				String msg = Msg.getMsg(Env.getCtx(), "PackageWithOrder", new Object[] { docNo });
 				throw new AdempiereException(msg);
 			}
 			packg.setTrackingInfo(null);
@@ -677,21 +674,21 @@ public class DPDRoutingService implements IDPDRoutingService
 			{
 				packg.setM_Shipper_ID(M_Shipper_ID.intValue());
 			}
-			packg.saveEx();
+			InterfaceWrapperHelper.save(packg);
 
-			for (final MPackageInfo packageInfo : MPackageInfo.retrieveForPackage(packg))
+			for (final I_M_PackageInfo packageInfo : retrievePackageInfosForPackage(packg))
 			{
-				packageInfo.deleteEx(false);
+				InterfaceWrapperHelper.delete(packageInfo);
 			}
 			return;
 		}
 
-		for (final MPackage pack : retrievePackagesForInOut(ctx, inOut, trxName))
+		for (final I_M_Package pack : retrievePackagesForInOut(ctx, inOut, trxName))
 		{
 			String docNo = fetchgetShipperTransportationDoc(pack);
 			if (!Check.isEmpty(docNo, true))
 			{
-				String msg = Msg.getMsg(pack.getCtx(), "PackageWithOrder", new Object[] { docNo });
+				String msg = Msg.getMsg(Env.getCtx(), "PackageWithOrder", new Object[] { docNo });
 				throw new AdempiereException(msg);
 			}
 			pack.setTrackingInfo(null);
@@ -699,19 +696,19 @@ public class DPDRoutingService implements IDPDRoutingService
 			{
 				pack.setM_Shipper_ID(M_Shipper_ID.intValue());
 			}
-			pack.saveEx();
+			InterfaceWrapperHelper.save(pack);
 
-			for (final MPackageInfo packageInfo : MPackageInfo.retrieveForPackage(pack))
+			for (final I_M_PackageInfo packageInfo : retrievePackageInfosForPackage(pack))
 			{
-				packageInfo.deleteEx(false);
+				InterfaceWrapperHelper.delete(packageInfo);
 			}
 		}
 	}
 
-	private String fetchgetShipperTransportationDoc(final MPackage pack)
+	private String fetchgetShipperTransportationDoc(final I_M_Package pack)
 	{
 		String whereClause = I_M_ShippingPackage.COLUMNNAME_M_Package_ID + " = ? ";
-		X_M_ShippingPackage sp = new Query(pack.getCtx(), I_M_ShippingPackage.Table_Name, whereClause, pack.get_TrxName())
+		X_M_ShippingPackage sp = new Query(Env.getCtx(), I_M_ShippingPackage.Table_Name, whereClause, ITrx.TRXNAME_ThreadInherited)
 									.setParameters(pack.getM_Package_ID())
 									.setOrderBy(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID)
 									.first();
@@ -720,7 +717,7 @@ public class DPDRoutingService implements IDPDRoutingService
 		return null;
 	}
 	
-	private List<MPackage> retrievePackagesForInOut(
+	private List<I_M_Package> retrievePackagesForInOut(
 			final Properties ctx,
 			final I_M_InOut inOut,
 			final String trxName)
@@ -732,7 +729,17 @@ public class DPDRoutingService implements IDPDRoutingService
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
 				.setOrderBy(I_M_Package.COLUMNNAME_M_Package_ID)
-				.list();
+				.list(I_M_Package.class);
+	}
+
+	private static Collection<I_M_PackageInfo> retrievePackageInfosForPackage(final I_M_Package pack) {
+
+		final String whereClause = I_M_PackageInfo.COLUMNNAME_M_Package_ID + "=?";
+		final Object[] parameters = { pack.getM_Package_ID() };
+
+		Properties ctx = InterfaceWrapperHelper.getCtx(pack);
+		String trxName = InterfaceWrapperHelper.getTrxName(pack);
+		return new Query(ctx, I_M_PackageInfo.Table_Name, whereClause, trxName).setParameters(parameters).list();
 	}
 
 }

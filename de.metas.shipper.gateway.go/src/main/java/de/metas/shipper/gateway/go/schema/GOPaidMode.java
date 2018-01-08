@@ -1,7 +1,15 @@
 package de.metas.shipper.gateway.go.schema;
 
+import java.util.NoSuchElementException;
+import java.util.stream.Stream;
+
+import org.adempiere.util.GuavaCollectors;
+
+import com.google.common.collect.ImmutableMap;
+
 import de.metas.shipper.gateway.api.model.PaidMode;
 import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -39,4 +47,17 @@ public enum GOPaidMode implements PaidMode
 	{
 		this.code = code;
 	}
+
+	public static GOPaidMode forCode(@NonNull final String code)
+	{
+		final GOPaidMode type = code2type.get(code);
+		if (type == null)
+		{
+			throw new NoSuchElementException("No element found for code=" + code);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, GOPaidMode> code2type = Stream.of(values())
+			.collect(GuavaCollectors.toImmutableMapByKey(GOPaidMode::getCode));
 }

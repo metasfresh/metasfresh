@@ -10,12 +10,12 @@ package org.eevolution.mrp.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,7 +52,6 @@ import org.compiere.util.TrxRunnable;
 import org.eevolution.LiberoConstants;
 import org.eevolution.api.IPPWorkflowDAO;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_AD_Note;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -90,7 +89,9 @@ import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.impl.MRPContextFactory;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.quantity.Quantity;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -107,20 +108,20 @@ public class MRPExecutor implements IMRPExecutor
 	public static final String MRP_ERROR_060_SupplyDueButNotReleased = "MRP-060";
 	/**
 	 * MRP-070 - Release Past Due For Action Notice overdue.
-	 * 
+	 *
 	 * Indicates that a supply order was not released when it was due, and should be either released or expedited now, or the demand rescheduled for a later date.
 	 */
 	public static final String MRP_ERROR_070_SupplyPastDueButNotReleased = "MRP-070";
 	/**
 	 * MRP-100 - Time Fence Conflict.
-	 * 
+	 *
 	 * Indicates that there is an unsatisfied material requirement inside the planning time fence for this product.<br>
 	 * You should either manually schedule and expedite orders to fill this demand or delay fulfillment of the requirement that created the demand.
 	 */
 	public static final String MRP_ERROR_100_TimeFenceConflict = "MRP-100";
 	/**
 	 * MRP-110 - Indicates that a schedule supply order receipt is past due.
-	 * 
+	 *
 	 * i.e. it's a firm supply which was scheduled to be released in the past, but so far it's not received yet.
 	 */
 	public static final String MRP_ERROR_110_SupplyPastDueButReleased = "MRP-110";
@@ -181,7 +182,7 @@ public class MRPExecutor implements IMRPExecutor
 
 	/**
 	 * Init common settings. This method is called before each MRP run/cleanup.
-	 * 
+	 *
 	 * @param mrpContext
 	 */
 	private final void initFromMRPContext(final IMaterialPlanningContext mrpContext)
@@ -576,7 +577,7 @@ public class MRPExecutor implements IMRPExecutor
 
 	/**
 	 * Checks if given MRP Demand is available for balancing
-	 * 
+	 *
 	 * @param mrpContext
 	 * @param mrpDemand
 	 * @return true if given MRP demand is available for balancing
@@ -613,13 +614,13 @@ public class MRPExecutor implements IMRPExecutor
 
 	/**
 	 * Setup MRP for given <code>product</code>.
-	 * 
+	 *
 	 * After executing this method, following variables will be set:
 	 * <ul>
 	 * <li>MRPContext's product planning data will be initialized
 	 * <li>MRPContext's TimeFence will be set
 	 * <li>MRPContext's QtyProjectOnHand will be set to QtyOnHand for MRPContext's warehouse, adjusted with SafetyStock </u>
-	 * 
+	 *
 	 * @param mrpContext
 	 * @param product
 	 */
@@ -864,7 +865,7 @@ public class MRPExecutor implements IMRPExecutor
 
 	/**
 	 * Calculate QtyOnHand
-	 * 
+	 *
 	 * @param mrpContext
 	 * @return QtyOnHand
 	 */
@@ -896,7 +897,7 @@ public class MRPExecutor implements IMRPExecutor
 
 	/**************************************************************************
 	 * Calculate Plan this product
-	 * 
+	 *
 	 * @param mrpContext
 	 * @param mrpDemand
 	 */
@@ -922,8 +923,8 @@ public class MRPExecutor implements IMRPExecutor
 		//
 		// Get MRP Demand that we will need to balance
 		Check.assumeNotNull(mrpDemand, "mrpDemand not null");
-		final Date DemandDateStartSchedule = mrpDemand.getDateStartSchedule();
-		Check.assumeNotNull(DemandDateStartSchedule, "DemandDateStartSchedule not null");
+		final Date demandDateStartSchedule = mrpDemand.getDateStartSchedule();
+		Check.assumeNotNull(demandDateStartSchedule, "DemandDateStartSchedule not null");
 
 		//
 		// Initial Projected QtyOnHand (before we do anything)
@@ -935,7 +936,7 @@ public class MRPExecutor implements IMRPExecutor
 
 		//
 		// Notify handlers about our allocations
-		// ... maybe they want to take some decissions / do some stuff
+		// ... maybe they want to take some decisions / do some stuff
 		getMRPSupplyProducerFactory().notifyQtyOnHandAllocated(mrpContext, this, mrpSupplyAllocationResult.getMRPDemandToSupplyAllocations());
 
 		// NOTE: also Projected QtyOnHand is updated (i.e. Projected QtyOnHand which was reserved was subtracted).
@@ -946,7 +947,7 @@ public class MRPExecutor implements IMRPExecutor
 		final I_M_Warehouse warehouse = mrpContext.getM_Warehouse();
 		logger.info("                    Product:" + product.getName() + " (ID=" + product.getM_Product_ID() + ")");
 		logger.info("                  Warehouse:" + warehouse.getName() + " (ID=" + warehouse.getM_Warehouse_ID() + ")");
-		logger.info(" Demand Date Start Schedule:" + DemandDateStartSchedule);
+		logger.info(" Demand Date Start Schedule:" + demandDateStartSchedule);
 		logger.info("                 MRP Demand:" + mrpDemand);
 		logger.info("     Qty Scheduled Receipts:" + mrpSupplyAllocationResult.getQtyScheduledReceipts());
 		logger.info("    Projected QOH (initial):" + qtyProjectedOnHand0);
@@ -997,12 +998,12 @@ public class MRPExecutor implements IMRPExecutor
 		// You should either manually schedule and expedite orders to fill this demand or delay fulfillment
 		// of the requirement that created the demand.
 		final Timestamp TimeFence = mrpContext.getTimeFence();
-		if (TimeFence != null && DemandDateStartSchedule.compareTo(TimeFence) < 0)
+		if (TimeFence != null && demandDateStartSchedule.compareTo(TimeFence) < 0)
 		{
 			newMRPNote(mrpContext, MRP_ERROR_100_TimeFenceConflict)
 					.addParameter(I_PP_Product_Planning.COLUMNNAME_TimeFence, m_product_planning.getTimeFence())
 					.addParameter("TimeFence_Max", TimeFence)
-					.addParameter("DemandDateStartSchedule", DemandDateStartSchedule)
+					.addParameter("DemandDateStartSchedule", demandDateStartSchedule)
 					.addParameter("QtyToOrder", qtyToOrder)
 					.collect();
 		}
@@ -1045,13 +1046,17 @@ public class MRPExecutor implements IMRPExecutor
 		{
 			try
 			{
+
 				final List<IMRPRecordAndQty> remainingMRPDemandsToAllocate = mrpSupplyAllocationResult.getRemainingMRPDemandsToAllocate();
-				final BigDecimal qtySupplied = createSupply(mrpContext, qtyToOrderPerOrder, DemandDateStartSchedule, remainingMRPDemandsToAllocate);
+				final Quantity qtySupplied = createSupply(mrpContext,
+						Quantity.of(qtyToOrderPerOrder, mrpContext.getM_Product().getC_UOM()),
+						demandDateStartSchedule,
+						remainingMRPDemandsToAllocate);
 
 				//
 				// Adjust Projected QtyOnHand: we are adding the qty that it was supplied.
 				final BigDecimal qtyProjectedOnHand = mrpContext.getQtyProjectOnHand();
-				final BigDecimal qtyProjectedOnHandNew = qtyProjectedOnHand.add(qtySupplied);
+				final BigDecimal qtyProjectedOnHandNew = qtyProjectedOnHand.add(qtySupplied.getQty());
 				mrpContext.setQtyProjectOnHand(qtyProjectedOnHandNew);
 			}
 			catch (final Exception e)
@@ -1060,7 +1065,7 @@ public class MRPExecutor implements IMRPExecutor
 				// Indicates that there was an error durring document creation
 				newMRPNote(mrpContext, MRP_ERROR_160_CannotCreateDocument)
 						.addParameter("QtyToOrderPerOrder", qtyToOrderPerOrder)
-						.addParameter("DemandDateStartSchedule", DemandDateStartSchedule)
+						.addParameter("DemandDateStartSchedule", demandDateStartSchedule)
 						.setException(e)
 						.collect();
 			}
@@ -1069,12 +1074,14 @@ public class MRPExecutor implements IMRPExecutor
 
 	/**
 	 * Adjusts the Net Requirements quantity by applying ordering settings from Product Planning (Order_Min, Order_Pack, Order_Max).
-	 * 
+	 *
 	 * @param mrpContext
 	 * @param qtyNetReq
 	 * @return net requirements quantity adjusted
 	 */
-	private BigDecimal calculateQtyToOrder(final IMaterialPlanningContext mrpContext, final BigDecimal qtyNetReq)
+	private BigDecimal calculateQtyToOrder(
+			final IMaterialPlanningContext mrpContext,
+			final BigDecimal qtyNetReq)
 	{
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 
@@ -1125,7 +1132,7 @@ public class MRPExecutor implements IMRPExecutor
 
 	/**
 	 * Create supply document
-	 * 
+	 *
 	 * @param mrpContext
 	 * @param qtyToSupply quantity that needs to be supplied
 	 * @param DemandDateStartSchedule
@@ -1133,16 +1140,15 @@ public class MRPExecutor implements IMRPExecutor
 	 * @return how much was actually supplied
 	 * @throws LiberoException if there is any error
 	 */
-	private BigDecimal createSupply(
+	private Quantity createSupply(
 			final IMaterialPlanningContext mrpContext,
-			final BigDecimal qtyToSupply,
+			final Quantity qtyToSupply,
 			final Date DemandDateStartSchedule,
 			final List<IMRPRecordAndQty> mrpDemandsToAllocate)
 			throws LiberoException
 	{
 		mrpBL.executeInMRPContext(mrpContext, new IMRPContextRunnable()
 		{
-
 			@Override
 			public void run(final IMutableMRPContext mrpContextLocal)
 			{
@@ -1163,12 +1169,12 @@ public class MRPExecutor implements IMRPExecutor
 		});
 
 		// TODO: we shall change our MRP supply producers and let them tell how much it was supplied.
-		final BigDecimal qtySupplied = qtyToSupply;
+		final Quantity qtySupplied = qtyToSupply;
 		return qtySupplied;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param mrpContext
 	 * @param DemandDateStartSchedule
 	 * @return qty reserved
@@ -1271,7 +1277,7 @@ public class MRPExecutor implements IMRPExecutor
 
 	/**
 	 * Marks the MRP record (Demand) as available, to be used in current planning.
-	 * 
+	 *
 	 * NOTE: logic of following methods are are all relying on this:
 	 * <ul>
 	 * <li>{@link #isMRPDemandAvailable(IMaterialPlanningContext, I_PP_MRP)}

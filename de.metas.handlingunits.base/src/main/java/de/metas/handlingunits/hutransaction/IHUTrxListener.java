@@ -97,7 +97,7 @@ public interface IHUTrxListener
 	 * @param unloadTrx
 	 * @param loadTrx
 	 */
-	default void onUnloadLoadTransaction(IHUContext huContext, IHUTransaction unloadTrx, IHUTransaction loadTrx)
+	default void onUnloadLoadTransaction(IHUContext huContext, IHUTransactionCandidate unloadTrx, IHUTransactionCandidate loadTrx)
 	{
 		// nothing
 	}
@@ -109,7 +109,7 @@ public interface IHUTrxListener
 	 * @param unloadTrx transaction on source HU
 	 * @param loadTrx transaction on destination HU
 	 */
-	default void onSplitTransaction(IHUContext huContext, IHUTransaction unloadTrx, IHUTransaction loadTrx)
+	default void onSplitTransaction(IHUContext huContext, IHUTransactionCandidate unloadTrx, IHUTransactionCandidate loadTrx)
 	{
 		// nothing
 	}

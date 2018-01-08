@@ -36,7 +36,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
 import org.eevolution.mrp.api.IMRPDemand;
@@ -47,6 +46,7 @@ import org.eevolution.mrp.api.IMRPSuppliesPool;
 import de.metas.material.planning.IMRPNoteBuilder;
 import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.pporder.LiberoException;
 
 public class MRPDemandsPool implements IMRPDemandsPool
 {

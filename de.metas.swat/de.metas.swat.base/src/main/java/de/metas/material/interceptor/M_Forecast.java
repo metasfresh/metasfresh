@@ -1,6 +1,5 @@
 package de.metas.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
@@ -22,7 +21,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import lombok.NonNull;
 
@@ -75,8 +74,8 @@ public class M_Forecast
 				forecastLines,
 				timing);
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(forecastCreatedEvent, getTrxName(forecast));
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		materialEventService.postEventAfterNextCommit(forecastCreatedEvent);
 	}
 
 	private List<I_M_ForecastLine> retrieveForecastLines(@NonNull final I_M_Forecast forecast)

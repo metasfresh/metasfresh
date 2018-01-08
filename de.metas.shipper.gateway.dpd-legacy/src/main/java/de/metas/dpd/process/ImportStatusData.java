@@ -36,7 +36,6 @@ import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_Package;
-import org.compiere.model.MPackage;
 import org.compiere.model.Query;
 import org.compiere.util.Trx;
 import org.compiere.util.Util;
@@ -48,8 +47,8 @@ import de.metas.dpd.service.Iso7064;
 import de.metas.impex.model.I_ImpEx_Connector;
 import de.metas.impex.model.MImpExConnector;
 import de.metas.impex.spi.IImportConnector;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 public class ImportStatusData extends JavaProcess
 {
@@ -183,14 +182,14 @@ public class ImportStatusData extends JavaProcess
 
 			statusData.setParcellNo(parcelNo);
 
-			final MPackage pack = retrievePackage(parcelNo);
+			final I_M_Package pack = retrievePackage(parcelNo);
 			if (pack == null)
 			{
 				statusData.setM_Package_ID(0);
 			}
 			else
 			{
-				statusData.setM_Package_ID(pack.get_ID());
+				statusData.setM_Package_ID(pack.getM_Package_ID());
 			}
 
 			statusData.setDPD_ScanCode_ID(scanCode.get_ID());
@@ -257,7 +256,7 @@ public class ImportStatusData extends JavaProcess
 	}
 
 	@Cached
-	private MPackage retrievePackage(final String parcelNo)
+	private I_M_Package retrievePackage(final String parcelNo)
 	{
 		final char checkDigit = Iso7064.compute(parcelNo);
 
@@ -265,7 +264,7 @@ public class ImportStatusData extends JavaProcess
 
 		final Object[] parameters = { parcelNo + checkDigit };
 
-		return new Query(getCtx(), I_M_Package.Table_Name, whereClause, get_TrxName()).setParameters(parameters).firstOnly();
+		return new Query(getCtx(), I_M_Package.Table_Name, whereClause, get_TrxName()).setParameters(parameters).firstOnly(I_M_Package.class);
 	}
 
 	private String getValIf(final String[] fields, final int idx)

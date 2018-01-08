@@ -70,8 +70,8 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.empties.IHUEmptiesService;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
-import de.metas.handlingunits.hutransaction.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
+import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -274,7 +274,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 			{
 				result.subtractAllocatedQty(qtySource);
 
-				final IHUTransaction trx = new HUTransaction(
+				final IHUTransactionCandidate trx = new HUTransactionCandidate(
 						inventoryLine, // Reference model
 						null, // HU item
 						null, // vHU item

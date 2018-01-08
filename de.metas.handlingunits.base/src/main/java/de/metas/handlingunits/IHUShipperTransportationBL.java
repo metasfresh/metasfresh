@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_M_Package;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -43,7 +44,7 @@ public interface IHUShipperTransportationBL extends ISingletonService
 	 * @param shipperTransportationId
 	 * @param hus
 	 */
-	void addHUsToShipperTransportation(int shipperTransportationId, Collection<I_M_HU> hus);
+	List<I_M_Package> addHUsToShipperTransportation(int shipperTransportationId, Collection<I_M_HU> hus);
 
 	/**
 	 * Generates Material Shipments from previously enqueued HUs to shipper transportation.

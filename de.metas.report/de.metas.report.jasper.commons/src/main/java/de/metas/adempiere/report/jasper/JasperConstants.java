@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.report.jasper;
 
@@ -13,12 +13,12 @@ package de.metas.adempiere.report.jasper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,12 +28,10 @@ package de.metas.adempiere.report.jasper;
 
 /**
  * @author kh
- * 
+ *
  */
 public final class JasperConstants
 {
-	public static final String PROFILE_JasperServer = "metasfresh-jasper-server";
-
 	public static final String SYSCONFIG_JRServerServlet = "de.metas.adempiere.report.jasper.JRServerServlet";
 	public static final String SYSCONFIG_BarcodeServlet = "de.metas.adempiere.report.barcode.BarcodeServlet";
 
@@ -51,7 +49,7 @@ public final class JasperConstants
 
 	/**
 	 * Specifies an alternative SQL query to be used by the Jasper Report.
-	 * 
+	 *
 	 * NOTE: this alternative query will be used only by jasper reports which are supporting it.
 	 * If the jasper report does not support this parameter, it will be ignored.
 	 */
