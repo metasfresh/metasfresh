@@ -13,13 +13,13 @@ import org.compiere.model.I_M_InOut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
+import de.metas.Profiles;
 import de.metas.handlingunits.inout.ReceiptCorrectHUsProcessor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.view.IViewsRepository;
@@ -53,7 +53,7 @@ import de.metas.ui.web.window.model.DocumentCollection;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Profile(value = WebRestApiApplication.PROFILE_Webui)
+@Profile(value = Profiles.PROFILE_Webui)
 public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implements IProcessPrecondition
 {
 	@Autowired

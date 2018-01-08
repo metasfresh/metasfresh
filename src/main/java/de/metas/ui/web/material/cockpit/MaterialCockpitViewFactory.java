@@ -6,11 +6,15 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
+import org.compiere.util.CacheMgt;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -44,21 +48,24 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@ViewFactory(
-		windowId = MaterialCockpitConstants.WINDOWID_MaterialCockpitView_String,
-		viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
-public class MaterialCockpitViewFactory implements IViewFactory
+@ViewFactory(windowId = MaterialCockpitConstants.WINDOWID_MaterialCockpitView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
+public class MaterialCockpitViewFactory
+		implements IViewFactory
 {
 	private final MaterialCockpitRowRepository materialCockpitRowRepository;
 
 	private final MaterialCockpitFilters materialCockpitFilters;
 
+	private final MaterialCockpitViewsIndexStorage materialCockpitViewsIndexStorage;
+
 	public MaterialCockpitViewFactory(
 			@NonNull final MaterialCockpitRowRepository materialCockpitRowRepository,
+			@NonNull final MaterialCockpitViewsIndexStorage materialCockpitViewsIndexStorage,
 			@NonNull final MaterialCockpitFilters materialCockpitFilters)
 	{
 		this.materialCockpitRowRepository = materialCockpitRowRepository;
 		this.materialCockpitFilters = materialCockpitFilters;
+		this.materialCockpitViewsIndexStorage = materialCockpitViewsIndexStorage;
 	}
 
 	@Override
@@ -71,12 +78,23 @@ public class MaterialCockpitViewFactory implements IViewFactory
 
 		final Supplier<List<MaterialCockpitRow>> rowsSupplier = createRowsSupplier(filtersToUse);
 
-		return MaterialCockpitView.builder()
+		final MaterialCockpitView view = MaterialCockpitView.builder()
 				.viewId(request.getViewId())
 				.description(ITranslatableString.empty())
 				.rowsSupplier(rowsSupplier)
 				.filters(filtersToUse)
 				.build();
+
+		CacheMgt.get().addCacheResetListener(I_MD_Cockpit.Table_Name, cacheInvalidateRequest -> {
+			materialCockpitViewsIndexStorage.streamAllViews().forEach(IView::invalidateAll);
+			return 0;
+		});
+		CacheMgt.get().addCacheResetListener(I_MD_Stock.Table_Name, cacheInvalidateRequest -> {
+			materialCockpitViewsIndexStorage.streamAllViews().forEach(IView::invalidateAll);
+			return 0;
+		});
+
+		return view;
 	}
 
 	private void assertWindowIdOfRequestIsCorrect(@NonNull final CreateViewRequest request)
@@ -115,4 +133,5 @@ public class MaterialCockpitViewFactory implements IViewFactory
 
 		return viewlayOutBuilder.build();
 	}
+
 }

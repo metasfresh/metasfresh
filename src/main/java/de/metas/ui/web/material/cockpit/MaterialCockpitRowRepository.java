@@ -13,8 +13,11 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.dispo.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
+import de.metas.ui.web.material.cockpit.filters.StockFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
 import lombok.NonNull;
@@ -68,14 +71,19 @@ public class MaterialCockpitRowRepository
 		{
 			return ImmutableList.of();
 		}
-		final List<I_MD_Cockpit> productInfoDetailRecords = materialCockpitFilters
+		final List<I_MD_Cockpit> cockpitRecords = materialCockpitFilters
 				.createQuery(filters)
+				.list();
+
+		final List<I_MD_Stock> stockRecords = StockFilters
+				.createStockQueryFor(filters)
 				.list();
 
 		final CreateRowsRequest request = CreateRowsRequest.builder()
 				.date(date)
 				.productsToListEvenIfEmpty(retrieveRelevantProducts(filters))
-				.dataRecords(productInfoDetailRecords)
+				.cockpitRecords(cockpitRecords)
+				.stockRecords(stockRecords)
 				.build();
 		return materialCockpitRowFactory.createRows(request);
 	}

@@ -50,8 +50,8 @@ import de.metas.ui.web.notification.UserNotificationRepository;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.SqlViewFactory;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -184,7 +184,7 @@ public class DebugRestController
 				.map(viewResult -> JSONViewResult.of(viewResult, ViewRowOverridesHelper.NULL, adLanguage))
 				.collect(GuavaCollectors.toImmutableList());
 	}
-	
+
 	@PostMapping("/viewDefaultProfile/{windowId}")
 	public void setDefaultViewProfile(@PathVariable("windowId") final String windowIdStr, @RequestBody final String profileIdStr)
 	{
@@ -213,8 +213,8 @@ public class DebugRestController
 	)
 	{
 		final Topic topic = Topic.builder()
-				.setName(topicName)
-				.setType(Type.LOCAL)
+				.name(topicName)
+				.type(Type.LOCAL)
 				.build();
 
 		final Builder eventBuilder = Event.builder()
@@ -307,7 +307,7 @@ public class DebugRestController
 	public static enum LoggingModule
 	{
 		websockets(de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName()),
-		view(de.metas.ui.web.view.IView.class.getPackage().getName()), 
+		view(de.metas.ui.web.view.IView.class.getPackage().getName()),
 		cache(
 				org.compiere.util.CCache.class.getName() //
 				, org.compiere.util.CacheMgt.class.getName() //
@@ -380,7 +380,7 @@ public class DebugRestController
 				throw new IllegalStateException("For some reason " + logger + " could not be set to level " + level);
 			}
 		}
-		
+
 		return loggerNamesEffective;
 	}
 

@@ -10,11 +10,11 @@ import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.springframework.context.annotation.Profile;
 
+import de.metas.Profiles;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
@@ -48,7 +48,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh/issues/2361
  */
-@Profile(WebRestApiApplication.PROFILE_Webui)
+@Profile(Profiles.PROFILE_Webui)
 public class C_Invoice_Candidate_ApproveForInvoicing extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	private int countUpdated = 0;

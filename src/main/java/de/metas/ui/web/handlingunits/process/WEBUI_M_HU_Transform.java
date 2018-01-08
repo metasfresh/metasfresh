@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Profile;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.Profiles;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -23,7 +24,6 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
@@ -62,7 +62,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@Profile(value = WebRestApiApplication.PROFILE_Webui)
+@Profile(Profiles.PROFILE_Webui)
 public class WEBUI_M_HU_Transform
 		extends HUEditorProcessTemplate
 		implements IProcessPrecondition, IProcessDefaultParametersProvider

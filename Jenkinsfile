@@ -55,7 +55,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// and therefore, the jenkins information would not be added to the build.properties info file.
 				withEnv(["MF_VERSION=${MF_VERSION}"])
 				{
-        withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
+        withMaven(jdk: 'java-8', maven: 'maven-3.5.2', mavenLocalRepo: '.repository')
         {
 				stage('Set versions and build metasfresh-webui-api')
         {
@@ -122,7 +122,9 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 <code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${MF_VERSION} ${publishedDockerImageName}</code></li>
 </ul>"""
 
-				junit '**/target/surefire-reports/*.xml'
+				// after upgrading the "Pipeline Maven Integration Plugin" from 0.7 to 3.1.0, collecting the tests is now done by that plugin.
+				// comment it out to avoid all tests being counted twice
+				// junit '**/target/surefire-reports/*.xml'
 
 				// thx to https://github.com/jenkinsci/jacoco-plugin/pull/83
 				jacoco exclusionPattern: '**/src/main/java-gen'
