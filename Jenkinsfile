@@ -45,7 +45,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 		nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
-        withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
+        withMaven(jdk: 'java-8', maven: 'maven-3.5.2', mavenLocalRepo: '.repository')
         {
             stage('Set versions and build')
             {
