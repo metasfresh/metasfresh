@@ -248,7 +248,6 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				.addColumnDescending(I_C_Tax.COLUMNNAME_ValidFrom)
 				.endOrderBy()
 				.create()
-				.setClient_ID()
 				.firstId();
 
 		if (taxId <= 0)

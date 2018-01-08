@@ -43,7 +43,7 @@ import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 
-import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrderProductionQtyChangedEvent;
 import de.metas.material.event.pporder.PPOrderProductionQtyChangedEvent.PPOrderProductionQtyChangedEventBuilder;
@@ -105,8 +105,8 @@ public class PP_Cost_Collector
 					.newQuantity(costCollector.getMovementQty());
 		}
 
-		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(eventBuilder.build());
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		materialEventService.postEventAfterNextCommit(eventBuilder.build());
 	}
 
 	/**

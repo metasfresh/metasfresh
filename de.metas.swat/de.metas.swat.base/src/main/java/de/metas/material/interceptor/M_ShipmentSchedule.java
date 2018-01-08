@@ -17,8 +17,8 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
-import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -74,8 +74,8 @@ public class M_ShipmentSchedule
 			return;
 		}
 
-		final FireMaterialEventService fireMaterialEventService = Adempiere.getBean(FireMaterialEventService.class);
-		fireMaterialEventService.fireEventAfterNextCommit(event);
+		final PostMaterialEventService postMaterialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		postMaterialEventService.postEventAfterNextCommit(event);
 	}
 
 	@VisibleForTesting
@@ -169,24 +169,4 @@ public class M_ShipmentSchedule
 				.build();
 		return orderedMaterial;
 	}
-
-	private BigDecimal computeEffectiveOrderedQuantity(
-			@NonNull final I_M_ShipmentSchedule schedule,
-			@NonNull final ModelChangeType timing)
-	{
-		final BigDecimal quantity;
-		final boolean deleted = timing.isDelete() || !schedule.isActive();
-		if (deleted)
-		{
-			quantity = BigDecimal.ZERO;
 		}
-		else
-		{
-			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-			quantity = schedule.getQtyDelivered()
-					.max(schedule.getQtyToDeliver())
-					.max(shipmentScheduleEffectiveBL.computeQtyOrdered(schedule));
-		}
-		return quantity;
-	}
-}

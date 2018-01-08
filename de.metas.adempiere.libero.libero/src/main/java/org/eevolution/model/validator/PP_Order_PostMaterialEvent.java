@@ -2,7 +2,6 @@ package org.eevolution.model.validator;
 
 import org.adempiere.ad.modelvalidator.InterceptorUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.Adempiere;
@@ -10,7 +9,7 @@ import org.compiere.model.ModelValidator;
 import org.eevolution.event.PPOrderRequestedEventHandler;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.event.pporder.PPOrder;
@@ -28,11 +27,11 @@ import lombok.NonNull;
  *
  */
 @Interceptor(I_PP_Order.class)
-public class PP_OrderFireMaterialEvent
+public class PP_Order_PostMaterialEvent
 {
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void fireMaterialEvent_newPPOrder(
+	public void postMaterialEvent_newPPOrder(
 			@NonNull final I_PP_Order ppOrder,
 			@NonNull final ModelChangeType type)
 	{
@@ -52,8 +51,8 @@ public class PP_OrderFireMaterialEvent
 				.groupId(groupIdFromPPOrderRequestedEvent)
 				.build();
 
-		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event);
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		materialEventService.postEventAfterNextCommit(event);
 	}
 
 	@ModelChange(//
@@ -73,14 +72,14 @@ public class PP_OrderFireMaterialEvent
 				.ppOrderId(ppOrder.getPP_Order_ID())
 				.build();
 
-		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event);
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		materialEventService.postEventAfterNextCommit(event);
 	}
 
 	@ModelChange(//
 			timings = ModelValidator.TYPE_AFTER_CHANGE, //
 			ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
-	public void fireMaterialEvent_ppOrderDocStatusChange(@NonNull final I_PP_Order ppOrder)
+	public void postMaterialEvent_ppOrderDocStatusChange(@NonNull final I_PP_Order ppOrder)
 	{
 		final PPOrderChangedDocStatusEvent event = PPOrderChangedDocStatusEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(ppOrder))
@@ -88,15 +87,7 @@ public class PP_OrderFireMaterialEvent
 				.newDocStatus(ppOrder.getDocStatus())
 				.build();
 
-		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event);
-	}
-
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_CLOSE)
-	public void fireMaterialEvent_ppOrderClosed(@NonNull final I_PP_Order ppOrderRecord)
-	{
-		final PPOrderPojoConverter ppOrderPojoConverter = Adempiere.getBean(PPOrderPojoConverter.class);
-		final PPOrder ppOrder = ppOrderPojoConverter.asPPOrderPojo(ppOrderRecord);
-
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		materialEventService.postEventAfterNextCommit(event);
 	}
 }

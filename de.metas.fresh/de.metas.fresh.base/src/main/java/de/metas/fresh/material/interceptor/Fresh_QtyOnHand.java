@@ -37,7 +37,7 @@ import org.compiere.model.ModelValidator;
 import de.metas.fresh.freshQtyOnHand.api.IFreshQtyOnHandDAO;
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
-import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -89,8 +89,8 @@ public class Fresh_QtyOnHand
 			events.add(event);
 		}
 
-		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
-		events.forEach(event -> materialEventService.fireEventAfterNextCommit(event));
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		events.forEach(event -> materialEventService.postEventAfterNextCommit(event));
 	}
 
 	private AbstractStockEstimateEvent createCreatedEvent(

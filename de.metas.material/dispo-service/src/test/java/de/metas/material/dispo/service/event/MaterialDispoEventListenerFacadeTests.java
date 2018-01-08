@@ -43,9 +43,9 @@ import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHand
 import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
 import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedOrCreatedHandler;
 import de.metas.material.dispo.service.event.handler.pporder.PPOrderAdvisedHandler;
-import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.MaterialEventHandlerRegistry;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
@@ -98,7 +98,7 @@ public class MaterialDispoEventListenerFacadeTests
 	private MaterialEventHandlerRegistry materialEventListener;
 
 	@Mocked
-	private FireMaterialEventService fireMaterialEventService;
+	private PostMaterialEventService postMaterialEventService;
 
 	@Mocked
 	private EventLogUserService eventLogUserService;
@@ -119,14 +119,13 @@ public class MaterialDispoEventListenerFacadeTests
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
-				candidateRepositoryCommands,
-				fireMaterialEventService);
+				candidateRepositoryCommands);
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
-						fireMaterialEventService,
+						postMaterialEventService,
 						stockRepository,
 						stockCandidateService),
 				new SupplyCandiateHandler(
@@ -136,14 +135,14 @@ public class MaterialDispoEventListenerFacadeTests
 
 		final RequestMaterialOrderService candidateService = new RequestMaterialOrderService(
 				candidateRepositoryRetrieval,
-				fireMaterialEventService);
+				postMaterialEventService);
 
 		final DDOrderAdvisedOrCreatedHandler distributionAdvisedEventHandler = new DDOrderAdvisedOrCreatedHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepositoryRetrieval, fireMaterialEventService));
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService));
 
 		final PPOrderAdvisedHandler ppOrderAdvisedHandler = new PPOrderAdvisedHandler(
 				candidateChangeHandler,

@@ -76,7 +76,7 @@ final class EventBus implements IEventBus
 			final String topicName,
 			final ExecutorService executor)
 	{
-		this.name = Check.assumeNotEmpty(topicName, "name not empty");;
+		this.name = Check.assumeNotEmpty(topicName, "name not empty");
 
 		if (executor == null)
 		{

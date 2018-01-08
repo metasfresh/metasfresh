@@ -52,7 +52,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.X_PP_Order;
 
-import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -198,8 +198,8 @@ public class PP_Order
 
 		final PPOrderQtyChangedEvent event = eventfactory.inspectPPOrderAfterChange();
 
-		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event);
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		materialEventService.postEventAfterNextCommit(event);
 	}
 
 	private void deleteWorkflowAndBOM(final I_PP_Order ppOrder)

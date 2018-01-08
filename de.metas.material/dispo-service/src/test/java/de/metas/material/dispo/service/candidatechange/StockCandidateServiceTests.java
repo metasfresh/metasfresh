@@ -32,10 +32,8 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -69,22 +67,17 @@ public class StockCandidateServiceTests
 	private StockCandidateService stockCandidateService;
 	private CandidateRepositoryWriteService candidateRepositoryCommands;
 
-	@Mocked
-	private FireMaterialEventService fireMaterialEvenService;
-
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
 
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
 
 		candidateRepositoryCommands = new CandidateRepositoryWriteService();
 		stockCandidateService = new StockCandidateService(
 				candidateRepository,
-				candidateRepositoryCommands,
-				fireMaterialEvenService);
+				candidateRepositoryCommands);
 	}
 
 	private void createStockRecordAtTimeNOW()

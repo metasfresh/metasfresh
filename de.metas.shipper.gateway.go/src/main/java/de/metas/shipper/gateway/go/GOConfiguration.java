@@ -1,18 +1,11 @@
 package de.metas.shipper.gateway.go;
 
 import org.adempiere.util.Check;
-import org.apache.http.auth.UsernamePasswordCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.ws.transport.http.HttpComponentsMessageSender;
-
-import de.metas.shipper.gateway.api.service.CountryCodeFactory;
-import de.metas.shipper.gateway.api.service.DefaultCountryCodeFactory;
-import de.metas.shipper.gateway.go.schema.ObjectFactory;
 
 /*
  * #%L
@@ -41,26 +34,35 @@ public class GOConfiguration
 {
 	private static final Logger logger = LoggerFactory.getLogger(GOConfiguration.class);
 
-	@Value("${de.metas.shipper.go.url}")
+	@Value("${de.metas.shipper.go.url:}")
 	private String url;
-	@Value("${de.metas.shipper.go.auth.username}")
+	@Value("${de.metas.shipper.go.auth.username:}")
 	private String authUsername;
-	@Value("${de.metas.shipper.go.auth.password}")
+	@Value("${de.metas.shipper.go.auth.password:}")
 	private String authPassword;
-	@Value("${de.metas.shipper.go.request.username}")
+	@Value("${de.metas.shipper.go.request.username:}")
 	private String requestUsername;
-	@Value("${de.metas.shipper.go.request.senderId}")
+	@Value("${de.metas.shipper.go.request.senderId:}")
 	private String requestSenderId;
 
-	@Bean
-	public GOClient goClient(final Jaxb2Marshaller marshaller)
+	public boolean isEnabled()
 	{
-		Check.assumeNotEmpty(url, "url is not empty");
+		return !Check.isEmpty(url, true);
+	}
+
+	@Bean
+	public GOClient goClient() throws Exception
+	{
+		if (!isEnabled())
+		{
+			logger.info("GO not configured. Skip inializing {}", GOClient.class);
+			return null;
+		}
 
 		final GOClient client = GOClient.builder()
 				.url(url)
-				.messageSender(goClientMessageSender())
-				.marshaller(marshaller)
+				.authUsername(authUsername)
+				.authPassword(authPassword)
 				.requestUsername(requestUsername)
 				.requestSenderId(requestSenderId)
 				.build();
@@ -69,36 +71,14 @@ public class GOConfiguration
 	}
 
 	@Bean
-	public Jaxb2Marshaller goClientMarshaller()
+	public GOShipperGatewayService goShipperGatewayService(final GODeliveryOrderRepository deliveryOrderRepository)
 	{
-		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-		marshaller.setPackagesToScan(ObjectFactory.class.getPackage().getName());
-		return marshaller;
-	}
+		if (!isEnabled())
+		{
+			logger.info("GO not configured. Skip inializing {}", GOShipperGatewayService.class);
+			return null;
+		}
 
-	@Bean
-	public HttpComponentsMessageSender goClientMessageSender()
-	{
-		final HttpComponentsMessageSender messageSender = new HttpComponentsMessageSender();
-		messageSender.setCredentials(goUsernamePasswordCredentials());
-		return messageSender;
-	}
-
-	@Bean
-	public UsernamePasswordCredentials goUsernamePasswordCredentials()
-	{
-		Check.assumeNotEmpty(authUsername, "username is not empty");
-		Check.assumeNotEmpty(authPassword, "password is not empty");
-
-		final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(authUsername, authPassword);
-		logger.info("Using GO credentials: {}", credentials);
-
-		return credentials;
-	}
-
-	@Bean
-	public CountryCodeFactory countryCodeFactory()
-	{
-		return new DefaultCountryCodeFactory();
+		return new GOShipperGatewayService(deliveryOrderRepository);
 	}
 }

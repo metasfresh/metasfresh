@@ -27,6 +27,7 @@ import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.ModelProductDescriptorExtractor;
@@ -246,6 +247,7 @@ public class DDOrderPojoSupplier
 				.collect(Collectors.toList());
 	}
 
+	@VisibleForTesting
 	/* package */final BigDecimal calculateQtyToMove(
 			@NonNull final BigDecimal qtyToMoveRequested,
 			@NonNull final BigDecimal networkLineTransferPercent)

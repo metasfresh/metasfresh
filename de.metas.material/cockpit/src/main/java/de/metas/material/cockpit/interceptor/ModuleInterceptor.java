@@ -31,10 +31,6 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 
 public class ModuleInterceptor extends AbstractModuleInterceptor
 {
-	public ModuleInterceptor()
-	{
-	}
-
 	@Override
 	protected void setupCaching(final IModelCacheService cachingService)
 	{

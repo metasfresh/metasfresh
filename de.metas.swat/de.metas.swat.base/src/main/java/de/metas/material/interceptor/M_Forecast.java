@@ -21,7 +21,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import lombok.NonNull;
 
@@ -74,8 +74,8 @@ public class M_Forecast
 				forecastLines,
 				timing);
 
-		final FireMaterialEventService materialEventService = Adempiere.getBean(FireMaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(forecastCreatedEvent);
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		materialEventService.postEventAfterNextCommit(forecastCreatedEvent);
 	}
 
 	private List<I_M_ForecastLine> retrieveForecastLines(@NonNull final I_M_Forecast forecast)

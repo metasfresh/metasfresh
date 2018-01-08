@@ -79,7 +79,7 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
-import de.metas.material.event.FireMaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
@@ -96,8 +96,9 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 @ActiveProfiles(Profiles.PROFILE_Test)
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
+	// the bean unused by the code in this class, but needed within the spring context
 	@MockBean
-	private FireMaterialEventService postMaterialEventService;
+	private PostMaterialEventService postMaterialEventService;
 
 	private MRPTestDataSimple masterData;
 

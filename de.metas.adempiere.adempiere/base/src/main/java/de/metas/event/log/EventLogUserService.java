@@ -104,8 +104,8 @@ public class EventLogUserService
 				.adIssueId(issue.getAD_Issue_ID());
 	}
 
-	@lombok.Value
-	@lombok.Builder
+	@Value
+	@Builder
 	public static class InvokeHandlerandLogRequest
 	{
 		Class<?> handlerClass;

@@ -18,7 +18,6 @@ import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.event.FireMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
 
@@ -50,16 +49,12 @@ public class StockCandidateService
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
-	private final FireMaterialEventService fireMaterialEventService;
-
 	public StockCandidateService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
-			@NonNull final FireMaterialEventService fireMaterialEventService)
+			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands)
 	{
 		this.candidateRepositoryRetrieval = candidateRepository;
 		this.candidateRepositoryWriteService = candidateRepositoryCommands;
-		this.fireMaterialEventService = fireMaterialEventService;
 	}
 
 	/**

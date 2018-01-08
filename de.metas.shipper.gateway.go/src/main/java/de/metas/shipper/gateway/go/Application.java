@@ -6,24 +6,29 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
+import java.util.Locale;
 
+import org.adempiere.util.Check;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import de.metas.shipper.gateway.api.ShipperGatewayClient;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
 import de.metas.shipper.gateway.api.model.Address;
+import de.metas.shipper.gateway.api.model.CountryCode;
 import de.metas.shipper.gateway.api.model.DeliveryOrder;
 import de.metas.shipper.gateway.api.model.DeliveryPosition;
 import de.metas.shipper.gateway.api.model.PackageLabel;
 import de.metas.shipper.gateway.api.model.PackageLabels;
 import de.metas.shipper.gateway.api.model.PickupDate;
-import de.metas.shipper.gateway.api.service.CountryCodeFactory;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
 import de.metas.shipper.gateway.go.schema.GOServiceType;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,7 +52,7 @@ import de.metas.shipper.gateway.go.schema.GOServiceType;
  * #L%
  */
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "de.metas.shipper.gateway")
 public class Application
 {
 	public static void main(final String[] args)
@@ -56,9 +61,14 @@ public class Application
 	}
 
 	@Bean
-	CommandLineRunner test(final ShipperGatewayClient shipperGatewayClient, final CountryCodeFactory countryCodeFactory)
+	CommandLineRunner test(
+			final GOClient goClient,
+			final ShipperGatewayRegistry shipperGatewayRegistry // not used, but just to make sure it loads OK
+	)
 	{
-		System.out.println("Using: " + shipperGatewayClient);
+		System.out.println("Using: " + goClient);
+
+		final CountryCodeFactory countryCodeFactory = new CountryCodeFactory();
 
 		final DeliveryOrder deliveryOrderCreateRequest = DeliveryOrder.builder()
 				.pickupAddress(Address.builder()
@@ -94,10 +104,10 @@ public class Application
 				.receiptConfirmationPhoneNumber("+40-746-010203")
 				.build();
 		return args -> {
-			final DeliveryOrder deliveryOrder = shipperGatewayClient.createDeliveryOrder(deliveryOrderCreateRequest);
-			shipperGatewayClient.completeDeliveryOrder(deliveryOrder);
+			final DeliveryOrder deliveryOrder = goClient.createDeliveryOrder(deliveryOrderCreateRequest);
+			goClient.completeDeliveryOrder(deliveryOrder);
 
-			final List<PackageLabels> packageLabels = shipperGatewayClient.getPackageLabelsList(deliveryOrder.getOrderId());
+			final List<PackageLabels> packageLabels = goClient.getPackageLabelsList(deliveryOrder.getOrderId());
 			System.out.println("Labels: " + packageLabels);
 			savePDFs(packageLabels);
 		};
@@ -130,6 +140,42 @@ public class Application
 		catch (final IOException ex)
 		{
 			throw new RuntimeException("Failed saving " + packageLabel, ex);
+		}
+	}
+
+	//
+	//
+	//
+	private static class CountryCodeFactory
+	{
+		private final ImmutableMap<String, CountryCode> countryCodesByAlpha2;
+
+		public CountryCodeFactory()
+		{
+			final ImmutableMap.Builder<String, CountryCode> countryCodesByAlpha2 = ImmutableMap.builder();
+			// final ImmutableMap.Builder<String, CountryCode> countryCodesByAlpha3 = ImmutableMap.builder();
+
+			for (final String countryCodeAlpha2 : Locale.getISOCountries())
+			{
+				final Locale locale = new Locale("", countryCodeAlpha2);
+				final String countryCodeAlpha3 = locale.getISO3Country();
+				final CountryCode countryCode = CountryCode.builder()
+						.alpha2(countryCodeAlpha2)
+						.alpha3(countryCodeAlpha3)
+						.build();
+				countryCodesByAlpha2.put(countryCodeAlpha2, countryCode);
+				// countryCodesByAlpha3.put(countryCodeAlpha3, countryCode);
+			}
+
+			this.countryCodesByAlpha2 = countryCodesByAlpha2.build();
+			// this.countryCodesByAlpha3 = countryCodesByAlpha3.build();
+		}
+
+		public CountryCode getCountryCodeByAlpha2(@NonNull final String countryCodeAlpha2)
+		{
+			final CountryCode countryCode = countryCodesByAlpha2.get(countryCodeAlpha2);
+			Check.assumeNotNull(countryCode, "countyCode shall exist for '{}' (alpha2)", countryCodeAlpha2);
+			return countryCode;
 		}
 	}
 }
