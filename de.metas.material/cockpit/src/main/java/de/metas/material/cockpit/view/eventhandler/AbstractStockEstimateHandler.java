@@ -10,8 +10,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.material.cockpit.view.DataRecordIdentifier;
-import de.metas.material.cockpit.view.DataUpdateRequest;
-import de.metas.material.cockpit.view.DataUpdateRequestHandler;
+import de.metas.material.cockpit.view.UpdateMainDataRequest;
+import de.metas.material.cockpit.view.MainDataRequestHandler;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
@@ -45,10 +45,10 @@ import lombok.NonNull;
 public class AbstractStockEstimateHandler
 		implements MaterialEventHandler<AbstractStockEstimateEvent>
 {
-	private final DataUpdateRequestHandler dataUpdateRequestHandler;
+	private final MainDataRequestHandler dataUpdateRequestHandler;
 
 	public AbstractStockEstimateHandler(
-			@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler)
+			@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
 	}
@@ -62,11 +62,11 @@ public class AbstractStockEstimateHandler
 	@Override
 	public void handleEvent(@NonNull final AbstractStockEstimateEvent event)
 	{
-		final DataUpdateRequest dataUpdateRequest = createDataUpdateRequestForEvent(event);
+		final UpdateMainDataRequest dataUpdateRequest = createDataUpdateRequestForEvent(event);
 		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
 	}
 
-	private DataUpdateRequest createDataUpdateRequestForEvent(
+	private UpdateMainDataRequest createDataUpdateRequestForEvent(
 			@NonNull final AbstractStockEstimateEvent stockEstimateEvent)
 	{
 		final DataRecordIdentifier identifier = DataRecordIdentifier.builder()
@@ -75,7 +75,7 @@ public class AbstractStockEstimateHandler
 				.plantId(stockEstimateEvent.getPlantId())
 				.build();
 
-		final DataUpdateRequest request = DataUpdateRequest.builder()
+		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.countedQty(stockEstimateEvent.getQuantityDelta())
 				.build();

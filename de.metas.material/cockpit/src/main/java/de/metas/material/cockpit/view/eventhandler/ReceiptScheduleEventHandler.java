@@ -10,8 +10,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.event.log.EventLogUserService;
 import de.metas.material.cockpit.view.DataRecordIdentifier;
-import de.metas.material.cockpit.view.DataUpdateRequest;
-import de.metas.material.cockpit.view.DataUpdateRequestHandler;
+import de.metas.material.cockpit.view.UpdateMainDataRequest;
+import de.metas.material.cockpit.view.MainDataRequestHandler;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
@@ -48,11 +48,11 @@ public class ReceiptScheduleEventHandler
 		implements MaterialEventHandler<AbstractReceiptScheduleEvent>
 {
 
-	private final DataUpdateRequestHandler dataUpdateRequestHandler;
+	private final MainDataRequestHandler dataUpdateRequestHandler;
 	private final EventLogUserService eventLogUserService;
 
 	public ReceiptScheduleEventHandler(
-			@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler,
+			@NonNull final MainDataRequestHandler dataUpdateRequestHandler,
 			@NonNull final EventLogUserService eventLogUserService)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
@@ -90,7 +90,7 @@ public class ReceiptScheduleEventHandler
 			return;
 		}
 
-		final DataUpdateRequest request = DataUpdateRequest.builder()
+		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.orderedPurchaseQty(event.getOrderedQuantityDelta())
 				.reservedPurchaseQty(event.getReservedQuantityDelta())

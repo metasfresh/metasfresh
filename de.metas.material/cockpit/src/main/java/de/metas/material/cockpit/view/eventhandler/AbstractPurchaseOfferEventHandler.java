@@ -10,8 +10,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.material.cockpit.view.DataRecordIdentifier;
-import de.metas.material.cockpit.view.DataUpdateRequest;
-import de.metas.material.cockpit.view.DataUpdateRequestHandler;
+import de.metas.material.cockpit.view.UpdateMainDataRequest;
+import de.metas.material.cockpit.view.MainDataRequestHandler;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.procurement.AbstractPurchaseOfferEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
@@ -46,10 +46,10 @@ import lombok.NonNull;
 public class AbstractPurchaseOfferEventHandler
 		implements MaterialEventHandler<AbstractPurchaseOfferEvent>
 {
-	private final DataUpdateRequestHandler dataUpdateRequestHandler;
+	private final MainDataRequestHandler dataUpdateRequestHandler;
 
 	public AbstractPurchaseOfferEventHandler(
-			@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler)
+			@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
 	}
@@ -66,11 +66,11 @@ public class AbstractPurchaseOfferEventHandler
 	@Override
 	public void handleEvent(@NonNull final AbstractPurchaseOfferEvent event)
 	{
-		final DataUpdateRequest dataUpdateRequest = createDataUpdateRequestForEvent(event);
+		final UpdateMainDataRequest dataUpdateRequest = createDataUpdateRequestForEvent(event);
 		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
 	}
 
-	private DataUpdateRequest createDataUpdateRequestForEvent(
+	private UpdateMainDataRequest createDataUpdateRequestForEvent(
 			@NonNull final AbstractPurchaseOfferEvent purchaseOfferedEvent)
 	{
 		final DataRecordIdentifier identifier = DataRecordIdentifier.builder()
@@ -78,7 +78,7 @@ public class AbstractPurchaseOfferEventHandler
 				.date(TimeUtil.getDay(purchaseOfferedEvent.getDate()))
 				.build();
 
-		final DataUpdateRequest request = DataUpdateRequest.builder()
+		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.offeredQty(purchaseOfferedEvent.getQtyDelta())
 				.build();

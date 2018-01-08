@@ -111,7 +111,7 @@ public class M_ShipmentSchedule
 		final ShipmentScheduleReferencedLineFactory referencedLineFactory = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class);
 		final DocumentLineDescriptor documentLineDescriptor = referencedLineFactory.createFor(shipmentSchedule)
 				.getDocumentLineDescriptor();
-		builder.documentDescriptor(documentLineDescriptor);
+		builder.documentLineDescriptor(documentLineDescriptor);
 
 		final ShipmentScheduleCreatedEvent event = builder.build();
 		return event;

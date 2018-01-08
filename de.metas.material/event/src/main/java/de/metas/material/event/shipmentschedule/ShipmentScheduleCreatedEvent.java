@@ -44,7 +44,7 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 {
 	public static final String TYPE = "ShipmentScheduleCreatedEvent";
 
-	private final DocumentLineDescriptor documentDescriptor;
+	private final DocumentLineDescriptor documentLineDescriptor;
 
 	@Builder
 	public ShipmentScheduleCreatedEvent(
@@ -52,7 +52,7 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("reservedQuantity") @NonNull final BigDecimal reservedQuantity,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
-			@JsonProperty("documentDescriptor") final DocumentLineDescriptor documentDescriptor)
+			@JsonProperty("documentLineDescriptor") final DocumentLineDescriptor documentLineDescriptor)
 	{
 		super(
 				eventDescriptor,
@@ -60,7 +60,7 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 				reservedQuantity,
 				shipmentScheduleId);
 
-		this.documentDescriptor = documentDescriptor;
+		this.documentLineDescriptor = documentLineDescriptor;
 	}
 
 	@Override
@@ -79,7 +79,8 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 	public void validate()
 	{
 		super.validate();
-		Check.errorIf(documentDescriptor == null, "documentDescriptor may not be null");
-		documentDescriptor.validate();
+
+		Check.errorIf(documentLineDescriptor == null, "documentLineDescriptor may not be null");
+		documentLineDescriptor.validate();
 	}
 }

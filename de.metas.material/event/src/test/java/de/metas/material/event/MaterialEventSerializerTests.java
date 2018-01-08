@@ -336,7 +336,7 @@ public class MaterialEventSerializerTests
 				.materialDescriptor(createMaterialDescriptor())
 				.reservedQuantity(new BigDecimal("3"))
 				.shipmentScheduleId(4)
-				.documentDescriptor(createOrderLineDescriptor())
+				.documentLineDescriptor(createOrderLineDescriptor())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(shipmentScheduleCreatedEvent);

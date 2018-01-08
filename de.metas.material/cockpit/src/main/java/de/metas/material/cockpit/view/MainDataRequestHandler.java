@@ -3,16 +3,11 @@ package de.metas.material.cockpit.view;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.ProductDescriptor;
 import lombok.NonNull;
 
 /*
@@ -38,9 +33,9 @@ import lombok.NonNull;
  */
 
 @Service
-public class DataUpdateRequestHandler
+public class MainDataRequestHandler
 {
-	public void handleDataUpdateRequest(@NonNull final DataUpdateRequest dataUpdateRequest)
+	public void handleDataUpdateRequest(@NonNull final UpdateMainDataRequest dataUpdateRequest)
 	{
 		final I_MD_Cockpit dataRecord = retrieveOrCreateDataRecord(dataUpdateRequest.getIdentifier());
 
@@ -51,7 +46,7 @@ public class DataUpdateRequestHandler
 
 	private I_MD_Cockpit retrieveOrCreateDataRecord(@NonNull final DataRecordIdentifier identifier)
 	{
-		final IQuery<I_MD_Cockpit> query = createQueryForIdentifier(identifier);
+		final IQuery<I_MD_Cockpit> query = identifier.createQuery();
 
 		final I_MD_Cockpit existingDataRecord = query.firstOnly(I_MD_Cockpit.class);
 		if (existingDataRecord != null)
@@ -68,35 +63,9 @@ public class DataUpdateRequestHandler
 		return newDataRecord;
 	}
 
-	private IQuery<I_MD_Cockpit> createQueryForIdentifier(@NonNull final DataRecordIdentifier identifier)
-	{
-		final ProductDescriptor productDescriptor = identifier.getProductDescriptor();
-
-		final AttributesKey attributesKey = productDescriptor.getStorageAttributesKey();
-		attributesKey.assertNotAllOrOther();
-
-		final IQueryBuilder<I_MD_Cockpit> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_MD_Cockpit.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Cockpit.COLUMN_M_Product_ID, productDescriptor.getProductId())
-				.addEqualsFilter(I_MD_Cockpit.COLUMN_AttributesKey, attributesKey.getAsString())
-				.addEqualsFilter(I_MD_Cockpit.COLUMN_DateGeneral, identifier.getDate());
-
-		if (identifier.getPlantId() > 0)
-		{
-			queryBuilder.addEqualsFilter(I_MD_Cockpit.COLUMN_PP_Plant_ID, identifier.getPlantId());
-		}
-		else
-		{
-			queryBuilder.addEqualsFilter(I_MD_Cockpit.COLUMN_PP_Plant_ID, null);
-		}
-
-		return queryBuilder.create();
-	}
-
 	private void updateDataRecordWithRequestQtys(
 			final I_MD_Cockpit dataRecord,
-			final DataUpdateRequest dataUpdateRequest)
+			final UpdateMainDataRequest dataUpdateRequest)
 	{
 		// was QtyMaterialentnahme
 		dataRecord.setQtyMaterialentnahme(dataRecord.getQtyMaterialentnahme().add(dataUpdateRequest.getDirectMovementQty()));
@@ -130,8 +99,5 @@ public class DataUpdateRequestHandler
 				dataRecord.getQtyOnHandEstimate()
 						.add(dataRecord.getQtyReserved_Purchase())
 						.subtract(dataRecord.getQtyReserved_Sale()));
-
-
-
 	}
 }

@@ -104,9 +104,9 @@ public class M_ShipmentScheduleTest
 		final ShipmentScheduleCreatedEvent createdEvent = (ShipmentScheduleCreatedEvent)result;
 		assertThat(createdEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
 
-		final DocumentLineDescriptor documentDescriptor = createdEvent.getDocumentDescriptor();
-		assertThat(documentDescriptor).isInstanceOf(OrderLineDescriptor.class);
-		assertThat(((OrderLineDescriptor)documentDescriptor).getOrderLineId()).isLessThanOrEqualTo(0);
+		final DocumentLineDescriptor documentLineDescriptor = createdEvent.getDocumentLineDescriptor();
+		assertThat(documentLineDescriptor).isInstanceOf(OrderLineDescriptor.class);
+		assertThat(((OrderLineDescriptor)documentLineDescriptor).getOrderLineId()).isLessThanOrEqualTo(0);
 
 		assertThat(createdEvent.getMaterialDescriptor().getBPartnerId()).isEqualTo(45);
 		assertThat(createdEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);

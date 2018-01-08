@@ -31,7 +31,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class DataUpdateRequest
+public class UpdateMainDataRequest
 {
 	@NonNull
 	DataRecordIdentifier identifier;

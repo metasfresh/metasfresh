@@ -144,7 +144,7 @@ public class ShipmentScheduleCreatedHandlerTests
 						.build())
 				.reservedQuantity(new BigDecimal("20"))
 				.shipmentScheduleId(shipmentScheduleId)
-				.documentDescriptor(OrderLineDescriptor.builder()
+				.documentLineDescriptor(OrderLineDescriptor.builder()
 						.orderLineId(orderLineId)
 						.orderId(30)
 						.build())

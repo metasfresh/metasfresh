@@ -10,9 +10,9 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.material.cockpit.view.DataRecordIdentifier;
-import de.metas.material.cockpit.view.DataUpdateRequest;
-import de.metas.material.cockpit.view.DataUpdateRequestHandler;
-import de.metas.material.cockpit.view.DataUpdateRequest.DataUpdateRequestBuilder;
+import de.metas.material.cockpit.view.MainDataRequestHandler;
+import de.metas.material.cockpit.view.UpdateMainDataRequest;
+import de.metas.material.cockpit.view.UpdateMainDataRequest.UpdateMainDataRequestBuilder;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
@@ -46,10 +46,10 @@ import lombok.NonNull;
 public class AbstractTransactionEventHandler
 		implements MaterialEventHandler<AbstractTransactionEvent>
 {
-	private final DataUpdateRequestHandler dataUpdateRequestHandler;
+	private final MainDataRequestHandler dataUpdateRequestHandler;
 
 	public AbstractTransactionEventHandler(
-			@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler)
+			@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
 	}
@@ -65,11 +65,11 @@ public class AbstractTransactionEventHandler
 	@Override
 	public void handleEvent(@NonNull final AbstractTransactionEvent event)
 	{
-		final DataUpdateRequest dataUpdateRequest = createDataUpdateRequestForEvent(event);
+		final UpdateMainDataRequest dataUpdateRequest = createDataUpdateRequestForEvent(event);
 		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
 	}
 
-	private DataUpdateRequest createDataUpdateRequestForEvent(
+	private UpdateMainDataRequest createDataUpdateRequestForEvent(
 			@NonNull final AbstractTransactionEvent transactionEvent)
 	{
 		final DataRecordIdentifier identifier = DataRecordIdentifier
@@ -77,7 +77,7 @@ public class AbstractTransactionEventHandler
 
 		final BigDecimal eventQuantity = transactionEvent.getQuantityDelta();
 
-		final DataUpdateRequestBuilder dataRequestBuilder = DataUpdateRequest.builder()
+		final UpdateMainDataRequestBuilder dataRequestBuilder = UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.onHandQtyChange(eventQuantity);
 
