@@ -1,13 +1,18 @@
 package de.metas.material.planning.pporder;
 
+import java.util.List;
+
+import org.adempiere.util.Services;
+import org.compiere.Adempiere;
+import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import lombok.NonNull;
 
 /*
@@ -53,9 +58,48 @@ public class PPOrderPojoConverter
 				.build();
 	}
 
-	public PPOrder asPPOrderPojo(@NonNull final PPOrderRequestedEvent event)
+	public PPOrder asPPOrderPojo(@NonNull final I_PP_Order ppOrderRecord)
 	{
-		return event.getPpOrder();
+		final PPOrderBuilder ppOrderPojoBuilder = createPPorderPojoBuilder(ppOrderRecord);
+
+		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
+
+		final List<I_PP_Order_BOMLine> orderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrderRecord);
+		for (final I_PP_Order_BOMLine line : orderBOMLines)
+		{
+			final boolean receipt = PPOrderUtil.isReceipt(line.getComponentType());
+
+			ppOrderPojoBuilder.line(PPOrderLine.builder()
+					.productDescriptor(productDescriptorFactory.createProductDescriptor(line))
+					.description(line.getDescription())
+					.ppOrderLineId(line.getPP_Order_BOMLine_ID())
+					.productBomLineId(line.getPP_Product_BOMLine_ID())
+					.qtyRequired(line.getQtyRequiered())
+					.issueOrReceiveDate(receipt ? ppOrderRecord.getDatePromised() : ppOrderRecord.getDateStartSchedule())
+					.receipt(receipt)
+					.build());
+		}
+		return ppOrderPojoBuilder.build();
 	}
 
+	private PPOrderBuilder createPPorderPojoBuilder(@NonNull final I_PP_Order ppOrder)
+	{
+		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
+
+		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
+				.datePromised(ppOrder.getDatePromised())
+				.dateStartSchedule(ppOrder.getDateStartSchedule())
+				.docStatus(ppOrder.getDocStatus())
+				.orderLineId(ppOrder.getC_OrderLine_ID())
+				.orgId(ppOrder.getAD_Org_ID())
+				.plantId(ppOrder.getS_Resource_ID())
+				.ppOrderId(ppOrder.getPP_Order_ID())
+				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrder))
+				.productPlanningId(ppOrder.getPP_Product_Planning_ID())
+				.quantity(ppOrder.getQtyOrdered())
+				.warehouseId(ppOrder.getM_Warehouse_ID())
+				.bPartnerId(ppOrder.getC_BPartner_ID())
+				.orderLineId(ppOrder.getC_OrderLine_ID());
+		return ppOrderPojoBuilder;
+	}
 }

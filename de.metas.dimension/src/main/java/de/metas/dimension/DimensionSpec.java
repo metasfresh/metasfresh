@@ -366,18 +366,17 @@ public class DimensionSpec
 			@NonNull final Multimap<String, Integer> groupNameToAttributeValueIds,
 			@NonNull final Builder<DimensionSpecGroup> list)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		groupNameToAttributeValueIds.asMap().entrySet().stream()
 				.sorted(Comparator.comparing(Entry::getKey))
 				.forEach(entry -> {
 
-					final ITranslatableString groupName = msgBL.getTranslatableMsgText(entry.getKey());
-					final boolean emptyGroup = false;
+					final ITranslatableString groupName = ITranslatableString.constant(entry.getKey());
+					final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(entry.getValue());
 
-					list.add(new DimensionSpecGroup(
+					final DimensionSpecGroup newGroup = new DimensionSpecGroup(
 							groupName,
-							AttributesKey.ofAttributeValueIds(entry.getValue()),
-							emptyGroup));
+							attributesKey);
+					list.add(newGroup);
 				});
 	}
 

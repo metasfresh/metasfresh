@@ -34,7 +34,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.api.IResourceDAO;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.mrp.api.IMRPExecutorService;
 import org.eevolution.mrp.api.IMRPResult;
 
@@ -42,6 +41,7 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.process.JavaProcess;
 
 public abstract class AbstractMRPProcess extends JavaProcess

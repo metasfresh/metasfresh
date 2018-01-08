@@ -43,7 +43,7 @@ public class DemandCandidateDetailTests
 	public void createOrNull_when_not_empty()
 	{
 		final SupplyRequiredDescriptor descriptor = SupplyRequiredDescriptor.builder()
-				.eventDescr(new EventDescriptor(10, 20))
+				.eventDescriptor(new EventDescriptor(10, 20))
 				.forecastLineId(1)
 				.shipmentScheduleId(2)
 				.orderLineId(3)

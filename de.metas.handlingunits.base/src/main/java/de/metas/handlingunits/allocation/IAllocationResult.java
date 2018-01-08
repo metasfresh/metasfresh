@@ -25,7 +25,7 @@ package de.metas.handlingunits.allocation;
 import java.math.BigDecimal;
 import java.util.List;
 
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 
 /**
@@ -63,11 +63,11 @@ public interface IAllocationResult
 	boolean isZeroAllocated();
 
 	/**
-	 * Gets the {@link IHUTransaction}s that were created in order to allocate/deallocate requested qty
+	 * Gets the {@link IHUTransactionCandidate}s that were created in order to allocate/deallocate requested qty
 	 *
-	 * @return {@link IHUTransaction}s; never return null
+	 * @return {@link IHUTransactionCandidate}s; never return null
 	 */
-	List<IHUTransaction> getTransactions();
+	List<IHUTransactionCandidate> getTransactions();
 
 	/**
 	 *

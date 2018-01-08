@@ -114,7 +114,7 @@ public class CandidateRepositoryWriteServiceTests
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
 		save(candidateRecord);
 
-		candidateRepositoryWriteService.addOrRecplaceDemandDetail(candidate, candidateRecord);
+		candidateRepositoryWriteService.addOrReplaceDemandDetail(candidate, candidateRecord);
 
 		final List<I_MD_Candidate_Demand_Detail> allDemandDetails = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Demand_Detail.class).create().list();
 		assertThat(allDemandDetails).hasSize(1);
@@ -211,7 +211,6 @@ public class CandidateRepositoryWriteServiceTests
 						.plantId(60)
 						.productBomLineId(70)
 						.productPlanningId(80)
-						.uomId(90)
 						.ppOrderId(100)
 						.ppOrderLineId(110)
 						.ppOrderDocStatus("ppOrderDocStatus")
@@ -233,7 +232,6 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(productionDetailRecord.getPP_Plant_ID()).isEqualTo(60);
 		assertThat(productionDetailRecord.getPP_Product_BOMLine_ID()).isEqualTo(70);
 		assertThat(productionDetailRecord.getPP_Product_Planning_ID()).isEqualTo(80);
-		assertThat(productionDetailRecord.getC_UOM_ID()).isEqualTo(90);
 		assertThat(productionDetailRecord.getPP_Order_ID()).isEqualTo(100);
 		assertThat(productionDetailRecord.getPP_Order_BOMLine_ID()).isEqualTo(110);
 		assertThat(productionDetailRecord.getPP_Order_DocStatus()).isEqualTo("ppOrderDocStatus");
@@ -257,6 +255,7 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(result1.getGroupId()).isEqualTo(result1.getId());
 
 		final Candidate candidateWithGroupId = candidateWithOutGroupId
+				.withId(0)
 				.withDate(TimeUtil.addMinutes(AFTER_NOW, 2)) // pick a different time from the other candidates
 				.withGroupId(result1.getGroupId());
 

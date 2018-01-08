@@ -4,8 +4,6 @@ import javax.annotation.Nullable;
 
 import org.eevolution.model.I_PP_Order;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -54,12 +52,6 @@ public abstract class AbstractPPOrderEvent implements MaterialEvent
 	private final PPOrder ppOrder;
 
 	/**
-	 * Set to > 0 if this event is about a "real" PPOrder that was created due to a {@link PPOrderRequestedEvent}.
-	 */
-	@JsonProperty
-	private final int groupId;
-
-	/**
 	 * Set to not-null mainly if this event is about and "advise" that was created due to a {@link SupplyRequiredEvent}, but also<br>
 	 * if this event is about a "wild" PPOrder that was somehow created and has a sales order line ID
 	 */
@@ -68,12 +60,10 @@ public abstract class AbstractPPOrderEvent implements MaterialEvent
 	public AbstractPPOrderEvent(
 			@NonNull final EventDescriptor eventDescriptor,
 			@NonNull final PPOrder ppOrder,
-			final int groupId,
 			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		this.eventDescriptor = eventDescriptor;
 		this.ppOrder = ppOrder;
-		this.groupId = groupId;
 		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
 	}
 

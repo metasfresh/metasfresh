@@ -10,12 +10,12 @@ package org.eevolution.mrp.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,9 +48,9 @@ import de.metas.material.planning.IMaterialPlanningContext;
 
 /**
  * An {@link IMRPSupplyProducer} implementation which just creates a Supply MRP record to balance the demand (see {@link #createSupply(IMaterialPlanningContext, IMRPExecutor)}).
- * 
+ *
  * @author tsa
- * 
+ *
  */
 @org.junit.Ignore
 public class MockedMRPSupplyProducer implements IMRPSupplyProducer
@@ -103,7 +103,7 @@ public class MockedMRPSupplyProducer implements IMRPSupplyProducer
 		final IMaterialPlanningContext mrpContext = request.getMrpContext();
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
 
-		final BigDecimal qtyToSupply = request.getQtyToSupply();
+		final BigDecimal qtyToSupply = request.getQtyToSupply().getQty();
 		final Timestamp supplyDateFinishSchedule = TimeUtil.asTimestamp(request.getDemandDate());
 		final int durationDays = productPlanningData.getDeliveryTime_Promised().intValueExact();
 		final Timestamp supplyDateStartSchedule = TimeUtil.addDays(supplyDateFinishSchedule, 0 - durationDays);

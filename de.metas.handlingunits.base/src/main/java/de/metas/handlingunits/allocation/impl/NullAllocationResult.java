@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.List;
 
 import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 
 /**
@@ -74,7 +74,7 @@ public final class NullAllocationResult implements IAllocationResult
 	}
 
 	@Override
-	public List<IHUTransaction> getTransactions()
+	public List<IHUTransactionCandidate> getTransactions()
 	{
 		return Collections.emptyList();
 	}

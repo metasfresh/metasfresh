@@ -43,6 +43,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
@@ -234,7 +235,8 @@ import lombok.NonNull;
 
 		if (_attributesStorageFactory == null)
 		{
-			_attributesStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
+			_attributesStorageFactory = Services.get(IAttributeStorageFactoryService.class)
+					.prepareHUAttributeStorageFactory(HUAttributesDAO.instance);
 		}
 
 		final IHUStorageFactory huStorageFactory = getHUStorageFactory();
@@ -282,6 +284,7 @@ import lombok.NonNull;
 		return _trxListeners;
 	}
 
+	@Override
 	public void addEmptyHUListener(@NonNull final EmptyHUListener emptyHUListener)
 	{
 		emptyHUListeners.add(emptyHUListener);

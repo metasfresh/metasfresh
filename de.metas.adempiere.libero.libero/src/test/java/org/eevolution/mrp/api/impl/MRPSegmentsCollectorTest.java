@@ -39,12 +39,12 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_S_Resource;
 import org.compiere.util.Env;
-import org.eevolution.exceptions.LiberoException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.planning.IMRPSegment;
+import de.metas.material.planning.pporder.LiberoException;
 
 public class MRPSegmentsCollectorTest
 {

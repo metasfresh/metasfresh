@@ -35,12 +35,12 @@ import org.compiere.model.ModelValidator;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IDDOrderLineBL;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.logging.LogManager;
 
 @Validator(I_DD_OrderLine.class)

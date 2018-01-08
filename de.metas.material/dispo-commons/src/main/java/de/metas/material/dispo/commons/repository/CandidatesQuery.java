@@ -49,7 +49,7 @@ import lombok.experimental.Wither;
 @Wither
 public final class CandidatesQuery
 {
-	public static final ProductionDetail NO_PRODUCTION_DETAIL = ProductionDetail.builder().uomId(99999999).plantId(99999999).build();
+	public static final ProductionDetail NO_PRODUCTION_DETAIL = ProductionDetail.builder().plantId(99999999).build();
 
 	public static final DistributionDetail NO_DISTRIBUTION_DETAIL = DistributionDetail.builder().build();
 
@@ -57,21 +57,30 @@ public final class CandidatesQuery
 
 	public static final int UNSPECIFIED_ID = -1;
 
+	/**
+	 * This query matches no candidate
+	 */
+	public static final CandidatesQuery FALSE = CandidatesQuery.fromId(-99);
+
 	public static CandidatesQuery fromCandidate(
 			@NonNull final Candidate candidate,
 			final boolean includeParentId)
 	{
+		if (candidate.getId() > 0)
+		{
+			return CandidatesQuery.fromId(candidate.getId());
+		}
+
 		final CandidatesQueryBuilder builder = CandidatesQuery.builder()
 				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(candidate.getMaterialDescriptor()))
 				.matchExactStorageAttributesKey(true)
 				.demandDetail(candidate.getDemandDetail())
 				.distributionDetail(candidate.getDistributionDetail())
 				.groupId(candidate.getGroupId())
-				.id(candidate.getId())
 				.orgId(candidate.getOrgId())
 				.productionDetail(candidate.getProductionDetail())
 				.status(candidate.getStatus())
-				.subType(candidate.getBusinessCase())
+				.businessCase(candidate.getBusinessCase())
 				.type(candidate.getType());
 
 		if (includeParentId)
@@ -104,7 +113,7 @@ public final class CandidatesQuery
 	/**
 	 * Should be {@code null} for stock candidates.
 	 */
-	CandidateBusinessCase subType;
+	CandidateBusinessCase businessCase;
 
 	CandidateStatus status;
 
@@ -148,7 +157,7 @@ public final class CandidatesQuery
 			final DemandDetail parentDemandDetail,
 			final int orgId,
 			final CandidateType type,
-			final CandidateBusinessCase subType,
+			final CandidateBusinessCase businessCase,
 			final CandidateStatus status,
 			final Integer id,
 			final Integer parentId,
@@ -166,7 +175,7 @@ public final class CandidatesQuery
 		this.matchExactStorageAttributesKey = matchExactStorageAttributesKey;
 		this.orgId = orgId;
 		this.type = type;
-		this.subType = subType;
+		this.businessCase = businessCase;
 		this.status = status;
 		this.id = id == null ? UNSPECIFIED_ID : id;
 		this.parentId = parentId == null ? UNSPECIFIED_PARENT_ID : parentId;

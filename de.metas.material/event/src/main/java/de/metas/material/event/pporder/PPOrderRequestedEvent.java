@@ -1,5 +1,7 @@
 package de.metas.material.event.pporder;
 
+import java.util.Date;
+
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.MaterialEvent;
@@ -47,8 +49,12 @@ public class PPOrderRequestedEvent implements MaterialEvent
 	@NonNull
 	EventDescriptor eventDescriptor;
 
+	int groupId;
+
+	@NonNull
+	Date dateOrdered;
+
 	@NonNull
 	PPOrder ppOrder;
 
-	int groupId;
 }

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
+import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_Org;
@@ -27,6 +27,7 @@ import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.event.ModelProductDescriptorExtractor;
@@ -38,6 +39,7 @@ import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.exception.MrpException;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -130,7 +132,7 @@ public class DDOrderPojoSupplier
 		// I_DD_Order order = null;
 		DDOrder.DDOrderBuilder ddOrderBuilder = null;
 
-		BigDecimal qtyToSupplyRemaining = request.getQtyToSupply();
+		Quantity qtyToSupplyRemaining = request.getQtyToSupply();
 		for (final I_DD_NetworkDistributionLine networkLine : networkLines)
 		{
 			//
@@ -217,7 +219,10 @@ public class DDOrderPojoSupplier
 
 			//
 			// Crate DD order line
-			final BigDecimal qtyToMove = calculateQtyToMove(qtyToSupplyRemaining, networkLine.getPercent());
+			final Quantity qtyToMove = Quantity.of(
+					calculateQtyToMove(qtyToSupplyRemaining.getQty(), networkLine.getPercent()),
+					qtyToSupplyRemaining.getUOM());
+
 			final DDOrderLine ddOrderLine = createDD_OrderLine(networkLine, qtyToMove, supplyDateFinishSchedule, request);
 			ddOrderBuilder.line(ddOrderLine);
 
@@ -242,11 +247,11 @@ public class DDOrderPojoSupplier
 				.collect(Collectors.toList());
 	}
 
-	/* package */final BigDecimal calculateQtyToMove(final BigDecimal qtyToMoveRequested, final BigDecimal networkLineTransferPercent)
+	@VisibleForTesting
+	/* package */final BigDecimal calculateQtyToMove(
+			@NonNull final BigDecimal qtyToMoveRequested,
+			@NonNull final BigDecimal networkLineTransferPercent)
 	{
-		Check.assumeNotNull(qtyToMoveRequested, "qtyToMoveRequested not null");
-		Check.assumeNotNull(networkLineTransferPercent, "networkLineTransferPercent not null");
-
 		if (networkLineTransferPercent.signum() == 0)
 		{
 			return BigDecimal.ZERO;
@@ -263,13 +268,12 @@ public class DDOrderPojoSupplier
 		}
 		final BigDecimal networkLineTransferPercentMultiplier = networkLineTransferPercent.divide(Env.ONEHUNDRED, 4, RoundingMode.HALF_UP);
 
-		final BigDecimal qtyToMove = qtyToMoveRequested.multiply(networkLineTransferPercentMultiplier);
-		return qtyToMove;
+		return qtyToMoveRequested.multiply(networkLineTransferPercentMultiplier);
 	}
 
 	private DDOrderLine createDD_OrderLine(
 			@Nullable final I_DD_NetworkDistributionLine networkLine,
-			@NonNull final BigDecimal qtyToMove,
+			@NonNull final Quantity qtyToMove,
 			@NonNull final Timestamp supplyDateFinishSchedule,
 			@NonNull final IMaterialRequest request)
 	{
@@ -283,15 +287,18 @@ public class DDOrderPojoSupplier
 
 		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);
 
+		final BigDecimal qtyToMoveInProductUOM = Services.get(IUOMConversionBL.class).convertToProductUOM(qtyToMove, asiAware.getM_Product());
+
 		final DDOrderLine ddOrderline = DDOrderLine.builder()
 				.salesOrderLineId(request.getMrpDemandOrderLineSOId())
 				.bPartnerId(request.getMrpDemandBPartnerId())
 				.productDescriptor(productDescriptor)
-				.qty(qtyToMove)
+				.qty(qtyToMoveInProductUOM)
 				.networkDistributionLineId(networkLine.getDD_NetworkDistributionLine_ID())
 				.durationDays(durationDays)
 				.build();
 
 		return ddOrderline;
 	}
+
 }

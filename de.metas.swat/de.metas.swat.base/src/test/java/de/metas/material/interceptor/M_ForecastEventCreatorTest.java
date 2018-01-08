@@ -11,7 +11,6 @@ import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.I_M_Warehouse;
@@ -33,7 +32,6 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
-import de.metas.material.interceptor.M_ForecastEventCreator;
 
 /*
  * #%L
@@ -146,7 +144,6 @@ public class M_ForecastEventCreatorTest
 			final I_M_ForecastLine forecastLineRecord)
 	{
 		assertThat(forecastLineEventPojo.getForecastLineId()).isEqualTo(forecastLineRecord.getM_ForecastLine_ID());
-		assertThat(forecastLineEventPojo.getReference()).isEqualTo(TableRecordReference.of(forecastLineRecord));
 		final MaterialDescriptor materialDescriptor = forecastLineEventPojo.getMaterialDescriptor();
 
 		assertThat(materialDescriptor.getDate()).isEqualTo(forecastLineRecord.getDatePromised());

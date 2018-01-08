@@ -56,7 +56,7 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionProcessor;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
@@ -362,13 +362,13 @@ public class HUTrxBL implements IHUTrxBL
 	}
 
 	@Override
-	public List<IHUTransaction> aggregateTransactions(final List<IHUTransaction> transactions)
+	public List<IHUTransactionCandidate> aggregateTransactions(final List<IHUTransactionCandidate> transactions)
 	{
-		final Map<ArrayKey, IHUTransaction> transactionsAggregateMap = new HashMap<>();
+		final Map<ArrayKey, IHUTransactionCandidate> transactionsAggregateMap = new HashMap<>();
 
-		final List<IHUTransaction> notAggregated = new ArrayList<>();
+		final List<IHUTransactionCandidate> notAggregated = new ArrayList<>();
 
-		for (final IHUTransaction trx : transactions)
+		for (final IHUTransactionCandidate trx : transactions)
 		{
 			if (trx.getCounterpart() != null)
 			{
@@ -397,7 +397,7 @@ public class HUTrxBL implements IHUTrxBL
 					trx,
 					(existingCand, newCand) -> {
 
-						final HUTransaction mergedCandidate = new HUTransaction(existingCand.getReferencedModel(),
+						final HUTransactionCandidate mergedCandidate = new HUTransactionCandidate(existingCand.getReferencedModel(),
 								existingCand.getM_HU_Item(),
 								existingCand.getVHU_Item(),
 								existingCand.getProduct(),
@@ -416,7 +416,7 @@ public class HUTrxBL implements IHUTrxBL
 
 		}
 
-		return ImmutableList.<IHUTransaction> builder()
+		return ImmutableList.<IHUTransactionCandidate> builder()
 				.addAll(notAggregated)
 				.addAll(transactionsAggregateMap.values())
 				.build();

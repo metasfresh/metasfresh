@@ -41,7 +41,6 @@ import de.metas.material.planning.IMaterialPlanningContext;
 @Service
 public class PPOrderDemandMatcher implements IMaterialDemandMatcher
 {
-
 	/**
 	 *
 	 */
@@ -54,7 +53,7 @@ public class PPOrderDemandMatcher implements IMaterialDemandMatcher
 			Loggables.get().addLog("Given MRP context has no PP_Product_Planning; mrpContext={}", mrpContext);
 			return false;
 		}
-		
+
 		final I_M_Product product = mrpContext.getM_Product();
 		final boolean isManufactured = X_PP_Product_Planning.ISMANUFACTURED_Yes.equals(productPlanning.getIsManufactured());
 		if (!isManufactured)

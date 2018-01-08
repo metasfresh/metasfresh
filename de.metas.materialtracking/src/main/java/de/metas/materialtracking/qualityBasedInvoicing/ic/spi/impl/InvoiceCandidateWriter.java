@@ -46,7 +46,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -407,7 +406,7 @@ public class InvoiceCandidateWriter
 		// ic.setC_Charge_ID(chargeId);
 
 		ic.setQtyOrdered(qtyOrdered);
-		ic.setQtyToInvoice(Env.ZERO); // to be computed
+		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 		ic.setC_UOM(uom);
 
 		ic.setDateOrdered(materialTrackingPPOrderBL.getDateOfProduction(order.getPP_Order()));

@@ -31,12 +31,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.material.planning.pporder.LiberoException;
 
 public class BoundedMRPRecordAndQtyTest
 {

@@ -28,12 +28,12 @@ import de.metas.event.Type;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,15 +50,15 @@ public class MovementProcessedEventBus extends QueueableForwardingEventBus
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.setName("de.metas.movement.Movement.ProcessedEvents")
-			.setType(Type.REMOTE)
+			.name("de.metas.movement.Movement.ProcessedEvents")
+			.type(Type.REMOTE)
 			.build();
 
 	// services
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	private static final String MSG_Event_MovementGenerated = "Event_MovementGenerated";
-	
+
 	private MovementProcessedEventBus(final IEventBus delegate)
 	{
 		super(delegate);
@@ -113,7 +113,7 @@ public class MovementProcessedEventBus extends QueueableForwardingEventBus
 	 * <li>if inout's DocStatus is Completed, a "generated" notification will be sent
 	 * <li>if inout's DocStatus is Voided or Reversed, a "reversed" notification will be sent
 	 * </ul>
-	 * 
+	 *
 	 * @param inout
 	 * @return
 	 */
