@@ -298,13 +298,14 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 				.parameters(parentParameters)
 				.build();
 
-		final IMutable<WebuiHUTransformCommandResult> result = new Mutable<>();
+		
 
-		Services.get(ITrxManager.class).run(() -> {
-			result.setValue(command.execute());
-		});
-
-		final ImmutableSet<Integer> huIdsToAddToView = result.getValue().getHuIdsToAddToView();
+		
+		final WebuiHUTransformCommandResult resultValue = Services.get(ITrxManager.class).call(() -> 
+			command.execute()
+		);
+		
+		final ImmutableSet<Integer> huIdsToAddToView = resultValue.getHuIdsToAddToView();
 
 		getView().addHUIdsAndInvalidate(huIdsToAddToView);
 
@@ -372,13 +373,12 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 				.parameters(parameters)
 				.build();
 
-		final IMutable<WebuiHUTransformCommandResult> result = new Mutable<>();
 
-		Services.get(ITrxManager.class).run(() -> {
-			result.setValue(command.execute());
-		});
+		final WebuiHUTransformCommandResult resultValue  = Services.get(ITrxManager.class).call(() ->
+			command.execute()
+		);
 
-		final ImmutableSet<Integer> huIdsToAddToView = result.getValue().getHuIdsCreated();
+		final ImmutableSet<Integer> huIdsToAddToView = resultValue.getHuIdsCreated();
 
 		Check.assume(huIdsToAddToView.size() <= 1, "Only one or no CU should be created");
 
