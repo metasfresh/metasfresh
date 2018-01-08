@@ -24,7 +24,6 @@ import de.metas.material.dispo.commons.repository.StockResult.AddToResultGroupRe
 import de.metas.material.dispo.commons.repository.StockResult.ResultGroup;
 import de.metas.material.dispo.model.I_MD_Candidate_Stock_v;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.ProductDescriptor;
 
 /*
  * #%L

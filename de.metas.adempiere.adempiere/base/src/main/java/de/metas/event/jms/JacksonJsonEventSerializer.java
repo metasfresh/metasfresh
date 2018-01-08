@@ -35,10 +35,15 @@ public class JacksonJsonEventSerializer implements IEventSerializer
 {
 	public static final transient JacksonJsonEventSerializer instance = new JacksonJsonEventSerializer();
 
-	private final ObjectMapper jsonObjectMapper = new ObjectMapper();
+	private final ObjectMapper jsonObjectMapper;
 
 	private JacksonJsonEventSerializer()
 	{
+		jsonObjectMapper = new ObjectMapper();
+
+		// important to register the jackson-datatype-jsr310 module which we have in our pom and
+		// which is needed to serialize/deserialize java.time.Instant
+		jsonObjectMapper.findAndRegisterModules();
 	}
 
 	@Override
@@ -46,7 +51,6 @@ public class JacksonJsonEventSerializer implements IEventSerializer
 	{
 		try
 		{
-			// return jsonObjectMapper.writeValueAsString(event);
 			return jsonObjectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(event);
 		}
 		catch (final JsonProcessingException ex)

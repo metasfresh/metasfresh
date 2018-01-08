@@ -45,9 +45,9 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
-import de.metas.handlingunits.hutransaction.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
@@ -173,7 +173,7 @@ public final class M_HU
 
 		//
 		// Create HU Transaction From: Old HUStatus, Old Locator, minus storage Qty
-		final IHUTransaction huTransactionFrom = new HUTransaction(referencedModel,
+		final IHUTransactionCandidate huTransactionFrom = new HUTransactionCandidate(referencedModel,
 				vhuItem, // huItem
 				vhuItem, // vhuItem
 				product,
@@ -185,7 +185,7 @@ public final class M_HU
 
 		//
 		// Create HU Transaction To: New HUStatus, New Locator, plus storage Qty
-		final IHUTransaction huTransactionTo = new HUTransaction(referencedModel,
+		final IHUTransactionCandidate huTransactionTo = new HUTransactionCandidate(referencedModel,
 				vhuItem, // huItem
 				vhuItem, // vhuItem
 				product,

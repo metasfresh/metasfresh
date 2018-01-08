@@ -58,8 +58,8 @@ public class OrderUserNotifications extends QueueableForwardingEventBus
 	}
 
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.setName("de.metas.order.OrderUserNotifications")
-			.setType(Type.REMOTE)
+			.name("de.metas.order.OrderUserNotifications")
+			.type(Type.REMOTE)
 			.build();
 
 	private static final Logger logger = LogManager.getLogger(OrderUserNotifications.class);

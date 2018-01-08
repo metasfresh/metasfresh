@@ -37,8 +37,8 @@ public final class UserRolePermissionsEventBus
 	private static final Logger logger = LogManager.getLogger(UserRolePermissionsEventBus.class);
 
 	private static final Topic EVENTBUS_TOPIC_Permissions = Topic.builder()
-			.setName("de.metas.permissions")
-			.setType(Type.REMOTE)
+			.name("de.metas.permissions")
+			.type(Type.REMOTE)
 			.build();
 
 	private static final String EVENT_PROPERTY_Type = "eventType";

@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,8 +42,8 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.quantity.Quantity;
@@ -90,7 +90,7 @@ public final class AllocationUtils
 
 	public static IAllocationRequestBuilder createQtyLoadRequestBuilder(
 			final IAllocationRequest originalRequest,
-			final IHUTransaction unloadTrx)
+			final IHUTransactionCandidate unloadTrx)
 	{
 		final Quantity qtyAbs = unloadTrx.getQuantity();
 		Check.assume(qtyAbs.signum() <= 0, "Qty <= 0 ({})", unloadTrx);
@@ -104,14 +104,13 @@ public final class AllocationUtils
 		builder.setQuantity(qty);
 		builder.setDate(unloadTrx.getDate());
 
-		//
 		// Referenced AD_Table_ID/Record_ID
 		// First try: we are keeping the From TableId/RecordId of original request
 		if (originalRequest.getReference() != null)
 		{
 			builder.setFromReferencedTableRecord(originalRequest.getReference());
 		}
-		//
+
 		// Second try: take it from unloadTrx
 		// CASE: the original request was performed on an allocation source which is over multiple documents
 		// And the actual allocation source was setting the actual referenced model in generated transaction
@@ -214,7 +213,7 @@ public final class AllocationUtils
 
 	/**
 	 * This method creates a new request that represents the portion of the given {@code request} that is not yet covered by the given {@code result}.
-	 * 
+	 *
 	 * @param request
 	 * @param status
 	 * @return
@@ -275,7 +274,7 @@ public final class AllocationUtils
 	 */
 	public static IAllocationResult createQtyAllocationResult(final BigDecimal qtyToAllocate,
 			final BigDecimal qtyAllocated,
-			final List<IHUTransaction> trxs,
+			final List<IHUTransactionCandidate> trxs,
 			final List<IHUTransactionAttribute> attributeTrxs
 			)
 	{

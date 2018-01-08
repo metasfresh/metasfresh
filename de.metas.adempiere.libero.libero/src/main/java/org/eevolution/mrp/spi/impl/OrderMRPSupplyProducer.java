@@ -54,7 +54,6 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPWorkflowDAO;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -79,6 +78,7 @@ import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.order.IOrderDAO;
 
 public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
@@ -392,8 +392,8 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 
-		I_PP_Order order = Services.get(IPPOrderDAO.class).retrieveMakeToOrderForOrderLine(ol);
-		if (order == null)
+		I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).retrieveMakeToOrderForOrderLine(ol);
+		if (ppOrder == null)
 		{
 			I_PP_Product_BOM bom = Services.get(IProductBOMDAO.class).retrieveMakeToOrderProductBOM(ctx, ol.getM_Product_ID(), trxName);
 
@@ -464,7 +464,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 						final I_M_AttributeSetInstance newASI = Services.get(IAttributeDAO.class).copy(ol.getM_AttributeSetInstance());
 						asiIdToUse = newASI.getM_AttributeSetInstance_ID();
 					}
-					order = createMakeToOrderMO(productPlanning,
+					ppOrder = createMakeToOrderMO(productPlanning,
 							ol.getC_OrderLine_ID(),
 							asiIdToUse,
 							qty,
@@ -483,7 +483,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 							+ " "
 							+ Services.get(IMsgBL.class).translate(ctx, I_PP_Order.COLUMNNAME_PP_Order_ID)
 							+ " : "
-							+ order.getDocumentNo();
+							+ ppOrder.getDocumentNo();
 
 					ol.setDescription(description);
 					InterfaceWrapperHelper.save(ol);
@@ -492,38 +492,44 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		}
 		else
 		{
-			if (!order.isProcessed())
+			if (!ppOrder.isProcessed())
 			{
-				// if you chance product in order line the Manufacturing order is void
-				if (order.getM_Product_ID() != ol.getM_Product_ID())
+				// if you change the product in order line the Manufacturing order is void
+				if (ppOrder.getM_Product_ID() != ol.getM_Product_ID())
 				{
-					order.setDescription("");
-					Services.get(IPPOrderBL.class).setQtyEntered(order, BigDecimal.ZERO);
-					order.setC_OrderLine(null);
-					order.setC_OrderLine_MTO(null);
+					ppOrder.setDescription("");
+					Services.get(IPPOrderBL.class).setQtyEntered(ppOrder, BigDecimal.ZERO);
+					ppOrder.setC_OrderLine(null);
+					ppOrder.setC_OrderLine_MTO(null);
 
-					Services.get(IDocumentBL.class).processIt(order, IDocument.ACTION_Void);
+					Services.get(IDocumentBL.class).processIt(ppOrder, IDocument.ACTION_Void);
 					// order.voidIt();
 
-					order.setDocStatus(X_PP_Order.DOCSTATUS_Voided);
-					order.setDocAction(X_PP_Order.DOCACTION_None);
-					InterfaceWrapperHelper.save(order);
+					ppOrder.setDocStatus(X_PP_Order.DOCSTATUS_Voided);
+					ppOrder.setDocAction(X_PP_Order.DOCACTION_None);
+					InterfaceWrapperHelper.save(ppOrder);
 					ol.setDescription("");
 					InterfaceWrapperHelper.save(ol);
 				}
-				if (order.getQtyEntered().compareTo(ol.getQtyEntered()) != 0)
+				if (ppOrder.getQtyOrdered().compareTo(ol.getQtyOrdered()) != 0
+						|| ppOrder.getQtyEntered().compareTo(ol.getQtyEntered()) != 0
+						|| ppOrder.getC_UOM_ID() != ol.getC_UOM_ID())
 				{
-					Services.get(IPPOrderBL.class).setQty(order, ol.getQtyEntered());
-					InterfaceWrapperHelper.save(order);
+					ppOrder.setC_UOM_ID(ol.getC_UOM_ID());
+					Services.get(IPPOrderBL.class).setQtyEntered(ppOrder, ol.getQtyEntered());
+
+					Services.get(IPPOrderBL.class).setQtyOrdered(ppOrder, ol.getQtyOrdered());
+
+					InterfaceWrapperHelper.save(ppOrder);
 				}
-				if (order.getDatePromised().compareTo(ol.getDatePromised()) != 0)
+				if (ppOrder.getDatePromised().compareTo(ol.getDatePromised()) != 0)
 				{
-					order.setDatePromised(ol.getDatePromised());
-					InterfaceWrapperHelper.save(order);
+					ppOrder.setDatePromised(ol.getDatePromised());
+					InterfaceWrapperHelper.save(ppOrder);
 				}
 			}
 		}
-		return order;
+		return ppOrder;
 	}
 
 	/**
@@ -571,7 +577,7 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		final Properties ctx = InterfaceWrapperHelper.getCtx(pp);
 
 		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService(ctx);
-		final int duration = routingService.calculateDuration(wf, pp.getS_Resource(), qty).intValueExact();
+		final int duration = routingService.calculateDurationDays(wf, pp.getS_Resource(), qty).intValueExact();
 		//
 		final I_PP_Order order = InterfaceWrapperHelper.newInstance(I_PP_Order.class, pp);
 		order.setAD_Org_ID(pp.getAD_Org_ID());
@@ -590,8 +596,11 @@ public class OrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		order.setDatePromised(datePromised);
 		order.setDateStartSchedule(TimeUtil.addDays(datePromised, 0 - duration));
 		order.setDateFinishSchedule(datePromised);
+
 		order.setC_UOM_ID(pp.getM_Product().getC_UOM_ID());
-		Services.get(IPPOrderBL.class).setQty(order, qty);
+		Services.get(IPPOrderBL.class).setQtyEntered(order, qty);
+		Services.get(IPPOrderBL.class).setQtyOrdered(order, qty);
+
 		order.setPriorityRule(X_PP_Order.PRIORITYRULE_High);
 		InterfaceWrapperHelper.save(order);
 

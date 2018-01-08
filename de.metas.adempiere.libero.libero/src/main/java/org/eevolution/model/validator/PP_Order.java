@@ -24,10 +24,9 @@ package org.eevolution.model.validator;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.List;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -37,6 +36,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -44,20 +44,19 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
-import org.eevolution.api.IDDOrderBL;
-import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderCostDAO;
 import org.eevolution.api.IPPOrderWorkflowBL;
 import org.eevolution.api.IPPOrderWorkflowDAO;
-import org.eevolution.exceptions.LiberoException;
-import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.X_PP_Order;
 
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
 
 @Interceptor(I_PP_Order.class)
@@ -72,10 +71,10 @@ public class PP_Order
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final I_PP_Order ppOrder)
+	public void beforeSave(final I_PP_Order ppOrder, final ModelChangeType changeType)
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-		final boolean newRecord = InterfaceWrapperHelper.isNew(ppOrder);
+		final boolean newRecord = changeType.isNew();
 
 		//
 		// If UOM not filled, get it from Product
@@ -177,39 +176,48 @@ public class PP_Order
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void afterSave(final I_PP_Order ppOrder, final int changeType)
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	public void createWorkFlowAndBom(final I_PP_Order ppOrderRecord)
 	{
-		final boolean newRecord = ModelValidator.TYPE_AFTER_NEW == changeType;
+		createWorkflowAndBOM(ppOrderRecord);
+	}
 
-		//
-		// Don't touch closed/voided orders
-		final String docAction = ppOrder.getDocAction();
-		if (X_PP_Order.DOCACTION_Close.equals(docAction)
-				|| X_PP_Order.DOCACTION_Void.equals(docAction))
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_PP_Order.COLUMNNAME_QtyEntered)
+	public void updateAndFireEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
+	{
+		final boolean delivered = Services.get(IPPOrderBL.class).isDelivered(ppOrderRecord);
+		if (delivered)
 		{
-			return;
+			throw new LiberoException("Cannot Change Quantity, Only is allow with Draft or In Process Status"); // TODO: Create Message for Translation
 		}
 
-		final boolean qtyEnteredChanged = InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_QtyEntered);
-		if (qtyEnteredChanged && !newRecord)
+		final PPOrderQtyEnteredChangeEventFactory eventfactory = PPOrderQtyEnteredChangeEventFactory.newWithPPOrderBeforeChange(ppOrderRecord);
+
+		deleteWorkflowAndBOM(ppOrderRecord);
+		createWorkflowAndBOM(ppOrderRecord);
+
+		final PPOrderQtyChangedEvent event = eventfactory.inspectPPOrderAfterChange();
+
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		materialEventService.postEventAfterNextCommit(event);
+	}
+
+	private void deleteWorkflowAndBOM(final I_PP_Order ppOrder)
+	{
+		Services.get(IPPOrderWorkflowDAO.class).deleteOrderWorkflow(ppOrder);
+
+		final I_PP_Order_BOM orderBOM = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOM(ppOrder);
+		if (orderBOM != null)
 		{
-			final boolean delivered = Services.get(IPPOrderBL.class).isDelivered(ppOrder);
-			if (delivered)
-			{
-				throw new LiberoException("Cannot Change Quantity, Only is allow with Draft or In Process Status"); // TODO: Create Message for Translation
-			}
-
-			deleteWorkflowAndBOM(ppOrder);
-			createWorkflowAndBOM(ppOrder);
+			InterfaceWrapperHelper.delete(orderBOM);
 		}
+	}
 
-		if (newRecord)
-		{
-			createWorkflowAndBOM(ppOrder);
-		}
-
-	} // beforeSave
+	private void createWorkflowAndBOM(final I_PP_Order ppOrder)
+	{
+		Services.get(IPPOrderWorkflowBL.class).createOrderWorkflow(ppOrder);
+		Services.get(IPPOrderBOMBL.class).createOrderBOMAndLines(ppOrder);
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void beforeDelete(final I_PP_Order ppOrder)
@@ -231,75 +239,5 @@ public class PP_Order
 		// Un-Order Stock
 		ppOrderBL.setQtyOrdered(ppOrder, BigDecimal.ZERO);
 		ppOrderBL.orderStock(ppOrder);
-	}
-
-	private void deleteWorkflowAndBOM(final I_PP_Order ppOrder)
-	{
-		//
-		// Delete Order Workflow/Routing
-		Services.get(IPPOrderWorkflowDAO.class).deleteOrderWorkflow(ppOrder);
-
-		//
-		// Delete Order BOM
-		final I_PP_Order_BOM orderBOM = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOM(ppOrder);
-		if (orderBOM != null)
-		{
-			InterfaceWrapperHelper.delete(orderBOM);
-		}
-	}
-
-	private void createWorkflowAndBOM(final I_PP_Order ppOrder)
-	{
-		Services.get(IPPOrderWorkflowBL.class).createOrderWorkflow(ppOrder);
-		Services.get(IPPOrderBOMBL.class).createOrderBOMAndLines(ppOrder);
-	}
-
-	// commenting this out, to prevent
-	// org.eevolution.exceptions.LiberoException: No MRP supply record found for MPPOrder[ID=1047383-DocumentNo=1045999,IsSOTrx=false,C_DocType_ID=1000037]
-	// at org.eevolution.api.impl.DDOrderDAO.retrieveForwardDDOrderLinesQuery(DDOrderDAO.java:232)
-	// at org.eevolution.model.validator.PP_Order.preventForwardDDOrderToBeCleanedUp(PP_Order.java:272)
-	//
-	// @DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	// public void preventForwardDDOrderToBeCleanedUp(final I_PP_Order ppOrder)
-	// {
-	// final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
-	//
-	// final List<I_DD_Order> forwardDDOrdersToDisallowCleanup = ddOrderDAO.retrieveForwardDDOrderLinesQuery(ppOrder)
-	// .andCollect(I_DD_OrderLine.COLUMN_DD_Order_ID)
-	// .addEqualsFilter(I_DD_Order.COLUMNNAME_MRP_AllowCleanup, true)
-	// .create()
-	// .list();
-	//
-	// for (final I_DD_Order ddOrder : forwardDDOrdersToDisallowCleanup)
-	// {
-	// if (ddOrder.isMRP_AllowCleanup())
-	// {
-	// ddOrder.setMRP_AllowCleanup(false);
-	// InterfaceWrapperHelper.save(ddOrder);
-	// }
-	// }
-	// }
-
-	/**
-	 * When manufacturing order is completed by the user, complete supply DD Orders.
-	 *
-	 * @param ppOrder
-	 */
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void completeBackwardDDOrders_IfUserCompleted(final I_PP_Order ppOrder)
-	{
-		// If it's not an UI action, then do nothing
-		if (!InterfaceWrapperHelper.isUIAction(ppOrder))
-		{
-			return;
-		}
-
-		final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
-		final List<I_DD_Order> ddOrders = ddOrderDAO.retrieveBackwardSupplyDDOrders(ppOrder);
-
-		//
-		// Complete DD Orders
-		final IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
-		ddOrderBL.completeDDOrdersIfNeeded(ddOrders);
 	}
 }

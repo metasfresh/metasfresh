@@ -1,7 +1,5 @@
 package de.metas.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
@@ -18,8 +16,8 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -65,8 +63,16 @@ public class M_ShipmentSchedule
 	{
 		final AbstractShipmentScheduleEvent event = createShipmentScheduleEvent(schedule, timing);
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event, getTrxName(schedule));
+		final boolean nothingActuallyChanged = //
+				event.getOrderedQuantityDelta().signum() == 0
+						&& event.getReservedQuantityDelta().signum() == 0;
+		if (nothingActuallyChanged)
+		{
+			 return;
+		}
+
+		final PostMaterialEventService postMaterialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		postMaterialEventService.postEventAfterNextCommit(event);
 	}
 
 	@VisibleForTesting
@@ -154,25 +160,5 @@ public class M_ShipmentSchedule
 				.quantity(orderedQuantity)
 				.build();
 		return orderedMaterial;
-	}
-
-	private BigDecimal computeEffectiveOrderedQuantity(
-			@NonNull final I_M_ShipmentSchedule schedule,
-			@NonNull final ModelChangeType timing)
-	{
-		final BigDecimal quantity;
-		final boolean deleted = timing.isDelete() || !schedule.isActive();
-		if (deleted)
-		{
-			quantity = BigDecimal.ZERO;
-		}
-		else
-		{
-			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-			quantity = schedule.getQtyDelivered()
-					.max(schedule.getQtyToDeliver())
-					.max(shipmentScheduleEffectiveBL.computeQtyOrdered(schedule));
-		}
-		return quantity;
 	}
 }

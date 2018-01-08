@@ -1,7 +1,5 @@
 package de.metas.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
@@ -19,10 +17,11 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
@@ -81,8 +80,8 @@ public class M_ReceiptSchedule
 	{
 		final AbstractReceiptScheduleEvent event = createReceiptScheduleEvent(schedule, timing);
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event, getTrxName(schedule));
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		materialEventService.postEventAfterNextCommit(event);
 	}
 
 	@VisibleForTesting
@@ -108,20 +107,32 @@ public class M_ReceiptSchedule
 	private AbstractReceiptScheduleEvent createCreatedEvent(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(receiptSchedule);
+		final OrderLineDescriptor orderLineDescriptor = createOrderLineDescriptor(receiptSchedule);
 
 		final ReceiptScheduleCreatedEvent event = ReceiptScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(receiptSchedule))
-				.orderedMaterial(orderedMaterial)
+				.orderLineDescriptor(orderLineDescriptor)
+				.materialDescriptor(orderedMaterial)
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
-				.orderLineId(receiptSchedule.getC_OrderLine_ID())
 				.build();
+
 		return event;
+	}
+
+	protected OrderLineDescriptor createOrderLineDescriptor(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		return OrderLineDescriptor.builder()
+		.orderLineId(receiptSchedule.getC_OrderLine_ID())
+		.orderId(receiptSchedule.getC_Order_ID())
+		.documentNo(receiptSchedule.getC_Order().getDocumentNo())
+		.build();
 	}
 
 	private AbstractReceiptScheduleEvent createUpdatedEvent(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(receiptSchedule);
+		final OrderLineDescriptor orderLineDescriptor = createOrderLineDescriptor(receiptSchedule);
 
 		final I_M_ReceiptSchedule oldReceiptSchedule = InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class);
 
@@ -131,7 +142,8 @@ public class M_ReceiptSchedule
 
 		final ReceiptScheduleUpdatedEvent event = ReceiptScheduleUpdatedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(receiptSchedule))
-				.orderedMaterial(orderedMaterial)
+				.materialDescriptor(orderedMaterial)
+				.orderLineDescriptor(orderLineDescriptor)
 				.reservedQuantity(qtyReserved)
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.reservedQuantityDelta(qtyReserved.subtract(extractQtyReserved(oldReceiptSchedule)))
@@ -155,10 +167,12 @@ public class M_ReceiptSchedule
 	private AbstractReceiptScheduleEvent createDeletedEvent(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(receiptSchedule);
+		final OrderLineDescriptor orderLineDescriptor = createOrderLineDescriptor(receiptSchedule);
 
 		final ReceiptScheduleDeletedEvent event = ReceiptScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(receiptSchedule))
-				.orderedMaterial(orderedMaterial)
+				.orderLineDescriptor(orderLineDescriptor)
+				.materialDescriptor(orderedMaterial)
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.build();

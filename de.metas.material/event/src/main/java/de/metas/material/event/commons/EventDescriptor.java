@@ -1,8 +1,5 @@
 package de.metas.material.event.commons;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IClientOrgAware;
 
@@ -35,18 +32,6 @@ import lombok.NonNull;
 @AllArgsConstructor
 public class EventDescriptor
 {
-
-	public EventDescriptor(final int clientId, final int orgId)
-	{
-		this(Instant.now(), UUID.randomUUID(), clientId, orgId);
-	}
-
-	@NonNull
-	private final Instant when;
-
-	@NonNull
-	private final UUID uuid;
-
 	@NonNull
 	private final Integer clientId;
 
@@ -59,7 +44,7 @@ public class EventDescriptor
 	}
 
 	/**
-	 * 
+	 *
 	 * @param clientOrgAware model which can be made into a {@link IClientOrgAware} via {@link InterfaceWrapperHelper#asColumnReferenceAwareOrNull(Object, Class)}.
 	 * @return
 	 */

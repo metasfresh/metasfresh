@@ -35,7 +35,7 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
@@ -73,7 +73,7 @@ public class DemandCandiateCangeHandlerTest
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
 	@Mocked
-	private MaterialEventService materialEventService;
+	private PostMaterialEventService postMaterialEventService;
 
 	private DemandCandiateHandler demandCandidateHandler;
 
@@ -90,12 +90,14 @@ public class DemandCandiateCangeHandlerTest
 
 		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
-		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands);
+		final StockCandidateService stockCandidateService = new StockCandidateService(
+				candidateRepositoryRetrieval,
+				candidateRepositoryCommands);
 
 		demandCandidateHandler = new DemandCandiateHandler(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands,
-				materialEventService,
+				postMaterialEventService,
 				stockRepository,
 				stockCandidateService);
 	}
@@ -198,7 +200,7 @@ public class DemandCandiateCangeHandlerTest
 		new Verifications()
 		{{
 			MaterialEvent event;
-			materialEventService.fireEvent(event = withCapture());
+			postMaterialEventService.postEventAfterNextCommit(event = withCapture());
 
 			assertThat(event).isInstanceOf(SupplyRequiredEvent.class);
 			final SupplyRequiredEvent materialDemandEvent = (SupplyRequiredEvent)event;
@@ -232,11 +234,10 @@ public class DemandCandiateCangeHandlerTest
 		assertThat(stockCandidate.getQty()).isEqualByComparingTo("-10");
 		assertThat(stockCandidate.getMD_Candidate_Parent_ID()).isEqualTo(unrelatedTransactionCandidate.getMD_Candidate_ID());
 
-		// @formatter:off verify that *no* event was fired
+		// @formatter:off verify that no event was fired
 		new Verifications()
 		{{
-			materialEventService.fireEvent((MaterialEvent)any); times = 0;
-			materialEventService.fireEventAfterNextCommit((MaterialEvent)any, anyString); times = 0;
+			postMaterialEventService.postEventNow((MaterialEvent)any); times = 0;
 		}}; // @formatter:on
 	}
 

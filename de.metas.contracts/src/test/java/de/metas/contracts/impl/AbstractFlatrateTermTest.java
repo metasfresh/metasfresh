@@ -13,7 +13,6 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.impl.AcctSchemaDAO;
-import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -123,15 +122,13 @@ public abstract class AbstractFlatrateTermTest
 	@BeforeClass
 	public final static void staticInit()
 	{
-		AdempiereTestHelper.get().staticInit();
 		POJOWrapper.setDefaultStrictValues(false);
 	}
 
 	@Before
 	public final void init()
 	{
-		final POJOLookupMap db = POJOLookupMap.get();
-		db.clear();
+		AdempiereTestHelper.get().init();
 
 		setupMasterData();
 		initialize();

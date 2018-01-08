@@ -91,8 +91,8 @@ public class HUAttributesBL implements IHUAttributesBL
 		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
-		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
-		huAttributeStorageFactory.setHUStorageFactory(storageFactory);
+		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService
+				.createHUAttributeStorageFactory(storageFactory);
 
 		final HUIterator iterator = new HUIterator();
 		// I'm not 100% sure which time to pick, but i think for the iterator itself it makes no difference, and i also don't need it in the beforeHU implementation.

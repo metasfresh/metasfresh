@@ -79,7 +79,6 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 
 	private final ExceptionListener exceptionListener = new ExceptionListener()
 	{
-
 		@Override
 		public void onException(final JMSException jmsException)
 		{
@@ -282,7 +281,6 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 			return false;
 		}
 
-		//
 		// Forward events from event bus to JMS
 		eventBus.subscribe(getEventBus2JMSListener());
 
@@ -436,7 +434,6 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 
 		private MessageConsumer2EventBusForwarder(final ActiveMQJMSEndpoint jms, final IEventBus eventBus) throws JMSException
 		{
-			super();
 			Check.assumeNotNull(eventBus, "eventBus not null");
 			this.eventBusRef = new WeakReference<>(eventBus);
 

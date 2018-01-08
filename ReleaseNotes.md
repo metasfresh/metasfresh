@@ -17,6 +17,8 @@ Here come the actual release notes:
     * Translation of the eMail Editor in WebUI for Language/ Locale de_DE.
 
 # metasfresh-webui-frontend
+  * [#1470](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1470) Bug in long texts with new line
+    * Improving the behavior in LongText Fields. Now only patching the content when leaving the Field.
   * [#1478](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1478) Attachment in eMail Editor: Show File name/ caption instead of key
     * Improving the Names for attached Files in eMail Editor. Now showing the caption manes instead of attachment keys.
 

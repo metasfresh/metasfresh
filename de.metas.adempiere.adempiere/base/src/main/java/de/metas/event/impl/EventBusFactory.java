@@ -52,6 +52,7 @@ import de.metas.event.Type;
 import de.metas.event.jms.ActiveMQJMSEndpoint;
 import de.metas.event.jms.IJMSEndpoint;
 import de.metas.event.jmx.JMXEventBusManager;
+import de.metas.event.log.EventBus2EventLogHandler;
 
 public class EventBusFactory implements IEventBusFactory
 {
@@ -63,7 +64,6 @@ public class EventBusFactory implements IEventBusFactory
 	private final LoadingCache<Topic, EventBus> topic2eventBus = CacheBuilder.newBuilder()
 			.removalListener(new RemovalListener<Topic, EventBus>()
 			{
-
 				@Override
 				public void onRemoval(final RemovalNotification<Topic, EventBus> notification)
 				{
@@ -73,7 +73,6 @@ public class EventBusFactory implements IEventBusFactory
 			})
 			.build(new CacheLoader<Topic, EventBus>()
 			{
-
 				@Override
 				public EventBus load(final Topic topic) throws Exception
 				{
@@ -150,7 +149,9 @@ public class EventBusFactory implements IEventBusFactory
 		// Create the event bus
 		final EventBus eventBus = new EventBus(topic.getName(), eventBusExecutor);
 
-		//
+		// whether the event is really stored is determined for each individual event
+		eventBus.subscribe(EventBus2EventLogHandler.INSTANCE);
+
 		// Bind the EventBus to JMS (only if the system is enabled).
 		// If is not enabled we will use only local event buses,
 		// because if we would return null or fail here a lot of BLs could fail.
@@ -162,7 +163,6 @@ public class EventBusFactory implements IEventBusFactory
 			}
 		}
 
-		//
 		// Add our global listeners
 		final Set<IEventListener> globalListeners = globalEventListeners.get(topic);
 		for (final IEventListener globalListener : globalListeners)

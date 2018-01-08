@@ -88,7 +88,7 @@ public class DDOrderAdvisedOrCreatedEventCreator
 
 				final DDOrderAdvisedOrCreatedEvent distributionAdvisedEvent = DDOrderAdvisedOrCreatedEvent.builder()
 						.supplyRequiredDescriptor(supplyRequiredDescriptor)
-						.eventDescriptor(supplyRequiredDescriptor.getEventDescr().createNew())
+						.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor().createNew())
 						.fromWarehouseId(networkLine.getM_WarehouseSource_ID())
 						.toWarehouseId(networkLine.getM_Warehouse_ID())
 						.ddOrder(ddOrder)

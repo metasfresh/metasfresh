@@ -41,7 +41,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.logging.LogManager;
@@ -166,7 +166,7 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 		final IAllocationResult result = AllocationUtils.createQtyAllocationResult(
 				BigDecimal.ZERO, // qtyToAllocate
 				BigDecimal.ZERO, // qtyAllocated
-				Collections.<IHUTransaction> emptyList(), // trxs
+				Collections.<IHUTransactionCandidate> emptyList(), // trxs
 				attributeTrxs // attribute transactions
 				);
 

@@ -69,19 +69,18 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
-import org.eevolution.exceptions.LiberoException;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;
 
@@ -282,8 +281,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		setM_Warehouse_ID(project.getM_Warehouse_ID());
 		setPP_Product_BOM_ID(PP_Product_BOM_ID);
 		setAD_Workflow_ID(AD_Workflow_ID);
-		setQtyEntered(Env.ONE);
-		setQtyOrdered(Env.ONE);
+		setQtyEntered(BigDecimal.ONE);
+		setQtyOrdered(BigDecimal.ONE);
 		MPPProductBOM bom = new MPPProductBOM(project.getCtx(), PP_Product_BOM_ID, project.get_TrxName());
 		final I_M_Product product = bom.getM_Product();
 		setC_UOM_ID(product.getC_UOM_ID());
@@ -687,7 +686,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 				.C_UOM(getC_UOM())
 				.M_AttributeSetInstance_ID(getM_AttributeSetInstance_ID())
 				.build();
-		
+
 		ppCostCollectorBL.createReceipt(candidate);
 
 		setQtyDelivered(qtyToReceive);

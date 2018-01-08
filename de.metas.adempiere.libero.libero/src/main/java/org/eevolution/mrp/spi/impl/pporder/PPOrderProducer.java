@@ -1,6 +1,8 @@
 
 package org.eevolution.mrp.spi.impl.pporder;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -11,6 +13,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBL;
@@ -89,7 +92,6 @@ public class PPOrderProducer
 		ppOrder.setM_Product_ID(productDescriptor.getProductId());
 		ppOrder.setM_AttributeSetInstance_ID(productDescriptor.getAttributeSetInstanceId());
 
-		ppOrder.setC_UOM_ID(pojo.getUomId());
 
 		//
 		// BOM & Workflow
@@ -108,9 +110,13 @@ public class PPOrderProducer
 		final Timestamp dateStartSchedule = new Timestamp(pojo.getDateStartSchedule().getTime());
 		ppOrder.setDateStartSchedule(dateStartSchedule);
 
-		//
+
 		// Qtys
-		ppOrderBL.setQty(ppOrder, pojo.getQuantity());
+		ppOrderBL.setQtyOrdered(ppOrder, pojo.getQuantity());
+
+		ppOrderBL.setQtyEntered(ppOrder, pojo.getQuantity());
+		ppOrder.setC_UOM_ID(load(productDescriptor.getProductId(), I_M_Product.class).getC_UOM_ID());
+
 		// QtyBatchSize : do not set it, let the MO to take it from workflow
 		ppOrder.setYield(BigDecimal.ZERO);
 

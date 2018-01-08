@@ -2,7 +2,9 @@ package de.metas.event.jms;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -26,12 +28,12 @@ import de.metas.event.EventBusConstants;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -58,7 +60,8 @@ public class JacksonJsonEventSerializerTest
 				.setSummary("Summary1")
 				.setDetailPlain("Detail1")
 				.setDetailADMessage("Detail_AD_Message", "P1", "P2", "P3")
-				.setId("MyID1")
+				.setUUID(UUID.randomUUID())
+				.setWhen(Instant.now())
 				.addRecipient_User_ID(10)
 				.addRecipient_User_ID(20)
 				.addRecipient_User_ID(40)
@@ -82,10 +85,10 @@ public class JacksonJsonEventSerializerTest
 
 		final String jsonEvent = jsonSerializer.toString(event);
 		System.out.println("json=" + jsonEvent);
-		
+
 		final Event eventRestored = jsonSerializer.fromString(jsonEvent);
 		System.out.println("eventRestored=" + eventRestored);
-		
+
 		final String jsonEventRestored = jsonSerializer.toString(eventRestored);
 		System.out.println("json event restored=" + jsonEventRestored);
 

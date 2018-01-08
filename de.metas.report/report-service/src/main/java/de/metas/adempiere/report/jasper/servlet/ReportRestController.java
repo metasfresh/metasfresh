@@ -10,15 +10,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.metas.Profiles;
 import de.metas.adempiere.report.jasper.IJasperServer;
-import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.report.jasper.JasperServerConstants;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.server.LocalJasperServer;
 
 @RestController
 @RequestMapping(value = ReportRestController.ENDPOINT)
-@Profile(JasperConstants.PROFILE_JasperServer)
+@Profile(Profiles.PROFILE_JasperServer)
 public class ReportRestController
 {
 	public static final String ENDPOINT = JasperServerConstants.SERVLET_ROOT + "/ReportServlet";

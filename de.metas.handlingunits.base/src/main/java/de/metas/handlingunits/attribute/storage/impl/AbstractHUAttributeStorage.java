@@ -10,12 +10,12 @@ package de.metas.handlingunits.attribute.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -57,6 +57,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import lombok.NonNull;
 
 public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorage implements IHUAware
 {
@@ -66,7 +67,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 
 	private boolean saveOnChange = false;
 
-	public AbstractHUAttributeStorage(final IAttributeStorageFactory storageFactory)
+	public AbstractHUAttributeStorage(@NonNull final IAttributeStorageFactory storageFactory)
 	{
 		super(storageFactory);
 	}
@@ -92,12 +93,12 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		}
 
 		//
-		// Propagate the flag to currently loaded children 
+		// Propagate the flag to currently loaded children
 		getChildAttributeStorages(false).forEach(childAttributeStorage -> childAttributeStorage.setSaveOnChange(saveOnChange));
 
 		this.saveOnChange = saveOnChange;
 	}
-	
+
 	protected final boolean isSaveOnChange()
 	{
 		return this.saveOnChange;
@@ -164,7 +165,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		Check.assumeNotNull(hu, "hu not null");
 
 		final IHUPIAttributesDAO huPIAttributesDAO = getHUPIAttributesDAO();
-		
+
 		//
 		// Retrieve M_HU_PI_Attributes
 		// gh #460: in case of an aggregate HU which is created right now, we need to get the pi version the HUBuilder was invoked with.
@@ -387,7 +388,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 	{
 		return handlingUnitsBL.isVirtual(getM_HU());
 	}
-	
+
 	@Override
 	public int getM_Warehouse_ID()
 	{
@@ -396,14 +397,14 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 		{
 			return -1;
 		}
-		
+
 		final I_M_Locator locator = hu.getM_Locator();
 		if(locator == null)
 		{
 			return -1;
 		}
-		
+
 		return locator.getM_Warehouse_ID();
 	}
-	
+
 }

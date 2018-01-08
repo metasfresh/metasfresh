@@ -33,7 +33,7 @@ import org.compiere.util.Util;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
-import de.metas.handlingunits.hutransaction.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU_Item;
 
 public class MockedAllocationSourceDestination implements IAllocationSource, IAllocationDestination
@@ -79,7 +79,7 @@ public class MockedAllocationSourceDestination implements IAllocationSource, IAl
 		final Object referencedModel = AllocationUtils.getReferencedModel(requestActual);
 		final I_M_HU_Item huItem = null; // no HU item
 		final I_M_HU_Item vhuItem = null; // no VHU item
-		final HUTransaction trx = new HUTransaction(referencedModel,
+		final HUTransactionCandidate trx = new HUTransactionCandidate(referencedModel,
 				huItem,
 				vhuItem,
 				requestActual,
