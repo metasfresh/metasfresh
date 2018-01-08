@@ -15,12 +15,12 @@ import static org.junit.Assert.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,8 +38,13 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.Assert;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.w3c.dom.Node;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
 import de.metas.handlingunits.expectations.HUsExpectation;
@@ -50,6 +55,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.inout.IInOutDAO;
+import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
 import de.metas.shipping.interfaces.I_M_Package;
 
 /**
@@ -61,6 +67,9 @@ import de.metas.shipping.interfaces.I_M_Package;
  * <li>assume: first VHU is assigned to first shipment schedule, second VHU to second shipment schedule
  * </ul>
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
+		ShipperGatewayRegistry.class})
 public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest extends AbstractHUShipmentProcessIntegrationTest
 {
 	@Override
@@ -150,7 +159,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 
 	/**
 	 * Verify that the TU before {@link #step30_aggregateHUs()} is the way we expect it to be.
-	 * 
+	 *
 	 * @param tu
 	 */
 	private void assertTUPreAggregateInvariants(final I_M_HU tu)
@@ -218,7 +227,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 				.capture(afterAggregation_LU)
 				.huPI(piLU)
 				.huStatus(X_M_HU.HUSTATUS_Picked)
-				
+
 				.newHUItemExpectation() // the real IFCO which contains the 15kg
 					.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
 					.newIncludedHUExpectation() // the "real" IFCO inside the LU
@@ -248,7 +257,7 @@ public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest ex
 						.endExpectation()
 					.endExpectation() // end of the "real" IFCO inside the LU
 				.endExpectation() // end of the real IFCO which contains the 15kg
-				
+
 				.newHUItemExpectation() // the empty stub aggregate VHU
 					.itemType(X_M_HU_Item.ITEMTYPE_HUAggregate)
 					.noItemStorages()
