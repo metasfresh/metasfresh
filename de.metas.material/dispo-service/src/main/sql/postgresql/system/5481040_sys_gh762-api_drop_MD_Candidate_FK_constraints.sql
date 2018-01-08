@@ -22,11 +22,11 @@ UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2017-12-20 14:49
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2017-12-20 14:49:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=556525
 ;
-ALTER TABLE public.md_candidate_prod_detail DROP CONSTRAINT pporder_mdcandidateproddetail;
-ALTER TABLE public.md_candidate_prod_detail DROP CONSTRAINT pporderbomline_mdcandidateprod;
-ALTER TABLE public.md_candidate_prod_detail DROP CONSTRAINT ppplant_mdcandidateproddetail;
-ALTER TABLE public.md_candidate_prod_detail DROP CONSTRAINT ppproductbomline_mdcandidatepr;
-ALTER TABLE public.md_candidate_prod_detail DROP CONSTRAINT ppproductplanning_mdcandidatep;
+ALTER TABLE public.md_candidate_prod_detail DROP CONSTRAINT IF EXISTS pporder_mdcandidateproddetail;
+ALTER TABLE public.md_candidate_prod_detail DROP CONSTRAINT IF EXISTS pporderbomline_mdcandidateprod;
+ALTER TABLE public.md_candidate_prod_detail DROP CONSTRAINT IF EXISTS ppplant_mdcandidateproddetail;
+ALTER TABLE public.md_candidate_prod_detail DROP CONSTRAINT IF EXISTS ppproductbomline_mdcandidatepr;
+ALTER TABLE public.md_candidate_prod_detail DROP CONSTRAINT IF EXISTS ppproductplanning_mdcandidatep;
 
 --
 -- MD_Candidate_Dist_Detail
@@ -55,12 +55,12 @@ UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2017-12-20 14:54
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2017-12-20 14:54:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=556801
 ;
-ALTER TABLE public.md_candidate_dist_detail DROP CONSTRAINT ddnetworkdistributionline_mdca;
-ALTER TABLE public.md_candidate_dist_detail DROP CONSTRAINT ddorder_mdcandidatedistdetail;
-ALTER TABLE public.md_candidate_dist_detail DROP CONSTRAINT ddorderline_mdcandidatedistdet;
-ALTER TABLE public.md_candidate_dist_detail DROP CONSTRAINT mshipper_mdcandidatedistdetail;
-ALTER TABLE public.md_candidate_dist_detail DROP CONSTRAINT ppplant_mdcandidatedistdetail;
-ALTER TABLE public.md_candidate_dist_detail DROP CONSTRAINT ppproductplanning_mdcandidated;
+ALTER TABLE public.md_candidate_dist_detail DROP CONSTRAINT IF EXISTS ddnetworkdistributionline_mdca;
+ALTER TABLE public.md_candidate_dist_detail DROP CONSTRAINT IF EXISTS ddorder_mdcandidatedistdetail;
+ALTER TABLE public.md_candidate_dist_detail DROP CONSTRAINT IF EXISTS ddorderline_mdcandidatedistdet;
+ALTER TABLE public.md_candidate_dist_detail DROP CONSTRAINT IF EXISTS mshipper_mdcandidatedistdetail;
+ALTER TABLE public.md_candidate_dist_detail DROP CONSTRAINT IF EXISTS ppplant_mdcandidatedistdetail;
+ALTER TABLE public.md_candidate_dist_detail DROP CONSTRAINT IF EXISTS ppproductplanning_mdcandidated;
 
 --
 -- MD_Candidate_Demand_Detail
@@ -77,8 +77,8 @@ UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2017-12-20 14:57
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2017-12-20 14:57:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=557365
 ;
-ALTER TABLE public.md_candidate_demand_detail DROP CONSTRAINT corderline_mdcandidatedemandde;
-ALTER TABLE public.md_candidate_demand_detail DROP CONSTRAINT mforecastline_mdcandidatedeman;
+ALTER TABLE public.md_candidate_demand_detail DROP CONSTRAINT IF EXISTS corderline_mdcandidatedemandde;
+ALTER TABLE public.md_candidate_demand_detail DROP CONSTRAINT IF EXISTS mforecastline_mdcandidatedeman;
 --note that the shipment sched's FK constraint was already cleaned up
 
 --
