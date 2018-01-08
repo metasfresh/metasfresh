@@ -245,7 +245,8 @@ class RawWidget extends Component {
       tabIndex: fullScreen ? -1 : tabIndex,
       onChange: e => handleChange && handleChange(widgetField, e.target.value),
       onBlur: e => this.handleBlur(widgetField, e.target.value, id),
-      onKeyDown: e => this.handleKeyDown(e, widgetField, e.target.value, widgetType)
+      onKeyDown: e =>
+        this.handleKeyDown(e, widgetField, e.target.value, widgetType)
     };
 
     switch (widgetType) {
