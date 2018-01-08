@@ -287,6 +287,8 @@ public class HUTransformService
 	 * @param sourceCuHU the source CU to be split or joined
 	 * @param qtyCU the CU-quantity to join or split
 	 * @param targetTuHU the target TU
+	 * 
+	 * @return the CUs that were created
 	 */
 	public List<I_M_HU> cuToExistingTU(
 			@NonNull final I_M_HU sourceCuHU,
@@ -348,7 +350,6 @@ public class HUTransformService
 		}
 		else
 		{
-			// TODO implement getCreatedHUs in HUListAllocationSourceDestination or chnge this logic. Currently it throws an error here in care of aggregated hus
 			// destination must be the HUProducerDestination we created further up, otherwise we would already have returned
 			childCUs = ((HUProducerDestination)destination).getCreatedHUs(); // i think there will be just one, but no need to bother
 		}

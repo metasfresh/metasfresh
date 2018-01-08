@@ -31,7 +31,7 @@ import org.compiere.model.I_M_Attribute;
 
 public class SerialNoDAO implements ISerialNoDAO
 {
-	public static String SerialNoAttribute = "SerialNo";
+	public static final String SerialNoAttribute = "SerialNo";
 	
 	@Override
 	public I_M_Attribute getSerialNoAttribute(final Properties ctx)
