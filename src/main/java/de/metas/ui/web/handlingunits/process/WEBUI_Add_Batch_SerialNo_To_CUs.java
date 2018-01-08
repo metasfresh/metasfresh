@@ -18,8 +18,6 @@ import org.adempiere.mm.attributes.api.ISerialNoDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 
@@ -298,13 +296,8 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 				.parameters(parentParameters)
 				.build();
 
-		
+		final WebuiHUTransformCommandResult resultValue = Services.get(ITrxManager.class).call(() -> command.execute());
 
-		
-		final WebuiHUTransformCommandResult resultValue = Services.get(ITrxManager.class).call(() -> 
-			command.execute()
-		);
-		
 		final ImmutableSet<Integer> huIdsToAddToView = resultValue.getHuIdsToAddToView();
 
 		getView().addHUIdsAndInvalidate(huIdsToAddToView);
@@ -343,11 +336,7 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 				.parameters(tuToLUParameters)
 				.build();
 
-		final IMutable<WebuiHUTransformCommandResult> resultTUToLU = new Mutable<>();
-
-		Services.get(ITrxManager.class).run(() -> {
-			resultTUToLU.setValue(tuToLUcommand.execute());
-		});
+		Services.get(ITrxManager.class).call(() -> tuToLUcommand.execute());
 
 		getView().invalidateAll();
 
@@ -373,10 +362,7 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 				.parameters(parameters)
 				.build();
 
-
-		final WebuiHUTransformCommandResult resultValue  = Services.get(ITrxManager.class).call(() ->
-			command.execute()
-		);
+		final WebuiHUTransformCommandResult resultValue = Services.get(ITrxManager.class).call(() -> command.execute());
 
 		final ImmutableSet<Integer> huIdsToAddToView = resultValue.getHuIdsCreated();
 
