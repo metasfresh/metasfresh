@@ -104,6 +104,11 @@ public interface IView
 	 */
 	void invalidateAll();
 
+	default void invalidateSelection()
+	{
+		throw new UnsupportedOperationException();
+	}
+
 	/**
 	 * Invalidate given row by ID.
 	 *

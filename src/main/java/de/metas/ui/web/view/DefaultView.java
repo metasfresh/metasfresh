@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
@@ -87,6 +88,7 @@ public class DefaultView implements IEditableView
 
 	private final IViewDataRepository viewDataRepository;
 
+	private final ViewId viewId;
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final ViewId parentViewId;
 	private final DocumentId parentRowId;
@@ -94,7 +96,8 @@ public class DefaultView implements IEditableView
 	private final ViewProfileId profileId;
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
-	private final transient ViewRowIdsOrderedSelection defaultSelection;
+	private final ExtendedMemorizingSupplier<ViewRowIdsOrderedSelection> defaultSelectionRef;
+	private final AtomicBoolean defaultSelectionDeleteBeforeCreate = new AtomicBoolean(false);
 	private final transient ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, ViewRowIdsOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
 
 	//
@@ -116,6 +119,7 @@ public class DefaultView implements IEditableView
 
 	private DefaultView(final Builder builder)
 	{
+		viewId = builder.getViewId();
 		viewDataRepository = builder.getViewDataRepository();
 		parentViewId = builder.getParentViewId();
 		parentRowId = builder.getParentRowId();
@@ -132,19 +136,23 @@ public class DefaultView implements IEditableView
 		//
 		// Selection
 		{
-			final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
-
-			defaultSelection = viewDataRepository.createOrderedSelection(
-					evalCtx,
-					builder.getViewId(),
-					ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)));
-			selectionsByOrderBys.put(defaultSelection.getOrderBys(), defaultSelection);
+			defaultSelectionRef = ExtendedMemorizingSupplier.of(() -> {
+				if(defaultSelectionDeleteBeforeCreate.get())
+				{
+					viewDataRepository.deleteSelection(viewId);
+				}
+				final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
+				return viewDataRepository.createOrderedSelection(
+						evalCtx,
+						viewId,
+						ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)));
+			});
 		}
 
 		//
 		// Cache
 		cache_rowsById = CCache.newLRUCache( //
-				viewDataRepository.getTableName() + "#rowById#viewId=" + defaultSelection.getSelectionId() // cache name
+				viewDataRepository.getTableName() + "#rowById#viewId=" + viewId.getViewId() // cache name
 				, 100 // maxSize
 				, 2 // expireAfterMinutes
 		);
@@ -157,6 +165,7 @@ public class DefaultView implements IEditableView
 	{
 		if (_toString == null)
 		{
+			final ViewRowIdsOrderedSelection defaultSelection = defaultSelectionRef.get();
 			// NOTE: keep it short
 			_toString = MoreObjects.toStringHelper(this)
 					.omitNullValues()
@@ -184,7 +193,7 @@ public class DefaultView implements IEditableView
 	@Override
 	public ViewId getViewId()
 	{
-		return defaultSelection.getViewId();
+		return viewId;
 	}
 
 	@Override
@@ -223,24 +232,28 @@ public class DefaultView implements IEditableView
 	@Override
 	public long size()
 	{
+		final ViewRowIdsOrderedSelection defaultSelection = defaultSelectionRef.get();
 		return defaultSelection.getSize();
 	}
 
 	@Override
 	public List<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
+		final ViewRowIdsOrderedSelection defaultSelection = defaultSelectionRef.get();
 		return defaultSelection.getOrderBys();
 	}
 
 	@Override
 	public int getQueryLimit()
 	{
+		final ViewRowIdsOrderedSelection defaultSelection = defaultSelectionRef.get();
 		return defaultSelection.getQueryLimit();
 	}
 
 	@Override
 	public boolean isQueryLimitHit()
 	{
+		final ViewRowIdsOrderedSelection defaultSelection = defaultSelectionRef.get();
 		return defaultSelection.isQueryLimitHit();
 	}
 
@@ -286,7 +299,6 @@ public class DefaultView implements IEditableView
 	@Override
 	public void invalidateAll()
 	{
-		// TODO recreate defaultSelection, clear selectionsByOrderBys etc
 		cache_rowsById.clear();
 	}
 
@@ -294,6 +306,19 @@ public class DefaultView implements IEditableView
 	public void invalidateRowById(final DocumentId rowId)
 	{
 		cache_rowsById.remove(rowId);
+	}
+
+	@Override
+	public void invalidateSelection()
+	{
+		defaultSelectionDeleteBeforeCreate.set(true);
+		defaultSelectionRef.forget();
+		selectionsByOrderBys.clear();
+
+		invalidateAll();
+
+		ViewChangesCollector.getCurrentOrAutoflush()
+				.collectFullyChanged(this);
 	}
 
 	private final void assertNotClosed()
@@ -350,6 +375,8 @@ public class DefaultView implements IEditableView
 
 	private ViewRowIdsOrderedSelection getOrderedSelection(final List<DocumentQueryOrderBy> orderBys)
 	{
+		final ViewRowIdsOrderedSelection defaultSelection = defaultSelectionRef.get();
+
 		if (orderBys == null || orderBys.isEmpty())
 		{
 			return defaultSelection;

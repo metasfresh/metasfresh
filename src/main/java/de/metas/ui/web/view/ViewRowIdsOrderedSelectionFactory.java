@@ -45,5 +45,5 @@ public interface ViewRowIdsOrderedSelectionFactory
 
 	boolean containsAnyOfRowIds(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 	
-	void deleteSelection(ViewRowIdsOrderedSelection selection);
+	void deleteSelection(ViewId viewId);
 }
