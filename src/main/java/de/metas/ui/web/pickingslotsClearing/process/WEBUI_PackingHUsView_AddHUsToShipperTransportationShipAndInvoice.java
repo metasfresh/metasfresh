@@ -72,6 +72,7 @@ public class WEBUI_PackingHUsView_AddHUsToShipperTransportationShipAndInvoice ex
 				.addToShipperTransportationId(shipperTransportationId)
 				.completeShipments(true)
 				.invoiceMode(InvoiceMode.AllWithoutInvoiceSchedule)
+				.createShipperDeliveryOrders(true)
 				.build()
 				.generateShippingDocuments();
 

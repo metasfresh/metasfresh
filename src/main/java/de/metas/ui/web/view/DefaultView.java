@@ -291,8 +291,8 @@ public class DefaultView implements IEditableView
 		}
 
 		// nothing now.
-		// TODO in future me might notify somebody to remove the temporary selections from database
-
+		// TODO https://github.com/metasfresh/metasfresh/issues/3286
+		// in future me might notify somebody to remove the temporary selections from database
 		logger.debug("View closed with reason={}: {}", reason, this);
 	}
 

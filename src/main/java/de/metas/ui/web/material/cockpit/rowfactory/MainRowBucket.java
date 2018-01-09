@@ -51,16 +51,16 @@ public class MainRowBucket
 	// zusagbar Zaehlbestand
 	private BigDecimal qtyAvailableToPromise = BigDecimal.ZERO;
 
-	public void addDataRecord(@NonNull final I_MD_Cockpit dataRecord)
+	public void addDataRecord(@NonNull final I_MD_Cockpit cocpitRecord)
 	{
-		pmmQtyPromised = pmmQtyPromised.add(dataRecord.getPMM_QtyPromised_OnDate());
-		qtyMaterialentnahme = qtyMaterialentnahme.add(dataRecord.getQtyMaterialentnahme());
-		qtyRequiredForProduction = qtyRequiredForProduction.add(dataRecord.getQtyRequiredForProduction());
-		qtyReservedPurchase = qtyReservedPurchase.add(dataRecord.getQtyReserved_Purchase());
-		qtyReservedSale = qtyReservedSale.add(dataRecord.getQtyReserved_Sale());
-		qtyAvailableToPromise = qtyAvailableToPromise.add(dataRecord.getQtyAvailableToPromise());
+		pmmQtyPromised = pmmQtyPromised.add(cocpitRecord.getPMM_QtyPromised_OnDate());
+		qtyMaterialentnahme = qtyMaterialentnahme.add(cocpitRecord.getQtyMaterialentnahme());
+		qtyRequiredForProduction = qtyRequiredForProduction.add(cocpitRecord.getQtyRequiredForProduction());
+		qtyReservedPurchase = qtyReservedPurchase.add(cocpitRecord.getQtyReserved_Purchase());
+		qtyReservedSale = qtyReservedSale.add(cocpitRecord.getQtyReserved_Sale());
+		qtyAvailableToPromise = qtyAvailableToPromise.add(cocpitRecord.getQtyAvailableToPromise());
 
-		qtyOnHandEstimate = qtyOnHandEstimate.add(dataRecord.getQtyOnHandEstimate());
+		qtyOnHandEstimate = qtyOnHandEstimate.add(cocpitRecord.getQtyOnHandEstimate());
 	}
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)

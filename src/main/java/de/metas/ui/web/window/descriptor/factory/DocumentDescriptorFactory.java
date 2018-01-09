@@ -36,9 +36,8 @@ public interface DocumentDescriptorFactory
 {
 	/**
 	 * Tell the caller if they can expect this instance's methods to work with the given {@code windowId}.
-	 * 
+	 *
 	 * @param windowId may be {@code null}. If {@code null}, then return {@code false}.
-	 * @return
 	 */
 	boolean isWindowIdSupported(WindowId windowId);
 

@@ -195,6 +195,8 @@ public class MainRowWithSubRows
 			final MaterialCockpitRow subRow = subRowBucket.createIncludedRow(this);
 			mainRowBuilder.includedRow(subRow);
 		}
+
+
 		return mainRowBuilder.build();
 
 	}

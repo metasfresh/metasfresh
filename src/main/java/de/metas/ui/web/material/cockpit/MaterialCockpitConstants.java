@@ -28,4 +28,7 @@ public class MaterialCockpitConstants
 {
 	public static final String WINDOWID_MaterialCockpitView_String = "540376";
 	public static final WindowId WINDOWID_MaterialCockpitView = WindowId.fromJson(WINDOWID_MaterialCockpitView_String);
+
+	public static final String WINDOWID_MaterialCockpit_Detail_String = "540395";
+	public static final WindowId WINDOWID_MaterialCockpit_DetailView = WindowId.fromJson(WINDOWID_MaterialCockpitView_String);
 }

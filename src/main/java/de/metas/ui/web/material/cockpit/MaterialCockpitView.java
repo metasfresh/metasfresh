@@ -12,7 +12,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
+import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
+import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -43,21 +47,26 @@ import lombok.NonNull;
 
 public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 {
-	private ImmutableList<DocumentFilter> filters;
+	private final ImmutableList<DocumentFilter> filters;
+
+	private final List<RelatedProcessDescriptor> relatedProcessDescriptors;
 
 	@Builder
 	private MaterialCockpitView(
 			@NonNull final ViewId viewId,
 			@NonNull final ITranslatableString description,
 			@NonNull final Supplier<List<MaterialCockpitRow>> rowsSupplier,
-			@NonNull final ImmutableList<DocumentFilter> filters)
+			@NonNull final ImmutableList<DocumentFilter> filters,
+			@NonNull final RelatedProcessDescriptor relatedProcessDescriptor
+			)
 	{
 		super(viewId, description, rowsSupplier);
 		this.filters = filters;
+		this.relatedProcessDescriptors = ImmutableList.of(relatedProcessDescriptor);
 	}
 
 	/**
-	 * Each record of this view is based on > 1 tables.
+	 * @return {@code null}, because each record of this view is based on > 1 tables.
 	 */
 	@Override
 	public String getTableNameOrNull(DocumentId documentId)
@@ -85,4 +94,19 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 				.findFirst()
 				.ifPresent(ref -> invalidateAll());
 	}
+
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return relatedProcessDescriptors;
+	}
+
+	@Override
+	public ViewActionDescriptorsList getActions()
+	{
+		return ViewActionDescriptorsFactory.instance
+				.getFromClass(MD_Cockpit_DocumentDetail_Display.class);
+	}
+
+
 }

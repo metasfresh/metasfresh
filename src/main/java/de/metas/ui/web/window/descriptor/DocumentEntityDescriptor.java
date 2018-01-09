@@ -131,8 +131,6 @@ public class DocumentEntityDescriptor
 
 	private DocumentEntityDescriptor(final Builder builder)
 	{
-		super();
-
 		documentType = builder.getDocumentType();
 		documentTypeId = builder.getDocumentTypeId();
 		caption = builder.getCaption();
@@ -333,7 +331,7 @@ public class DocumentEntityDescriptor
 		}
 		return includedEntityDescriptor;
 	}
-	
+
 	public Stream<DocumentEntityDescriptor> streamIncludedEntitiesByTableName(@NonNull final String tableName)
 	{
 		return includedEntitiesByDetailId.values()
@@ -422,20 +420,20 @@ public class DocumentEntityDescriptor
 	{
 		return printProcessId.orElse(-1) > 0;
 	}
-	
+
 	public boolean isCloneEnabled()
 	{
 		if(!CopyRecordFactory.isEnabled())
 		{
 			return false;
 		}
-		
+
 		final String tableName = getTableNameOrNull();
 		if(tableName == null)
 		{
 			return false;
 		}
-		
+
 		return CopyRecordFactory.isEnabledForTableName(tableName);
 	}
 
@@ -737,8 +735,8 @@ public class DocumentEntityDescriptor
 		{
 			final DocumentFieldDependencyMap.Builder dependenciesBuilder = DocumentFieldDependencyMap.builder();
 
-			dependenciesBuilder.add(DocumentFieldDependencyMap.DOCUMENT_Readonly, 
-					getReadonlyLogic().getParameterNames(), 
+			dependenciesBuilder.add(DocumentFieldDependencyMap.DOCUMENT_Readonly,
+					getReadonlyLogic().getParameterNames(),
 					DependencyType.DocumentReadonlyLogic);
 
 			getFields().values().stream().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
