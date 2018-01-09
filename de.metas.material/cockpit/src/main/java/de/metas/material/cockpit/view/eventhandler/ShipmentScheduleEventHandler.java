@@ -121,7 +121,9 @@ public class ShipmentScheduleEventHandler
 			@NonNull final AbstractShipmentScheduleEvent shipmentScheduleEvent,
 			@NonNull final MainDataRecordIdentifier identifier)
 	{
-		final DetailDataRecordIdentifier detailIdentifier = DetailDataRecordIdentifier.createForShipmentSchedule(identifier, shipmentScheduleEvent.getShipmentScheduleId());
+		final DetailDataRecordIdentifier detailIdentifier = DetailDataRecordIdentifier.createForShipmentSchedule(
+				identifier,
+				shipmentScheduleEvent.getShipmentScheduleId());
 
 		if (shipmentScheduleEvent instanceof ShipmentScheduleCreatedEvent)
 		{
