@@ -1239,7 +1239,7 @@ public class TimeUtil
 			return null;
 		}
 		final Instant instant = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
-		return new Timestamp(instant.getEpochSecond());
+		return Timestamp.from(instant);
 	}
 
 	public static Timestamp asTimestamp(final LocalDate localDate, final LocalTime localTime)
@@ -1255,7 +1255,7 @@ public class TimeUtil
 			instant = localDateEff.atTime(localTime).atZone(ZoneId.systemDefault()).toInstant();
 		}
 
-		return new Timestamp(instant.getEpochSecond());
+		return Timestamp.from(instant);
 	}
 
 	public static Timestamp asTimestamp(final LocalDateTime localDateTime)
@@ -1265,8 +1265,7 @@ public class TimeUtil
 			return null;
 		}
 
-		final Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
-		return new Timestamp(instant.getEpochSecond());
+		return Timestamp.valueOf(localDateTime);
 	}
 
 	/**

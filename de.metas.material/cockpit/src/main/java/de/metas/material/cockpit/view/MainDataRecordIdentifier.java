@@ -2,8 +2,13 @@ package de.metas.material.cockpit.view;
 
 import java.util.Date;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
 
+import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
@@ -34,12 +39,12 @@ import lombok.Value;
 
 @Value
 @Builder
-public class DataRecordIdentifier
+public class MainDataRecordIdentifier
 {
-	public static DataRecordIdentifier createForMaterial(
+	public static MainDataRecordIdentifier createForMaterial(
 			@NonNull final MaterialDescriptor material)
 	{
-		final DataRecordIdentifier identifier = DataRecordIdentifier.builder()
+		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 				.productDescriptor(material)
 				.date(TimeUtil.getDay(material.getDate()))
 				.plantId(0)
@@ -56,7 +61,7 @@ public class DataRecordIdentifier
 	 */
 	int plantId;
 
-	public DataRecordIdentifier(
+	public MainDataRecordIdentifier(
 			@NonNull final ProductDescriptor productDescriptor,
 			@NonNull final Date date,
 			int plantId)
@@ -65,5 +70,31 @@ public class DataRecordIdentifier
 		this.productDescriptor = productDescriptor;
 		this.date = date;
 		this.plantId = plantId;
+	}
+
+	public IQueryBuilder<I_MD_Cockpit> createQueryBuilder()
+	{
+		final ProductDescriptor productDescriptor = getProductDescriptor();
+
+		final AttributesKey attributesKey = productDescriptor.getStorageAttributesKey();
+		attributesKey.assertNotAllOrOther();
+
+		final IQueryBuilder<I_MD_Cockpit> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Cockpit.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Cockpit.COLUMN_M_Product_ID, productDescriptor.getProductId())
+				.addEqualsFilter(I_MD_Cockpit.COLUMN_AttributesKey, attributesKey.getAsString())
+				.addEqualsFilter(I_MD_Cockpit.COLUMN_DateGeneral, getDate());
+
+		if (getPlantId() > 0)
+		{
+			queryBuilder.addEqualsFilter(I_MD_Cockpit.COLUMN_PP_Plant_ID, getPlantId());
+		}
+		else
+		{
+			queryBuilder.addEqualsFilter(I_MD_Cockpit.COLUMN_PP_Plant_ID, null);
+		}
+
+		return queryBuilder;
 	}
 }

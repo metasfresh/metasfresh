@@ -19,12 +19,18 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
+import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
+import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
-import de.metas.material.interceptor.M_ShipmentSchedule;
+import lombok.NonNull;
 import mockit.Expectations;
+import mockit.Mocked;
+import mockit.integration.springframework.BeanFactoryMockUp;
 
 /*
  * #%L
@@ -49,18 +55,26 @@ import mockit.Expectations;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class,
-		ShutdownListener.class,
-		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
+		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class,
+
+		// note that we partially mock this service in this test
+		ShipmentScheduleReferencedLineFactory.class,
+
+		// note that we won't test against this class. we just need one ShipmentScheduleReferencedLineProvider to be present,
+		// so ShipmentScheduleReferencedLineFactory can be initialized by spring
+		ShipmentScheduleOrderReferenceProvider.class
+})
 public class M_ShipmentScheduleTest
 {
+	@Mocked
+	private ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
 
 	private static final BigDecimal ONE = BigDecimal.ONE;
 	private static final BigDecimal FOUR = new BigDecimal("4");
 	private static final BigDecimal FIVE = new BigDecimal("5");
 	private static final BigDecimal TEN = BigDecimal.TEN;
 	private static final BigDecimal TWENTY = new BigDecimal("20");
-
 
 	private I_M_ShipmentSchedule shipmentSchedule;
 
@@ -69,6 +83,8 @@ public class M_ShipmentScheduleTest
 	@Before
 	public void init()
 	{
+		new BeanFactoryMockUp();
+
 		AdempiereTestHelper.get().init();
 
 		oldShipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
@@ -94,6 +110,12 @@ public class M_ShipmentScheduleTest
 	@Test
 	public void createShipmentscheduleEvent_after_new()
 	{
+		final OrderLineDescriptor orderLineDescriptor = OrderLineDescriptor.builder()
+				.orderBPartnerId(10)
+				.orderId(20)
+				.orderLineId(30).build();
+		setupShipmentScheduleReferencedLineFactory(orderLineDescriptor);
+
 		final AbstractShipmentScheduleEvent result = M_ShipmentSchedule.INSTANCE
 				.createShipmentScheduleEvent(shipmentSchedule, ModelChangeType.AFTER_NEW);
 
@@ -102,12 +124,35 @@ public class M_ShipmentScheduleTest
 
 		final ShipmentScheduleCreatedEvent createdEvent = (ShipmentScheduleCreatedEvent)result;
 		assertThat(createdEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
-		assertThat(createdEvent.getOrderLineId()).isLessThanOrEqualTo(0);
-		assertThat(createdEvent.getOrderedMaterial().getBPartnerId()).isEqualTo(45);
-		assertThat(createdEvent.getOrderedMaterial().getQuantity()).isEqualByComparingTo(TEN);
-		assertThat(createdEvent.getOrderedMaterial().getProductId()).isEqualTo(20);
-		assertThat(createdEvent.getOrderedMaterial().getWarehouseId()).isEqualTo(30);
+
+		assertThat(createdEvent.getMaterialDescriptor().getBPartnerId()).isEqualTo(45);
+		assertThat(createdEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
+		assertThat(createdEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
+		assertThat(createdEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);
 		assertThat(createdEvent.getReservedQuantity()).isEqualByComparingTo(FIVE);
+		assertThat(createdEvent.getDocumentLineDescriptor()).isEqualTo(orderLineDescriptor);
+	}
+
+	/**
+	 * Make sure that {@link ShipmentScheduleReferencedLineFactory} will return a {@link ShipmentScheduleReferencedLine}
+	 * that contains the given {@code orderLineDescriptor}.
+	 *
+	 * @param orderLineDescriptor
+	 */
+	private void setupShipmentScheduleReferencedLineFactory(@NonNull final OrderLineDescriptor orderLineDescriptor)
+	{
+		final ShipmentScheduleReferencedLine shipmentScheduleReferencedLine = //
+				ShipmentScheduleReferencedLine.builder()
+						.groupId(10)
+						.shipperId(20)
+						.warehouseId(30)
+						.documentLineDescriptor(orderLineDescriptor).build();
+		// @formatter:off
+		new Expectations(ShipmentScheduleReferencedLineFactory.class)
+		{{
+			shipmentScheduleReferencedLineFactory.createFor(shipmentSchedule);
+			result = shipmentScheduleReferencedLine;
+		}};	// @formatter:on
 	}
 
 	@Test
@@ -128,10 +173,10 @@ public class M_ShipmentScheduleTest
 
 		final ShipmentScheduleUpdatedEvent updatedEvent = (ShipmentScheduleUpdatedEvent)result;
 		assertThat(updatedEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
-		assertThat(updatedEvent.getOrderedMaterial().getBPartnerId()).isEqualTo(45);
-		assertThat(updatedEvent.getOrderedMaterial().getQuantity()).isEqualByComparingTo(TEN);
-		assertThat(updatedEvent.getOrderedMaterial().getProductId()).isEqualTo(20);
-		assertThat(updatedEvent.getOrderedMaterial().getWarehouseId()).isEqualTo(30);
+		assertThat(updatedEvent.getMaterialDescriptor().getBPartnerId()).isEqualTo(45);
+		assertThat(updatedEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
+		assertThat(updatedEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
+		assertThat(updatedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);
 		assertThat(updatedEvent.getReservedQuantity()).isEqualByComparingTo(FIVE);
 		assertThat(updatedEvent.getReservedQuantityDelta()).isEqualByComparingTo(ONE);
 		assertThat(updatedEvent.getOrderedQuantityDelta()).isEqualByComparingTo(TEN.negate());
@@ -148,10 +193,10 @@ public class M_ShipmentScheduleTest
 
 		final ShipmentScheduleDeletedEvent deletedEvent = (ShipmentScheduleDeletedEvent)result;
 		assertThat(deletedEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
-		assertThat(deletedEvent.getOrderedMaterial().getBPartnerId()).isEqualTo(45);
-		assertThat(deletedEvent.getOrderedMaterial().getQuantity()).isEqualByComparingTo(TEN);
-		assertThat(deletedEvent.getOrderedMaterial().getProductId()).isEqualTo(20);
-		assertThat(deletedEvent.getOrderedMaterial().getWarehouseId()).isEqualTo(30);
+		assertThat(deletedEvent.getMaterialDescriptor().getBPartnerId()).isEqualTo(45);
+		assertThat(deletedEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
+		assertThat(deletedEvent.getMaterialDescriptor().getProductId()).isEqualTo(20);
+		assertThat(deletedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(30);
 		assertThat(deletedEvent.getReservedQuantity()).isEqualByComparingTo(FIVE);
 	}
 }

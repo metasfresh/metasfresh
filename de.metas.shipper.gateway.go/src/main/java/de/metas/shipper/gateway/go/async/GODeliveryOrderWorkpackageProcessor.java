@@ -111,8 +111,8 @@ public class GODeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAda
 
 	private void printLabel(DeliveryOrder deliveryOrder, PackageLabel packageLabel)
 	{
-		final String fileExt = MimeType.getExtensionByType(packageLabel.getContentType());
-		final String fileName = packageLabel.getType().toString() + "." + fileExt;
+		final String fileExtWithDot = MimeType.getExtensionByType(packageLabel.getContentType());
+		final String fileName = packageLabel.getType().toString() + fileExtWithDot;
 		final byte[] labelData = packageLabel.getLabelData();
 
 		final Properties ctx = Env.getCtx();

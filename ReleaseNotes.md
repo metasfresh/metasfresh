@@ -12,15 +12,24 @@ Here come the actual release notes:
 
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**
-# metasfresh-app
+
+## Features
+* metasfresh-app
   * [#3284](https://github.com/metasfresh/metasfresh/issues/3284) Translation of eMail Editor in WebUI
     * Translation of the eMail Editor in WebUI for Language/ Locale de_DE.
+  * [#3286](https://github.com/metasfresh/metasfresh/issues/3286) Workaround for truncating T_WEBUI_ViewSelection/-Line
+    * Temporary Solution for the data growth of ViewSelection and ViewSelectionline tables.
 
-# metasfresh-webui-frontend
+* metasfresh-webui-frontend
   * [#1470](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1470) Bug in long texts with new line
     * Improving the behavior in LongText Fields. Now only patching the content when leaving the Field.
   * [#1478](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1478) Attachment in eMail Editor: Show File name/ caption instead of key
     * Improving the Names for attached Files in eMail Editor. Now showing the caption manes instead of attachment keys.
+	
+## Fixes
+* metasfresh-webui-frontend
+  * [#1481](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1481) Cannot open "Create purchase orders" modal view
+    * Now enables to open modal overlays from action menu again.
 
 # metasfresh 5.40 (2018-02)
 
