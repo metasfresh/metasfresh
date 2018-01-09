@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.OrderLineDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -51,7 +50,6 @@ public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 	@JsonCreator
 	@Builder
 	public ReceiptScheduleUpdatedEvent(
-			@JsonProperty("orderLineDescriptor") final OrderLineDescriptor orderLineDescriptor,
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("orderedQuantityDelta") final BigDecimal orderedQuantityDelta,
@@ -59,9 +57,7 @@ public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 			@JsonProperty("reservedQuantityDelta") final BigDecimal reservedQuantityDelta,
 			@JsonProperty("receiptScheduleId") final int receiptScheduleId)
 	{
-		super(
-				orderLineDescriptor,
-				eventDescriptor,
+		super(eventDescriptor,
 				materialDescriptor,
 				reservedQuantity,
 				receiptScheduleId);

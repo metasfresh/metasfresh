@@ -1,16 +1,15 @@
-package de.metas.inoutcandidate.spi;
+package de.metas.material.cockpit.view.detailrecord;
 
-import java.sql.Timestamp;
+import java.math.BigDecimal;
 
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.event.commons.DocumentLineDescriptor;
+import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.swat.base
+ * metasfresh-webui-api
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -30,33 +29,24 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * Contains data about the document a given {@link I_M_ShipmentSchedule} references via its {@code AD_Table_ID} and {@code Reference_ID} columns.
- * Instances are generally created by {@link ShipmentScheduleReferencedLineFactory}.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
 @Value
-@Builder
-public class ShipmentScheduleReferencedLine
+public class UpdateDetailRequest
 {
-	@NonNull
-	Integer groupId;
+	DetailDataRecordIdentifier detailDataRecordIdentifier;
 
-	Timestamp deliveryDate;
+	 BigDecimal qtyOrdered;
 
-	Timestamp preparationDate;
+	 BigDecimal qtyReserved;
 
-	/**
-	 * Might be zero.
-	 */
-	@NonNull
-	Integer shipperId;
+	@Builder
+	public UpdateDetailRequest(
+			final @NonNull DetailDataRecordIdentifier detailDataRecordIdentifier,
+			@NonNull final BigDecimal qtyOrdered,
+			@NonNull final BigDecimal qtyReserved)
+	{
+		this.qtyOrdered = qtyOrdered;
+		this.qtyReserved = qtyReserved;
 
-	@NonNull
-	Integer warehouseId;
-
-	@NonNull
-	DocumentLineDescriptor documentLineDescriptor;
+		this.detailDataRecordIdentifier = detailDataRecordIdentifier;
+	}
 }

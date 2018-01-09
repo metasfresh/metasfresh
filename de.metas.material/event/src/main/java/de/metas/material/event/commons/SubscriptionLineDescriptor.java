@@ -31,30 +31,31 @@ import lombok.Value;
  */
 
 @Value
-public class OrderLineDescriptor implements DocumentLineDescriptor
+@Builder
+public class SubscriptionLineDescriptor  implements DocumentLineDescriptor
 {
-	int orderLineId;
-	int orderId;
-	int orderBPartnerId;
+	int subscriptionProgressId;
+	int flatrateTermId;
+
+	int subscriptionBillBPartnerId;
 
 	@Builder
 	@JsonCreator
-	public OrderLineDescriptor(
-			@JsonProperty("orderLineId") final int orderLineId,
-			@JsonProperty("orderId") final int orderId,
-			@JsonProperty("orderBPartnerId") final int orderBPartnerId)
+	public SubscriptionLineDescriptor(
+			@JsonProperty("subscriptionProgressId") final int subscriptionProgressId,
+			@JsonProperty("flatrateTermId") final int flatrateTermId,
+			@JsonProperty("subscriptionBillBPartnerId") final int subscriptionBillBPartnerId)
 	{
-		this.orderLineId = orderLineId;
-		this.orderId = orderId;
-		this.orderBPartnerId = orderBPartnerId;
+		this.subscriptionProgressId = subscriptionProgressId;
+		this.flatrateTermId = flatrateTermId;
+		this.subscriptionBillBPartnerId = subscriptionBillBPartnerId;
 	}
 
 	@Override
 	public void validate()
 	{
-		checkIdGreaterThanZero("orderLineId", orderLineId);
-		checkIdGreaterThanZero("orderId", orderId);
-
-		checkIdGreaterThanZero("orderBPartnerId", orderBPartnerId);
+		checkIdGreaterThanZero("subscriptionProgressId", subscriptionProgressId);
+		checkIdGreaterThanZero("flatrateTermId", flatrateTermId);
+		checkIdGreaterThanZero("subscriptionBillBPartnerId", subscriptionBillBPartnerId);
 	}
 }

@@ -1,7 +1,8 @@
-package de.metas.material.cockpit.view;
+package de.metas.material.cockpit.view.mainrecord;
 
 import java.math.BigDecimal;
 
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -31,10 +32,10 @@ import lombok.Value;
 
 @Value
 @Builder
-public class DataUpdateRequest
+public class UpdateMainDataRequest
 {
 	@NonNull
-	DataRecordIdentifier identifier;
+	MainDataRecordIdentifier identifier;
 
 	@Default
 	BigDecimal countedQty = BigDecimal.ZERO;

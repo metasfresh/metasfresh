@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.material.cockpit.view.DataRecordIdentifier;
-import de.metas.material.cockpit.view.DataUpdateRequest;
-import de.metas.material.cockpit.view.DataUpdateRequestHandler;
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.PPOrder;
@@ -47,9 +47,9 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
 public class PPOrderCreatedOrAdvisedEventHandler implements MaterialEventHandler<AbstractPPOrderEvent>
 {
-	private final DataUpdateRequestHandler dataUpdateRequestHandler;
+	private final MainDataRequestHandler dataUpdateRequestHandler;
 
-	public PPOrderCreatedOrAdvisedEventHandler(@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler)
+	public PPOrderCreatedOrAdvisedEventHandler(@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
 	}
@@ -70,15 +70,15 @@ public class PPOrderCreatedOrAdvisedEventHandler implements MaterialEventHandler
 		final PPOrder ppOrder = ppOrderAdvisedOrCreatedEvent.getPpOrder();
 		final List<PPOrderLine> lines = ppOrder.getLines();
 
-		final ImmutableList.Builder<DataUpdateRequest> requests = ImmutableList.builder();
+		final ImmutableList.Builder<UpdateMainDataRequest> requests = ImmutableList.builder();
 		for (final PPOrderLine line : lines)
 		{
-			final DataRecordIdentifier identifier = DataRecordIdentifier.builder()
+			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(line.getProductDescriptor())
 					.date(TimeUtil.getDay(ppOrder.getDatePromised()))
 					.build();
 
-			final DataUpdateRequest request = DataUpdateRequest.builder()
+			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)
 					.requiredForProductionQty(line.getQtyRequired())
 					.build();
