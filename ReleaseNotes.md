@@ -19,14 +19,22 @@ Here come the actual release notes:
     * Translation of the eMail Editor in WebUI for Language/ Locale de_DE.
   * [#3286](https://github.com/metasfresh/metasfresh/issues/3286) Workaround for truncating T_WEBUI_ViewSelection/-Line
     * Temporary Solution for the data growth of ViewSelection and ViewSelectionline tables.
+  * [#3293](https://github.com/metasfresh/metasfresh/issues/3293) Webui: Add Translation Messages for Daterangepicker
+    * Improved Translations. Added static translations for de_DE, en_US and Date Range Picker.
 
 * metasfresh-webui-frontend
   * [#1470](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1470) Bug in long texts with new line
     * Improving the behavior in LongText Fields. Now only patching the content when leaving the Field.
   * [#1478](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1478) Attachment in eMail Editor: Show File name/ caption instead of key
-    * Improving the Names for attached Files in eMail Editor. Now showing the caption manes instead of attachment keys.
+    * Improving the Names for attached Files in eMail Editor. Now showing the caption names instead of attachment keys.
+  * [#1485](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1485) Tooltip for for "Select all"/ "Select all x rows"
+    * New Tooltip for the Select All Functionality.
 	
 ## Fixes
+* metasfresh-app
+  * [#3291](https://github.com/metasfresh/metasfresh/issues/3291) Search Icon disappears when switching Main-Subtab in Contract Window
+    * Fixes the vanishing Search Icon in window contracts of metasfresh swingUI.
+
 * metasfresh-webui-frontend
   * [#1481](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1481) Cannot open "Create purchase orders" modal view
     * Now enables to open modal overlays from action menu again.
