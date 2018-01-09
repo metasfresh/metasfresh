@@ -24,9 +24,13 @@ Here come the actual release notes:
   * [#1470](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1470) Bug in long texts with new line
     * Improving the behavior in LongText Fields. Now only patching the content when leaving the Field.
   * [#1478](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1478) Attachment in eMail Editor: Show File name/ caption instead of key
-    * Improving the Names for attached Files in eMail Editor. Now showing the caption manes instead of attachment keys.
+    * Improving the Names for attached Files in eMail Editor. Now showing the caption names instead of attachment keys.
 	
 ## Fixes
+* metasfresh-app
+  * [#3291](https://github.com/metasfresh/metasfresh/issues/3291) Search Icon disappears when switching Main-Subtab in Contract Window
+    * Fixes the vanishing Search Icon in window contracts of metasfresh swingUI.
+
 * metasfresh-webui-frontend
   * [#1481](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1481) Cannot open "Create purchase orders" modal view
     * Now enables to open modal overlays from action menu again.
