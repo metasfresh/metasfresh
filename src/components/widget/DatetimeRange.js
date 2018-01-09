@@ -89,6 +89,7 @@ class DatetimeRange extends Component {
         locale={{
           firstDay: 1,
           monthNames: Moment.months(),
+          daysOfWeek: Moment.weekdaysMin(),
           customRangeLabel: counterpart.translate("window.daterange.custom")
         }}
         autoApply={false}
