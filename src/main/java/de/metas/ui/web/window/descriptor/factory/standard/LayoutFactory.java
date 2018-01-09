@@ -213,7 +213,8 @@ public class LayoutFactory
 		final ILogicExpression tabDisplayLogic = descriptorsFactory.getTabDisplayLogic();
 		if (tabDisplayLogic.isConstantFalse())
 		{
-			logger.warn("Skip creating single row layout because it's never displayed: {}, tabDisplayLogic={}", entityDescriptor, tabDisplayLogic);
+			logger.warn("Skip creating single row layout because it's never displayed: {}, tabDisplayLogic={}",
+					entityDescriptor, tabDisplayLogic);
 			return null;
 		}
 
@@ -224,7 +225,8 @@ public class LayoutFactory
 		// Usually this happens when generating the single row layout for included tabs.
 		if (!layoutSectionsList.stream().anyMatch(DocumentLayoutSectionDescriptor.Builder::isNotEmpty))
 		{
-			DocumentLayoutSectionDescriptor.Builder oneLayoutSection = DocumentLayoutSectionDescriptor.builder().addColumn(layoutGridView().getElements());
+			DocumentLayoutSectionDescriptor.Builder oneLayoutSection = DocumentLayoutSectionDescriptor.builder()
+					.addColumn(layoutGridView().getElements());
 			layoutSectionsList = ImmutableList.of(oneLayoutSection);
 		}
 
@@ -336,7 +338,7 @@ public class LayoutFactory
 				continue;
 			}
 
-			final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = layoutElementLine(uiElement, layoutElementGroupBuilder);
+			final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = layoutElementLine(uiElement);
 			if (layoutElementLineBuilder == null)
 			{
 				continue;
@@ -354,7 +356,7 @@ public class LayoutFactory
 		return layoutElementGroupBuilder;
 	}
 
-	private DocumentLayoutElementLineDescriptor.Builder layoutElementLine(final I_AD_UI_Element uiElement, final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder)
+	private DocumentLayoutElementLineDescriptor.Builder layoutElementLine(final I_AD_UI_Element uiElement)
 	{
 		logger.trace("Building layout element line for {}", uiElement);
 
@@ -456,18 +458,16 @@ public class LayoutFactory
 			@NonNull final I_AD_UI_Element uiElement,
 			final DocumentFieldWidgetType widgetType)
 	{
-		final boolean readOnly = uiElement.getAD_Field().isReadOnly()
-				|| uiElement.getAD_Tab().isReadOnly()
-				|| uiElement.getAD_Tab().getAD_Table().isView();
+		final DocumentFieldDescriptor.Builder field = descriptorsFactory
+				.documentFieldByAD_Field_ID(uiElement.getAD_Field_ID());
 
-		return readOnly
-				? ViewEditorRenderMode.NEVER
-				: computeViewEditorRenderModeStatic(widgetType);
-	}
+		final boolean readOnly = field != null && field.getReadonlyLogicEffective().isConstantTrue();
+		if (readOnly)
+		{
+			return ViewEditorRenderMode.NEVER;
+		}
 
-	private static final ViewEditorRenderMode computeViewEditorRenderModeStatic(
-			final DocumentFieldWidgetType widgetType)
-	{
+		// if we can't tell the mode from field, then use our "old" logic
 		if (widgetType == DocumentFieldWidgetType.Amount
 				|| widgetType == DocumentFieldWidgetType.CostPrice
 				|| widgetType == DocumentFieldWidgetType.Quantity)

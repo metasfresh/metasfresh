@@ -710,6 +710,7 @@ public final class DocumentFieldDescriptor
 		private ILogicExpression _entityReadonlyLogic = ConstantLogicExpression.FALSE;
 		private ILogicExpression _readonlyLogic = ConstantLogicExpression.FALSE;
 		private ILogicExpression _readonlyLogicEffective = null;
+
 		private boolean alwaysUpdateable = false;
 		private ILogicExpression displayLogic = ConstantLogicExpression.TRUE;
 		private ILogicExpression _mandatoryLogic = ConstantLogicExpression.FALSE;
@@ -1071,7 +1072,7 @@ public final class DocumentFieldDescriptor
 			return _readonlyLogic;
 		}
 
-		private ILogicExpression getReadonlyLogicEffective()
+		public ILogicExpression getReadonlyLogicEffective()
 		{
 			if (_readonlyLogicEffective == null)
 			{
