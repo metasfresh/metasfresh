@@ -51,15 +51,19 @@ class DatetimeRange extends Component {
   };
 
   render() {
-    //const today = counterpart.translate("window.daterange.today");
     const today = counterpart.translate("window.daterange.today");
+    const yesterday = counterpart.translate("window.daterange.yesterday");
+    const last7days = counterpart.translate("window.daterange.last7days");
+    const last30days = counterpart.translate("window.daterange.last30days");
+    const thisMonth = counterpart.translate("window.daterange.thismonth");
+    const lastMonth = counterpart.translate("window.daterange.lastmonth");
     const ranges = {
       [today]: [Moment(), Moment()],
-      Yesterday: [Moment().subtract(1, "days"), Moment().subtract(1, "days")],
-      "Last 7 Days": [Moment().subtract(6, "days"), Moment()],
-      "Last 30 Days": [Moment().subtract(29, "days"), Moment()],
-      "This Month": [Moment().startOf("month"), Moment().endOf("month")],
-      "Last Month": [
+      [yesterday]: [Moment().subtract(1, "days"), Moment().subtract(1, "days")],
+      [last7days]: [Moment().subtract(6, "days"), Moment()],
+      [last30days]: [Moment().subtract(29, "days"), Moment()],
+      [thisMonth]: [Moment().startOf("month"), Moment().endOf("month")],
+      [lastMonth]: [
         Moment()
           .subtract(1, "month")
           .startOf("month"),
@@ -84,7 +88,8 @@ class DatetimeRange extends Component {
         onHide={onHide}
         locale={{
           firstDay: 1,
-          monthNames: Moment.months()
+          monthNames: Moment.months(),
+          customRangeLabel: counterpart.translate("window.daterange.custom")
         }}
         autoApply={false}
         timePicker={timePicker}
