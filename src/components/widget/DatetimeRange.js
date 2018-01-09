@@ -90,6 +90,8 @@ class DatetimeRange extends Component {
           firstDay: 1,
           monthNames: Moment.months(),
           daysOfWeek: Moment.weekdaysMin(),
+          applyLabel: counterpart.translate("window.daterange.apply"),
+          cancelLabel: counterpart.translate("window.daterange.cancel"),
           customRangeLabel: counterpart.translate("window.daterange.custom")
         }}
         autoApply={false}
