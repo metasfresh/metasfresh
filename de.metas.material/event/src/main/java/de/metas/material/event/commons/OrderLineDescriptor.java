@@ -36,17 +36,21 @@ public class OrderLineDescriptor implements DocumentLineDescriptor
 	int orderLineId;
 	int orderId;
 	int orderBPartnerId;
+	int docTypeId;
+
 
 	@Builder
 	@JsonCreator
 	public OrderLineDescriptor(
 			@JsonProperty("orderLineId") final int orderLineId,
 			@JsonProperty("orderId") final int orderId,
-			@JsonProperty("orderBPartnerId") final int orderBPartnerId)
+			@JsonProperty("orderBPartnerId") final int orderBPartnerId,
+			@JsonProperty("docTypeId") final int docTypeId)
 	{
 		this.orderLineId = orderLineId;
 		this.orderId = orderId;
 		this.orderBPartnerId = orderBPartnerId;
+		this.docTypeId = docTypeId;
 	}
 
 	@Override
@@ -54,7 +58,7 @@ public class OrderLineDescriptor implements DocumentLineDescriptor
 	{
 		checkIdGreaterThanZero("orderLineId", orderLineId);
 		checkIdGreaterThanZero("orderId", orderId);
-
 		checkIdGreaterThanZero("orderBPartnerId", orderBPartnerId);
+		checkIdGreaterThanZero("docTypeId", docTypeId);
 	}
 }

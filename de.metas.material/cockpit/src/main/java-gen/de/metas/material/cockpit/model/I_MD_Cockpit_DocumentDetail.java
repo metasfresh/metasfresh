@@ -98,6 +98,35 @@ public interface I_MD_Cockpit_DocumentDetail
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
+	 * Set Belegart.
+	 * Belegart oder Verarbeitungsvorgaben
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_DocType_ID (int C_DocType_ID);
+
+	/**
+	 * Get Belegart.
+	 * Belegart oder Verarbeitungsvorgaben
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_DocType_ID();
+
+	public org.compiere.model.I_C_DocType getC_DocType();
+
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
+
+    /** Column definition for C_DocType_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, org.compiere.model.I_C_DocType>(I_MD_Cockpit_DocumentDetail.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
 	 * Set Pauschale - Vertragsperiode.
 	 *
 	 * <br>Type: Search

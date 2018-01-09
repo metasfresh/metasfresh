@@ -42,6 +42,8 @@ public class InsertDetailRequest
 	int subscriptionLineId;
 	int subscriptionId;
 
+	int docTypeId;
+
 	/**
 	 * May be zero because shipment schedules initially have a zero bpartnerId.
 	 */
@@ -59,6 +61,7 @@ public class InsertDetailRequest
 			final int subscriptionLineId,
 			final int subscriptionId,
 			final int bPartnerId,
+			final int docTypeId,
 			@NonNull final BigDecimal qtyOrdered,
 			@NonNull final BigDecimal qtyReserved)
 	{
@@ -73,6 +76,8 @@ public class InsertDetailRequest
 
 		this.subscriptionLineId = subscriptionLineId;
 		this.subscriptionId = subscriptionId;
+
+		this.docTypeId = docTypeId;
 
 		validate();
 	}

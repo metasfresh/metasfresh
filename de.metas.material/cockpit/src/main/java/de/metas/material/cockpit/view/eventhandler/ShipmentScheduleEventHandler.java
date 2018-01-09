@@ -135,7 +135,6 @@ public class ShipmentScheduleEventHandler
 							.detailDataRecordIdentifier(detailIdentifier)
 							.qtyOrdered(shipmentScheduleEvent.getMaterialDescriptor().getQuantity())
 							.qtyReserved(shipmentScheduleEvent.getReservedQuantity())
-
 							.build());
 		}
 		else if (shipmentScheduleEvent instanceof ShipmentScheduleDeletedEvent)
@@ -171,7 +170,8 @@ public class ShipmentScheduleEventHandler
 			addDetailsRequest
 					.orderId(orderLineDescriptor.getOrderId())
 					.orderLineId(orderLineDescriptor.getOrderLineId())
-					.bPartnerId(orderLineDescriptor.getOrderBPartnerId());;
+					.bPartnerId(orderLineDescriptor.getOrderBPartnerId())
+					.docTypeId(orderLineDescriptor.getDocTypeId());
 		}
 		else if (documentLineDescriptor instanceof SubscriptionLineDescriptor)
 		{
