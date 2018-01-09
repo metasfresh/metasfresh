@@ -231,6 +231,7 @@ class TablePagination extends Component {
           onClick={() => {
             this._handleSelectAll();
           }}
+          title="Alt+A"
         >
           {selectedWholePage
             ? counterpart.translate("view.selectAllItems.caption", {
