@@ -68,3 +68,59 @@ INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,E
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Message t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Message_ID=544624 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
 ;
 
+-- 2018-01-09T13:34:11.893
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-09 13:34:11','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',MsgText='Today' WHERE AD_Message_ID=544619 AND AD_Language='en_US'
+;
+
+-- 2018-01-09T13:34:34.462
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-09 13:34:34','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',MsgText='Last 30 Days' WHERE AD_Message_ID=544622 AND AD_Language='en_US'
+;
+
+-- 2018-01-09T13:34:45.693
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-09 13:34:45','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',MsgText='Last 7 Days' WHERE AD_Message_ID=544621 AND AD_Language='en_US'
+;
+
+-- 2018-01-09T13:35:00.461
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-09 13:35:00','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',MsgText='Last Month' WHERE AD_Message_ID=544624 AND AD_Language='en_US'
+;
+
+-- 2018-01-09T13:35:22.393
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-09 13:35:22','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',MsgText='This Month' WHERE AD_Message_ID=544623 AND AD_Language='en_US'
+;
+
+-- 2018-01-09T13:35:32.309
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-09 13:35:32','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',MsgText='Yesterday' WHERE AD_Message_ID=544620 AND AD_Language='en_US'
+;
+
+-- 2018-01-09T13:38:47.934
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET Value='webui.window.daterange.last30days',Updated=TO_TIMESTAMP('2018-01-09 13:38:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544622
+;
+
+-- 2018-01-09T13:38:51.624
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET Value='webui.window.daterange.last7days',Updated=TO_TIMESTAMP('2018-01-09 13:38:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544621
+;
+
+-- 2018-01-09T13:38:54.209
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET Value='webui.window.daterange.lastmonth',Updated=TO_TIMESTAMP('2018-01-09 13:38:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544624
+;
+
+-- 2018-01-09T13:38:56.840
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET Value='webui.window.daterange.thismonth',Updated=TO_TIMESTAMP('2018-01-09 13:38:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544623
+;
+
+-- 2018-01-09T13:39:01.776
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET Value='webui.window.daterange.yesterday',Updated=TO_TIMESTAMP('2018-01-09 13:39:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544620
+;
+
+
