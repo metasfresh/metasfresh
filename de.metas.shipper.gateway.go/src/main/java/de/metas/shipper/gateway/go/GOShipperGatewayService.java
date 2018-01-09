@@ -21,6 +21,8 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.shipper.gateway.api.ShipperGatewayService;
 import de.metas.shipper.gateway.api.model.DeliveryOrder;
@@ -122,6 +124,8 @@ public class GOShipperGatewayService implements ShipperGatewayService
 		final I_C_BPartner_Location deliverToBPLocation = load(deliverToBPartnerLocationId, I_C_BPartner_Location.class);
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 
+		final Set<Integer> mpackageIds = mpackages.stream().map(I_M_Package::getM_Package_ID).collect(ImmutableSet.toImmutableSet());
+
 		return DeliveryOrder.builder()
 				.serviceType(GOServiceType.Overnight)
 				.paidMode(GOPaidMode.Prepaid)
@@ -149,7 +153,8 @@ public class GOShipperGatewayService implements ShipperGatewayService
 				//
 				// Delivery content
 				.deliveryPosition(DeliveryPosition.builder()
-						.numberOfPackages(mpackages.size())
+						.numberOfPackages(mpackageIds.size())
+						.packageIds(mpackageIds)
 						.grossWeightKg(Math.max(computeGrossWeightInKg(mpackages), 1))
 						.content(computePackageContentDescription(mpackages))
 						.build())

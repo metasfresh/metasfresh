@@ -14,7 +14,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1016700092L;
+	private static final long serialVersionUID = 594300821L;
 
     /** Standard Constructor */
     public X_GO_DeliveryOrder (Properties ctx, int GO_DeliveryOrder_ID, String trxName)
@@ -25,7 +25,6 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 			setGO_DeliverToBPartner_ID (0);
 			setGO_DeliverToBPLocation_ID (0);
 			setGO_DeliverToCompanyName (null);
-			setGO_DeliverToCompanyName2 (null);
 			setGO_DeliverToDepartment (null);
 			setGO_DeliverToLocation_ID (0);
 			setGO_DeliveryOrder_ID (0);

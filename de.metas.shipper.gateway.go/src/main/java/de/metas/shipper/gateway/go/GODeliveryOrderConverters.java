@@ -3,6 +3,7 @@ package de.metas.shipper.gateway.go;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -85,7 +86,7 @@ import lombok.experimental.UtilityClass;
 		orderPO.setGO_DeliverToCompanyName2(deliveryAddress.getCompanyName2());
 		orderPO.setGO_DeliverToDepartment(deliveryAddress.getCompanyDepartment());
 		orderPO.setGO_DeliverToLocation_ID(createC_Location_ID(deliveryAddress));
-		
+
 		orderPO.setGO_DeliverToBPartner_ID(deliveryAddress.getBpartnerId());
 		orderPO.setGO_DeliverToBPLocation_ID(deliveryAddress.getBpartnerLocationId());
 	}
@@ -148,10 +149,11 @@ import lombok.experimental.UtilityClass;
 		orderPO.setGO_DeliverToPhoneNo(deliveryContact != null ? deliveryContact.getPhoneAsString() : null);
 	}
 
-	public static DeliveryPosition deliveryPositionFromPO(final I_GO_DeliveryOrder orderPO)
+	public static DeliveryPosition deliveryPositionFromPO(final I_GO_DeliveryOrder orderPO, final Set<Integer> mpackageIds)
 	{
 		return DeliveryPosition.builder()
 				.numberOfPackages(orderPO.getGO_NumberOfPackages())
+				.packageIds(mpackageIds)
 				.grossWeightKg(orderPO.getGO_GrossWeightKg())
 				.content(orderPO.getGO_PackageContentDescription())
 				.build();
