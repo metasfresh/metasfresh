@@ -27,6 +27,8 @@ Here come the actual release notes:
     * Improving the behavior in LongText Fields. Now only patching the content when leaving the Field.
   * [#1478](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1478) Attachment in eMail Editor: Show File name/ caption instead of key
     * Improving the Names for attached Files in eMail Editor. Now showing the caption names instead of attachment keys.
+  * [#1485](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1485) Tooltip for for "Select all"/ "Select all x rows"
+    * New Tooltip for the Select All Functionality.
 	
 ## Fixes
 * metasfresh-app
