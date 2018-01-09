@@ -225,7 +225,7 @@ public interface I_GO_DeliveryOrder
 	 * Set Deliver To Company Name2.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setGO_DeliverToCompanyName2 (java.lang.String GO_DeliverToCompanyName2);
@@ -234,7 +234,7 @@ public interface I_GO_DeliveryOrder
 	 * Get Deliver To Company Name2.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getGO_DeliverToCompanyName2();

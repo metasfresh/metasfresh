@@ -413,12 +413,12 @@ public class GOClient implements ShipperGatewayClient
 		final SendungsRueckmeldung.Sendung goResponseContent = goResponse.getSendung();
 
 		// NOTE: based on protocol v1.3 i understand there will be only one position, always
-		final List<SendungsRueckmeldung.Sendung.Position> goDeliveryPositions = goResponseContent.getPosition();
-		if (goDeliveryPositions.size() != 1)
+		final List<SendungsRueckmeldung.Sendung.Position> goResponseDeliveryPositions = goResponseContent.getPosition();
+		if (goResponseDeliveryPositions.size() != 1)
 		{
-			throw new ShipperGatewayException("Only one delivery position was expected but got " + goDeliveryPositions);
+			throw new ShipperGatewayException("Only one delivery position was expected but got " + goResponseDeliveryPositions);
 		}
-		final SendungsRueckmeldung.Sendung.Position goDeliveryPosition = goDeliveryPositions.get(0);
+		final SendungsRueckmeldung.Sendung.Position goResponseDeliveryPosition = goResponseDeliveryPositions.get(0);
 
 		return deliveryOrderRequest.toBuilder()
 				.orderId(GOUtils.createOrderId(goResponseContent.getSendungsnummerAX4()))
@@ -453,7 +453,7 @@ public class GOClient implements ShipperGatewayClient
 				// Delivery content
 				.deliveryPosition(deliveryOrderRequest.getDeliveryPosition().toBuilder()
 						// .positionNo(goDeliveryPosition.getPositionsNr()) // assume it's always 1
-						.numberOfPackages(Integer.parseInt(goDeliveryPosition.getAnzahlPackstuecke()))
+						.numberOfPackages(Integer.parseInt(goResponseDeliveryPosition.getAnzahlPackstuecke()))
 						// .barcodes(goDeliveryPosition.getBarcodes().getBarcodeNr())
 						.build())
 				//
