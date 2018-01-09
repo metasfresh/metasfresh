@@ -5,6 +5,7 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.compiere.util.CacheMgt;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
 import de.metas.material.cockpit.model.I_MD_Stock;
 
 /*
@@ -34,8 +35,12 @@ public class ModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void setupCaching(final IModelCacheService cachingService)
 	{
+		// changes in both MD_Cockpit and MD_Stock trigger the material cockpit view to be revalidated
 		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_MD_Cockpit.Table_Name);
 		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_MD_Stock.Table_Name);
-	}
 
+		// currently as this window is opend via MD_Cockpit_DocumentDetail_Display,
+		// changes MD_Cockpit_DocumentDetail don't cause and view change
+		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_MD_Cockpit_DocumentDetail.Table_Name);
+	}
 }
