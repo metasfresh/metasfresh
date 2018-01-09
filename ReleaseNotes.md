@@ -15,6 +15,8 @@ Here come the actual release notes:
 # metasfresh-app
   * [#3284](https://github.com/metasfresh/metasfresh/issues/3284) Translation of eMail Editor in WebUI
     * Translation of the eMail Editor in WebUI for Language/ Locale de_DE.
+  * [#3286](https://github.com/metasfresh/metasfresh/issues/3286) Workaround for truncating T_WEBUI_ViewSelection/-Line
+    * Temporary Solution for the data growth of ViewSelection and ViewSelectionline tables.
 
 # metasfresh-webui-frontend
   * [#1470](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1470) Bug in long texts with new line
