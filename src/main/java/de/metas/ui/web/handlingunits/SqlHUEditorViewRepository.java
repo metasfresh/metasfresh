@@ -582,7 +582,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	@Override
 	public void deleteSelection(final ViewRowIdsOrderedSelection selection)
 	{
-		viewSelectionFactory.deleteSelection(selection);
+		viewSelectionFactory.deleteSelection(selection.getViewId());
 	}
 
 	@Override

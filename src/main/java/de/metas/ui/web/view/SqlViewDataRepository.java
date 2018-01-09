@@ -178,6 +178,12 @@ class SqlViewDataRepository implements IViewDataRepository
 	{
 		return viewRowIdsOrderedSelectionFactory.createOrderedSelectionFromSelection(viewEvalCtx, fromSelection, orderBys);
 	}
+	
+	@Override
+	public void deleteSelection(final ViewId viewId)
+	{
+		viewRowIdsOrderedSelectionFactory.deleteSelection(viewId);
+	}
 
 	@Override
 	public IViewRow retrieveById(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final DocumentId rowId)

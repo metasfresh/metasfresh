@@ -261,9 +261,9 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	}
 
 	@Override
-	public void deleteSelection(@NonNull final ViewRowIdsOrderedSelection selection)
+	public void deleteSelection(@NonNull final ViewId viewId)
 	{
-		final String selectionId = selection.getSelectionId();
+		final String selectionId = viewId.getViewId();
 		final SqlViewSelectionQueryBuilder viewQueryBuilder = newSqlViewSelectionQueryBuilder();
 
 		// Delete selection lines
