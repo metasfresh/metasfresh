@@ -2,6 +2,9 @@ package de.metas.material.event.commons;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -28,16 +31,30 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class OrderLineDescriptor implements DocumentLineDescriptor
 {
 	int orderLineId;
 	int orderId;
+	int orderBPartnerId;
+
+	@Builder
+	@JsonCreator
+	public OrderLineDescriptor(
+			@JsonProperty("orderLineId") final int orderLineId,
+			@JsonProperty("orderId") final int orderId,
+			@JsonProperty("orderBPartnerId") final int orderBPartnerId)
+	{
+		this.orderLineId = orderLineId;
+		this.orderId = orderId;
+		this.orderBPartnerId = orderBPartnerId;
+	}
 
 	@Override
 	public void validate()
 	{
 		checkIdGreaterThanZero("orderLineId", orderLineId);
 		checkIdGreaterThanZero("orderId", orderId);
+
+		checkIdGreaterThanZero("orderBPartnerId", orderBPartnerId);
 	}
 }

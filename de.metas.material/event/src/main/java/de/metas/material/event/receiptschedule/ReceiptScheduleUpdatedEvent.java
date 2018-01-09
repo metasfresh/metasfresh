@@ -50,7 +50,6 @@ public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 	@JsonCreator
 	@Builder
 	public ReceiptScheduleUpdatedEvent(
-
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("orderedQuantityDelta") final BigDecimal orderedQuantityDelta,

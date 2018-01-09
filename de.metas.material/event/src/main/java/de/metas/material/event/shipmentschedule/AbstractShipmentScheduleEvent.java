@@ -4,6 +4,8 @@ import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 import java.math.BigDecimal;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import org.adempiere.util.Check;
 
 import de.metas.material.event.MaterialEvent;
@@ -64,8 +66,8 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 
 	public abstract BigDecimal getReservedQuantityDelta();
 
+	@OverridingMethodsMustInvokeSuper
 	public void validate()
-
 	{
 		checkIdGreaterThanZero("shipmentScheduleId", shipmentScheduleId);
 

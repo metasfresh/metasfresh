@@ -17,8 +17,8 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
@@ -104,10 +104,13 @@ public class M_ReceiptSchedule
 		return createUpdatedEvent(receiptSchedule);
 	}
 
-	private AbstractReceiptScheduleEvent createCreatedEvent(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	private AbstractReceiptScheduleEvent createCreatedEvent(
+			@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(receiptSchedule);
-		final OrderLineDescriptor orderLineDescriptor = createOrderLineDescriptor(receiptSchedule);
+		final MaterialDescriptor orderedMaterial = //
+				createOrdereMaterialDescriptor(receiptSchedule);
+		final OrderLineDescriptor orderLineDescriptor = //
+				createOrderLineDescriptor(receiptSchedule);
 
 		final ReceiptScheduleCreatedEvent event = ReceiptScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(receiptSchedule))
@@ -120,11 +123,13 @@ public class M_ReceiptSchedule
 		return event;
 	}
 
-	protected OrderLineDescriptor createOrderLineDescriptor(final I_M_ReceiptSchedule receiptSchedule)
+	private OrderLineDescriptor createOrderLineDescriptor(
+			@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		return OrderLineDescriptor.builder()
 				.orderLineId(receiptSchedule.getC_OrderLine_ID())
 				.orderId(receiptSchedule.getC_Order_ID())
+				.orderBPartnerId(receiptSchedule.getC_Order().getC_BPartner_ID())
 				.build();
 	}
 
@@ -132,7 +137,11 @@ public class M_ReceiptSchedule
 	{
 		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(receiptSchedule);
 
-		final I_M_ReceiptSchedule oldReceiptSchedule = InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class);
+		final I_M_ReceiptSchedule oldReceiptSchedule = InterfaceWrapperHelper.createOld(
+				receiptSchedule,
+				I_M_ReceiptSchedule.class);
+
+
 		final BigDecimal oldOrderedQuantity = extractQtyOrdered(oldReceiptSchedule);
 
 		final BigDecimal qtyReserved = extractQtyReserved(receiptSchedule);

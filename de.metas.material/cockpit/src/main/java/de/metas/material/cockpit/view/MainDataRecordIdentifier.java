@@ -5,7 +5,6 @@ import java.util.Date;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Services;
-import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
@@ -40,12 +39,12 @@ import lombok.Value;
 
 @Value
 @Builder
-public class DataRecordIdentifier
+public class MainDataRecordIdentifier
 {
-	public static DataRecordIdentifier createForMaterial(
+	public static MainDataRecordIdentifier createForMaterial(
 			@NonNull final MaterialDescriptor material)
 	{
-		final DataRecordIdentifier identifier = DataRecordIdentifier.builder()
+		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 				.productDescriptor(material)
 				.date(TimeUtil.getDay(material.getDate()))
 				.plantId(0)
@@ -62,7 +61,7 @@ public class DataRecordIdentifier
 	 */
 	int plantId;
 
-	public DataRecordIdentifier(
+	public MainDataRecordIdentifier(
 			@NonNull final ProductDescriptor productDescriptor,
 			@NonNull final Date date,
 			int plantId)
@@ -73,7 +72,7 @@ public class DataRecordIdentifier
 		this.plantId = plantId;
 	}
 
-	public IQuery<I_MD_Cockpit> createQuery()
+	public IQueryBuilder<I_MD_Cockpit> createQueryBuilder()
 	{
 		final ProductDescriptor productDescriptor = getProductDescriptor();
 
@@ -96,6 +95,6 @@ public class DataRecordIdentifier
 			queryBuilder.addEqualsFilter(I_MD_Cockpit.COLUMN_PP_Plant_ID, null);
 		}
 
-		return queryBuilder.create();
+		return queryBuilder;
 	}
 }

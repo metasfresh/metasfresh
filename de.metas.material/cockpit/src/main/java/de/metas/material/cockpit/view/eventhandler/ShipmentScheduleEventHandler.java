@@ -10,14 +10,15 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.event.log.EventLogUserService;
-import de.metas.material.cockpit.view.AddDetailRequest;
-import de.metas.material.cockpit.view.AddDetailRequest.AddDetailRequestBuilder;
-import de.metas.material.cockpit.view.DataRecordIdentifier;
-import de.metas.material.cockpit.view.UpdateMainDataRequest;
-import de.metas.material.cockpit.view.MainDataRequestHandler;
-import de.metas.material.cockpit.view.DetailRequestHandler;
-import de.metas.material.cockpit.view.RemoveDetailsRequest;
-import de.metas.material.cockpit.view.RemoveDetailsRequest.RemoveDetailsRequestBuilder;
+import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.material.cockpit.view.detailrecord.DetailDataRequestHandler;
+import de.metas.material.cockpit.view.detailrecord.InsertDetailRequest;
+import de.metas.material.cockpit.view.detailrecord.InsertDetailRequest.InsertDetailRequestBuilder;
+import de.metas.material.cockpit.view.detailrecord.RemoveDetailRequest;
+import de.metas.material.cockpit.view.detailrecord.UpdateDetailRequest;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -57,12 +58,12 @@ public class ShipmentScheduleEventHandler
 		implements MaterialEventHandler<AbstractShipmentScheduleEvent>
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
-	private final DetailRequestHandler detailRequestHandler;
+	private final DetailDataRequestHandler detailRequestHandler;
 	private EventLogUserService eventLogUserService;
 
 	public ShipmentScheduleEventHandler(
 			@NonNull final MainDataRequestHandler dataUpdateRequestHandler,
-			@NonNull final DetailRequestHandler detailRequestHandler,
+			@NonNull final DetailDataRequestHandler detailRequestHandler,
 			@NonNull final EventLogUserService eventLogUserService)
 	{
 		this.detailRequestHandler = detailRequestHandler;
@@ -80,19 +81,34 @@ public class ShipmentScheduleEventHandler
 	}
 
 	@Override
+	public void validateEvent(@NonNull final AbstractShipmentScheduleEvent event)
+	{
+		event.validate();
+	}
+
+	@Override
 	public void handleEvent(@NonNull final AbstractShipmentScheduleEvent event)
 	{
 		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
-		final DataRecordIdentifier identifier = DataRecordIdentifier.createForMaterial(materialDescriptor);
+		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.createForMaterial(materialDescriptor);
 
-		createDataUpdateRequestForEvent(event, identifier);
+		createAndHandleDataUpdateRequestForEvent(event, identifier);
 		createAndHandleDetailRequest(event, identifier);
 	}
 
-	private void createDataUpdateRequestForEvent(
+	private void createAndHandleDataUpdateRequestForEvent(
 			@NonNull final AbstractShipmentScheduleEvent shipmentScheduleEvent,
-			@NonNull final DataRecordIdentifier identifier)
+			@NonNull final MainDataRecordIdentifier identifier)
 	{
+		if (shipmentScheduleEvent.getOrderedQuantityDelta().signum() == 0
+				&& shipmentScheduleEvent.getReservedQuantityDelta().signum() == 0)
+		{
+			eventLogUserService.newLogEntry(this.getClass())
+					.message("Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero")
+					.storeEntry();
+			return;
+		}
+
 		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.orderedSalesQty(shipmentScheduleEvent.getOrderedQuantityDelta())
@@ -103,17 +119,31 @@ public class ShipmentScheduleEventHandler
 
 	private void createAndHandleDetailRequest(
 			@NonNull final AbstractShipmentScheduleEvent shipmentScheduleEvent,
-			@NonNull final DataRecordIdentifier identifier)
+			@NonNull final MainDataRecordIdentifier identifier)
 	{
+		final DetailDataRecordIdentifier detailIdentifier = DetailDataRecordIdentifier.createForShipmentSchedule(identifier, shipmentScheduleEvent.getShipmentScheduleId());
+
 		if (shipmentScheduleEvent instanceof ShipmentScheduleCreatedEvent)
 		{
 			final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent = (ShipmentScheduleCreatedEvent)shipmentScheduleEvent;
-			createAndHandleAddDetailRequest(identifier, shipmentScheduleCreatedEvent);
+			createAndHandleAddDetailRequest(detailIdentifier, shipmentScheduleCreatedEvent);
+		}
+		else if (shipmentScheduleEvent instanceof ShipmentScheduleUpdatedEvent)
+		{
+			detailRequestHandler
+					.handleUpdateDetailRequest(UpdateDetailRequest.builder()
+							.detailDataRecordIdentifier(detailIdentifier)
+							.qtyOrdered(shipmentScheduleEvent.getMaterialDescriptor().getQuantity())
+							.qtyReserved(shipmentScheduleEvent.getReservedQuantity())
+
+							.build());
 		}
 		else if (shipmentScheduleEvent instanceof ShipmentScheduleDeletedEvent)
 		{
-			final RemoveDetailsRequestBuilder removeDetailsRequest = RemoveDetailsRequest.builder().identifier(identifier);
-			final int deletedCount = detailRequestHandler.handleRemoveDetailsRequest(removeDetailsRequest.build());
+			final int deletedCount = detailRequestHandler
+					.handleRemoveDetailRequest(RemoveDetailRequest.builder()
+							.detailDataRecordIdentifier(detailIdentifier)
+							.build());
 			eventLogUserService
 					.newLogEntry(ShipmentScheduleEventHandler.class)
 					.formattedMessage("Deleted {} detail records", deletedCount)
@@ -122,15 +152,17 @@ public class ShipmentScheduleEventHandler
 	}
 
 	private void createAndHandleAddDetailRequest(
-			@NonNull final DataRecordIdentifier identifier,
+			@NonNull final DetailDataRecordIdentifier identifier,
 			@NonNull final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent)
 	{
 		final DocumentLineDescriptor documentLineDescriptor = //
 				shipmentScheduleCreatedEvent
 						.getDocumentLineDescriptor();
 
-		final AddDetailRequestBuilder addDetailsRequest = AddDetailRequest.builder()
-				.identifier(identifier);
+		final InsertDetailRequestBuilder addDetailsRequest = InsertDetailRequest.builder()
+				.detailDataRecordIdentifier(identifier)
+				.qtyOrdered(shipmentScheduleCreatedEvent.getMaterialDescriptor().getQuantity())
+				.qtyReserved(shipmentScheduleCreatedEvent.getReservedQuantity());
 
 		if (documentLineDescriptor instanceof OrderLineDescriptor)
 		{
@@ -138,7 +170,8 @@ public class ShipmentScheduleEventHandler
 					(OrderLineDescriptor)documentLineDescriptor;
 			addDetailsRequest
 					.orderId(orderLineDescriptor.getOrderId())
-					.orderLineId(orderLineDescriptor.getOrderLineId());
+					.orderLineId(orderLineDescriptor.getOrderLineId())
+					.bPartnerId(orderLineDescriptor.getOrderBPartnerId());;
 		}
 		else if (documentLineDescriptor instanceof SubscriptionLineDescriptor)
 		{
@@ -146,7 +179,8 @@ public class ShipmentScheduleEventHandler
 					(SubscriptionLineDescriptor)documentLineDescriptor;
 			addDetailsRequest
 					.subscriptionId(subscriptionLineDescriptor.getFlatrateTermId())
-					.subscriptionLineId(subscriptionLineDescriptor.getSubscriptionProgressId());
+					.subscriptionLineId(subscriptionLineDescriptor.getSubscriptionProgressId())
+					.bPartnerId(subscriptionLineDescriptor.getSubscriptionBillBPartnerId());
 		}
 		else
 		{
@@ -154,6 +188,6 @@ public class ShipmentScheduleEventHandler
 					"The DocumentLineDescriptor has an unexpected type; documentLineDescriptor={}", documentLineDescriptor);
 		}
 
-		detailRequestHandler.handleAddDetailRequest(addDetailsRequest.build());
+		detailRequestHandler.handleInsertDetailRequest(addDetailsRequest.build());
 	}
 }

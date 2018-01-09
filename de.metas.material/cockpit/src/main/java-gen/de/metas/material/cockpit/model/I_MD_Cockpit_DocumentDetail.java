@@ -69,6 +69,35 @@ public interface I_MD_Cockpit_DocumentDetail
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BPartner_ID();
+
+	public org.compiere.model.I_C_BPartner getC_BPartner();
+
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, org.compiere.model.I_C_BPartner>(I_MD_Cockpit_DocumentDetail.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
 	 * Set Pauschale - Vertragsperiode.
 	 *
 	 * <br>Type: Search
@@ -228,27 +257,27 @@ public interface I_MD_Cockpit_DocumentDetail
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set DocumentDetails.
+	 * Set DocumentDetail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setMD_Cockpit_DocumentDetails_ID (int MD_Cockpit_DocumentDetails_ID);
+	public void setMD_Cockpit_DocumentDetail_ID (int MD_Cockpit_DocumentDetail_ID);
 
 	/**
-	 * Get DocumentDetails.
+	 * Get DocumentDetail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getMD_Cockpit_DocumentDetails_ID();
+	public int getMD_Cockpit_DocumentDetail_ID();
 
-    /** Column definition for MD_Cockpit_DocumentDetails_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_MD_Cockpit_DocumentDetails_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object>(I_MD_Cockpit_DocumentDetail.class, "MD_Cockpit_DocumentDetails_ID", null);
-    /** Column name MD_Cockpit_DocumentDetails_ID */
-    public static final String COLUMNNAME_MD_Cockpit_DocumentDetails_ID = "MD_Cockpit_DocumentDetails_ID";
+    /** Column definition for MD_Cockpit_DocumentDetail_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_MD_Cockpit_DocumentDetail_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object>(I_MD_Cockpit_DocumentDetail.class, "MD_Cockpit_DocumentDetail_ID", null);
+    /** Column name MD_Cockpit_DocumentDetail_ID */
+    public static final String COLUMNNAME_MD_Cockpit_DocumentDetail_ID = "MD_Cockpit_DocumentDetail_ID";
 
 	/**
 	 * Set Materialcockpit.
@@ -276,6 +305,102 @@ public interface I_MD_Cockpit_DocumentDetail
     public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, de.metas.material.cockpit.model.I_MD_Cockpit> COLUMN_MD_Cockpit_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, de.metas.material.cockpit.model.I_MD_Cockpit>(I_MD_Cockpit_DocumentDetail.class, "MD_Cockpit_ID", de.metas.material.cockpit.model.I_MD_Cockpit.class);
     /** Column name MD_Cockpit_ID */
     public static final String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
+
+	/**
+	 * Set Wareneingangsdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID);
+
+	/**
+	 * Get Wareneingangsdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_ReceiptSchedule_ID();
+
+    /** Column definition for M_ReceiptSchedule_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_M_ReceiptSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object>(I_MD_Cockpit_DocumentDetail.class, "M_ReceiptSchedule_ID", null);
+    /** Column name M_ReceiptSchedule_ID */
+    public static final String COLUMNNAME_M_ReceiptSchedule_ID = "M_ReceiptSchedule_ID";
+
+	/**
+	 * Set Lieferdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+
+	/**
+	 * Get Lieferdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_ShipmentSchedule_ID();
+
+    /** Column definition for M_ShipmentSchedule_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object>(I_MD_Cockpit_DocumentDetail.class, "M_ShipmentSchedule_ID", null);
+    /** Column name M_ShipmentSchedule_ID */
+    public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
+	 * Set Bestellte Menge.
+	 * Bestellte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
+
+	/**
+	 * Get Bestellte Menge.
+	 * Bestellte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyOrdered();
+
+    /** Column definition for QtyOrdered */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_QtyOrdered = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object>(I_MD_Cockpit_DocumentDetail.class, "QtyOrdered", null);
+    /** Column name QtyOrdered */
+    public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
+
+	/**
+	 * Set Reservierte Menge.
+	 * Reservierte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyReserved (java.math.BigDecimal QtyReserved);
+
+	/**
+	 * Get Reservierte Menge.
+	 * Reservierte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyReserved();
+
+    /** Column definition for QtyReserved */
+    public static final org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object> COLUMN_QtyReserved = new org.adempiere.model.ModelColumn<I_MD_Cockpit_DocumentDetail, Object>(I_MD_Cockpit_DocumentDetail.class, "QtyReserved", null);
+    /** Column name QtyReserved */
+    public static final String COLUMNNAME_QtyReserved = "QtyReserved";
 
 	/**
 	 * Get Aktualisiert.

@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * #L%
  */
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "documentLineDescriptorType")
 @JsonSubTypes({
 	@JsonSubTypes.Type(name = "OrderLineDescriptor", value = OrderLineDescriptor.class),
 	@JsonSubTypes.Type(name = "SubscriptionLineDescriptor", value = SubscriptionLineDescriptor.class)

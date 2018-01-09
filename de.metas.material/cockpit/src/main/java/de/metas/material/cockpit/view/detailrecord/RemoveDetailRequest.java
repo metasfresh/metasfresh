@@ -1,5 +1,6 @@
-package de.metas.material.cockpit.view;
+package de.metas.material.cockpit.view.detailrecord;
 
+import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -27,9 +28,14 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class RemoveDetailsRequest
+public class RemoveDetailRequest
 {
-	@NonNull
-	DataRecordIdentifier identifier;
+	DetailDataRecordIdentifier detailDataRecordIdentifier;
+
+	@Builder
+	public RemoveDetailRequest(
+			@NonNull DetailDataRecordIdentifier detailDataRecordIdentifier)
+	{
+		this.detailDataRecordIdentifier = detailDataRecordIdentifier;
+	}
 }

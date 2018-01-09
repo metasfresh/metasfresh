@@ -16,6 +16,7 @@ import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
+import de.metas.material.event.commons.SubscriptionLineDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
@@ -42,6 +43,7 @@ import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent.ShipmentScheduleCreatedEventBuilder;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.material.event.stock.OnHandQtyChangedEvent;
@@ -329,17 +331,35 @@ public class MaterialEventSerializerTests
 	}
 
 	@Test
-	public void shipmentScheduleCreatedEvent()
+	public void shipmentScheduleCreatedEvent_with_OrderLineDescriptor()
 	{
-		final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent = ShipmentScheduleCreatedEvent.builder()
+		final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent = //
+				createShipmentScheduleEventBuilder()
+						.documentLineDescriptor(createOrderLineDescriptor())
+						.build();
+		shipmentScheduleCreatedEvent.validate();
+		assertEventEqualAfterSerializeDeserialize(shipmentScheduleCreatedEvent);
+	}
+
+	@Test
+	public void shipmentScheduleCreatedEvent_with_SubscriptionLineDescriptor()
+	{
+
+		final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent = //
+				createShipmentScheduleEventBuilder()
+						.documentLineDescriptor(createSubscriptionLineDescriptor())
+						.build();
+		shipmentScheduleCreatedEvent.validate();
+		assertEventEqualAfterSerializeDeserialize(shipmentScheduleCreatedEvent);
+	}
+
+	private ShipmentScheduleCreatedEventBuilder createShipmentScheduleEventBuilder()
+	{
+		return ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
 				.reservedQuantity(new BigDecimal("3"))
-				.shipmentScheduleId(4)
-				.documentLineDescriptor(createOrderLineDescriptor())
-				.build();
-
-		assertEventEqualAfterSerializeDeserialize(shipmentScheduleCreatedEvent);
+				.shipmentScheduleId(4);
 	}
 
 	@Test
@@ -347,7 +367,7 @@ public class MaterialEventSerializerTests
 	{
 		final ShipmentScheduleUpdatedEvent shipmentScheduleUpdatedEvent = ShipmentScheduleUpdatedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
-				.orderedMaterial(createMaterialDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.orderedQuantityDelta(new BigDecimal("2"))
 				.reservedQuantity(new BigDecimal("3"))
 				.reservedQuantityDelta(new BigDecimal("4"))
@@ -447,6 +467,16 @@ public class MaterialEventSerializerTests
 		return OrderLineDescriptor.builder()
 				.orderLineId(4)
 				.orderId(5)
+				.orderBPartnerId(6)
+				.build();
+	}
+
+	private static SubscriptionLineDescriptor createSubscriptionLineDescriptor()
+	{
+		return SubscriptionLineDescriptor.builder()
+				.subscriptionProgressId(4)
+				.flatrateTermId(5)
+				.subscriptionBillBPartnerId(6)
 				.build();
 	}
 

@@ -113,6 +113,7 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 		return OrderLineDescriptor.builder()
 				.orderId(shipmentSchedule.getC_Order_ID())
 				.orderLineId(shipmentSchedule.getC_OrderLine_ID())
+				.orderBPartnerId(shipmentSchedule.getC_Order().getC_BPartner_ID())
 				.build();
 	}
 

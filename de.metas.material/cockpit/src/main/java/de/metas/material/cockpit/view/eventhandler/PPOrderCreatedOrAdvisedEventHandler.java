@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.material.cockpit.view.DataRecordIdentifier;
-import de.metas.material.cockpit.view.UpdateMainDataRequest;
-import de.metas.material.cockpit.view.MainDataRequestHandler;
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.PPOrder;
@@ -73,7 +73,7 @@ public class PPOrderCreatedOrAdvisedEventHandler implements MaterialEventHandler
 		final ImmutableList.Builder<UpdateMainDataRequest> requests = ImmutableList.builder();
 		for (final PPOrderLine line : lines)
 		{
-			final DataRecordIdentifier identifier = DataRecordIdentifier.builder()
+			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(line.getProductDescriptor())
 					.date(TimeUtil.getDay(ppOrder.getDatePromised()))
 					.build();

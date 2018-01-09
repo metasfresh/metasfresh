@@ -67,11 +67,13 @@ public class ShipmentScheduleSubscriptionReferenceProvider implements ShipmentSc
 		return Services.get(IFlatrateBL.class).getWarehouseId(subscriptionLine.getC_Flatrate_Term());
 	}
 
-	private SubscriptionLineDescriptor createDocumentLineDescriptor(@NonNull final I_C_SubscriptionProgress subscriptionLine)
+	private SubscriptionLineDescriptor createDocumentLineDescriptor(
+			@NonNull final I_C_SubscriptionProgress subscriptionLine)
 	{
 		return SubscriptionLineDescriptor.builder()
 				.flatrateTermId(subscriptionLine.getC_Flatrate_Term_ID())
 				.subscriptionProgressId(subscriptionLine.getC_SubscriptionProgress_ID())
+				.subscriptionBillBPartnerId(subscriptionLine.getC_Flatrate_Term().getBill_BPartner_ID())
 				.build();
 	};
 }

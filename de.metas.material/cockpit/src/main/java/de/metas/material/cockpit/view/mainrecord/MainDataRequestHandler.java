@@ -1,4 +1,4 @@
-package de.metas.material.cockpit.view;
+package de.metas.material.cockpit.view.mainrecord;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -8,6 +8,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import lombok.NonNull;
 
 /*
@@ -44,9 +45,9 @@ public class MainDataRequestHandler
 		save(dataRecord);
 	}
 
-	private I_MD_Cockpit retrieveOrCreateDataRecord(@NonNull final DataRecordIdentifier identifier)
+	private I_MD_Cockpit retrieveOrCreateDataRecord(@NonNull final MainDataRecordIdentifier identifier)
 	{
-		final IQuery<I_MD_Cockpit> query = identifier.createQuery();
+		final IQuery<I_MD_Cockpit> query = identifier.createQueryBuilder().create();
 
 		final I_MD_Cockpit existingDataRecord = query.firstOnly(I_MD_Cockpit.class);
 		if (existingDataRecord != null)

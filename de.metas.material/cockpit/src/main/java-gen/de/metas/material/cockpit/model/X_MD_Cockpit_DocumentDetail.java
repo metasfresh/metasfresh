@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.material.cockpit.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1451599594L;
+	private static final long serialVersionUID = -326537292L;
 
     /** Standard Constructor */
     public X_MD_Cockpit_DocumentDetail (Properties ctx, int MD_Cockpit_DocumentDetail_ID, String trxName)
@@ -22,7 +23,7 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
       super (ctx, MD_Cockpit_DocumentDetail_ID, trxName);
       /** if (MD_Cockpit_DocumentDetail_ID == 0)
         {
-			setMD_Cockpit_DocumentDetails_ID (0);
+			setMD_Cockpit_DocumentDetail_ID (0);
 			setMD_Cockpit_ID (0);
         } */
     }
@@ -41,6 +42,43 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set Pauschale - Vertragsperiode.
 		@param C_Flatrate_Term_ID Pauschale - Vertragsperiode	  */
@@ -160,23 +198,23 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 		return ii.intValue();
 	}
 
-	/** Set DocumentDetails.
-		@param MD_Cockpit_DocumentDetails_ID DocumentDetails	  */
+	/** Set DocumentDetail.
+		@param MD_Cockpit_DocumentDetail_ID DocumentDetail	  */
 	@Override
-	public void setMD_Cockpit_DocumentDetails_ID (int MD_Cockpit_DocumentDetails_ID)
+	public void setMD_Cockpit_DocumentDetail_ID (int MD_Cockpit_DocumentDetail_ID)
 	{
-		if (MD_Cockpit_DocumentDetails_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_DocumentDetails_ID, null);
+		if (MD_Cockpit_DocumentDetail_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_DocumentDetail_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_DocumentDetails_ID, Integer.valueOf(MD_Cockpit_DocumentDetails_ID));
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_DocumentDetail_ID, Integer.valueOf(MD_Cockpit_DocumentDetail_ID));
 	}
 
-	/** Get DocumentDetails.
-		@return DocumentDetails	  */
+	/** Get DocumentDetail.
+		@return DocumentDetail	  */
 	@Override
-	public int getMD_Cockpit_DocumentDetails_ID () 
+	public int getMD_Cockpit_DocumentDetail_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Cockpit_DocumentDetails_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Cockpit_DocumentDetail_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -214,5 +252,93 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Wareneingangsdisposition.
+		@param M_ReceiptSchedule_ID Wareneingangsdisposition	  */
+	@Override
+	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID)
+	{
+		if (M_ReceiptSchedule_ID < 1) 
+			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, Integer.valueOf(M_ReceiptSchedule_ID));
+	}
+
+	/** Get Wareneingangsdisposition.
+		@return Wareneingangsdisposition	  */
+	@Override
+	public int getM_ReceiptSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ReceiptSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Lieferdisposition.
+		@param M_ShipmentSchedule_ID Lieferdisposition	  */
+	@Override
+	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
+	{
+		if (M_ShipmentSchedule_ID < 1) 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
+	}
+
+	/** Get Lieferdisposition.
+		@return Lieferdisposition	  */
+	@Override
+	public int getM_ShipmentSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Bestellte Menge.
+		@param QtyOrdered 
+		Bestellte Menge
+	  */
+	@Override
+	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
+	{
+		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
+	}
+
+	/** Get Bestellte Menge.
+		@return Bestellte Menge
+	  */
+	@Override
+	public java.math.BigDecimal getQtyOrdered () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Reservierte Menge.
+		@param QtyReserved 
+		Reservierte Menge
+	  */
+	@Override
+	public void setQtyReserved (java.math.BigDecimal QtyReserved)
+	{
+		set_Value (COLUMNNAME_QtyReserved, QtyReserved);
+	}
+
+	/** Get Reservierte Menge.
+		@return Reservierte Menge
+	  */
+	@Override
+	public java.math.BigDecimal getQtyReserved () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 }

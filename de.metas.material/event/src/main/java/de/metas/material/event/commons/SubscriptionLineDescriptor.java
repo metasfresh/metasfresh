@@ -2,6 +2,9 @@ package de.metas.material.event.commons;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -34,10 +37,25 @@ public class SubscriptionLineDescriptor  implements DocumentLineDescriptor
 	int subscriptionProgressId;
 	int flatrateTermId;
 
+	int subscriptionBillBPartnerId;
+
+	@Builder
+	@JsonCreator
+	public SubscriptionLineDescriptor(
+			@JsonProperty("subscriptionProgressId") final int subscriptionProgressId,
+			@JsonProperty("flatrateTermId") final int flatrateTermId,
+			@JsonProperty("subscriptionBillBPartnerId") final int subscriptionBillBPartnerId)
+	{
+		this.subscriptionProgressId = subscriptionProgressId;
+		this.flatrateTermId = flatrateTermId;
+		this.subscriptionBillBPartnerId = subscriptionBillBPartnerId;
+	}
+
 	@Override
 	public void validate()
 	{
 		checkIdGreaterThanZero("subscriptionProgressId", subscriptionProgressId);
 		checkIdGreaterThanZero("flatrateTermId", flatrateTermId);
+		checkIdGreaterThanZero("subscriptionBillBPartnerId", subscriptionBillBPartnerId);
 	}
 }

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.util.Check;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
@@ -46,6 +47,7 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 	private final OrderLineDescriptor orderLineDescriptor;
 
 	@Builder
+	@JsonCreator
 	public ReceiptScheduleCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("orderLineDescriptor") final OrderLineDescriptor orderLineDescriptor,

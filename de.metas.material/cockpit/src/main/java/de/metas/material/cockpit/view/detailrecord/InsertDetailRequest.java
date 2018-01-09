@@ -1,7 +1,10 @@
-package de.metas.material.cockpit.view;
+package de.metas.material.cockpit.view.detailrecord;
+
+import java.math.BigDecimal;
 
 import org.adempiere.util.Check;
 
+import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -29,10 +32,9 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class AddDetailRequest
+public class InsertDetailRequest
 {
-	DataRecordIdentifier identifier;
+	DetailDataRecordIdentifier detailDataRecordIdentifier;
 
 	int orderLineId;
 	int orderId;
@@ -40,14 +42,31 @@ public class AddDetailRequest
 	int subscriptionLineId;
 	int subscriptionId;
 
-	public AddDetailRequest(
-			@NonNull DataRecordIdentifier identifier,
-			int orderLineId,
-			int orderId,
-			int subscriptionLineId,
-			int subscriptionId)
+	/**
+	 * May be zero because shipment schedules initially have a zero bpartnerId.
+	 */
+	int bPartnerId;
+
+	BigDecimal qtyOrdered;
+
+	BigDecimal qtyReserved;
+
+	@Builder
+	public InsertDetailRequest(
+			@NonNull final DetailDataRecordIdentifier detailDataRecordIdentifier,
+			final int orderLineId,
+			final int orderId,
+			final int subscriptionLineId,
+			final int subscriptionId,
+			final int bPartnerId,
+			@NonNull final BigDecimal qtyOrdered,
+			@NonNull final BigDecimal qtyReserved)
 	{
-		this.identifier = identifier;
+		this.detailDataRecordIdentifier = detailDataRecordIdentifier;
+
+		this.bPartnerId = bPartnerId;
+		this.qtyOrdered = qtyOrdered;
+		this.qtyReserved = qtyReserved;
 
 		this.orderLineId = orderLineId;
 		this.orderId = orderId;

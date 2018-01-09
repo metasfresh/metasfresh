@@ -98,67 +98,88 @@ public class M_ShipmentSchedule
 		return createUpdatedEvent(shipmentSchedule);
 	}
 
-	private AbstractShipmentScheduleEvent createCreatedEvent(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private AbstractShipmentScheduleEvent createCreatedEvent(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final MaterialDescriptor materialDescriptor = createOrdereMaterialDescriptor(shipmentSchedule);
+		final MaterialDescriptor materialDescriptor = //
+				createOrdereMaterialDescriptor(shipmentSchedule);
 
-		final ShipmentScheduleCreatedEventBuilder builder = ShipmentScheduleCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
-				.materialDescriptor(materialDescriptor)
-				.reservedQuantity(shipmentSchedule.getQtyReserved())
-				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID());
+		final ShipmentScheduleReferencedLineFactory referencedLineFactory = //
+				Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class);
+		final DocumentLineDescriptor documentLineDescriptor = //
+				referencedLineFactory.createFor(shipmentSchedule)
+						.getDocumentLineDescriptor();
 
-		final ShipmentScheduleReferencedLineFactory referencedLineFactory = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class);
-		final DocumentLineDescriptor documentLineDescriptor = referencedLineFactory.createFor(shipmentSchedule)
-				.getDocumentLineDescriptor();
-		builder.documentLineDescriptor(documentLineDescriptor);
+		final ShipmentScheduleCreatedEventBuilder builder = //
+				ShipmentScheduleCreatedEvent.builder()
+						.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
+						.materialDescriptor(materialDescriptor)
+						.reservedQuantity(shipmentSchedule.getQtyReserved())
+						.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
+						.documentLineDescriptor(documentLineDescriptor);
 
 		final ShipmentScheduleCreatedEvent event = builder.build();
 		return event;
 	}
 
-	private AbstractShipmentScheduleEvent createUpdatedEvent(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private AbstractShipmentScheduleEvent createUpdatedEvent(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(shipmentSchedule);
+		final MaterialDescriptor materialDescriptor = createOrdereMaterialDescriptor(shipmentSchedule);
 
 		final I_M_ShipmentSchedule oldShipmentSchedule = InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final BigDecimal oldOrderedQuantity = shipmentScheduleEffectiveBL.computeQtyOrdered(oldShipmentSchedule);
 
+		final BigDecimal orderedQuantityDelta = materialDescriptor
+				.getQuantity()
+				.subtract(oldOrderedQuantity);
+		final BigDecimal reservedQuantityDelta = shipmentSchedule
+				.getQtyReserved()
+				.subtract(oldShipmentSchedule.getQtyReserved());
+
 		final ShipmentScheduleUpdatedEvent event = ShipmentScheduleUpdatedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
-				.orderedMaterial(orderedMaterial)
+				.materialDescriptor(materialDescriptor)
 				.reservedQuantity(shipmentSchedule.getQtyReserved())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
-				.reservedQuantityDelta(shipmentSchedule.getQtyReserved().subtract(oldShipmentSchedule.getQtyReserved()))
-				.orderedQuantityDelta(orderedMaterial.getQuantity().subtract(oldOrderedQuantity))
+				.reservedQuantityDelta(reservedQuantityDelta)
+				.orderedQuantityDelta(orderedQuantityDelta)
 				.build();
 		return event;
 	}
 
-	private AbstractShipmentScheduleEvent createDeletedEvent(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private AbstractShipmentScheduleEvent createDeletedEvent(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(shipmentSchedule);
+		final MaterialDescriptor materialDescriptor = //
+				createOrdereMaterialDescriptor(shipmentSchedule);
 
 		final ShipmentScheduleDeletedEvent event = ShipmentScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
-				.materialDescriptor(orderedMaterial)
+				.materialDescriptor(materialDescriptor)
 				.reservedQuantity(shipmentSchedule.getQtyReserved())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.build();
 		return event;
 	}
 
-	private MaterialDescriptor createOrdereMaterialDescriptor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private MaterialDescriptor createOrdereMaterialDescriptor(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final BigDecimal orderedQuantity = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = //
+				Services.get(IShipmentScheduleEffectiveBL.class);
+		final BigDecimal orderedQuantity = //
+				shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
 
-		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
+		final Timestamp preparationDate = //
+				shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
 
-		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
-		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(shipmentSchedule);
+		final ModelProductDescriptorExtractor productDescriptorFactory = //
+				Adempiere.getBean(ModelProductDescriptorExtractor.class);
+		final ProductDescriptor productDescriptor = //
+				productDescriptorFactory.createProductDescriptor(shipmentSchedule);
 
 		final MaterialDescriptor orderedMaterial = MaterialDescriptor.builder()
 				.date(preparationDate)
@@ -169,4 +190,4 @@ public class M_ShipmentSchedule
 				.build();
 		return orderedMaterial;
 	}
-		}
+}
