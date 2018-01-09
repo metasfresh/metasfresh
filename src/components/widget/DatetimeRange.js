@@ -1,6 +1,7 @@
 import Moment from "moment";
 import React, { Component } from "react";
 import DateRangePicker from "react-bootstrap-daterangepicker";
+import counterpart from "counterpart";
 
 class DatetimeRange extends Component {
   constructor(props) {
@@ -50,8 +51,10 @@ class DatetimeRange extends Component {
   };
 
   render() {
+    //const today = counterpart.translate("window.daterange.today");
+    const today = counterpart.translate("window.daterange.today");
     const ranges = {
-      Today: [Moment(), Moment()],
+      [today]: [Moment(), Moment()],
       Yesterday: [Moment().subtract(1, "days"), Moment().subtract(1, "days")],
       "Last 7 Days": [Moment().subtract(6, "days"), Moment()],
       "Last 30 Days": [Moment().subtract(29, "days"), Moment()],
