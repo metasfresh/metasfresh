@@ -208,7 +208,7 @@ public class Adempiere
 			message = "This unit test requires a spring ApplicationContext; A known way to do that is to annotate the test class like this:\n"
 					+ "\n"
 					+ "@RunWith(SpringRunner.class)\n"
-					+ "@SpringBootTest(classes = { StartupListener.class, <further configuration classes> })\n"
+					+ "@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, <further classes> })\n"
 					+ "public class YourTest ...\n"
 					+ "\n"
 					+ "Where the further configuration classes contain @ComponentScann annotations to discover spring components required by the actual tests"
