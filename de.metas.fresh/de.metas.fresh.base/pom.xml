@@ -247,6 +247,12 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 		
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.go</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
 		<!--
 			Lombok
 			See https://github.com/metasfresh/metasfresh/issues/1125

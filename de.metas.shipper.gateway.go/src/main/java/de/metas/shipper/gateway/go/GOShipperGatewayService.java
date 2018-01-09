@@ -170,11 +170,12 @@ public class GOShipperGatewayService implements ShipperGatewayService
 
 	private static String computePackageContentDescription(final Collection<I_M_Package> mpackages)
 	{
-		return mpackages.stream()
+		final String content = mpackages.stream()
 				.map(I_M_Package::getDescription)
 				.filter(desc -> !Check.isEmpty(desc, true))
 				.map(String::trim)
 				.collect(Collectors.joining(", "));
+		return !Check.isEmpty(content, true) ? content : "-";
 	}
 
 	@lombok.Value

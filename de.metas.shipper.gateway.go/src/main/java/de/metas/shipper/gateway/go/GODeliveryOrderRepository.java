@@ -56,6 +56,7 @@ public class GODeliveryOrderRepository
 	private DeliveryOrder toDeliveryOrder(@NonNull final I_GO_DeliveryOrder orderPO)
 	{
 		return DeliveryOrder.builder()
+				.repoId(orderPO.getGO_DeliveryOrder_ID())
 				.orderId(GOUtils.createOrderIdOrNull(orderPO.getGO_AX4Number()))
 				.hwbNumber(HWBNumber.ofNullable(orderPO.getGO_HWBNumber()))
 				.orderStatus(GOOrderStatus.forNullableCode(orderPO.getGO_OrderStatus()))
@@ -94,19 +95,23 @@ public class GODeliveryOrderRepository
 		{
 			orderPO = InterfaceWrapperHelper.load(order.getRepoId(), I_GO_DeliveryOrder.class);
 		}
-		if (orderPO == null)
+
+		final OrderId orderId = order.getOrderId();
+		if (orderPO == null && orderId != null)
 		{
-			orderPO = retrieveGODeliveryOrderPOById(order.getOrderId());
+			orderPO = retrieveGODeliveryOrderPOById(orderId);
 		}
+
 		if (orderPO == null)
 		{
 			orderPO = InterfaceWrapperHelper.newInstance(I_GO_DeliveryOrder.class);
 		}
 
+		final HWBNumber hwbNumber = order.getHwbNumber();
 		final OrderStatus orderStatus = order.getOrderStatus();
 
-		orderPO.setGO_AX4Number(order.getOrderId().getOrderIdAsString());
-		orderPO.setGO_HWBNumber(order.getHwbNumber().getAsString());
+		orderPO.setGO_AX4Number(orderId != null ? orderId.getOrderIdAsString() : null);
+		orderPO.setGO_HWBNumber(hwbNumber != null ? hwbNumber.getAsString() : null);
 		orderPO.setGO_OrderStatus(orderStatus != null ? orderStatus.getCode() : null);
 		orderPO.setProcessed(orderStatus != null && orderStatus.isFinalState());
 

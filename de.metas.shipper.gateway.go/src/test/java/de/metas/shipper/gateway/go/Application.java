@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.adempiere.util.Check;
+import org.junit.Ignore;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -53,6 +54,7 @@ import lombok.NonNull;
  */
 
 @SpringBootApplication(scanBasePackages = "de.metas.shipper.gateway")
+@Ignore
 public class Application
 {
 	public static void main(final String[] args)
