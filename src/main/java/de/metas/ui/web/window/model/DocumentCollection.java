@@ -121,7 +121,7 @@ public class DocumentCollection
 
 	/**
 	 * Delegates to the {@link DocumentDescriptorFactory#isWindowIdSupported(WindowId)} of this instance's {@code documentDescriptorFactory}.
-	 * 
+	 *
 	 * @param windowId
 	 * @return
 	 */
@@ -192,7 +192,10 @@ public class DocumentCollection
 		try
 		{
 			return rootDocuments.get(documentKey, () -> {
-				final Document rootDocument = retrieveRootDocumentFromRepository(documentKey).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
+
+				final Document rootDocument = retrieveRootDocumentFromRepository(documentKey)
+						.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
+
 				addToTableName2WindowIdsCache(rootDocument.getEntityDescriptor());
 				return rootDocument;
 			});
@@ -596,7 +599,7 @@ public class DocumentCollection
 
 	/**
 	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
-	 * 
+	 *
 	 * @param tableName
 	 * @param recordId
 	 */
@@ -663,7 +666,7 @@ public class DocumentCollection
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
 		final DocumentKey documentKey = DocumentKey.ofRootDocumentPath(rootDocumentPath);
 		final Document document = rootDocuments.getIfPresent(documentKey);
-		
+
 		// Invalidate
 		if (document != null)
 		{
@@ -673,15 +676,14 @@ public class DocumentCollection
 			}
 		}
 
-
 		//
-		// Notify frontend, even if the root document does not exist (or it was not cached). 
+		// Notify frontend, even if the root document does not exist (or it was not cached).
 		websocketPublisher.staleByDocumentPath(documentPath);
 	}
 
 	/**
 	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
-	 * 
+	 *
 	 * @param tableName
 	 * @param recordId
 	 */

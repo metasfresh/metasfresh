@@ -231,9 +231,12 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				recordId = -1;
 			}
 
-			//
-			if (viewDocumentIds.isEmpty())
+
+			final boolean emptyTableName = Check.isEmpty(tableName);
+			if (viewDocumentIds.isEmpty() || emptyTableName)
 			{
+				// Note: in the case of material cockpit, there is no single tableName to be returned by view.getTableNameOrNull,
+				// so we do have selected rows, but no table name, which is OK
 				sqlWhereClause = null;
 			}
 			else
