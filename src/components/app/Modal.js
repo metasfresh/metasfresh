@@ -165,7 +165,11 @@ class Modal extends Component {
             processType: windowType,
             viewId: modalViewId,
             type: parentType,
-            ids: modalViewDocumentIds || (dataId ? [dataId] : parentSelection),
+            //ids: modalViewDocumentIds || (dataId ? [dataId] : parentSelection),
+            ids: modalViewId
+              ? modalViewDocumentIds
+              : dataId ? [dataId] : parentSelection,
+            //ids: (dataId ? [dataId] : modalViewDocumentIds) || parentSelection,
             tabId,
             rowId
           };
