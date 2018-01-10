@@ -114,6 +114,7 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 				.orderId(shipmentSchedule.getC_Order_ID())
 				.orderLineId(shipmentSchedule.getC_OrderLine_ID())
 				.orderBPartnerId(shipmentSchedule.getC_Order().getC_BPartner_ID())
+				.docTypeId(shipmentSchedule.getC_Order().getC_DocType_ID())
 				.build();
 	}
 

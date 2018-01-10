@@ -62,6 +62,8 @@ public class DetailDataRequestHandler
 		documentDetailRecord.setC_Flatrate_Term_ID(insertDetailRequest.getSubscriptionId());
 		documentDetailRecord.setC_SubscriptionProgress_ID(insertDetailRequest.getSubscriptionLineId());
 
+		documentDetailRecord.setC_DocType_ID(insertDetailRequest.getDocTypeId());
+
 		save(documentDetailRecord);
 	}
 

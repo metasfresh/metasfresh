@@ -15,6 +15,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
@@ -95,6 +96,7 @@ public class Application
 						.build())
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(5)
+						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
 						.grossWeightKg(1)
 						.content("some products")
 						.build())
@@ -109,7 +111,7 @@ public class Application
 			final DeliveryOrder deliveryOrder = goClient.createDeliveryOrder(deliveryOrderCreateRequest);
 			goClient.completeDeliveryOrder(deliveryOrder);
 
-			final List<PackageLabels> packageLabels = goClient.getPackageLabelsList(deliveryOrder.getOrderId());
+			final List<PackageLabels> packageLabels = goClient.getPackageLabelsList(deliveryOrder);
 			System.out.println("Labels: " + packageLabels);
 			savePDFs(packageLabels);
 		};

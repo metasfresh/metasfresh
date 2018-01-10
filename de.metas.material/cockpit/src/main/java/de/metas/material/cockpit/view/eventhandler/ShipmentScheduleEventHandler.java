@@ -121,7 +121,9 @@ public class ShipmentScheduleEventHandler
 			@NonNull final AbstractShipmentScheduleEvent shipmentScheduleEvent,
 			@NonNull final MainDataRecordIdentifier identifier)
 	{
-		final DetailDataRecordIdentifier detailIdentifier = DetailDataRecordIdentifier.createForShipmentSchedule(identifier, shipmentScheduleEvent.getShipmentScheduleId());
+		final DetailDataRecordIdentifier detailIdentifier = DetailDataRecordIdentifier.createForShipmentSchedule(
+				identifier,
+				shipmentScheduleEvent.getShipmentScheduleId());
 
 		if (shipmentScheduleEvent instanceof ShipmentScheduleCreatedEvent)
 		{
@@ -135,7 +137,6 @@ public class ShipmentScheduleEventHandler
 							.detailDataRecordIdentifier(detailIdentifier)
 							.qtyOrdered(shipmentScheduleEvent.getMaterialDescriptor().getQuantity())
 							.qtyReserved(shipmentScheduleEvent.getReservedQuantity())
-
 							.build());
 		}
 		else if (shipmentScheduleEvent instanceof ShipmentScheduleDeletedEvent)
@@ -171,7 +172,8 @@ public class ShipmentScheduleEventHandler
 			addDetailsRequest
 					.orderId(orderLineDescriptor.getOrderId())
 					.orderLineId(orderLineDescriptor.getOrderLineId())
-					.bPartnerId(orderLineDescriptor.getOrderBPartnerId());;
+					.bPartnerId(orderLineDescriptor.getOrderBPartnerId())
+					.docTypeId(orderLineDescriptor.getDocTypeId());
 		}
 		else if (documentLineDescriptor instanceof SubscriptionLineDescriptor)
 		{

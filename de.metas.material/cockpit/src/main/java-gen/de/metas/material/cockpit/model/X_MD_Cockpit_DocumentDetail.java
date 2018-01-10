@@ -15,7 +15,7 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -326537292L;
+	private static final long serialVersionUID = -545768687L;
 
     /** Standard Constructor */
     public X_MD_Cockpit_DocumentDetail (Properties ctx, int MD_Cockpit_DocumentDetail_ID, String trxName)
@@ -75,6 +75,43 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
+	}
+
+	@Override
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
+	}
+
+	/** Set Belegart.
+		@param C_DocType_ID 
+		Belegart oder Verarbeitungsvorgaben
+	  */
+	@Override
+	public void setC_DocType_ID (int C_DocType_ID)
+	{
+		if (C_DocType_ID < 0) 
+			set_Value (COLUMNNAME_C_DocType_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+	}
+
+	/** Get Belegart.
+		@return Belegart oder Verarbeitungsvorgaben
+	  */
+	@Override
+	public int getC_DocType_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -305,7 +342,7 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 	@Override
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
 	{
-		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
+		set_ValueNoCheck (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
 	/** Get Bestellte Menge.
@@ -327,7 +364,7 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 	@Override
 	public void setQtyReserved (java.math.BigDecimal QtyReserved)
 	{
-		set_Value (COLUMNNAME_QtyReserved, QtyReserved);
+		set_ValueNoCheck (COLUMNNAME_QtyReserved, QtyReserved);
 	}
 
 	/** Get Reservierte Menge.

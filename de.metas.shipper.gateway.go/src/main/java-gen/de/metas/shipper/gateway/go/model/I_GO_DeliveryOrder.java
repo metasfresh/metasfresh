@@ -225,7 +225,7 @@ public interface I_GO_DeliveryOrder
 	 * Set Deliver To Company Name2.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setGO_DeliverToCompanyName2 (java.lang.String GO_DeliverToCompanyName2);
@@ -234,7 +234,7 @@ public interface I_GO_DeliveryOrder
 	 * Get Deliver To Company Name2.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getGO_DeliverToCompanyName2();
@@ -805,6 +805,35 @@ public interface I_GO_DeliveryOrder
     public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, Object>(I_GO_DeliveryOrder.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Lieferweg.
+	 * Methode oder Art der Warenlieferung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Lieferweg.
+	 * Methode oder Art der Warenlieferung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Shipper_ID();
+
+	public org.compiere.model.I_M_Shipper getM_Shipper();
+
+	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
+
+    /** Column definition for M_Shipper_ID */
+    public static final org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_GO_DeliveryOrder, org.compiere.model.I_M_Shipper>(I_GO_DeliveryOrder.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+    /** Column name M_Shipper_ID */
+    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
 	 * Set Transport Auftrag.

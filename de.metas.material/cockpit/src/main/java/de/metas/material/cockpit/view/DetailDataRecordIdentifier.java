@@ -1,5 +1,6 @@
 package de.metas.material.cockpit.view;
 
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Check;
 import org.compiere.model.IQuery;
 
@@ -67,10 +68,16 @@ public class DetailDataRecordIdentifier
 
 	public IQuery<I_MD_Cockpit_DocumentDetail> createQuery()
 	{
-		return mainDataRecordIdentifier.createQueryBuilder()
-				.andCollectChildren(I_MD_Cockpit_DocumentDetail.COLUMN_MD_Cockpit_ID)
-				.addEqualsFilter(I_MD_Cockpit_DocumentDetail.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleId)
-				.addEqualsFilter(I_MD_Cockpit_DocumentDetail.COLUMN_M_ReceiptSchedule_ID, receiptScheduleId)
-				.create();
+		final IQueryBuilder<I_MD_Cockpit_DocumentDetail> queryBuilder = mainDataRecordIdentifier.createQueryBuilder()
+				.andCollectChildren(I_MD_Cockpit_DocumentDetail.COLUMN_MD_Cockpit_ID);
+		if (shipmentScheduleId > 0)
+		{
+			queryBuilder.addEqualsFilter(I_MD_Cockpit_DocumentDetail.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleId);
+		}
+		if (receiptScheduleId > 0)
+		{
+			queryBuilder.addEqualsFilter(I_MD_Cockpit_DocumentDetail.COLUMN_M_ReceiptSchedule_ID, receiptScheduleId);
+		}
+		return queryBuilder.create();
 	}
 }

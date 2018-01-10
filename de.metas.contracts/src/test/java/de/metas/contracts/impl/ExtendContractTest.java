@@ -1,6 +1,5 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Timestamp;
@@ -12,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
 import de.metas.contracts.impl.FlatrateTermDataFactory.ProductAndPricingSystem;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -28,14 +28,22 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
 	}
-	
+
 
 	@Test
 	public void extendContractWithAutoRenewOnYes_test()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true);
 
-		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
+		final ContractExtendingRequest context = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(1)
+				.contract(contract)
+				.forceExtend(true)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+
+		Services.get(IFlatrateBL.class).extendContract(context);
 
 		assertFlatrateTerm(contract);
 		assertPartnerData(contract);
@@ -45,9 +53,16 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	public void extendContractWithAutoRenewOnNo_test()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(false);
-			
-		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
-		save(contract);
+
+		final ContractExtendingRequest context = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(1)
+				.contract(contract)
+				.forceExtend(true)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+
+		Services.get(IFlatrateBL.class).extendContract(context);
 
 		assertFlatrateTerm(contract);
 		assertPartnerData(contract);

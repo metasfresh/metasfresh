@@ -46,6 +46,10 @@ public class AD_EventLog_RepostEvent extends JavaProcess
 				.type(Type.valueOf(eventLogRecord.getEventTypeName()))
 				.build();
 		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(topic);
+		if (topic.getType().equals(Type.REMOTE) && !eventBus.getType().equals(Type.REMOTE))
+		{
+			addLog("The given event log record has a REMOTE topic, but we only got a LOCAL event bus!");
+		}
 
 		final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
 		final Event event = eventLogService.loadEventForReposting(eventLogRecord);

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.JAXBElement;
 
@@ -12,13 +13,12 @@ import org.adempiere.util.Check;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.transport.http.HttpComponentsMessageSender;
-import org.springframework.xml.transform.StringResult;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.shipper.gateway.api.ShipperGatewayClient;
@@ -36,6 +36,7 @@ import de.metas.shipper.gateway.api.model.PackageLabel;
 import de.metas.shipper.gateway.api.model.PackageLabels;
 import de.metas.shipper.gateway.api.model.PhoneNumber;
 import de.metas.shipper.gateway.api.model.PickupDate;
+import de.metas.shipper.gateway.go.GOClientLogEvent.GOClientLogEventBuilder;
 import de.metas.shipper.gateway.go.schema.Fehlerbehandlung;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;
 import de.metas.shipper.gateway.go.schema.GOPackageLabelType;
@@ -75,37 +76,31 @@ public class GOClient implements ShipperGatewayClient
 	private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
 	private static final Logger logger = LoggerFactory.getLogger(GOClient.class);
+	private final GOClientLogger goClientLogger;
+
 	private final ObjectFactory objectFactory = new ObjectFactory();
 	private final WebServiceTemplate webServiceTemplate;
 
-	private final String requestUsername;
-	private final String requestSenderId;
+	private final GOClientConfig config;
 
 	@Builder
 	private GOClient(
-			final String url,
-			final String authUsername,
-			final String authPassword,
-			final String requestUsername,
-			final String requestSenderId)
+			@NonNull final GOClientConfig config,
+			final GOClientLogger goClientLogger)
 	{
-		Check.assumeNotEmpty(url, "url is not empty");
-		Check.assumeNotEmpty(requestUsername, "requestUsername is not empty");
-		Check.assumeNotEmpty(requestSenderId, "requestSenderId is not empty");
+		this.config = config;
+		this.goClientLogger = goClientLogger != null ? goClientLogger : SLF4JGOClientLogger.instance;
 
-		final HttpComponentsMessageSender messageSender = createMessageSender(authUsername, authPassword);
+		final HttpComponentsMessageSender messageSender = createMessageSender(config.getAuthUsername(), config.getAuthPassword());
 
 		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
 		marshaller.setPackagesToScan(de.metas.shipper.gateway.go.schema.ObjectFactory.class.getPackage().getName());
 
 		webServiceTemplate = new WebServiceTemplate();
-		webServiceTemplate.setDefaultUri(url);
+		webServiceTemplate.setDefaultUri(config.getUrl());
 		webServiceTemplate.setMessageSender(messageSender);
 		webServiceTemplate.setMarshaller(marshaller);
 		webServiceTemplate.setUnmarshaller(marshaller);
-
-		this.requestUsername = requestUsername;
-		this.requestSenderId = requestSenderId;
 	}
 
 	private static HttpComponentsMessageSender createMessageSender(final String authUsername, final String authPassword)
@@ -145,7 +140,10 @@ public class GOClient implements ShipperGatewayClient
 		logger.trace("Creating delivery order for {}", draftDeliveryOrder);
 		final Sendung goRequest = createGODeliveryOrder(draftDeliveryOrder, GOOrderStatus.NEW);
 
-		final Object goResponseObj = sendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
+		final Object goResponseObj = sendAndReceive(
+				objectFactory.createGOWebServiceSendungsErstellung(goRequest),
+				"createDeliveryOrder",
+				draftDeliveryOrder.getRepoId());
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
 		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromResponse(goResponse, draftDeliveryOrder, GOOrderStatus.NEW);
 		logger.trace("Delivery order created: {}", deliveryOrderResponse);
@@ -154,19 +152,15 @@ public class GOClient implements ShipperGatewayClient
 	}
 
 	@Override
-	public DeliveryOrder updateDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder)
-	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrderRequest)
 	{
 		logger.trace("Creating delivery order for {}", deliveryOrderRequest);
 		final Sendung goRequest = createGODeliveryOrder(deliveryOrderRequest, GOOrderStatus.APPROVED);
 
-		final Object goResponseObj = sendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
+		final Object goResponseObj = sendAndReceive(
+				objectFactory.createGOWebServiceSendungsErstellung(goRequest),
+				"completeDeliveryOrder",
+				deliveryOrderRequest.getRepoId());
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
 		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromResponse(goResponse, deliveryOrderRequest, GOOrderStatus.APPROVED);
 		logger.trace("Delivery order completed: {}", deliveryOrderResponse);
@@ -180,7 +174,10 @@ public class GOClient implements ShipperGatewayClient
 		logger.trace("Creating delivery order for {}", deliveryOrderRequest);
 		final Sendung goRequest = createGODeliveryOrder(deliveryOrderRequest, GOOrderStatus.CANCELLATION);
 
-		final Object goResponseObj = sendAndReceive(objectFactory.createGOWebServiceSendungsErstellung(goRequest));
+		final Object goResponseObj = sendAndReceive(
+				objectFactory.createGOWebServiceSendungsErstellung(goRequest),
+				"voidDeliveryOrder",
+				deliveryOrderRequest.getRepoId());
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
 		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromResponse(goResponse, deliveryOrderRequest, GOOrderStatus.CANCELLATION);
 		logger.trace("Delivery order completed: {}", deliveryOrderResponse);
@@ -189,13 +186,16 @@ public class GOClient implements ShipperGatewayClient
 	}
 
 	@Override
-	public List<PackageLabels> getPackageLabelsList(@NonNull final OrderId orderId) throws ShipperGatewayException
+	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		logger.trace("getPackageLabelsList: orderId={}", orderId);
+		logger.trace("getPackageLabelsList for {}", deliveryOrder);
 		final Sendungsnummern goRequest = objectFactory.createSendungsnummern();
-		goRequest.getSendungsnummerAX4().add(orderId.getOrderIdAsInt());
+		goRequest.getSendungsnummerAX4().add(deliveryOrder.getOrderId().getOrderIdAsInt());
 
-		final Object goResponseObj = sendAndReceive(objectFactory.createGOWebServiceSendungsnummern(goRequest));
+		final Object goResponseObj = sendAndReceive(
+				objectFactory.createGOWebServiceSendungsnummern(goRequest),
+				"getPackageLabelsList",
+				deliveryOrder.getRepoId());
 		if (goResponseObj instanceof Label)
 		{
 			final Label goLabels = (Label)goResponseObj;
@@ -214,21 +214,41 @@ public class GOClient implements ShipperGatewayClient
 		}
 	}
 
-	private Object sendAndReceive(final JAXBElement<?> goRequestElement)
+	private Object sendAndReceive(final JAXBElement<?> goRequestElement,
+			final String action, // for logging
+			final int deliveryOrderRepoId // for logging
+	)
 	{
-		if (logger.isTraceEnabled())
-		{
-			logger.trace("Sending GO Request: {}", toString(goRequestElement));
-		}
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		final GOClientLogEventBuilder logEventBuilder = GOClientLogEvent.builder()
+				.jaxbMarshaller(webServiceTemplate.getMarshaller())
+				.requestElement(goRequestElement)
+				.deliveryOrderRepoId(deliveryOrderRepoId)
+				.action(action)
+				.config(config);
 
-		final JAXBElement<?> goResponseElement = (JAXBElement<?>)webServiceTemplate.marshalSendAndReceive(goRequestElement);
-		if (logger.isTraceEnabled())
+		try
 		{
-			logger.trace("Got GO Response: {}", toString(goResponseElement));
-		}
+			final JAXBElement<?> goResponseElement = (JAXBElement<?>)webServiceTemplate.marshalSendAndReceive(goRequestElement);
+			goClientLogger.log(logEventBuilder
+					.responseElement(goResponseElement)
+					.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
+					.build());
 
-		final Object goResponseObj = goResponseElement.getValue();
-		return goResponseObj;
+			final Object goResponseObj = goResponseElement.getValue();
+			return goResponseObj;
+		}
+		catch (final Throwable throwable)
+		{
+			final AdempiereException exception = AdempiereException.wrapIfNeeded(throwable);
+			goClientLogger.log(logEventBuilder
+					.responseException(exception)
+					.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
+					.build());
+
+			throw exception;
+
+		}
 	}
 
 	private ShipperGatewayException extractException(final Fehlerbehandlung errorResponse)
@@ -294,8 +314,8 @@ public class GOClient implements ShipperGatewayClient
 	private Sendung newGODeliveryRequest()
 	{
 		final Sendung goRequest = objectFactory.createSendung();
-		goRequest.setVersender(requestSenderId);
-		goRequest.setBenutzername(requestUsername);
+		goRequest.setVersender(config.getRequestSenderId());
+		goRequest.setBenutzername(config.getRequestUsername());
 		return goRequest;
 	}
 
@@ -413,12 +433,12 @@ public class GOClient implements ShipperGatewayClient
 		final SendungsRueckmeldung.Sendung goResponseContent = goResponse.getSendung();
 
 		// NOTE: based on protocol v1.3 i understand there will be only one position, always
-		final List<SendungsRueckmeldung.Sendung.Position> goDeliveryPositions = goResponseContent.getPosition();
-		if (goDeliveryPositions.size() != 1)
+		final List<SendungsRueckmeldung.Sendung.Position> goResponseDeliveryPositions = goResponseContent.getPosition();
+		if (goResponseDeliveryPositions.size() != 1)
 		{
-			throw new ShipperGatewayException("Only one delivery position was expected but got " + goDeliveryPositions);
+			throw new ShipperGatewayException("Only one delivery position was expected but got " + goResponseDeliveryPositions);
 		}
-		final SendungsRueckmeldung.Sendung.Position goDeliveryPosition = goDeliveryPositions.get(0);
+		final SendungsRueckmeldung.Sendung.Position goResponseDeliveryPosition = goResponseDeliveryPositions.get(0);
 
 		return deliveryOrderRequest.toBuilder()
 				.orderId(GOUtils.createOrderId(goResponseContent.getSendungsnummerAX4()))
@@ -453,7 +473,7 @@ public class GOClient implements ShipperGatewayClient
 				// Delivery content
 				.deliveryPosition(deliveryOrderRequest.getDeliveryPosition().toBuilder()
 						// .positionNo(goDeliveryPosition.getPositionsNr()) // assume it's always 1
-						.numberOfPackages(Integer.parseInt(goDeliveryPosition.getAnzahlPackstuecke()))
+						.numberOfPackages(Integer.parseInt(goResponseDeliveryPosition.getAnzahlPackstuecke()))
 						// .barcodes(goDeliveryPosition.getBarcodes().getBarcodeNr())
 						.build())
 				//
@@ -503,20 +523,5 @@ public class GOClient implements ShipperGatewayClient
 						.labelData(pdfs.getRouterlabelZebra())
 						.build())
 				.build();
-	}
-
-	private String toString(final JAXBElement<?> jaxbElement)
-	{
-		final Marshaller marshaller = webServiceTemplate.getMarshaller();
-		try
-		{
-			final StringResult result = new StringResult();
-			marshaller.marshal(jaxbElement, result);
-			return result.toString();
-		}
-		catch (final Exception ex)
-		{
-			throw new RuntimeException("Failed converting " + jaxbElement + " to String", ex);
-		}
 	}
 }
