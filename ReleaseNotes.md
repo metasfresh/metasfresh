@@ -92,15 +92,23 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#752](https://github.com/metasfresh/metasfresh-webui-api/issues/752) Picking Tray Clearing: picking slot filter no results
+    * Improvement of the filtering in Picking Tray Window. Now showing "No Rows" for en empty result instead of en Error message.
   * [#758](https://github.com/metasfresh/metasfresh-webui-api/issues/758) Picking Tray Clearing: process to take out an HU and add it to existing HU
+    * New Functionality in Picking tray Clearing, having a new Action that takes out Handling Units from Picking Slot and adds to existing HU.
   * [#760](https://github.com/metasfresh/metasfresh-webui-api/issues/760) Picking Tray Clearing: process to take out an HU and add it to new HU
+    * New Functionality in Picking tray Clearing, having a new Action that takes out Handling Units from Picking Slot and adds to a new HU.
   * [#763](https://github.com/metasfresh/metasfresh-webui-api/issues/763) Picking Tray Clearing: packing HUs: Add to Transportation Order, Ship and Invoice action
+    * New Functionality in Picking tray Clearing, having a new Action that adds Handling Units to Transportation order and automatically creates Shipments and Invoiced for the HU.
   * [#764](https://github.com/metasfresh/metasfresh-webui-api/issues/764) Receipt candidates: HU editor: cannot call Transform for a CU
+    * Improvement of Receipt Candidates, now allowing to transform Customer Units.
   * [#768](https://github.com/metasfresh/metasfresh-webui-api/issues/768) Picking Tray Clearing: packing HUs: generate shipper's package label
+    * New Functionality in Picking tray Clearing, generating a shipper package Label for package HU.
   * [#769](https://github.com/metasfresh/metasfresh-webui-api/issues/769) New context variable for isWebUI
+    * Improvement of Display logic in WebUI now allowing to use "isWebUI" flag in display logic.
 
 * metasfresh-webui-frontend
   * [#1465](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1465) frontend: Processes: when calling a process frontend shall provide which are the selected rows in the left/right view
+    * Enhanced funcktionality in WebUI selectedIDs. Now it's possible to select lines in splitted views so that actions/ process receive all selected Ids.
   * [#1475](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1475) Hover showing Element Content for flags wrongly
     * Improvement of the tablecell tooltips in Grid Views. Not not showing a tooltip for checkboxes and switches anymore.
 
