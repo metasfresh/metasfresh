@@ -209,6 +209,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		importData(importResult);
 
 		loggable.addLog("" + importResult);
+
 		return importResult;
 	}
 
@@ -343,6 +344,8 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 					}
 				});
 			}
+
+			afterImport();
 		}
 		catch (final SQLException e)
 		{
