@@ -6,7 +6,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -56,6 +55,7 @@ public class GODeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAda
 		Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(GODeliveryOrderWorkpackageProcessor.class)
 				.newBlock()
 				.newWorkpackage()
+				.setUserInChargeId(Env.getAD_User_ID())
 				.bindToThreadInheritedTrx()
 				.parameters()
 				.setParameter(PARAM_DeliveryOrderRepoId, deliveryOrderRepoId)
@@ -83,27 +83,19 @@ public class GODeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAda
 	}
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage_NOTUSED, final String localTrxName_NOTUSED)
 	{
-		try
-		{
-			DeliveryOrder deliveryOrder = retrieveDeliveryOrder();
+		DeliveryOrder deliveryOrder = retrieveDeliveryOrder();
 
-			final GOClient goClient = goClientFactory.newGOClientForShipperId(deliveryOrder.getShipperId());
+		final GOClient goClient = goClientFactory.newGOClientForShipperId(deliveryOrder.getShipperId());
 
-			deliveryOrder = goClient.completeDeliveryOrder(deliveryOrder);
-			deliveryOrderRepo.save(deliveryOrder);
+		deliveryOrder = goClient.completeDeliveryOrder(deliveryOrder);
+		deliveryOrderRepo.save(deliveryOrder);
 
-			final List<PackageLabels> packageLabelsList = goClient.getPackageLabelsList(deliveryOrder);
-			printLabels(deliveryOrder, packageLabelsList);
+		final List<PackageLabels> packageLabelsList = goClient.getPackageLabelsList(deliveryOrder);
+		printLabels(deliveryOrder, packageLabelsList);
 
-			return Result.SUCCESS;
-		}
-		catch (Exception ex)
-		{
-			// TODO: notify user
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
+		return Result.SUCCESS;
 	}
 
 	private void printLabels(DeliveryOrder deliveryOrder, List<PackageLabels> packageLabels)
