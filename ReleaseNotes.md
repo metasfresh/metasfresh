@@ -19,6 +19,8 @@ Here come the actual release notes:
     * Translation of the eMail Editor in WebUI for Language/ Locale de_DE.
   * [#3286](https://github.com/metasfresh/metasfresh/issues/3286) Workaround for truncating T_WEBUI_ViewSelection/-Line
     * Temporary Solution for the data growth of ViewSelection and ViewSelectionline tables.
+  * [#3289](https://github.com/metasfresh/metasfresh/issues/3289) WebUI: New Window for Document Details in Material Cockpit
+    * New Window for Document Details that can now be shown via Material Cockpit Window.
   * [#3293](https://github.com/metasfresh/metasfresh/issues/3293) Webui: Add Translation Messages for Daterangepicker
     * Improved Translations. Added static translations for de_DE, en_US and Date Range Picker.
 
