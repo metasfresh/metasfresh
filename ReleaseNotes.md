@@ -38,6 +38,8 @@ Here come the actual release notes:
     * Fixes the vanishing Search Icon in window contracts of metasfresh swingUI.
 
 * metasfresh-webui-frontend
+  * [#1348](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1348) Keeping lines selected when turning the page not working
+    * Fixes the Pagination after selecting lines. Now the selections are kept when switching pages.
   * [#1481](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1481) Cannot open "Create purchase orders" modal view
     * Now enables to open modal overlays from action menu again.
 
