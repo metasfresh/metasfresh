@@ -34,8 +34,6 @@ public interface ShipperGatewayClient
 	
 	DeliveryOrder createDeliveryOrder(final DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException;
 
-	DeliveryOrder updateDeliveryOrder(DeliveryOrder deliveryOrder) throws ShipperGatewayException;
-
 	DeliveryOrder completeDeliveryOrder(DeliveryOrder deliveryOrder) throws ShipperGatewayException;
 
 	DeliveryOrder voidDeliveryOrder(DeliveryOrder deliveryOrder) throws ShipperGatewayException;

@@ -152,13 +152,6 @@ public class GOClient implements ShipperGatewayClient
 	}
 
 	@Override
-	public DeliveryOrder updateDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder)
-	{
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrderRequest)
 	{
 		logger.trace("Creating delivery order for {}", deliveryOrderRequest);
