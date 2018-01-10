@@ -209,12 +209,6 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.list();
 	}
 
-	private int getSourcePriceList_Version_ID()
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
 	private I_M_Product createProduct(@NonNull final I_I_Pharma_Product importRecord)
 	{
 		final I_M_Product product = newInstance(I_M_Product.class, importRecord);
