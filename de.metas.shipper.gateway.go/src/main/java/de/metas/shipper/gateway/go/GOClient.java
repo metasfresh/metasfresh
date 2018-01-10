@@ -44,7 +44,6 @@ import de.metas.shipper.gateway.go.schema.ObjectFactory;
 import de.metas.shipper.gateway.go.schema.Sendung;
 import de.metas.shipper.gateway.go.schema.SendungsRueckmeldung;
 import de.metas.shipper.gateway.go.schema.Sendungsnummern;
-import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -71,6 +70,11 @@ import lombok.NonNull;
 
 public class GOClient implements ShipperGatewayClient
 {
+	public static final GOClient fromConfig(final GOClientConfig config)
+	{
+		return new GOClient(config);
+	}
+
 	private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 	private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -81,31 +85,21 @@ public class GOClient implements ShipperGatewayClient
 	private final String requestUsername;
 	private final String requestSenderId;
 
-	@Builder
-	private GOClient(
-			final String url,
-			final String authUsername,
-			final String authPassword,
-			final String requestUsername,
-			final String requestSenderId)
+	private GOClient(@NonNull final GOClientConfig config)
 	{
-		Check.assumeNotEmpty(url, "url is not empty");
-		Check.assumeNotEmpty(requestUsername, "requestUsername is not empty");
-		Check.assumeNotEmpty(requestSenderId, "requestSenderId is not empty");
-
-		final HttpComponentsMessageSender messageSender = createMessageSender(authUsername, authPassword);
+		final HttpComponentsMessageSender messageSender = createMessageSender(config.getAuthUsername(), config.getAuthPassword());
 
 		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
 		marshaller.setPackagesToScan(de.metas.shipper.gateway.go.schema.ObjectFactory.class.getPackage().getName());
 
 		webServiceTemplate = new WebServiceTemplate();
-		webServiceTemplate.setDefaultUri(url);
+		webServiceTemplate.setDefaultUri(config.getUrl());
 		webServiceTemplate.setMessageSender(messageSender);
 		webServiceTemplate.setMarshaller(marshaller);
 		webServiceTemplate.setUnmarshaller(marshaller);
 
-		this.requestUsername = requestUsername;
-		this.requestSenderId = requestSenderId;
+		this.requestUsername = config.getRequestUsername();
+		this.requestSenderId = config.getRequestSenderId();
 	}
 
 	private static HttpComponentsMessageSender createMessageSender(final String authUsername, final String authPassword)
