@@ -50,15 +50,21 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#1752](https://github.com/metasfresh/metasfresh/issues/1752) System Element overwrite on Window Field
+    *  New Feature in the Application Dictionary, now able to overwrite the system element on Field Level.
   * [#3155](https://github.com/metasfresh/metasfresh/issues/3155) Create special pharma import product table
+    * New vertical Feature for the import of products from pharma industry.
   * [#3222](https://github.com/metasfresh/metasfresh/issues/3222) refactor trx event listeners
+    * Improvement of Transaction event listeners, now leading to explicit specification which code shall be executed on which event.
   * [#3229](https://github.com/metasfresh/metasfresh/issues/3229) Show c_activity_ID in purchase Orderlines Grid View
     * New Field for Activity in Purchase Orderlines.
   * [#3234](https://github.com/metasfresh/metasfresh/issues/3234) Material Tracking ID in Invoice Candidates Filter shall be search
     * Improving the Material Tracking ID Lookup widget. It is now an autocomplete search field instead of a dropdown list.
   * [#3237](https://github.com/metasfresh/metasfresh/issues/3237) New Document "Source of Supply"
+    * Improvement of the shipping workflow, now also able t create a "Source of Supply" Document for the shipped Products.
   * [#3238](https://github.com/metasfresh/metasfresh/issues/3238) Create Missing M_Cost records on the fly
+    * Improvement of the M_Cost handling, now creating missing entries on the fly.
   * [#3230](https://github.com/metasfresh/metasfresh/issues/3230) Pharma: import prices
+    * New Import Prices functionality for products from pharma industry.
   * [#3239](https://github.com/metasfresh/metasfresh/issues/3239) WebUI: Material Receipt Candidates Fields not readonly
     * Improvement of the Material Receipt Candidates Window in WebUI. Now Fields are readonly that should not be changes by the user after creation.
   * [#3242](https://github.com/metasfresh/metasfresh/issues/3242) WebUI: Create new Customer Accounts Window
@@ -80,6 +86,7 @@ Here come the actual release notes:
   * [#3269](https://github.com/metasfresh/metasfresh/issues/3269) WebUI: Add Shortcut Filter from Calendar Year to Periods Window
     * Improving the Usability of Calendar and Period Window, now allowing to directly zoom to filtered Periods for a given year.
   * [#3272](https://github.com/metasfresh/metasfresh/issues/3272) Provide Periods for 2018
+    * Housekeeping issue, providing the periods for 2018 as migration script.
   * [#3275](https://github.com/metasfresh/metasfresh/issues/3275) New Filter for datepromised in Sales/ Purchase Order
     * Adding the Filter for datepromised in Sales Order and Purchase order Window in WebUI.
 
