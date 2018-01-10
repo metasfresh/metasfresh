@@ -42,6 +42,10 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.inout.model.I_M_InOutLine;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Getter;
+import lombok.NonNull;
 
 public interface IFlatrateBL extends ISingletonService
 {
@@ -89,17 +93,30 @@ public interface IFlatrateBL extends ISingletonService
 	void updateEntry(I_C_Flatrate_DataEntry dataEntry);
 
 	/**
-	 * Create a new flatrate term using the given term as template. The new term's C_Year will be the year after the given term's C_Year.
-	 *
-	 * <b>IMPORTANT:</b> the method might set the given term's C_FlatrateTerm_Next_ID, but won't save it!
-	 *
-	 * @param term
-	 * @param forceExtend will create a new term, even if the given <code>term</code> has <code>IsAutoRenew='N'</code>
-	 * @param completeNewTerm optional, may be <code>null</code>. If not <code>null</code>, then this value will decide if the new term is completed.
-	 *            If <code>null</code>, then {@link I_C_Flatrate_Transition#isAutoCompleteNewTerm()} of the given <code>term</code> transition will decide.
-	 * @param ol if a new term is created, this order line (if !=null) will be referenced from the new term.
+	 * term to extend
+	 * forceExtend - will create a new term, even if the given <code>term</code> has <code>IsAutoRenew='N'</code>
+	 * forceComplete - will complete a new term (if one has been created), even if it has <code>IsAutoComplete='N'</code>
+	 * ol - if a new term is created, this order line (if !=null) will be referenced from the new term.
 	 */
-	void extendContract(I_C_Flatrate_Term term, boolean forceExtend, Boolean completeNewTerm, final Timestamp nextTermStartDate, I_C_OrderLine ol);
+	@Builder
+	@Getter
+	public static class ContractExtendingRequest
+	{
+		private @NonNull final I_C_Flatrate_Term contract;
+		private final boolean forceExtend;
+		private final Boolean forceComplete;
+		private final Timestamp nextTermStartDate;
+		private @Default I_C_OrderLine orderLine = null;
+		private final int AD_PInstance_ID;
+	}
+
+	/**
+	 * Create a new flatrate term using the given term as template. The new term's C_Year will be the year after the
+	 * given term's C_Year.
+	 *
+	 * @param context
+	 */
+	void extendContract(ContractExtendingRequest context);
 
 	/**
 	 * Updates the <code>NoticeDate</code> and <code>EndDate</code> dates of the given term, using the term's values such as <code>StartDate</code>, as well as the {@link I_C_Flatrate_Transition}
@@ -182,8 +199,8 @@ public interface IFlatrateBL extends ISingletonService
 
 	/**
 	 * Check if there are terms for the same that have a time period overlapping with the given term and match with the same product or product category.
-	 * 
-	 * 
+	 *
+	 *
 	 * @param term
 	 * @return
 	 */
@@ -192,7 +209,7 @@ public interface IFlatrateBL extends ISingletonService
 	/**
 	 * Complete the given flatrate term only if it respects some conditions:
 	 * 1) Has not already completed overlapping terms (until now this is the only condition. Implement here if more become needed)
-	 * 
+	 *
 	 * @param term
 	 */
 	void completeIfValid(I_C_Flatrate_Term term);

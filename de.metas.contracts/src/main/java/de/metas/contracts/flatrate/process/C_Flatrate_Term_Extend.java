@@ -29,7 +29,6 @@ import java.util.Iterator;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -37,12 +36,14 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.model.Query;
 
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.document.engine.IDocument;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.RunOutOfTrx;
 
 public class C_Flatrate_Term_Extend
 		extends JavaProcess
@@ -57,26 +58,29 @@ public class C_Flatrate_Term_Extend
 	private Timestamp p_startDate;
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		final Boolean forceComplete = StringUtils.toBooleanOrNull(p_forceComplete);
 
 		if (I_C_Flatrate_Term.Table_Name.equals(getTableName()))
 		{
-			final I_C_Flatrate_Term termToExtend = getRecord(I_C_Flatrate_Term.class);
+			final I_C_Flatrate_Term contractToExtend = getRecord(I_C_Flatrate_Term.class);
 
 			// we are called from a given term => extend the term
-			flatrateBL.extendContract(termToExtend,
-					true,   // forceExtend
-					forceComplete,
-					p_startDate,
-					null); // ol
-			termToExtend.setAD_PInstance_EndOfTerm_ID(getAD_PInstance_ID());
+			final ContractExtendingRequest context = ContractExtendingRequest.builder()
+					.AD_PInstance_ID(getAD_PInstance_ID())
+					.contract(contractToExtend)
+					.forceExtend(true)
+					.forceComplete(forceComplete)
+					.nextTermStartDate(p_startDate)
+					.build();
 
-			addLog("@Processed@: @C_Flatrate_Term_ID@ " + termToExtend.getC_Flatrate_Term_ID());
-			InterfaceWrapperHelper.save(termToExtend);
+			flatrateBL.extendContract(context);
 
-			getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(termToExtend));
+			addLog("@Processed@: @C_Flatrate_Term_ID@ " + contractToExtend.getC_Flatrate_Term_ID());
+
+			getResult().setRecordToRefreshAfterExecution(TableRecordReference.of(contractToExtend));
 		}
 		else
 		{
@@ -95,18 +99,21 @@ public class C_Flatrate_Term_Extend
 			int counter = 0;
 			while (termsToExtend.hasNext())
 			{
-				final I_C_Flatrate_Term termToExtend = termsToExtend.next();
-				flatrateBL.extendContract(termToExtend,
-						false,   // forceExtend
-						forceComplete,   //
-						p_startDate,
-						null); // ol
-				termToExtend.setAD_PInstance_EndOfTerm_ID(getAD_PInstance_ID());
-				if (termToExtend.getC_FlatrateTerm_Next_ID() > 0)
+				final I_C_Flatrate_Term contractToExtend = termsToExtend.next();
+				final ContractExtendingRequest context = ContractExtendingRequest.builder()
+						.AD_PInstance_ID(getAD_PInstance_ID())
+						.contract(contractToExtend)
+						.forceExtend(false)
+						.forceComplete(forceComplete)
+						.nextTermStartDate(p_startDate)
+						.build();
+
+				flatrateBL.extendContract(context);
+
+				if (contractToExtend.getC_FlatrateTerm_Next_ID() > 0)
 				{
 					counter++;
 				}
-				InterfaceWrapperHelper.save(termToExtend);
 			}
 			addLog("Extended " + counter + " terms");
 		}
