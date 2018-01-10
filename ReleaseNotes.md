@@ -115,16 +115,22 @@ Here come the actual release notes:
 #Fixes
 * metasfresh-app
   * [#2822](https://github.com/metasfresh/metasfresh/issues/2822) Empty Country in Price List not working
+    * Fixes the price retrieval Logic for Pricelists with empty country.
   * [#3225](https://github.com/metasfresh/metasfresh/issues/3225) Error on unclosing a "manually" created PPOrder
+    * Fixes a Bug that appeared when trying to manually unclose a Manufacturing Order.
   * [#3227](https://github.com/metasfresh/metasfresh/issues/3227) Attachment related perf problem in swing client
+    * Fixes a Performance Issue that was related to missing indices in Attachment.
   * [#3233](https://github.com/metasfresh/metasfresh/issues/3233) WebUI: Role permission constraints missing in Subtabs
+    * Fixes an issue that allowed to add duplicate permissions in WebUI Role Window.
   * [#3281](https://github.com/metasfresh/metasfresh/issues/3281) C_Tax.ValidFrom bug
+    * Fix for the check of valid from date in Tax ID retrieval.
 
 * metasfresh-webui-api
   * [#741](https://github.com/metasfresh/metasfresh-webui-api/issues/741) WebUI window C_Printing_Queue broken
+    * Fixes the Prining Queue Window in WebUI.
   * [#757](https://github.com/metasfresh/metasfresh-webui-api/issues/757) elasticsearch shall use slf4j instead of log4j
+    * Switches the logger for elasticsearch to slf4j.
 
-* metasfresh-webui-frontend
 
 # metasfresh 5.39 (2017-50)
 
