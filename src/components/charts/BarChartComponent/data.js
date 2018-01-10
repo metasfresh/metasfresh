@@ -104,7 +104,11 @@ export const drawData = (
       if (yChanged || reRender) {
         return dimensions.height;
       } else {
-        return ranges.y(d.valuePrev);
+        if (d.valuePrev < 0) {
+          return ranges.y(0);
+        } else {
+          return ranges.y(d.valuePrev);
+        }
       }
     })
     .attr("height", d => {
@@ -116,7 +120,13 @@ export const drawData = (
     })
     .transition()
     .duration(1000)
-    .attr("y", d => ranges.y(d.value))
+    .attr("y", d => {
+      if (d.value < 0) {
+        return ranges.y(0);
+      } else {
+        return ranges.y(d.value);
+      }
+    })
     .attr("height", d => Math.abs(ranges.y(d.value) - ranges.y(0)))
     .attr("fill", d => ranges.z(d.key));
 };
