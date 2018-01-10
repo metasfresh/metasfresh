@@ -5,8 +5,10 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import de.metas.event.Event;
@@ -40,6 +42,7 @@ import lombok.NonNull;
  */
 
 @Service
+@DependsOn(Adempiere.BEAN_NAME)
 public class MetasfreshEventListener
 {
 	private static final Logger logger = LogManager.getLogger(MetasfreshEventListener.class);
