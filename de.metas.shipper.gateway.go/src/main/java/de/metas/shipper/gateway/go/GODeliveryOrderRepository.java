@@ -66,6 +66,8 @@ public class GODeliveryOrderRepository
 
 		return DeliveryOrder.builder()
 				.repoId(orderPO.getGO_DeliveryOrder_ID())
+				.shipperId(orderPO.getM_Shipper_ID())
+				//
 				.orderId(GOUtils.createOrderIdOrNull(orderPO.getGO_AX4Number()))
 				.hwbNumber(HWBNumber.ofNullable(orderPO.getGO_HWBNumber()))
 				.orderStatus(GOOrderStatus.forNullableCode(orderPO.getGO_OrderStatus()))
@@ -115,6 +117,8 @@ public class GODeliveryOrderRepository
 		{
 			orderPO = InterfaceWrapperHelper.newInstance(I_GO_DeliveryOrder.class);
 		}
+
+		orderPO.setM_Shipper_ID(order.getShipperId());
 
 		final HWBNumber hwbNumber = order.getHwbNumber();
 		final OrderStatus orderStatus = order.getOrderStatus();

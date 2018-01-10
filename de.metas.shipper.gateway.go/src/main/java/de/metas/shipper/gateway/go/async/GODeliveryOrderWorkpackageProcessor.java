@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.go.async;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -22,6 +23,7 @@ import de.metas.shipper.gateway.api.model.DeliveryOrder;
 import de.metas.shipper.gateway.api.model.PackageLabel;
 import de.metas.shipper.gateway.api.model.PackageLabels;
 import de.metas.shipper.gateway.go.GOClient;
+import de.metas.shipper.gateway.go.GOClientFactory;
 import de.metas.shipper.gateway.go.GODeliveryOrderRepository;
 
 /*
@@ -66,12 +68,12 @@ public class GODeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAda
 	// Services
 	private final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 	private final GODeliveryOrderRepository deliveryOrderRepo;
-	private final GOClient goClient;
+	private final GOClientFactory goClientFactory;
 
 	public GODeliveryOrderWorkpackageProcessor()
 	{
 		deliveryOrderRepo = Adempiere.getBean(GODeliveryOrderRepository.class);
-		goClient = Adempiere.getBean(GOClient.class);
+		goClientFactory = Adempiere.getBean(GOClientFactory.class);
 	}
 
 	@Override
@@ -87,10 +89,13 @@ public class GODeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAda
 		{
 			DeliveryOrder deliveryOrder = retrieveDeliveryOrder();
 
+			final GOClient goClient = goClientFactory.newGOClientForShipperId(deliveryOrder.getShipperId());
+
 			deliveryOrder = goClient.completeDeliveryOrder(deliveryOrder);
 			deliveryOrderRepo.save(deliveryOrder);
 
-			retrieveAndPrintPackageLabels(deliveryOrder);
+			final List<PackageLabels> packageLabelsList = goClient.getPackageLabelsList(deliveryOrder.getOrderId());
+			printLabels(deliveryOrder, packageLabelsList);
 
 			return Result.SUCCESS;
 		}
@@ -101,10 +106,9 @@ public class GODeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAda
 		}
 	}
 
-	private void retrieveAndPrintPackageLabels(final DeliveryOrder deliveryOrder)
+	private void printLabels(DeliveryOrder deliveryOrder, List<PackageLabels> packageLabels)
 	{
-		goClient.getPackageLabelsList(deliveryOrder.getOrderId())
-				.stream()
+		packageLabels.stream()
 				.map(PackageLabels::getDefaultPackageLabel)
 				.forEach(packageLabel -> printLabel(deliveryOrder, packageLabel));
 	}

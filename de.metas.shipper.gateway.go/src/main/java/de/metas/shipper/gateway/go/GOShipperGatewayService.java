@@ -127,6 +127,8 @@ public class GOShipperGatewayService implements ShipperGatewayService
 		final Set<Integer> mpackageIds = mpackages.stream().map(I_M_Package::getM_Package_ID).collect(ImmutableSet.toImmutableSet());
 
 		return DeliveryOrder.builder()
+				.shipperId(deliveryOrderKey.getShipperId())
+				//
 				.serviceType(GOServiceType.Overnight)
 				.paidMode(GOPaidMode.Prepaid)
 				.receiptConfirmationPhoneNumber(null)

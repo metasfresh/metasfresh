@@ -1,13 +1,12 @@
 package de.metas.shipper.gateway.go;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
- * de.metas.shipper.go
+ * de.metas.shipper.gateway.go
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,12 +24,19 @@ import org.springframework.context.annotation.Configuration;
  * #L%
  */
 
-@Configuration
-public class GOConfiguration
+@Service
+public class GOClientFactory
 {
-	@Bean
-	public GOShipperGatewayService goShipperGatewayService(final GODeliveryOrderRepository deliveryOrderRepository)
+	private final GOClientConfigRepository configRepo;
+
+	GOClientFactory(final GOClientConfigRepository configRepo)
 	{
-		return new GOShipperGatewayService(deliveryOrderRepository);
+		this.configRepo = configRepo;
+	}
+
+	public GOClient newGOClientForShipperId(final int shipperId)
+	{
+		final GOClientConfig config = configRepo.getByShipperId(shipperId);
+		return GOClient.fromConfig(config);
 	}
 }
