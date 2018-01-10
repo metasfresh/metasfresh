@@ -455,7 +455,7 @@ import de.metas.notification.INotificationBL;
 
 	private void markError(final I_C_Queue_WorkPackage workPackage, final AdempiereException ex)
 	{
-		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, ex);
+		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(ex);
 
 		//
 		// Allow retry processing this workpackage?
