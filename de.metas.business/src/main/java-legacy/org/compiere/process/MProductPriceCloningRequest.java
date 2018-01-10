@@ -29,7 +29,7 @@ public class MProductPriceCloningRequest
 	public void cloneProductPrice()
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
+		final String trxName = ITrx.TRXNAME_None;
 
 		final IQuery<I_M_ProductPrice> existentProductPrices = queryBL.createQueryBuilder(I_M_ProductPrice.class, trxName)
 				.addEqualsFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, target_PriceList_Version_ID)
