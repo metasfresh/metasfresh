@@ -161,7 +161,8 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 
 	private List<I_M_PriceList> retrievePriceLists()
 	{
-		final List<I_I_Pharma_Product> importRecords = retrieveImportRecords(I_I_Pharma_Product.class);
+		final String whereClause = "1=1" + getWhereClause();
+		final List<I_I_Pharma_Product> importRecords = retrieveImportRecords(I_I_Pharma_Product.class, whereClause);
 		final List<I_M_PriceList> matchedPriceList = new ArrayList<>();
 		importRecords.forEach(record -> {
 
@@ -198,12 +199,13 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		return matchedPriceList;
 	}
 
-	private <T> List<T> retrieveImportRecords(final Class<T> clazz)
+	private <T> List<T> retrieveImportRecords(final Class<T> clazz, final String whereClause)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
-		final IQueryFilter<T> sqlFilter = TypedSqlQueryFilter.of(getWhereClause());
+		final String trxName = ITrx.TRXNAME_None;
+		final IQueryFilter<T> sqlFilter = TypedSqlQueryFilter.of(whereClause);
 		return queryBL.createQueryBuilder(clazz, trxName)
+				.addOnlyActiveRecordsFilter()
 				.filter(sqlFilter)
 				.create()
 				.list();
