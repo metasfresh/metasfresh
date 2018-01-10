@@ -1,6 +1,9 @@
 package de.metas.shipper.gateway.go;
 
-import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -24,22 +27,32 @@ import org.springframework.stereotype.Service;
  * #L%
  */
 
-@Service
-public class GOClientFactory
+public class SLF4JGOClientLogger implements GOClientLogger
 {
-	private final GOClientConfigRepository configRepo;
+	public static final transient SLF4JGOClientLogger instance = new SLF4JGOClientLogger();
 
-	GOClientFactory(final GOClientConfigRepository configRepo)
+	private static final Logger logger = LogManager.getLogger(SLF4JGOClientLogger.class);
+
+	private SLF4JGOClientLogger()
 	{
-		this.configRepo = configRepo;
 	}
 
-	public GOClient newGOClientForShipperId(final int shipperId)
+	@Override
+	public void log(@NonNull final GOClientLogEvent event)
 	{
-		final GOClientConfig config = configRepo.getByShipperId(shipperId);
-		return GOClient.builder()
-				.config(config)
-				.goClientLogger(DatabaseGOClientLogger.instance)
-				.build();
+		if (!logger.isTraceEnabled())
+		{
+			return;
+		}
+
+		if (event.getResponseException() != null)
+		{
+			logger.trace("GO Send/Receive error: {}", event, event.getResponseException());
+		}
+		else
+		{
+			logger.trace("GO Send/Receive OK: {}", event);
+		}
 	}
+
 }

@@ -4,7 +4,6 @@ import java.util.List;
 
 import de.metas.shipper.gateway.api.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.api.model.DeliveryOrder;
-import de.metas.shipper.gateway.api.model.OrderId;
 import de.metas.shipper.gateway.api.model.PackageLabels;
 
 /*
@@ -41,5 +40,5 @@ public interface ShipperGatewayClient
 
 	DeliveryOrder voidDeliveryOrder(DeliveryOrder deliveryOrder) throws ShipperGatewayException;
 	
-	List<PackageLabels> getPackageLabelsList(OrderId orderId) throws ShipperGatewayException;;
+	List<PackageLabels> getPackageLabelsList(DeliveryOrder deliveryOrder) throws ShipperGatewayException;;
 }

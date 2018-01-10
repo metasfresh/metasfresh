@@ -94,7 +94,7 @@ public class GODeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAda
 			deliveryOrder = goClient.completeDeliveryOrder(deliveryOrder);
 			deliveryOrderRepo.save(deliveryOrder);
 
-			final List<PackageLabels> packageLabelsList = goClient.getPackageLabelsList(deliveryOrder.getOrderId());
+			final List<PackageLabels> packageLabelsList = goClient.getPackageLabelsList(deliveryOrder);
 			printLabels(deliveryOrder, packageLabelsList);
 
 			return Result.SUCCESS;
