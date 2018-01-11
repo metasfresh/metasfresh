@@ -1,5 +1,7 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
+import javax.annotation.Nullable;
+
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
@@ -8,6 +10,7 @@ import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail.ProductionDetailBuilder;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -16,7 +19,6 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import lombok.NonNull;
 
@@ -64,16 +66,9 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		this.requestMaterialOrderService = candidateService;
 	}
 
-	@Override
-	public void handleEvent(@NonNull final AbstractPPOrderEvent event)
-	{
-		final boolean advised = event instanceof PPOrderAdvisedEvent;
-		handlePPOrderAdvisedOrCreatedEvent(event, advised);
-	}
-
 	protected final void handlePPOrderAdvisedOrCreatedEvent(
 			@NonNull final AbstractPPOrderEvent ppOrderEvent,
-			final boolean advised)
+			final boolean isPPOrderAdvisedEvent)
 	{
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 
@@ -82,18 +77,24 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		final DemandDetail demandDetailOrNull = DemandDetail.createOrNull(
 				ppOrderEvent.getSupplyRequiredDescriptor());
 
-		final CandidatesQuery query = createQuery(ppOrderEvent);
-		final Candidate existingCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
+		final CandidatesQuery preExistingSupplyQuery = createPreExistingCandidatesQuery(ppOrderEvent);
+		final Candidate existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(preExistingSupplyQuery);
 
-		final CandidateBuilder builder = existingCandidate != null
-				? existingCandidate.toBuilder()
+		final CandidateBuilder builder = existingCandidateOrNull != null
+				? existingCandidateOrNull.toBuilder()
 				: Candidate.builderForEventDescr(ppOrderEvent.getEventDescriptor());
+
+		final ProductionDetail newProductionDetailForPPOrder = createProductionDetailForPPOrder(
+				ppOrder,
+				existingCandidateOrNull,
+				isPPOrderAdvisedEvent);
+		// note that newProductionDetailForPPOrder.isAdvised() might be != isPPOrderAdvisedEvent
 
 		final Candidate supplyCandidate = builder
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.status(candidateStatus)
-				.productionDetail(createProductionDetailForPPOrder(ppOrder, advised))
+				.productionDetail(newProductionDetailForPPOrder)
 				.demandDetail(demandDetailOrNull)
 				.materialDescriptor(createMaterialDescriptorFromPpOrder(ppOrder))
 				.build();
@@ -102,7 +103,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 
 		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
 		{
-			final CandidatesQuery lineQuery = createQuery(ppOrderLine, ppOrderEvent);
+			final CandidatesQuery lineQuery = createPreExistingCandidatesQuery(ppOrderLine, ppOrderEvent);
 			final Candidate existingLineCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(lineQuery);
 
 			final CandidateBuilder lineCandidateBuilder = existingLineCandidate != null
@@ -117,7 +118,10 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)
 					.materialDescriptor(createMaterialDescriptorForPpOrderAndLine(ppOrder, ppOrderLine))
 					.demandDetail(demandDetailOrNull)
-					.productionDetail(createProductionDetailForPPOrderAndLine(ppOrder, ppOrderLine, advised));
+					.productionDetail(createProductionDetailForPPOrderAndLine(
+							ppOrder,
+							ppOrderLine,
+							newProductionDetailForPPOrder.isAdvised()));
 
 			// in case of CandidateType.DEMAND this might trigger further demand events
 			candidateChangeHandler.onCandidateNewOrChange(lineCandidateBuilder.build());
@@ -129,10 +133,10 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		}
 	}
 
-	protected abstract CandidatesQuery createQuery(
+	protected abstract CandidatesQuery createPreExistingCandidatesQuery(
 			AbstractPPOrderEvent ppOrderEvent);
 
-	protected abstract CandidatesQuery createQuery(
+	protected abstract CandidatesQuery createPreExistingCandidatesQuery(
 			PPOrderLine ppOrderLine,
 			AbstractPPOrderEvent ppOrderEvent);
 
@@ -183,19 +187,41 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 		return candidateStatus;
 	}
 
-	private static ProductionDetail createProductionDetailForPPOrder(
+	private ProductionDetail createProductionDetailForPPOrder(
 			@NonNull final PPOrder ppOrder,
-			final boolean advised)
+			@Nullable final Candidate existingCandidateOrNull,
+			final boolean isPPOrderAdvisedEvent)
 	{
-		final ProductionDetail productionCandidateDetail = ProductionDetail.builder()
-				.advised(advised)
+		//
+		// get our effective builder and advised values, depending on whether a candidate already exists
+		final ProductionDetail existingProductionDetailOrNull = existingCandidateOrNull != null
+				? existingCandidateOrNull.getProductionDetail()
+				: null;
+
+		final ProductionDetailBuilder initialBuilder;
+		final boolean effectiveAdvisedValue;
+		if (existingProductionDetailOrNull == null)
+		{
+			initialBuilder = ProductionDetail.builder();
+			effectiveAdvisedValue = isPPOrderAdvisedEvent;
+		}
+		else
+		{
+			initialBuilder = existingProductionDetailOrNull.toBuilder();
+			effectiveAdvisedValue = existingProductionDetailOrNull.isAdvised() || isPPOrderAdvisedEvent; // don't go "back" to false if it was already true
+		}
+
+		//
+		// build and return the productionDetail
+		final ProductionDetail newProductionDetailForPPOrder = initialBuilder
+				.advised(effectiveAdvisedValue)
 				.plannedQty(ppOrder.getQuantity())
 				.plantId(ppOrder.getPlantId())
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.ppOrderId(ppOrder.getPpOrderId())
 				.ppOrderDocStatus(ppOrder.getDocStatus())
 				.build();
-		return productionCandidateDetail;
+		return newProductionDetailForPPOrder;
 	}
 
 	private static ProductionDetail createProductionDetailForPPOrderAndLine(

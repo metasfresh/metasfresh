@@ -15,7 +15,7 @@ import lombok.Value;
 @Builder
 public class DDOrderRequestedEvent implements MaterialEvent
 {
-	public static final String TYPE = "DistributionRequestedEvent";
+	public static final String TYPE = "DDOrderRequestedEvent";
 
 	@NonNull
 	EventDescriptor eventDescriptor;

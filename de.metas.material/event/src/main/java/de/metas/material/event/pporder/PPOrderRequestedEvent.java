@@ -44,12 +44,10 @@ import lombok.Value;
 @Builder
 public class PPOrderRequestedEvent implements MaterialEvent
 {
-	public static final String TYPE = "ProductionRequestedEvent";
+	public static final String TYPE = "PPOrderRequestedEvent";
 
 	@NonNull
 	EventDescriptor eventDescriptor;
-
-	int groupId;
 
 	@NonNull
 	Date dateOrdered;

@@ -37,6 +37,9 @@ public class GOClientFactory
 	public GOClient newGOClientForShipperId(final int shipperId)
 	{
 		final GOClientConfig config = configRepo.getByShipperId(shipperId);
-		return GOClient.fromConfig(config);
+		return GOClient.builder()
+				.config(config)
+				.goClientLogger(DatabaseGOClientLogger.instance)
+				.build();
 	}
 }

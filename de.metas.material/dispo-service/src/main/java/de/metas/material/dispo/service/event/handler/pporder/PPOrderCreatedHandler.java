@@ -100,10 +100,13 @@ public final class PPOrderCreatedHandler
 	}
 
 	@Override
-	protected CandidatesQuery createQuery(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	protected CandidatesQuery createPreExistingCandidatesQuery(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		final PPOrderCreatedEvent ppOrderCreatedEvent = (PPOrderCreatedEvent)ppOrderEvent;
-		if (ppOrderCreatedEvent.getGroupId() <= 0)
+		final PPOrder ppOrder = ppOrderCreatedEvent.getPpOrder();
+
+		final int groupId = ppOrder.getMaterialDispoGroupId();
+		if (groupId <= 0)
 		{
 			eventLogUserService.newLogEntry(this.getClass())
 					.message("The given ppOrderCreatedEvent has no groupId, so it was created by a user and not via material-dispo. Going to create new candidate records.")
@@ -111,13 +114,14 @@ public final class PPOrderCreatedHandler
 			return CandidatesQuery.FALSE;
 		}
 
-		final PPOrder ppOrder = ppOrderCreatedEvent.getPpOrder();
 		final ProductDescriptor productDescriptor = ppOrder.getProductDescriptor();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				.groupId(ppOrderCreatedEvent.getGroupId())
+				.groupId(groupId)
+
+				// there might also be supply candidates for co-products, so the groupId alone is not sufficient
 				.materialDescriptorQuery(createMaterialDescriptorQuery(productDescriptor))
 				.build();
 
@@ -125,12 +129,15 @@ public final class PPOrderCreatedHandler
 	}
 
 	@Override
-	protected CandidatesQuery createQuery(
+	protected CandidatesQuery createPreExistingCandidatesQuery(
 			@NonNull final PPOrderLine ppOrderLine,
 			@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		final PPOrderCreatedEvent ppOrderCreatedEvent = (PPOrderCreatedEvent)ppOrderEvent;
-		if (ppOrderCreatedEvent.getGroupId() <= 0)
+
+		final PPOrder ppOrder = ppOrderCreatedEvent.getPpOrder();
+		final int groupId = ppOrder.getMaterialDispoGroupId();
+		if (groupId <= 0)
 		{
 			// we already logged in the other createQuery() method; no need to log again.
 			return CandidatesQuery.FALSE;
@@ -139,7 +146,7 @@ public final class PPOrderCreatedHandler
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(extractCandidateType(ppOrderLine))
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				.groupId(ppOrderCreatedEvent.getGroupId())
+				.groupId(groupId)
 				.materialDescriptorQuery(createMaterialDescriptorQuery(ppOrderLine.getProductDescriptor()))
 				.build();
 

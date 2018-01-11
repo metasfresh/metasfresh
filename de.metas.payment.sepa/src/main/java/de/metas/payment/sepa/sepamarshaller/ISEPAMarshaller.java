@@ -1,4 +1,4 @@
-package de.metas.payment.sepa.spi;
+package de.metas.payment.sepa.sepamarshaller;
 
 /*
  * #%L

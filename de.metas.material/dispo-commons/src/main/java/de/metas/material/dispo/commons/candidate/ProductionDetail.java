@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 
 import org.adempiere.util.Check;
 
+import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -31,6 +33,24 @@ import lombok.Value;
 @Value
 public class ProductionDetail
 {
+	public static ProductionDetail forProductionDetailRecord(
+			@NonNull final I_MD_Candidate_Prod_Detail productionDetail)
+	{
+		final ProductionDetail productionCandidateDetail = ProductionDetail.builder()
+				.advised(productionDetail.isAdvised())
+				.description(productionDetail.getDescription())
+				.plantId(productionDetail.getPP_Plant_ID())
+				.productBomLineId(productionDetail.getPP_Product_BOMLine_ID())
+				.productPlanningId(productionDetail.getPP_Product_Planning_ID())
+				.ppOrderId(productionDetail.getPP_Order_ID())
+				.ppOrderLineId(productionDetail.getPP_Order_BOMLine_ID())
+				.ppOrderDocStatus(productionDetail.getPP_Order_DocStatus())
+				.plannedQty(productionDetail.getPlannedQty())
+				.actualQty(productionDetail.getActualQty())
+				.build();
+		return productionCandidateDetail;
+	}
+
 	int plantId;
 
 	int productPlanningId;
@@ -53,16 +73,16 @@ public class ProductionDetail
 
 	@Builder(toBuilder = true)
 	private ProductionDetail(
-			int plantId,
-			int productPlanningId,
-			int productBomLineId,
-			String description,
-			int ppOrderId,
-			String ppOrderDocStatus,
-			int ppOrderLineId,
-			boolean advised,
-			BigDecimal plannedQty,
-			BigDecimal actualQty)
+			final int plantId,
+			final int productPlanningId,
+			final int productBomLineId,
+			final String description,
+			final int ppOrderId,
+			final String ppOrderDocStatus,
+			final int ppOrderLineId,
+			final boolean advised,
+			final BigDecimal plannedQty,
+			final BigDecimal actualQty)
 	{
 		this.advised = advised;
 

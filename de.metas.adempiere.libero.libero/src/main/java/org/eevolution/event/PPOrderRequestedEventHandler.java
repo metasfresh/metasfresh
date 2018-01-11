@@ -6,7 +6,6 @@ import static de.metas.document.engine.IDocument.STATUS_Completed;
 import java.util.Collection;
 import java.util.Date;
 
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.util.Services;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.mrp.spi.impl.pporder.PPOrderProducer;
@@ -49,9 +48,6 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App) // only one handler should bother itself with these events
 public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrderRequestedEvent>
 {
-	public static final ModelDynAttributeAccessor<I_PP_Order, Integer> ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID = //
-			new ModelDynAttributeAccessor<>(I_PP_Order.class.getName(), "PPOrderRequestedEvent_GroupId", Integer.class);
-
 	private final PPOrderProducer ppOrderProducer;
 
 	public PPOrderRequestedEventHandler(@NonNull final PPOrderProducer ppOrderProducer)
@@ -86,7 +82,6 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 		final Date dateOrdered = ppOrderRequestedEvent.getDateOrdered();
 
 		final I_PP_Order ppOrderRecord = ppOrderProducer.createPPOrder(ppOrder, dateOrdered);
-		ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.setValue(ppOrderRecord, ppOrderRequestedEvent.getGroupId());
 
 		if (ppOrderRecord.getPP_Product_Planning().isDocComplete())
 		{

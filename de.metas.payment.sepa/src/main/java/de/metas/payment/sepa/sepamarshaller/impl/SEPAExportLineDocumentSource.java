@@ -1,4 +1,4 @@
-package de.metas.payment.sepa.spi.impl;
+package de.metas.payment.sepa.sepamarshaller.impl;
 
 /*
  * #%L
@@ -34,7 +34,7 @@ import de.metas.payment.sepa.api.ISEPADocumentSourceQuery;
 import de.metas.payment.sepa.api.ISEPAExportLineSourceDAO;
 import de.metas.payment.sepa.api.impl.SEPADocument;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
-import de.metas.payment.sepa.spi.ISEPADocumentSource;
+import de.metas.payment.sepa.sepamarshaller.ISEPADocumentSource;
 
 public class SEPAExportLineDocumentSource implements ISEPADocumentSource
 {
