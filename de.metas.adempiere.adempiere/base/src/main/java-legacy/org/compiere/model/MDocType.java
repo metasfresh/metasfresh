@@ -20,14 +20,13 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.document.IDocTypeBL;
+import de.metas.document.IDocTypeDAO;
 
 /**
  *	Document Type Model
@@ -103,8 +102,7 @@ public class MDocType extends X_C_DocType
 			return null;
 		}
 
-		// NOTE: we assume the C_DocType is cached on table level (i.e. see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService))
-		final I_C_DocType docType = InterfaceWrapperHelper.create(ctx, C_DocType_ID, I_C_DocType.class, ITrx.TRXNAME_None);
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(C_DocType_ID);
 		return LegacyAdapters.convertToPO(docType);
 	} 	//	get
 
