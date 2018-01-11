@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -52,18 +53,29 @@ public class CountingSubRowBucket
 	// Zaehlbestand
 	private BigDecimal qtyOnHandEstimate = BigDecimal.ZERO;
 
+	private BigDecimal qtyOnHandStock = BigDecimal.ZERO;
+
 	private final Set<Integer> cockpitRecordIds = new HashSet<>();
+
+	private final Set<Integer> stockRecordIds = new HashSet<>();
 
 	public CountingSubRowBucket(final int plantId)
 	{
 		this.plantId = plantId;
 	}
 
-	public void addDataRecord(@NonNull final I_MD_Cockpit cockpitRecord)
+	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
 		qtyOnHandEstimate = qtyOnHandEstimate.add(cockpitRecord.getQtyOnHandEstimate());
 
 		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
+	}
+
+	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
+	{
+		qtyOnHandStock = qtyOnHandStock.add(stockRecord.getQtyOnHand());
+
+		stockRecordIds.add(stockRecord.getMD_Stock_ID());
 	}
 
 	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowWithSubRows mainRowBucket)
@@ -75,7 +87,9 @@ public class CountingSubRowBucket
 				.productId(productIdAndDate.getProductId())
 				.plantId(plantId)
 				.qtyOnHandEstimate(qtyOnHandEstimate)
+				.qtyOnHandStock(qtyOnHandStock)
 				.allIncludedCockpitRecordIds(cockpitRecordIds)
+				.allIncludedStockRecordIds(stockRecordIds)
 				.build();
 	}
 

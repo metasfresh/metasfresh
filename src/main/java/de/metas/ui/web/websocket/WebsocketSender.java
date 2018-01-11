@@ -212,7 +212,7 @@ public class WebsocketSender implements InitializingBean
 		private void enqueue(@NonNull final WebsocketEvent event)
 		{
 			events.add(event);
-			logger.info("[{}] Enqueued event: {}", name, event);
+			logger.info("[name={}] Enqueued event={}", name, event);
 		}
 
 		public void sendEventsAndClear()
@@ -235,7 +235,7 @@ public class WebsocketSender implements InitializingBean
 
 		private void sendEvent(final String destination, final Object payload, final boolean converted)
 		{
-			logger.info("[{}] Sending to {}: {}", name, destination, payload);
+			logger.info("[name={}] Sending to destination={}: payload={}", name, destination, payload);
 
 			sleepBeforeSend();
 
@@ -265,7 +265,7 @@ public class WebsocketSender implements InitializingBean
 			return;
 		}
 
-		logger.info("Going to sleep {} ms");
+		logger.info("Going to sleep {}ms", delayMillis);
 		try
 		{
 			Thread.sleep(delayMillis);

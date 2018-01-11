@@ -1,6 +1,8 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
@@ -51,20 +53,28 @@ public class MainRowBucket
 	// zusagbar Zaehlbestand
 	private BigDecimal qtyAvailableToPromise = BigDecimal.ZERO;
 
-	public void addDataRecord(@NonNull final I_MD_Cockpit cocpitRecord)
-	{
-		pmmQtyPromised = pmmQtyPromised.add(cocpitRecord.getPMM_QtyPromised_OnDate());
-		qtyMaterialentnahme = qtyMaterialentnahme.add(cocpitRecord.getQtyMaterialentnahme());
-		qtyRequiredForProduction = qtyRequiredForProduction.add(cocpitRecord.getQtyRequiredForProduction());
-		qtyReservedPurchase = qtyReservedPurchase.add(cocpitRecord.getQtyReserved_Purchase());
-		qtyReservedSale = qtyReservedSale.add(cocpitRecord.getQtyReserved_Sale());
-		qtyAvailableToPromise = qtyAvailableToPromise.add(cocpitRecord.getQtyAvailableToPromise());
+	private final Set<Integer> cockpitRecordIds = new HashSet<>();
 
-		qtyOnHandEstimate = qtyOnHandEstimate.add(cocpitRecord.getQtyOnHandEstimate());
+	private final Set<Integer> stockRecordIds = new HashSet<>();
+
+	public void addDataRecord(@NonNull final I_MD_Cockpit cockpitRecord)
+	{
+		pmmQtyPromised = pmmQtyPromised.add(cockpitRecord.getPMM_QtyPromised_OnDate());
+		qtyMaterialentnahme = qtyMaterialentnahme.add(cockpitRecord.getQtyMaterialentnahme());
+		qtyRequiredForProduction = qtyRequiredForProduction.add(cockpitRecord.getQtyRequiredForProduction());
+		qtyReservedPurchase = qtyReservedPurchase.add(cockpitRecord.getQtyReserved_Purchase());
+		qtyReservedSale = qtyReservedSale.add(cockpitRecord.getQtyReserved_Sale());
+		qtyAvailableToPromise = qtyAvailableToPromise.add(cockpitRecord.getQtyAvailableToPromise());
+
+		qtyOnHandEstimate = qtyOnHandEstimate.add(cockpitRecord.getQtyOnHandEstimate());
+
+		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
 	{
 		qtyOnHand = qtyOnHand.add(stockRecord.getQtyOnHand());
+
+		stockRecordIds.add(stockRecord.getMD_Stock_ID());
 	}
 }

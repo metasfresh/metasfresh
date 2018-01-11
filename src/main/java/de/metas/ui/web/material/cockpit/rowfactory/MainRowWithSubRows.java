@@ -78,13 +78,19 @@ public class MainRowWithSubRows
 	{
 		if (cockpitRecord.getQtyOnHandCount().signum() != 0 || cockpitRecord.getPP_Plant_ID() > 0)
 		{
-			addDataRecordToCounting(cockpitRecord);
+			addCockpitRecordToCounting(cockpitRecord);
 		}
 		else
 		{
 			addCockpitRecordToDimensionGroups(cockpitRecord, dimensionSpec);
 		}
 		mainRow.addDataRecord(cockpitRecord);
+	}
+
+	private void addCockpitRecordToCounting(@NonNull final I_MD_Cockpit stockEstimate)
+	{
+		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(stockEstimate.getPP_Plant_ID(), CountingSubRowBucket::create);
+		countingSubRow.addCockpitRecord(stockEstimate);
 	}
 
 	private void addCockpitRecordToDimensionGroups(
@@ -95,7 +101,7 @@ public class MainRowWithSubRows
 
 		final AttributesKey attributesKey = AttributesKey.ofString(dataRecord.getAttributesKey());
 		final List<DimensionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(attributesKey, dimensionSpec);
-		subRowBuckets.forEach(bucket -> bucket.addDataRecord(dataRecord));
+		subRowBuckets.forEach(bucket -> bucket.addCockpitRecord(dataRecord));
 	}
 
 	private void assertProductIdAndDateOfDataRecord(@NonNull final I_MD_Cockpit dataRecord)
@@ -148,19 +154,22 @@ public class MainRowWithSubRows
 		return result.build();
 	}
 
-	private void addDataRecordToCounting(@NonNull final I_MD_Cockpit stockEstimate)
-	{
-		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(stockEstimate.getPP_Plant_ID(), CountingSubRowBucket::create);
-		countingSubRow.addDataRecord(stockEstimate);
-	}
-
 	public void addStockRecord(
 			@NonNull final I_MD_Stock stockRecord,
 			@NonNull final DimensionSpec dimensionSpec)
 	{
+		addStockRecordToCounting(stockRecord);
+
 		addStockRecordToDimensionGroups(stockRecord, dimensionSpec);
 
 		mainRow.addStockRecord(stockRecord);
+	}
+
+	private void addStockRecordToCounting(@NonNull final I_MD_Stock stockRecord)
+	{
+		final int plantId = stockRecord.getM_Warehouse().getPP_Plant_ID();
+		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(plantId, CountingSubRowBucket::create);
+		countingSubRow.addStockRecord(stockRecord);
 	}
 
 	private void addStockRecordToDimensionGroups(
@@ -182,7 +191,9 @@ public class MainRowWithSubRows
 				.qtyReservedPurchase(mainRow.getQtyReservedPurchase())
 				.qtyAvailableToPromise(mainRow.getQtyAvailableToPromise())
 				.qtyReservedSale(mainRow.getQtyReservedSale())
-				.pmmQtyPromised(mainRow.getPmmQtyPromised());
+				.pmmQtyPromised(mainRow.getPmmQtyPromised())
+				.allIncludedCockpitRecordIds(mainRow.getCockpitRecordIds())
+				.allIncludedStockRecordIds(mainRow.getStockRecordIds());
 
 		for (final CountingSubRowBucket subRowBucket : countingSubRows.values())
 		{
@@ -195,7 +206,6 @@ public class MainRowWithSubRows
 			final MaterialCockpitRow subRow = subRowBucket.createIncludedRow(this);
 			mainRowBuilder.includedRow(subRow);
 		}
-
 
 		return mainRowBuilder.build();
 

@@ -52,7 +52,7 @@ public interface IView
 	ViewId getViewId();
 
 	JSONViewDataType getViewType();
-	
+
 	default ViewProfileId getProfileId()
 	{
 		return ViewProfileId.NULL;
@@ -112,9 +112,7 @@ public interface IView
 	/**
 	 * Invalidate given row by ID.
 	 *
-	 * If there is no custom implementation then this method will invalidate all by default.
-	 *
-	 * NOTE: this method is NOT sending websocket notifications
+	 * If there is no custom implementation then this method will invoke {@link #invalidateAll()}.
 	 *
 	 * @param rowId
 	 */

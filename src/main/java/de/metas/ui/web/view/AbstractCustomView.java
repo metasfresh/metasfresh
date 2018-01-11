@@ -69,25 +69,25 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	 *
 	 * @param viewId
 	 * @param description may not be {@code null} either; if you don't have one, please use {@link ITranslatableString#empty()}.
-	 * @param rowsSupplier
+	 * @param rowsListSupplier
 	 */
 	protected AbstractCustomView(
 			@NonNull final ViewId viewId,
 			@NonNull final ITranslatableString description,
-			@NonNull final Supplier<List<T>> rowsSupplier)
+			@NonNull final Supplier<List<T>> rowsListSupplier)
 	{
 		this.viewId = viewId;
 		this.description = description;
 
 		this.topLevelRowsSupplier = ExtendedMemorizingSupplier.of(() -> {
 
-			return Maps.uniqueIndex(rowsSupplier.get(), row -> row.getId());
+			return Maps.uniqueIndex(rowsListSupplier.get(), row -> row.getId());
 		});
 
 		this.allRowsSupplier = ExtendedMemorizingSupplier.of(() -> {
 
 			final ImmutableMap.Builder<DocumentId, T> allRows = ImmutableMap.builder();
-			rowsSupplier.get().forEach(topLevelRow -> {
+			rowsListSupplier.get().forEach(topLevelRow -> {
 
 				allRows.put(topLevelRow.getId(), topLevelRow);
 				allRows.putAll(extractAllIncludedRows(topLevelRow));
@@ -153,7 +153,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		return topLevelRowsSupplier.get();
 	}
 
-	private Map<DocumentId, T> getRowsIncludingSubRows()
+	public Map<DocumentId, T> getMainRowsAndSubRows()
 	{
 		return allRowsSupplier.get();
 	}
@@ -167,12 +167,17 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	@Override
 	public void invalidateAll()
 	{
-		topLevelRowsSupplier.forget();
-		allRowsSupplier.forget();
+		invalidateRowSuppliers();
 
 		ViewChangesCollector
 				.getCurrentOrAutoflush()
 				.collectFullyChanged(this);
+	}
+
+	protected void invalidateRowSuppliers()
+	{
+		topLevelRowsSupplier.forget();
+		allRowsSupplier.forget();
 	}
 
 	@Override
@@ -263,9 +268,9 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	}
 
 	@Override
-	public final T getById(DocumentId rowId) throws EntityNotFoundException
+	public final T getById(@NonNull final DocumentId rowId) throws EntityNotFoundException
 	{
-		final T row = getRowsIncludingSubRows().get(rowId);
+		final T row = getMainRowsAndSubRows().get(rowId);
 		if (row == null)
 		{
 			throw new EntityNotFoundException("Row not found")

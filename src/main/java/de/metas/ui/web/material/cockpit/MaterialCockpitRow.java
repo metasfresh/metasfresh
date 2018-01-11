@@ -144,6 +144,9 @@ public class MaterialCockpitRow implements IViewRow
 	@Getter
 	private final Set<Integer> allIncludedCockpitRecordIds;
 
+	@Getter
+	private final Set<Integer> allIncludedStockRecordIds;
+
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
 
 	@lombok.Builder(builderClassName = "MainRowBuilder", builderMethodName = "mainRowBuilder")
@@ -157,7 +160,8 @@ public class MaterialCockpitRow implements IViewRow
 			final BigDecimal qtyOnHandEstimate,
 			final BigDecimal qtyOnHandStock,
 			@Singular final List<MaterialCockpitRow> includedRows,
-			@Singular final Set<Integer> allIncludedCockpitRecordIds)
+			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
+			@NonNull final Set<Integer> allIncludedStockRecordIds)
 	{
 		Check.errorIf(includedRows.isEmpty(), "The given includedRows may not be empty");
 
@@ -191,9 +195,8 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyAvailableToPromise = qtyAvailableToPromise;
 		this.qtyOnHandStock = qtyOnHandStock;
 
-		this.allIncludedCockpitRecordIds = includedRows.stream()
-				.flatMap(includedRow -> includedRow.getAllIncludedCockpitRecordIds().stream())
-				.collect(ImmutableSet.toImmutableSet());
+		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
+		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);
 	}
 
 	private static Timestamp extractDate(final List<MaterialCockpitRow> includedRows)
@@ -224,7 +227,8 @@ public class MaterialCockpitRow implements IViewRow
 			final BigDecimal qtyRequiredForProduction,
 			final BigDecimal qtyAvailableToPromise,
 			final BigDecimal qtyOnHandStock,
-			@NonNull final Set<Integer> allIncludedCockpitRecordIds)
+			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
+			@NonNull final Set<Integer> allIncludedStockRecordIds)
 	{
 		this.rowType = DefaultRowType.Line;
 
@@ -260,6 +264,7 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyAvailableToPromise = Util.coalesce(qtyAvailableToPromise, BigDecimal.ZERO);
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
+		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);
 	}
 
 	@lombok.Builder(builderClassName = "CountingSubRowBuilder", builderMethodName = "countingSubRowBuilder")
@@ -269,7 +274,8 @@ public class MaterialCockpitRow implements IViewRow
 			final int plantId,
 			final BigDecimal qtyOnHandEstimate,
 			final BigDecimal qtyOnHandStock,
-			@NonNull final Set<Integer> allIncludedCockpitRecordIds)
+			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
+			@NonNull final Set<Integer> allIncludedStockRecordIds)
 	{
 		this.rowType = DefaultRowType.Line;
 
@@ -313,6 +319,7 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyAvailableToPromise = null;
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
+		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);
 	}
 
 	@Override

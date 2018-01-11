@@ -79,14 +79,13 @@ public class MaterialCockpitViewFactory
 
 		final ImmutableList<DocumentFilter> requestFilters = materialCockpitFilters.extractDocumentFilters(request);
 		final ImmutableList<DocumentFilter> filtersToUse = request.isUseAutoFilters() ? materialCockpitFilters.createAutoFilters() : requestFilters;
-
-		final Supplier<List<MaterialCockpitRow>> rowsSupplier = () -> materialCockpitRowRepository.retrieveRows(filtersToUse);
+		final Supplier<List<MaterialCockpitRow>> rowsListSupplier = () -> materialCockpitRowRepository.retrieveRows(filtersToUse);
 
 		final MaterialCockpitView view = MaterialCockpitView.builder()
 				.viewId(request.getViewId())
 				.description(ITranslatableString.empty())
-				.rowsSupplier(rowsSupplier)
 				.filters(filtersToUse)
+				.rowsListSupplier(rowsListSupplier)
 				.relatedProcessDescriptor(createProcessDescriptor())
 				.build();
 
