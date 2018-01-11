@@ -17,6 +17,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.empties.EmptiesInOutLinesProducer;
@@ -123,7 +124,12 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 		final String docSubType = isSOTrx ? X_C_DocType.DOCSUBTYPE_Leergutanlieferung : X_C_DocType.DOCSUBTYPE_Leergutausgabe;
 
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		final List<I_C_DocType> docTypes = docTypeDAO.retrieveDocTypesByBaseType(Env.getCtx(), docBaseType, adClientId, adOrgId, ITrx.TRXNAME_None);
+		final List<I_C_DocType> docTypes = docTypeDAO.retrieveDocTypesByBaseType(DocTypeQuery.builder()
+				.docBaseType(docBaseType)
+				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build());
 		if (docTypes == null)
 		{
 			logger.warn("No document types found for docBaseType={}, adClientId={}, adOrgId={}", docBaseType, adClientId, adOrgId);

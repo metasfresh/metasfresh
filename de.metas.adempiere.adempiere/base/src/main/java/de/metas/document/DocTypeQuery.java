@@ -1,10 +1,17 @@
-package de.metas.shipper.gateway.api;
+package de.metas.document;
 
-import de.metas.shipper.gateway.api.model.DeliveryOrderCreateRequest;
+import javax.annotation.Nullable;
+
+import org.compiere.util.Env;
+
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.shipper.gateway.api
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -24,9 +31,26 @@ import de.metas.shipper.gateway.api.model.DeliveryOrderCreateRequest;
  * #L%
  */
 
-public interface ShipperGatewayService
+@Value
+@Builder
+public class DocTypeQuery
 {
-	String getShipperGatewayId();
-	
-	void createAndSendDeliveryOrdersForPackages(DeliveryOrderCreateRequest request);
+	public static final String DOCSUBTYPE_Any = "DOCSUBTYPE_Any";
+	public static final String DOCSUBTYPE_NONE = null;
+
+	@NonNull
+	String docBaseType;
+
+	@Nullable
+	@Default
+	String docSubType = DOCSUBTYPE_Any;
+
+	@NonNull
+	Integer adClientId;
+
+	@Default
+	int adOrgId = Env.CTXVALUE_AD_Org_ID_System;
+
+	@Nullable
+	Boolean isSOTrx;
 }

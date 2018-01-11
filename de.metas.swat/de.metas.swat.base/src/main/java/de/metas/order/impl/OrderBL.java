@@ -351,8 +351,7 @@ public class OrderBL implements IOrderBL
 		}
 	}
 
-	@Override
-	public int retrieveDocTypeId(final int clientId, final int adOrgId, final String docSubType)
+	private int retrieveDocTypeId(final int clientId, final int adOrgId, final String docSubType)
 	{
 		final String sql = "SELECT C_DocType_ID FROM C_DocType "
 				+ "WHERE AD_Client_ID=? AND AD_Org_ID IN (0," + adOrgId

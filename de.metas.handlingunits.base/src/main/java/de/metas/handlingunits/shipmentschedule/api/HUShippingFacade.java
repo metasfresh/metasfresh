@@ -1,7 +1,9 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,6 +21,7 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -35,6 +38,8 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
 import de.metas.shipper.gateway.api.ShipperGatewayService;
+import de.metas.shipper.gateway.api.model.DeliveryOrderCreateRequest;
+import de.metas.shipping.model.I_M_ShipperTransportation;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -85,6 +90,7 @@ public class HUShippingFacade
 	private final boolean completeShipments;
 	private final InvoiceMode invoiceMode;
 	private final boolean createShipperDeliveryOrders;
+	private LocalDate _shipperDeliveryOrderPickupDate = null; // lazy, will be fetched from Shipper Transportation
 
 	//
 	// State
@@ -227,6 +233,20 @@ public class HUShippingFacade
 
 		final ShipperGatewayService shipperGatewayService = shipperGatewayRegistry.getShipperGatewayService(shipperGatewayId);
 		final Set<Integer> mpackageIds = mpackages.stream().map(I_M_Package::getM_Package_ID).collect(ImmutableSet.toImmutableSet());
-		shipperGatewayService.createAndSendDeliveryOrdersForPackages(mpackageIds);
+		shipperGatewayService.createAndSendDeliveryOrdersForPackages(DeliveryOrderCreateRequest.builder()
+				.pickupDate(getShipperDeliveryOrderPickupDate())
+				.packageIds(mpackageIds)
+				.build());
+	}
+
+	public LocalDate getShipperDeliveryOrderPickupDate()
+	{
+		if (_shipperDeliveryOrderPickupDate == null)
+		{
+			Check.assume(addToShipperTransportationId > 0, "addToShipperTransportationId > 0");
+			final I_M_ShipperTransportation shipperTransportation = load(addToShipperTransportationId, I_M_ShipperTransportation.class);
+			_shipperDeliveryOrderPickupDate = TimeUtil.asLocalDate(shipperTransportation.getDateDoc());
+		}
+		return _shipperDeliveryOrderPickupDate;
 	}
 }

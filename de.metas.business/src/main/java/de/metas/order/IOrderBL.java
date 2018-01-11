@@ -137,8 +137,6 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void setDocTypeTargetId(I_C_Order order);
 
-	int retrieveDocTypeId(int clientId, int adOrgId, String docSubType);
-
 	/**
 	 * Updates the addresses in the order lines from the order. Also sets the header info in the lines.
 	 *
