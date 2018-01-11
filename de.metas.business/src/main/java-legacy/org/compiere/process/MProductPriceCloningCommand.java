@@ -1,7 +1,5 @@
 package org.compiere.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -19,7 +17,7 @@ import lombok.Builder;
  *
  */
 @Builder
-public class MProductPriceCloningRequest
+public class MProductPriceCloningCommand
 {
 	private final int source_PriceList_Version_ID;
 	private final int target_PriceList_Version_ID;
@@ -45,18 +43,10 @@ public class MProductPriceCloningRequest
 
 	private void createProductPrice(final I_M_ProductPrice productPrice)
 	{
-		final I_M_ProductPrice pp = newInstance(I_M_ProductPrice.class, productPrice);
+		final I_M_ProductPrice pp = InterfaceWrapperHelper.copy()
+				.setFrom(productPrice)
+				.copyToNew(I_M_ProductPrice.class);
 		pp.setM_PriceList_Version_ID(target_PriceList_Version_ID);
-		pp.setM_Product_ID(productPrice.getM_Product_ID());
-		pp.setPriceLimit(productPrice.getPriceLimit());
-		pp.setPriceList(productPrice.getPriceList());
-		pp.setPriceStd(productPrice.getPriceStd());
-		pp.setC_TaxCategory_ID(productPrice.getC_TaxCategory_ID());
-		pp.setC_UOM_ID(productPrice.getC_UOM_ID());
-		pp.setIsSeasonFixedPrice(productPrice.isSeasonFixedPrice());
-		pp.setM_DiscountSchemaLine_ID(productPrice.getM_DiscountSchemaLine_ID());
-		pp.setIsAttributeDependant(productPrice.isAttributeDependant());
-		pp.setM_AttributeSetInstance_ID(productPrice.getM_AttributeSetInstance_ID());
 		InterfaceWrapperHelper.save(pp);
 
 		cloneASI(productPrice);

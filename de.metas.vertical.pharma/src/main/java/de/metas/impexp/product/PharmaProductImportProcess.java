@@ -32,7 +32,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
-import org.compiere.process.MProductPriceCloningRequest;
+import org.compiere.process.MProductPriceCloningCommand;
 
 import de.metas.product.IProductDAO;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
@@ -134,7 +134,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				.filter(plv -> plv.getM_Pricelist_Version_Base_ID() > 0)
 				.forEach(plv -> {
 
-					final MProductPriceCloningRequest productPriceCloning = MProductPriceCloningRequest.builder()
+					final MProductPriceCloningCommand productPriceCloning = MProductPriceCloningCommand.builder()
 							.source_PriceList_Version_ID(plv.getM_Pricelist_Version_Base_ID())
 							.target_PriceList_Version_ID(plv.getM_PriceList_Version_ID())
 							.build();
