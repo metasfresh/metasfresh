@@ -78,6 +78,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.service.IInvoiceLineBL;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
@@ -545,11 +546,14 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 		final int adClientId = invoice.getAD_Client_ID();
 		final int adOrgId = invoice.getAD_Org_ID();
-		final int C_DocType_ID = docTypeDAO.getDocTypeIdOrNull(ctx, docBaseType, adClientId, adOrgId, trxName);
+		final int C_DocType_ID = docTypeDAO.getDocTypeIdOrNull(DocTypeQuery.builder()
+				.docBaseType(docBaseType)
+				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build());
 		if (C_DocType_ID <= 0)
 		{
 			log.error("Not found for AD_Client_ID=" + adClientId + " - " + docBaseType);

@@ -58,7 +58,7 @@ import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.document.IDocTypeDAO;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -241,7 +241,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		//
 		// Document Type & Status
 		// NOTE: not sure if we need to use MaterialTrackingPPOrderBL.C_DocType_DOCSUBTYPE_QualityInspection or not
-		ppOrderBL.setDocType(order, X_C_DocType.DOCBASETYPE_ManufacturingOrder, IDocTypeDAO.DOCSUBTYPE_Any);
+		ppOrderBL.setDocType(order, X_C_DocType.DOCBASETYPE_ManufacturingOrder, DocTypeQuery.DOCSUBTYPE_Any);
 		order.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
 		order.setDocAction(X_PP_Order.DOCACTION_Complete);
 
