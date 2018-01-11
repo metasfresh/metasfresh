@@ -18,12 +18,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
 import com.google.common.base.Preconditions;
 
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
@@ -251,21 +251,14 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 	@Override
 	protected int getReturnsDocTypeId(final String docBaseType, final boolean isSOTrx, final int adClientId, final int adOrgId)
 	{
-		// in the case of returns the docSubType is null
-		final String docSubType = IDocTypeDAO.DOCSUBTYPE_NONE;
-
-		final I_C_DocType returnsDocType = Services.get(IDocTypeDAO.class)
-				.getDocTypeOrNullForSOTrx(
-						Env.getCtx() // ctx
-						, docBaseType // doc basetype
-						, docSubType // doc subtype
-						, isSOTrx // isSOTrx
-						, adClientId // client
-						, adOrgId // org
-						, ITrx.TRXNAME_None // trx
-		);
-
-		return returnsDocType == null ? -1 : returnsDocType.getC_DocType_ID();
+		return Services.get(IDocTypeDAO.class)
+				.getDocTypeIdOrNull(DocTypeQuery.builder()
+						.docBaseType(docBaseType)
+						.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
+						.isSOTrx(isSOTrx)
+						.adClientId(adClientId)
+						.adOrgId(adOrgId)
+						.build());
 	}
 
 	@Override

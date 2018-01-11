@@ -48,6 +48,7 @@ import org.compiere.model.X_C_DocType;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -377,11 +378,13 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		//
 		// Fallback: get standard Material Receipt document type
-		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
-		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
-		return Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(ctx, X_C_DocType.DOCBASETYPE_MaterialReceipt,
-				orderLine.getAD_Client_ID(), orderLine.getAD_Org_ID(),
-				trxName);
+		return Services.get(IDocTypeDAO.class)
+				.getDocTypeIdOrNull(DocTypeQuery.builder()
+						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+						.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+						.adClientId(orderLine.getAD_Client_ID())
+						.adOrgId(orderLine.getAD_Org_ID())
+						.build());
 	}
 
 	/** Wraps {@link I_C_OrderLine} as {@link IReceiptScheduleWarehouseDestProvider.IContext} */

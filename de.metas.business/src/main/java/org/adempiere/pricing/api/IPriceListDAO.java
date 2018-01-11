@@ -97,4 +97,6 @@ public interface IPriceListDAO extends ISingletonService
 	int retrieveNextMatchSeqNo(final I_M_ProductPrice productPrice);
 
 	I_M_PriceList_Version retrievePriceListVersionWithExactValidDate(int priceListId, Date date);
+
+	I_M_PriceList_Version retrieveLastCreatedPriceListVersion(int priceListId);
 }
