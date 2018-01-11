@@ -180,13 +180,11 @@ public class MDocType extends X_C_DocType
 	/**
 	 * 	Set SOTrx based on document base type
 	 */
-	public void setIsSOTrx ()
+	public void setIsSOTrx()
 	{
-		boolean isSOTrx = DOCBASETYPE_SalesOrder.equals(getDocBaseType())
-			|| DOCBASETYPE_MaterialDelivery.equals(getDocBaseType())
-			|| getDocBaseType().startsWith("AR");
-		super.setIsSOTrx (isSOTrx);
-	}	//	setIsSOTrx
+		final boolean isSOTrx = Services.get(IDocTypeBL.class).isSOTrx(getDocBaseType());
+		setIsSOTrx(isSOTrx);
+	}	// setIsSOTrx
 
 	/**
 	 * 	String Representation
