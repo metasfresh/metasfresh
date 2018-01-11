@@ -8,10 +8,13 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -51,6 +54,7 @@ import lombok.NonNull;
  *
  */
 @Component
+@DependsOn(Adempiere.BEAN_NAME) // only temporary, for as long as we need ISysConfigBL
 public class WebsocketSender implements InitializingBean
 {
 	private static final transient Logger logger = LogManager.getLogger(WebsocketSender.class);
@@ -102,7 +106,7 @@ public class WebsocketSender implements InitializingBean
 		{
 			return autoflushQueue;
 		}
-		else if(!trx.getTrxListenerManager().canRegisterOnTiming(TrxEventTiming.AFTER_COMMIT))
+		else if (!trx.getTrxListenerManager().canRegisterOnTiming(TrxEventTiming.AFTER_COMMIT))
 		{
 			return autoflushQueue;
 		}
@@ -208,12 +212,12 @@ public class WebsocketSender implements InitializingBean
 		private void enqueue(@NonNull final WebsocketEvent event)
 		{
 			events.add(event);
-			logger.trace("[{}] Enqueued event: {}", name, event);
+			logger.info("[{}] Enqueued event: {}", name, event);
 		}
 
 		public void sendEventsAndClear()
 		{
-			logger.trace("Sending all queued events");
+			logger.info("Sending all queued events");
 
 			final List<WebsocketEvent> eventsToSend = new ArrayList<>(events);
 			events.clear();
@@ -231,7 +235,9 @@ public class WebsocketSender implements InitializingBean
 
 		private void sendEvent(final String destination, final Object payload, final boolean converted)
 		{
-			logger.trace("[{}] Sending to {}: {}", name, destination, payload);
+			logger.info("[{}] Sending to {}: {}", name, destination, payload);
+
+			sleepBeforeSend();
 
 			if (converted)
 			{
@@ -243,6 +249,30 @@ public class WebsocketSender implements InitializingBean
 				websocketMessagingTemplate.convertAndSend(destination, payload);
 				eventsLog.logEvent(destination, payload);
 			}
+		}
+	}
+
+	/**
+	 * @task https://github.com/metasfresh/metasfresh-webui-frontend/issues/1498
+	 * @deprecated this is an attempt for a dirty workaround.
+	 */
+	@Deprecated
+	private static void sleepBeforeSend()
+	{
+		final int delayMillis = Services.get(ISysConfigBL.class).getIntValue("de.metas.ui.web.websocket.WebsocketSender.sendEventDelayMillis", 500);
+		if (delayMillis <= 0)
+		{
+			return;
+		}
+
+		logger.info("Going to sleep {} ms");
+		try
+		{
+			Thread.sleep(delayMillis);
+		}
+		catch (InterruptedException e)
+		{
+			// nothing
 		}
 	}
 }
