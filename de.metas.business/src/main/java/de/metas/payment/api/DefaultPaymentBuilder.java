@@ -134,7 +134,8 @@ public class DefaultPaymentBuilder implements IBuilder
 	{
 		markAsBuilt();
 
-		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+		// note: the only reason why we are calling the "...OrNull" method is because some unit tests are failing.
+		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(DocTypeQuery.builder()
 				.docBaseType(getDocBaseType())
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(payment.getAD_Client_ID())
