@@ -38,7 +38,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 	public void updateTranslations(final int elementId, final String adLanguage) throws SQLException
 	{
 		// Update Columns, Fields, Parameters, Print Info translation tables
-		final String trxName = ITrx.TRXNAME_None;
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		{
 			DB.executeFunctionCallEx(trxName, addUpdateFunctionCall(FUNCTION_Update_TRL_Tables_On_AD_Element_TRL_Update, elementId, adLanguage), null);
 		}
