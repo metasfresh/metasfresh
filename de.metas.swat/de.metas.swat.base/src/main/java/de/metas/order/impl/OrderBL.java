@@ -341,11 +341,11 @@ public class OrderBL implements IOrderBL
 
 		if (C_DocType_ID <= 0)
 		{
-			OrderBL.logger.error("Not found for AD_Client_ID=" + order.getAD_Client_ID() + ", SubType=" + docSubType);
+			logger.error("Not found for AD_Client_ID=" + order.getAD_Client_ID() + ", SubType=" + docSubType);
 		}
 		else
 		{
-			OrderBL.logger.debug("(SO) - " + docSubType);
+			logger.debug("(SO) - " + docSubType);
 			order.setC_DocTypeTarget_ID(C_DocType_ID);
 			order.setIsSOTrx(true);
 		}
