@@ -13,10 +13,8 @@ import {
   getZoomIntoWindow,
   mapIncluded,
   openModal,
-  patchAll,
   selectTableItems
 } from "../../actions/WindowActions";
-import { VIEW_EDITOR_RENDER_MODES_NEVER } from "../../constants/Constants";
 import Prompt from "../app/Prompt";
 import DocumentListContextShortcuts from "../shortcuts/DocumentListContextShortcuts";
 import TableContextShortcuts from "../shortcuts/TableContextShortcuts";
@@ -176,30 +174,6 @@ class Table extends Component {
         }
       });
     }
-  };
-
-  patchAllEditFields = () => {
-    const { dispatch, cols, entity, windowType, viewId } = this.props;
-    const { rows } = this.state;
-    let editableRows = [];
-    rows.map(row => {
-      cols.map(col => {
-        const property = col.fields[0].field;
-        const field = row.fieldsByName[property];
-        const value = field ? field.value : "";
-        const viewEditorRenderMode =
-          (field && field.viewEditorRenderMode) || col.viewEditorRenderMode;
-        if (viewEditorRenderMode !== VIEW_EDITOR_RENDER_MODES_NEVER) {
-          editableRows.push({
-            rowId: row.id,
-            property,
-            value
-          });
-        }
-      });
-    });
-
-    dispatch(patchAll(entity, windowType, viewId, editableRows));
   };
 
   getIndentData = selectFirst => {

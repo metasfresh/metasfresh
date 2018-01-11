@@ -144,13 +144,9 @@ class Container extends Component {
               windowType={rawModal.type}
               viewId={rawModal.viewId}
               masterDocumentList={masterDocumentList}
-              childRef={this.documentListComponent}
             >
               <div className="document-lists-wrapper">
                 <DocumentList
-                  ref={c => {
-                    this.documentListComponent = c && c.getWrappedInstance();
-                  }}
                   type="grid"
                   windowType={rawModal.type}
                   defaultViewId={rawModal.viewId}

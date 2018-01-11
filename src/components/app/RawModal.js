@@ -14,8 +14,7 @@ import Indicator from "./Indicator";
 class RawModal extends Component {
   state = {
     scrolled: false,
-    isTooltipShow: false,
-    closeModal: false
+    isTooltipShow: false
   };
 
   componentDidMount() {
@@ -37,16 +36,6 @@ class RawModal extends Component {
     }
 
     this.removeEventListeners();
-  }
-
-  componentDidUpdate() {
-    if (this.state.closeModal) {
-      const { closeCallback, viewId, windowType } = this.props;
-      const { isNew } = this.state;
-      closeCallback && closeCallback(isNew);
-      deleteView(windowType, viewId);
-      this.removeModal();
-    }
   }
 
   toggleTooltip = visible => {
@@ -80,11 +69,16 @@ class RawModal extends Component {
   };
 
   handleClose = () => {
-    const { childRef } = this.props;
-    childRef && childRef.handlePatchAllEditFields();
-    this.setState({
-      closeModal: true
-    });
+    const { closeCallback, viewId, windowType } = this.props;
+    const { isNew } = this.state;
+
+    if (closeCallback) {
+      closeCallback(isNew);
+    }
+
+    deleteView(windowType, viewId);
+
+    this.removeModal();
   };
 
   removeModal = () => {

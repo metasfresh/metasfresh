@@ -506,30 +506,6 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
   };
 }
 
-export function patchAll(entity, windowType, viewId, rows) {
-  return dispatch => {
-    dispatch(indicatorState("pending"));
-    let patchRequests = [];
-    const isEdit = true;
-
-    rows.map(row => {
-      patchRequests.push(
-        patchRequest({
-          entity,
-          docType: windowType,
-          viewId,
-          isEdit,
-          ...row
-        })
-      );
-    });
-
-    axios.all(patchRequests).then(() => {
-      dispatch(indicatorState("saved"));
-    });
-  };
-}
-
 /*
  *  Wrapper for patch request of widget elements
  *  when responses should merge store
