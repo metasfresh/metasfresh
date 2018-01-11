@@ -221,4 +221,16 @@ public class PriceListDAO implements IPriceListDAO
 		final int nextMatchSeqNo = (lastMatchSeqNo / 10) * 10 + 10;
 		return nextMatchSeqNo;
 	}
+
+	@Override
+	public I_M_PriceList_Version retrieveLastCreatedPriceListVersion(final int priceListId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_PriceList_Version.class)
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceListId)
+				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_M_PriceList_Version.COLUMNNAME_Created)
+				.create()
+				.first();
+	}
 }

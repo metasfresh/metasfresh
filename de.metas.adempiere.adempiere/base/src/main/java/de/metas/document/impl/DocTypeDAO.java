@@ -47,6 +47,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import lombok.NonNull;
@@ -63,8 +64,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	public int getDocTypeIdOrNull(
 			@CacheCtx final Properties ctx,
 			@CacheTrx final String trxName,
-			final DocTypeQuery query
-			)
+			@CacheAllowMutable final DocTypeQuery query)
 	{
 		final int docTypeId = createDocTypeByBaseTypeQuery(ctx, trxName, query)
 				.create()
@@ -94,7 +94,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	public int getDocTypeId(final DocTypeQuery query)
 	{
 		final int docTypeId = getDocTypeIdOrNull(Env.getCtx(), ITrx.TRXNAME_None, query);
-		if(docTypeId <= 0)
+		if (docTypeId <= 0)
 		{
 			throw new DocTypeNotFoundException(query);
 		}
@@ -143,7 +143,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		}
 		return docType;
 	}
-	
+
 	@Override
 	public I_C_DocType getDocTypeOrNull(@NonNull DocTypeQuery query)
 	{
@@ -175,8 +175,8 @@ public class DocTypeDAO implements IDocTypeDAO
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMN_DocSubType, docSubType);
 		}
-		
-		if(query.getIsSOTrx() != null)
+
+		if (query.getIsSOTrx() != null)
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMN_IsSOTrx, query.getIsSOTrx());
 		}
