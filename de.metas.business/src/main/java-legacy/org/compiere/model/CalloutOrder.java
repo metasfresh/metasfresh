@@ -70,7 +70,7 @@ public class CalloutOrder extends CalloutEngine
 	// public static final String COLNAME_QTY_AVAIL = "QtyAvailable";
 
 	/**
-	 * Order Header Change - DocType. - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
+	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
 	 */
 	public String docType(final ICalloutField calloutField)
 	{
@@ -235,6 +235,9 @@ public class CalloutOrder extends CalloutEngine
 				}
 			}
 		}
+
+		//
+		Services.get(IOrderBL.class).updateDescriptionFromDocTypeTargetId(order);
 
 		//
 		return NO_ERROR;

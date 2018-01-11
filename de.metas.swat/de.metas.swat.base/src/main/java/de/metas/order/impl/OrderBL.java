@@ -358,16 +358,30 @@ public class OrderBL implements IOrderBL
 	public void setDocTypeTargetIdAndUpdateDescription(final I_C_Order order, final int docTypeId)
 	{
 		order.setC_DocTypeTarget_ID(docTypeId);
-		
-		if(docTypeId > 0)
+		updateDescriptionFromDocTypeTargetId(order);
+	}
+
+	@Override
+	public void updateDescriptionFromDocTypeTargetId(final I_C_Order order)
+	{
+		final int docTypeId = order.getC_DocTypeTarget_ID();
+		if(docTypeId <= 0)
 		{
-			org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
-			if(docType != null)
-			{
-				order.setDescription(docType.getDescription());
-				order.setDescriptionBottom(docType.getDocumentNote());
-			}
+			return;
 		}
+		org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		if(docType == null)
+		{
+			return;
+		}
+		
+		if(!docType.isCopyDescriptionToDocument())
+		{
+			return;
+		}
+		
+		order.setDescription(docType.getDescription());
+		order.setDescriptionBottom(docType.getDocumentNote());
 	}
 
 	@Override

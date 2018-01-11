@@ -239,4 +239,6 @@ public interface IOrderBL extends ISingletonService
 	 * @task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
 	 */
 	void updateOrderQtySums(I_C_Order order);
+
+	void updateDescriptionFromDocTypeTargetId(I_C_Order order);
 }
