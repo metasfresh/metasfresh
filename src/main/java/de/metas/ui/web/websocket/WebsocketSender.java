@@ -235,9 +235,8 @@ public class WebsocketSender implements InitializingBean
 
 		private void sendEvent(final String destination, final Object payload, final boolean converted)
 		{
-			logger.info("[name={}] Sending to destination={}: payload={}", name, destination, payload);
-
 			sleepBeforeSend();
+			logger.info("[name={}] Sending to destination={}: payload={}", name, destination, payload);
 
 			if (converted)
 			{
@@ -250,29 +249,30 @@ public class WebsocketSender implements InitializingBean
 				eventsLog.logEvent(destination, payload);
 			}
 		}
+
+		/**
+		 * @task https://github.com/metasfresh/metasfresh-webui-frontend/issues/1498
+		 * @deprecated this is an attempt for a dirty workaround.
+		 */
+		@Deprecated
+		private void sleepBeforeSend()
+		{
+			final int delayMillis = Services.get(ISysConfigBL.class).getIntValue("de.metas.ui.web.websocket.WebsocketSender.sendEventDelayMillis", 500);
+			if (delayMillis <= 0)
+			{
+				return;
+			}
+
+			logger.info("[name={}] Sleeping {}ms before the send", name, delayMillis);
+			try
+			{
+				Thread.sleep(delayMillis);
+			}
+			catch (InterruptedException e)
+			{
+				// nothing
+			}
+		}
 	}
 
-	/**
-	 * @task https://github.com/metasfresh/metasfresh-webui-frontend/issues/1498
-	 * @deprecated this is an attempt for a dirty workaround.
-	 */
-	@Deprecated
-	private static void sleepBeforeSend()
-	{
-		final int delayMillis = Services.get(ISysConfigBL.class).getIntValue("de.metas.ui.web.websocket.WebsocketSender.sendEventDelayMillis", 500);
-		if (delayMillis <= 0)
-		{
-			return;
-		}
-
-		logger.info("Going to sleep {}ms", delayMillis);
-		try
-		{
-			Thread.sleep(delayMillis);
-		}
-		catch (InterruptedException e)
-		{
-			// nothing
-		}
-	}
 }
