@@ -181,12 +181,14 @@ public class MOrder extends X_C_Order implements IDocument
 		if (IsSOTrx)
 		{
 			if (DocSubType == null || DocSubType.length() == 0)
-				setC_DocTypeTarget_ID(DocSubType_OnCredit);
+				Services.get(IOrderBL.class).setDocTypeTargetId(this, DocSubType_OnCredit);
 			else
-				setC_DocTypeTarget_ID(DocSubType);
+				Services.get(IOrderBL.class).setDocTypeTargetId(this, DocSubType);
 		}
 		else
-			setC_DocTypeTarget_ID();
+		{
+			Services.get(IOrderBL.class).setDocTypeTargetId(this);
+		}
 	}	// MOrder
 
 	/**
@@ -350,37 +352,6 @@ public class MOrder extends X_C_Order implements IDocument
 	public void setC_DocTypeTarget_ID(String DocSubType_x)
 	{
 		Services.get(IOrderBL.class).setDocTypeTargetId(this, DocSubType_x);
-	}	// setC_DocTypeTarget_ID
-
-	/**
-	 * Set Target Document Type.
-	 * Standard Order or PO
-	 *
-	 * Please use {@link de.metas.adempiere.service.IOrderBL.setDocTypeTargetId(I_C_Order)}.
-	 *
-	 * Please, when changing this one, also change the {@link de.metas.adempiere.service.IOrderBL.setDocTypeTargetId(I_C_Order)}.
-	 */
-	@Deprecated
-	public void setC_DocTypeTarget_ID()
-	{
-		if (isSOTrx())  		// SO = Std Order
-		{
-			setC_DocTypeTarget_ID(DocSubType_Standard);
-			return;
-		}
-		// PO
-		String sql = "SELECT C_DocType_ID FROM C_DocType "
-				+ "WHERE AD_Client_ID=? AND AD_Org_ID IN (0," + getAD_Org_ID()
-				+ ") AND DocBaseType='POO' "
-				+ "ORDER BY AD_Org_ID DESC, IsDefault DESC, DocSubType NULLS FIRST";
-		int C_DocType_ID = DB.getSQLValue(null, sql, getAD_Client_ID());
-		if (C_DocType_ID <= 0)
-			log.error("No POO found for AD_Client_ID=" + getAD_Client_ID());
-		else
-		{
-			log.debug("(PO) - " + C_DocType_ID);
-			setC_DocTypeTarget_ID(C_DocType_ID);
-		}
 	}	// setC_DocTypeTarget_ID
 
 	/**
@@ -998,7 +969,9 @@ public class MOrder extends X_C_Order implements IDocument
 
 		// Default Document Type
 		if (getC_DocTypeTarget_ID() <= 0)
-			setC_DocTypeTarget_ID(DocSubType_Standard);
+		{
+			Services.get(IOrderBL.class).setDocTypeTargetId(this, DocSubType_Standard);
+		}
 
 		// Default Payment Term
 		if (getC_PaymentTerm_ID() == 0)

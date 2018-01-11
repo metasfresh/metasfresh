@@ -371,7 +371,7 @@ public class CalloutOrder extends CalloutEngine
 				Integer docTypeTargetId = rs.getInt("SO_DocTypeTarget_ID");
 				if (IsSOTrx && docTypeTargetId > 0)
 				{
-					order.setC_DocTypeTarget_ID(docTypeTargetId);
+					Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, docTypeTargetId);
 				}
 
 				// Sales Rep - If BP has a default SalesRep then default it

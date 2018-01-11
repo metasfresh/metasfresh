@@ -17,11 +17,8 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
+import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MDistributionList;
 import org.compiere.model.MDistributionListLine;
@@ -29,6 +26,10 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MProduct;
 import org.compiere.util.Env;
+
+import de.metas.order.IOrderBL;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Create Distribution List Order
@@ -38,6 +39,8 @@ import org.compiere.util.Env;
  */
 public class DistributionCreate extends JavaProcess
 {
+	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	
 	/**	Product					*/
 	private int 			p_M_Product_ID = 0;
 	/** Quantity				*/
@@ -68,6 +71,7 @@ public class DistributionCreate extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -100,6 +104,7 @@ public class DistributionCreate extends JavaProcess
 	 *  @return Message (text with variables)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("M_DistributionList_ID=" + p_M_DistributionList_ID 
@@ -135,7 +140,7 @@ public class DistributionCreate extends JavaProcess
 			//
 			m_singleOrder = new MOrder (getCtx(), 0, get_TrxName());
 			m_singleOrder.setIsSOTrx(true);
-			m_singleOrder.setC_DocTypeTarget_ID(MOrder.DocSubType_Standard);
+			orderBL.setDocTypeTargetId(m_singleOrder, MOrder.DocSubType_Standard);
 			m_singleOrder.setBPartner(bp);
 			if (p_Bill_Location_ID != 0)
 				m_singleOrder.setC_BPartner_Location_ID(p_Bill_Location_ID);
@@ -178,7 +183,7 @@ public class DistributionCreate extends JavaProcess
 		{
 			order = new MOrder (getCtx(), 0, get_TrxName());
 			order.setIsSOTrx(true);
-			order.setC_DocTypeTarget_ID(MOrder.DocSubType_Standard);
+			orderBL.setDocTypeTargetId(order, MOrder.DocSubType_Standard);
 			order.setBPartner(bp);
 			if (dll.getC_BPartner_Location_ID() != 0)
 				order.setC_BPartner_Location_ID(dll.getC_BPartner_Location_ID());

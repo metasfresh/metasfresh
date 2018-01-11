@@ -128,14 +128,23 @@ public interface IOrderBL extends ISingletonService
 	 */
 	int retrievePriceListId(I_C_Order order);
 
-	void setDocTypeTargetId(I_C_Order order, String docSubType);
+	/**
+	 * Set Target Sales Document Type.
+	 * This method is also setting IsSOTrx to true.
+	 * 
+	 * @param order
+	 * @param soDocSubType sales DocSubType
+	 */
+	void setDocTypeTargetId(I_C_Order order, String soDocSubType);
 
 	/**
-	 * Please, if you change this, also change {@link org.compiere.model.MOrder.setC_DocTypeTarget_ID()}
+	 * Sets Target Document Type based on {@link I_C_Order#isSOTrx()} (Standard Order or PO)
 	 *
 	 * @param order
 	 */
 	void setDocTypeTargetId(I_C_Order order);
+
+	void setDocTypeTargetIdAndUpdateDescription(I_C_Order order, int docTypeId);
 
 	/**
 	 * Updates the addresses in the order lines from the order. Also sets the header info in the lines.
@@ -230,5 +239,4 @@ public interface IOrderBL extends ISingletonService
 	 * @task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
 	 */
 	void updateOrderQtySums(I_C_Order order);
-
 }
