@@ -152,7 +152,7 @@ public class StockResult
 
 	private final List<ResultGroup> resultGroups;
 
-	@ToString
+	@ToString(exclude = "storageAttributesKeyMatcher" /*because it's just gibberish most of the time*/)
 	@EqualsAndHashCode
 	@Getter
 	public static final class ResultGroup

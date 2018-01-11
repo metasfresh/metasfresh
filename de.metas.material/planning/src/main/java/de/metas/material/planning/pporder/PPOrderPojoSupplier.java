@@ -148,8 +148,12 @@ public class PPOrderPojoSupplier
 			@NonNull final IMaterialRequest request,
 			@NonNull final IMRPNotesCollector mrpNotesCollector)
 	{
-		final PPOrder ppOrderPojo = supplyPPOrderPojo(request, mrpNotesCollector);
-		return ppOrderPojo.withLines(supplyPPOrderLinePojos(ppOrderPojo));
+		final PPOrder ppOrder = supplyPPOrderPojo(request, mrpNotesCollector);
+
+		final PPOrder ppOrderWithLines = ppOrder.toBuilder()
+				.lines(supplyPPOrderLinePojos(ppOrder)).build();
+
+		return ppOrderWithLines;
 	}
 
 	private int calculateDurationDays(

@@ -237,7 +237,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 	private PPOrderAdvisedEvent createPPOrderAdvisedEvent()
 	{
-		final PPOrder ppOrder = createPpOrderWithPpOrderId(0);
+		final PPOrder ppOrder = createPpOrderWithPpOrderId(0, 0);
 
 		final PPOrderAdvisedEvent event = PPOrderAdvisedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
@@ -250,11 +250,10 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 	private PPOrderCreatedEvent createPPOrderCreatedEvent(final int ppOrderId, final int groupId)
 	{
-		final PPOrder ppOrder = createPpOrderWithPpOrderId(ppOrderId);
+		final PPOrder ppOrder = createPpOrderWithPpOrderId(ppOrderId, groupId);
 
 		final PPOrderCreatedEvent event = PPOrderCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
-				.groupId(groupId)
 				.ppOrder(ppOrder)
 				.build();
 
@@ -262,7 +261,9 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		return event;
 	}
 
-	private PPOrder createPpOrderWithPpOrderId(final int ppOrderId)
+	private PPOrder createPpOrderWithPpOrderId(
+			final int ppOrderId,
+			final int groupId)
 	{
 		final ProductDescriptor rawProductDescriptor1 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct1Id);
 		final ProductDescriptor rawProductDescriptor2 = ProductDescriptor.completeForProductIdAndEmptyAttribute(rawProduct2Id);
@@ -279,6 +280,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				.plantId(120)
 				.productPlanningId(140)
 				.docStatus("IP")
+				.materialDispoGroupId(groupId)
 				.line(PPOrderLine.builder()
 						.ppOrderLineId(ppOrderId * 5)
 						.description("descr1")

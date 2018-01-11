@@ -18,7 +18,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import lombok.experimental.Wither;
 
 /*
  * #%L
@@ -42,7 +41,6 @@ import lombok.experimental.Wither;
  * #L%
  */
 @Value
-@Wither
 public class PPOrder
 {
 	int orgId;
@@ -57,6 +55,13 @@ public class PPOrder
 	int bPartnerId;
 
 	int productPlanningId;
+
+	/**
+	 * Not persisted in the {@code PP_Order} data record, but
+	 * when material-dispo posts {@link PPOrderRequestedEvent}, it contains a group-ID,
+	 * and the respective {@link PPOrderCreatedEvent} contains the same group-ID.
+	 */
+	int materialDispoGroupId;
 
 	@NonNull
 	ProductDescriptor productDescriptor;
@@ -100,7 +105,7 @@ public class PPOrder
 	List<PPOrderLine> lines;
 
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	public PPOrder(
 			@JsonProperty("orgId") final int orgId,
 			@JsonProperty("plantId") final int plantId,
@@ -115,7 +120,8 @@ public class PPOrder
 			@JsonProperty("dateStartSchedule") @NonNull final Date dateStartSchedule,
 			@JsonProperty("quantity") @NonNull final BigDecimal quantity,
 			@JsonProperty("advisedToCreatePPOrder") final boolean advisedToCreatePPOrder,
-			@JsonProperty("lines") @Singular final List<PPOrderLine> lines)
+			@JsonProperty("lines") @Singular final List<PPOrderLine> lines,
+			@JsonProperty("materialDispoGroupId") final int materialDispoGroupId)
 	{
 		this.orgId = checkIdGreaterThanZero("orgId", orgId);
 		this.plantId = checkIdGreaterThanZero("plantId", plantId);
@@ -133,5 +139,7 @@ public class PPOrder
 		this.quantity = quantity;
 		this.advisedToCreatePPOrder = advisedToCreatePPOrder;
 		this.lines = lines;
+
+		this.materialDispoGroupId = materialDispoGroupId;
 	}
 }

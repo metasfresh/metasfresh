@@ -6,14 +6,13 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
-import org.eevolution.event.PPOrderRequestedEventHandler;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderChangedDocStatusEvent;
+import de.metas.material.event.pporder.PPOrderDocStatusChangedEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
@@ -43,12 +42,11 @@ public class PP_Order_PostMaterialEvent
 
 		final PPOrderPojoConverter pojoSupplier = Adempiere.getBean(PPOrderPojoConverter.class);
 		final PPOrder ppOrderPojo = pojoSupplier.asPPOrderPojo(ppOrder);
-		final int groupIdFromPPOrderRequestedEvent = PPOrderRequestedEventHandler.ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrder, 0);
+
 
 		final PPOrderCreatedEvent event = PPOrderCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(ppOrder))
 				.ppOrder(ppOrderPojo)
-				.groupId(groupIdFromPPOrderRequestedEvent)
 				.build();
 
 		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
@@ -81,7 +79,7 @@ public class PP_Order_PostMaterialEvent
 			ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
 	public void postMaterialEvent_ppOrderDocStatusChange(@NonNull final I_PP_Order ppOrder)
 	{
-		final PPOrderChangedDocStatusEvent event = PPOrderChangedDocStatusEvent.builder()
+		final PPOrderDocStatusChangedEvent event = PPOrderDocStatusChangedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(ppOrder))
 				.ppOrderId(ppOrder.getPP_Order_ID())
 				.newDocStatus(ppOrder.getDocStatus())

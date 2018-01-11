@@ -27,9 +27,9 @@ import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
-import de.metas.material.event.pporder.PPOrderChangedDocStatusEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
+import de.metas.material.event.pporder.PPOrderDocStatusChangedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderProductionQtyChangedEvent;
 import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
@@ -132,10 +132,10 @@ public class MaterialEventSerializerTests
 		final PPOrderRequestedEvent event = PPOrderRequestedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.dateOrdered(NOW)
-				.groupId(30)
 				.ppOrder(PPOrder.builder()
 						.datePromised(NOW)
 						.dateStartSchedule(NOW)
+						.materialDispoGroupId(30)
 						.orgId(100)
 						.plantId(110)
 						.productDescriptor(createProductDescriptor())
@@ -184,7 +184,7 @@ public class MaterialEventSerializerTests
 	@Test
 	public void ppOrderChangedDocStatusEvent()
 	{
-		final PPOrderChangedDocStatusEvent event = PPOrderChangedDocStatusEvent.builder()
+		final PPOrderDocStatusChangedEvent event = PPOrderDocStatusChangedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
 				.ppOrderId(10)
 				.newDocStatus("newDocStatus")
@@ -468,6 +468,7 @@ public class MaterialEventSerializerTests
 				.orderLineId(4)
 				.orderId(5)
 				.orderBPartnerId(6)
+				.docTypeId(7)
 				.build();
 	}
 
