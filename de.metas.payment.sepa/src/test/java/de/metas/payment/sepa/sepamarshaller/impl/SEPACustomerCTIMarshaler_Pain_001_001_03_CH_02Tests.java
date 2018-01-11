@@ -1,4 +1,4 @@
-package de.metas.payment.sepa.spi.impl;
+package de.metas.payment.sepa.sepamarshaller.impl;
 
 /*
  * #%L
@@ -30,6 +30,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
+
+import de.metas.payment.sepa.sepamarshaller.impl.SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02;
 
 public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02Tests
 {

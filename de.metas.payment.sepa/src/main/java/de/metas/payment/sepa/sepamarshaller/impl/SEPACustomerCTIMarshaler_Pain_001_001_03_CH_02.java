@@ -1,4 +1,4 @@
-package de.metas.payment.sepa.spi.impl;
+package de.metas.payment.sepa.sepamarshaller.impl;
 
 /*
  * #%L
@@ -13,11 +13,11 @@ package de.metas.payment.sepa.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -93,7 +93,7 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.ServiceLevel8Choice;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.StructuredRemittanceInformation7;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
-import de.metas.payment.sepa.spi.ISEPAMarshaller;
+import de.metas.payment.sepa.sepamarshaller.ISEPAMarshaller;
 
 /**
  * Written according to "Schweizer Implementation Guidelines für Kunde-an-Bank-Meldungen für Überweisungen im Zahlungsverkehr", "Version 1.4/30.06.2013". There link is
@@ -242,7 +242,9 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 		final Iterator<I_SEPA_Export_Line> sepaDocumentLines = Services.get(ISEPADocumentDAO.class).retrieveLines(sepaDocument);
 		if (!sepaDocumentLines.hasNext())
 		{
-			throw new AdempiereException("@NoLines@: " + sepaDocument);
+			throw new AdempiereException("The given SEPA_Export record has no lines")
+					.appendParametersToMessage()
+					.setParameter("SEPA_Export", sepaDocument);
 		}
 
 		while (sepaDocumentLines.hasNext())
@@ -264,7 +266,6 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 implements ISEPAMars
 			final BigDecimal groupHeaderCtrlAmt = creditTransferInitiation.getGrpHdr().getCtrlSum();
 			final BigDecimal groupHeaderCtrlAmtNew = groupHeaderCtrlAmt.add(payInsInf.getCtrlSum());
 			creditTransferInitiation.getGrpHdr().setCtrlSum(groupHeaderCtrlAmtNew);
-
 		}
 		//
 		// Number of transactions: The total number of direct debit transaction blocks in the message.

@@ -1,4 +1,4 @@
-package de.metas.payment.sepa.spi.impl;
+package de.metas.payment.sepa.sepamarshaller.impl;
 
 /*
  * #%L
@@ -32,7 +32,7 @@ import org.adempiere.util.collections.IteratorChain;
 
 import de.metas.payment.sepa.api.ISEPADocument;
 import de.metas.payment.sepa.api.ISEPADocumentSourceQuery;
-import de.metas.payment.sepa.spi.ISEPADocumentSource;
+import de.metas.payment.sepa.sepamarshaller.ISEPADocumentSource;
 
 public class AggregatedSEPADocumentSource implements ISEPADocumentSource
 {
