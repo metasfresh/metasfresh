@@ -47,9 +47,8 @@ public class MProductPriceCloningCommand
 				.setFrom(productPrice)
 				.copyToNew(I_M_ProductPrice.class);
 		pp.setM_PriceList_Version_ID(target_PriceList_Version_ID);
-		InterfaceWrapperHelper.save(pp);
-
 		cloneASI(productPrice);
+		InterfaceWrapperHelper.save(pp);
 	}
 
 	private void cloneASI(final I_M_ProductPrice productPrice)
@@ -61,8 +60,6 @@ public class MProductPriceCloningCommand
 
 		final I_M_AttributeSetInstance sourceASI = productPrice.getM_AttributeSetInstance();
 		final I_M_AttributeSetInstance targetASI = sourceASI == null ? null : attributeDAO.copy(sourceASI);
-
 		productPrice.setM_AttributeSetInstance(targetASI);
-		InterfaceWrapperHelper.save(productPrice);
 	}
 }
