@@ -82,6 +82,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -459,7 +460,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			}
 		}
 
-		invoice.setC_DocTypeTarget_ID(docTypeId);
+		setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId);
 		if (dateInvoiced != null)
 		{
 			invoice.setDateInvoiced(dateInvoiced);
@@ -542,31 +543,56 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final boolean setC_DocTypeTarget(final I_C_Invoice invoice, final String docBaseType)
+	public final boolean setC_DocTypeTarget(final org.compiere.model.I_C_Invoice invoice, final String docBaseType)
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
-		final int adClientId = invoice.getAD_Client_ID();
-		final int adOrgId = invoice.getAD_Org_ID();
-		final int C_DocType_ID = docTypeDAO.getDocTypeIdOrNull(DocTypeQuery.builder()
+		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(docBaseType)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.build());
-		if (C_DocType_ID <= 0)
+				.adClientId(invoice.getAD_Client_ID())
+				.adOrgId(invoice.getAD_Org_ID())
+				.build();
+		final int docTypeId = docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
+		if (docTypeId <= 0)
 		{
-			log.error("Not found for AD_Client_ID=" + adClientId + " - " + docBaseType);
+			log.error("Not found for {}", docTypeQuery);
 			return false;
 		}
 		else
 		{
-			log.debug(docBaseType);
-			invoice.setC_DocTypeTarget_ID(C_DocType_ID);
-			final boolean isSOTrx = X_C_DocType.DOCBASETYPE_ARInvoice.equals(docBaseType)
-					|| X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(docBaseType);
+			setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId);
+			final boolean isSOTrx = docTypeBL.isSOTrx(docBaseType);
 			invoice.setIsSOTrx(isSOTrx);
 			return true;
+		}
+	}
+
+	@Override
+	public void setDocTypeTargetIdIfNotSet(final org.compiere.model.I_C_Invoice invoice)
+	{
+		if (invoice.getC_DocTypeTarget_ID() > 0)
+		{
+			return;
+		}
+		
+		final String docBaseType = invoice.isSOTrx() ? X_C_DocType.DOCBASETYPE_ARInvoice : X_C_DocType.DOCBASETYPE_APInvoice;
+		setC_DocTypeTarget(invoice, docBaseType);
+	}
+
+	@Override
+	public void setDocTypeTargetIdAndUpdateDescription(org.compiere.model.I_C_Invoice invoice, int docTypeId)
+	{
+		invoice.setC_DocTypeTarget_ID(docTypeId);
+		if(docTypeId > 0)
+		{
+			org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+			if(docType != null)
+			{
+				invoice.setDescription(docType.getDescription());
+				invoice.setDescriptionBottom(docType.getDocumentNote());
+			}
 		}
 	}
 

@@ -428,7 +428,7 @@ public class CommissionValidator implements ModelValidator
 
 			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getDocType(Constants.DOCBASETYPE_AEInvoice, CommissionConstants.COMMISSON_INVOICE_DOCSUBTYPE_CALC, process.getAD_Client_ID(), process.getAD_Org_ID());
 
-			invoice.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
+			Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(invoice, docType.getC_DocType_ID());
 			invoice.setC_Currency_ID(currencyId);
 			invoice.setDocAction(IDocument.ACTION_Complete);
 
