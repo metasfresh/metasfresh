@@ -87,7 +87,7 @@ class DatePicker extends Component {
 
   render() {
     return (
-      <div tabIndex="-1" onKeyDown={this.handleKeydown}>
+      <div tabIndex="-1" onKeyDown={this.handleKeydown} className="datepicker">
         <Datetime
           closeOnTab={true}
           renderDay={this.renderDay}
@@ -95,7 +95,9 @@ class DatePicker extends Component {
           onBlur={this.handleBlur}
           onFocus={this.handleFocus}
           {...this.props}
+          open={true}
         />
+        <i className="meta-icon-calendar" key={0} />
       </div>
     );
   }

@@ -275,9 +275,7 @@ class RawWidget extends Component {
             />
           );
         } else {
-          return [
-            <i className="meta-icon-calendar input-icon-right" key={0} />,
-
+          return (
             <DatePicker
               key={1}
               field={fields[0].field}
@@ -299,7 +297,7 @@ class RawWidget extends Component {
               }
               handleBackdropLock={handleBackdropLock}
             />
-          ];
+          );
         }
       case "DateTime":
         if (range) {
@@ -349,7 +347,6 @@ class RawWidget extends Component {
                 tabIndex={fullScreen ? -1 : tabIndex}
                 handleBackdropLock={handleBackdropLock}
               />
-              <i className="meta-icon-calendar input-icon-right" />
             </div>
           );
         }
@@ -395,7 +392,6 @@ class RawWidget extends Component {
               tabIndex={fullScreen ? -1 : tabIndex}
               handleBackdropLock={handleBackdropLock}
             />
-            <i className="meta-icon-calendar input-icon-right" />
           </div>
         );
       case "Lookup":
