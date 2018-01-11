@@ -31,7 +31,7 @@ import org.adempiere.util.Check;
 
 import de.metas.payment.sepa.api.ISEPADocumentSourceFactory;
 import de.metas.payment.sepa.api.ISEPADocumentSourceQuery;
-import de.metas.payment.sepa.spi.ISEPADocumentSource;
+import de.metas.payment.sepa.sepamarshaller.ISEPADocumentSource;
 
 public class SEPADocumentSourceFactory implements ISEPADocumentSourceFactory
 {
