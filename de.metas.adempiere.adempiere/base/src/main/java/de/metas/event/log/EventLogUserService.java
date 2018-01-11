@@ -116,7 +116,7 @@ public class EventLogUserService
 			@NonNull final Class<?> handlerClass,
 			@NonNull final Exception e)
 	{
-		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, e);
+		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(e);
 
 		return EventLogEntryRequest.builder()
 				.error(true)

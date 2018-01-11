@@ -111,7 +111,7 @@ public class Application
 			final DeliveryOrder deliveryOrder = goClient.createDeliveryOrder(deliveryOrderCreateRequest);
 			goClient.completeDeliveryOrder(deliveryOrder);
 
-			final List<PackageLabels> packageLabels = goClient.getPackageLabelsList(deliveryOrder.getOrderId());
+			final List<PackageLabels> packageLabels = goClient.getPackageLabelsList(deliveryOrder);
 			System.out.println("Labels: " + packageLabels);
 			savePDFs(packageLabels);
 		};
