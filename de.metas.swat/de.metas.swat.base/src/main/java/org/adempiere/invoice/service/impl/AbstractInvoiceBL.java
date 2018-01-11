@@ -585,16 +585,32 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public void setDocTypeTargetIdAndUpdateDescription(org.compiere.model.I_C_Invoice invoice, int docTypeId)
 	{
 		invoice.setC_DocTypeTarget_ID(docTypeId);
-		if(docTypeId > 0)
-		{
-			org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
-			if(docType != null)
-			{
-				invoice.setDescription(docType.getDescription());
-				invoice.setDescriptionBottom(docType.getDocumentNote());
-			}
-		}
+		updateDescriptionFromDocTypeTargetId(invoice);
 	}
+	
+	@Override
+	public void updateDescriptionFromDocTypeTargetId(final org.compiere.model.I_C_Invoice invoice)
+	{
+		final int docTypeId = invoice.getC_DocTypeTarget_ID();
+		if(docTypeId <= 0)
+		{
+			return;
+		}
+		org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		if(docType == null)
+		{
+			return;
+		}
+		
+		if(!docType.isCopyDescriptionToDocument())
+		{
+			return;
+		}
+		
+		invoice.setDescription(docType.getDescription());
+		invoice.setDescriptionBottom(docType.getDocumentNote());
+	}
+
 
 	@Override
 	public final void renumberLines(final I_C_Invoice invoice, final int step)
