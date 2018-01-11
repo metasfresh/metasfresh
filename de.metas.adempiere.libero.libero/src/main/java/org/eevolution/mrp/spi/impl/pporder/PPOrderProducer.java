@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import lombok.NonNull;
 
 /*
@@ -53,94 +54,96 @@ import lombok.NonNull;
 public class PPOrderProducer
 {
 	public I_PP_Order createPPOrder(
-			@NonNull final PPOrder pojo,
+			@NonNull final PPOrder ppOrderPojo,
 			@NonNull final Date dateOrdered)
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
 		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper
-				.create(Env.getCtx(), pojo.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_None);
+				.create(Env.getCtx(), ppOrderPojo.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_None);
 
 		//
 		// Create PP Order
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
-		ppOrder.setPP_Product_Planning(productPlanning);
+		final I_PP_Order ppOrderRecord = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
+		PPOrderPojoConverter.ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.setValue(ppOrderRecord, ppOrderPojo.getMaterialDispoGroupId());
 
-		ppOrder.setMRP_Generated(true);
-		ppOrder.setMRP_AllowCleanup(true);
-		ppOrder.setLine(10);
+		ppOrderRecord.setPP_Product_Planning(productPlanning);
+
+		ppOrderRecord.setMRP_Generated(true);
+		ppOrderRecord.setMRP_AllowCleanup(true);
+		ppOrderRecord.setLine(10);
 
 		//
 		// Planning dimension
-		ppOrder.setAD_Org_ID(pojo.getOrgId());
-		ppOrder.setS_Resource_ID(pojo.getPlantId());
-		ppOrder.setM_Warehouse_ID(pojo.getWarehouseId());
-		ppOrder.setPlanner_ID(productPlanning.getPlanner_ID());
+		ppOrderRecord.setAD_Org_ID(ppOrderPojo.getOrgId());
+		ppOrderRecord.setS_Resource_ID(ppOrderPojo.getPlantId());
+		ppOrderRecord.setM_Warehouse_ID(ppOrderPojo.getWarehouseId());
+		ppOrderRecord.setPlanner_ID(productPlanning.getPlanner_ID());
 
 		//
 		// Document Type & Status
-		final int docTypeId = getC_DocType_ID(pojo.getOrgId());
+		final int docTypeId = getC_DocType_ID(ppOrderPojo.getOrgId());
 
-		ppOrder.setC_DocTypeTarget_ID(docTypeId);
-		ppOrder.setC_DocType_ID(docTypeId);
-		ppOrder.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
-		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
+		ppOrderRecord.setC_DocTypeTarget_ID(docTypeId);
+		ppOrderRecord.setC_DocType_ID(docTypeId);
+		ppOrderRecord.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
+		ppOrderRecord.setDocAction(X_PP_Order.DOCACTION_Complete);
 
 		//
 		// Product, ASI, UOM
-		final ProductDescriptor productDescriptor = pojo.getProductDescriptor();
-		ppOrder.setM_Product_ID(productDescriptor.getProductId());
-		ppOrder.setM_AttributeSetInstance_ID(productDescriptor.getAttributeSetInstanceId());
+		final ProductDescriptor productDescriptor = ppOrderPojo.getProductDescriptor();
+		ppOrderRecord.setM_Product_ID(productDescriptor.getProductId());
+		ppOrderRecord.setM_AttributeSetInstance_ID(productDescriptor.getAttributeSetInstanceId());
 
 
 		//
 		// BOM & Workflow
-		ppOrder.setPP_Product_BOM(productPlanning.getPP_Product_BOM());
-		ppOrder.setAD_Workflow(productPlanning.getAD_Workflow());
+		ppOrderRecord.setPP_Product_BOM(productPlanning.getPP_Product_BOM());
+		ppOrderRecord.setAD_Workflow(productPlanning.getAD_Workflow());
 
 		//
 		// Dates
-		ppOrder.setDateOrdered(new Timestamp(dateOrdered.getTime()));
+		ppOrderRecord.setDateOrdered(new Timestamp(dateOrdered.getTime()));
 
-		final Timestamp dateFinishSchedule = new Timestamp(pojo.getDatePromised().getTime());
-		ppOrder.setDatePromised(dateFinishSchedule);
-		ppOrder.setDateFinishSchedule(dateFinishSchedule);
-		ppOrder.setPreparationDate(dateFinishSchedule);
+		final Timestamp dateFinishSchedule = new Timestamp(ppOrderPojo.getDatePromised().getTime());
+		ppOrderRecord.setDatePromised(dateFinishSchedule);
+		ppOrderRecord.setDateFinishSchedule(dateFinishSchedule);
+		ppOrderRecord.setPreparationDate(dateFinishSchedule);
 
-		final Timestamp dateStartSchedule = new Timestamp(pojo.getDateStartSchedule().getTime());
-		ppOrder.setDateStartSchedule(dateStartSchedule);
+		final Timestamp dateStartSchedule = new Timestamp(ppOrderPojo.getDateStartSchedule().getTime());
+		ppOrderRecord.setDateStartSchedule(dateStartSchedule);
 
 
 		// Qtys
-		ppOrderBL.setQtyOrdered(ppOrder, pojo.getQuantity());
+		ppOrderBL.setQtyOrdered(ppOrderRecord, ppOrderPojo.getQuantity());
 
-		ppOrderBL.setQtyEntered(ppOrder, pojo.getQuantity());
-		ppOrder.setC_UOM_ID(load(productDescriptor.getProductId(), I_M_Product.class).getC_UOM_ID());
+		ppOrderBL.setQtyEntered(ppOrderRecord, ppOrderPojo.getQuantity());
+		ppOrderRecord.setC_UOM_ID(load(productDescriptor.getProductId(), I_M_Product.class).getC_UOM_ID());
 
 		// QtyBatchSize : do not set it, let the MO to take it from workflow
-		ppOrder.setYield(BigDecimal.ZERO);
+		ppOrderRecord.setYield(BigDecimal.ZERO);
 
-		ppOrder.setScheduleType(X_PP_MRP.TYPEMRP_Demand);
-		ppOrder.setPriorityRule(X_PP_Order.PRIORITYRULE_Medium);
+		ppOrderRecord.setScheduleType(X_PP_MRP.TYPEMRP_Demand);
+		ppOrderRecord.setPriorityRule(X_PP_Order.PRIORITYRULE_Medium);
 
 		//
 		// Inherit values from MRP demand
-		ppOrder.setC_OrderLine_ID(pojo.getOrderLineId());
-		if (pojo.getBPartnerId() > 0)
+		ppOrderRecord.setC_OrderLine_ID(ppOrderPojo.getOrderLineId());
+		if (ppOrderPojo.getBPartnerId() > 0)
 		{
-			ppOrder.setC_BPartner_ID(pojo.getBPartnerId());
+			ppOrderRecord.setC_BPartner_ID(ppOrderPojo.getBPartnerId());
 		}
-		else if (pojo.getOrderLineId() > 0)
+		else if (ppOrderPojo.getOrderLineId() > 0)
 		{
-			ppOrder.setC_BPartner_ID(ppOrder.getC_OrderLine().getC_BPartner_ID());
+			ppOrderRecord.setC_BPartner_ID(ppOrderRecord.getC_OrderLine().getC_BPartner_ID());
 		}
 
 		//
 		// Save the manufacturing order
 		// I_PP_Order_BOM and I_PP_Order_BOMLines are created via a model interceptor
-		InterfaceWrapperHelper.save(ppOrder);
+		InterfaceWrapperHelper.save(ppOrderRecord);
 
-		return ppOrder;
+		return ppOrderRecord;
 	}
 
 	private int getC_DocType_ID(final int orgId)

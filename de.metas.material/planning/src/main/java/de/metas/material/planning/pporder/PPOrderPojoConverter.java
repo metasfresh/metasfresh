@@ -2,6 +2,7 @@ package de.metas.material.planning.pporder;
 
 import java.util.List;
 
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.eevolution.model.I_PP_Order;
@@ -39,6 +40,9 @@ import lombok.NonNull;
 @Service
 public class PPOrderPojoConverter
 {
+	public static final ModelDynAttributeAccessor<I_PP_Order, Integer> ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID = //
+			new ModelDynAttributeAccessor<>(I_PP_Order.class.getName(), "PPOrderRequestedEvent_GroupId", Integer.class);
+
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
 	public PPOrderPojoConverter(@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
@@ -86,6 +90,8 @@ public class PPOrderPojoConverter
 	{
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 
+		final int groupIdFromPPOrderRequestedEvent = ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrder, 0);
+
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
 				.datePromised(ppOrder.getDatePromised())
 				.dateStartSchedule(ppOrder.getDateStartSchedule())
@@ -99,7 +105,8 @@ public class PPOrderPojoConverter
 				.quantity(ppOrder.getQtyOrdered())
 				.warehouseId(ppOrder.getM_Warehouse_ID())
 				.bPartnerId(ppOrder.getC_BPartner_ID())
-				.orderLineId(ppOrder.getC_OrderLine_ID());
+				.orderLineId(ppOrder.getC_OrderLine_ID())
+				.materialDispoGroupId(groupIdFromPPOrderRequestedEvent);
 		return ppOrderPojoBuilder;
 	}
 }

@@ -32,11 +32,9 @@ import lombok.Value;
 
 @Value
 @Builder
-public class PPOrderChangedDocStatusEvent implements MaterialEvent
+public class PPOrderDocStatusChangedEvent implements MaterialEvent
 {
-	// TODO test serialization
-	// TODO handle
-	public static final String TYPE = "PPOrderChangedDocStatusEvent";
+	public static final String TYPE = "PPOrderDocStatusChangedEvent";
 
 	EventDescriptor eventDescriptor;
 
@@ -46,7 +44,7 @@ public class PPOrderChangedDocStatusEvent implements MaterialEvent
 
 	@JsonCreator
 	@Builder
-	public PPOrderChangedDocStatusEvent(
+	public PPOrderDocStatusChangedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("ppOrderId") final int ppOrderId,
 			@JsonProperty("newDocStatus") final String newDocStatus)

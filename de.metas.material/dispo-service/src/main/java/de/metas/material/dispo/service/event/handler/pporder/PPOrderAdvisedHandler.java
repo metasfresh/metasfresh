@@ -103,7 +103,7 @@ public final class PPOrderAdvisedHandler
 	}
 
 	@Override
-	protected CandidatesQuery createQuery(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	protected CandidatesQuery createPreExistingCandidatesQuery(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		final PPOrderAdvisedEvent ppOrderAdvisedEvent = (PPOrderAdvisedEvent)ppOrderEvent;
 
@@ -127,7 +127,7 @@ public final class PPOrderAdvisedHandler
 	}
 
 	@Override
-	protected CandidatesQuery createQuery(
+	protected CandidatesQuery createPreExistingCandidatesQuery(
 			@NonNull final PPOrderLine ppOrderLine,
 			@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
