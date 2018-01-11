@@ -543,7 +543,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final boolean setC_DocTypeTarget(final org.compiere.model.I_C_Invoice invoice, final String docBaseType)
+	public final boolean setDocTypeTargetId(final org.compiere.model.I_C_Invoice invoice, final String docBaseType)
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
@@ -578,7 +578,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 		
 		final String docBaseType = invoice.isSOTrx() ? X_C_DocType.DOCBASETYPE_ARInvoice : X_C_DocType.DOCBASETYPE_APInvoice;
-		setC_DocTypeTarget(invoice, docBaseType);
+		setDocTypeTargetId(invoice, docBaseType);
 	}
 
 	@Override

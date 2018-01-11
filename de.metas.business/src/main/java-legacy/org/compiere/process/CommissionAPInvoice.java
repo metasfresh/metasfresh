@@ -82,7 +82,7 @@ public class CommissionAPInvoice extends JavaProcess
 		//	Create Invoice
 		MInvoice invoice = new MInvoice (getCtx(), 0, null);
 		invoice.setClientOrg(com.getAD_Client_ID(), com.getAD_Org_ID());
-		Services.get(IInvoiceBL.class).setC_DocTypeTarget(invoice, X_C_DocType.DOCBASETYPE_APInvoice);	//	API
+		Services.get(IInvoiceBL.class).setDocTypeTargetId(invoice, X_C_DocType.DOCBASETYPE_APInvoice);	//	API
 		invoice.setBPartner(bp);
 	//	invoice.setDocumentNo (comRun.getDocumentNo());		//	may cause unique constraint
 		invoice.setSalesRep_ID(getAD_User_ID());	//	caller

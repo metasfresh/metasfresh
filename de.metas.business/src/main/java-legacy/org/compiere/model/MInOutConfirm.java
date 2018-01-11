@@ -599,7 +599,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 			{
 				m_creditMemo = new MInvoice (inout, null);
 				m_creditMemo.setDescription(Msg.translate(getCtx(), "M_InOutConfirm_ID") + " " + getDocumentNo());
-				Services.get(IInvoiceBL.class).setC_DocTypeTarget(m_creditMemo, X_C_DocType.DOCBASETYPE_APCreditMemo);
+				Services.get(IInvoiceBL.class).setDocTypeTargetId(m_creditMemo, X_C_DocType.DOCBASETYPE_APCreditMemo);
 				m_creditMemo.saveEx();
 				setC_Invoice_ID(m_creditMemo.getC_Invoice_ID());
 			}

@@ -135,7 +135,7 @@ public class BankingBL implements IBankingBL
 		final String paymentRuleToUse = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
 		invoice.setPaymentRule(paymentRuleToUse);
 
-		Services.get(IInvoiceBL.class).setC_DocTypeTarget(invoice, Constants.DOCBASETYPE_AVIinvoice);
+		Services.get(IInvoiceBL.class).setDocTypeTargetId(invoice, Constants.DOCBASETYPE_AVIinvoice);
 		invoice.saveEx();
 
 		final MInvoiceLine invoiceLine = new MInvoiceLine(invoice);

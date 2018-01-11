@@ -220,7 +220,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param docBaseType
 	 * @return true if document type found and set
 	 */
-	boolean setC_DocTypeTarget(I_C_Invoice invoice, String docBaseType);
+	boolean setDocTypeTargetId(I_C_Invoice invoice, String docBaseType);
 
 	/**
 	 * Set Target Document Type based on SO flag AP/AP Invoice

@@ -129,7 +129,7 @@ public class ExpenseAPInvoice extends JavaProcess
 					log.info("New Invoice for " + bp);
 					invoice = new MInvoice (getCtx(), 0, null);
 					invoice.setClientOrg(te.getAD_Client_ID(), te.getAD_Org_ID());
-					Services.get(IInvoiceBL.class).setC_DocTypeTarget(invoice, X_C_DocType.DOCBASETYPE_APInvoice);	//	API
+					Services.get(IInvoiceBL.class).setDocTypeTargetId(invoice, X_C_DocType.DOCBASETYPE_APInvoice);	//	API
 					invoice.setDocumentNo (te.getDocumentNo());
 					//
 					invoice.setBPartner(bp);

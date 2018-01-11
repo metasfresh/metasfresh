@@ -421,7 +421,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			}
 			else
 			{
-				invoiceBL.setC_DocTypeTarget(invoice, invoiceHeaderDocBaseType);
+				invoiceBL.setDocTypeTargetId(invoice, invoiceHeaderDocBaseType);
 			}
 		}
 
@@ -440,7 +440,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			final boolean invoice_IsCreditMemo = invoiceBL.isCreditMemo(invoiceDocBaseType);
 			if (invoiceHeader_IsCreditMemo && !invoice_IsCreditMemo)
 			{
-				invoiceBL.setC_DocTypeTarget(invoice, invoiceHeaderDocBaseType);
+				invoiceBL.setDocTypeTargetId(invoice, invoiceHeaderDocBaseType);
 			}
 		}
 	}
