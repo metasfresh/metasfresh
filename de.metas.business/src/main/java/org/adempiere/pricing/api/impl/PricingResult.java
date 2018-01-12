@@ -66,6 +66,7 @@ class PricingResult implements IPricingResult
 	private boolean isUseDiscountSchema = false;
 	private boolean disallowDiscount = false;
 	private Timestamp priceDateTS = null;
+	private int C_PaymentTerm_ID = -1;
 
 	private boolean calculated = false;
 
@@ -412,7 +413,7 @@ class PricingResult implements IPricingResult
 	{
 		return pricingAttributes;
 	}
-	
+
 	@Override
 	public void addPricingAttributes(final Collection<IPricingAttribute> pricingAttributesToAdd)
 	{
@@ -420,7 +421,7 @@ class PricingResult implements IPricingResult
 		{
 			return;
 		}
-		
+
 		this.pricingAttributes.addAll(pricingAttributesToAdd);
 	}
 
@@ -428,5 +429,17 @@ class PricingResult implements IPricingResult
 	public String toString()
 	{
 		return ObjectUtils.toString(this);
+	}
+
+	@Override
+	public int getC_PaymentTerm_ID()
+	{
+		return C_PaymentTerm_ID;
+	}
+
+	@Override
+	public void setC_PaymentTerm_ID(int C_PaymentTerm_ID)
+	{
+		this.C_PaymentTerm_ID = C_PaymentTerm_ID;
 	}
 }
