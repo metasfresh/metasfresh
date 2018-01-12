@@ -55,6 +55,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
 import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
@@ -71,6 +72,7 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.Lookup;
@@ -78,7 +80,6 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
-import org.compiere.model.MOrderLine;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.PopupMenuListenerAdapter;
@@ -113,7 +114,7 @@ import de.metas.logging.LogManager;
  *         <li>BF [ 1979213 ] VLookup.getDirectAccessSQL issue
  *         <li>BF [ 2552901 ] VLookup: TAB is not working OK
  * @author Michael Judd (MultiSelect)
- * 
+ *
  * @author hengsin, hengsin.low@idalica.com
  * @see FR [2887701] https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2887701&group_id=176962
  * @sponsor www.metas.de
@@ -123,7 +124,7 @@ public class VLookup extends JComponent
 		, ICopyPasteSupportEditorAware
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1307112072890929329L;
 
@@ -154,7 +155,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Create Optional BPartner Search Lookup
-	 * 
+	 *
 	 * @param WindowNo window
 	 * @return VLookup
 	 */
@@ -176,7 +177,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Create Optional Product Search Lookup
-	 * 
+	 *
 	 * @param WindowNo window
 	 * @return VLookup
 	 */
@@ -198,7 +199,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Create Optional User Search Lookup
-	 * 
+	 *
 	 * @param WindowNo window
 	 * @return VLookup
 	 */
@@ -424,7 +425,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Set Content and Size of Components
-	 * 
+	 *
 	 * @param initial true if this is the initial call (on component construction)
 	 */
 	private void setUI(final boolean initial)
@@ -445,7 +446,7 @@ public class VLookup extends JComponent
 		}
 		else if (isComboBox())	    // show combo if not Search
 		{
-			this.setBorder(null); // no border, because we are showing the combobox, which already has a border
+			setBorder(null); // no border, because we are showing the combobox, which already has a border
 			this.add(m_combo, BorderLayout.CENTER);
 			m_comboActive = true;
 			copyPasteSupport.activateCombo();
@@ -500,7 +501,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Loads first item for a comboBox
-	 * 
+	 *
 	 * @throws AdempiereException if {@link #m_combo} is null or if {@link #isComboBox()} is false
 	 */
 	public void loadFirstItem() throws AdempiereException
@@ -522,28 +523,23 @@ public class VLookup extends JComponent
 			return;
 		}
 
-		SwingUtilities.invokeLater(new Runnable()
-		{
-			@Override
-			public void run()
+		SwingUtilities.invokeLater(() -> {
+			final Object firstKey;
+			final Object firstElement = lookup.getElementAt(0);
+			if (firstElement == null || !(firstElement instanceof KeyNamePair))
 			{
-				final Object firstKey;
-				final Object firstElement = lookup.getElementAt(0);
-				if (firstElement == null || !(firstElement instanceof KeyNamePair))
-				{
-					firstKey = firstElement;
-				}
-				else
-				{
-					firstKey = ((KeyNamePair)firstElement).getKey();
-				}
-				setValue(firstKey);
+				firstKey = firstElement;
 			}
+			else
+			{
+				firstKey = ((KeyNamePair)firstElement).getKey();
+			}
+			setValue(firstKey);
 		});
 	}
 
 	/**
-	 * 
+	 *
 	 * @return window number or {@link Env#WINDOW_None}
 	 */
 	private int getWindowNo()
@@ -564,7 +560,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Set ReadWrite
-	 * 
+	 *
 	 * @param value ReadWrite
 	 */
 	@Override
@@ -606,7 +602,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * IsEditable
-	 * 
+	 *
 	 * @return is lookup ReadWrite
 	 */
 	@Override
@@ -617,7 +613,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Set Mandatory (and back color)
-	 * 
+	 *
 	 * @param mandatory mandatory
 	 */
 	@Override
@@ -629,7 +625,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Is it mandatory
-	 * 
+	 *
 	 * @return true if mandatory
 	 */
 	@Override
@@ -640,7 +636,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Set Background
-	 * 
+	 *
 	 * @param color color
 	 */
 	@Override
@@ -652,7 +648,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Set Background
-	 * 
+	 *
 	 * @param error error
 	 */
 	@Override
@@ -664,7 +660,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Set Foreground
-	 * 
+	 *
 	 * @param fg Foreground color
 	 */
 	@Override
@@ -704,7 +700,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Set Editor to value
-	 * 
+	 *
 	 * @param value new Value
 	 */
 	@Override
@@ -829,16 +825,18 @@ public class VLookup extends JComponent
 
 	/**
 	 * Property Change Listener.
-	 * 
+	 *
 	 * NOTE: this is used for Model to View binding
-	 * 
+	 *
 	 * @param evt PropertyChangeEvent
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent evt)
 	{
 		if (m_stopediting)
+		{
 			return;
+		}
 
 		// log.debug( "VLookup.propertyChange", evt);
 		if (evt.getPropertyName().equals(GridField.PROPERTY))
@@ -858,7 +856,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Return Editor Key Value (Integer)
-	 * 
+	 *
 	 * @return value
 	 */
 	@Override
@@ -884,7 +882,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Return editor display
-	 * 
+	 *
 	 * @return display value
 	 */
 	@Override
@@ -911,7 +909,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Set Field/WindowNo for ValuePreference
-	 * 
+	 *
 	 * @param mField Model Field for Lookup
 	 */
 	@Override
@@ -938,14 +936,16 @@ public class VLookup extends JComponent
 
 	/**************************************************************************
 	 * Action Listener - data binding
-	 * 
+	 *
 	 * @param e ActionEvent
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		if (m_settingValue || m_stopediting)
+		{
 			return;
+		}
 
 		if (m_settingFocus)
 		{
@@ -973,10 +973,13 @@ public class VLookup extends JComponent
 		}
 		// Button pressed
 		else if (e.getSource() == m_button)
+		{
 			actionButton("");
-		// Text entered
+		}
 		else if (e.getSource() == m_text)
+		{
 			actionText();
+		}
 	}	// actionPerformed
 
 	/**
@@ -1017,7 +1020,7 @@ public class VLookup extends JComponent
 	 * Action - Combo.
 	 * <br>
 	 * == dataBinding == inform of new value
-	 * 
+	 *
 	 * <pre>
 	 *  VLookup.actionCombo
 	 *      GridController.vetoableChange
@@ -1026,7 +1029,7 @@ public class VLookup extends JComponent
 	 *                  VLookup.setValue
 	 *          MTab.dataStatusChanged
 	 * </pre>
-	 * 
+	 *
 	 * @param value new value
 	 */
 	// metas: changed access from private to protected
@@ -1053,9 +1056,13 @@ public class VLookup extends JComponent
 		}
 
 		if (updatedValue == null && m_value == null)
+		{
 			updated = true;
+		}
 		else if (updatedValue != null && value.equals(m_value))
+		{
 			updated = true;
+		}
 		if (!updated)
 		{
 			// happens if VLookup is used outside of APanel/GridController (no property listener)
@@ -1071,7 +1078,7 @@ public class VLookup extends JComponent
 	/**
 	 * Action - Button.
 	 * - Call Info
-	 * 
+	 *
 	 * @param queryValue initial query value
 	 */
 	private void actionButton(final String queryValue)
@@ -1161,17 +1168,20 @@ public class VLookup extends JComponent
 			resetTabInfo();
 			// Replace Value with name if no value exists
 			if (queryValue.length() == 0 && m_text.getText().length() > 0)
+			 {
 				queryValue = "@" + m_text.getText() + "@";   // Name indicator - otherwise Value
+			}
 
 			if (m_mField != null)
 			{
 				final int AD_Table_ID = m_mField.getAD_Table_ID();
-				multipleSelection = (MOrderLine.Table_ID == AD_Table_ID) || (MInvoiceLine.Table_ID == AD_Table_ID) || (I_PP_Product_BOMLine.Table_ID == AD_Table_ID)
+				multipleSelection = (InterfaceWrapperHelper.getTableId(I_C_OrderLine.class) == AD_Table_ID)
+						|| (MInvoiceLine.Table_ID == AD_Table_ID) || (I_PP_Product_BOMLine.Table_ID == AD_Table_ID)
 						|| (I_M_ProductPrice.Table_Name.equals(m_mField.getTableName()));
 			}
 
 			// Show Info
-			final Map<String, Object> attributes = new HashMap<String, Object>();
+			final Map<String, Object> attributes = new HashMap<>();
 			attributes.put("M_Warehouse_ID", Env.getContextAsInt(Env.getCtx(), lookup.getWindowNo(), "M_Warehouse_ID"));
 			attributes.put("M_PriceList_ID", Env.getContextAsInt(Env.getCtx(), lookup.getWindowNo(), "M_PriceList_ID"));
 
@@ -1193,7 +1203,9 @@ public class VLookup extends JComponent
 		{
 			// Replace Value with name if no value exists
 			if (queryValue.length() == 0 && m_text.getText().length() > 0)
+			{
 				queryValue = m_text.getText();
+			}
 			// boolean isSOTrx = true; // default
 			// if (Env.getContext(Env.getCtx(), m_lookup.getWindowNo(), "IsSOTrx").equals("N"))
 			// isSOTrx = false;
@@ -1234,12 +1246,18 @@ public class VLookup extends JComponent
 			// make sure that value is in cache
 			lookup.getDirect(IValidationContext.NULL, result[0], false, true); // saveInCache=false, cacheLocal=true
 			if (resetValue)
+			{
 				actionCombo(null);
+			}
 			// juddm added logic for multi-select handling
 			if (result.length > 1)
+			{
 				actionCombo(result);	// data binding
+			}
 			else
+			{
 				actionCombo(result[0]);
+			}
 
 		}
 		else if (cancelled)
@@ -1256,33 +1274,45 @@ public class VLookup extends JComponent
 
 	/**
 	 * Get Where Clause
-	 * 
+	 *
 	 * @return where clause or ""
 	 */
 	private static String getWhereClause(final Lookup lookup)
 	{
 		// final Lookup lookup = getLookup();
 		if (lookup == null)
+		{
 			return "";
+		}
 
 		String whereClause = "";
 
 		if (lookup.getZoomQuery() != null)
+		{
 			whereClause = lookup.getZoomQuery().getWhereClause();
+		}
 		String validation = lookup.getValidation();
 		if (validation == null)
+		{
 			validation = "";
+		}
 		if (whereClause.length() == 0)
+		{
 			whereClause = validation;
+		}
 		else if (validation.length() > 0)
+		{
 			whereClause += " AND (" + validation + ")";
+		}
 		// log.trace("ZoomQuery=" + (m_lookup.getZoomQuery()==null ? "" : m_lookup.getZoomQuery().getWhereClause())
 		// + ", Validation=" + m_lookup.getValidation());
 		if (whereClause.indexOf('@') != -1)
 		{
 			String validated = Env.parseContext(Env.getCtx(), lookup.getWindowNo(), whereClause, false);
 			if (validated.length() == 0)
+			{
 				log.error(lookup + " - Cannot Parse=" + whereClause);
+			}
 			else
 			{
 				log.debug(lookup + " - Parsed: " + validated);
@@ -1386,9 +1416,13 @@ public class VLookup extends JComponent
 		if (id <= 0)
 		{
 			if (id == -3)
+			{
 				log.debug(m_columnName + " - Not Found - " + finalSQL);
+			}
 			else
+			{
 				log.debug(m_columnName + " - Not Unique - " + finalSQL);
+			}
 			m_value = null;	// force re-display
 			actionButton(m_text.getText());
 			return;
@@ -1412,7 +1446,7 @@ public class VLookup extends JComponent
 	 * Generate Access SQL for Search.
 	 * The SQL returns the ID of the value entered
 	 * Also sets m_tableName and m_keyColumnName
-	 * 
+	 *
 	 * @param text search text
 	 * @return sql or ""
 	 *         Example
@@ -1711,7 +1745,7 @@ public class VLookup extends JComponent
 	// start: metas-2009_0021_AP1_CR52
 	/**
 	 * Refresh lookup value.
-	 * 
+	 *
 	 * NOTE: usually this method is called when user Right-click->Refresh on a field.
 	 */
 	@Override
@@ -1779,7 +1813,7 @@ public class VLookup extends JComponent
 	}	// actionRefresh
 
 	/**
-	 * 
+	 *
 	 * @return true if refreshed
 	 */
 	private boolean refreshLookupIfNeeded()
@@ -1821,7 +1855,7 @@ public class VLookup extends JComponent
 	/**************************************************************************
 	 * Focus Listener for ComboBoxes with missing Validation or invalid entries
 	 * - Requery listener for updated list
-	 * 
+	 *
 	 * @param e FocusEvent
 	 */
 	@Override
@@ -1861,7 +1895,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Reset Selection List
-	 * 
+	 *
 	 * @param e FocusEvent
 	 */
 	@Override
@@ -1919,7 +1953,9 @@ public class VLookup extends JComponent
 		}
 		// Combo lost focus
 		if (e.getSource() != m_combo && e.getSource() != m_combo.getEditor().getEditorComponent())
+		{
 			return;
+		}
 		if (lookup.isValidated() && !lookup.hasInactive())
 		{
 			m_haveFocus = false;
@@ -1954,7 +1990,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Set ToolTip
-	 * 
+	 *
 	 * @param text tool tip text
 	 */
 	@Override
@@ -1968,7 +2004,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Reset Env.TAB_INFO context variables
-	 * 
+	 *
 	 * @param columnName
 	 */
 	private void resetTabInfo()
@@ -1993,14 +2029,16 @@ public class VLookup extends JComponent
 
 	/**
 	 * Refresh Query
-	 * 
+	 *
 	 * @return count
 	 */
 	private int refresh()
 	{
 		final Lookup lookup = getLookup();
 		if (lookup == null)
+		{
 			return -1;
+		}
 
 		// no need to refresh readonly lookup, just remove direct cache
 		if (!isReadWrite())
@@ -2014,7 +2052,7 @@ public class VLookup extends JComponent
 
 	/**
 	 * Use by vcelleditor to indicate editing is off and don't invoke databinding
-	 * 
+	 *
 	 * @param stopediting
 	 */
 	public void setStopEditing(boolean stopediting)
