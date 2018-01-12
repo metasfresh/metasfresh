@@ -21,19 +21,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocument;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
-
+import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.util.Services;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MRMA;
 import org.compiere.model.MRMALine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.document.engine.IDocument;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Generate invoice for Vendor RMA
@@ -56,7 +56,8 @@ public class InvoiceGenerateRMA extends JavaProcess
     /**
      *  Prepare - e.g., get Parameters.
      */
-    protected void prepare()
+    @Override
+	protected void prepare()
     {
         
         ProcessInfoParameter[] para = getParametersAsArray();
@@ -80,7 +81,8 @@ public class InvoiceGenerateRMA extends JavaProcess
         }
     }
 
-    protected String doIt() throws Exception
+    @Override
+	protected String doIt() throws Exception
     {
         if (!p_Selection)
         {
@@ -147,7 +149,7 @@ public class InvoiceGenerateRMA extends JavaProcess
         MInvoice invoice = new MInvoice(getCtx(), 0, get_TrxName());
         invoice.setRMA(rma);
         
-        invoice.setC_DocTypeTarget_ID(docTypeId);
+        Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId);
         if (!invoice.save())
         {
             throw new IllegalStateException("Could not create invoice");
@@ -158,7 +160,7 @@ public class InvoiceGenerateRMA extends JavaProcess
     
     private MInvoiceLine[] createInvoiceLines(MRMA rma, MInvoice invoice)
     {
-        ArrayList<MInvoiceLine> invLineList = new ArrayList<MInvoiceLine>();
+        ArrayList<MInvoiceLine> invLineList = new ArrayList<>();
         
         MRMALine rmaLines[] = rma.getLines(true);
         

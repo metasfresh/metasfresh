@@ -53,7 +53,7 @@ Here come the actual release notes:
     *  New Feature in the Application Dictionary, now able to overwrite the system element on Field Level.
   * [#3155](https://github.com/metasfresh/metasfresh/issues/3155) Create special pharma import product table
     * New vertical Feature for the import of products from pharma industry.
-  * [#3222](https://github.com/metasfresh/metasfresh/issues/3222) refactor trx event listeners
+  * [#3222](https://github.com/metasfresh/metasfresh/issues/3222) Refactor trx event listeners
     * Improvement of Transaction event listeners, now leading to explicit specification which code shall be executed on which event.
   * [#3229](https://github.com/metasfresh/metasfresh/issues/3229) Show c_activity_ID in purchase Orderlines Grid View
     * New Field for Activity in Purchase Orderlines.
@@ -82,7 +82,7 @@ Here come the actual release notes:
   * [#3261](https://github.com/metasfresh/metasfresh/issues/3261) WebUI: New Window for BPartner Group Accounts
     * New Window for Business Partner Group Accounts, allowing the user to define relevant accounting information for Business Partner Groups.
   * [#3267](https://github.com/metasfresh/metasfresh/issues/3267) WebUI: Add Create Periods to Action menu in Calendar Window
-    * Improving teh Calender and Period Window in WebUI, adding the Create Periods action to action menu.
+    * Improving the Calender and Period Window in WebUI, adding the Create Periods process to action menu.
   * [#3269](https://github.com/metasfresh/metasfresh/issues/3269) WebUI: Add Shortcut Filter from Calendar Year to Periods Window
     * Improving the Usability of Calendar and Period Window, now allowing to directly zoom to filtered Periods for a given year.
   * [#3272](https://github.com/metasfresh/metasfresh/issues/3272) Provide Periods for 2018

@@ -91,96 +91,6 @@ public class MOrder extends X_C_Order implements IDocument
 
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 
-	/**
-	 * Create new Order by copying
-	 *
-	 * @param from order
-	 * @param org the org of the new order
-	 * @param dateDoc date of the document date
-	 * @param C_DocTypeTarget_ID target document type
-	 * @param isSOTrx sales order
-	 * @param counter create counter links
-	 * @param copyASI copy line attributes Attribute Set Instance, Resaouce Assignment
-	 * @param trxName trx
-	 * @return Order
-	 */
-	public static MOrder copyFrom(MOrder from,
-			I_AD_Org org,
-			Timestamp dateDoc,
-			int C_DocTypeTarget_ID,
-			boolean isSOTrx,
-			boolean counter,
-			boolean copyASI,
-			String trxName)
-	{
-		final MOrder to = new MOrder(from.getCtx(), 0, trxName);
-		to.set_TrxName(trxName);
-		PO.copyValues(from, to, from.getAD_Client_ID(), from.getAD_Org_ID());
-		to.set_ValueNoCheck("C_Order_ID", I_ZERO);
-		to.set_ValueNoCheck("DocumentNo", null);
-
-		to.setAD_Org(org); // 09700
-
-		//
-		to.setDocStatus(DOCSTATUS_Drafted);		// Draft
-		to.setDocAction(DOCACTION_Complete);
-		//
-		to.setC_DocType_ID(0);
-		to.setC_DocTypeTarget_ID(C_DocTypeTarget_ID);
-		to.setIsSOTrx(isSOTrx);
-		//
-		// the new order needs to figure out the pricing and also the warehouse (task 9700) by itself
-		InterfaceWrapperHelper.create(to, de.metas.adempiere.model.I_C_Order.class).setM_PricingSystem_ID(0);
-		to.setM_PriceList_ID(0);
-		to.setM_Warehouse(null);
-
-		to.setIsSelected(false);
-		to.setDateOrdered(dateDoc);
-		to.setDateAcct(dateDoc);
-		to.setDatePromised(dateDoc);	// assumption
-		to.setDatePrinted(null);
-		to.setIsPrinted(false);
-		//
-		to.setIsApproved(false);
-		to.setIsCreditApproved(false);
-		to.setC_Payment_ID(0);
-		to.setC_CashLine_ID(0);
-		// Amounts are updated when adding lines
-		to.setGrandTotal(Env.ZERO);
-		to.setTotalLines(Env.ZERO);
-		//
-		to.setIsDelivered(false);
-		to.setIsInvoiced(false);
-		to.setIsSelfService(false);
-		to.setIsTransferred(false);
-		to.setPosted(false);
-		to.setProcessed(false);
-		if (counter)
-		{
-			to.setRef_Order_ID(from.getC_Order_ID());
-		}
-		else
-		{
-			to.setRef_Order_ID(0);
-		}
-
-		InterfaceWrapperHelper.save(to);
-
-		if (counter)
-		{
-			from.setRef_Order_ID(to.getC_Order_ID());
-		}
-		if (to.copyLinesFrom(from, counter, copyASI) == 0)
-		{
-			throw new IllegalStateException("Could not create Order Lines");
-		}
-
-		// don't copy linked PO/SO
-		to.setLink_Order_ID(0);
-
-		return to;
-	}	// copyFrom
-
 	/**************************************************************************
 	 * Default Constructor
 	 *
@@ -271,12 +181,14 @@ public class MOrder extends X_C_Order implements IDocument
 		if (IsSOTrx)
 		{
 			if (DocSubType == null || DocSubType.length() == 0)
-				setC_DocTypeTarget_ID(DocSubType_OnCredit);
+				Services.get(IOrderBL.class).setDocTypeTargetId(this, DocSubType_OnCredit);
 			else
-				setC_DocTypeTarget_ID(DocSubType);
+				Services.get(IOrderBL.class).setDocTypeTargetId(this, DocSubType);
 		}
 		else
-			setC_DocTypeTarget_ID();
+		{
+			Services.get(IOrderBL.class).setDocTypeTargetId(this);
+		}
 	}	// MOrder
 
 	/**
@@ -436,52 +348,10 @@ public class MOrder extends X_C_Order implements IDocument
 	 *
 	 * @param DocSubType_x SO sub type - see DocSubType_*
 	 */
+	@Deprecated
 	public void setC_DocTypeTarget_ID(String DocSubType_x)
 	{
-		String sql = "SELECT C_DocType_ID FROM C_DocType "
-				+ "WHERE AD_Client_ID=? AND AD_Org_ID IN (0," + getAD_Org_ID()
-				+ ") AND DocSubType=? "
-				+ "ORDER BY AD_Org_ID DESC, IsDefault DESC";
-		int C_DocType_ID = DB.getSQLValue(null, sql, getAD_Client_ID(), DocSubType_x);
-		if (C_DocType_ID <= 0)
-			log.error("Not found for AD_Client_ID=" + getAD_Client_ID() + ", SubType=" + DocSubType_x);
-		else
-		{
-			log.debug("(SO) - " + DocSubType_x);
-			setC_DocTypeTarget_ID(C_DocType_ID);
-			setIsSOTrx(true);
-		}
-	}	// setC_DocTypeTarget_ID
-
-	/**
-	 * Set Target Document Type.
-	 * Standard Order or PO
-	 *
-	 * Please use {@link de.metas.adempiere.service.IOrderBL.setDocTypeTargetId(I_C_Order)}.
-	 *
-	 * Please, when changing this one, also change the {@link de.metas.adempiere.service.IOrderBL.setDocTypeTargetId(I_C_Order)}.
-	 */
-	@Deprecated
-	public void setC_DocTypeTarget_ID()
-	{
-		if (isSOTrx())  		// SO = Std Order
-		{
-			setC_DocTypeTarget_ID(DocSubType_Standard);
-			return;
-		}
-		// PO
-		String sql = "SELECT C_DocType_ID FROM C_DocType "
-				+ "WHERE AD_Client_ID=? AND AD_Org_ID IN (0," + getAD_Org_ID()
-				+ ") AND DocBaseType='POO' "
-				+ "ORDER BY AD_Org_ID DESC, IsDefault DESC, DocSubType NULLS FIRST";
-		int C_DocType_ID = DB.getSQLValue(null, sql, getAD_Client_ID());
-		if (C_DocType_ID <= 0)
-			log.error("No POO found for AD_Client_ID=" + getAD_Client_ID());
-		else
-		{
-			log.debug("(PO) - " + C_DocType_ID);
-			setC_DocTypeTarget_ID(C_DocType_ID);
-		}
+		Services.get(IOrderBL.class).setDocTypeTargetId(this, DocSubType_x);
 	}	// setC_DocTypeTarget_ID
 
 	/**
@@ -1099,7 +969,9 @@ public class MOrder extends X_C_Order implements IDocument
 
 		// Default Document Type
 		if (getC_DocTypeTarget_ID() <= 0)
-			setC_DocTypeTarget_ID(DocSubType_Standard);
+		{
+			Services.get(IOrderBL.class).setDocTypeTargetId(this, DocSubType_Standard);
+		}
 
 		// Default Payment Term
 		if (getC_PaymentTerm_ID() == 0)

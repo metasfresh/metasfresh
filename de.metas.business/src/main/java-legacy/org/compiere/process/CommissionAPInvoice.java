@@ -17,18 +17,18 @@
 package org.compiere.process;
 
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
-
+import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MCommission;
 import org.compiere.model.MCommissionRun;
-import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
+
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Create AP Invoices for Commission
@@ -41,6 +41,7 @@ public class CommissionAPInvoice extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -59,6 +60,7 @@ public class CommissionAPInvoice extends JavaProcess
 	 *  @return Message (variables are parsed)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("doIt - C_CommissionRun_ID=" + getRecord_ID());
@@ -80,7 +82,7 @@ public class CommissionAPInvoice extends JavaProcess
 		//	Create Invoice
 		MInvoice invoice = new MInvoice (getCtx(), 0, null);
 		invoice.setClientOrg(com.getAD_Client_ID(), com.getAD_Org_ID());
-		invoice.setC_DocTypeTarget_ID(MDocType.DOCBASETYPE_APInvoice);	//	API
+		Services.get(IInvoiceBL.class).setDocTypeTargetId(invoice, X_C_DocType.DOCBASETYPE_APInvoice);	//	API
 		invoice.setBPartner(bp);
 	//	invoice.setDocumentNo (comRun.getDocumentNo());		//	may cause unique constraint
 		invoice.setSalesRep_ID(getAD_User_ID());	//	caller

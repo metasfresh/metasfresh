@@ -36,6 +36,8 @@ import lombok.Value;
 
 public interface IDocTypeDAO extends ISingletonService
 {
+	I_C_DocType getById(int docTypeId);
+	
 	/**
 	 * @return C_DocType_ID or -1 if not found
 	 */

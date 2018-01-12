@@ -263,7 +263,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 					throw new AdempiereException("@NotFound@ @C_DocTypeInvoice_ID@ - @C_DocType_ID@:" + odt.get_Translation(MDocType.COLUMNNAME_Name));
 			}
 		}
-		setC_DocTypeTarget_ID(C_DocTypeTarget_ID);
+		Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(this, C_DocTypeTarget_ID);
 		if (invoiceDate != null)
 			setDateInvoiced(invoiceDate);
 		setDateAcct(getDateInvoiced());
@@ -287,7 +287,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setClientOrg(ship);
 		setShipment(ship);	// set base settings
 		//
-		setC_DocTypeTarget_ID();
+		Services.get(IInvoiceBL.class).setDocTypeTargetIdIfNotSet(this);
 		if (invoiceDate != null)
 			setDateInvoiced(invoiceDate);
 		setDateAcct(getDateInvoiced());
@@ -348,7 +348,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setUser1_ID(line.getUser1_ID());
 		setUser2_ID(line.getUser2_ID());
 		//
-		setC_DocTypeTarget_ID(line.getC_DocType_ID());
+		Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(this, line.getC_DocType_ID());
 		setDateInvoiced(line.getDateInvoiced());
 		setDateAcct(line.getDateAcct());
 		//
@@ -523,7 +523,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			//
 			MDocType dt = MDocType.get(getCtx(), order.getC_DocType_ID());
 			if (dt.getC_DocTypeInvoice_ID() != 0)
-				setC_DocTypeTarget_ID(dt.getC_DocTypeInvoice_ID());
+				Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(this, dt.getC_DocTypeInvoice_ID());
 			// Overwrite Invoice BPartner
 			setC_BPartner_ID(order.getBill_BPartner_ID());
 			// Overwrite Invoice Address
@@ -551,52 +551,12 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			MDocType dt = MDocType.get(getCtx(), rma.getC_DocType_ID());
 			if (dt.getC_DocTypeInvoice_ID() != 0)
 			{
-				setC_DocTypeTarget_ID(dt.getC_DocTypeInvoice_ID());
+				Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(this, dt.getC_DocTypeInvoice_ID());
 			}
 			setC_BPartner_Location_ID(rmaOrder.getBill_Location_ID());
 		}
 
 	}	// setShipment
-
-	/**
-	 * Set Target Document Type
-	 *
-	 * @param DocBaseType doc type MDocType.DOCBASETYPE_
-	 */
-	public void setC_DocTypeTarget_ID(String DocBaseType)
-	{
-		// metas: check for AD_Org_ID when fetching C_DocType_ID
-		String sql = "SELECT C_DocType_ID FROM C_DocType "
-				+ "WHERE AD_Client_ID=? AND AD_Org_ID in (0,?) AND DocBaseType=?"
-				+ " AND IsActive='Y' "
-				+ "ORDER BY IsDefault DESC, AD_Org_ID";
-		int C_DocType_ID = DB.getSQLValueEx(null, sql, getAD_Client_ID(), getAD_Org_ID(), DocBaseType);
-		if (C_DocType_ID <= 0)
-			log.error("Not found for AD_Client_ID="
-					+ getAD_Client_ID() + " - " + DocBaseType);
-		else
-		{
-			log.debug(DocBaseType);
-			setC_DocTypeTarget_ID(C_DocType_ID);
-			boolean isSOTrx = MDocType.DOCBASETYPE_ARInvoice.equals(DocBaseType)
-					|| MDocType.DOCBASETYPE_ARCreditMemo.equals(DocBaseType);
-			setIsSOTrx(isSOTrx);
-		}
-	}	// setC_DocTypeTarget_ID
-
-	/**
-	 * Set Target Document Type.
-	 * Based on SO flag AP/AP Invoice
-	 */
-	public void setC_DocTypeTarget_ID()
-	{
-		if (getC_DocTypeTarget_ID() > 0)
-			return;
-		if (isSOTrx())
-			setC_DocTypeTarget_ID(MDocType.DOCBASETYPE_ARInvoice);
-		else
-			setC_DocTypeTarget_ID(MDocType.DOCBASETYPE_APInvoice);
-	}	// setC_DocTypeTarget_ID
 
 	/**
 	 * Get Grand Total
@@ -881,8 +841,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		// Document Type
 		if (getC_DocType_ID() == 0)
 			setC_DocType_ID(0);	// make sure it's set to 0
-		if (getC_DocTypeTarget_ID() == 0)
-			setC_DocTypeTarget_ID(isSOTrx() ? MDocType.DOCBASETYPE_ARInvoice : MDocType.DOCBASETYPE_APInvoice);
+		Services.get(IInvoiceBL.class).setDocTypeTargetIdIfNotSet(this);
 
 		// Payment Term
 		if (getC_PaymentTerm_ID() == 0)

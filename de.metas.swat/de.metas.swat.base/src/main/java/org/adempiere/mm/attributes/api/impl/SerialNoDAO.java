@@ -1,10 +1,17 @@
-package de.metas.document;
+package org.adempiere.mm.attributes.api.impl;
+
+import java.util.Properties;
+
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ISerialNoDAO;
+import org.adempiere.util.Services;
+import org.compiere.model.I_M_Attribute;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,29 +29,15 @@ package de.metas.document;
  * #L%
  */
 
-
-import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_C_DocType;
-
-public interface IDocTypeBL extends ISingletonService
+public class SerialNoDAO implements ISerialNoDAO
 {
-	/**
-	 * 	Is this a Quotation (Binding)
-	 *	@return true if Quotation
-	 */
-	boolean isQuotation(I_C_DocType dt);
+	public static final String SerialNoAttribute = "SerialNo";
 	
-	/**
-	 * 	Is this a Proposal (Not binding)
-	 *	@return true if proposal
-	 */
-	boolean isProposal(I_C_DocType dt);
-	
-	/**
-	 * 	Is this a Proposal or Quotation
-	 *	@return true if proposal or quotation
-	 */
-	boolean isOffer(I_C_DocType dt);
-	
-	boolean isSOTrx(String docBaseType);
+	@Override
+	public I_M_Attribute getSerialNoAttribute(final Properties ctx)
+	{
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+		return attributeDAO.retrieveAttributeByValue(ctx, SerialNoAttribute, I_M_Attribute.class);
+	}	
 }
