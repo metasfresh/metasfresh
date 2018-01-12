@@ -1,7 +1,5 @@
 package de.metas.translation.api.impl;
 
-import java.sql.SQLException;
-
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
@@ -35,7 +33,7 @@ public class ElementTranslationBL implements IElementTranslationBL
 	public static final String FUNCTION_Update_TRL_Tables_On_AD_Element_TRL_Update = "update_TRL_Tables_On_AD_Element_TRL_Update";
 
 	@Override
-	public void updateTranslations(final int elementId, final String adLanguage) throws SQLException
+	public void updateTranslations(final int elementId, final String adLanguage)
 	{
 		// Update Columns, Fields, Parameters, Print Info translation tables
 		final String trxName = ITrx.TRXNAME_ThreadInherited;

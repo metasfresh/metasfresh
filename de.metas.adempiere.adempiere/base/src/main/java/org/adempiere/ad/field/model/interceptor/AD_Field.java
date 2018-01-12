@@ -62,11 +62,11 @@ public class AD_Field
 		field.setName(fieldElement.getName());
 		field.setDescription(fieldElement.getDescription());
 		field.setHelp(fieldElement.getHelp());
-		
+
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Field.COLUMNNAME_AD_Name_ID)
-	public void updateTranslationsForElement(final I_AD_Field field) throws SQLException
+	public void updateTranslationsForElement(final I_AD_Field field)
 	{
 		final I_AD_Element fieldElement;
 
