@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -21,6 +22,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.dimension.DimensionSpecGroup;
+import de.metas.i18n.IMsgBL;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.view.IViewRow;
@@ -287,7 +289,8 @@ public class MaterialCockpitRow implements IViewRow
 		}
 		else
 		{
-			plantName = "";
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			plantName = msgBL.getMsg(Env.getCtx(), "de.metas.ui.web.material.cockpit.MaterialCockpitRow.No_Plant_Info");
 		}
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
 				"countingRow",
