@@ -28,7 +28,7 @@ import de.metas.logging.LogManager;
 
 /**
  * 	Maintain AD_Table_ID/Record_ID constraint
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: PO_Record.java,v 1.4 2006/07/30 00:58:04 jjanke Exp $
  */
@@ -43,17 +43,17 @@ public class PO_Record
 		X_C_Order.Table_Name,
 		X_CM_Container.Table_Name
 	};
-	private static int[]	s_parentChilds = new int[]{
-		X_C_OrderLine.Table_ID,
+	private static int[] s_parentChilds = new int[] {
+		InterfaceWrapperHelper.getTableId(I_C_OrderLine.class),
 		X_CM_Container_Element.Table_ID
 	};
 	private static String[]	s_parentChildNames = new String[]{
 		X_C_OrderLine.Table_Name,
 		X_CM_Container_Element.Table_Name
 	};
-	
-	
-	
+
+
+
 	/**	Cascade Table ID			*/
 	private static int[]	s_cascades =	new int[]{
 		X_AD_Attachment.Table_ID,
@@ -88,7 +88,7 @@ public class PO_Record
 
 	/**	Logger	*/
 	private static Logger log = LogManager.getLogger(PO_Record.class);
-	
+
 	/**
 	 * 	Delete Cascade including (selected)parent relationships
 	 *	@param AD_Table_ID table
@@ -110,7 +110,9 @@ public class PO_Record
 					.append(" WHERE AD_Table_ID=? AND Record_ID=?");
 				int no = DB.executeUpdate(sql.toString(), params, false, trxName);
 				if (no > 0)
+				{
 					log.info(s_cascadeNames[i] + " (" + AD_Table_ID + "/" + Record_ID + ") #" + no);
+				}
 				else if (no < 0)
 				{
 					log.error(s_cascadeNames[i] + " (" + AD_Table_ID + "/" + Record_ID + ") #" + no);
@@ -121,7 +123,7 @@ public class PO_Record
 		//	Parent Loop
 		for (int j = 0; j < s_parents.length; j++)
 		{
-			// DELETE FROM AD_Attachment WHERE AD_Table_ID=1 AND Record_ID IN 
+			// DELETE FROM AD_Attachment WHERE AD_Table_ID=1 AND Record_ID IN
 			//	(SELECT C_InvoiceLine_ID FROM C_InvoiceLine WHERE C_Invoice_ID=1)
 			if (s_parents[j] == AD_Table_ID)
 			{
@@ -137,8 +139,10 @@ public class PO_Record
 						.append(s_parentNames[j]).append("_ID=?)");
 					int no = DB.executeUpdate(sql.toString(), params, false, trxName);
 					if (no > 0)
-						log.info(s_cascadeNames[i] + " " + s_parentNames[j]  
+					{
+						log.info(s_cascadeNames[i] + " " + s_parentNames[j]
 		                   + " (" + AD_Table_ID + "/" + Record_ID + ") #" + no);
+					}
 					else if (no < 0)
 					{
 						log.error(s_cascadeNames[i] + " " + s_parentNames[j]
@@ -169,7 +173,9 @@ public class PO_Record
 				.append(" WHERE AD_Table_ID=? AND Record_ID=?");
 			final int no = DB.getSQLValue(trxName, sql.toString(), AD_Table_ID, Record_ID);
 			if (no > 0)
+			{
 				return s_restrictNames[i];
+			}
 		}
 		return null;
 	}	//	exists
@@ -200,7 +206,7 @@ public class PO_Record
 			rs = null; pstmt = null;
 		}
 	}	//	validate
-	
+
 	/**
 	 * 	Validate all tables for AD_Table/Record_ID relationships
 	 *	@param AD_Table_ID table
@@ -209,9 +215,13 @@ public class PO_Record
 	{
 		MTable table = new MTable(Env.getCtx(), AD_Table_ID, null);
 		if (table.isView())
+		{
 			log.warn("Ignored - View " + table.getTableName());
+		}
 		else
+		{
 			validate (table.getAD_Table_ID(), table.getTableName());
+		}
 	}	//	validate
 
 	/**
@@ -230,10 +240,12 @@ public class PO_Record
 				.append(TableName).append("_ID FROM ").append(TableName).append(")");
 			int no = DB.executeUpdate(sql.toString(), null);
 			if (no > 0)
-				log.info(s_cascadeNames[i] + " (" + AD_Table_ID + "/" + TableName 
+			{
+				log.info(s_cascadeNames[i] + " (" + AD_Table_ID + "/" + TableName
 					+ ") Invalid #" + no);
+			}
 		}
 	}	//	validate
-	
-	
+
+
 }	//	PO_Record

@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1607068852L;
+	private static final long serialVersionUID = -895238540L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -422,6 +422,43 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_OrderLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
+	}
+
+	@Override
+	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
+	}
+
+	/** Set Zahlungsbedingung.
+		@param C_PaymentTerm_ID 
+		Die Bedingungen für die Bezahlung dieses Vorgangs
+	  */
+	@Override
+	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
+	{
+		if (C_PaymentTerm_ID < 1) 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
+	}
+
+	/** Get Zahlungsbedingung.
+		@return Die Bedingungen für die Bezahlung dieses Vorgangs
+	  */
+	@Override
+	public int getC_PaymentTerm_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
