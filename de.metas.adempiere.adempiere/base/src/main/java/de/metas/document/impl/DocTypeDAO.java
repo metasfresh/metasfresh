@@ -34,6 +34,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Sequence;
@@ -47,12 +48,22 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import lombok.NonNull;
 
 public class DocTypeDAO implements IDocTypeDAO
 {
+	@Override
+	public I_C_DocType getById(final int docTypeId)
+	{
+		Check.assume(docTypeId > 0, "docTypeId > 0");
+
+		// NOTE: we assume the C_DocType is cached on table level (i.e. see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService))
+		return InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
+	}
+
 	@Override
 	public int getDocTypeIdOrNull(final DocTypeQuery query)
 	{
@@ -63,8 +74,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	public int getDocTypeIdOrNull(
 			@CacheCtx final Properties ctx,
 			@CacheTrx final String trxName,
-			final DocTypeQuery query
-			)
+			@CacheAllowMutable final DocTypeQuery query)
 	{
 		final int docTypeId = createDocTypeByBaseTypeQuery(ctx, trxName, query)
 				.create()
@@ -94,7 +104,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	public int getDocTypeId(final DocTypeQuery query)
 	{
 		final int docTypeId = getDocTypeIdOrNull(Env.getCtx(), ITrx.TRXNAME_None, query);
-		if(docTypeId <= 0)
+		if (docTypeId <= 0)
 		{
 			throw new DocTypeNotFoundException(query);
 		}
@@ -143,7 +153,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		}
 		return docType;
 	}
-	
+
 	@Override
 	public I_C_DocType getDocTypeOrNull(@NonNull DocTypeQuery query)
 	{
@@ -175,15 +185,16 @@ public class DocTypeDAO implements IDocTypeDAO
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMN_DocSubType, docSubType);
 		}
-		
-		if(query.getIsSOTrx() != null)
+
+		if (query.getIsSOTrx() != null)
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMN_IsSOTrx, query.getIsSOTrx());
 		}
 
 		queryBuilder.orderBy()
 				.addColumn(I_C_DocType.COLUMNNAME_IsDefault, Direction.Descending, Nulls.Last)
-				.addColumn(I_C_DocType.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last);
+				.addColumn(I_C_DocType.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_C_DocType.COLUMNNAME_DocSubType, Direction.Ascending, Nulls.First);
 
 		return queryBuilder;
 	}

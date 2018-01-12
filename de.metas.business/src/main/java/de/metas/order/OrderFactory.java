@@ -192,7 +192,10 @@ public class OrderFactory
 	public OrderFactory docType(final int docTypeTargetId)
 	{
 		assertNotBuilt();
-		order.setC_DocTypeTarget_ID(docTypeTargetId);
+		
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
+		orderBL.setDocTypeTargetIdAndUpdateDescription(order, docTypeTargetId);
+		
 		return this;
 	}
 

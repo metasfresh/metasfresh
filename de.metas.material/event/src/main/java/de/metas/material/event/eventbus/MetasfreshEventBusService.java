@@ -1,10 +1,7 @@
 package de.metas.material.event.eventbus;
 
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.stereotype.Service;
 
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
@@ -38,8 +35,7 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Service(MaterialEventConfiguration.BEAN_NAME)
-@DependsOn(Adempiere.BEAN_NAME)
+
 public final class MetasfreshEventBusService
 {
 	private static final Logger logger = LogManager.getLogger(MetasfreshEventBusService.class);

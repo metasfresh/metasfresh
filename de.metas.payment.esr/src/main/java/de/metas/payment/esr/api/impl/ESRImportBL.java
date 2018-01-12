@@ -569,7 +569,7 @@ public class ESRImportBL implements IESRImportBL
 				save(esrImport, ITrx.TRXNAME_None); // out of transaction: we want to not be rollback
 			}
 
-			throw new AdempiereException(e.getLocalizedMessage(), e);
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 		finally
 		{

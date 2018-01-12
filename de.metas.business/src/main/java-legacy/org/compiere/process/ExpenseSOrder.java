@@ -20,10 +20,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
@@ -37,6 +33,9 @@ import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
+import de.metas.order.IOrderBL;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Create Sales Orders from Expense Reports
@@ -46,6 +45,8 @@ import de.metas.document.engine.IDocument;
  */
 public class ExpenseSOrder extends JavaProcess
 {
+	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	
 	/**	 BPartner				*/
 	private int			p_C_BPartner_ID = 0;
 	/** Date Drom				*/
@@ -183,7 +184,7 @@ public class ExpenseSOrder extends JavaProcess
 			log.info("New Order for " + bp + ", Project=" + tel.getC_Project_ID());
 			m_order = new MOrder (getCtx(), 0, get_TrxName());
 			m_order.setAD_Org_ID(tel.getAD_Org_ID());
-			m_order.setC_DocTypeTarget_ID(MOrder.DocSubType_OnCredit);
+			orderBL.setDocTypeTargetId(m_order, MOrder.DocSubType_OnCredit);
 			//
 			m_order.setBPartner(bp);
 			if (m_order.getC_BPartner_Location_ID() == 0)

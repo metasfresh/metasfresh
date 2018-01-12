@@ -32,17 +32,19 @@ public interface IDocTypeBL extends ISingletonService
 	 * 	Is this a Quotation (Binding)
 	 *	@return true if Quotation
 	 */
-	public boolean isQuotation(I_C_DocType dt);
+	boolean isQuotation(I_C_DocType dt);
 	
 	/**
 	 * 	Is this a Proposal (Not binding)
 	 *	@return true if proposal
 	 */
-	public boolean isProposal(I_C_DocType dt);
+	boolean isProposal(I_C_DocType dt);
 	
 	/**
 	 * 	Is this a Proposal or Quotation
 	 *	@return true if proposal or quotation
 	 */
-	public boolean isOffer(I_C_DocType dt);
+	boolean isOffer(I_C_DocType dt);
+	
+	boolean isSOTrx(String docBaseType);
 }
