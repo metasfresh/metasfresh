@@ -15,7 +15,7 @@ public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_Dis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1202159939L;
+	private static final long serialVersionUID = 1095717415L;
 
     /** Standard Constructor */
     public X_M_DiscountSchema (Properties ctx, int M_DiscountSchema_ID, String trxName)
@@ -134,12 +134,12 @@ public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_Dis
 	public static final int DISCOUNTTYPE_AD_Reference_ID=247;
 	/** Flat Percent = F */
 	public static final String DISCOUNTTYPE_FlatPercent = "F";
-	/** Formel = S */
-	public static final String DISCOUNTTYPE_Formel = "S";
+	/** Formula = S */
+	public static final String DISCOUNTTYPE_Formula = "S";
 	/** Breaks = B */
 	public static final String DISCOUNTTYPE_Breaks = "B";
-	/** Preisliste = P */
-	public static final String DISCOUNTTYPE_Preisliste = "P";
+	/** Pricelist = P */
+	public static final String DISCOUNTTYPE_Pricelist = "P";
 	/** Set Rabatt Art.
 		@param DiscountType 
 		Type of trade discount calculation
