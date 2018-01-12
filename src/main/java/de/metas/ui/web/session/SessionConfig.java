@@ -67,7 +67,7 @@ public class SessionConfig
 		{
 			final ScheduledExecutorService scheduledExecutor = sessionScheduledExecutorService();
 			scheduledExecutor.scheduleAtFixedRate(
-					sessionRepository::purgeExpiredSessions, // command
+					sessionRepository::purgeExpiredSessionsNoFail, // command, don't fail because on failure the task won't be re-scheduled so it's game over
 					checkExpiredSessionsRateInMinutes, // initialDelay
 					checkExpiredSessionsRateInMinutes, // period
 					TimeUnit.MINUTES // timeUnit
