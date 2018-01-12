@@ -50,15 +50,14 @@ public class ShipmentScheduleUpdatedEvent extends AbstractShipmentScheduleEvent
 	@Builder
 	public ShipmentScheduleUpdatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("orderedMaterial") final MaterialDescriptor orderedMaterial,
+			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("orderedQuantityDelta") @NonNull final BigDecimal orderedQuantityDelta,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
 			@JsonProperty("reservedQuantityDelta") @NonNull final BigDecimal reservedQuantityDelta,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId)
 	{
-		super(
-				eventDescriptor,
-				orderedMaterial,
+		super(eventDescriptor,
+				materialDescriptor,
 				reservedQuantity,
 				shipmentScheduleId);
 

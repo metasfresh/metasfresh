@@ -19,23 +19,23 @@ package org.compiere.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocument;
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
-
+import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
-import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MTimeExpense;
 import org.compiere.model.MTimeExpenseLine;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+
+import de.metas.document.engine.IDocument;
+import de.metas.i18n.Msg;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Create AP Invoices from Expense Reports
@@ -53,6 +53,7 @@ public class ExpenseAPInvoice extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -79,6 +80,7 @@ public class ExpenseAPInvoice extends JavaProcess
 	 *  @return Message (clear text)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws java.lang.Exception
 	{
 		StringBuffer sql = new StringBuffer ("SELECT * "
@@ -127,7 +129,7 @@ public class ExpenseAPInvoice extends JavaProcess
 					log.info("New Invoice for " + bp);
 					invoice = new MInvoice (getCtx(), 0, null);
 					invoice.setClientOrg(te.getAD_Client_ID(), te.getAD_Org_ID());
-					invoice.setC_DocTypeTarget_ID(MDocType.DOCBASETYPE_APInvoice);	//	API
+					Services.get(IInvoiceBL.class).setDocTypeTargetId(invoice, X_C_DocType.DOCBASETYPE_APInvoice);	//	API
 					invoice.setDocumentNo (te.getDocumentNo());
 					//
 					invoice.setBPartner(bp);

@@ -48,24 +48,35 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import lombok.NonNull;
 
 public class DocTypeDAO implements IDocTypeDAO
 {
 	@Override
-	public int getDocTypeIdOrNull(final Properties ctx, final String docBaseType, final int adClientId, final int adOrgId, final String trxName)
+	public I_C_DocType getById(final int docTypeId)
 	{
-		final String docSubType = DOCSUBTYPE_Any;
-		return getDocTypeIdOrNull(ctx, docBaseType, docSubType, adClientId, adOrgId, trxName);
+		Check.assume(docTypeId > 0, "docTypeId > 0");
+
+		// NOTE: we assume the C_DocType is cached on table level (i.e. see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService))
+		return InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
 	}
 
-	@Cached(cacheName = I_C_DocType.Table_Name + "#by#DocBaseType#DocSubType#AD_Client_ID#AD_Org_ID")
+	@Override
+	public int getDocTypeIdOrNull(final DocTypeQuery query)
+	{
+		return getDocTypeIdOrNull(Env.getCtx(), ITrx.TRXNAME_None, query);
+	}
+
+	@Cached(cacheName = I_C_DocType.Table_Name + "#by#query")
 	public int getDocTypeIdOrNull(
 			@CacheCtx final Properties ctx,
-			final String docBaseType, final String docSubType, final int adClientId, final int adOrgId,
-			@CacheTrx final String trxName)
+			@CacheTrx final String trxName,
+			@CacheAllowMutable final DocTypeQuery query)
 	{
-		final int docTypeId = createDocTypeByBaseTypeQuery(ctx, docBaseType, docSubType, adClientId, adOrgId, trxName)
+		final int docTypeId = createDocTypeByBaseTypeQuery(ctx, trxName, query)
 				.create()
 				.firstId();
 
@@ -80,14 +91,36 @@ public class DocTypeDAO implements IDocTypeDAO
 	@Override
 	public int getDocTypeId(final Properties ctx, final String docBaseType, final int adClientId, final int adOrgId, final String trxName)
 	{
-		final String docSubType = DOCSUBTYPE_Any;
-		return getDocTypeIdOrNull(ctx, docBaseType, docSubType, adClientId, adOrgId, trxName);
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(docBaseType)
+				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build();
+		return getDocTypeIdOrNull(ctx, trxName, query);
+	}
+
+	@Override
+	public int getDocTypeId(final DocTypeQuery query)
+	{
+		final int docTypeId = getDocTypeIdOrNull(Env.getCtx(), ITrx.TRXNAME_None, query);
+		if (docTypeId <= 0)
+		{
+			throw new DocTypeNotFoundException(query);
+		}
+		return docTypeId;
 	}
 
 	@Override
 	public int getDocTypeId(final Properties ctx, final String docBaseType, final String docSubType, final int adClientId, final int adOrgId, final String trxName)
 	{
-		final int docTypeId = getDocTypeIdOrNull(ctx, docBaseType, docSubType, adClientId, adOrgId, trxName);
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(docBaseType)
+				.docSubType(docSubType)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build();
+		final int docTypeId = getDocTypeIdOrNull(ctx, trxName, query);
 		if (docTypeId <= 0)
 		{
 			final String additionalInfo = "@DocSubType@: " + docSubType
@@ -100,105 +133,76 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
-	public I_C_DocType getDocTypeOrNull(final Properties ctx,
-			final String docBaseType,
-			final int adClientId,
-			final int adOrgId,
-			final String trxName)
-	{
-		final String docSubType = DOCSUBTYPE_Any;
-		return createDocTypeByBaseTypeQuery(ctx, docBaseType, docSubType, adClientId, adOrgId, trxName)
-				.create()
-				.first(I_C_DocType.class);
-	}
-
-	@Override
-	public I_C_DocType getDocTypeOrNullForSOTrx(
-			final Properties ctx,
-			final String docBaseType,
-			final String docSubType,
-			final boolean isSOTrx,
-			final int adClientId,
-			final int adOrgId,
-			final String trxName)
-	{
-		return createDocTypeByBaseTypeQuery(ctx, docBaseType, docSubType, adClientId, adOrgId, trxName)
-				.addEqualsFilter(I_C_DocType.COLUMN_IsSOTrx, isSOTrx)
-				.create().first(I_C_DocType.class);
-	}
-
-	@Override
 	public I_C_DocType getDocType(
 			final String docBaseType,
 			final String docSubType,
 			final int adClientId,
 			final int adOrgId)
 	{
-		final I_C_DocType docType = getDocTypeOrNull(Env.getCtx(), docBaseType, docSubType, adClientId, adOrgId, ITrx.TRXNAME_None);
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(docBaseType)
+				.docSubType(docSubType)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build();
+
+		final I_C_DocType docType = getDocTypeOrNull(query);
 		if (docType == null)
 		{
-			final String additionalInfo = "@DocSubType@: " + docSubType
-					+ ", @AD_Client_ID@: " + adClientId
-					+ ", @AD_Org_ID@: " + adOrgId;
-			throw new DocTypeNotFoundException(docBaseType, additionalInfo);
+			throw new DocTypeNotFoundException(query);
 		}
 		return docType;
 	}
 
 	@Override
-	public I_C_DocType getDocTypeOrNull(final Properties ctx,
-			final String docBaseType,
-			final String docSubType,
-			final int adClientId,
-			final int adOrgId,
-			final String trxName)
+	public I_C_DocType getDocTypeOrNull(@NonNull DocTypeQuery query)
 	{
-		return createDocTypeByBaseTypeQuery(ctx, docBaseType, docSubType, adClientId, adOrgId, trxName)
+		return createDocTypeByBaseTypeQuery(Env.getCtx(), ITrx.TRXNAME_None, query)
 				.create()
 				.first(I_C_DocType.class);
 	}
 
 	private IQueryBuilder<I_C_DocType> createDocTypeByBaseTypeQuery(
 			final Properties ctx,
-			final String docBaseType,
-			final String docSubType,
-			final int adClientId,
-			final int adOrgId,
-			final String trxName)
+			final String trxName,
+			@NonNull final DocTypeQuery query)
 	{
-		Check.assumeNotNull(docBaseType, "docBaseType not null");
-
 		final IQueryBuilder<I_C_DocType> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_DocType.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_C_DocType> filters = queryBuilder.getCompositeFilter();
 		filters.addOnlyActiveRecordsFilter();
-		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_AD_Client_ID, adClientId);
-		filters.addInArrayOrAllFilter(I_C_DocType.COLUMNNAME_AD_Org_ID, 0, adOrgId);
-		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
+		filters.addEqualsFilter(I_C_DocType.COLUMN_AD_Client_ID, query.getAdClientId());
+		filters.addInArrayOrAllFilter(I_C_DocType.COLUMN_AD_Org_ID, 0, query.getAdOrgId());
+		filters.addEqualsFilter(I_C_DocType.COLUMN_DocBaseType, query.getDocBaseType());
 
-		if (docSubType == DOCSUBTYPE_NONE)
+		final String docSubType = query.getDocSubType();
+		if (docSubType == DocTypeQuery.DOCSUBTYPE_NONE)
 		{
-			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
+			filters.addEqualsFilter(I_C_DocType.COLUMN_DocSubType, null);
+		}
+		else if (docSubType != DocTypeQuery.DOCSUBTYPE_Any)
+		{
+			filters.addEqualsFilter(I_C_DocType.COLUMN_DocSubType, docSubType);
 		}
 
-		else if (docSubType != DOCSUBTYPE_Any)
+		if (query.getIsSOTrx() != null)
 		{
-			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
+			filters.addEqualsFilter(I_C_DocType.COLUMN_IsSOTrx, query.getIsSOTrx());
 		}
 
 		queryBuilder.orderBy()
 				.addColumn(I_C_DocType.COLUMNNAME_IsDefault, Direction.Descending, Nulls.Last)
-				.addColumn(I_C_DocType.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last);
+				.addColumn(I_C_DocType.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_C_DocType.COLUMNNAME_DocSubType, Direction.Ascending, Nulls.First);
 
 		return queryBuilder;
 	}
 
 	@Override
-	public List<I_C_DocType> retrieveDocTypesByBaseType(final Properties ctx, final String docBaseType, final int adClientId, final int adOrgId, final String trxName)
+	public List<I_C_DocType> retrieveDocTypesByBaseType(final DocTypeQuery query)
 	{
-		final String docSubType = DOCSUBTYPE_Any;
-		return createDocTypeByBaseTypeQuery(ctx, docBaseType, docSubType, adClientId, adOrgId, trxName)
+		return createDocTypeByBaseTypeQuery(Env.getCtx(), ITrx.TRXNAME_None, query)
 				.create()
 				.list(I_C_DocType.class);
 	}
@@ -240,11 +244,11 @@ public class DocTypeDAO implements IDocTypeDAO
 		final String name = request.getName();
 
 		final int docNoSequenceId;
-		if(request.getDocNoSequenceId() > 0)
+		if (request.getDocNoSequenceId() > 0)
 		{
 			docNoSequenceId = request.getDocNoSequenceId();
 		}
-		else if(request.getNewDocNoSequenceStartNo() > 0)
+		else if (request.getNewDocNoSequenceStartNo() > 0)
 		{
 			final I_AD_Sequence sequence = new MSequence(ctx, Env.getAD_Client_ID(ctx), name, request.getNewDocNoSequenceStartNo(), trxName);
 			InterfaceWrapperHelper.save(sequence);
@@ -257,7 +261,7 @@ public class DocTypeDAO implements IDocTypeDAO
 
 		final MDocType dt = new MDocType(ctx, request.getDocBaseType(), name, trxName);
 		dt.setEntityType(request.getEntityType());
-		if(request.getAdOrgId() > 0)
+		if (request.getAdOrgId() > 0)
 		{
 			dt.setAD_Org_ID(request.getAdOrgId());
 		}
@@ -281,7 +285,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		{
 			dt.setGL_Category_ID(request.getGlCategoryId());
 		}
-		
+
 		if (docNoSequenceId <= 0)
 		{
 			dt.setIsDocNoControlled(false);
@@ -291,13 +295,13 @@ public class DocTypeDAO implements IDocTypeDAO
 			dt.setIsDocNoControlled(true);
 			dt.setDocNoSequence_ID(docNoSequenceId);
 		}
-		
-		if(request.getDocumentCopies() > 0)
+
+		if (request.getDocumentCopies() > 0)
 		{
 			dt.setDocumentCopies(request.getDocumentCopies());
 		}
 
-		if(request.getIsSOTrx() != null)
+		if (request.getIsSOTrx() != null)
 		{
 			dt.setIsSOTrx(request.getIsSOTrx());
 		}
@@ -305,7 +309,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		{
 			dt.setIsSOTrx();
 		}
-		
+
 		InterfaceWrapperHelper.save(dt);
 		return dt;
 	}

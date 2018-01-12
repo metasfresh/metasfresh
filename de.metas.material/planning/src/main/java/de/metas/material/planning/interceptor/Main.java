@@ -4,6 +4,8 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.model.I_AD_Client;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.swat.base

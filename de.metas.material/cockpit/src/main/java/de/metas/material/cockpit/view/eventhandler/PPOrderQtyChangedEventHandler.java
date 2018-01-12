@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.material.cockpit.view.DataRecordIdentifier;
-import de.metas.material.cockpit.view.DataUpdateRequest;
-import de.metas.material.cockpit.view.DataUpdateRequestHandler;
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
@@ -46,9 +46,9 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
 public class PPOrderQtyChangedEventHandler implements MaterialEventHandler<PPOrderQtyChangedEvent>
 {
-	private final DataUpdateRequestHandler dataUpdateRequestHandler;
+	private final MainDataRequestHandler dataUpdateRequestHandler;
 
-	public PPOrderQtyChangedEventHandler(@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler)
+	public PPOrderQtyChangedEventHandler(@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
 	}
@@ -64,15 +64,15 @@ public class PPOrderQtyChangedEventHandler implements MaterialEventHandler<PPOrd
 	{
 		final List<PPOrderLine> newPPOrderLines = ppOrderQtyChangedEvent.getNewPPOrderLines();
 
-		final ImmutableList.Builder<DataUpdateRequest> requests = ImmutableList.builder();
+		final ImmutableList.Builder<UpdateMainDataRequest> requests = ImmutableList.builder();
 		for (final PPOrderLine newPPOrderLine : newPPOrderLines)
 		{
-			final DataRecordIdentifier identifier = DataRecordIdentifier.builder()
+			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(newPPOrderLine.getProductDescriptor())
 					.date(TimeUtil.getDay(newPPOrderLine.getIssueOrReceiveDate()))
 					.build();
 
-			final DataUpdateRequest request = DataUpdateRequest.builder()
+			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)
 					.requiredForProductionQty(newPPOrderLine.getQtyRequired())
 					.build();
@@ -82,11 +82,11 @@ public class PPOrderQtyChangedEventHandler implements MaterialEventHandler<PPOrd
 		final List<DeletedPPOrderLineDescriptor> deletedPPOrderLines = ppOrderQtyChangedEvent.getDeletedPPOrderLines();
 		for(final DeletedPPOrderLineDescriptor deletedPPOrderLine: deletedPPOrderLines)
 		{
-			final DataRecordIdentifier identifier = DataRecordIdentifier.builder()
+			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(deletedPPOrderLine.getProductDescriptor())
 					.date(TimeUtil.getDay(deletedPPOrderLine.getIssueOrReceiveDate()))
 					.build();
-			final DataUpdateRequest request = DataUpdateRequest.builder()
+			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)
 					.requiredForProductionQty(deletedPPOrderLine.getQuantity().negate())
 					.build();
@@ -96,12 +96,12 @@ public class PPOrderQtyChangedEventHandler implements MaterialEventHandler<PPOrd
 		final List<ChangedPPOrderLineDescriptor> changedPPOrderLines = ppOrderQtyChangedEvent.getPpOrderLineChanges();
 		for(final ChangedPPOrderLineDescriptor changedPPOrderLine: changedPPOrderLines)
 		{
-			final DataRecordIdentifier identifier = DataRecordIdentifier.builder()
+			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(changedPPOrderLine.getProductDescriptor())
 					.date(TimeUtil.getDay(changedPPOrderLine.getIssueOrReceiveDate()))
 					.build();
 
-			final DataUpdateRequest request = DataUpdateRequest.builder()
+			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 					.identifier(identifier)
 					.requiredForProductionQty(changedPPOrderLine.getQtyDelta())
 					.build();

@@ -40,6 +40,7 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
 
 /*
  * #%L
@@ -65,6 +66,8 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 
 public class PPOrderRequestedEventHandlerTests
 {
+	private static final int PPORDER_POJO_GROUPID = 33;
+
 	private I_PP_Product_Planning productPlanning;
 
 	private I_AD_Org org;
@@ -154,6 +157,7 @@ public class PPOrderRequestedEventHandlerTests
 				bomMainProduct.getM_AttributeSetInstance_ID());
 
 		ppOrderPojo = PPOrder.builder()
+				.materialDispoGroupId(PPORDER_POJO_GROUPID)
 				.datePromised(SystemTime.asDate())
 				.dateStartSchedule(SystemTime.asDate())
 				.orgId(org.getAD_Org_ID())
@@ -174,11 +178,9 @@ public class PPOrderRequestedEventHandlerTests
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(0, 10))
 				.dateOrdered(SystemTime.asDate())
-				.groupId(33)
 				.ppOrder(ppOrderPojo).build();
 
 		final I_PP_Order ppOrder = ppOrderRequestedEventHandler.createProductionOrder(ppOrderRequestedEvent);
-
 		verifyPPOrder(ppOrder);
 	}
 
@@ -202,8 +204,8 @@ public class PPOrderRequestedEventHandlerTests
 			assertThat(ppOrder.getDocStatus()).isEqualTo(STATUS_Completed);
 		}
 
-		final Integer groupId = PPOrderRequestedEventHandler.ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrder);
-		assertThat(groupId).isEqualTo(33);
+		final Integer groupId = PPOrderPojoConverter.ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrder);
+		assertThat(groupId).isEqualTo(PPORDER_POJO_GROUPID);
 	}
 
 	@Test
@@ -214,7 +216,6 @@ public class PPOrderRequestedEventHandlerTests
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(0, 10))
 				.dateOrdered(SystemTime.asDate())
-				.groupId(33)
 				.ppOrder(ppOrderPojo).build();
 
 		final I_PP_Order ppOrder = ppOrderRequestedEventHandler

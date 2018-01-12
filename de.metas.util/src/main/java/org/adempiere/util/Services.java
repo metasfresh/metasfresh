@@ -178,7 +178,7 @@ public class Services
 	 *         </ul>
 	 * @throws ServicesException if a service implementation was not found or could not be instantiated
 	 */
-	public static <T extends IService> T get( @NonNull final Class<T> serviceInterfaceClass)
+	public static <T extends IService> T get(@NonNull final Class<T> serviceInterfaceClass)
 	{
 		Check.assume(serviceInterfaceClass.isInterface(), "Param 'clazz' shall be an interface: {}", serviceInterfaceClass);
 

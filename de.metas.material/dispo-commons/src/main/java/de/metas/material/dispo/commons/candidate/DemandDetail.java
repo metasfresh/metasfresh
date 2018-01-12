@@ -2,7 +2,12 @@ package de.metas.material.dispo.commons.candidate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.util.Check;
+
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
+import de.metas.material.event.commons.DocumentLineDescriptor;
+import de.metas.material.event.commons.OrderLineDescriptor;
+import de.metas.material.event.commons.SubscriptionLineDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,7 +36,38 @@ import lombok.Value;
 @Value
 public class DemandDetail
 {
-	public static DemandDetail createOrNull(@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	public static DemandDetail forDocumentDescriptor(
+			final int shipmentScheduleId,
+			@NonNull final DocumentLineDescriptor documentDescriptor)
+	{
+		final int orderLineId;
+		final int subscriptionProgressId;
+		if (documentDescriptor instanceof OrderLineDescriptor)
+		{
+			orderLineId = ((OrderLineDescriptor)documentDescriptor).getOrderLineId();
+			subscriptionProgressId = -1;
+		}
+		else if (documentDescriptor instanceof SubscriptionLineDescriptor)
+		{
+			orderLineId = -1;
+			subscriptionProgressId = ((SubscriptionLineDescriptor)documentDescriptor).getSubscriptionProgressId();
+		}
+		else
+		{
+			Check.errorIf(true,
+					"The given documentDescriptor has an unexpected type; documentDescriptor={}", documentDescriptor);
+			return null;
+		}
+
+		return new DemandDetail(
+				-1,
+				shipmentScheduleId,
+				orderLineId,
+				subscriptionProgressId);
+	}
+
+	public static DemandDetail createOrNull(
+			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		if (supplyRequiredDescriptor == null)
 		{
@@ -40,22 +76,25 @@ public class DemandDetail
 		return new DemandDetail(
 				supplyRequiredDescriptor.getForecastLineId(),
 				supplyRequiredDescriptor.getShipmentScheduleId(),
-				supplyRequiredDescriptor.getOrderLineId());
+				supplyRequiredDescriptor.getOrderLineId(),
+				supplyRequiredDescriptor.getSubscriptionProgressId());
 	}
 
-	public static DemandDetail forDemandDetailRecord(@NonNull final I_MD_Candidate_Demand_Detail demandDetailRecord)
+	public static DemandDetail forDemandDetailRecord(
+			@NonNull final I_MD_Candidate_Demand_Detail demandDetailRecord)
 	{
 		return new DemandDetail(
 				demandDetailRecord.getM_ForecastLine_ID(),
 				demandDetailRecord.getM_ShipmentSchedule_ID(),
-				demandDetailRecord.getC_OrderLine_ID());
+				demandDetailRecord.getC_OrderLine_ID(),
+				demandDetailRecord.getC_SubscriptionProgress_ID());
 	}
 
 	public static DemandDetail forShipmentScheduleIdAndOrderLineId(
 			final int shipmentScheduleId,
 			final int orderLineId)
 	{
-		return new DemandDetail(-1, shipmentScheduleId, orderLineId);
+		return new DemandDetail(-1, shipmentScheduleId, orderLineId, -1);
 	}
 
 	public static DemandDetail forOrderLineIdOrNull(int salesOrderLineId)
@@ -64,12 +103,12 @@ public class DemandDetail
 		{
 			return null;
 		}
-		return new DemandDetail(-1, -1, salesOrderLineId);
+		return new DemandDetail(-1, -1, salesOrderLineId, -1);
 	}
 
 	public static DemandDetail forForecastLineId(final int forecastLineId)
 	{
-		return new DemandDetail(forecastLineId, -1, -1);
+		return new DemandDetail(forecastLineId, -1, -1, -1);
 	}
 
 	int forecastLineId;
@@ -78,4 +117,5 @@ public class DemandDetail
 
 	int orderLineId;
 
+	int subscriptionProgressId;
 }

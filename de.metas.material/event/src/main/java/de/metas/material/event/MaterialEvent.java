@@ -8,7 +8,7 @@ import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
-import de.metas.material.event.pporder.PPOrderChangedDocStatusEvent;
+import de.metas.material.event.pporder.PPOrderDocStatusChangedEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.event.pporder.PPOrderProductionQtyChangedEvent;
@@ -76,7 +76,7 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 		@JsonSubTypes.Type(name = PPOrderCreatedEvent.TYPE, value = PPOrderCreatedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderDeletedEvent.TYPE, value = PPOrderDeletedEvent.class),
 
-		@JsonSubTypes.Type(name = PPOrderChangedDocStatusEvent.TYPE, value = PPOrderChangedDocStatusEvent.class),
+		@JsonSubTypes.Type(name = PPOrderDocStatusChangedEvent.TYPE, value = PPOrderDocStatusChangedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderQtyChangedEvent.TYPE, value = PPOrderQtyChangedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderProductionQtyChangedEvent.TYPE, value = PPOrderProductionQtyChangedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderRequestedEvent.TYPE, value = PPOrderRequestedEvent.class),

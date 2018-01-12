@@ -2,7 +2,8 @@ package de.metas.material.event.commons;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
-import org.adempiere.util.Check;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
 import lombok.Value;
@@ -30,18 +31,34 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class OrderLineDescriptor
+public class OrderLineDescriptor implements DocumentLineDescriptor
 {
 	int orderLineId;
 	int orderId;
-	String documentNo;
+	int orderBPartnerId;
+	int docTypeId;
 
+
+	@Builder
+	@JsonCreator
+	public OrderLineDescriptor(
+			@JsonProperty("orderLineId") final int orderLineId,
+			@JsonProperty("orderId") final int orderId,
+			@JsonProperty("orderBPartnerId") final int orderBPartnerId,
+			@JsonProperty("docTypeId") final int docTypeId)
+	{
+		this.orderLineId = orderLineId;
+		this.orderId = orderId;
+		this.orderBPartnerId = orderBPartnerId;
+		this.docTypeId = docTypeId;
+	}
+
+	@Override
 	public void validate()
 	{
 		checkIdGreaterThanZero("orderLineId", orderLineId);
 		checkIdGreaterThanZero("orderId", orderId);
-
-		Check.errorIf(Check.isEmpty(documentNo, true), "documentNo may not be empty");
+		checkIdGreaterThanZero("orderBPartnerId", orderBPartnerId);
+		checkIdGreaterThanZero("docTypeId", docTypeId);
 	}
 }

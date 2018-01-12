@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.compiere.model.I_AD_Issue;
 import org.springframework.stereotype.Service;
 
@@ -77,8 +78,27 @@ public class EventLogUserService
 			final EventLogEntryCollector eventLogCollector = EventLogEntryCollector.getThreadLocal();
 			eventLogCollector.addEventLog(this);
 		}
+
+		public static class EventLogEntryRequestBuilder
+		{
+			public EventLogEntryRequestBuilder formattedMessage(final String message, final Object... params)
+			{
+				message(StringUtils.formatMessage(message, params));
+				return this;
+			}
+		}
 	}
 
+	/**
+	 * Before <b>posting</b> an event, you can use this method to tell the system, that the event shall be stored.
+	 * <p>
+	 * Note: even if an event was not prepared by this method, you can still store log messages,
+	 * but there won't be event data needed to <i>replay</i> the event in question.
+	 *
+	 * @param eventbuilder
+	 * @param adviseValue
+	 * @return
+	 */
 	public Event.Builder addEventLogAdvise(
 			@NonNull final Event.Builder eventbuilder,
 			final boolean adviseValue)
@@ -96,7 +116,8 @@ public class EventLogUserService
 			@NonNull final Class<?> handlerClass,
 			@NonNull final Exception e)
 	{
-		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, e);
+		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(e);
+
 		return EventLogEntryRequest.builder()
 				.error(true)
 				.eventHandlerClass(handlerClass)

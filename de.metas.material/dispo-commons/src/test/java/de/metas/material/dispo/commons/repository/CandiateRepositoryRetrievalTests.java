@@ -31,6 +31,7 @@ import org.junit.rules.TestWatcher;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
@@ -190,18 +191,22 @@ public class CandiateRepositoryRetrievalTests
 
 		final Candidate cand = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(record.getMD_Candidate_ID()));
 		assertThat(cand).isNotNull();
-		assertThat(cand.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(cand.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-		assertThat(cand.getMaterialDescriptor().getDate()).isEqualTo(NOW);
-		assertThat(cand.getProductionDetail()).isNotNull();
-		assertThat(cand.getProductionDetail().getActualQty()).isZero();
-		assertThat(cand.getProductionDetail().getPlannedQty()).isZero();
-		assertThat(cand.getProductionDetail().getDescription()).isEqualTo("description1");
-		assertThat(cand.getProductionDetail().getProductBomLineId()).isEqualTo(71);
-		assertThat(cand.getProductionDetail().getProductPlanningId()).isEqualTo(81);
-		assertThat(cand.getProductionDetail().getPpOrderId()).isEqualTo(101);
-		assertThat(cand.getProductionDetail().getPpOrderLineId()).isEqualTo(111);
-		assertThat(cand.getProductionDetail().getPpOrderDocStatus()).isEqualTo("ppOrderDocStatus1");
+
+		final MaterialDescriptor materialDescriptor = cand.getMaterialDescriptor();
+		assertThat(materialDescriptor.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(materialDescriptor.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(materialDescriptor.getDate()).isEqualTo(NOW);
+
+		final ProductionDetail productionDetail = cand.getProductionDetail();
+		assertThat(productionDetail).isNotNull();
+		assertThat(productionDetail.getActualQty()).isZero();
+		assertThat(productionDetail.getPlannedQty()).isZero();
+		assertThat(productionDetail.getDescription()).isEqualTo("description1");
+		assertThat(productionDetail.getProductBomLineId()).isEqualTo(71);
+		assertThat(productionDetail.getProductPlanningId()).isEqualTo(81);
+		assertThat(productionDetail.getPpOrderId()).isEqualTo(101);
+		assertThat(productionDetail.getPpOrderLineId()).isEqualTo(111);
+		assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo("ppOrderDocStatus1");
 
 		return ImmutablePair.of(cand, record);
 	}

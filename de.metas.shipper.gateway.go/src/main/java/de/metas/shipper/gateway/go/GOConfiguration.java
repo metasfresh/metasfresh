@@ -1,9 +1,5 @@
 package de.metas.shipper.gateway.go;
 
-import org.adempiere.util.Check;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,53 +28,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class GOConfiguration
 {
-	private static final Logger logger = LoggerFactory.getLogger(GOConfiguration.class);
-
-	@Value("${de.metas.shipper.go.url:}")
-	private String url;
-	@Value("${de.metas.shipper.go.auth.username:}")
-	private String authUsername;
-	@Value("${de.metas.shipper.go.auth.password:}")
-	private String authPassword;
-	@Value("${de.metas.shipper.go.request.username:}")
-	private String requestUsername;
-	@Value("${de.metas.shipper.go.request.senderId:}")
-	private String requestSenderId;
-
-	public boolean isEnabled()
-	{
-		return !Check.isEmpty(url, true);
-	}
-
-	@Bean
-	public GOClient goClient() throws Exception
-	{
-		if (!isEnabled())
-		{
-			logger.info("GO not configured. Skip inializing {}", GOClient.class);
-			return null;
-		}
-
-		final GOClient client = GOClient.builder()
-				.url(url)
-				.authUsername(authUsername)
-				.authPassword(authPassword)
-				.requestUsername(requestUsername)
-				.requestSenderId(requestSenderId)
-				.build();
-		logger.info("GO Client initialized: {}", client);
-		return client;
-	}
-
 	@Bean
 	public GOShipperGatewayService goShipperGatewayService(final GODeliveryOrderRepository deliveryOrderRepository)
 	{
-		if (!isEnabled())
-		{
-			logger.info("GO not configured. Skip inializing {}", GOShipperGatewayService.class);
-			return null;
-		}
-
 		return new GOShipperGatewayService(deliveryOrderRepository);
 	}
 }

@@ -132,7 +132,7 @@ public class SubscriptionShipmentScheduleHandler implements IShipmentScheduleHan
 	private void updateNewSchedWithValuesFromReferencedLine(@NonNull final I_M_ShipmentSchedule newSched)
 	{
 		final ShipmentScheduleReferencedLine subscriptionFromgressInfos = Adempiere
-				.getBean(ShipmentScheduleOrderDocForSubscriptionLine.class)
+				.getBean(ShipmentScheduleSubscriptionReferenceProvider.class)
 				.provideFor(newSched);
 
 		newSched.setM_Warehouse_ID(subscriptionFromgressInfos.getWarehouseId());

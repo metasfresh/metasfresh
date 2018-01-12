@@ -4,8 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -14,16 +14,17 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Package;
-import org.compiere.util.TimeUtil;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
 import de.metas.shipper.gateway.api.ShipperGatewayService;
 import de.metas.shipper.gateway.api.model.DeliveryOrder;
+import de.metas.shipper.gateway.api.model.DeliveryOrderCreateRequest;
 import de.metas.shipper.gateway.api.model.DeliveryPosition;
 import de.metas.shipper.gateway.api.model.PickupDate;
 import de.metas.shipper.gateway.go.async.GODeliveryOrderWorkpackageProcessor;
@@ -71,13 +72,12 @@ public class GOShipperGatewayService implements ShipperGatewayService
 	}
 
 	@Override
-	public void createAndSendDeliveryOrdersForPackages(final Set<Integer> mpackageIds)
+	public void createAndSendDeliveryOrdersForPackages(@NonNull DeliveryOrderCreateRequest request)
 	{
-		Check.assumeNotEmpty(mpackageIds, "mpackageIds is not empty");
-
-		retrievePackagesByIds(mpackageIds)
+		final LocalDate pickupDate = request.getPickupDate();
+		retrievePackagesByIds(request.getPackageIds())
 				.stream()
-				.collect(GuavaCollectors.toImmutableListMultimap(GOShipperGatewayService::createDeliveryOrderKey))
+				.collect(GuavaCollectors.toImmutableListMultimap(mpackage -> createDeliveryOrderKey(mpackage, pickupDate)))
 				.asMap()
 				.forEach(this::createAndSendDeliveryOrder);
 	}
@@ -91,13 +91,14 @@ public class GOShipperGatewayService implements ShipperGatewayService
 				.list(I_M_Package.class);
 	}
 
-	private static final DeliveryOrderKey createDeliveryOrderKey(final I_M_Package mpackage)
+	private static final DeliveryOrderKey createDeliveryOrderKey(final I_M_Package mpackage, final LocalDate pickupDate)
 	{
 		return DeliveryOrderKey.builder()
 				.shipperId(mpackage.getM_Shipper_ID())
 				.fromOrgId(mpackage.getAD_Org_ID())
 				.deliverToBPartnerId(mpackage.getC_BPartner_ID())
 				.deliverToBPartnerLocationId(mpackage.getC_BPartner_Location_ID())
+				.pickupDate(pickupDate)
 				.build();
 	}
 
@@ -113,7 +114,7 @@ public class GOShipperGatewayService implements ShipperGatewayService
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
 		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(deliveryOrderKey.getFromOrgId());
-		final Date pickupDate = SystemTime.asDayTimestamp(); // TODO: find out next available pickup date
+		final LocalDate pickupDate = deliveryOrderKey.getPickupDate();
 
 		final int deliverToBPartnerId = deliveryOrderKey.getDeliverToBPartnerId();
 		final I_C_BPartner deliverToBPartner = load(deliverToBPartnerId, I_C_BPartner.class);
@@ -122,7 +123,11 @@ public class GOShipperGatewayService implements ShipperGatewayService
 		final I_C_BPartner_Location deliverToBPLocation = load(deliverToBPartnerLocationId, I_C_BPartner_Location.class);
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 
+		final Set<Integer> mpackageIds = mpackages.stream().map(I_M_Package::getM_Package_ID).collect(ImmutableSet.toImmutableSet());
+
 		return DeliveryOrder.builder()
+				.shipperId(deliveryOrderKey.getShipperId())
+				//
 				.serviceType(GOServiceType.Overnight)
 				.paidMode(GOPaidMode.Prepaid)
 				.receiptConfirmationPhoneNumber(null)
@@ -133,7 +138,7 @@ public class GOShipperGatewayService implements ShipperGatewayService
 						.companyName2(pickupFromBPartner.getName2())
 						.build())
 				.pickupDate(PickupDate.builder()
-						.date(TimeUtil.asLocalDate(pickupDate))
+						.date(pickupDate)
 						.build())
 				.selfPickup(GOSelfPickup.Delivery)
 				//
@@ -149,7 +154,8 @@ public class GOShipperGatewayService implements ShipperGatewayService
 				//
 				// Delivery content
 				.deliveryPosition(DeliveryPosition.builder()
-						.numberOfPackages(mpackages.size())
+						.numberOfPackages(mpackageIds.size())
+						.packageIds(mpackageIds)
 						.grossWeightKg(Math.max(computeGrossWeightInKg(mpackages), 1))
 						.content(computePackageContentDescription(mpackages))
 						.build())
@@ -170,11 +176,12 @@ public class GOShipperGatewayService implements ShipperGatewayService
 
 	private static String computePackageContentDescription(final Collection<I_M_Package> mpackages)
 	{
-		return mpackages.stream()
+		final String content = mpackages.stream()
 				.map(I_M_Package::getDescription)
 				.filter(desc -> !Check.isEmpty(desc, true))
 				.map(String::trim)
 				.collect(Collectors.joining(", "));
+		return !Check.isEmpty(content, true) ? content : "-";
 	}
 
 	@lombok.Value
@@ -184,13 +191,15 @@ public class GOShipperGatewayService implements ShipperGatewayService
 		int fromOrgId;
 		int deliverToBPartnerId;
 		int deliverToBPartnerLocationId;
+		LocalDate pickupDate;
 
 		@lombok.Builder
 		public DeliveryOrderKey(
 				final int shipperId,
 				final int fromOrgId,
 				final int deliverToBPartnerId,
-				final int deliverToBPartnerLocationId)
+				final int deliverToBPartnerLocationId,
+				@NonNull final LocalDate pickupDate)
 		{
 			Check.assume(shipperId > 0, "shipperId > 0");
 			Check.assume(fromOrgId > 0, "fromOrgId > 0");
@@ -201,6 +210,7 @@ public class GOShipperGatewayService implements ShipperGatewayService
 			this.fromOrgId = fromOrgId;
 			this.deliverToBPartnerId = deliverToBPartnerId;
 			this.deliverToBPartnerLocationId = deliverToBPartnerLocationId;
+			this.pickupDate = pickupDate;
 		}
 	}
 

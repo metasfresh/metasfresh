@@ -9,11 +9,19 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.event.log.EventLogUserService;
-import de.metas.material.cockpit.view.DataRecordIdentifier;
-import de.metas.material.cockpit.view.DataUpdateRequest;
-import de.metas.material.cockpit.view.DataUpdateRequestHandler;
+import de.metas.material.cockpit.view.DetailDataRecordIdentifier;
+import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.material.cockpit.view.detailrecord.DetailDataRequestHandler;
+import de.metas.material.cockpit.view.detailrecord.InsertDetailRequest;
+import de.metas.material.cockpit.view.detailrecord.InsertDetailRequest.InsertDetailRequestBuilder;
+import de.metas.material.cockpit.view.detailrecord.RemoveDetailRequest;
+import de.metas.material.cockpit.view.detailrecord.RemoveDetailRequest.RemoveDetailRequestBuilder;
+import de.metas.material.cockpit.view.detailrecord.UpdateDetailRequest;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
@@ -48,16 +56,18 @@ public class ReceiptScheduleEventHandler
 		implements MaterialEventHandler<AbstractReceiptScheduleEvent>
 {
 
-	private final DataUpdateRequestHandler dataUpdateRequestHandler;
+	private final MainDataRequestHandler dataUpdateRequestHandler;
 	private final EventLogUserService eventLogUserService;
+	private final DetailDataRequestHandler detailRequestHandler;
 
 	public ReceiptScheduleEventHandler(
-			@NonNull final DataUpdateRequestHandler dataUpdateRequestHandler,
+			@NonNull final MainDataRequestHandler dataUpdateRequestHandler,
+			@NonNull final DetailDataRequestHandler detailRequestHandler,
 			@NonNull final EventLogUserService eventLogUserService)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
 		this.eventLogUserService = eventLogUserService;
-
+		this.detailRequestHandler = detailRequestHandler;
 	}
 
 	@Override
@@ -78,9 +88,16 @@ public class ReceiptScheduleEventHandler
 	@Override
 	public void handleEvent(@NonNull final AbstractReceiptScheduleEvent event)
 	{
-		final MaterialDescriptor orderedMaterial = event.getMaterialDescriptor();
-		final DataRecordIdentifier identifier = DataRecordIdentifier.createForMaterial(orderedMaterial);
+		final MaterialDescriptor materialDesciptor = event.getMaterialDescriptor();
+		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.createForMaterial(materialDesciptor);
 
+		createAndHandleMainDataEvent(event, identifier);
+
+		createAndHandleDetailRequest(event, identifier);
+	}
+
+	private void createAndHandleMainDataEvent(final AbstractReceiptScheduleEvent event, final MainDataRecordIdentifier identifier)
+	{
 		if (event.getOrderedQuantityDelta().signum() == 0
 				&& event.getReservedQuantityDelta().signum() == 0)
 		{
@@ -89,8 +106,7 @@ public class ReceiptScheduleEventHandler
 					.storeEntry();
 			return;
 		}
-
-		final DataUpdateRequest request = DataUpdateRequest.builder()
+		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.orderedPurchaseQty(event.getOrderedQuantityDelta())
 				.reservedPurchaseQty(event.getReservedQuantityDelta())
@@ -99,4 +115,57 @@ public class ReceiptScheduleEventHandler
 		dataUpdateRequestHandler.handleDataUpdateRequest(request);
 	}
 
+	private void createAndHandleDetailRequest(
+			@NonNull final AbstractReceiptScheduleEvent receiptScheduleEvent,
+			@NonNull final MainDataRecordIdentifier identifier)
+	{
+		final DetailDataRecordIdentifier detailIdentifier = DetailDataRecordIdentifier
+				.createForReceiptSchedule(identifier, receiptScheduleEvent.getReceiptScheduleId());
+
+		if (receiptScheduleEvent instanceof ReceiptScheduleCreatedEvent)
+		{
+			final ReceiptScheduleCreatedEvent receiptScheduleCreatedEvent = (ReceiptScheduleCreatedEvent)receiptScheduleEvent;
+			createAndHandleAddDetailRequest(detailIdentifier, receiptScheduleCreatedEvent);
+		}
+		else if (receiptScheduleEvent instanceof ReceiptScheduleUpdatedEvent)
+		{
+			detailRequestHandler
+					.handleUpdateDetailRequest(UpdateDetailRequest.builder()
+							.detailDataRecordIdentifier(detailIdentifier)
+							.qtyOrdered(receiptScheduleEvent.getMaterialDescriptor().getQuantity())
+							.qtyReserved(receiptScheduleEvent.getReservedQuantity())
+							.build());
+		}
+		else if (receiptScheduleEvent instanceof ReceiptScheduleDeletedEvent)
+		{
+			final RemoveDetailRequestBuilder removeDetailRequest = RemoveDetailRequest.builder()
+					.detailDataRecordIdentifier(detailIdentifier);
+
+			final int deletedCount = detailRequestHandler.handleRemoveDetailRequest(removeDetailRequest.build());
+			eventLogUserService
+					.newLogEntry(ShipmentScheduleEventHandler.class)
+					.formattedMessage("Deleted {} detail records", deletedCount)
+					.storeEntry();
+		}
+	}
+
+	private void createAndHandleAddDetailRequest(
+			@NonNull final DetailDataRecordIdentifier identifier,
+			@NonNull final ReceiptScheduleCreatedEvent receiptScheduleCreatedEvent)
+	{
+		final OrderLineDescriptor orderLineDescriptor = //
+				receiptScheduleCreatedEvent.getOrderLineDescriptor();
+
+		final InsertDetailRequestBuilder addDetailsRequest = InsertDetailRequest.builder()
+				.detailDataRecordIdentifier(identifier);
+
+		addDetailsRequest
+				.qtyOrdered(receiptScheduleCreatedEvent.getMaterialDescriptor().getQuantity())
+				.qtyReserved(receiptScheduleCreatedEvent.getReservedQuantity())
+				.orderId(orderLineDescriptor.getOrderId())
+				.orderLineId(orderLineDescriptor.getOrderLineId())
+				.bPartnerId(orderLineDescriptor.getOrderBPartnerId());
+
+		detailRequestHandler.handleInsertDetailRequest(addDetailsRequest.build());
+	}
 }

@@ -156,11 +156,12 @@ public class RequestMaterialOrderService
 
 		final Candidate firstGroupMember = group.get(0);
 
+		ppOrderBuilder.materialDispoGroupId(firstGroupMember.getEffectiveGroupId());
+
 		return PPOrderRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.dateOrdered(SystemTime.asDate())
 				.ppOrder(ppOrderBuilder.build())
-				.groupId(firstGroupMember.getEffectiveGroupId())
 				.build();
 	}
 

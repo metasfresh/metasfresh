@@ -25,7 +25,7 @@ package de.metas.payment.sepa.api;
 
 import org.adempiere.util.ISingletonService;
 
-import de.metas.payment.sepa.spi.ISEPADocumentSource;
+import de.metas.payment.sepa.sepamarshaller.ISEPADocumentSource;
 
 public interface ISEPADocumentSourceFactory extends ISingletonService
 {

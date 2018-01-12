@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
@@ -598,7 +599,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 			{
 				m_creditMemo = new MInvoice (inout, null);
 				m_creditMemo.setDescription(Msg.translate(getCtx(), "M_InOutConfirm_ID") + " " + getDocumentNo());
-				m_creditMemo.setC_DocTypeTarget_ID(MDocType.DOCBASETYPE_APCreditMemo);
+				Services.get(IInvoiceBL.class).setDocTypeTargetId(m_creditMemo, X_C_DocType.DOCBASETYPE_APCreditMemo);
 				m_creditMemo.saveEx();
 				setC_Invoice_ID(m_creditMemo.getC_Invoice_ID());
 			}

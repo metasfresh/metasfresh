@@ -20,7 +20,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.pporder.PPOrderChangedDocStatusEvent;
+import de.metas.material.event.pporder.PPOrderDocStatusChangedEvent;
 import lombok.NonNull;
 
 /*
@@ -47,7 +47,7 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
-public class PPOrderDocStatusChangedHandler implements MaterialEventHandler<PPOrderChangedDocStatusEvent>
+public class PPOrderDocStatusChangedHandler implements MaterialEventHandler<PPOrderDocStatusChangedEvent>
 {
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final CandidateChangeService candidateChangeService;
@@ -61,13 +61,13 @@ public class PPOrderDocStatusChangedHandler implements MaterialEventHandler<PPOr
 	}
 
 	@Override
-	public Collection<Class<? extends PPOrderChangedDocStatusEvent>> getHandeledEventType()
+	public Collection<Class<? extends PPOrderDocStatusChangedEvent>> getHandeledEventType()
 	{
-		return ImmutableList.of(PPOrderChangedDocStatusEvent.class);
+		return ImmutableList.of(PPOrderDocStatusChangedEvent.class);
 	}
 
 	@Override
-	public void handleEvent(@NonNull final PPOrderChangedDocStatusEvent ppOrderChangedDocStatusEvent)
+	public void handleEvent(@NonNull final PPOrderDocStatusChangedEvent ppOrderChangedDocStatusEvent)
 	{
 		final List<Candidate> candidatesForPPOrderId = PPOrderUtil
 				.retrieveCandidatesForPPOrderId(
@@ -75,21 +75,25 @@ public class PPOrderDocStatusChangedHandler implements MaterialEventHandler<PPOr
 						ppOrderChangedDocStatusEvent.getPpOrderId());
 
 		Check.errorIf(candidatesForPPOrderId.isEmpty(),
-				"unknown PP_Order_ID={} ",
+				"No Candidates found for PP_Order_ID={} ",
 				ppOrderChangedDocStatusEvent.getPpOrderId());
 
+		final String newDocStatusFromEvent = ppOrderChangedDocStatusEvent.getNewDocStatus();
 		final CandidateStatus newCandidateStatus = EventUtil
-				.getCandidateStatus(ppOrderChangedDocStatusEvent.getNewDocStatus());
+				.getCandidateStatus(newDocStatusFromEvent);
 
-		final Function<ProductionDetail, BigDecimal> provider = createdQtyProvider(newCandidateStatus);
+		final Function<ProductionDetail, BigDecimal> produtionDetail2Qty = createProdutionDetail2QtyProvider(newCandidateStatus);
 
 		final List<Candidate> updatedCandidatesToPersist = new ArrayList<>();
 
 		for (final Candidate candidateForPPOrderId : candidatesForPPOrderId)
 		{
-			final BigDecimal newQuantity = provider.apply(candidateForPPOrderId.getProductionDetail());
+			final BigDecimal newQuantity = produtionDetail2Qty.apply(candidateForPPOrderId.getProductionDetail());
+
 			final Candidate updatedCandidateToPersist = candidateForPPOrderId.toBuilder()
+					.status(newCandidateStatus)
 					.materialDescriptor(candidateForPPOrderId.getMaterialDescriptor().withQuantity(newQuantity))
+					.productionDetail(candidateForPPOrderId.getProductionDetail().toBuilder().ppOrderDocStatus(newDocStatusFromEvent).build())
 					.build();
 
 			updatedCandidatesToPersist.add(updatedCandidateToPersist);
@@ -98,7 +102,7 @@ public class PPOrderDocStatusChangedHandler implements MaterialEventHandler<PPOr
 		updatedCandidatesToPersist.forEach(candidate -> candidateChangeService.onCandidateNewOrChange(candidate));
 	}
 
-	private Function<ProductionDetail, BigDecimal> createdQtyProvider(
+	private Function<ProductionDetail, BigDecimal> createProdutionDetail2QtyProvider(
 			@NonNull final CandidateStatus candidateStatus)
 	{
 		final Function<ProductionDetail, BigDecimal> provider;
@@ -106,12 +110,12 @@ public class PPOrderDocStatusChangedHandler implements MaterialEventHandler<PPOr
 		if (CandidateStatus.doc_closed.equals(candidateStatus))
 		{
 			// update candidates , take the "actualQty" instead of max(actual, planned)
-			provider = productDetail -> productDetail.getActualQty();
+			provider = productionDetail -> productionDetail.getActualQty();
 		}
 		else
 		{
-			// update candidates , take the max(actual, pplanned)
-			provider = productDetail -> productDetail.getActualQty().max(productDetail.getPlannedQty());
+			// update candidates , take the max(actual, planned)
+			provider = productionDetail -> productionDetail.getActualQty().max(productionDetail.getPlannedQty());
 		}
 		return provider;
 	}

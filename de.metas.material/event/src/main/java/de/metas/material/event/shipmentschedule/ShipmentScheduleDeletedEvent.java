@@ -45,13 +45,13 @@ public class ShipmentScheduleDeletedEvent extends AbstractShipmentScheduleEvent
 	@Builder
 	public ShipmentScheduleDeletedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("orderedMaterial") final MaterialDescriptor orderedMaterial,
+			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId)
 	{
 		super(
 				eventDescriptor,
-				orderedMaterial,
+				materialDescriptor,
 				reservedQuantity,
 				shipmentScheduleId);
 	}
@@ -59,7 +59,7 @@ public class ShipmentScheduleDeletedEvent extends AbstractShipmentScheduleEvent
 	@Override
 	public BigDecimal getOrderedQuantityDelta()
 	{
-		return getOrderedMaterial().getQuantity().negate();
+		return getMaterialDescriptor().getQuantity().negate();
 	}
 
 	@Override

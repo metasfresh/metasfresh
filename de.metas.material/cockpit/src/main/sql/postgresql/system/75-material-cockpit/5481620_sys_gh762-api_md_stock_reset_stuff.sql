@@ -30,7 +30,8 @@ Please make sure it is in sync with the java implemention in AttributesKeys.crea
 
 Belongs to issue "Show onhand quantity in new WebUI MRP Product Info Window" https://github.com/metasfresh/metasfresh-webui-api/issues/762';
 
-CREATE OR REPLACE VIEW MD_Stock_From_HUs_V AS
+DROP VIEW IF EXISTS MD_Stock_From_HUs_V;
+CREATE VIEW MD_Stock_From_HUs_V AS
 SELECT 
 	l.M_Warehouse_ID,
 	hus.M_Product_ID,

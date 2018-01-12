@@ -4,12 +4,13 @@ import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 import java.math.BigDecimal;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import org.adempiere.util.Check;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.OrderLineDescriptor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -53,16 +54,12 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 
 	private final int receiptScheduleId;
 
-	private final OrderLineDescriptor orderLineDescriptor;
-
 	public AbstractReceiptScheduleEvent(
-			final OrderLineDescriptor orderLineDescriptor,
 			final EventDescriptor eventDescriptor,
 			final MaterialDescriptor materialDescriptor,
 			final BigDecimal reservedQuantity,
 			final int receiptScheduleId)
 	{
-		this.orderLineDescriptor = orderLineDescriptor;
 		this.receiptScheduleId = receiptScheduleId;
 		this.eventDescriptor = eventDescriptor;
 		this.materialDescriptor = materialDescriptor;
@@ -73,12 +70,10 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 
 	public abstract BigDecimal getReservedQuantityDelta();
 
+	@OverridingMethodsMustInvokeSuper
 	public void validate()
 	{
 		checkIdGreaterThanZero("receiptScheduleId", receiptScheduleId);
-
-		Check.errorIf(orderLineDescriptor == null, "orderLineDescriptor may not be null");
-		orderLineDescriptor.validate();
 
 		Check.errorIf(eventDescriptor == null, "eventDescriptor may not be null");
 		Check.errorIf(materialDescriptor == null, "materialDescriptor may not be null");

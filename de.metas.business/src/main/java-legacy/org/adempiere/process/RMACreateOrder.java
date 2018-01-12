@@ -26,6 +26,7 @@ import org.compiere.model.MRMA;
 import org.compiere.model.MRMALine;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 
 /**
@@ -36,6 +37,7 @@ import de.metas.process.JavaProcess;
 
 public class RMACreateOrder extends JavaProcess
 {
+	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	
 	private int rmaId = 0;
     @Override
@@ -78,13 +80,13 @@ public class RMACreateOrder extends JavaProcess
         order.setSalesRep_ID(rma.getSalesRep_ID());
         order.setM_PriceList_ID(originalOrder.getM_PriceList_ID());
         order.setM_Warehouse_ID(originalOrder.getM_Warehouse_ID());
-        order.setC_DocTypeTarget_ID(originalOrder.getC_DocTypeTarget_ID());
+		orderBL.setDocTypeTargetIdAndUpdateDescription(order, originalOrder.getC_DocTypeTarget_ID());
         order.setC_PaymentTerm_ID(originalOrder.getC_PaymentTerm_ID());
         order.setDeliveryRule(originalOrder.getDeliveryRule());
         // start: metas c.ghita@metas.ro : set fields for metas order
         I_C_Order mOrder = InterfaceWrapperHelper.create(order, I_C_Order.class);   // metas c.ghita@metas.ro : metas order
         order.setM_Shipper_ID(originalOrder.getM_Shipper_ID());
-        order.setC_DocTypeTarget_ID(originalOrder.getC_DocTypeTarget_ID());
+        orderBL.setDocTypeTargetIdAndUpdateDescription(order, originalOrder.getC_DocTypeTarget_ID());
         mOrder.setBPartnerAddress(originalOrder.getBPartnerAddress());
         mOrder.setBillToAddress(originalOrder.getBillToAddress());
         mOrder.setC_Sponsor_ID(originalOrder.getC_Sponsor_ID());

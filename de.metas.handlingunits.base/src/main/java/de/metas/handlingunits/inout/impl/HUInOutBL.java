@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,9 +40,9 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
@@ -295,19 +294,14 @@ public class HUInOutBL implements IHUInOutBL
 	@Override
 	public boolean isCustomerReturn(final org.compiere.model.I_M_InOut inOut)
 	{
-
-		// in the case of returns the docSubType is null
-		final String docSubType = IDocTypeDAO.DOCSUBTYPE_NONE;
-
 		final I_C_DocType returnsDocType = Services.get(IDocTypeDAO.class)
-				.getDocTypeOrNullForSOTrx(
-						Env.getCtx() // ctx
-						, X_C_DocType.DOCBASETYPE_MaterialReceipt // doc basetype
-						, docSubType // doc subtype
-						, true // isSOTrx
-						, inOut.getAD_Client_ID() // client
-						, inOut.getAD_Org_ID() // org
-						, ITrx.TRXNAME_None); // trx
+				.getDocTypeOrNull(DocTypeQuery.builder()
+						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+						.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
+						.isSOTrx(true)
+						.adClientId(inOut.getAD_Client_ID())
+						.adOrgId(inOut.getAD_Org_ID())
+						.build());
 
 		if (returnsDocType == null)
 		{
@@ -328,19 +322,14 @@ public class HUInOutBL implements IHUInOutBL
 	@Override
 	public boolean isVendorReturn(final org.compiere.model.I_M_InOut inOut)
 	{
-
-		// in the case of returns the docSubType is null
-		final String docSubType = IDocTypeDAO.DOCSUBTYPE_NONE;
-
 		final I_C_DocType returnsDocType = Services.get(IDocTypeDAO.class)
-				.getDocTypeOrNullForSOTrx(
-						Env.getCtx() // ctx
-						, X_C_DocType.DOCBASETYPE_MaterialDelivery // doc basetype
-						, docSubType // doc subtype
-						, false // isSOTrx
-						, inOut.getAD_Client_ID() // client
-						, inOut.getAD_Org_ID() // org
-						, ITrx.TRXNAME_None); // trx
+				.getDocTypeOrNull(DocTypeQuery.builder()
+						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
+						.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
+						.isSOTrx(false)
+						.adClientId(inOut.getAD_Client_ID())
+						.adOrgId(inOut.getAD_Org_ID())
+						.build());
 
 		if (returnsDocType == null)
 		{

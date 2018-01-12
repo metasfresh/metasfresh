@@ -40,6 +40,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.purchasing.api.IBPartnerProductDAO;
@@ -61,6 +62,8 @@ import de.metas.purchasing.api.IBPartnerProductDAO;
  */
 public class RequisitionPOCreate extends JavaProcess
 {
+	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	
 	/** Org					*/
 	private int			p_AD_Org_ID = 0;
 	/** Warehouse			*/
@@ -94,7 +97,7 @@ public class RequisitionPOCreate extends JavaProcess
 	/** Order Line			*/
 	private MOrderLine	m_orderLine = null;
 	/** Orders Cache : (C_BPartner_ID, DateRequired, M_PriceList_ID) -> MOrder */
-	private HashMap<ArrayKey, MOrder> m_cacheOrders = new HashMap<ArrayKey, MOrder>();
+	private HashMap<ArrayKey, MOrder> m_cacheOrders = new HashMap<>();
 	
 	/**
 	 *  Prepare - e.g., get Parameters.
@@ -180,7 +183,7 @@ public class RequisitionPOCreate extends JavaProcess
 			+ ", M_Product_ID=" + p_M_Product_ID
 			+ ", ConsolidateDocument" + p_ConsolidateDocument);
 		
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer("C_OrderLine_ID IS NULL");
 		if (p_AD_Org_ID > 0)
 		{
@@ -360,7 +363,7 @@ public class RequisitionPOCreate extends JavaProcess
 			m_order = new MOrder(getCtx(), 0, get_TrxName());
 			m_order.setDatePromised(DateRequired);
 			m_order.setIsSOTrx(false);
-			m_order.setC_DocTypeTarget_ID();
+			orderBL.setDocTypeTargetId(m_order);
 			m_order.setBPartner(m_bpartner);
 			m_order.setM_PriceList_ID(M_PriceList_ID); 
 			//	References
@@ -514,7 +517,7 @@ public class RequisitionPOCreate extends JavaProcess
 		}
 		return match;
 	}
-	private List<Integer> m_excludedVendors = new ArrayList<Integer>();
+	private List<Integer> m_excludedVendors = new ArrayList<>();
 	
 	/**
 	 * check if the partner is vendor for specific product
