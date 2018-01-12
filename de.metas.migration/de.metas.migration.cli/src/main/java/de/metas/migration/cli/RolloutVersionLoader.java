@@ -72,8 +72,9 @@ public class RolloutVersionLoader
 
 		private CantGetRolloutVersionStringException(final CantLoadPropertiesException e)
 		{
-			super("Unable to get our own version. Hint: provide the build.version file or disable both version-check and the version-update at the start and end of the tool", e);
+			super("Unable to get our own version.\n"
+					+ "Hint: provide the build.version file\n"
+					+ "or use -v -u to disable both version-check and the version-update at the start and end of the tool", e);
 		}
 	}
-
 }
