@@ -6,10 +6,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -21,6 +19,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -67,13 +66,15 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate implements IProcessPrecondition
 {
+	private static final String SERIALNO_SEPARATOR = ",";
+
 	private static transient IHandlingUnitsBL huBL = Services.get(IHandlingUnitsBL.class);
 
 	private static final String PARAM_SerialNo = "SerialNo";
 	@Param(parameterName = PARAM_SerialNo, mandatory = true)
 	private String p_SerialNo;
 
-	List<String> serialNumbers = Collections.emptyList();
+	ArrayList<String> _serialNumbers;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -102,18 +103,41 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final String serialNumbersString = replaceAllSeparatorsWithComma(p_SerialNo);
-		serialNumbers = splitIntoSerialNumbers(serialNumbersString);
-
 		final ImmutableList<HUEditorRow> selectedCuRows = orderSelectedCUs();
 
-		for (HUEditorRow selectedCuRow : selectedCuRows)
-		{
-			processCURow(selectedCuRow);
+		processCURows(selectedCuRows);
 
-		}
 		return MSG_OK;
 
+	}
+
+	private void processCURows(final ImmutableList<HUEditorRow> selectedCuRows)
+	{
+		selectedCuRows.stream().forEach(selectedHURow -> processCURow(selectedHURow));
+	}
+
+	private ArrayList<String> getSerialNumbers()
+	{
+		if (_serialNumbers == null)
+		{
+			_serialNumbers = parseSerialNumbers();
+		}
+		return _serialNumbers;
+
+	}
+
+	private ArrayList<String> parseSerialNumbers()
+	{
+		final String serialNumbersNorm = p_SerialNo
+				.replace("\n", SERIALNO_SEPARATOR)
+				.replace(";", SERIALNO_SEPARATOR);
+
+		final List<String> serialNosList = Splitter.on(SERIALNO_SEPARATOR)
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(serialNumbersNorm);
+
+		return new ArrayList<>(serialNosList);
 	}
 
 	@Override
@@ -143,20 +167,6 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 
 	}
 
-	final String replaceAllSeparatorsWithComma(final String originalString)
-	{
-		return originalString
-				.replaceAll("\n", ",")
-				.replaceAll(";", ",");
-	}
-
-	final List<String> splitIntoSerialNumbers(final String originalString)
-	{
-		final String[] split = originalString.split(",");
-
-		return new LinkedList<>(Arrays.asList(split));
-	}
-
 	private ImmutableList<HUEditorRow> orderSelectedCUs()
 	{
 		return streamSelectedRows(HUEditorRowFilter.select(Select.ALL))
@@ -178,28 +188,29 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 				}).collect(ImmutableList.toImmutableList());
 	}
 
-	private void processCURow(HUEditorRow selectedCuRow)
+	private void processCURow(final HUEditorRow selectedCuRow)
 	{
-		if (Check.isEmpty(serialNumbers))
+		final ArrayList<String> availableSerialNumbers = getSerialNumbers();
+		
+		if (availableSerialNumbers.isEmpty())
 		{
-			// the serial numbers are done. Nothing to do any more
 			return;
 		}
+
 		final int qtyCU = selectedCuRow.getQtyCU().intValueExact();
 
 		if (qtyCU == 1)
 		{
-			assignSerialNumberToCU(selectedCuRow.getM_HU(), serialNumbers.get(0));
-			serialNumbers.remove(0);
+			final String serialNo = availableSerialNumbers.remove(0);
+			assignSerialNumberToCU(selectedCuRow.getM_HU(), serialNo);
 		}
 		else
 		{
-			final int serialNoCount = serialNumbers.size();
+			final int serialNoCount = availableSerialNumbers.size();
 			final int cusToCreateCount = qtyCU < serialNoCount ? qtyCU : serialNoCount;
 
 			final List<I_M_HU> splittedCUs = splitIntoCUs(selectedCuRow, cusToCreateCount);
-			assignSerialNumbersToCUs(splittedCUs);
-
+			assignSerialNumbersToCUs(splittedCUs, availableSerialNumbers);
 		}
 	}
 
@@ -379,19 +390,18 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		return cu;
 	}
 
-	private void assignSerialNumbersToCUs(final List<I_M_HU> cus)
+	private void assignSerialNumbersToCUs(final List<I_M_HU> cus, final List<String> availableSerialNumbers)
 	{
 		final int numberOfCUs = cus.size();
 
 		for (int i = 0; i < numberOfCUs; i++)
 		{
-			if (Check.isEmpty(serialNumbers))
+			if (availableSerialNumbers.isEmpty())
 			{
 				return;
 			}
 
-			assignSerialNumberToCU(cus.get(i), serialNumbers.get(0));
-			serialNumbers.remove(0);
+			assignSerialNumberToCU(cus.get(i), availableSerialNumbers.remove(0));
 		}
 	}
 
