@@ -10,11 +10,9 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -54,7 +52,7 @@ import lombok.NonNull;
  *
  */
 @Component
-@DependsOn(Adempiere.BEAN_NAME) // only temporary, for as long as we need ISysConfigBL
+// @DependsOn(Adempiere.BEAN_NAME) // only temporary, for as long as we need ISysConfigBL
 public class WebsocketSender implements InitializingBean
 {
 	private static final transient Logger logger = LogManager.getLogger(WebsocketSender.class);
