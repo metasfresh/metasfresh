@@ -10,12 +10,12 @@ package org.adempiere.pricing.spi.impl.rules;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,12 +46,12 @@ import de.metas.logging.LogManager;
 
 /**
  * Discount Calculations
- * 
+ *
  * @author Jorg Janke
  * @author tobi42 metas us1064 <li>calculateDiscount only calculates (retrieves) the discount, but does not alter priceStd. <li>Therefore, <code>m_PriceStd</code> is not changed from its
  *         respective productPrice.
  * @author Teo Sarca - refactory
- * 
+ *
  * @version $Id: MProductPricing.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  */
 public class Discount implements IPricingRule
@@ -169,6 +169,7 @@ public class Discount implements IPricingRule
 		result.setUsesDiscountSchema(isUseDiscountSchema);
 		result.setM_DiscountSchema_ID(discountSchema.getM_DiscountSchema_ID());
 		result.setDiscount(m_discount);
+		result.setC_PaymentTerm_ID(discountSchema.getC_PaymentTerm_ID());
 		// metas us1064 end
 	}
 }
