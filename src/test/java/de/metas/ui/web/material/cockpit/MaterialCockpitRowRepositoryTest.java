@@ -4,8 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
+import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 
 /*
  * #%L
@@ -58,8 +57,10 @@ public class MaterialCockpitRowRepositoryTest
 		final I_X_MRP_ProductInfo_Detail_MV record = newInstance(I_X_MRP_ProductInfo_Detail_MV.class);
 		save(record);
 
-		final List<MaterialCockpitRow> result = materialCockpitRowRepository.retrieveRows(ImmutableList.of());
-		assertThat(result).isEmpty();;
+		final IRowsData<MaterialCockpitRow> result = materialCockpitRowRepository.createRowsData(ImmutableList.of());
+		assertThat(result.getDocumentId2AllRows()).isEmpty();
+		assertThat(result.getDocumentId2TopLevelRows()).isEmpty();
+		assertThat(result.getTableRecordReference2rows()).isEmpty();
 	}
 
 }

@@ -74,10 +74,10 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 	private PackageableView(
 			@NonNull final ViewId viewId,
 			@NonNull final ITranslatableString description,
-			@NonNull final Supplier<List<PackageableRow>> rowsSupplier,
+			@NonNull final IRowsData<PackageableRow> rowsData,
 			@NonNull final PickingCandidateService pickingCandidateService)
 	{
-		super(viewId, description, rowsSupplier);
+		super(viewId, description, rowsData);
 
 		this.pickingCandidateService = pickingCandidateService;
 	}
