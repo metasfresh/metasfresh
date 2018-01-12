@@ -135,6 +135,18 @@ import lombok.ToString;
 		return result;
 	}
 
+	public void purgeExpiredSessionsNoFail()
+	{
+		try
+		{
+			purgeExpiredSessions();
+		}
+		catch (final Throwable ex)
+		{
+			logger.warn("Failed purging expired sessions. Ignored.", ex);
+		}
+	}
+
 	public void purgeExpiredSessions()
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
