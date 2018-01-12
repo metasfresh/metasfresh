@@ -45,6 +45,9 @@ public class WebuiHUTransformCommandResult
 
 	@Singular("huIdChanged")
 	private final ImmutableSet<Integer> huIdsChanged;
+	
+	@Singular("huIdCreated")
+	private final ImmutableSet<Integer> huIdsCreated;
 
 	private final boolean fullViewInvalidation;
 }
