@@ -6,15 +6,18 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
-import org.compiere.util.CacheMgt;
+import org.adempiere.util.Services;
+import org.compiere.util.Env;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.material.cockpit.model.I_MD_Cockpit;
-import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
+import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -25,6 +28,7 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout.Builder;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.factory.standard.DefaultDocumentDescriptorFactory;
 import lombok.NonNull;
 
 /*
@@ -48,7 +52,8 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@ViewFactory(windowId = MaterialCockpitConstants.WINDOWID_MaterialCockpitView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
+@ViewFactory(windowId = MaterialCockpitConstants.WINDOWID_MaterialCockpitView_String, //
+		viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class MaterialCockpitViewFactory
 		implements IViewFactory
 {
@@ -56,16 +61,15 @@ public class MaterialCockpitViewFactory
 
 	private final MaterialCockpitFilters materialCockpitFilters;
 
-	private final MaterialCockpitViewsIndexStorage materialCockpitViewsIndexStorage;
-
 	public MaterialCockpitViewFactory(
 			@NonNull final MaterialCockpitRowRepository materialCockpitRowRepository,
-			@NonNull final MaterialCockpitViewsIndexStorage materialCockpitViewsIndexStorage,
-			@NonNull final MaterialCockpitFilters materialCockpitFilters)
+			@NonNull final MaterialCockpitFilters materialCockpitFilters,
+			@NonNull final DefaultDocumentDescriptorFactory defaultDocumentDescriptorFactory)
 	{
 		this.materialCockpitRowRepository = materialCockpitRowRepository;
 		this.materialCockpitFilters = materialCockpitFilters;
-		this.materialCockpitViewsIndexStorage = materialCockpitViewsIndexStorage;
+
+		defaultDocumentDescriptorFactory.addUnsupportedWindowId(MaterialCockpitConstants.WINDOWID_MaterialCockpitView);
 	}
 
 	@Override
@@ -75,24 +79,15 @@ public class MaterialCockpitViewFactory
 
 		final ImmutableList<DocumentFilter> requestFilters = materialCockpitFilters.extractDocumentFilters(request);
 		final ImmutableList<DocumentFilter> filtersToUse = request.isUseAutoFilters() ? materialCockpitFilters.createAutoFilters() : requestFilters;
-
-		final Supplier<List<MaterialCockpitRow>> rowsSupplier = createRowsSupplier(filtersToUse);
+		final Supplier<List<MaterialCockpitRow>> rowsListSupplier = () -> materialCockpitRowRepository.retrieveRows(filtersToUse);
 
 		final MaterialCockpitView view = MaterialCockpitView.builder()
 				.viewId(request.getViewId())
 				.description(ITranslatableString.empty())
-				.rowsSupplier(rowsSupplier)
 				.filters(filtersToUse)
+				.rowsListSupplier(rowsListSupplier)
+				.relatedProcessDescriptor(createProcessDescriptor())
 				.build();
-
-		CacheMgt.get().addCacheResetListener(I_MD_Cockpit.Table_Name, cacheInvalidateRequest -> {
-			materialCockpitViewsIndexStorage.streamAllViews().forEach(IView::invalidateAll);
-			return 0;
-		});
-		CacheMgt.get().addCacheResetListener(I_MD_Stock.Table_Name, cacheInvalidateRequest -> {
-			materialCockpitViewsIndexStorage.streamAllViews().forEach(IView::invalidateAll);
-			return 0;
-		});
 
 		return view;
 	}
@@ -105,12 +100,6 @@ public class MaterialCockpitViewFactory
 		Check.errorUnless(MaterialCockpitConstants.WINDOWID_MaterialCockpitView.equals(windowId),
 				"The parameter request needs to have WindowId={}, but has {} instead; request={};",
 				MaterialCockpitConstants.WINDOWID_MaterialCockpitView, windowId, request);
-	}
-
-	private Supplier<List<MaterialCockpitRow>> createRowsSupplier(@NonNull final List<DocumentFilter> filtersToUse)
-	{
-		final Supplier<List<MaterialCockpitRow>> rowsSupplier = () -> materialCockpitRowRepository.retrieveRows(filtersToUse);
-		return rowsSupplier;
 	}
 
 	@Override
@@ -132,6 +121,20 @@ public class MaterialCockpitViewFactory
 				.setFilters(materialCockpitFilters.getFilterDescriptors());
 
 		return viewlayOutBuilder.build();
+	}
+
+	private RelatedProcessDescriptor createProcessDescriptor()
+	{
+		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+
+		final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), MD_Cockpit_DocumentDetail_Display.class);
+		Preconditions.checkArgument(processId > 0, "No AD_Process_ID found for class %s", MD_Cockpit_DocumentDetail_Display.class);
+
+		final RelatedProcessDescriptor processDescriptor = RelatedProcessDescriptor.builder()
+				.processId(processId)
+				.webuiQuickAction(true)
+				.build();
+		return processDescriptor;
 	}
 
 }

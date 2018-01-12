@@ -1,6 +1,7 @@
 package de.metas.ui.web.view;
 
 import java.util.List;
+import java.util.Set;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -45,5 +46,7 @@ public interface ViewRowIdsOrderedSelectionFactory
 
 	boolean containsAnyOfRowIds(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 	
-	void deleteSelection(ViewRowIdsOrderedSelection selection);
+	void deleteSelection(ViewId viewId);
+
+	void scheduleDeleteSelections(Set<String> viewIds);
 }

@@ -11,6 +11,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
@@ -60,24 +61,55 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 {
 	private final ViewId viewId;
 	private final ITranslatableString description;
-	private final ExtendedMemorizingSupplier<Map<DocumentId, T>> rowsSupplier;
+	private final ExtendedMemorizingSupplier<Map<DocumentId, T>> topLevelRowsSupplier;
+
+	private final ExtendedMemorizingSupplier<Map<DocumentId, T>> allRowsSupplier;
 
 	/**
 	 *
 	 * @param viewId
 	 * @param description may not be {@code null} either; if you don't have one, please use {@link ITranslatableString#empty()}.
-	 * @param rowsSupplier
+	 * @param rowsListSupplier
 	 */
 	protected AbstractCustomView(
 			@NonNull final ViewId viewId,
 			@NonNull final ITranslatableString description,
-			@NonNull final Supplier<List<T>> rowsSupplier)
+			@NonNull final Supplier<List<T>> rowsListSupplier)
 	{
 		this.viewId = viewId;
 		this.description = description;
 
-		final Supplier<Map<DocumentId, T>> map = () -> Maps.uniqueIndex(rowsSupplier.get(), row -> row.getId());
-		this.rowsSupplier = ExtendedMemorizingSupplier.of(map);
+		this.topLevelRowsSupplier = ExtendedMemorizingSupplier.of(() -> {
+
+			return Maps.uniqueIndex(rowsListSupplier.get(), row -> row.getId());
+		});
+
+		this.allRowsSupplier = ExtendedMemorizingSupplier.of(() -> {
+
+			final ImmutableMap.Builder<DocumentId, T> allRows = ImmutableMap.builder();
+			rowsListSupplier.get().forEach(topLevelRow -> {
+
+				allRows.put(topLevelRow.getId(), topLevelRow);
+				allRows.putAll(extractAllIncludedRows(topLevelRow));
+			});
+			return allRows.build();
+		});
+
+	}
+
+	private Map<DocumentId, T> extractAllIncludedRows(@NonNull final T topLevelRow)
+	{
+		@SuppressWarnings("unchecked")
+		final List<T> includedRows = (List<T>)topLevelRow.getIncludedRows();
+
+		final ImmutableMap.Builder<DocumentId, T> resultOfThisInvocation = ImmutableMap.builder();
+		for (final T includedRow : includedRows)
+		{
+			resultOfThisInvocation.put(includedRow.getId(), includedRow);
+			resultOfThisInvocation.putAll(extractAllIncludedRows(includedRow));
+		}
+
+		return resultOfThisInvocation.build();
 	}
 
 	@Override
@@ -118,7 +150,12 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 
 	protected final Map<DocumentId, T> getRows()
 	{
-		return rowsSupplier.get();
+		return topLevelRowsSupplier.get();
+	}
+
+	public Map<DocumentId, T> getMainRowsAndSubRows()
+	{
+		return allRowsSupplier.get();
 	}
 
 	@Override
@@ -130,11 +167,17 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	@Override
 	public void invalidateAll()
 	{
-		rowsSupplier.forget();
+		invalidateRowSuppliers();
 
 		ViewChangesCollector
 				.getCurrentOrAutoflush()
 				.collectFullyChanged(this);
+	}
+
+	protected void invalidateRowSuppliers()
+	{
+		topLevelRowsSupplier.forget();
+		allRowsSupplier.forget();
 	}
 
 	@Override
@@ -225,12 +268,13 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	}
 
 	@Override
-	public final T getById(DocumentId rowId) throws EntityNotFoundException
+	public final T getById(@NonNull final DocumentId rowId) throws EntityNotFoundException
 	{
-		final T row = getRows().get(rowId);
+		final T row = getMainRowsAndSubRows().get(rowId);
 		if (row == null)
 		{
-			throw new EntityNotFoundException("Row not found").setParameter("rowId", rowId);
+			throw new EntityNotFoundException("Row not found")
+					.appendParametersToMessage().setParameter("rowId", rowId);
 		}
 		return row;
 	}

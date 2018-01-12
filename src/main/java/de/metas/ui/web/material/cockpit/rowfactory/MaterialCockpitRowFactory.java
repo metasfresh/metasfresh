@@ -82,21 +82,8 @@ public class MaterialCockpitRowFactory
 
 		final Map<MainRowBucketId, MainRowWithSubRows> result = new HashMap<>(emptyRowBuckets);
 
-		for (final I_MD_Cockpit cockpitRecord : request.getCockpitRecords())
-		{
-			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForCockpitRecord(cockpitRecord);
-
-			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowWithSubRows.create(key));
-			mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec);
-		}
-
-		for (final I_MD_Stock stockRecord : request.getStockRecords())
-		{
-			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForStockRecord(stockRecord, request.getDate());
-
-			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowWithSubRows.create(key));
-			mainRowBucket.addStockRecord(stockRecord, dimensionSpec);
-		}
+		addCockpitRowsToResult(request, dimensionSpec, result);
+		addStockRowsToResult(request, dimensionSpec, result);
 
 		return result.values()
 				.stream()
@@ -142,6 +129,34 @@ public class MaterialCockpitRowFactory
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant)
 				.create().list();
+	}
+
+	private void addCockpitRowsToResult(
+			@NonNull final CreateRowsRequest request,
+			@NonNull final DimensionSpec dimensionSpec,
+			@NonNull final Map<MainRowBucketId, MainRowWithSubRows> result)
+	{
+		for (final I_MD_Cockpit cockpitRecord : request.getCockpitRecords())
+		{
+			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForCockpitRecord(cockpitRecord);
+
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowWithSubRows.create(key));
+			mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec);
+		}
+	}
+
+	private void addStockRowsToResult(
+			@NonNull final CreateRowsRequest request,
+			@NonNull final DimensionSpec dimensionSpec,
+			@NonNull final Map<MainRowBucketId, MainRowWithSubRows> result)
+	{
+		for (final I_MD_Stock stockRecord : request.getStockRecords())
+		{
+			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForStockRecord(stockRecord, request.getDate());
+
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, key -> MainRowWithSubRows.create(key));
+			mainRowBucket.addStockRecord(stockRecord, dimensionSpec);
+		}
 	}
 
 }

@@ -2,6 +2,7 @@ package de.metas.ui.web.view;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.security.IUserRolePermissions;
@@ -261,9 +262,9 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	}
 
 	@Override
-	public void deleteSelection(@NonNull final ViewRowIdsOrderedSelection selection)
+	public void deleteSelection(@NonNull final ViewId viewId)
 	{
-		final String selectionId = selection.getSelectionId();
+		final String selectionId = viewId.getViewId();
 		final SqlViewSelectionQueryBuilder viewQueryBuilder = newSqlViewSelectionQueryBuilder();
 
 		// Delete selection lines
@@ -279,5 +280,11 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			final int countDeleted = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 			logger.trace("Delete {} selection rows for {}", countDeleted, selectionId);
 		}
+	}
+
+	@Override
+	public void scheduleDeleteSelections(final Set<String> viewIds)
+	{
+		SqlViewSelectionToDeleteHelper.scheduleDeleteSelections(viewIds);
 	}
 }

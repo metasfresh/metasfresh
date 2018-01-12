@@ -51,6 +51,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -212,7 +213,8 @@ public class LayoutFactory
 		final ILogicExpression tabDisplayLogic = descriptorsFactory.getTabDisplayLogic();
 		if (tabDisplayLogic.isConstantFalse())
 		{
-			logger.warn("Skip creating single row layout because it's never displayed: {}, tabDisplayLogic={}", entityDescriptor, tabDisplayLogic);
+			logger.warn("Skip creating single row layout because it's never displayed: {}, tabDisplayLogic={}",
+					entityDescriptor, tabDisplayLogic);
 			return null;
 		}
 
@@ -223,7 +225,8 @@ public class LayoutFactory
 		// Usually this happens when generating the single row layout for included tabs.
 		if (!layoutSectionsList.stream().anyMatch(DocumentLayoutSectionDescriptor.Builder::isNotEmpty))
 		{
-			DocumentLayoutSectionDescriptor.Builder oneLayoutSection = DocumentLayoutSectionDescriptor.builder().addColumn(layoutGridView().getElements());
+			DocumentLayoutSectionDescriptor.Builder oneLayoutSection = DocumentLayoutSectionDescriptor.builder()
+					.addColumn(layoutGridView().getElements());
 			layoutSectionsList = ImmutableList.of(oneLayoutSection);
 		}
 
@@ -335,7 +338,7 @@ public class LayoutFactory
 				continue;
 			}
 
-			final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = layoutElementLine(uiElement, layoutElementGroupBuilder);
+			final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = layoutElementLine(uiElement);
 			if (layoutElementLineBuilder == null)
 			{
 				continue;
@@ -353,7 +356,7 @@ public class LayoutFactory
 		return layoutElementGroupBuilder;
 	}
 
-	private DocumentLayoutElementLineDescriptor.Builder layoutElementLine(final I_AD_UI_Element uiElement, final DocumentLayoutElementGroupDescriptor.Builder layoutElementGroupBuilder)
+	private DocumentLayoutElementLineDescriptor.Builder layoutElementLine(final I_AD_UI_Element uiElement)
 	{
 		logger.trace("Building layout element line for {}", uiElement);
 
@@ -414,7 +417,7 @@ public class LayoutFactory
 
 			layoutElementBuilder.addField(layoutElementFieldBuilder);
 		}
-		
+
 		if (layoutElementBuilder.getFieldsCount() <= 0)
 		{
 			logger.trace("Skip layout element for {} because it has no fields: {}", uiElement, layoutElementBuilder);
@@ -439,8 +442,42 @@ public class LayoutFactory
 			descriptorsFactory.addFieldsCharacteristic(layoutElementBuilder.getFieldNames(), Characteristic.AdvancedField);
 		}
 
+		layoutElementBuilder.setViewEditorRenderMode(
+				computeViewEditorRenderMode(
+						uiElement,
+						layoutElementBuilder.getWidgetType()));
+
 		logger.trace("Built layout element for {}: {}", uiElement, layoutElementBuilder);
 		return layoutElementBuilder;
+	}
+
+	/**
+	 * @task https://github.com/metasfresh/metasfresh-webui-api/issues/778
+	 */
+	private ViewEditorRenderMode computeViewEditorRenderMode(
+			@NonNull final I_AD_UI_Element uiElement,
+			final DocumentFieldWidgetType widgetType)
+	{
+		final DocumentFieldDescriptor.Builder field = descriptorsFactory
+				.documentFieldByAD_Field_ID(uiElement.getAD_Field_ID());
+
+		final boolean readOnly = field != null && field.getReadonlyLogicEffective().isConstantTrue();
+		if (readOnly)
+		{
+			return ViewEditorRenderMode.NEVER;
+		}
+
+		// if we can't tell the mode from field, then use our "old" logic
+		if (widgetType == DocumentFieldWidgetType.Amount
+				|| widgetType == DocumentFieldWidgetType.CostPrice
+				|| widgetType == DocumentFieldWidgetType.Quantity)
+		{
+			return ViewEditorRenderMode.ON_DEMAND;
+		}
+		else
+		{
+			return ViewEditorRenderMode.NEVER;
+		}
 	}
 
 	private List<DocumentFieldDescriptor.Builder> extractDocumentFields(final I_AD_UI_Element uiElement)
@@ -522,9 +559,7 @@ public class LayoutFactory
 					.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNoGrid))
 					.map(adUIElement -> layoutElement(adUIElement))
 					.filter(uiElement -> uiElement != null)
-					.peek(uiElement -> uiElement
-							.setGridElement()
-							.setViewEditorRenderMode(extractViewEditorRenderMode(uiElement.getWidgetType())))
+					.peek(uiElement -> uiElement.setGridElement())
 					.forEach(layout::addElement);
 		}
 
@@ -540,7 +575,6 @@ public class LayoutFactory
 					.peek(uiElement -> uiElement.setGridElement())
 					.forEach(layout::addElement);
 		}
-		
 
 		//
 		// Fallback:
@@ -554,20 +588,6 @@ public class LayoutFactory
 		descriptorsFactory.addFieldsCharacteristic(layout.getFieldNames(), Characteristic.GridViewField);
 
 		return layout;
-	}
-
-	private static final ViewEditorRenderMode extractViewEditorRenderMode(final DocumentFieldWidgetType widgetType)
-	{
-		if (widgetType == DocumentFieldWidgetType.Amount
-				|| widgetType == DocumentFieldWidgetType.CostPrice
-				|| widgetType == DocumentFieldWidgetType.Quantity)
-		{
-			return ViewEditorRenderMode.ON_DEMAND;
-		}
-		else
-		{
-			return ViewEditorRenderMode.NEVER;
-		}
 	}
 
 	/** @return included entity grid layout */

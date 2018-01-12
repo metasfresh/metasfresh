@@ -1,6 +1,8 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
@@ -64,24 +66,32 @@ public class DimensionGroupSubRowBucket
 
 	private BigDecimal qtyOnHandStock = BigDecimal.ZERO;
 
+	private final Set<Integer> cockpitRecordIds = new HashSet<>();
+
+	private final Set<Integer> stockRecordIds = new HashSet<>();
+
 	public DimensionGroupSubRowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
 		this.dimensionSpecGroup = dimensionSpecGroup;
 	}
 
-	public void addDataRecord(@NonNull final I_MD_Cockpit dataRecord)
+	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
-		pmmQtyPromised = pmmQtyPromised.add(dataRecord.getPMM_QtyPromised_OnDate());
-		qtyMaterialentnahme = qtyMaterialentnahme.add(dataRecord.getQtyMaterialentnahme());
-		qtyRequiredForProduction = qtyRequiredForProduction.add(dataRecord.getQtyRequiredForProduction());
-		qtyReservedPurchase = qtyReservedPurchase.add(dataRecord.getQtyReserved_Purchase());
-		qtyReservedSale = qtyReservedSale.add(dataRecord.getQtyReserved_Sale());
-		qtyAvailableToPromise = qtyAvailableToPromise.add(dataRecord.getQtyAvailableToPromise());
+		pmmQtyPromised = pmmQtyPromised.add(cockpitRecord.getPMM_QtyPromised_OnDate());
+		qtyMaterialentnahme = qtyMaterialentnahme.add(cockpitRecord.getQtyMaterialentnahme());
+		qtyRequiredForProduction = qtyRequiredForProduction.add(cockpitRecord.getQtyRequiredForProduction());
+		qtyReservedPurchase = qtyReservedPurchase.add(cockpitRecord.getQtyReserved_Purchase());
+		qtyReservedSale = qtyReservedSale.add(cockpitRecord.getQtyReserved_Sale());
+		qtyAvailableToPromise = qtyAvailableToPromise.add(cockpitRecord.getQtyAvailableToPromise());
+
+		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
 	{
 		qtyOnHandStock = qtyOnHandStock.add(stockRecord.getQtyOnHand());
+
+		stockRecordIds.add(stockRecord.getMD_Stock_ID());
 	}
 
 	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowWithSubRows mainRowBucket)
@@ -91,6 +101,7 @@ public class DimensionGroupSubRowBucket
 		return MaterialCockpitRow.attributeSubRowBuilder()
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId())
+
 				.dimensionGroup(dimensionSpecGroup)
 				.pmmQtyPromised(getPmmQtyPromised())
 				.qtyMaterialentnahme(getQtyMaterialentnahme())
@@ -98,6 +109,8 @@ public class DimensionGroupSubRowBucket
 				.qtyReservedPurchase(getQtyReservedPurchase())
 				.qtyReservedSale(getQtyReservedSale())
 				.qtyOnHandStock(getQtyOnHandStock())
+				.allIncludedCockpitRecordIds(cockpitRecordIds)
+				.allIncludedStockRecordIds(stockRecordIds)
 				.build();
 	}
 }

@@ -9,8 +9,10 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -55,6 +57,27 @@ public interface IViewRow
 	//
 	// Fields
 	Map<String, Object> getFieldNameAndJsonValues();
+	
+	default int getFieldJsonValueAsInt(@NonNull final String fieldName, final int defaultValueIfNotFound)
+	{
+		final Object jsonValueObj = getFieldNameAndJsonValues().get(fieldName);
+		if(jsonValueObj == null)
+		{
+			return defaultValueIfNotFound;
+		}
+		else if (jsonValueObj instanceof Number)
+		{
+			return ((Number)jsonValueObj).intValue();
+		}
+		else if (jsonValueObj instanceof JSONLookupValue)
+		{
+			return ((JSONLookupValue)jsonValueObj).getKeyAsInt();
+		}
+		else
+		{
+			return Integer.parseInt(jsonValueObj.toString());
+		}
+	}
 
 	default Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
 	{

@@ -1,6 +1,7 @@
 package de.metas.ui.web.view;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.exceptions.DBException;
 
@@ -59,4 +60,8 @@ public interface IViewDataRepository
 	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, ViewId viewId, List<DocumentFilter> filters);
 
 	ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(final ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
+
+	void deleteSelection(ViewId viewId);
+
+	void scheduleDeleteSelections(Set<String> viewIds);
 }

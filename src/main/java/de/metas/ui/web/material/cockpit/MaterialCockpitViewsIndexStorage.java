@@ -36,7 +36,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
  */
 
 /**
- * This IViewsIndexStorage implementation is dedicated to storing {@link MaterialCockpitView}.
+ * This {@link IViewsIndexStorage} implementation is dedicated to storing {@link MaterialCockpitView}.
  * The actual work is done by an internal instance of {@link DefaultViewsRepositoryStorage}.
  * We store {@link MaterialCockpitView}s inside this dedicated storage,
  * because we need to invalidate those views on changes in two different tables (the standard framework could handle only one).

@@ -1,21 +1,35 @@
 package de.metas.ui.web.material.cockpit;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
+import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
+import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -43,21 +57,57 @@ import lombok.NonNull;
 
 public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 {
-	private ImmutableList<DocumentFilter> filters;
+	private final ImmutableList<DocumentFilter> filters;
+
+	private final List<RelatedProcessDescriptor> relatedProcessDescriptors;
+
+	private final ExtendedMemorizingSupplier<Map<TableRecordReference, Collection<DocumentId>>> tableRecordReference2DocumentId;
 
 	@Builder
 	private MaterialCockpitView(
 			@NonNull final ViewId viewId,
 			@NonNull final ITranslatableString description,
-			@NonNull final Supplier<List<MaterialCockpitRow>> rowsSupplier,
-			@NonNull final ImmutableList<DocumentFilter> filters)
+			@NonNull final Supplier<List<MaterialCockpitRow>> rowsListSupplier,
+			@NonNull final ImmutableList<DocumentFilter> filters,
+			@NonNull final RelatedProcessDescriptor relatedProcessDescriptor)
 	{
-		super(viewId, description, rowsSupplier);
+		super(viewId,
+				description,
+				rowsListSupplier);
+
+		this.tableRecordReference2DocumentId = ExtendedMemorizingSupplier.of(() -> extractTableRecordReference2DocumentId2());
+
 		this.filters = filters;
+		this.relatedProcessDescriptors = ImmutableList.of(relatedProcessDescriptor);
+	}
+
+	private Map<TableRecordReference, Collection<DocumentId>> extractTableRecordReference2DocumentId2()
+	{
+		final ListMultimap<TableRecordReference, DocumentId> recordReference2DocumentId = ArrayListMultimap.create();
+
+		final Map<DocumentId, MaterialCockpitRow> rows = getMainRowsAndSubRows();
+		for (final Entry<DocumentId, MaterialCockpitRow> row : rows.entrySet())
+		{
+			final MaterialCockpitRow materialCockpitRow = row.getValue();
+
+			final DocumentId documentId = row.getKey();
+			materialCockpitRow
+					.getAllIncludedCockpitRecordIds()
+					.forEach(cockpitRecordId -> recordReference2DocumentId
+							.put(TableRecordReference.of(I_MD_Cockpit.Table_Name, cockpitRecordId), documentId));
+
+			materialCockpitRow
+					.getAllIncludedStockRecordIds()
+					.forEach(stockRecordId -> recordReference2DocumentId
+							.put(TableRecordReference.of(I_MD_Stock.Table_Name, stockRecordId), documentId));
+
+		}
+
+		return recordReference2DocumentId.asMap();
 	}
 
 	/**
-	 * Each record of this view is based on > 1 tables.
+	 * @return {@code null}, because each record of this view is based on > 1 tables.
 	 */
 	@Override
 	public String getTableNameOrNull(DocumentId documentId)
@@ -74,15 +124,61 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 	@Override
 	public void notifyRecordsChanged(@NonNull final Set<TableRecordReference> recordRefs)
 	{
-		Predicate<TableRecordReference> isRelatedTable = //
+		final ImmutableSet<TableRecordReference> recordRefsWithRelatedTable = filterForRelevantTableName(recordRefs);
+		if (recordRefsWithRelatedTable.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableList<DocumentId> changedDocumentIds = extractDocumentIds(recordRefs);
+		if (changedDocumentIds.isEmpty())
+		{
+			return; // nothing to do
+		}
+
+		invalidateRowSuppliers();
+		ViewChangesCollector
+				.getCurrentOrAutoflush()
+				.collectRowsChanged(this, DocumentIdsSelection.of(changedDocumentIds));
+	}
+
+	private ImmutableSet<TableRecordReference> filterForRelevantTableName(
+			@NonNull final Set<TableRecordReference> recordRefs)
+	{
+		final Predicate<TableRecordReference> isRelatedTable = //
 				ref -> I_MD_Cockpit.Table_Name.equals(ref.getTableName())
 						|| I_MD_Stock.Table_Name.equals(ref.getTableName());
-
-		// TODO refine this, to check if any of the particular is currently loaded in here,
-		// and also to not invalidate everything
-		recordRefs.stream()
+		final ImmutableSet<TableRecordReference> recordRefsWithRelatedTable = recordRefs.stream()
 				.filter(isRelatedTable)
-				.findFirst()
-				.ifPresent(ref -> invalidateAll());
+				.collect(ImmutableSet.toImmutableSet());
+		return recordRefsWithRelatedTable;
 	}
+
+	private ImmutableList<DocumentId> extractDocumentIds(
+			@NonNull final Set<TableRecordReference> recordRefs)
+	{
+		final Map<TableRecordReference, Collection<DocumentId>> recordReference2DocumentId = //
+				tableRecordReference2DocumentId.get();
+
+		final ImmutableList<DocumentId> changedDocumentIds = recordRefs.stream()
+				.map(recordReference2DocumentId::get)
+				.filter(Objects::nonNull)
+				.flatMap(documentIds -> documentIds.stream())
+				.collect(ImmutableList.toImmutableList());
+		return changedDocumentIds;
+	}
+
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return relatedProcessDescriptors;
+	}
+
+	@Override
+	public ViewActionDescriptorsList getActions()
+	{
+		return ViewActionDescriptorsFactory.instance
+				.getFromClass(MD_Cockpit_DocumentDetail_Display.class);
+	}
+
 }

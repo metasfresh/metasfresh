@@ -22,9 +22,18 @@ package de.metas.ui.web.window.descriptor;
  * #L%
  */
 
+/**
+ * Decides if and how a given field may be edited by a user.
+ */
 public enum ViewEditorRenderMode
 {
-	NEVER("never"), ON_DEMAND("on-demand"), ALWAYS("always");
+	/** Read-only */
+	NEVER("never"),
+
+	/**	after a right-click */
+	ON_DEMAND("on-demand"),
+
+	ALWAYS("always");
 
 	private final String json;
 
