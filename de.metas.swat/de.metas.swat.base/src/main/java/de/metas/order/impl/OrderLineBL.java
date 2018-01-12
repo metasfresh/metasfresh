@@ -168,7 +168,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		updateLineNetAmt(orderLine, qtyEntered, factor);
 	}
-	
+
 	@Override
 	public void setTaxAmtInfoIfNotIgnored(final Properties ctx, final I_C_OrderLine ol, final String trxName)
 	{
@@ -541,6 +541,11 @@ public class OrderLineBL implements IOrderLineBL
 		if (!pricingResult.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine());
+		}
+
+		if (pricingResult.getC_PaymentTerm_ID() > 0)
+		{
+			orderLine.setC_PaymentTerm_ID(pricingResult.getC_PaymentTerm_ID());
 		}
 
 		//
