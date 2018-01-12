@@ -17,16 +17,18 @@ import org.slf4j.Logger;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 
 public final class OrderCreateNewFromProposal extends JavaProcess 
 {
 	private static final Logger log = LogManager.getLogger(OrderCreateNewFromProposal.class);
+	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private MOrder sourceOrder;
 
-	private int newOrderDocType;
+	private int newOrderDocTypeId;
 
 	private Timestamp newOrderDateOrdered;
 
@@ -45,9 +47,8 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 		final PO to = InterfaceWrapperHelper.getPO(newOrder);
 		PO.copyValues(sourceOrder, to, true);
 		
-		final MDocType docType = MDocType.get(Env.getCtx(), newOrderDocType);
-		newOrder.setC_DocTypeTarget(docType);
-		newOrder.setC_DocType(docType);
+		orderBL.setDocTypeTargetIdAndUpdateDescription(newOrder, newOrderDocTypeId);
+		newOrder.setC_DocType_ID(newOrderDocTypeId);
 		
 		if (newOrderDateOrdered != null)
 		{
@@ -127,7 +128,7 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 			}
 			else if (name.equals("C_DocType_ID"))
 			{
-				newOrderDocType = para[i].getParameterAsInt();
+				newOrderDocTypeId = para[i].getParameterAsInt();
 			}
 			else if (name.equals("DateOrdered"))
 			{

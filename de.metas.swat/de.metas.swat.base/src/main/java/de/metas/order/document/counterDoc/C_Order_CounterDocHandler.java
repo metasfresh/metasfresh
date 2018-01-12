@@ -22,6 +22,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.spi.CounterDocumentHandlerAdapter;
 import de.metas.document.spi.ICounterDocHandler;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 
 /*
  * #%L
@@ -84,12 +85,12 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 		final I_AD_Org counterOrg = retrieveCounterOrgOrNull(document);
 
 		final de.metas.adempiere.model.I_C_Order counterOrder = InterfaceWrapperHelper.newInstance(de.metas.adempiere.model.I_C_Order.class, document.getCtx());
-		final MOrder counterOrderPO = (MOrder)LegacyAdapters.convertToPO(counterOrder);
+		final MOrder counterOrderPO = LegacyAdapters.convertToPO(counterOrder);
 
 		counterOrder.setAD_Org(counterOrg); // 09700
 
 		//
-		counterOrder.setC_DocTypeTarget(counterDocType);
+		Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, counterDocType.getC_DocType_ID());
 		counterOrder.setIsSOTrx(counterDocType.isSOTrx());
 
 		// the new order needs to figure out the pricing by itself

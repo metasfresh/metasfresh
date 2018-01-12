@@ -110,6 +110,9 @@ public class CalloutInvoice extends CalloutEngine
 		}
 
 		//
+		Services.get(IInvoiceBL.class).updateDescriptionFromDocTypeTargetId(invoice);
+		
+		//
 		return NO_ERROR;
 	}	// docType
 
