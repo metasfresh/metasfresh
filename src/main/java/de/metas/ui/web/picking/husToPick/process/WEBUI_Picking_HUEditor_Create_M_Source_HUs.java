@@ -52,7 +52,7 @@ public class WEBUI_Picking_HUEditor_Create_M_Source_HUs
 					sourceHuService.addSourceHuMarker(huEditorRow.getM_HU_ID());
 				});
 
-		invalidateViewsAndGoBackToPickingSlotsView();
+		invalidateAndGoBackToPickingSlotsView();
 		return MSG_OK;
 	}
 }

@@ -45,7 +45,7 @@ public class WEBUI_Picking_HUEditor_PickHU
 	{
 		retrieveEligibleHUEditorRows().forEach(this::pickHuRow);
 
-		invalidateViewsAndGoBackToPickingSlotsView();
+		invalidateAndGoBackToPickingSlotsView();
 		return MSG_OK;
 	}
 

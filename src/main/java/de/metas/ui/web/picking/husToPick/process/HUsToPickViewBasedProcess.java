@@ -121,12 +121,16 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 		return pickingSlotView.getById(pickingSlotRowId);
 	}
 
-	protected final void invalidateViewsAndGoBackToPickingSlotsView()
+	protected final void invalidateAndGoBackToPickingSlotsView()
 	{
-		invalidateView(); // picking slots view
-		invalidateParentView();  // picking view
+		// https://github.com/metasfresh/metasfresh-webui-frontend/issues/1447
+		// commenting this out because we now close the current view; currently this is a must,
+		// because currently the frontend then load *this* view's data into the pickingSlotView
+		// invalidateView();
 
-		// After this process finished successfully go back to picking slots view
+		invalidateParentView();  // parent view is the picking view (M_Packageable_V); need to invalidate it in order to update frontend's qtyPicked
+
+		// After this process finished successfully go back to the picking slots view
 		getResult().setWebuiIncludedViewIdToOpen(getPickingSlotView().getViewId().getViewId());
 	}
 
