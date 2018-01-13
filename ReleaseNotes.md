@@ -23,6 +23,8 @@ Here come the actual release notes:
     * New Window for Document Details that can now be shown via Material Cockpit Window.
   * [#3293](https://github.com/metasfresh/metasfresh/issues/3293) Webui: Add Translation Messages for Daterangepicker
     * Improved Translations. Added static translations for de_DE, en_US and Date Range Picker.
+  * [#3303](https://github.com/metasfresh/metasfresh/issues/3303) WebUI: New Window for GO! Delivery Orders
+    * New Window in WebUI for the new Functionality of General Overnight Shipper Transportation.
 
 * metasfresh-webui-frontend
   * [#1470](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1470) Bug in long texts with new line
