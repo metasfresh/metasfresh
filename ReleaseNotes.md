@@ -25,6 +25,8 @@ Here come the actual release notes:
     * Improved Translations. Added static translations for de_DE, en_US and Date Range Picker.
   * [#3303](https://github.com/metasfresh/metasfresh/issues/3303) WebUI: New Window for GO! Delivery Orders
     * New Window in WebUI for the new Functionality of General Overnight Shipper Transportation.
+  * [#3309](https://github.com/metasfresh/metasfresh/issues/3309) Webui Window Design: Improve window Event store
+    * New System Admin Window Event Store. Allows the System Admin to view the status of events and checking/ resubmitting them in case of issues.
 
 * metasfresh-webui-frontend
   * [#1470](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1470) Bug in long texts with new line
