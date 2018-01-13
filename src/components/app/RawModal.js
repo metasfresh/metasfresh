@@ -84,17 +84,17 @@ class RawModal extends Component {
   removeModal = async () => {
     const { dispatch, modalVisible, windowType, viewId } = this.props;
 
-    for (const action of [
-      closeRawModal(),
-      closeModal(),
-      closeListIncludedView({
-        windowType,
-        viewId,
-        forceClose: true
-      })
-    ]) {
-      await dispatch(action);
-    }
+    await Promise.all(
+      [
+        closeRawModal(),
+        closeModal(),
+        closeListIncludedView({
+          windowType,
+          viewId,
+          forceClose: true
+        })
+      ].map(action => dispatch(action))
+    );
 
     if (!modalVisible) {
       document.body.style.overflow = "auto";
