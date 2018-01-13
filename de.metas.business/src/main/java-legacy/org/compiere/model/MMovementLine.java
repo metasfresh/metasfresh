@@ -182,15 +182,19 @@ public class MMovementLine extends X_M_MovementLine
 		//	Set Line No
 		if (getLine() == 0)
 		{
-			String sql = "SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM M_MovementLine WHERE M_Movement_ID=?";
-			int ii = DB.getSQLValue (get_TrxName(), sql, getM_Movement_ID());
-			setLine (ii);
+			final String sql = "SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM M_MovementLine WHERE M_Movement_ID=?";
+			final int nextLineNo = DB.getSQLValueEx (get_TrxName(), sql, getM_Movement_ID());
+			setLine (nextLineNo);
 		}
 		
 		 //either movement between locator or movement between lot
 		if (getM_Locator_ID() == getM_LocatorTo_ID() && getM_AttributeSetInstance_ID() == getM_AttributeSetInstanceTo_ID())
 		{
-			throw new AdempiereException("@M_Locator_ID@ == @M_LocatorTo_ID@ and @M_AttributeSetInstance_ID@ == @M_AttributeSetInstanceTo_ID@");
+			throw new AdempiereException("@M_Locator_ID@ == @M_LocatorTo_ID@ and @M_AttributeSetInstance_ID@ == @M_AttributeSetInstanceTo_ID@")
+					.setParameter("M_Locator_ID", getM_Locator())
+					.setParameter("M_LocatorTo_ID", getM_LocatorTo())
+					.setParameter("M_AttributeSetInstance_ID", getM_AttributeSetInstance())
+					.setParameter("M_AttributeSetInstanceTo_ID", getM_AttributeSetInstanceTo());
 		}
 
 		if (getMovementQty().signum() == 0)
