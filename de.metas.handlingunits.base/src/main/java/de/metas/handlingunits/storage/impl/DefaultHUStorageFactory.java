@@ -13,21 +13,22 @@ package de.metas.handlingunits.storage.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_M_Product;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -81,17 +82,21 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 	}
 
 	@Override
-	public List<IHUProductStorage> getHUProductStorages(
-			@NonNull final List<I_M_HU> hus,
-			@NonNull final I_M_Product product)
+	public List<IHUProductStorage> getHUProductStorages(@NonNull final List<I_M_HU> hus, final int productId)
 	{
-		final List<IHUProductStorage> productStorages = hus.stream()
-				.map(hu -> getStorage(hu))
-				.map(huStorage -> huStorage.getProductStorageOrNull(product))
+		return hus.stream()
+				.map(this::getStorage)
+				.map(huStorage -> huStorage.getProductStorageOrNull(productId))
 				.filter(productStorage -> productStorage != null)
-				.collect(Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
+	}
 
-		return productStorages;
+	@Override
+	public Stream<IHUProductStorage> streamHUProductStorages(@NonNull final List<I_M_HU> hus)
+	{
+		return hus.stream()
+				.map(this::getStorage)
+				.flatMap(IHUStorage::streamProductStorages);
 	}
 
 }
