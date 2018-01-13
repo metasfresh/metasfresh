@@ -227,8 +227,8 @@ class MasterWindow extends Component {
   closeModalCallback = (
     { isNew, windowType, documentId, tabId, rowId } = {}
   ) => {
-    if (isNew) {
-      discardNewRow({ windowType, documentId, tabId, rowId });
+    if (!isNew) {
+      return discardNewRow({ windowType, documentId, tabId, rowId });
     }
   };
 

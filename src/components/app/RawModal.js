@@ -68,31 +68,33 @@ class RawModal extends Component {
     });
   };
 
-  handleClose = () => {
+  handleClose = async () => {
     const { closeCallback, viewId, windowType } = this.props;
     const { isNew } = this.state;
 
     if (closeCallback) {
-      closeCallback(isNew);
+      await closeCallback(isNew);
     }
 
-    deleteView(windowType, viewId);
+    await deleteView(windowType, viewId);
 
-    this.removeModal();
+    await this.removeModal();
   };
 
-  removeModal = () => {
+  removeModal = async () => {
     const { dispatch, modalVisible, windowType, viewId } = this.props;
 
-    dispatch(closeRawModal());
-    dispatch(closeModal());
-    dispatch(
+    for (const action of [
+      closeRawModal(),
+      closeModal(),
       closeListIncludedView({
         windowType,
         viewId,
         forceClose: true
       })
-    );
+    ]) {
+      await dispatch(action);
+    }
 
     if (!modalVisible) {
       document.body.style.overflow = "auto";
