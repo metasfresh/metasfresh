@@ -523,57 +523,58 @@ export function patch(
   viewId,
   isEdit
 ) {
-  return dispatch => {
-    dispatch(indicatorState("pending"));
+  return async dispatch => {
+    await dispatch(indicatorState("pending"));
 
-    return patchRequest({
-      entity,
-      docType: windowType,
-      docId: id,
-      tabId,
-      rowId,
-      property,
-      value,
-      isAdvanced,
-      viewId,
-      isEdit
-    })
-      .then(response => {
-        let data =
-          response.data instanceof Array ? response.data : [response.data];
-        dispatch(
-          mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
-        );
-
-        dispatch(indicatorState("saved"));
-
-        return data;
-      })
-      .catch(() => {
-        getData(
-          entity,
-          windowType,
-          id,
-          tabId,
-          rowId,
-          null,
-          null,
-          isAdvanced,
-          null,
-          viewId
-        ).then(response => {
-          dispatch(
-            mapDataToState(
-              response.data,
-              isModal,
-              rowId,
-              id,
-              windowType,
-              isAdvanced
-            )
-          );
-        });
+    try {
+      const response = await patchRequest({
+        entity,
+        docType: windowType,
+        docId: id,
+        tabId,
+        rowId,
+        property,
+        value,
+        isAdvanced,
+        viewId,
+        isEdit
       });
+
+      const data =
+        response.data instanceof Array ? response.data : [response.data];
+
+      await dispatch(
+        mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
+      );
+
+      await dispatch(indicatorState("saved"));
+
+      return data;
+    } catch (error) {
+      const response = await getData(
+        entity,
+        windowType,
+        id,
+        tabId,
+        rowId,
+        null,
+        null,
+        isAdvanced,
+        null,
+        viewId
+      );
+
+      await dispatch(
+        mapDataToState(
+          response.data,
+          isModal,
+          rowId,
+          id,
+          windowType,
+          isAdvanced
+        )
+      );
+    }
   };
 }
 
