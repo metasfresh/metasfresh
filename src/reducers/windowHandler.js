@@ -1,6 +1,36 @@
 import update from "react-addons-update";
 
-import * as types from "../constants/ActionTypes";
+import {
+  ACTIVATE_TAB,
+  ADD_NEW_ROW,
+  ADD_ROW_DATA,
+  ALLOW_SHORTCUT,
+  CHANGE_INDICATOR_STATE,
+  CLEAR_MASTER_DATA,
+  CLOSE_MODAL,
+  CLOSE_PROCESS_MODAL,
+  CLOSE_RAW_MODAL,
+  DELETE_ROW,
+  DISABLE_SHORTCUT,
+  INIT_DATA_SUCCESS,
+  INIT_LAYOUT_SUCCESS,
+  NO_CONNECTION,
+  OPEN_MODAL,
+  OPEN_RAW_MODAL,
+  SELECT_TABLE_ITEMS,
+  SET_LATEST_NEW_DOCUMENT,
+  SORT_TAB,
+  UNSELECT_TAB,
+  UPDATE_DATA_FIELD_PROPERTY,
+  UPDATE_DATA_INCLUDED_TABS_INFO,
+  UPDATE_DATA_PROPERTY,
+  UPDATE_DATA_SAVE_STATUS,
+  UPDATE_DATA_VALID_STATUS,
+  UPDATE_MODAL,
+  UPDATE_ROW_FIELD_PROPERTY,
+  UPDATE_ROW_PROPERTY,
+  UPDATE_ROW_STATUS
+} from "../constants/ActionTypes";
 
 const initialState = {
   connectionError: false,
@@ -60,12 +90,12 @@ export const getSelection = ({ state, windowType, viewId }) => {
 
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
-    case types.NO_CONNECTION:
+    case NO_CONNECTION:
       return Object.assign({}, state, {
         connectionError: action.status
       });
 
-    case types.OPEN_MODAL:
+    case OPEN_MODAL:
       return Object.assign({}, state, {
         modal: Object.assign({}, state.modal, {
           visible: true,
@@ -86,7 +116,7 @@ export default function windowHandler(state = initialState, action) {
         })
       });
 
-    case types.UPDATE_MODAL:
+    case UPDATE_MODAL:
       return Object.assign({}, state, {
         modal: Object.assign({}, state.modal, {
           rowId: action.rowId,
@@ -94,7 +124,7 @@ export default function windowHandler(state = initialState, action) {
         })
       });
 
-    case types.CLOSE_PROCESS_MODAL:
+    case CLOSE_PROCESS_MODAL:
       if (state.modal.modalType === "process") {
         return Object.assign({}, state, {
           modal: Object.assign({}, state.modal, initialState.modal)
@@ -102,21 +132,21 @@ export default function windowHandler(state = initialState, action) {
       }
       return state;
 
-    case types.CLOSE_MODAL:
+    case CLOSE_MODAL:
       return Object.assign({}, state, {
         modal: Object.assign({}, state.modal, initialState.modal)
       });
 
     // SCOPED ACTIONS
 
-    case types.INIT_LAYOUT_SUCCESS:
+    case INIT_LAYOUT_SUCCESS:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
           layout: action.layout
         })
       });
 
-    case types.INIT_DATA_SUCCESS:
+    case INIT_DATA_SUCCESS:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
           data: action.data,
@@ -131,7 +161,7 @@ export default function windowHandler(state = initialState, action) {
         })
       });
 
-    case types.CLEAR_MASTER_DATA:
+    case CLEAR_MASTER_DATA:
       return Object.assign({}, state, {
         master: Object.assign({}, state.master, {
           data: {},
@@ -140,7 +170,7 @@ export default function windowHandler(state = initialState, action) {
         })
       });
 
-    case types.SORT_TAB:
+    case SORT_TAB:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
           layout: Object.assign({}, state[action.scope].layout, {
@@ -161,7 +191,7 @@ export default function windowHandler(state = initialState, action) {
         })
       });
 
-    case types.ACTIVATE_TAB:
+    case ACTIVATE_TAB:
       return update(state, {
         [action.scope]: {
           layout: {
@@ -170,7 +200,7 @@ export default function windowHandler(state = initialState, action) {
         }
       });
 
-    case types.UNSELECT_TAB:
+    case UNSELECT_TAB:
       return update(state, {
         [action.scope]: {
           layout: {
@@ -179,14 +209,14 @@ export default function windowHandler(state = initialState, action) {
         }
       });
 
-    case types.ADD_ROW_DATA:
+    case ADD_ROW_DATA:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
           rowData: Object.assign({}, state[action.scope].rowData, action.data)
         })
       });
 
-    case types.ADD_NEW_ROW:
+    case ADD_NEW_ROW:
       return update(state, {
         [action.scope]: {
           rowData: {
@@ -197,7 +227,7 @@ export default function windowHandler(state = initialState, action) {
         }
       });
 
-    case types.DELETE_ROW:
+    case DELETE_ROW:
       return update(state, {
         [action.scope]: {
           rowData: {
@@ -210,7 +240,7 @@ export default function windowHandler(state = initialState, action) {
         }
       });
 
-    case types.UPDATE_DATA_FIELD_PROPERTY:
+    case UPDATE_DATA_FIELD_PROPERTY:
       return update(state, {
         [action.scope]: {
           data: {
@@ -225,7 +255,7 @@ export default function windowHandler(state = initialState, action) {
         }
       });
 
-    case types.UPDATE_DATA_PROPERTY: {
+    case UPDATE_DATA_PROPERTY: {
       let value;
 
       if (typeof action.value === "string") {
@@ -251,7 +281,7 @@ export default function windowHandler(state = initialState, action) {
       });
     }
 
-    case types.UPDATE_ROW_FIELD_PROPERTY: {
+    case UPDATE_ROW_FIELD_PROPERTY: {
       const scope = action.scope;
       const tabid = action.tabid;
       const rowid = action.rowid;
@@ -291,7 +321,7 @@ export default function windowHandler(state = initialState, action) {
       }
     }
 
-    case types.UPDATE_ROW_PROPERTY:
+    case UPDATE_ROW_PROPERTY:
       return update(state, {
         [action.scope]: {
           rowData: {
@@ -310,7 +340,7 @@ export default function windowHandler(state = initialState, action) {
         }
       });
 
-    case types.UPDATE_ROW_STATUS:
+    case UPDATE_ROW_STATUS:
       return update(state, {
         [action.scope]: {
           rowData: {
@@ -326,21 +356,21 @@ export default function windowHandler(state = initialState, action) {
         }
       });
 
-    case types.UPDATE_DATA_VALID_STATUS:
+    case UPDATE_DATA_VALID_STATUS:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
           validStatus: action.validStatus
         })
       });
 
-    case types.UPDATE_DATA_SAVE_STATUS:
+    case UPDATE_DATA_SAVE_STATUS:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
           saveStatus: action.saveStatus
         })
       });
 
-    case types.UPDATE_DATA_INCLUDED_TABS_INFO:
+    case UPDATE_DATA_INCLUDED_TABS_INFO:
       return Object.assign({}, state, {
         [action.scope]: Object.assign({}, state[action.scope], {
           includedTabsInfo: Object.keys(
@@ -360,14 +390,14 @@ export default function windowHandler(state = initialState, action) {
     // END OF SCOPED ACTIONS
 
     // INDICATOR ACTIONS
-    case types.CHANGE_INDICATOR_STATE:
+    case CHANGE_INDICATOR_STATE:
       return Object.assign({}, state, {
         indicator: action.state
       });
 
     // END OF INDICATOR ACTIONS
 
-    case types.SELECT_TABLE_ITEMS: {
+    case SELECT_TABLE_ITEMS: {
       const { windowType, viewId, ids } = action.payload;
 
       return {
@@ -386,13 +416,13 @@ export default function windowHandler(state = initialState, action) {
     }
 
     // LATEST NEW DOCUMENT CACHE
-    case types.SET_LATEST_NEW_DOCUMENT:
+    case SET_LATEST_NEW_DOCUMENT:
       return Object.assign({}, state, {
         latestNewDocument: action.id
       });
 
     // RAW Modal
-    case types.CLOSE_RAW_MODAL:
+    case CLOSE_RAW_MODAL:
       return Object.assign({}, state, {
         rawModal: Object.assign({}, state.rawModal, {
           visible: false,
@@ -401,7 +431,7 @@ export default function windowHandler(state = initialState, action) {
         })
       });
 
-    case types.OPEN_RAW_MODAL:
+    case OPEN_RAW_MODAL:
       return Object.assign({}, state, {
         rawModal: Object.assign({}, state.rawModal, {
           visible: true,
@@ -410,13 +440,13 @@ export default function windowHandler(state = initialState, action) {
         })
       });
 
-    case types.ALLOW_SHORTCUT:
+    case ALLOW_SHORTCUT:
       return {
         ...state,
         allowShortcut: true
       };
 
-    case types.DISABLE_SHORTCUT:
+    case DISABLE_SHORTCUT:
       return {
         ...state,
         allowShortcut: false
