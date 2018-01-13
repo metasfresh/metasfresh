@@ -10,25 +10,22 @@ package org.eevolution.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,76 +47,97 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.pporder.LiberoException;
+import lombok.NonNull;
 
 public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 {
+	// services
 	private final IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IMovementBL movementBL = Services.get(IMovementBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
-	private I_DD_Order ddOrder;
-	private Timestamp movementDate;
-	private I_M_Movement movement;
+	// parameters
+	private I_DD_Order _ddOrder;
+	private Timestamp _movementDate;
+	private int _locatorToId;
+
+	// state
+	private I_M_Movement _movement;
 
 	private final void assumeNoMovementHeaderCreated()
 	{
-		Check.assumeNull(movement, LiberoException.class, "movement header shall not be created");
+		Check.assumeNull(getMovementOrNull(), LiberoException.class, "movement header shall not be created");
 	}
 
 	@Override
 	public void setDD_Order(final I_DD_Order ddOrder)
 	{
 		assumeNoMovementHeaderCreated();
-		this.ddOrder = ddOrder;
+		_ddOrder = ddOrder;
 	}
 
-	@Override
-	public I_DD_Order getDD_Order()
+	private I_DD_Order getDD_Order()
 	{
-		Check.assumeNotNull(ddOrder, LiberoException.class, "ddOrder not null");
-		return ddOrder;
+		Check.assumeNotNull(_ddOrder, LiberoException.class, "ddOrder not null");
+		return _ddOrder;
 	}
 
 	@Override
-	public void setMovementDate(final Date movementDate)
+	public void setMovementDate(@NonNull final Date movementDate)
 	{
 		assumeNoMovementHeaderCreated();
-		this.movementDate = TimeUtil.asTimestamp(movementDate);
+		_movementDate = TimeUtil.asTimestamp((Date)movementDate.clone());
+	}
+
+	private Timestamp getMovementDate()
+	{
+		Check.assumeNotNull(_movementDate, LiberoException.class, "movementDate not null");
+		return _movementDate;
+	}
+
+	private I_M_Movement getMovementOrNull()
+	{
+		return _movement;
 	}
 
 	@Override
-	public Timestamp getMovementDate()
+	public void setLocatorToIdOverride(final int locatorToId)
 	{
-		Check.assumeNotNull(movementDate, LiberoException.class, "movementDate not null");
-		return movementDate;
+		_locatorToId = locatorToId;
 	}
 
-	@Override
-	public I_M_Movement getCreateMovementHeader()
+	private I_M_Movement getCreateMovementHeader()
 	{
-		if (movement != null)
+		if (_movement == null)
 		{
-			return movement;
+			_movement = createMovement();
 		}
+		return _movement;
+	}
 
+	private I_M_Movement createMovement()
+	{
 		final I_DD_Order order = getDD_Order();
 		final Timestamp movementDate = getMovementDate();
 
-		Check.assumeNotNull(order, LiberoException.class, "order not null");
-		Check.assumeNotNull(movementDate, LiberoException.class, "movementDate not null");
-
-		movement = InterfaceWrapperHelper.newInstance(I_M_Movement.class, order);
+		final I_M_Movement movement = InterfaceWrapperHelper.newInstance(I_M_Movement.class);
 		movement.setAD_Org_ID(order.getAD_Org_ID());
 
 		//
 		// Document Type
-		final Properties ctx = InterfaceWrapperHelper.getCtx(movement);
-		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(ctx,
-				X_C_DocType.DOCBASETYPE_MaterialMovement,
-				movement.getAD_Client_ID(), movement.getAD_Org_ID(),
-				ITrx.TRXNAME_None);
+		final int docTypeId = docTypeDAO
+				.getDocTypeId(DocTypeQuery.builder()
+						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialMovement)
+						.adClientId(movement.getAD_Client_ID())
+						.adOrgId(movement.getAD_Org_ID())
+						.build());
 		movement.setC_DocType_ID(docTypeId);
 
 		//
@@ -182,11 +200,9 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 	}
 
 	@Override
-	public I_M_MovementLine addMovementLineReceipt(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt
-			, final BigDecimal movementQtySrc, final I_C_UOM movementQtyUOM)
+	public I_M_MovementLine addMovementLineReceipt(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt, final BigDecimal movementQtySrc, final I_C_UOM movementQtyUOM)
 	{
-		final boolean isReceipt = true;
-		return addMovementLine(ddOrderLineOrAlt, isReceipt, movementQtySrc, movementQtyUOM);
+		return addMovementLine(ddOrderLineOrAlt, MovementType.ReceiveFromTransit, movementQtySrc, movementQtyUOM);
 	}
 
 	@Override
@@ -198,20 +214,29 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 	}
 
 	@Override
-	public I_M_MovementLine addMovementLineShipment(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt
-			, final BigDecimal movementQtySrc, final I_C_UOM movementQtyUOM)
+	public I_M_MovementLine addMovementLineShipment(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt, final BigDecimal movementQtySrc, final I_C_UOM movementQtyUOM)
 	{
-		final boolean isReceipt = false;
-		return addMovementLine(ddOrderLineOrAlt, isReceipt, movementQtySrc, movementQtyUOM);
+		return addMovementLine(ddOrderLineOrAlt, MovementType.ShipToTransit, movementQtySrc, movementQtyUOM);
 	}
 
-	private I_M_MovementLine addMovementLine(final I_DD_OrderLine_Or_Alternative fromDDOrderLineOrAlt
-			, final boolean isReceipt
-			, final BigDecimal movementQtySrc, final I_C_UOM movementQtyUOM)
+	@Override
+	public I_M_MovementLine addMovementLineDirect(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt, final BigDecimal movementQtySrc, final I_C_UOM movementQtyUOM)
+	{
+		return addMovementLine(ddOrderLineOrAlt, MovementType.Direct, movementQtySrc, movementQtyUOM);
+	}
+
+	private static enum MovementType
+	{
+		ShipToTransit, ReceiveFromTransit, Direct,
+	};
+
+	private I_M_MovementLine addMovementLine(final I_DD_OrderLine_Or_Alternative fromDDOrderLineOrAlt,
+			final MovementType movementType,
+			final BigDecimal movementQtySrc, final I_C_UOM movementQtyUOM)
 	{
 		final I_M_Movement movement = getCreateMovementHeader();
 
-		final I_M_MovementLine movementLine = InterfaceWrapperHelper.newInstance(I_M_MovementLine.class, movement);
+		final I_M_MovementLine movementLine = InterfaceWrapperHelper.newInstance(I_M_MovementLine.class);
 		movementLine.setAD_Org_ID(movement.getAD_Org_ID());
 		movementLine.setM_Movement(movement);
 
@@ -252,51 +277,66 @@ public class DD_Order_MovementBuilder implements IDDOrderMovementBuilder
 		movementLine.setM_AttributeSetInstanceTo_ID(ddOrderLine.getM_AttributeSetInstanceTo_ID());
 		//
 
-		//
-		// Get InTransit Locator/Warehouse
-		final I_DD_Order ddOrder = ddOrderLine.getDD_Order();
-		final I_M_Warehouse warehouseInTransit = ddOrder.getM_Warehouse();
-		final I_M_Locator locatorInTransit = Services.get(IWarehouseBL.class).getDefaultLocator(warehouseInTransit);
-
-		// final BigDecimal movementQtySrc;
-		// final I_C_UOM movementQtyUOM = fromDDOrderLine.getC_UOM();
-
-		// Movement-Receipt: InTransit -> Destination Locator
-		final I_M_Locator locatorTo;
-		if (isReceipt)
+		final int locatorFromId;
+		final int locatorToId;
+		if (movementType == MovementType.ReceiveFromTransit)
 		{
-			// movementQtySrc = getQtyToReceive(fromDDOrderLine);
-			movementLine.setM_Locator_ID(locatorInTransit.getM_Locator_ID());
-
-			locatorTo = ddOrderLine.getM_LocatorTo();
+			locatorFromId = getInTransitLocatorId(ddOrderLine);
+			locatorToId = getLocatorToId(ddOrderLine);
 		}
-		// Movement-Shipment: Source Locator -> InTransit
+		else if (movementType == MovementType.ShipToTransit)
+		{
+			locatorFromId = ddOrderLine.getM_Locator_ID();
+			locatorToId = getInTransitLocatorId(ddOrderLine);
+		}
+		else if (movementType == MovementType.Direct)
+		{
+			locatorFromId = ddOrderLine.getM_Locator_ID();
+			locatorToId = getLocatorToId(ddOrderLine);
+		}
 		else
 		{
-			// movementQtySrc = getQtyToShip(fromDDOrderLine);
-			movementLine.setM_Locator_ID(ddOrderLine.getM_Locator_ID());
-
-			locatorTo = locatorInTransit;
+			throw new AdempiereException("Invalid movement type: " + movementType);
 		}
 
-		movementLine.setM_LocatorTo(locatorTo);
+		movementLine.setM_Locator_ID(locatorFromId);
+		movementLine.setM_LocatorTo_ID(locatorToId);
 
-		Services.get(IMovementBL.class).setMovementQty(movementLine, movementQtySrc, movementQtyUOM);
+		movementBL.setMovementQty(movementLine, movementQtySrc, movementQtyUOM);
 		InterfaceWrapperHelper.save(movementLine);
-		// 07629
-		// set the activity from the warehouse of locator To
-		// only in case it is different from the activity of the product acct
-		Services.get(IMovementBL.class).setC_Activities(movementLine);
+
+		//
+		// Set the activity from the warehouse of locator To
+		// only in case it is different from the activity of the product acct (07629)
+		movementBL.setC_Activities(movementLine);
 
 		return movementLine;
+	}
+
+	private int getInTransitLocatorId(final I_DD_OrderLine ddOrderLine)
+	{
+		final I_DD_Order ddOrder = ddOrderLine.getDD_Order();
+		final I_M_Warehouse warehouseInTransit = ddOrder.getM_Warehouse();
+		final I_M_Locator locatorInTransit = warehouseBL.getDefaultLocator(warehouseInTransit);
+		return locatorInTransit.getM_Locator_ID();
+	}
+
+	private int getLocatorToId(final I_DD_OrderLine ddOrderLine)
+	{
+		if (_locatorToId > 0)
+		{
+			return _locatorToId;
+		}
+		return ddOrderLine.getM_LocatorTo_ID();
 	}
 
 	@Override
 	public I_M_Movement process()
 	{
+		final I_M_Movement movement = getMovementOrNull();
 		Check.assumeNotNull(movement, LiberoException.class, "movement not null");
 
-		Services.get(IDocumentBL.class).processEx(movement, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+		documentBL.processEx(movement, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		return movement;
 	}
 }
