@@ -17,6 +17,10 @@ import {
   NO_CONNECTION,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
+  PATCH_FAILURE,
+  PATCH_REQUEST,
+  PATCH_RESET,
+  PATCH_SUCCESS,
   SELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
   SORT_TAB,
@@ -78,7 +82,13 @@ const initialState = {
   allowShortcut: true,
   latestNewDocument: null,
   viewId: null,
-  selections: {}
+  selections: {},
+  patches: {
+    requests: {
+      length: 0
+    },
+    success: true
+  }
 };
 
 export const NO_SELECTION = [];
@@ -450,6 +460,70 @@ export default function windowHandler(state = initialState, action) {
       return {
         ...state,
         allowShortcut: false
+      };
+
+    case PATCH_REQUEST:
+      return {
+        ...state,
+        patches: {
+          ...state.patches,
+          requests: {
+            ...state.patches.requests,
+            [action.symbol]: action.options,
+            length: state.patches.requests.length + 1
+          }
+        }
+      };
+
+    case PATCH_SUCCESS: {
+      const requests = { ...state.patches.requests };
+
+      if (!requests[action.symbol]) {
+        return state;
+      }
+
+      delete requests[action.symbol];
+      requests.length = requests.length - 1;
+
+      return {
+        ...state,
+        patches: {
+          ...state.patches,
+          requests
+        }
+      };
+    }
+
+    case PATCH_FAILURE: {
+      const requests = { ...state.patches.requests };
+
+      if (!requests[action.symbol]) {
+        return state;
+      }
+
+      delete requests[action.symbol];
+      requests.length = requests.length - 1;
+
+      return {
+        ...state,
+        patches: {
+          ...state.patches,
+          requests,
+          success: false
+        }
+      };
+    }
+
+    case PATCH_RESET:
+      return {
+        ...state,
+        patches: {
+          ...state.patches,
+          requests: {
+            length: 0
+          },
+          success: true
+        }
       };
 
     default:

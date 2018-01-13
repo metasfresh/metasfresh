@@ -22,6 +22,9 @@ import {
   NO_CONNECTION,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
+  PATCH_FAILURE,
+  PATCH_REQUEST,
+  PATCH_SUCCESS,
   SELECT_TABLE_ITEMS,
   SET_LATEST_NEW_DOCUMENT,
   SORT_TAB,
@@ -555,21 +558,26 @@ export function patch(
   isEdit
 ) {
   return async dispatch => {
+    const symbol = Symbol();
+
+    const options = {
+      entity,
+      docType: windowType,
+      docId: id,
+      tabId,
+      rowId,
+      property,
+      value,
+      isAdvanced,
+      viewId,
+      isEdit
+    };
+
+    await dispatch({ type: PATCH_REQUEST, symbol, options });
     await dispatch(indicatorState("pending"));
 
     try {
-      const response = await patchRequest({
-        entity,
-        docType: windowType,
-        docId: id,
-        tabId,
-        rowId,
-        property,
-        value,
-        isAdvanced,
-        viewId,
-        isEdit
-      });
+      const response = await patchRequest(options);
 
       const data =
         response.data instanceof Array ? response.data : [response.data];
@@ -579,9 +587,12 @@ export function patch(
       );
 
       await dispatch(indicatorState("saved"));
+      await dispatch({ type: PATCH_SUCCESS, symbol });
 
       return data;
     } catch (error) {
+      await dispatch({ type: PATCH_FAILURE, symbol });
+
       const response = await getData(
         entity,
         windowType,

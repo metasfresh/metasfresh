@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { connect } from "react-redux";
 
+import { PATCH_RESET } from "../../constants/ActionTypes";
 import { closeListIncludedView } from "../../actions/ListActions";
 import { deleteView } from "../../actions/ViewActions";
 import { closeModal, closeRawModal } from "../../actions/WindowActions";
@@ -38,6 +39,14 @@ class RawModal extends Component {
     this.removeEventListeners();
   }
 
+  componentWillUpdate(props) {
+    if (this.resolve) {
+      if (!props.success || props.requests.length === 0) {
+        this.resolve(props.success);
+      }
+    }
+  }
+
   toggleTooltip = visible => {
     this.setState({
       isTooltipShow: visible
@@ -69,8 +78,30 @@ class RawModal extends Component {
   };
 
   handleClose = async () => {
-    const { closeCallback, viewId, windowType } = this.props;
+    const {
+      dispatch,
+      closeCallback,
+      viewId,
+      windowType,
+      requests
+    } = this.props;
+
     const { isNew } = this.state;
+
+    if (requests.length > 0) {
+      const success = await new Promise(resolve => {
+        this.resolve = resolve;
+      });
+
+      delete this.resolve;
+
+      if (!success) {
+        // TODO: Give user feedback about error, modal won't close now
+        await dispatch({ type: PATCH_RESET });
+
+        return;
+      }
+    }
 
     if (closeCallback) {
       await closeCallback(isNew);
@@ -157,12 +188,16 @@ class RawModal extends Component {
 }
 
 const mapStateToProps = state => ({
-  modalVisible: state.windowHandler.modal.visible || false
+  modalVisible: state.windowHandler.modal.visible || false,
+  requests: state.windowHandler.patches.requests,
+  success: state.windowHandler.patches.success
 });
 
 RawModal.propTypes = {
   dispatch: PropTypes.func.isRequired,
-  modalVisible: PropTypes.bool
+  modalVisible: PropTypes.bool,
+  requests: PropTypes.object.isRequired,
+  success: PropTypes.bool.isRequired
 };
 
 export default connect(mapStateToProps)(RawModal);
