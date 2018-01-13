@@ -26,9 +26,9 @@ export const populateY0Axis = (svg, rangeY, width, data, fields) => {
   svg
     .select("g.y0-axis")
     .append("line")
-    .attr("y1", rangeY(-3))
+    .attr("y1", rangeY(0))
     .attr("x1", 0)
-    .attr("y2", rangeY(-3))
+    .attr("y2", rangeY(0))
     .attr("x2", width)
     .attr("stroke-width", 1)
     .attr("opacity", 0.5)
