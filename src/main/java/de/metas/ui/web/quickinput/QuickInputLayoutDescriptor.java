@@ -8,6 +8,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -58,7 +59,8 @@ public class QuickInputLayoutDescriptor
 			}
 
 			final DocumentFieldDescriptor[] elementFields = Stream.of(elementFieldNames)
-					.map(fieldName -> entityDescriptor.getField(fieldName))
+					.map(fieldName -> entityDescriptor.getFieldOrNull(fieldName))
+					.filter(Predicates.notNull())
 					.toArray(size -> new DocumentFieldDescriptor[size]);
 			
 			layoutBuilder.addElement(DocumentLayoutElementDescriptor.builder(elementFields));

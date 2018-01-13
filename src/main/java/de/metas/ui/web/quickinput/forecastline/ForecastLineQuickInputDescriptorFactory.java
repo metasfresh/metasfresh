@@ -21,6 +21,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.material.adapter.AvailableStockAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInput;
+import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -85,13 +86,11 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 			final DocumentId documentTypeId,
 			final DetailId detailId)
 	{
-		final DocumentEntityDescriptor.Builder descriptorBuilder = createDescriptorBuilder(documentTypeId, detailId);
-
-		descriptorBuilder.addField(createProductFieldBuilder());
-		descriptorBuilder.addField(createPackingInstructionFieldBuilder());
-		descriptorBuilder.addField(createQuantityFieldBuilder());
-
-		return descriptorBuilder.build();
+		return createDescriptorBuilder(documentTypeId, detailId)
+				.addField(createProductFieldBuilder())
+				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), () -> createPackingInstructionFieldBuilder())
+				.addField(createQuantityFieldBuilder())
+				.build();
 	}
 
 	private static DocumentEntityDescriptor.Builder createDescriptorBuilder(final DocumentId documentTypeId, final DetailId detailId)
@@ -101,8 +100,7 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 				.disableDefaultTableCallouts()
 				// Defaults:
 				.setDetailId(detailId)
-				.setTableName(I_M_ForecastLine.Table_Name)
-		;
+				.setTableName(I_M_ForecastLine.Table_Name);
 		return entityDescriptor;
 	}
 
@@ -137,7 +135,7 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 
 		final IForecastLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IForecastLineQuickInput.class);
 		final LookupValue productLookupValue = quickInputModel.getM_Product_ID();
-		if(productLookupValue == null)
+		if (productLookupValue == null)
 		{
 			return;
 		}
