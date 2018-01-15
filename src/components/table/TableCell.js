@@ -144,7 +144,7 @@ class TableCell extends Component {
     const tdValue = !isEdited
       ? TableCell.fieldValueToString(widgetData[0].value, item.widgetType)
       : null;
-
+    const isOpenDatePicker = isEdited && item.widgetType === "Date";
     return (
       <td
         tabIndex={tabIndex}
@@ -180,6 +180,7 @@ class TableCell extends Component {
             listenOnKeysFalse={listenOnKeysFalse}
             onChange={mainTable ? onCellChange : null}
             closeTableField={closeTableField}
+            isOpenDatePicker={isOpenDatePicker}
             ref={c => {
               this.widget = c && c.getWrappedInstance();
             }}
