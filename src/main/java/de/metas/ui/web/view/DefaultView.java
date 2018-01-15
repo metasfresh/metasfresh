@@ -18,7 +18,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CCache;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
@@ -98,6 +97,7 @@ public class DefaultView implements IEditableView
 	private final ViewProfileId profileId;
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
+	private final ViewEvaluationCtx viewEvaluationCtx;
 	private final ExtendedMemorizingSupplier<ViewRowIdsOrderedSelections> selectionsRef;
 	private final AtomicBoolean defaultSelectionDeleteBeforeCreate = new AtomicBoolean(false);
 
@@ -137,14 +137,15 @@ public class DefaultView implements IEditableView
 		//
 		// Selection
 		{
+			viewEvaluationCtx = ViewEvaluationCtx.newInstanceFromCurrentContext();
+			
 			selectionsRef = ExtendedMemorizingSupplier.of(() -> {
 				if (defaultSelectionDeleteBeforeCreate.get())
 				{
 					viewDataRepository.deleteSelection(viewId);
 				}
-				final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
 				final ViewRowIdsOrderedSelection defaultSelection = viewDataRepository.createOrderedSelection(
-						evalCtx,
+						getViewEvaluationCtx(),
 						viewId,
 						ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)));
 
@@ -331,13 +332,18 @@ public class DefaultView implements IEditableView
 			throw new IllegalStateException("View already closed: " + getViewId());
 		}
 	}
+	
+	private ViewEvaluationCtx getViewEvaluationCtx()
+	{
+		return viewEvaluationCtx;
+	}
 
 	@Override
 	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
 		assertNotClosed();
 
-		final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
+		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBys);
 
 		final List<IViewRow> page = viewDataRepository.retrievePage(evalCtx, orderedSelection, firstRow, pageLength);
@@ -353,7 +359,7 @@ public class DefaultView implements IEditableView
 	{
 		assertNotClosed();
 
-		final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
+		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBys);
 
 		final List<DocumentId> rowIds = viewDataRepository.retrieveRowIdsByPage(evalCtx, orderedSelection, firstRow, pageLength);
@@ -370,10 +376,13 @@ public class DefaultView implements IEditableView
 
 	private final IViewRow getOrRetrieveById(final DocumentId rowId)
 	{
-		return cache_rowsById.getOrLoad(rowId, () -> {
-			final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
-			return viewDataRepository.retrieveById(evalCtx, getViewId(), rowId);
-		});
+		return cache_rowsById.getOrLoad(rowId, () -> retrieveRowById(rowId));
+	}
+	
+	private final IViewRow retrieveRowById(final DocumentId rowId)
+	{
+		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
+		return viewDataRepository.retrieveById(evalCtx, getViewId(), rowId);
 	}
 
 	private ViewRowIdsOrderedSelection getOrderedSelection(final List<DocumentQueryOrderBy> orderBys)
@@ -381,7 +390,7 @@ public class DefaultView implements IEditableView
 		return selectionsRef.get()
 				.computeIfAbsent(
 						orderBys,
-						(defaultSelection, orderBysImmutable) -> viewDataRepository.createOrderedSelectionFromSelection(ViewEvaluationCtx.of(Env.getCtx()), defaultSelection, orderBysImmutable));
+						(defaultSelection, orderBysImmutable) -> viewDataRepository.createOrderedSelectionFromSelection(getViewEvaluationCtx(), defaultSelection, orderBysImmutable));
 	}
 
 	@Override

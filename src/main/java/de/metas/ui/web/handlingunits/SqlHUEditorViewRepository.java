@@ -27,7 +27,6 @@ import org.adempiere.util.collections.PagedIterator.Page;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -454,7 +453,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		{
 			huQuery.addOnlyHUIds(onlyHUIds);
 		}
-		
 
 		// Exclude HUs
 		huQuery.addHUIdsToExclude(huIdsFilter.getShallNotHUIds());
@@ -482,7 +480,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		}
 
 		final Set<Integer> initialHUIdsOrEmpty = initialHUIds != null ? initialHUIds : ImmutableSet.of();
-		
+
 		return Stream.concat(initialHUIdsOrEmpty.stream(), huIdsToInclude.stream())
 				.filter(huId -> !huIdsToExclude.contains(huId))
 				.distinct()
@@ -490,10 +488,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public Page<Integer> retrieveHUIdsPage(final ViewRowIdsOrderedSelection selection, final int firstRow, final int maxRows)
+	public Page<Integer> retrieveHUIdsPage(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection selection, final int firstRow, final int maxRows)
 	{
 		final SqlAndParams sqlAndParams = sqlViewSelect.selectByPage()
-				.viewEvalCtx(ViewEvaluationCtx.of(Env.getCtx()))
+				.viewEvalCtx(viewEvalCtx)
 				.viewId(selection.getViewId())
 				.firstRowZeroBased(firstRow)
 				.pageLength(maxRows)
@@ -548,16 +546,21 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection createSelection(final ViewId viewId, final List<DocumentFilter> filters, final List<DocumentQueryOrderBy> orderBys)
+	public ViewRowIdsOrderedSelection createSelection(
+			@NonNull final ViewEvaluationCtx viewEvalCtx,
+			final ViewId viewId,
+			final List<DocumentFilter> filters,
+			final List<DocumentQueryOrderBy> orderBys)
 	{
-		final ViewEvaluationCtx viewEvalCtx = ViewEvaluationCtx.of(Env.getCtx());
 		return viewSelectionFactory.createOrderedSelection(viewEvalCtx, viewId, filters, orderBys);
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection createSelectionFromSelection(final ViewRowIdsOrderedSelection fromSelection, final List<DocumentQueryOrderBy> orderBys)
+	public ViewRowIdsOrderedSelection createSelectionFromSelection(
+			@NonNull final ViewEvaluationCtx viewEvalCtx,
+			final ViewRowIdsOrderedSelection fromSelection,
+			final List<DocumentQueryOrderBy> orderBys)
 	{
-		final ViewEvaluationCtx viewEvalCtx = ViewEvaluationCtx.of(Env.getCtx());
 		return viewSelectionFactory.createOrderedSelectionFromSelection(viewEvalCtx, fromSelection, orderBys);
 	}
 
