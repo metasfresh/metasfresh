@@ -277,28 +277,29 @@ class RawWidget extends Component {
           );
         } else {
           return (
-            <DatePicker
-              key={1}
-              field={fields[0].field}
-              timeFormat={false}
-              dateFormat={true}
-              isOpenDatePicker={isOpenDatePicker}
-              inputProps={{
-                className: this.getClassNames({ icon: true }),
-                placeholder: fields[0].emptyText,
-                disabled: widgetData[0].readonly || disabled,
-                tabIndex: fullScreen ? -1 : tabIndex
-              }}
-              value={widgetValue || widgetData[0].value}
-              onChange={date => handleChange(widgetField, date)}
-              patch={date =>
-                this.handlePatch(
-                  widgetField,
-                  date ? Moment(date).format(DATE_FORMAT) : null
-                )
-              }
-              handleBackdropLock={handleBackdropLock}
-            />
+            <div className={this.getClassNames({ icon: true })}>
+              <DatePicker
+                key={1}
+                field={fields[0].field}
+                timeFormat={false}
+                dateFormat={true}
+                isOpenDatePicker={isOpenDatePicker}
+                inputProps={{
+                  placeholder: fields[0].emptyText,
+                  disabled: widgetData[0].readonly || disabled,
+                  tabIndex: fullScreen ? -1 : tabIndex
+                }}
+                value={widgetValue || widgetData[0].value}
+                onChange={date => handleChange(widgetField, date)}
+                patch={date =>
+                  this.handlePatch(
+                    widgetField,
+                    date ? Moment(date).format(DATE_FORMAT) : null
+                  )
+                }
+                handleBackdropLock={handleBackdropLock}
+              />
+            </div>
           );
         }
       case "DateTime":
