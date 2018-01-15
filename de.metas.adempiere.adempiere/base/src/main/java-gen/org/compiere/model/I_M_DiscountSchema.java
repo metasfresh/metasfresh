@@ -69,35 +69,6 @@ public interface I_M_DiscountSchema
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Zahlungsbedingung.
-	 * Die Bedingungen für die Bezahlung dieses Vorgangs
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
-
-	/**
-	 * Get Zahlungsbedingung.
-	 * Die Bedingungen für die Bezahlung dieses Vorgangs
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_PaymentTerm_ID();
-
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm();
-
-	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm);
-
-    /** Column definition for C_PaymentTerm_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchema, org.compiere.model.I_C_PaymentTerm> COLUMN_C_PaymentTerm_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchema, org.compiere.model.I_C_PaymentTerm>(I_M_DiscountSchema.class, "C_PaymentTerm_ID", org.compiere.model.I_C_PaymentTerm.class);
-    /** Column name C_PaymentTerm_ID */
-    public static final String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *

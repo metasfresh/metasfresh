@@ -15,7 +15,7 @@ public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_Dis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1095717415L;
+	private static final long serialVersionUID = -1059044603L;
 
     /** Standard Constructor */
     public X_M_DiscountSchema (Properties ctx, int M_DiscountSchema_ID, String trxName)
@@ -46,43 +46,6 @@ public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_Dis
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
-	}
-
-	@Override
-	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm)
-	{
-		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
-	}
-
-	/** Set Zahlungsbedingung.
-		@param C_PaymentTerm_ID 
-		Die Bedingungen für die Bezahlung dieses Vorgangs
-	  */
-	@Override
-	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
-	{
-		if (C_PaymentTerm_ID < 1) 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
-	}
-
-	/** Get Zahlungsbedingung.
-		@return Die Bedingungen für die Bezahlung dieses Vorgangs
-	  */
-	@Override
-	public int getC_PaymentTerm_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	/** 
 	 * CumulativeLevel AD_Reference_ID=246
