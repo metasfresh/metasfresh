@@ -122,6 +122,11 @@ public class OrderLineBL implements IOrderLineBL
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine());
 		}
 
+		if (pricingResult.getC_PaymentTerm_ID() > 0)
+		{
+			orderLine.setC_PaymentTerm_Override_ID(pricingResult.getC_PaymentTerm_ID());
+		}
+
 		//
 		// PriceList
 		final BigDecimal priceListStdOld = orderLine.getPriceList_Std();
