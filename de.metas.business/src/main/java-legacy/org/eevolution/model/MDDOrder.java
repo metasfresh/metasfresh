@@ -18,10 +18,8 @@ package org.eevolution.model;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -36,12 +34,9 @@ import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MDocType;
 import org.compiere.model.MLocator;
-import org.compiere.model.MMovement;
 import org.compiere.model.MPeriod;
-import org.compiere.model.MProject;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
@@ -67,73 +62,10 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	 */
 	private static final long serialVersionUID = -2407222565384020843L;
 
-	/**
-	 * Create new Order by copying
-	 *
-	 * @param from order
-	 * @param dateDoc date of the document date
-	 * @param C_DocTypeTarget_ID target document type
-	 * @param isSOTrx sales order
-	 * @param counter create counter links
-	 * @param copyASI copy line attributes Attribute Set Instance, Resaouce Assignment
-	 * @param trxName trx
-	 * @return Distribution Order
-	 */
-	public static MDDOrder copyFrom(MDDOrder from, Timestamp dateDoc,
-			int C_DocTypeTarget_ID, boolean isSOTrx, boolean counter, boolean copyASI,
-			String trxName)
-	{
-		MDDOrder to = new MDDOrder(from.getCtx(), 0, trxName);
-		to.set_TrxName(trxName);
-		PO.copyValues(from, to, from.getAD_Client_ID(), from.getAD_Org_ID());
-		to.set_ValueNoCheck("DD_Order_ID", I_ZERO);
-		to.set_ValueNoCheck("DocumentNo", null);
-		//
-		to.setDocStatus(DOCSTATUS_Drafted);		// Draft
-		to.setDocAction(DOCACTION_Complete);
-		//
-		to.setC_DocType_ID(0);
-		to.setIsSOTrx(isSOTrx);
-		//
-		to.setIsSelected(false);
-		to.setDateOrdered(dateDoc);
-		to.setDatePromised(dateDoc);	// assumption
-		to.setDatePrinted(null);
-		to.setIsPrinted(false);
-		//
-		to.setIsApproved(false);
-		//
-		to.setIsDelivered(false);
-		to.setPosted(false);
-		to.setProcessed(false);
-		if (counter)
-			to.setRef_Order_ID(from.getDD_Order_ID());
-		else
-			to.setRef_Order_ID(0);
-		//
-		if (!to.save(trxName))
-			throw new IllegalStateException("Could not create Order");
-		if (counter)
-			from.setRef_Order_ID(to.getDD_Order_ID());
-
-		if (to.copyLinesFrom(from, counter, copyASI) == 0)
-			throw new IllegalStateException("Could not create Order Lines");
-
-		return to;
-	}	// copyFrom
-
-	/**************************************************************************
-	 * Default Constructor
-	 *
-	 * @param ctx context
-	 * @param DD_Order_ID order to load, (0 create new order)
-	 * @param trxName trx name
-	 */
 	public MDDOrder(Properties ctx, int DD_Order_ID, String trxName)
 	{
 		super(ctx, DD_Order_ID, trxName);
-		// New
-		if (DD_Order_ID == 0)
+		if (is_new())
 		{
 			setDocStatus(DOCSTATUS_Drafted);
 			setDocAction(DOCACTION_Prepare);
@@ -165,63 +97,16 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		}
 	}	// MDDOrder
 
-	/**************************************************************************
-	 * Project Constructor
-	 *
-	 * @param project Project to create Order from
-	 * @param IsSOTrx sales order
-	 * @param DocSubType if SO DocType Target (default DocSubType_OnCredit)
-	 */
-	public MDDOrder(MProject project, boolean IsSOTrx, String DocSubType)
-	{
-		this(project.getCtx(), 0, project.get_TrxName());
-		setAD_Client_ID(project.getAD_Client_ID());
-		setAD_Org_ID(project.getAD_Org_ID());
-		setC_Campaign_ID(project.getC_Campaign_ID());
-		setSalesRep_ID(project.getSalesRep_ID());
-		//
-		setC_Project_ID(project.getC_Project_ID());
-		setDescription(project.getName());
-		Timestamp ts = project.getDateContract();
-		if (ts != null)
-			setDateOrdered(ts);
-		ts = project.getDateFinish();
-		if (ts != null)
-			setDatePromised(ts);
-		//
-		setC_BPartner_ID(project.getC_BPartner_ID());
-		setC_BPartner_Location_ID(project.getC_BPartner_Location_ID());
-		setAD_User_ID(project.getAD_User_ID());
-		//
-		setM_Warehouse_ID(project.getM_Warehouse_ID());
-		//
-		setIsSOTrx(IsSOTrx);
-	}	// MDDOrder
 
-	/**
-	 * Load Constructor
-	 *
-	 * @param ctx context
-	 * @param rs result set record
-	 * @param trxName transaction
-	 */
 	public MDDOrder(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MDDOrder
+	}
 
 	/** Order Lines */
 	private MDDOrderLine[] m_lines = null;
 
-	// /** Force Creation of order */
-	// private boolean m_forceCreation = false;
-
-	/**
-	 * Add to Description
-	 *
-	 * @param description text
-	 */
-	public void addDescription(String description)
+	private void addDescription(String description)
 	{
 		String desc = getDescription();
 		if (desc == null)
@@ -229,36 +114,6 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		else
 			setDescription(desc + " | " + description);
 	}	// addDescription
-
-	/**
-	 * Set Ship Business Partner
-	 *
-	 * @param C_BPartner_ID bpartner
-	 */
-	public void setShip_BPartner_ID(int C_BPartner_ID)
-	{
-		super.setC_BPartner_ID(C_BPartner_ID);
-	}	// setShip_BPartner_ID
-
-	/**
-	 * Set Ship Business Partner Location
-	 *
-	 * @param C_BPartner_Location_ID bp location
-	 */
-	public void setShip_Location_ID(int C_BPartner_Location_ID)
-	{
-		super.setC_BPartner_Location_ID(C_BPartner_Location_ID);
-	}	// setShip_Location_ID
-
-	/**
-	 * Set Ship Business Partner Contact
-	 *
-	 * @param AD_User_ID user
-	 */
-	public void setShip_User_ID(int AD_User_ID)
-	{
-		super.setAD_User_ID(AD_User_ID);
-	}	// setShip_User_ID
 
 	/**
 	 * Set Business Partner Defaults & Details. SOTrx should be set.
@@ -330,55 +185,10 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		}
 	}	// setBPartner
 
-	/**
-	 * Copy Lines From other Order
-	 *
-	 * @param otherOrder order
-	 * @param counter set counter info
-	 * @param copyASI copy line attributes Attribute Set Instance, Resource Assignment
-	 * @return number of lines copied
-	 */
-	public int copyLinesFrom(MDDOrder otherOrder, boolean counter, boolean copyASI)
-	{
-		if (isProcessed() || isPosted() || otherOrder == null)
-			return 0;
-		MDDOrderLine[] fromLines = otherOrder.getLines(true, null);
-		int count = 0;
-		for (int i = 0; i < fromLines.length; i++)
-		{
-			MDDOrderLine line = new MDDOrderLine(this);
-			PO.copyValues(fromLines[i], line, getAD_Client_ID(), getAD_Org_ID());
-			line.setDD_Order(this);
-			line.setOrder(this);
-			// References
-			if (!copyASI)
-			{
-				line.setM_AttributeSetInstance_ID(0);
-				// line.setS_ResourceAssignment_ID(0);
-			}
-
-			line.setQtyDelivered(Env.ZERO);
-			line.setQtyReserved(Env.ZERO);
-			line.setDateDelivered(null);
-
-			line.setProcessed(false);
-			if (line.save(get_TrxName()))
-				count++;
-		}
-		if (fromLines.length != count)
-			log.error("Line difference - From=" + fromLines.length + " <> Saved=" + count);
-		return count;
-	}	// copyLinesFrom
-
-	/**************************************************************************
-	 * String Representation
-	 *
-	 * @return info
-	 */
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MDDOrder[")
+		StringBuilder sb = new StringBuilder("MDDOrder[")
 				.append(get_ID()).append("-").append(getDocumentNo())
 				.append(",IsSOTrx=").append(isSOTrx())
 				.append(",C_DocType_ID=").append(getC_DocType_ID())
@@ -386,11 +196,6 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		return sb.toString();
 	}	// toString
 
-	/**
-	 * Get Document Info
-	 *
-	 * @return document info (untranslated)
-	 */
 	@Override
 	public String getDocumentInfo()
 	{
@@ -398,11 +203,6 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		return dt.getName() + " " + getDocumentNo();
 	}	// getDocumentInfo
 
-	/**
-	 * Create PDF
-	 *
-	 * @return File or null
-	 */
 	@Override
 	public File createPDF()
 	{
@@ -418,13 +218,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		return null;
 	}	// getPDF
 
-	/**
-	 * Create PDF file
-	 *
-	 * @param file output file
-	 * @return file if success
-	 */
-	public File createPDF(File file)
+	private File createPDF(File file)
 	{
 		ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.DISTRIBUTION_ORDER, getDD_Order_ID());
 		if (re == null)
@@ -439,7 +233,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	 * @param orderClause order clause
 	 * @return lines
 	 */
-	public MDDOrderLine[] getLines(String whereClause, String orderClause)
+	private MDDOrderLine[] getLines(String whereClause, String orderClause)
 	{
 		StringBuffer whereClauseFinal = new StringBuffer(MDDOrderLine.COLUMNNAME_DD_Order_ID).append("=?");
 		if (!Check.isEmpty(whereClause, true))
@@ -459,7 +253,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	 * @param orderBy optional order by column
 	 * @return lines
 	 */
-	public MDDOrderLine[] getLines(boolean requery, final String orderBy)
+	private MDDOrderLine[] getLines(boolean requery, final String orderBy)
 	{
 		// NOTE: requery is a legacy parameter and it shall always be true
 		if (!requery)
@@ -486,76 +280,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		return m_lines;
 	}	// getLines
 
-	/**
-	 * Renumber Lines
-	 *
-	 * @param step start and step
-	 */
-	public void renumberLines(final int step)
-	{
-		int number = step;
-		final MDDOrderLine[] lines = getLines(true, null);	// Line is default
-		for (int i = 0; i < lines.length; i++)
-		{
-			MDDOrderLine line = lines[i];
-			line.setLine(number);
-			line.save(get_TrxName());
-			number += step;
-		}
-		m_lines = null;
-	}	// renumberLines
 
 	/**
-	 * Get Shipments of Order
-	 *
-	 * @return shipments
-	 */
-	public MMovement[] getMovement()
-	{
-		ArrayList<MMovement> list = new ArrayList<>();
-		String sql = "SELECT DISTINCT io.* FROM M_MovementLine ml " +
-				"INNER JOIN M_Movement m ON (m.M_Movement_ID = ml.M_Movement_ID) " +
-				"INNER JOIN DD_ORDERLINE ol ON (ol.DD_ORDERLINE_ID=ml.DD_ORDERLINE_ID) " +
-				"INNER JOIN DD_ORDER o ON (o.DD_ORDER_ID=ol.DD_ORDER_ID) " +
-				"WHERE	o.DD_ORDER_ID=? " +
-				"ORDER BY m.Created DESC";
-
-		PreparedStatement pstmt = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			pstmt.setInt(1, getDD_Order_ID());
-			ResultSet rs = pstmt.executeQuery();
-			while (rs.next())
-				list.add(new MMovement(getCtx(), rs, get_TrxName()));
-			rs.close();
-			pstmt.close();
-			pstmt = null;
-		}
-		catch (Exception e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			try
-			{
-				if (pstmt != null)
-					pstmt.close();
-			}
-			catch (Exception e)
-			{
-			}
-			pstmt = null;
-		}
-		//
-		MMovement[] retValue = new MMovement[list.size()];
-		list.toArray(retValue);
-		return retValue;
-	}	// getShipments
-
-	/**
-	 * Set Processed. Propergate to Lines/Taxes
+	 * Set Processed. Propagate to Lines/Taxes
 	 *
 	 * @param processed processed
 	 */
@@ -564,7 +291,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	{
 		super.setProcessed(processed);
 
-		if (get_ID() <= 0)
+		if (getDD_Order_ID() <= 0)
 		{
 			return;
 		}
@@ -583,12 +310,6 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 	}	// setProcessed
 
-	/**************************************************************************
-	 * Before Save
-	 *
-	 * @param newRecord new
-	 * @return save
-	 */
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
@@ -599,7 +320,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 			if (context_AD_Org_ID != 0)
 			{
 				setAD_Org_ID(context_AD_Org_ID);
-				log.warn("Changed Org to Context=" + context_AD_Org_ID);
+				log.warn("Changed Org to Context={}", context_AD_Org_ID);
 			}
 		}
 		if (getAD_Client_ID() <= 0)
@@ -614,9 +335,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		// Default Warehouse
 		if (getM_Warehouse_ID() <= 0)
 		{
-			int ii = Env.getContextAsInt(getCtx(), "#M_Warehouse_ID");
-			if (ii > 0)
-				setM_Warehouse_ID(ii);
+			final int warehouseId = Env.getContextAsInt(getCtx(), Env.CTXNAME_M_Warehouse_ID);
+			if (warehouseId > 0)
+				setM_Warehouse_ID(warehouseId);
 			else
 			{
 				throw new FillMandatoryException(COLUMNNAME_M_Warehouse_ID);
@@ -642,23 +363,16 @@ public class MDDOrder extends X_DD_Order implements IDocument
 			setBPartner(new MBPartner(getCtx(), getC_BPartner_ID(), ITrx.TRXNAME_None));
 
 		// Default Sales Rep
-		if (getSalesRep_ID() == 0)
+		if (getSalesRep_ID() <= 0)
 		{
-			int ii = Env.getContextAsInt(getCtx(), "#AD_User_ID");
-			if (ii != 0)
-				setSalesRep_ID(ii);
+			final int loggedUserId = Env.getAD_User_ID(getCtx());
+			if (loggedUserId > 0)
+				setSalesRep_ID(loggedUserId);
 		}
 
 		return true;
 	}	// beforeSave
 
-	/**
-	 * After Save
-	 *
-	 * @param newRecord new
-	 * @param success success
-	 * @return true if can be saved
-	 */
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
@@ -702,12 +416,6 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		}
 	}	// afterSaveSync
 
-	/**************************************************************************
-	 * Process document
-	 *
-	 * @param processAction document action
-	 * @return true if performed
-	 */
 	@Override
 	public boolean processIt(String processAction)
 	{
@@ -728,7 +436,6 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	@Override
 	public boolean unlockIt()
 	{
-		log.info("unlockIt - " + toString());
 		setProcessing(false);
 		return true;
 	}	// unlockIt
@@ -741,7 +448,6 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	@Override
 	public boolean invalidateIt()
 	{
-		log.info(toString());
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	}	// invalidateIt
@@ -754,7 +460,6 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	@Override
 	public String prepareIt()
 	{
-		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 			return IDocument.STATUS_Invalid;
@@ -823,8 +528,8 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	 */
 	private void reserveStock(MDDOrderLine[] lines)
 	{
-		BigDecimal Volume = Env.ZERO;
-		BigDecimal Weight = Env.ZERO;
+		BigDecimal Volume = BigDecimal.ZERO;
+		BigDecimal Weight = BigDecimal.ZERO;
 
 		// Always check and (un) Reserve Inventory
 		for (int i = 0; i < lines.length; i++)
@@ -888,37 +593,20 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		setWeight(Weight);
 	}	// reserveStock
 
-	/**
-	 * Approve Document
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean approveIt()
 	{
-		log.info("approveIt - " + toString());
 		setIsApproved(true);
 		return true;
 	}	// approveIt
 
-	/**
-	 * Reject Approval
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean rejectIt()
 	{
-		log.info("rejectIt - " + toString());
 		setIsApproved(false);
 		return true;
 	}	// rejectIt
 
-	/**************************************************************************
-	 * Complete Document
-	 *
-	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
-	 */
 	@Override
 	public String completeIt()
 	{
@@ -981,15 +669,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		return IDocument.STATUS_Completed;
 	}	// completeIt
 
-	/**
-	 * Void Document. Set Qtys to 0 - Sales: reverse all documents
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean voidIt()
 	{
-		log.info(toString());
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
@@ -1027,44 +709,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		return true;
 	}	// voidIt
 
-	/**
-	 * Create Shipment/Invoice Reversals
-	 *
-	 * @return true if success
-	 */
-	/*
-	 * private boolean createReversals() { // Cancel only Sales if (!isSOTrx()) return true;
-	 *
-	 * log.info("createReversals"); StringBuffer info = new StringBuffer();
-	 *
-	 * // Reverse All *Shipments* info.append("@M_InOut_ID@:"); MInOut[] shipments = getShipments(); for (int i = 0; i < shipments.length; i++) { MInOut ship = shipments[i]; // if closed - ignore if
-	 * (MInOut.DOCSTATUS_Closed.equals(ship.getDocStatus()) || MInOut.DOCSTATUS_Reversed.equals(ship.getDocStatus()) || MInOut.DOCSTATUS_Voided.equals(ship.getDocStatus()) ) continue;
-	 * ship.set_TrxName(get_TrxName());
-	 *
-	 * // If not completed - void - otherwise reverse it if (!MInOut.DOCSTATUS_Completed.equals(ship.getDocStatus())) { if (ship.voidIt()) ship.setDocStatus(MInOut.DOCSTATUS_Voided); } else if
-	 * (ship.reverseCorrectIt()) // completed shipment { ship.setDocStatus(MInOut.DOCSTATUS_Reversed); info.append(" ").append(ship.getDocumentNo()); } else { m_processMsg =
-	 * "Could not reverse Shipment " + ship; return false; } ship.setDocAction(MInOut.DOCACTION_None); ship.save(get_TrxName()); } // for all shipments
-	 *
-	 * // Reverse All *Invoices* info.append(" - @C_Invoice_ID@:"); MInvoice[] invoices = getInvoices(); for (int i = 0; i < invoices.length; i++) { MInvoice invoice = invoices[i]; // if closed -
-	 * ignore if (MInvoice.DOCSTATUS_Closed.equals(invoice.getDocStatus()) || MInvoice.DOCSTATUS_Reversed.equals(invoice.getDocStatus()) || MInvoice.DOCSTATUS_Voided.equals(invoice.getDocStatus()) )
-	 * continue; invoice.set_TrxName(get_TrxName());
-	 *
-	 * // If not completed - void - otherwise reverse it if (!MInvoice.DOCSTATUS_Completed.equals(invoice.getDocStatus())) { if (invoice.voidIt()) invoice.setDocStatus(MInvoice.DOCSTATUS_Voided); }
-	 * else if (invoice.reverseCorrectIt()) // completed invoice { invoice.setDocStatus(MInvoice.DOCSTATUS_Reversed); info.append(" ").append(invoice.getDocumentNo()); } else { m_processMsg =
-	 * "Could not reverse Invoice " + invoice; return false; } invoice.setDocAction(MInvoice.DOCACTION_None); invoice.save(get_TrxName()); } // for all shipments
-	 *
-	 * m_processMsg = info.toString(); return true; } // createReversals
-	 */
-
-	/**
-	 * Close Document. Cancel not delivered Qunatities
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean closeIt()
 	{
-		log.info(toString());
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
@@ -1099,15 +746,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		return true;
 	}	// closeIt
 
-	/**
-	 * Reverse Correction - same void
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		log.info(toString());
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
@@ -1121,15 +762,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		return voidIt();
 	}	// reverseCorrectionIt
 
-	/**
-	 * Reverse Accrual - none
-	 *
-	 * @return false
-	 */
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		log.info(toString());
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
@@ -1143,15 +778,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		return false;
 	}	// reverseAccrualIt
 
-	/**
-	 * Re-activate.
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean reActivateIt()
 	{
-		log.info(toString());
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
@@ -1166,15 +795,10 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		return true;
 	}	// reActivateIt
 
-	/*************************************************************************
-	 * Get Summary
-	 *
-	 * @return Summary of Document
-	 */
 	@Override
 	public String getSummary()
 	{
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(getDocumentNo());
 
 		if (m_lines != null)
@@ -1185,22 +809,12 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		return sb.toString();
 	}	// getSummary
 
-	/**
-	 * Get Process Message
-	 *
-	 * @return clear text error message
-	 */
 	@Override
 	public String getProcessMsg()
 	{
 		return m_processMsg;
 	}	// getProcessMsg
 
-	/**
-	 * Get Document Owner (Responsible)
-	 *
-	 * @return AD_User_ID
-	 */
 	@Override
 	public int getDoc_User_ID()
 	{
@@ -1228,10 +842,10 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	 */
 	public boolean isComplete()
 	{
-		String ds = getDocStatus();
-		return DOCSTATUS_Completed.equals(ds)
-				|| DOCSTATUS_Closed.equals(ds)
-				|| DOCSTATUS_Reversed.equals(ds);
-	}	// isComplete
+		final String docStatus = getDocStatus();
+		return DOCSTATUS_Completed.equals(docStatus)
+				|| DOCSTATUS_Closed.equals(docStatus)
+				|| DOCSTATUS_Reversed.equals(docStatus);
+	}
 
 }	// MDDOrder

@@ -13,11 +13,11 @@ package de.metas.handlingunits.client.terminal.ddorder.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -244,7 +244,7 @@ public class DDOrderFiltering extends AbstractFiltering
 	 */
 	public Set<Integer> getProductIdsFromRows(final Collection<? extends IPOSTableRow> rows)
 	{
-		final Set<Integer> productIds = new HashSet<Integer>();
+		final Set<Integer> productIds = new HashSet<>();
 		for (final IPOSTableRow row : rows)
 		{
 			final Set<Integer> rowProductIds = row.getM_Product_IDs();
@@ -253,7 +253,7 @@ public class DDOrderFiltering extends AbstractFiltering
 
 		return productIds;
 	}
-	
+
 	/**
 	 * Gets source warehouses from given <code>rows</code>
 	 *
@@ -261,8 +261,8 @@ public class DDOrderFiltering extends AbstractFiltering
 	 */
 	public Set<Integer> getSourceWarehouseIds(final Collection<? extends IPOSTableRow> rows)
 	{
-		final Set<Integer> seenLocatorIds = new HashSet<Integer>();
-		final Set<Integer> sourceWarehouseIds = new HashSet<Integer>();
+		final Set<Integer> seenLocatorIds = new HashSet<>();
+		final Set<Integer> sourceWarehouseIds = new HashSet<>();
 
 		for (final IPOSTableRow row : rows)
 		{
@@ -286,7 +286,7 @@ public class DDOrderFiltering extends AbstractFiltering
 
 		return sourceWarehouseIds;
 	}
-	
+
 	public List<Integer> getHUIdsScheduledToMove(final Properties ctx, final Collection<? extends IPOSTableRow> rows)
 	{
 		final Set<Integer> ddOrderLineIds = getDDOrderLineIds(rows);
@@ -294,10 +294,9 @@ public class DDOrderFiltering extends AbstractFiltering
 		{
 			return Collections.emptyList();
 		}
-		
+
 		return Services.get(IHUDDOrderDAO.class).retrieveHUIdsScheduledToMove(ctx, ddOrderLineIds);
 	}
-
 
 	@Override
 	public Object getReferencedObject(final IPOSTableRow row)
@@ -341,6 +340,9 @@ public class DDOrderFiltering extends AbstractFiltering
 	public void processDDOrderLines(final Collection<I_DD_OrderLine> ddOrderLines, final Collection<IHUProductStorage> huProductStorages)
 	{
 		final IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
-		huDDOrderBL.createMovements(ddOrderLines, huProductStorages);
+		huDDOrderBL.createMovements()
+				.setDDOrderLines(ddOrderLines)
+				.allocateHUProductStorages(huProductStorages)
+				.process();
 	}
 }
