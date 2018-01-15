@@ -50,11 +50,17 @@ Here come the actual release notes:
 
 * metasfresh-webui-API
   * [#672](https://github.com/metasfresh/metasfresh-webui-api/issues/672) Window for easy Distribution Orderlines Handling in WebUI
+    * New Window that allows the Handling of Distribution Orderlines in WebUI.
   * [#737](https://github.com/metasfresh/metasfresh-webui-api/issues/737) Deal properly with T_WEBUI_ViewSelection[Line]
+    * Improvement of WebUI temporary selections.
   * [#745](https://github.com/metasfresh/metasfresh-webui-api/issues/745) Batch entry mode w/o Packing Instruction branch:master type:enhancement
+    * Improvement of the Bacth entry mode functionality. Now it's possible to cinfigure the Batch entry via Sysconfig so that no Packing Instruciton is needed for recording.
   * [#762](https://github.com/metasfresh/metasfresh-webui-api/issues/762) Show onhand quantity in new WebUI MRP Product Info Window
+    * New Field in material Cockpit, nw showing the on Hand Quantity too.
   * [#770](https://github.com/metasfresh/metasfresh-webui-api/issues/770) Raise session Timeout of WebUI Application
+    * Now possible to configure the session timeout of metasfresh via Spring Boot.
   * [#778](https://github.com/metasfresh/metasfresh-webui-api/issues/778) Use readOnlyFlag from AD_Field and AD_Tab when creating DocumentLayoutElements
+    * Improvement of the Read-Only functionality in WebUI, now respecting the configuration doen in AD_Fields and AD_TAB about the readOnly Flag.
 
 * metasfresh-webui-frontend
   * [#1470](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1470) Bug in long texts with new line
@@ -67,6 +73,7 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
   * [#3232](https://github.com/metasfresh/metasfresh/issues/3232) Disposal creates Invoice Candidates
+    * Improved Feature, now possible to prohibit the creation of Invoice Candidates in Disposal Workflow.
   * [#3291](https://github.com/metasfresh/metasfresh/issues/3291) Search Icon disappears when switching Main-Subtab in Contract Window
     * Fixes the vanishing Search Icon in window contracts of metasfresh swingUI.
 
