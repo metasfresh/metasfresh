@@ -330,8 +330,17 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setAD_User_ID(invoiceHeader.getBill_User_ID());
 			invoice.setC_Currency_ID(invoiceHeader.getC_Currency_ID()); // 03805
 
-			invoice.setDescription(invoiceHeader.getDescription());
-			invoice.setDescriptionBottom(invoiceHeader.getDescriptionBottom());
+			//
+			// Set Description and DescriptionBottom.
+			// Don't override if already set (e.g. copied from C_DocType).
+			if (Check.isEmpty(invoice.getDescription(), true))
+			{
+				invoice.setDescription(invoiceHeader.getDescription());
+			}
+			if (Check.isEmpty(invoice.getDescriptionBottom(), true))
+			{
+				invoice.setDescriptionBottom(invoiceHeader.getDescriptionBottom());
+			}
 
 			invoice.setIsSOTrx(header.isSOTrx());
 
@@ -371,8 +380,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				// In case of a problem, this two variables are used to hand the problematic candidates and the
 				// exception over to the TrxRunnable's doFinally() method for logging
 				final List<I_C_Invoice_Candidate> errorCandidates = new ArrayList<>();
-				final AdempiereException[] errorException =
-					{ null };
+				final AdempiereException[] errorException = { null };
 
 				//
 				// The invoice lines from 'aggregate' are generated in a common trx runner.
@@ -983,8 +991,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					final String noteMsg = msgBL.getMsg(
 							adLanguage,
 							MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P,
-							new Object[]
-							{ candidates.toString() });
+							new Object[] { candidates.toString() });
 					note.setTextMsg(noteMsg);
 					InterfaceWrapperHelper.save(note);
 					// @formatter:off
