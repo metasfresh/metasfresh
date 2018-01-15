@@ -47,7 +47,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.collections.IdentityHashSet;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Tax;
@@ -300,17 +299,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			else
 			{
 				invoice = InterfaceWrapperHelper.create(ctx, I_C_Invoice.class, trxName);
-
-				// task 07242: setting the payment term from the given bill partner. Note that C_BP_Group has no payment term columns, so we don't need a BL to fall back to C_BP_Group
-				final I_C_BPartner billPartner = InterfaceWrapperHelper.create(ctx, invoiceHeader.getBill_BPartner_ID(), org.compiere.model.I_C_BPartner.class, ITrx.TRXNAME_None);
-				if (header.isSOTrx())
-				{
-					invoice.setC_PaymentTerm_ID(billPartner.getC_PaymentTerm_ID());
-				}
-				else
-				{
-					invoice.setC_PaymentTerm_ID(billPartner.getPO_PaymentTerm_ID());
-				}
+				invoice.setC_PaymentTerm_ID(invoiceHeader.getC_PaymentTerm_ID());
 
 				invoice.setAD_Org_ID(invoiceHeader.getAD_Org_ID());
 				setC_DocType(invoice, invoiceHeader);

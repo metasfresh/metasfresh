@@ -56,28 +56,23 @@ public class AggregationBL implements IAggregationBL
 	private final IAggregationKeyBuilder<I_C_Invoice_Candidate> headerAggregationKeyBuilder = new HeaderAggregationKeyBuilder();
 	private final IAggregationKeyBuilder<I_C_Invoice_Candidate> lineAggregationKeyBuilder = new LineAggregationKeyBuilder();
 
-	private final IProcessor<I_C_Invoice_Candidate> invoiceCandidateUpdater = new IProcessor<I_C_Invoice_Candidate>()
-	{
-		@Override
-		public void process(final I_C_Invoice_Candidate ic)
+	private final IProcessor<I_C_Invoice_Candidate> invoiceCandidateUpdater = ic -> {
+		if (ic.isToClear())
 		{
-			if (ic.isToClear())
-			{
-				ic.setC_Invoice_Candidate_Agg(null);
-				resetHeaderAggregationKey(ic);
-				resetLineAggregationKey(ic);
-			}
-			else
-			{
-				//
-				// find our aggregator and set it
-				final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
-				final I_C_Invoice_Candidate_Agg agg = aggregationDAO.retrieveAggregate(ic);
-				ic.setC_Invoice_Candidate_Agg(agg);
-				setHeaderAggregationKey(ic);
+			ic.setC_Invoice_Candidate_Agg(null);
+			resetHeaderAggregationKey(ic);
+			resetLineAggregationKey(ic);
+		}
+		else
+		{
+			//
+			// find our aggregator and set it
+			final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
+			final I_C_Invoice_Candidate_Agg agg = aggregationDAO.retrieveAggregate(ic);
+			ic.setC_Invoice_Candidate_Agg(agg);
+			setHeaderAggregationKey(ic);
 
-				setLineAggregationKey(ic);
-			}
+			setLineAggregationKey(ic);
 		}
 	};
 
@@ -142,6 +137,7 @@ public class AggregationBL implements IAggregationBL
 		result.setPriceEntered(template.getPriceEntered());
 		result.setPrinted(template.isPrinted());
 		result.setQtyToInvoice(template.getQtyToInvoice());
+		result.setC_PaymentTerm_ID(template.getC_PaymentTerm_ID());
 
 		return result;
 	}
