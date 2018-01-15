@@ -8,11 +8,11 @@ import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
-import de.metas.material.event.pporder.PPOrderDocStatusChangedEvent;
+import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
+import de.metas.material.event.pporder.PPOrderDocStatusChangedEvent;
 import de.metas.material.event.pporder.PPOrderProductionQtyChangedEvent;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
@@ -23,7 +23,6 @@ import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
-import de.metas.material.event.stock.OnHandQtyChangedEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
@@ -70,14 +69,12 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 
 		@JsonSubTypes.Type(name = ForecastCreatedEvent.TYPE, value = ForecastCreatedEvent.class),
 
-		@JsonSubTypes.Type(name = OnHandQtyChangedEvent.TYPE, value = OnHandQtyChangedEvent.class),
-
 		@JsonSubTypes.Type(name = PPOrderAdvisedEvent.TYPE, value = PPOrderAdvisedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderCreatedEvent.TYPE, value = PPOrderCreatedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderDeletedEvent.TYPE, value = PPOrderDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = PPOrderDocStatusChangedEvent.TYPE, value = PPOrderDocStatusChangedEvent.class),
-		@JsonSubTypes.Type(name = PPOrderQtyChangedEvent.TYPE, value = PPOrderQtyChangedEvent.class),
+		@JsonSubTypes.Type(name = PPOrderChangedEvent.TYPE, value = PPOrderChangedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderProductionQtyChangedEvent.TYPE, value = PPOrderProductionQtyChangedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderRequestedEvent.TYPE, value = PPOrderRequestedEvent.class),
 

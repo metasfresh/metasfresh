@@ -84,6 +84,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Generate Shipments from given shipment schedules by processing enqueued work packages.<br>
@@ -256,10 +257,10 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 *
 	 * NOTE: this method will create missing LUs before.
 	 *
-	 * @param schedule
 	 * @return one single candidate if there are no {@link I_M_ShipmentSchedule_QtyPicked} for the given schedule. One candidate per {@link I_M_ShipmentSchedule_QtyPicked} otherwise.
 	 */
-	private List<IShipmentScheduleWithHU> createCandidates(final IHUContext huContext, final I_M_ShipmentSchedule schedule)
+	private List<IShipmentScheduleWithHU> createCandidates(final IHUContext huContext,
+			@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		//
 		// Load all QtyPicked records that have no InOutLine yet
@@ -288,7 +289,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 			// There are no picked qtys for the given shipment schedule, so we will ship as is (without any handling units)
 			final BigDecimal qtyToDeliver = shipmentScheduleEffectiveValuesBL.getQtyToDeliver(schedule);
-			final IShipmentScheduleWithHU candidate = new ShipmentScheduleWithHU(huContext, schedule, qtyToDeliver);
+			final IShipmentScheduleWithHU candidate = //
+					ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(schedule, qtyToDeliver, huContext);
+
 			return Collections.singletonList(candidate);
 		}
 
@@ -326,7 +329,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 			//
 			// Create ShipmentSchedule+HU candidate and add it to our list
-			final IShipmentScheduleWithHU candidate = new ShipmentScheduleWithHU(huContext, qtyPickedRecordHU);
+			final IShipmentScheduleWithHU candidate = //
+					ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(qtyPickedRecordHU, huContext);
 			candidates.add(candidate);
 		}
 
@@ -341,9 +345,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 *         <li>either no HU assigned to them, or</li>
 	 *         <li>HUs which are already picked or shipped assigned to them</li>
 	 *         </ul>
-	 * 
+	 *
 	 *         Hint: also take a look at {@link #isPickedOrShippedOrNoHU(I_M_ShipmentSchedule_QtyPicked)}.
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/759
 	 * @task https://github.com/metasfresh/metasfresh/issues/1174
 	 */
@@ -371,7 +375,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	/**
 	 * Returns {@code true} if there is either no HU assigned to the given {@code schedQtyPicked} or if that HU is either picked or shipped.
 	 * If you don't see why it could possibly be already shipped, please take a look at issue <a href="https://github.com/metasfresh/metasfresh/issues/1174">#1174</a>.
-	 * 
+	 *
 	 * @param schedQtyPicked
 	 * @return
 	 *

@@ -6,7 +6,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.test.AdempiereTestHelper;
@@ -57,6 +60,14 @@ import de.metas.material.event.transactions.AbstractTransactionEvent;
 public class M_Transaction_TransactionEventCreatorTest
 {
 
+	private static final BigDecimal THREE = new BigDecimal("3");
+	private static final BigDecimal TWO = new BigDecimal("2");
+	private static final BigDecimal ONE = BigDecimal.ONE;
+	private static final BigDecimal MINUS_TEN = new BigDecimal("-10");
+	private static final BigDecimal MINUS_THREE = new BigDecimal("-3");
+	private static final BigDecimal MINUS_TWO = new BigDecimal("-2");
+	private static final BigDecimal MINUS_ONE = ONE.negate();
+
 	private static final int INOUT_LINE_ID = 30;
 	private I_M_Warehouse wh;
 	private I_M_Locator locator;
@@ -75,7 +86,7 @@ public class M_Transaction_TransactionEventCreatorTest
 	}
 
 	@Test
-	public void createEventsForTransaction()
+	public void createEventsForTransaction_shipment_but_not_shipmentSchedule()
 	{
 		final I_M_Transaction transaction = createShipmentTransaction();
 
@@ -86,8 +97,8 @@ public class M_Transaction_TransactionEventCreatorTest
 
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
-		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-10");
-		assertThat(event.getShipmentScheduleId()).isZero();
+		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_TEN);
+		assertThat(event.getShipmentScheduleIds2Qtys()).isEmpty();
 	}
 
 	@Test
@@ -103,13 +114,18 @@ public class M_Transaction_TransactionEventCreatorTest
 		transaction.setM_InOutLine_ID(INOUT_LINE_ID);
 		save(transaction);
 
+		// invoke the method under test
 		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
 				.createEventsForTransaction(transaction, false);
 
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
-		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-10");
-		assertThat(event.getShipmentScheduleId()).isEqualTo(20);
+		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_TEN);
+
+		assertThat(event.getShipmentScheduleIds2Qtys()).hasSize(1);
+		final Entry<Integer, BigDecimal> entry = event.getShipmentScheduleIds2Qtys().entrySet().iterator().next();
+		assertThat(entry.getKey()).isEqualTo(20);
+		assertThat(entry.getValue()).isEqualByComparingTo(MINUS_TEN);
 	}
 
 	@Test
@@ -118,7 +134,7 @@ public class M_Transaction_TransactionEventCreatorTest
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
 		shipmentScheduleQtyPicked.setM_ShipmentSchedule_ID(20);
 		shipmentScheduleQtyPicked.setM_InOutLine_ID(INOUT_LINE_ID);
-		shipmentScheduleQtyPicked.setQtyPicked(BigDecimal.ONE);
+		shipmentScheduleQtyPicked.setQtyPicked(ONE);
 		save(shipmentScheduleQtyPicked);
 
 		final I_M_Transaction transaction = createShipmentTransaction();
@@ -129,38 +145,39 @@ public class M_Transaction_TransactionEventCreatorTest
 		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
 				.createEventsForTransaction(transaction, false);
 
-		assertThat(events).hasSize(2);
+		assertThat(events).hasSize(1);
 
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
-		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-9");
-		assertThat(event.getShipmentScheduleId()).isZero();
+		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_TEN);
 
-		final AbstractTransactionEvent event1 = (AbstractTransactionEvent)events.get(1);
-		assertCommon(transaction, event1);
-		assertThat(event1.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-1");
-		assertThat(event1.getShipmentScheduleId()).isEqualTo(20);
+		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = event.getShipmentScheduleIds2Qtys();
+		assertThat(shipmentScheduleIds2Qtys).hasSize(1);
+		final Entry<Integer, BigDecimal> entry = shipmentScheduleIds2Qtys.entrySet().iterator().next();
+		assertThat(entry.getKey()).isEqualTo(20);
+		assertThat(entry.getValue()).isEqualByComparingTo("-1");
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void createEventsForTransaction_multiple_shipmentSchedules_with_partial_quantity()
 	{
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
 		shipmentScheduleQtyPicked.setM_ShipmentSchedule_ID(20);
 		shipmentScheduleQtyPicked.setM_InOutLine_ID(INOUT_LINE_ID);
-		shipmentScheduleQtyPicked.setQtyPicked(BigDecimal.ONE);
+		shipmentScheduleQtyPicked.setQtyPicked(ONE);
 		save(shipmentScheduleQtyPicked);
 
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked2 = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
 		shipmentScheduleQtyPicked2.setM_ShipmentSchedule_ID(21);
 		shipmentScheduleQtyPicked2.setM_InOutLine_ID(INOUT_LINE_ID);
-		shipmentScheduleQtyPicked2.setQtyPicked(new BigDecimal("2"));
+		shipmentScheduleQtyPicked2.setQtyPicked(TWO);
 		save(shipmentScheduleQtyPicked2);
 
 		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked3 = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
 		shipmentScheduleQtyPicked3.setM_ShipmentSchedule_ID(21);
 		shipmentScheduleQtyPicked3.setM_InOutLine_ID(INOUT_LINE_ID + 30); // references another iol
-		shipmentScheduleQtyPicked3.setQtyPicked(new BigDecimal("3"));
+		shipmentScheduleQtyPicked3.setQtyPicked(THREE);
 		save(shipmentScheduleQtyPicked3);
 
 		final I_M_Transaction transaction = createShipmentTransaction();
@@ -171,22 +188,16 @@ public class M_Transaction_TransactionEventCreatorTest
 		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
 				.createEventsForTransaction(transaction, false);
 
-		assertThat(events).hasSize(3);
-
+		assertThat(events).hasSize(1);
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
-		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-7");
-		assertThat(event.getShipmentScheduleId()).isZero();
+		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_TEN);
 
-		final AbstractTransactionEvent event1 = (AbstractTransactionEvent)events.get(1);
-		assertCommon(transaction, event1);
-		assertThat(event1.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-1");
-		assertThat(event1.getShipmentScheduleId()).isEqualTo(20);
-
-		final AbstractTransactionEvent event2 = (AbstractTransactionEvent)events.get(2);
-		assertCommon(transaction, event2);
-		assertThat(event2.getMaterialDescriptor().getQuantity()).isEqualByComparingTo("-2");
-		assertThat(event2.getShipmentScheduleId()).isEqualTo(21);
+		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = event.getShipmentScheduleIds2Qtys();
+		assertThat(shipmentScheduleIds2Qtys).containsOnly(
+				new SimpleImmutableEntry(20, MINUS_ONE),
+				new SimpleImmutableEntry(21, MINUS_TWO),
+				new SimpleImmutableEntry(21, MINUS_THREE));
 	}
 
 	private I_M_Transaction createShipmentTransaction()
@@ -197,7 +208,7 @@ public class M_Transaction_TransactionEventCreatorTest
 		transaction.setM_Product(product);
 		transaction.setMovementDate(movementDate);
 		transaction.setM_InOutLine_ID(30);
-		transaction.setMovementQty(BigDecimal.TEN.negate());
+		transaction.setMovementQty(MINUS_TEN);
 		save(transaction);
 		return transaction;
 	}

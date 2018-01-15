@@ -13,12 +13,12 @@ import java.util.Collections;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,9 +37,9 @@ import org.compiere.util.Env;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
@@ -173,15 +173,12 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	}
 
 	@Override
-	public List<IShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(final List<I_M_HU> hus)
+	public List<IShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(@NonNull final List<I_M_HU> hus)
 	{
-		Check.assumeNotEmpty(hus, "hus is not empty");
-
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-		final IHUContext huContext = huContextFactory.createMutableHUContext();
-
 		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 
 		//
 		// Iterate HUs and collect candidates from them
@@ -197,10 +194,11 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 			//
 			// Retrieve and create candidates from shipment schedule QtyPicked assignments
 			final List<IShipmentScheduleWithHU> candidatesForHU = new ArrayList<>();
-			final List<I_M_ShipmentSchedule_QtyPicked> ssQtyPickedList = huShipmentScheduleDAO.retriveQtyPickedNotDeliveredForTopLevelHU(hu);
-			for (final I_M_ShipmentSchedule_QtyPicked ssQtyPicked : ssQtyPickedList)
+			final List<I_M_ShipmentSchedule_QtyPicked> shipmentSchedulesQtyPicked //
+					= huShipmentScheduleDAO.retriveQtyPickedNotDeliveredForTopLevelHU(hu);
+			for (final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked : shipmentSchedulesQtyPicked)
 			{
-				if (!ssQtyPicked.isActive())
+				if (!shipmentScheduleQtyPicked.isActive())
 				{
 					continue;
 				}
@@ -211,7 +209,8 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 				// continue;
 				// }
 
-				final IShipmentScheduleWithHU candidate = new ShipmentScheduleWithHU(huContext, ssQtyPicked);
+				final IShipmentScheduleWithHU candidate = //
+						ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(shipmentScheduleQtyPicked, huContext);
 				candidatesForHU.add(candidate);
 			}
 
@@ -222,7 +221,9 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 			// Log if there were no candidates created for current HU.
 			if (candidatesForHU.isEmpty())
 			{
-				Loggables.get().addLog("No eligible " + de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.Table_Name + " records found for " + handlingUnitsBL.getDisplayName(hu));
+				Loggables.get().addLog("No eligible {} records found for hu {}",
+						de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.Table_Name,
+						handlingUnitsBL.getDisplayName(hu));
 			}
 		}
 

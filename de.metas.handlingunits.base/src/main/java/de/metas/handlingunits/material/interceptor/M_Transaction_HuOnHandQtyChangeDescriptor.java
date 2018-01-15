@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Transaction;
 
@@ -14,19 +12,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUAssignmentDAO.HuAssignment;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
-import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.stock.OnHandQtyChangedEvent;
-import de.metas.material.event.stock.OnHandQtyChangedEvent.OnHandQtyChangedEventBuilder;
+import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
+import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor.HUOnHandQtyChangeDescriptorBuilder;
 import lombok.NonNull;
 
 /*
@@ -51,35 +42,32 @@ import lombok.NonNull;
  * #L%
  */
 
-public class M_Transaction_OnHandQtyEventCreator extends M_Transaction_EventCreator
+public class M_Transaction_HuOnHandQtyChangeDescriptor
 {
-	public static final M_Transaction_OnHandQtyEventCreator INSTANCE = new M_Transaction_OnHandQtyEventCreator();
+	public static final M_Transaction_HuOnHandQtyChangeDescriptor INSTANCE = new M_Transaction_HuOnHandQtyChangeDescriptor();
 
-	private M_Transaction_OnHandQtyEventCreator()
+	private M_Transaction_HuOnHandQtyChangeDescriptor()
 	{
 	}
 
-	@Override
-	public List<MaterialEvent> createEventsForInOutLine(@NonNull final I_M_Transaction transaction, final boolean deleted)
+	public List<HUOnHandQtyChangeDescriptor> createEventsForInOutLine(@NonNull final I_M_Transaction transaction, final boolean deleted)
 	{
 		return createEventsForModel(transaction.getM_InOutLine(), deleted);
 	}
 
-	@Override
-	public List<MaterialEvent> createEventsForCostCollector(@NonNull final I_M_Transaction transaction, final boolean deleted)
+	public List<HUOnHandQtyChangeDescriptor> createEventsForCostCollector(@NonNull final I_M_Transaction transaction, final boolean deleted)
 	{
 		return createEventsForModel(transaction.getPP_Cost_Collector(), deleted);
 	}
 
-	@Override
-	public List<MaterialEvent> createEventsForMovementLine(
+	public List<HUOnHandQtyChangeDescriptor> createEventsForMovementLine(
 			@NonNull final I_M_Transaction transaction,
 			final boolean deleted)
 	{
 		return createEventsForModel(transaction.getM_MovementLine(), deleted);
 	}
 
-	private static List<MaterialEvent> createEventsForModel(
+	private static List<HUOnHandQtyChangeDescriptor> createEventsForModel(
 			@NonNull final Object huReferencedModel,
 			final boolean deleted)
 	{
@@ -87,7 +75,7 @@ public class M_Transaction_OnHandQtyEventCreator extends M_Transaction_EventCrea
 		final List<HuAssignment> huAssignments = huAssignmentDAO
 				.retrieveHUAssignmentPojosForModel(huReferencedModel);
 
-		final ImmutableList.Builder<MaterialEvent> result = ImmutableList.builder();
+		final ImmutableList.Builder<HUOnHandQtyChangeDescriptor> result = ImmutableList.builder();
 		for (final HuAssignment huAssignment : huAssignments)
 		{
 			result.addAll(createEventsForHu(huAssignment.getLowestLevelHU(), deleted));
@@ -96,41 +84,26 @@ public class M_Transaction_OnHandQtyEventCreator extends M_Transaction_EventCrea
 		return result.build();
 	}
 
-	private static ArrayList<OnHandQtyChangedEvent> createEventsForHu(
+	private static ArrayList<HUOnHandQtyChangeDescriptor> createEventsForHu(
 			@NonNull final I_M_HU hu,
 			final boolean deleted)
 	{
-		final OnHandQtyChangedEventBuilder builder = OnHandQtyChangedEvent.builder()
-				.warehouseId(hu.getM_Locator().getM_Warehouse_ID())
+		final HUOnHandQtyChangeDescriptorBuilder builder = HUOnHandQtyChangeDescriptor.builder()
 				.huId(hu.getM_HU_ID());
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 
-		final IAttributeStorageFactory huAttributeStorageFactory = Services.get(IAttributeStorageFactoryService.class)
-				.createHUAttributeStorageFactory(storageFactory);
-		final IAttributeStorage attributeStorage = huAttributeStorageFactory.getAttributeStorage(hu);
-
-		final AttributesKey attributesKey = AttributesKeys
-				.createAttributesKeyFromAttributeSet(attributeStorage)
-				.orElse(AttributesKey.NONE);
-
 		final IHUStorage storage = storageFactory.getStorage(hu);
 		final List<IHUProductStorage> productStorages = storage.getProductStorages();
 
-		final ArrayList<OnHandQtyChangedEvent> events = new ArrayList<>();
+		final ArrayList<HUOnHandQtyChangeDescriptor> events = new ArrayList<>();
 
 		for (final IHUProductStorage productStorage : productStorages)
 		{
-			final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
-					productStorage.getM_Product_ID(),
-					attributesKey,
-					AttributeConstants.M_AttributeSetInstance_ID_None);
-
 			final BigDecimal quantity = productStorage.getQtyInStockingUOM();
 
-			final OnHandQtyChangedEvent event = builder.eventDescriptor(EventDescriptor.createNew(hu))
-					.productDescriptor(productDescriptor)
+			final HUOnHandQtyChangeDescriptor event = builder
 					.quantity(deleted ? BigDecimal.ZERO : quantity)
 					.quantityDelta(deleted ? quantity.negate() : quantity)
 					.build();

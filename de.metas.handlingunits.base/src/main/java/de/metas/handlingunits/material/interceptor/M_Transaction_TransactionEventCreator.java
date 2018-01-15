@@ -3,7 +3,6 @@ package de.metas.handlingunits.material.interceptor;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -18,11 +17,12 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
@@ -61,26 +61,40 @@ public class M_Transaction_TransactionEventCreator extends M_Transaction_EventCr
 	{
 	}
 
-	private static AbstractTransactionEvent createEventForShipmentScheduleToQtyMapping(
+	private static boolean isDirectMovementWarehouse(final int warehouseId)
+	{
+		final int intValue = Services.get(ISysConfigBL.class).getIntValue(IHUMovementBL.SYSCONFIG_DirectMove_Warehouse_ID, -1);
+		return intValue == warehouseId;
+	}
+
+	@Override
+	public List<MaterialEvent> createEventsForCostCollector(
 			@NonNull final I_M_Transaction transaction,
-			@NonNull final Entry<Integer, BigDecimal> entry,
 			final boolean deleted)
 	{
-		final BigDecimal quantity = entry.getValue();
 		final EventDescriptor eventDescriptor = EventDescriptor.createNew(transaction);
-		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(transaction, quantity);
+		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(
+				transaction,
+				transaction.getMovementQty());
 
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(extractTransactionWarehouseId(transaction));
 
 		final AbstractTransactionEvent event;
+		final I_PP_Cost_Collector costCollector = transaction.getPP_Cost_Collector();
+
+		final List<HUOnHandQtyChangeDescriptor> huDescriptors = //
+				M_Transaction_HuOnHandQtyChangeDescriptor.INSTANCE.createEventsForCostCollector(transaction, deleted);
+
 		if (deleted)
 		{
 			event = TransactionDeletedEvent.builder()
 					.eventDescriptor(eventDescriptor)
 					.transactionId(transaction.getM_Transaction_ID())
 					.materialDescriptor(materialDescriptor)
-					.shipmentScheduleId(entry.getKey())
 					.directMovementWarehouse(directMovementWarehouse)
+					.ppOrderId(costCollector.getPP_Order_ID())
+					.ppOrderLineId(costCollector.getPP_Order_BOMLine_ID())
+					.huOnHandQtyChangeDescriptors(huDescriptors)
 					.build();
 		}
 		else
@@ -89,44 +103,70 @@ public class M_Transaction_TransactionEventCreator extends M_Transaction_EventCr
 					.eventDescriptor(eventDescriptor)
 					.transactionId(transaction.getM_Transaction_ID())
 					.materialDescriptor(materialDescriptor)
-					.shipmentScheduleId(entry.getKey())
 					.directMovementWarehouse(directMovementWarehouse)
+					.ppOrderId(costCollector.getPP_Order_ID())
+					.ppOrderLineId(costCollector.getPP_Order_BOMLine_ID())
+					.huOnHandQtyChangeDescriptors(huDescriptors)
 					.build();
 		}
-		return event;
+		return ImmutableList.of(event);
 	}
 
-	private static boolean isDirectMovementWarehouse(final int warehouseId)
+	private static MaterialDescriptor createMaterialDescriptor(
+			@NonNull final I_M_Transaction transaction,
+			@NonNull final BigDecimal quantity)
 	{
-		final int intValue = Services.get(ISysConfigBL.class).getIntValue(IHUMovementBL.SYSCONFIG_DirectMove_Warehouse_ID, -1);
-		return intValue == warehouseId;
+		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(transaction);
+
+		return MaterialDescriptor.builder()
+				.warehouseId(extractTransactionWarehouseId(transaction))
+				.date(transaction.getMovementDate())
+				.productDescriptor(productDescriptor)
+				.bPartnerId(transaction.getC_BPartner_ID())
+				.quantity(quantity)
+				.build();
+	}
+
+	private static int extractTransactionWarehouseId(@NonNull final I_M_Transaction transaction)
+	{
+		return transaction.getM_Locator().getM_Warehouse_ID();
+	}
+
+	@Override
+	public List<MaterialEvent> createEventsForInOutLine(
+			@NonNull final I_M_Transaction transaction,
+			final boolean deleted)
+	{
+		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = retrieveShipmentScheduleId2Qty(transaction);
+
+		final AbstractTransactionEvent event = createEventForShipmentScheduleToQtyMapping(transaction, shipmentScheduleIds2Qtys, deleted);
+		return ImmutableList.of(event);
 	}
 
 	@VisibleForTesting
-	static Map<Integer, BigDecimal> retrieveShipmentScheduleId(@NonNull final I_M_Transaction transaction)
+	static Map<Integer, BigDecimal> retrieveShipmentScheduleId2Qty(
+			@NonNull final I_M_Transaction transaction)
 	{
 		final Map<Integer, BigDecimal> shipmentScheduleId2quantity = new TreeMap<>();
 
 		BigDecimal qtyLeftToDistribute = transaction.getMovementQty();
 
-		if (transaction.getM_InOutLine_ID() <= 0)
-		{
-			shipmentScheduleId2quantity.put(0, qtyLeftToDistribute);
-			return shipmentScheduleId2quantity;
-		}
-
 		final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtysPicked = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, transaction.getM_InOutLine_ID())
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, transaction.getM_InOutLine_ID())
 				.create()
 				.list();
+
 		for (final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked : shipmentScheduleQtysPicked)
 		{
 			assertSignumsOfQuantitiesMatch(shipmentScheduleQtyPicked, transaction);
 
 			final BigDecimal qtyPicked = shipmentScheduleQtyPicked.getQtyPicked();
-			final BigDecimal quantityForMaterialDescriptor = MTransactionUtil.isInboundTransaction(transaction) ? qtyPicked : qtyPicked.negate();
+			final BigDecimal quantityForMaterialDescriptor = MTransactionUtil.isInboundTransaction(transaction)
+					? qtyPicked
+					: qtyPicked.negate();
 
 			shipmentScheduleId2quantity.merge(
 					shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID(),
@@ -168,30 +208,31 @@ public class M_Transaction_TransactionEventCreator extends M_Transaction_EventCr
 						.setParameter("transaction", transaction);
 	}
 
-	@Override
-	public List<MaterialEvent> createEventsForCostCollector(
+	private static AbstractTransactionEvent createEventForShipmentScheduleToQtyMapping(
 			@NonNull final I_M_Transaction transaction,
+			@NonNull final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
 			final boolean deleted)
 	{
+		final boolean directMovementWarehouse = isDirectMovementWarehouse(extractTransactionWarehouseId(transaction));
+
 		final EventDescriptor eventDescriptor = EventDescriptor.createNew(transaction);
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(
 				transaction,
 				transaction.getMovementQty());
 
-		final boolean directMovementWarehouse = isDirectMovementWarehouse(extractTransactionWarehouseId(transaction));
+		final List<HUOnHandQtyChangeDescriptor> huDescriptor = //
+				M_Transaction_HuOnHandQtyChangeDescriptor.INSTANCE.createEventsForInOutLine(transaction, deleted);
 
 		final AbstractTransactionEvent event;
-		final I_PP_Cost_Collector costCollector = transaction.getPP_Cost_Collector();
 		if (deleted)
 		{
 			event = TransactionDeletedEvent.builder()
 					.eventDescriptor(eventDescriptor)
 					.transactionId(transaction.getM_Transaction_ID())
 					.materialDescriptor(materialDescriptor)
-					.shipmentScheduleId(0)
+					.shipmentScheduleIds2Qtys(shipmentScheduleIds2Qtys)
 					.directMovementWarehouse(directMovementWarehouse)
-					.ppOrderId(costCollector.getPP_Order_ID())
-					.ppOrderLineId(costCollector.getPP_Order_BOMLine_ID())
+					.huOnHandQtyChangeDescriptors(huDescriptor)
 					.build();
 		}
 		else
@@ -200,49 +241,12 @@ public class M_Transaction_TransactionEventCreator extends M_Transaction_EventCr
 					.eventDescriptor(eventDescriptor)
 					.transactionId(transaction.getM_Transaction_ID())
 					.materialDescriptor(materialDescriptor)
-					.shipmentScheduleId(0)
+					.shipmentScheduleIds2Qtys(shipmentScheduleIds2Qtys)
 					.directMovementWarehouse(directMovementWarehouse)
-					.ppOrderId(costCollector.getPP_Order_ID())
-					.ppOrderLineId(costCollector.getPP_Order_BOMLine_ID())
+					.huOnHandQtyChangeDescriptors(huDescriptor)
 					.build();
 		}
-		return ImmutableList.of(event);
-	}
-
-	private static MaterialDescriptor createMaterialDescriptor(
-			@NonNull final I_M_Transaction transaction,
-			@NonNull final BigDecimal quantity)
-	{
-		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
-		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(transaction);
-
-		return MaterialDescriptor.builder()
-				.warehouseId(extractTransactionWarehouseId(transaction))
-				.date(transaction.getMovementDate())
-				.productDescriptor(productDescriptor)
-				.bPartnerId(transaction.getC_BPartner_ID())
-				.quantity(quantity)
-				.build();
-	}
-
-	private static int extractTransactionWarehouseId(@NonNull final I_M_Transaction transaction)
-	{
-		return transaction.getM_Locator().getM_Warehouse_ID();
-	}
-
-	@Override
-	public List<MaterialEvent> createEventsForInOutLine(I_M_Transaction transaction, boolean deleted)
-	{
-		ImmutableList.Builder<MaterialEvent> result = ImmutableList.builder();
-
-		final Map<Integer, BigDecimal> shipmentScheduleId2qty = retrieveShipmentScheduleId(transaction);
-
-		for (final Entry<Integer, BigDecimal> entry : shipmentScheduleId2qty.entrySet())
-		{
-			final AbstractTransactionEvent event = createEventForShipmentScheduleToQtyMapping(transaction, entry, deleted);
-			result.add(event);
-		}
-		return result.build();
+		return event;
 	}
 
 	@Override
@@ -262,6 +266,9 @@ public class M_Transaction_TransactionEventCreator extends M_Transaction_EventCr
 				? movementLine.getDD_OrderLine().getDD_Order_ID()
 				: 0;
 
+		final List<HUOnHandQtyChangeDescriptor> huDescriptors = //
+				M_Transaction_HuOnHandQtyChangeDescriptor.INSTANCE.createEventsForMovementLine(transaction, deleted);
+
 		if (deleted)
 		{
 			event = TransactionDeletedEvent.builder()
@@ -271,6 +278,7 @@ public class M_Transaction_TransactionEventCreator extends M_Transaction_EventCr
 					.directMovementWarehouse(directMovementWarehouse)
 					.ddOrderId(ddOrderId)
 					.ddOrderLineId(movementLine.getDD_OrderLine_ID())
+					.huOnHandQtyChangeDescriptors(huDescriptors)
 					.build();
 		}
 		else
@@ -279,12 +287,13 @@ public class M_Transaction_TransactionEventCreator extends M_Transaction_EventCr
 					.eventDescriptor(eventDescriptor)
 					.transactionId(transaction.getM_Transaction_ID())
 					.materialDescriptor(materialDescriptor)
-					.shipmentScheduleId(0)
 					.directMovementWarehouse(directMovementWarehouse)
 					.ddOrderId(ddOrderId)
 					.ddOrderLineId(movementLine.getDD_OrderLine_ID())
+					.huOnHandQtyChangeDescriptors(huDescriptors)
 					.build();
 		}
+
 		return ImmutableList.of(event);
 	}
 }

@@ -1,7 +1,11 @@
 package de.metas.material.dispo.service.event.handler;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.context.annotation.Profile;
@@ -52,12 +56,12 @@ import lombok.NonNull;
  */
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
-public class TransactionEventHandler implements MaterialEventHandler<AbstractTransactionEvent>
+public class TransactionEventHandlerForCockpitRecords implements MaterialEventHandler<AbstractTransactionEvent>
 {
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepository;
 
-	public TransactionEventHandler(
+	public TransactionEventHandlerForCockpitRecords(
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final CandidateRepositoryRetrieval candidateRepository)
 	{
@@ -74,63 +78,75 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	@Override
 	public void handleEvent(@NonNull final AbstractTransactionEvent event)
 	{
-		final Candidate candidate = createCandidateForTransactionEvent(event);
-		candidateChangeHandler.onCandidateNewOrChange(candidate);
+		final List<Candidate> candidates = createCandidatesForTransactionEvent(event);
+
+		candidates.forEach(candidate -> candidateChangeHandler.onCandidateNewOrChange(candidate));
 	}
 
 	@VisibleForTesting
-	Candidate createCandidateForTransactionEvent(@NonNull final AbstractTransactionEvent event)
+	List<Candidate> createCandidatesForTransactionEvent(@NonNull final AbstractTransactionEvent event)
 	{
-		final Candidate candidate;
-		if (event.getShipmentScheduleId() > 0)
+		final List<Candidate> candidates = new ArrayList<>();
+
+		if (event.getShipmentScheduleIds2Qtys() != null && !event.getShipmentScheduleIds2Qtys().isEmpty())
 		{
-			candidate = prepareCandidateForShipmentScheduleId(event);
+			candidates.addAll(prepareCandidateForShipmentScheduleId(event));
 		}
 		else if (event.getPpOrderId() > 0)
 		{
-			candidate = prepareCandidateForPPorder(event);
+			candidates.add(prepareCandidateForPPorder(event));
 		}
-		else if(event.getDdOrderLineId() > 0)
+		else if (event.getDdOrderLineId() > 0)
 		{
-			candidate = prepareCandidateForDDorder(event);
+			candidates.add(prepareCandidateForDDorder(event));
 		}
 		else
 		{
-			candidate = prepareUnrelatedCandidate(event);
+			candidates.add(prepareUnrelatedCandidate(event));
 		}
-		return candidate;
+		return candidates;
 	}
 
-	private Candidate prepareCandidateForShipmentScheduleId(@NonNull final AbstractTransactionEvent event)
+	private List<Candidate> prepareCandidateForShipmentScheduleId(@NonNull final AbstractTransactionEvent event)
 	{
-		final DemandDetail demandDetail = DemandDetail.forShipmentScheduleIdAndOrderLineId(event.getShipmentScheduleId(), -1);
+		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = event.getShipmentScheduleIds2Qtys();
 
-		final CandidatesQuery query = CandidatesQuery.builder().type(CandidateType.DEMAND)
-				.demandDetail(demandDetail) // only search via demand detail, ..the product and warehouse will also match, but e.g. the date probably won't!
-				.build();
+		final Builder<Candidate> result = ImmutableList.builder();
 
-		final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
-		final Candidate candidate;
-
-		final boolean unrelatedNewTransaction = existingCandidate == null && event instanceof TransactionCreatedEvent;
-		if (unrelatedNewTransaction)
+		for (final Entry<Integer, BigDecimal> shipmentScheduleId2Qty : shipmentScheduleIds2Qtys.entrySet())
 		{
-			candidate = createBuilderForNewUnrelatedCandidate((TransactionCreatedEvent)event)
-					.demandDetail(demandDetail)
-					.transactionDetail(createTransactionDetail(event))
+			final DemandDetail demandDetail = DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleId2Qty.getKey(), -1);
+
+			final CandidatesQuery query = CandidatesQuery.builder().type(CandidateType.DEMAND)
+					.demandDetail(demandDetail) // only search via demand detail, ..the product and warehouse will also match, but e.g. the date probably won't!
 					.build();
+
+			final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
+			final Candidate candidate;
+
+			final boolean unrelatedNewTransaction = existingCandidate == null && event instanceof TransactionCreatedEvent;
+			if (unrelatedNewTransaction)
+			{
+				candidate = createBuilderForNewUnrelatedCandidate(
+						(TransactionCreatedEvent)event,
+						shipmentScheduleId2Qty.getValue())
+								.demandDetail(demandDetail)
+								.transactionDetail(createTransactionDetail(event))
+								.build();
+			}
+			else if (existingCandidate != null)
+			{
+				candidate = newCandidateWithAddedTransactionDetail(
+						existingCandidate,
+						createTransactionDetail(event));
+			}
+			else
+			{
+				throw createExceptionForUnexpectedEvent(event);
+			}
+			result.add(candidate);
 		}
-		else if (existingCandidate != null)
-		{
-			candidate = newCandidateWithAddedTransactionDetail(
-					existingCandidate,
-					createTransactionDetail(event));
-		}
-		else
-		{
-			throw createExceptionForUnexpectedEvent(event);
-		}
-		return candidate;
+		return result.build();
 	}
 
 	private Candidate prepareCandidateForPPorder(@NonNull final AbstractTransactionEvent event)
@@ -153,10 +169,12 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean unrelatedNewTransaction = existingCandidate == null && event instanceof TransactionCreatedEvent;
 		if (unrelatedNewTransaction)
 		{
-			candidate = createBuilderForNewUnrelatedCandidate((TransactionCreatedEvent)event)
-					.productionDetail(productionDetail)
-					.transactionDetail(transactionDetailOfEvent)
-					.build();
+			candidate = createBuilderForNewUnrelatedCandidate(
+					(TransactionCreatedEvent)event,
+					event.getQuantity())
+							.productionDetail(productionDetail)
+							.transactionDetail(transactionDetailOfEvent)
+							.build();
 		}
 		else if (existingCandidate != null)
 		{
@@ -191,10 +209,12 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean unrelatedNewTransaction = existingCandidate == null && event instanceof TransactionCreatedEvent;
 		if (unrelatedNewTransaction)
 		{
-			candidate = createBuilderForNewUnrelatedCandidate((TransactionCreatedEvent)event)
-					.distributionDetail(distributionDetail)
-					.transactionDetail(transactionDetailOfEvent)
-					.build();
+			candidate = createBuilderForNewUnrelatedCandidate(
+					(TransactionCreatedEvent)event,
+					event.getQuantity())
+							.distributionDetail(distributionDetail)
+							.transactionDetail(transactionDetailOfEvent)
+							.build();
 		}
 		else if (existingCandidate != null)
 		{
@@ -239,9 +259,11 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean unrelatedNewTransaction = existingCandidate == null && event instanceof TransactionCreatedEvent;
 		if (unrelatedNewTransaction)
 		{
-			candidate = createBuilderForNewUnrelatedCandidate((TransactionCreatedEvent)event)
-					.transactionDetail(transactionDetailOfEvent)
-					.build();
+			candidate = createBuilderForNewUnrelatedCandidate(
+					(TransactionCreatedEvent)event,
+					event.getQuantity())
+							.transactionDetail(transactionDetailOfEvent)
+							.build();
 		}
 		else if (existingCandidate != null)
 		{
@@ -285,16 +307,16 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	 * @param transactionCreatedEvent note that creating a new candidate doesn't make sense for a {@link TransactionDeletedEvent}
 	 */
 	@VisibleForTesting
-	static CandidateBuilder createBuilderForNewUnrelatedCandidate(@NonNull final TransactionCreatedEvent transactionCreatedEvent)
+	static CandidateBuilder createBuilderForNewUnrelatedCandidate(
+			@NonNull final TransactionCreatedEvent transactionCreatedEvent,
+			@NonNull final BigDecimal quantity)
 	{
-		final BigDecimal eventQuantity = transactionCreatedEvent.getQuantity();
-
 		final CandidateBuilder builder = Candidate
 				.builderForEventDescr(transactionCreatedEvent.getEventDescriptor());
-		if (eventQuantity.signum() <= 0)
+		if (quantity.signum() <= 0)
 		{
 			return builder.type(CandidateType.UNRELATED_DECREASE)
-					.materialDescriptor(transactionCreatedEvent.getMaterialDescriptor().withQuantity(eventQuantity.negate()));
+					.materialDescriptor(transactionCreatedEvent.getMaterialDescriptor().withQuantity(quantity.negate()));
 		}
 		else
 		{

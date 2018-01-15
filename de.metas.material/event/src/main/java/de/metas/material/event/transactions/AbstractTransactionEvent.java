@@ -3,13 +3,19 @@ package de.metas.material.event.transactions;
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+import org.adempiere.util.Check;
 
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -45,7 +51,7 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 	// ids used to match the transaction to the respective shipmentSchedule
 	// if *none of those are set* then the transaction will be recorded as "unplanned"
-	private final int shipmentScheduleId;
+	private final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys;
 
 	private final int transactionId;
 
@@ -55,29 +61,32 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 	private final int ppOrderLineId;
 
-	private int ddOrderId;
+	private final int ddOrderId;
 
-	private int ddOrderLineId;
+	private final int ddOrderLineId;
+
+	private final List<HUOnHandQtyChangeDescriptor> huOnHandQtyChangeDescriptors;
 
 	public AbstractTransactionEvent(
-			@NonNull final EventDescriptor eventDescriptor,
-			@NonNull final MaterialDescriptor materialDescriptor,
-			final int shipmentScheduleId,
+			final EventDescriptor eventDescriptor,
+			final MaterialDescriptor materialDescriptor,
+			final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
 			final int ppOrderId,
 			final int ppOrderLineId,
 			final int ddOrderId,
 			final int ddOrderLineId,
 			final int transactionId,
-			final boolean directMovementWarehouse)
+			final boolean directMovementWarehouse,
+			final List<HUOnHandQtyChangeDescriptor> huOnHandQtyChangeDescriptors)
 	{
 		this.transactionId = checkIdGreaterThanZero("transactionId", transactionId);
 
 		this.eventDescriptor = eventDescriptor;
 
-		materialDescriptor.asssertMaterialDescriptorComplete();
 		this.materialDescriptor = materialDescriptor;
+		this.huOnHandQtyChangeDescriptors = huOnHandQtyChangeDescriptors;
 
-		this.shipmentScheduleId = shipmentScheduleId;
+		this.shipmentScheduleIds2Qtys = shipmentScheduleIds2Qtys;
 
 		this.ddOrderLineId = ddOrderLineId;
 		this.ddOrderId = ddOrderId;
@@ -90,4 +99,15 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 	public abstract BigDecimal getQuantity();
 	public abstract BigDecimal getQuantityDelta();
+
+	@OverridingMethodsMustInvokeSuper
+	public void assertValid()
+	{
+		Check.errorIf(eventDescriptor == null, "eventDescriptor may not be null");
+
+		Check.errorIf(materialDescriptor == null, "materialDescriptor may not be null");
+		materialDescriptor.asssertMaterialDescriptorComplete();
+
+		huOnHandQtyChangeDescriptors.forEach(HUOnHandQtyChangeDescriptor::assertValid);
+	}
 }

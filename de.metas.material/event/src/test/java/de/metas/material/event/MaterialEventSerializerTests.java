@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.commons.SubscriptionLineDescriptor;
@@ -27,14 +28,14 @@ import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
+import de.metas.material.event.pporder.PPOrderChangedEvent;
+import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
+import de.metas.material.event.pporder.PPOrderChangedEvent.DeletedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.event.pporder.PPOrderDocStatusChangedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderProductionQtyChangedEvent;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent.ChangedPPOrderLineDescriptor;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent.DeletedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
@@ -46,7 +47,6 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent.ShipmentScheduleCreatedEventBuilder;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
-import de.metas.material.event.stock.OnHandQtyChangedEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
@@ -221,7 +221,7 @@ public class MaterialEventSerializerTests
 	@Test
 	public void ppOrderQtyEnteredChangedEvent()
 	{
-		final PPOrderQtyChangedEvent event = PPOrderQtyChangedEvent.builder()
+		final PPOrderChangedEvent event = PPOrderChangedEvent.builder()
 				.productDescriptor(createProductDescriptor())
 				.datePromised(NOW)
 				.ppOrderId(10)
@@ -486,6 +486,7 @@ public class MaterialEventSerializerTests
 	{
 		final TransactionCreatedEvent evt = createSampleTransactionEvent();
 
+		evt.assertValid();
 		assertEventEqualAfterSerializeDeserialize(evt);
 	}
 
@@ -496,6 +497,13 @@ public class MaterialEventSerializerTests
 				.transactionId(10)
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
+				.shipmentScheduleIds2Qty(20, BigDecimal.TEN)
+				.shipmentScheduleIds2Qty(21, BigDecimal.ONE.negate())
+				.huOnHandQtyChangeDescriptor(HUOnHandQtyChangeDescriptor.builder()
+						.huId(30)
+						.quantity(BigDecimal.TEN)
+						.quantityDelta(BigDecimal.ONE)
+						.build())
 				.build();
 		return evt;
 	}
@@ -508,24 +516,11 @@ public class MaterialEventSerializerTests
 				.transactionId(10)
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
+				.shipmentScheduleIds2Qty(20, BigDecimal.TEN)
+				.shipmentScheduleIds2Qty(21, BigDecimal.ONE.negate())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(evt);
-	}
-
-	@Test
-	public void onHandQtyChangedEvent()
-	{
-		final OnHandQtyChangedEvent event = OnHandQtyChangedEvent.builder()
-				.eventDescriptor(createEventDescriptor())
-				.huId(10)
-				.productDescriptor(createProductDescriptor())
-				.quantity(BigDecimal.TEN)
-				.quantityDelta(BigDecimal.ONE)
-				.warehouseId(20)
-				.build();
-		event.assertValid();
-		assertEventEqualAfterSerializeDeserialize(event);
 	}
 
 	@Test

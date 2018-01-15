@@ -40,7 +40,7 @@ import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHan
 import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandler;
 import de.metas.material.dispo.service.event.handler.ShipmentScheduleCreatedHandlerTests;
-import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
+import de.metas.material.dispo.service.event.handler.TransactionEventHandlerForCockpitRecords;
 import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedOrCreatedHandler;
 import de.metas.material.dispo.service.event.handler.pporder.PPOrderAdvisedHandler;
 import de.metas.material.event.MaterialEventHandler;
@@ -151,7 +151,7 @@ public class MaterialDispoEventListenerFacadeTests
 
 		final ForecastCreatedHandler forecastCreatedEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
 
-		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(candidateChangeHandler, candidateRepositoryRetrieval);
+		final TransactionEventHandlerForCockpitRecords transactionEventHandler = new TransactionEventHandlerForCockpitRecords(candidateChangeHandler, candidateRepositoryRetrieval);
 
 		final ShipmentScheduleCreatedHandler shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(candidateChangeHandler);
 

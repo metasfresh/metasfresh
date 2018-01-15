@@ -34,10 +34,9 @@ import lombok.Value;
  * #L%
  */
 
-// TODO: handle/test handling
 @Value
 @Builder
-public class PPOrderQtyChangedEvent implements MaterialEvent
+public class PPOrderChangedEvent implements MaterialEvent
 {
 	public static final String TYPE = "PPOrderQtyChangedEvent";
 
