@@ -22,6 +22,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#3209](https://github.com/metasfresh/metasfresh/issues/3209) Material Receipt candidates action for batch serial No on selected HU
+    * New Action added for Serial No generation in Material Receipt and distribution to its received Handling Units.
   * [#3213](https://github.com/metasfresh/metasfresh/issues/3213) New Action for Repost Document in Accounting Transaction Window
   * [#3245](https://github.com/metasfresh/metasfresh/issues/3245) Material Cockpit Details modal overlay
   * [#3271](https://github.com/metasfresh/metasfresh/issues/3271) Implement event log
