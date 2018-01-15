@@ -30,9 +30,9 @@ import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
-import de.metas.material.dispo.service.event.handler.DDOrderAdvisedOrCreatedHandler;
 import de.metas.material.dispo.service.event.handler.DDOrderAdvisedOrCreatedHandlerTests;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedOrCreatedHandler;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import mockit.Mocked;
 
@@ -87,7 +87,7 @@ public class SupplyProposalEvaluatorTests
 	private CandidateRepositoryWriteService candidateRepositoryCommands;
 
 	@Mocked
-	private MaterialEventService materialEventService;
+	private PostMaterialEventService postMaterialEventService;
 
 
 	private StockRepository stockRepository;
@@ -103,7 +103,8 @@ public class SupplyProposalEvaluatorTests
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
-				candidateRepositoryRetrieval, candidateRepositoryCommands);
+				candidateRepositoryRetrieval,
+				candidateRepositoryCommands);
 
 		stockRepository = new StockRepository();
 
@@ -112,7 +113,7 @@ public class SupplyProposalEvaluatorTests
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
-						materialEventService,
+						postMaterialEventService,
 						stockRepository,
 						stockCandidateService
 						)));
@@ -122,7 +123,7 @@ public class SupplyProposalEvaluatorTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepositoryRetrieval, materialEventService));
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService));
 	}
 
 	/**

@@ -12,6 +12,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateListenerAdapter;
+import lombok.NonNull;
 
 public class OrderAndInOutInvoiceCandidateListener extends InvoiceCandidateListenerAdapter
 {
@@ -19,11 +20,10 @@ public class OrderAndInOutInvoiceCandidateListener extends InvoiceCandidateListe
 
 	private OrderAndInOutInvoiceCandidateListener()
 	{
-		super();
 	}
 
 	@Override
-	public void onBeforeClosed(I_C_Invoice_Candidate candidate)
+	public void onBeforeClosed(@NonNull final I_C_Invoice_Candidate candidate)
 	{
 		if (candidate.isSOTrx())
 		{
@@ -42,5 +42,4 @@ public class OrderAndInOutInvoiceCandidateListener extends InvoiceCandidateListe
 					.forEach(receiptSchedule -> receiptScheduleBL.close(receiptSchedule));
 		}
 	}
-
 }

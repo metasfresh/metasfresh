@@ -1,23 +1,50 @@
 package de.metas.material.dispo.commons.candidate;
 
+import java.math.BigDecimal;
+
+import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
 public class DistributionDetail
 {
+	public static DistributionDetail forDistributionDetailRecord(
+			@NonNull final I_MD_Candidate_Dist_Detail distributionDetailRecord)
+	{
+		final DistributionDetail distributionDetail = DistributionDetail.builder()
+				.networkDistributionLineId(distributionDetailRecord.getDD_NetworkDistributionLine_ID())
+				.productPlanningId(distributionDetailRecord.getPP_Product_Planning_ID())
+				.plantId(distributionDetailRecord.getPP_Plant_ID())
+				.ddOrderId(distributionDetailRecord.getDD_Order_ID())
+				.ddOrderLineId(distributionDetailRecord.getDD_OrderLine_ID())
+				.ddOrderDocStatus(distributionDetailRecord.getDD_Order_DocStatus())
+				.plannedQty(distributionDetailRecord.getPlannedQty())
+				.actualQty(distributionDetailRecord.getActualQty())
+				.shipperId(distributionDetailRecord.getM_Shipper_ID())
+				.build();
+		return distributionDetail;
+	}
+
 	int productPlanningId;
 
 	int plantId;
-	
+
 	int networkDistributionLineId;
 
 	int shipperId;
-	
+
 	int ddOrderId;
 
 	int ddOrderLineId;
-	
+
 	String ddOrderDocStatus;
+
+	boolean advised;
+
+	BigDecimal plannedQty;
+
+	BigDecimal actualQty;
 }

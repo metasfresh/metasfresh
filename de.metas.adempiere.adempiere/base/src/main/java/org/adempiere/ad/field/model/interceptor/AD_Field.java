@@ -1,11 +1,16 @@
 package org.adempiere.ad.field.model.interceptor;
 
+import java.sql.SQLException;
+
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.ModelValidator;
+
+import de.metas.translation.api.IElementTranslationBL;
 
 /*
  * #%L
@@ -20,50 +25,70 @@ import org.compiere.model.ModelValidator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 @Interceptor(I_AD_Field.class)
 public class AD_Field
-{	
+{
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Field.COLUMNNAME_AD_Name_ID)
-	public void onNameIDChanged(final I_AD_Field field)
+	public void onNameIDChanged(final I_AD_Field field) throws SQLException
 	{
-		if(field.getAD_Name_ID() <= 0)
+		final I_AD_Element fieldElement;
+
+		if (field.getAD_Name_ID() <= 0)
 		{
 			// the AD_Name_ID was set to null. Get back to the values from the AD_Column
 			final I_AD_Column fieldColumn = field.getAD_Column();
-			
-			final I_AD_Element columnElement = fieldColumn.getAD_Element();
-			
-			if(columnElement == null)
-			{
-				// not yet saved. Do nothing
-				return;
-			}
-			field.setName(fieldColumn.getName());
-			field.setDescription(fieldColumn.getDescription());
-			field.setHelp(fieldColumn.getHelp());
-			
+			fieldElement = fieldColumn.getAD_Element();
+
 		}
-		
-		final I_AD_Element fieldElement = field.getAD_Name();
-		
-		if(fieldElement == null)
+		else
+		{
+			fieldElement = field.getAD_Name();
+		}
+
+		if (fieldElement == null)
 		{
 			// not yet saved; do nothing
 			return;
 		}
-		
+
 		field.setName(fieldElement.getName());
 		field.setDescription(fieldElement.getDescription());
 		field.setHelp(fieldElement.getHelp());
-		
-		
+
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Field.COLUMNNAME_AD_Name_ID)
+	public void updateTranslationsForElement(final I_AD_Field field)
+	{
+		final I_AD_Element fieldElement;
+
+		if (field.getAD_Name_ID() <= 0)
+		{
+			// the AD_Name_ID was set to null. Get back to the values from the AD_Column
+			final I_AD_Column fieldColumn = field.getAD_Column();
+			fieldElement = fieldColumn.getAD_Element();
+
+		}
+		else
+		{
+			fieldElement = field.getAD_Name();
+		}
+
+		if (fieldElement == null)
+		{
+			// not yet saved; do nothing
+			return;
+		}
+
+		// in the end, make sure the translation fields are also updated
+		Services.get(IElementTranslationBL.class).updateTranslations(fieldElement.getAD_Element_ID(), null);
 	}
 }

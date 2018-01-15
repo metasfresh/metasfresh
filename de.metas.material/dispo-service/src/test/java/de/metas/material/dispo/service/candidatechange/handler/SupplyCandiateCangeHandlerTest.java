@@ -73,7 +73,9 @@ public class SupplyCandiateCangeHandlerTest
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
 		candidateRepositoryWriteService = new CandidateRepositoryWriteService();
 
-		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryWriteService);
+		final StockCandidateService stockCandidateService = new StockCandidateService(
+				candidateRepository,
+				candidateRepositoryWriteService);
 
 		supplyCandiateHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryWriteService, stockCandidateService);
 	}
@@ -236,7 +238,6 @@ public class SupplyCandiateCangeHandlerTest
 		assertThat(supplyRecord.getQty()).isEqualByComparingTo(supplyQty);
 		assertThat(supplyRecord.getMD_Candidate_BusinessCase()).isEqualTo(CandidateBusinessCase.PRODUCTION.toString());
 		assertThat(stockRecord.getQty()).isEqualByComparingTo(new BigDecimal("34"));
-
 
 		assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
 	}

@@ -27,11 +27,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.util.Check;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 import org.eevolution.mrp.api.IMRPDemandAggregation;
 import org.eevolution.mrp.api.IMRPDemandAggregationFactory;
+
+import de.metas.material.planning.pporder.LiberoException;
 
 public class MRPDemandAggregationFactory implements IMRPDemandAggregationFactory
 {

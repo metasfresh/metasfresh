@@ -11,7 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
-import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderDocForOrderLine;
+import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
 
 /*
  * #%L
@@ -42,7 +42,7 @@ import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderDocForOrderLine;
 		StartupListener.class, ShutdownListener.class,
 
 		// needed so that the spring context can discover those two components. Note that there are other ways too, but this one is very fast
-		ShipmentScheduleReferencedLineFactory.class, ShipmentScheduleOrderDocForOrderLine.class
+		ShipmentScheduleReferencedLineFactory.class, ShipmentScheduleOrderReferenceProvider.class
 })
 public class ShipmentScheduleOrderDocFactoryTest
 {
@@ -53,6 +53,6 @@ public class ShipmentScheduleOrderDocFactoryTest
 
 		final ShipmentScheduleReferencedLineProvider providerForOrderLineScheds = bean.getProviderForTableName(I_C_OrderLine.Table_Name);
 		assertThat(providerForOrderLineScheds).isNotNull();
-		assertThat(providerForOrderLineScheds).isInstanceOf(ShipmentScheduleOrderDocForOrderLine.class);
+		assertThat(providerForOrderLineScheds).isInstanceOf(ShipmentScheduleOrderReferenceProvider.class);
 	}
 }

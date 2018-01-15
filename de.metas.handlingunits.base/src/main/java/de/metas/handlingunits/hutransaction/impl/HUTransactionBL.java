@@ -28,7 +28,7 @@ import org.adempiere.util.Services;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -38,11 +38,11 @@ public class HUTransactionBL implements IHUTransactionBL
 {
 
 	@Override
-	public IHUTransaction createLUTransactionForAttributeTransfer(final I_M_HU luHU, final I_M_HU_PI_Item luItemPI, final IAllocationRequest request)
+	public IHUTransactionCandidate createLUTransactionForAttributeTransfer(final I_M_HU luHU, final I_M_HU_PI_Item luItemPI, final IAllocationRequest request)
 	{
 		final I_M_HU_Item luItem = Services.get(IHandlingUnitsDAO.class).retrieveItem(luHU, luItemPI);
 
-		final HUTransaction luTrx = new HUTransaction(AllocationUtils.getReferencedModel(request), // receipt schedule
+		final HUTransactionCandidate luTrx = new HUTransactionCandidate(AllocationUtils.getReferencedModel(request), // receipt schedule
 				luItem, // huItem,
 				null, // vhuItem (note: at this level we're not talking about VHUs but actual LU-HUs)
 				request.getProduct(),

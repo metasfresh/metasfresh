@@ -32,7 +32,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 
@@ -47,8 +47,8 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 	private final BigDecimal qtyToAllocateInitial;
 	private BigDecimal qtyToAllocate;
 
-	private final List<IHUTransaction> transactions = new ArrayList<IHUTransaction>();
-	private final List<IHUTransaction> transactionsRO = Collections.unmodifiableList(transactions);
+	private final List<IHUTransactionCandidate> transactions = new ArrayList<IHUTransactionCandidate>();
+	private final List<IHUTransactionCandidate> transactionsRO = Collections.unmodifiableList(transactions);
 
 	private final List<IHUTransactionAttribute> attributeTransactions = new ArrayList<IHUTransactionAttribute>();
 	private final List<IHUTransactionAttribute> attributeTransactionsRO = Collections.unmodifiableList(attributeTransactions);
@@ -74,7 +74,7 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 				+ "\n qtyAllocated=" + getQtyAllocated());
 
 		sb.append("\n transactions(" + transactions.size() + "):");
-		for (final IHUTransaction transaction : transactions)
+		for (final IHUTransactionCandidate transaction : transactions)
 		{
 			sb.append("\n\t").append(transaction);
 		}
@@ -161,19 +161,19 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 	}
 
 	@Override
-	public void addTransaction(final IHUTransaction trx)
+	public void addTransaction(final IHUTransactionCandidate trx)
 	{
 		transactions.add(trx);
 	}
 
 	@Override
-	public void addTransactions(final List<IHUTransaction> trxs)
+	public void addTransactions(final List<IHUTransactionCandidate> trxs)
 	{
 		trxs.forEach(trx -> addTransaction(trx));
 	}
 
 	@Override
-	public List<IHUTransaction> getTransactions()
+	public List<IHUTransactionCandidate> getTransactions()
 	{
 		return transactionsRO;
 	}
@@ -200,7 +200,7 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 	public void aggregateTransactions()
 	{
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-		final List<IHUTransaction> aggregateTransactions = huTrxBL.aggregateTransactions(transactions);
+		final List<IHUTransactionCandidate> aggregateTransactions = huTrxBL.aggregateTransactions(transactions);
 
 		transactions.clear();
 		transactions.addAll(aggregateTransactions);

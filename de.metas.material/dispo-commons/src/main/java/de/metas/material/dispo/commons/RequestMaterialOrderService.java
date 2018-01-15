@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
@@ -54,11 +55,11 @@ import lombok.NonNull;
 public class RequestMaterialOrderService
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
-	private final MaterialEventService materialEventService;
+	private final PostMaterialEventService materialEventService;
 
 	public RequestMaterialOrderService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final MaterialEventService materialEventService)
+			@NonNull final PostMaterialEventService materialEventService)
 	{
 		this.materialEventService = materialEventService;
 		this.candidateRepository = candidateRepository;
@@ -96,15 +97,15 @@ public class RequestMaterialOrderService
 	private void createAndFireProductionRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestedEvent(group);
-		materialEventService.fireEvent(ppOrderRequestEvent);
+		materialEventService.postEventNow(ppOrderRequestEvent);
 	}
 
 	@VisibleForTesting
-	PPOrderRequestedEvent createPPOrderRequestedEvent(final List<Candidate> group)
+	PPOrderRequestedEvent createPPOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
-		PPOrderBuilder ppOrderBuilder = PPOrder.builder();
+		final PPOrderBuilder ppOrderBuilder = PPOrder.builder();
 
 		for (final Candidate groupMember : group)
 		{
@@ -126,7 +127,6 @@ public class RequestMaterialOrderService
 						.productDescriptor(materialDescriptor)
 						.bPartnerId(materialDescriptor.getBPartnerId())
 						.quantity(groupMember.getQuantity())
-						.uomId(prodDetail.getUomId())
 						.warehouseId(groupMember.getWarehouseId());
 			}
 			else
@@ -145,6 +145,7 @@ public class RequestMaterialOrderService
 						PPOrderLine.builder()
 								.description(prodDetail.getDescription())
 								.productBomLineId(prodDetail.getProductBomLineId())
+								.issueOrReceiveDate(groupMember.getDate())
 								.productDescriptor(materialDescriptor)
 								.qtyRequired(groupMember.getQuantity())
 								.productBomLineId(prodDetail.getProductBomLineId())
@@ -155,17 +156,19 @@ public class RequestMaterialOrderService
 
 		final Candidate firstGroupMember = group.get(0);
 
+		ppOrderBuilder.materialDispoGroupId(firstGroupMember.getEffectiveGroupId());
+
 		return PPOrderRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
+				.dateOrdered(SystemTime.asDate())
 				.ppOrder(ppOrderBuilder.build())
-				.groupId(firstGroupMember.getEffectiveGroupId())
 				.build();
 	}
 
 	private void requestDistributionOrder(@NonNull final List<Candidate> group)
 	{
 		final DDOrderRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group);
-		materialEventService.fireEvent(ddOrderRequestEvent);
+		materialEventService.postEventNow(ddOrderRequestEvent);
 	}
 
 	@VisibleForTesting
@@ -220,6 +223,7 @@ public class RequestMaterialOrderService
 
 		return DDOrderRequestedEvent.builder()
 				.eventDescriptor(new EventDescriptor(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
+				.dateOrdered(SystemTime.asDate())
 				.ddOrder(ddOrderBuilder
 						.line(ddOrderLineBuilder
 								.durationDays(durationDays)

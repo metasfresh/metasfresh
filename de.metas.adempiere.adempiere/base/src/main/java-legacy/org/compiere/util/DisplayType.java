@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
 import org.slf4j.Logger;
@@ -567,7 +568,7 @@ public final class DisplayType
 	}	//	getDescription
 	
 	// metas: tsa
-	private static Map<Integer, String> mapTableNamesByDisplayType = new HashMap<Integer, String>();
+	private static Map<Integer, String> mapTableNamesByDisplayType = new HashMap<>();
 	static
 	{
 		// NOTE: we use strings instead of I_*.Table_Name because this should be independent
@@ -582,6 +583,17 @@ public final class DisplayType
 	public static String getTableName(int displayType)
 	{
 		return mapTableNamesByDisplayType.get(displayType);
+	}
+	
+	public static String getKeyColumnName(int displayType)
+	{
+		final String tableName = getTableName(displayType);
+		if(tableName == null)
+		{
+			return null;
+		}
+
+		return InterfaceWrapperHelper.getKeyColumnName(tableName);
 	}
 
 	/**

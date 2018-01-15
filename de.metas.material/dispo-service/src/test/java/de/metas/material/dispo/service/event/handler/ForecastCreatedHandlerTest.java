@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +28,7 @@ import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.StockUpCandiateHandler;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
@@ -71,7 +70,7 @@ public class ForecastCreatedHandlerTest
 	private ForecastCreatedHandler forecastCreatedHandler;
 
 	@Mocked
-	private MaterialEventService materialEventService;
+	private PostMaterialEventService postMaterialEventService;
 
 	@Mocked
 	private CandidateRepositoryRetrieval candidateRepository;
@@ -90,7 +89,7 @@ public class ForecastCreatedHandlerTest
 						new StockUpCandiateHandler(
 								candidateRepository,
 								candidateRepositoryCommands,
-								materialEventService,
+								postMaterialEventService,
 								stockRepository))));
 	}
 
@@ -117,11 +116,11 @@ public class ForecastCreatedHandlerTest
 			stockRepository.retrieveAvailableStockQtySum(query);
 			times = 1; result = BigDecimal.ZERO;
 
-			materialEventService.fireEvent(with(eventQuantity("8")));
+			postMaterialEventService.postEventNow(with(eventQuantity("8")));
 			times = 1;
 		}}; // @formatter:on
 
-		forecastCreatedHandler.handleForecastCreatedEvent(forecastCreatedEvent);
+		forecastCreatedHandler.handleEvent(forecastCreatedEvent);
 		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords().stream().sorted(Comparator.comparing(I_MD_Candidate::getSeqNo)).collect(Collectors.toList());
 
 		assertThat(result).hasSize(1);
@@ -155,11 +154,11 @@ public class ForecastCreatedHandlerTest
 			stockRepository.retrieveAvailableStockQtySum(query);
 			times = 1; result = new BigDecimal("3");
 
-			materialEventService.fireEvent(with(eventQuantity("5")));
+			postMaterialEventService.postEventNow(with(eventQuantity("5")));
 			times = 1;
 		}};	// @formatter:on
 
-		forecastCreatedHandler.handleForecastCreatedEvent(forecastCreatedEvent);
+		forecastCreatedHandler.handleEvent(forecastCreatedEvent);
 		final List<I_MD_Candidate> result = DispoTestUtils.retrieveAllRecords().stream().sorted(Comparator.comparing(I_MD_Candidate::getSeqNo)).collect(Collectors.toList());
 
 		assertThat(result).hasSize(1);
@@ -180,7 +179,6 @@ public class ForecastCreatedHandlerTest
 						.quantity(new BigDecimal("8"))
 						.date(NOW)
 						.build())
-				.reference(TableRecordReference.of("someTable", 300))
 				.build();
 
 		final Forecast forecast = Forecast.builder().forecastId(200)

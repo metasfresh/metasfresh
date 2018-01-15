@@ -10,18 +10,17 @@ package org.adempiere.impexp;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -49,16 +48,17 @@ import org.compiere.util.Env;
 import org.compiere.util.ISqlUpdateReturnProcessor;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 
 /**
  * Base implementation of {@link IImportProcess}.
- * 
+ *
  * Implementors shall extend this class instead of implementing {@link IImportProcess}.
- * 
+ *
  * @author tsa
  *
  * @param <ImportRecordType> import table model (e.g. I_I_BPartner).
@@ -67,9 +67,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 {
 	public static enum ImportRecordResult
 	{
-		Inserted,
-		Updated,
-		Nothing,
+		Inserted, Updated, Nothing,
 	};
 
 	public static final String COLUMNNAME_I_IsImported = "I_IsImported";
@@ -167,6 +165,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		return whereClause.toString();
 	}
 
+
 	@Override
 	public final ImportProcessResult run()
 	{
@@ -210,6 +209,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		importData(importResult);
 
 		loggable.addLog("" + importResult);
+
 		return importResult;
 	}
 
@@ -235,14 +235,14 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE " + getImportTableName()
 				+ " SET AD_Client_ID = COALESCE (AD_Client_ID, ").append(getAD_Client_ID()).append("),"
-				+ " AD_Org_ID = COALESCE (AD_Org_ID, 0),"
-				+ " IsActive = COALESCE (IsActive, 'Y'),"
-				+ " Created = COALESCE (Created, now()),"
-				+ " CreatedBy = COALESCE (CreatedBy, 0),"
-				+ " Updated = COALESCE (Updated, now()),"
-				+ " UpdatedBy = COALESCE (UpdatedBy, 0),"
-				+ COLUMNNAME_I_ErrorMsg + " = ' ',"
-				+ COLUMNNAME_I_IsImported + "= 'N' ");
+						+ " AD_Org_ID = COALESCE (AD_Org_ID, 0),"
+						+ " IsActive = COALESCE (IsActive, 'Y'),"
+						+ " Created = COALESCE (Created, now()),"
+						+ " CreatedBy = COALESCE (CreatedBy, 0),"
+						+ " Updated = COALESCE (Updated, now()),"
+						+ " UpdatedBy = COALESCE (UpdatedBy, 0),"
+						+ COLUMNNAME_I_ErrorMsg + " = ' ',"
+						+ COLUMNNAME_I_IsImported + "= 'N' ");
 		final List<Object> sqlParams = new ArrayList<>();
 
 		for (final Map.Entry<String, Object> defaultValueEntry : getImportTableDefaultValues().entrySet())
@@ -269,7 +269,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 
 	/**
 	 * Actual data import.
-	 * 
+	 *
 	 * @param importResult
 	 */
 	protected final void importData(final ImportProcessResult importResult)
@@ -344,6 +344,8 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 					}
 				});
 			}
+
+			afterImport();
 		}
 		catch (final SQLException e)
 		{
@@ -385,8 +387,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 				OnFail.IgnoreButLog,
 				ITrx.TRXNAME_ThreadInherited,
 				0, // no timeOut
-				(ISqlUpdateReturnProcessor)null
-				);
+				(ISqlUpdateReturnProcessor)null);
 	}
 
 	protected final int markNotImportedAllWithErrors()
@@ -404,5 +405,10 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		InterfaceWrapperHelper.setValue(importRecord, COLUMNNAME_Processed, true);
 		InterfaceWrapperHelper.setValue(importRecord, COLUMNNAME_Processing, false);
 		InterfaceWrapperHelper.save(importRecord);
+	}
+
+	protected void afterImport()
+	{
+		// nothing to do here
 	}
 }

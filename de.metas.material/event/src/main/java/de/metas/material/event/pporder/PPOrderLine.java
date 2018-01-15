@@ -1,15 +1,15 @@
 package de.metas.material.event.pporder;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
-import lombok.experimental.Wither;
+import lombok.Value;
 
 /*
  * #%L
@@ -44,9 +44,7 @@ import lombok.experimental.Wither;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Data
-@Builder
-@Wither
+@Value
 public class PPOrderLine
 {
 	String description;
@@ -65,19 +63,21 @@ public class PPOrderLine
 	 */
 	boolean receipt;
 
-	@NonNull
+	Date issueOrReceiveDate;
+
 	ProductDescriptor productDescriptor;
 
-	@NonNull
 	BigDecimal qtyRequired;
 
 	@JsonCreator
+	@Builder(toBuilder = true)
 	public PPOrderLine(
 			@JsonProperty("description") final String description,
 			@JsonProperty("productBomLineId") final int productBomLineId,
 			@JsonProperty("ppOrderLineId") final int ppOrderLineId,
-			@JsonProperty("receipt") final boolean receipt,
+			@JsonProperty("receipt") @NonNull final Boolean receipt,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
+			@JsonProperty("issueOrReceiveDate") @NonNull final Date issueOrReceiveDate,
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired)
 	{
 		this.description = description;
@@ -90,5 +90,7 @@ public class PPOrderLine
 		this.productDescriptor = productDescriptor;
 
 		this.qtyRequired = qtyRequired;
+
+		this.issueOrReceiveDate = issueOrReceiveDate;
 	}
 }

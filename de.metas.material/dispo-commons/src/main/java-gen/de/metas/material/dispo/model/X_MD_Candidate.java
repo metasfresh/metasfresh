@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -123747904L;
+	private static final long serialVersionUID = 1226392063L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -30,7 +30,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 			setM_Warehouse_ID (0);
 			setQty (BigDecimal.ZERO);
 			setSeqNo (0);
-			setStorageAttributesKey (null); // EMPTY
+			setStorageAttributesKey (null); // -1002
         } */
     }
 

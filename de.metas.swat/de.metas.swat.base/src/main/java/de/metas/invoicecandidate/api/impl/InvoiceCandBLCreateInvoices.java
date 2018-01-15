@@ -149,7 +149,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private Properties ctx;
 
 		private I_C_Invoice createdInvoice = null;
-		private final List<I_AD_Note> notifications = new ArrayList<I_AD_Note>();
+		private final List<I_AD_Note> notifications = new ArrayList<>();
 
 		private Throwable t;
 
@@ -202,7 +202,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoiceBL.renumberLines(lines, 10);
 
 			// task 08926: on invoice creation
-			final List<I_C_Invoice_Candidate> allCands = new ArrayList<I_C_Invoice_Candidate>();
+			final List<I_C_Invoice_Candidate> allCands = new ArrayList<>();
 
 			for (final IInvoiceCandAggregate aggregated : header.getLines())
 			{
@@ -241,7 +241,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			}
 
 			// collect all affected invoice candidates
-			final List<I_C_Invoice_Candidate> allCandidates = new ArrayList<I_C_Invoice_Candidate>();
+			final List<I_C_Invoice_Candidate> allCandidates = new ArrayList<>();
 			for (final IInvoiceCandAggregate aggregate : header.getLines())
 			{
 				allCandidates.addAll(aggregate.getAllCands());
@@ -358,19 +358,19 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			// a non-local trx
 			Check.assume(!Check.isEmpty(trxName), "Param 'trxName' is not empty");
 
-			final List<I_C_InvoiceLine> createdLines = new ArrayList<I_C_InvoiceLine>();
+			final List<I_C_InvoiceLine> createdLines = new ArrayList<>();
 
 			//
 			// Set of InvoiceLineRWs which were already processed.
 			// Used to avoid processing (i.e. creating invoice line) an IInvoiceLineRW more then once.
 			// NOTE: we are not relying on IInvoiceLineRW's equals() method because it could be that they "look" the same but they are not.
-			final Set<IInvoiceLineRW> processedLines = new IdentityHashSet<IInvoiceLineRW>();
+			final Set<IInvoiceLineRW> processedLines = new IdentityHashSet<>();
 
 			for (final IInvoiceCandAggregate aggregate : aggregates)
 			{
 				// In case of a problem, this two variables are used to hand the problematic candidates and the
 				// exception over to the TrxRunnable's doFinally() method for logging
-				final List<I_C_Invoice_Candidate> errorCandidates = new ArrayList<I_C_Invoice_Candidate>();
+				final List<I_C_Invoice_Candidate> errorCandidates = new ArrayList<>();
 				final AdempiereException[] errorException =
 					{ null };
 
@@ -416,12 +416,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			final I_C_DocType invoiceHeaderDocType = invoiceHeader.getC_DocTypeInvoice();
 			if (invoiceHeaderDocType != null)
 			{
-				invoice.setC_DocTypeTarget_ID(invoiceHeaderDocType.getC_DocType_ID());
+				invoiceBL.setDocTypeTargetIdAndUpdateDescription(invoice, invoiceHeaderDocType.getC_DocType_ID());
 				invoice.setIsSOTrx(invoiceHeaderDocType.isSOTrx());
 			}
 			else
 			{
-				invoiceBL.setC_DocTypeTarget(invoice, invoiceHeaderDocBaseType);
+				invoiceBL.setDocTypeTargetId(invoice, invoiceHeaderDocBaseType);
 			}
 		}
 
@@ -440,7 +440,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			final boolean invoice_IsCreditMemo = invoiceBL.isCreditMemo(invoiceDocBaseType);
 			if (invoiceHeader_IsCreditMemo && !invoice_IsCreditMemo)
 			{
-				invoiceBL.setC_DocTypeTarget(invoice, invoiceHeaderDocBaseType);
+				invoiceBL.setDocTypeTargetId(invoice, invoiceHeaderDocBaseType);
 			}
 		}
 	}
@@ -461,7 +461,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
 				final String trxName)
 		{
-			createdLines = new ArrayList<I_C_InvoiceLine>();
+			createdLines = new ArrayList<>();
 
 			this.invoice = invoice;
 			this.errorCandidates = errorCandidates;
@@ -926,9 +926,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			loggable.addLog("Caught exception " + error + " with meesage: " + error.getLocalizedMessage());
 
-			final List<I_AD_Note> result = new ArrayList<I_AD_Note>();
+			final List<I_AD_Note> result = new ArrayList<>();
 
-			final Map<Integer, List<I_C_Invoice_Candidate>> userId2cands = new HashMap<Integer, List<I_C_Invoice_Candidate>>();
+			final Map<Integer, List<I_C_Invoice_Candidate>> userId2cands = new HashMap<>();
 
 			//
 			// find out which user should be notified about which affected candidate
@@ -943,7 +943,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				List<I_C_Invoice_Candidate> candsOfUserId = userId2cands.get(userInChargeId);
 				if (candsOfUserId == null)
 				{
-					candsOfUserId = new ArrayList<I_C_Invoice_Candidate>();
+					candsOfUserId = new ArrayList<>();
 					userId2cands.put(userInChargeId, candsOfUserId);
 				}
 				candsOfUserId.add(ic);

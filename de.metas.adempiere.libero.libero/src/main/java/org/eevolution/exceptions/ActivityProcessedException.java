@@ -38,6 +38,8 @@ package org.eevolution.exceptions;
 
 import org.eevolution.model.I_PP_Order_Node;
 
+import de.metas.material.planning.pporder.LiberoException;
+
 /**
  * Thrown when we are trying to process/complete an Order Activity that is already processed/completed
  * 

@@ -1,5 +1,7 @@
 package de.metas.material.event.pporder;
 
+import java.util.Date;
+
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.MaterialEvent;
@@ -42,13 +44,15 @@ import lombok.Value;
 @Builder
 public class PPOrderRequestedEvent implements MaterialEvent
 {
-	public static final String TYPE = "ProductionRequestedEvent";
+	public static final String TYPE = "PPOrderRequestedEvent";
 
 	@NonNull
 	EventDescriptor eventDescriptor;
 
 	@NonNull
+	Date dateOrdered;
+
+	@NonNull
 	PPOrder ppOrder;
 
-	int groupId;
 }

@@ -48,7 +48,7 @@ import de.metas.quantity.Quantity;
  *
  * @author al
  */
-/* package */class DDOrderLineToAllocate
+/* package */final class DDOrderLineToAllocate
 {
 	private final transient IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -63,7 +63,6 @@ import de.metas.quantity.Quantity;
 
 	public DDOrderLineToAllocate(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt)
 	{
-		super();
 		Check.assumeNotNull(ddOrderLineOrAlt, "ddOrderLineOrAlt not null");
 		_ddOrderLineOrAlt = ddOrderLineOrAlt;
 
@@ -79,6 +78,11 @@ import de.metas.quantity.Quantity;
 	public I_DD_OrderLine_Or_Alternative getDD_OrderLine_Or_Alternative()
 	{
 		return _ddOrderLineOrAlt;
+	}
+	
+	public int getProductId()
+	{
+		return getDD_OrderLine_Or_Alternative().getM_Product_ID();
 	}
 
 	public Collection<I_M_HU> getM_HUs()

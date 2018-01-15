@@ -4,7 +4,11 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 
+import com.google.common.collect.ImmutableSet;
+
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -36,13 +40,16 @@ public class DeliveryPosition
 	int grossWeightKg;
 	String content;
 	PackageDimensions packageDimensions;
+	
+	ImmutableSet<Integer> packageIds;
 
 	@Builder(toBuilder = true)
 	private DeliveryPosition(
 			final int numberOfPackages,
 			final int grossWeightKg,
 			final String content,
-			@Nullable final PackageDimensions packageDimensions)
+			@Nullable final PackageDimensions packageDimensions,
+			@NonNull @Singular final ImmutableSet<Integer> packageIds)
 	{
 		Check.assume(numberOfPackages > 0, "numberOfPackages > 0");
 		Check.assume(grossWeightKg > 0, "grossWeightKg > 0");
@@ -52,5 +59,6 @@ public class DeliveryPosition
 		this.grossWeightKg = grossWeightKg;
 		this.content = content;
 		this.packageDimensions = packageDimensions;
+		this.packageIds = packageIds;
 	}
 }

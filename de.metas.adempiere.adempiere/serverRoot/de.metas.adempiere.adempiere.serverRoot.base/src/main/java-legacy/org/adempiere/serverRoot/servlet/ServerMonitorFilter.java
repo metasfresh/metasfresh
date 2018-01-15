@@ -39,18 +39,18 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 
-import de.metas.ServerBoot;
+import de.metas.Profiles;
 import de.metas.logging.LogManager;
 
 /**
  * Server Monitor Filter. Application Server independent check of username/password
- * 
+ *
  * @author Jorg Janke
  * @author Michael Judd BF [ 2736817 ] - remove deprecated BASE64Encoder classes
  * @author tsa
  */
 @WebFilter({ "/serverMonitor/*", "/test/*" })
-@Profile(ServerBoot.PROFILE)
+@Profile(Profiles.PROFILE_App)
 public class ServerMonitorFilter implements Filter
 {
 	public ServerMonitorFilter()
@@ -149,7 +149,7 @@ public class ServerMonitorFilter implements Filter
 				log.warn("User not found or password did not match: {}", name);
 				return false;
 			}
-			
+
 			if(!Services.get(IUserRolePermissionsDAO.class).isAdministrator(Env.getCtx(), user.getAD_User_ID()))
 			{
 				log.warn("Not a Sys Admin: {}", name);

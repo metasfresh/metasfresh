@@ -28,13 +28,13 @@ import java.util.Set;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.util.lang.IMutable;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
 import org.eevolution.mrp.api.IMRPExecutor;
 
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.pporder.LiberoException;
 
 
 public interface IMRPSupplyProducer

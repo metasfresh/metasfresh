@@ -14,7 +14,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -334703035L;
+	private static final long serialVersionUID = 1315474791L;
 
     /** Standard Constructor */
     public X_C_DocType (Properties ctx, int C_DocType_ID, String trxName)
@@ -28,6 +28,7 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 			setEntityType (null);
 			setGL_Category_ID (0);
 			setHasCharges (false);
+			setIsCopyDescriptionToDocument (true); // Y
 			setIsCreateCounter (true); // Y
 			setIsDefault (false);
 			setIsDefaultCounterDoc (false);
@@ -57,18 +58,6 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public de.metas.letters.model.I_AD_BoilerPlate getAD_BoilerPlate() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_BoilerPlate_ID, de.metas.letters.model.I_AD_BoilerPlate.class);
-	}
-
-	@Override
-	public void setAD_BoilerPlate(de.metas.letters.model.I_AD_BoilerPlate AD_BoilerPlate)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_BoilerPlate_ID, de.metas.letters.model.I_AD_BoilerPlate.class, AD_BoilerPlate);
-	}
 
 	/** Set Emailtext.
 		@param AD_BoilerPlate_ID 
@@ -707,6 +696,29 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public boolean isHasProforma () 
 	{
 		Object oo = get_Value(COLUMNNAME_HasProforma);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Copy description to document.
+		@param IsCopyDescriptionToDocument Copy description to document	  */
+	@Override
+	public void setIsCopyDescriptionToDocument (boolean IsCopyDescriptionToDocument)
+	{
+		set_Value (COLUMNNAME_IsCopyDescriptionToDocument, Boolean.valueOf(IsCopyDescriptionToDocument));
+	}
+
+	/** Get Copy description to document.
+		@return Copy description to document	  */
+	@Override
+	public boolean isCopyDescriptionToDocument () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsCopyDescriptionToDocument);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

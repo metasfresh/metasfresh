@@ -29,9 +29,10 @@ import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import mockit.Mocked;
 
@@ -70,7 +71,7 @@ public class ShipmentScheduleCreatedHandlerTests
 	private static final int toWarehouseId = 30;
 
 	@Mocked
-	private MaterialEventService materialEventService;
+	private PostMaterialEventService postMaterialEventService;
 
 	private ShipmentScheduleCreatedHandler shipmentScheduleEventHandler;
 
@@ -91,9 +92,11 @@ public class ShipmentScheduleCreatedHandlerTests
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
-						materialEventService,
+						postMaterialEventService,
 						stockRepository,
-						new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryCommands))));
+						new StockCandidateService(
+								candidateRepositoryRetrieval,
+								candidateRepositoryCommands))));
 
 		shipmentScheduleEventHandler = new ShipmentScheduleCreatedHandler(candidateChangeHandler);
 	}
@@ -105,10 +108,10 @@ public class ShipmentScheduleCreatedHandlerTests
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableStock(
 				stockRepository,
-				event.getOrderedMaterial(),
+				event.getMaterialDescriptor(),
 				"0");
 
-		shipmentScheduleEventHandler.handleShipmentScheduleCreatedEvent(event);
+		shipmentScheduleEventHandler.handleEvent(event);
 
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
 		assertThat(allRecords).hasSize(2);
@@ -132,7 +135,7 @@ public class ShipmentScheduleCreatedHandlerTests
 	{
 		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
-				.orderedMaterial(MaterialDescriptor.builder()
+				.materialDescriptor(MaterialDescriptor.builder()
 						.date(NOW)
 						.productDescriptor(createProductDescriptor())
 						.bPartnerId(BPARTNER_ID)
@@ -141,7 +144,10 @@ public class ShipmentScheduleCreatedHandlerTests
 						.build())
 				.reservedQuantity(new BigDecimal("20"))
 				.shipmentScheduleId(shipmentScheduleId)
-				.orderLineId(orderLineId)
+				.documentLineDescriptor(OrderLineDescriptor.builder()
+						.orderLineId(orderLineId)
+						.orderId(30)
+						.build())
 				.build();
 		return event;
 	}

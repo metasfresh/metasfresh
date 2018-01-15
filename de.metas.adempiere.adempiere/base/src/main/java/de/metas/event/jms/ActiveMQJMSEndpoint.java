@@ -53,7 +53,6 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Predicate;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -64,6 +63,7 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.jms.IJMSService;
+import lombok.NonNull;
 
 public class ActiveMQJMSEndpoint implements IJMSEndpoint
 {
@@ -79,7 +79,6 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 
 	private final ExceptionListener exceptionListener = new ExceptionListener()
 	{
-
 		@Override
 		public void onException(final JMSException jmsException)
 		{
@@ -131,19 +130,16 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 	private final String _jmsClientID;
 	private Connection _jmsConnection;
 	private Session _jmsSession;
-	private final LoadingCache<String, MessageProducer> topicName2messageProducer = CacheBuilder.newBuilder()
-			.build(new CacheLoader<String, MessageProducer>()
-			{
 
-				@Override
-				public MessageProducer load(final String topicName) throws Exception
-				{
-					return createTopicProducer(topicName);
-				}
+	private final LoadingCache<String, MessageProducer> topicName2messageProducer = CacheBuilder.newBuilder().build(new CacheLoader<String, MessageProducer>()
+	{
+		@Override
+		public MessageProducer load(final String topicName) throws Exception
+		{
+			return createTopicProducer(topicName);
+		}
 
-			});
-
-	private final Predicate<IEventBus> allowBindingPredicate = new SysconfigBackedAllowRemoteBindingPredicate();
+	});
 
 	/**
 	 * Asynchronous executor, used to execute ActiveMQ commands.
@@ -274,37 +270,20 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 	}
 
 	@Override
-	public boolean bindIfNeeded(final IEventBus eventBus)
+	public boolean bindIfNeeded(@NonNull final IEventBus eventBus)
 	{
-		// Check if we allow to bind given event bus
-		if (!allowBindingPredicate.apply(eventBus))
-		{
-			return false;
-		}
-
-		//
 		// Forward events from event bus to JMS
 		eventBus.subscribe(getEventBus2JMSListener());
 
-		//
 		// Forward events from JMS to event bus
 		forwardIncomingMessagesToEventBus(eventBus);
 
 		return true;
 	}
 
-	private final void forwardIncomingMessagesToEventBus(final IEventBus eventBus)
+	private final void forwardIncomingMessagesToEventBus(@NonNull final IEventBus eventBus)
 	{
-		Check.assumeNotNull(eventBus, "eventBus not null");
-		asyncExecutor.submit(new Runnable()
-		{
-
-			@Override
-			public void run()
-			{
-				forwardIncomingMessagesToEventBusNow(eventBus);
-			}
-		});
+		asyncExecutor.submit(() -> forwardIncomingMessagesToEventBusNow(eventBus));
 	}
 
 	private final void forwardIncomingMessagesToEventBusNow(final IEventBus eventBus)
@@ -436,7 +415,6 @@ public class ActiveMQJMSEndpoint implements IJMSEndpoint
 
 		private MessageConsumer2EventBusForwarder(final ActiveMQJMSEndpoint jms, final IEventBus eventBus) throws JMSException
 		{
-			super();
 			Check.assumeNotNull(eventBus, "eventBus not null");
 			this.eventBusRef = new WeakReference<>(eventBus);
 

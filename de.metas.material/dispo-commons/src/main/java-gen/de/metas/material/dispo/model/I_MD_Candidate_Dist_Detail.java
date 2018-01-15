@@ -23,6 +23,29 @@ public interface I_MD_Candidate_Dist_Detail
     /** Load Meta Data */
 
 	/**
+	 * Set Istmenge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setActualQty (java.math.BigDecimal ActualQty);
+
+	/**
+	 * Get Istmenge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getActualQty();
+
+    /** Column definition for ActualQty */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_ActualQty = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object>(I_MD_Candidate_Dist_Detail.class, "ActualQty", null);
+    /** Column name ActualQty */
+    public static final String COLUMNNAME_ActualQty = "ActualQty";
+
+	/**
 	 * Get Mandant.
 	 * Mandant für diese Installation.
 	 *
@@ -228,6 +251,31 @@ public interface I_MD_Candidate_Dist_Detail
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Vom System vorgeschlagen.
+	 * Ja bedeutet, dass es zumindest ursprünglich kein entsprechendes Dokument (z.B. Produktionsauftrag) gab, sondern dass das System einen Beleg vorgeschlagen hatte.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAdvised (boolean IsAdvised);
+
+	/**
+	 * Get Vom System vorgeschlagen.
+	 * Ja bedeutet, dass es zumindest ursprünglich kein entsprechendes Dokument (z.B. Produktionsauftrag) gab, sondern dass das System einen Beleg vorgeschlagen hatte.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAdvised();
+
+    /** Column definition for IsAdvised */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_IsAdvised = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object>(I_MD_Candidate_Dist_Detail.class, "IsAdvised", null);
+    /** Column name IsAdvised */
+    public static final String COLUMNNAME_IsAdvised = "IsAdvised";
+
+	/**
 	 * Set Dispo-Bereitstellungsdetail.
 	 *
 	 * <br>Type: ID
@@ -305,6 +353,29 @@ public interface I_MD_Candidate_Dist_Detail
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, org.compiere.model.I_M_Shipper>(I_MD_Candidate_Dist_Detail.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
     /** Column name M_Shipper_ID */
     public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+
+	/**
+	 * Set Geplante Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPlannedQty (java.math.BigDecimal PlannedQty);
+
+	/**
+	 * Get Geplante Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPlannedQty();
+
+    /** Column definition for PlannedQty */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_PlannedQty = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object>(I_MD_Candidate_Dist_Detail.class, "PlannedQty", null);
+    /** Column name PlannedQty */
+    public static final String COLUMNNAME_PlannedQty = "PlannedQty";
 
 	/**
 	 * Set Produktionsstätte.

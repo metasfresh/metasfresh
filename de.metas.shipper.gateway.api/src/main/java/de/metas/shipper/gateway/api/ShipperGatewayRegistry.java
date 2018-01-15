@@ -4,10 +4,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
 import lombok.NonNull;
 
@@ -36,18 +39,24 @@ import lombok.NonNull;
 @Service
 public class ShipperGatewayRegistry
 {
+	private static final Logger logger = LoggerFactory.getLogger(ShipperGatewayRegistry.class);
+
 	private final ImmutableMap<String, ShipperGatewayService> servicesByGatewayId;
 
 	public ShipperGatewayRegistry(final Optional<List<ShipperGatewayService>> services)
 	{
 		if (services.isPresent())
 		{
-			servicesByGatewayId = Maps.uniqueIndex(services.get(), ShipperGatewayService::getShipperGatewayId);
+			servicesByGatewayId = services.get()
+					.stream()
+					.filter(Predicates.notNull())
+					.collect(GuavaCollectors.toImmutableMapByKey(ShipperGatewayService::getShipperGatewayId));
 		}
 		else
 		{
 			servicesByGatewayId = ImmutableMap.of();
 		}
+		logger.info("Services: {}", servicesByGatewayId);
 	}
 
 	public boolean hasServiceSupport(@NonNull final String shipperGatewayId)

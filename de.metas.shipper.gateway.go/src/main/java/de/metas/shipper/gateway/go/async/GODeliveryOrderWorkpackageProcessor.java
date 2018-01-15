@@ -1,11 +1,11 @@
 package de.metas.shipper.gateway.go.async;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -22,6 +22,7 @@ import de.metas.shipper.gateway.api.model.DeliveryOrder;
 import de.metas.shipper.gateway.api.model.PackageLabel;
 import de.metas.shipper.gateway.api.model.PackageLabels;
 import de.metas.shipper.gateway.go.GOClient;
+import de.metas.shipper.gateway.go.GOClientFactory;
 import de.metas.shipper.gateway.go.GODeliveryOrderRepository;
 
 /*
@@ -54,6 +55,7 @@ public class GODeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAda
 		Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(GODeliveryOrderWorkpackageProcessor.class)
 				.newBlock()
 				.newWorkpackage()
+				.setUserInChargeId(Env.getAD_User_ID())
 				.bindToThreadInheritedTrx()
 				.parameters()
 				.setParameter(PARAM_DeliveryOrderRepoId, deliveryOrderRepoId)
@@ -66,12 +68,12 @@ public class GODeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAda
 	// Services
 	private final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 	private final GODeliveryOrderRepository deliveryOrderRepo;
-	private final GOClient goClient;
+	private final GOClientFactory goClientFactory;
 
 	public GODeliveryOrderWorkpackageProcessor()
 	{
 		deliveryOrderRepo = Adempiere.getBean(GODeliveryOrderRepository.class);
-		goClient = Adempiere.getBean(GOClient.class);
+		goClientFactory = Adempiere.getBean(GOClientFactory.class);
 	}
 
 	@Override
@@ -81,38 +83,32 @@ public class GODeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAda
 	}
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage_NOTUSED, final String localTrxName_NOTUSED)
 	{
-		try
-		{
-			DeliveryOrder deliveryOrder = retrieveDeliveryOrder();
+		DeliveryOrder deliveryOrder = retrieveDeliveryOrder();
 
-			deliveryOrder = goClient.completeDeliveryOrder(deliveryOrder);
-			deliveryOrderRepo.save(deliveryOrder);
+		final GOClient goClient = goClientFactory.newGOClientForShipperId(deliveryOrder.getShipperId());
 
-			retrieveAndPrintPackageLabels(deliveryOrder);
+		deliveryOrder = goClient.completeDeliveryOrder(deliveryOrder);
+		deliveryOrderRepo.save(deliveryOrder);
 
-			return Result.SUCCESS;
-		}
-		catch (Exception ex)
-		{
-			// TODO: notify user
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
+		final List<PackageLabels> packageLabelsList = goClient.getPackageLabelsList(deliveryOrder);
+		printLabels(deliveryOrder, packageLabelsList);
+
+		return Result.SUCCESS;
 	}
 
-	private void retrieveAndPrintPackageLabels(final DeliveryOrder deliveryOrder)
+	private void printLabels(DeliveryOrder deliveryOrder, List<PackageLabels> packageLabels)
 	{
-		goClient.getPackageLabelsList(deliveryOrder.getOrderId())
-				.stream()
+		packageLabels.stream()
 				.map(PackageLabels::getDefaultPackageLabel)
 				.forEach(packageLabel -> printLabel(deliveryOrder, packageLabel));
 	}
 
 	private void printLabel(DeliveryOrder deliveryOrder, PackageLabel packageLabel)
 	{
-		final String fileExt = MimeType.getExtensionByType(packageLabel.getContentType());
-		final String fileName = packageLabel.getType().toString() + "." + fileExt;
+		final String fileExtWithDot = MimeType.getExtensionByType(packageLabel.getContentType());
+		final String fileName = packageLabel.getType().toString() + fileExtWithDot;
 		final byte[] labelData = packageLabel.getLabelData();
 
 		final Properties ctx = Env.getCtx();

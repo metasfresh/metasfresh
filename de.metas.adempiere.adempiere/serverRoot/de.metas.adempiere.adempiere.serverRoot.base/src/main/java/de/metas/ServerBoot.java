@@ -24,7 +24,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.logging.LogManager;
 import de.metas.server.housekeep.MissingTranslationHouseKeepingTask;
 import de.metas.server.housekeep.RoleAccessUpdateHouseKeepingTask;
@@ -62,7 +61,7 @@ import de.metas.server.housekeep.SignDatabaseBuildHouseKeepingTask;
 	{ "de.metas", "org.adempiere" })
 @ServletComponentScan(value =
 	{ "de.metas", "org.adempiere" })
-@Profile(ServerBoot.PROFILE)
+@Profile(Profiles.PROFILE_App)
 public class ServerBoot
 {
 	/**
@@ -71,7 +70,7 @@ public class ServerBoot
 	 */
 	public static final String SYSTEM_PROPERTY_HEADLESS = "app-server-run-headless";
 
-	public static final String PROFILE = "metasfresh-server";
+
 
 	@Autowired
 	private ApplicationContext applicationContext;
@@ -88,7 +87,7 @@ public class ServerBoot
 				.web(true)
 				// consider removing the jasper profile
 				// if we did that, then to also have jasper within the backend, we would start it with -Dspring.profiles.active=metasfresh-jasper-server
-				.profiles(PROFILE, JasperConstants.PROFILE_JasperServer)
+				.profiles(Profiles.PROFILE_App, Profiles.PROFILE_JasperServer)
 				.run(args);
 	}
 
@@ -141,7 +140,7 @@ public class ServerBoot
 		}
 	}
 
-	@Bean
+	@Bean(Adempiere.BEAN_NAME)
 	public Adempiere adempiere()
 	{
 		final IHouseKeepingBL houseKeepingRegistry = Services.get(IHouseKeepingBL.class);

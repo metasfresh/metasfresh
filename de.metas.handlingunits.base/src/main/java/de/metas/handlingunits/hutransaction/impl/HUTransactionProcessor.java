@@ -10,12 +10,12 @@ package de.metas.handlingunits.hutransaction.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,7 +42,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeProcessor;
 import de.metas.handlingunits.attribute.impl.HUTransactionAttributeProcessor;
-import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.hutransaction.IHUTransactionProcessor;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
@@ -101,7 +101,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 		};
 	}
 
-	private final I_M_HU_Trx_Line createTrxLine(final I_M_HU_Trx_Hdr trxHdr, final IHUTransaction trxLineCandidate)
+	private final I_M_HU_Trx_Line createTrxLine(final I_M_HU_Trx_Hdr trxHdr, final IHUTransactionCandidate trxLineCandidate)
 	{
 		Check.assumeNotNull(trxLineCandidate.getCounterpart(),
 				"TrxLine shall have a parent set: {}", trxLineCandidate);
@@ -149,7 +149,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 	 * @param trxLines
 	 */
 	private final void processTrx(
-			@NonNull final IReference<I_M_HU_Trx_Hdr> trxHdrRef, 
+			@NonNull final IReference<I_M_HU_Trx_Hdr> trxHdrRef,
 			@NonNull final List<I_M_HU_Trx_Line> trxLines)
 	{
 		//
@@ -251,7 +251,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 
 		//
 		// Create and process transaction lines
-		final List<IHUTransaction> trxCandidates = result.getTransactions();
+		final List<IHUTransactionCandidate> trxCandidates = result.getTransactions();
 		createAndProcessTrx(trxHdrRef, trxCandidates);
 
 		//
@@ -265,13 +265,17 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 		markProcessed(trxHdrRef);
 	}
 
-	private void createAndProcessTrx(final IReference<I_M_HU_Trx_Hdr> trxHdrRef, final List<IHUTransaction> trxCandidates)
+	private void createAndProcessTrx(
+			final IReference<I_M_HU_Trx_Hdr> trxHdrRef,
+			@NonNull final List<IHUTransactionCandidate> trxCandidates)
 	{
 		final List<I_M_HU_Trx_Line> trxLines = create(trxHdrRef, trxCandidates);
 		processTrx(trxHdrRef, trxLines);
 	}
 
-	private List<I_M_HU_Trx_Line> create(final IReference<I_M_HU_Trx_Hdr> trxHdrRef, final List<IHUTransaction> trxCandidates)
+	private List<I_M_HU_Trx_Line> create(
+			final IReference<I_M_HU_Trx_Hdr> trxHdrRef,
+			@NonNull final List<IHUTransactionCandidate> trxCandidates)
 	{
 		if (trxCandidates.isEmpty())
 		{
@@ -282,9 +286,9 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 		// Create Transaction Line for each transaction line candidate
 		// Also build some indexes to be able to set counterparts after
 		final List<I_M_HU_Trx_Line> trxLines = new ArrayList<I_M_HU_Trx_Line>();
-		final Map<IHUTransaction, I_M_HU_Trx_Line> trxCandidate2trxLine = new IdentityHashMap<IHUTransaction, I_M_HU_Trx_Line>();
+		final Map<IHUTransactionCandidate, I_M_HU_Trx_Line> trxCandidate2trxLine = new IdentityHashMap<IHUTransactionCandidate, I_M_HU_Trx_Line>();
 
-		for (final IHUTransaction trxCandidate : trxCandidates)
+		for (final IHUTransactionCandidate trxCandidate : trxCandidates)
 		{
 			final I_M_HU_Trx_Hdr trxHdr = trxHdrRef.getValue();
 			final I_M_HU_Trx_Line trxLine = createTrxLine(trxHdr, trxCandidate);
@@ -294,9 +298,9 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 
 		//
 		// Set Counterpart Transaction Link
-		for (final IHUTransaction trxCandidate : trxCandidates)
+		for (final IHUTransactionCandidate trxCandidate : trxCandidates)
 		{
-			final IHUTransaction counterpartTrxCandidate = trxCandidate.getCounterpart();
+			final IHUTransactionCandidate counterpartTrxCandidate = trxCandidate.getCounterpart();
 			if (counterpartTrxCandidate == null)
 			{
 				throw new AdempiereException("No counterpart transaction was found for " + trxCandidate);
@@ -451,11 +455,10 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 	 * @param trxLine
 	 * @param counterpartTrxLine
 	 */
-	private final void linkTrxLines(final I_M_HU_Trx_Line trxLine, final I_M_HU_Trx_Line counterpartTrxLine)
+	private final void linkTrxLines(
+			@NonNull final I_M_HU_Trx_Line trxLine,
+			@NonNull final I_M_HU_Trx_Line counterpartTrxLine)
 	{
-		Check.assumeNotNull(trxLine, "trxLine not null");
-		Check.assumeNotNull(counterpartTrxLine, "conterpartTrxLine not null");
-
 		if (trxLine.getM_HU_Trx_Hdr_ID() != counterpartTrxLine.getM_HU_Trx_Hdr_ID())
 		{
 			throw new AdempiereException("Transactions lines shall have same header: " + trxLine + ", " + counterpartTrxLine);

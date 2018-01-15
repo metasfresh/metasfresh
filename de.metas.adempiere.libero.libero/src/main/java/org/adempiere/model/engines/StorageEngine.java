@@ -58,10 +58,10 @@ import org.compiere.model.MWarehouse;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
-import org.eevolution.exceptions.LiberoException;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 

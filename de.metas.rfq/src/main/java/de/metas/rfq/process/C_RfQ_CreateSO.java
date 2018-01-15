@@ -10,8 +10,9 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.util.Env;
 
-import de.metas.process.Param;
+import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLine;
@@ -54,6 +55,7 @@ public class C_RfQ_CreateSO extends JavaProcess
 {
 	// services
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Param(parameterName = "C_DocType_ID")
 	private int p_C_DocType_ID;
@@ -73,11 +75,11 @@ public class C_RfQ_CreateSO extends JavaProcess
 		order.setIsSOTrx(true);
 		if (p_C_DocType_ID > 0)
 		{
-			order.setC_DocTypeTarget_ID(p_C_DocType_ID);
+			orderBL.setDocTypeTargetIdAndUpdateDescription(order, p_C_DocType_ID);
 		}
 		else
 		{
-			order.setC_DocTypeTarget_ID();
+			orderBL.setDocTypeTargetId(order);
 		}
 		order.setBPartner(bp);
 		order.setC_BPartner_Location_ID(rfq.getC_BPartner_Location_ID());

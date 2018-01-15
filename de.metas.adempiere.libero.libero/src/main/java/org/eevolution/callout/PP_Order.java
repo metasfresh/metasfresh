@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.CalloutEngine;
@@ -37,7 +38,6 @@ import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.MUOMConversion;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPWorkflowDAO;
@@ -151,7 +151,8 @@ public class PP_Order extends CalloutEngine
 		}
 		else
 		{
-			qtyOrdered = MUOMConversion.convertToProductUOM(Env.getCtx(), productId, uomToId, qtyEntered);
+			qtyOrdered = Services.get(IUOMConversionBL.class)
+					.convertToProductUOM(Env.getCtx(), ppOrder.getM_Product(), ppOrder.getC_UOM(), qtyEntered);
 			if (qtyOrdered == null)
 			{
 				qtyOrdered = qtyEntered;

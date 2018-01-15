@@ -73,8 +73,11 @@ public class StockCandidateServiceTests
 		AdempiereTestHelper.get().init();
 
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
+
 		candidateRepositoryCommands = new CandidateRepositoryWriteService();
-		stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
+		stockCandidateService = new StockCandidateService(
+				candidateRepository,
+				candidateRepositoryCommands);
 	}
 
 	private void createStockRecordAtTimeNOW()

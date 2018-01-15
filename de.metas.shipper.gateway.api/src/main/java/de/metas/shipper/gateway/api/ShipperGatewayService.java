@@ -1,6 +1,6 @@
 package de.metas.shipper.gateway.api;
 
-import java.util.Set;
+import de.metas.shipper.gateway.api.model.DeliveryOrderCreateRequest;
 
 /*
  * #%L
@@ -28,5 +28,5 @@ public interface ShipperGatewayService
 {
 	String getShipperGatewayId();
 	
-	void createAndSendDeliveryOrdersForPackages(Set<Integer> mpackageIds);
+	void createAndSendDeliveryOrdersForPackages(DeliveryOrderCreateRequest request);
 }

@@ -10,18 +10,17 @@ package org.adempiere.uom.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -42,6 +41,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
@@ -52,6 +52,7 @@ import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UOMUtil;
+import lombok.NonNull;
 
 public class UOMConversionBL implements IUOMConversionBL
 {
@@ -100,13 +101,13 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	/**
 	 * Creates a new {@link Quantity} object by converting the given {@code quantity} to the given {@code uomTo}.
-	 * 
+	 *
 	 * The new {@link Quantity} object will have {@link #getQty()} and {@link #getUOM()} as their source Qty/UOM.
-	 * 
+	 *
 	 * @param quantity the quantity to convert
 	 * @param conversionCtx conversion context.
 	 * @param uomTo
-	 * 
+	 *
 	 * @return new Quantity converted to given <code>uom</code>.
 	 */
 	@Override
@@ -139,11 +140,11 @@ public class UOMConversionBL implements IUOMConversionBL
 				sourceQtyNew,
 				sourceUOMNew, // From UOM
 				uomTo // To UOM
-				);
+		);
 		// Create an return the new quantity
 		return new Quantity(qtyNew, uomTo, sourceQtyNew, sourceUOMNew);
 	}
-	
+
 	@Override
 	public BigDecimal convertQtyToProductUOM(final IUOMConversionContext conversionCtx, final BigDecimal qty, final I_C_UOM uomFrom)
 	{
@@ -154,6 +155,12 @@ public class UOMConversionBL implements IUOMConversionBL
 		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockingUOM(product);
 
 		return convertQty(conversionCtx, qty, uomFrom, uomTo);
+	}
+
+	@Override
+	public BigDecimal convertToProductUOM(@NonNull final Quantity quantity, @NonNull final I_M_Product product)
+	{
+		return convert(Env.getCtx(), quantity.getUOM(), product.getC_UOM(), quantity.getQty());
 	}
 
 	@Override
@@ -267,12 +274,11 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			return roundToUOMPrecisionIfPossible(priceInUOMFrom, uomTo);
 		}
-		
+
 		final BigDecimal conversionRate = getRateForConversionToProductUOM(ctx, product, uomTo);
-		
+
 		final BigDecimal qtyConverted = conversionRate.multiply(priceInUOMFrom);
-		
-		
+
 		if (qtyConverted == null)
 		{
 
@@ -341,7 +347,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		final ArrayKey key = mkGenericRatesKey(uomFromID, uomToID);
 		final BigDecimal multiplyRate = conversions.get(key);
-		if(multiplyRate == null)
+		if (multiplyRate == null)
 		{
 			throw new NoUOMConversionException(-1, uomFromID, uomToID);
 		}
@@ -453,11 +459,10 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	/**
 	 * Create Conversion Matrix (Client)
-	 * 
+	 *
 	 * @param ctx context
 	 */
-	@Cached(cacheName = I_C_UOM_Conversion.Table_Name + "#by#GenericConversions",
-			expireMinutes = Cached.EXPIREMINUTES_Never)
+	@Cached(cacheName = I_C_UOM_Conversion.Table_Name + "#by#GenericConversions", expireMinutes = Cached.EXPIREMINUTES_Never)
 	Map<ArrayKey, BigDecimal> getRates(@CacheCtx final Properties ctx)
 	{
 		// Here the conversions will be mapped
@@ -487,7 +492,7 @@ public class UOMConversionBL implements IUOMConversionBL
 				// In case divide rate is not available, calculate divide rate as 1/multiplyRate (precision=12)
 				divideRate = BigDecimal.ONE.divide(multiplyRate, 12, BigDecimal.ROUND_HALF_UP);
 			}
-			
+
 			final ArrayKey reversedConversionKey = mkGenericRatesKey(toUOMId, fromUOMId);
 			if (divideRate != null && divideRate.signum() != 0)
 			{
@@ -504,7 +509,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	/**
 	 * Get rate to convert a qty from the stocking UOM of the given <code>M_Product_ID</code>'s product to the given <code>C_UOM_Dest_ID</code> to.
-	 * 
+	 *
 	 * @param ctx context
 	 * @param product product from whose stocking UOM we want to convert
 	 * @param uomDest uom we want to convert to
@@ -562,11 +567,11 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	/**
 	 * Get rate to convert a qty from the given <code>C_UOM_Source_ID</code> to the stocking UOM of the given <code>M_Product_ID</code>'s product.
-	 * 
+	 *
 	 * @param ctx context
 	 * @param M_Product_ID product to whose stocking UOM we want to convert
 	 * @param C_UOM_Source_ID UOM we want to convert from
-	 * 
+	 *
 	 * @return multiplier or null
 	 */
 	/* package */BigDecimal getRateForConversionToProductUOM(

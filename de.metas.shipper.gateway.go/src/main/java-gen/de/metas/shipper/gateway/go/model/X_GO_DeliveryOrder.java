@@ -14,7 +14,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1016700092L;
+	private static final long serialVersionUID = -522317920L;
 
     /** Standard Constructor */
     public X_GO_DeliveryOrder (Properties ctx, int GO_DeliveryOrder_ID, String trxName)
@@ -25,7 +25,6 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 			setGO_DeliverToBPartner_ID (0);
 			setGO_DeliverToBPLocation_ID (0);
 			setGO_DeliverToCompanyName (null);
-			setGO_DeliverToCompanyName2 (null);
 			setGO_DeliverToDepartment (null);
 			setGO_DeliverToLocation_ID (0);
 			setGO_DeliveryOrder_ID (0);
@@ -38,6 +37,7 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 			setGO_SelfDelivery (null);
 			setGO_SelfPickup (null);
 			setGO_ServiceType (null);
+			setM_Shipper_ID (0);
 			setProcessed (false); // N
         } */
     }
@@ -659,6 +659,43 @@ public class X_GO_DeliveryOrder extends org.compiere.model.PO implements I_GO_De
 	public java.lang.String getGO_ServiceType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_GO_ServiceType);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Shipper getM_Shipper() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
+	}
+
+	@Override
+	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
+	}
+
+	/** Set Lieferweg.
+		@param M_Shipper_ID 
+		Methode oder Art der Warenlieferung
+	  */
+	@Override
+	public void setM_Shipper_ID (int M_Shipper_ID)
+	{
+		if (M_Shipper_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Shipper_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+	}
+
+	/** Get Lieferweg.
+		@return Methode oder Art der Warenlieferung
+	  */
+	@Override
+	public int getM_Shipper_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Transport Auftrag.

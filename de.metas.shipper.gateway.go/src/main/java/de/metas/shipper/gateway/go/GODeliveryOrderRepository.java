@@ -1,5 +1,8 @@
 package de.metas.shipper.gateway.go;
 
+import java.util.List;
+import java.util.Set;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -7,11 +10,15 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+
 import de.metas.shipper.gateway.api.model.DeliveryOrder;
 import de.metas.shipper.gateway.api.model.HWBNumber;
 import de.metas.shipper.gateway.api.model.OrderId;
 import de.metas.shipper.gateway.api.model.OrderStatus;
 import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder;
+import de.metas.shipper.gateway.go.model.I_GO_DeliveryOrder_Package;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
@@ -55,7 +62,12 @@ public class GODeliveryOrderRepository
 	 */
 	private DeliveryOrder toDeliveryOrder(@NonNull final I_GO_DeliveryOrder orderPO)
 	{
+		final Set<Integer> mpackageIds = retrieveGODeliveryOrderPackageIds(orderPO.getGO_DeliveryOrder_ID());
+
 		return DeliveryOrder.builder()
+				.repoId(orderPO.getGO_DeliveryOrder_ID())
+				.shipperId(orderPO.getM_Shipper_ID())
+				//
 				.orderId(GOUtils.createOrderIdOrNull(orderPO.getGO_AX4Number()))
 				.hwbNumber(HWBNumber.ofNullable(orderPO.getGO_HWBNumber()))
 				.orderStatus(GOOrderStatus.forNullableCode(orderPO.getGO_OrderStatus()))
@@ -79,7 +91,7 @@ public class GODeliveryOrderRepository
 				.customerReference(orderPO.getGO_CustomerReference())
 				//
 				// Delivery content
-				.deliveryPosition(GODeliveryOrderConverters.deliveryPositionFromPO(orderPO))
+				.deliveryPosition(GODeliveryOrderConverters.deliveryPositionFromPO(orderPO, mpackageIds))
 				//
 				.build();
 	}
@@ -94,19 +106,25 @@ public class GODeliveryOrderRepository
 		{
 			orderPO = InterfaceWrapperHelper.load(order.getRepoId(), I_GO_DeliveryOrder.class);
 		}
-		if (orderPO == null)
+
+		final OrderId orderId = order.getOrderId();
+		if (orderPO == null && orderId != null)
 		{
-			orderPO = retrieveGODeliveryOrderPOById(order.getOrderId());
+			orderPO = retrieveGODeliveryOrderPOById(orderId);
 		}
+
 		if (orderPO == null)
 		{
 			orderPO = InterfaceWrapperHelper.newInstance(I_GO_DeliveryOrder.class);
 		}
 
+		orderPO.setM_Shipper_ID(order.getShipperId());
+
+		final HWBNumber hwbNumber = order.getHwbNumber();
 		final OrderStatus orderStatus = order.getOrderStatus();
 
-		orderPO.setGO_AX4Number(order.getOrderId().getOrderIdAsString());
-		orderPO.setGO_HWBNumber(order.getHwbNumber().getAsString());
+		orderPO.setGO_AX4Number(orderId != null ? orderId.getOrderIdAsString() : null);
+		orderPO.setGO_HWBNumber(hwbNumber != null ? hwbNumber.getAsString() : null);
 		orderPO.setGO_OrderStatus(orderStatus != null ? orderStatus.getCode() : null);
 		orderPO.setProcessed(orderStatus != null && orderStatus.isFinalState());
 
@@ -158,6 +176,8 @@ public class GODeliveryOrderRepository
 		final I_GO_DeliveryOrder orderPO = toDeliveryOrderPO(order);
 		InterfaceWrapperHelper.save(orderPO);
 
+		saveAssignedPackageIds(orderPO.getGO_DeliveryOrder_ID(), order.getDeliveryPosition().getPackageIds());
+
 		return order.toBuilder()
 				.repoId(orderPO.getGO_DeliveryOrder_ID())
 				.build();
@@ -170,6 +190,50 @@ public class GODeliveryOrderRepository
 				.addEqualsFilter(I_GO_DeliveryOrder.COLUMN_GO_AX4Number, orderId.getOrderIdAsString())
 				.create()
 				.firstOnly(I_GO_DeliveryOrder.class);
+	}
+
+	private void saveAssignedPackageIds(final int deliveryOrderRepoId, final Set<Integer> packageIds)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final Set<Integer> prevPackageIds = retrieveGODeliveryOrderPackageIds(deliveryOrderRepoId);
+
+		final Set<Integer> packageIdsToDelete = Sets.difference(prevPackageIds, packageIds);
+		if (!packageIdsToDelete.isEmpty())
+		{
+			queryBL.createQueryBuilder(I_GO_DeliveryOrder_Package.class)
+					.addEqualsFilter(I_GO_DeliveryOrder_Package.COLUMN_GO_DeliveryOrder_ID, deliveryOrderRepoId)
+					.addInArrayFilter(I_GO_DeliveryOrder_Package.COLUMN_M_Package_ID, packageIdsToDelete)
+					.create()
+					.delete();
+		}
+
+		final Set<Integer> packageIdsToAdd = Sets.difference(packageIds, prevPackageIds);
+		packageIdsToAdd.forEach(packageId -> createGODeliveryOrderPackage(deliveryOrderRepoId, packageId));
+	}
+
+	private Set<Integer> retrieveGODeliveryOrderPackageIds(final int deliveryOrderRepoId)
+	{
+		if (deliveryOrderRepoId <= 0)
+		{
+			return ImmutableSet.of();
+		}
+
+		final List<Integer> mpackageIds = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_GO_DeliveryOrder_Package.class)
+				.addEqualsFilter(I_GO_DeliveryOrder_Package.COLUMN_GO_DeliveryOrder_ID, deliveryOrderRepoId)
+				.create()
+				.listDistinct(I_GO_DeliveryOrder_Package.COLUMNNAME_M_Package_ID, Integer.class);
+
+		return ImmutableSet.copyOf(mpackageIds);
+	}
+
+	private void createGODeliveryOrderPackage(final int deliveryOrderRepoId, final int packageId)
+	{
+		final I_GO_DeliveryOrder_Package orderPackagePO = InterfaceWrapperHelper.newInstance(I_GO_DeliveryOrder_Package.class);
+		orderPackagePO.setGO_DeliveryOrder_ID(deliveryOrderRepoId);
+		orderPackagePO.setM_Package_ID(packageId);
+		InterfaceWrapperHelper.save(orderPackagePO);
 	}
 
 }

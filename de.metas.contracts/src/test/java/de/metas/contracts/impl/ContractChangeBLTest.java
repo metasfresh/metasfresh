@@ -1,6 +1,5 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /*
@@ -40,6 +39,7 @@ import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
 import de.metas.contracts.impl.ContractsTestBase.FixedTimeSource;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -68,7 +68,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	public void before()
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Flatrate_Term.INSTANCE);
-		SystemTime.setTimeSource(today); 
+		SystemTime.setTimeSource(today);
 	}
 
 	@Test
@@ -84,8 +84,16 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	public void cancel_a_Contract_which_was_extended_using_a_date_from_initial_contract()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
-		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
-		save(contract);
+
+		final ContractExtendingRequest context = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(1)
+				.contract(contract)
+				.forceExtend(true)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+
+		Services.get(IFlatrateBL.class).extendContract(context);
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
@@ -103,8 +111,16 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	public void cancel_a_Contract_which_was_extended_using_a_date_from_extended_contract()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
-		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
-		save(contract);
+
+		final ContractExtendingRequest context = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(1)
+				.contract(contract)
+				.forceExtend(true)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+
+		Services.get(IFlatrateBL.class).extendContract(context);
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
@@ -129,7 +145,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		assertSubscriptionProgress(extendedContract, 3);
 		assertThat(contract.getMasterEndDate()).isEqualTo(extendedContract.getMasterEndDate());
 	}
-	
+
 	private void assertFlatrateTerm(@NonNull final I_C_Flatrate_Term flatrateTerm, final Timestamp cancelinglDate)
 	{
 		assertThat(flatrateTerm.getContractStatus()).isEqualTo(X_C_Flatrate_Term.CONTRACTSTATUS_Quit);

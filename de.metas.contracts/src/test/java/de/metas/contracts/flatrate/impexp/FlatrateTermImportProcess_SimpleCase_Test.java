@@ -25,7 +25,7 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.contracts.impl.AbstractFlatrateTermTest;
 import de.metas.contracts.impl.FlatrateTermDataFactory;
-import de.metas.contracts.inoutcandidate.ShipmentScheduleOrderDocForSubscriptionLine;
+import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionReferenceProvider;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
@@ -64,7 +64,7 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 @SpringBootTest(classes = { StartupListener.class,
 		ShutdownListener.class,
 		InOutLinesWithMissingInvoiceCandidate.class,
-		ShipmentScheduleOrderDocForSubscriptionLine.class,
+		ShipmentScheduleSubscriptionReferenceProvider.class,
 		OrderGroupRepository.class })
 public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateTermTest
 {

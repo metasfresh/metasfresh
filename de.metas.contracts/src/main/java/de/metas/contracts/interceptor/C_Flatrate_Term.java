@@ -35,7 +35,6 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -67,6 +66,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.i18n.IMsgBL;
@@ -119,10 +119,13 @@ public class C_Flatrate_Term
 			Env.setContext(localCtx, Env.CTXNAME_AD_Client_ID, org.getAD_Client_ID());
 			Env.setContext(localCtx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
 
-			final org.compiere.model.I_C_DocType existingDocType = docTypeDAO.getDocTypeOrNull(localCtx,
-					I_C_DocType.DocBaseType_CustomerContract, docSubType,
-					org.getAD_Client_ID(), org.getAD_Org_ID(),
-					ITrx.TRXNAME_None);
+			final org.compiere.model.I_C_DocType existingDocType = docTypeDAO
+					.getDocTypeOrNull(DocTypeQuery.builder()
+							.docBaseType(I_C_DocType.DocBaseType_CustomerContract)
+							.docSubType(docSubType)
+							.adClientId(org.getAD_Client_ID())
+							.adOrgId(org.getAD_Org_ID())
+							.build());
 			if (existingDocType != null)
 			{
 				continue;

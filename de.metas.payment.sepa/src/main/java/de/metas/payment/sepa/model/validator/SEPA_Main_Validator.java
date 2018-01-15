@@ -31,7 +31,7 @@ import org.compiere.model.PO;
 
 import de.metas.payment.sepa.api.ISEPADocumentSourceFactory;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
-import de.metas.payment.sepa.spi.impl.SEPAExportLineDocumentSource;
+import de.metas.payment.sepa.sepamarshaller.impl.SEPAExportLineDocumentSource;
 
 public class SEPA_Main_Validator implements ModelValidator
 {

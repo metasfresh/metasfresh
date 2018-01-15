@@ -82,6 +82,7 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.IOLCandBL;
@@ -500,7 +501,7 @@ public class OLCandBL implements IOLCandBL
 		order.setC_PaymentTerm_ID(processor.getC_PaymentTerm_ID());
 
 		order.setInvoiceRule(processor.getInvoiceRule());
-		order.setC_DocTypeTarget_ID(processor.getC_DocTypeTarget_ID());
+		Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, processor.getC_DocTypeTarget_ID());
 		order.setM_Warehouse_ID(processor.getM_Warehouse_ID());
 
 		final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);

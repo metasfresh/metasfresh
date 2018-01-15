@@ -17,12 +17,13 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -50,12 +51,15 @@ public class CandidateServiceTests
 {
 	private RequestMaterialOrderService requestMaterialOrderService;
 
+	@Mocked
+	private PostMaterialEventService postMaterialEventService;
+
 	@Before
 	public void init()
 	{
 		requestMaterialOrderService = new RequestMaterialOrderService(
 				new CandidateRepositoryRetrieval(),
-				MaterialEventService.createLocalServiceThatIsReadyToUse());
+				postMaterialEventService);
 	}
 
 	@Test
@@ -70,7 +74,6 @@ public class CandidateServiceTests
 				.productionDetail(ProductionDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
-						.uomId(230)
 						.build())
 				.build();
 
@@ -96,14 +99,17 @@ public class CandidateServiceTests
 						.productBomLineId(600)
 						.build());
 
-		final PPOrderRequestedEvent productionRequestedEvent = requestMaterialOrderService.createPPOrderRequestedEvent(ImmutableList.of(candidate, candidate2, candidate3));
-		assertThat(productionRequestedEvent).isNotNull();
-		assertThat(productionRequestedEvent.getEventDescriptor()).isNotNull();
+		final PPOrderRequestedEvent ppOrderRequestedEvent = requestMaterialOrderService
+				.createPPOrderRequestedEvent(
+						ImmutableList.of(candidate, candidate2, candidate3));
 
-		assertThat(productionRequestedEvent.getEventDescriptor().getClientId()).isEqualTo(20);
-		assertThat(productionRequestedEvent.getEventDescriptor().getOrgId()).isEqualTo(30);
+		assertThat(ppOrderRequestedEvent).isNotNull();
+		assertThat(ppOrderRequestedEvent.getEventDescriptor()).isNotNull();
 
-		final PPOrder ppOrder = productionRequestedEvent.getPpOrder();
+		assertThat(ppOrderRequestedEvent.getEventDescriptor().getClientId()).isEqualTo(20);
+		assertThat(ppOrderRequestedEvent.getEventDescriptor().getOrgId()).isEqualTo(30);
+
+		final PPOrder ppOrder = ppOrderRequestedEvent.getPpOrder();
 		assertThat(ppOrder).isNotNull();
 		assertThat(ppOrder.getOrgId()).isEqualTo(30);
 		assertThat(ppOrder.getProductDescriptor().getProductId()).isEqualTo(PRODUCT_ID);

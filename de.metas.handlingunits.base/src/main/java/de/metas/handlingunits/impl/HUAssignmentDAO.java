@@ -77,7 +77,11 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, recordId);
 	}
 
-	public IQueryBuilder<I_M_HU_Assignment> retrieveHUAssignmentsForModelQuery(final Properties ctx, final int adTableId, final int recordId, final String trxName)
+	public IQueryBuilder<I_M_HU_Assignment> retrieveHUAssignmentsForModelQuery(
+			final Properties ctx,
+			final int adTableId,
+			final int recordId,
+			final String trxName)
 	{
 		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Assignment.class, ctx, trxName);

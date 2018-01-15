@@ -32,6 +32,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.CalloutOrder;
@@ -127,10 +128,12 @@ public class C_OrderLine
 	 * Set QtyOrderedInPriceUOM, just to make sure is up2date.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
-			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyEntered,
-					I_C_OrderLine.COLUMNNAME_Price_UOM_ID,
-					I_C_OrderLine.COLUMNNAME_C_UOM_ID,
-					I_C_OrderLine.COLUMNNAME_M_Product_ID })
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyEntered,
+			I_C_OrderLine.COLUMNNAME_Price_UOM_ID,
+			I_C_OrderLine.COLUMNNAME_C_UOM_ID,
+			I_C_OrderLine.COLUMNNAME_M_Product_ID
+	})
 	public void setQtyEnteredInPriceUOM(final I_C_OrderLine orderLine)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
@@ -143,9 +146,11 @@ public class C_OrderLine
 	 * {@link CalloutOrder#amt(java.util.Properties, int, org.compiere.model.GridTab, org.compiere.model.GridField, Object)}.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
-			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID,
-					I_C_OrderLine.COLUMNNAME_QtyEntered,
-					I_C_OrderLine.COLUMNNAME_C_UOM_ID })
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID,
+			I_C_OrderLine.COLUMNNAME_QtyEntered,
+			I_C_OrderLine.COLUMNNAME_C_UOM_ID
+	})
 	public void setQtyOrdered(final I_C_OrderLine orderLine)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
@@ -169,11 +174,10 @@ public class C_OrderLine
 
 	/**
 	 * Ported this method from de.metas.adempiere.modelvalidator.OrderLine
-	 *
-	 * @param ol
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
-			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyReserved })
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_QtyReserved)
 	public void checkQtyReserved(final I_C_OrderLine ol)
 	{
 		if (ol.getQtyReserved().signum() >= 0)
@@ -191,6 +195,21 @@ public class C_OrderLine
 					+ "\nStorage: " + ol);
 			logger.warn(ex.getLocalizedMessage(), ex);
 		}
+	}
+
+	/**
+	 * @task https://github.com/metasfresh/metasfresh/issues/3298
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_QtyReserved)
+	public void checkQtyOrdered(final I_C_OrderLine ol)
+	{
+		final boolean qtyOrderedLessThanZero = ol.getQtyOrdered().signum() < 0;
+
+		Check.errorIf(qtyOrderedLessThanZero,
+				"QtyOrdered needs to be >= 0, but the given ol has QtyOrdered={}; ol={}; C_Order_ID={}",
+				ol.getQtyOrdered(), ol, ol.getC_Order_ID());
 	}
 
 	// task 06727

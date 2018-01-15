@@ -4,12 +4,15 @@ import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 import java.math.BigDecimal;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+import org.adempiere.util.Check;
+
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -39,29 +42,37 @@ import lombok.ToString;
 @ToString
 public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 {
-	@NonNull
 	private final EventDescriptor eventDescriptor;
 
-	@NonNull
-	private final MaterialDescriptor orderedMaterial;
+	private final MaterialDescriptor materialDescriptor;
 
 	private final BigDecimal reservedQuantity;
 
 	private final int shipmentScheduleId;
 
 	public AbstractShipmentScheduleEvent(
-			@NonNull final EventDescriptor eventDescriptor,
-			@NonNull final MaterialDescriptor orderedMaterial,
-			@NonNull final BigDecimal reservedQuantity,
+			final EventDescriptor eventDescriptor,
+			final MaterialDescriptor materialDescriptor,
+			final BigDecimal reservedQuantity,
 			final int shipmentScheduleId)
 	{
-		this.shipmentScheduleId = checkIdGreaterThanZero("shipmentScheduleId", shipmentScheduleId);
+		this.shipmentScheduleId = shipmentScheduleId;
 		this.eventDescriptor = eventDescriptor;
-		this.orderedMaterial = orderedMaterial;
+		this.materialDescriptor = materialDescriptor;
 		this.reservedQuantity = reservedQuantity;
 	}
 
 	public abstract BigDecimal getOrderedQuantityDelta();
 
 	public abstract BigDecimal getReservedQuantityDelta();
+
+	@OverridingMethodsMustInvokeSuper
+	public void validate()
+	{
+		checkIdGreaterThanZero("shipmentScheduleId", shipmentScheduleId);
+
+		Check.errorIf(eventDescriptor == null, "eventDescriptor may not be null");
+		Check.errorIf(materialDescriptor == null, "materialDescriptor may not be null");
+		Check.errorIf(reservedQuantity == null, "reservedQuantity may not be null");
+	}
 }

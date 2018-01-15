@@ -9,8 +9,9 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 
-import de.metas.process.Param;
+import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.exceptions.NoCompletedRfQResponsesFoundException;
@@ -56,6 +57,7 @@ public class C_RfQ_CreatePO extends JavaProcess
 	// services
 	private final transient IRfqBL rfqBL = Services.get(IRfqBL.class);
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
+	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Param(parameterName = "C_DocType_ID")
 	private int p_C_DocType_ID;
@@ -89,11 +91,11 @@ public class C_RfQ_CreatePO extends JavaProcess
 			order.setIsSOTrx(false);
 			if (p_C_DocType_ID > 0)
 			{
-				order.setC_DocTypeTarget_ID(p_C_DocType_ID);
+				orderBL.setDocTypeTargetIdAndUpdateDescription(order, p_C_DocType_ID);
 			}
 			else
 			{
-				order.setC_DocTypeTarget_ID();
+				orderBL.setDocTypeTargetId(order);
 			}
 			order.setBPartner(bp);
 			order.setC_BPartner_Location_ID(rfqResponse.getC_BPartner_Location_ID());
@@ -173,7 +175,7 @@ public class C_RfQ_CreatePO extends JavaProcess
 				{
 					order = new MOrder(getCtx(), 0, get_TrxName());
 					order.setIsSOTrx(false);
-					order.setC_DocTypeTarget_ID();
+					orderBL.setDocTypeTargetId(order);
 					order.setBPartner(bp);
 					order.setC_BPartner_Location_ID(response.getC_BPartner_Location_ID());
 					order.setSalesRep_ID(rfq.getSalesRep_ID());

@@ -4,6 +4,10 @@ import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 import java.math.BigDecimal;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+import org.adempiere.util.Check;
+
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -43,7 +47,7 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 	private final EventDescriptor eventDescriptor;
 
 	@NonNull
-	private final MaterialDescriptor orderedMaterial;
+	private final MaterialDescriptor materialDescriptor;
 
 	// needed on update and delete
 	private final BigDecimal reservedQuantity;
@@ -51,19 +55,29 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 	private final int receiptScheduleId;
 
 	public AbstractReceiptScheduleEvent(
-			@NonNull final EventDescriptor eventDescriptor,
-			@NonNull final MaterialDescriptor orderedMaterial,
-			@NonNull final BigDecimal reservedQuantity,
+			final EventDescriptor eventDescriptor,
+			final MaterialDescriptor materialDescriptor,
+			final BigDecimal reservedQuantity,
 			final int receiptScheduleId)
 	{
-		this.receiptScheduleId = checkIdGreaterThanZero("receiptScheduleId", receiptScheduleId);
+		this.receiptScheduleId = receiptScheduleId;
 		this.eventDescriptor = eventDescriptor;
-		this.orderedMaterial= orderedMaterial;
+		this.materialDescriptor = materialDescriptor;
 		this.reservedQuantity = reservedQuantity;
 	}
 
 	public abstract BigDecimal getOrderedQuantityDelta();
 
 	public abstract BigDecimal getReservedQuantityDelta();
+
+	@OverridingMethodsMustInvokeSuper
+	public void validate()
+	{
+		checkIdGreaterThanZero("receiptScheduleId", receiptScheduleId);
+
+		Check.errorIf(eventDescriptor == null, "eventDescriptor may not be null");
+		Check.errorIf(materialDescriptor == null, "materialDescriptor may not be null");
+		Check.errorIf(reservedQuantity == null, "reservedQuantity may not be null");
+	}
 
 }

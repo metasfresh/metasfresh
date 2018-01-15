@@ -37,7 +37,7 @@ import lombok.experimental.Wither;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Wither
 public class Candidate
 {

@@ -1,7 +1,5 @@
 package de.metas.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
@@ -18,13 +16,16 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.event.MaterialEventService;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent.ShipmentScheduleCreatedEventBuilder;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import lombok.NonNull;
@@ -65,8 +66,16 @@ public class M_ShipmentSchedule
 	{
 		final AbstractShipmentScheduleEvent event = createShipmentScheduleEvent(schedule, timing);
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event, getTrxName(schedule));
+		final boolean nothingActuallyChanged = //
+				event.getOrderedQuantityDelta().signum() == 0
+						&& event.getReservedQuantityDelta().signum() == 0;
+		if (nothingActuallyChanged)
+		{
+			return;
+		}
+
+		final PostMaterialEventService postMaterialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		postMaterialEventService.postEventAfterNextCommit(event);
 	}
 
 	@VisibleForTesting
@@ -89,62 +98,88 @@ public class M_ShipmentSchedule
 		return createUpdatedEvent(shipmentSchedule);
 	}
 
-	private AbstractShipmentScheduleEvent createCreatedEvent(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private AbstractShipmentScheduleEvent createCreatedEvent(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(shipmentSchedule);
+		final MaterialDescriptor materialDescriptor = //
+				createOrdereMaterialDescriptor(shipmentSchedule);
 
-		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
-				.orderedMaterial(orderedMaterial)
-				.reservedQuantity(shipmentSchedule.getQtyReserved())
-				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
-				.orderLineId(shipmentSchedule.getC_OrderLine_ID())
-				.build();
+		final ShipmentScheduleReferencedLineFactory referencedLineFactory = //
+				Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class);
+		final DocumentLineDescriptor documentLineDescriptor = //
+				referencedLineFactory.createFor(shipmentSchedule)
+						.getDocumentLineDescriptor();
+
+		final ShipmentScheduleCreatedEventBuilder builder = //
+				ShipmentScheduleCreatedEvent.builder()
+						.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
+						.materialDescriptor(materialDescriptor)
+						.reservedQuantity(shipmentSchedule.getQtyReserved())
+						.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
+						.documentLineDescriptor(documentLineDescriptor);
+
+		final ShipmentScheduleCreatedEvent event = builder.build();
 		return event;
 	}
 
-	private AbstractShipmentScheduleEvent createUpdatedEvent(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private AbstractShipmentScheduleEvent createUpdatedEvent(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(shipmentSchedule);
+		final MaterialDescriptor materialDescriptor = createOrdereMaterialDescriptor(shipmentSchedule);
 
 		final I_M_ShipmentSchedule oldShipmentSchedule = InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final BigDecimal oldOrderedQuantity = shipmentScheduleEffectiveBL.computeQtyOrdered(oldShipmentSchedule);
 
+		final BigDecimal orderedQuantityDelta = materialDescriptor
+				.getQuantity()
+				.subtract(oldOrderedQuantity);
+		final BigDecimal reservedQuantityDelta = shipmentSchedule
+				.getQtyReserved()
+				.subtract(oldShipmentSchedule.getQtyReserved());
+
 		final ShipmentScheduleUpdatedEvent event = ShipmentScheduleUpdatedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
-				.orderedMaterial(orderedMaterial)
+				.materialDescriptor(materialDescriptor)
 				.reservedQuantity(shipmentSchedule.getQtyReserved())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
-				.reservedQuantityDelta(shipmentSchedule.getQtyReserved().subtract(oldShipmentSchedule.getQtyReserved()))
-				.orderedQuantityDelta(orderedMaterial.getQuantity().subtract(oldOrderedQuantity))
+				.reservedQuantityDelta(reservedQuantityDelta)
+				.orderedQuantityDelta(orderedQuantityDelta)
 				.build();
 		return event;
 	}
 
-	private AbstractShipmentScheduleEvent createDeletedEvent(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private AbstractShipmentScheduleEvent createDeletedEvent(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final MaterialDescriptor orderedMaterial = createOrdereMaterialDescriptor(shipmentSchedule);
+		final MaterialDescriptor materialDescriptor = //
+				createOrdereMaterialDescriptor(shipmentSchedule);
 
 		final ShipmentScheduleDeletedEvent event = ShipmentScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
-				.orderedMaterial(orderedMaterial)
+				.materialDescriptor(materialDescriptor)
 				.reservedQuantity(shipmentSchedule.getQtyReserved())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.build();
 		return event;
 	}
 
-	private MaterialDescriptor createOrdereMaterialDescriptor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private MaterialDescriptor createOrdereMaterialDescriptor(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final BigDecimal orderedQuantity = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = //
+				Services.get(IShipmentScheduleEffectiveBL.class);
+		final BigDecimal orderedQuantity = //
+				shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
 
-		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
+		final Timestamp preparationDate = //
+				shipmentScheduleEffectiveBL.getPreparationDate(shipmentSchedule);
 
-		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
-		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(shipmentSchedule);
+		final ModelProductDescriptorExtractor productDescriptorFactory = //
+				Adempiere.getBean(ModelProductDescriptorExtractor.class);
+		final ProductDescriptor productDescriptor = //
+				productDescriptorFactory.createProductDescriptor(shipmentSchedule);
 
 		final MaterialDescriptor orderedMaterial = MaterialDescriptor.builder()
 				.date(preparationDate)
@@ -154,25 +189,5 @@ public class M_ShipmentSchedule
 				.quantity(orderedQuantity)
 				.build();
 		return orderedMaterial;
-	}
-
-	private BigDecimal computeEffectiveOrderedQuantity(
-			@NonNull final I_M_ShipmentSchedule schedule,
-			@NonNull final ModelChangeType timing)
-	{
-		final BigDecimal quantity;
-		final boolean deleted = timing.isDelete() || !schedule.isActive();
-		if (deleted)
-		{
-			quantity = BigDecimal.ZERO;
-		}
-		else
-		{
-			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-			quantity = schedule.getQtyDelivered()
-					.max(schedule.getQtyToDeliver())
-					.max(shipmentScheduleEffectiveBL.computeQtyOrdered(schedule));
-		}
-		return quantity;
 	}
 }

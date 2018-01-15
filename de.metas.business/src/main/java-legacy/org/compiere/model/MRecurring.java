@@ -22,7 +22,9 @@ import java.util.Calendar;
 import java.util.Properties;
 
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 /**
  * Recurring Model
@@ -102,7 +104,7 @@ public class MRecurring extends X_C_Recurring
 			MOrder from = new MOrder(getCtx(), getC_Order_ID(), get_TrxName());
 			final boolean counter = false;
 			final boolean copyASI = false;
-			MOrder order = MOrder.copyFrom(from,
+			MOrder order = copyOrderFrom(from,
 					from.getAD_Org(),
 					dateDoc,
 					from.getC_DocType_ID(),
@@ -223,4 +225,94 @@ public class MRecurring extends X_C_Recurring
 		return true;
 	}	// beforeSave
 
+	/**
+	 * Create new Order by copying
+	 *
+	 * @param from order
+	 * @param org the org of the new order
+	 * @param dateDoc date of the document date
+	 * @param C_DocTypeTarget_ID target document type
+	 * @param isSOTrx sales order
+	 * @param counter create counter links
+	 * @param copyASI copy line attributes Attribute Set Instance, Resaouce Assignment
+	 * @param trxName trx
+	 * @return Order
+	 */
+	private static MOrder copyOrderFrom(MOrder from,
+			I_AD_Org org,
+			Timestamp dateDoc,
+			int C_DocTypeTarget_ID,
+			boolean isSOTrx,
+			boolean counter,
+			boolean copyASI,
+			String trxName)
+	{
+		final MOrder to = new MOrder(from.getCtx(), 0, trxName);
+		to.set_TrxName(trxName);
+		PO.copyValues(from, to, from.getAD_Client_ID(), from.getAD_Org_ID());
+		to.set_ValueNoCheck("C_Order_ID", I_ZERO);
+		to.set_ValueNoCheck("DocumentNo", null);
+
+		to.setAD_Org(org); // 09700
+
+		//
+		to.setDocStatus(X_C_Order.DOCSTATUS_Drafted);		// Draft
+		to.setDocAction(X_C_Order.DOCACTION_Complete);
+		//
+		to.setC_DocType_ID(0);
+		to.setC_DocTypeTarget_ID(C_DocTypeTarget_ID);
+		to.setIsSOTrx(isSOTrx);
+		//
+		// the new order needs to figure out the pricing and also the warehouse (task 9700) by itself
+		InterfaceWrapperHelper.create(to, de.metas.adempiere.model.I_C_Order.class).setM_PricingSystem_ID(0);
+		to.setM_PriceList_ID(0);
+		to.setM_Warehouse(null);
+
+		to.setIsSelected(false);
+		to.setDateOrdered(dateDoc);
+		to.setDateAcct(dateDoc);
+		to.setDatePromised(dateDoc);	// assumption
+		to.setDatePrinted(null);
+		to.setIsPrinted(false);
+		//
+		to.setIsApproved(false);
+		to.setIsCreditApproved(false);
+		to.setC_Payment_ID(0);
+		to.setC_CashLine_ID(0);
+		// Amounts are updated when adding lines
+		to.setGrandTotal(Env.ZERO);
+		to.setTotalLines(Env.ZERO);
+		//
+		to.setIsDelivered(false);
+		to.setIsInvoiced(false);
+		to.setIsSelfService(false);
+		to.setIsTransferred(false);
+		to.setPosted(false);
+		to.setProcessed(false);
+		if (counter)
+		{
+			to.setRef_Order_ID(from.getC_Order_ID());
+		}
+		else
+		{
+			to.setRef_Order_ID(0);
+		}
+
+		InterfaceWrapperHelper.save(to);
+
+		if (counter)
+		{
+			from.setRef_Order_ID(to.getC_Order_ID());
+		}
+		if (to.copyLinesFrom(from, counter, copyASI) == 0)
+		{
+			throw new IllegalStateException("Could not create Order Lines");
+		}
+
+		// don't copy linked PO/SO
+		to.setLink_Order_ID(0);
+
+		return to;
+	}
+	
 }	// MRecurring

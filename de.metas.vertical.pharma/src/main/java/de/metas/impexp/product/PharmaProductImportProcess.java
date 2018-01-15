@@ -8,11 +8,14 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
@@ -29,6 +32,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
+import org.compiere.process.MProductPriceCloningCommand;
 
 import de.metas.product.IProductDAO;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
@@ -120,6 +124,91 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		importRecord.setI_IsImported(X_I_Pharma_Product.I_ISIMPORTED_Imported);
 		importRecord.setProcessed(true);
 		InterfaceWrapperHelper.save(importRecord);
+	}
+
+	@Override
+	protected void afterImport()
+	{
+		final List<I_M_PriceList_Version> versions = retrieveLatestPriceListVersion();
+		versions.stream()
+				.filter(plv -> plv.getM_Pricelist_Version_Base_ID() > 0)
+				.forEach(plv -> {
+
+					final MProductPriceCloningCommand productPriceCloning = MProductPriceCloningCommand.builder()
+							.source_PriceList_Version_ID(plv.getM_Pricelist_Version_Base_ID())
+							.target_PriceList_Version_ID(plv.getM_PriceList_Version_ID())
+							.build();
+
+					productPriceCloning.cloneProductPrice();
+				});
+	}
+
+	private List<I_M_PriceList_Version> retrieveLatestPriceListVersion()
+	{
+		final List<I_M_PriceList_Version> priceListVersions = new ArrayList<>();
+
+		final List<I_M_PriceList> matchedPriceList = retrievePriceLists();
+		matchedPriceList.forEach(priceList -> {
+			final I_M_PriceList_Version plv = Services.get(IPriceListDAO.class).retrieveLastCreatedPriceListVersion(priceList.getM_PriceList_ID());
+			if (plv != null)
+			{
+				priceListVersions.add(plv);
+			}
+		});
+
+		return priceListVersions;
+	}
+
+	private List<I_M_PriceList> retrievePriceLists()
+	{
+		final String whereClause = "1=1" + getWhereClause();
+		final List<I_I_Pharma_Product> importRecords = retrieveImportRecords(I_I_Pharma_Product.class, whereClause);
+		final List<I_M_PriceList> matchedPriceList = new ArrayList<>();
+		importRecords.forEach(record -> {
+
+			if (record.getAEP_Price_List() != null)
+			{
+				matchedPriceList.add(record.getAEP_Price_List());
+			}
+
+			if (record.getAPU_Price_List() != null)
+			{
+				matchedPriceList.add(record.getAPU_Price_List());
+			}
+
+			if (record.getAVP_Price_List() != null)
+			{
+				matchedPriceList.add(record.getAVP_Price_List());
+			}
+
+			if (record.getKAEP_Price_List() != null)
+			{
+				matchedPriceList.add(record.getKAEP_Price_List());
+			}
+
+			if (record.getUVP_Price_List() != null)
+			{
+				matchedPriceList.add(record.getUVP_Price_List());
+			}
+
+			if (record.getZBV_Price_List() != null)
+			{
+				matchedPriceList.add(record.getZBV_Price_List());
+			}
+		});
+		return matchedPriceList;
+	}
+
+	private <T> List<T> retrieveImportRecords(final Class<T> clazz, final String whereClause)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final String trxName = ITrx.TRXNAME_None;
+		final IQueryFilter<T> sqlFilter = TypedSqlQueryFilter.of(whereClause);
+		return queryBL.createQueryBuilder(clazz, trxName)
+				.addOnlyActiveRecordsFilter()
+				.filter(sqlFilter)
+				.create()
+				.list();
 	}
 
 	private I_M_Product createProduct(@NonNull final I_I_Pharma_Product importRecord)

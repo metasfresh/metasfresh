@@ -180,6 +180,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-cockpit</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.materialtracking</groupId>
 			<artifactId>de.metas.materialtracking</artifactId>
 			<version>${metasfresh.version}</version>
@@ -238,6 +244,12 @@
 		<dependency>
 			<groupId>de.metas.purchasecandidate</groupId>
 			<artifactId>de.metas.purchasecandidate.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.shipper.gateway</groupId>
+			<artifactId>de.metas.shipper.gateway.go</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 		

@@ -31,6 +31,7 @@ import org.junit.rules.TestWatcher;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
@@ -182,7 +183,6 @@ public class CandiateRepositoryRetrievalTests
 		productionDetailRecord.setPP_Plant_ID(61);
 		productionDetailRecord.setPP_Product_BOMLine_ID(71);
 		productionDetailRecord.setPP_Product_Planning_ID(81);
-		productionDetailRecord.setC_UOM_ID(91);
 		productionDetailRecord.setMD_Candidate(record);
 		productionDetailRecord.setPP_Order_ID(101);
 		productionDetailRecord.setPP_Order_BOMLine_ID(111);
@@ -191,17 +191,22 @@ public class CandiateRepositoryRetrievalTests
 
 		final Candidate cand = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(CandidatesQuery.fromId(record.getMD_Candidate_ID()));
 		assertThat(cand).isNotNull();
-		assertThat(cand.getMaterialDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(cand.getMaterialDescriptor().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-		assertThat(cand.getMaterialDescriptor().getDate()).isEqualTo(NOW);
-		assertThat(cand.getProductionDetail()).isNotNull();
-		assertThat(cand.getProductionDetail().getDescription()).isEqualTo("description1");
-		assertThat(cand.getProductionDetail().getProductBomLineId()).isEqualTo(71);
-		assertThat(cand.getProductionDetail().getProductPlanningId()).isEqualTo(81);
-		assertThat(cand.getProductionDetail().getUomId()).isEqualTo(91);
-		assertThat(cand.getProductionDetail().getPpOrderId()).isEqualTo(101);
-		assertThat(cand.getProductionDetail().getPpOrderLineId()).isEqualTo(111);
-		assertThat(cand.getProductionDetail().getPpOrderDocStatus()).isEqualTo("ppOrderDocStatus1");
+
+		final MaterialDescriptor materialDescriptor = cand.getMaterialDescriptor();
+		assertThat(materialDescriptor.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(materialDescriptor.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(materialDescriptor.getDate()).isEqualTo(NOW);
+
+		final ProductionDetail productionDetail = cand.getProductionDetail();
+		assertThat(productionDetail).isNotNull();
+		assertThat(productionDetail.getActualQty()).isZero();
+		assertThat(productionDetail.getPlannedQty()).isZero();
+		assertThat(productionDetail.getDescription()).isEqualTo("description1");
+		assertThat(productionDetail.getProductBomLineId()).isEqualTo(71);
+		assertThat(productionDetail.getProductPlanningId()).isEqualTo(81);
+		assertThat(productionDetail.getPpOrderId()).isEqualTo(101);
+		assertThat(productionDetail.getPpOrderLineId()).isEqualTo(111);
+		assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo("ppOrderDocStatus1");
 
 		return ImmutablePair.of(cand, record);
 	}
@@ -217,7 +222,7 @@ public class CandiateRepositoryRetrievalTests
 		final Candidate cand = pair.getLeft();
 		final I_MD_Candidate record = pair.getRight();
 
-		// make another record, just like "record", but without a proeductionDetailRecord
+		// make another record, just like "record", but without a productionDetailRecord
 		final I_MD_Candidate otherRecord = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
 		otherRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
 		otherRecord.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION);
@@ -229,8 +234,7 @@ public class CandiateRepositoryRetrievalTests
 		assertThat(expectedRecordWithProdDetails.getId()).isEqualTo(record.getMD_Candidate_ID());
 
 		final CandidatesQuery querqWithoutProdDetails = CandidatesQuery
-				.fromCandidate(cand, false)
-				.withId(0)
+				.fromCandidate(cand.withId(0), false)
 				.withProductionDetail(CandidatesQuery.NO_PRODUCTION_DETAIL);
 		final Candidate expectedRecordWithoutProdDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(querqWithoutProdDetails);
@@ -280,14 +284,15 @@ public class CandiateRepositoryRetrievalTests
 
 	/**
 	 * Verifies that demand details are also used as filter criterion
-	 * If this one fails, i recommend to first check if {@link #retrieve_with_DistributionDetail()} works.
+	 * If this one fails, I recommend to first check if {@link #retrieve_with_DistributionDetail()} works.
 	 */
 	@Test
 	public void retrieveExact_with_DistributionDetail_filtered()
 	{
 		final IPair<Candidate, I_MD_Candidate> pair = perform_retrieve_with_DistributionDetail();
-		final Candidate cand = pair.getLeft();
-		assertThat(cand.getDistributionDetail()).isNotNull();
+
+		final Candidate candidateWithDistributionDetail = pair.getLeft();
+		assertThat(candidateWithDistributionDetail.getDistributionDetail()).isNotNull();
 
 		final I_MD_Candidate record = pair.getRight();
 
@@ -297,15 +302,14 @@ public class CandiateRepositoryRetrievalTests
 		otherRecord.setMD_Candidate_BusinessCase(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION);
 		save(otherRecord);
 
-		final Candidate expectedRecordWithDistDetails = candidateRepositoryRetrieval
-				.retrieveLatestMatchOrNull(CandidatesQuery.fromCandidate(cand, false));
-		assertThat(expectedRecordWithDistDetails).isNotNull();
-		assertThat(expectedRecordWithDistDetails.getDistributionDetail()).isNotNull();
-		assertThat(expectedRecordWithDistDetails.getId()).isEqualTo(record.getMD_Candidate_ID());
+		final Candidate expectedResultWithDistDetails = candidateRepositoryRetrieval
+				.retrieveLatestMatchOrNull(CandidatesQuery.fromCandidate(candidateWithDistributionDetail, false));
+		assertThat(expectedResultWithDistDetails).isNotNull();
+		assertThat(expectedResultWithDistDetails.getDistributionDetail()).isNotNull();
+		assertThat(expectedResultWithDistDetails.getId()).isEqualTo(record.getMD_Candidate_ID());
 
 		final CandidatesQuery withoutdistDetailsQuery = CandidatesQuery
-				.fromCandidate(cand, false)
-				.withId(0)
+				.fromCandidate(candidateWithDistributionDetail.withId(0), false)
 				.withDistributionDetail(CandidatesQuery.NO_DISTRIBUTION_DETAIL);
 		final Candidate expectedRecordWithoutDistDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(withoutdistDetailsQuery);

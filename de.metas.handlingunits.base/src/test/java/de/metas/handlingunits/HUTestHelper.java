@@ -352,7 +352,6 @@ public class HUTestHelper
 	};
 	private IMutableHUContext huContext;
 
-
 	/**
 	 * Invokes {@link #HUTestHelper(boolean)} with init=<code>true</code>.
 	 */
@@ -1508,7 +1507,11 @@ public class HUTestHelper
 
 	public final void load(TestHelperLoadRequest r)
 	{
-		final IAllocationSource source = createDummySourceDestination(r.getCuProduct(), Quantity.QTY_INFINITE, r.getLoadCuUOM(), true);
+		final IAllocationSource source = createDummySourceDestination(
+				r.getCuProduct(),
+				Quantity.QTY_INFINITE,
+				r.getLoadCuUOM(),
+				true); // fullyLoaded
 
 		final HULoader huLoader = HULoader.of(source, r.getProducer())
 				.setAllowPartialUnloads(false)

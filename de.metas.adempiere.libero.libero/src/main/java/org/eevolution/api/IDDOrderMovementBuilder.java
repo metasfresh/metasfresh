@@ -13,15 +13,14 @@ package org.eevolution.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -40,13 +39,13 @@ import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
  */
 public interface IDDOrderMovementBuilder
 {
-	Date getMovementDate();
+	I_M_Movement process();
 
 	void setMovementDate(Date movementDate);
 
-	I_DD_Order getDD_Order();
-
 	void setDD_Order(I_DD_Order ddOrder);
+	
+	void setLocatorToIdOverride(int locatorToId);
 
 	I_M_MovementLine addMovementLineShipment(I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt);
 
@@ -55,8 +54,7 @@ public interface IDDOrderMovementBuilder
 	I_M_MovementLine addMovementLineReceipt(I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt);
 
 	I_M_MovementLine addMovementLineReceipt(I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt, BigDecimal movementQtySrc, I_C_UOM movementQtyUOM);
+	
+	I_M_MovementLine addMovementLineDirect(I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt, BigDecimal movementQtySrc, I_C_UOM movementQtyUOM);
 
-	I_M_Movement process();
-
-	I_M_Movement getCreateMovementHeader();
 }

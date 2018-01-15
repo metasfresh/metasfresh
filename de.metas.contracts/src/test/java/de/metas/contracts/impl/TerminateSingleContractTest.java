@@ -48,6 +48,7 @@ import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.impl.ContractsTestBase.FixedTimeSource;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
@@ -115,8 +116,16 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	public void assertThrowingException_When_terminatingOneSingleContract_which_was_extended()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
-		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
-		save(contract);
+
+		final ContractExtendingRequest context = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(1)
+				.contract(contract)
+				.forceExtend(true)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+
+		Services.get(IFlatrateBL.class).extendContract(context);
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
@@ -137,8 +146,15 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	public void terminateOneSingleContract()
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(true, startDate);
-		Services.get(IFlatrateBL.class).extendContract(contract, true, true, null, null);
-		save(contract);
+		final ContractExtendingRequest context = ContractExtendingRequest.builder()
+				.AD_PInstance_ID(1)
+				.contract(contract)
+				.forceExtend(true)
+				.forceComplete(true)
+				.nextTermStartDate(null)
+				.build();
+
+		Services.get(IFlatrateBL.class).extendContract(context);
 
 		final I_C_Flatrate_Term extendedContract = contract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();

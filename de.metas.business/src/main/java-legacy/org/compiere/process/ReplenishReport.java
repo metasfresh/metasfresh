@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 
+import org.adempiere.util.Services;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MDocType;
@@ -46,6 +47,7 @@ import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
 
 import de.metas.i18n.Msg;
+import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 
@@ -416,7 +418,7 @@ public class ReplenishReport extends JavaProcess
 			{
 				order = new MOrder(getCtx(), 0, get_TrxName());
 				order.setIsSOTrx(false);
-				order.setC_DocTypeTarget_ID(p_C_DocType_ID);
+				Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, p_C_DocType_ID);
 				MBPartner bp = new MBPartner(getCtx(), replenish.getC_BPartner_ID(), get_TrxName());
 				order.setBPartner(bp);
 				order.setSalesRep_ID(getAD_User_ID());

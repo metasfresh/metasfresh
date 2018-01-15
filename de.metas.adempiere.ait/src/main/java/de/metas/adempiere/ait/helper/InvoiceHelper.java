@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema_Default;
@@ -49,6 +49,7 @@ import de.metas.adempiere.ait.helper.AcctFactAssert.AcctDimension;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_BPartner;
@@ -135,7 +136,13 @@ public class InvoiceHelper
 
 		if (docBaseType != null)
 		{
-			invoice.setC_DocTypeTarget_ID(Services.get(IDocTypeDAO.class).getDocTypeId(ctx, docBaseType, invoice.getAD_Client_ID(), invoice.getAD_Org_ID(), ITrx.TRXNAME_None));
+			final int docTypeId = Services.get(IDocTypeDAO.class)
+					.getDocTypeId(DocTypeQuery.builder()
+							.docBaseType(docBaseType)
+							.adClientId(invoice.getAD_Client_ID())
+							.adOrgId(invoice.getAD_Org_ID())
+							.build());
+			Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId);
 		}
 
 		if (gridTabLevel)

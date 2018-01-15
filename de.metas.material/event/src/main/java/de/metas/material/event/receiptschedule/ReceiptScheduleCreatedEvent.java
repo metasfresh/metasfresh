@@ -2,10 +2,14 @@ package de.metas.material.event.receiptschedule;
 
 import java.math.BigDecimal;
 
+import org.adempiere.util.Check;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.OrderLineDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -40,29 +44,29 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 {
 	public static final String TYPE = "ReceiptScheduleCreatedEvent";
 
-	private final int orderLineId;
+	private final OrderLineDescriptor orderLineDescriptor;
 
 	@Builder
+	@JsonCreator
 	public ReceiptScheduleCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("orderedMaterial") final MaterialDescriptor orderedMaterial,
+			@JsonProperty("orderLineDescriptor") final OrderLineDescriptor orderLineDescriptor,
+			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
-			@JsonProperty("receiptScheduleId") int receiptScheduleId,
-			@JsonProperty("orderLineId") int orderLineId)
+			@JsonProperty("receiptScheduleId") int receiptScheduleId)
 	{
-		super(
-				eventDescriptor,
-				orderedMaterial,
+		super(eventDescriptor,
+				materialDescriptor,
 				reservedQuantity,
 				receiptScheduleId);
 
-		this.orderLineId = orderLineId;
+		this.orderLineDescriptor = orderLineDescriptor;
 	}
 
 	@Override
 	public BigDecimal getOrderedQuantityDelta()
 	{
-		return getOrderedMaterial().getQuantity();
+		return getMaterialDescriptor().getQuantity();
 	}
 
 	@Override
@@ -70,4 +74,13 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 	{
 		return getReservedQuantity();
 	}
+
+	@Override
+	public void validate()
+	{
+		super.validate();
+		Check.errorIf(orderLineDescriptor == null, "orderLineDescriptor may not be null");
+		orderLineDescriptor.validate();
+	}
+
 }

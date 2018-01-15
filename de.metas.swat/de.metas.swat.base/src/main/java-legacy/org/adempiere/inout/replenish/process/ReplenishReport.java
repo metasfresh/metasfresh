@@ -460,7 +460,7 @@ public class ReplenishReport extends JavaProcess
 			{
 				order = new MOrder(getCtx(), 0, get_TrxName());
 				order.setIsSOTrx(false);
-				order.setC_DocTypeTarget_ID(p_C_DocType_ID);
+				Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, p_C_DocType_ID);
 
 				final MBPartner bp = new MBPartner(getCtx(), replenish.getC_BPartner_ID(), get_TrxName());
 				Services.get(IOrderBL.class).setBPartner(order, bp);

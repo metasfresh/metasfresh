@@ -1,7 +1,5 @@
 package de.metas.fresh.material.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-
 import java.math.BigDecimal;
 
 import org.adempiere.ad.modelvalidator.InterceptorUtil;
@@ -12,7 +10,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -97,7 +95,7 @@ public class PMM_PurchaseCandidate
 					.build();
 		}
 
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		materialEventService.fireEventAfterNextCommit(event, getTrxName(purchaseCandidate));
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		materialEventService.postEventAfterNextCommit(event);
 	}
 }

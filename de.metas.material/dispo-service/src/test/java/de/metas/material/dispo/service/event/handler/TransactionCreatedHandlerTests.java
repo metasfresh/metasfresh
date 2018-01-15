@@ -59,7 +59,7 @@ public class TransactionCreatedHandlerTests
 	private static final int SHIPMENT_SCHEDULE_ID = 40;
 
 	@Tested
-	private TransactionCreatedHandler transactionEventHandler;
+	private TransactionEventHandler transactionEventHandler;
 
 	@Injectable
 	private CandidateChangeService candidateChangeService;
@@ -78,7 +78,7 @@ public class TransactionCreatedHandlerTests
 	{
 		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(BigDecimal.TEN.negate()).build();
 
-		final Candidate candidate = TransactionCreatedHandler.createCommonCandidateBuilder(event).build();
+		final Candidate candidate = TransactionEventHandler.createBuilderForNewUnrelatedCandidate(event).build();
 
 		assertThat(candidate.getType()).isSameAs(CandidateType.UNRELATED_DECREASE);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("10");
@@ -89,7 +89,7 @@ public class TransactionCreatedHandlerTests
 	{
 		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
 
-		final Candidate candidate = TransactionCreatedHandler.createCommonCandidateBuilder(event).build();
+		final Candidate candidate = TransactionEventHandler.createBuilderForNewUnrelatedCandidate(event).build();
 
 		assertThat(candidate.getType()).isSameAs(CandidateType.UNRELATED_INCREASE);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("10");

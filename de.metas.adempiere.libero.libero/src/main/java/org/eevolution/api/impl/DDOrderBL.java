@@ -42,7 +42,6 @@ import org.compiere.model.I_S_Resource;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.api.IDDOrderMovementBuilder;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
@@ -55,6 +54,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.material.planning.pporder.LiberoException;
 
 public class DDOrderBL implements IDDOrderBL
 {

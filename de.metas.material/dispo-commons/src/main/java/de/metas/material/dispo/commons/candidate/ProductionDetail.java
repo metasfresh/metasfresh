@@ -1,8 +1,12 @@
 package de.metas.material.dispo.commons.candidate;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+import java.math.BigDecimal;
 
+import org.adempiere.util.Check;
+
+import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -29,9 +33,25 @@ import lombok.Value;
 @Value
 public class ProductionDetail
 {
-	int plantId;
+	public static ProductionDetail forProductionDetailRecord(
+			@NonNull final I_MD_Candidate_Prod_Detail productionDetail)
+	{
+		final ProductionDetail productionCandidateDetail = ProductionDetail.builder()
+				.advised(productionDetail.isAdvised())
+				.description(productionDetail.getDescription())
+				.plantId(productionDetail.getPP_Plant_ID())
+				.productBomLineId(productionDetail.getPP_Product_BOMLine_ID())
+				.productPlanningId(productionDetail.getPP_Product_Planning_ID())
+				.ppOrderId(productionDetail.getPP_Order_ID())
+				.ppOrderLineId(productionDetail.getPP_Order_BOMLine_ID())
+				.ppOrderDocStatus(productionDetail.getPP_Order_DocStatus())
+				.plannedQty(productionDetail.getPlannedQty())
+				.actualQty(productionDetail.getActualQty())
+				.build();
+		return productionCandidateDetail;
+	}
 
-	int uomId;
+	int plantId;
 
 	int productPlanningId;
 
@@ -45,26 +65,35 @@ public class ProductionDetail
 
 	int ppOrderLineId;
 
-	@Builder
+	boolean advised;
+
+	BigDecimal plannedQty;
+
+	BigDecimal actualQty;
+
+	@Builder(toBuilder = true)
 	private ProductionDetail(
-			int plantId,
-			int uomId,
-			int productPlanningId,
-			int productBomLineId,
-			String description,
-			int ppOrderId,
-			String ppOrderDocStatus,
-			int ppOrderLineId)
+			final int plantId,
+			final int productPlanningId,
+			final int productBomLineId,
+			final String description,
+			final int ppOrderId,
+			final String ppOrderDocStatus,
+			final int ppOrderLineId,
+			final boolean advised,
+			final BigDecimal plannedQty,
+			final BigDecimal actualQty)
 	{
+		this.advised = advised;
+
 		final boolean detailForPpOrderHead = productBomLineId <= 0;
-		if (detailForPpOrderHead)
+		if (advised && detailForPpOrderHead)
 		{
 			// these two need to be available when using this productionDetail to ppOrder pojo
-			checkIdGreaterThanZero("plantId", plantId);
-			checkIdGreaterThanZero("uomId", uomId);
+			Check.errorIf(plantId <= 0, "Parameter plantId needs to be >= 0 for and advised PPOrder 'Header' productionDetail");
 		}
+
 		this.plantId = plantId;
-		this.uomId = uomId;
 
 		this.productPlanningId = productPlanningId;
 		this.productBomLineId = productBomLineId;
@@ -72,5 +101,7 @@ public class ProductionDetail
 		this.ppOrderId = ppOrderId;
 		this.ppOrderDocStatus = ppOrderDocStatus;
 		this.ppOrderLineId = ppOrderLineId;
+		this.plannedQty = plannedQty;
+		this.actualQty = actualQty;
 	}
 }

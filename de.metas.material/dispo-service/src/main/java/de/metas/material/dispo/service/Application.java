@@ -5,6 +5,7 @@ import java.util.Collections;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
+import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
-import de.metas.material.dispo.service.event.MaterialDispoEventListenerFacade;
-import de.metas.material.event.MaterialEventService;
+import de.metas.Profiles;
+import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 
 /*
  * #%L
@@ -52,12 +57,6 @@ public class Application
 	@Autowired
 	private ApplicationContext applicationContext;
 
-	@Autowired
-	private MaterialEventService eventService;
-
-	@Autowired
-	private MaterialDispoEventListenerFacade mdEventListener;
-
 	public static void main(final String[] args)
 	{
 		Ini.setRunMode(RunMode.BACKEND);
@@ -65,10 +64,11 @@ public class Application
 		new SpringApplicationBuilder(Application.class)
 				.headless(true)
 				.web(true)
+				.profiles(Profiles.PROFILE_MaterialDispo)
 				.run(args);
 	}
 
-	@Bean
+	@Bean(name=Adempiere.BEAN_NAME)
 	@Profile("!test")
 	public Adempiere adempiere()
 	{
@@ -79,10 +79,19 @@ public class Application
 		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
 		adempiere.startup(RunMode.BACKEND);
 
-		eventService.registerListener(mdEventListener);
-		eventService.subscribeToEventBus();
+		enableCacheEventsForDispoTables();
 
 		return adempiere;
 	}
 
+	private void enableCacheEventsForDispoTables()
+	{
+		final CacheMgt cacheMgt = CacheMgt.get();
+
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_MD_Candidate.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_MD_Candidate_Demand_Detail.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_MD_Candidate_Dist_Detail.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_MD_Candidate_Prod_Detail.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_MD_Candidate_Transaction_Detail.Table_Name);
+	}
 }

@@ -45,7 +45,8 @@ public class SupplyRequiredEventCreator
 	{
 		verifyCandidateType(demandCandidate);
 
-		final SupplyRequiredDescriptor descriptor = createdSupplyRequiredDescriptor(demandCandidate, requiredAdditionalQty);
+		final SupplyRequiredDescriptor descriptor = createSupplyRequiredDescriptor(
+				demandCandidate, requiredAdditionalQty);
 
 		final SupplyRequiredEvent materialDemandEvent = SupplyRequiredEvent.builder()
 				.supplyRequiredDescriptor(descriptor).build();
@@ -60,11 +61,13 @@ public class SupplyRequiredEventCreator
 				"Given parameter demandCandidate needs to have DEMAND or STOCK_UP as type; demandCandidate=%s", demandCandidate);
 	}
 
-	private SupplyRequiredDescriptor createdSupplyRequiredDescriptor(
+	private SupplyRequiredDescriptor createSupplyRequiredDescriptor(
 			@NonNull final Candidate demandCandidate,
 			@NonNull final BigDecimal requiredAdditionalQty)
 	{
-		final SupplyRequiredDescriptorBuilder descriptorBuilder = createAndInitSupplyRequiredDescriptor(demandCandidate, requiredAdditionalQty);
+		final SupplyRequiredDescriptorBuilder descriptorBuilder = createAndInitSupplyRequiredDescriptor(
+				demandCandidate,
+				requiredAdditionalQty);
 
 		if (demandCandidate.getDemandDetail() != null)
 		{
@@ -72,7 +75,8 @@ public class SupplyRequiredEventCreator
 			descriptorBuilder
 					.forecastLineId(demandDetail.getForecastLineId())
 					.shipmentScheduleId(demandDetail.getShipmentScheduleId())
-					.orderLineId(demandDetail.getOrderLineId());
+					.orderLineId(demandDetail.getOrderLineId())
+					.subscriptionProgressId(demandDetail.getSubscriptionProgressId());
 		}
 		return descriptorBuilder.build();
 	}
@@ -83,7 +87,7 @@ public class SupplyRequiredEventCreator
 	{
 		return SupplyRequiredDescriptor.builder()
 				.demandCandidateId(candidate.getId())
-				.eventDescr(new EventDescriptor(candidate.getClientId(), candidate.getOrgId()))
+				.eventDescriptor(new EventDescriptor(candidate.getClientId(), candidate.getOrgId()))
 				.materialDescriptor(candidate.getMaterialDescriptor().withQuantity(qty));
 	}
 

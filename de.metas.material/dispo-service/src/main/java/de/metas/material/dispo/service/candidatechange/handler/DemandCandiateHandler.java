@@ -18,7 +18,7 @@ import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.StockMultiQuery;
 import de.metas.material.dispo.commons.repository.StockRepository;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
 
@@ -51,7 +51,7 @@ public class DemandCandiateHandler implements CandidateHandler
 
 	private final StockRepository stockRepository;
 
-	private final MaterialEventService materialEventService;
+	private final PostMaterialEventService materialEventService;
 
 	private final StockCandidateService stockCandidateService;
 
@@ -60,7 +60,7 @@ public class DemandCandiateHandler implements CandidateHandler
 	public DemandCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
-			@NonNull final MaterialEventService materialEventService,
+			@NonNull final PostMaterialEventService materialEventService,
 			@NonNull final StockRepository stockRepository,
 			@NonNull final StockCandidateService stockCandidateService)
 	{
@@ -112,6 +112,7 @@ public class DemandCandiateHandler implements CandidateHandler
 			final Candidate existingSupplyParentStockWithoutParentId = retrieveSupplyParentStockWithoutParentIdOrNull(demandCandidateWithId);
 			if (existingSupplyParentStockWithoutParentId != null)
 			{
+				//
 				final Candidate existingSupplyParentStockWithUpdatedQty = existingSupplyParentStockWithoutParentId
 						.withQuantity(existingSupplyParentStockWithoutParentId.getQuantity().subtract(demandCandidateWithId.getQuantity()))
 						.withParentId(CandidatesQuery.UNSPECIFIED_PARENT_ID);
@@ -198,10 +199,11 @@ public class DemandCandiateHandler implements CandidateHandler
 		return existingSupplyParentStockWithoutOwnParentId;
 	}
 
-
 	private void fireSupplyRequiredEventIfQtyBelowZero(@NonNull final Candidate demandCandidateWithId)
 	{
-		final StockMultiQuery query = StockMultiQuery.forDescriptorAndAllPossibleBPartnerIds(demandCandidateWithId.getMaterialDescriptor());
+		final StockMultiQuery query = StockMultiQuery
+				.forDescriptorAndAllPossibleBPartnerIds(demandCandidateWithId.getMaterialDescriptor());
+
 		final BigDecimal availableQuantityAfterDemandWasApplied = stockRepository.retrieveAvailableStockQtySum(query);
 
 		if (availableQuantityAfterDemandWasApplied.signum() < 0)
@@ -210,7 +212,7 @@ public class DemandCandiateHandler implements CandidateHandler
 
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
 					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty);
-			materialEventService.fireEvent(supplyRequiredEvent);
+			materialEventService.postEventAfterNextCommit(supplyRequiredEvent);
 		}
 	}
 }

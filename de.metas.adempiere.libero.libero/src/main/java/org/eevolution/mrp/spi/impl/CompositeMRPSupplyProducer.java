@@ -35,13 +35,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
-import org.eevolution.exceptions.LiberoException;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.pporder.LiberoException;
 
 public class CompositeMRPSupplyProducer implements IMRPSupplyProducer
 {

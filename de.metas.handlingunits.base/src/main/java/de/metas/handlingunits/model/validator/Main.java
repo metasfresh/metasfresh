@@ -173,6 +173,8 @@ public final class Main extends AbstractModuleInterceptor
 
 		engine.addModelValidator(de.metas.handlingunits.sourcehu.interceptor.M_HU.INSTANCE, client);
 
+		engine.addModelValidator(de.metas.handlingunits.material.interceptor.M_Transaction.INSTANCE, client);
+
 		//
 		// 08255: M_ShipmentSchedule update qtys
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.inoutcandidate.callout.M_ShipmentSchedule.instance);

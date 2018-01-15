@@ -102,7 +102,7 @@ public class Login
 
 	// services
 	private static final transient Logger log = LogManager.getLogger(Login.class);
-	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
 	private final transient IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	private final transient IUserDAO userDAO = Services.get(IUserDAO.class);
@@ -222,6 +222,7 @@ public class Login
 		//
 		// If not authenticated so far, use AD_User as backup
 		//
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int maxLoginFailure = sysConfigBL.getIntValue("ZK_LOGIN_FAILURES_MAX", 3);
 		final int accountLockExpire = sysConfigBL.getIntValue("USERACCOUNT_LOCK_EXPIRE", 30);
 		final MFSession session = startSession();
@@ -253,7 +254,7 @@ public class Login
 				throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
 			}
 		}
-		
+
 		final boolean isPasswordValid = Objects.equals(password, user.getPassword());
 		if (!isPasswordValid)
 		{
@@ -297,7 +298,7 @@ public class Login
 			if (Ini.isPropertyBool(Ini.P_STORE_PWD) && systemBL.isRememberPasswordAllowed("SWING_LOGIN_ALLOW_REMEMBER_ME"))
 				Ini.setProperty(Ini.P_PWD, password);
 		}
-		
+
 		//
 		// Use user's AD_Language, if any
 		if (!Check.isEmpty(user.getAD_Language()))
@@ -632,6 +633,8 @@ public class Login
 				&& Ini.isPropertyBool(Ini.P_SHOW_ACCT));
 		ctx.setProperty("#ShowTrl", Ini.isPropertyBool(Ini.P_SHOW_TRL));
 		ctx.setProperty("#ShowAdvanced", Ini.isPropertyBool(Ini.P_SHOW_ADVANCED));
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		ctx.setProperty("#CashAsPayment", sysConfigBL.getBooleanValue("CASH_AS_PAYMENT", true, AD_Client_ID));
 
 		String retValue = "";
@@ -906,6 +909,8 @@ public class Login
 		final int AD_Client_ID = ctx.getAD_Client_ID();
 		final int AD_Org_ID = ctx.getAD_Org_ID();
 
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 		final String windowHeaderNoticeText = sysConfigBL.getValue(SYSCONFIG_UI_WindowHeader_Notice_Text, AD_Client_ID, AD_Org_ID);
 		ctx.setProperty(Env.CTXNAME_UI_WindowHeader_Notice_Text, windowHeaderNoticeText);
 
@@ -950,6 +955,7 @@ public class Login
 	public boolean isShowWarehouseOnLogin()
 	{
 		final boolean defaultValue = true;
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		return sysConfigBL.getBooleanValue(SYSCONFIG_ShowWarehouseOnLogin, defaultValue, Env.CTXVALUE_AD_Client_ID_System, Env.CTXVALUE_AD_Org_ID_System);
 	}
 

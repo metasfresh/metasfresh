@@ -93,7 +93,6 @@ public class TraceHUTrxListener implements IHUTrxListener
 		final ITrxListenerManager trxListenerManager = trxManager.getTrxListenerManager(ITrx.TRXNAME_ThreadInherited);
 		trxListenerManager
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerWeakly(false) // register "hard", because that's how it was before
 				.registerHandlingMethod(innerTrx -> {
 
 					// do a brand new transaction in which we execute our things,

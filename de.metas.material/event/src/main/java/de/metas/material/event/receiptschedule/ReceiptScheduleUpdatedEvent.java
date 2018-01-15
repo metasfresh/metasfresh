@@ -2,6 +2,8 @@ package de.metas.material.event.receiptschedule;
 
 import java.math.BigDecimal;
 
+import org.adempiere.util.Check;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -10,7 +12,6 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -42,7 +43,6 @@ public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 {
 	public static final String TYPE = "ReceiptScheduleUpdatedEvent";
 
-	// TODO: fire this event for shipment schedules, all with deltas etc
 	private final BigDecimal orderedQuantityDelta;
 
 	private final BigDecimal reservedQuantityDelta;
@@ -51,19 +51,26 @@ public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 	@Builder
 	public ReceiptScheduleUpdatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("orderedMaterial") final MaterialDescriptor orderedMaterial,
-			@JsonProperty("orderedQuantityDelta") @NonNull final BigDecimal orderedQuantityDelta,
+			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
+			@JsonProperty("orderedQuantityDelta") final BigDecimal orderedQuantityDelta,
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
-			@JsonProperty("reservedQuantityDelta") @NonNull final BigDecimal reservedQuantityDelta,
+			@JsonProperty("reservedQuantityDelta") final BigDecimal reservedQuantityDelta,
 			@JsonProperty("receiptScheduleId") final int receiptScheduleId)
 	{
-		super(
-				eventDescriptor,
-				orderedMaterial,
+		super(eventDescriptor,
+				materialDescriptor,
 				reservedQuantity,
 				receiptScheduleId);
 
 		this.orderedQuantityDelta = orderedQuantityDelta;
 		this.reservedQuantityDelta = reservedQuantityDelta;
+	}
+
+	@Override
+	public void validate()
+	{
+		super.validate();
+		Check.errorIf(reservedQuantityDelta == null, "reservedQuantityDelta may not be null");
+		Check.errorIf(orderedQuantityDelta == null, "orderedQuantityDelta may not be null");
 	}
 }

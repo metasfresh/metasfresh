@@ -83,7 +83,7 @@ public enum GOOrderStatus implements OrderStatus
 		return type;
 	}
 
-	public static GOOrderStatus forNullableCode(@NonNull final String code)
+	public static GOOrderStatus forNullableCode(final String code)
 	{
 		if (Check.isEmpty(code, true))
 		{

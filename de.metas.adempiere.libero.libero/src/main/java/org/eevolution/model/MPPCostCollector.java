@@ -77,13 +77,14 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.exceptions.ActivityProcessedException;
-import org.eevolution.exceptions.LiberoException;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.order.IOrderBL;
 import de.metas.product.IProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
@@ -995,7 +996,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 				order.setAD_Org_ID(getAD_Org_ID());
 				order.setBPartner(vendor);
 				order.setIsSOTrx(false);
-				order.setC_DocTypeTarget_ID();
+				Services.get(IOrderBL.class).setDocTypeTargetId(order);
 				order.setDatePromised(datePromised);
 				order.setDescription(Services.get(IMsgBL.class).translate(getCtx(), MPPOrder.COLUMNNAME_PP_Order_ID) + ":" + getPP_Order().getDocumentNo());
 				order.setDocStatus(MOrder.DOCSTATUS_Drafted);

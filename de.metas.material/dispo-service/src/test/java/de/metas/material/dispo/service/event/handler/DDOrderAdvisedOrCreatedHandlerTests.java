@@ -36,9 +36,10 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandiateHandler;
-import de.metas.material.dispo.service.event.MaterialDispoEventListenerFacade;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
-import de.metas.material.event.MaterialEventService;
+import de.metas.material.dispo.service.event.handler.ddorder.DDOrderAdvisedOrCreatedHandler;
+import de.metas.material.event.MaterialEventHandlerRegistry;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
@@ -108,7 +109,7 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 	private DDOrderAdvisedOrCreatedHandler ddOrderAdvisedOrCreatedHandler;
 
 	@Mocked
-	private MaterialEventService materialEventService;
+	private PostMaterialEventService postMaterialEventService;
 
 	private StockRepository stockRepository;
 
@@ -122,12 +123,14 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		stockRepository = new StockRepository();
-		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepository, candidateRepositoryCommands);
+		final StockCandidateService stockCandidateService = new StockCandidateService(
+				candidateRepository,
+				candidateRepositoryCommands);
 
 		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(
 				candidateRepository,
 				candidateRepositoryCommands,
-				materialEventService,
+				postMaterialEventService,
 				stockRepository,
 				stockCandidateService);
 		final SupplyCandiateHandler supplyCandiateHandler = new SupplyCandiateHandler(candidateRepository, candidateRepositoryCommands, stockCandidateService);
@@ -140,7 +143,7 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 				candidateRepositoryCommands,
 				candidateChangeService,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepository, materialEventService));
+				new RequestMaterialOrderService(candidateRepository, postMaterialEventService));
 	}
 
 	/**
@@ -173,7 +176,7 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 						.build())
 				.build();
 
-		ddOrderAdvisedOrCreatedHandler.handleDDOrderAdvisedOrCreatedEvent(event);
+		ddOrderAdvisedOrCreatedHandler.handleEvent(event);
 
 		final List<I_MD_Candidate> allNonStockRecords = DispoTestUtils.filterExclStock();
 		final int groupIdOfFirstRecord = allNonStockRecords.get(0).getMD_Candidate_GroupId();
@@ -233,7 +236,7 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 	}
 
 	/**
-	 * Submits two distributionAdvisedEvent to the {@link MaterialDispoEventListenerFacade}.
+	 * Submits two distributionAdvisedEvent to the {@link MaterialEventHandlerRegistry}.
 	 */
 	@Test
 	public void handleDistributionAdvisedEvent_with_two_events_chronological()
@@ -388,6 +391,6 @@ public class DDOrderAdvisedOrCreatedHandlerTests
 								.build())
 						.build())
 				.build();
-		distributionAdvisedHandler.handleDDOrderAdvisedOrCreatedEvent(event1);
+		distributionAdvisedHandler.handleEvent(event1);
 	}
 }

@@ -4,12 +4,11 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -55,15 +54,13 @@ public class HUInventoryBL implements IHUInventoryBL
 		// in the case of returns the docSubType is null
 
 		final I_C_DocType returnsDocType = Services.get(IDocTypeDAO.class)
-				.getDocTypeOrNullForSOTrx(
-						Env.getCtx() // ctx
-						, X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory // doc basetype
-						, X_C_DocType.DOCSUBTYPE_MaterialDisposal // doc subtype
-						, false // isSOTrx
-						, inventory.getAD_Client_ID() // client
-						, inventory.getAD_Org_ID() // org
-						, ITrx.TRXNAME_None); // trx
-
+				.getDocTypeOrNull(DocTypeQuery.builder()
+						.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
+						.docSubType(X_C_DocType.DOCSUBTYPE_MaterialDisposal)
+						.isSOTrx(false)
+						.adClientId(inventory.getAD_Client_ID())
+						.adOrgId(inventory.getAD_Org_ID())
+						.build());
 		if (returnsDocType == null)
 		{
 			// there is no material disposal doc type defined in the project. Return false by default

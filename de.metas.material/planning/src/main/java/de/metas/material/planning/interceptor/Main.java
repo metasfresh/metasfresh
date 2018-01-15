@@ -2,13 +2,9 @@ package de.metas.material.planning.interceptor;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.Adempiere;
-import org.compiere.Adempiere.RunMode;
 import org.compiere.model.I_AD_Client;
-import org.compiere.util.Ini;
 
-import de.metas.material.event.MaterialEventService;
-import de.metas.material.planning.event.SupplyRequiredEventListener;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -42,20 +38,5 @@ public class Main extends AbstractModuleInterceptor
 	{
 		engine.addModelValidator(M_Product.INSTANCE, client);
 		engine.addModelValidator(S_Resource.INSTANCE, client);
-	}
-
-	@Override
-	protected void onAfterInit()
-	{
-		if (Ini.getRunMode() != RunMode.BACKEND)
-		{
-			return; // event based material planning can only run in the backend as of now
-		}
-
-		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
-		final SupplyRequiredEventListener materialDemandListener = Adempiere.getBean(SupplyRequiredEventListener.class);
-
-		materialEventService.registerListener(materialDemandListener);
-		materialEventService.subscribeToEventBus();
 	}
 }

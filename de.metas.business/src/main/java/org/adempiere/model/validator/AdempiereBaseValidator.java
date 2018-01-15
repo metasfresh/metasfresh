@@ -151,7 +151,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 			engine.addModelValidator(new de.metas.adempiere.docline.sort.model.validator.C_BP_DocLine_Sort(), client);
 		}
 
-		//
+		engine.addModelValidator(de.metas.event.interceptor.Main.INSTANCE, client);
+
 		// Task 09548
 		engine.addModelValidator(de.metas.inout.model.validator.M_InOutLine.INSTANCE, client);
 
@@ -183,7 +184,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		// #2913
 		engine.addModelValidator(org.adempiere.ad.column.model.interceptor.AD_Column.instance, client);
-		
+
 		// #1752
 		engine.addModelValidator(new org.adempiere.ad.field.model.interceptor.AD_Field(), client);
 		engine.addModelValidator(new AD_Element(), client);
@@ -317,7 +318,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_InfoWindow.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_AD_InfoColumn.Table_Name);
-		
+
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_BPartner.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_BP_Relation.Table_Name);
 

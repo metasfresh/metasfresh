@@ -1,6 +1,6 @@
 package de.metas.material.planning.event;
 
-import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptor;
+import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -8,12 +8,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedOrCreatedEvent;
@@ -67,10 +69,19 @@ public class DistributionAdvisedEventCreatorTest
 	@Mocked
 	DDOrderLine ddOrderLine;
 
+	private I_M_Product product;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		save(uom);
+
+		product = newInstance(I_M_Product.class);
+		product.setC_UOM(uom);
+		save(product);
 	}
 
 	@Test
@@ -87,7 +98,7 @@ public class DistributionAdvisedEventCreatorTest
 			ddOrder.getLines(); result = ImmutableList.of(ddOrderLine);
 			ddOrderLine.getNetworkDistributionLineId(); result = networkDistributionLine.getDD_NetworkDistributionLine_ID();
 		}};	// @formatter:on
-		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptor();
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
 
 		final DDOrderAdvisedOrCreatedEventCreator productionAdvisedEventCreator = new DDOrderAdvisedOrCreatedEventCreator(ddOrderDemandMatcher, ddOrderPojoSupplier);
 		final List<DDOrderAdvisedOrCreatedEvent> events = productionAdvisedEventCreator.createDistributionAdvisedEvents(supplyRequiredDescriptor, mrpContext);

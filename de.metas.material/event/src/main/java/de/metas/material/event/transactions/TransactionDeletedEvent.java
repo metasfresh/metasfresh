@@ -41,11 +41,36 @@ public class TransactionDeletedEvent extends AbstractTransactionEvent
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
 			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
-			@JsonProperty("transactionId") final int transactionId)
+			@JsonProperty("ppOrderId") final int ppOrderId,
+			@JsonProperty("ppOrderLineId") final int ppOrderLineId,
+			@JsonProperty("ddOrderId") final int ddOrderId,
+			@JsonProperty("ddOrderLineId") final int ddOrderLineId,
+			@JsonProperty("transactionId") final int transactionId,
+			@JsonProperty("directMovementWarehouse") final boolean directMovementWarehouse)
 	{
-		super(eventDescriptor, materialDescriptor, shipmentScheduleId, transactionId);
+		super(eventDescriptor,
+				materialDescriptor,
+				shipmentScheduleId,
+				ppOrderId,
+				ppOrderLineId,
+				ddOrderId,
+				ddOrderLineId,
+				transactionId,
+				directMovementWarehouse);
 	}
 
+	/**
+	 * @return zero.
+	 */
+	@Override
+	public BigDecimal getQuantity()
+	{
+		return BigDecimal.ZERO;
+	}
+
+	/**
+	 * @return our material descriptor's <b>negated</b> quantity, i.e. the negated {@code MovementQty} if the underlying {@code M_Transaction}.
+	 */
 	@Override
 	public BigDecimal getQuantityDelta()
 	{

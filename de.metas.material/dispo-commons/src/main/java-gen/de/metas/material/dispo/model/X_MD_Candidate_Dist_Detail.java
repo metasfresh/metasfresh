@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.material.dispo.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 81128668L;
+	private static final long serialVersionUID = 1515083853L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Dist_Detail (Properties ctx, int MD_Candidate_Dist_Detail_ID, String trxName)
@@ -22,6 +23,7 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
       super (ctx, MD_Candidate_Dist_Detail_ID, trxName);
       /** if (MD_Candidate_Dist_Detail_ID == 0)
         {
+			setIsAdvised (false); // N
 			setMD_Candidate_Dist_Detail_ID (0);
 			setMD_Candidate_ID (0);
         } */
@@ -41,6 +43,25 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Istmenge.
+		@param ActualQty Istmenge	  */
+	@Override
+	public void setActualQty (java.math.BigDecimal ActualQty)
+	{
+		set_Value (COLUMNNAME_ActualQty, ActualQty);
+	}
+
+	/** Get Istmenge.
+		@return Istmenge	  */
+	@Override
+	public java.math.BigDecimal getActualQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
 
 	@Override
 	public org.eevolution.model.I_DD_NetworkDistributionLine getDD_NetworkDistributionLine() throws RuntimeException
@@ -190,6 +211,32 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 		return ii.intValue();
 	}
 
+	/** Set Vom System vorgeschlagen.
+		@param IsAdvised 
+		Ja bedeutet, dass es zumindest ursprünglich kein entsprechendes Dokument (z.B. Produktionsauftrag) gab, sondern dass das System einen Beleg vorgeschlagen hatte.
+	  */
+	@Override
+	public void setIsAdvised (boolean IsAdvised)
+	{
+		set_Value (COLUMNNAME_IsAdvised, Boolean.valueOf(IsAdvised));
+	}
+
+	/** Get Vom System vorgeschlagen.
+		@return Ja bedeutet, dass es zumindest ursprünglich kein entsprechendes Dokument (z.B. Produktionsauftrag) gab, sondern dass das System einen Beleg vorgeschlagen hatte.
+	  */
+	@Override
+	public boolean isAdvised () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAdvised);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Dispo-Bereitstellungsdetail.
 		@param MD_Candidate_Dist_Detail_ID Dispo-Bereitstellungsdetail	  */
 	@Override
@@ -281,6 +328,25 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Geplante Menge.
+		@param PlannedQty Geplante Menge	  */
+	@Override
+	public void setPlannedQty (java.math.BigDecimal PlannedQty)
+	{
+		set_Value (COLUMNNAME_PlannedQty, PlannedQty);
+	}
+
+	/** Get Geplante Menge.
+		@return Geplante Menge	  */
+	@Override
+	public java.math.BigDecimal getPlannedQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PlannedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	@Override

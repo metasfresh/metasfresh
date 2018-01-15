@@ -119,26 +119,19 @@ public class CandidateRepositoryRetrieval
 
 		final CandidateBuilder builder = createAndInitializeBuilder(candidateRecordOrNull);
 
-		final CandidateBusinessCase businessCase = getSubTypeOrNull(candidateRecordOrNull);
+		final CandidateBusinessCase businessCase = getBusinesCaseOrNull(candidateRecordOrNull);
 		builder.businessCase(businessCase);
 
-		if (businessCase == CandidateBusinessCase.PRODUCTION)
-		{
-			builder.productionDetail(createProductionDetailOrNull(candidateRecordOrNull));
-		}
-		else if (businessCase == CandidateBusinessCase.DISTRIBUTION)
-		{
-			builder.distributionDetail(createDistributionDetailOrNull(candidateRecordOrNull));
-		}
-
+		builder.productionDetail(createProductionDetailOrNull(candidateRecordOrNull));
+		builder.distributionDetail(createDistributionDetailOrNull(candidateRecordOrNull));
 		builder.demandDetail(createDemandDetailOrNull(candidateRecordOrNull));
 
-		builder.transactionDetails(retrieveTransactionDetails(candidateRecordOrNull));
+		builder.transactionDetails(createTransactionDetails(candidateRecordOrNull));
 
 		return Optional.of(builder.build());
 	}
 
-	private CandidateBusinessCase getSubTypeOrNull(@NonNull final I_MD_Candidate candidateRecord)
+	private CandidateBusinessCase getBusinesCaseOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		CandidateBusinessCase subType = null;
 		if (!Check.isEmpty(candidateRecord.getMD_Candidate_BusinessCase()))
@@ -205,47 +198,32 @@ public class CandidateRepositoryRetrieval
 
 	private ProductionDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		final I_MD_Candidate_Prod_Detail productionDetail = RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
+		final I_MD_Candidate_Prod_Detail productionDetail = //
+				RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
 		if (productionDetail == null)
 		{
 			return null;
 		}
-		final ProductionDetail productionCandidateDetail = ProductionDetail.builder()
-				.description(productionDetail.getDescription())
-				.plantId(productionDetail.getPP_Plant_ID())
-				.productBomLineId(productionDetail.getPP_Product_BOMLine_ID())
-				.productPlanningId(productionDetail.getPP_Product_Planning_ID())
-				.uomId(productionDetail.getC_UOM_ID())
-				.ppOrderId(productionDetail.getPP_Order_ID())
-				.ppOrderLineId(productionDetail.getPP_Order_BOMLine_ID())
-				.ppOrderDocStatus(productionDetail.getPP_Order_DocStatus())
-				.build();
-		return productionCandidateDetail;
+
+		return ProductionDetail.forProductionDetailRecord(productionDetail);
 	}
 
 	private DistributionDetail createDistributionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		final I_MD_Candidate_Dist_Detail distributionDetail = RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Dist_Detail.class);
+		final I_MD_Candidate_Dist_Detail distributionDetail = //
+				RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Dist_Detail.class);
 		if (distributionDetail == null)
 		{
 			return null;
 		}
 
-		final DistributionDetail distributionCandidateDetail = DistributionDetail.builder()
-				.networkDistributionLineId(distributionDetail.getDD_NetworkDistributionLine_ID())
-				.productPlanningId(distributionDetail.getPP_Product_Planning_ID())
-				.plantId(distributionDetail.getPP_Plant_ID())
-				.ddOrderId(distributionDetail.getDD_Order_ID())
-				.ddOrderLineId(distributionDetail.getDD_OrderLine_ID())
-				.ddOrderDocStatus(distributionDetail.getDD_Order_DocStatus())
-				.shipperId(distributionDetail.getM_Shipper_ID())
-				.build();
-		return distributionCandidateDetail;
+		return DistributionDetail.forDistributionDetailRecord(distributionDetail);
 	}
 
 	private static DemandDetail createDemandDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
-		final I_MD_Candidate_Demand_Detail demandDetailRecord = RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Demand_Detail.class);
+		final I_MD_Candidate_Demand_Detail demandDetailRecord = //
+				RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Demand_Detail.class);
 		if (demandDetailRecord == null)
 		{
 			return null;
@@ -254,7 +232,7 @@ public class CandidateRepositoryRetrieval
 		return DemandDetail.forDemandDetailRecord(demandDetailRecord);
 	}
 
-	private List<TransactionDetail> retrieveTransactionDetails(@NonNull final I_MD_Candidate candidateRecord)
+	private static List<TransactionDetail> createTransactionDetails(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final List<I_MD_Candidate_Transaction_Detail> transactionDetailRecords = //
 				RepositoryCommons.createCandidateDetailQueryBuilder(candidateRecord, I_MD_Candidate_Transaction_Detail.class)
@@ -263,7 +241,7 @@ public class CandidateRepositoryRetrieval
 		final ImmutableList.Builder<TransactionDetail> result = ImmutableList.builder();
 		for (final I_MD_Candidate_Transaction_Detail transactionDetailRecord : transactionDetailRecords)
 		{
-			result.add(TransactionDetail.fromTransactionDetailRecord(transactionDetailRecord));
+			result.add(TransactionDetail.forTransactionDetailRecord(transactionDetailRecord));
 		}
 		return result.build();
 	}

@@ -35,13 +35,11 @@ public class DimensionSpecGroup
 {
 	public static DimensionSpecGroup EMPTY_GROUP = new DimensionSpecGroup(
 			Services.get(IMsgBL.class).getTranslatableMsgText(DimensionConstants.MSG_NoneOrEmpty),
-			AttributesKey.NONE,
-			true);
+			AttributesKey.NONE);
 
 	public static DimensionSpecGroup OTHER_GROUP = new DimensionSpecGroup(
 			Services.get(IMsgBL.class).getTranslatableMsgText(AttributesKey.MSG_ATTRIBUTES_KEY_OTHER),
-			AttributesKey.OTHER,
-			true);
+			AttributesKey.OTHER);
 
 	@NonNull
 	ITranslatableString groupName;
@@ -53,5 +51,13 @@ public class DimensionSpecGroup
 	@NonNull
 	AttributesKey attributesKey;
 
-	boolean emptyGroup;
+	public boolean isEmptyGroup()
+	{
+		return AttributesKey.NONE.equals(attributesKey);
+	}
+
+	public boolean isOtherGroup()
+	{
+		return AttributesKey.OTHER.equals(attributesKey);
+	}
 }

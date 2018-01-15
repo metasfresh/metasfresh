@@ -7,13 +7,13 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.ModelValidator;
-import org.eevolution.api.IPPOrderBOMDAO;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.model.validator.PP_Order;

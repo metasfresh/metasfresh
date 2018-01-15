@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -67,15 +68,22 @@ public class RepositoryCommons
 		final IQueryBuilder<I_MD_Candidate> builder = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter();
 
+		if(CandidatesQuery.FALSE.equals(query))
+		{
+			builder.filter(ConstantQueryFilter.of(false));
+			return builder;
+		}
+		else if (query.getId() > 0)
+		{
+			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, query.getId());
+			return builder;
+		}
+
 		if (query.getType() != null)
 		{
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Type, query.getType().toString());
 		}
 
-		if (query.getId() > 0)
-		{
-			builder.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, query.getId());
-		}
 
 		if (query.getParentId() >= 0)
 		{
@@ -297,6 +305,11 @@ public class RepositoryCommons
 			if (productionDetail.getProductBomLineId() > 0)
 			{
 				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Product_BOMLine_ID, productionDetail.getProductBomLineId());
+				doFilter = true;
+			}
+			if (productionDetail.getPpOrderId() > 0)
+			{
+				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Order_ID, productionDetail.getPpOrderId());
 				doFilter = true;
 			}
 			if (doFilter)
