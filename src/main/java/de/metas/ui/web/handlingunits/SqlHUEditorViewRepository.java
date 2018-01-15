@@ -281,7 +281,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 					.stream()
 					.map(includedVHU -> storageFactory.getStorage(includedVHU))
 					.flatMap(vhuStorage -> vhuStorage.getProductStorages().stream())
-					.map(vhuProductStorage -> createHUEditorRow(huId, topLevelHUId, vhuProductStorage, processed))
+					.map(vhuProductStorage -> createHUEditorRow(huId, topLevelHUIdEffective, vhuProductStorage, processed))
 					.forEach(huEditorRow::addIncludedRow);
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI.equals(huUnitTypeCode))
