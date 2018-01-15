@@ -22,15 +22,21 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#3209](https://github.com/metasfresh/metasfresh/issues/3209) Material Receipt candidates action for batch serial No on selected HU
+    * New Action added for Serial No generation in Material Receipt and distribution to its received Handling Units.
   * [#3213](https://github.com/metasfresh/metasfresh/issues/3213) New Action for Repost Document in Accounting Transaction Window
+    * New Action in Accounting Transaction Window, allowing to repost the shown lines.
   * [#3245](https://github.com/metasfresh/metasfresh/issues/3245) Material Cockpit Details modal overlay
+    * Improvement for Material Cockpit, now allowing a modal overlay with detailed information about reserved and ordered quantities and their documents.
   * [#3271](https://github.com/metasfresh/metasfresh/issues/3271) Implement event log
+    * New Event Log Functionality that is used first time for nearly realtime Material Cocpit updates.
   * [#3279](https://github.com/metasfresh/metasfresh/issues/3279) Pharma: Copy missing product prices after import
+    * New Functionality after import of pharmaceutlical prodcuts. Now automatically creating product prices in the corresponding pricelist versions.
   * [#3284](https://github.com/metasfresh/metasfresh/issues/3284) Translation of eMail Editor in WebUI
     * Translation of the eMail Editor in WebUI for Language/ Locale de_DE.
   * [#3286](https://github.com/metasfresh/metasfresh/issues/3286) Workaround for truncating T_WEBUI_ViewSelection/-Line
     * Temporary Solution for the data growth of ViewSelection and ViewSelectionline tables.
   * [#3288](https://github.com/metasfresh/metasfresh/issues/3288) Shipper Transportation: Shipper Location: change validation rule logic
+    * Adjustment of the Shipper Transportation validation rule logic.
   * [#3289](https://github.com/metasfresh/metasfresh/issues/3289) WebUI: New Window for Document Details in Material Cockpit
     * New Window for Document Details that can now be shown via Material Cockpit Window.
   * [#3293](https://github.com/metasfresh/metasfresh/issues/3293) Webui: Add Translation Messages for Daterangepicker
@@ -38,6 +44,7 @@ Here come the actual release notes:
   * [#3303](https://github.com/metasfresh/metasfresh/issues/3303) WebUI: New Window for GO! Delivery Orders
     * New Window in WebUI for the new Functionality of General Overnight Shipper Transportation.
   * [#3304](https://github.com/metasfresh/metasfresh/issues/3304) Copy C_DocType.Description/DescriptionBottom to Order and Invoice
+    * New feature for Documents Generation. Now it's possible to define default text snippets in Document Types and copy these automatically to the created document description when selecting the Document type.
   * [#3309](https://github.com/metasfresh/metasfresh/issues/3309) Webui Window Design: Improve window Event store
     * New System Admin Window Event Store. Allows the System Admin to view the status of events and checking/ resubmitting them in case of issues.
 
