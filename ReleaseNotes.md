@@ -10,23 +10,44 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.42 (2018-04)
+**release for week 2018-04**
+
+## Features
+## Fixes
+
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**
 
 ## Features
 * metasfresh-app
+  * [#3209](https://github.com/metasfresh/metasfresh/issues/3209) Material Receipt candidates action for batch serial No on selected HU
+  * [#3213](https://github.com/metasfresh/metasfresh/issues/3213) New Action for Repost Document in Accounting Transaction Window
+  * [#3245](https://github.com/metasfresh/metasfresh/issues/3245) Material Cockpit Details modal overlay
+  * [#3271](https://github.com/metasfresh/metasfresh/issues/3271) Implement event log
+  * [#3279](https://github.com/metasfresh/metasfresh/issues/3279) Pharma: Copy missing product prices after import
   * [#3284](https://github.com/metasfresh/metasfresh/issues/3284) Translation of eMail Editor in WebUI
     * Translation of the eMail Editor in WebUI for Language/ Locale de_DE.
   * [#3286](https://github.com/metasfresh/metasfresh/issues/3286) Workaround for truncating T_WEBUI_ViewSelection/-Line
     * Temporary Solution for the data growth of ViewSelection and ViewSelectionline tables.
+  * [#3288](https://github.com/metasfresh/metasfresh/issues/3288) Shipper Transportation: Shipper Location: change validation rule logic
   * [#3289](https://github.com/metasfresh/metasfresh/issues/3289) WebUI: New Window for Document Details in Material Cockpit
     * New Window for Document Details that can now be shown via Material Cockpit Window.
   * [#3293](https://github.com/metasfresh/metasfresh/issues/3293) Webui: Add Translation Messages for Daterangepicker
     * Improved Translations. Added static translations for de_DE, en_US and Date Range Picker.
   * [#3303](https://github.com/metasfresh/metasfresh/issues/3303) WebUI: New Window for GO! Delivery Orders
     * New Window in WebUI for the new Functionality of General Overnight Shipper Transportation.
+  * [#3304](https://github.com/metasfresh/metasfresh/issues/3304) Copy C_DocType.Description/DescriptionBottom to Order and Invoice
   * [#3309](https://github.com/metasfresh/metasfresh/issues/3309) Webui Window Design: Improve window Event store
     * New System Admin Window Event Store. Allows the System Admin to view the status of events and checking/ resubmitting them in case of issues.
+
+* metasfresh-webui-API
+  * [#672](https://github.com/metasfresh/metasfresh-webui-api/issues/672) Window for easy Distribution Orderlines Handling in WebUI
+  * [#737](https://github.com/metasfresh/metasfresh-webui-api/issues/737) Deal properly with T_WEBUI_ViewSelection[Line]
+  * [#745](https://github.com/metasfresh/metasfresh-webui-api/issues/745) Batch entry mode w/o Packing Instruction branch:master type:enhancement
+  * [#762](https://github.com/metasfresh/metasfresh-webui-api/issues/762) Show onhand quantity in new WebUI MRP Product Info Window
+  * [#770](https://github.com/metasfresh/metasfresh-webui-api/issues/770) Raise session Timeout of WebUI Application
+  * [#778](https://github.com/metasfresh/metasfresh-webui-api/issues/778) Use readOnlyFlag from AD_Field and AD_Tab when creating DocumentLayoutElements
 
 * metasfresh-webui-frontend
   * [#1470](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1470) Bug in long texts with new line
@@ -35,9 +56,10 @@ Here come the actual release notes:
     * Improving the Names for attached Files in eMail Editor. Now showing the caption names instead of attachment keys.
   * [#1485](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1485) Tooltip for for "Select all"/ "Select all x rows"
     * New Tooltip for the Select All Functionality.
-	
+
 ## Fixes
 * metasfresh-app
+  * [#3232](https://github.com/metasfresh/metasfresh/issues/3232) Disposal creates Invoice Candidates
   * [#3291](https://github.com/metasfresh/metasfresh/issues/3291) Search Icon disappears when switching Main-Subtab in Contract Window
     * Fixes the vanishing Search Icon in window contracts of metasfresh swingUI.
 
