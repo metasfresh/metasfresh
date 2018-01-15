@@ -36,8 +36,6 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
-import de.metas.document.documentNo.impl.IDocumentNoInfo;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.tax.api.ITaxBL;
 
@@ -54,67 +52,6 @@ public class CalloutInvoice extends CalloutEngine
 	private static final String CTX_UOMConversion = "UOMConversion";
 
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
-
-	/**
-	 * Invoice Header - DocType.
-	 * - PaymentRule
-	 * - temporary Document
-	 * Context:
-	 * - DocSubType
-	 * - HasCharges
-	 * - (re-sets Business Partner info of required)
-	 *
-	 * @param calloutField
-	 * @return error message or {@link #NO_ERROR}
-	 */
-	public String docType(final ICalloutField calloutField)
-	{
-		final I_C_Invoice invoice = calloutField.getModel(I_C_Invoice.class);
-		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
-				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(invoice.getC_DocTypeTarget())
-				.setOldDocumentNo(invoice.getDocumentNo())
-				.setDocumentModel(invoice)
-				.buildOrNull();
-		if (documentNoInfo == null)
-		{
-			return NO_ERROR;
-		}
-
-		// Charges - Set Context
-		calloutField.putWindowContext(I_C_DocType.COLUMNNAME_HasCharges, documentNoInfo.isHasChanges());
-
-		// DocumentNo
-		if (documentNoInfo.isDocNoControlled())
-		{
-			invoice.setDocumentNo(documentNoInfo.getDocumentNo());
-		}
-
-		// DocBaseType - Set Context
-		final String docBaseType = documentNoInfo.getDocBaseType();
-		calloutField.putWindowContext(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
-
-		// AP Check & AR Credit Memo
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		if (docBaseType == null)
-		{
-			// nothing
-		}
-		else if (invoiceBL.isVendorInvoice(docBaseType))
-		{
-			invoice.setPaymentRule(X_C_Invoice.PAYMENTRULE_Check); // Check
-		}
-		else if (invoiceBL.isCreditMemo(docBaseType))
-		{
-			invoice.setPaymentRule(X_C_Invoice.PAYMENTRULE_OnCredit); // OnCredit
-		}
-
-		//
-		Services.get(IInvoiceBL.class).updateDescriptionFromDocTypeTargetId(invoice);
-		
-		//
-		return NO_ERROR;
-	}	// docType
 
 	/**
 	 * Invoice Header- BPartner.
