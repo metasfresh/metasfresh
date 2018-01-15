@@ -949,7 +949,8 @@ RawWidget.propTypes = {
   buttonProcessId: PropTypes.string, // NOTE: looks like this wasn't used
   onBlurWidget: PropTypes.func,
   defaultValue: PropTypes.array,
-  noLabel: PropTypes.bool
+  noLabel: PropTypes.bool,
+  isOpenDatePicker: PropTypes.bool
 };
 
 export default connect()(RawWidget);
