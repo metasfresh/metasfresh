@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -895238540L;
+	private static final long serialVersionUID = -1564750929L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -428,37 +428,37 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
+	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm_Override() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
+		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_Override_ID, org.compiere.model.I_C_PaymentTerm.class);
 	}
 
 	@Override
-	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm)
+	public void setC_PaymentTerm_Override(org.compiere.model.I_C_PaymentTerm C_PaymentTerm_Override)
 	{
-		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
+		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_Override_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm_Override);
 	}
 
-	/** Set Zahlungsbedingung.
-		@param C_PaymentTerm_ID 
+	/** Set Zahlungsbedingung abw..
+		@param C_PaymentTerm_Override_ID 
 		Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
 	@Override
-	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
+	public void setC_PaymentTerm_Override_ID (int C_PaymentTerm_Override_ID)
 	{
-		if (C_PaymentTerm_ID < 1) 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
+		if (C_PaymentTerm_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_PaymentTerm_Override_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
+			set_Value (COLUMNNAME_C_PaymentTerm_Override_ID, Integer.valueOf(C_PaymentTerm_Override_ID));
 	}
 
-	/** Get Zahlungsbedingung.
+	/** Get Zahlungsbedingung abw..
 		@return Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
 	@Override
-	public int getC_PaymentTerm_ID () 
+	public int getC_PaymentTerm_Override_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_Override_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

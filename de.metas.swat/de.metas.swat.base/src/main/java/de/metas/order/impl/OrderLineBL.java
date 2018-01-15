@@ -545,7 +545,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		if (pricingResult.getC_PaymentTerm_ID() > 0)
 		{
-			orderLine.setC_PaymentTerm_ID(pricingResult.getC_PaymentTerm_ID());
+			orderLine.setC_PaymentTerm_Override_ID(pricingResult.getC_PaymentTerm_ID());
 		}
 
 		//
