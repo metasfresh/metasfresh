@@ -361,7 +361,7 @@ public class DefaultModelArchiver
 			{
 				printFormatId = getAD_PrintFormat_ID();
 			}
-			if (printFormatId < 0)
+			if (printFormatId <= 0)
 			{
 				throw new AdempiereException("NoDocPrintFormat");
 			}
