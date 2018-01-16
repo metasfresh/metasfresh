@@ -11,6 +11,7 @@ import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescri
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
@@ -125,15 +126,15 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				requestMaterialOrderService);
 
 		ppOrderCreatedHandler = new PPOrderCreatedHandler(
-				candidateChangeHandler, candidateRepositoryRetrieval,
-				requestMaterialOrderService,
+				candidateChangeHandler,
+				candidateRepositoryRetrieval,
 				eventLogUserService);
 	}
 
 	@Test
 	public void handlePPOrderAdvisedEvent()
 	{
-		final PPOrderAdvisedEvent ppOrderAdvisedEvent = createPPOrderAdvisedEvent();
+		final PPOrderAdvisedEvent ppOrderAdvisedEvent = createPPOrderAdvisedEvent(true);
 		ppOrderAdvisedHandler.validateEvent(ppOrderAdvisedEvent);
 		ppOrderAdvisedHandler.handleEvent(ppOrderAdvisedEvent);
 
@@ -143,7 +144,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 	@Test
 	public void handle_PPOrder_AdvisedEvent_then_CreatedEvent_with_groupId()
 	{
-		final PPOrderAdvisedEvent ppOrderAdvisedEvent = createPPOrderAdvisedEvent();
+		final PPOrderAdvisedEvent ppOrderAdvisedEvent = createPPOrderAdvisedEvent(true);
 		ppOrderAdvisedHandler.validateEvent(ppOrderAdvisedEvent);
 		ppOrderAdvisedHandler.handleEvent(ppOrderAdvisedEvent);
 
@@ -212,18 +213,25 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		assertThat(DispoTestUtils.filterExclStock()).allSatisfy(r -> assertCandidateRecordHasPpOorderId(r, ppOrderId));
 		assertThat(DispoTestUtils.retrieveAllRecords()).allSatisfy(r -> assertThat(r.getC_BPartner_ID()).isEqualTo(BPARTNER_ID));
 
+		if (ppOrderEvent instanceof PPOrderAdvisedEvent)
+		{
+			final List<I_MD_Candidate_Prod_Detail> allProductionDetails = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
+					.create().list();
+			final boolean pickIfFeasibleFromEvent = ppOrderAdvisedHandler.extractIsDirectlyPickSupply(ppOrderEvent).toBoolean();
+			assertThat(allProductionDetails).allSatisfy(d -> assertThat(d.isPickDirectlyIfFeasible()).isEqualTo(pickIfFeasibleFromEvent));
+		}
 		return supplyDemandGroupId;
 	}
 
 	@Test
 	public void handle_PPOrder_AdvisedEvent_then_CreatedEvent_without_groupId()
 	{
-		final PPOrderAdvisedEvent ppOrderAdvisedEvent = createPPOrderAdvisedEvent();
+		final PPOrderAdvisedEvent ppOrderAdvisedEvent = createPPOrderAdvisedEvent(true);
 		ppOrderAdvisedHandler.validateEvent(ppOrderAdvisedEvent);
 		ppOrderAdvisedHandler.handleEvent(ppOrderAdvisedEvent);
 
 		assert_data_after_ppOrderEvent(ppOrderAdvisedEvent); // guard
-
 
 		final PPOrderCreatedEvent ppOrderCreatedEvent = createPPOrderCreatedEvent(30, 0);
 		ppOrderCreatedHandler.validateEvent(ppOrderCreatedEvent);
@@ -235,12 +243,13 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(4);
 	}
 
-	private PPOrderAdvisedEvent createPPOrderAdvisedEvent()
+	private PPOrderAdvisedEvent createPPOrderAdvisedEvent(final boolean directlyPickSupply)
 	{
 		final PPOrder ppOrder = createPpOrderWithPpOrderId(0, 0);
 
 		final PPOrderAdvisedEvent event = PPOrderAdvisedEvent.builder()
 				.eventDescriptor(new EventDescriptor(CLIENT_ID, ORG_ID))
+				.directlyPickSupply(directlyPickSupply)
 				.supplyRequiredDescriptor(createSupplyRequiredDescriptor())
 				.ppOrder(ppOrder)
 				.build();

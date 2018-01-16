@@ -25,12 +25,12 @@ package org.eevolution.form;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -430,10 +430,6 @@ public class VMRPDetailed
 			msgBL.translate(getCtx(), I_PP_Product_Planning.COLUMNNAME_IsMPS),
 			"",
 			false);
-	private final VCheckBox fIsRequiredMRP = new VCheckBox(I_PP_Product_Planning.COLUMNNAME_IsRequiredMRP, false, false, true,
-			msgBL.translate(getCtx(), I_PP_Product_Planning.COLUMNNAME_IsRequiredMRP),
-			"",
-			false);
 	private final VCheckBox fIsCreatePlan = new VCheckBox(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan, false, false, true,
 			msgBL.translate(getCtx(), I_PP_Product_Planning.COLUMNNAME_IsCreatePlan),
 			"",
@@ -615,8 +611,7 @@ public class VMRPDetailed
 
 		fIsMRP.setSelected(false);
 		fIsMRP.setReadWrite(false);
-		fIsRequiredMRP.setSelected(false);
-		fIsRequiredMRP.setReadWrite(false);
+
 		fIsCreatePlan.setSelected(false);
 		fIsCreatePlan.setReadWrite(false);
 
@@ -857,7 +852,6 @@ public class VMRPDetailed
 		// 9th Row
 		addToParameterPanel(lDocumentNo, new ALayoutConstraint(8, 0)); // 07952
 		addToParameterPanel(fDocumentNo, new ALayoutConstraint(8, 1)); // 07952
-		addToParameterPanel(fIsRequiredMRP, new ALayoutConstraint(8, 3));
 		addToParameterPanel(lYield, new ALayoutConstraint(8, 4));
 		addToParameterPanel(fYield, new ALayoutConstraint(8, 5));
 
@@ -969,7 +963,7 @@ public class VMRPDetailed
 		{
 			m_frame.setIconImage(Images.getImage2(InfoBuilder.ACTION_InfoMRP + "16"));
 		}
-		
+
 		final Properties ctx = getCtx();
 
 		mainPanel.setLayout(new java.awt.BorderLayout());
@@ -1125,15 +1119,15 @@ public class VMRPDetailed
 	{
 		// nothing
 	}
-	
+
 	private final void loadMRPRows()
 	{
 		// Clear Table
 		p_table.setRowCount(0);
-		
+
 		final List<Object> sqlParams = new ArrayList<Object>();
 		final String sqlFinal = getSQL(sqlParams);
-		
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -1226,12 +1220,12 @@ public class VMRPDetailed
 			DB.close(rs, pstmt);
 			rs = null;
 			pstmt = null;
-			
+
 			p_table.autoSize();
 			statusBar.setStatusDB(p_table.getRowCount());
 		}
 	}
-	
+
 	private String getSQL(final List<Object> sqlParams)
 	{
 		final StringBuilder sql = new StringBuilder(m_sqlMain);
@@ -1406,7 +1400,6 @@ public class VMRPDetailed
 		final String orderPolicyName = adReferenceDAO.retrieveListNameTrl(X_PP_Product_Planning.ORDER_POLICY_AD_Reference_ID, pp.getOrder_Policy());
 
 		fIsMRP.setSelected(pp.isMPS());
-		fIsRequiredMRP.setSelected(pp.isRequiredMRP());
 		fIsCreatePlan.setSelected(pp.isCreatePlan());
 		fOrderPeriod.setValue(pp.getOrder_Period());
 		fLeadtime.setValue(pp.getDeliveryTime_Promised());
@@ -1951,7 +1944,7 @@ public class VMRPDetailed
 			try
 			{
 				lockUI(null);
-				
+
 				loadMRPRows();
 				updateProjectedQtyOnHand();
 			}

@@ -19,8 +19,9 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
@@ -60,13 +61,16 @@ public class TransactionCreatedHandlerTests
 	private static final int SHIPMENT_SCHEDULE_ID = 40;
 
 	@Tested
-	private TransactionEventHandlerForCockpitRecords transactionEventHandler;
+	private TransactionEventHandler transactionEventHandler;
 
 	@Injectable
 	private CandidateChangeService candidateChangeService;
 
 	@Injectable
 	private CandidateRepositoryRetrieval candidateRepository;
+
+	@Injectable
+	private PostMaterialEventService postMaterialEventService;
 
 	@Before
 	public void init()
@@ -79,7 +83,7 @@ public class TransactionCreatedHandlerTests
 	{
 		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(BigDecimal.TEN.negate()).build();
 
-		final Candidate candidate = TransactionEventHandlerForCockpitRecords.createBuilderForNewUnrelatedCandidate(
+		final Candidate candidate = TransactionEventHandler.createBuilderForNewUnrelatedCandidate(
 				event,
 				event.getQuantity()).build();
 
@@ -92,7 +96,7 @@ public class TransactionCreatedHandlerTests
 	{
 		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(BigDecimal.TEN).build();
 
-		final Candidate candidate = TransactionEventHandlerForCockpitRecords.createBuilderForNewUnrelatedCandidate(
+		final Candidate candidate = TransactionEventHandler.createBuilderForNewUnrelatedCandidate(
 				event,
 				event.getQuantity()).build();
 

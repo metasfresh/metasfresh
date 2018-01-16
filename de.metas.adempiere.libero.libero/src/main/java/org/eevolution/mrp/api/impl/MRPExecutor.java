@@ -79,7 +79,6 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMRPNoteBuilder;
 import de.metas.material.planning.IMRPNotesCollector;
@@ -757,8 +756,6 @@ public class MRPExecutor implements IMRPExecutor
 		// Create a plain copy of current data planning
 		final I_PP_Product_Planning productPlanningActual = productPlanningBL.createPlainProductPlanning(productPlanning);
 
-		productPlanningActual.setIsRequiredDRP(mrpContext.isRequireDRP());
-
 		//
 		// Set actual IsPurchased flag
 		final String isPurchasedStr = productPlanningActual.getIsPurchased();
@@ -816,50 +813,6 @@ public class MRPExecutor implements IMRPExecutor
 			productPlanningActual.setOrder_Policy(X_PP_Product_Planning.ORDER_POLICY_Lot_For_Lot);
 		}
 
-		// Find Vendor
-		if (!mrpContext.isRequireDRP())
-		{
-			if (isPurchasedActual)
-			{
-				int C_BPartner_ID = -1;
-
-				// FRESH-334: Make sure the BP_Product if of the product's org or org *
-				final int orgId = product.getAD_Org_ID();
-				final int productId = product.getM_Product_ID();
-
-				final List<I_C_BPartner_Product> partnerProducts = bpartnerProductDAO.retrieveBPartnerForProduct(ctx, 0, productId, orgId);
-				// task cg : 05952 : end
-				for (final I_C_BPartner_Product bpp : partnerProducts)
-				{
-					if (bpp.isCurrentVendor() && bpp.getC_BPartner_ID() > 0)
-					{
-						C_BPartner_ID = bpp.getC_BPartner_ID();
-						productPlanningActual.setDeliveryTime_Promised(BigDecimal.valueOf(bpp.getDeliveryTime_Promised()));
-						productPlanningActual.setOrder_Min(bpp.getOrder_Min());
-						productPlanningActual.setOrder_Max(BigDecimal.ZERO);
-						productPlanningActual.setOrder_Pack(bpp.getOrder_Pack());
-						productPlanningActual.setC_BPartner_ID(C_BPartner_ID);
-						break;
-					}
-				}
-				if (C_BPartner_ID <= 0)
-				{
-					newMRPNote(mrpContext, "MRP-130")
-							.collect();
-					//
-					productPlanningActual.setIsCreatePlan(false);
-				}
-			}
-			if (isManufacturedActual)
-			{
-				if (productPlanningActual.getAD_Workflow_ID() <= 0)
-				{
-					// NOTE: a note will be created later
-					logger.info("Error: Do not exist workflow (" + product.getValue() + ")");
-				}
-			}
-		}
-		//
 		return productPlanningActual;
 	}
 

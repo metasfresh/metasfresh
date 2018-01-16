@@ -282,7 +282,7 @@ public class MRPTestHelper
 		final IMutableMRPContext mrpContext = new MRPContext();
 		mrpContext.setCtx(ctx);
 		mrpContext.setTrxName(ITrx.TRXNAME_None);
-		mrpContext.setRequireDRP(true);
+
 		// mrpContext.setPlanner_User_ID(p_Planner_ID);
 		mrpContext.setDate(_today);
 		mrpContext.setAD_Client_ID(adClient.getAD_Client_ID());

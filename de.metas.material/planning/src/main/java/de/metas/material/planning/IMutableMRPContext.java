@@ -27,8 +27,6 @@ public interface IMutableMRPContext extends IMaterialPlanningContext
 
 	void setAD_Org(final I_AD_Org org);
 
-	void setRequireDRP(boolean requiredDRP);
-
 	void setM_Product(final I_M_Product product);
 
 	void setM_AttributeSetInstance_ID(int attributeSetInstanceId);

@@ -16,6 +16,7 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -74,6 +75,8 @@ public class CandidateServiceTests
 				.productionDetail(ProductionDetail.builder()
 						.plantId(210)
 						.productPlanningId(220)
+						.advised(Flag.FALSE)
+						.pickDirectlyIfFeasible(Flag.FALSE)
 						.build())
 				.build();
 
@@ -86,6 +89,8 @@ public class CandidateServiceTests
 						.plantId(210)
 						.productPlanningId(220)
 						.productBomLineId(500)
+						.advised(Flag.TRUE)
+						.pickDirectlyIfFeasible(Flag.FALSE)
 						.build());
 
 		final Candidate candidate3 = candidate
@@ -97,6 +102,8 @@ public class CandidateServiceTests
 						.plantId(210)
 						.productPlanningId(220)
 						.productBomLineId(600)
+						.advised(Flag.FALSE)
+						.pickDirectlyIfFeasible(Flag.TRUE)
 						.build());
 
 		final PPOrderRequestedEvent ppOrderRequestedEvent = requestMaterialOrderService

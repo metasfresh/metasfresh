@@ -24,10 +24,14 @@ import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
+import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
@@ -56,17 +60,20 @@ import lombok.NonNull;
  */
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
-public class TransactionEventHandlerForCockpitRecords implements MaterialEventHandler<AbstractTransactionEvent>
+public class TransactionEventHandler implements MaterialEventHandler<AbstractTransactionEvent>
 {
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepository;
+	private final PostMaterialEventService postMaterialEventService;
 
-	public TransactionEventHandlerForCockpitRecords(
+	public TransactionEventHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final CandidateRepositoryRetrieval candidateRepository)
+			@NonNull final CandidateRepositoryRetrieval candidateRepository,
+			@NonNull final PostMaterialEventService postMaterialEventService)
 	{
 		this.candidateChangeHandler = candidateChangeHandler;
 		this.candidateRepository = candidateRepository;
+		this.postMaterialEventService = postMaterialEventService;
 	}
 
 	@Override
@@ -94,17 +101,69 @@ public class TransactionEventHandlerForCockpitRecords implements MaterialEventHa
 		}
 		else if (event.getPpOrderId() > 0)
 		{
-			candidates.add(prepareCandidateForPPorder(event));
+			final Candidate candidateForPPorder = prepareCandidateForPPorder(event);
+			firePickRequiredEvent(candidateForPPorder, event);
+
+			candidates.add(candidateForPPorder);
 		}
 		else if (event.getDdOrderLineId() > 0)
 		{
-			candidates.add(prepareCandidateForDDorder(event));
+			final Candidate candidateForDDorder = prepareCandidateForDDorder(event);
+			firePickRequiredEvent(candidateForDDorder, event);
+
+			candidates.add(candidateForDDorder);
 		}
 		else
 		{
 			candidates.add(prepareUnrelatedCandidate(event));
 		}
 		return candidates;
+	}
+
+	private void firePickRequiredEvent(
+			@NonNull final Candidate candidateForPPorder,
+			@NonNull final AbstractTransactionEvent transactionEvent)
+	{
+		if (transactionEvent instanceof TransactionDeletedEvent)
+		{
+			return;
+		}
+
+		final boolean dontPickDirectly = !candidateForPPorder
+				.getProductionDetail()
+				.getPickDirectlyIfFeasible()
+				.toBoolean();
+		if (dontPickDirectly)
+		{
+			return;
+		}
+
+		final DemandDetail demandDetail = candidateForPPorder.getDemandDetail();
+		final boolean noShipmentScheduleForPicking = demandDetail == null || demandDetail.getShipmentScheduleId() <= 0;
+		if (noShipmentScheduleForPicking)
+		{
+			return;
+		}
+
+		final List<HUOnHandQtyChangeDescriptor> huOnHandQtyChangeDescriptors = transactionEvent.getHuOnHandQtyChangeDescriptors();
+		final boolean noHUsToPick = huOnHandQtyChangeDescriptors == null || huOnHandQtyChangeDescriptors.isEmpty();
+		if (noHUsToPick)
+		{
+			return;
+		}
+
+		final ImmutableList<Integer> huIdsToPick = huOnHandQtyChangeDescriptors.stream()
+				.filter(huDescriptor -> huDescriptor.getQuantity().signum() > 0)
+				.map(HUOnHandQtyChangeDescriptor::getHuId)
+				.collect(ImmutableList.toImmutableList());
+
+		final PickingRequestedEvent pickingRequestedEvent = PickingRequestedEvent.builder()
+				.eventDescriptor(transactionEvent.getEventDescriptor())
+				.shipmentScheduleId(demandDetail.getShipmentScheduleId())
+				.topLevelHuIdsToPick(huIdsToPick)
+				.build();
+
+		postMaterialEventService.postEventAfterNextCommit(pickingRequestedEvent);
 	}
 
 	private List<Candidate> prepareCandidateForShipmentScheduleId(@NonNull final AbstractTransactionEvent event)
@@ -115,38 +174,45 @@ public class TransactionEventHandlerForCockpitRecords implements MaterialEventHa
 
 		for (final Entry<Integer, BigDecimal> shipmentScheduleId2Qty : shipmentScheduleIds2Qtys.entrySet())
 		{
-			final DemandDetail demandDetail = DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleId2Qty.getKey(), -1);
-
-			final CandidatesQuery query = CandidatesQuery.builder().type(CandidateType.DEMAND)
-					.demandDetail(demandDetail) // only search via demand detail, ..the product and warehouse will also match, but e.g. the date probably won't!
-					.build();
-
-			final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
-			final Candidate candidate;
-
-			final boolean unrelatedNewTransaction = existingCandidate == null && event instanceof TransactionCreatedEvent;
-			if (unrelatedNewTransaction)
-			{
-				candidate = createBuilderForNewUnrelatedCandidate(
-						(TransactionCreatedEvent)event,
-						shipmentScheduleId2Qty.getValue())
-								.demandDetail(demandDetail)
-								.transactionDetail(createTransactionDetail(event))
-								.build();
-			}
-			else if (existingCandidate != null)
-			{
-				candidate = newCandidateWithAddedTransactionDetail(
-						existingCandidate,
-						createTransactionDetail(event));
-			}
-			else
-			{
-				throw createExceptionForUnexpectedEvent(event);
-			}
+			final Candidate candidate = createCandidateForShipmentSchedule(event, shipmentScheduleId2Qty);
 			result.add(candidate);
 		}
 		return result.build();
+	}
+
+	private Candidate createCandidateForShipmentSchedule(final AbstractTransactionEvent event, final Entry<Integer, BigDecimal> shipmentScheduleId2Qty)
+	{
+		final DemandDetail demandDetail = DemandDetail.forShipmentScheduleIdAndOrderLineId(shipmentScheduleId2Qty.getKey(), -1);
+
+		final CandidatesQuery query = CandidatesQuery.builder().type(CandidateType.DEMAND)
+				.demandDetail(demandDetail) // only search via demand detail ..the product and warehouse will also match, but e.g. the date probably won't!
+				.build();
+
+		final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
+		final Candidate candidate;
+
+		final boolean unrelatedNewTransaction = existingCandidate == null && event instanceof TransactionCreatedEvent;
+		if (unrelatedNewTransaction)
+		{
+			candidate = createBuilderForNewUnrelatedCandidate(
+					(TransactionCreatedEvent)event,
+					shipmentScheduleId2Qty.getValue())
+							.demandDetail(demandDetail)
+							.transactionDetail(createTransactionDetail(event))
+							.build();
+		}
+		else if (existingCandidate != null)
+		{
+			candidate = newCandidateWithAddedTransactionDetail(
+					existingCandidate,
+					createTransactionDetail(event));
+		}
+		else
+		{
+			throw createExceptionForUnexpectedEvent(event);
+		}
+
+		return candidate;
 	}
 
 	private Candidate prepareCandidateForPPorder(@NonNull final AbstractTransactionEvent event)
@@ -161,7 +227,7 @@ public class TransactionEventHandlerForCockpitRecords implements MaterialEventHa
 				.build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.productionDetail(productionDetail) // only search via production detail, ..the product and warehouse will also match, but e.g. the date probably won't!
+				.productionDetailsQuery(ProductionDetailsQuery.fromProductionDetail(productionDetail))
 				.build();
 
 		final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);

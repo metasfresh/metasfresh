@@ -1,9 +1,17 @@
 package de.metas.material.event.picking;
 
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
+
+import java.util.List;
+
+import org.adempiere.util.Check;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -29,15 +37,39 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class PickingRequestedEvent implements MaterialEvent
 {
 	public static final String TYPE = "PickingRequestedEvent";
 
-	@NonNull
 	EventDescriptor eventDescriptor;
 
 	int shipmentScheduleId;
 
+	int pickingSlotId;
 
+	List<Integer> topLevelHuIdsToPick;
+
+	@Builder
+	@JsonCreator
+	public PickingRequestedEvent(
+			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
+			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
+			@JsonProperty("pickingSlotId") final int pickingSlotId,
+			@JsonProperty("topLevelHuIdsToPick") final List<Integer> topLevelHuIdsToPick)
+	{
+		this.eventDescriptor = eventDescriptor;
+		this.shipmentScheduleId = shipmentScheduleId;
+		this.pickingSlotId = pickingSlotId;
+		this.topLevelHuIdsToPick = topLevelHuIdsToPick;
+	}
+
+	public void assertValid()
+	{
+		Check.errorIf(eventDescriptor == null, "eventDescriptor may not be null");
+
+		Check.errorIf(topLevelHuIdsToPick == null, "topLevelHuIdsToPick may not be null");
+		Check.errorIf(topLevelHuIdsToPick.isEmpty(), "topLevelHuIdsToPick may not be empty");
+
+		checkIdGreaterThanZero("shipmentScheduleId", shipmentScheduleId);
+	}
 }

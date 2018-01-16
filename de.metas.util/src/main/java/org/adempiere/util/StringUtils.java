@@ -114,7 +114,7 @@ public final class StringUtils
 	 * <li>{@code "Y"} or {@code "y"} => {@code true}
 	 * <li>otherwise, the return value of {@link Boolean#parseBoolean(String)} is returned.
 	 * </ul>
-	 * 
+	 *
 	 * @param strBoolean the parameter to convert. May be empty or {@code null}.
 	 * @return
 	 */
@@ -136,11 +136,11 @@ public final class StringUtils
 
 		return Boolean.parseBoolean(strBoolean);
 	}
-	
-	
+
+
 	/**
 	 * Convert given object to ADempiere's boolean value.
-	 * 
+	 *
 	 * @param value
 	 * @param defaultValue
 	 * @return <ul>
@@ -181,7 +181,7 @@ public final class StringUtils
 
 	/**
 	 * Converts the give object to boolean value, same as {@link #toBoolean(Object, boolean)} but assumes default value is <code>false</code>.
-	 * 
+	 *
 	 * @param value may be {@code null}. in that case, {@code false} is returned.
 	 * @return <ul>
 	 *         <li>true if value is boolean true, "true" or "Y"
@@ -197,7 +197,7 @@ public final class StringUtils
 
 	/**
 	 * Converts given boolean value to ADempiere's string representation of it
-	 * 
+	 *
 	 * @param value
 	 * @return <ul>
 	 *         <li><code>null</code> if value is null
@@ -213,7 +213,7 @@ public final class StringUtils
 		}
 		return value ? "Y" : "N";
 	}
-	
+
 	/**
 	 * Formats the given message, using either {@link java.text.Format} or {@link org.slf4j.helpers.MessageFormatter}.<br>
 	 * If the given <code>message</code> contains <code>{0}</code> as a substring and the given <code>params</code> has at least one item, then {@link java.text.Format} is used, otherwise the SLF4J
