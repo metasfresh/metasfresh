@@ -72,23 +72,28 @@ class FiltersItem extends Component {
     }
   };
 
+  parseDateToReadable = value => {
+    if (value) {
+      return new Date(value);
+    }
+  };
+
   mergeData = (property, value, valueTo) => {
+    const DATE_FIELD = "DateDoc";
     this.setState(prevState => ({
       filter: Object.assign({}, prevState.filter, {
         parameters: prevState.filter.parameters.map(param => {
           if (param.parameterName === property) {
-            return Object.assign(
-              {},
-              param,
-              valueTo
-                ? {
-                    value,
-                    valueTo
-                  }
-                : {
-                    value
-                  }
-            );
+            return Object.assign({}, param, {
+              value:
+                DATE_FIELD === property
+                  ? this.parseDateToReadable(value)
+                  : value,
+              valueTo:
+                DATE_FIELD === property
+                  ? this.parseDateToReadable(valueTo)
+                  : valueTo
+            });
           } else {
             return param;
           }
