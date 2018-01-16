@@ -55,10 +55,6 @@ UPDATE AD_Field SET ColumnDisplayLength=0, IsDisplayedGrid='Y', SeqNoGrid=80,Upd
 UPDATE AD_Field SET ColumnDisplayLength=0, IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2018-01-10 16:13:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=561291
 ;
 
--- 2018-01-10T16:43:06.593
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UserQuery (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_User_ID,AD_UserQuery_ID,Code,Created,CreatedBy,IsActive,Name,Updated,UpdatedBy) VALUES (0,0,540979,540888,100,540030,'AND<^>EventData<^> ILIKE /*icase*/ <^>%PPOrderRequestedEvent%<^>',TO_TIMESTAMP('2018-01-10 16:43:06','YYYY-MM-DD HH24:MI:SS'),100,'Y','PPOrderRequestedEvent',TO_TIMESTAMP('2018-01-10 16:43:06','YYYY-MM-DD HH24:MI:SS'),100)
-;
 -- 2018-01-11T18:29:32.117
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_SysConfig SET Value='500',Updated=TO_TIMESTAMP('2018-01-11 18:29:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541188
