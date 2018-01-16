@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.util.Collection;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.function.Supplier;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -117,16 +118,16 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 
 		final List<I_M_PickingSlot> pickingSlots = Services.get(IPickingSlotDAO.class).retrievePickingSlots(pickingSlotQuery);
 
-		Check.errorIf(pickingSlots.isEmpty(), "Found no picking slot for C_BP_Location_ID={}; C_BPartner_ID={}; shipmentSchedule={}",
-				() -> bpLocationId,
-				() -> loadOutOfTrx(bpLocationId, I_C_BPartner_Location.class).getC_BPartner_ID(),
-				() -> shipmentSchedule);
+		Check.errorIf(pickingSlots.isEmpty(),
+				"Found no picking slot for C_BP_Location_ID={}; C_BPartner_ID={}; shipmentSchedule={}",
+				bpLocationId,
+				(Supplier<Object>)() -> loadOutOfTrx(bpLocationId, I_C_BPartner_Location.class).getC_BPartner_ID(),
+				shipmentSchedule);
 
 		final I_M_PickingSlot firstPickingSlot = pickingSlots.get(0);
 
 		eventLogUserService.newLogEntry(PickingRequestedHandler.class)
-				.error(true)
-				.formattedMessage("Retrieved an available picking slot, because one was set in the event; pickingSlot={}", firstPickingSlot)
+				.formattedMessage("Retrieved an available picking slot, because none was set in the event; pickingSlot={}", firstPickingSlot)
 				.storeEntry();
 		return firstPickingSlot.getM_PickingSlot_ID();
 	}

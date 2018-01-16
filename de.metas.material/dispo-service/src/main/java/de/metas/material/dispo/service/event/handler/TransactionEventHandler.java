@@ -22,6 +22,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
@@ -220,14 +221,12 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final Candidate candidate;
 		final TransactionDetail transactionDetailOfEvent = createTransactionDetail(event);
 
-		final ProductionDetail productionDetail = ProductionDetail.builder()
+		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
 				.ppOrderId(event.getPpOrderId())
-				.ppOrderLineId(event.getPpOrderLineId())
-				.actualQty(event.getQuantity())
-				.build();
+				.ppOrderLineId(event.getPpOrderLineId()).build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.productionDetailsQuery(ProductionDetailsQuery.fromProductionDetail(productionDetail))
+				.productionDetailsQuery(productionDetailsQuery)
 				.build();
 
 		final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
@@ -235,6 +234,13 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean unrelatedNewTransaction = existingCandidate == null && event instanceof TransactionCreatedEvent;
 		if (unrelatedNewTransaction)
 		{
+			final ProductionDetail productionDetail = productionDetailsQuery
+					.toProductionDetailBuilder()
+					.advised(Flag.FALSE_DONT_UPDATE)
+					.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
+					.actualQty(event.getQuantity())
+					.build();
+
 			candidate = createBuilderForNewUnrelatedCandidate(
 					(TransactionCreatedEvent)event,
 					event.getQuantity())

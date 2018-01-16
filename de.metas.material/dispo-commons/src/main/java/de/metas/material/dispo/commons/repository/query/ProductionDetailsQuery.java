@@ -5,6 +5,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Services;
 
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail.ProductionDetailBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import lombok.Builder;
@@ -67,6 +68,20 @@ public class ProductionDetailsQuery
 	int ppOrderId;
 
 	int ppOrderLineId;
+
+	/**
+	 * Convenience method that uses this instance to kickstart an return a builder.
+	 *
+	 * @return
+	 */
+	public ProductionDetailBuilder toProductionDetailBuilder()
+	{
+		return ProductionDetail.builder()
+				.productPlanningId(productPlanningId)
+				.productBomLineId(productBomLineId)
+				.ppOrderId(ppOrderId)
+				.ppOrderLineId(ppOrderLineId);
+	}
 
 	public void augmentQueryBuilder(@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{

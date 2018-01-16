@@ -78,13 +78,13 @@ public class M_Transaction_HuOnHandQtyChangeDescriptor
 		final ImmutableList.Builder<HUOnHandQtyChangeDescriptor> result = ImmutableList.builder();
 		for (final HuAssignment huAssignment : huAssignments)
 		{
-			result.addAll(createEventsForHu(huAssignment.getLowestLevelHU(), deleted));
+			result.addAll(createHuDescriptors(huAssignment.getLowestLevelHU(), deleted));
 		}
 
 		return result.build();
 	}
 
-	private static ArrayList<HUOnHandQtyChangeDescriptor> createEventsForHu(
+	private static ArrayList<HUOnHandQtyChangeDescriptor> createHuDescriptors(
 			@NonNull final I_M_HU hu,
 			final boolean deleted)
 	{

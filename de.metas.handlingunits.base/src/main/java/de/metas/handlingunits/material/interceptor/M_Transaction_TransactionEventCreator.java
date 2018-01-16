@@ -16,6 +16,7 @@ import org.eevolution.model.I_PP_Cost_Collector;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
@@ -53,12 +54,34 @@ import lombok.NonNull;
  * #L%
  */
 
-public class M_Transaction_TransactionEventCreator extends M_Transaction_EventCreator
+public class M_Transaction_TransactionEventCreator
 {
 	public static final M_Transaction_TransactionEventCreator INSTANCE = new M_Transaction_TransactionEventCreator();
 
 	private M_Transaction_TransactionEventCreator()
 	{
+	}
+
+	public final List<MaterialEvent> createEventsForTransaction(
+			@NonNull final I_M_Transaction transaction,
+			final boolean deleted)
+	{
+		final Builder<MaterialEvent> result = ImmutableList.builder();
+
+		if (transaction.getM_InOutLine_ID() > 0)
+		{
+			result.add(createEventForInOutLine(transaction, deleted));
+		}
+		else if (transaction.getPP_Cost_Collector_ID() > 0)
+		{
+			result.add(createEventForCostCollector(transaction, deleted));
+		}
+		else if (transaction.getM_MovementLine_ID() > 0)
+		{
+			result.add(createEventForMovementLine(transaction, deleted));
+		}
+
+		return result.build();
 	}
 
 	private static boolean isDirectMovementWarehouse(final int warehouseId)
@@ -67,8 +90,7 @@ public class M_Transaction_TransactionEventCreator extends M_Transaction_EventCr
 		return intValue == warehouseId;
 	}
 
-	@Override
-	public List<MaterialEvent> createEventsForCostCollector(
+	private MaterialEvent createEventForCostCollector(
 			@NonNull final I_M_Transaction transaction,
 			final boolean deleted)
 	{
@@ -109,7 +131,7 @@ public class M_Transaction_TransactionEventCreator extends M_Transaction_EventCr
 					.huOnHandQtyChangeDescriptors(huDescriptors)
 					.build();
 		}
-		return ImmutableList.of(event);
+		return event;
 	}
 
 	private static MaterialDescriptor createMaterialDescriptor(
@@ -133,15 +155,14 @@ public class M_Transaction_TransactionEventCreator extends M_Transaction_EventCr
 		return transaction.getM_Locator().getM_Warehouse_ID();
 	}
 
-	@Override
-	public List<MaterialEvent> createEventsForInOutLine(
+	private MaterialEvent createEventForInOutLine(
 			@NonNull final I_M_Transaction transaction,
 			final boolean deleted)
 	{
 		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = retrieveShipmentScheduleId2Qty(transaction);
 
 		final AbstractTransactionEvent event = createEventForShipmentScheduleToQtyMapping(transaction, shipmentScheduleIds2Qtys, deleted);
-		return ImmutableList.of(event);
+		return event;
 	}
 
 	@VisibleForTesting
@@ -249,8 +270,7 @@ public class M_Transaction_TransactionEventCreator extends M_Transaction_EventCr
 		return event;
 	}
 
-	@Override
-	public List<MaterialEvent> createEventsForMovementLine(I_M_Transaction transaction, boolean deleted)
+	private MaterialEvent createEventForMovementLine(I_M_Transaction transaction, boolean deleted)
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(extractTransactionWarehouseId(transaction));
 
@@ -294,6 +314,6 @@ public class M_Transaction_TransactionEventCreator extends M_Transaction_EventCr
 					.build();
 		}
 
-		return ImmutableList.of(event);
+		return event;
 	}
 }
