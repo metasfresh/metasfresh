@@ -96,6 +96,12 @@ Therefore we just add this dependency to both
 			<version>1.0</version>
 		</dependency>
  -->		
+ 
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports-fonts</artifactId>
+			<version>4.0.0</version>
+		</dependency>
 	</dependencies>
 
 
