@@ -172,8 +172,8 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	@Getter
 	static public class DiscountRequest
 	{
-		final BigDecimal discount;
+		private final BigDecimal discount;
 		@Default
-		int C_PaymentTerm_ID =-1;
+		private int C_PaymentTerm_ID =-1;
 	}
 }

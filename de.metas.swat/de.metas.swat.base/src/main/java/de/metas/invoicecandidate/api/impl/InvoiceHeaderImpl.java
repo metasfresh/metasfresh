@@ -359,7 +359,7 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 			return C_PaymentTerm_ID;
 		}
 		// task 07242: setting the payment term from the given bill partner. Note that C_BP_Group has no payment term columns, so we don't need a BL to fall back to C_BP_Group
-		final I_C_BPartner billPartner = InterfaceWrapperHelper.create(Env.getCtx(), getBill_BPartner_ID(), org.compiere.model.I_C_BPartner.class, ITrx.TRXNAME_None);
+		final I_C_BPartner billPartner = InterfaceWrapperHelper.create(Env.getCtx(), getBill_BPartner_ID(), I_C_BPartner.class, ITrx.TRXNAME_None);
 		if (isSOTrx())
 		{
 			return billPartner.getC_PaymentTerm_ID();
