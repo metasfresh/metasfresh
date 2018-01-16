@@ -21,6 +21,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.process.WebuiHUTransformCommandResult.WebuiHUTransformCommandResultBuilder;
 import lombok.Builder;
 import lombok.NonNull;
@@ -306,8 +307,9 @@ public class WebuiHUTransformCommand
 	{
 		newHUTransformation().tuToExistingLU(tuRow.getM_HU(), qtyTU, luHU);
 
+		final HUEditorRowId tuRowId = tuRow.getHURowId();
 		return WebuiHUTransformCommandResult.builder()
-				.huIdToRemoveFromView(tuRow.getM_HU_ID()) // TODO check and remove the tuRow only if is empty (consider the Aggregated TUs case too)
+				.huIdChanged(tuRowId.getTopLevelHUId())
 				.huIdChanged(luHU.getM_HU_ID())
 				.fullViewInvalidation(true) // because it might be that the TU is inside an LU of which we don't know the ID
 				.build();
