@@ -25,7 +25,9 @@ package org.adempiere.util;
 import java.math.BigDecimal;
 import java.text.Format;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Supplier;
 
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
@@ -246,7 +248,10 @@ public final class StringUtils
 		{
 			return message; // i think null would also be handled by MessageFormatter, but better be save than sorry
 		}
-		final FormattingTuple arrayFormat = MessageFormatter.arrayFormat(message, params);
+
+		final Object[] effectiveParams = invokeSuppliers(params);
+		final FormattingTuple arrayFormat = MessageFormatter.arrayFormat(message, effectiveParams);
+
 		return arrayFormat.getMessage();
 	}
 
@@ -275,7 +280,8 @@ public final class StringUtils
 				// however if it turns out that we need to use the regexp solution, make sure to have the patters as a pre-compiled constant
 				final String msgToUse = message.replace("'", "''");
 
-				messageFormated = MessageFormat.format(msgToUse, params);
+				final Object[] effectiveParams = invokeSuppliers(params);
+				messageFormated = MessageFormat.format(msgToUse, effectiveParams);
 			}
 			catch (Exception e)
 			{
@@ -291,6 +297,32 @@ public final class StringUtils
 			messageFormated = message;
 		}
 		return messageFormated;
+	}
+
+	@SafeVarargs
+	private static Object[] invokeSuppliers(final Object... params)
+	{
+		if (params == null)
+		{
+			return null;
+		}
+
+		final ArrayList<Object> result = new ArrayList<>(params.length);
+		for (final Object param : params)
+		{
+			if (param instanceof Supplier)
+			{
+				@SuppressWarnings("rawtypes")
+				final Supplier paramSupplier = (Supplier)param;
+
+				result.add(paramSupplier.get());
+			}
+			else
+			{
+				result.add(param);
+			}
+		}
+		return result.toArray();
 	}
 
 	/**
