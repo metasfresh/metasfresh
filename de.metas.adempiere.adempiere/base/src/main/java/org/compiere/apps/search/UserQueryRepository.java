@@ -1,5 +1,8 @@
 package org.compiere.apps.search;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,6 +32,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -43,11 +47,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -104,7 +108,7 @@ public class UserQueryRepository
 	{
 		return searchFields;
 	}
-	
+
 	private Properties getCtx()
 	{
 		return Env.getCtx();
@@ -119,7 +123,7 @@ public class UserQueryRepository
 	{
 		return adTableId;
 	}
-	
+
 	private int getAD_User_ID()
 	{
 		return adUserId;
@@ -160,14 +164,13 @@ public class UserQueryRepository
 				.orderBy()
 				.addColumn(I_AD_UserQuery.COLUMNNAME_Name)
 				.endOrderBy();
-				//
-		
-		if(adUserId > 0 || adUserId == Env.CTXVALUE_AD_User_ID_System)
+		//
+
+		if (adUserId > 0 || adUserId == Env.CTXVALUE_AD_User_ID_System)
 		{
 			queryBuilder.addInArrayOrAllFilter(I_AD_UserQuery.COLUMNNAME_AD_User_ID, Env.CTXVALUE_AD_User_ID_System, adUserId, null);
 		}
-		
-		
+
 		return queryBuilder.create().listImmutable(I_AD_UserQuery.class);
 	}
 
@@ -269,7 +272,7 @@ public class UserQueryRepository
 			else if (j == INDEX_OPERATOR)
 			{
 				final Operator operator = Operator.forCodeOrNull(fields[j]);
-				if(operator != null)
+				if (operator != null)
 				{
 					row.setOperator(operator);
 				}
@@ -311,7 +314,7 @@ public class UserQueryRepository
 		for (int rowIndex = 0, rowsCount = rows.size(); rowIndex < rowsCount; rowIndex++)
 		{
 			final IUserQueryRestriction row = rows.get(rowIndex);
-			if(row.isEmpty())
+			if (row.isEmpty())
 			{
 				continue;
 			}
@@ -332,7 +335,7 @@ public class UserQueryRepository
 			{
 				throw new FillMandatoryException("AD_Field_ID");
 			}
-			
+
 			final String columnName = field.getColumnName();
 			final String columnDisplayName = field.getDisplayName().translate(Env.getAD_Language(getCtx()));
 			final String columnSql = field.getColumnSQL();
@@ -351,13 +354,13 @@ public class UserQueryRepository
 			if (value == null)
 			{
 				// allow saving restrictions without a value specified
-				//continue;
+				// continue;
 			}
 			final Object valueConverted = field.convertValueToFieldType(value);
 			if (valueConverted == null)
 			{
 				// allow saving restrictions without a value specified
-				//continue;
+				// continue;
 			}
 			final String valueDisplay = field.getValueDisplay(value);
 
@@ -411,7 +414,7 @@ public class UserQueryRepository
 			final I_AD_UserQuery userQuery = getAD_UserQueryByName(userQueryName);
 			if (userQueryCode.length() <= 0)
 			{
-				if(userQuery != null)
+				if (userQuery != null)
 				{
 					deleteUserQuery(userQuery);
 				}
@@ -423,11 +426,10 @@ public class UserQueryRepository
 		}
 	}
 
-	private void saveUserQuery(@Nullable I_AD_UserQuery userQuery, final String name, final String code)
+	private void saveUserQuery(@Nullable I_AD_UserQuery userQuery,
+			@NonNull final String name,
+			@NonNull final String code)
 	{
-		Check.assumeNotEmpty(name, "name not empty");
-		Check.assumeNotEmpty(code, "code not empty");
-
 		// New user query instance
 		if (userQuery == null)
 		{
@@ -452,7 +454,7 @@ public class UserQueryRepository
 		// Save user query
 		try
 		{
-			InterfaceWrapperHelper.save(userQuery);
+			save(userQuery);
 		}
 		catch (final Exception e)
 		{
@@ -460,6 +462,14 @@ public class UserQueryRepository
 		}
 
 		resetUserQueriesCache();
+	}
+
+	public void deactivateUserQuery(@NonNull final IUserQuery userQuery)
+	{
+		final I_AD_UserQuery userQueryRecord = load(userQuery.getId(), I_AD_UserQuery.class);
+		userQueryRecord.setDescription("!! deactivated by the system because it could not be evaluated !!\n" + userQueryRecord.getDescription());
+		userQueryRecord.setIsActive(false);
+		save(userQueryRecord);
 	}
 
 	private void deleteUserQuery(final I_AD_UserQuery userQuery)
@@ -509,7 +519,6 @@ public class UserQueryRepository
 
 		private Builder()
 		{
-			super();
 		}
 
 		public UserQueryRepository build()
@@ -554,7 +563,7 @@ public class UserQueryRepository
 			Check.assume(adTableId > 0, "adTableId > 0");
 			return adTableId;
 		}
-		
+
 		public Builder setAD_User_ID(final int adUserId)
 		{
 			this.adUserId = adUserId;
@@ -574,5 +583,4 @@ public class UserQueryRepository
 		}
 
 	}
-
 }
