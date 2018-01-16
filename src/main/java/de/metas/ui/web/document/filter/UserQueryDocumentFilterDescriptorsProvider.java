@@ -3,22 +3,27 @@ package de.metas.ui.web.document.filter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.compiere.apps.search.IUserQuery;
 import org.compiere.apps.search.IUserQueryField;
 import org.compiere.apps.search.IUserQueryRestriction;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.apps.search.UserQueryRepository;
+import org.compiere.model.I_AD_UserQuery;
 import org.compiere.util.CachedSuppliers;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -26,6 +31,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -51,6 +57,8 @@ import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
 
 final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
+	private static final Logger logger = LogManager.getLogger(UserQueryDocumentFilterDescriptorsProvider.class);
+
 	private final UserQueryRepository repository;
 	private final Supplier<Map<String, DocumentFilterDescriptor>> filtersSupplier = CachedSuppliers.renewOnCacheReset(() -> retrieveAllByFilterId());
 
@@ -74,7 +82,8 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 				.build();
 	}
 
-	@Override public Collection<DocumentFilterDescriptor> getAll()
+	@Override
+	public Collection<DocumentFilterDescriptor> getAll()
 	{
 		return filtersSupplier.get().values();
 	}
@@ -89,11 +98,30 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 	{
 		return repository.getUserQueries()
 				.stream()
-				.map(userQuery -> createFilterDescriptor(userQuery))
+				.map(userQuery -> createFilterDescriptorOrNull(userQuery))
+				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableMapByKey(DocumentFilterDescriptor::getFilterId));
 	}
 
-	private static final DocumentFilterDescriptor createFilterDescriptor(final IUserQuery userQuery)
+	private final DocumentFilterDescriptor createFilterDescriptorOrNull(@NonNull final IUserQuery userQuery)
+	{
+		try
+		{
+			return createFilterDescriptor0(userQuery);
+		}
+		catch (final RuntimeException e)
+		{
+			final String message = StringUtils.formatMessage(
+					"Unable to create a DocumentFilterDescriptor for the userQuery with {}={}; Deactivating this query; Exception={}",
+					I_AD_UserQuery.Table_Name, userQuery.getId(), e);
+			logger.error(message, e);
+
+			repository.deactivateUserQuery(userQuery);
+			return null;
+		}
+	}
+
+	private static final DocumentFilterDescriptor createFilterDescriptor0(@NonNull final IUserQuery userQuery)
 	{
 		final DocumentFilterDescriptor.Builder filter = DocumentFilterDescriptor.builder()
 				.setFilterId("userquery-" + userQuery.getId())
