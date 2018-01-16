@@ -106,7 +106,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 					.build();
 		}
 
-		final I_M_DiscountSchemaBreak breakApplied = fetchDiscountSchemaBreak(schema, qty, Price, M_Product_ID, M_Product_Category_ID, instances, bPartnerFlatDiscount);
+		final I_M_DiscountSchemaBreak breakApplied = fetchDiscountSchemaBreak(schema, qty, Price, M_Product_ID, M_Product_Category_ID, instances);
 
 		if (breakApplied != null)
 		{
@@ -140,8 +140,8 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			final BigDecimal Price,
 			final int M_Product_ID,
 			final int M_Product_Category_ID,
-			final List<I_M_AttributeInstance> instances,
-			final BigDecimal bPartnerFlatDiscount)
+			final List<I_M_AttributeInstance> instances
+			)
 	{
 		// Price Breaks
 		final List<I_M_DiscountSchemaBreak> breaks = Services.get(IMDiscountSchemaDAO.class).retrieveBreaks(schema);
