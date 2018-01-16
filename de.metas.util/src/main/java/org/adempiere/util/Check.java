@@ -25,10 +25,12 @@ package org.adempiere.util;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
@@ -435,30 +437,78 @@ public final class Check
 	 * <p>
 	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
 	 *
-	 * @param cond
-	 * @param errMsg
-	 * @param params
 	 */
 	public static void errorIf(final boolean cond, final String errMsg, final Object... params)
 	{
+		errorIf(cond, defaultExClazz, errMsg, createDummySuppliers(params));
+	}
+
+	@SafeVarargs
+	public static void errorIf(
+			final boolean cond,
+			final String errMsg,
+			final Supplier<Object>... params)
+	{
 		errorIf(cond, defaultExClazz, errMsg, params);
+	}
+
+	public static void errorIf(
+			final boolean cond,
+			final Class<? extends RuntimeException> exceptionClass,
+			final String errMsg,
+			final Object... params)
+	{
+		errorIf(cond, exceptionClass, errMsg, createDummySuppliers(params));
 	}
 
 	/**
 	 * Like {@link #errorIf(boolean, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
 	 *
-	 * @param cond
-	 * @param exceptionClass
-	 * @param errMsg
-	 * @param params
 	 */
-	public static void errorIf(final boolean cond, final Class<? extends RuntimeException> exceptionClass, final String errMsg, final Object... params)
+	@SafeVarargs
+	public static void errorIf(
+			final boolean cond,
+			final Class<? extends RuntimeException> exceptionClass,
+			final String errMsg,
+			final Supplier<Object>... paramSuppliers)
 	{
 		if (cond)
 		{
+			final Object[] params = invokeSuppliers(paramSuppliers);
 			final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
 			throwOrLogEx(exceptionClass, "Error: " + errMsgFormated);
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private static Supplier<Object>[] createDummySuppliers(final Object... params)
+	{
+		final Supplier<Object>[] paramSuppliers;
+		if (params == null)
+		{
+			paramSuppliers = null;
+		}
+		else
+		{
+			final Function<Object, Supplier<Object>> createDummySupplierFunction = param -> (() -> param);
+			paramSuppliers = Arrays.asList(params).stream().map(param -> createDummySupplierFunction.apply(param)).toArray(Supplier[]::new);
+		}
+		return paramSuppliers;
+	}
+
+	@SafeVarargs
+	private static Object[] invokeSuppliers(final Supplier<Object>... paramSuppliers)
+	{
+		final Object[] params;
+		if (paramSuppliers == null)
+		{
+			params = null;
+		}
+		else
+		{
+			params = Arrays.asList(paramSuppliers).stream().map(Supplier::get).toArray();
+		}
+		return params;
 	}
 
 	/**
@@ -559,6 +609,7 @@ public final class Check
 	 * If both a and b are Object[], they are compared item-by-item.
 	 *
 	 * NOTE: this is a copy paste from org.zkoss.lang.Objects.equals(Object, Object)
+	 *
 	 * @deprecated: as of java-8, there is {@link Objects#equals(Object, Object)}. Please use that instead.
 	 */
 	@Deprecated
