@@ -131,7 +131,7 @@ public final class DocumentFilterDescriptorsProviderFactory
 	{
 		final ITranslatableString displayName = field.getCaption();
 		final String fieldName = field.getFieldName();
-		final DocumentFieldWidgetType widgetType = field.getWidgetType();
+		final DocumentFieldWidgetType widgetType = extractFilterWidgetType(field);
 		final DocumentFieldDefaultFilterDescriptor filteringInfo = field.getDefaultFilterInfo();
 
 		final LookupDescriptor lookupDescriptor = field.getLookupDescriptor(LookupDescriptorProvider.LookupScope.DocumentFilter);
@@ -159,6 +159,18 @@ public final class DocumentFilterDescriptorsProviderFactory
 				.setMandatory(false)
 				.setShowIncrementDecrementButtons(filteringInfo.isShowFilterIncrementButtons())
 				.setAutoFilterInitialValue(filteringInfo.getAutoFilterInitialValue());
+	}
+
+	private DocumentFieldWidgetType extractFilterWidgetType(final DocumentFieldDescriptor field)
+	{
+		final DocumentFieldWidgetType widgetType = field.getWidgetType();
+		if (widgetType == DocumentFieldWidgetType.DateTime)
+		{
+			return DocumentFieldWidgetType.Date;
+		}
+
+		return widgetType;
+
 	}
 
 }
