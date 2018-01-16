@@ -40,6 +40,7 @@ import org.compiere.util.Env;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import lombok.NonNull;
 
 /**
  * Default implementation for {@link IInvoiceHeader}
@@ -377,29 +378,32 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 	private int extractC_PaymentTerm_IDFromLine()
 	{
 		final List<IInvoiceCandAggregate> lines = getLines();
-
 		if (lines == null || lines.isEmpty())
 		{
 			return -1;
 		}
 
-		final List<IInvoiceLineRW> invoiceLinesRW = new ArrayList<>();
-		lines.forEach(lineAgg -> invoiceLinesRW.addAll(lineAgg.getAllLines()));
-
-		final Map<Integer, IInvoiceLineRW> uniquePaymentTermLines = invoiceLinesRW.stream()
-				.collect(GuavaCollectors.toImmutableMapByKey(line -> line.getC_PaymentTerm_ID()));
-
-		int C_PaymentTerm_ID = -1;
+		final Map<Integer, IInvoiceLineRW> uniquePaymentTermLines = mapUniqueIInvoiceLineRWPerPaymentTerm(lines);
+		// extract payment term  if all lines have same C_PaymentTerm_ID
 		if (uniquePaymentTermLines.size() == 1)
 		{
-			Set<Integer> ids = uniquePaymentTermLines.keySet();
+			final Set<Integer> ids = uniquePaymentTermLines.keySet();
 			int id = ids.iterator().next();
 			if (id > 0)
 			{
-				C_PaymentTerm_ID = id;
+				return id;
 			}
 		}
 
-		return C_PaymentTerm_ID;
+		return -1;
+	}
+
+	private Map<Integer, IInvoiceLineRW> mapUniqueIInvoiceLineRWPerPaymentTerm(@NonNull final List<IInvoiceCandAggregate> lines)
+	{
+		final List<IInvoiceLineRW> invoiceLinesRW = new ArrayList<>();
+		lines.forEach(lineAgg -> invoiceLinesRW.addAll(lineAgg.getAllLines()));
+
+		return invoiceLinesRW.stream()
+				.collect(GuavaCollectors.toImmutableMapByKey(line -> line.getC_PaymentTerm_ID()));
 	}
 }
