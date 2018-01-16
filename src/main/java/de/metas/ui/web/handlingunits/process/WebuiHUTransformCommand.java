@@ -332,7 +332,7 @@ public class WebuiHUTransformCommand
 
 		return WebuiHUTransformCommandResult.builder()
 				.huIdsToAddToView(createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet()))
-				.huIdToRemoveFromView(tuRow.getM_HU_ID()) // TODO check and remove the tuRow only if is empty (consider the Aggregated TUs case too)
+				.huIdChanged(tuRow.getHURowId().getTopLevelHUId())
 				.fullViewInvalidation(true) // because it might be that the TU is inside an LU of which we don't know the ID
 				.build();
 	}
