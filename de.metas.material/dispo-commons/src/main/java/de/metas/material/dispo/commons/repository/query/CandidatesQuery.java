@@ -9,7 +9,6 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import lombok.Builder;
@@ -49,8 +48,6 @@ import lombok.experimental.Wither;
 @Wither
 public final class CandidatesQuery
 {
-	public static final DistributionDetail NO_DISTRIBUTION_DETAIL = DistributionDetail.builder().build();
-
 	public static final int UNSPECIFIED_PARENT_ID = -1;
 
 	public static final int UNSPECIFIED_ID = -1;
@@ -72,11 +69,14 @@ public final class CandidatesQuery
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery
 				.fromProductionDetail(candidate.getProductionDetail());
 
+		final DistributionDetailsQuery distributionDetailsQuery = DistributionDetailsQuery
+				.fromDistributionDetail(candidate.getDistributionDetail());
+		
 		final CandidatesQueryBuilder builder = CandidatesQuery.builder()
 				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(candidate.getMaterialDescriptor()))
 				.matchExactStorageAttributesKey(true)
 				.demandDetail(candidate.getDemandDetail())
-				.distributionDetail(candidate.getDistributionDetail())
+				.distributionDetailsQuery(distributionDetailsQuery)
 				.groupId(candidate.getGroupId())
 				.orgId(candidate.getOrgId())
 				.productionDetailsQuery(productionDetailsQuery)
@@ -143,7 +143,7 @@ public final class CandidatesQuery
 	/**
 	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#DISTRIBUTION}.
 	 */
-	DistributionDetail distributionDetail;
+	DistributionDetailsQuery distributionDetailsQuery;
 
 	/**
 	 * Used for additional infos if this candidate relates to particular demand
@@ -166,7 +166,7 @@ public final class CandidatesQuery
 			final MaterialDescriptorQuery materialDescriptorQuery,
 			final boolean matchExactStorageAttributesKey,
 			final ProductionDetailsQuery productionDetailsQuery,
-			final DistributionDetail distributionDetail,
+			final DistributionDetailsQuery distributionDetailsQuery,
 			final DemandDetail demandDetail,
 			final TransactionDetail transactionDetail)
 	{
@@ -184,7 +184,7 @@ public final class CandidatesQuery
 
 		this.materialDescriptorQuery = materialDescriptorQuery;
 		this.productionDetailsQuery = productionDetailsQuery;
-		this.distributionDetail = distributionDetail;
+		this.distributionDetailsQuery = distributionDetailsQuery;
 		this.demandDetail = demandDetail;
 		this.transactionDetail = transactionDetail;
 	}

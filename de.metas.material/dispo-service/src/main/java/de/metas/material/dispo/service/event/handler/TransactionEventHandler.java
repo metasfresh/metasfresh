@@ -27,6 +27,7 @@ import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
@@ -266,14 +267,13 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final Candidate candidate;
 		final TransactionDetail transactionDetailOfEvent = createTransactionDetail(event);
 
-		final DistributionDetail distributionDetail = DistributionDetail.builder()
+		final DistributionDetailsQuery distributionDetailsQuery = DistributionDetailsQuery.builder()
 				.ddOrderLineId(event.getDdOrderLineId())
 				.ddOrderId(event.getDdOrderId())
-				.actualQty(event.getQuantity())
 				.build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.distributionDetail(distributionDetail) // only search via distribution detail, ..the product and warehouse will also match, but e.g. the date probably won't!
+				.distributionDetailsQuery(distributionDetailsQuery) // only search via distribution detail, ..the product and warehouse will also match, but e.g. the date probably won't!
 				.build();
 
 		final Candidate existingCandidate = candidateRepository.retrieveLatestMatchOrNull(query);
@@ -281,6 +281,10 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean unrelatedNewTransaction = existingCandidate == null && event instanceof TransactionCreatedEvent;
 		if (unrelatedNewTransaction)
 		{
+			final DistributionDetail distributionDetail = distributionDetailsQuery
+					.toDistributionDetailBuilder()
+					.actualQty(event.getQuantity()).build();
+
 			candidate = createBuilderForNewUnrelatedCandidate(
 					(TransactionCreatedEvent)event,
 					event.getQuantity())
