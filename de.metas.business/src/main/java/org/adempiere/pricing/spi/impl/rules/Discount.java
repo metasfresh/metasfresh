@@ -32,6 +32,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
+import org.adempiere.pricing.api.IMDiscountSchemaBL.DiscountRequest;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.spi.IPricingRule;
@@ -131,7 +132,8 @@ public class Discount implements IPricingRule
 		// 08660
 		// In case we are dealing with an asi aware object, make sure the value(s) from that asi
 		// are also taken into account when the discount is calculated
-		final BigDecimal m_discount;
+		final DiscountRequest discountRequest;
+
 
 		final IAttributeSetInstanceAware asiAware = Services
 				.get(IAttributeSetInstanceAwareFactoryService.class)
@@ -139,7 +141,7 @@ public class Discount implements IPricingRule
 
 		if (asiAware == null)
 		{
-			m_discount = Services.get(IMDiscountSchemaBL.class).
+			discountRequest = Services.get(IMDiscountSchemaBL.class).
 					calculateDiscount(
 							discountSchema,
 							pricingCtx.getQty(),
@@ -155,7 +157,7 @@ public class Discount implements IPricingRule
 
 			final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asi);
 
-			m_discount = Services.get(IMDiscountSchemaBL.class).
+			discountRequest = Services.get(IMDiscountSchemaBL.class).
 					calculateDiscount(
 							discountSchema,
 							pricingCtx.getQty(),
@@ -168,8 +170,8 @@ public class Discount implements IPricingRule
 
 		result.setUsesDiscountSchema(isUseDiscountSchema);
 		result.setM_DiscountSchema_ID(discountSchema.getM_DiscountSchema_ID());
-		result.setDiscount(m_discount);
-		result.setC_PaymentTerm_ID(discountSchema.getC_PaymentTerm_ID());
+		result.setDiscount(discountRequest.getDiscount());
+		result.setC_PaymentTerm_ID(discountRequest.getC_PaymentTerm_ID());
 		// metas us1064 end
 	}
 }

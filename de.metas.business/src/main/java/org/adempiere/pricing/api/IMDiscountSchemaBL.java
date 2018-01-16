@@ -32,6 +32,10 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Getter;
+
 public interface IMDiscountSchemaBL extends ISingletonService
 {
 	final public static Comparator<I_M_DiscountSchemaBreak> REVERSED_BREAKS_COMPARATOR = Comparator.<I_M_DiscountSchemaBreak, BigDecimal> comparing(I_M_DiscountSchemaBreak::getBreakValue)
@@ -48,7 +52,7 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	 * @param bPartnerFlatDiscount
 	 * @return
 	 */
-	BigDecimal calculateDiscount(I_M_DiscountSchema schema, BigDecimal Qty, BigDecimal Price, int M_Product_ID, int M_Product_Category_ID, BigDecimal bPartnerFlatDiscount);
+	DiscountRequest calculateDiscount(I_M_DiscountSchema schema, BigDecimal Qty, BigDecimal Price, int M_Product_ID, int M_Product_Category_ID, BigDecimal bPartnerFlatDiscount);
 
 	/**
 	 * Calculate Discounted Price
@@ -116,7 +120,7 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	 * @param bPartnerFlatDiscount
 	 * @return
 	 */
-	BigDecimal calculateDiscount(I_M_DiscountSchema schema, BigDecimal qty, BigDecimal Price, int M_Product_ID, int M_Product_Category_ID, List<I_M_AttributeInstance> instances,
+	DiscountRequest calculateDiscount(I_M_DiscountSchema schema, BigDecimal qty, BigDecimal Price, int M_Product_ID, int M_Product_Category_ID, List<I_M_AttributeInstance> instances,
 			BigDecimal bPartnerFlatDiscount);
 
 	/**
@@ -164,4 +168,12 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	I_M_DiscountSchemaBreak pickApplyingBreak(List<I_M_DiscountSchemaBreak> breaks, List<I_M_AttributeInstance> instances, boolean isQtyBased, int M_Product_ID, int M_Product_Category_ID,
 			BigDecimal qty, BigDecimal amt);
 
+	@Builder
+	@Getter
+	static public class DiscountRequest
+	{
+		final BigDecimal discount;
+		@Default
+		int C_PaymentTerm_ID =-1;
+	}
 }

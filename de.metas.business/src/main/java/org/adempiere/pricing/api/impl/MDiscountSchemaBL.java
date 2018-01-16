@@ -61,7 +61,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 	 * @return discount or zero
 	 */
 	@Override
-	public BigDecimal calculateDiscount(final I_M_DiscountSchema schema,
+	public DiscountRequest calculateDiscount(final I_M_DiscountSchema schema,
 			final BigDecimal qty,
 			final BigDecimal Price,
 			final int M_Product_ID,
@@ -78,9 +78,8 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 				bPartnerFlatDiscount);
 	}	// calculateDiscount
 
-
 	@Override
-	public BigDecimal calculateDiscount(@NonNull final I_M_DiscountSchema schema,
+	public DiscountRequest calculateDiscount(@NonNull final I_M_DiscountSchema schema,
 			final BigDecimal qty,
 			final BigDecimal Price,
 			final int M_Product_ID,
@@ -90,7 +89,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 	{
 		final BigDecimal bpFlatDiscountToUse = bPartnerFlatDiscount == null ? BigDecimal.ZERO : bPartnerFlatDiscount;
 		final String discountType = schema.getDiscountType();
-		final boolean isQtyBased = schema.isQuantityBased();
+
 
 		if (X_M_DiscountSchema.DISCOUNTTYPE_FlatPercent.equals(discountType))
 		{
@@ -100,13 +99,55 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 				|| X_M_DiscountSchema.DISCOUNTTYPE_Pricelist.equals(discountType))
 		{
 			logger.warn("Not supported (yet) DiscountType={}", discountType);
-			return BigDecimal.ZERO;
+
+			return DiscountRequest.builder()
+					.discount(BigDecimal.ZERO)
+					.build();
 		}
 
+		final I_M_DiscountSchemaBreak breakApplied = fetchDiscountSchemaBreak(schema, qty, Price, M_Product_ID, M_Product_Category_ID, instances, bPartnerFlatDiscount);
+
+		if (breakApplied != null)
+		{
+
+			// Line applies
+			BigDecimal discount = null;
+			if (breakApplied.isBPartnerFlatDiscount())
+			{
+				discount = bPartnerFlatDiscount;
+			}
+			else
+			{
+				discount = breakApplied.getBreakDiscount();
+			}
+			logger.debug("Discount=>{}", discount);
+
+			return DiscountRequest.builder()
+					.discount(discount)
+					.C_PaymentTerm_ID(breakApplied.getC_PaymentTerm_ID())
+					.build();
+			// for all breaks
+		}
+
+		return DiscountRequest.builder()
+				.discount(BigDecimal.ZERO)
+				.build();
+	}
+
+	public I_M_DiscountSchemaBreak fetchDiscountSchemaBreak(@NonNull final I_M_DiscountSchema schema,
+			final BigDecimal qty,
+			final BigDecimal Price,
+			final int M_Product_ID,
+			final int M_Product_Category_ID,
+			final List<I_M_AttributeInstance> instances,
+			final BigDecimal bPartnerFlatDiscount)
+	{
 		// Price Breaks
 		final List<I_M_DiscountSchemaBreak> breaks = Services.get(IMDiscountSchemaDAO.class).retrieveBreaks(schema);
 
 		BigDecimal amt = Price.multiply(qty);
+
+		final boolean isQtyBased = schema.isQuantityBased();
 
 		if (isQtyBased)
 		{
@@ -157,37 +198,22 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			}
 		}
 
-		if (breakApplied != null)
-		{
-
-			// Line applies
-			BigDecimal discount = null;
-			if (breakApplied.isBPartnerFlatDiscount())
-			{
-				discount = bPartnerFlatDiscount;
-			}
-			else
-			{
-				discount = breakApplied.getBreakDiscount();
-			}
-			logger.debug("Discount=>{}", discount);
-			return discount;
-			// for all breaks
-		}
-
-		return BigDecimal.ZERO;
+		return breakApplied;
 	}
 
-	private BigDecimal computeFlatDiscount(@NonNull final I_M_DiscountSchema schema, @NonNull final BigDecimal bpFlatDiscountToUse)
+	private DiscountRequest computeFlatDiscount(@NonNull final I_M_DiscountSchema schema, @NonNull final BigDecimal bpFlatDiscountToUse)
 	{
 		if (schema.isBPartnerFlatDiscount())
 		{
-			return bpFlatDiscountToUse;
+			return DiscountRequest.builder()
+					.discount(bpFlatDiscountToUse)
+					.build();
 		}
 
-		return schema.getFlatDiscount();
+		return DiscountRequest.builder()
+				.discount(schema.getFlatDiscount())
+				.build();
 	}
-
 
 	@Override
 	public I_M_DiscountSchemaBreak pickApplyingBreak(
@@ -336,7 +362,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 			return price;
 		}
 
-		final BigDecimal discount = calculateDiscount(
+		final DiscountRequest discountRequest = calculateDiscount(
 				schema,
 				qty,
 				price,
@@ -345,6 +371,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 				instances,
 				bPartnerFlatDiscount);
 
+		final BigDecimal discount = discountRequest.getDiscount();
 		if (discount == null || discount.signum() == 0)
 		{
 			return price;

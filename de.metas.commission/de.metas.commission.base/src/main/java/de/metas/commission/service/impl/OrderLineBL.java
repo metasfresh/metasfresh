@@ -10,12 +10,12 @@ package de.metas.commission.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,6 +34,7 @@ import java.util.Set;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
+import org.adempiere.pricing.api.IMDiscountSchemaBL.DiscountRequest;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -68,7 +69,7 @@ public class OrderLineBL implements IOrderLineBL
 
 	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
 
-	private final Set<Integer> ignoredOlIds = new HashSet<Integer>();
+	private final Set<Integer> ignoredOlIds = new HashSet<>();
 
 	@Override
 	public void ignore(final int orderLineId)
@@ -325,7 +326,7 @@ public class OrderLineBL implements IOrderLineBL
 
 	/**
 	 * Note: doesn't touch update the priceUOM.
-	 * 
+	 *
 	 * @param olGen ol whose discount needs updating. Note: The type is org.compiere.model.I_C_OrderLine, so MOrderLines as well as any kind of _C_OrderLine can be added
 	 * @param newDs
 	 * @param precision
@@ -361,7 +362,7 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal newDiscount;
 		if (newDs != null)
 		{
-			newDiscount = discountSchemaBL.calculateDiscount(
+			final DiscountRequest discountrequest = discountSchemaBL.calculateDiscount(
 					discountSchema,
 					olGen.getQtyOrdered(),
 					priceEntered,
@@ -369,6 +370,7 @@ public class OrderLineBL implements IOrderLineBL
 					0,
 					instances,
 					null);
+			newDiscount = discountrequest.getDiscount();
 		}
 		else
 		{
