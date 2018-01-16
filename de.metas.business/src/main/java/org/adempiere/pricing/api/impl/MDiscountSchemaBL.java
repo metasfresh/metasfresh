@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
@@ -134,7 +135,7 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 				.build();
 	}
 
-	public I_M_DiscountSchemaBreak fetchDiscountSchemaBreak(@NonNull final I_M_DiscountSchema schema,
+	private I_M_DiscountSchemaBreak fetchDiscountSchemaBreak(@NonNull final I_M_DiscountSchema schema,
 			final BigDecimal qty,
 			final BigDecimal Price,
 			final int M_Product_ID,
@@ -144,19 +145,8 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 	{
 		// Price Breaks
 		final List<I_M_DiscountSchemaBreak> breaks = Services.get(IMDiscountSchemaDAO.class).retrieveBreaks(schema);
-
 		BigDecimal amt = Price.multiply(qty);
-
 		final boolean isQtyBased = schema.isQuantityBased();
-
-		if (isQtyBased)
-		{
-			logger.trace("Qty={}, M_Product_ID={}, M_Product_Category_ID={}", qty, M_Product_ID, M_Product_Category_ID);
-		}
-		else
-		{
-			logger.trace("Amt={}, M_Product_ID={}, M_Product_Category_ID={}", amt, M_Product_ID, M_Product_Category_ID);
-		}
 
 		I_M_DiscountSchemaBreak breakApplied = null;
 		if (hasNoValues(instances))
@@ -172,30 +162,19 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		}
 		else
 		{
-
-			for (final I_M_AttributeInstance instance : instances)
-			{
-				if (hasNoValue(instance))
-				{
-					continue;
-				}
-
-				final int attributeValueID = instance.getM_AttributeValue_ID();
-
-				breakApplied = pickApplyingBreak(
-						breaks,
-						attributeValueID,
-						isQtyBased,
-						M_Product_ID,
-						M_Product_Category_ID,
-						qty,
-						amt);
-
-				if (breakApplied != null)
-				{
-					break;
-				}
-			}
+			final Optional<I_M_DiscountSchemaBreak> optionalBreak = instances.stream()
+					.filter(instance -> !hasNoValue(instance))
+					.map(instance -> pickApplyingBreak(
+							breaks,
+							instance.getM_AttributeValue_ID(),
+							isQtyBased,
+							M_Product_ID,
+							M_Product_Category_ID,
+							qty,
+							amt))
+					.filter(schemaBreak -> schemaBreak != null)
+					.findFirst();
+			breakApplied = optionalBreak.orElse(null);
 		}
 
 		return breakApplied;
