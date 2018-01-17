@@ -50,24 +50,28 @@ public class M_Transaction_HuOnHandQtyChangeDescriptor
 	{
 	}
 
-	public List<HUOnHandQtyChangeDescriptor> createEventsForInOutLine(@NonNull final I_M_Transaction transaction, final boolean deleted)
-	{
-		return createEventsForModel(transaction.getM_InOutLine(), deleted);
-	}
-
-	public List<HUOnHandQtyChangeDescriptor> createEventsForCostCollector(@NonNull final I_M_Transaction transaction, final boolean deleted)
-	{
-		return createEventsForModel(transaction.getPP_Cost_Collector(), deleted);
-	}
-
-	public List<HUOnHandQtyChangeDescriptor> createEventsForMovementLine(
+	public List<HUOnHandQtyChangeDescriptor> createHuDescriptorsForInOutLine(
 			@NonNull final I_M_Transaction transaction,
 			final boolean deleted)
 	{
-		return createEventsForModel(transaction.getM_MovementLine(), deleted);
+		return createHUDescriptorsForModel(transaction.getM_InOutLine(), deleted);
 	}
 
-	private static List<HUOnHandQtyChangeDescriptor> createEventsForModel(
+	public List<HUOnHandQtyChangeDescriptor> createHuDescriptorsForCostCollector(
+			@NonNull final I_M_Transaction transaction,
+			final boolean deleted)
+	{
+		return createHUDescriptorsForModel(transaction.getPP_Cost_Collector(), deleted);
+	}
+
+	public List<HUOnHandQtyChangeDescriptor> createHuDescriptorsForMovementLine(
+			@NonNull final I_M_Transaction transaction,
+			final boolean deleted)
+	{
+		return createHUDescriptorsForModel(transaction.getM_MovementLine(), deleted);
+	}
+
+	private static List<HUOnHandQtyChangeDescriptor> createHUDescriptorsForModel(
 			@NonNull final Object huReferencedModel,
 			final boolean deleted)
 	{

@@ -105,7 +105,7 @@ public class M_Transaction_TransactionEventCreator
 		final I_PP_Cost_Collector costCollector = transaction.getPP_Cost_Collector();
 
 		final List<HUOnHandQtyChangeDescriptor> huDescriptors = //
-				M_Transaction_HuOnHandQtyChangeDescriptor.INSTANCE.createEventsForCostCollector(transaction, deleted);
+				M_Transaction_HuOnHandQtyChangeDescriptor.INSTANCE.createHuDescriptorsForCostCollector(transaction, deleted);
 
 		if (deleted)
 		{
@@ -242,7 +242,7 @@ public class M_Transaction_TransactionEventCreator
 				transaction.getMovementQty());
 
 		final List<HUOnHandQtyChangeDescriptor> huDescriptor = //
-				M_Transaction_HuOnHandQtyChangeDescriptor.INSTANCE.createEventsForInOutLine(transaction, deleted);
+				M_Transaction_HuOnHandQtyChangeDescriptor.INSTANCE.createHuDescriptorsForInOutLine(transaction, deleted);
 
 		final AbstractTransactionEvent event;
 		if (deleted)
@@ -287,7 +287,7 @@ public class M_Transaction_TransactionEventCreator
 				: 0;
 
 		final List<HUOnHandQtyChangeDescriptor> huDescriptors = //
-				M_Transaction_HuOnHandQtyChangeDescriptor.INSTANCE.createEventsForMovementLine(transaction, deleted);
+				M_Transaction_HuOnHandQtyChangeDescriptor.INSTANCE.createHuDescriptorsForMovementLine(transaction, deleted);
 
 		if (deleted)
 		{

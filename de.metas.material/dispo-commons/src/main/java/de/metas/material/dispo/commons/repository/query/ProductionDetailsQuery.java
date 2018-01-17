@@ -1,5 +1,7 @@
 package de.metas.material.dispo.commons.repository.query;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Services;
@@ -44,8 +46,8 @@ public class ProductionDetailsQuery
 			.ppOrderId(-10)
 			.ppOrderLineId(-10).build();
 
-	public static ProductionDetailsQuery fromProductionDetail(
-			final ProductionDetail productionDetail)
+	public static ProductionDetailsQuery ofProductionDetailOrNull(
+			@Nullable final ProductionDetail productionDetail)
 	{
 		if (productionDetail == null)
 		{

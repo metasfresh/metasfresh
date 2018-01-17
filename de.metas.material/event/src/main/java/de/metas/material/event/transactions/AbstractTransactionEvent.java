@@ -49,8 +49,6 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 	private final MaterialDescriptor materialDescriptor;
 
-	// ids used to match the transaction to the respective shipmentSchedule
-	// if *none of those are set* then the transaction will be recorded as "unplanned"
 	private final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys;
 
 	private final int transactionId;

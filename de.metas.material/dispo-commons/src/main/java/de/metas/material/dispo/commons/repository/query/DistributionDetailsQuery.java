@@ -1,5 +1,7 @@
 package de.metas.material.dispo.commons.repository.query;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Services;
@@ -45,8 +47,13 @@ public class DistributionDetailsQuery
 			.ddOrderLineId(-10)
 			.build();
 
-	public static DistributionDetailsQuery fromDistributionDetail(DistributionDetail distributionDetail)
+	public static DistributionDetailsQuery ofDistributionDetailOrNull(
+			@Nullable final DistributionDetail distributionDetail)
 	{
+		if(distributionDetail == null)
+		{
+			return null;
+		}
 		return builder()
 				.productPlanningId(distributionDetail.getProductPlanningId())
 				.networkDistributionLineId(distributionDetail.getNetworkDistributionLineId())

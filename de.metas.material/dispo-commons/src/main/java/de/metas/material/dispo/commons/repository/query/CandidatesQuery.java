@@ -67,10 +67,10 @@ public final class CandidatesQuery
 		}
 
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery
-				.fromProductionDetail(candidate.getProductionDetail());
+				.ofProductionDetailOrNull(candidate.getProductionDetail());
 
 		final DistributionDetailsQuery distributionDetailsQuery = DistributionDetailsQuery
-				.fromDistributionDetail(candidate.getDistributionDetail());
+				.ofDistributionDetailOrNull(candidate.getDistributionDetail());
 		
 		final CandidatesQueryBuilder builder = CandidatesQuery.builder()
 				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(candidate.getMaterialDescriptor()))

@@ -34,12 +34,7 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.Assert;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
 import de.metas.handlingunits.model.I_M_HU;
@@ -47,7 +42,6 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.inout.IInOutDAO;
-import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
 import de.metas.shipping.interfaces.I_M_Package;
 
 /**
@@ -62,9 +56,6 @@ import de.metas.shipping.interfaces.I_M_Package;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/08715_Kennzeichen_Gebinde_ausblenden_auf_Lsch._%28Gastro%29%2C_TU_auf_LKW_Verdichtung_%28109809505901%29
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		ShipperGatewayRegistry.class})
 public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends AbstractHUShipmentProcessIntegrationTest
 {
 	private ShipmentScheduleQtyPickedExpectations afterPick_ShipmentScheduleQtyPickedExpectations = null;
