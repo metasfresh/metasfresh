@@ -24,23 +24,14 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
-import org.compiere.util.Env;
 
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
-import lombok.NonNull;
 
 /**
  * Default implementation for {@link IInvoiceHeader}
@@ -93,6 +84,8 @@ import lombok.NonNull;
 	private I_C_DocType docTypeInvoice;
 
 	private boolean taxIncluded;
+
+	private int C_PaymentTerm_ID = -1;;
 
 	/* package */ InvoiceHeaderImpl()
 	{
@@ -350,60 +343,14 @@ import lombok.NonNull;
 		return totalNetAmt;
 	}
 
+	public void setC_PaymentTerm_ID(final int paymentTermId)
+	{
+		C_PaymentTerm_ID = paymentTermId;
+	}
+
 	@Override
 	public int getC_PaymentTerm_ID()
 	{
-		int C_PaymentTerm_ID = extractC_PaymentTerm_IDFromLine();
-
-		if (C_PaymentTerm_ID > 0)
-		{
-			return C_PaymentTerm_ID;
-		}
-		// task 07242: setting the payment term from the given bill partner. Note that C_BP_Group has no payment term columns, so we don't need a BL to fall back to C_BP_Group
-		final I_C_BPartner billPartner = InterfaceWrapperHelper.create(Env.getCtx(), getBill_BPartner_ID(), I_C_BPartner.class, ITrx.TRXNAME_None);
-		if (isSOTrx())
-		{
-			return billPartner.getC_PaymentTerm_ID();
-		}
-		else
-		{
-			return billPartner.getPO_PaymentTerm_ID();
-		}
-	}
-
-	/**
-	 * extract C_PaymentTerm_ID from invoice candidate
-	 * @return
-	 */
-	private int extractC_PaymentTerm_IDFromLine()
-	{
-		final List<IInvoiceCandAggregate> lines = getLines();
-		if (lines == null || lines.isEmpty())
-		{
-			return -1;
-		}
-
-		final Map<Integer, IInvoiceLineRW> uniquePaymentTermLines = mapUniqueIInvoiceLineRWPerPaymentTerm(lines);
-		// extract payment term  if all lines have same C_PaymentTerm_ID
-		if (uniquePaymentTermLines.size() == 1)
-		{
-			final Set<Integer> ids = uniquePaymentTermLines.keySet();
-			int id = ids.iterator().next();
-			if (id > 0)
-			{
-				return id;
-			}
-		}
-
-		return -1;
-	}
-
-	private Map<Integer, IInvoiceLineRW> mapUniqueIInvoiceLineRWPerPaymentTerm(@NonNull final List<IInvoiceCandAggregate> lines)
-	{
-		final List<IInvoiceLineRW> invoiceLinesRW = new ArrayList<>();
-		lines.forEach(lineAgg -> invoiceLinesRW.addAll(lineAgg.getAllLines()));
-
-		return invoiceLinesRW.stream()
-				.collect(GuavaCollectors.toImmutableMapByKey(line -> line.getC_PaymentTerm_ID()));
+		return C_PaymentTerm_ID;
 	}
 }
