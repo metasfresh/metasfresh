@@ -255,10 +255,10 @@ public class WebuiHUTransformCommand
 	private WebuiHUTransformCommandResult action_SplitCU_To_ExistingTU(final HUEditorRow cuRow, final I_M_HU tuHU, final BigDecimal qtyCU)
 	{
 		final List<I_M_HU> createdCUs = newHUTransformation().cuToExistingTU(cuRow.getM_HU(), qtyCU, tuHU);
-
+		
 		return WebuiHUTransformCommandResult.builder()
-				.huIdChanged(cuRow.getM_HU_ID())
-				.huIdChanged(tuHU.getM_HU_ID())
+				.huIdChanged(cuRow.getHURowId().getTopLevelHUId())
+				.huIdChanged(Services.get(IHandlingUnitsBL.class).getTopLevelParent(tuHU).getM_HU_ID())
 				.huIdsCreated(createdCUs.stream().map(hu -> hu.getM_HU_ID()).collect(ImmutableList.toImmutableList()))
 				.build();
 	}
@@ -278,6 +278,7 @@ public class WebuiHUTransformCommand
 		final ImmutableSet<Integer> createdHUIds = createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet());
 
 		return WebuiHUTransformCommandResult.builder()
+				.huIdChanged(cuRow.getHURowId().getTopLevelHUId())
 				.huIdsToAddToView(createdHUIds)
 				.huIdsCreated(createdHUIds)
 				.build();
@@ -298,6 +299,7 @@ public class WebuiHUTransformCommand
 		final List<I_M_HU> createdHUs = newHUTransformation().cuToNewTUs(cuRow.getM_HU(), qtyCU, tuPIItemProduct, isOwnPackingMaterials);
 		final ImmutableSet<Integer> createdHUIds = createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet());
 		return WebuiHUTransformCommandResult.builder()
+				.huIdChanged(cuRow.getHURowId().getTopLevelHUId())
 				.huIdsToAddToView(createdHUIds)
 				.huIdsCreated(createdHUIds)
 				.build();
