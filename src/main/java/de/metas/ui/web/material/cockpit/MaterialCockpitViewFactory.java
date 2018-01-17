@@ -1,8 +1,5 @@
 package de.metas.ui.web.material.cockpit;
 
-import java.util.List;
-import java.util.function.Supplier;
-
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
@@ -79,13 +76,12 @@ public class MaterialCockpitViewFactory
 
 		final ImmutableList<DocumentFilter> requestFilters = materialCockpitFilters.extractDocumentFilters(request);
 		final ImmutableList<DocumentFilter> filtersToUse = request.isUseAutoFilters() ? materialCockpitFilters.createAutoFilters() : requestFilters;
-		final Supplier<List<MaterialCockpitRow>> rowsListSupplier = () -> materialCockpitRowRepository.retrieveRows(filtersToUse);
 
 		final MaterialCockpitView view = MaterialCockpitView.builder()
 				.viewId(request.getViewId())
 				.description(ITranslatableString.empty())
 				.filters(filtersToUse)
-				.rowsListSupplier(rowsListSupplier)
+				.rowsData(materialCockpitRowRepository.createRowsData(filtersToUse))
 				.relatedProcessDescriptor(createProcessDescriptor())
 				.build();
 

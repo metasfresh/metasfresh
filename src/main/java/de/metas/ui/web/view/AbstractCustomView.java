@@ -1,19 +1,20 @@
 package de.metas.ui.web.view;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -27,6 +28,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderBys;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -61,9 +63,9 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 {
 	private final ViewId viewId;
 	private final ITranslatableString description;
-	private final ExtendedMemorizingSupplier<Map<DocumentId, T>> topLevelRowsSupplier;
 
-	private final ExtendedMemorizingSupplier<Map<DocumentId, T>> allRowsSupplier;
+	@Getter
+	private final IRowsData<T> rowsData;
 
 	/**
 	 *
@@ -74,42 +76,12 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	protected AbstractCustomView(
 			@NonNull final ViewId viewId,
 			@NonNull final ITranslatableString description,
-			@NonNull final Supplier<List<T>> rowsListSupplier)
+			@NonNull final IRowsData<T> rowsData)
 	{
 		this.viewId = viewId;
 		this.description = description;
 
-		this.topLevelRowsSupplier = ExtendedMemorizingSupplier.of(() -> {
-
-			return Maps.uniqueIndex(rowsListSupplier.get(), row -> row.getId());
-		});
-
-		this.allRowsSupplier = ExtendedMemorizingSupplier.of(() -> {
-
-			final ImmutableMap.Builder<DocumentId, T> allRows = ImmutableMap.builder();
-			rowsListSupplier.get().forEach(topLevelRow -> {
-
-				allRows.put(topLevelRow.getId(), topLevelRow);
-				allRows.putAll(extractAllIncludedRows(topLevelRow));
-			});
-			return allRows.build();
-		});
-
-	}
-
-	private Map<DocumentId, T> extractAllIncludedRows(@NonNull final T topLevelRow)
-	{
-		@SuppressWarnings("unchecked")
-		final List<T> includedRows = (List<T>)topLevelRow.getIncludedRows();
-
-		final ImmutableMap.Builder<DocumentId, T> resultOfThisInvocation = ImmutableMap.builder();
-		for (final T includedRow : includedRows)
-		{
-			resultOfThisInvocation.put(includedRow.getId(), includedRow);
-			resultOfThisInvocation.putAll(extractAllIncludedRows(includedRow));
-		}
-
-		return resultOfThisInvocation.build();
+		this.rowsData = rowsData;
 	}
 
 	@Override
@@ -150,12 +122,12 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 
 	protected final Map<DocumentId, T> getRows()
 	{
-		return topLevelRowsSupplier.get();
+		return rowsData.getDocumentId2TopLevelRows();
 	}
 
 	public Map<DocumentId, T> getMainRowsAndSubRows()
 	{
-		return allRowsSupplier.get();
+		return rowsData.getDocumentId2AllRows();
 	}
 
 	@Override
@@ -167,17 +139,10 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	@Override
 	public void invalidateAll()
 	{
-		invalidateRowSuppliers();
-
+		rowsData.invalidateAll();
 		ViewChangesCollector
 				.getCurrentOrAutoflush()
 				.collectFullyChanged(this);
-	}
-
-	protected void invalidateRowSuppliers()
-	{
-		topLevelRowsSupplier.forget();
-		allRowsSupplier.forget();
 	}
 
 	@Override
@@ -299,7 +264,77 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	}
 
 	@Override
-	public void notifyRecordsChanged(Set<TableRecordReference> recordRefs)
+	@OverridingMethodsMustInvokeSuper
+	public void notifyRecordsChanged(@NonNull final Set<TableRecordReference> recordRefs)
 	{
+		final ImmutableList<DocumentId> changedDocumentIds = extractDocumentIds(recordRefs);
+		if (changedDocumentIds.isEmpty())
+		{
+			return; // nothing to do
+		}
+
+		rowsData.invalidateAll();
+		ViewChangesCollector
+				.getCurrentOrAutoflush()
+				.collectRowsChanged(this, DocumentIdsSelection.of(changedDocumentIds));
+	}
+
+	private ImmutableList<DocumentId> extractDocumentIds(
+			@NonNull final Set<TableRecordReference> recordRefs)
+	{
+		final Map<TableRecordReference, Collection<T>> recordReference2DocumentId = //
+				rowsData.getTableRecordReference2rows();
+
+		final ImmutableList<DocumentId> changedDocumentIds = recordRefs.stream()
+				.map(recordReference2DocumentId::get)
+				.filter(Objects::nonNull)
+				.flatMap(rows -> rows.stream())
+				.map(IViewRow::getId)
+				.collect(ImmutableList.toImmutableList());
+		return changedDocumentIds;
+	}
+
+	private static class RowsDataTool
+	{
+		private static <T extends IViewRow> Map<DocumentId, T> extractAllRows(Collection<T> topLevelRows)
+		{
+			final ImmutableMap.Builder<DocumentId, T> allRows = ImmutableMap.builder();
+			topLevelRows.forEach(topLevelRow -> {
+
+				allRows.put(topLevelRow.getId(), topLevelRow);
+				allRows.putAll(extractAllIncludedRows(topLevelRow));
+			});
+
+			return allRows.build();
+		}
+
+		private static <T extends IViewRow> Map<DocumentId, T> extractAllIncludedRows(@NonNull final T topLevelRow)
+		{
+			@SuppressWarnings("unchecked")
+			final List<T> includedRows = (List<T>)topLevelRow.getIncludedRows();
+
+			final ImmutableMap.Builder<DocumentId, T> resultOfThisInvocation = ImmutableMap.builder();
+			for (final T includedRow : includedRows)
+			{
+				resultOfThisInvocation.put(includedRow.getId(), includedRow);
+				resultOfThisInvocation.putAll(extractAllIncludedRows(includedRow));
+			}
+
+			return resultOfThisInvocation.build();
+		}
+	}
+
+	public interface IRowsData<T extends IViewRow>
+	{
+		Map<DocumentId, T> getDocumentId2TopLevelRows();
+
+		default Map<DocumentId, T> getDocumentId2AllRows()
+		{
+			return RowsDataTool.extractAllRows(getDocumentId2TopLevelRows().values());
+		}
+
+		Map<TableRecordReference, Collection<T>> getTableRecordReference2rows();
+
+		void invalidateAll();
 	}
 }

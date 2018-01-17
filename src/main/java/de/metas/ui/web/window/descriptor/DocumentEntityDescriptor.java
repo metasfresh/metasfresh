@@ -11,6 +11,7 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -423,13 +424,13 @@ public class DocumentEntityDescriptor
 
 	public boolean isCloneEnabled()
 	{
-		if(!CopyRecordFactory.isEnabled())
+		if (!CopyRecordFactory.isEnabled())
 		{
 			return false;
 		}
 
 		final String tableName = getTableNameOrNull();
-		if(tableName == null)
+		if (tableName == null)
 		{
 			return false;
 		}
@@ -557,6 +558,18 @@ public class DocumentEntityDescriptor
 		{
 			assertNotBuilt();
 			Check.assumeNull(_fields, "Fields not already built");
+		}
+
+		public Builder addFieldIf(final boolean condition, @NonNull final Supplier<DocumentFieldDescriptor.Builder> fieldBuilderSupplier)
+		{
+			if (!condition)
+			{
+				return this;
+			}
+
+			assertFieldsNotBuilt();
+			addField(fieldBuilderSupplier.get());
+			return this;
 		}
 
 		public Builder addField(final DocumentFieldDescriptor.Builder fieldBuilder)

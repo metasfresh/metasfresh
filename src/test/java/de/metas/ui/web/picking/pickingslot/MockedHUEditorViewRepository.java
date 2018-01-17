@@ -16,6 +16,7 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilters;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
+import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -86,19 +87,19 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public Page<Integer> retrieveHUIdsPage(final ViewRowIdsOrderedSelection selection, final int firstRow, final int maxRows)
+	public Page<Integer> retrieveHUIdsPage(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection selection, final int firstRow, final int maxRows)
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection createSelection(final ViewId viewId, final List<DocumentFilter> filters, final List<DocumentQueryOrderBy> orderBys)
+	public ViewRowIdsOrderedSelection createSelection(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final List<DocumentFilter> filters, final List<DocumentQueryOrderBy> orderBys)
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection createSelectionFromSelection(final ViewRowIdsOrderedSelection fromSelection, final List<DocumentQueryOrderBy> orderBys)
+	public ViewRowIdsOrderedSelection createSelectionFromSelection(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection fromSelection, final List<DocumentQueryOrderBy> orderBys)
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}
@@ -120,7 +121,7 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}
-	
+
 	@Override
 	public void deleteSelection(final ViewRowIdsOrderedSelection selection)
 	{

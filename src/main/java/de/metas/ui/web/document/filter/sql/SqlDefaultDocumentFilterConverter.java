@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.adempiere.ad.dao.IQueryFilterModifier;
+import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.ad.dao.impl.NullQueryFilterModifier;
 import org.adempiere.db.DBConstants;
 import org.compiere.util.DB;
 
@@ -122,80 +125,82 @@ import lombok.NonNull;
 		// Regular filter
 		final String fieldName = filterParam.getFieldName();
 		final SqlEntityFieldBinding fieldBinding = entityBinding.getFieldByFieldName(fieldName);
-		final String columnSql = extractColumnSql(fieldBinding, sqlOpts);
+		final IQueryFilterModifier fieldModifier = extractFieldModifier(fieldBinding);
+		final IQueryFilterModifier valueModifier = extractValueModifier(fieldBinding);
+		final String columnSql = extractColumnSql(fieldBinding, fieldModifier, sqlOpts);
 
 		final Operator operator = filterParam.getOperator();
 		switch (operator)
 		{
 			case EQUAL:
 			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
 				final boolean negate = false;
 				return buildSqlWhereClause_Equals(columnSql, sqlValue, negate, sqlParams);
 			}
 			case NOT_EQUAL:
 			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
 				final boolean negate = true;
 				return buildSqlWhereClause_Equals(columnSql, sqlValue, negate, sqlParams);
 			}
 			case IN_ARRAY:
 			{
-				final List<Object> sqlValuesList = filterParam.getValueAsList(itemObj -> convertToSqlValue(itemObj, fieldBinding));
+				final List<Object> sqlValuesList = filterParam.getValueAsList(itemObj -> convertToSqlValue(itemObj, fieldBinding, valueModifier));
 				return buildSqlWhereClause_InArray(columnSql, sqlValuesList, sqlParams);
 			}
 			case GREATER:
 			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
 				return buildSqlWhereClause_Compare(columnSql, ">", sqlValue, sqlParams);
 			}
 			case GREATER_OR_EQUAL:
 			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
 				return buildSqlWhereClause_Compare(columnSql, ">=", sqlValue, sqlParams);
 			}
 			case LESS:
 			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
 				return buildSqlWhereClause_Compare(columnSql, "<", sqlValue, sqlParams);
 			}
 			case LESS_OR_EQUAL:
 			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
 				return buildSqlWhereClause_Compare(columnSql, "<=", sqlValue, sqlParams);
 			}
 			case LIKE:
 			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
 				final boolean negate = false;
 				final boolean ignoreCase = false;
 				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
 			}
 			case NOT_LIKE:
 			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
 				final boolean negate = true;
 				final boolean ignoreCase = false;
 				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
 			}
 			case LIKE_I:
 			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
 				final boolean negate = false;
 				final boolean ignoreCase = true;
 				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
 			}
 			case NOT_LIKE_I:
 			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
 				final boolean negate = true;
 				final boolean ignoreCase = true;
 				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
 			}
 			case BETWEEN:
 			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding);
-				final Object sqlValueTo = convertToSqlValue(filterParam.getValueTo(), fieldBinding);
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
+				final Object sqlValueTo = convertToSqlValue(filterParam.getValueTo(), fieldBinding, valueModifier);
 				return buildSqlWhereClause_Between(columnSql, sqlValue, sqlValueTo, sqlParams);
 			}
 			default:
@@ -205,23 +210,62 @@ import lombok.NonNull;
 		}
 	}
 
-	private String extractColumnSql(@NonNull final SqlEntityFieldBinding fieldBinding, final SqlOptions sqlOpts)
+	private IQueryFilterModifier extractFieldModifier(final SqlEntityFieldBinding fieldBinding)
 	{
-		if (sqlOpts.isUseTableAlias())
+		final DocumentFieldWidgetType widgetType = fieldBinding.getWidgetType();
+		if (widgetType == DocumentFieldWidgetType.DateTime)
 		{
-			return replaceTableNameWithTableAlias(fieldBinding.getColumnSql(), sqlOpts.getTableAlias());
+			return DateTruncQueryFilterModifier.DAY;
 		}
-
-		return fieldBinding.getColumnSql();
+		// NOTE: for performance reasons we are not truncating the field if the field is already Date.
+		// If we would do so, it might happen that the index we have on that column will not be used.
+		// More, we assume the column already contains truncated Date(s).
+		else if (widgetType == DocumentFieldWidgetType.Date)
+		{
+			return DateTruncQueryFilterModifier.DAY;
+		}
+		else
+		{
+			return NullQueryFilterModifier.instance;
+		}
 	}
 
-	private Object convertToSqlValue(final Object value, final SqlEntityFieldBinding fieldBinding)
+	private IQueryFilterModifier extractValueModifier(final SqlEntityFieldBinding fieldBinding)
+	{
+		final DocumentFieldWidgetType widgetType = fieldBinding.getWidgetType();
+		if (widgetType == DocumentFieldWidgetType.DateTime)
+		{
+			return DateTruncQueryFilterModifier.DAY;
+		}
+		else if (widgetType == DocumentFieldWidgetType.Date)
+		{
+			return DateTruncQueryFilterModifier.DAY;
+		}
+		else
+		{
+			return NullQueryFilterModifier.instance;
+		}
+	}
+
+	private String extractColumnSql(@NonNull final SqlEntityFieldBinding fieldBinding, final IQueryFilterModifier modifier, final SqlOptions sqlOpts)
+	{
+		String columnSql = fieldBinding.getColumnSql();
+		if (sqlOpts.isUseTableAlias())
+		{
+			columnSql = replaceTableNameWithTableAlias(columnSql, sqlOpts.getTableAlias());
+		}
+
+		return modifier.getColumnSql(columnSql);
+	}
+
+	private Object convertToSqlValue(final Object value, final SqlEntityFieldBinding fieldBinding, final IQueryFilterModifier modifier)
 	{
 		final String columnName = fieldBinding.getColumnName();
 		final DocumentFieldWidgetType widgetType = fieldBinding.getWidgetType();
 		final Class<?> targetClass = fieldBinding.getSqlValueClass();
 		final Object sqlValue = SqlDocumentsRepository.convertValueToPO(value, columnName, widgetType, targetClass);
-		return sqlValue;
+
+		return modifier.convertValue(columnName, sqlValue, null/* model */);
 	}
 
 	private static final String buildSqlWhereClause_Equals(final String sqlColumnExpr, final Object sqlValue, final boolean negate, final SqlParamsCollector sqlParams)

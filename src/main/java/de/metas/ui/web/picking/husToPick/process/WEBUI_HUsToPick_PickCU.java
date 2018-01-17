@@ -122,7 +122,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 
 		pickCUs();
 
-		invalidateViewsAndGoBackToPickingSlotsView();
+		invalidateAndGoBackToPickingSlotsView();
 		return MSG_OK;
 	}
 

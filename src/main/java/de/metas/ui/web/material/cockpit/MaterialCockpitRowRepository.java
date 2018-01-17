@@ -1,17 +1,24 @@
 package de.metas.ui.web.material.cockpit;
 
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Maps;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
@@ -20,6 +27,8 @@ import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.filters.StockFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
+import de.metas.ui.web.view.AbstractCustomView.IRowsData;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
 
 /*
@@ -64,7 +73,34 @@ public class MaterialCockpitRowRepository
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
 	}
 
-	public List<MaterialCockpitRow> retrieveRows(@NonNull final List<DocumentFilter> filters)
+	public IRowsData<MaterialCockpitRow> createRowsData(@NonNull final List<DocumentFilter> filters)
+	{
+		return new IRowsData<MaterialCockpitRow>()
+		{
+			private final ExtendedMemorizingSupplier<List<MaterialCockpitRow>> topLevelRows = //
+					ExtendedMemorizingSupplier.of(() -> retrieveRows(filters));
+
+			@Override
+			public Map<DocumentId, MaterialCockpitRow> getDocumentId2TopLevelRows()
+			{
+				return Maps.uniqueIndex(topLevelRows.get(), row -> row.getId());
+			}
+
+			@Override
+			public Map<TableRecordReference, Collection<MaterialCockpitRow>> getTableRecordReference2rows()
+			{
+				return extractTableRecordReference2DocumentId2(getDocumentId2AllRows().values());
+			}
+
+			@Override
+			public void invalidateAll()
+			{
+				topLevelRows.forget();
+			}
+		};
+	}
+
+	private List<MaterialCockpitRow> retrieveRows(@NonNull final List<DocumentFilter> filters)
 	{
 		final Timestamp date = materialCockpitFilters.extractDateOrNull(filters);
 		if (date == null)
@@ -117,5 +153,26 @@ public class MaterialCockpitRowRepository
 						.create()
 						.list();
 		return products;
+	}
+
+	private Map<TableRecordReference, Collection<MaterialCockpitRow>> extractTableRecordReference2DocumentId2(
+			@NonNull final Collection<MaterialCockpitRow> allRows)
+	{
+		final ListMultimap<TableRecordReference, MaterialCockpitRow> recordReference2DocumentId = ArrayListMultimap.create();
+
+		for (final MaterialCockpitRow materialCockpitRow : allRows)
+		{
+			materialCockpitRow
+					.getAllIncludedCockpitRecordIds()
+					.forEach(cockpitRecordId -> recordReference2DocumentId
+							.put(TableRecordReference.of(I_MD_Cockpit.Table_Name, cockpitRecordId), materialCockpitRow));
+
+			materialCockpitRow
+					.getAllIncludedStockRecordIds()
+					.forEach(stockRecordId -> recordReference2DocumentId
+							.put(TableRecordReference.of(I_MD_Stock.Table_Name, stockRecordId), materialCockpitRow));
+		}
+
+		return recordReference2DocumentId.asMap();
 	}
 }

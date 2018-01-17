@@ -21,6 +21,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.material.adapter.AvailableStockAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInput;
+import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -85,13 +86,11 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 			final DocumentId documentTypeId,
 			final DetailId detailId)
 	{
-		final DocumentEntityDescriptor.Builder descriptorBuilder = createDescriptorBuilder(documentTypeId, detailId);
-
-		descriptorBuilder.addField(createProductFieldBuilder());
-		descriptorBuilder.addField(createPackingInstructionFieldBuilder());
-		descriptorBuilder.addField(createQuantityFieldBuilder());
-
-		return descriptorBuilder.build();
+		return createDescriptorBuilder(documentTypeId, detailId)
+				.addField(createProductFieldBuilder())
+				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), () -> createPackingInstructionFieldBuilder())
+				.addField(createQuantityFieldBuilder())
+				.build();
 	}
 
 	private static DocumentEntityDescriptor.Builder createDescriptorBuilder(final DocumentId documentTypeId, final DetailId detailId)
@@ -137,7 +136,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 
 		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
 		final LookupValue productLookupValue = quickInputModel.getM_Product_ID();
-		if(productLookupValue == null)
+		if (productLookupValue == null)
 		{
 			return;
 		}
@@ -147,6 +146,11 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		Services.get(IHUOrderBL.class).findM_HU_PI_Item_Product(order, quickInputProduct, quickInputModel::setM_HU_PI_Item_Product);
+	}
+
+	private boolean isUsePackingInstructionsField()
+	{
+		return false;
 	}
 
 	private static Builder createPackingInstructionFieldBuilder()

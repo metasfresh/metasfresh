@@ -1,26 +1,20 @@
 package de.metas.ui.web.picking.packageable;
 
-import java.util.List;
-import java.util.Set;
-import java.util.function.Supplier;
-
 import javax.annotation.Nullable;
-
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.picking.PickingConstants;
+import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
-import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import lombok.NonNull;
@@ -49,7 +43,7 @@ import lombok.NonNull;
 
 /**
  * Factory class for {@link PackageableView} intances.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -61,7 +55,7 @@ public class PackageableViewFactory implements IViewFactory
 	private final PickingCandidateService pickingCandidateService;
 
 	/**
-	 * 
+	 *
 	 * @param pickingViewRepo
 	 * @param pickingCandidateService when a new view is created, this stateless instance is given to that view
 	 */
@@ -79,8 +73,6 @@ public class PackageableViewFactory implements IViewFactory
 			@NonNull final JSONViewDataType viewDataType,
 			@Nullable final ViewProfileId profileId)
 	{
-		// TODO: cache it
-
 		return ViewLayout.builder()
 				.setWindowId(PickingConstants.WINDOWID_PickingView)
 				.setCaption("Picking")
@@ -110,15 +102,14 @@ public class PackageableViewFactory implements IViewFactory
 			throw new IllegalArgumentException("Invalid request's windowId: " + request);
 		}
 
-		final Set<DocumentId> rowIds = request
-				.getFilterOnlyIds() // this is never null, empty means "no restriction"
-				.stream().map(DocumentId::of).collect(ImmutableSet.toImmutableSet());
-		final Supplier<List<PackageableRow>> rowsSupplier = () -> pickingViewRepo.retrieveRowsByIds(viewId, rowIds);
+		final IRowsData<PackageableRow> rowsData = pickingViewRepo.createRowsData(
+				request.getViewId(),
+				request.getFilterOnlyIds());
 
 		return PackageableView.builder()
 				.viewId(viewId)
 				.description(ITranslatableString.empty())
-				.rowsSupplier(rowsSupplier)
+				.rowsData(rowsData)
 				.pickingCandidateService(pickingCandidateService)
 				.build();
 	}
