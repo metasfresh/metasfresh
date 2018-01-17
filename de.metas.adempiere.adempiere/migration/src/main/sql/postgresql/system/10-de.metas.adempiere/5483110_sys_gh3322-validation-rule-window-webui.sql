@@ -677,3 +677,133 @@ UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2018-01-17 11:48:
 UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2018-01-17 11:48:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550212
 ;
 
+-- 2018-01-17T11:53:56.682
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Enthaltene Validierungs Regel',Updated=TO_TIMESTAMP('2018-01-17 11:53:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=53572
+;
+
+-- 2018-01-17T11:54:03.906
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Description='Validierungs Regeln',Updated=TO_TIMESTAMP('2018-01-17 11:54:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=108
+;
+
+-- 2018-01-17T11:54:21.627
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Entitäts Art',Updated=TO_TIMESTAMP('2018-01-17 11:54:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5812
+;
+
+-- 2018-01-17T11:54:30.259
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Klassenname',Updated=TO_TIMESTAMP('2018-01-17 11:54:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=65359
+;
+
+-- 2018-01-17T11:55:04.667
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='System Element',Updated=TO_TIMESTAMP('2018-01-17 11:55:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12552
+;
+
+-- 2018-01-17T11:55:19.067
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Auswahl Spalte',Updated=TO_TIMESTAMP('2018-01-17 11:55:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12549
+;
+
+-- 2018-01-17T11:55:25.188
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Nur Lesen',Updated=TO_TIMESTAMP('2018-01-17 11:55:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12546
+;
+
+-- 2018-01-17T11:55:29.221
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Entitäts Art',Updated=TO_TIMESTAMP('2018-01-17 11:55:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12535
+;
+
+-- 2018-01-17T11:55:45.379
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Immer aktualisierbar',Updated=TO_TIMESTAMP('2018-01-17 11:55:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12524
+;
+
+-- 2018-01-17T11:55:53.550
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='SQL Spalte',Updated=TO_TIMESTAMP('2018-01-17 11:55:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12528
+;
+
+-- 2018-01-17T11:55:56.813
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Standardwert Logik',Updated=TO_TIMESTAMP('2018-01-17 11:55:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12531
+;
+
+-- 2018-01-17T11:55:59.453
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Schlüssel Spalte',Updated=TO_TIMESTAMP('2018-01-17 11:55:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12537
+;
+
+-- 2018-01-17T11:56:06.452
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Eltern Spalte',Updated=TO_TIMESTAMP('2018-01-17 11:56:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12544
+;
+
+-- 2018-01-17T11:56:15.773
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Identifikator',Updated=TO_TIMESTAMP('2018-01-17 11:56:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12536
+;
+
+-- 2018-01-17T11:56:27.492
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Verschlüsselung',Updated=TO_TIMESTAMP('2018-01-17 11:56:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12534
+;
+
+-- 2018-01-17T11:56:34.199
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Wert Format',Updated=TO_TIMESTAMP('2018-01-17 11:56:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12556
+;
+
+-- 2018-01-17T11:56:50.534
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Aktualisierbar',Updated=TO_TIMESTAMP('2018-01-17 11:56:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12555
+;
+
+-- 2018-01-17T11:57:09.152
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Entitäts Art',Updated=TO_TIMESTAMP('2018-01-17 11:57:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=65352
+;
+
+-- 2018-01-17T11:57:28.335
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Enthaltene Validierungs Regel',Updated=TO_TIMESTAMP('2018-01-17 11:57:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=65355
+;
+
+-- 2018-01-17T11:57:38.911
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Kommentar/ Hilfe',Updated=TO_TIMESTAMP('2018-01-17 11:57:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=65350
+;
+
+-- 2018-01-17T11:57:45.694
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Sektion',Updated=TO_TIMESTAMP('2018-01-17 11:57:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=65357
+;
+
+-- 2018-01-17T11:58:33.256
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-17 11:58:33','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Included Validation Rule' WHERE AD_Tab_ID=53572 AND AD_Language='en_US'
+;
+
+-- 2018-01-17T11:59:24.232
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-17 11:59:24','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='SeqNo',Description='',Help='' WHERE AD_Field_ID=65358 AND AD_Language='en_US'
+;
+
+-- 2018-01-17T11:59:43.280
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-17 11:59:43','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Entity Type' WHERE AD_Field_ID=65352 AND AD_Language='en_US'
+;
+
+-- 2018-01-17T12:00:08.880
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-17 12:00:08','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Dynamic Validation',Description='',Help='' WHERE AD_Field_ID=65351 AND AD_Language='en_US'
+;
+
+-- 2018-01-17T12:00:38.777
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-17 12:00:38','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Included Validation Rule' WHERE AD_Field_ID=65355 AND AD_Language='en_US'
+;
+
