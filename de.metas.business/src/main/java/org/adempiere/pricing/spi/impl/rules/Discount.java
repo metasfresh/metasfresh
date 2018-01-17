@@ -31,8 +31,8 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.DiscountSchemaCommand;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
-import org.adempiere.pricing.api.IMDiscountSchemaBL.DiscountRequest;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.spi.IPricingRule;
@@ -132,7 +132,7 @@ public class Discount implements IPricingRule
 		// 08660
 		// In case we are dealing with an asi aware object, make sure the value(s) from that asi
 		// are also taken into account when the discount is calculated
-		final DiscountRequest discountRequest;
+		final DiscountSchemaCommand discountSchemaCommand;
 
 
 		final IAttributeSetInstanceAware asiAware = Services
@@ -141,14 +141,15 @@ public class Discount implements IPricingRule
 
 		if (asiAware == null)
 		{
-			discountRequest = Services.get(IMDiscountSchemaBL.class).
-					calculateDiscount(
-							discountSchema,
-							pricingCtx.getQty(),
-							result.getPriceStd(),
-							productID,
-							result.getM_Product_Category_ID(),
-							flatDiscount);
+			discountSchemaCommand = DiscountSchemaCommand.builder()
+					.schema(discountSchema)
+					.qty(pricingCtx.getQty())
+					.Price(result.getPriceStd())
+					.M_Product_ID(productID)
+					.M_Product_Category_ID(result.getM_Product_Category_ID())
+					.instances(null)
+					.bPartnerFlatDiscount(flatDiscount)
+					.build();
 		}
 
 		else
@@ -157,21 +158,23 @@ public class Discount implements IPricingRule
 
 			final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asi);
 
-			discountRequest = Services.get(IMDiscountSchemaBL.class).
-					calculateDiscount(
-							discountSchema,
-							pricingCtx.getQty(),
-							result.getPriceStd(),
-							productID,
-							result.getM_Product_Category_ID(),
-							instances,
-							flatDiscount);
+			discountSchemaCommand = DiscountSchemaCommand.builder()
+					.schema(discountSchema)
+					.qty(pricingCtx.getQty())
+					.Price(result.getPriceStd())
+					.M_Product_ID(productID)
+					.M_Product_Category_ID(result.getM_Product_Category_ID())
+					.instances(instances)
+					.bPartnerFlatDiscount(flatDiscount)
+					.build();
 		}
+
+		discountSchemaCommand.calculateDiscount();
 
 		result.setUsesDiscountSchema(isUseDiscountSchema);
 		result.setM_DiscountSchema_ID(discountSchema.getM_DiscountSchema_ID());
-		result.setDiscount(discountRequest.getDiscount());
-		result.setC_PaymentTerm_ID(discountRequest.getC_PaymentTerm_ID());
+		result.setDiscount(discountSchemaCommand.getDiscount());
+		result.setC_PaymentTerm_ID(discountSchemaCommand.getC_PaymentTerm_ID());
 		// metas us1064 end
 	}
 }

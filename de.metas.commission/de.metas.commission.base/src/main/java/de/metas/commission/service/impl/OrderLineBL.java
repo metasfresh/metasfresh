@@ -33,8 +33,8 @@ import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.DiscountSchemaCommand;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
-import org.adempiere.pricing.api.IMDiscountSchemaBL.DiscountRequest;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -362,15 +362,17 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal newDiscount;
 		if (newDs != null)
 		{
-			final DiscountRequest discountrequest = discountSchemaBL.calculateDiscount(
-					discountSchema,
-					olGen.getQtyOrdered(),
-					priceEntered,
-					olGen.getM_Product_ID(),
-					0,
-					instances,
-					null);
-			newDiscount = discountrequest.getDiscount();
+			final DiscountSchemaCommand discountSchemaCommand = DiscountSchemaCommand.builder()
+					.schema(discountSchema)
+					.qty(olGen.getQtyOrdered())
+					.Price(priceEntered)
+					.M_Product_ID(olGen.getM_Product_ID())
+					.M_Product_Category_ID(0)
+					.instances(instances)
+					.bPartnerFlatDiscount(null)
+					.build();
+			discountSchemaCommand.calculateDiscount();
+			newDiscount = discountSchemaCommand.getDiscount();
 		}
 		else
 		{

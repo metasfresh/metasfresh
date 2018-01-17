@@ -501,6 +501,7 @@ public class AggregationEngine implements IAggregationEngine
 
 	private int getC_PaymentTerm_ID(final InvoiceHeaderImpl invoiceHeader)
 	{
+		int C_PaymentTerm_ID = extractC_PaymentTerm_IDFromLines(invoiceHeader);
 
 		if (C_PaymentTerm_ID > 0)
 		{
@@ -523,6 +524,7 @@ public class AggregationEngine implements IAggregationEngine
 	 * extract C_PaymentTerm_ID from invoice candidate
 	 * @return
 	 */
+	private int extractC_PaymentTerm_IDFromLines(@NonNull final InvoiceHeaderImpl invoiceHeader)
 	{
 		final List<IInvoiceCandAggregate> lines = invoiceHeader.getLines();
 		if (lines == null || lines.isEmpty())

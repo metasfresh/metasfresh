@@ -32,27 +32,10 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.Getter;
-
 public interface IMDiscountSchemaBL extends ISingletonService
 {
 	final public static Comparator<I_M_DiscountSchemaBreak> REVERSED_BREAKS_COMPARATOR = Comparator.<I_M_DiscountSchemaBreak, BigDecimal> comparing(I_M_DiscountSchemaBreak::getBreakValue)
 			.reversed();
-
-	/**
-	 * Calculate Discount Percentage
-	 *
-	 * @param schema
-	 * @param Qty
-	 * @param Price
-	 * @param M_Product_ID
-	 * @param M_Product_Category_ID
-	 * @param bPartnerFlatDiscount
-	 * @return
-	 */
-	DiscountRequest calculateDiscount(I_M_DiscountSchema schema, BigDecimal Qty, BigDecimal Price, int M_Product_ID, int M_Product_Category_ID, BigDecimal bPartnerFlatDiscount);
 
 	/**
 	 * Calculate Discounted Price
@@ -109,21 +92,6 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	boolean breakApplies(I_M_DiscountSchemaBreak br, BigDecimal value, int product_ID, int product_Category_ID, int attributeValue_ID);
 
 	/**
-	 * Calculate Discount Percentage, based also on attribute instances
-	 *
-	 * @param schema
-	 * @param qty
-	 * @param Price
-	 * @param M_Product_ID
-	 * @param M_Product_Category_ID
-	 * @param instances
-	 * @param bPartnerFlatDiscount
-	 * @return
-	 */
-	DiscountRequest calculateDiscount(I_M_DiscountSchema schema, BigDecimal qty, BigDecimal Price, int M_Product_ID, int M_Product_Category_ID, List<I_M_AttributeInstance> instances,
-			BigDecimal bPartnerFlatDiscount);
-
-	/**
 	 * Calculate Discounted Price, based also on attribute instances
 	 *
 	 * @param schema
@@ -167,13 +135,4 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	 */
 	I_M_DiscountSchemaBreak pickApplyingBreak(List<I_M_DiscountSchemaBreak> breaks, List<I_M_AttributeInstance> instances, boolean isQtyBased, int M_Product_ID, int M_Product_Category_ID,
 			BigDecimal qty, BigDecimal amt);
-
-	@Builder
-	@Getter
-	static public class DiscountRequest
-	{
-		private final BigDecimal discount;
-		@Default
-		private int C_PaymentTerm_ID =-1;
-	}
 }
