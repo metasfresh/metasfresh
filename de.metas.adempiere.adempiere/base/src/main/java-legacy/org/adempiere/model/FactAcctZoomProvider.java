@@ -1,16 +1,19 @@
 package org.adempiere.model;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
@@ -63,7 +66,7 @@ public class FactAcctZoomProvider implements IZoomProvider
 			return ImmutableList.of();
 		}
 
-		
+
 		// Return nothing if source is not Posted
 		if(source.hasField(COLUMNNAME_Posted))
 		{
@@ -83,12 +86,17 @@ public class FactAcctZoomProvider implements IZoomProvider
 
 		if (checkRecordsCount)
 		{
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+
 			final int count = Services.get(IQueryBL.class).createQueryBuilder(I_Fact_Acct.class)
 					.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, source.getAD_Table_ID())
 					.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, source.getRecord_ID())
 					.create()
 					.count();
 			query.setRecordCount(count);
+
+			final long elapsedTimeMillis = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
+			Loggables.get().addLog("FactAcctZoomProvider {} took {}ms", this, elapsedTimeMillis);
 		}
 
 		//
