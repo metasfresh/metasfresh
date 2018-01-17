@@ -10,19 +10,68 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.42 (2018-04)
+**release for week 2018-04**
+
+## Features
+* metasfresh
+  * [#3319](https://github.com/metasfresh/metasfresh/issues/3319) Webui Window Design: Improve window Message
+    * Improvement of the WebUI message window.
+
+* metasfresh-webui-frontend
+  * [#1502](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1502) Missing PropTypes Validation for noLabel isOpenDatePicker
+    * Internal Housekeeping Issue. Adding PropType Validation for isOpenDatePicker.
+
+## Fixes
+* metasfresh
+  * [#3339](https://github.com/metasfresh/metasfresh/issues/3339) Field "Doctype" is included twice in payment window
+    * Fixes a doubled Field for Doctype in the payment window.
+
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**
 
 ## Features
 * metasfresh-app
+  * [#3209](https://github.com/metasfresh/metasfresh/issues/3209) Material Receipt candidates action for batch serial No on selected HU
+    * New Action added for Serial No generation in Material Receipt and distribution to its received Handling Units.
+  * [#3213](https://github.com/metasfresh/metasfresh/issues/3213) New Action for Repost Document in Accounting Transaction Window
+    * New Action in Accounting Transaction Window, allowing to repost the shown lines.
+  * [#3245](https://github.com/metasfresh/metasfresh/issues/3245) Material Cockpit Details modal overlay
+    * Improvement for Material Cockpit, now allowing a modal overlay with detailed information about reserved and ordered quantities and their documents.
+  * [#3271](https://github.com/metasfresh/metasfresh/issues/3271) Implement event log
+    * New Event Log Functionality that is used first time for nearly realtime Material Cocpit updates.
+  * [#3279](https://github.com/metasfresh/metasfresh/issues/3279) Pharma: Copy missing product prices after import
+    * New Functionality after import of pharmaceutlical prodcuts. Now automatically creating product prices in the corresponding pricelist versions.
   * [#3284](https://github.com/metasfresh/metasfresh/issues/3284) Translation of eMail Editor in WebUI
     * Translation of the eMail Editor in WebUI for Language/ Locale de_DE.
   * [#3286](https://github.com/metasfresh/metasfresh/issues/3286) Workaround for truncating T_WEBUI_ViewSelection/-Line
     * Temporary Solution for the data growth of ViewSelection and ViewSelectionline tables.
+  * [#3288](https://github.com/metasfresh/metasfresh/issues/3288) Shipper Transportation: Shipper Location: change validation rule logic
+    * Adjustment of the Shipper Transportation validation rule logic.
   * [#3289](https://github.com/metasfresh/metasfresh/issues/3289) WebUI: New Window for Document Details in Material Cockpit
     * New Window for Document Details that can now be shown via Material Cockpit Window.
   * [#3293](https://github.com/metasfresh/metasfresh/issues/3293) Webui: Add Translation Messages for Daterangepicker
     * Improved Translations. Added static translations for de_DE, en_US and Date Range Picker.
+  * [#3303](https://github.com/metasfresh/metasfresh/issues/3303) WebUI: New Window for GO! Delivery Orders
+    * New Window in WebUI for the new Functionality of General Overnight Shipper Transportation.
+  * [#3304](https://github.com/metasfresh/metasfresh/issues/3304) Copy C_DocType.Description/DescriptionBottom to Order and Invoice
+    * New feature for Documents Generation. Now it's possible to define default text snippets in Document Types and copy these automatically to the created document description when selecting the Document type.
+  * [#3309](https://github.com/metasfresh/metasfresh/issues/3309) Webui Window Design: Improve window Event store
+    * New System Admin Window Event Store. Allows the System Admin to view the status of events and checking/ resubmitting them in case of issues.
+
+* metasfresh-webui-API
+  * [#672](https://github.com/metasfresh/metasfresh-webui-api/issues/672) Window for easy Distribution Orderlines Handling in WebUI
+    * New Window that allows the Handling of Distribution Orderlines in WebUI.
+  * [#737](https://github.com/metasfresh/metasfresh-webui-api/issues/737) Deal properly with T_WEBUI_ViewSelection[Line]
+    * Improvement of WebUI temporary selections.
+  * [#745](https://github.com/metasfresh/metasfresh-webui-api/issues/745) Batch entry mode w/o Packing Instruction branch:master type:enhancement
+    * Improvement of the Bacth entry mode functionality. Now it's possible to cinfigure the Batch entry via Sysconfig so that no Packing Instruciton is needed for recording.
+  * [#762](https://github.com/metasfresh/metasfresh-webui-api/issues/762) Show onhand quantity in new WebUI MRP Product Info Window
+    * New Field in material Cockpit, nw showing the on Hand Quantity too.
+  * [#770](https://github.com/metasfresh/metasfresh-webui-api/issues/770) Raise session Timeout of WebUI Application
+    * Now possible to configure the session timeout of metasfresh via Spring Boot.
+  * [#778](https://github.com/metasfresh/metasfresh-webui-api/issues/778) Use readOnlyFlag from AD_Field and AD_Tab when creating DocumentLayoutElements
+    * Improvement of the Read-Only functionality in WebUI, now respecting the configuration doen in AD_Fields and AD_TAB about the readOnly Flag.
 
 * metasfresh-webui-frontend
   * [#1470](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1470) Bug in long texts with new line
@@ -31,9 +80,11 @@ Here come the actual release notes:
     * Improving the Names for attached Files in eMail Editor. Now showing the caption names instead of attachment keys.
   * [#1485](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1485) Tooltip for for "Select all"/ "Select all x rows"
     * New Tooltip for the Select All Functionality.
-	
+
 ## Fixes
 * metasfresh-app
+  * [#3232](https://github.com/metasfresh/metasfresh/issues/3232) Disposal creates Invoice Candidates
+    * Improved Feature, now possible to prohibit the creation of Invoice Candidates in Disposal Workflow.
   * [#3291](https://github.com/metasfresh/metasfresh/issues/3291) Search Icon disappears when switching Main-Subtab in Contract Window
     * Fixes the vanishing Search Icon in window contracts of metasfresh swingUI.
 
@@ -53,7 +104,7 @@ Here come the actual release notes:
     *  New Feature in the Application Dictionary, now able to overwrite the system element on Field Level.
   * [#3155](https://github.com/metasfresh/metasfresh/issues/3155) Create special pharma import product table
     * New vertical Feature for the import of products from pharma industry.
-  * [#3222](https://github.com/metasfresh/metasfresh/issues/3222) refactor trx event listeners
+  * [#3222](https://github.com/metasfresh/metasfresh/issues/3222) Refactor trx event listeners
     * Improvement of Transaction event listeners, now leading to explicit specification which code shall be executed on which event.
   * [#3229](https://github.com/metasfresh/metasfresh/issues/3229) Show c_activity_ID in purchase Orderlines Grid View
     * New Field for Activity in Purchase Orderlines.
@@ -82,7 +133,7 @@ Here come the actual release notes:
   * [#3261](https://github.com/metasfresh/metasfresh/issues/3261) WebUI: New Window for BPartner Group Accounts
     * New Window for Business Partner Group Accounts, allowing the user to define relevant accounting information for Business Partner Groups.
   * [#3267](https://github.com/metasfresh/metasfresh/issues/3267) WebUI: Add Create Periods to Action menu in Calendar Window
-    * Improving teh Calender and Period Window in WebUI, adding the Create Periods action to action menu.
+    * Improving the Calender and Period Window in WebUI, adding the Create Periods process to action menu.
   * [#3269](https://github.com/metasfresh/metasfresh/issues/3269) WebUI: Add Shortcut Filter from Calendar Year to Periods Window
     * Improving the Usability of Calendar and Period Window, now allowing to directly zoom to filtered Periods for a given year.
   * [#3272](https://github.com/metasfresh/metasfresh/issues/3272) Provide Periods for 2018

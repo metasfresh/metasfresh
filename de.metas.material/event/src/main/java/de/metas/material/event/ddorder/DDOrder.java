@@ -58,11 +58,6 @@ final public class DDOrder
 
 	int shipperId;
 
-	/**
-	 * If {@code true}, then this event advises the recipient to directly request an actual DD_Order to be created.
-	 */
-	boolean advisedToCreateDDrder;
-
 	@Singular
 	List<DDOrderLine> lines;
 
@@ -77,7 +72,6 @@ final public class DDOrder
 			@JsonProperty("productPlanningId") final int productPlanningId,
 			@JsonProperty("datePromised") @NonNull final Date datePromised,
 			@JsonProperty("shipperId") final int shipperId,
-			@JsonProperty("createDDrder") final boolean advisedToCreateDDrder,
 			@JsonProperty("lines") final List<DDOrderLine> lines,
 			@JsonProperty("ddOrderId") final int ddOrderId,
 			@JsonProperty("docStatus") final String docStatus)
@@ -90,7 +84,6 @@ final public class DDOrder
 
 		this.datePromised = datePromised;
 		this.shipperId = shipperId;
-		this.advisedToCreateDDrder = advisedToCreateDDrder;
 		this.lines = lines;
 		this.ddOrderId = ddOrderId;
 		this.docStatus = docStatus;

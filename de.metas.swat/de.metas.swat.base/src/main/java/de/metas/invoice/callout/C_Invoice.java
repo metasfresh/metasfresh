@@ -154,5 +154,7 @@ public class C_Invoice
 		final String paymentRuleToUse = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
 		invoice.setPaymentRule(paymentRuleToUse);
 
+		//
+		Services.get(IInvoiceBL.class).updateDescriptionFromDocTypeTargetId(invoice);
 	}
 }

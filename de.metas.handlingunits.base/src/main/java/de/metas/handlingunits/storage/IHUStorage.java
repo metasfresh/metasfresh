@@ -25,12 +25,14 @@ package de.metas.handlingunits.storage;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.model.I_M_HU;
+import lombok.NonNull;
 
 /**
  * Handling Unit Instance Storage
@@ -43,6 +45,11 @@ public interface IHUStorage extends IGenericHUStorage
 	I_M_HU getM_HU();
 
 	List<IHUProductStorage> getProductStorages();
+	
+	default Stream<IHUProductStorage> streamProductStorages()
+	{
+		return getProductStorages().stream();
+	}
 
 	/**
 	 * Gets product storage for given product.
@@ -56,10 +63,15 @@ public interface IHUStorage extends IGenericHUStorage
 	/**
 	 * Gets product storage for given product.
 	 *
-	 * @param product
+	 * @param productId
 	 * @return product storage; if no storage was found, null is returned
 	 */
-	IHUProductStorage getProductStorageOrNull(I_M_Product product);
+	IHUProductStorage getProductStorageOrNull(int productId);
+	
+	default IHUProductStorage getProductStorageOrNull(@NonNull I_M_Product product)
+	{
+		return getProductStorageOrNull(product.getM_Product_ID());
+	}
 
 	/**
 	 * @return full qty of the {@link IHUProductStorage}s of this {@link IHUStorage}

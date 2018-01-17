@@ -44,6 +44,6 @@ public interface IElementTranslationBL extends ISingletonService
 	 * @param adLanguage
 	 * @throws SQLException 
 	 */
-	void updateTranslations(int elementId, String adLanguage) throws SQLException;
+	void updateTranslations(int elementId, String adLanguage);
 
 }

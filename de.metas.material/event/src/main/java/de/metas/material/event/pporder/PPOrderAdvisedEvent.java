@@ -7,6 +7,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 
 /*
@@ -37,13 +38,28 @@ public class PPOrderAdvisedEvent extends AbstractPPOrderEvent
 {
 	public static final String TYPE = "PPOrderAdvisedEvent";
 
+	/**
+	 * If {@code true}, then this event advises the recipient to directly request an actual PP_Order to be created.
+	 */
+	@Getter
+	private final boolean directlyCreatePPOrder;
+
+	@Getter
+	private final boolean directlyPickSupply;
+
 	@JsonCreator
 	@Builder
 	public PPOrderAdvisedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("ppOrder") final PPOrder ppOrder,
-			@JsonProperty("supplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor)
+			@JsonProperty("supplyRequiredDescriptor") final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@JsonProperty("directlyCreatePPOrder") final boolean directlyCreatePPOrder,
+			@JsonProperty("directlyPickSupply") final boolean directlyPickSupply)
 	{
 		super(eventDescriptor, ppOrder, supplyRequiredDescriptor);
+
+		this.directlyCreatePPOrder = directlyCreatePPOrder;
+		this.directlyPickSupply = directlyPickSupply;
+
 	}
 }

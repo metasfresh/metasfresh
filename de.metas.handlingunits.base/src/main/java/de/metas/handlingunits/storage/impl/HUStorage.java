@@ -246,7 +246,7 @@ import lombok.NonNull;
 			return true;
 		}
 
-		final Set<Integer> productIds = new HashSet<Integer>();
+		final Set<Integer> productIds = new HashSet<>();
 		for (final I_M_HU_Storage storage : storages)
 		{
 			if (isEmpty(storage))
@@ -299,7 +299,7 @@ import lombok.NonNull;
 	public List<IHUProductStorage> getProductStorages()
 	{
 		final List<I_M_HU_Storage> storages = dao.retrieveStorages(hu);
-		final List<IHUProductStorage> productStorages = new ArrayList<IHUProductStorage>(storages.size());
+		final List<IHUProductStorage> productStorages = new ArrayList<>(storages.size());
 		for (final I_M_HU_Storage storage : storages)
 		{
 			final IHUProductStorage productStorage = createProductStorage(storage);
@@ -322,10 +322,10 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IHUProductStorage getProductStorageOrNull(final I_M_Product product)
+	public IHUProductStorage getProductStorageOrNull(final int productId)
 	{
-		Check.assumeNotNull(product, "product not null");
-		final I_M_HU_Storage storage = dao.retrieveStorage(hu, product.getM_Product_ID());
+		Check.assume(productId > 0, "product > 0");
+		final I_M_HU_Storage storage = dao.retrieveStorage(hu, productId);
 		if (storage == null)
 		{
 			return null;

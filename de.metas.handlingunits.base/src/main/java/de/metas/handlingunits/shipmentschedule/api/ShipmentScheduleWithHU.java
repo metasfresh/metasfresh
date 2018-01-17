@@ -41,7 +41,9 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPackageBL;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -51,9 +53,32 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class ShipmentScheduleWithHU implements IShipmentScheduleWithHU
 {
+	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPicked(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
+	{
+		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		return ofShipmentScheduleQtyPickedWithHuContext(shipmentScheduleQtyPicked, huContext);
+	}
+
+	public static final ShipmentScheduleWithHU ofShipmentScheduleQtyPickedWithHuContext(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked,
+			@NonNull final IHUContext huContext)
+	{
+		return new ShipmentScheduleWithHU(huContext, shipmentScheduleQtyPicked);
+	}
+
+	public static final ShipmentScheduleWithHU ofShipmentScheduleWithoutHu(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@NonNull final BigDecimal qtyPicked,
+			@NonNull final IHUContext huContext)
+	{
+		return new ShipmentScheduleWithHU(huContext, shipmentSchedule, qtyPicked);
+	}
+
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleWithHU.class);
 
 	private final IHUContext huContext;
@@ -67,11 +92,11 @@ public class ShipmentScheduleWithHU implements IShipmentScheduleWithHU
 
 	private I_M_InOutLine shipmentLine = null;
 
-	public ShipmentScheduleWithHU(final IHUContext huContext, final I_M_ShipmentSchedule_QtyPicked shipmentScheduleAlloc)
+	private ShipmentScheduleWithHU(final IHUContext huContext,
+			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleAlloc)
 	{
 		this.huContext = huContext;
 
-		Check.assumeNotNull(shipmentScheduleAlloc, "shipmentScheduleAlloc not null");
 		this.shipmentScheduleAlloc = shipmentScheduleAlloc;
 
 		if (Services.get(IShipmentScheduleAllocBL.class).isDelivered(shipmentScheduleAlloc))
@@ -81,6 +106,7 @@ public class ShipmentScheduleWithHU implements IShipmentScheduleWithHU
 
 		shipmentSchedule = InterfaceWrapperHelper.create(shipmentScheduleAlloc.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
 		qtyPicked = shipmentScheduleAlloc.getQtyPicked();
+
 		vhu = shipmentScheduleAlloc.getVHU_ID() > 0 ? shipmentScheduleAlloc.getVHU() : null;
 		tuHU = shipmentScheduleAlloc.getM_TU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_TU_HU() : null;
 		luHU = shipmentScheduleAlloc.getM_LU_HU_ID() > 0 ? shipmentScheduleAlloc.getM_LU_HU() : null;
@@ -88,20 +114,21 @@ public class ShipmentScheduleWithHU implements IShipmentScheduleWithHU
 
 	/**
 	 * Creates a HU-"empty" instance that just references the given shipment schedule.
+	 *
 	 * @param huContext
 	 * @param shipmentSchedule
 	 * @param qtyPicked
 	 */
-	public ShipmentScheduleWithHU(final IHUContext huContext, final I_M_ShipmentSchedule shipmentSchedule, final BigDecimal qtyPicked)
+	private ShipmentScheduleWithHU(
+			final IHUContext huContext,
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@NonNull final BigDecimal qtyPicked)
 	{
 		this.huContext = huContext;
 
-		shipmentScheduleAlloc = null; // no allocation, will be created on fly when needed
+		this.shipmentScheduleAlloc = null; // no allocation, will be created on fly when needed
 
-		Check.assumeNotNull(shipmentSchedule, "shipmentSchedule not null");
 		this.shipmentSchedule = shipmentSchedule;
-
-		Check.assumeNotNull(qtyPicked, "qtyPicked not null");
 		this.qtyPicked = qtyPicked;
 
 		vhu = null; // no VHU
@@ -185,7 +212,7 @@ public class ShipmentScheduleWithHU implements IShipmentScheduleWithHU
 			// Only consider attributes which were defined in the template (i.e. No PI),
 			// because only those attributes will be considered in ASI, so only those attributes will land there.
 			// e.g. SSCC18 which has UseInASI=true but it's not defined in template but in some LUs.
-			if(!attributeValue.isDefinedByTemplate())
+			if (!attributeValue.isDefinedByTemplate())
 			{
 				logger.trace("Skip attribute because it's not defined by template: {}", attributeValue);
 				continue;

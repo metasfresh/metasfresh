@@ -21,6 +21,7 @@ import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -254,13 +255,23 @@ public class CandidateRepositoryWriteService
 		{
 			productionDetailRecordToUpdate = newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
 			productionDetailRecordToUpdate.setMD_Candidate(synchedRecord);
+			productionDetailRecordToUpdate.setIsPickDirectlyIfFeasible(productionDetail.getPickDirectlyIfFeasible().toBoolean());
+			productionDetailRecordToUpdate.setIsAdvised(productionDetail.getAdvised().toBoolean());
 		}
 		else
 		{
 			productionDetailRecordToUpdate = existingDetail;
+
+			if (productionDetail.getPickDirectlyIfFeasible().updateExistingRecord())
+			{
+				productionDetailRecordToUpdate.setIsPickDirectlyIfFeasible(productionDetail.getPickDirectlyIfFeasible().toBoolean());
+			}
+			if (productionDetail.getAdvised().updateExistingRecord())
+			{
+				productionDetailRecordToUpdate.setIsAdvised(productionDetail.getAdvised().toBoolean());
+			}
 		}
 
-		productionDetailRecordToUpdate.setIsAdvised(productionDetail.isAdvised());
 		productionDetailRecordToUpdate.setDescription(productionDetail.getDescription());
 		productionDetailRecordToUpdate.setPP_Plant_ID(productionDetail.getPlantId());
 		productionDetailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
@@ -296,6 +307,8 @@ public class CandidateRepositoryWriteService
 			detailRecordToUpdate = existingDetail;
 		}
 
+		detailRecordToUpdate.setIsAdvised(distributionDetail.isAdvised());
+		detailRecordToUpdate.setIsPickDirectlyIfFeasible(distributionDetail.isPickDirectlyIfFeasible());
 		detailRecordToUpdate.setDD_NetworkDistributionLine_ID(distributionDetail.getNetworkDistributionLineId());
 		detailRecordToUpdate.setPP_Plant_ID(distributionDetail.getPlantId());
 		detailRecordToUpdate.setPP_Product_Planning_ID(distributionDetail.getProductPlanningId());

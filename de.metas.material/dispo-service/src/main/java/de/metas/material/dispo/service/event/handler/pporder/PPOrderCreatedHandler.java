@@ -10,12 +10,12 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.event.log.EventLogUserService;
-import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
@@ -62,10 +62,9 @@ public final class PPOrderCreatedHandler
 	public PPOrderCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final RequestMaterialOrderService candidateService,
 			@NonNull final EventLogUserService eventLogUserService)
 	{
-		super(candidateChangeHandler, candidateRepositoryRetrieval, candidateService);
+		super(candidateChangeHandler, candidateRepositoryRetrieval);
 		this.eventLogUserService = eventLogUserService;
 	}
 
@@ -95,8 +94,7 @@ public final class PPOrderCreatedHandler
 	@Override
 	public void handleEvent(@NonNull final PPOrderCreatedEvent event)
 	{
-		final boolean advised = false;
-		handlePPOrderAdvisedOrCreatedEvent(event, advised);
+		handlePPOrderAdvisedOrCreatedEvent(event);
 	}
 
 	@Override
@@ -139,7 +137,7 @@ public final class PPOrderCreatedHandler
 		final int groupId = ppOrder.getMaterialDispoGroupId();
 		if (groupId <= 0)
 		{
-			// we already logged in the other createQuery() method; no need to log again.
+			// returned false, but don't write another log message; we already logged in the other createQuery() method
 			return CandidatesQuery.FALSE;
 		}
 
@@ -147,7 +145,9 @@ public final class PPOrderCreatedHandler
 				.type(extractCandidateType(ppOrderLine))
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.groupId(groupId)
-				.materialDescriptorQuery(createMaterialDescriptorQuery(ppOrderLine.getProductDescriptor()))
+				.materialDescriptorQuery(
+						createMaterialDescriptorQuery(
+								ppOrderLine.getProductDescriptor()))
 				.build();
 
 		return query;
@@ -160,5 +160,17 @@ public final class PPOrderCreatedHandler
 				.productId(productDescriptor.getProductId())
 				.storageAttributesKey(productDescriptor.getStorageAttributesKey())
 				.build();
+	}
+
+	@Override
+	protected Flag extractIsAdviseEvent(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	{
+		return Flag.FALSE_DONT_UPDATE;
+	}
+
+	@Override
+	protected Flag extractIsDirectlyPickSupply(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	{
+		return Flag.FALSE_DONT_UPDATE;
 	}
 }

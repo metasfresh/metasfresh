@@ -3,9 +3,9 @@ package de.metas.material.dispo.service.event.handler.pporder;
 import java.util.List;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -39,7 +39,7 @@ public class PPOrderUtil
 			final int ppOrderId)
 	{
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.productionDetail(ProductionDetail.builder()
+				.productionDetailsQuery(ProductionDetailsQuery.builder()
 						.ppOrderId(ppOrderId).build())
 				.build();
 		final List<Candidate> candidatesToUpdate = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
