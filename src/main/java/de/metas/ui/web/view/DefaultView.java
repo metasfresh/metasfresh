@@ -1,5 +1,6 @@
 package de.metas.ui.web.view;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -14,6 +15,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -22,6 +24,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -40,6 +43,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
@@ -138,7 +142,7 @@ public class DefaultView implements IEditableView
 		// Selection
 		{
 			viewEvaluationCtx = ViewEvaluationCtx.newInstanceFromCurrentContext();
-			
+
 			selectionsRef = ExtendedMemorizingSupplier.of(() -> {
 				if (defaultSelectionDeleteBeforeCreate.get())
 				{
@@ -332,7 +336,7 @@ public class DefaultView implements IEditableView
 			throw new IllegalStateException("View already closed: " + getViewId());
 		}
 	}
-	
+
 	private ViewEvaluationCtx getViewEvaluationCtx()
 	{
 		return viewEvaluationCtx;
@@ -346,12 +350,60 @@ public class DefaultView implements IEditableView
 		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBys);
 
-		final List<IViewRow> page = viewDataRepository.retrievePage(evalCtx, orderedSelection, firstRow, pageLength);
+		final List<IViewRow> rows = viewDataRepository.retrievePage(evalCtx, orderedSelection, firstRow, pageLength);
 
 		// Add to cache
-		page.forEach(row -> cache_rowsById.put(row.getId(), row));
+		rows.forEach(row -> cache_rowsById.put(row.getId(), row));
 
-		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderedSelection.getOrderBys(), page);
+		return ViewResult.builder()
+				.view(this)
+				.firstRow(firstRow)
+				.pageLength(pageLength)
+				.orderBys(orderedSelection.getOrderBys())
+				.rows(rows)
+				.columnInfos(extractViewResultColumns(rows))
+				.build();
+	}
+
+	private List<ViewResultColumn> extractViewResultColumns(final List<IViewRow> rows)
+	{
+		if (rows.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return viewDataRepository.getWidgetTypesByFieldName()
+				.entrySet()
+				.stream()
+				.map(e -> extractViewResultColumnOrNull(e.getKey(), e.getValue(), rows))
+				.filter(Predicates.notNull())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private ViewResultColumn extractViewResultColumnOrNull(final String fieldName, final DocumentFieldWidgetType widgetType, final List<IViewRow> rows)
+	{
+		if (widgetType == DocumentFieldWidgetType.Integer)
+		{
+			return null;
+		}
+		else if (widgetType.isNumeric())
+		{
+			final int maxPrecision = rows.stream()
+					.map(row -> row.getFieldJsonValueAsBigDecimal(fieldName, BigDecimal.ZERO))
+					.mapToInt(valueBD -> NumberUtils.stripTrailingDecimalZeros(valueBD).scale())
+					.max()
+					.orElse(0);
+
+			return ViewResultColumn.builder()
+					.fieldName(fieldName)
+					.widgetType(widgetType)
+					.maxPrecision(maxPrecision)
+					.build();
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	@Override
@@ -364,7 +416,13 @@ public class DefaultView implements IEditableView
 
 		final List<DocumentId> rowIds = viewDataRepository.retrieveRowIdsByPage(evalCtx, orderedSelection, firstRow, pageLength);
 
-		return ViewResult.ofViewAndRowIds(this, firstRow, pageLength, orderedSelection.getOrderBys(), rowIds);
+		return ViewResult.builder()
+				.view(this)
+				.firstRow(firstRow)
+				.pageLength(pageLength)
+				.orderBys(orderedSelection.getOrderBys())
+				.rowIds(rowIds)
+				.build();
 	}
 
 	@Override
@@ -378,7 +436,7 @@ public class DefaultView implements IEditableView
 	{
 		return cache_rowsById.getOrLoad(rowId, () -> retrieveRowById(rowId));
 	}
-	
+
 	private final IViewRow retrieveRowById(final DocumentId rowId)
 	{
 		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();

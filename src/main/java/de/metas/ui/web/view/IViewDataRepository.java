@@ -1,6 +1,7 @@
 package de.metas.ui.web.view;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.exceptions.DBException;
@@ -9,6 +10,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 
@@ -46,6 +48,8 @@ public interface IViewDataRepository
 	String getTableName();
 
 	String getSqlWhereClause(ViewId viewId, List<DocumentFilter> filters, DocumentIdsSelection rowIds, SqlOptions sqlOpts);
+	
+	Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName();
 
 	DocumentFilterDescriptorsProvider getViewFilterDescriptors();
 
