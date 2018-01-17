@@ -257,7 +257,7 @@ class DocumentList extends Component {
             selectTableItems({
               windowType,
               viewId,
-              ids: selection[0]
+              ids: [selection[0]]
             })
           );
 
