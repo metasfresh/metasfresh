@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import React, { Component } from "react";
 import Datetime from "react-datetime";
 import { connect } from "react-redux";
-
+import TetheredDateTime from "./TetheredDateTime";
 import { addNotification } from "../../actions/AppActions";
 
 const propTypes = {
@@ -89,7 +89,7 @@ class DatePicker extends Component {
   render() {
     return (
       <div tabIndex="-1" onKeyDown={this.handleKeydown}>
-        <Datetime
+        <TetheredDateTime
           closeOnTab={true}
           renderDay={this.renderDay}
           renderInput={this.renderInput}

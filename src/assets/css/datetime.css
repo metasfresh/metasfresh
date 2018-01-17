@@ -23,8 +23,8 @@
 }
 
 .rdtPicker {
-    display: none;
-    position: absolute;
+    display: block;
+    position: static;
     width: 260px;
     padding: 0;
     margin-top: 3px;
@@ -230,3 +230,11 @@ td.rdtYear:hover {
 .rdtDayPart {
     margin-top: 43px;
 }
+
+.tether-element {
+    z-index: 9;
+}
+
+.tether-out-of-bounds-top .rdtPicker {
+    visibility: hidden;
+} 
