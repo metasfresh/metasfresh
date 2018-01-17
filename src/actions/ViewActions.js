@@ -93,7 +93,6 @@ export function filterViewRequest(windowId, viewId, filters) {
       }
     });
   });
-  console.log(filters);
   return axios.post(
     config.API_URL + "/documentView/" + windowId + "/" + viewId + "/filter",
     {

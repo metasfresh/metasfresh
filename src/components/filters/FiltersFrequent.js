@@ -33,7 +33,7 @@ class FiltersFrequent extends Component {
     const { widgetShown, dropdownToggled } = this.props;
     const { allowOutsideClickListener } = this.state;
     if (allowOutsideClickListener) {
-      !widgetShown && this.toggleFilter(null, null);
+      !widgetShown && this.toggleFilter(null);
       dropdownToggled();
     }
   };
