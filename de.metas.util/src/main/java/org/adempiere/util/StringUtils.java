@@ -25,7 +25,9 @@ package org.adempiere.util;
 import java.math.BigDecimal;
 import java.text.Format;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Supplier;
 
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
@@ -114,7 +116,7 @@ public final class StringUtils
 	 * <li>{@code "Y"} or {@code "y"} => {@code true}
 	 * <li>otherwise, the return value of {@link Boolean#parseBoolean(String)} is returned.
 	 * </ul>
-	 * 
+	 *
 	 * @param strBoolean the parameter to convert. May be empty or {@code null}.
 	 * @return
 	 */
@@ -136,11 +138,11 @@ public final class StringUtils
 
 		return Boolean.parseBoolean(strBoolean);
 	}
-	
-	
+
+
 	/**
 	 * Convert given object to ADempiere's boolean value.
-	 * 
+	 *
 	 * @param value
 	 * @param defaultValue
 	 * @return <ul>
@@ -181,7 +183,7 @@ public final class StringUtils
 
 	/**
 	 * Converts the give object to boolean value, same as {@link #toBoolean(Object, boolean)} but assumes default value is <code>false</code>.
-	 * 
+	 *
 	 * @param value may be {@code null}. in that case, {@code false} is returned.
 	 * @return <ul>
 	 *         <li>true if value is boolean true, "true" or "Y"
@@ -197,7 +199,7 @@ public final class StringUtils
 
 	/**
 	 * Converts given boolean value to ADempiere's string representation of it
-	 * 
+	 *
 	 * @param value
 	 * @return <ul>
 	 *         <li><code>null</code> if value is null
@@ -213,7 +215,7 @@ public final class StringUtils
 		}
 		return value ? "Y" : "N";
 	}
-	
+
 	/**
 	 * Formats the given message, using either {@link java.text.Format} or {@link org.slf4j.helpers.MessageFormatter}.<br>
 	 * If the given <code>message</code> contains <code>{0}</code> as a substring and the given <code>params</code> has at least one item, then {@link java.text.Format} is used, otherwise the SLF4J
@@ -246,7 +248,10 @@ public final class StringUtils
 		{
 			return message; // i think null would also be handled by MessageFormatter, but better be save than sorry
 		}
-		final FormattingTuple arrayFormat = MessageFormatter.arrayFormat(message, params);
+
+		final Object[] effectiveParams = invokeSuppliers(params);
+		final FormattingTuple arrayFormat = MessageFormatter.arrayFormat(message, effectiveParams);
+
 		return arrayFormat.getMessage();
 	}
 
@@ -275,7 +280,8 @@ public final class StringUtils
 				// however if it turns out that we need to use the regexp solution, make sure to have the patters as a pre-compiled constant
 				final String msgToUse = message.replace("'", "''");
 
-				messageFormated = MessageFormat.format(msgToUse, params);
+				final Object[] effectiveParams = invokeSuppliers(params);
+				messageFormated = MessageFormat.format(msgToUse, effectiveParams);
 			}
 			catch (Exception e)
 			{
@@ -291,6 +297,32 @@ public final class StringUtils
 			messageFormated = message;
 		}
 		return messageFormated;
+	}
+
+	@SafeVarargs
+	private static Object[] invokeSuppliers(final Object... params)
+	{
+		if (params == null)
+		{
+			return null;
+		}
+
+		final ArrayList<Object> result = new ArrayList<>(params.length);
+		for (final Object param : params)
+		{
+			if (param instanceof Supplier)
+			{
+				@SuppressWarnings("rawtypes")
+				final Supplier paramSupplier = (Supplier)param;
+
+				result.add(paramSupplier.get());
+			}
+			else
+			{
+				result.add(param);
+			}
+		}
+		return result.toArray();
 	}
 
 	/**

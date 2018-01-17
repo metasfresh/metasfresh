@@ -13,9 +13,10 @@ import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.pporder.AbstractPPOrderEvent;
@@ -51,6 +52,9 @@ import lombok.NonNull;
 public final class PPOrderAdvisedHandler
 		extends PPOrderAdvisedOrCreatedHandler<PPOrderAdvisedEvent>
 {
+
+	private final RequestMaterialOrderService requestMaterialOrderService;
+
 	/**
 	 *
 	 * @param candidateChangeHandler
@@ -59,9 +63,11 @@ public final class PPOrderAdvisedHandler
 	public PPOrderAdvisedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final RequestMaterialOrderService candidateService)
+			@NonNull final RequestMaterialOrderService requestMaterialOrderService)
 	{
-		super(candidateChangeHandler, candidateRepositoryRetrieval, candidateService);
+		super(candidateChangeHandler, candidateRepositoryRetrieval);
+
+		this.requestMaterialOrderService = requestMaterialOrderService;
 	}
 
 	@Override
@@ -98,21 +104,24 @@ public final class PPOrderAdvisedHandler
 	@Override
 	public void handleEvent(@NonNull final PPOrderAdvisedEvent event)
 	{
-		final boolean advised = true;
-		handlePPOrderAdvisedOrCreatedEvent(event, advised);
+		final int groupId = handlePPOrderAdvisedOrCreatedEvent(event);
+
+		if (event.isDirectlyCreatePPOrder())
+		{
+			requestMaterialOrderService.requestMaterialOrder(groupId);
+		}
 	}
 
 	@Override
 	protected CandidatesQuery createPreExistingCandidatesQuery(@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
-		final PPOrderAdvisedEvent ppOrderAdvisedEvent = (PPOrderAdvisedEvent)ppOrderEvent;
+		final PPOrderAdvisedEvent ppOrderAdvisedEvent = cast(ppOrderEvent);
 
 		final DemandDetail demandDetail = DemandDetail.createOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
 		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ppOrderAdvisedEvent);
 
 		final PPOrder ppOrder = ppOrderAdvisedEvent.getPpOrder();
-		final ProductionDetail productionCandidateDetail = ProductionDetail.builder()
-				.plantId(ppOrder.getPlantId())
+		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
 				.productPlanningId(ppOrder.getProductPlanningId())
 				.build();
 
@@ -120,7 +129,7 @@ public final class PPOrderAdvisedHandler
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.demandDetail(demandDetail)
-				.productionDetail(productionCandidateDetail)
+				.productionDetailsQuery(productionDetailsQuery)
 				.build();
 
 		return query;
@@ -136,7 +145,7 @@ public final class PPOrderAdvisedHandler
 		final DemandDetail demandDetail = DemandDetail.createOrNull(ppOrderEvent.getSupplyRequiredDescriptor());
 		Check.errorIf(demandDetail == null, "Missing demandDetail for ppOrderAdvisedEvent={}", ppOrderAdvisedEvent);
 
-		final ProductionDetail productionCandidateDetail = ProductionDetail.builder()
+		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
 				.productPlanningId(ppOrderLine.getProductBomLineId())
 				.productBomLineId(ppOrderLine.getProductBomLineId())
 				.build();
@@ -145,10 +154,29 @@ public final class PPOrderAdvisedHandler
 				.type(extractCandidateType(ppOrderLine))
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.demandDetail(demandDetail)
-				.productionDetail(productionCandidateDetail)
+				.productionDetailsQuery(productionDetailsQuery)
 				.build();
 
 		return query;
+	}
+
+	@Override
+	protected Flag extractIsAdviseEvent(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	{
+		return Flag.TRUE;
+	}
+
+	@Override
+	protected Flag extractIsDirectlyPickSupply(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	{
+		final PPOrderAdvisedEvent ppOrderAdvisedEvent = cast(ppOrderEvent);
+		return Flag.of(ppOrderAdvisedEvent.isDirectlyPickSupply());
+	}
+
+	private PPOrderAdvisedEvent cast(@NonNull final AbstractPPOrderEvent ppOrderEvent)
+	{
+		final PPOrderAdvisedEvent ppOrderAdvisedEvent = (PPOrderAdvisedEvent)ppOrderEvent;
+		return ppOrderAdvisedEvent;
 	}
 
 }

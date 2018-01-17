@@ -15,6 +15,8 @@ public class DistributionDetail
 			@NonNull final I_MD_Candidate_Dist_Detail distributionDetailRecord)
 	{
 		final DistributionDetail distributionDetail = DistributionDetail.builder()
+				.advised(distributionDetailRecord.isAdvised())
+				.pickDirectlyIfFeasible(distributionDetailRecord.isPickDirectlyIfFeasible())
 				.networkDistributionLineId(distributionDetailRecord.getDD_NetworkDistributionLine_ID())
 				.productPlanningId(distributionDetailRecord.getPP_Product_Planning_ID())
 				.plantId(distributionDetailRecord.getPP_Plant_ID())
@@ -25,6 +27,7 @@ public class DistributionDetail
 				.actualQty(distributionDetailRecord.getActualQty())
 				.shipperId(distributionDetailRecord.getM_Shipper_ID())
 				.build();
+
 		return distributionDetail;
 	}
 
@@ -43,6 +46,8 @@ public class DistributionDetail
 	String ddOrderDocStatus;
 
 	boolean advised;
+
+	boolean pickDirectlyIfFeasible;
 
 	BigDecimal plannedQty;
 

@@ -74,4 +74,11 @@ public class DDOrderAdvisedOrCreatedEvent implements MaterialEvent
 	 * if this event is about a "wild" PPOrder that was somehow created and has a sale order line ID
 	 */
 	SupplyRequiredDescriptor supplyRequiredDescriptor;
+
+	/**
+	 * If {@code true}, then this event advises the recipient to directly request an actual DD_Order to be created.
+	 */
+	boolean advisedToCreateDDrder;
+
+	boolean pickIfFeasible;
 }

@@ -94,11 +94,6 @@ public class PPOrder
 	BigDecimal quantity;
 
 	/**
-	 * If {@code true}, then this event advises the recipient to directly request an actual PP_Order to be created.
-	 */
-	boolean advisedToCreatePPOrder;
-
-	/**
 	 * Attention, might be {@code null}.
 	 */
 	@Singular
@@ -119,7 +114,6 @@ public class PPOrder
 			@JsonProperty("datePromised") @NonNull final Date datePromised,
 			@JsonProperty("dateStartSchedule") @NonNull final Date dateStartSchedule,
 			@JsonProperty("quantity") @NonNull final BigDecimal quantity,
-			@JsonProperty("advisedToCreatePPOrder") final boolean advisedToCreatePPOrder,
 			@JsonProperty("lines") @Singular final List<PPOrderLine> lines,
 			@JsonProperty("materialDispoGroupId") final int materialDispoGroupId)
 	{
@@ -137,7 +131,6 @@ public class PPOrder
 		this.datePromised = datePromised;
 		this.dateStartSchedule = dateStartSchedule;
 		this.quantity = quantity;
-		this.advisedToCreatePPOrder = advisedToCreatePPOrder;
 		this.lines = lines;
 
 		this.materialDispoGroupId = materialDispoGroupId;

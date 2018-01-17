@@ -1,4 +1,4 @@
-package de.metas.material.event.stock;
+package de.metas.material.event.commons;
 
 import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
@@ -6,9 +6,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.util.Check;
 
-import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.Value;
 
@@ -36,29 +33,18 @@ import lombok.Value;
 
 @Value
 @Builder(toBuilder = true)
-public class OnHandQtyChangedEvent implements MaterialEvent
+public class HUOnHandQtyChangeDescriptor
 {
-	public static final String TYPE = "OnHandQtyChangedEvent";
-
-	EventDescriptor eventDescriptor;
-
-	ProductDescriptor productDescriptor;
-
 	BigDecimal quantity;
 
 	BigDecimal quantityDelta;
 
 	int huId;
 
-	int warehouseId;
-
 	public void assertValid()
 	{
-		checkIdGreaterThanZero("warehouseId", warehouseId);
 		checkIdGreaterThanZero("huId", huId);
 
-		Check.errorIf(eventDescriptor == null, "eventDescriptor may not be null");
-		Check.errorIf(productDescriptor == null, "productDescriptor may not be null");
 		Check.errorIf(quantity == null, "quantity may not be null");
 		Check.errorIf(quantity.signum() < 0, "quantity may not be less than zero");
 		Check.errorIf(quantityDelta == null, "quantityDelta may not be null");

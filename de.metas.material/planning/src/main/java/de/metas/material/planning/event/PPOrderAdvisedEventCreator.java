@@ -2,6 +2,7 @@ package de.metas.material.planning.event;
 
 import java.util.List;
 
+import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -65,10 +66,14 @@ public class PPOrderAdvisedEventCreator
 						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext),
 						SupplyRequiredHandlerUtils.mkMRPNotesCollector());
 
+		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+
 		final PPOrderAdvisedEvent event = PPOrderAdvisedEvent.builder()
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.eventDescriptor(supplyRequiredDescriptor.getEventDescriptor().createNew())
 				.ppOrder(ppOrder)
+				.directlyCreatePPOrder(productPlanning.isCreatePlan())
+				.directlyPickSupply(productPlanning.isPickDirectlyIfFeasible())
 				.build();
 
 		return ImmutableList.of(event);

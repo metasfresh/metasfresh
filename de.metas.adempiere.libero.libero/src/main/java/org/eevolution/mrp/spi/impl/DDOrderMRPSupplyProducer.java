@@ -395,12 +395,6 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	@Override
 	public void cleanup(final IMaterialPlanningContext mrpContext, final IMRPExecutor executor)
 	{
-		// If DRP module is not activated, then skip the cleanup
-		if (!mrpContext.isRequireDRP())
-		{
-			return;
-		}
-
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		//
