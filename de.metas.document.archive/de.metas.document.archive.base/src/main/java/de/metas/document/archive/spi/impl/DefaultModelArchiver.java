@@ -361,6 +361,10 @@ public class DefaultModelArchiver
 			{
 				printFormatId = getAD_PrintFormat_ID();
 			}
+			if (printFormatId <= 0)
+			{
+				throw new AdempiereException("NoDocPrintFormat");
+			}
 			final MPrintFormat printFormat = MPrintFormat.get(ctx, printFormatId, readFromDisk);
 
 			final Language language = getLanguage();
