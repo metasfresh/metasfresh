@@ -42,8 +42,7 @@ public class ProductionDetailsQuery
 			.productPlanningId(-10)
 			.productBomLineId(-10)
 			.ppOrderId(-10)
-			.ppOrderLineId(-10)
-			.build();
+			.ppOrderLineId(-10).build();
 
 	public static ProductionDetailsQuery fromProductionDetail(
 			final ProductionDetail productionDetail)

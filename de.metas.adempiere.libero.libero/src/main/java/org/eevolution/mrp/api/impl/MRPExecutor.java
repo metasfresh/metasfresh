@@ -975,8 +975,8 @@ public class MRPExecutor implements IMRPExecutor
 		}
 
 		//
-		// Calculate how many supply documents we shal create and how much quantity on each of them
-		// NOTE: this makes sensse only for Fixed Order Quantity (FOQ) ordering type.
+		// Calculate how many supply documents we shall create and how much quantity on each of them
+		// NOTE: this makes sense only for Fixed Order Quantity (FOQ) ordering type.
 		// For other ordering types we will just create 1 supply order with the whole quantity to order.
 		int ordersCount = 1;
 		BigDecimal qtyToOrderPerOrder = qtyToOrder;
