@@ -17,11 +17,15 @@ Here come the actual release notes:
 * metasfresh
   * [#3319](https://github.com/metasfresh/metasfresh/issues/3319) Webui Window Design: Improve window Message
     * Improvement of the WebUI message window.
-    
+
 * metasfresh-webui-frontend
   * [#1502](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1502) Missing PropTypes Validation for noLabel isOpenDatePicker
     * Internal Housekeeping Issue. Adding PropType Validation for isOpenDatePicker.
+
 ## Fixes
+* metasfresh
+  * [#3339](https://github.com/metasfresh/metasfresh/issues/3339) Field "Doctype" is included twice in payment window
+    * Fixes a doubled Field for Doctype in the payment window.
 
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**
