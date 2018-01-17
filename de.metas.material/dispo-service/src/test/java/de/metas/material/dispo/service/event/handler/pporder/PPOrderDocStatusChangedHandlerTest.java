@@ -12,8 +12,9 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.EventDescriptor;
@@ -64,7 +65,10 @@ public class PPOrderDocStatusChangedHandlerTest
 				.materialDescriptor(EventTestHelper.createMaterialDescriptor())
 				.productionDetail(ProductionDetail.builder()
 						.actualQty(BigDecimal.ONE)
-						.plannedQty(BigDecimal.TEN).build())
+						.plannedQty(BigDecimal.TEN)
+						.advised(Flag.FALSE)
+						.pickDirectlyIfFeasible(Flag.FALSE)
+						.build())
 				.build();
 
 		// @formatter:off

@@ -1,4 +1,4 @@
-package de.metas.material.dispo.commons.repository;
+package de.metas.material.dispo.commons.repository.query;
 
 import java.util.Objects;
 
@@ -9,9 +9,8 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -49,10 +48,6 @@ import lombok.experimental.Wither;
 @Wither
 public final class CandidatesQuery
 {
-	public static final ProductionDetail NO_PRODUCTION_DETAIL = ProductionDetail.builder().plantId(99999999).build();
-
-	public static final DistributionDetail NO_DISTRIBUTION_DETAIL = DistributionDetail.builder().build();
-
 	public static final int UNSPECIFIED_PARENT_ID = -1;
 
 	public static final int UNSPECIFIED_ID = -1;
@@ -71,14 +66,20 @@ public final class CandidatesQuery
 			return CandidatesQuery.fromId(candidate.getId());
 		}
 
+		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery
+				.ofProductionDetailOrNull(candidate.getProductionDetail());
+
+		final DistributionDetailsQuery distributionDetailsQuery = DistributionDetailsQuery
+				.ofDistributionDetailOrNull(candidate.getDistributionDetail());
+		
 		final CandidatesQueryBuilder builder = CandidatesQuery.builder()
 				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(candidate.getMaterialDescriptor()))
 				.matchExactStorageAttributesKey(true)
 				.demandDetail(candidate.getDemandDetail())
-				.distributionDetail(candidate.getDistributionDetail())
+				.distributionDetailsQuery(distributionDetailsQuery)
 				.groupId(candidate.getGroupId())
 				.orgId(candidate.getOrgId())
-				.productionDetail(candidate.getProductionDetail())
+				.productionDetailsQuery(productionDetailsQuery)
 				.status(candidate.getStatus())
 				.businessCase(candidate.getBusinessCase())
 				.type(candidate.getType());
@@ -137,12 +138,12 @@ public final class CandidatesQuery
 	/**
 	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#PRODUCTION}.
 	 */
-	ProductionDetail productionDetail;
+	ProductionDetailsQuery productionDetailsQuery;
 
 	/**
 	 * Used for additional infos if this candidate has the sub type {@link CandidateBusinessCase#DISTRIBUTION}.
 	 */
-	DistributionDetail distributionDetail;
+	DistributionDetailsQuery distributionDetailsQuery;
 
 	/**
 	 * Used for additional infos if this candidate relates to particular demand
@@ -164,8 +165,8 @@ public final class CandidatesQuery
 			final int groupId,
 			final MaterialDescriptorQuery materialDescriptorQuery,
 			final boolean matchExactStorageAttributesKey,
-			final ProductionDetail productionDetail,
-			final DistributionDetail distributionDetail,
+			final ProductionDetailsQuery productionDetailsQuery,
+			final DistributionDetailsQuery distributionDetailsQuery,
 			final DemandDetail demandDetail,
 			final TransactionDetail transactionDetail)
 	{
@@ -182,8 +183,8 @@ public final class CandidatesQuery
 		this.groupId = groupId;
 
 		this.materialDescriptorQuery = materialDescriptorQuery;
-		this.productionDetail = productionDetail;
-		this.distributionDetail = distributionDetail;
+		this.productionDetailsQuery = productionDetailsQuery;
+		this.distributionDetailsQuery = distributionDetailsQuery;
 		this.demandDetail = demandDetail;
 		this.transactionDetail = transactionDetail;
 	}

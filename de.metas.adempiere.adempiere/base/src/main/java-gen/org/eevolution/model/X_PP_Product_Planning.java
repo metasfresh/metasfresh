@@ -15,7 +15,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1855076790L;
+	private static final long serialVersionUID = 545146725L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (Properties ctx, int PP_Product_Planning_ID, String trxName)
@@ -27,8 +27,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 			setIsCreatePlan (true); // Y
 			setIsDocComplete (false); // N
 			setIsPhantom (false);
-			setIsRequiredDRP (false);
-			setIsRequiredMRP (false);
+			setIsPickDirectlyIfFeasible (false); // N
 			setM_Product_ID (0);
 			setPP_POQ_AggregateOnBPartnerLevel (false); // N
 			setPP_Product_Planning_ID (0);
@@ -270,7 +269,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public void setIsManufactured (java.lang.String IsManufactured)
 	{
 
-		set_ValueNoCheck (COLUMNNAME_IsManufactured, IsManufactured);
+		set_Value (COLUMNNAME_IsManufactured, IsManufactured);
 	}
 
 	/** Get Wird produziert.
@@ -330,6 +329,32 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return false;
 	}
 
+	/** Set Sofort Kommissionieren wenn möglich.
+		@param IsPickDirectlyIfFeasible 
+		Falls "Ja" und ein Bestand wird für einen bestimmten Lieferdispo-Eintrag bereit gestellt oder produziert, dann wird dieser sofort zugeordnet und als kommissioniert markiert.
+	  */
+	@Override
+	public void setIsPickDirectlyIfFeasible (boolean IsPickDirectlyIfFeasible)
+	{
+		set_Value (COLUMNNAME_IsPickDirectlyIfFeasible, Boolean.valueOf(IsPickDirectlyIfFeasible));
+	}
+
+	/** Get Sofort Kommissionieren wenn möglich.
+		@return Falls "Ja" und ein Bestand wird für einen bestimmten Lieferdispo-Eintrag bereit gestellt oder produziert, dann wird dieser sofort zugeordnet und als kommissioniert markiert.
+	  */
+	@Override
+	public boolean isPickDirectlyIfFeasible () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPickDirectlyIfFeasible);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** 
 	 * IsPurchased AD_Reference_ID=319
 	 * Reference name: _YesNo
@@ -357,52 +382,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public java.lang.String getIsPurchased () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_IsPurchased);
-	}
-
-	/** Set Required Calculate DRP.
-		@param IsRequiredDRP Required Calculate DRP	  */
-	@Override
-	public void setIsRequiredDRP (boolean IsRequiredDRP)
-	{
-		set_ValueNoCheck (COLUMNNAME_IsRequiredDRP, Boolean.valueOf(IsRequiredDRP));
-	}
-
-	/** Get Required Calculate DRP.
-		@return Required Calculate DRP	  */
-	@Override
-	public boolean isRequiredDRP () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsRequiredDRP);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Required Calculate MRP.
-		@param IsRequiredMRP Required Calculate MRP	  */
-	@Override
-	public void setIsRequiredMRP (boolean IsRequiredMRP)
-	{
-		set_ValueNoCheck (COLUMNNAME_IsRequiredMRP, Boolean.valueOf(IsRequiredMRP));
-	}
-
-	/** Get Required Calculate MRP.
-		@return Required Calculate MRP	  */
-	@Override
-	public boolean isRequiredMRP () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsRequiredMRP);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	@Override
@@ -828,9 +807,9 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public void setS_Resource_ID (int S_Resource_ID)
 	{
 		if (S_Resource_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_S_Resource_ID, null);
+			set_Value (COLUMNNAME_S_Resource_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_S_Resource_ID, Integer.valueOf(S_Resource_ID));
+			set_Value (COLUMNNAME_S_Resource_ID, Integer.valueOf(S_Resource_ID));
 	}
 
 	/** Get Ressource.

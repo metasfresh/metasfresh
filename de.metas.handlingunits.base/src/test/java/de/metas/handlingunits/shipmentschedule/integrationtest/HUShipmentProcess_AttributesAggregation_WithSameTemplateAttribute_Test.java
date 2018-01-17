@@ -6,16 +6,10 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.Assert;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inout.IInOutDAO;
-import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
 
 /*
  * #%L
@@ -54,9 +48,6 @@ import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
  * @author metas-dev <dev@metasfresh.com>
  * @task FRESH-578 #275
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		ShipperGatewayRegistry.class})
 public class HUShipmentProcess_AttributesAggregation_WithSameTemplateAttribute_Test extends HUShipmentProcess_AttributesAggregation_Base
 {
 	@Override

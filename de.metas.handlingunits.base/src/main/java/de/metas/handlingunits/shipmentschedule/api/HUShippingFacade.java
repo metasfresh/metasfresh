@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -80,7 +81,9 @@ public class HUShippingFacade
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final ShipperGatewayRegistry shipperGatewayRegistry = Adempiere.getBean(ShipperGatewayRegistry.class);
+
+	private final Supplier<ShipperGatewayRegistry> shipperGatewayRegistrySupplier = //
+			() -> Adempiere.getBean(ShipperGatewayRegistry.class);
 
 	//
 	// Parameters
@@ -226,17 +229,25 @@ public class HUShippingFacade
 		{
 			return;
 		}
+
+		final ShipperGatewayRegistry shipperGatewayRegistry = //
+				shipperGatewayRegistrySupplier.get();
 		if (!shipperGatewayRegistry.hasServiceSupport(shipperGatewayId))
 		{
 			return;
 		}
 
-		final ShipperGatewayService shipperGatewayService = shipperGatewayRegistry.getShipperGatewayService(shipperGatewayId);
-		final Set<Integer> mpackageIds = mpackages.stream().map(I_M_Package::getM_Package_ID).collect(ImmutableSet.toImmutableSet());
-		shipperGatewayService.createAndSendDeliveryOrdersForPackages(DeliveryOrderCreateRequest.builder()
-				.pickupDate(getShipperDeliveryOrderPickupDate())
-				.packageIds(mpackageIds)
-				.build());
+		final ShipperGatewayService shipperGatewayService = //
+				shipperGatewayRegistry.getShipperGatewayService(shipperGatewayId);
+
+		final Set<Integer> mpackageIds = mpackages.stream()
+				.map(I_M_Package::getM_Package_ID).collect(ImmutableSet.toImmutableSet());
+
+		shipperGatewayService
+				.createAndSendDeliveryOrdersForPackages(DeliveryOrderCreateRequest.builder()
+						.pickupDate(getShipperDeliveryOrderPickupDate())
+						.packageIds(mpackageIds)
+						.build());
 	}
 
 	public LocalDate getShipperDeliveryOrderPickupDate()

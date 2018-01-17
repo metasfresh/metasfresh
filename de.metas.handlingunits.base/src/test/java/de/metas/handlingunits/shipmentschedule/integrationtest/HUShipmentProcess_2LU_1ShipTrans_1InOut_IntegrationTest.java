@@ -37,13 +37,8 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.Assert;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
@@ -53,7 +48,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.inout.IInOutDAO;
 import de.metas.logging.LogManager;
-import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
 import de.metas.shipping.interfaces.I_M_Package;
 
 /**
@@ -63,9 +57,6 @@ import de.metas.shipping.interfaces.I_M_Package;
  * <li>assume: both TUs end up on a single shipment, on different lines (one per line per shipment schedule)
  * </ul>
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		ShipperGatewayRegistry.class})
 public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 		extends AbstractAggregateShipment2SSchedHUShipmentProcessIntegrationTest
 {

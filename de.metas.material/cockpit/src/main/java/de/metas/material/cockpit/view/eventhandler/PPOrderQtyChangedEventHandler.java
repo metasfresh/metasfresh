@@ -15,9 +15,9 @@ import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent.ChangedPPOrderLineDescriptor;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent.DeletedPPOrderLineDescriptor;
+import de.metas.material.event.pporder.PPOrderChangedEvent;
+import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
+import de.metas.material.event.pporder.PPOrderChangedEvent.DeletedPPOrderLineDescriptor;
 import lombok.NonNull;
 
 /*
@@ -44,7 +44,7 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
-public class PPOrderQtyChangedEventHandler implements MaterialEventHandler<PPOrderQtyChangedEvent>
+public class PPOrderQtyChangedEventHandler implements MaterialEventHandler<PPOrderChangedEvent>
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 
@@ -54,13 +54,13 @@ public class PPOrderQtyChangedEventHandler implements MaterialEventHandler<PPOrd
 	}
 
 	@Override
-	public Collection<Class<? extends PPOrderQtyChangedEvent>> getHandeledEventType()
+	public Collection<Class<? extends PPOrderChangedEvent>> getHandeledEventType()
 	{
-		return ImmutableList.of(PPOrderQtyChangedEvent.class);
+		return ImmutableList.of(PPOrderChangedEvent.class);
 	}
 
 	@Override
-	public void handleEvent(@NonNull final PPOrderQtyChangedEvent ppOrderQtyChangedEvent)
+	public void handleEvent(@NonNull final PPOrderChangedEvent ppOrderQtyChangedEvent)
 	{
 		final List<PPOrderLine> newPPOrderLines = ppOrderQtyChangedEvent.getNewPPOrderLines();
 

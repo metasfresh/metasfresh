@@ -12,12 +12,12 @@ import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderChangedEvent;
+import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
+import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor.ChangedPPOrderLineDescriptorBuilder;
+import de.metas.material.event.pporder.PPOrderChangedEvent.DeletedPPOrderLineDescriptor;
+import de.metas.material.event.pporder.PPOrderChangedEvent.PPOrderChangedEventBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent.ChangedPPOrderLineDescriptor;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent.ChangedPPOrderLineDescriptor.ChangedPPOrderLineDescriptorBuilder;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent.DeletedPPOrderLineDescriptor;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent.PPOrderQtyChangedEventBuilder;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import lombok.NonNull;
 
@@ -43,20 +43,20 @@ import lombok.NonNull;
  * #L%
  */
 
-public class PPOrderQtyEnteredChangeEventFactory
+public class PPOrderChangeEventFactory
 {
-	public static PPOrderQtyEnteredChangeEventFactory newWithPPOrderBeforeChange(@NonNull final I_PP_Order ppOrderRecord)
+	public static PPOrderChangeEventFactory newWithPPOrderBeforeChange(@NonNull final I_PP_Order ppOrderRecord)
 	{
-		return new PPOrderQtyEnteredChangeEventFactory(ppOrderRecord);
+		return new PPOrderChangeEventFactory(ppOrderRecord);
 	}
 
-	private final PPOrderQtyChangedEventBuilder eventBuilder;
+	private final PPOrderChangedEventBuilder eventBuilder;
 	private final PPOrderPojoConverter ppOrderConverter;
 	private final I_PP_Order ppOrderRecord;
 
 	private final Map<Integer, ChangedPPOrderLineDescriptorBuilder> productBomLineId2ChangeBuilder = new HashMap<>();
 
-	private PPOrderQtyEnteredChangeEventFactory(@NonNull final I_PP_Order ppOrderRecord)
+	private PPOrderChangeEventFactory(@NonNull final I_PP_Order ppOrderRecord)
 	{
 		this.ppOrderConverter = Adempiere.getBean(PPOrderPojoConverter.class);
 
@@ -88,12 +88,12 @@ public class PPOrderQtyEnteredChangeEventFactory
 				});
 	}
 
-	private PPOrderQtyChangedEventBuilder createAndInitEventBuilderWithOldValues(@NonNull final I_PP_Order ppOrderRecord)
+	private PPOrderChangedEventBuilder createAndInitEventBuilderWithOldValues(@NonNull final I_PP_Order ppOrderRecord)
 	{
 		final I_PP_Order oldPPOrderRecord = createOld(ppOrderRecord, I_PP_Order.class);
 		final PPOrder oldPPOrderPojo = this.ppOrderConverter.asPPOrderPojo(oldPPOrderRecord);
 
-		final PPOrderQtyChangedEventBuilder eventBuilder = PPOrderQtyChangedEvent
+		final PPOrderChangedEventBuilder eventBuilder = PPOrderChangedEvent
 				.builder()
 				.eventDescriptor(EventDescriptor.createNew(ppOrderRecord))
 				.datePromised(oldPPOrderPojo.getDatePromised())
@@ -112,7 +112,7 @@ public class PPOrderQtyEnteredChangeEventFactory
 		return collect;
 	}
 
-	public PPOrderQtyChangedEvent inspectPPOrderAfterChange()
+	public PPOrderChangedEvent inspectPPOrderAfterChange()
 	{
 		final PPOrder updatedPPOrder = ppOrderConverter.asPPOrderPojo(ppOrderRecord);
 
@@ -148,7 +148,7 @@ public class PPOrderQtyEnteredChangeEventFactory
 			eventBuilder.deletedPPOrderLine(deletedDescriptor);
 		});
 
-		final PPOrderQtyChangedEvent event = eventBuilder.build();
+		final PPOrderChangedEvent event = eventBuilder.build();
 		return event;
 	}
 

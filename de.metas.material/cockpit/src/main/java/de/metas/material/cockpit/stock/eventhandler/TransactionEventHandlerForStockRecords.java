@@ -12,7 +12,10 @@ import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.cockpit.stock.StockDataUpdateRequest;
 import de.metas.material.cockpit.stock.StockDataUpdateRequestHandler;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.stock.OnHandQtyChangedEvent;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.transactions.AbstractTransactionEvent;
+import de.metas.material.event.transactions.TransactionCreatedEvent;
+import de.metas.material.event.transactions.TransactionDeletedEvent;
 import lombok.NonNull;
 
 /*
@@ -39,36 +42,38 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
-public class StockTransactionEventHandler
-		implements MaterialEventHandler<OnHandQtyChangedEvent>
+public class TransactionEventHandlerForStockRecords
+		implements MaterialEventHandler<AbstractTransactionEvent>
 {
 	private final StockDataUpdateRequestHandler dataUpdateRequestHandler;
 
-	public StockTransactionEventHandler(
+	public TransactionEventHandlerForStockRecords(
 			@NonNull final StockDataUpdateRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
 	}
 
 	@Override
-	public Collection<Class<? extends OnHandQtyChangedEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractTransactionEvent>> getHandeledEventType()
 	{
-		return ImmutableList.of(OnHandQtyChangedEvent.class);
+		return ImmutableList.of(TransactionCreatedEvent.class, TransactionDeletedEvent.class);
 	}
 
 	@Override
-	public void handleEvent(@NonNull final OnHandQtyChangedEvent event)
+	public void handleEvent(@NonNull final AbstractTransactionEvent event)
 	{
 		final StockDataUpdateRequest dataUpdateRequest =  createDataUpdateRequestForEvent(event);
 		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
 	}
 
 	private StockDataUpdateRequest createDataUpdateRequestForEvent(
-			@NonNull final OnHandQtyChangedEvent event)
+			@NonNull final AbstractTransactionEvent event)
 	{
+		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
+
 		final StockDataRecordIdentifier identifier = StockDataRecordIdentifier.builder()
-				.productDescriptor(event.getProductDescriptor())
-				.warehouseId(event.getWarehouseId())
+				.productDescriptor(materialDescriptor)
+				.warehouseId(materialDescriptor.getWarehouseId())
 				.build();
 
 		final StockDataUpdateRequest request = StockDataUpdateRequest.builder()
