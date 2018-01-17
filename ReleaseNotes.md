@@ -14,6 +14,10 @@ Here come the actual release notes:
 **release for week 2018-04**
 
 ## Features
+* metasfresh
+  * [#3319](https://github.com/metasfresh/metasfresh/issues/3319) Webui Window Design: Improve window Message
+    * Improvement of the WebUI message window.
+    
 * metasfresh-webui-frontend
   * [#1502](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1502) Missing PropTypes Validation for noLabel isOpenDatePicker
     * Internal Housekeeping Issue. Adding PropType Validation for isOpenDatePicker.
