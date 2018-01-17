@@ -1097,30 +1097,32 @@ function getScope(isModal) {
   return isModal ? "modal" : "master";
 }
 
-export function parseToDisplay(obj) {
-  return parseDateToReadable(nullToEmptyStrings(obj));
+export function parseToDisplay(fieldsByName) {
+  return parseDateToReadable(nullToEmptyStrings(fieldsByName));
 }
 
-function parseDateToReadable(obj) {
+function parseDateToReadable(fieldsByName) {
   const dateParse = ["Date", "DateTime", "Time"];
 
-  return Object.keys(obj).reduce((acc, key) => {
-    acc[key] =
-      dateParse.indexOf(obj[key].widgetType) > -1 && obj[key].value
-        ? Object.assign({}, obj[key], {
-            value: obj[key].value ? new Date(obj[key].value) : ""
+  return Object.keys(fieldsByName).reduce((acc, fieldName) => {
+    const field = fieldsByName[fieldName];
+    const isDateField = dateParse.indexOf(field.widgetType) > -1;
+    acc[fieldName] =
+      isDateField && field.value
+        ? Object.assign({}, field, {
+            value: field.value ? new Date(field.value) : ""
           })
-        : obj[key];
+        : field;
     return acc;
   }, {});
 }
 
-function nullToEmptyStrings(obj) {
-  return Object.keys(obj).reduce((acc, key) => {
-    acc[key] =
-      obj[key].value === null
-        ? Object.assign({}, obj[key], { value: "" })
-        : obj[key];
+function nullToEmptyStrings(fieldsByName) {
+  return Object.keys(fieldsByName).reduce((acc, fieldName) => {
+    acc[fieldName] =
+      fieldsByName[fieldName].value === null
+        ? Object.assign({}, fieldsByName[fieldName], { value: "" })
+        : fieldsByName[fieldName];
     return acc;
   }, {});
 }
