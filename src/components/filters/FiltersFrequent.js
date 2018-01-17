@@ -12,6 +12,13 @@ const classes = "btn btn-filter btn-meta-outline-secondary btn-sm";
 class FiltersFrequent extends Component {
   state = { openFilterId: null };
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      allowOutsideClickListener: true
+    };
+  }
+
   toggleFilter = index => {
     this.setState({
       openFilterId: index
@@ -24,8 +31,15 @@ class FiltersFrequent extends Component {
 
   outsideClick = () => {
     const { widgetShown, dropdownToggled } = this.props;
-    !widgetShown && this.toggleFilter(null, null);
-    dropdownToggled();
+    const { allowOutsideClickListener } = this.state;
+    if (allowOutsideClickListener) {
+      !widgetShown && this.toggleFilter(null, null);
+      dropdownToggled();
+    }
+  };
+
+  allowOutsideClickListener = value => {
+    this.setState({ allowOutsideClickListener: value });
   };
 
   render() {
@@ -115,6 +129,7 @@ class FiltersFrequent extends Component {
                   onHide={() => handleShow(false)}
                   viewId={viewId}
                   outsideClick={this.outsideClick}
+                  allowOutsideClickListener={this.allowOutsideClickListener}
                 />
               )}
             </div>

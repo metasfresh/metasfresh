@@ -224,7 +224,8 @@ class RawWidget extends Component {
       attribute,
       allowShowPassword,
       onBlurWidget,
-      defaultValue
+      defaultValue,
+      allowOutsideClickListener
     } = this.props;
     const widgetValue = data || widgetData[0].value;
     const { isEdited } = this.state;
@@ -297,7 +298,10 @@ class RawWidget extends Component {
                   date ? Moment(date).format(DATE_FORMAT) : null
                 )
               }
-              handleBackdropLock={handleBackdropLock}
+              {...{
+                allowOutsideClickListener,
+                handleBackdropLock
+              }}
             />
           ];
         }

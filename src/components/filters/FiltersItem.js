@@ -144,7 +144,8 @@ class FiltersItem extends Component {
       onHide,
       viewId,
       outsideClick,
-      captionValue
+      captionValue,
+      allowOutsideClickListener
     } = this.props;
 
     const { filter, isTooltipShow } = this.state;
@@ -198,7 +199,13 @@ class FiltersItem extends Component {
                       caption={item.caption}
                       noLabel={false}
                       filterWidget={true}
-                      {...{ viewId, windowType, onShow, onHide }}
+                      {...{
+                        viewId,
+                        windowType,
+                        onShow,
+                        onHide,
+                        allowOutsideClickListener
+                      }}
                     />
                   ))}
               </div>
