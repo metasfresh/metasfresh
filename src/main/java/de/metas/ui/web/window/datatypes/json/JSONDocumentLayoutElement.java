@@ -94,10 +94,6 @@ public final class JSONDocumentLayoutElement
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final ProcessId buttonProcessId;
 
-	@JsonProperty("precision")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final Integer precision;
-
 	/** Type: primary, secondary */
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -142,7 +138,6 @@ public final class JSONDocumentLayoutElement
 
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
 		allowShowPassword = element.isAllowShowPassword() ? Boolean.TRUE : null;
-		precision = element.getPrecision().orElse(null);
 
 		final ButtonFieldActionDescriptor buttonAction = element.getButtonActionDescriptor();
 		final ButtonFieldActionType buttonActionType = buttonAction == null ? null : buttonAction.getActionType();
@@ -174,7 +169,6 @@ public final class JSONDocumentLayoutElement
 		this.widgetType = JSONLayoutWidgetType.fromNullable(widgetType);
 		allowShowPassword = null;
 		buttonProcessId = null;
-		precision = null;
 
 		type = null;
 		size = null;
