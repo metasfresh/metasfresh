@@ -120,12 +120,6 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 /* DDL */ SELECT public.db_alter_table('PP_Product_Planning','ALTER TABLE public.PP_Product_Planning ADD COLUMN IsPickDirectlyIfFeasible CHAR(1) DEFAULT ''N'' CHECK (IsPickDirectlyIfFeasible IN (''Y'',''N'')) NOT NULL')
 ;
 
--- 2018-01-15T13:54:53.892
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Column WHERE AD_Column_ID=53387
-;
-
-
 -- 2018-01-15T14:29:17.751
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET EntityType='EE04',Updated=TO_TIMESTAMP('2018-01-15 14:29:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558579
