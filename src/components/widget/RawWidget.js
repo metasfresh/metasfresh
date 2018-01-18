@@ -304,7 +304,7 @@ class RawWidget extends Component {
                 }}
               />
             </div>
-            );
+          );
         }
       case "DateTime":
         if (range) {

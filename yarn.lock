@@ -7157,6 +7157,13 @@ react-tagsinput@~3.18.0:
   version "3.18.0"
   resolved "https://registry.yarnpkg.com/react-tagsinput/-/react-tagsinput-3.18.0.tgz#40e036fc0f4c3d6b4689858189ab02926717a818"
 
+react-tether@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/react-tether/-/react-tether-0.6.0.tgz#428fb676467aa033336790997477ffcebe0aeca8"
+  dependencies:
+    prop-types "^15.5.8"
+    tether "^1.3.7"
+
 react-themeable@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/react-themeable/-/react-themeable-1.1.0.tgz#7d4466dd9b2b5fa75058727825e9f152ba379a0e"
