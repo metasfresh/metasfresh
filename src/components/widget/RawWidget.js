@@ -224,7 +224,8 @@ class RawWidget extends Component {
       attribute,
       allowShowPassword,
       onBlurWidget,
-      defaultValue
+      defaultValue,
+      isOpenDatePicker
     } = this.props;
     const widgetValue = data || widgetData[0].value;
     const { isEdited } = this.state;
@@ -275,31 +276,31 @@ class RawWidget extends Component {
             />
           );
         } else {
-          return [
-            <i className="meta-icon-calendar input-icon-right" key={0} />,
-
-            <DatePicker
-              key={1}
-              field={fields[0].field}
-              timeFormat={false}
-              dateFormat={true}
-              inputProps={{
-                className: this.getClassNames({ icon: true }),
-                placeholder: fields[0].emptyText,
-                disabled: widgetData[0].readonly || disabled,
-                tabIndex: fullScreen ? -1 : tabIndex
-              }}
-              value={widgetValue || widgetData[0].value}
-              onChange={date => handleChange(widgetField, date)}
-              patch={date =>
-                this.handlePatch(
-                  widgetField,
-                  date ? Moment(date).format(DATE_FORMAT) : null
-                )
-              }
-              handleBackdropLock={handleBackdropLock}
-            />
-          ];
+          return (
+            <div className={this.getClassNames({ icon: true })}>
+              <DatePicker
+                key={1}
+                field={fields[0].field}
+                timeFormat={false}
+                dateFormat={true}
+                isOpenDatePicker={isOpenDatePicker}
+                inputProps={{
+                  placeholder: fields[0].emptyText,
+                  disabled: widgetData[0].readonly || disabled,
+                  tabIndex: fullScreen ? -1 : tabIndex
+                }}
+                value={widgetValue || widgetData[0].value}
+                onChange={date => handleChange(widgetField, date)}
+                patch={date =>
+                  this.handlePatch(
+                    widgetField,
+                    date ? Moment(date).format(DATE_FORMAT) : null
+                  )
+                }
+                handleBackdropLock={handleBackdropLock}
+              />
+            </div>
+          );
         }
       case "DateTime":
         if (range) {
@@ -349,7 +350,6 @@ class RawWidget extends Component {
                 tabIndex={fullScreen ? -1 : tabIndex}
                 handleBackdropLock={handleBackdropLock}
               />
-              <i className="meta-icon-calendar input-icon-right" />
             </div>
           );
         }
@@ -395,7 +395,6 @@ class RawWidget extends Component {
               tabIndex={fullScreen ? -1 : tabIndex}
               handleBackdropLock={handleBackdropLock}
             />
-            <i className="meta-icon-calendar input-icon-right" />
           </div>
         );
       case "Lookup":
