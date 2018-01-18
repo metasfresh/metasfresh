@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderLineBL;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
@@ -45,6 +42,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.inout.IInOutBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductBL;
 import de.metas.tax.api.ITaxBL;
 
@@ -114,7 +112,7 @@ public class Doc_InOut extends Doc
 	 */
 	private DocLine[] loadLines(MInOut inout)
 	{
-		ArrayList<DocLine> list = new ArrayList<DocLine>();
+		ArrayList<DocLine> list = new ArrayList<>();
 		MInOutLine[] lines = inout.getLines(true);
 		for (int i = 0; i < lines.length; i++)
 		{
@@ -192,7 +190,7 @@ public class Doc_InOut extends Doc
 		final IProductBL productBL = Services.get(IProductBL.class);
 
 		//
-		ArrayList<Fact> facts = new ArrayList<Fact>();
+		ArrayList<Fact> facts = new ArrayList<>();
 		//  create Fact Header
 		Fact fact = new Fact(this, as, Fact.POST_Actual);
 		final int c_Currency_ID = as.getC_Currency_ID();
@@ -292,7 +290,6 @@ public class Doc_InOut extends Doc
 						line.getDescription(), true, getTrxName());
 				}
 			}	//	for all lines
-			updateProductInfo(as.getC_AcctSchema_ID());     //  only for SO!
 
 			/** Commitment release										****/
 			if (as.isAccrual() && as.isCreateSOCommitment())
@@ -398,7 +395,6 @@ public class Doc_InOut extends Doc
 					}					
 				}
 			}	//	for all lines
-			updateProductInfo(as.getC_AcctSchema_ID());     //  only for SO!
 		}	//	Sales Return
 		//
 		//  *** Purchasing - Receipt
@@ -725,36 +721,4 @@ public class Doc_InOut extends Doc
 		final int precision = currencyDAO.getStdPrecision(getCtx(), C_Currency_ID);
 		return costs.setScale(precision, RoundingMode.HALF_UP);
 	}
-
-	/**
-	 * Update Sales Order Costing Product Info (old). Purchase side handled in Invoice Matching. <br>
-	 * decrease average cumulatives
-	 * 
-	 * @param C_AcctSchema_ID accounting schema
-	 * @deprecated old costing
-	 */
-	@Deprecated
-	private void updateProductInfo(int C_AcctSchema_ID)
-	{
-		log.debug("M_InOut_ID=" + get_ID());
-		// Old Model
-		StringBuffer sql = new StringBuffer(
-				// FYRACLE add pc. everywhere
-				"UPDATE M_Product_Costing pc "
-						+ "SET (CostAverageCumQty, CostAverageCumAmt)="
-						+ "(SELECT pc.CostAverageCumQty - SUM(il.MovementQty),"
-						+ " pc.CostAverageCumAmt - SUM(il.MovementQty*pc.CurrentCostPrice) "
-						+ "FROM M_InOutLine il "
-						+ "WHERE pc.M_Product_ID=il.M_Product_ID"
-						+ " AND il.M_InOut_ID=").append(get_ID()).append(") ")
-				.append("WHERE EXISTS (SELECT * "
-						+ "FROM M_InOutLine il "
-						+ "WHERE pc.M_Product_ID=il.M_Product_ID"
-						+ " AND il.M_InOut_ID=").append(get_ID()).append(")");
-		final String sqlNative = DB.convertSqlToNative(sql.toString());
-		int no = DB.executeUpdate(sqlNative, getTrxName());
-		log.debug("M_Product_Costing - Updated=" + no);
-		//
-	}   // updateProductInfo
-
 }   // Doc_InOut

@@ -21,13 +21,14 @@ package org.compiere.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.logging.MetasfreshLastError;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Title:	Inventory Valuation Temporary Table
@@ -190,13 +191,8 @@ public class T_InventoryValue_Create extends JavaProcess
 	           + "WHERE pp.M_Product_ID=T_InventoryValue.M_Product_ID AND pp.M_PriceList_Version_ID=T_InventoryValue.M_PriceList_Version_ID "
 	           + "AND pp.M_PriceList_Version_ID=plv.M_PriceList_Version_ID "
 	           + "AND plv.M_PriceList_ID=pl.M_PriceList_ID), "
-	           + "CostStandard = " 
-	           + "(SELECT currencyConvert(pc.CurrentCostPrice,acs.C_Currency_ID,T_InventoryValue.C_Currency_ID,T_InventoryValue.DateValue, null, T_InventoryValue.AD_Client_ID, T_InventoryValue.AD_Org_ID) "
-	           + "FROM AD_ClientInfo ci, C_AcctSchema acs, M_Product_Costing pc "
-	           + "WHERE T_InventoryValue.AD_Client_ID=ci.AD_Client_ID AND ci.C_AcctSchema1_ID=acs.C_AcctSchema_ID "
-	           + "AND acs.C_AcctSchema_ID=pc.C_AcctSchema_ID "
-	           + "AND T_InventoryValue.M_Product_ID=pc.M_Product_ID) "
-	           + "WHERE	T_InventoryValue.M_Warehouse_ID = " + p_M_Warehouse_ID;		
+	           + "CostStandard = 0 " // here it was the OLD product costing, now we replaced it with ZERO 
+	           + " WHERE T_InventoryValue.M_Warehouse_ID = " + p_M_Warehouse_ID;		
 		cntu = DB.executeUpdate(sqlupd, get_TrxName());
 		if (cntu < 0) {
 			raiseError("GetPrices:ERROR", sqlupd);

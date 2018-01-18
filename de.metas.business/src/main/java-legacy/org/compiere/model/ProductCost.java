@@ -24,10 +24,10 @@ import org.adempiere.acct.api.ProductAcctType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.acct.api.IProductAcctDAO;
 
@@ -241,10 +241,6 @@ public class ProductCost
 			log.debug("No Qty");
 			return null;
 		}
-		/**
-		 * Old Costing MClient client = MClient.get(as.getCtx(), as.getAD_Client_ID()); if (!client.isUseBetaFunctions()) { BigDecimal itemCost = getProductItemCostOld(as, costingMethod); BigDecimal
-		 * cost = m_qty.multiply(itemCost); cost = cost.setScale(as.getCostingPrecision(), BigDecimal.ROUND_HALF_UP); log.debug("Qty(" + m_qty + ") * Cost(" + itemCost + ") = " + cost); return cost; }
-		 **/
 
 		// No Product
 		if (m_product == null)

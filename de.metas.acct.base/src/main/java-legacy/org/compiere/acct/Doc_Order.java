@@ -23,9 +23,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderLineBL;
 
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Services;
@@ -42,6 +39,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.order.IOrderLineBL;
 
 /**
  * Post Order Documents.
@@ -103,7 +101,7 @@ public class Doc_Order extends Doc
 	 */
 	private DocLine[] loadLines(MOrder order)
 	{
-		ArrayList<DocLine> list = new ArrayList<DocLine>();
+		ArrayList<DocLine> list = new ArrayList<>();
 		MOrderLine[] lines = order.getLines();
 		for (int i = 0; i < lines.length; i++)
 		{
@@ -166,14 +164,14 @@ public class Doc_Order extends Doc
 	{
 		MOrder order = (MOrder)getPO();
 		MOrderLine[] oLines = order.getLines();
-		HashMap<Integer, BigDecimal> qtys = new HashMap<Integer, BigDecimal>();
+		HashMap<Integer, BigDecimal> qtys = new HashMap<>();
 		for (int i = 0; i < oLines.length; i++)
 		{
 			MOrderLine line = oLines[i];
 			qtys.put(new Integer(line.getC_OrderLine_ID()), line.getQtyOrdered());
 		}
 		//
-		ArrayList<DocLine> list = new ArrayList<DocLine>();
+		ArrayList<DocLine> list = new ArrayList<>();
 		String sql = "SELECT * FROM M_RequisitionLine rl "
 				+ "WHERE EXISTS (SELECT * FROM C_Order o "
 				+ " INNER JOIN C_OrderLine ol ON (o.C_Order_ID=ol.C_Order_ID) "
@@ -233,7 +231,7 @@ public class Doc_Order extends Doc
 	 */
 	private DocTax[] loadTaxes()
 	{
-		final List<DocTax> list = new ArrayList<DocTax>();
+		final List<DocTax> list = new ArrayList<>();
 		final String sql = "SELECT it.C_Tax_ID, t.Name, t.Rate, it.TaxBaseAmt, it.TaxAmt, t.IsSalesTax " // 1..6
 				+ ", it." + I_C_OrderTax.COLUMNNAME_IsTaxIncluded
 				+ " FROM C_Tax t, C_OrderTax it "
@@ -346,12 +344,11 @@ public class Doc_Order extends Doc
 	@Override
 	public ArrayList<Fact> createFacts(MAcctSchema as)
 	{
-		ArrayList<Fact> facts = new ArrayList<Fact>();
+		ArrayList<Fact> facts = new ArrayList<>();
 		// Purchase Order
 		if (getDocumentType().equals(DOCTYPE_POrder))
 		{
 			updateProductPO(as);
-			updateProductInfo(as.getC_AcctSchema_ID());
 
 			BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
 
@@ -506,7 +503,7 @@ public class Doc_Order extends Doc
 	{
 		int precision = -1;
 		//
-		ArrayList<DocLine> list = new ArrayList<DocLine>();
+		ArrayList<DocLine> list = new ArrayList<>();
 		String sql = "SELECT * FROM C_OrderLine ol "
 				+ "WHERE EXISTS "
 				+ "(SELECT * FROM C_InvoiceLine il "
@@ -654,7 +651,7 @@ public class Doc_Order extends Doc
 	{
 		int precision = -1;
 		//
-		ArrayList<DocLine> list = new ArrayList<DocLine>();
+		ArrayList<DocLine> list = new ArrayList<>();
 		String sql = "SELECT * FROM C_OrderLine ol "
 				+ "WHERE EXISTS "
 				+ "(SELECT * FROM M_InOutLine il "
@@ -784,53 +781,4 @@ public class Doc_Order extends Doc
 				C_Currency_ID, null, total);
 		return fact;
 	}	// getCommitmentSalesRelease
-
-	/**************************************************************************
-	 * Update Product Info (old)
-	 * - Costing (PriceLastPO)
-	 * - PO (PriceLastPO)
-	 * 
-	 * @param C_AcctSchema_ID accounting schema
-	 * @deprecated old costing
-	 */
-	@Deprecated
-	private void updateProductInfo(int C_AcctSchema_ID)
-	{
-		log.debug("C_Order_ID=" + get_ID());
-
-		/**
-		 * @todo Last.. would need to compare document/last updated date
-		 *       would need to maintain LastPriceUpdateDate on _PO and _Costing
-		 */
-
-		// update Product Costing
-		// requires existence of currency conversion !!
-		// if there are multiple lines of the same product last price uses first
-		StringBuffer sql = new StringBuffer(
-				"UPDATE M_Product_Costing pc "
-						+ "SET PriceLastPO = "
-						+ "(SELECT currencyConvert(ol.PriceActual,ol.C_Currency_ID,a.C_Currency_ID,o.DateOrdered,o.C_ConversionType_ID,o.AD_Client_ID,o.AD_Org_ID) "
-						+ "FROM C_Order o, C_OrderLine ol, C_AcctSchema a "
-						+ "WHERE o.C_Order_ID=ol.C_Order_ID"
-						+ " AND pc.M_Product_ID=ol.M_Product_ID AND pc.C_AcctSchema_ID=a.C_AcctSchema_ID ");
-
-		sql.append(" AND ol.C_OrderLine_ID = (SELECT MIN(ol1.C_OrderLine_ID) "
-				+ "FROM C_Order o1, C_OrderLine ol1 "
-				+ "WHERE o1.C_Order_ID=ol1.C_Order_ID"
-				+ " AND pc.M_Product_ID=ol1.M_Product_ID ")
-				.append("  AND o1.C_Order_ID=").append(get_ID()).append(") ");
-		
-		sql.append(" AND pc.C_AcctSchema_ID=").append(C_AcctSchema_ID).append(" AND o.C_Order_ID=")
-				.append(get_ID()).append(") ")
-				.append("WHERE EXISTS (SELECT * "
-						+ "FROM C_Order o, C_OrderLine ol, C_AcctSchema a "
-						+ "WHERE o.C_Order_ID=ol.C_Order_ID"
-						+ " AND pc.M_Product_ID=ol.M_Product_ID AND pc.C_AcctSchema_ID=a.C_AcctSchema_ID"
-						+ " AND pc.C_AcctSchema_ID=")
-				.append(C_AcctSchema_ID).append(" AND o.C_Order_ID=")
-				.append(get_ID()).append(")");
-		int no = DB.executeUpdate(sql.toString(), getTrxName());
-		log.debug("M_Product_Costing - Updated=" + no);
-	}   // updateProductInfo
-
 }   // Doc_Order

@@ -568,17 +568,10 @@ public class MProduct extends X_M_Product
 		// New - Acct, Tree, Old Costing
 		if (newRecord)
 		{
-			insert_Accounting("M_Product_Acct", "M_Product_Category_Acct",
+			insert_Accounting(I_M_Product_Acct.Table_Name,
+					I_M_Product_Category_Acct.Table_Name,
 					"p.M_Product_Category_ID=" + getM_Product_Category_ID());
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
-			//
-			final I_C_AcctSchema[] mass = MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID());
-			for (int i = 0; i < mass.length; i++)
-			{
-				// Old
-				MProductCosting pcOld = new MProductCosting(this, mass[i].getC_AcctSchema_ID());
-				pcOld.save();
-			}
 		}
 
 		// New Costing
@@ -629,13 +622,7 @@ public class MProduct extends X_M_Product
 			}
 
 		}
-		// delete costing
-		MProductCosting[] costings = MProductCosting.getOfProduct(getCtx(), get_ID(), get_TrxName());
-		for (int i = 0; i < costings.length; i++)
-		{
-			costings[i].delete(true, get_TrxName());
-		}
-
+		
 		MCost.delete(this);
 
 		// [ 1674225 ] Delete Product: Costing deletion error

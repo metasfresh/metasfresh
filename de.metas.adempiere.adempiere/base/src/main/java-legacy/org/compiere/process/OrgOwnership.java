@@ -17,11 +17,12 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
+
 import org.compiere.util.DB;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Org Ownership Process
@@ -45,6 +46,7 @@ public class OrgOwnership extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -78,6 +80,7 @@ public class OrgOwnership extends JavaProcess
 	 *  @return Message (clear text)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("doIt - AD_Org_ID=" + p_AD_Org_ID);
@@ -284,12 +287,6 @@ public class OrgOwnership extends JavaProcess
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
 			log.debug("generalOwnership - C_BP_Withholding=" + no);
-
-		//	Costing
-		sql = "UPDATE M_Product_Costing " + set;
-		no = DB.executeUpdate(sql, get_TrxName());
-		if (no != 0)
-			log.debug("generalOwnership - M_Product_Costing=" + no);
 
 		//	Replenish
 		sql = "UPDATE M_Replenish " + set;
