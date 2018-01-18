@@ -31,7 +31,8 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.DiscountSchemaCommand;
+import org.adempiere.pricing.api.CalculateDiscountRequest;
+import org.adempiere.pricing.api.DiscountResult;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
@@ -132,7 +133,8 @@ public class Discount implements IPricingRule
 		// 08660
 		// In case we are dealing with an asi aware object, make sure the value(s) from that asi
 		// are also taken into account when the discount is calculated
-		final DiscountSchemaCommand discountSchemaCommand;
+
+		final CalculateDiscountRequest request;
 
 
 		final IAttributeSetInstanceAware asiAware = Services
@@ -141,7 +143,7 @@ public class Discount implements IPricingRule
 
 		if (asiAware == null)
 		{
-			discountSchemaCommand = DiscountSchemaCommand.builder()
+			request = CalculateDiscountRequest.builder()
 					.schema(discountSchema)
 					.qty(pricingCtx.getQty())
 					.Price(result.getPriceStd())
@@ -158,7 +160,7 @@ public class Discount implements IPricingRule
 
 			final List<I_M_AttributeInstance> instances = Services.get(IAttributeDAO.class).retrieveAttributeInstances(asi);
 
-			discountSchemaCommand = DiscountSchemaCommand.builder()
+			request = CalculateDiscountRequest.builder()
 					.schema(discountSchema)
 					.qty(pricingCtx.getQty())
 					.Price(result.getPriceStd())
@@ -169,12 +171,12 @@ public class Discount implements IPricingRule
 					.build();
 		}
 
-		discountSchemaCommand.calculateDiscount();
+		final DiscountResult disccountResult = Services.get(IMDiscountSchemaBL.class).calculateDiscount(request);
 
 		result.setUsesDiscountSchema(isUseDiscountSchema);
 		result.setM_DiscountSchema_ID(discountSchema.getM_DiscountSchema_ID());
-		result.setDiscount(discountSchemaCommand.getDiscount());
-		result.setC_PaymentTerm_ID(discountSchemaCommand.getC_PaymentTerm_ID());
+		result.setDiscount(disccountResult.getDiscount());
+		result.setC_PaymentTerm_ID(disccountResult.getC_PaymentTerm_ID());
 		// metas us1064 end
 	}
 }

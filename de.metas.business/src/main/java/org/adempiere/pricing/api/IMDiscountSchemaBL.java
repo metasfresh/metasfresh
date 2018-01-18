@@ -38,17 +38,17 @@ public interface IMDiscountSchemaBL extends ISingletonService
 			.reversed();
 
 	/**
+	 * Calculate Discount Percentage
+	 *
+	 */
+	DiscountResult calculateDiscount(final CalculateDiscountRequest request);
+
+	/**
 	 * Calculate Discounted Price
 	 *
-	 * @param schema
-	 * @param qty
-	 * @param price
-	 * @param product_ID
-	 * @param product_Category_ID
-	 * @param bPartnerFlatDiscount
 	 * @return
 	 */
-	BigDecimal calculatePrice(I_M_DiscountSchema schema, BigDecimal qty, BigDecimal price, int product_ID, int product_Category_ID, BigDecimal bPartnerFlatDiscount);
+	BigDecimal calculatePrice(final CalculateDiscountRequest request);
 
 	/**
 	 * Criteria apply
@@ -90,21 +90,6 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	 * @return
 	 */
 	boolean breakApplies(I_M_DiscountSchemaBreak br, BigDecimal value, int product_ID, int product_Category_ID, int attributeValue_ID);
-
-	/**
-	 * Calculate Discounted Price, based also on attribute instances
-	 *
-	 * @param schema
-	 * @param qty
-	 * @param price
-	 * @param product_ID
-	 * @param product_Category_ID
-	 * @param instances
-	 * @param bPartnerFlatDiscount
-	 * @return
-	 */
-	BigDecimal calculatePrice(I_M_DiscountSchema schema, BigDecimal qty, BigDecimal price, int product_ID, int product_Category_ID, List<I_M_AttributeInstance> instances,
-			BigDecimal bPartnerFlatDiscount);
 
 	/**
 	 * Pick the first break that applies based on product, category and attribute value

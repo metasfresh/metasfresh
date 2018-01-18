@@ -24,11 +24,11 @@ package org.adempiere.pricing.api.impl;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.DiscountSchemaCommand;
+import org.adempiere.pricing.api.CalculateDiscountRequest;
+import org.adempiere.pricing.api.DiscountResult;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.util.Services;
@@ -45,6 +45,13 @@ import lombok.NonNull;
 
 public class MDiscountSchemaBL implements IMDiscountSchemaBL
 {
+
+	@Override
+	public DiscountResult calculateDiscount(final CalculateDiscountRequest request)
+	{
+		final CalculateDiscountCommand command = new CalculateDiscountCommand(request);
+		return command.calculateDiscount();
+	}
 
 	@Override
 	public I_M_DiscountSchemaBreak pickApplyingBreak(
@@ -148,70 +155,25 @@ public class MDiscountSchemaBL implements IMDiscountSchemaBL
 		return breakApplied;
 	}
 
-	/**
-	 * Calculate Discounted Price
-	 *
-	 * @param qty quantity
-	 * @param price price
-	 * @param product_ID product
-	 * @param product_Category_ID category
-	 * @param bPartnerFlatDiscount flat discount
-	 * @return discount or zero
-	 */
-	@Override
-	public BigDecimal calculatePrice(
-			final I_M_DiscountSchema schema,
-			final BigDecimal qty,
-			final BigDecimal price,
-			final int product_ID,
-			final int product_Category_ID,
-			final BigDecimal bPartnerFlatDiscount)
-	{
-		return calculatePrice(
-				schema,
-				qty,
-				price,
-				product_ID,
-				product_Category_ID,
-				Collections.<I_M_AttributeInstance> emptyList(),// instances
-				bPartnerFlatDiscount);
-
-	}
 
 	@Override
-	public BigDecimal calculatePrice(
-			final I_M_DiscountSchema schema,
-			final BigDecimal qty,
-			final BigDecimal price,
-			final int product_ID,
-			final int product_Category_ID,
-			final List<I_M_AttributeInstance> instances,
-			final BigDecimal bPartnerFlatDiscount)
+	public BigDecimal calculatePrice(final CalculateDiscountRequest request)
 	{
-		if (price == null || price.signum() == 0)
+
+		if (request.getPrice() == null || request.getPrice().signum() == 0)
 		{
-			return price;
+			return request.getPrice();
 		}
 
-		final DiscountSchemaCommand discountSchemaCommand = DiscountSchemaCommand.builder()
-				.schema(schema)
-				.qty(qty)
-				.Price(price)
-				.M_Product_ID(product_ID)
-				.M_Product_Category_ID(product_Category_ID)
-				.instances(instances)
-				.bPartnerFlatDiscount(bPartnerFlatDiscount)
-				.build();
+		final DiscountResult result = calculateDiscount(request);
 
-		discountSchemaCommand.calculateDiscount();
-
-		final BigDecimal discount = discountSchemaCommand.getDiscount();
+		final BigDecimal discount = result.getDiscount();
 		if (discount == null || discount.signum() == 0)
 		{
-			return price;
+			return request.getPrice();
 		}
 
-		return applyDiscount(price, discount);
+		return applyDiscount(request.getPrice(), discount);
 	}
 
 	private BigDecimal applyDiscount(@NonNull final BigDecimal price, @NonNull final BigDecimal discount)
