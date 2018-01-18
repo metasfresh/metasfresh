@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import classNames from 'classnames';
+import classNames from "classnames";
 class Tooltips extends Component {
   constructor(props) {
     super(props);
@@ -36,7 +36,7 @@ class Tooltips extends Component {
       "tooltip-wrapp",
       { [`tooltip-${type}`]: type },
       { [`${extraClass}`]: extraClass },
-      { [`${className}`]: className },
+      { [`${className}`]: className }
     );
 
     const { opacity } = this.state;
