@@ -5,8 +5,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import de.metas.Profiles;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import lombok.NonNull;
@@ -34,18 +36,20 @@ import lombok.NonNull;
  */
 
 @Service
+@Profile(Profiles.PROFILE_App) // the event handler is also just on this profile
 public class MainDataRequestHandler
 {
 	public void handleDataUpdateRequest(@NonNull final UpdateMainDataRequest dataUpdateRequest)
 	{
-		final I_MD_Cockpit dataRecord = retrieveOrCreateDataRecord(dataUpdateRequest.getIdentifier());
-
-		updateDataRecordWithRequestQtys(dataRecord, dataUpdateRequest);
-
-		save(dataRecord);
+		synchronized (MainDataRequestHandler.class)
+		{
+			final I_MD_Cockpit dataRecord = retrieveOrCreateDataRecord(dataUpdateRequest.getIdentifier());
+			updateDataRecordWithRequestQtys(dataRecord, dataUpdateRequest);
+			save(dataRecord);
+		}
 	}
 
-	private I_MD_Cockpit retrieveOrCreateDataRecord(@NonNull final MainDataRecordIdentifier identifier)
+	private static I_MD_Cockpit retrieveOrCreateDataRecord(@NonNull final MainDataRecordIdentifier identifier)
 	{
 		final IQuery<I_MD_Cockpit> query = identifier.createQueryBuilder().create();
 
@@ -64,7 +68,7 @@ public class MainDataRequestHandler
 		return newDataRecord;
 	}
 
-	private void updateDataRecordWithRequestQtys(
+	private static void updateDataRecordWithRequestQtys(
 			final I_MD_Cockpit dataRecord,
 			final UpdateMainDataRequest dataUpdateRequest)
 	{

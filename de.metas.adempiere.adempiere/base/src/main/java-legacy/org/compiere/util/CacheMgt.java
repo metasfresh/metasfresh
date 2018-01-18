@@ -17,6 +17,7 @@
 package org.compiere.util;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -460,31 +461,43 @@ public final class CacheMgt
 		}
 
 		cacheInstancesLock.lock();
+
+		final Map<String, AtomicInteger> tableNamesSnapshot;
+		final List<CacheInterface> cacheInstancesSnapshot;
 		try
 		{
-			int total = 0;
-
-			for (final CacheInvalidateRequest request : multiRequest.getRequests())
-			{
-				final int totalPerRequest = resetCacheInterfacesNoLock(request);
-				total += totalPerRequest;
-			}
-
-			return total;
+			tableNamesSnapshot = new HashMap<>(tableNames);
+			cacheInstancesSnapshot = cacheInstances.hardList();
 		}
 		finally
 		{
 			cacheInstancesLock.unlock();
 		}
+
+		int total = 0;
+
+		for (final CacheInvalidateRequest request : multiRequest.getRequests())
+		{
+			final int totalPerRequest = resetCacheInterfacesNoLock(
+					request,
+					tableNamesSnapshot,
+					cacheInstancesSnapshot);
+			total += totalPerRequest;
+		}
+
+		return total;
+
 	}
 
-	private int resetCacheInterfacesNoLock(final CacheInvalidateRequest request)
+	private static int resetCacheInterfacesNoLock(final CacheInvalidateRequest request,
+			final Map<String, AtomicInteger> tableNamesSnapshot,
+			final List<CacheInterface> cacheInstancesSnapshot)
 	{
 		final String tableName = request.getTableNameEffective();
 		final int recordId = request.getRecordIdEffective();
 
 		// optimization: skip if there is no cache interface registered for request's tableName
-		if (!tableNames.containsKey(tableName))
+		if (!tableNamesSnapshot.containsKey(tableName))
 		{
 			return 0;
 		}
@@ -494,7 +507,7 @@ public final class CacheMgt
 
 		//
 		// Invalidate local caches if we have at least one cache interface about our table
-		for (final CacheInterface cacheInstance : cacheInstances)
+		for (final CacheInterface cacheInstance : cacheInstancesSnapshot)
 		{
 			if (cacheInstance == null)
 			{
