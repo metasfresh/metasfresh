@@ -343,6 +343,6 @@ public class DDOrderFiltering extends AbstractFiltering
 		huDDOrderBL.createMovements()
 				.setDDOrderLines(ddOrderLines)
 				.allocateHUProductStorages(huProductStorages)
-				.process();
+				.processWithinOwnTrx();
 	}
 }
