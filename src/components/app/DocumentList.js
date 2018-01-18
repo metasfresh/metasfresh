@@ -17,7 +17,9 @@ import {
   deleteStaticFilter,
   filterViewRequest,
   getViewLayout,
-  getViewRowsByIds
+  getViewRowsByIds,
+  mergeColumnInfosIntoViewRows,
+  mergeRows
 } from "../../actions/ViewActions";
 import {
   connectWS,
@@ -92,8 +94,9 @@ class DocumentList extends Component {
     this.supportAttribute = false;
 
     this.state = {
-      data: null,
+      data: null, // view result (result, firstRow, pageLength etc)
       layout: null,
+      pageColumnInfosByFieldName: null,
 
       viewId: defaultViewId,
       page: defaultPage || 1,
@@ -224,18 +227,15 @@ class DocumentList extends Component {
       if (changedIds) {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
-            response.data.map(row => {
-              this.setState({
-                data: Object.assign(
-                  this.state.data,
-                  {},
-                  {
-                    result: this.state.data.result.map(
-                      resultRow => (resultRow.id === row.id ? row : resultRow)
-                    )
-                  }
-                )
-              });
+            const rows = mergeRows({
+              toRows: this.state.data.result,
+              fromRows: response.data,
+              columnInfosByFieldName: this.state.pageColumnInfosByFieldName
+            });
+            this.setState({
+              data: Object.assign({}, this.state.data, {
+                result: rows
+              })
             });
           }
         );
@@ -257,7 +257,7 @@ class DocumentList extends Component {
             selectTableItems({
               windowType,
               viewId,
-              ids: selection[0]
+              ids: [selection[0]]
             })
           );
 
@@ -459,6 +459,9 @@ class DocumentList extends Component {
     });
   };
 
+  /**
+   * Loads view/included tab data from REST endpoint
+   */
   getData = (id, page, sortingQuery) => {
     const { store } = this.context;
     const {
@@ -505,14 +508,21 @@ class DocumentList extends Component {
             selected: selection
           }));
 
-      response.data.result.map(el => {
-        el.fieldsByName = parseToDisplay(el.fieldsByName);
+      response.data.result.map(row => {
+        row.fieldsByName = parseToDisplay(row.fieldsByName);
       });
+
+      const pageColumnInfosByFieldName = response.data.columnsByFieldName;
+      mergeColumnInfosIntoViewRows(
+        pageColumnInfosByFieldName,
+        response.data.result
+      );
 
       if (this.mounted) {
         this.setState(
           {
             data: response.data,
+            pageColumnInfosByFieldName: pageColumnInfosByFieldName,
             filters: response.data.filters
           },
           () => {

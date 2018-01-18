@@ -24,8 +24,13 @@ class DatePicker extends Component {
   }
 
   componentDidMount() {
-    const { handleBackdropLock } = this.props;
+    const { handleBackdropLock, isOpenDatePicker } = this.props;
     handleBackdropLock && handleBackdropLock(true);
+    if (isOpenDatePicker) {
+      setTimeout(() => {
+        this.picker.openCalendar();
+      }, 100);
+    }
   }
 
   handleBlur = date => {
@@ -91,8 +96,9 @@ class DatePicker extends Component {
 
   render() {
     return (
-      <div tabIndex="-1" onKeyDown={this.handleKeydown}>
+      <div tabIndex="-1" onKeyDown={this.handleKeydown} className="datepicker">
         <TetheredDateTime
+          ref={c => (this.picker = c)}
           closeOnTab={true}
           renderDay={this.renderDay}
           renderInput={this.renderInput}
@@ -100,6 +106,7 @@ class DatePicker extends Component {
           onFocus={this.handleFocus}
           {...this.props}
         />
+        <i className="meta-icon-calendar" key={0} />
       </div>
     );
   }

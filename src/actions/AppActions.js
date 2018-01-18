@@ -264,7 +264,7 @@ export function loginSuccess(auth) {
 function initNumeralLocales(lang, locale) {
   const language = lang.toLowerCase();
   const LOCAL_NUMERAL_FORMAT = {
-    defaultFormat: "0,0.00",
+    defaultFormat: "0,0.00[000]",
     delimiters: {
       thousands: locale.numberGroupingSeparator || ",",
       decimal: locale.numberDecimalSeparator || "."

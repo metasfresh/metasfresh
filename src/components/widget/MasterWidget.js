@@ -232,7 +232,8 @@ class MasterWidget extends Component {
       listenOnKeysTrue,
       closeTableField,
       allowShowPassword,
-      onBlurWidget
+      onBlurWidget,
+      isOpenDatePicker
     } = this.props;
 
     const { updated, data } = this.state;
@@ -268,7 +269,8 @@ class MasterWidget extends Component {
           listenOnKeysTrue,
           closeTableField,
           data,
-          onBlurWidget
+          onBlurWidget,
+          isOpenDatePicker
         }}
         handlePatch={this.handlePatch}
         handleChange={this.handleChange}
@@ -281,7 +283,8 @@ class MasterWidget extends Component {
 }
 
 MasterWidget.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
+  isOpenDatePicker: PropTypes.bool
 };
 
 export default connect(false, false, false, { withRef: true })(MasterWidget);

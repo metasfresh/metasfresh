@@ -54,6 +54,22 @@ class TableCell extends Component {
   };
 
   static AMOUNT_FIELD_TYPES = ["Amount", "CostPrice"];
+  static AMOUNT_FIELD_FORMATS_BY_PRECISION = [
+    "0,0.[00000]",
+    "0,0.0[0000]",
+    "0,0.00[000]",
+    "0,0.000[00]",
+    "0,0.0000[0]",
+    "0,0.00000"
+  ];
+
+  static getAmountFormatByPrecision = precision =>
+    precision &&
+    precision >= 0 &&
+    precision < TableCell.AMOUNT_FIELD_FORMATS_BY_PRECISION.length
+      ? TableCell.AMOUNT_FIELD_FORMATS_BY_PRECISION[precision]
+      : null;
+
   static DATE_FIELD_TYPES = ["Date", "DateTime", "Time"];
   static DATE_FIELD_FORMATS = {
     Date: "DD.MM.YYYY",
@@ -71,10 +87,23 @@ class TableCell extends Component {
       ? Moment(new Date(fieldValue)).format(TableCell.getDateFormat(fieldType))
       : "";
 
-  static createAmount = fieldValue =>
-    fieldValue ? numeral(parseFloat(fieldValue)).format() : "";
+  static createAmount = (fieldValue, precision) => {
+    if (fieldValue) {
+      const fieldValueAsNum = numeral(parseFloat(fieldValue));
+      const numberFormat = TableCell.getAmountFormatByPrecision(precision);
+      return numberFormat
+        ? fieldValueAsNum.format(numberFormat)
+        : fieldValueAsNum.format();
+    } else {
+      return "";
+    }
+  };
 
-  static fieldValueToString = (fieldValue, fieldType = "Text") => {
+  static fieldValueToString = (
+    fieldValue,
+    fieldType = "Text",
+    precision = null
+  ) => {
     if (fieldValue === null) {
       return "";
     }
@@ -104,7 +133,7 @@ class TableCell extends Component {
         if (TableCell.DATE_FIELD_TYPES.includes(fieldType)) {
           return TableCell.createDate(fieldValue, fieldType);
         } else if (TableCell.AMOUNT_FIELD_TYPES.includes(fieldType)) {
-          return TableCell.createAmount(fieldValue);
+          return TableCell.createAmount(fieldValue, precision);
         }
         return fieldValue;
       }
@@ -142,9 +171,13 @@ class TableCell extends Component {
     } = this.props;
 
     const tdValue = !isEdited
-      ? TableCell.fieldValueToString(widgetData[0].value, item.widgetType)
+      ? TableCell.fieldValueToString(
+          widgetData[0].value,
+          item.widgetType,
+          widgetData[0].precision
+        )
       : null;
-
+    const isOpenDatePicker = isEdited && item.widgetType === "Date";
     return (
       <td
         tabIndex={tabIndex}
@@ -180,6 +213,7 @@ class TableCell extends Component {
             listenOnKeysFalse={listenOnKeysFalse}
             onChange={mainTable ? onCellChange : null}
             closeTableField={closeTableField}
+            isOpenDatePicker={isOpenDatePicker}
             ref={c => {
               this.widget = c && c.getWrappedInstance();
             }}

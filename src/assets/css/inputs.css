@@ -570,11 +570,6 @@ input:checked + .input-slider:before {
     padding-right: 0.5rem;
 }
 
-
-.input-icon-container .meta-icon-calendar {
-    z-index: -1;
-}
-
 .input-icon-right{
     position: absolute;
     top: 2px;

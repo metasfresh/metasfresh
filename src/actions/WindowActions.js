@@ -1097,30 +1097,32 @@ function getScope(isModal) {
   return isModal ? "modal" : "master";
 }
 
-export function parseToDisplay(obj) {
-  return parseDateToReadable(nullToEmptyStrings(obj));
+export function parseToDisplay(fieldsByName) {
+  return parseDateToReadable(nullToEmptyStrings(fieldsByName));
 }
 
-function parseDateToReadable(obj) {
+function parseDateToReadable(fieldsByName) {
   const dateParse = ["Date", "DateTime", "Time"];
 
-  return Object.keys(obj).reduce((acc, key) => {
-    acc[key] =
-      dateParse.indexOf(obj[key].widgetType) > -1 && obj[key].value
-        ? Object.assign({}, obj[key], {
-            value: obj[key].value ? new Date(obj[key].value) : ""
+  return Object.keys(fieldsByName).reduce((acc, fieldName) => {
+    const field = fieldsByName[fieldName];
+    const isDateField = dateParse.indexOf(field.widgetType) > -1;
+    acc[fieldName] =
+      isDateField && field.value
+        ? Object.assign({}, field, {
+            value: field.value ? new Date(field.value) : ""
           })
-        : obj[key];
+        : field;
     return acc;
   }, {});
 }
 
-function nullToEmptyStrings(obj) {
-  return Object.keys(obj).reduce((acc, key) => {
-    acc[key] =
-      obj[key].value === null
-        ? Object.assign({}, obj[key], { value: "" })
-        : obj[key];
+function nullToEmptyStrings(fieldsByName) {
+  return Object.keys(fieldsByName).reduce((acc, fieldName) => {
+    acc[fieldName] =
+      fieldsByName[fieldName].value === null
+        ? Object.assign({}, fieldsByName[fieldName], { value: "" })
+        : fieldsByName[fieldName];
     return acc;
   }, {});
 }
@@ -1225,12 +1227,30 @@ export function collapsedMap(node, isCollapsed, initialMap) {
   return collapsedMap;
 }
 
-export function connectWS(topic, cb) {
+export function connectWS(topic, onMessageCallback) {
+  // Avoid disconnecting and reconnecting to same topic.
+  // IMPORTANT: we assume the "onMessageCallback" is same
+  if (this.sockTopic === topic) {
+    // console.log("WS: Skip subscribing because already subscrinbed to %s", this.sockTopic);
+    return;
+  }
+
   const subscribe = ({ tries = 3 } = {}) => {
     if (this.sockClient.connected || tries <= 0) {
       this.sockSubscription = this.sockClient.subscribe(topic, msg => {
-        cb(JSON.parse(msg.body));
+        // console.log("WS: Got event on %s: %s", topic, msg.body);
+        if (topic === this.sockTopic) {
+          onMessageCallback(JSON.parse(msg.body));
+        } else {
+          // console.warn(
+          //   "Discard event because the WS topic changed. Current WS topic is %s",
+          //   this.sockTopic
+          // );
+        }
       });
+
+      this.sockTopic = topic;
+      // console.log("WS: Subscribed to %s (tries=%s)", this.sockTopic, tries);
     } else {
       // not ready yet
       setTimeout(() => {
@@ -1238,26 +1258,29 @@ export function connectWS(topic, cb) {
       }, 200);
     }
   };
+
   const connect = () => {
     this.sock = new SockJs(config.WS_URL);
     this.sockClient = Stomp.Stomp.over(this.sock);
     this.sockClient.debug = null;
     this.sockClient.connect({}, subscribe);
   };
-  const connected = disconnectWS.call(this, connect);
 
-  if (!connected) {
+  const wasConnected = disconnectWS.call(this, connect);
+  if (!wasConnected) {
     connect();
   }
 }
 
-export function disconnectWS(callback) {
+export function disconnectWS(onDisconnectCallback) {
   const connected =
     this.sockClient && this.sockClient.connected && this.sockSubscription;
 
   if (connected) {
+    // console.log("WS: Unsubscribing from %s", this.sockTopic);
     this.sockSubscription.unsubscribe();
-    this.sockClient.disconnect(callback);
+    this.sockClient.disconnect(onDisconnectCallback);
+    this.sockTopic = null;
   }
 
   return connected;
