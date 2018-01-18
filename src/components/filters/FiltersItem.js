@@ -6,6 +6,7 @@ import OverlayField from "../app/OverlayField";
 import ModalContextShortcuts from "../shortcuts/ModalContextShortcuts";
 import Tooltips from "../tooltips/Tooltips.js";
 import RawWidget from "../widget/RawWidget";
+import TetherComponent from "react-tether";
 
 class FiltersItem extends Component {
   constructor(props) {
@@ -218,21 +219,36 @@ class FiltersItem extends Component {
               </div>
             </div>
             <div className="filter-btn-wrapper">
-              <button
-                className="applyBtn btn btn-sm btn-success"
-                onClick={this.handleApply}
-                onMouseEnter={() => this.toggleTooltip(true)}
-                onMouseLeave={() => this.toggleTooltip(false)}
+              <TetherComponent
+                attachment="top left"
+                targetAttachment="bottom left"
+                constraints={[
+                  {
+                    to: "scrollParent"
+                  },
+                  {
+                    to: "window",
+                    pin: ["bottom"]
+                  }
+                ]}
               >
-                {counterpart.translate("window.apply.caption")}
+                <button
+                  className="applyBtn btn btn-sm btn-success"
+                  onClick={this.handleApply}
+                  onMouseEnter={() => this.toggleTooltip(true)}
+                  onMouseLeave={() => this.toggleTooltip(false)}
+                >
+                  {counterpart.translate("window.apply.caption")}
+                </button>
                 {isTooltipShow && (
                   <Tooltips
+                    className="filter-tooltip"
                     name={keymap.APPLY}
                     action={counterpart.translate("window.apply.caption")}
                     type={""}
                   />
                 )}
-              </button>
+              </TetherComponent>
             </div>
           </div>
         )}
