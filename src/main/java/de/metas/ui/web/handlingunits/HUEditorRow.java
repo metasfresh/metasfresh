@@ -737,4 +737,13 @@ public final class HUEditorRow implements IViewRow
 			return ImmutableList.copyOf(includedRows);
 		}
 	}
+	
+	@lombok.Builder
+	@lombok.Value
+	public static class HUEditorRowHierarchy 
+	{
+		@NonNull private final HUEditorRow cuRow;
+		@Nullable private final HUEditorRow parentRow;
+		@Nullable private final HUEditorRow topLevelRow;
+	}
 }
