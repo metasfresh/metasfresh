@@ -629,7 +629,6 @@ public class Doc_Invoice extends Doc
 				fact.createLine(null, MAccount.get(getCtx(), payablesServices_ID), getC_Currency_ID(), null, serviceAmt);
 			//
 			updateProductPO(as);	// Only API
-			updateProductInfo(as.getC_AcctSchema_ID());    // only API
 		}
 		// APC
 		else if (getDocumentType().equals(DOCTYPE_APCredit))
@@ -1027,81 +1026,6 @@ public class Doc_Invoice extends Doc
 		int no = DB.executeUpdate(sql.toString(), getTrxName());
 		log.debug("Updated=" + no);
 	}	// updateProductPO
-
-	/**
-	 * Update Product Info (old).
-	 * - Costing (PriceLastInv)
-	 * - PO (PriceLastInv)
-	 * 
-	 * @param C_AcctSchema_ID accounting schema
-	 * @deprecated old costing
-	 */
-	@Deprecated
-	private void updateProductInfo(int C_AcctSchema_ID)
-	{
-		log.debug("C_Invoice_ID=" + get_ID());
-
-		/**
-		 * @todo Last.. would need to compare document/last updated date
-		 *       would need to maintain LastPriceUpdateDate on _PO and _Costing
-		 */
-
-		// update Product Costing
-		// requires existence of currency conversion !!
-		// if there are multiple lines of the same product last price uses first
-		// -> TotalInvAmt is sometimes NULL !! -> error
-		// begin globalqss 2005-10-19
-		// postgresql doesn't support LIMIT on UPDATE or DELETE statements
-		/*
-		 * StringBuilder sql = new StringBuilder (
-		 * "UPDATE M_Product_Costing pc "
-		 * + "SET (PriceLastInv, TotalInvAmt,TotalInvQty) = "
-		 * // select
-		 * + "(SELECT currencyConvert(il.PriceActual,i.C_Currency_ID,a.C_Currency_ID,i.DateInvoiced,i.C_ConversionType_ID,i.AD_Client_ID,i.AD_Org_ID),"
-		 * + " currencyConvert(il.LineNetAmt,i.C_Currency_ID,a.C_Currency_ID,i.DateInvoiced,i.C_ConversionType_ID,i.AD_Client_ID,i.AD_Org_ID),il.QtyInvoiced "
-		 * + "FROM C_Invoice i, C_InvoiceLine il, C_AcctSchema a "
-		 * + "WHERE i.C_Invoice_ID=il.C_Invoice_ID"
-		 * + " AND pc.M_Product_ID=il.M_Product_ID AND pc.C_AcctSchema_ID=a.C_AcctSchema_ID"
-		 * + " AND ROWNUM=1"
-		 * + " AND pc.C_AcctSchema_ID=").append(C_AcctSchema_ID).append(" AND i.C_Invoice_ID=")
-		 * .append(get_ID()).append(") ")
-		 * // update
-		 * .append("WHERE EXISTS (SELECT * "
-		 * + "FROM C_Invoice i, C_InvoiceLine il, C_AcctSchema a "
-		 * + "WHERE i.C_Invoice_ID=il.C_Invoice_ID"
-		 * + " AND pc.M_Product_ID=il.M_Product_ID AND pc.C_AcctSchema_ID=a.C_AcctSchema_ID"
-		 * + " AND pc.C_AcctSchema_ID=").append(C_AcctSchema_ID).append(" AND i.C_Invoice_ID=")
-		 * .append(get_ID()).append(")");
-		 */
-		// the next command is equivalent and works in postgresql and oracle
-		final StringBuilder sql = new StringBuilder(
-				"UPDATE M_Product_Costing pc "
-						+ "SET (PriceLastInv, TotalInvAmt,TotalInvQty) = "
-						// select
-						+ "(SELECT currencyConvert(il.PriceActual,i.C_Currency_ID,a.C_Currency_ID,i.DateInvoiced,i.C_ConversionType_ID,i.AD_Client_ID,i.AD_Org_ID),"
-						+ " currencyConvert(il.LineNetAmt,i.C_Currency_ID,a.C_Currency_ID,i.DateInvoiced,i.C_ConversionType_ID,i.AD_Client_ID,i.AD_Org_ID),il.QtyInvoiced "
-						+ "FROM C_Invoice i, C_InvoiceLine il, C_AcctSchema a "
-						+ "WHERE i.C_Invoice_ID=il.C_Invoice_ID"
-						+ " AND il.c_invoiceline_id = (SELECT MIN(C_InvoiceLine_ID) FROM C_InvoiceLine il2" +
-						" WHERE  il2.M_PRODUCT_ID=il.M_PRODUCT_ID AND C_Invoice_ID=")
-								.append(get_ID()).append(")"
-										+ " AND pc.M_Product_ID=il.M_Product_ID AND pc.C_AcctSchema_ID=a.C_AcctSchema_ID"
-										+ " AND pc.C_AcctSchema_ID=")
-								.append(C_AcctSchema_ID).append(" AND i.C_Invoice_ID=")
-								.append(get_ID()).append(") ")
-								// update
-								.append("WHERE EXISTS (SELECT * "
-										+ "FROM C_Invoice i, C_InvoiceLine il, C_AcctSchema a "
-										+ "WHERE i.C_Invoice_ID=il.C_Invoice_ID"
-										+ " AND pc.M_Product_ID=il.M_Product_ID AND pc.C_AcctSchema_ID=a.C_AcctSchema_ID"
-										+ " AND pc.C_AcctSchema_ID=")
-								.append(C_AcctSchema_ID).append(" AND i.C_Invoice_ID=")
-								.append(get_ID()).append(")");
-		// end globalqss 2005-10-19
-		final String sqlNative = DB.convertSqlToNative(sql.toString());
-		final int no = DB.executeUpdate(sqlNative, getTrxName());
-		log.debug("M_Product_Costing - Updated=" + no);
-	}   // updateProductInfo
 
 	public static void unpost(final I_C_Invoice invoice)
 	{
