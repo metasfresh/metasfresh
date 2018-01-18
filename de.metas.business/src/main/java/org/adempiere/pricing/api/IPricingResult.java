@@ -132,7 +132,7 @@ public interface IPricingResult
 
 	/**
 	 * Adds given {@link IPricingAttribute}s to this result.
-	 * 
+	 *
 	 * @param pricingAttributesToAdd pricing attributes or empty or {@code null}.
 	 */
 	void addPricingAttributes(final Collection<IPricingAttribute> pricingAttributesToAdd);
@@ -149,4 +149,8 @@ public interface IPricingResult
 	 * @param priceDate
 	 */
 	void setPriceDate(Timestamp priceDate);
+
+	int getC_PaymentTerm_ID();
+
+	void setC_PaymentTerm_ID(int C_PaymentTerm_ID);
 }
