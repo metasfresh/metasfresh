@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 import lombok.Builder;
 import lombok.Builder.Default;
-import lombok.Getter;
+import lombok.Value;
 
 /*
  * #%L
@@ -36,7 +36,7 @@ import lombok.Getter;
  *
  */
 @Builder
-@Getter
+@Value
 public class DiscountResult
 {
 	@Default

@@ -50,7 +50,7 @@ import lombok.NonNull;
 
 	final CalculateDiscountRequest request;
 
-	public CalculateDiscountCommand(final CalculateDiscountRequest request)
+	public CalculateDiscountCommand(@NonNull final CalculateDiscountRequest request)
 	{
 		this.request = request;
 	}
@@ -171,7 +171,7 @@ import lombok.NonNull;
 	 */
 	private boolean hasNoValues()
 	{
-		if (request.getInstances() == null || request.getInstances().isEmpty())
+		if (request.getInstances().isEmpty())
 		{
 			return true;
 		}
