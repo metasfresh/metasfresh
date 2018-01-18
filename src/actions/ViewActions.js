@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import Moment from "moment";
 import { getQueryString } from "./GenericActions";
 
 export function getViewLayout(windowId, viewType, viewProfileId = null) {
@@ -86,6 +86,13 @@ export function createViewRequest({
 }
 
 export function filterViewRequest(windowId, viewId, filters) {
+  filters.map(filter => {
+    filter.parameters.map((param, index) => {
+      if (param.caption === "Date") {
+        filter.parameters[index].value = Moment(param.value).format();
+      }
+    });
+  });
   return axios.post(
     config.API_URL + "/documentView/" + windowId + "/" + viewId + "/filter",
     {

@@ -225,6 +225,7 @@ class RawWidget extends Component {
       allowShowPassword,
       onBlurWidget,
       defaultValue,
+      allowOutsideClickListener,
       isOpenDatePicker
     } = this.props;
     const widgetValue = data || widgetData[0].value;
@@ -297,7 +298,10 @@ class RawWidget extends Component {
                     date ? Moment(date).format(DATE_FORMAT) : null
                   )
                 }
-                handleBackdropLock={handleBackdropLock}
+                {...{
+                  allowOutsideClickListener,
+                  handleBackdropLock
+                }}
               />
             </div>
           );

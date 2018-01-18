@@ -12,7 +12,8 @@ class FiltersNotFrequent extends Component {
 
     this.state = {
       isOpenDropdown: false,
-      openFilterId: null
+      openFilterId: null,
+      allowOutsideClickListener: true
     };
   }
 
@@ -22,11 +23,16 @@ class FiltersNotFrequent extends Component {
 
   outsideClick = () => {
     const { widgetShown, dropdownToggled } = this.props;
-    if (!widgetShown) {
+    const { allowOutsideClickListener } = this.state;
+    if (allowOutsideClickListener && !widgetShown) {
       dropdownToggled();
       this.toggleDropdown(false);
       this.toggleFilter(null);
     }
+  };
+
+  allowOutsideClickListener = value => {
+    this.setState({ allowOutsideClickListener: value });
   };
 
   toggleDropdown = value => {
@@ -119,6 +125,7 @@ class FiltersNotFrequent extends Component {
                 onHide={() => handleShow(false)}
                 viewId={viewId}
                 outsideClick={this.outsideClick}
+                allowOutsideClickListener={this.allowOutsideClickListener}
               />
             )}
           </div>
