@@ -951,15 +951,6 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     outline: 1px dashed #cbcbcb;
 }
 
-.rdtPicker {
-    left: -.75rem;
-    margin-top: 7px;
-}
-
-.rdtPicker table {
-    margin: 0;
-}
-
 .input-table .input-dropdown .input-field {
     background: transparent;
     color: $brand-font-color;

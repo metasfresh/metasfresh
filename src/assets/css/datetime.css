@@ -32,6 +32,30 @@
     background: #fff;
     border: 1px solid $brand-light-color;
     border-radius: 3px;
+    margin-top: 7px;
+    margin-left: -9px;
+}
+.rdtPicker:before {
+    border-right: 7px solid transparent;
+    border-bottom: 7px solid $brand-light-color;
+    border-left: 7px solid transparent;
+    position: absolute;
+    left: 19px;
+    top: 1px;
+    content: '';
+}
+.rdtPicker:after {
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid #fff;
+    border-left: 6px solid transparent;
+    position: absolute;
+    left: 20px;
+    top: 2px;
+    content: '';
+}
+
+.rdtPicker table {
+    margin: 0;
 }
 
 .filter-menu .rdtPicker {
