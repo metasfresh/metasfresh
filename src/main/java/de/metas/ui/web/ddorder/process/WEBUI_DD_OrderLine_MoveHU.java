@@ -15,6 +15,7 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -86,6 +87,7 @@ public class WEBUI_DD_OrderLine_MoveHU extends ViewBasedProcessTemplate implemen
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		final int ddOrderLineId = getSingleSelectedRow().getId().toInt();
@@ -99,7 +101,7 @@ public class WEBUI_DD_OrderLine_MoveHU extends ViewBasedProcessTemplate implemen
 				.setDoDirectMovements(true)
 				.setFailIfCannotAllocate(true)
 				.allocateHU(hu)
-				.process();
+				.processWithinOwnTrx();
 
 		return MSG_OK;
 	}
