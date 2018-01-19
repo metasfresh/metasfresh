@@ -259,8 +259,7 @@ public class CostDetailService implements ICostDetailService
 		}
 	}
 
-	@Override
-	public void process(final I_M_CostDetail costDetail)
+	private void process(final I_M_CostDetail costDetail)
 	{
 		if (costDetail.isProcessed())
 		{

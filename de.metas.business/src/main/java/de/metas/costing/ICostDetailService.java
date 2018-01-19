@@ -29,14 +29,11 @@ import org.compiere.model.I_M_CostDetail;
 
 public interface ICostDetailService extends ISingletonService
 {
-
 	void createCostDetail(CostDetailCreateRequest request);
 
 	void reverseAndDeleteForDocument(CostingDocumentRef documentRef);
 
 	void reversePartialQty(CostDetailQuery query, BigDecimal qty);
-
-	void process(I_M_CostDetail costDetail);
 
 	void processIfCostImmediate(I_M_CostDetail costDetail);
 
