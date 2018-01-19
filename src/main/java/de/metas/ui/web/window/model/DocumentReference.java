@@ -1,14 +1,15 @@
 package de.metas.ui.web.window.model;
 
-import javax.validation.constraints.NotNull;
+import java.time.Duration;
 
-import com.google.common.base.MoreObjects;
+import javax.annotation.Nullable;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.WindowId;
-import groovy.transform.Immutable;
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -32,7 +33,7 @@ import lombok.Builder;
  * #L%
  */
 
-@Immutable
+@Value
 public final class DocumentReference
 {
 	private final String id;
@@ -40,52 +41,27 @@ public final class DocumentReference
 	private final WindowId windowId;
 	private final int documentsCount;
 	private final DocumentFilter filter;
+	private final Duration loadDuration;
 	
 	@Builder
-	private DocumentReference(final String id, final ITranslatableString caption, final WindowId windowId, final int documentsCount, final DocumentFilter filter)
+	private DocumentReference(
+			@NonNull final String id,
+			@NonNull final ITranslatableString caption,
+			@NonNull final WindowId windowId,
+			final int documentsCount,
+			@NonNull final DocumentFilter filter,
+			@Nullable final Duration loadDuration)
 	{
 		this.id = id;
 		this.caption = caption;
 		this.windowId = windowId;
 		this.documentsCount = documentsCount;
 		this.filter = filter;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("id", id)
-				.add("caption", caption)
-				.add("windowId", windowId)
-				.add("documentsCount", documentsCount)
-				.add("filter", filter)
-				.toString();
-	}
-	
-	public String getId()
-	{
-		return id;
+		this.loadDuration = loadDuration;
 	}
 
 	public String getCaption(final String adLanguage)
 	{
 		return caption.translate(adLanguage);
-	}
-
-	public WindowId getWindowId()
-	{
-		return windowId;
-	}
-
-	public int getDocumentsCount()
-	{
-		return documentsCount;
-	}
-
-	@NotNull
-	public DocumentFilter getFilter()
-	{
-		return filter;
 	}
 }
