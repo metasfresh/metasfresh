@@ -6,6 +6,7 @@ import { connect } from "react-redux";
 import { PATCH_RESET } from "../../constants/ActionTypes";
 import { closeListIncludedView } from "../../actions/ListActions";
 import { deleteView } from "../../actions/ViewActions";
+import { addNotification } from "../../actions/AppActions";
 import { closeModal, closeRawModal } from "../../actions/WindowActions";
 import keymap from "../../shortcuts/keymap";
 import ModalContextShortcuts from "../shortcuts/ModalContextShortcuts";
@@ -96,8 +97,14 @@ class RawModal extends Component {
       delete this.resolve;
 
       if (!success) {
-        // TODO: Give user feedback about error, modal won't close now
         await dispatch({ type: PATCH_RESET });
+
+        const title = "Error while saving";
+        const message = "Not all fields have been saved";
+        const time = 5000;
+        const type = "error";
+
+        await dispatch(addNotification(title, message, time, type));
 
         return;
       }
