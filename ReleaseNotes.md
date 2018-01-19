@@ -25,6 +25,8 @@ Here come the actual release notes:
     * Refining the look and feel of the calendar icon behavior in WebUI grid views.
   * [#1502](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1502) Missing PropTypes Validation for noLabel isOpenDatePicker
     * Internal Housekeeping Issue. Adding PropType Validation for isOpenDatePicker.
+  * [#1509](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1509) Harmonize details calendar widget with daterange widget in Filter
+    * Improving the Layout of Date Picker, harmonizing with the look and feel of Date Range Widget.
 
 ## Fixes
 * metasfresh
