@@ -19,6 +19,8 @@ Here come the actual release notes:
     * Improvement of the WebUI message window.
   * [#3322](https://github.com/metasfresh/metasfresh/issues/3322) Webui Window Design: Improve window Validation Rule
     * New Window for the maintainence of Validation Rules in metasfresh. This window can be used by System Admins.
+  * [#3349](https://github.com/metasfresh/metasfresh/issues/3349) Add BPartner to User Window
+    * New Field in Window User, allowing to see and maintain the Business Partner.
 
 * metasfresh-webui-frontend
   * [#1428](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1428) Calendar icon covers date field
