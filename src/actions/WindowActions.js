@@ -1051,7 +1051,10 @@ function getProcessData({
 
     if (parentViewId) {
       payload.parentViewId = parentViewId;
-      payload.parentViewSelectedIds = parentViewSelectedIds;
+      payload.parentViewSelectedIds =
+        parentViewSelectedIds instanceof Array
+          ? parentViewSelectedIds
+          : [parentViewSelectedIds];
     }
   } else {
     payload.documentId = Array.isArray(ids) ? ids[0] : ids;
