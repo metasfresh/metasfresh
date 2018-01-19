@@ -1478,7 +1478,7 @@ public class Util
 	{
 		return firstValidValue(Predicates.notNull(), values);
 	}
-	
+
 	@SafeVarargs
 	public static final <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, final Supplier<T>... values)
 	{
@@ -1489,14 +1489,13 @@ public class Util
 		for (final Supplier<T> supplier : values)
 		{
 			final T value = supplier.get();
-			if(isValidPredicate.test(value))
+			if (isValidPredicate.test(value))
 			{
 				return value;
 			}
 		}
 		return null;
 	}
-
 
 	/**
 	 * Analog to {@link #coalesce(Object...)}, returns the first <code>int</code> value that is greater than 0.
@@ -1580,5 +1579,10 @@ public class Util
 			}
 		}
 		return found ? buf.toString() : null;
+	}
+
+	public static int getMinimumOfThree(final int no1, final int no2, final int no3)
+	{
+		return no1 < no2 ? (no1 < no3 ? no1 : no3) : (no2 < no3 ? no2 : no3);
 	}
 }   // Util
