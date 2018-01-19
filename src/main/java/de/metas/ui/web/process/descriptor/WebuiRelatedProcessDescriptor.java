@@ -1,16 +1,20 @@
 package de.metas.ui.web.process.descriptor;
 
+import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.process.ProcessId;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -50,7 +54,7 @@ public final class WebuiRelatedProcessDescriptor
 	private final boolean quickAction;
 	private final boolean defaultQuickAction;
 	@NonNull
-	private final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier;
+	private final Supplier<ValueAndDuration<ProcessPreconditionsResolution>> preconditionsResolutionSupplier;
 
 	private final String debugProcessClassname;
 
@@ -62,8 +66,7 @@ public final class WebuiRelatedProcessDescriptor
 			final boolean quickAction,
 			final boolean defaultQuickAction,
 			@NonNull final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier,
-			final String debugProcessClassname
-	)
+			final String debugProcessClassname)
 	{
 		super();
 		this.processId = processId;
@@ -71,11 +74,11 @@ public final class WebuiRelatedProcessDescriptor
 		this.processDescription = processDescription;
 		this.quickAction = quickAction;
 		this.defaultQuickAction = defaultQuickAction;
-		
+
 		// Memorize the resolution supplier to make sure it's not invoked more than once because it might be an expensive operation.
 		// Also we assume this is a short living instance which was created right before checking
-		this.preconditionsResolutionSupplier = ExtendedMemorizingSupplier.of(preconditionsResolutionSupplier);
-		
+		this.preconditionsResolutionSupplier = ExtendedMemorizingSupplier.of(() -> ValueAndDuration.fromSupplier(preconditionsResolutionSupplier));
+
 		this.debugProcessClassname = debugProcessClassname;
 	}
 
@@ -112,9 +115,14 @@ public final class WebuiRelatedProcessDescriptor
 
 	private ProcessPreconditionsResolution getPreconditionsResolution()
 	{
-		return preconditionsResolutionSupplier.get();
+		return preconditionsResolutionSupplier.get().getValue();
 	}
-	
+
+	public Duration getPreconditionsResolutionCalcDuration()
+	{
+		return preconditionsResolutionSupplier.get().getDuration();
+	}
+
 	public boolean isDisabled()
 	{
 		return getPreconditionsResolution().isRejected();
@@ -147,5 +155,26 @@ public final class WebuiRelatedProcessDescriptor
 		}
 
 		return debugProperties.build();
+	}
+
+	@Value
+	private static final class ValueAndDuration<T>
+	{
+		public static <T> ValueAndDuration<T> fromSupplier(final Supplier<T> supplier)
+		{
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			final T value = supplier.get();
+			final Duration duration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
+			return new ValueAndDuration<>(value, duration);
+		}
+
+		private final T value;
+		private final Duration duration;
+
+		private ValueAndDuration(final T value, final Duration duration)
+		{
+			this.value = value;
+			this.duration = duration;
+		}
 	}
 }
