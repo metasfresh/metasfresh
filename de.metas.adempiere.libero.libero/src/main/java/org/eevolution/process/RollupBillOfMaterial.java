@@ -46,11 +46,13 @@ import java.util.List;
 
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostElement;
+import org.compiere.model.I_M_CostType;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
 import org.compiere.model.MCostElement;
-import org.compiere.model.MCostType;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -63,8 +65,8 @@ import org.eevolution.model.MPPProductPlanning;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.mrp.api.IMRPDAO;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Roll-UP Bill of Material
@@ -106,17 +108,17 @@ public class RollupBillOfMaterial extends JavaProcess
 				;
 			else if (name.equals(I_M_CostElement.COLUMNNAME_AD_Org_ID))
 				p_AD_Org_ID = para.getParameterAsInt();
-			else if (name.equals(MAcctSchema.COLUMNNAME_C_AcctSchema_ID))
+			else if (name.equals(I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID))
 				p_C_AcctSchema_ID = para.getParameterAsInt();
-			else if (name.equals(MCostType.COLUMNNAME_M_CostType_ID))
+			else if (name.equals(I_M_CostType.COLUMNNAME_M_CostType_ID))
 				p_M_CostType_ID = para.getParameterAsInt();
-			else if (name.equals(MCostElement.COLUMNNAME_CostingMethod))
+			else if (name.equals(I_M_CostElement.COLUMNNAME_CostingMethod))
 				p_ConstingMethod=(String)para.getParameter();
-			else if (name.equals(MProduct.COLUMNNAME_M_Product_ID))
+			else if (name.equals(I_M_Product.COLUMNNAME_M_Product_ID))
 				p_M_Product_ID = para.getParameterAsInt();
-			else if (name.equals(MProduct.COLUMNNAME_M_Product_Category_ID))
+			else if (name.equals(I_M_Product.COLUMNNAME_M_Product_Category_ID))
 				p_M_Product_Category_ID = para.getParameterAsInt();
-			else if (name.equals(MProduct.COLUMNNAME_ProductType))
+			else if (name.equals(I_M_Product.COLUMNNAME_ProductType))
 				p_ProductType = para.getParameter() == null ? null : para.getParameter().toString();
 			else
 				log.error("prepare - Unknown Parameter: " + name);
@@ -296,7 +298,7 @@ public class RollupBillOfMaterial extends JavaProcess
 
 	private Collection<MProduct> getProducts(int lowLevel)
 	{
-		List<Object> params = new ArrayList<Object>();
+		List<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer("AD_Client_ID=?")
 						.append(" AND ").append(MProduct.COLUMNNAME_LowLevel).append("=?")
 		;
@@ -332,7 +334,7 @@ public class RollupBillOfMaterial extends JavaProcess
 	 */
 	private void resetCostsLLForLLC0()
 	{
-		List<Object> params = new ArrayList<Object>();
+		List<Object> params = new ArrayList<>();
 		StringBuffer productWhereClause = new StringBuffer();
 		productWhereClause.append("AD_Client_ID=? AND "+MProduct.COLUMNNAME_LowLevel+"=?");
 		params.add(getAD_Client_ID());

@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -30,7 +14,7 @@ public class X_C_AcctSchema extends org.compiere.model.PO implements I_C_AcctSch
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1804990591L;
+	private static final long serialVersionUID = 935837223L;
 
     /** Standard Constructor */
     public X_C_AcctSchema (Properties ctx, int C_AcctSchema_ID, String trxName)
@@ -41,28 +25,21 @@ public class X_C_AcctSchema extends org.compiere.model.PO implements I_C_AcctSch
 			setAutoPeriodControl (false);
 			setC_AcctSchema_ID (0);
 			setC_Currency_ID (0);
-			setCommitmentType (null);
-// N
-			setCostingLevel (null);
-// C
-			setCostingMethod (null);
-// S
+			setCommitmentType (null); // N
+			setCostingLevel (null); // C
+			setCostingMethod (null); // S
 			setGAAP (null);
 			setHasAlias (false);
 			setHasCombination (false);
-			setIsAccrual (true);
-// Y
+			setIsAccrual (true); // Y
 			setIsAdjustCOGS (false);
 			setIsDiscountCorrectsTax (false);
-			setIsExplicitCostAdjustment (false);
-// N
-			setIsPostServices (false);
-// N
+			setIsExplicitCostAdjustment (false); // N
+			setIsPostServices (false); // N
 			setIsTradeDiscountPosted (false);
 			setM_CostType_ID (0);
 			setName (null);
-			setSeparator (null);
-// -
+			setSeparator (null); // -
 			setTaxCorrectionType (null);
         } */
     }

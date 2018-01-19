@@ -17,15 +17,27 @@ Here come the actual release notes:
 * metasfresh
   * [#3319](https://github.com/metasfresh/metasfresh/issues/3319) Webui Window Design: Improve window Message
     * Improvement of the WebUI message window.
+  * [#3322](https://github.com/metasfresh/metasfresh/issues/3322) Webui Window Design: Improve window Validation Rule
+    * New Window for the maintainence of Validation Rules in metasfresh. This window can be used by System Admins.
 
 * metasfresh-webui-frontend
+  * [#1428](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1428) Calendar icon covers date field
+    * Refining the look and feel of the calendar icon behavior in WebUI grid views.
   * [#1502](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1502) Missing PropTypes Validation for noLabel isOpenDatePicker
     * Internal Housekeeping Issue. Adding PropType Validation for isOpenDatePicker.
+  * [#1509](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1509) Harmonize details calendar widget with daterange widget in Filter
+    * Improving the Layout of Date Picker, harmonizing with the look and feel of Date Range Widget.
 
 ## Fixes
 * metasfresh
   * [#3339](https://github.com/metasfresh/metasfresh/issues/3339) Field "Doctype" is included twice in payment window
     * Fixes a doubled Field for Doctype in the payment window.
+
+* metasfresh-webui-frontend
+  * [#1495](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1495) Error on "add to transportation order"
+    * Fixes a Bug that occurred in window Picking Tray Clearing when adding an HU to a Transportation Order.
+  * [#1508](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1508) Scrollbar in Filter when hovering apply Button
+    * Improvement of the Tooltip Layout for Apply Button in Filter Selection Dropdowns.
 
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**

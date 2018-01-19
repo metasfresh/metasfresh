@@ -22,12 +22,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
@@ -159,7 +161,7 @@ public class MCostElement extends X_M_CostElement
 	 */
 	public static MCostElement[] getCostingMethods(PO po)
 	{
-		ArrayList<MCostElement> list = new ArrayList<MCostElement>();
+		ArrayList<MCostElement> list = new ArrayList<>();
 		String sql = "SELECT * FROM M_CostElement "
 				+ "WHERE AD_Client_ID=?"
 				+ " AND IsActive='Y' AND CostElementType='M' AND CostingMethod IS NOT NULL";
@@ -204,7 +206,7 @@ public class MCostElement extends X_M_CostElement
 	 */
 	public static MCostElement[] getNonCostingMethods(PO po)
 	{
-		ArrayList<MCostElement> list = new ArrayList<MCostElement>();
+		ArrayList<MCostElement> list = new ArrayList<>();
 		String sql = "SELECT * FROM M_CostElement "
 				+ "WHERE AD_Client_ID=?"
 				+ " AND IsActive='Y' AND CostingMethod IS NULL";
@@ -302,7 +304,7 @@ public class MCostElement extends X_M_CostElement
 	}
 
 	/** Cache */
-	private static CCache<Integer, MCostElement> s_cache = new CCache<Integer, MCostElement>("M_CostElement", 20);
+	private static CCache<Integer, MCostElement> s_cache = new CCache<>("M_CostElement", 20);
 
 	/** Logger */
 	private static Logger s_log = LogManager.getLogger(MCostElement.class);
@@ -337,14 +339,8 @@ public class MCostElement extends X_M_CostElement
 		super(ctx, rs, trxName);
 	}	// MCostElement
 
-	/**
-	 * Before Save
-	 *
-	 * @param newRecord new
-	 * @return true
-	 */
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		// Check Unique Costing Method
 		if ((COSTELEMENTTYPE_Material.equals(getCostElementType())
@@ -354,10 +350,15 @@ public class MCostElement extends X_M_CostElement
 				|| COSTELEMENTTYPE_OutsideProcessing.equals(getCostElementType()))
 				&& (newRecord || is_ValueChanged(COLUMNNAME_CostingMethod)))
 		{
-			String sql = "SELECT  COALESCE(MAX(M_CostElement_ID),0) FROM M_CostElement "
-					+ "WHERE AD_Client_ID=? AND CostingMethod=? AND CostElementType=?";
-			int id = DB.getSQLValue(get_TrxName(), sql, getAD_Client_ID(), getCostingMethod(), getCostElementType());
-			if (id > 0 && id != get_ID())
+			final boolean costingMethodAlreadyExists = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_M_CostElement.class)
+					.addNotEqualsFilter(I_M_CostElement.COLUMN_M_CostElement_ID, getM_CostElement_ID())
+					.addEqualsFilter(I_M_CostElement.COLUMN_AD_Client_ID, getAD_Client_ID())
+					.addEqualsFilter(I_M_CostElement.COLUMN_CostingMethod, getCostingMethod())
+					.addEqualsFilter(I_M_CostElement.COLUMN_CostElementType, getCostElementType())
+					.create()
+					.match();
+			if (costingMethodAlreadyExists)
 			{
 				throw new AdempiereException("@AlreadyExists@ @CostingMethod@");
 			}
@@ -388,21 +389,16 @@ public class MCostElement extends X_M_CostElement
 		return true;
 	}	// beforeSave
 
-	/**
-	 * Before Delete
-	 *
-	 * @return true if can be deleted
-	 */
 	@Override
 	protected boolean beforeDelete()
 	{
-		String cm = getCostingMethod();
-		if (cm == null
-				|| !COSTELEMENTTYPE_Material.equals(getCostElementType()))
+		if (!isCostingMethod())
+		{
 			return true;
+		}
 
 		// Costing Methods on AS level
-		MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID());
+		final MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID());
 		for (int i = 0; i < ass.length; i++)
 		{
 			if (ass[i].getCostingMethod().equals(getCostingMethod()))
@@ -412,41 +408,22 @@ public class MCostElement extends X_M_CostElement
 		}
 
 		// Costing Methods on PC level
-		String sql = "SELECT M_Product_Category_ID FROM M_Product_Category_Acct WHERE AD_Client_ID=? AND CostingMethod=?";
-		int M_Product_Category_ID = 0;
-		PreparedStatement pstmt = null;
-		try
+		final String productCategoriesUsingCostingMethod = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Product_Category_Acct.class)
+				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_AD_Client_ID, getAD_Client_ID())
+				.addEqualsFilter(I_M_Product_Category_Acct.COLUMN_CostingMethod, getCostingMethod())
+				.andCollect(I_M_Product_Category_Acct.COLUMN_M_Product_Category_ID)
+				.orderBy(I_M_Product_Category.COLUMN_Name)
+				.create()
+				.setLimit(50)
+				.listDistinct(I_M_Product_Category.COLUMNNAME_Name, String.class)
+				.stream()
+				.collect(Collectors.joining(", "));
+		if (!Check.isEmpty(productCategoriesUsingCostingMethod, true))
 		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, getAD_Client_ID());
-			pstmt.setString(2, getCostingMethod());
-			ResultSet rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				M_Product_Category_ID = rs.getInt(1);
-			}
-			rs.close();
-			pstmt.close();
-			pstmt = null;
+			throw new AdempiereException("@CannotDeleteUsed@ @M_Product_Category_ID@ (" + productCategoriesUsingCostingMethod + ")");
 		}
-		catch (Exception e)
-		{
-			log.error(sql, e);
-		}
-		try
-		{
-			if (pstmt != null)
-				pstmt.close();
-			pstmt = null;
-		}
-		catch (Exception e)
-		{
-			pstmt = null;
-		}
-		if (M_Product_Category_ID != 0)
-		{
-			throw new AdempiereException("@CannotDeleteUsed@ @M_Product_Category_ID@ (ID=" + M_Product_Category_ID + ")");
-		}
+
 		return true;
 	}	// beforeDelete
 
@@ -565,21 +542,16 @@ public class MCostElement extends X_M_CostElement
 				&& COSTELEMENTTYPE_Material.equals(getCostElementType());
 	}	// isAveragePO
 
-	/**
-	 * String Representation
-	 *
-	 * @return info
-	 */
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MCostElement[");
+		StringBuilder sb = new StringBuilder("MCostElement[");
 		sb.append(get_ID())
 				.append("-").append(getName())
 				.append(",Type=").append(getCostElementType())
 				.append(",Method=").append(getCostingMethod())
 				.append("]");
 		return sb.toString();
-	} // toString
+	}
 
 }	// MCostElement

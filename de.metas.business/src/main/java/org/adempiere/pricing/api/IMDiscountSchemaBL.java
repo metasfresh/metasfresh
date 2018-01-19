@@ -40,28 +40,15 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	/**
 	 * Calculate Discount Percentage
 	 *
-	 * @param schema
-	 * @param Qty
-	 * @param Price
-	 * @param M_Product_ID
-	 * @param M_Product_Category_ID
-	 * @param bPartnerFlatDiscount
-	 * @return
 	 */
-	BigDecimal calculateDiscount(I_M_DiscountSchema schema, BigDecimal Qty, BigDecimal Price, int M_Product_ID, int M_Product_Category_ID, BigDecimal bPartnerFlatDiscount);
+	DiscountResult calculateDiscount(final CalculateDiscountRequest request);
 
 	/**
 	 * Calculate Discounted Price
 	 *
-	 * @param schema
-	 * @param qty
-	 * @param price
-	 * @param product_ID
-	 * @param product_Category_ID
-	 * @param bPartnerFlatDiscount
 	 * @return
 	 */
-	BigDecimal calculatePrice(I_M_DiscountSchema schema, BigDecimal qty, BigDecimal price, int product_ID, int product_Category_ID, BigDecimal bPartnerFlatDiscount);
+	BigDecimal calculatePrice(final CalculateDiscountRequest request);
 
 	/**
 	 * Criteria apply
@@ -105,36 +92,6 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	boolean breakApplies(I_M_DiscountSchemaBreak br, BigDecimal value, int product_ID, int product_Category_ID, int attributeValue_ID);
 
 	/**
-	 * Calculate Discount Percentage, based also on attribute instances
-	 *
-	 * @param schema
-	 * @param qty
-	 * @param Price
-	 * @param M_Product_ID
-	 * @param M_Product_Category_ID
-	 * @param instances
-	 * @param bPartnerFlatDiscount
-	 * @return
-	 */
-	BigDecimal calculateDiscount(I_M_DiscountSchema schema, BigDecimal qty, BigDecimal Price, int M_Product_ID, int M_Product_Category_ID, List<I_M_AttributeInstance> instances,
-			BigDecimal bPartnerFlatDiscount);
-
-	/**
-	 * Calculate Discounted Price, based also on attribute instances
-	 *
-	 * @param schema
-	 * @param qty
-	 * @param price
-	 * @param product_ID
-	 * @param product_Category_ID
-	 * @param instances
-	 * @param bPartnerFlatDiscount
-	 * @return
-	 */
-	BigDecimal calculatePrice(I_M_DiscountSchema schema, BigDecimal qty, BigDecimal price, int product_ID, int product_Category_ID, List<I_M_AttributeInstance> instances,
-			BigDecimal bPartnerFlatDiscount);
-
-	/**
 	 * Pick the first break that applies based on product, category and attribute value
 	 *
 	 * @param breaks
@@ -163,5 +120,4 @@ public interface IMDiscountSchemaBL extends ISingletonService
 	 */
 	I_M_DiscountSchemaBreak pickApplyingBreak(List<I_M_DiscountSchemaBreak> breaks, List<I_M_AttributeInstance> instances, boolean isQtyBased, int M_Product_ID, int M_Product_Category_ID,
 			BigDecimal qty, BigDecimal amt);
-
 }

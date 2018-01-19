@@ -36,6 +36,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.IContextAware;
+import org.adempiere.pricing.api.CalculateDiscountRequest;
 import org.adempiere.pricing.api.IMDiscountSchemaDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -463,27 +464,24 @@ public class MDiscountSchemaTest
 
 		// Discount 0 (because no breaks were applied)
 
-		final BigDecimal price = bl.calculatePrice(
-				schema1,
-				new BigDecimal(100),
-				new BigDecimal(1),
-				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
-				new BigDecimal(1));
+
+		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
+				.schema(schema1)
+				.qty(new BigDecimal(100))
+				.Price(new BigDecimal(1))
+				.M_Product_ID(product1.getM_Product_ID())
+				.M_Product_Category_ID(category1.getM_Product_Category_ID())
+				.bPartnerFlatDiscount(new BigDecimal(1))
+				.build();
+
+		final BigDecimal price = bl.calculatePrice(request);
 
 		assertThat(price).isEqualByComparingTo(BigDecimal.ONE);
 
 		schemaBreak1.setM_AttributeValue(null);
 		save(schemaBreak1);
 
-		final BigDecimal price2 = bl.calculatePrice(
-				schema1,
-				new BigDecimal(100),
-				new BigDecimal(1),
-				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
-				new BigDecimal(1));
-
+		final BigDecimal price2 = bl.calculatePrice(request);
 		final BigDecimal expectedPrice = new BigDecimal("0.500000");
 		assertThat(expectedPrice).isEqualByComparingTo(price2);
 	}
@@ -523,14 +521,17 @@ public class MDiscountSchemaTest
 
 		// Discount 0 (because no breaks were applied)
 
-		final BigDecimal price = bl.calculatePrice(
-				schema1,
-				new BigDecimal(100),
-				new BigDecimal(1),
-				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
-				instances,
-				new BigDecimal(1));
+		final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
+				.schema(schema1)
+				.qty(new BigDecimal(100))
+				.Price(new BigDecimal(1))
+				.M_Product_ID(product1.getM_Product_ID())
+				.M_Product_Category_ID(category1.getM_Product_Category_ID())
+				.instances(instances)
+				.bPartnerFlatDiscount(new BigDecimal(1))
+				.build();
+
+		final BigDecimal price = bl.calculatePrice(request);
 
 		BigDecimal expectedPrice = new BigDecimal("0.500000");
 		assertThat(expectedPrice).isEqualByComparingTo(price);
@@ -539,14 +540,7 @@ public class MDiscountSchemaTest
 		schemaBreak1.setM_AttributeValue(attrValue3);
 		save(schemaBreak1);
 
-		final BigDecimal price2 = bl.calculatePrice(
-				schema1,
-				new BigDecimal(100),
-				new BigDecimal(1),
-				product1.getM_Product_ID(),
-				category1.getM_Product_Category_ID(),
-				instances,
-				new BigDecimal(1));
+		final BigDecimal price2 = bl.calculatePrice(request);
 
 		expectedPrice = new BigDecimal("0.750000");
 		assertThat(expectedPrice).isEqualByComparingTo(price2);
