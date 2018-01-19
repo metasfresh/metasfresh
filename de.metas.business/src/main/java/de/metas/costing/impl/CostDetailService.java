@@ -90,69 +90,71 @@ public class CostDetailService implements ICostDetailService
 	@Override
 	public void createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
-		final CostDetailQuery query = CostDetailQuery.builder()
+		final CostDetailQuery costDetailForDocumentQuery = CostDetailQuery.builder()
 				.acctSchemaId(request.getAcctSchemaId())
 				.attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.documentRef(request.getDocumentRef())
 				.build();
 
-		// Delete Unprocessed zero Differences
-		costDetailsRepo.deleteUnprocessedWithNoChanges(query);
+		// Delete all unprocessed or zero differences for given document
+		costDetailsRepo.deleteUnprocessedWithNoChanges(costDetailForDocumentQuery);
 
-		I_M_CostDetail costDetail = costDetailsRepo.getCostDetailOrNull(query);
+		//
+		// Create/Update the cost detail
+		I_M_CostDetail costDetail = costDetailsRepo.getCostDetailOrNull(costDetailForDocumentQuery);
 		if (costDetail == null)		// createNew
 		{
 			costDetail = createDraftCostDetail(request);
 		}
 		else
 		{
-			// MZ Goodwill
-			// set deltaAmt=Amt, deltaQty=qty, and set Cost Detail for Amt and Qty
-			final BigDecimal amt = request.getAmt();
-			final BigDecimal qty = request.getQty();
-			costDetail.setDeltaAmt(amt.subtract(costDetail.getAmt()));
-			costDetail.setDeltaQty(qty.subtract(costDetail.getQty()));
-			if (isDelta(costDetail))
-			{
-				costDetail.setProcessed(false);
-				costDetail.setAmt(amt);
-				costDetail.setQty(qty);
-			}
-			// end MZ
-			else
-			{
-				return;	// nothing to do
-			}
+			updateCostDetailFromCreateRequest(costDetail, request);
 		}
-
+		//
 		costDetailsRepo.save(costDetail);
 
+		//
+		// Process if needed
 		processIfCostImmediate(costDetail);
 	}
 
 	private I_M_CostDetail createDraftCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
-		final I_M_CostDetail cd = InterfaceWrapperHelper.newInstance(I_M_CostDetail.class);
-		cd.setAD_Org_ID(request.getOrgId());
-		cd.setC_AcctSchema_ID(request.getAcctSchemaId());
-		cd.setM_Product_ID(request.getProductId());
-		cd.setM_AttributeSetInstance_ID(request.getAttributeSetInstanceId());
+		final I_M_CostDetail costDetail = InterfaceWrapperHelper.newInstance(I_M_CostDetail.class);
+		costDetail.setAD_Org_ID(request.getOrgId());
+		costDetail.setC_AcctSchema_ID(request.getAcctSchemaId());
+		costDetail.setM_Product_ID(request.getProductId());
+		costDetail.setM_AttributeSetInstance_ID(request.getAttributeSetInstanceId());
 
-		cd.setM_CostElement_ID(request.getCostElementId());
+		costDetail.setM_CostElement_ID(request.getCostElementId());
 
-		cd.setAmt(request.getAmt());
-		cd.setQty(request.getQty());
-		cd.setDescription(request.getDescription());
+		costDetail.setAmt(request.getAmt());
+		costDetail.setQty(request.getQty());
+		costDetail.setDescription(request.getDescription());
 
 		final CostingDocumentRef documentRef = request.getDocumentRef();
-		InterfaceWrapperHelper.setValue(cd, documentRef.getCostDetailColumnName(), documentRef.getRecordId());
+		InterfaceWrapperHelper.setValue(costDetail, documentRef.getCostDetailColumnName(), documentRef.getRecordId());
 
 		if (documentRef.getOutboundTrx() != null)
 		{
-			cd.setIsSOTrx(documentRef.getOutboundTrx());
+			costDetail.setIsSOTrx(documentRef.getOutboundTrx());
 		}
 
-		return cd;
+		return costDetail;
+	}
+	
+	private void updateCostDetailFromCreateRequest(final I_M_CostDetail costDetail, final CostDetailCreateRequest request)
+	{
+		final BigDecimal amt = request.getAmt();
+		final BigDecimal qty = request.getQty();
+		costDetail.setDeltaAmt(amt.subtract(costDetail.getAmt()));
+		costDetail.setDeltaQty(qty.subtract(costDetail.getQty()));
+		if (isDelta(costDetail))
+		{
+			costDetail.setProcessed(false);
+			costDetail.setAmt(amt);
+			costDetail.setQty(qty);
+		}
 	}
 
 	@Override
