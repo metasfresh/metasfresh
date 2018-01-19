@@ -18,6 +18,7 @@ import org.adempiere.util.Services;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;

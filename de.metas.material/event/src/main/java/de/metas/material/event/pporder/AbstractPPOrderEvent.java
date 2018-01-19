@@ -66,6 +66,4 @@ public abstract class AbstractPPOrderEvent implements MaterialEvent
 		this.ppOrder = ppOrder;
 		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
 	}
-
-
 }

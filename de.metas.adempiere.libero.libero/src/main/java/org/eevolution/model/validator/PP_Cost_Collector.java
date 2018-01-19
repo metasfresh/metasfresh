@@ -63,7 +63,7 @@ public class PP_Cost_Collector
 			ModelValidator.TYPE_AFTER_NEW,
 			ModelValidator.TYPE_AFTER_CHANGE,
 			ModelValidator.TYPE_BEFORE_DELETE })
-	public void fireMaterialEvent(@NonNull final I_PP_Cost_Collector costCollector,
+	public void postMaterialEvent(@NonNull final I_PP_Cost_Collector costCollector,
 			@NonNull final ModelChangeType type)
 	{
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
@@ -80,7 +80,8 @@ public class PP_Cost_Collector
 		final boolean created = type.isNew() || InterceptorUtil.isJustActivated(costCollector);
 		final boolean deleted = type.isDelete() || InterceptorUtil.isJustDeactivated(costCollector);
 
-		final PPOrderProductionQtyChangedEventBuilder eventBuilder = PPOrderProductionQtyChangedEvent.builder().eventDescriptor(EventDescriptor.createNew(costCollector))
+		final PPOrderProductionQtyChangedEventBuilder eventBuilder = PPOrderProductionQtyChangedEvent.builder()
+				.eventDescriptor(EventDescriptor.createNew(costCollector))
 				.ppOrderId(costCollector.getPP_Order_ID())
 				.ppOrderLineId(costCollector.getPP_Order_BOMLine_ID());
 		if (created)
@@ -104,9 +105,14 @@ public class PP_Cost_Collector
 					.oldQuantity(oldCostCollector.getMovementQty())
 					.newQuantity(costCollector.getMovementQty());
 		}
+		final PPOrderProductionQtyChangedEvent event = eventBuilder.build();
+		if (event.getNewQuantity().compareTo(event.getOldQuantity()) == 0)
+		{
+			// nothing to do
+		}
 
 		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
-		materialEventService.postEventAfterNextCommit(eventBuilder.build());
+		materialEventService.postEventAfterNextCommit(event);
 	}
 
 	/**

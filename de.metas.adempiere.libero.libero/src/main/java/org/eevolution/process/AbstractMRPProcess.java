@@ -10,12 +10,12 @@ package org.eevolution.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,12 +37,12 @@ import org.eevolution.api.IResourceDAO;
 import org.eevolution.mrp.api.IMRPExecutorService;
 import org.eevolution.mrp.api.IMRPResult;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 public abstract class AbstractMRPProcess extends JavaProcess
 {
@@ -116,7 +116,7 @@ public abstract class AbstractMRPProcess extends JavaProcess
 
 	/**
 	 * Creates {@link IMaterialPlanningContext} from process parameters.
-	 * 
+	 *
 	 * @return created MRP Context
 	 */
 	protected final IMaterialPlanningContext createMRPContext()
@@ -126,7 +126,6 @@ public abstract class AbstractMRPProcess extends JavaProcess
 		mrpContext.setCtx(getCtx());
 		mrpContext.setTrxName(ITrx.TRXNAME_None);
 		mrpContext.setAllowCleanup(p_MRP_Cleanup);
-		mrpContext.setRequireDRP(p_IsRequiredDRP);
 		mrpContext.setPlanner_User_ID(p_Planner_ID);
 		mrpContext.setDate(SystemTime.asTimestamp());
 		mrpContext.setAD_Client_ID(getAD_Client_ID());

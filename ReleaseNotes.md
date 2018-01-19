@@ -14,10 +14,30 @@ Here come the actual release notes:
 **release for week 2018-04**
 
 ## Features
+* metasfresh
+  * [#3319](https://github.com/metasfresh/metasfresh/issues/3319) Webui Window Design: Improve window Message
+    * Improvement of the WebUI message window.
+  * [#3322](https://github.com/metasfresh/metasfresh/issues/3322) Webui Window Design: Improve window Validation Rule
+    * New Window for the maintainence of Validation Rules in metasfresh. This window can be used by System Admins.
+
 * metasfresh-webui-frontend
+  * [#1428](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1428) Calendar icon covers date field
+    * Refining the look and feel of the calendar icon behavior in WebUI grid views.
   * [#1502](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1502) Missing PropTypes Validation for noLabel isOpenDatePicker
     * Internal Housekeeping Issue. Adding PropType Validation for isOpenDatePicker.
+  * [#1509](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1509) Harmonize details calendar widget with daterange widget in Filter
+    * Improving the Layout of Date Picker, harmonizing with the look and feel of Date Range Widget.
+
 ## Fixes
+* metasfresh
+  * [#3339](https://github.com/metasfresh/metasfresh/issues/3339) Field "Doctype" is included twice in payment window
+    * Fixes a doubled Field for Doctype in the payment window.
+
+* metasfresh-webui-frontend
+  * [#1495](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1495) Error on "add to transportation order"
+    * Fixes a Bug that occurred in window Picking Tray Clearing when adding an HU to a Transportation Order.
+  * [#1508](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1508) Scrollbar in Filter when hovering apply Button
+    * Improvement of the Tooltip Layout for Apply Button in Filter Selection Dropdowns.
 
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**
@@ -42,13 +62,13 @@ Here come the actual release notes:
     * Adjustment of the Shipper Transportation validation rule logic.
   * [#3289](https://github.com/metasfresh/metasfresh/issues/3289) WebUI: New Window for Document Details in Material Cockpit
     * New Window for Document Details that can now be shown via Material Cockpit Window.
-  * [#3293](https://github.com/metasfresh/metasfresh/issues/3293) Webui: Add Translation Messages for Daterangepicker
+  * [#3293](https://github.com/metasfresh/metasfresh/issues/3293) WebUI: Add Translation Messages for Daterangepicker
     * Improved Translations. Added static translations for de_DE, en_US and Date Range Picker.
   * [#3303](https://github.com/metasfresh/metasfresh/issues/3303) WebUI: New Window for GO! Delivery Orders
     * New Window in WebUI for the new Functionality of General Overnight Shipper Transportation.
   * [#3304](https://github.com/metasfresh/metasfresh/issues/3304) Copy C_DocType.Description/DescriptionBottom to Order and Invoice
     * New feature for Documents Generation. Now it's possible to define default text snippets in Document Types and copy these automatically to the created document description when selecting the Document type.
-  * [#3309](https://github.com/metasfresh/metasfresh/issues/3309) Webui Window Design: Improve window Event store
+  * [#3309](https://github.com/metasfresh/metasfresh/issues/3309) WebUI Window Design: Improve window Event store
     * New System Admin Window Event Store. Allows the System Admin to view the status of events and checking/ resubmitting them in case of issues.
 
 * metasfresh-webui-API
@@ -57,9 +77,9 @@ Here come the actual release notes:
   * [#737](https://github.com/metasfresh/metasfresh-webui-api/issues/737) Deal properly with T_WEBUI_ViewSelection[Line]
     * Improvement of WebUI temporary selections.
   * [#745](https://github.com/metasfresh/metasfresh-webui-api/issues/745) Batch entry mode w/o Packing Instruction branch:master type:enhancement
-    * Improvement of the Bacth entry mode functionality. Now it's possible to cinfigure the Batch entry via Sysconfig so that no Packing Instruciton is needed for recording.
+    * Improvement of the Batch entry mode functionality. Now it's possible to configure the Batch entry via Sysconfig so that no Packing Instruction is needed for recording.
   * [#762](https://github.com/metasfresh/metasfresh-webui-api/issues/762) Show onhand quantity in new WebUI MRP Product Info Window
-    * New Field in material Cockpit, nw showing the on Hand Quantity too.
+    * New Field in material Cockpit, now showing the on Hand Quantity too.
   * [#770](https://github.com/metasfresh/metasfresh-webui-api/issues/770) Raise session Timeout of WebUI Application
     * Now possible to configure the session timeout of metasfresh via Spring Boot.
   * [#778](https://github.com/metasfresh/metasfresh-webui-api/issues/778) Use readOnlyFlag from AD_Field and AD_Tab when creating DocumentLayoutElements

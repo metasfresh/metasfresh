@@ -33,6 +33,9 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -235,7 +238,7 @@ public class CandiateRepositoryRetrievalTests
 
 		final CandidatesQuery querqWithoutProdDetails = CandidatesQuery
 				.fromCandidate(cand.withId(0), false)
-				.withProductionDetail(CandidatesQuery.NO_PRODUCTION_DETAIL);
+				.withProductionDetailsQuery(ProductionDetailsQuery.NO_PRODUCTION_DETAIL);
 		final Candidate expectedRecordWithoutProdDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(querqWithoutProdDetails);
 		assertThat(expectedRecordWithoutProdDetails).isNotNull();
@@ -310,7 +313,7 @@ public class CandiateRepositoryRetrievalTests
 
 		final CandidatesQuery withoutdistDetailsQuery = CandidatesQuery
 				.fromCandidate(candidateWithDistributionDetail.withId(0), false)
-				.withDistributionDetail(CandidatesQuery.NO_DISTRIBUTION_DETAIL);
+				.withDistributionDetailsQuery(DistributionDetailsQuery.NO_DISTRIBUTION_DETAIL);
 		final Candidate expectedRecordWithoutDistDetails = candidateRepositoryRetrieval
 				.retrieveLatestMatchOrNull(withoutdistDetailsQuery);
 

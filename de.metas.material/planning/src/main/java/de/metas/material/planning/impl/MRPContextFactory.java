@@ -51,7 +51,6 @@ public class MRPContextFactory implements IMRPContextFactory
 
 		mrpContextNew.setAD_Client_ID(context.getAD_Client_ID());
 		mrpContextNew.setAD_Org(context.getAD_Org());
-		mrpContextNew.setRequireDRP(context.isRequireDRP());
 		mrpContextNew.setM_Product(context.getM_Product());
 		// mrpContextNew.setProductPlanning(context.getProductPlanning()); // needs to be copied, see below
 

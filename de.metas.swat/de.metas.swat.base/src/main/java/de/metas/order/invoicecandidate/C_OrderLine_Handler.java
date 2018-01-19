@@ -277,6 +277,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * <li>QtyOrdered := C_OrderLine.QtyOrdered
 	 * <li>DateOrdered := C_OrderLine.DateOrdered
 	 * <li>C_Order_ID: C_OrderLine.C_Order_ID
+	 * <li>C_PaymentTerm_ID: C_OrderLine.C_PaymentTerm_ID/C_Order.C_PaymentTerm_ID
 	 * </ul>
 	 *
 	 * @see IInvoiceCandidateHandler#setOrderedData(I_C_Invoice_Candidate)
@@ -290,6 +291,23 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setQtyOrdered(orderLine.getQtyOrdered());
 		ic.setDateOrdered(orderLine.getDateOrdered());
 		ic.setC_Order_ID(orderLine.getC_Order_ID());
+
+		setC_PaymentTerm(ic);
+	}
+
+	private void setC_PaymentTerm(final I_C_Invoice_Candidate ic)
+	{
+		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
+
+		if (orderLine.getC_PaymentTerm_Override() == null)
+		{
+			final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+			ic.setC_PaymentTerm(order.getC_PaymentTerm());
+		}
+		else
+		{
+			ic.setC_PaymentTerm(orderLine.getC_PaymentTerm_Override());
+		}
 	}
 
 	/**

@@ -12,8 +12,8 @@ import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import lombok.NonNull;
 

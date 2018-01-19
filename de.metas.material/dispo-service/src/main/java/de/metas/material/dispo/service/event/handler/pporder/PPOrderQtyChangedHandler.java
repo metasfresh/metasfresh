@@ -18,8 +18,8 @@ import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent;
-import de.metas.material.event.pporder.PPOrderQtyChangedEvent.ChangedPPOrderLineDescriptor;
+import de.metas.material.event.pporder.PPOrderChangedEvent;
+import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
 import lombok.NonNull;
 
 /*
@@ -46,7 +46,7 @@ import lombok.NonNull;
 
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
-public class PPOrderQtyChangedHandler implements MaterialEventHandler<PPOrderQtyChangedEvent>
+public class PPOrderQtyChangedHandler implements MaterialEventHandler<PPOrderChangedEvent>
 {
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final CandidateChangeService candidateChangeService;
@@ -61,13 +61,13 @@ public class PPOrderQtyChangedHandler implements MaterialEventHandler<PPOrderQty
 	}
 
 	@Override
-	public Collection<Class<? extends PPOrderQtyChangedEvent>> getHandeledEventType()
+	public Collection<Class<? extends PPOrderChangedEvent>> getHandeledEventType()
 	{
-		return ImmutableList.of(PPOrderQtyChangedEvent.class);
+		return ImmutableList.of(PPOrderChangedEvent.class);
 	}
 
 	@Override
-	public void handleEvent(@NonNull final PPOrderQtyChangedEvent ppOrderQtyChangedEvent)
+	public void handleEvent(@NonNull final PPOrderChangedEvent ppOrderQtyChangedEvent)
 	{
 		final List<Candidate> candidatesToUpdate = PPOrderUtil.retrieveCandidatesForPPOrderId(
 				candidateRepositoryRetrieval,
@@ -85,7 +85,7 @@ public class PPOrderQtyChangedHandler implements MaterialEventHandler<PPOrderQty
 
 	private List<Candidate> processPPOrderChange(
 			@NonNull final List<Candidate> candidatesToUpdate,
-			@NonNull final PPOrderQtyChangedEvent ppOrderQtyChangedEvent)
+			@NonNull final PPOrderChangedEvent ppOrderQtyChangedEvent)
 	{
 		final List<Candidate> updatedCandidates = new ArrayList<>();
 		for (final Candidate candidateToUpdate : candidatesToUpdate)

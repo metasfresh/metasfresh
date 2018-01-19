@@ -71,8 +71,6 @@ public interface IMaterialPlanningContext extends IContextAware
 
 	I_PP_Product_Planning getProductPlanning();
 
-	boolean isRequireDRP();
-
 	/**
 	 *
 	 * @return Demand or Supply MRP record; also it can be <code>null</code> so please make sure you are doing NPE checks.

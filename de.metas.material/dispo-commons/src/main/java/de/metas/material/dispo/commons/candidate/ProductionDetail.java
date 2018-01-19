@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.util.Check;
 
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,22 +34,54 @@ import lombok.Value;
 @Value
 public class ProductionDetail
 {
-	public static ProductionDetail forProductionDetailRecord(
-			@NonNull final I_MD_Candidate_Prod_Detail productionDetail)
+	public enum Flag
 	{
-		final ProductionDetail productionCandidateDetail = ProductionDetail.builder()
-				.advised(productionDetail.isAdvised())
-				.description(productionDetail.getDescription())
-				.plantId(productionDetail.getPP_Plant_ID())
-				.productBomLineId(productionDetail.getPP_Product_BOMLine_ID())
-				.productPlanningId(productionDetail.getPP_Product_Planning_ID())
-				.ppOrderId(productionDetail.getPP_Order_ID())
-				.ppOrderLineId(productionDetail.getPP_Order_BOMLine_ID())
-				.ppOrderDocStatus(productionDetail.getPP_Order_DocStatus())
-				.plannedQty(productionDetail.getPlannedQty())
-				.actualQty(productionDetail.getActualQty())
+		TRUE,
+
+		FALSE,
+
+		/**
+		 * Don't update existing records, but initialize new ones to {@code false}.
+		 * <p>
+		 * Only used when storing an instance with the {@link CandidateRepositoryWriteService}.<br>
+		 * If you load an instance from DB, it shall never have flags with this value.
+		 */
+		FALSE_DONT_UPDATE;
+
+		public static Flag of(final boolean value)
+		{
+			return value ? TRUE : FALSE;
+		}
+
+		public boolean toBoolean()
+		{
+			return this.equals(TRUE);
+		}
+
+		public boolean updateExistingRecord()
+		{
+			return !this.equals(FALSE_DONT_UPDATE);
+		}
+	}
+
+	public static ProductionDetail forProductionDetailRecord(
+			@NonNull final I_MD_Candidate_Prod_Detail productionDetailRecord)
+	{
+		final ProductionDetail productionDetail = ProductionDetail.builder()
+				.advised(Flag.of(productionDetailRecord.isAdvised()))
+				.pickDirectlyIfFeasible(Flag.of(productionDetailRecord.isPickDirectlyIfFeasible()))
+				.description(productionDetailRecord.getDescription())
+				.plantId(productionDetailRecord.getPP_Plant_ID())
+				.productBomLineId(productionDetailRecord.getPP_Product_BOMLine_ID())
+				.productPlanningId(productionDetailRecord.getPP_Product_Planning_ID())
+				.ppOrderId(productionDetailRecord.getPP_Order_ID())
+				.ppOrderLineId(productionDetailRecord.getPP_Order_BOMLine_ID())
+				.ppOrderDocStatus(productionDetailRecord.getPP_Order_DocStatus())
+				.plannedQty(productionDetailRecord.getPlannedQty())
+				.actualQty(productionDetailRecord.getActualQty())
 				.build();
-		return productionCandidateDetail;
+
+		return productionDetail;
 	}
 
 	int plantId;
@@ -65,7 +98,9 @@ public class ProductionDetail
 
 	int ppOrderLineId;
 
-	boolean advised;
+	Flag advised;
+
+	Flag pickDirectlyIfFeasible;
 
 	BigDecimal plannedQty;
 
@@ -80,16 +115,18 @@ public class ProductionDetail
 			final int ppOrderId,
 			final String ppOrderDocStatus,
 			final int ppOrderLineId,
-			final boolean advised,
+			@NonNull final Flag advised,
+			@NonNull final Flag pickDirectlyIfFeasible,
 			final BigDecimal plannedQty,
 			final BigDecimal actualQty)
 	{
 		this.advised = advised;
+		this.pickDirectlyIfFeasible = pickDirectlyIfFeasible;
 
-		final boolean detailForPpOrderHead = productBomLineId <= 0;
-		if (advised && detailForPpOrderHead)
+		final boolean detailIsAboutPPOrderHeader = productBomLineId <= 0;
+		if (Flag.TRUE.equals(advised) && detailIsAboutPPOrderHeader)
 		{
-			// these two need to be available when using this productionDetail to ppOrder pojo
+			// plantId needs to be available when using this productionDetail to request a ppOrder being created
 			Check.errorIf(plantId <= 0, "Parameter plantId needs to be >= 0 for and advised PPOrder 'Header' productionDetail");
 		}
 

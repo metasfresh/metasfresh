@@ -16,6 +16,7 @@ package org.adempiere.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -337,10 +338,11 @@ import de.metas.logging.LogManager;
 		{
 			count = DB.getSQLValue(ITrx.TRXNAME_None, sqlCount);
 		}
-		query.setRecordCount(count);
+		
+		final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
+		query.setRecordCount(count, countDuration);
 
-		final long elapsedTimeMillis = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
-		Loggables.get().addLog("GenericZoomInfoDescriptor {} took {}ms", zoomInfoDescriptor, elapsedTimeMillis);
+		Loggables.get().addLog("GenericZoomInfoDescriptor {} took {}", zoomInfoDescriptor, countDuration);
 	}
 
 	private static final class GenericZoomInfoDescriptor

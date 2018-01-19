@@ -209,8 +209,7 @@ public class DDOrderPojoSupplier
 						.plantId(plant.getS_Resource_ID())
 						.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 						.datePromised(supplyDateFinishSchedule)
-						.shipperId(networkLine.getM_Shipper_ID())
-						.advisedToCreateDDrder(productPlanningData.isCreatePlan());
+						.shipperId(networkLine.getM_Shipper_ID());
 
 				builders.add(ddOrderBuilder);
 

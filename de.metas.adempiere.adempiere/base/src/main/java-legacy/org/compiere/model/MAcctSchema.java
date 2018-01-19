@@ -27,6 +27,7 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.report.MReportTree;
+import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import com.google.common.base.Supplier;
@@ -426,15 +427,14 @@ public class MAcctSchema extends X_C_AcctSchema
 	 */
 	public void checkCosting()
 	{
-		log.info(toString());
 		//	Create Cost Type
-		if (getM_CostType_ID() == 0)
+		if (getM_CostType_ID() <= 0)
 		{
-			MCostType ct = new MCostType (getCtx(), 0, get_TrxName());
-			ct.setClientOrg(getAD_Client_ID(), 0);
-			ct.setName(getName());
-			ct.save();
-			setM_CostType_ID(ct.getM_CostType_ID());
+			final I_M_CostType costType = InterfaceWrapperHelper.newInstance(I_M_CostType.class);
+			costType.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
+			costType.setName(getName());
+			InterfaceWrapperHelper.save(costType);
+			setM_CostType_ID(costType.getM_CostType_ID());
 		}
 		
 		//	Create Cost Elements

@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,7 +32,7 @@ import org.compiere.model.I_C_Tax;
 
 /**
  * Invoice Line predecessor which is returned by {@link IAggregationBL#aggregate()}.
- * 
+ *
  * One or more invoice candidates are aggregated in one instance of this class
  */
 public interface IInvoiceLineRW
@@ -79,7 +79,7 @@ public interface IInvoiceLineRW
 	// end of 03439 add description
 
 	/**
-	 * 
+	 *
 	 * @return returns a mutable collection. never returns <code>null</code>.
 	 */
 	public Collection<Integer> getC_InvoiceCandidate_InOutLine_IDs();
@@ -116,4 +116,8 @@ public interface IInvoiceLineRW
 	Set<IInvoiceLineAttribute> getInvoiceLineAttributes();
 
 	List<IInvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate();
+
+	public int getC_PaymentTerm_ID();
+
+	public void setC_PaymentTerm_ID(int paymentTermId);
 }

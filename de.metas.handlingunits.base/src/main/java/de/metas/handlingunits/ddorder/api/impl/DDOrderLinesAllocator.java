@@ -185,9 +185,13 @@ public class DDOrderLinesAllocator
 	/**
 	 * Process allocations and create material movement documents
 	 */
-	public void process()
+	public void processWithinOwnTrx()
 	{
-		//
+		Services.get(ITrxManager.class).run(localTrx -> process());
+	}
+
+	private void process()
+	{
 		// Clean previous state
 		ddOrderId2ShipmentMovementBuilder.clear();
 		ddOrderId2ReceiptMovementBuilder.clear();

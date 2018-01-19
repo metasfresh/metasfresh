@@ -359,7 +359,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setR_RequestRelated_ID(parent_record_id);
 		}
-		else if (parent_table_id == I_C_OrderLine.Table_ID)
+		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
 		{
 			final MOrderLine oLine = new MOrderLine(Env.getCtx(), parent_record_id, null);
 			if (oLine != null)

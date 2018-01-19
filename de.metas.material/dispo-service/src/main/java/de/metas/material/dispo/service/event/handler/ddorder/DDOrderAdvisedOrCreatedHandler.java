@@ -21,7 +21,7 @@ import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
@@ -166,7 +166,7 @@ public class DDOrderAdvisedOrCreatedHandler
 				candidateRepositoryWrite.updateCandidate(parentOfSupplyCandidate.withSeqNo(seqNoOfDemand - 2));
 			}
 
-			if (ddOrder.isAdvisedToCreateDDrder())
+			if (event.isAdvisedToCreateDDrder())
 			{
 				final boolean ddOrderCreationNotYetRequested = groupIdsWithRequestedPPOrders.add(groupId);
 				if (ddOrderCreationNotYetRequested)

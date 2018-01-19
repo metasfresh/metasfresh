@@ -33,6 +33,7 @@ import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.MAsset;
 import org.compiere.model.MCampaign;
@@ -299,7 +300,7 @@ public class ARequest implements ActionListener
 			{
 				tab.setValue(MRequest.COLUMNNAME_R_RequestRelated_ID, new Integer(m_Record_ID));
 			}
-			else if (m_AD_Table_ID == MOrderLine.Table_ID) {
+			else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class)) {
 				MOrderLine oLine = new MOrderLine(Env.getCtx(), m_Record_ID, null);
 				if (oLine != null) {
 					tab.setValue(MOrderLine.COLUMNNAME_C_Order_ID, new Integer(oLine.getC_Order_ID()));

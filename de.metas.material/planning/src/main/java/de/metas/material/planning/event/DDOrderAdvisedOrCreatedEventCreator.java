@@ -6,6 +6,7 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
+import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -72,6 +73,8 @@ public class DDOrderAdvisedOrCreatedEventCreator
 						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, mrpContext),
 						SupplyRequiredHandlerUtils.mkMRPNotesCollector());
 
+		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
+
 		for (final DDOrder ddOrder : ddOrders)
 		{
 			for (final DDOrderLine ddOrderLine : ddOrder.getLines())
@@ -92,6 +95,8 @@ public class DDOrderAdvisedOrCreatedEventCreator
 						.fromWarehouseId(networkLine.getM_WarehouseSource_ID())
 						.toWarehouseId(networkLine.getM_Warehouse_ID())
 						.ddOrder(ddOrder)
+						.advisedToCreateDDrder(productPlanningData.isCreatePlan())
+						.pickIfFeasible(productPlanningData.isPickDirectlyIfFeasible())
 						.build();
 
 				events.add(distributionAdvisedEvent);

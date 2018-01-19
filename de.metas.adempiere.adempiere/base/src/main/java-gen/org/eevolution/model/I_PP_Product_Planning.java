@@ -378,6 +378,31 @@ public interface I_PP_Product_Planning
     public static final String COLUMNNAME_IsPhantom = "IsPhantom";
 
 	/**
+	 * Set Sofort Kommissionieren wenn möglich.
+	 * Falls "Ja" und ein Bestand wird für einen bestimmten Lieferdispo-Eintrag bereit gestellt oder produziert, dann wird dieser sofort zugeordnet und als kommissioniert markiert.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPickDirectlyIfFeasible (boolean IsPickDirectlyIfFeasible);
+
+	/**
+	 * Get Sofort Kommissionieren wenn möglich.
+	 * Falls "Ja" und ein Bestand wird für einen bestimmten Lieferdispo-Eintrag bereit gestellt oder produziert, dann wird dieser sofort zugeordnet und als kommissioniert markiert.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPickDirectlyIfFeasible();
+
+    /** Column definition for IsPickDirectlyIfFeasible */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsPickDirectlyIfFeasible = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsPickDirectlyIfFeasible", null);
+    /** Column name IsPickDirectlyIfFeasible */
+    public static final String COLUMNNAME_IsPickDirectlyIfFeasible = "IsPickDirectlyIfFeasible";
+
+	/**
 	 * Set Eingekauft.
 	 * Die Organisation kauft dieses Produkt ein
 	 *
@@ -401,52 +426,6 @@ public interface I_PP_Product_Planning
     public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsPurchased = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsPurchased", null);
     /** Column name IsPurchased */
     public static final String COLUMNNAME_IsPurchased = "IsPurchased";
-
-	/**
-	 * Set Required Calculate DRP.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsRequiredDRP (boolean IsRequiredDRP);
-
-	/**
-	 * Get Required Calculate DRP.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isRequiredDRP();
-
-    /** Column definition for IsRequiredDRP */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsRequiredDRP = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsRequiredDRP", null);
-    /** Column name IsRequiredDRP */
-    public static final String COLUMNNAME_IsRequiredDRP = "IsRequiredDRP";
-
-	/**
-	 * Set Required Calculate MRP.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsRequiredMRP (boolean IsRequiredMRP);
-
-	/**
-	 * Get Required Calculate MRP.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isRequiredMRP();
-
-    /** Column definition for IsRequiredMRP */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsRequiredMRP = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsRequiredMRP", null);
-    /** Column name IsRequiredMRP */
-    public static final String COLUMNNAME_IsRequiredMRP = "IsRequiredMRP";
 
 	/**
 	 * Set Merkmale.
@@ -837,7 +816,7 @@ public interface I_PP_Product_Planning
 	 * Set Ressource.
 	 * Resource
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -847,7 +826,7 @@ public interface I_PP_Product_Planning
 	 * Get Ressource.
 	 * Resource
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
