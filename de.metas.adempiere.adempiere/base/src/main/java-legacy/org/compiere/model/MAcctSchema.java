@@ -27,7 +27,6 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.report.MReportTree;
-import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import com.google.common.base.Supplier;
@@ -421,33 +420,6 @@ public class MAcctSchema extends X_C_AcctSchema
 	}	//	getCostingPrecision
 	
 	
-	/**
-	 * 	Check Costing Setup.
-	 * 	Make sure that there is a Cost Type and Cost Element
-	 */
-	public void checkCosting()
-	{
-		//	Create Cost Type
-		if (getM_CostType_ID() <= 0)
-		{
-			final I_M_CostType costType = InterfaceWrapperHelper.newInstance(I_M_CostType.class);
-			costType.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
-			costType.setName(getName());
-			InterfaceWrapperHelper.save(costType);
-			setM_CostType_ID(costType.getM_CostType_ID());
-		}
-		
-		//	Create Cost Elements
-		MCostElement.getMaterialCostElement(this, getCostingMethod());
-		
-		//	Default Costing Level
-		if (getCostingLevel() == null)
-			setCostingLevel(COSTINGLEVEL_Client);
-		if (getCostingMethod() == null)
-			setCostingMethod (COSTINGMETHOD_StandardCosting);
-		if (getGAAP() == null)
-			setGAAP (GAAP_InternationalGAAP);
-	}	//	checkCosting
 	
 	/**
 	 * 	Is Client Costing Level (default)
@@ -579,7 +551,10 @@ public class MAcctSchema extends X_C_AcctSchema
 		{
 			setTaxCorrectionType(isDiscountCorrectsTax() ? TAXCORRECTIONTYPE_Write_OffAndDiscount : TAXCORRECTIONTYPE_None);
 		}
-		checkCosting();
+		
+		if (getGAAP() == null)
+			setGAAP(GAAP_InternationalGAAP);
+
 		//	Check Primary
 		if (getAD_OrgOnly_ID() != 0)
 		{

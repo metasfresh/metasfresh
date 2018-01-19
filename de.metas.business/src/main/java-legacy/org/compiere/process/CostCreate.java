@@ -16,14 +16,13 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
-
-import org.compiere.model.MCostDetail;
+import org.adempiere.util.Services;
 import org.compiere.model.MProduct;
 import org.compiere.util.AdempiereUserError;
+
+import de.metas.costing.ICostDetailService;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * 	Create/Update Costing for Product
@@ -39,6 +38,7 @@ public class CostCreate extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -60,6 +60,7 @@ public class CostCreate extends JavaProcess
 	 *  @return Message (text with variables)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		log.info("M_Product_ID=" + p_M_Product_ID);
@@ -69,9 +70,8 @@ public class CostCreate extends JavaProcess
 		if (product.get_ID() != p_M_Product_ID)
 			throw new AdempiereUserError("@NotFound@: @M_Product_ID@ = " + p_M_Product_ID);
 		//
-		if (MCostDetail.processProduct(product, get_TrxName()))
-			return "@OK@";
-		return "@Error@";
+		Services.get(ICostDetailService.class).processAllForProduct(p_M_Product_ID);
+		return MSG_OK;
 	}	//	doIt
 	
 }	//	CostCreate

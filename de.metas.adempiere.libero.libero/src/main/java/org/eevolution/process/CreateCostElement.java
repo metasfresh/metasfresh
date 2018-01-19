@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved.               *
- * Contributor(s): Victor Perez www.e-evolution.com                           *
- *                 Teo Sarca, www.arhipac.ro                                  *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
+ * Contributor(s): Victor Perez www.e-evolution.com *
+ * Teo Sarca, www.arhipac.ro *
  *****************************************************************************/
 
 package org.eevolution.process;
@@ -30,11 +30,11 @@ package org.eevolution.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -47,7 +47,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.engines.CostDimension;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
@@ -57,8 +56,11 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.MCost;
 import org.compiere.model.X_C_AcctSchema;
 
-import de.metas.process.ProcessInfoParameter;
+import de.metas.costing.CostSegment;
+import de.metas.costing.CostingLevel;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.product.IProductBL;
 
 /**
  * Create Cost Element
@@ -132,28 +134,30 @@ public class CreateCostElement extends JavaProcess
 		final I_C_AcctSchema as = InterfaceWrapperHelper.create(getCtx(), p_C_AcctSchema_ID, I_C_AcctSchema.class, ITrx.TRXNAME_None);
 
 		int count_costs = 0, count_all = 0;
-		for (final int org_id : getOrgs(as))
+		for (final int orgId : getOrgs(as))
 		{
 			for (final I_M_Product product : getProducts())
 			{
 				final int product_id = product.getM_Product_ID();
-				
+				final CostingLevel costingLevel = CostingLevel.forCode(Services.get(IProductBL.class).getCostingLevel(product, as));
+
+				final CostSegment costSegment = CostSegment.builder()
+						.costingLevel(costingLevel)
+						.acctSchemaId(as.getC_AcctSchema_ID())
+						.costTypeId(p_M_CostType_ID)
+						.productId(product_id)
+						.clientId(getAD_Client_ID())
+						.orgId(orgId)
+						.attributeSetInstanceId(0)
+						.build();
+
 				for (final I_M_CostElement element : getElements())
 				{
-					CostDimension d = new CostDimension(getAD_Client_ID(), org_id,
-							product_id,
-							0, // ASI=0
-							p_M_CostType_ID,
-							as.getC_AcctSchema_ID(),
-							element.getM_CostElement_ID()
-							);
-					I_M_Cost cost = d.toQuery(I_M_Cost.class, get_TrxName()).firstOnly(I_M_Cost.class);
+					final I_M_Cost cost = MCost.getOrCreate(costSegment, element.getM_CostElement_ID());
+					if(InterfaceWrapperHelper.isNew(cost))
 					if (cost == null)
 					{
-						cost = new MCost(product, d.getM_AttributeSetInstance_ID(), as,
-								d.getAD_Org_ID(), d.getM_CostElement_ID());
-						cost.setM_CostType_ID(d.getM_CostType_ID());
-						InterfaceWrapperHelper.save(cost, get_TrxName());
+						InterfaceWrapperHelper.save(cost);
 						count_costs++;
 					}
 					count_all++;
@@ -252,7 +256,7 @@ public class CreateCostElement extends JavaProcess
 		m_products = queryBuilder
 				.create()
 				.list();
-		
+
 		return m_products;
 	}
 

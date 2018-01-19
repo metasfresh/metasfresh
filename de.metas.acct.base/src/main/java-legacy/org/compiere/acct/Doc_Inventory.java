@@ -30,6 +30,8 @@ import org.compiere.model.MProduct;
 import org.compiere.model.ProductCost;
 import org.compiere.util.Env;
 
+import de.metas.costing.CostingDocumentRef;
+
 /**
  *  Post Inventory Documents.
  *  <pre>
@@ -67,6 +69,7 @@ public class Doc_Inventory extends Doc
 	 *  Load Document Details
 	 *  @return error message or null
 	 */
+	@Override
 	protected String loadDocumentDetails()
 	{
 		setC_Currency_ID (NO_CURRENCY);
@@ -88,7 +91,7 @@ public class Doc_Inventory extends Doc
 	 */
 	private DocLine[] loadLines(MInventory inventory)
 	{
-		ArrayList<DocLine> list = new ArrayList<DocLine>();
+		ArrayList<DocLine> list = new ArrayList<>();
 		MInventoryLine[] lines = inventory.getLines(false);
 		for (int i = 0; i < lines.length; i++)
 		{
@@ -124,6 +127,7 @@ public class Doc_Inventory extends Doc
 	 *  Get Balance
 	 *  @return Zero (always balanced)
 	 */
+	@Override
 	public BigDecimal getBalance()
 	{
 		BigDecimal retValue = Env.ZERO;
@@ -141,6 +145,7 @@ public class Doc_Inventory extends Doc
 	 *  @param as account schema
 	 *  @return Fact
 	 */
+	@Override
 	public ArrayList<Fact> createFacts (MAcctSchema as)
 	{
 		//  create Fact Header
@@ -157,7 +162,7 @@ public class Doc_Inventory extends Doc
 			// MZ Goodwill
 			// if Physical Inventory CostDetail is exist then get Cost from Cost Detail
 			// metas-ts: US330: call with zeroCostsOK=false, because we want the system to return the result of MCost.getSeedCosts(), if there are no current costs yet
-			BigDecimal costs = line.getProductCosts(as, line.getAD_Org_ID(), false, "M_InventoryLine_ID=?");
+			BigDecimal costs = line.getProductCosts(as, line.getAD_Org_ID(), false, CostingDocumentRef.ofInventoryLineId(line.get_ID()));
 			// end MZ
 			if (ProductCost.isNoCosts(costs))
 			{
@@ -225,7 +230,7 @@ public class Doc_Inventory extends Doc
 				line.getDescription(), getTrxName());*/
 		}
 		//
-		ArrayList<Fact> facts = new ArrayList<Fact>();
+		ArrayList<Fact> facts = new ArrayList<>();
 		facts.add(fact);
 		return facts;
 	}   //  createFact

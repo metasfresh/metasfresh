@@ -38,7 +38,7 @@ public class MProductCategoryAcct extends X_M_Product_Category_Acct
 	 */
 	private static final long serialVersionUID = 2075372131034904732L;
 	/** Static cache */
-	private static CCache<String, I_M_Product_Category_Acct> s_cache = new CCache<String, I_M_Product_Category_Acct>(Table_Name, 40, 5);
+	private static CCache<String, I_M_Product_Category_Acct> s_cache = new CCache<>(Table_Name, 40, 5);
 	
 	
 	/**
@@ -140,29 +140,6 @@ public class MProductCategoryAcct extends X_M_Product_Category_Acct
 	{
 		super (ctx, rs, trxName);
 	}	//	MProductCategoryAcct
-
-	/**
-	 * 	Check Costing Setup
-	 */
-	public void checkCosting()
-	{
-		//	Create Cost Elements
-		if (getCostingMethod() != null && getCostingMethod().length() > 0)
-			MCostElement.getMaterialCostElement(this, getCostingMethod());
-	}	//	checkCosting
-
-	/**
-	 * 	After Save
-	 *	@param newRecord new
-	 *	@param success success
-	 *	@return success
-	 */
-	@Override
-	protected boolean afterSave (boolean newRecord, boolean success)
-	{
-		checkCosting();
-		return success;
-	}	//	afterSave
 	
 	/**
 	 * 	String Representation
@@ -171,7 +148,7 @@ public class MProductCategoryAcct extends X_M_Product_Category_Acct
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer ("MProductCategoryAcct[");
+		StringBuilder sb = new StringBuilder ("MProductCategoryAcct[");
 		sb.append (get_ID())
 			.append (",M_Product_Category_ID=").append (getM_Product_Category_ID())
 			.append (",C_AcctSchema_ID=").append(getC_AcctSchema_ID())

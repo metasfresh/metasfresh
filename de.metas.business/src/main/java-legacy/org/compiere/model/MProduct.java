@@ -29,6 +29,7 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.costing.ICostDetailRepository;
 import de.metas.product.IProductBL;
 
 /**
@@ -57,6 +58,7 @@ public class MProduct extends X_M_Product
 	 * @param M_Product_ID id
 	 * @return MProduct or null
 	 */
+	@Deprecated
 	public static MProduct get(Properties ctx, int M_Product_ID)
 	{
 		if (M_Product_ID <= 0)
@@ -523,11 +525,7 @@ public class MProduct extends X_M_Product
 		}
 
 		// check if it has cost
-		boolean hasCosts = new Query(getCtx(), MCostDetail.Table_Name,
-				MCostDetail.COLUMNNAME_M_Product_ID + "=?", get_TrxName())
-				.setOnlyActiveRecords(true)
-				.setParameters(new Object[] { get_ID() })
-				.match();
+		final boolean hasCosts = Services.get(ICostDetailRepository.class).hasCostDetailsForProductId(getM_Product_ID());
 		if (hasCosts)
 		{
 			return true;
@@ -575,7 +573,7 @@ public class MProduct extends X_M_Product
 		}
 
 		// New Costing
-		if (newRecord || is_ValueChanged("M_Product_Category_ID"))
+		if (newRecord || is_ValueChanged(COLUMNNAME_M_Product_Category_ID))
 		{
 			MCost.create(this);
 		}

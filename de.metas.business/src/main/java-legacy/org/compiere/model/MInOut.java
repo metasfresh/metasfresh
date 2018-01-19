@@ -49,6 +49,8 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostDetailService;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
@@ -2427,6 +2429,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		//
 		// For all lines
+		final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
 		for (final I_M_InOutLine inoutLine : getLines(true))
 		{
 			final I_M_Product product = inoutLine.getM_Product();
@@ -2475,10 +2478,9 @@ public class MInOut extends X_M_InOut implements IDocument
 			}
 
 			// Delete M_CostDetails
-			for (final I_M_CostDetail costDetail : MCostDetail.retrieveForInOutLine(inoutLine))
-			{
-				MCostDetail.reverseAndDelete(costDetail);
-			}
+			costDetailService.reverseAndDeleteForDocument(isSOTrx() ? //
+					CostingDocumentRef.ofShipmentLineId(inoutLine.getM_InOutLine_ID())
+					: CostingDocumentRef.ofReceiptLineId(inoutLine.getM_InOutLine_ID()));
 
 			// Update Order Line
 			final I_C_OrderLine orderLine = inoutLine.getC_OrderLine();

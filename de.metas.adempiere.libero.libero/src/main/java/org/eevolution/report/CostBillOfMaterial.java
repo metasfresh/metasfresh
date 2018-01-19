@@ -47,18 +47,20 @@ import java.util.List;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.engines.CostEngine;
 import org.adempiere.model.engines.CostEngineFactory;
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Cost;
-import org.compiere.model.I_M_CostElement;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
-import org.compiere.model.MCostElement;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
+import org.compiere.model.X_M_CostElement;
 import org.compiere.util.Env;
 import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 import org.eevolution.model.X_T_BOMLine;
 
+import de.metas.costing.CostElement;
+import de.metas.costing.ICostElementRepository;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -78,7 +80,7 @@ public class CostBillOfMaterial extends JavaProcess
 	private int p_C_AcctSchema_ID = 0;
 	private int p_M_Product_ID = 0;
 	private int p_M_CostType_ID = 0;
-	private String p_ConstingMethod = MCostElement.COSTINGMETHOD_StandardCosting;
+	private String p_ConstingMethod = X_M_CostElement.COSTINGMETHOD_StandardCosting;
 	private boolean p_implosion = false;
 	//
 	private int m_LevelNo = 0;
@@ -102,7 +104,7 @@ public class CostBillOfMaterial extends JavaProcess
 			}
 			else if (name.equals(MCost.COLUMNNAME_M_CostType_ID))
 				p_M_CostType_ID= para.getParameterAsInt();
-			else if (name.equals(MCostElement.COLUMNNAME_CostingMethod))
+			else if (name.equals(X_M_CostElement.COLUMNNAME_CostingMethod))
 				p_ConstingMethod=(String)para.getParameter();
 			else if (name.equals(MCost.COLUMNNAME_M_Product_ID))
 				p_M_Product_ID = para.getParameterAsInt();
@@ -175,7 +177,7 @@ public class CostBillOfMaterial extends JavaProcess
 	 */
 	private List<MPPProductBOM> getBOMs(MProduct product, boolean includeAlternativeBOMs)
 	{
-		ArrayList<Object> params = new ArrayList<Object>();
+		ArrayList<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer();
 		whereClause.append(MPPProductBOM.COLUMNNAME_M_Product_ID).append("=?");
 		params.add(product.get_ID());
@@ -219,7 +221,7 @@ public class CostBillOfMaterial extends JavaProcess
 		{
 			throw new LiberoException("@NotFound@ @PP_Product_BOM_ID@");
 		}
-		for (I_M_CostElement costElement : getCostElements())
+		for (CostElement costElement : getCostElements())
 		{
 			X_T_BOMLine tboml = new X_T_BOMLine(getCtx(), 0, get_TrxName());
 			tboml.setAD_Org_ID(p_AD_Org_ID);
@@ -229,7 +231,7 @@ public class CostBillOfMaterial extends JavaProcess
 			tboml.setM_CostType_ID(p_M_CostType_ID);
 			tboml.setCostingMethod(p_ConstingMethod);
 			tboml.setAD_PInstance_ID(getAD_PInstance_ID());
-			tboml.setM_CostElement_ID(costElement.getM_CostElement_ID());
+			tboml.setM_CostElement_ID(costElement.getId());
 			tboml.setM_Product_ID(product.get_ID());
 			tboml.setQtyBOM(qty);
 			//
@@ -245,7 +247,7 @@ public class CostBillOfMaterial extends JavaProcess
 					p_M_CostType_ID,
 					p_AD_Org_ID,
 					0, // ASI
-					costElement.getM_CostElement_ID());
+					costElement.getId());
 			BigDecimal currentCostPrice = Env.ZERO;
 			BigDecimal currentCostPriceLL = Env.ZERO;
 			BigDecimal futureCostPrice = Env.ZERO;
@@ -281,13 +283,13 @@ public class CostBillOfMaterial extends JavaProcess
 		}
 	}
 
-	public Collection<I_M_CostElement> getCostElements()
+	public List<CostElement> getCostElements()
 	{
 		if (m_costElements == null)
 		{
-			m_costElements = MCostElement.getByCostingMethod(getCtx(), p_ConstingMethod);
+			m_costElements = Services.get(ICostElementRepository.class).getByCostingMethod(p_ConstingMethod);
 		}
 		return m_costElements;
 	}
-	private Collection <I_M_CostElement> m_costElements = null;
+	private List<CostElement> m_costElements = null;
 }

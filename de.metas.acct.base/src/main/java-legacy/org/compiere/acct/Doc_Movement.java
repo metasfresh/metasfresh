@@ -19,12 +19,16 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import org.adempiere.util.Services;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCostDetail;
 import org.compiere.model.MMovement;
 import org.compiere.model.MMovementLine;
 import org.compiere.model.ProductCost;
 import org.compiere.util.Env;
+
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostDetailService;
 
 /**
  *  Post Invoice Documents.
@@ -79,7 +83,7 @@ public class Doc_Movement extends Doc
 	 */
 	private DocLine[] loadLines(MMovement move)
 	{
-		ArrayList<DocLine> list = new ArrayList<DocLine>();
+		ArrayList<DocLine> list = new ArrayList<>();
 		MMovementLine[] lines = move.getLines(true);
 		for (int i = 0; i < lines.length; i++)
 		{
@@ -135,7 +139,7 @@ public class Doc_Movement extends Doc
 			DocLine line = p_lines[i];
 			// MZ Goodwill
 			// if Inventory Move CostDetail exist then get Cost from Cost Detail 
-			BigDecimal costs = line.getProductCosts(as, line.getAD_Org_ID(), true, "M_MovementLine_ID=? AND IsSOTrx='N'");
+			BigDecimal costs = line.getProductCosts(as, line.getAD_Org_ID(), true, CostingDocumentRef.ofToMovementLineId(line.get_ID()));
 			// end MZ
 
 			//  ** Inventory       DR      CR
@@ -190,22 +194,35 @@ public class Doc_Movement extends Doc
 				if (description == null)
 					description = "";
 				//	Cost Detail From
-				MCostDetail.createMovement(as, dr.getAD_Org_ID(), 	//	locator org
-					line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-					line.get_ID(), 0,
-					costs.negate(), line.getQty().negate(), true,
-					description + "(|->)", getTrxName());
+				final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
+				costDetailService.createCostDetail(CostDetailCreateRequest.builder()
+						.acctSchemaId(as.getC_AcctSchema_ID())
+						.orgId(dr.getAD_Org_ID())
+						.productId(line.getM_Product_ID())
+						.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
+						.documentRef(CostingDocumentRef.ofFromMovementLineId(line.get_ID()))
+						.costElementId(0)
+						.amt(costs.negate())
+						.qty(line.getQty().negate())
+						.description(description + "(|->)")
+						.build());
 				//	Cost Detail To
-				MCostDetail.createMovement(as, cr.getAD_Org_ID(),	//	locator org 
-					line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-					line.get_ID(), 0,
-					costs, line.getQty(), false,
-					description + "(|<-)", getTrxName());
+				costDetailService.createCostDetail(CostDetailCreateRequest.builder()
+						.acctSchemaId(as.getC_AcctSchema_ID())
+						.orgId(cr.getAD_Org_ID())
+						.productId(line.getM_Product_ID())
+						.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
+						.documentRef(CostingDocumentRef.ofToMovementLineId(line.get_ID()))
+						.costElementId(0)
+						.amt(costs)
+						.qty(line.getQty())
+						.description(description + "(|<-)")
+						.build());
 			}
 		}
 
 		//
-		ArrayList<Fact> facts = new ArrayList<Fact>();
+		ArrayList<Fact> facts = new ArrayList<>();
 		facts.add(fact);
 		return facts;
 	}   //  createFact

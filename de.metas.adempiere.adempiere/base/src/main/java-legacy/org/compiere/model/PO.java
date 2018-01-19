@@ -2269,7 +2269,7 @@ public abstract class PO
 	 * @param AD_Org_ID org
 	 */
 	@OverridingMethodsMustInvokeSuper
-	protected void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
+	public void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
 	{
 		if (AD_Client_ID != getAD_Client_ID())
 			setAD_Client_ID(AD_Client_ID);

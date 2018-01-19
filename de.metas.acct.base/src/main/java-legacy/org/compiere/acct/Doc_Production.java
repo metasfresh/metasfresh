@@ -21,17 +21,22 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.util.Services;
+import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCostDetail;
 import org.compiere.model.ProductCost;
 import org.compiere.model.X_M_Production;
 import org.compiere.model.X_M_ProductionLine;
 import org.compiere.model.X_M_ProductionPlan;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailQuery;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICostDetailService;
 
 /**
  *  Post Invoice Documents.
@@ -59,6 +64,7 @@ public class Doc_Production extends Doc
 	 *  Load Document Details
 	 *  @return error message or null
 	 */
+	@Override
 	protected String loadDocumentDetails()
 	{
 		setC_Currency_ID (NO_CURRENCY);
@@ -78,7 +84,7 @@ public class Doc_Production extends Doc
 	 */
 	private DocLine[] loadLines(X_M_Production prod)
 	{
-		ArrayList<DocLine> list = new ArrayList<DocLine>();
+		ArrayList<DocLine> list = new ArrayList<>();
 		//	Production
 		//	-- ProductionPlan
 		//	-- -- ProductionLine	- the real level
@@ -146,6 +152,7 @@ public class Doc_Production extends Doc
 	 *  Get Balance
 	 *  @return Zero (always balanced)
 	 */
+	@Override
 	public BigDecimal getBalance()
 	{
 		BigDecimal retValue = Env.ZERO;
@@ -162,6 +169,7 @@ public class Doc_Production extends Doc
 	 *  @param as account schema
 	 *  @return Fact
 	 */
+	@Override
 	public ArrayList<Fact> createFacts (MAcctSchema as)
 	{
 		//  create Fact Header
@@ -178,10 +186,16 @@ public class Doc_Production extends Doc
 			
 			// MZ Goodwill
 			// if Production CostDetail exist then get Cost from Cost Detail 
-			MCostDetail cd = MCostDetail.get (as.getCtx(), "M_ProductionLine_ID=?", 
-					line.get_ID(), line.getM_AttributeSetInstance_ID(), as.getC_AcctSchema_ID(), getTrxName());
+			final I_M_CostDetail cd = Services.get(ICostDetailRepository.class)
+					.getCostDetailOrNull(CostDetailQuery.builder()
+							.acctSchemaId(as.getC_AcctSchema_ID())
+							.documentRef(CostingDocumentRef.ofProductionLineId(line.get_ID()))
+							.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
+							.build());
 			if (cd != null)
+			{
 				costs = cd.getAmt();
+			}
 			else
 			{	
 				if (line.isProductionBOM())
@@ -231,14 +245,21 @@ public class Doc_Production extends Doc
 				description = "";
 			if (line.isProductionBOM())
 				description += "(*)";
-			MCostDetail.createProduction(as, line.getAD_Org_ID(), 
-				line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(), 
-				line.get_ID(), 0, 
-				costs, line.getQty(), 
-				description, getTrxName());
+			Services.get(ICostDetailService.class)
+					.createCostDetail(CostDetailCreateRequest.builder()
+							.acctSchemaId(as.getC_AcctSchema_ID())
+							.orgId(line.getAD_Org_ID())
+							.productId(line.getM_Product_ID())
+							.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
+							.documentRef(CostingDocumentRef.ofProductionLineId(line.get_ID()))
+							.costElementId(0)
+							.amt(costs)
+							.qty(line.getQty())
+							.description(description)
+							.build());
 		}
 		//
-		ArrayList<Fact> facts = new ArrayList<Fact>();
+		ArrayList<Fact> facts = new ArrayList<>();
 		facts.add(fact);
 		return facts;
 	}   //  createFact

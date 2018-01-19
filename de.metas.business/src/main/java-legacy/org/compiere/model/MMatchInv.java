@@ -29,6 +29,10 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailQuery;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostDetailService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
 import de.metas.invoice.IMatchInvDAO;
@@ -358,10 +362,18 @@ public class MMatchInv extends X_M_MatchInv
 				tQty = tQty.add(getQty());
 			}
 			// Set Total Amount and Total Quantity from Matched Invoice 
-			MCostDetail.createInvoice(as, getAD_Org_ID(), 
-					getM_Product_ID(), getM_AttributeSetInstance_ID(),
-					invoiceLine.getC_InvoiceLine_ID(), 0,		//	No cost element
-					tAmt, tQty,	getDescription(), get_TrxName());
+			Services.get(ICostDetailService.class)
+					.createCostDetail(CostDetailCreateRequest.builder()
+							.acctSchemaId(as.getC_AcctSchema_ID())
+							.orgId(getAD_Org_ID())
+							.productId(getM_Product_ID())
+							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+							.documentRef(CostingDocumentRef.ofInvoiceLineId(invoiceLine.getC_InvoiceLine_ID()))
+							.costElementId(0)
+							.amt(tAmt)
+							.qty(tQty)
+							.description(getDescription())
+							.build());
 			// end MZ
 		}
 	}
@@ -375,7 +387,16 @@ public class MMatchInv extends X_M_MatchInv
 			return; // task 08529: we extend the use of matchInv to also keep track of the SoTrx side. However, currently we don't need the accounting of that side to work
 		}
 
+		final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
+		
+		final I_M_InOut receipt = getM_InOutLine().getM_InOut();
+		BigDecimal qty = getQty();
+		if (inOutBL.isReturnMovementType(receipt.getMovementType()))
+		{
+			qty = qty.negate();
+		}
+
 
 		// Get Account Schemas to delete MCostDetail
 		for(final MAcctSchema as : MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID()))
@@ -385,48 +406,12 @@ public class MMatchInv extends X_M_MatchInv
 				continue;
 			}
 			
-			// update/delete Cost Detail and recalculate Current Cost
-			MCostDetail cd = MCostDetail.get (getCtx(), "C_InvoiceLine_ID=?", 
-					getC_InvoiceLine_ID(), getM_AttributeSetInstance_ID(), as.getC_AcctSchema_ID(), get_TrxName());
-			if (cd != null)
-			{
-				final I_M_InOut receipt = getM_InOutLine().getM_InOut();
-				BigDecimal qty = getQty();
-				if (inOutBL.isReturnMovementType(receipt.getMovementType()))
-				{
-					qty = qty.negate();
-				}
-				
-				//
-				final BigDecimal price;
-				if (cd.getQty().signum() == 0)
-				{
-					price = cd.getAmt(); // FIXME: shall use price=0?
-				}
-				else
-				{
-					price = cd.getAmt().divide(cd.getQty(),12,BigDecimal.ROUND_HALF_UP);
-				}
-				cd.setDeltaAmt(price.multiply(qty.negate()));
-				cd.setDeltaQty(qty.negate());
-				cd.setProcessed(false);
-				//
-				cd.setAmt(price.multiply(cd.getQty().subtract(qty)));
-				cd.setQty(cd.getQty().subtract(qty));
-				if (!cd.isProcessed())
-				{
-					final I_AD_Client client = MClient.get(getCtx(), getAD_Client_ID());
-					if (client.isCostImmediate())
-					{
-						cd.process();
-					}
-				}
-				if (cd.getQty().signum() == 0)
-				{
-					cd.setProcessed(false);
-					cd.delete(true);
-				}
-			}
+			final CostDetailQuery costDetailQuery = CostDetailQuery.builder()
+					.acctSchemaId(as.getC_AcctSchema_ID())
+					.documentRef(CostingDocumentRef.ofInvoiceLineId(getC_InvoiceLine_ID()))
+					.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+					.build();
+			costDetailService.reversePartialQty(costDetailQuery, qty);
 		}
 	}
 }	//	MMatchInv

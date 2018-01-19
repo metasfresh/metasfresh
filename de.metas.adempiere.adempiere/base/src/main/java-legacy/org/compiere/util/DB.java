@@ -62,7 +62,6 @@ import org.compiere.db.CConnection;
 import org.compiere.db.Database;
 import org.compiere.dbPort.Convert;
 import org.compiere.model.I_AD_System;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MSequence;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
@@ -199,14 +198,14 @@ public final class DB
 		log.info("After migration: Sequence check");
 		SequenceCheck.validate(ctx);
 
-		// Costing Setup
-		log.info("After migration: Product costing check");
-		MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(ctx, 0);
-		for (int i = 0; i < ass.length; i++)
-		{
-			ass[i].checkCosting();
-			ass[i].save();
-		}
+//		// Costing Setup
+//		log.info("After migration: Product costing check");
+//		MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(ctx, 0);
+//		for (int i = 0; i < ass.length; i++)
+//		{
+//			ass[i].checkCosting();
+//			ass[i].save();
+//		}
 
 		// Reset Flag
 		system.setIsJustMigrated(false);

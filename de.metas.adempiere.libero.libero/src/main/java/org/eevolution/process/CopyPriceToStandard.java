@@ -45,15 +45,17 @@ import org.adempiere.model.engines.CostDimension;
 import org.adempiere.util.Services;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
-import org.compiere.model.MCostElement;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductPrice;
+import org.compiere.model.X_M_CostElement;
 
+import de.metas.costing.CostElement;
+import de.metas.costing.ICostElementRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * CopyPriceToStandard
@@ -114,8 +116,8 @@ public class CopyPriceToStandard extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		MAcctSchema as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
-		MCostElement element = MCostElement.get(getCtx(), p_M_CostElement_ID);
-		if (!MCostElement.COSTELEMENTTYPE_Material.equals(element.getCostElementType()))
+		CostElement element = Services.get(ICostElementRepository.class).getById(p_M_CostElement_ID);
+		if (!X_M_CostElement.COSTELEMENTTYPE_Material.equals(element.getCostElementType()))
 		{
 			throw new LiberoException("Only Material Cost Elements are allowed");
 		}
@@ -138,7 +140,7 @@ public class CopyPriceToStandard extends JavaProcess
 			Collection<MCost> costs = d.toQuery(MCost.class, get_TrxName()).list();
 			for (MCost cost : costs)
 			{
-				if (cost.getM_CostElement_ID() == element.get_ID())
+				if (cost.getM_CostElement_ID() == element.getId())
 				{
 					cost.setFutureCostPrice(price);
 					cost.saveEx();

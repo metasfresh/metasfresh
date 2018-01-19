@@ -50,18 +50,19 @@ import org.adempiere.model.engines.CostEngine;
 import org.adempiere.model.engines.CostEngineFactory;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Cost;
-import org.compiere.model.I_M_CostElement;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
-import org.compiere.model.MCostElement;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
+import org.compiere.model.X_M_CostElement;
 import org.compiere.util.Env;
 import org.compiere.wf.MWFNode;
 import org.compiere.wf.MWorkflow;
 import org.eevolution.api.IPPWorkflowDAO;
 import org.eevolution.model.MPPProductPlanning;
 
+import de.metas.costing.CostElement;
+import de.metas.costing.ICostElementRepository;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.process.JavaProcess;
@@ -78,6 +79,7 @@ import de.metas.process.ProcessInfoParameter;
  */
 public class RollupWorkflow extends JavaProcess
 {
+	private final ICostElementRepository costElementsRepo = Services.get(ICostElementRepository.class);
 
 	/* Organization     */
 	private int		 		p_AD_Org_ID = 0;
@@ -90,7 +92,7 @@ public class RollupWorkflow extends JavaProcess
 	/* Product Category */
 	private int 			p_M_Product_Category_ID = 0;
 	/* Costing Method 	*/
-	private String 			p_ConstingMethod = MCostElement.COSTINGMETHOD_StandardCosting;
+	private String 			p_ConstingMethod = X_M_CostElement.COSTINGMETHOD_StandardCosting;
 
 	private MAcctSchema m_as = null;
 
@@ -115,7 +117,7 @@ public class RollupWorkflow extends JavaProcess
 			}
 			else if (name.equals(MCost.COLUMNNAME_M_CostType_ID))
 				p_M_CostType_ID = para.getParameterAsInt();
-			else if (name.equals(MCostElement.COLUMNNAME_CostingMethod))
+			else if (name.equals(X_M_CostElement.COLUMNNAME_CostingMethod))
 				p_ConstingMethod=(String)para.getParameter();
 			else if (name.equals(MProduct.COLUMNNAME_M_Product_ID))
 				p_M_Product_ID = para.getParameterAsInt();
@@ -177,7 +179,7 @@ public class RollupWorkflow extends JavaProcess
 
 	private Collection<MProduct> getProducts()
 	{
-		List<Object> params = new ArrayList<Object>();
+		List<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer("AD_Client_ID=?");
 		params.add(getAD_Client_ID());
 
@@ -247,13 +249,13 @@ public class RollupWorkflow extends JavaProcess
 		workflow.setMovingTime(MovingTime);
 		workflow.setWorkingTime(WorkingTime);
 
-		for (I_M_CostElement element : MCostElement.getByCostingMethod(getCtx(), p_ConstingMethod))
+		for (CostElement element : costElementsRepo.getByCostingMethod(p_ConstingMethod))
 		{
 			if (!CostEngine.isActivityControlElement(element))
 			{
 				continue;
 			}
-			final CostDimension d = new CostDimension(product, m_as, p_M_CostType_ID, p_AD_Org_ID, 0, element.getM_CostElement_ID());
+			final CostDimension d = new CostDimension(product, m_as, p_M_CostType_ID, p_AD_Org_ID, 0, element.getId());
 			final List<MCost> costs = d.toQuery(MCost.class, get_TrxName()).list();
 			for (MCost cost : costs)
 			{

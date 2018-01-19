@@ -31,7 +31,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
-import org.compiere.model.MCostDetail;
 import org.compiere.model.MInOut;
 import org.compiere.model.MInOutLine;
 import org.compiere.model.MOrderLine;
@@ -41,6 +40,9 @@ import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostDetailService;
 import de.metas.inout.IInOutBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductBL;
@@ -218,7 +220,7 @@ public class Doc_InOut extends Doc
 				// MZ Goodwill
 				// if Shipment CostDetail exist then get Cost from Cost Detail 
 				// metas-ts: US330: call with zeroCostsOK=false, because we want the system to return the result of MCost.getSeedCosts(), if there are no current costs yet 
-				BigDecimal costs = line.getProductCosts(as, line.getAD_Org_ID(), false, "M_InOutLine_ID=?");
+				BigDecimal costs = line.getProductCosts(as, line.getAD_Org_ID(), false, CostingDocumentRef.ofShipmentLineId(line.get_ID()));
 				// end MZ
 				if (ProductCost.isNoCosts(costs) || costs.signum() == 0)
 				{
@@ -283,11 +285,18 @@ public class Doc_InOut extends Doc
 				//
 				if (line.getM_Product_ID() != 0)
 				{
-					MCostDetail.createShipment(as, line.getAD_Org_ID(), 
-						line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-						line.get_ID(), 0,
-						costs, line.getQty(),
-						line.getDescription(), true, getTrxName());
+					Services.get(ICostDetailService.class)
+							.createCostDetail(CostDetailCreateRequest.builder()
+									.acctSchemaId(as.getC_AcctSchema_ID())
+									.orgId(line.getAD_Org_ID())
+									.productId(line.getM_Product_ID())
+									.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
+									.documentRef(CostingDocumentRef.ofShipmentLineId(line.get_ID()))
+									.costElementId(0)
+									.amt(costs)
+									.qty(line.getQty())
+									.description(line.getDescription())
+									.build());
 				}
 			}	//	for all lines
 
@@ -322,7 +331,7 @@ public class Doc_InOut extends Doc
 
 				// MZ Goodwill
 				// if Shipment CostDetail exist then get Cost from Cost Detail 
-				BigDecimal costs = line.getProductCosts(as, line.getAD_Org_ID(), true, "M_InOutLine_ID=?");
+				BigDecimal costs = line.getProductCosts(as, line.getAD_Org_ID(), true, CostingDocumentRef.ofShipmentLineId(line.get_ID()));
 				// end MZ
 				
 				if (ProductCost.isNoCosts(costs) || costs.signum() == 0)	// zero costs OK
@@ -363,11 +372,18 @@ public class Doc_InOut extends Doc
 				//
 				if (line.getM_Product_ID() != 0)
 				{
-					MCostDetail.createShipment(as, line.getAD_Org_ID(), 
-						line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-						line.get_ID(), 0,
-						costs, line.getQty(),
-						line.getDescription(), true, getTrxName());
+					Services.get(ICostDetailService.class)
+							.createCostDetail(CostDetailCreateRequest.builder()
+									.acctSchemaId(as.getC_AcctSchema_ID())
+									.orgId(line.getAD_Org_ID())
+									.productId(line.getM_Product_ID())
+									.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
+									.documentRef(CostingDocumentRef.ofShipmentLineId(line.get_ID()))
+									.costElementId(0)
+									.amt(costs)
+									.qty(line.getQty())
+									.description(line.getDescription())
+									.build());
 				}
 				
 				//  CoGS            CR

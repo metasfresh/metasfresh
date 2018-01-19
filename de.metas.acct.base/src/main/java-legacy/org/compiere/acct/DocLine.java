@@ -28,20 +28,23 @@ import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_ValidCombination;
+import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCharge;
-import org.compiere.model.MCostDetail;
 import org.compiere.model.MProduct;
 import org.compiere.model.MTax;
 import org.compiere.model.PO;
 import org.compiere.model.ProductCost;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
+import de.metas.costing.CostDetailQuery;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostDetailRepository;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
 /**
@@ -918,8 +921,9 @@ public class DocLine
 	public final ProductCost getProductCost()
 	{
 		if (m_productCost == null)
-			m_productCost = new ProductCost(getCtx(),
-					getM_Product_ID(), getM_AttributeSetInstance_ID(), p_po.get_TrxName());
+		{
+			m_productCost = new ProductCost(getCtx(), getM_Product_ID(), getM_AttributeSetInstance_ID(), p_po.get_TrxName());
+		}
 		return m_productCost;
 	}	// getProductCost
 
@@ -933,14 +937,20 @@ public class DocLine
 	 * @param whereClause null are OK
 	 * @return costs
 	 */
-	public final BigDecimal getProductCosts(MAcctSchema as, int AD_Org_ID, boolean zeroCostsOK, String whereClause)
+	public final BigDecimal getProductCosts(MAcctSchema as, int AD_Org_ID, boolean zeroCostsOK, CostingDocumentRef documentRef)
 	{
-		if (whereClause != null)
+		if (documentRef != null)
 		{
-			MCostDetail cd = MCostDetail.get(getCtx(), whereClause,
-					get_ID(), getM_AttributeSetInstance_ID(), as.getC_AcctSchema_ID(), p_po.get_TrxName());
+			final CostDetailQuery query = CostDetailQuery.builder()
+					.acctSchemaId(as.getC_AcctSchema_ID())
+					.documentRef(documentRef)
+					.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+					.build();
+			final I_M_CostDetail cd = Services.get(ICostDetailRepository.class).getCostDetailOrNull(query);
 			if (cd != null)
+			{
 				return cd.getAmt();
+			}
 		}
 		return getProductCosts(as, AD_Org_ID, zeroCostsOK);
 	}   // getProductCosts
@@ -960,11 +970,10 @@ public class DocLine
 		ProductCost pc = getProductCost();
 		int C_OrderLine_ID = getC_OrderLine_ID();
 		String costingMethod = null;
-		BigDecimal costs = pc.getProductCosts(as, AD_Org_ID, costingMethod,
-				C_OrderLine_ID, zeroCostsOK);
+		BigDecimal costs = pc.getProductCosts(as, AD_Org_ID, costingMethod, C_OrderLine_ID, zeroCostsOK);
 		if (costs != null)
 			return costs;
-		return Env.ZERO;
+		return BigDecimal.ZERO;
 	}   // getProductCosts
 
 	/**
@@ -974,12 +983,7 @@ public class DocLine
 	 */
 	public final MProduct getProduct()
 	{
-		if (m_productCost == null)
-			m_productCost = new ProductCost(getCtx(),
-					getM_Product_ID(), getM_AttributeSetInstance_ID(), p_po.get_TrxName());
-		if (m_productCost != null)
-			return m_productCost.getProduct();
-		return null;
+		return getProductCost().getProduct();
 	}	// getProduct
 
 	/**
@@ -1006,9 +1010,9 @@ public class DocLine
 		int index = p_po.get_ColumnIndex("C_UOM_ID");
 		if (index != -1)
 		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
+			final Integer uomId = (Integer)p_po.get_Value(index);
+			if (uomId != null)
+				return uomId.intValue();
 		}
 		// Storage UOM
 		MProduct product = getProduct();

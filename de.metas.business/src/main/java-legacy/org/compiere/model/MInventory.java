@@ -28,6 +28,9 @@ import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostDetailService;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
@@ -1060,11 +1063,18 @@ public class MInventory extends X_M_Inventory implements IDocument
 			}
 
 			// Set Total Amount and Total Quantity from Inventory
-			MCostDetail.createInventory(as, line.getAD_Org_ID(),
-					line.getM_Product_ID(), M_AttributeSetInstance_ID,
-					line.getM_InventoryLine_ID(), 0,	// no cost element
-					costs, qty,
-					line.getDescription(), line.get_TrxName());
+			Services.get(ICostDetailService.class)
+					.createCostDetail(CostDetailCreateRequest.builder()
+							.acctSchemaId(as.getC_AcctSchema_ID())
+							.orgId(line.getAD_Org_ID())
+							.productId(line.getM_Product_ID())
+							.attributeSetInstanceId(M_AttributeSetInstance_ID)
+							.documentRef(CostingDocumentRef.ofInventoryLineId(line.getM_InventoryLine_ID()))
+							.costElementId(0)
+							.amt(costs)
+							.qty(qty)
+							.description(line.getDescription())
+							.build());
 		}
 
 		return "";

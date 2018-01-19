@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -39,7 +39,6 @@ import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCostDetail;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MLandedCostAllocation;
@@ -47,6 +46,10 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostDetailService;
 
 /**
  * Post Invoice Documents.
@@ -589,12 +592,18 @@ public class Doc_Invoice extends Doc
 					//
 					if (line.getM_Product_ID() > 0 && line.isService())  // otherwise Inv Matching
 					{
-						MCostDetail.createInvoice(as, line.getAD_Org_ID(),
-								line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-								line.get_ID(),  // C_InvoiceLine_ID
-								0, 		// No Cost Element
-								line.getAmtSource(), line.getQty(),
-								line.getDescription(), getTrxName());
+						Services.get(ICostDetailService.class)
+								.createCostDetail(CostDetailCreateRequest.builder()
+										.acctSchemaId(as.getC_AcctSchema_ID())
+										.orgId(line.getAD_Org_ID())
+										.productId(line.getM_Product_ID())
+										.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
+										.documentRef(CostingDocumentRef.ofInvoiceLineId(line.get_ID()))
+										.costElementId(0)
+										.amt(line.getAmtSource())
+										.qty(line.getQty())
+										.description(line.getDescription())
+										.build());
 					}
 				}
 			}
@@ -711,12 +720,18 @@ public class Doc_Invoice extends Doc
 					//
 					if (line.getM_Product_ID() > 0 && line.isService()) 	// otherwise Inv Matching
 					{
-						MCostDetail.createInvoice(as, line.getAD_Org_ID(),
-								line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-								line.get_ID(),  // C_InvoiceLine_ID
-								0, 		// No Cost Element
-								line.getAmtSource().negate(), line.getQty(),
-								line.getDescription(), getTrxName());
+						Services.get(ICostDetailService.class)
+								.createCostDetail(CostDetailCreateRequest.builder()
+										.acctSchemaId(as.getC_AcctSchema_ID())
+										.orgId(line.getAD_Org_ID())
+										.productId(line.getM_Product_ID())
+										.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
+										.documentRef(CostingDocumentRef.ofInvoiceLineId(line.get_ID()))
+										.costElementId(0)
+										.amt(line.getAmtSource().negate())
+										.qty(line.getQty().negate())
+										.description(line.getDescription())
+										.build());
 					}
 				}
 			}
@@ -976,11 +991,18 @@ public class Doc_Invoice extends Doc
 				allocationAmt = allocationAmt.negate();
 			// AZ Goodwill
 			// use createInvoice to create/update non Material Cost Detail
-			MCostDetail.createInvoice(as, lca.getAD_Org_ID(),
-					lca.getM_Product_ID(), lca.getM_AttributeSetInstance_ID(),
-					C_InvoiceLine_ID, lca.getM_CostElement_ID(),
-					allocationAmt, lca.getQty(),
-					desc, getTrxName());
+			Services.get(ICostDetailService.class)
+					.createCostDetail(CostDetailCreateRequest.builder()
+							.acctSchemaId(as.getC_AcctSchema_ID())
+							.orgId(lca.getAD_Org_ID())
+							.productId(lca.getM_Product_ID())
+							.attributeSetInstanceId(lca.getM_AttributeSetInstance_ID())
+							.documentRef(CostingDocumentRef.ofInvoiceLineId(C_InvoiceLine_ID))
+							.costElementId(lca.getM_CostElement_ID())
+							.amt(allocationAmt)
+							.qty(lca.getQty())
+							.description(desc)
+							.build());
 			// end AZ
 		}
 

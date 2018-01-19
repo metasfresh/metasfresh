@@ -45,6 +45,9 @@ import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.costing.CostDetailQuery;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostDetailRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.documentNo.IDocumentNoBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
@@ -2426,36 +2429,31 @@ public class MOrder extends X_C_Order implements IDocument
 	}	// getApprovalAmt
 
 	// AZ Goodwill
-	private String deleteMatchPOCostDetail(MOrderLine line)
+	private void deleteMatchPOCostDetail(final I_C_OrderLine line)
 	{
+		final ICostDetailRepository costDetailRepository = Services.get(ICostDetailRepository.class);
+		
 		// Get Account Schemas to delete MCostDetail
-		MAcctSchema[] acctschemas = MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID());
-		for (int asn = 0; asn < acctschemas.length; asn++)
+		for (MAcctSchema as : MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID()))
 		{
-			MAcctSchema as = acctschemas[asn];
-
 			if (as.isSkipOrg(getAD_Org_ID()))
 			{
 				continue;
 			}
 
 			// update/delete Cost Detail and recalculate Current Cost
-			MMatchPO[] mPO = MMatchPO.getOrderLine(getCtx(), line.getC_OrderLine_ID(), get_TrxName());
+			final MMatchPO[] mPO = MMatchPO.getOrderLine(getCtx(), line.getC_OrderLine_ID(), get_TrxName());
 			// delete Cost Detail if the Matched PO has been deleted
 			if (mPO.length == 0)
 			{
-				MCostDetail cd = MCostDetail.get(getCtx(), "C_OrderLine_ID=?",
-						line.getC_OrderLine_ID(), line.getM_AttributeSetInstance_ID(),
-						as.getC_AcctSchema_ID(), get_TrxName());
-				if (cd != null)
-				{
-					cd.setProcessed(false);
-					cd.delete(true);
-				}
+				costDetailRepository
+						.delete(CostDetailQuery.builder()
+								.acctSchemaId(as.getC_AcctSchema_ID())
+								.documentRef(CostingDocumentRef.ofOrderLineId(line.getC_OrderLine_ID()))
+								.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
+								.build());
 			}
 		}
-
-		return "";
 	}
 
 	/**

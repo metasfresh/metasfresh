@@ -44,17 +44,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_CostType;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
-import org.compiere.model.MCostElement;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
+import org.compiere.model.X_M_CostElement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMDAO;
@@ -65,8 +67,13 @@ import org.eevolution.model.MPPProductPlanning;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.mrp.api.IMRPDAO;
 
+import de.metas.costing.CostElement;
+import de.metas.costing.CostSegment;
+import de.metas.costing.CostingLevel;
+import de.metas.costing.ICostElementRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.IProductBL;
 
 /**
  * Roll-UP Bill of Material
@@ -79,6 +86,8 @@ import de.metas.process.ProcessInfoParameter;
 @SuppressWarnings("deprecation") // hide those to not polute our Warnings
 public class RollupBillOfMaterial extends JavaProcess
 {
+	private final ICostElementRepository costElementsRepo = Services.get(ICostElementRepository.class);
+	
 	/* Organization 		*/
 	private int		 		p_AD_Org_ID = 0;
 	/* Account Schema 		*/
@@ -86,7 +95,7 @@ public class RollupBillOfMaterial extends JavaProcess
 	/* Cost Type			*/
 	private int				p_M_CostType_ID = 0;
 	/* Costing Method 		*/
-	private String 			p_ConstingMethod = MCostElement.COSTINGMETHOD_StandardCosting;
+	private String 			p_ConstingMethod = X_M_CostElement.COSTINGMETHOD_StandardCosting;
 	/* Product 				*/
 	private int				p_M_Product_ID = 0;
 	/* Product Category  	*/
@@ -173,9 +182,9 @@ public class RollupBillOfMaterial extends JavaProcess
 
 	protected void rollup(MProduct product, MPPProductBOM bom)
 	{
-		for (I_M_CostElement element : getCostElements())
+		for (CostElement element : getCostElements())
 		{
-			for (MCost cost : getCosts(product, element.getM_CostElement_ID()))
+			for (MCost cost : getCosts(product, element.getId()))
 			{
 				log.info("Calculate Lower Cost for: "+ bom);
 				BigDecimal price = getCurrentCostPriceLL(bom, element);
@@ -209,25 +218,12 @@ public class RollupBillOfMaterial extends JavaProcess
 			final BigDecimal costPrice = baseCost.getCurrentCostPriceLL().multiply(bomline.getCostAllocationPerc());
 			//
 			// Get/Create Cost
-			MCost cost = MCost.get(baseCost.getCtx(), baseCost.getAD_Client_ID(), baseCost.getAD_Org_ID(),
-									bomline.getM_Product_ID(),
-									baseCost.getM_CostType_ID(), baseCost.getC_AcctSchema_ID(),
-									baseCost.getM_CostElement_ID(),
-									0, // ASI
-									baseCost.get_TrxName());
-			if (cost == null)
-			{
-				cost = new MCost (baseCost.getCtx(), 0, baseCost.get_TrxName());
-				//cost.setAD_Client_ID(baseCost.getAD_Client_ID());
-				cost.setAD_Org_ID(baseCost.getAD_Org_ID());
-				cost.setM_Product_ID(bomline.getM_Product_ID());
-				cost.setM_CostType_ID(baseCost.getM_CostType_ID());
-				cost.setC_AcctSchema_ID(baseCost.getC_AcctSchema_ID());
-				cost.setM_CostElement_ID(baseCost.getM_CostElement_ID());
-				cost.setM_AttributeSetInstance_ID(0);
-			}
+
+			final CostSegment costSegment = extractCostSegment(baseCost);
+			final I_M_Cost cost = MCost.getOrCreate(costSegment, baseCost.getM_CostElement_ID());
 			cost.setCurrentCostPriceLL(costPrice);
-			cost.saveEx();
+			InterfaceWrapperHelper.save(cost);
+			
 			costPriceTotal = costPriceTotal.add(costPrice);
 		}
 		// Update Base Cost:
@@ -236,6 +232,24 @@ public class RollupBillOfMaterial extends JavaProcess
 			baseCost.setCurrentCostPriceLL(costPriceTotal);
 		}
 	}
+	
+	private static CostSegment extractCostSegment(final I_M_Cost cost)
+	{
+		final I_M_Product product = InterfaceWrapperHelper.load(cost.getM_Product_ID(), I_M_Product.class);
+		final I_C_AcctSchema as = InterfaceWrapperHelper.load(cost.getC_AcctSchema_ID(), I_C_AcctSchema.class);
+		final CostingLevel costingLevel = CostingLevel.forCode(Services.get(IProductBL.class).getCostingLevel(product, as));
+
+		return CostSegment.builder()
+				.costingLevel(costingLevel)
+				.acctSchemaId(cost.getC_AcctSchema_ID())
+				.costTypeId(cost.getM_CostType_ID())
+				.productId(cost.getM_Product_ID())
+				.clientId(cost.getAD_Client_ID())
+				.orgId(cost.getAD_Org_ID())
+				.attributeSetInstanceId(cost.getM_AttributeSetInstance_ID())
+				.build();
+	}
+
 
 	/**
 	 * Get the sum Current Cost Price Level Low for this Cost Element
@@ -243,7 +257,7 @@ public class RollupBillOfMaterial extends JavaProcess
 	 * @param element MCostElement
 	 * @return Cost Price Lower Level
 	 */
-	private BigDecimal getCurrentCostPriceLL(MPPProductBOM bom, I_M_CostElement element)
+	private BigDecimal getCurrentCostPriceLL(MPPProductBOM bom, CostElement element)
 	{
 		log.info("Element: "+ element);
 		BigDecimal costPriceLL = Env.ZERO;
@@ -265,7 +279,7 @@ public class RollupBillOfMaterial extends JavaProcess
 			//
 			MProduct component = MProduct.get(getCtx(), bomline.getM_Product_ID());
 			// get the rate for this resource
-			for (MCost cost : getCosts(component, element.getM_CostElement_ID()))
+			for (MCost cost : getCosts(component, element.getId()))
 			{
 				BigDecimal qty = bomline.getQty(true);
 
@@ -357,12 +371,12 @@ public class RollupBillOfMaterial extends JavaProcess
 		log.info("Updated #"+no);
 	}
 
-	private Collection<I_M_CostElement> m_costElements = null;
-	private Collection<I_M_CostElement> getCostElements()
+	private List<CostElement> m_costElements = null;
+	private List<CostElement> getCostElements()
 	{
 		if (m_costElements == null)
 		{
-			m_costElements = MCostElement.getByCostingMethod(getCtx(),  p_ConstingMethod);
+			m_costElements = costElementsRepo.getByCostingMethod(p_ConstingMethod);
 		}
 		return m_costElements;
 	}

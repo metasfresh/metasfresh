@@ -29,11 +29,12 @@ package org.compiere.acct;
 import org.adempiere.acct.api.ProductAcctType;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCostElement;
 import org.compiere.model.PO;
 import org.compiere.model.ProductCost;
+import org.compiere.model.X_M_CostElement;
 import org.compiere.util.DB;
 
+import de.metas.costing.CostElement;
 import de.metas.material.planning.pporder.LiberoException;
 
 /**
@@ -47,27 +48,27 @@ public class DocLine_CostCollector extends DocLine
 		super(po, doc);
 	}
 	
-	public MAccount getAccount(MAcctSchema as, MCostElement element)
+	public MAccount getAccount(MAcctSchema as, CostElement element)
 	{
 		String costElementType = element.getCostElementType();
 		final ProductAcctType acctType;
-		if (MCostElement.COSTELEMENTTYPE_Material.equals(costElementType))
+		if (X_M_CostElement.COSTELEMENTTYPE_Material.equals(costElementType))
 		{
 			acctType = ProductCost.ACCTTYPE_P_Asset;
 		}
-		else if (MCostElement.COSTELEMENTTYPE_Resource.equals(costElementType))
+		else if (X_M_CostElement.COSTELEMENTTYPE_Resource.equals(costElementType))
 		{
 			acctType = ProductCost.ACCTTYPE_P_Labor;
 		}
-		else if (MCostElement.COSTELEMENTTYPE_BurdenMOverhead.equals(costElementType))
+		else if (X_M_CostElement.COSTELEMENTTYPE_BurdenMOverhead.equals(costElementType))
 		{
 			acctType = ProductCost.ACCTTYPE_P_Burden;
 		}
-		else if (MCostElement.COSTELEMENTTYPE_Overhead.equals(costElementType))
+		else if (X_M_CostElement.COSTELEMENTTYPE_Overhead.equals(costElementType))
 		{
 			acctType = ProductCost.ACCTTYPE_P_Overhead;
 		}
-		else if (MCostElement.COSTELEMENTTYPE_OutsideProcessing.equals(costElementType))
+		else if (X_M_CostElement.COSTELEMENTTYPE_OutsideProcessing.equals(costElementType))
 		{
 			acctType = ProductCost.ACCTTYPE_P_OutsideProcessing;
 		}

@@ -24,7 +24,6 @@ import org.adempiere.acct.api.ProductAcctType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -54,7 +53,6 @@ public class ProductCost
 	 */
 	public ProductCost(Properties ctx, int M_Product_ID, int M_AttributeSetInstance_ID, String trxName)
 	{
-		super();
 		m_M_Product_ID = M_Product_ID;
 		if (m_M_Product_ID > 0)
 		{
@@ -79,7 +77,7 @@ public class ProductCost
 	private final String m_trxName;
 
 	private int m_C_UOM_ID = 0;
-	private BigDecimal m_qty = Env.ZERO;
+	private BigDecimal m_qty = BigDecimal.ZERO;
 
 	/**
 	 * Get Product
@@ -233,8 +231,7 @@ public class ProductCost
 	 * @param zeroCostsOK zero/no costs are OK
 	 * @return cost or null, if qty or costs cannot be determined
 	 */
-	public BigDecimal getProductCosts(MAcctSchema as, int AD_Org_ID,
-			String costingMethod, int C_OrderLine_ID, boolean zeroCostsOK)
+	public BigDecimal getProductCosts(MAcctSchema as, int AD_Org_ID, String costingMethod, int C_OrderLine_ID, boolean zeroCostsOK)
 	{
 		if (m_qty == null)
 		{
