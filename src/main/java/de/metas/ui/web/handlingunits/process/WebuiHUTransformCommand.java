@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.api.ISerialNoDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -16,7 +15,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -134,11 +132,6 @@ public class WebuiHUTransformCommand
 	private final HUEditorRow _selectedRow;
 	private final List<TableRecordReference> _contextDocumentLines;
 	private final WebuiHUTransformParameters _parameters;
-
-	// Services
-	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	final ISerialNoDAO serialNoDAO = Services.get(ISerialNoDAO.class);
 
 	@Builder
 	private WebuiHUTransformCommand(

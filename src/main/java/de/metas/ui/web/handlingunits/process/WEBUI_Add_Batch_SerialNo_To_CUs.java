@@ -128,8 +128,10 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		{
 			return;
 		}
+		
 		removeSelectedRowsIfHUDestoyed();
 		invalidateView();
+				
 	}
 
 	private boolean isEligibleHuRow(final HUEditorRow huRow)

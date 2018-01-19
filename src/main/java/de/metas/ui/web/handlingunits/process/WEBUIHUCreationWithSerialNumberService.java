@@ -14,6 +14,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -59,9 +60,8 @@ public class WEBUIHUCreationWithSerialNumberService
 		return new WEBUIHUCreationWithSerialNumberService();
 	}
 
-	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	final ISerialNoDAO serialNoDAO = Services.get(ISerialNoDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final ISerialNoDAO serialNoDAO = Services.get(ISerialNoDAO.class);
 
 	public final WebuiHUTransformCommandResult action_CreateCUs_With_SerialNumbers(final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy, final List<String> availableSerialNumbers)
 	{
@@ -156,7 +156,8 @@ public class WEBUIHUCreationWithSerialNumberService
 			}
 
 			final int tuCapacity = calculateTUCapacity(parentHU);
-			numberOfCUsToCreate = getMinimumOfThree(tuCapacity, maxCUsAllowedPerBatch, initialQtyCU);
+			numberOfCUsToCreate = Util.getMinimumOfThree(tuCapacity, maxCUsAllowedPerBatch, initialQtyCU);
+			
 			for (int i = 0; i < numberOfCUsToCreate; i++)
 			{
 				final List<I_M_HU> createdCUs = newHUTransformation().cuToExistingTU(huToSplit, BigDecimal.ONE, parentHU);
@@ -179,11 +180,6 @@ public class WEBUIHUCreationWithSerialNumberService
 		}
 
 		return huPIP.getQty().intValueExact();
-	}
-
-	private int getMinimumOfThree(final int no1, final int no2, final int no3)
-	{
-		return no1 < no2 ? (no1 < no3 ? no1 : no3) : (no2 < no3 ? no2 : no3);
 	}
 
 	private I_M_HU createNonAggregatedTU(final HUEditorRow tuRow, final HUEditorRow luRow)
@@ -217,7 +213,7 @@ public class WEBUIHUCreationWithSerialNumberService
 			{
 				return;
 			}
-			
+
 			assignSerialNumberToCU(listOfCUIDs.get(i), availableSerialNumbers.remove(0));
 		}
 	}
@@ -234,7 +230,7 @@ public class WEBUIHUCreationWithSerialNumberService
 
 		final I_M_Attribute serialNoAttribute = serialNoDAO.getSerialNoAttribute(ctxAware.getCtx());
 
-		Check.assume(attributeStorage.hasAttribute(serialNoAttribute), "There is no SerialNo attribute defined for the handling unit" + hu);
+		Check.errorUnless(attributeStorage.hasAttribute(serialNoAttribute), "There is no SerialNo attribute {} defined for the handling unit {}", serialNoAttribute, hu);
 
 		attributeStorage.setValue(serialNoAttribute, serialNo.trim());
 		attributeStorage.saveChangesIfNeeded();
