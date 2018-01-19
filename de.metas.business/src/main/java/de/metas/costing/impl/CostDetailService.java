@@ -282,7 +282,7 @@ public class CostDetailService implements ICostDetailService
 	private List<CostElement> extractCostElements(final I_M_CostDetail cd)
 	{
 		final ICostElementRepository costElementRepository = Services.get(ICostElementRepository.class);
-		
+
 		final int costElementId = cd.getM_CostElement_ID();
 		if (costElementId <= 0)
 		{
@@ -402,8 +402,8 @@ public class CostDetailService implements ICostDetailService
 	private void process(final I_M_CostDetail costDetail, final CostSegment costSegment, final CostElement costElement)
 	{
 		final CostDetailEvent event = createCostDetailEvent(costDetail, costSegment, costElement);
-		final CostingMethodHandler costingMethodHandler = getCostingMethodHandler(event.getCostingMethod());
-		costingMethodHandler.process(event);
+		getCostingMethodHandler(event.getCostingMethod())
+				.process(event);
 	}
 
 	private CostDetailEvent createCostDetailEvent(final I_M_CostDetail cd, final CostSegment costSegment, final CostElement costElement)
@@ -421,13 +421,16 @@ public class CostDetailService implements ICostDetailService
 			amt = cd.getAmt();
 		}
 
-		final Properties ctx = Env.getCtx();
-		final MAcctSchema as = MAcctSchema.get(ctx, costSegment.getAcctSchemaId());
+		final MAcctSchema as = MAcctSchema.get(Env.getCtx(), costSegment.getAcctSchemaId());
 		final int precision = as.getCostingPrecision();
-		BigDecimal price = amt;
+		final BigDecimal price;
 		if (qty.signum() != 0)
 		{
 			price = amt.divide(qty, precision, RoundingMode.HALF_UP);
+		}
+		else
+		{
+			price = amt;
 		}
 
 		return CostDetailEvent.builder()
