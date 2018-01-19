@@ -16,9 +16,18 @@
  *****************************************************************************/
 package org.compiere.util;
 
+import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.HOURS;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,6 +37,8 @@ import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
@@ -808,42 +819,26 @@ public class TimeUtil
 		return new Timestamp(cal.getTimeInMillis());
 	}	// addHours
 
-	/**************************************************************************
+	/**
 	 * Format Elapsed Time
 	 *
 	 * @param start start time or null for now
 	 * @param end end time or null for now
-	 * @return formatted time string 1'23:59:59.999
 	 */
 	public static String formatElapsed(final Timestamp start, final Timestamp end)
 	{
-		long startTime = 0;
-		if (start == null)
+		if(start == null || end == null)
 		{
-			startTime = System.currentTimeMillis();
+			return formatElapsed(0);
 		}
-		else
-		{
-			startTime = start.getTime();
-		}
-		//
-		long endTime = 0;
-		if (end == null)
-		{
-			endTime = System.currentTimeMillis();
-		}
-		else
-		{
-			endTime = end.getTime();
-		}
+		
+		final long startTime = start != null ? start.getTime() : System.currentTimeMillis();
+		final long endTime = end != null ? end.getTime() : System.currentTimeMillis();
 		return formatElapsed(endTime - startTime);
-	}	// formatElapsed
+	}
 
 	/**
 	 * Format Elapsed Time until now
-	 *
-	 * @param start start time
-	 * @return formatted time string 1'23:59:59.999
 	 */
 	public static String formatElapsed(final Timestamp start)
 	{
@@ -854,79 +849,77 @@ public class TimeUtil
 		final long startTime = start.getTime();
 		final long endTime = System.currentTimeMillis();
 		return formatElapsed(endTime - startTime);
-	}	// formatElapsed
+	}
 
-	/**
-	 * Format Elapsed Time
-	 *
-	 * @param elapsedMS time in ms
-	 * @return formatted time string 1'23:59:59.999 - d'hh:mm:ss.xxx
-	 */
-	public static String formatElapsed(long elapsedMS)
+	public static String formatElapsed(long elapsedMillis)
 	{
-		if (elapsedMS == 0)
-		{
-			return "0";
-		}
-		final StringBuffer sb = new StringBuffer();
-		if (elapsedMS < 0)
-		{
-			elapsedMS = -elapsedMS;
-			sb.append("-");
-		}
-		//
-		final long miliSeconds = elapsedMS % 1000;
-		elapsedMS = elapsedMS / 1000;
-		final long seconds = elapsedMS % 60;
-		elapsedMS = elapsedMS / 60;
-		final long minutes = elapsedMS % 60;
-		elapsedMS = elapsedMS / 60;
-		final long hours = elapsedMS % 24;
-		final long days = elapsedMS / 24;
-		//
-		if (days != 0)
-		{
-			sb.append(days).append("'");
-		}
-		// hh
-		if (hours != 0)
-		{
-			sb.append(get2digits(hours)).append(":");
-		}
-		else if (days != 0)
-		{
-			sb.append("00:");
-		}
-		// mm
-		if (minutes != 0)
-		{
-			sb.append(get2digits(minutes)).append(":");
-		}
-		else if (hours != 0 || days != 0)
-		{
-			sb.append("00:");
-		}
-		// ss
-		sb.append(get2digits(seconds))
-				.append(".").append(miliSeconds);
-		return sb.toString();
-	}	// formatElapsed
+		return formatElapsed(Duration.ofMillis(elapsedMillis));
+	}
 
-	/**
-	 * Get Minimum of 2 digits
-	 *
-	 * @param no number
-	 * @return String
-	 */
-	private static String get2digits(final long no)
+	// copy-paste of com.google.common.base.Stopwatch.toString(). Too bad that functionality is not exposed as a regular method call
+	public static String formatElapsed(@NonNull final Duration duration)
 	{
-		final String s = String.valueOf(no);
-		if (s.length() > 1)
+		final long nanos = duration.toNanos();
+
+		final TimeUnit unit = chooseUnit(nanos);
+		final double value = (double)nanos / NANOSECONDS.convert(1, unit);
+
+		return String.format(Locale.ROOT, "%.4g", value) + " " + abbreviate(unit);
+	}
+
+	// copy-paste of com.google.common.base.Stopwatch.chooseUnit(long)
+	private static TimeUnit chooseUnit(long nanos)
+	{
+		if (DAYS.convert(nanos, NANOSECONDS) > 0)
 		{
-			return s;
+			return DAYS;
 		}
-		return "0" + s;
-	}	// get2digits
+		if (HOURS.convert(nanos, NANOSECONDS) > 0)
+		{
+			return HOURS;
+		}
+		if (MINUTES.convert(nanos, NANOSECONDS) > 0)
+		{
+			return MINUTES;
+		}
+		if (SECONDS.convert(nanos, NANOSECONDS) > 0)
+		{
+			return SECONDS;
+		}
+		if (MILLISECONDS.convert(nanos, NANOSECONDS) > 0)
+		{
+			return MILLISECONDS;
+		}
+		if (MICROSECONDS.convert(nanos, NANOSECONDS) > 0)
+		{
+			return MICROSECONDS;
+		}
+		return NANOSECONDS;
+	}
+
+	// copy-paste of com.google.common.base.Stopwatch.abbreviate(TimeUnit)
+	private static String abbreviate(TimeUnit unit)
+	{
+		switch (unit)
+		{
+			case NANOSECONDS:
+				return "ns";
+			case MICROSECONDS:
+				return "\u03bcs"; // Î¼s
+			case MILLISECONDS:
+				return "ms";
+			case SECONDS:
+				return "s";
+			case MINUTES:
+				return "min";
+			case HOURS:
+				return "h";
+			case DAYS:
+				return "d";
+			default:
+				throw new AssertionError();
+		}
+	}
 
 	/**
 	 * Is it valid today?

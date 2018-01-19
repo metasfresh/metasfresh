@@ -1,5 +1,6 @@
 package org.adempiere.model;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -93,10 +94,11 @@ public class FactAcctZoomProvider implements IZoomProvider
 					.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, source.getRecord_ID())
 					.create()
 					.count();
-			query.setRecordCount(count);
+			
+			final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
+			query.setRecordCount(count, countDuration);
 
-			final long elapsedTimeMillis = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
-			Loggables.get().addLog("FactAcctZoomProvider {} took {}ms", this, elapsedTimeMillis);
+			Loggables.get().addLog("FactAcctZoomProvider {} took {}", this, countDuration);
 		}
 
 		//

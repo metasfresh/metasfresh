@@ -14,12 +14,15 @@
 package org.adempiere.model;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
@@ -302,6 +305,12 @@ public class ZoomInfoFactory
 		public int getRecordCount()
 		{
 			return _query.getRecordCount();
+		}
+
+		@Nullable
+		public Duration getRecordCountDuration()
+		{
+			return _query.getRecordCountDuration();
 		}
 
 		public int getAD_Window_ID()
