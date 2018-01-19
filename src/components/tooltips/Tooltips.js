@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-
+import classNames from "classnames";
 class Tooltips extends Component {
   constructor(props) {
     super(props);
@@ -28,18 +28,22 @@ class Tooltips extends Component {
       action,
       type,
       extraClass,
-      tooltipOnFirstlevelPositionLeft
+      tooltipOnFirstlevelPositionLeft,
+      className
     } = this.props;
+
+    const cx = classNames(
+      "tooltip-wrapp",
+      { [`tooltip-${type}`]: type },
+      { [`${extraClass}`]: extraClass },
+      { [`${className}`]: className }
+    );
+
     const { opacity } = this.state;
     return (
       <div style={{ opacity: opacity }}>
         <div
-          className={
-            "tooltip-wrapp " +
-            (type ? "tooltip-" + type : "") +
-            " " +
-            (extraClass ? extraClass : "")
-          }
+          className={cx}
           style={{ left: tooltipOnFirstlevelPositionLeft + "px" }}
         >
           <div className="tooltip-shortcut">{name}</div>
