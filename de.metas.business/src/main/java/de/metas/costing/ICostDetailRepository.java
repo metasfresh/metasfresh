@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
@@ -38,6 +39,9 @@ public interface ICostDetailRepository extends ISingletonService
 	void deleteUnprocessedWithNoChanges(CostDetailQuery query);
 
 	I_M_CostDetail getCostDetailOrNull(CostDetailQuery query);
+	
+	BigDecimal getCostDetailAmtOrNull(CostDetailQuery query);
+
 
 	List<I_M_CostDetail> getAllForDocument(CostingDocumentRef documentRef);
 

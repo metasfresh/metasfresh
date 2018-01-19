@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.ProductCost;
 import org.compiere.model.X_M_Production;
@@ -186,15 +185,15 @@ public class Doc_Production extends Doc
 			
 			// MZ Goodwill
 			// if Production CostDetail exist then get Cost from Cost Detail 
-			final I_M_CostDetail cd = Services.get(ICostDetailRepository.class)
-					.getCostDetailOrNull(CostDetailQuery.builder()
+			final BigDecimal costDetailAmt = Services.get(ICostDetailRepository.class)
+					.getCostDetailAmtOrNull(CostDetailQuery.builder()
 							.acctSchemaId(as.getC_AcctSchema_ID())
 							.documentRef(CostingDocumentRef.ofProductionLineId(line.get_ID()))
 							.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 							.build());
-			if (cd != null)
+			if (costDetailAmt != null)
 			{
-				costs = cd.getAmt();
+				costs = costDetailAmt;
 			}
 			else
 			{	

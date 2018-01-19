@@ -80,17 +80,18 @@ public class CostDetailRepository implements ICostDetailRepository
 	}
 
 	@Override
+	public BigDecimal getCostDetailAmtOrNull(final CostDetailQuery query)
+	{
+		final I_M_CostDetail costDetail = getCostDetailOrNull(query);
+		return costDetail != null ? costDetail.getAmt() : null;
+	}
+
+	@Override
 	public I_M_CostDetail getCostDetailOrNull(@NonNull final CostDetailQuery query)
 	{
 		return createQueryBuilder(query)
 				.create()
 				.firstOnly(I_M_CostDetail.class);
-	}
-
-	public BigDecimal getCostDetailAmt(@NonNull final CostDetailQuery query)
-	{
-		final I_M_CostDetail costDetail = getCostDetailOrNull(query);
-		return costDetail != null ? costDetail.getAmt() : BigDecimal.ZERO;
 	}
 
 	private IQueryBuilder<I_M_CostDetail> createQueryBuilder(@NonNull final CostDetailQuery query)

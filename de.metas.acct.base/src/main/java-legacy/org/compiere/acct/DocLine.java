@@ -28,7 +28,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_ValidCombination;
-import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
@@ -946,10 +945,10 @@ public class DocLine
 					.documentRef(documentRef)
 					.attributeSetInstanceId(getM_AttributeSetInstance_ID())
 					.build();
-			final I_M_CostDetail cd = Services.get(ICostDetailRepository.class).getCostDetailOrNull(query);
-			if (cd != null)
+			final BigDecimal costDetailAmt = Services.get(ICostDetailRepository.class).getCostDetailAmtOrNull(query);
+			if (costDetailAmt != null)
 			{
-				return cd.getAmt();
+				return costDetailAmt;
 			}
 		}
 		return getProductCosts(as, AD_Org_ID, zeroCostsOK);
