@@ -72,6 +72,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		if (addition)
 		{
 			cost.add(amt, qty);
+			
 			// Initial
 			if (cost.getCurrentCostPrice().signum() == 0
 					&& cost.getCurrentCostPriceLL().signum() == 0
@@ -82,7 +83,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		}
 		else
 		{
-			cost.setCurrentQty(cost.getCurrentQty().add(qty));
+			cost.adjustCurrentQty(qty);
 		}
 	}
 }

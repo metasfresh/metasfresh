@@ -67,7 +67,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CostResult cost)
 	{
 		final BigDecimal qty = event.getQty();
-		cost.setCurrentQty(cost.getCurrentQty().add(qty));
+		cost.adjustCurrentQty(qty);
 	}
 
 	@Override

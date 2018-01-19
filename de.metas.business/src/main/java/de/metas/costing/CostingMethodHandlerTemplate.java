@@ -202,8 +202,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		 */
 		public void add(@NonNull final BigDecimal amt, @NonNull final BigDecimal qty)
 		{
-			this.currentQty = this.currentQty.add(qty);
-
+			adjustCurrentQty(qty);
 			addCumulatedAmtAndQty(amt, qty);
 		}
 
@@ -233,7 +232,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			this.cumulatedAmt = this.cumulatedAmt.add(amt);
 			this.cumulatedQty = this.cumulatedQty.add(qty);
 		}
-		
+
 		public void adjustCurrentQty(@NonNull final BigDecimal qtyToAdd)
 		{
 			this.currentQty = this.currentQty.add(qtyToAdd);

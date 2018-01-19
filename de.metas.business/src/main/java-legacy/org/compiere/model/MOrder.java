@@ -141,10 +141,10 @@ public class MOrder extends X_C_Order implements IDocument
 			setDatePromised(SystemTime.asDayTimestamp()); // task 06269 (see KurzBeschreibung)
 			setDateOrdered(new Timestamp(System.currentTimeMillis()));
 
-			setFreightAmt(Env.ZERO);
-			setChargeAmt(Env.ZERO);
-			setTotalLines(Env.ZERO);
-			setGrandTotal(Env.ZERO);
+			setFreightAmt(BigDecimal.ZERO);
+			setChargeAmt(BigDecimal.ZERO);
+			setTotalLines(BigDecimal.ZERO);
+			setGrandTotal(BigDecimal.ZERO);
 		}
 	}	// MOrder
 
@@ -535,10 +535,10 @@ public class MOrder extends X_C_Order implements IDocument
 			line.setRef_OrderLine_ID(0);
 		}
 		//
-		line.setQtyDelivered(Env.ZERO);
-		line.setQtyInvoiced(Env.ZERO);
+		line.setQtyDelivered(BigDecimal.ZERO);
+		line.setQtyInvoiced(BigDecimal.ZERO);
 		// task 09358: get rid of this; instead, update qtyReserved at one central place
-		// line.setQtyReserved(Env.ZERO);
+		// line.setQtyReserved(BigDecimal.ZERO);
 		line.setDateDelivered(null);
 		line.setDateInvoiced(null);
 		// don't copy linked lines
@@ -1406,11 +1406,11 @@ public class MOrder extends X_C_Order implements IDocument
 //				// Convert into Comment Line
 //				line.setM_Product_ID(0);
 //				line.setM_AttributeSetInstance_ID(0);
-//				line.setPrice(Env.ZERO);
-//				line.setPriceLimit(Env.ZERO);
-//				line.setPriceList(Env.ZERO);
-//				line.setLineNetAmt(Env.ZERO);
-//				line.setFreightAmt(Env.ZERO);
+//				line.setPrice(BigDecimal.ZERO);
+//				line.setPriceLimit(BigDecimal.ZERO);
+//				line.setPriceList(BigDecimal.ZERO);
+//				line.setLineNetAmt(BigDecimal.ZERO);
+//				line.setFreightAmt(BigDecimal.ZERO);
 //				//
 //				String description = product.getName();
 //				if (product.getDescription() != null)
@@ -1471,8 +1471,8 @@ public class MOrder extends X_C_Order implements IDocument
 			header_M_Warehouse_ID = 0;		// don't enforce
 		}
 
-		BigDecimal Volume = Env.ZERO;
-		BigDecimal Weight = Env.ZERO;
+		BigDecimal Volume = BigDecimal.ZERO;
+		BigDecimal Weight = BigDecimal.ZERO;
 
 		// Always check and (un) Reserve Inventory
 		for (int i = 0; i < lines.length; i++)
@@ -1496,7 +1496,7 @@ public class MOrder extends X_C_Order implements IDocument
 				}
 			}
 			// Binding
-			BigDecimal target = binding ? line.getQtyOrdered() : Env.ZERO;
+			BigDecimal target = binding ? line.getQtyOrdered() : BigDecimal.ZERO;
 			BigDecimal difference = target
 					.subtract(line.getQtyReserved())
 					.subtract(line.getQtyDelivered());
@@ -1522,8 +1522,8 @@ public class MOrder extends X_C_Order implements IDocument
 			{
 				if (Services.get(IProductBL.class).isStocked(product))
 				{
-					BigDecimal ordered = isSOTrx ? Env.ZERO : difference;
-					BigDecimal reserved = isSOTrx ? difference : Env.ZERO;
+					BigDecimal ordered = isSOTrx ? BigDecimal.ZERO : difference;
+					BigDecimal reserved = isSOTrx ? difference : BigDecimal.ZERO;
 					final int lineWarehouseId = (line.getM_Warehouse_ID() > 0 ? line.getM_Warehouse_ID() : Services.get(IWarehouseAdvisor.class).evaluateWarehouse(line).getM_Warehouse_ID());
 					int M_Locator_ID = 0;
 					// Get Locator to reserve
@@ -1563,7 +1563,7 @@ public class MOrder extends X_C_Order implements IDocument
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstance_ID(),
 							line.getM_AttributeSetInstance_ID(),
-							Env.ZERO,
+							BigDecimal.ZERO,
 							reserved,
 							ordered,
 							get_TrxName());
@@ -1601,7 +1601,7 @@ public class MOrder extends X_C_Order implements IDocument
 		m_taxes = null;
 
 		// Lines
-		BigDecimal totalLines = Env.ZERO;
+		BigDecimal totalLines = BigDecimal.ZERO;
 		final Set<Integer> taxIds = new HashSet<>();
 		final MOrderLine[] lines = getLines();
 		for (final MOrderLine line : lines)
@@ -2032,8 +2032,8 @@ public class MOrder extends X_C_Order implements IDocument
 			if (old.signum() != 0)
 			{
 				line.addDescription(Msg.getMsg(getCtx(), "Voided") + " (" + old + ")");
-				line.setQty(Env.ZERO);
-				line.setLineNetAmt(Env.ZERO);
+				line.setQty(BigDecimal.ZERO);
+				line.setLineNetAmt(BigDecimal.ZERO);
 				line.save(get_TrxName());
 			}
 			// AZ Goodwill
@@ -2225,10 +2225,10 @@ public class MOrder extends X_C_Order implements IDocument
 		for (int i = 0; i < lines.length; i++)
 		{
 			MOrderLine line = lines[i];
-			if (Env.ZERO.compareTo(line.getQtyLostSales()) != 0)
+			if (BigDecimal.ZERO.compareTo(line.getQtyLostSales()) != 0)
 			{
 				line.setQtyOrdered(line.getQtyLostSales().add(line.getQtyDelivered()));
-				line.setQtyLostSales(Env.ZERO);
+				line.setQtyLostSales(BigDecimal.ZERO);
 				// QtyEntered unchanged
 
 				// Strip Close() tags from description
@@ -2429,27 +2429,27 @@ public class MOrder extends X_C_Order implements IDocument
 	}	// getApprovalAmt
 
 	// AZ Goodwill
-	private void deleteMatchPOCostDetail(final I_C_OrderLine line)
+	private static void deleteMatchPOCostDetail(final I_C_OrderLine line)
 	{
 		final ICostDetailRepository costDetailRepository = Services.get(ICostDetailRepository.class);
 		
 		// Get Account Schemas to delete MCostDetail
-		for (MAcctSchema as : MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID()))
+		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(Env.getCtx(), line.getAD_Client_ID()))
 		{
-			if (as.isSkipOrg(getAD_Org_ID()))
+			if (as.isSkipOrg(line.getAD_Org_ID()))
 			{
 				continue;
 			}
 
 			// update/delete Cost Detail and recalculate Current Cost
-			final MMatchPO[] mPO = MMatchPO.getOrderLine(getCtx(), line.getC_OrderLine_ID(), get_TrxName());
+			final List<I_M_MatchPO> mPO = MMatchPO.getOrderLine(line.getC_OrderLine_ID());
 			// delete Cost Detail if the Matched PO has been deleted
-			if (mPO.length == 0)
+			if (mPO.isEmpty())
 			{
 				costDetailRepository
 						.delete(CostDetailQuery.builder()
 								.acctSchemaId(as.getC_AcctSchema_ID())
-								.documentRef(CostingDocumentRef.ofOrderLineId(line.getC_OrderLine_ID()))
+								.documentRef(CostingDocumentRef.ofPurchaseOrderLineId(line.getC_OrderLine_ID()))
 								.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 								.build());
 			}

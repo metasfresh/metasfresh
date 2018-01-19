@@ -80,7 +80,7 @@ public class CostsAdjustmentsCostingMethodHandler extends CostingMethodHandlerTe
 				sql += " AND M_AttributeSetInstance_ID=" + costSegment.getAttributeSetInstanceId();
 			}
 			//
-			final BigDecimal qtyOnhand = DB.getSQLValueBD(ITrx.TRXNAME_ThreadInherited, sql);
+			final BigDecimal qtyOnhand = DB.getSQLValueBDEx(ITrx.TRXNAME_ThreadInherited, sql);
 			if (qtyOnhand.signum() != 0)
 			{
 				final BigDecimal oldSum = cost.getCurrentCostPrice().multiply(cost.getCurrentQty());

@@ -362,7 +362,7 @@ public class CostDetailService implements ICostDetailService
 	{
 		if (cd.getC_OrderLine_ID() > 0)
 		{
-			return CostingDocumentRef.ofOrderLineId(cd.getC_OrderLine_ID());
+			return CostingDocumentRef.ofPurchaseOrderLineId(cd.getC_OrderLine_ID());
 		}
 		else if (cd.getC_InvoiceLine_ID() > 0)
 		{

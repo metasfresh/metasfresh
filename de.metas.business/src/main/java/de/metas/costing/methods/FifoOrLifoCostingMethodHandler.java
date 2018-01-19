@@ -86,7 +86,8 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 		{
 			cost.setCurrentCostPrice(cQueue.get(0).getCurrentCostPrice());
 		}
-		cost.setCurrentQty(cost.getCurrentQty().add(qty));
+		
+		cost.adjustCurrentQty(qty);
 	}
 	
 	@Data

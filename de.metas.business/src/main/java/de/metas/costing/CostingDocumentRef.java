@@ -41,9 +41,9 @@ import lombok.Value;
 @Value
 public class CostingDocumentRef
 {
-	public static CostingDocumentRef ofOrderLineId(final int orderLineId)
+	public static CostingDocumentRef ofPurchaseOrderLineId(final int orderLineId)
 	{
-		final Boolean outboundTrx = null;
+		final Boolean outboundTrx = Boolean.FALSE;
 		return new CostingDocumentRef(I_C_OrderLine.Table_Name, orderLineId, I_M_CostDetail.COLUMNNAME_C_OrderLine_ID, outboundTrx);
 	}
 
