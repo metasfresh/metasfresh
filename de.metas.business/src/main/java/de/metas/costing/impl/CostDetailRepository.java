@@ -68,6 +68,9 @@ public class CostDetailRepository implements ICostDetailRepository
 	public void deleteUnprocessedWithNoChanges(@NonNull final CostDetailQuery query)
 	{
 		final int countDeleted = createQueryBuilder(query)
+				.addEqualsFilter(I_M_CostDetail.COLUMN_Processed, false)
+				.addInArrayFilter(I_M_CostDetail.COLUMN_DeltaAmt, null, BigDecimal.ZERO)
+				.addInArrayFilter(I_M_CostDetail.COLUMN_DeltaQty, null, BigDecimal.ZERO)
 				.create()
 				.deleteDirectly();
 		if (countDeleted > 0)
@@ -93,7 +96,7 @@ public class CostDetailRepository implements ICostDetailRepository
 	private IQueryBuilder<I_M_CostDetail> createQueryBuilder(@NonNull final CostDetailQuery query)
 	{
 		final CostingDocumentRef documentRef = query.getDocumentRef();
-		
+
 		final IQueryBuilder<I_M_CostDetail> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_CostDetail.class)
 				.addEqualsFilter(I_M_CostDetail.COLUMN_C_AcctSchema_ID, query.getAcctSchemaId())
