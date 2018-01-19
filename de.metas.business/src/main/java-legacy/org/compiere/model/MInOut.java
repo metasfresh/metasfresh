@@ -2465,8 +2465,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			// TODO: check if there are more places where to look and check if the inout line was already invoiced
 
 			// Delete material allocations
-			final MInOutLineMA mas[] = MInOutLineMA.get(getCtx(), inoutLine.getM_InOutLine_ID(), get_TrxName());
-			for (final I_M_InOutLineMA ma : mas)
+			for (final MInOutLineMA ma: MInOutLineMA.get(getCtx(), inoutLine.getM_InOutLine_ID(), get_TrxName()))
 			{
 				InterfaceWrapperHelper.delete(ma);
 			}
@@ -2478,9 +2477,10 @@ public class MInOut extends X_M_InOut implements IDocument
 			}
 
 			// Delete M_CostDetails
-			costDetailService.reverseAndDeleteForDocument(isSOTrx() ? //
-					CostingDocumentRef.ofShipmentLineId(inoutLine.getM_InOutLine_ID())
-					: CostingDocumentRef.ofReceiptLineId(inoutLine.getM_InOutLine_ID()));
+			if(isSOTrx())
+			{
+				costDetailService.reverseAndDeleteForDocument(CostingDocumentRef.ofShipmentLineId(inoutLine.getM_InOutLine_ID()));
+			}
 
 			// Update Order Line
 			final I_C_OrderLine orderLine = inoutLine.getC_OrderLine();

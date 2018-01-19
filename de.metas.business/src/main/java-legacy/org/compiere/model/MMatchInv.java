@@ -368,7 +368,7 @@ public class MMatchInv extends X_M_MatchInv
 							.orgId(getAD_Org_ID())
 							.productId(getM_Product_ID())
 							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
-							.documentRef(CostingDocumentRef.ofInvoiceLineId(invoiceLine.getC_InvoiceLine_ID()))
+							.documentRef(CostingDocumentRef.ofPurchaseInvoiceLineId(invoiceLine.getC_InvoiceLine_ID()))
 							.costElementId(0)
 							.amt(tAmt)
 							.qty(tQty)
@@ -408,7 +408,7 @@ public class MMatchInv extends X_M_MatchInv
 			
 			final CostDetailQuery costDetailQuery = CostDetailQuery.builder()
 					.acctSchemaId(as.getC_AcctSchema_ID())
-					.documentRef(CostingDocumentRef.ofInvoiceLineId(getC_InvoiceLine_ID()))
+					.documentRef(CostingDocumentRef.ofPurchaseInvoiceLineId(getC_InvoiceLine_ID()))
 					.attributeSetInstanceId(getM_AttributeSetInstance_ID())
 					.build();
 			costDetailService.reversePartialQty(costDetailQuery, qty);

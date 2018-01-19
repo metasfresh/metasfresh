@@ -26,12 +26,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,9 +47,9 @@ public class CostingDocumentRef
 		return new CostingDocumentRef(I_C_OrderLine.Table_Name, orderLineId, I_M_CostDetail.COLUMNNAME_C_OrderLine_ID, outboundTrx);
 	}
 
-	public static CostingDocumentRef ofInvoiceLineId(final int invoiceLineId)
+	public static CostingDocumentRef ofPurchaseInvoiceLineId(final int invoiceLineId)
 	{
-		final Boolean outboundTrx = null;
+		final Boolean outboundTrx = Boolean.FALSE;
 		return new CostingDocumentRef(I_C_InvoiceLine.Table_Name, invoiceLineId, I_M_CostDetail.COLUMNNAME_C_InvoiceLine_ID, outboundTrx);
 	}
 
@@ -59,25 +59,19 @@ public class CostingDocumentRef
 		return new CostingDocumentRef(I_M_InOutLine.Table_Name, inOutLineId, I_M_CostDetail.COLUMNNAME_M_InOutLine_ID, outboundTrx);
 	}
 
-	public static CostingDocumentRef ofReceiptLineId(final int inOutLineId)
-	{
-		final Boolean outboundTrx = Boolean.FALSE;
-		return new CostingDocumentRef(I_M_InOutLine.Table_Name, inOutLineId, I_M_CostDetail.COLUMNNAME_M_InOutLine_ID, outboundTrx);
-	}
-
 	public static CostingDocumentRef ofInventoryLineId(final int inventoryLineId)
 	{
 		final Boolean outboundTrx = null;
 		return new CostingDocumentRef(I_M_InventoryLine.Table_Name, inventoryLineId, I_M_CostDetail.COLUMNNAME_M_InventoryLine_ID, outboundTrx);
 	}
 
-	public static CostingDocumentRef ofFromMovementLineId(final int movementLineId)
+	public static CostingDocumentRef ofOutboundMovementLineId(final int movementLineId)
 	{
 		final Boolean outboundTrx = Boolean.TRUE;
 		return new CostingDocumentRef(I_M_MovementLine.Table_Name, movementLineId, I_M_CostDetail.COLUMNNAME_M_MovementLine_ID, outboundTrx);
 	}
 
-	public static CostingDocumentRef ofToMovementLineId(final int movementLineId)
+	public static CostingDocumentRef ofInboundMovementLineId(final int movementLineId)
 	{
 		final Boolean outboundTrx = Boolean.FALSE;
 		return new CostingDocumentRef(I_M_MovementLine.Table_Name, movementLineId, I_M_CostDetail.COLUMNNAME_M_MovementLine_ID, outboundTrx);
@@ -89,13 +83,13 @@ public class CostingDocumentRef
 		return new CostingDocumentRef(I_M_ProductionLine.Table_Name, productionLineId, I_M_CostDetail.COLUMNNAME_M_ProductionLine_ID, outboundTrx);
 	}
 
-	public static CostingDocumentRef ofProjectIssueId(int projectIssueId)
+	public static CostingDocumentRef ofProjectIssueId(final int projectIssueId)
 	{
 		final Boolean outboundTrx = null;
 		return new CostingDocumentRef(I_C_ProjectIssue.Table_Name, projectIssueId, I_M_CostDetail.COLUMNNAME_C_ProjectIssue_ID, outboundTrx);
 	}
 
-	public static CostingDocumentRef ofCostCollectorId(int ppCostCollectorId)
+	public static CostingDocumentRef ofCostCollectorId(final int ppCostCollectorId)
 	{
 		final Boolean outboundTrx = null;
 		return new CostingDocumentRef(I_PP_Cost_Collector.Table_Name, ppCostCollectorId, I_M_CostDetail.COLUMNNAME_PP_Cost_Collector_ID, outboundTrx);
@@ -113,6 +107,7 @@ public class CostingDocumentRef
 			@Nullable final Boolean outboundTrx)
 	{
 		Check.assume(recordId > 0, "recordId > 0");
+
 		this.tableName = tableName;
 		this.recordId = recordId;
 		this.costDetailColumnName = costDetailColumnName;

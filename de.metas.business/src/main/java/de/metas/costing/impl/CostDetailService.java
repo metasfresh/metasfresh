@@ -142,7 +142,7 @@ public class CostDetailService implements ICostDetailService
 
 		return costDetail;
 	}
-	
+
 	private void updateCostDetailFromCreateRequest(final I_M_CostDetail costDetail, final CostDetailCreateRequest request)
 	{
 		final BigDecimal amt = request.getAmt();
@@ -362,19 +362,31 @@ public class CostDetailService implements ICostDetailService
 	{
 		if (cd.getC_OrderLine_ID() > 0)
 		{
+			if (cd.isSOTrx())
+			{
+				throw new AdempiereException("Sales order line not supported: " + cd);
+			}
 			return CostingDocumentRef.ofPurchaseOrderLineId(cd.getC_OrderLine_ID());
 		}
 		else if (cd.getC_InvoiceLine_ID() > 0)
 		{
-			return CostingDocumentRef.ofInvoiceLineId(cd.getC_InvoiceLine_ID());
+			if (cd.isSOTrx())
+			{
+				throw new AdempiereException("Sales invoice line not supported: " + cd);
+			}
+			return CostingDocumentRef.ofPurchaseInvoiceLineId(cd.getC_InvoiceLine_ID());
 		}
 		else if (cd.getM_InOutLine_ID() > 0)
 		{
-			return cd.isSOTrx() ? CostingDocumentRef.ofShipmentLineId(cd.getM_InOutLine_ID()) : CostingDocumentRef.ofReceiptLineId(cd.getM_InOutLine_ID());
+			if (!cd.isSOTrx())
+			{
+				throw new AdempiereException("Material receipt line not supported: " + cd);
+			}
+			return CostingDocumentRef.ofShipmentLineId(cd.getM_InOutLine_ID());
 		}
 		else if (cd.getM_MovementLine_ID() > 0)
 		{
-			return cd.isSOTrx() ? CostingDocumentRef.ofFromMovementLineId(cd.getM_MovementLine_ID()) : CostingDocumentRef.ofToMovementLineId(cd.getM_MovementLine_ID());
+			return cd.isSOTrx() ? CostingDocumentRef.ofOutboundMovementLineId(cd.getM_MovementLine_ID()) : CostingDocumentRef.ofInboundMovementLineId(cd.getM_MovementLine_ID());
 		}
 		else if (cd.getM_InventoryLine_ID() > 0)
 		{

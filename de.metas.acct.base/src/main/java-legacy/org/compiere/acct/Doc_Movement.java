@@ -139,7 +139,7 @@ public class Doc_Movement extends Doc
 			DocLine line = p_lines[i];
 			// MZ Goodwill
 			// if Inventory Move CostDetail exist then get Cost from Cost Detail 
-			BigDecimal costs = line.getProductCosts(as, line.getAD_Org_ID(), true, CostingDocumentRef.ofToMovementLineId(line.get_ID()));
+			BigDecimal costs = line.getProductCosts(as, line.getAD_Org_ID(), true, CostingDocumentRef.ofInboundMovementLineId(line.get_ID()));
 			// end MZ
 
 			//  ** Inventory       DR      CR
@@ -200,7 +200,7 @@ public class Doc_Movement extends Doc
 						.orgId(dr.getAD_Org_ID())
 						.productId(line.getM_Product_ID())
 						.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
-						.documentRef(CostingDocumentRef.ofFromMovementLineId(line.get_ID()))
+						.documentRef(CostingDocumentRef.ofOutboundMovementLineId(line.get_ID()))
 						.costElementId(0)
 						.amt(costs.negate())
 						.qty(line.getQty().negate())
@@ -212,7 +212,7 @@ public class Doc_Movement extends Doc
 						.orgId(cr.getAD_Org_ID())
 						.productId(line.getM_Product_ID())
 						.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
-						.documentRef(CostingDocumentRef.ofToMovementLineId(line.get_ID()))
+						.documentRef(CostingDocumentRef.ofInboundMovementLineId(line.get_ID()))
 						.costElementId(0)
 						.amt(costs)
 						.qty(line.getQty())
