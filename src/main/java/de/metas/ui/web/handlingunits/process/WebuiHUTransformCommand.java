@@ -137,7 +137,8 @@ public class WebuiHUTransformCommand
 	private WebuiHUTransformCommand(
 			@NonNull final HUEditorRow selectedRow,
 			@Nullable final List<TableRecordReference> contextDocumentLines,
-			@NonNull final WebuiHUTransformParameters parameters)
+			@NonNull final WebuiHUTransformParameters parameters,
+			final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy)
 	{
 		this._selectedRow = selectedRow;
 		this._contextDocumentLines = contextDocumentLines != null ? ImmutableList.copyOf(contextDocumentLines) : ImmutableList.of();
@@ -176,6 +177,7 @@ public class WebuiHUTransformCommand
 		final HUEditorRow row = getSelectedRow();
 		final ActionType action = getActionType();
 		final WebuiHUTransformParameters parameters = getParameters();
+
 		switch (action)
 		{
 			case CU_To_NewCU:
@@ -226,6 +228,8 @@ public class WebuiHUTransformCommand
 		}
 	}
 
+	
+
 	/**
 	 *
 	 * @param row
@@ -255,7 +259,7 @@ public class WebuiHUTransformCommand
 	private WebuiHUTransformCommandResult action_SplitCU_To_ExistingTU(final HUEditorRow cuRow, final I_M_HU tuHU, final BigDecimal qtyCU)
 	{
 		final List<I_M_HU> createdCUs = newHUTransformation().cuToExistingTU(cuRow.getM_HU(), qtyCU, tuHU);
-		
+
 		return WebuiHUTransformCommandResult.builder()
 				.huIdChanged(cuRow.getHURowId().getTopLevelHUId())
 				.huIdChanged(Services.get(IHandlingUnitsBL.class).getTopLevelParent(tuHU).getM_HU_ID())
@@ -274,7 +278,7 @@ public class WebuiHUTransformCommand
 	{
 		// TODO: if qtyCU is the "maximum", then don't do anything, but show a user message
 		final List<I_M_HU> createdHUs = newHUTransformation().cuToNewCU(cuRow.getM_HU(), qtyCU);
-		
+
 		final ImmutableSet<Integer> createdHUIds = createdHUs.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet());
 
 		return WebuiHUTransformCommandResult.builder()
@@ -371,4 +375,5 @@ public class WebuiHUTransformCommand
 
 		return resultBuilder.build();
 	}
+
 }
