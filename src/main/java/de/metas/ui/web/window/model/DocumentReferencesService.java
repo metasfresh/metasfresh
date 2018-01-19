@@ -128,6 +128,7 @@ public class DocumentReferencesService
 				.windowId(WindowId.of(zoomInfo.getAD_Window_ID()))
 				.documentsCount(zoomInfo.getRecordCount())
 				.filter(MQueryDocumentFilterHelper.createDocumentFilterFromMQuery(zoomInfo.getQuery(), filterCaption))
+				.loadDuration(zoomInfo.getRecordCountDuration())
 				.build();
 	}
 
