@@ -31,6 +31,10 @@ Here come the actual release notes:
   * [#3339](https://github.com/metasfresh/metasfresh/issues/3339) Field "Doctype" is included twice in payment window
     * Fixes a doubled Field for Doctype in the payment window.
 
+* metasfresh-webui-frontend
+  * [#1495](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1495) Error on "add to transportation order"
+    * Fixes a Bug that occurred in window Picking Tray Clearing when adding an HU to a Transportation Order.
+
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**
 
