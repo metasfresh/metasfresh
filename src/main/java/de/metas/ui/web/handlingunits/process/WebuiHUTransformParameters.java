@@ -1,7 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -53,7 +52,4 @@ public class WebuiHUTransformParameters
 	private final BigDecimal qtyTU;
 	private final boolean huPlanningReceiptOwnerPM_LU;
 	private final boolean huPlanningReceiptOwnerPM_TU;
-	
-	private final List<String> serialNumbers;
-
 }

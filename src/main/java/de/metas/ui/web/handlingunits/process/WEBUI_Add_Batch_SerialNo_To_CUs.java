@@ -1,7 +1,10 @@
 
 package de.metas.ui.web.handlingunits.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -12,6 +15,7 @@ import org.adempiere.util.Services;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -22,8 +26,8 @@ import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
+import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
-import de.metas.ui.web.handlingunits.process.WebuiHUTransformCommand.ActionType;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
@@ -124,6 +128,7 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		{
 			return;
 		}
+		removeSelectedRowsIfHUDestoyed();
 		invalidateView();
 	}
 
@@ -182,18 +187,9 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 				.topLevelRow(topLevelRow)
 				.build();
 
-		final WebuiHUTransformParameters huTransformParams = WebuiHUTransformParameters.builder()
-				.actionType(ActionType.CUs_With_SerialNumbers)
-				.serialNumbers(availableSerialNumbers)
-				.build();
+		final WebuiHUTransformCommandResult result = WEBUIHUCreationWithSerialNumberService.newInstance().action_CreateCUs_With_SerialNumbers(huEditorRowHierarchy, availableSerialNumbers);
 
-		final WebuiHUTransformCommand command = WebuiHUTransformCommand.builder()
-				.selectedRow(selectedCuRow)
-				.huEditorRowHierarchy(huEditorRowHierarchy)
-				.parameters(huTransformParams)
-				.build();
-
-		command.execute();
+		updateViewFromResult(result);
 
 	}
 
@@ -210,6 +206,63 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 	{
 		final I_M_HU hu = huRow.getM_HU();
 		return handlingUnitsBL.isAggregateHU(hu);
+	}
+
+	private final void updateViewFromResult(final WebuiHUTransformCommandResult result)
+	{
+		final HUEditorView view = getView();
+
+		view.addHUIds(result.getHuIdsToAddToView());
+
+		view.removeHUIds(result.getHuIdsToRemoveFromView());
+
+		if (!result.getHuIdsChanged().isEmpty())
+		{
+			removeHUsIfDestroyed(result.getHuIdsChanged());
+		}
+
+	}
+
+	/** @return true if view was changed and needs invalidation */
+	private final boolean removeSelectedRowsIfHUDestoyed()
+	{
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+		if (selectedRowIds.isEmpty())
+		{
+			return false;
+		}
+		else if (selectedRowIds.isAll())
+		{
+			return false;
+		}
+
+		final HUEditorView view = getView();
+		final ImmutableSet<Integer> selectedHUIds = view.streamByIds(selectedRowIds)
+				.map(row -> row.getM_HU_ID())
+				.collect(ImmutableSet.toImmutableSet());
+
+		return removeHUsIfDestroyed(selectedHUIds);
+	}
+
+	/**
+	 * @return true if at least one HU was removed
+	 */
+	private boolean removeHUsIfDestroyed(final Collection<Integer> huIds)
+	{
+		final ImmutableSet<Integer> destroyedHUIds = huIds.stream()
+				.distinct()
+				.map(huId -> load(huId, I_M_HU.class))
+				.filter(Services.get(IHandlingUnitsBL.class)::isDestroyed)
+				.map(I_M_HU::getM_HU_ID)
+				.collect(ImmutableSet.toImmutableSet());
+		if (destroyedHUIds.isEmpty())
+		{
+			return false;
+		}
+
+		final HUEditorView view = getView();
+		final boolean changes = view.removeHUIds(destroyedHUIds);
+		return changes;
 	}
 
 }
