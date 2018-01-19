@@ -90,7 +90,6 @@ class DocumentList extends Component {
     const { defaultViewId, defaultPage, defaultSort } = props;
 
     this.pageLength = 20;
-    this.table = null;
     this.supportAttribute = false;
 
     this.state = {
@@ -650,10 +649,6 @@ class DocumentList extends Component {
     if (!showIncludedView) {
       dispatch(closeListIncludedView({ windowType, viewId, forceClose }));
     }
-  };
-
-  handlePatchAllEditFields = () => {
-    this.table && this.table.patchAllEditFields();
   };
 
   render() {

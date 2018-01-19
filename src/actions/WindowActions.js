@@ -5,7 +5,41 @@ import SockJs from "sockjs-client";
 
 import Stomp from "stompjs/lib/stomp.min.js";
 
-import * as types from "../constants/ActionTypes";
+import {
+  ACTIVATE_TAB,
+  ADD_NEW_ROW,
+  ADD_ROW_DATA,
+  ALLOW_SHORTCUT,
+  CHANGE_INDICATOR_STATE,
+  CLEAR_MASTER_DATA,
+  CLOSE_MODAL,
+  CLOSE_PROCESS_MODAL,
+  CLOSE_RAW_MODAL,
+  DELETE_ROW,
+  DISABLE_SHORTCUT,
+  INIT_DATA_SUCCESS,
+  INIT_LAYOUT_SUCCESS,
+  NO_CONNECTION,
+  OPEN_MODAL,
+  OPEN_RAW_MODAL,
+  PATCH_FAILURE,
+  PATCH_REQUEST,
+  PATCH_SUCCESS,
+  SELECT_TABLE_ITEMS,
+  SET_LATEST_NEW_DOCUMENT,
+  SORT_TAB,
+  UNSELECT_TAB,
+  UPDATE_DATA_FIELD_PROPERTY,
+  UPDATE_DATA_INCLUDED_TABS_INFO,
+  UPDATE_DATA_PROPERTY,
+  UPDATE_DATA_SAVE_STATUS,
+  UPDATE_DATA_VALID_STATUS,
+  UPDATE_MODAL,
+  UPDATE_ROW_FIELD_PROPERTY,
+  UPDATE_ROW_PROPERTY,
+  UPDATE_ROW_STATUS
+} from "../constants/ActionTypes";
+
 import {
   addNotification,
   setNotificationProgress,
@@ -18,7 +52,7 @@ import { getWindowBreadcrumb } from "./MenuActions";
 
 export function setLatestNewDocument(id) {
   return {
-    type: types.SET_LATEST_NEW_DOCUMENT,
+    type: SET_LATEST_NEW_DOCUMENT,
     id: id
   };
 }
@@ -36,7 +70,7 @@ export function discardNewDocument({ windowType, documentId } = {}) {
 
 export function openRawModal(windowType, viewId) {
   return {
-    type: types.OPEN_RAW_MODAL,
+    type: OPEN_RAW_MODAL,
     windowType: windowType,
     viewId: viewId
   };
@@ -44,25 +78,25 @@ export function openRawModal(windowType, viewId) {
 
 export function closeRawModal() {
   return {
-    type: types.CLOSE_RAW_MODAL
+    type: CLOSE_RAW_MODAL
   };
 }
 
 export function allowShortcut() {
   return {
-    type: types.ALLOW_SHORTCUT
+    type: ALLOW_SHORTCUT
   };
 }
 
 export function disableShortcut() {
   return {
-    type: types.DISABLE_SHORTCUT
+    type: DISABLE_SHORTCUT
   };
 }
 
 export function activateTab(scope, tabId) {
   return {
-    type: types.ACTIVATE_TAB,
+    type: ACTIVATE_TAB,
     scope,
     tabId
   };
@@ -70,14 +104,14 @@ export function activateTab(scope, tabId) {
 
 export function unselectTab(scope) {
   return {
-    type: types.UNSELECT_TAB,
+    type: UNSELECT_TAB,
     scope
   };
 }
 
 export function initLayoutSuccess(layout, scope) {
   return {
-    type: types.INIT_LAYOUT_SUCCESS,
+    type: INIT_LAYOUT_SUCCESS,
     layout: layout,
     scope: scope
   };
@@ -100,7 +134,7 @@ export function initDataSuccess({
     saveStatus,
     scope,
     standardActions,
-    type: types.INIT_DATA_SUCCESS,
+    type: INIT_DATA_SUCCESS,
     validStatus,
     websocket
   };
@@ -108,13 +142,13 @@ export function initDataSuccess({
 
 export function clearMasterData() {
   return {
-    type: types.CLEAR_MASTER_DATA
+    type: CLEAR_MASTER_DATA
   };
 }
 
 export function addRowData(data, scope) {
   return {
-    type: types.ADD_ROW_DATA,
+    type: ADD_ROW_DATA,
     data,
     scope
   };
@@ -122,7 +156,7 @@ export function addRowData(data, scope) {
 
 export function sortTab(scope, tabId, field, asc) {
   return {
-    type: types.SORT_TAB,
+    type: SORT_TAB,
     scope,
     tabId,
     field,
@@ -132,7 +166,7 @@ export function sortTab(scope, tabId, field, asc) {
 
 export function updateRowStatus(scope, tabid, rowid, saveStatus) {
   return {
-    type: types.UPDATE_ROW_STATUS,
+    type: UPDATE_ROW_STATUS,
     scope,
     tabid,
     rowid,
@@ -142,7 +176,7 @@ export function updateRowStatus(scope, tabid, rowid, saveStatus) {
 
 export function updateDataProperty(property, value, scope) {
   return {
-    type: types.UPDATE_DATA_PROPERTY,
+    type: UPDATE_DATA_PROPERTY,
     property,
     value,
     scope
@@ -151,7 +185,7 @@ export function updateDataProperty(property, value, scope) {
 
 export function updateDataSaveStatus(scope, saveStatus) {
   return {
-    type: types.UPDATE_DATA_SAVE_STATUS,
+    type: UPDATE_DATA_SAVE_STATUS,
     scope,
     saveStatus
   };
@@ -159,7 +193,7 @@ export function updateDataSaveStatus(scope, saveStatus) {
 
 export function updateDataValidStatus(scope, validStatus) {
   return {
-    type: types.UPDATE_DATA_VALID_STATUS,
+    type: UPDATE_DATA_VALID_STATUS,
     scope,
     validStatus
   };
@@ -167,7 +201,7 @@ export function updateDataValidStatus(scope, validStatus) {
 
 export function updateRowProperty(property, item, tabid, rowid, scope) {
   return {
-    type: types.UPDATE_ROW_PROPERTY,
+    type: UPDATE_ROW_PROPERTY,
     property,
     item,
     tabid,
@@ -178,7 +212,7 @@ export function updateRowProperty(property, item, tabid, rowid, scope) {
 
 export function updateDataIncludedTabsInfo(scope, includedTabsInfo) {
   return {
-    type: types.UPDATE_DATA_INCLUDED_TABS_INFO,
+    type: UPDATE_DATA_INCLUDED_TABS_INFO,
     scope,
     includedTabsInfo
   };
@@ -186,7 +220,7 @@ export function updateDataIncludedTabsInfo(scope, includedTabsInfo) {
 
 export function addNewRow(item, tabid, rowid, scope) {
   return {
-    type: types.ADD_NEW_ROW,
+    type: ADD_NEW_ROW,
     item: item,
     tabid: tabid,
     rowid: rowid,
@@ -211,7 +245,7 @@ export function discardNewRow({ windowType, documentId, tabId, rowId } = {}) {
 
 export function deleteRow(tabid, rowid, scope) {
   return {
-    type: types.DELETE_ROW,
+    type: DELETE_ROW,
     tabid: tabid,
     rowid: rowid,
     scope: scope
@@ -220,7 +254,7 @@ export function deleteRow(tabid, rowid, scope) {
 
 export function updateDataFieldProperty(property, item, scope) {
   return {
-    type: types.UPDATE_DATA_FIELD_PROPERTY,
+    type: UPDATE_DATA_FIELD_PROPERTY,
     property: property,
     item: item,
     scope: scope
@@ -229,7 +263,7 @@ export function updateDataFieldProperty(property, item, scope) {
 
 export function updateRowFieldProperty(property, item, tabid, rowid, scope) {
   return {
-    type: types.UPDATE_ROW_FIELD_PROPERTY,
+    type: UPDATE_ROW_FIELD_PROPERTY,
     property: property,
     item: item,
     tabid: tabid,
@@ -240,7 +274,7 @@ export function updateRowFieldProperty(property, item, tabid, rowid, scope) {
 
 export function noConnection(status) {
   return {
-    type: types.NO_CONNECTION,
+    type: NO_CONNECTION,
     status: status
   };
 }
@@ -262,7 +296,7 @@ export function openModal(
   childViewSelectedIds
 ) {
   return {
-    type: types.OPEN_MODAL,
+    type: OPEN_MODAL,
     windowType: windowType,
     modalType: type,
     tabId: tabId,
@@ -282,19 +316,19 @@ export function openModal(
 
 export function closeProcessModal() {
   return {
-    type: types.CLOSE_PROCESS_MODAL
+    type: CLOSE_PROCESS_MODAL
   };
 }
 
 export function closeModal() {
   return {
-    type: types.CLOSE_MODAL
+    type: CLOSE_MODAL
   };
 }
 
 export function updateModal(rowId, dataId) {
   return {
-    type: types.UPDATE_MODAL,
+    type: UPDATE_MODAL,
     rowId,
     dataId
   };
@@ -304,7 +338,7 @@ export function updateModal(rowId, dataId) {
 
 export function indicatorState(state) {
   return {
-    type: types.CHANGE_INDICATOR_STATE,
+    type: CHANGE_INDICATOR_STATE,
     state: state
   };
 }
@@ -313,7 +347,7 @@ export function indicatorState(state) {
 
 export function selectTableItems({ ids, windowType, viewId }) {
   return {
-    type: types.SELECT_TABLE_ITEMS,
+    type: SELECT_TABLE_ITEMS,
     payload: { ids, windowType, viewId }
   };
 }
@@ -506,30 +540,6 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
   };
 }
 
-export function patchAll(entity, windowType, viewId, rows) {
-  return dispatch => {
-    dispatch(indicatorState("pending"));
-    let patchRequests = [];
-    const isEdit = true;
-
-    rows.map(row => {
-      patchRequests.push(
-        patchRequest({
-          entity,
-          docType: windowType,
-          viewId,
-          isEdit,
-          ...row
-        })
-      );
-    });
-
-    axios.all(patchRequests).then(() => {
-      dispatch(indicatorState("saved"));
-    });
-  };
-}
-
 /*
  *  Wrapper for patch request of widget elements
  *  when responses should merge store
@@ -547,10 +557,10 @@ export function patch(
   viewId,
   isEdit
 ) {
-  return dispatch => {
-    dispatch(indicatorState("pending"));
+  return async dispatch => {
+    const symbol = Symbol();
 
-    return patchRequest({
+    const options = {
       entity,
       docType: windowType,
       docId: id,
@@ -561,43 +571,52 @@ export function patch(
       isAdvanced,
       viewId,
       isEdit
-    })
-      .then(response => {
-        let data =
-          response.data instanceof Array ? response.data : [response.data];
-        dispatch(
-          mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
-        );
+    };
 
-        dispatch(indicatorState("saved"));
+    await dispatch({ type: PATCH_REQUEST, symbol, options });
+    await dispatch(indicatorState("pending"));
 
-        return data;
-      })
-      .catch(() => {
-        getData(
-          entity,
-          windowType,
-          id,
-          tabId,
+    try {
+      const response = await patchRequest(options);
+
+      const data =
+        response.data instanceof Array ? response.data : [response.data];
+
+      await dispatch(
+        mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
+      );
+
+      await dispatch(indicatorState("saved"));
+      await dispatch({ type: PATCH_SUCCESS, symbol });
+
+      return data;
+    } catch (error) {
+      await dispatch({ type: PATCH_FAILURE, symbol });
+
+      const response = await getData(
+        entity,
+        windowType,
+        id,
+        tabId,
+        rowId,
+        null,
+        null,
+        isAdvanced,
+        null,
+        viewId
+      );
+
+      await dispatch(
+        mapDataToState(
+          response.data,
+          isModal,
           rowId,
-          null,
-          null,
-          isAdvanced,
-          null,
-          viewId
-        ).then(response => {
-          dispatch(
-            mapDataToState(
-              response.data,
-              isModal,
-              rowId,
-              id,
-              windowType,
-              isAdvanced
-            )
-          );
-        });
-      });
+          id,
+          windowType,
+          isAdvanced
+        )
+      );
+    }
   };
 }
 

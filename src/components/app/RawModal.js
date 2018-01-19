@@ -3,8 +3,10 @@ import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { connect } from "react-redux";
 
+import { PATCH_RESET } from "../../constants/ActionTypes";
 import { closeListIncludedView } from "../../actions/ListActions";
 import { deleteView } from "../../actions/ViewActions";
+import { addNotification } from "../../actions/AppActions";
 import { closeModal, closeRawModal } from "../../actions/WindowActions";
 import keymap from "../../shortcuts/keymap";
 import ModalContextShortcuts from "../shortcuts/ModalContextShortcuts";
@@ -14,8 +16,7 @@ import Indicator from "./Indicator";
 class RawModal extends Component {
   state = {
     scrolled: false,
-    isTooltipShow: false,
-    closeModal: false
+    isTooltipShow: false
   };
 
   componentDidMount() {
@@ -39,13 +40,11 @@ class RawModal extends Component {
     this.removeEventListeners();
   }
 
-  componentDidUpdate() {
-    if (this.state.closeModal) {
-      const { closeCallback, viewId, windowType } = this.props;
-      const { isNew } = this.state;
-      closeCallback && closeCallback(isNew);
-      deleteView(windowType, viewId);
-      this.removeModal();
+  componentWillUpdate(props) {
+    if (this.resolve) {
+      if (!props.success || props.requests.length === 0) {
+        this.resolve(props.success);
+      }
     }
   }
 
@@ -79,25 +78,60 @@ class RawModal extends Component {
     });
   };
 
-  handleClose = () => {
-    const { childRef } = this.props;
-    childRef && childRef.handlePatchAllEditFields();
-    this.setState({
-      closeModal: true
-    });
+  handleClose = async () => {
+    const {
+      dispatch,
+      closeCallback,
+      viewId,
+      windowType,
+      requests
+    } = this.props;
+
+    const { isNew } = this.state;
+
+    if (requests.length > 0) {
+      const success = await new Promise(resolve => {
+        this.resolve = resolve;
+      });
+
+      delete this.resolve;
+
+      if (!success) {
+        await dispatch({ type: PATCH_RESET });
+
+        const title = "Error while saving";
+        const message = "Not all fields have been saved";
+        const time = 5000;
+        const type = "error";
+
+        await dispatch(addNotification(title, message, time, type));
+
+        return;
+      }
+    }
+
+    if (closeCallback) {
+      await closeCallback(isNew);
+    }
+
+    await deleteView(windowType, viewId);
+
+    await this.removeModal();
   };
 
-  removeModal = () => {
+  removeModal = async () => {
     const { dispatch, modalVisible, windowType, viewId } = this.props;
 
-    dispatch(closeRawModal());
-    dispatch(closeModal());
-    dispatch(
-      closeListIncludedView({
-        windowType,
-        viewId,
-        forceClose: true
-      })
+    await Promise.all(
+      [
+        closeRawModal(),
+        closeModal(),
+        closeListIncludedView({
+          windowType,
+          viewId,
+          forceClose: true
+        })
+      ].map(action => dispatch(action))
     );
 
     if (!modalVisible) {
@@ -161,12 +195,16 @@ class RawModal extends Component {
 }
 
 const mapStateToProps = state => ({
-  modalVisible: state.windowHandler.modal.visible || false
+  modalVisible: state.windowHandler.modal.visible || false,
+  requests: state.windowHandler.patches.requests,
+  success: state.windowHandler.patches.success
 });
 
 RawModal.propTypes = {
   dispatch: PropTypes.func.isRequired,
-  modalVisible: PropTypes.bool
+  modalVisible: PropTypes.bool,
+  requests: PropTypes.object.isRequired,
+  success: PropTypes.bool.isRequired
 };
 
 export default connect(mapStateToProps)(RawModal);
