@@ -34,6 +34,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1495](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1495) Error on "add to transportation order"
     * Fixes a Bug that occurred in window Picking Tray Clearing when adding an HU to a Transportation Order.
+  * [#1508](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1508) Scrollbar in Filter when hovering apply Button
+    * Improvement of the Tooltip Layout for Apply Button in Filter Selection Dropdowns.
 
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**
