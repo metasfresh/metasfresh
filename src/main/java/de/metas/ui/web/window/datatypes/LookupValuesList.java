@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -53,7 +54,7 @@ import lombok.NonNull;
  *
  */
 @Immutable
-public final class LookupValuesList
+public final class LookupValuesList implements Iterable<LookupValue>
 {
 	/**
 	 * Collects {@link LookupValue}s and builds a {@link LookupValuesList} with those values.
@@ -210,6 +211,12 @@ public final class LookupValuesList
 	public Stream<LookupValue> stream()
 	{
 		return getValues().stream();
+	}
+	
+	@Override
+	public Iterator<LookupValue> iterator()
+	{
+		return getValues().iterator();
 	}
 
 	/**
