@@ -32,6 +32,7 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewRowCustomizer;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.NonNull;
@@ -66,6 +67,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	private final ImmutableMap<String, SqlViewRowFieldBinding> _fieldsByFieldName;
 	private final SqlViewRowFieldBinding _keyField;
+	private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
 
 	private final SqlViewSelectData sqlViewSelect;
 	private final IStringExpression sqlWhereClause;
@@ -95,6 +97,9 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		_fieldsByFieldName = ImmutableMap.copyOf(builder.getFieldsByFieldName());
 		_keyField = builder.getKeyField();
+		widgetTypesByFieldName = _fieldsByFieldName.values()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(SqlViewRowFieldBinding::getFieldName, SqlViewRowFieldBinding::getWidgetType));
 
 		final Collection<String> displayFieldNames = builder.getDisplayFieldNames();
 
@@ -196,6 +201,11 @@ public class SqlViewBinding implements SqlEntityBinding
 		return field;
 	}
 
+	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
+	{
+		return widgetTypesByFieldName;
+	}
+
 	public SqlViewSelectData getSqlViewSelect()
 	{
 		return sqlViewSelect;
@@ -215,6 +225,12 @@ public class SqlViewBinding implements SqlEntityBinding
 	public ViewRowCustomizer getRowCustomizer()
 	{
 		return rowCustomizer;
+	}
+
+	@Override
+	public DocumentFilterDescriptorsProvider getFilterDescriptors()
+	{
+		return getViewFilterDescriptors();
 	}
 
 	public DocumentFilterDescriptorsProvider getViewFilterDescriptors()

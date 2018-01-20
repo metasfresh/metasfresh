@@ -7,6 +7,7 @@ import org.adempiere.util.collections.PagedIterator.Page;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
+import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -38,9 +39,9 @@ public interface HUEditorViewRepository
 {
 	void invalidateCache();
 
-	ViewRowIdsOrderedSelection createSelection(ViewId viewId, List<DocumentFilter> filters, List<DocumentQueryOrderBy> orderBys);
+	ViewRowIdsOrderedSelection createSelection(ViewEvaluationCtx viewEvalCtx, ViewId viewId, List<DocumentFilter> filters, List<DocumentQueryOrderBy> orderBys);
 
-	ViewRowIdsOrderedSelection createSelectionFromSelection(ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
+	ViewRowIdsOrderedSelection createSelectionFromSelection(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
 	
 	void deleteSelection(ViewRowIdsOrderedSelection selection);
 
@@ -56,7 +57,7 @@ public interface HUEditorViewRepository
 
 	List<Integer> retrieveHUIdsEffective(HUIdsFilterData huIdsFilter, List<DocumentFilter> filters);
 
-	Page<Integer> retrieveHUIdsPage(ViewRowIdsOrderedSelection selection, int firstRow, int maxRows);
+	Page<Integer> retrieveHUIdsPage(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection selection, int firstRow, int maxRows);
 
 	ViewRowIdsOrderedSelection addRowIdsToSelection(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIdsToAdd);
 

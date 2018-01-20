@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.util.LinkedHashMap;
-import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -79,7 +78,6 @@ public final class DocumentLayoutElementDescriptor
 	private final ITranslatableString description;
 
 	private final DocumentFieldWidgetType widgetType;
-	private final Optional<Integer> precision;
 	private final boolean allowShowPassword; // in case widgetType is Password
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
 
@@ -106,7 +104,6 @@ public final class DocumentLayoutElementDescriptor
 		description = builder.getDescription();
 
 		widgetType = builder.getWidgetType();
-		precision = Optional.ofNullable(builder.getPrecision());
 		allowShowPassword = builder.isAllowShowPassword();
 		buttonActionDescriptor = builder.getButtonActionDescriptor();
 
@@ -167,11 +164,6 @@ public final class DocumentLayoutElementDescriptor
 	public DocumentFieldWidgetType getWidgetType()
 	{
 		return widgetType;
-	}
-
-	public Optional<Integer> getPrecision()
-	{
-		return precision;
 	}
 
 	public boolean isAllowShowPassword()
@@ -409,11 +401,6 @@ public final class DocumentLayoutElementDescriptor
 		private boolean isAllowShowPassword()
 		{
 			return _allowShowPassword;
-		}
-
-		private Integer getPrecision()
-		{
-			return getWidgetType().getStandardNumberPrecision();
 		}
 
 		public Builder setLayoutType(final LayoutType layoutType)

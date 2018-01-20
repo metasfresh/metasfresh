@@ -555,6 +555,7 @@ import lombok.NonNull;
 				// .setMandatoryLogic(gridFieldVO.isMandatory() ? ConstantLogicExpression.TRUE : gridFieldVO.getMandatoryLogic())
 				// .setDisplayLogic(gridFieldVO.getDisplayLogic())
 				//
+				.setDefaultFilterInfo(createLabelsDefaultFilterInfo(labelsUIElement))
 				.setDataBinding(fieldBinding);
 
 		//
@@ -599,6 +600,18 @@ import lombok.NonNull;
 	public static final String getLabelsFieldName(final I_AD_UI_Element uiElement)
 	{
 		return "Labels_" + uiElement.getAD_UI_Element_ID();
+	}
+
+	private static DocumentFieldDefaultFilterDescriptor createLabelsDefaultFilterInfo(final I_AD_UI_Element labelsUIElement)
+	{
+		if (!labelsUIElement.isAllowFiltering())
+		{
+			return null;
+		}
+
+		return DocumentFieldDefaultFilterDescriptor.builder()
+				.seqNo(Integer.MAX_VALUE)
+				.build();
 	}
 
 	public final DocumentFieldDescriptor.Builder addInternalVirtualField(

@@ -1,7 +1,10 @@
 package de.metas.ui.web.view;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+
+import org.adempiere.util.NumberUtils;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -57,11 +60,11 @@ public interface IViewRow
 	//
 	// Fields
 	Map<String, Object> getFieldNameAndJsonValues();
-	
+
 	default int getFieldJsonValueAsInt(@NonNull final String fieldName, final int defaultValueIfNotFound)
 	{
 		final Object jsonValueObj = getFieldNameAndJsonValues().get(fieldName);
-		if(jsonValueObj == null)
+		if (jsonValueObj == null)
 		{
 			return defaultValueIfNotFound;
 		}
@@ -77,6 +80,12 @@ public interface IViewRow
 		{
 			return Integer.parseInt(jsonValueObj.toString());
 		}
+	}
+
+	default BigDecimal getFieldJsonValueAsBigDecimal(@NonNull final String fieldName, final BigDecimal defaultValueIfNotFoundOrError)
+	{
+		final Object jsonValueObj = getFieldNameAndJsonValues().get(fieldName);
+		return NumberUtils.asBigDecimal(jsonValueObj, defaultValueIfNotFoundOrError);
 	}
 
 	default Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()

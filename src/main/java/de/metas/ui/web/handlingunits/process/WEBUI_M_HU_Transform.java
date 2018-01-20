@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits.process;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.GuavaCollectors;
@@ -264,9 +265,10 @@ public class WEBUI_M_HU_Transform
 		}
 		if (!result.getHuIdsChanged().isEmpty())
 		{
+			removeHUsIfDestroyed(result.getHuIdsChanged());
 			changes = true;
 		}
-		if(removeSelectedRowsIfHUDestoyed())
+		if (removeSelectedRowsIfHUDestoyed())
 		{
 			changes = true;
 		}
@@ -291,18 +293,30 @@ public class WEBUI_M_HU_Transform
 		}
 
 		final HUEditorView view = getView();
-		final ImmutableSet<Integer> destroyedHUIds = view.streamByIds(selectedRowIds)
+		final ImmutableSet<Integer> selectedHUIds = view.streamByIds(selectedRowIds)
 				.map(row -> row.getM_HU_ID())
+				.collect(ImmutableSet.toImmutableSet());
+
+		return removeHUsIfDestroyed(selectedHUIds);
+	}
+
+	/**
+	 * @return true if at least one HU was removed
+	 */
+	private boolean removeHUsIfDestroyed(final Collection<Integer> huIds)
+	{
+		final ImmutableSet<Integer> destroyedHUIds = huIds.stream()
 				.distinct()
 				.map(huId -> load(huId, I_M_HU.class))
 				.filter(Services.get(IHandlingUnitsBL.class)::isDestroyed)
 				.map(I_M_HU::getM_HU_ID)
 				.collect(ImmutableSet.toImmutableSet());
-		if(destroyedHUIds.isEmpty())
+		if (destroyedHUIds.isEmpty())
 		{
 			return false;
 		}
 
+		final HUEditorView view = getView();
 		final boolean changes = view.removeHUIds(destroyedHUIds);
 		return changes;
 	}

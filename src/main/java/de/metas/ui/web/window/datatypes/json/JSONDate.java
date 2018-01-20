@@ -10,6 +10,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.time.SimpleDateFormatThreadLocal;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.Env;
@@ -162,7 +163,7 @@ public final class JSONDate implements Serializable
 				final String errmsg = "Failed converting '" + valueStr + "' to date."
 						+ "\n Please use following format: " + DATE_PATTEN + "."
 						+ "\n e.g. " + DATE_FORMAT.format(ZonedDateTime.now());
-				final IllegalArgumentException exFinal = new IllegalArgumentException(errmsg, ex1);
+				final AdempiereException exFinal = new AdempiereException(errmsg, ex1);
 				exFinal.addSuppressed(ex2);
 				throw exFinal;
 			}

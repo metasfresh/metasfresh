@@ -22,9 +22,11 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -57,16 +59,21 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	}
 
 	/** Labels table name (e.g. C_BPartner_Attribute) */
+	@Getter
 	private final String labelsTableName;
 	/** Labels reference List column name (e.g. C_BPartner_Attribute's Attribute) */
+	@Getter
 	private final String labelsListColumnName;
 	/** Labels list's AD_Reference_ID (e.g. C_BPartner_Attributes list) */
+	@Getter
 	private final int labelsListReferenceId;
 	/** Labels tableName's link column name (e.g. C_BPartner_Attribute's C_BPartner_ID) */
+	@Getter
 	private final String labelsLinkColumnName;
 	/** Table name (e.g. C_BPartner) */
 	private final String tableName;
 	/** Table's link column name (e.g. C_BPartner's C_BPartner_ID) */
+	@Getter
 	private final String linkColumnName;
 
 	private final Set<CtxName> parameters;
@@ -88,25 +95,11 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 
 		parameters = ImmutableSet.of(CtxNames.parse(linkColumnName));
 	}
-	
-	public String getLabelsTableName()
-	{
-		return labelsTableName;
-	}
-	
-	public String getLabelsLinkColumnName()
-	{
-		return labelsLinkColumnName;
-	}
 
-	public String getLabelsListColumnName()
+	@Override
+	public Class<?> getValueClass()
 	{
-		return labelsListColumnName;
-	}
-	
-	public String getLinkColumnName()
-	{
-		return linkColumnName;
+		return DocumentFieldWidgetType.Labels.getValueClass();
 	}
 
 	private Map<String, ADRefListItem> getListItemsIndexedByValue()
