@@ -659,6 +659,15 @@ public final class DocumentFieldDescriptor
 					+ "\n Widget type: " + widgetType
 					+ "\n Reason: " + e.getLocalizedMessage(), e);
 		}
+		
+		//
+		// Fallbacks
+		
+		// consider empty strings as null objects
+		if(value instanceof String || value.toString().isEmpty())
+		{
+			return null;
+		}
 
 		throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
 				+ "\n LookupDataSource: " + lookupDataSource //
