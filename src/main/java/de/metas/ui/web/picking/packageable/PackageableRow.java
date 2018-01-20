@@ -15,6 +15,7 @@ import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -51,7 +52,7 @@ import lombok.ToString;
 
 /**
  * Rows shown in {@link PackageableView}. Each row basically represents one {@link I_M_Packageable_V}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -60,8 +61,6 @@ public final class PackageableRow implements IViewRow
 {
 	private final ViewId viewId;
 	private final DocumentId id;
-	private final IViewRowType type;
-	private final boolean processed;
 	private final DocumentPath documentPath;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_Order_ID, layouts =
@@ -115,8 +114,6 @@ public final class PackageableRow implements IViewRow
 	private PackageableRow(
 			@NonNull final DocumentId id,
 			@NonNull final ViewId viewId,
-			final IViewRowType type,
-			final boolean processed,
 			@NonNull final DocumentPath documentPath,
 
 			final LookupValue order,
@@ -129,8 +126,6 @@ public final class PackageableRow implements IViewRow
 	{
 		this.id = id;
 		this.viewId = viewId;
-		this.type = type;
-		this.processed = processed;
 		this.documentPath = documentPath;
 
 		this.order = order;
@@ -156,13 +151,13 @@ public final class PackageableRow implements IViewRow
 	@Override
 	public IViewRowType getType()
 	{
-		return type;
+		return DefaultRowType.Row;
 	}
 
 	@Override
 	public boolean isProcessed()
 	{
-		return processed;
+		return false;
 	}
 
 	@Override
