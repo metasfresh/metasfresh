@@ -15,6 +15,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#3318](https://github.com/metasfresh/metasfresh/issues/3318) Webui Window Design: Improve window Reference
+    * New Window in WebUI for Process & Reports maintenance.
   * [#3319](https://github.com/metasfresh/metasfresh/issues/3319) Webui Window Design: Improve window Message
     * Improvement of the WebUI message window.
   * [#3322](https://github.com/metasfresh/metasfresh/issues/3322) Webui Window Design: Improve window Validation Rule
@@ -24,7 +26,7 @@ Here come the actual release notes:
   * [#3349](https://github.com/metasfresh/metasfresh/issues/3349) Add BPartner to User Window
     * New Field in Window User, allowing to see and maintain the Business Partner.
   * [#3359](https://github.com/metasfresh/metasfresh/issues/3359) User Window unlock Account Action
-    * New Window for Report & Process in WebUI.
+    * Adding new Action in User Window in WebUI allowing to unlock the User Account.
 
 * metasfresh-webui-frontend
   * [#1428](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1428) Calendar icon covers date field
