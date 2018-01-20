@@ -15,8 +15,10 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
-  * [#3318](https://github.com/metasfresh/metasfresh/issues/3318) Webui Window Design: Improve window Reference
+  * [#3317](https://github.com/metasfresh/metasfresh/issues/3317) Webui Window Design: Improve window Report & Process
     * New Window in WebUI for Process & Reports maintenance.
+  * [#3318](https://github.com/metasfresh/metasfresh/issues/3318) Webui Window Design: Improve window Reference
+    * New Window in WebUI for Reference maintenance.
   * [#3319](https://github.com/metasfresh/metasfresh/issues/3319) Webui Window Design: Improve window Message
     * Improvement of the WebUI message window.
   * [#3322](https://github.com/metasfresh/metasfresh/issues/3322) Webui Window Design: Improve window Validation Rule
