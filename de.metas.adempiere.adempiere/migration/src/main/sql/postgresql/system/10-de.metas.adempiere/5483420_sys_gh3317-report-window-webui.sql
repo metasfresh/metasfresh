@@ -1910,3 +1910,88 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-20 11:56:39'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-20 11:56:43','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Use Business Partner Language' WHERE AD_Field_ID=556918 AND AD_Language='en_US'
 ;
 
+-- 2018-01-20T12:01:35.712
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-20 12:01:35','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Window',Description='',Help='' WHERE AD_Field_ID=558789 AND AD_Language='en_US'
+;
+
+-- 2018-01-20T12:01:52.902
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-20 12:01:52','YYYY-MM-DD HH24:MI:SS') WHERE AD_Field_ID=61177 AND AD_Language='it_CH'
+;
+
+-- 2018-01-20T12:03:09.199
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Entitäts Art',Updated=TO_TIMESTAMP('2018-01-20 12:03:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5817
+;
+
+-- 2018-01-20T12:03:13.042
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='System Element',Updated=TO_TIMESTAMP('2018-01-20 12:03:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5818
+;
+
+-- 2018-01-20T12:03:18.958
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Wert Format',Updated=TO_TIMESTAMP('2018-01-20 12:03:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=2907
+;
+
+-- 2018-01-20T12:03:21.904
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Standardwert Logik',Updated=TO_TIMESTAMP('2018-01-20 12:03:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=2902
+;
+
+-- 2018-01-20T12:03:30.883
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Standardwert Logik',Updated=TO_TIMESTAMP('2018-01-20 12:03:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=4398
+;
+
+-- 2018-01-20T12:03:38.633
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Nur Lesen Logik',Updated=TO_TIMESTAMP('2018-01-20 12:03:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=56333
+;
+
+-- 2018-01-20T12:03:44.169
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Verschlüsselt',Updated=TO_TIMESTAMP('2018-01-20 12:03:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=59683
+;
+
+-- 2018-01-20T12:03:47.499
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Prozess Parameter',Updated=TO_TIMESTAMP('2018-01-20 12:03:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=2538
+;
+
+-- 2018-01-20T12:05:15.531
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='DB Tabelle',Updated=TO_TIMESTAMP('2018-01-20 12:05:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=61174
+;
+
+-- 2018-01-20T12:05:18.917
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Entitäts Art',Updated=TO_TIMESTAMP('2018-01-20 12:05:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=547617
+;
+
+-- 2018-01-20T12:05:32.740
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Quick Aktion',Updated=TO_TIMESTAMP('2018-01-20 12:05:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=557494
+;
+
+-- 2018-01-20T12:05:47.276
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Standard Quick Action',Updated=TO_TIMESTAMP('2018-01-20 12:05:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=557495
+;
+
+-- 2018-01-20T12:06:05.652
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Statistik Zähler',Updated=TO_TIMESTAMP('2018-01-20 12:06:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=557430
+;
+
+-- 2018-01-20T12:06:17.164
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Statistik Millisekundenconds',Updated=TO_TIMESTAMP('2018-01-20 12:06:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=557431
+;
+
+-- 2018-01-20T12:06:26.635
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Prozess Statistik',Updated=TO_TIMESTAMP('2018-01-20 12:06:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=557429
+;
+
