@@ -13,13 +13,13 @@
  *****************************************************************************/
 package org.compiere.report;
 
-import java.io.UnsupportedEncodingException;
-
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.adempiere.util.FileUtils;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.print.JRReportViewerProvider;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.util.Ini;
@@ -31,6 +31,8 @@ import com.google.common.io.Files;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ClientOnlyProcess;
 import de.metas.process.IProcess;
@@ -174,25 +176,34 @@ public class ReportStarter implements IProcess
 
 	private static final String extractReportFilename(final ProcessInfo pi, final OutputType outputType)
 	{
-		String fileBasename = pi.getTitle();
-		if (Check.isEmpty(fileBasename, true))
-		{
-			fileBasename = "report_" + pi.getAD_PInstance_ID();
-		}
+		final String fileBasename = Util.firstValidValue(
+				basename -> !Check.isEmpty(basename, true),
+				() -> extractReportBasename_IfDocument(pi),
+				() -> pi.getTitle(),
+				() -> "report_" + pi.getAD_PInstance_ID());
 
 		final String fileExtension = outputType.getFileExtension();
 
 		final String filename = fileBasename.trim() + "." + fileExtension;
-		try
+		return FileUtils.stripIllegalCharacters(filename);
+	}
+
+	private static String extractReportBasename_IfDocument(final ProcessInfo pi)
+	{
+		final TableRecordReference recordRef = pi.getRecordRefOrNull();
+		if (recordRef == null)
 		{
-			return java.net.URLEncoder.encode(filename, "UTF-8");
+			return null;
 		}
-		catch (final UnsupportedEncodingException e)
+
+		final Object record = recordRef.getModel();
+		final IDocument document = Services.get(IDocumentBL.class).getDocumentOrNull(record);
+		if(document == null)
 		{
-			final String fallbackFilename = "report_" + pi.getAD_PInstance_ID() + "." + fileExtension;
-			log.warn("Failed encoding filename '{}'. Returning '{}'", filename, fallbackFilename, e);
-			return fallbackFilename;
+			return null;
 		}
+		
+		return document.getDocumentInfo();
 	}
 
 	private ReportPrintingInfo extractReportPrintingInfo(final ProcessInfo pi)
@@ -263,7 +274,7 @@ public class ReportStarter implements IProcess
 
 		private boolean forceSync = false;
 
-			@Override
+		@Override
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)

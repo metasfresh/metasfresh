@@ -443,11 +443,11 @@ public final class Convert_PostgreSQLTest
 		assertEquals(sqe, convertResult.get(0));
 
 		// doc_matchinv update average cost, bug [ 1742835 ]
-		sql = "UPDATE M_Product_Costing "
+		sql = "UPDATE SomeOldCostingTable "
 				+ "SET CostAverage = CostAverageCumAmt/DECODE(CostAverageCumQty, 0,1, CostAverageCumQty) "
 				+ "WHERE C_AcctSchema_ID=0"
 				+ " AND M_Product_ID=0";
-		sqe = "UPDATE M_Product_Costing "
+		sqe = "UPDATE SomeOldCostingTable "
 				+ "SET CostAverage = CostAverageCumAmt/CASE WHEN CostAverageCumQty=0 THEN 1 ELSE CostAverageCumQty END "
 				+ "WHERE C_AcctSchema_ID=0"
 				+ " AND M_Product_ID=0";

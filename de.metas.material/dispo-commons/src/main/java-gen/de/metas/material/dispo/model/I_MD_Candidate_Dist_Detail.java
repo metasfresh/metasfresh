@@ -276,6 +276,31 @@ public interface I_MD_Candidate_Dist_Detail
     public static final String COLUMNNAME_IsAdvised = "IsAdvised";
 
 	/**
+	 * Set Sofort Kommissionieren wenn möglich.
+	 * Falls "Ja" und ein Bestand wird für einen bestimmten Lieferdispo-Eintrag bereit gestellt oder produziert, dann wird dieser sofort zugeordnet und als kommissioniert markiert.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPickDirectlyIfFeasible (boolean IsPickDirectlyIfFeasible);
+
+	/**
+	 * Get Sofort Kommissionieren wenn möglich.
+	 * Falls "Ja" und ein Bestand wird für einen bestimmten Lieferdispo-Eintrag bereit gestellt oder produziert, dann wird dieser sofort zugeordnet und als kommissioniert markiert.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPickDirectlyIfFeasible();
+
+    /** Column definition for IsPickDirectlyIfFeasible */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object> COLUMN_IsPickDirectlyIfFeasible = new org.adempiere.model.ModelColumn<I_MD_Candidate_Dist_Detail, Object>(I_MD_Candidate_Dist_Detail.class, "IsPickDirectlyIfFeasible", null);
+    /** Column name IsPickDirectlyIfFeasible */
+    public static final String COLUMNNAME_IsPickDirectlyIfFeasible = "IsPickDirectlyIfFeasible";
+
+	/**
 	 * Set Dispo-Bereitstellungsdetail.
 	 *
 	 * <br>Type: ID

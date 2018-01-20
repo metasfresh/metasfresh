@@ -13,9 +13,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail.ProductionDetailBuilder;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery.ProductionDetailsQueryBuilder;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrderProductionQtyChangedEvent;
@@ -68,15 +69,15 @@ public class PPOrderProductionQtyChangedHandler implements MaterialEventHandler<
 	public void handleEvent(
 			@NonNull final PPOrderProductionQtyChangedEvent productionQtyChangedEvent)
 	{
-		final ProductionDetailBuilder productionDetailBuilder = ProductionDetail.builder()
+		final ProductionDetailsQueryBuilder productionDetailsQueryBuilder = ProductionDetailsQuery.builder()
 				.ppOrderId(productionQtyChangedEvent.getPpOrderId());
 		if (productionQtyChangedEvent.getPpOrderLineId() > 0)
 		{
-			productionDetailBuilder.ppOrderLineId(productionQtyChangedEvent.getPpOrderLineId());
+			productionDetailsQueryBuilder.ppOrderLineId(productionQtyChangedEvent.getPpOrderLineId());
 		}
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.productionDetail(productionDetailBuilder.build())
+				.productionDetailsQuery(productionDetailsQueryBuilder.build())
 				.build();
 
 		final List<Candidate> updatedCandidatesToPersist = new ArrayList<>();

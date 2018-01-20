@@ -1,13 +1,17 @@
 package de.metas.material.event.transactions;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.HUOnHandQtyChangeDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
+import lombok.Singular;
 
 /*
  * #%L
@@ -40,27 +44,29 @@ public class TransactionCreatedEvent extends AbstractTransactionEvent
 	public TransactionCreatedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
-			@JsonProperty("shipmentScheduleId") final int shipmentScheduleId,
+			@JsonProperty("shipmentScheduleIds2Qtys") @Singular final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
 			@JsonProperty("ppOrderId") final int ppOrderId,
 			@JsonProperty("ppOrderLineId") final int ppOrderLineId,
 			@JsonProperty("ddOrderId") final int ddOrderId,
 			@JsonProperty("ddOrderLineId") final int ddOrderLineId,
 			@JsonProperty("transactionId") final int transactionId,
-			@JsonProperty("directMovementWarehouse") final boolean directMovementWarehouse)
+			@JsonProperty("directMovementWarehouse") final boolean directMovementWarehouse,
+			@JsonProperty("huOnHandQtyChangeDescriptor") @Singular final List<HUOnHandQtyChangeDescriptor> huOnHandQtyChangeDescriptors)
 	{
 		super(eventDescriptor,
 				materialDescriptor,
-				shipmentScheduleId,
+				shipmentScheduleIds2Qtys,
 				ppOrderId,
 				ppOrderLineId,
 				ddOrderId,
 				ddOrderLineId,
 				transactionId,
-				directMovementWarehouse);
+				directMovementWarehouse,
+				huOnHandQtyChangeDescriptors);
 	}
 
 	/**
-	 *  @return our material descriptor's quantity, i.e. the {@code MovementQty} if the underlying {@code M_Transaction}.
+	 * @return our material descriptor's quantity, i.e. the {@code MovementQty} if the underlying {@code M_Transaction}.
 	 */
 	@Override
 	public BigDecimal getQuantity()

@@ -86,4 +86,6 @@ public interface IInvoiceHeader
 	I_C_DocType getC_DocTypeInvoice();
 
 	boolean isTaxIncluded();
+
+	int getC_PaymentTerm_ID();
 }

@@ -35,6 +35,8 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.DemandDetail;
 import de.metas.material.dispo.commons.candidate.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.ProductionDetail;
+import de.metas.material.dispo.commons.candidate.ProductionDetail.Flag;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
@@ -214,6 +216,8 @@ public class CandidateRepositoryWriteServiceTests
 						.ppOrderId(100)
 						.ppOrderLineId(110)
 						.ppOrderDocStatus("ppOrderDocStatus")
+						.advised(Flag.TRUE)
+						.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
 						.build())
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(productionCandidate);

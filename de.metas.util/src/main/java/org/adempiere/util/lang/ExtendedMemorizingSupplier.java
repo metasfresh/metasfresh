@@ -13,15 +13,14 @@ package org.adempiere.util.lang;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.Serializable;
 
@@ -38,10 +37,11 @@ public final class ExtendedMemorizingSupplier<T> implements java.util.function.S
 		{
 			return (ExtendedMemorizingSupplier<T>)supplier;
 		}
-		return new ExtendedMemorizingSupplier<T>(supplier);
+		return new ExtendedMemorizingSupplier<>(supplier);
 	}
 
 	private final java.util.function.Supplier<T> delegate;
+
 	private transient volatile boolean initialized;
 	// "value" does not need to be volatile; visibility piggy-backs
 	// on volatile read of "initialized".
@@ -83,18 +83,29 @@ public final class ExtendedMemorizingSupplier<T> implements java.util.function.S
 
 	/**
 	 * Forget memorized value
+	 *
 	 * @return
 	 * @return current value if any
 	 */
 	public T forget()
 	{
-		synchronized (this)
+		// https://github.com/metasfresh/metasfresh-webui-api/issues/787 - similar to the code of get();
+		// if the instance known to not be initialized
+		// then don't attempt to acquire lock (and to other time consuming stuff..)
+		if (initialized)
 		{
-			final T valueOld = this.value;
-			initialized = false;
-			value = null;
-			return valueOld;
+			synchronized (this)
+			{
+				if (initialized)
+				{
+					final T valueOld = this.value;
+					initialized = false;
+					value = null;
+					return valueOld;
+				}
+			}
 		}
+		return null;
 	}
 
 	/** @return true if this supplier has a value memorized */

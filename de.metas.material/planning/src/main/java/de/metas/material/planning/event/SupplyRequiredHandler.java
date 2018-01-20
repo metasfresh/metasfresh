@@ -24,9 +24,9 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.event.log.EventLogUserService;
-import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -165,7 +165,6 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		mrpContext.setDate(materialDescr.getDate());
 		mrpContext.setCtx(Env.getCtx());
 		mrpContext.setTrxName(ITrx.TRXNAME_ThreadInherited);
-		mrpContext.setRequireDRP(true); // DRP means distribution resource planning? i.e. "consider making DD_Orders"?
 
 		mrpContext.setProductPlanning(productPlanning);
 		mrpContext.setPlant(plant);

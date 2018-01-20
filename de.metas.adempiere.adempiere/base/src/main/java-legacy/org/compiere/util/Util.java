@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import javax.annotation.concurrent.Immutable;
@@ -60,7 +61,10 @@ import org.slf4j.Logger;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.google.common.base.Predicates;
+
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * General Utilities
@@ -1472,6 +1476,12 @@ public class Util
 	@SafeVarargs
 	public static final <T> T coalesceSuppliers(final Supplier<T>... values)
 	{
+		return firstValidValue(Predicates.notNull(), values);
+	}
+
+	@SafeVarargs
+	public static final <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, final Supplier<T>... values)
+	{
 		if (values == null || values.length == 0)
 		{
 			return null;
@@ -1479,7 +1489,7 @@ public class Util
 		for (final Supplier<T> supplier : values)
 		{
 			final T value = supplier.get();
-			if (value != null)
+			if (isValidPredicate.test(value))
 			{
 				return value;
 			}
@@ -1569,5 +1579,10 @@ public class Util
 			}
 		}
 		return found ? buf.toString() : null;
+	}
+
+	public static int getMinimumOfThree(final int no1, final int no2, final int no3)
+	{
+		return no1 < no2 ? (no1 < no3 ? no1 : no3) : (no2 < no3 ? no2 : no3);
 	}
 }   // Util

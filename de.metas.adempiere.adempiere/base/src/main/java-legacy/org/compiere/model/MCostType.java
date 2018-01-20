@@ -56,18 +56,6 @@ public class MCostType extends X_M_CostType
 	}	//	MCostType
 	
 	/**
-	 * 	String Representation
-	 *	@return info
-	 */
-	@Override
-	public String toString ()
-	{
-		StringBuffer sb = new StringBuffer ("MCostType[");
-		sb.append (get_ID()).append ("-").append (getName ()).append ("]");
-		return sb.toString ();
-	}	//	toString
-	
-	/**
 	 * 	Before Save
 	 *	@param newRecord new
 	 *	@return true

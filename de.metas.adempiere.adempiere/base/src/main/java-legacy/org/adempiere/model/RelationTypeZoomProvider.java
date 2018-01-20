@@ -1,5 +1,6 @@
 package org.adempiere.model;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -377,7 +378,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		final String sqlCount = "SELECT COUNT(*) " + sqlCommon;
 		final int count = DB.getSQLValueEx(ITrx.TRXNAME_None, sqlCount);
-		query.setRecordCount(count);
 
 		if (count > 0)
 		{
@@ -387,8 +387,10 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			query.setZoomValue(firstKey);
 		}
 
-		final long elapsedTimeMillis = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
-		Loggables.get().addLog("RelationTypeZoomProvider {} took {}ms", this, elapsedTimeMillis);
+		final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
+		query.setRecordCount(count, countDuration);
+		
+		Loggables.get().addLog("RelationTypeZoomProvider {} took {}", this, countDuration);
 	}
 
 	/**

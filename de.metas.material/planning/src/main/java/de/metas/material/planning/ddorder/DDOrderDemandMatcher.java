@@ -42,12 +42,6 @@ public class DDOrderDemandMatcher implements IMaterialDemandMatcher
 	@Override
 	public boolean matches(final IMaterialPlanningContext mrpContext)
 	{
-		if (!mrpContext.isRequireDRP())
-		{
-			Loggables.get().addLog("DRP not enabled in given mrpContext={}", mrpContext);
-			return false;
-		}
-
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
 		if (productPlanning == null)
 		{

@@ -38,13 +38,8 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.Assert;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.w3c.dom.Node;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
 import de.metas.handlingunits.expectations.HUsExpectation;
@@ -55,7 +50,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.inout.IInOutDAO;
-import de.metas.shipper.gateway.api.ShipperGatewayRegistry;
 import de.metas.shipping.interfaces.I_M_Package;
 
 /**
@@ -67,9 +61,6 @@ import de.metas.shipping.interfaces.I_M_Package;
  * <li>assume: first VHU is assigned to first shipment schedule, second VHU to second shipment schedule
  * </ul>
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		ShipperGatewayRegistry.class})
 public class HUShipmentProcess_1TUwith2VHU_splitTo_1LUwith1TU_IntegrationTest extends AbstractHUShipmentProcessIntegrationTest
 {
 	@Override

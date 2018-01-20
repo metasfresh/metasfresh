@@ -14,8 +14,8 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.ModelValidator;
 
-import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.PostMaterialEventService;
 import lombok.NonNull;
 
 /*
@@ -73,8 +73,6 @@ public class M_Transaction
 					final List<MaterialEvent> events = new ArrayList<>();
 
 					events.addAll(M_Transaction_TransactionEventCreator.INSTANCE.createEventsForTransaction(transaction, deleted));
-
-					events.addAll(M_Transaction_OnHandQtyEventCreator.INSTANCE.createEventsForTransaction(transaction, deleted));
 
 					final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
 					for (final MaterialEvent event : events)

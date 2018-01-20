@@ -15,7 +15,7 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1515083853L;
+	private static final long serialVersionUID = 1460095005L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Dist_Detail (Properties ctx, int MD_Candidate_Dist_Detail_ID, String trxName)
@@ -24,6 +24,7 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
       /** if (MD_Candidate_Dist_Detail_ID == 0)
         {
 			setIsAdvised (false); // N
+			setIsPickDirectlyIfFeasible (false); // N
 			setMD_Candidate_Dist_Detail_ID (0);
 			setMD_Candidate_ID (0);
         } */
@@ -228,6 +229,32 @@ public class X_MD_Candidate_Dist_Detail extends org.compiere.model.PO implements
 	public boolean isAdvised () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAdvised);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Sofort Kommissionieren wenn möglich.
+		@param IsPickDirectlyIfFeasible 
+		Falls "Ja" und ein Bestand wird für einen bestimmten Lieferdispo-Eintrag bereit gestellt oder produziert, dann wird dieser sofort zugeordnet und als kommissioniert markiert.
+	  */
+	@Override
+	public void setIsPickDirectlyIfFeasible (boolean IsPickDirectlyIfFeasible)
+	{
+		set_Value (COLUMNNAME_IsPickDirectlyIfFeasible, Boolean.valueOf(IsPickDirectlyIfFeasible));
+	}
+
+	/** Get Sofort Kommissionieren wenn möglich.
+		@return Falls "Ja" und ein Bestand wird für einen bestimmten Lieferdispo-Eintrag bereit gestellt oder produziert, dann wird dieser sofort zugeordnet und als kommissioniert markiert.
+	  */
+	@Override
+	public boolean isPickDirectlyIfFeasible () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPickDirectlyIfFeasible);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

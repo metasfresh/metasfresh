@@ -10,18 +10,17 @@ package de.metas.commission.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -33,6 +32,8 @@ import java.util.Set;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.CalculateDiscountRequest;
+import org.adempiere.pricing.api.DiscountResult;
 import org.adempiere.pricing.api.IMDiscountSchemaBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -68,7 +69,7 @@ public class OrderLineBL implements IOrderLineBL
 
 	private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
 
-	private final Set<Integer> ignoredOlIds = new HashSet<Integer>();
+	private final Set<Integer> ignoredOlIds = new HashSet<>();
 
 	@Override
 	public void ignore(final int orderLineId)
@@ -219,8 +220,7 @@ public class OrderLineBL implements IOrderLineBL
 					rank = currentSponsorRankPoints;
 				}
 
-				final I_C_AdvCommissionSalaryGroup currentSponsorRank =
-						sponsorBL.retrieveRank(ctx, sponsor, contract.getC_AdvComSystem(), order.getDateOrdered(), X_C_AdvComSalesRepFact.STATUS_Prognose, trxName);
+				final I_C_AdvCommissionSalaryGroup currentSponsorRank = sponsorBL.retrieveRank(ctx, sponsor, contract.getC_AdvComSystem(), order.getDateOrdered(), X_C_AdvComSalesRepFact.STATUS_Prognose, trxName);
 
 				if (currentSponsorRank.getSeqNo() > currentSponsorRankPoints.getSeqNo())
 				{
@@ -246,8 +246,7 @@ public class OrderLineBL implements IOrderLineBL
 			}
 			if (updateDiscount(currentOl, newDs, precision))
 			{
-				final de.metas.order.IOrderLineBL swatOrderLineBL =
-						Services.get(de.metas.order.IOrderLineBL.class);
+				final de.metas.order.IOrderLineBL swatOrderLineBL = Services.get(de.metas.order.IOrderLineBL.class);
 
 				ignore(currentOl.getC_OrderLine_ID());
 				swatOrderLineBL.ignore(currentOl.getC_OrderLine_ID());
@@ -325,7 +324,7 @@ public class OrderLineBL implements IOrderLineBL
 
 	/**
 	 * Note: doesn't touch update the priceUOM.
-	 * 
+	 *
 	 * @param olGen ol whose discount needs updating. Note: The type is org.compiere.model.I_C_OrderLine, so MOrderLines as well as any kind of _C_OrderLine can be added
 	 * @param newDs
 	 * @param precision
@@ -361,14 +360,17 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal newDiscount;
 		if (newDs != null)
 		{
-			newDiscount = discountSchemaBL.calculateDiscount(
-					discountSchema,
-					olGen.getQtyOrdered(),
-					priceEntered,
-					olGen.getM_Product_ID(),
-					0,
-					instances,
-					null);
+			final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
+					.schema(discountSchema)
+					.qty(olGen.getQtyOrdered())
+					.Price(priceEntered)
+					.M_Product_ID(olGen.getM_Product_ID())
+					.M_Product_Category_ID(0)
+					.instances(instances)
+					.bPartnerFlatDiscount(null)
+					.build();
+			final DiscountResult result = discountSchemaBL.calculateDiscount(request);
+			newDiscount = result.getDiscount();
 		}
 		else
 		{
@@ -379,15 +381,17 @@ public class OrderLineBL implements IOrderLineBL
 
 		if (newDs != null)
 		{
-			final BigDecimal discountedPrice = discountSchemaBL.calculatePrice(
-					discountSchema,
-					olGen.getQtyOrdered(),
-					priceEntered,
-					olGen.getM_Product_ID(),
-					0,
-					instances,
-					null).
-					setScale(precision, RoundingMode.UP);
+			final CalculateDiscountRequest request = CalculateDiscountRequest.builder()
+					.schema(discountSchema)
+					.qty(olGen.getQtyOrdered())
+					.Price(priceEntered)
+					.M_Product_ID(olGen.getM_Product_ID())
+					.M_Product_Category_ID(0)
+					.instances(instances)
+					.bPartnerFlatDiscount(null)
+					.build();
+			final BigDecimal discountedPrice = discountSchemaBL.calculatePrice(request)
+					.setScale(precision, RoundingMode.UP);
 
 			olGen.setPriceActual(discountedPrice);
 			OrderLineBL.logger.info(olGen + " changing Discount from "

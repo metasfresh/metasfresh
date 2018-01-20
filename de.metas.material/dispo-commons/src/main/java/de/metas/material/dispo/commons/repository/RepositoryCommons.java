@@ -16,14 +16,13 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.commons.candidate.DemandDetail;
-import de.metas.material.dispo.commons.candidate.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQuery.DateOperator;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
-import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
-import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
@@ -278,44 +277,10 @@ public class RepositoryCommons
 			final CandidatesQuery candidate,
 			final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		final ProductionDetail productionDetail = candidate.getProductionDetail();
-		if (productionDetail == null)
+		final ProductionDetailsQuery productionDetailsQuery = candidate.getProductionDetailsQuery();
+		if (productionDetailsQuery != null)
 		{
-			return;
-		}
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQueryBuilder<I_MD_Candidate_Prod_Detail> productDetailSubQueryBuilder = queryBL
-				.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
-				.addOnlyActiveRecordsFilter();
-
-		if (productionDetail == CandidatesQuery.NO_PRODUCTION_DETAIL)
-		{
-			builder.addNotInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, productDetailSubQueryBuilder.create());
-		}
-		else
-		{
-			boolean doFilter = false;
-			if (productionDetail.getProductPlanningId() > 0)
-			{
-				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Product_Planning_ID, productionDetail.getProductPlanningId());
-				doFilter = true;
-			}
-			if (productionDetail.getProductBomLineId() > 0)
-			{
-				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Product_BOMLine_ID, productionDetail.getProductBomLineId());
-				doFilter = true;
-			}
-			if (productionDetail.getPpOrderId() > 0)
-			{
-				productDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_PP_Order_ID, productionDetail.getPpOrderId());
-				doFilter = true;
-			}
-			if (doFilter)
-			{
-				builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, productDetailSubQueryBuilder.create());
-			}
+			productionDetailsQuery.augmentQueryBuilder(builder);
 		}
 	}
 
@@ -323,39 +288,10 @@ public class RepositoryCommons
 			@NonNull final CandidatesQuery query,
 			@NonNull final IQueryBuilder<I_MD_Candidate> builder)
 	{
-		final DistributionDetail distributionDetail = query.getDistributionDetail();
-		if (distributionDetail == null)
+		final DistributionDetailsQuery distributionDetail = query.getDistributionDetailsQuery();
+		if (distributionDetail != null)
 		{
-			return;
-		}
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQueryBuilder<I_MD_Candidate_Dist_Detail> distDetailSubQueryBuilder = queryBL
-				.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
-				.addOnlyActiveRecordsFilter();
-
-		if (distributionDetail == CandidatesQuery.NO_DISTRIBUTION_DETAIL)
-		{
-			builder.addNotInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, distDetailSubQueryBuilder.create());
-		}
-		else
-		{
-			boolean doFilter = false;
-			if (distributionDetail.getProductPlanningId() > 0)
-			{
-				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_PP_Product_Planning_ID, distributionDetail.getProductPlanningId());
-				doFilter = true;
-			}
-			if (distributionDetail.getNetworkDistributionLineId() > 0)
-			{
-				distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_DD_NetworkDistributionLine_ID, distributionDetail.getNetworkDistributionLineId());
-				doFilter = true;
-			}
-			if (doFilter)
-			{
-				builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, distDetailSubQueryBuilder.create());
-			}
+			distributionDetail.augmentQueryBuilder(builder);
 		}
 	}
 

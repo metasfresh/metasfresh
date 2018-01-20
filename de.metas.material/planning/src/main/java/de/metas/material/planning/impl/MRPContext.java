@@ -277,18 +277,6 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public boolean isRequireDRP()
-	{
-		return requireDRP;
-	}
-
-	@Override
-	public void setRequireDRP(final boolean requiredDRP)
-	{
-		requireDRP = requiredDRP;
-	}
-
-	@Override
 	public I_M_Product getM_Product()
 	{
 		return product;
