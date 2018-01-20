@@ -1760,3 +1760,153 @@ UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2018-01-20 11:43:2
 UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2018-01-20 11:43:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550377
 ;
 
+-- 2018-01-20T11:49:13.334
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-20 11:49:13','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Tab_ID=540719 AND AD_Language='en_US'
+;
+
+-- 2018-01-20T11:49:18.388
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-20 11:49:18','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Tab_ID=53389 AND AD_Language='en_US'
+;
+
+-- 2018-01-20T11:49:22.604
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-20 11:49:22','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Tab_ID=540771 AND AD_Language='nl_NL'
+;
+
+-- 2018-01-20T11:49:48.611
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Description='Berechtigung Berichts Zugriff', Name='Berechtigung Berichts Zugriff',Updated=TO_TIMESTAMP('2018-01-20 11:49:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=308
+;
+
+-- 2018-01-20T11:50:23.508
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Tabellen Zuweisung',Updated=TO_TIMESTAMP('2018-01-20 11:50:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=53389
+;
+
+-- 2018-01-20T11:50:32.086
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Statistiken',Updated=TO_TIMESTAMP('2018-01-20 11:50:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540771
+;
+
+-- 2018-01-20T11:50:58.606
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Beta Funktionalität',Updated=TO_TIMESTAMP('2018-01-20 11:50:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=10562
+;
+
+-- 2018-01-20T11:51:02.974
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Entitäts Art',Updated=TO_TIMESTAMP('2018-01-20 11:51:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5128
+;
+
+-- 2018-01-20T11:51:08.342
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Server Prozess',Updated=TO_TIMESTAMP('2018-01-20 11:51:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12100
+;
+
+-- 2018-01-20T11:51:17.788
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Nur eine Instanz',Updated=TO_TIMESTAMP('2018-01-20 11:51:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=61140
+;
+
+-- 2018-01-20T11:51:57.006
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Zeit Unterbrechung',Updated=TO_TIMESTAMP('2018-01-20 11:51:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=61141
+;
+
+-- 2018-01-20T11:51:59.942
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Java Klasse',Updated=TO_TIMESTAMP('2018-01-20 11:51:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=3703
+;
+
+-- 2018-01-20T11:52:07.621
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Prozedur',Updated=TO_TIMESTAMP('2018-01-20 11:52:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=2534
+;
+
+-- 2018-01-20T11:52:17.305
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Arbeits Ablauf',Updated=TO_TIMESTAMP('2018-01-20 11:52:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=10235
+;
+
+-- 2018-01-20T11:52:32.597
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Spezielle Form',Updated=TO_TIMESTAMP('2018-01-20 11:52:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=56497
+;
+
+-- 2018-01-20T11:52:34.954
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Berichts View',Updated=TO_TIMESTAMP('2018-01-20 11:52:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=3278
+;
+
+-- 2018-01-20T11:52:41.235
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Direkt Druck',Updated=TO_TIMESTAMP('2018-01-20 11:52:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=3219
+;
+
+-- 2018-01-20T11:52:44.649
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Druck Format',Updated=TO_TIMESTAMP('2018-01-20 11:52:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=5849
+;
+
+-- 2018-01-20T11:52:57.137
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Hilfe anzeigen',Updated=TO_TIMESTAMP('2018-01-20 11:52:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=50155
+;
+
+-- 2018-01-20T11:53:10.374
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Sicherheitseinstellung anwenden',Updated=TO_TIMESTAMP('2018-01-20 11:53:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556932
+;
+
+-- 2018-01-20T11:53:30.014
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Jasper Report (tabellarisch)',Updated=TO_TIMESTAMP('2018-01-20 11:53:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556165
+;
+
+-- 2018-01-20T11:53:38.015
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='SQL Abfrage',Updated=TO_TIMESTAMP('2018-01-20 11:53:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=543154
+;
+
+-- 2018-01-20T11:53:52.468
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Aktualisieren nach Ausführung',Updated=TO_TIMESTAMP('2018-01-20 11:53:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=554874
+;
+
+-- 2018-01-20T11:54:04.367
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Geschäftspartner Sprache anwenden',Updated=TO_TIMESTAMP('2018-01-20 11:54:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556918
+;
+
+-- 2018-01-20T11:54:20.023
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Arbeitsablauf Schlüssel',Updated=TO_TIMESTAMP('2018-01-20 11:54:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=10083
+;
+
+-- 2018-01-20T11:55:28.674
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-20 11:55:28','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Apply Security Settings' WHERE AD_Field_ID=556932 AND AD_Language='en_US'
+;
+
+-- 2018-01-20T11:55:46.474
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-20 11:55:46','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=554874 AND AD_Language='en_US'
+;
+
+-- 2018-01-20T11:56:14.921
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-20 11:56:14','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Allow Process Re-Run' WHERE AD_Field_ID=556273 AND AD_Language='en_US'
+;
+
+-- 2018-01-20T11:56:39.699
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-20 11:56:39','YYYY-MM-DD HH24:MI:SS'),Name='Use Business Partner Language' WHERE AD_Field_ID=556918 AND AD_Language='nl_NL'
+;
+
+-- 2018-01-20T11:56:43.836
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-20 11:56:43','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Use Business Partner Language' WHERE AD_Field_ID=556918 AND AD_Language='en_US'
+;
+
