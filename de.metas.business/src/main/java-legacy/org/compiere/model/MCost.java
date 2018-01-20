@@ -102,6 +102,37 @@ public class MCost extends X_M_Cost
 	{
 		//
 		// Cost segment
+		final CostSegment costSegment = createCostSegment(product, M_AttributeSetInstance_ID, as, AD_Org_ID);
+
+		//
+		// Costing Method
+		final String costingMethodEffective;
+		if (costingMethod == null)
+		{
+			final IProductBL productBL = Services.get(IProductBL.class);
+			costingMethodEffective = productBL.getCostingMethod(product, as);
+			if (costingMethodEffective == null)
+			{
+				throw new IllegalArgumentException("No Costing Method");
+			}
+		}
+		else
+		{
+			costingMethodEffective = costingMethod;
+		}
+
+		// Create/Update Costs
+		Services.get(ICostDetailService.class).processAllForProduct(product.getM_Product_ID());
+
+		return getCurrentCost(costSegment, costingMethodEffective, qty, C_OrderLine_ID, zeroCostsOK);
+	}	// getCurrentCost
+	
+	private static CostSegment createCostSegment(
+			final I_M_Product product,
+			final int M_AttributeSetInstance_ID,
+			final MAcctSchema as,
+			final int AD_Org_ID)
+	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final CostingLevel costingLevel = CostingLevel.forCode(productBL.getCostingLevel(product, as));
 		final CostSegmentBuilder costSegmentBuilder = CostSegment.builder()
@@ -128,30 +159,9 @@ public class MCost extends X_M_Cost
 					.orgId(0)
 					.attributeSetInstanceId(M_AttributeSetInstance_ID);
 		}
-		//
-		final CostSegment costSegment = costSegmentBuilder.build();
-
-		//
-		// Costing Method
-		final String costingMethodEffective;
-		if (costingMethod == null)
-		{
-			costingMethodEffective = productBL.getCostingMethod(product, as);
-			if (costingMethodEffective == null)
-			{
-				throw new IllegalArgumentException("No Costing Method");
-			}
-		}
-		else
-		{
-			costingMethodEffective = costingMethod;
-		}
-
-		// Create/Update Costs
-		Services.get(ICostDetailService.class).processAllForProduct(product.getM_Product_ID());
-
-		return getCurrentCost(costSegment, costingMethodEffective, qty, C_OrderLine_ID, zeroCostsOK);
-	}	// getCurrentCost
+		
+		return costSegmentBuilder.build();
+	}
 
 	/**
 	 * Get Current Cost Price for Costing Level
