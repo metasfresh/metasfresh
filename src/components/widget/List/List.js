@@ -62,12 +62,12 @@ class List extends Component {
           docId: dataId,
           docType: windowType,
           entity,
-          propertyName,
-          rowId,
           subentity,
           subentityId,
           tabId,
-          viewId
+          viewId,
+          propertyName,
+          rowId
         });
 
     request.then(res => {
