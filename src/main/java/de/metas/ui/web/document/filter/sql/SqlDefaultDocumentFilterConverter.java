@@ -8,6 +8,7 @@ import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.dao.impl.NullQueryFilterModifier;
 import org.adempiere.db.DBConstants;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 
 import com.google.common.base.MoreObjects;
@@ -16,9 +17,13 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
+import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
@@ -82,11 +87,12 @@ import lombok.NonNull;
 			@NonNull final DocumentFilter filter,
 			@NonNull final SqlOptions sqlOpts)
 	{
-		final StringBuilder sql = new StringBuilder();
+		final String filterId = filter.getFilterId();
 
+		final StringBuilder sql = new StringBuilder();
 		for (final DocumentFilterParam filterParam : filter.getParameters())
 		{
-			final String sqlFilterParam = buildSqlWhereClause(sqlParams, filterParam, sqlOpts);
+			final String sqlFilterParam = buildSqlWhereClause(sqlParams, filterId, filterParam, sqlOpts);
 			if (Check.isEmpty(sqlFilterParam, true))
 			{
 				continue;
@@ -104,7 +110,7 @@ import lombok.NonNull;
 	}
 
 	/** Build document filter parameter where clause */
-	private String buildSqlWhereClause(final SqlParamsCollector sqlParams, final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
+	private String buildSqlWhereClause(final SqlParamsCollector sqlParams, final String filterId, final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
 	{
 		//
 		// SQL filter
@@ -122,97 +128,40 @@ import lombok.NonNull;
 		}
 
 		//
-		// Regular filter
-		final String fieldName = filterParam.getFieldName();
-		final SqlEntityFieldBinding fieldBinding = entityBinding.getFieldByFieldName(fieldName);
-		final IQueryFilterModifier fieldModifier = extractFieldModifier(fieldBinding);
-		final IQueryFilterModifier valueModifier = extractValueModifier(fieldBinding);
-		final String columnSql = extractColumnSql(fieldBinding, fieldModifier, sqlOpts);
-
-		final Operator operator = filterParam.getOperator();
-		switch (operator)
+		// Labels filter
+		final String parameterName = filterParam.getFieldName();
+		final DocumentFieldWidgetType widgetType = getParameterWidgetType(parameterName);
+		if (widgetType == DocumentFieldWidgetType.Labels)
 		{
-			case EQUAL:
-			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
-				final boolean negate = false;
-				return buildSqlWhereClause_Equals(columnSql, sqlValue, negate, sqlParams);
-			}
-			case NOT_EQUAL:
-			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
-				final boolean negate = true;
-				return buildSqlWhereClause_Equals(columnSql, sqlValue, negate, sqlParams);
-			}
-			case IN_ARRAY:
-			{
-				final List<Object> sqlValuesList = filterParam.getValueAsList(itemObj -> convertToSqlValue(itemObj, fieldBinding, valueModifier));
-				return buildSqlWhereClause_InArray(columnSql, sqlValuesList, sqlParams);
-			}
-			case GREATER:
-			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
-				return buildSqlWhereClause_Compare(columnSql, ">", sqlValue, sqlParams);
-			}
-			case GREATER_OR_EQUAL:
-			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
-				return buildSqlWhereClause_Compare(columnSql, ">=", sqlValue, sqlParams);
-			}
-			case LESS:
-			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
-				return buildSqlWhereClause_Compare(columnSql, "<", sqlValue, sqlParams);
-			}
-			case LESS_OR_EQUAL:
-			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
-				return buildSqlWhereClause_Compare(columnSql, "<=", sqlValue, sqlParams);
-			}
-			case LIKE:
-			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
-				final boolean negate = false;
-				final boolean ignoreCase = false;
-				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
-			}
-			case NOT_LIKE:
-			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
-				final boolean negate = true;
-				final boolean ignoreCase = false;
-				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
-			}
-			case LIKE_I:
-			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
-				final boolean negate = false;
-				final boolean ignoreCase = true;
-				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
-			}
-			case NOT_LIKE_I:
-			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
-				final boolean negate = true;
-				final boolean ignoreCase = true;
-				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
-			}
-			case BETWEEN:
-			{
-				final Object sqlValue = convertToSqlValue(filterParam.getValue(), fieldBinding, valueModifier);
-				final Object sqlValueTo = convertToSqlValue(filterParam.getValueTo(), fieldBinding, valueModifier);
-				return buildSqlWhereClause_Between(columnSql, sqlValue, sqlValueTo, sqlParams);
-			}
-			default:
-			{
-				throw new IllegalArgumentException("Operator not supported: " + operator);
-			}
+			final DocumentFilterParamDescriptor paramDescriptor = getParameterDescriptor(filterId, parameterName);
+			return buildSqlWhereClause_LabelsWidget(filterParam, paramDescriptor, sqlParams, sqlOpts);
+		}
+		//
+		// Standard filter
+		else
+		{
+			return buildSqlWhereClause_StandardWidget(sqlParams, filterParam, sqlOpts);
 		}
 	}
 
-	private IQueryFilterModifier extractFieldModifier(final SqlEntityFieldBinding fieldBinding)
+	private SqlEntityFieldBinding getParameterBinding(final String parameterName)
 	{
-		final DocumentFieldWidgetType widgetType = fieldBinding.getWidgetType();
+		final SqlEntityFieldBinding fieldBinding = entityBinding.getFieldByFieldName(parameterName);
+		return fieldBinding;
+	}
+
+	private DocumentFieldWidgetType getParameterWidgetType(final String parameterName)
+	{
+		return getParameterBinding(parameterName).getWidgetType();
+	}
+
+	private DocumentFilterParamDescriptor getParameterDescriptor(final String filterId, final String parameterName)
+	{
+		return entityBinding.getFilterDescriptors().getByFilterId(filterId).getParameterByName(parameterName);
+	}
+
+	private static IQueryFilterModifier extractFieldModifier(final DocumentFieldWidgetType widgetType)
+	{
 		if (widgetType == DocumentFieldWidgetType.DateTime)
 		{
 			return DateTruncQueryFilterModifier.DAY;
@@ -230,9 +179,8 @@ import lombok.NonNull;
 		}
 	}
 
-	private IQueryFilterModifier extractValueModifier(final SqlEntityFieldBinding fieldBinding)
+	private static IQueryFilterModifier extractValueModifier(final DocumentFieldWidgetType widgetType)
 	{
-		final DocumentFieldWidgetType widgetType = fieldBinding.getWidgetType();
 		if (widgetType == DocumentFieldWidgetType.DateTime)
 		{
 			return DateTruncQueryFilterModifier.DAY;
@@ -266,6 +214,98 @@ import lombok.NonNull;
 		final Object sqlValue = SqlDocumentsRepository.convertValueToPO(value, columnName, widgetType, targetClass);
 
 		return modifier.convertValue(columnName, sqlValue, null/* model */);
+	}
+
+	private final String buildSqlWhereClause_StandardWidget(final SqlParamsCollector sqlParams, final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
+	{
+		final SqlEntityFieldBinding paramBinding = getParameterBinding(filterParam.getFieldName());
+		final DocumentFieldWidgetType widgetType = paramBinding.getWidgetType();
+
+		//
+		// Regular filter
+		final IQueryFilterModifier fieldModifier = extractFieldModifier(widgetType);
+		final IQueryFilterModifier valueModifier = extractValueModifier(widgetType);
+		final String columnSql = extractColumnSql(paramBinding, fieldModifier, sqlOpts);
+
+		final Operator operator = filterParam.getOperator();
+		switch (operator)
+		{
+			case EQUAL:
+			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
+				final boolean negate = false;
+				return buildSqlWhereClause_Equals(columnSql, sqlValue, negate, sqlParams);
+			}
+			case NOT_EQUAL:
+			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
+				final boolean negate = true;
+				return buildSqlWhereClause_Equals(columnSql, sqlValue, negate, sqlParams);
+			}
+			case IN_ARRAY:
+			{
+				final List<Object> sqlValuesList = filterParam.getValueAsList(itemObj -> convertToSqlValue(itemObj, paramBinding, valueModifier));
+				return buildSqlWhereClause_InArray(columnSql, sqlValuesList, sqlParams);
+			}
+			case GREATER:
+			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
+				return buildSqlWhereClause_Compare(columnSql, ">", sqlValue, sqlParams);
+			}
+			case GREATER_OR_EQUAL:
+			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
+				return buildSqlWhereClause_Compare(columnSql, ">=", sqlValue, sqlParams);
+			}
+			case LESS:
+			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
+				return buildSqlWhereClause_Compare(columnSql, "<", sqlValue, sqlParams);
+			}
+			case LESS_OR_EQUAL:
+			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
+				return buildSqlWhereClause_Compare(columnSql, "<=", sqlValue, sqlParams);
+			}
+			case LIKE:
+			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
+				final boolean negate = false;
+				final boolean ignoreCase = false;
+				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
+			}
+			case NOT_LIKE:
+			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
+				final boolean negate = true;
+				final boolean ignoreCase = false;
+				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
+			}
+			case LIKE_I:
+			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
+				final boolean negate = false;
+				final boolean ignoreCase = true;
+				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
+			}
+			case NOT_LIKE_I:
+			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
+				final boolean negate = true;
+				final boolean ignoreCase = true;
+				return buildSqlWhereClause_Like(columnSql, negate, ignoreCase, sqlValue, sqlParams);
+			}
+			case BETWEEN:
+			{
+				final Object sqlValue = convertToSqlValue(filterParam.getValue(), paramBinding, valueModifier);
+				final Object sqlValueTo = convertToSqlValue(filterParam.getValueTo(), paramBinding, valueModifier);
+				return buildSqlWhereClause_Between(columnSql, sqlValue, sqlValueTo, sqlParams);
+			}
+			default:
+			{
+				throw new IllegalArgumentException("Operator not supported: " + operator);
+			}
+		}
 	}
 
 	private static final String buildSqlWhereClause_Equals(final String sqlColumnExpr, final Object sqlValue, final boolean negate, final SqlParamsCollector sqlParams)
@@ -382,6 +422,64 @@ import lombok.NonNull;
 		final String matchTableNameIgnoringCase = "(?i)" + Pattern.quote(entityBinding.getTableName() + ".");
 		final String sqlFixed = sql.replaceAll(matchTableNameIgnoringCase, tableAlias + ".");
 		return sqlFixed;
+	}
+
+	private final String buildSqlWhereClause_LabelsWidget(
+			final DocumentFilterParam filterParam,
+			final DocumentFilterParamDescriptor paramDescriptor,
+			final SqlParamsCollector sqlParams,
+			final SqlOptions sqlOpts)
+	{
+		final LookupValuesList lookupValues = extractLookupValuesList(filterParam);
+		if (lookupValues.isEmpty())
+		{
+			return null;
+		}
+
+		final String tableAlias = sqlOpts.getTableNameOrAlias();
+
+		final LabelsLookup lookup = LabelsLookup.cast(paramDescriptor.getLookupDescriptor());
+		final String labelsTableName = lookup.getLabelsTableName();
+		final String labelsLinkColumnName = lookup.getLabelsLinkColumnName();
+		final String linkColumnName = lookup.getLinkColumnName();
+		final String labelsValueColumnName = lookup.getLabelsListColumnName();
+
+		final StringBuilder sql = new StringBuilder();
+		for (final LookupValue lookupValue : lookupValues)
+		{
+			if (sql.length() > 0)
+			{
+				sql.append(" AND ");
+			}
+
+			sql.append("EXISTS (SELECT 1 FROM " + labelsTableName + " labels "
+					+ " WHERE labels." + labelsLinkColumnName + "=" + tableAlias + "." + linkColumnName
+					+ " AND labels." + labelsValueColumnName + "=" + sqlParams.placeholder(lookupValue.getIdAsString())
+					+ ")");
+		}
+
+		return sql.toString();
+	}
+
+	private static final LookupValuesList extractLookupValuesList(final DocumentFilterParam filterParam)
+	{
+		final Object valueObj = filterParam.getValue();
+		if (valueObj == null)
+		{
+			return LookupValuesList.EMPTY;
+		}
+		else if (valueObj instanceof String && ((String)valueObj).isEmpty())
+		{
+			return LookupValuesList.EMPTY;
+		}
+		else if (valueObj instanceof LookupValuesList)
+		{
+			return (LookupValuesList)valueObj;
+		}
+		else
+		{
+			throw new AdempiereException("Connot convert " + valueObj + " to " + LookupValuesList.class + " for " + filterParam);
+		}
 	}
 
 }
