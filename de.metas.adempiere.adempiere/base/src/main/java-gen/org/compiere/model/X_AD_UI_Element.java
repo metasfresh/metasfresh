@@ -14,7 +14,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1394134818L;
+	private static final long serialVersionUID = 1126591526L;
 
     /** Standard Constructor */
     public X_AD_UI_Element (Properties ctx, int AD_UI_Element_ID, String trxName)
@@ -26,6 +26,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 			setAD_UI_Element_ID (0);
 			setAD_UI_ElementType (null); // F
 			setIsAdvancedField (false); // N
+			setIsAllowFiltering (false); // N
 			setIsDisplayed (true); // Y
 			setIsDisplayed_SideList (false); // N
 			setIsDisplayedGrid (false); // N
@@ -256,6 +257,29 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	public boolean isAdvancedField () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAdvancedField);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Allow filtering.
+		@param IsAllowFiltering Allow filtering	  */
+	@Override
+	public void setIsAllowFiltering (boolean IsAllowFiltering)
+	{
+		set_Value (COLUMNNAME_IsAllowFiltering, Boolean.valueOf(IsAllowFiltering));
+	}
+
+	/** Get Allow filtering.
+		@return Allow filtering	  */
+	@Override
+	public boolean isAllowFiltering () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAllowFiltering);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
