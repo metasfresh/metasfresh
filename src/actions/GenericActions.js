@@ -225,7 +225,7 @@ export function autocompleteRequest({
 export function dropdownRequest({
   attribute,
   docId,
-  docType,
+  docType, // windowId
   entity,
   propertyName,
   rowId,
