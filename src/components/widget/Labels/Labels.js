@@ -19,6 +19,7 @@ class Labels extends Component {
   };
 
   static defaultProps = {
+    entity: "window",
     selected: [],
     onChange: () => {}
   };
@@ -36,13 +37,24 @@ class Labels extends Component {
   handleClick = async () => {
     this.input.focus();
 
-    const { windowId, docId, name } = this.props;
+    const {
+      windowType, // windowId
+      docId,
+      name,
+      entity,
+      subentity,
+      subentityId,
+      viewId
+    } = this.props;
 
     const response = await dropdownRequest({
+      docType: windowType,
       docId,
-      entity: "window",
-      propertyName: name,
-      viewId: windowId
+      entity,
+      subentity,
+      subentityId,
+      viewId,
+      propertyName: name
     });
 
     const { values } = response.data;

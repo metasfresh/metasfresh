@@ -773,6 +773,11 @@ class RawWidget extends Component {
         return (
           <Labels
             name={widgetField}
+            entity={entity}
+            subentity={subentity}
+            subentityId={subentityId}
+            windowType={windowType}
+            viewId={viewId}
             selected={values}
             className={this.getClassNames()}
             onChange={value =>
