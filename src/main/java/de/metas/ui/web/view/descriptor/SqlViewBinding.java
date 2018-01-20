@@ -200,7 +200,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		}
 		return field;
 	}
-	
+
 	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
 	{
 		return widgetTypesByFieldName;
@@ -225,6 +225,12 @@ public class SqlViewBinding implements SqlEntityBinding
 	public ViewRowCustomizer getRowCustomizer()
 	{
 		return rowCustomizer;
+	}
+
+	@Override
+	public DocumentFilterDescriptorsProvider getFilterDescriptors()
+	{
+		return getViewFilterDescriptors();
 	}
 
 	public DocumentFilterDescriptorsProvider getViewFilterDescriptors()
