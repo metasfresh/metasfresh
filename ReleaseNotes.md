@@ -47,9 +47,12 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#766](https://github.com/metasfresh/metasfresh-webui-api/issues/766) Precision Layout in Price of Orderlines
+    * New Precision Functionality in WebUI, now allowing to record and display more that 2 digits in precision.
   * [#772](https://github.com/metasfresh/metasfresh-webui-api/issues/772) EMail Attachment Name in WebUI
+    * Improvement of the eMail Attachement Name in WebUI eMail editor, now showing the Documenttype and Documentno as combined attachment Name.
   * [#785](https://github.com/metasfresh/metasfresh-webui-api/issues/785) Act gracefully on old/invalid AD_UserQuery
   * [#788](https://github.com/metasfresh/metasfresh-webui-api/issues/788) Allow Filtering of Label-Type-Fields in WebUI
+    * New Functionality that allows to add Label Type Fields in WebUI as Filter criteria.
   * [#793](https://github.com/metasfresh/metasfresh-webui-api/issues/793) Provide "loadDuration" when fetching document references
   * [#794](https://github.com/metasfresh/metasfresh-webui-api/issues/794) Provide actions's evaluateDuration
 
