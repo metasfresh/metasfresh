@@ -80,20 +80,13 @@ class FiltersItem extends Component {
   };
 
   mergeData = (property, value, valueTo) => {
-    const DATE_FIELD = "DateDoc";
     this.setState(prevState => ({
       filter: Object.assign({}, prevState.filter, {
         parameters: prevState.filter.parameters.map(param => {
           if (param.parameterName === property) {
             return Object.assign({}, param, {
-              value:
-                DATE_FIELD === property
-                  ? this.parseDateToReadable(value)
-                  : value,
-              valueTo:
-                DATE_FIELD === property
-                  ? this.parseDateToReadable(valueTo)
-                  : valueTo
+              value: this.parseDateToReadable(value),
+              valueTo: this.parseDateToReadable(valueTo)
             });
           } else {
             return param;
