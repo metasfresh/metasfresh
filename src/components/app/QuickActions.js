@@ -27,6 +27,8 @@ class QuickActions extends Component {
     parentView: PropTypes.object.isRequired
   };
 
+  unmounted = false;
+
   constructor(props) {
     super(props);
 
@@ -47,11 +49,10 @@ class QuickActions extends Component {
 
   componentDidMount = () => {
     this.setState(initialState);
-    this.mounted = true;
   };
 
   componentWillUnmount = () => {
-    this.mounted = false;
+    this.unmounted = true;
   };
 
   componentWillReceiveProps = nextProps => {
@@ -144,6 +145,10 @@ class QuickActions extends Component {
   };
 
   fetchActions = (windowType, viewId, selected, childView, parentView) => {
+    if (this.unmounted) {
+      return;
+    }
+
     /*
         this.setState({
             loading: true
@@ -236,7 +241,6 @@ class QuickActions extends Component {
                 />
               )}
             </div>
-
             {isDropdownOpen && (
               <QuickActionsDropdown
                 actions={actions}
