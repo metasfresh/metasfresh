@@ -36,7 +36,7 @@ import lombok.NonNull;
 public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	@Override
-	protected void processPurchaseInvoice(final CostDetailEvent event, final CostResult cost)
+	protected void processPurchaseInvoice(final CostDetailEvent event, final CurrentCost cost)
 	{
 		final CostSegment costSegment = event.getCostSegment();
 		final int costElementId = event.getCostElementId();
@@ -58,7 +58,7 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 	}
 
 	@Override
-	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CostResult cost)
+	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CurrentCost cost)
 	{
 		final CostSegment costSegment = event.getCostSegment();
 		final int costElementId = event.getCostElementId();

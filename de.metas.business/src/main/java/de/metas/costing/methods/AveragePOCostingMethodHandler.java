@@ -44,13 +44,13 @@ import de.metas.currency.ICurrencyBL;
 public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	@Override
-	protected void processPurchaseOrderLine(final CostDetailEvent event, final CostResult cost)
+	protected void processPurchaseOrderLine(final CostDetailEvent event, final CurrentCost cost)
 	{
 		cost.addWeightedAverage(event.getAmt(), event.getQty());
 	}
 
 	@Override
-	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CostResult cost)
+	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CurrentCost cost)
 	{
 		final BigDecimal amt = event.getAmt();
 		final BigDecimal qty = event.getQty();

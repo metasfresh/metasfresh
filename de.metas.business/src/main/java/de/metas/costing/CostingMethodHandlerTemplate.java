@@ -57,7 +57,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	public final void process(final CostDetailEvent event)
 	{
 		final I_M_Cost costRecord = MCost.getOrCreate(event.getCostSegment(), event.getCostElementId());
-		final CostResult cost = toCostResult(costRecord, event.getPrecision());
+		final CurrentCost cost = toCurrentCost(costRecord, event.getPrecision());
 
 		final CostingDocumentRef documentRef = event.getDocumentRef();
 		final String documentTableName = documentRef.getTableName();
@@ -103,59 +103,59 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		InterfaceWrapperHelper.save(costRecord);
 	}
 
-	protected void processPurchaseOrderLine(final CostDetailEvent event, final CostResult cost)
+	protected void processPurchaseOrderLine(final CostDetailEvent event, final CurrentCost cost)
 	{
 		// nothing on this level
 	}
 
-	protected void processPurchaseInvoice(final CostDetailEvent event, final CostResult cost)
+	protected void processPurchaseInvoice(final CostDetailEvent event, final CurrentCost cost)
 	{
 		// nothing on this level
 	}
 
-	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CostResult cost)
+	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CurrentCost cost)
 	{
 		// nothing on this level
 	}
 
-	protected void processMaterialShipment(final CostDetailEvent event, final CostResult cost)
+	protected void processMaterialShipment(final CostDetailEvent event, final CurrentCost cost)
 	{
 		processOutboundTransactionDefaultImpl(event, cost);
 	}
 
-	protected void processMovementLine(final CostDetailEvent event, final CostResult cost)
+	protected void processMovementLine(final CostDetailEvent event, final CurrentCost cost)
 	{
 		processOutboundTransactionDefaultImpl(event, cost);
 	}
 
-	protected void processInventoryLine(final CostDetailEvent event, final CostResult cost)
+	protected void processInventoryLine(final CostDetailEvent event, final CurrentCost cost)
 	{
 		processOutboundTransactionDefaultImpl(event, cost);
 	}
 
-	protected void processProductionLine(final CostDetailEvent event, final CostResult cost)
+	protected void processProductionLine(final CostDetailEvent event, final CurrentCost cost)
 	{
 		processOutboundTransactionDefaultImpl(event, cost);
 	}
 
-	protected void processProjectIssue(final CostDetailEvent event, final CostResult cost)
+	protected void processProjectIssue(final CostDetailEvent event, final CurrentCost cost)
 	{
 		processOutboundTransactionDefaultImpl(event, cost);
 	}
 
-	protected void processCostCollector(final CostDetailEvent event, final CostResult cost)
+	protected void processCostCollector(final CostDetailEvent event, final CurrentCost cost)
 	{
 		processOutboundTransactionDefaultImpl(event, cost);
 	}
 
-	protected void processOther(final CostDetailEvent event, final CostResult cost)
+	protected void processOther(final CostDetailEvent event, final CurrentCost cost)
 	{
 		logger.warn("Skip event because document is not handled: {}", event);
 	}
 
-	private CostResult toCostResult(final I_M_Cost costRecord, final int precision)
+	private CurrentCost toCurrentCost(final I_M_Cost costRecord, final int precision)
 	{
-		return CostResult.builder()
+		return CurrentCost.builder()
 				.precision(precision)
 				.currentCostPrice(costRecord.getCurrentCostPrice())
 				.currentCostPriceLL(costRecord.getCurrentCostPriceLL())
@@ -165,7 +165,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 				.build();
 	}
 
-	private void updateCostRecord(final I_M_Cost cost, final CostResult from)
+	private void updateCostRecord(final I_M_Cost cost, final CurrentCost from)
 	{
 		cost.setCurrentCostPrice(from.getCurrentCostPrice());
 		cost.setCurrentCostPriceLL(from.getCurrentCostPriceLL());
@@ -176,7 +176,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	@Builder
 	@Getter
-	protected static final class CostResult
+	protected static final class CurrentCost
 	{
 		private final int precision;
 

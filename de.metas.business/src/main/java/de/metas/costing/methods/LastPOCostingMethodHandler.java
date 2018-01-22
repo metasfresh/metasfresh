@@ -41,7 +41,7 @@ import de.metas.costing.CostingMethodHandlerTemplate;
 public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	@Override
-	protected void processPurchaseOrderLine(final CostDetailEvent event, final CostResult cost)
+	protected void processPurchaseOrderLine(final CostDetailEvent event, final CurrentCost cost)
 	{
 		final BigDecimal amt = event.getAmt();
 		final BigDecimal qty = event.getQty();
@@ -64,7 +64,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
-	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CostResult cost)
+	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CurrentCost cost)
 	{
 		final BigDecimal qty = event.getQty();
 		cost.adjustCurrentQty(qty);
