@@ -19,6 +19,8 @@ Here come the actual release notes:
     * New Window in WebUI for Field Group maintenance. This window can be used by System Admins.
   * [#3329](https://github.com/metasfresh/metasfresh/issues/3329) Webui Window Design: Translate all in window Event store
     * Improved Window, Tab and Fields translations.
+  * [#3366](https://github.com/metasfresh/metasfresh/issues/3366) Webui Window: Create window for ReferenceNo and Reference Type
+    * New Windows for Reference No and Reference No Type maintenance.
 
 
 # metasfresh 5.42 (2018-04)
