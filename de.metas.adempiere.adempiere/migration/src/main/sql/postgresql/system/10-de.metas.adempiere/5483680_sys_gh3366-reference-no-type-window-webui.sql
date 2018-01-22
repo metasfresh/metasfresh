@@ -273,3 +273,63 @@ UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2018-01-22 17:07:5
 UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2018-01-22 17:08:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550416
 ;
 
+-- 2018-01-22T17:11:03.506
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Entitäts Art',Updated=TO_TIMESTAMP('2018-01-22 17:11:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=550743
+;
+
+-- 2018-01-22T17:11:05.767
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Java Klasse',Updated=TO_TIMESTAMP('2018-01-22 17:11:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=550706
+;
+
+-- 2018-01-22T17:11:13.127
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Reference Nr. Art',Updated=TO_TIMESTAMP('2018-01-22 17:11:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=550709
+;
+
+-- 2018-01-22T17:12:05.843
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-22 17:12:05','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Value',Description='' WHERE AD_Field_ID=550711 AND AD_Language='en_US'
+;
+
+-- 2018-01-22T17:12:10.901
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-22 17:12:10','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=550708 AND AD_Language='en_US'
+;
+
+-- 2018-01-22T17:12:19.809
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-22 17:12:19','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Description' WHERE AD_Field_ID=550703 AND AD_Language='en_US'
+;
+
+-- 2018-01-22T17:12:28.736
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-22 17:12:28','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Java Class' WHERE AD_Field_ID=550706 AND AD_Language='en_US'
+;
+
+-- 2018-01-22T17:12:45.463
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-22 17:12:45','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Entity Type' WHERE AD_Field_ID=550743 AND AD_Language='en_US'
+;
+
+-- 2018-01-22T17:12:56.187
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-22 17:12:56','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=550709 AND AD_Language='en_US'
+;
+
+-- 2018-01-22T17:13:31.208
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-22 17:13:31','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Description' WHERE AD_Field_ID=550715 AND AD_Language='en_US'
+;
+
+-- 2018-01-22T17:13:50.649
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-22 17:13:50','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Entity Type' WHERE AD_Field_ID=550744 AND AD_Language='en_US'
+;
+
+-- 2018-01-22T17:14:06.383
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-22 17:14:06','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=550720 AND AD_Language='en_US'
+;
+
