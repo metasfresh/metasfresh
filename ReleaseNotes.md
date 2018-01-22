@@ -15,6 +15,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-webui-Frontend
+  * [#3313](https://github.com/metasfresh/metasfresh/issues/3313) Webui Window Design: Improve window Field Group
+    * New Window in WebUI for Field Group maintenance. This window can be used by System Admins.
   * [#3329](https://github.com/metasfresh/metasfresh/issues/3329) Webui Window Design: Translate all in window Event store
     * Improved Window, Tab and Fields translations.
 
@@ -27,7 +29,7 @@ Here come the actual release notes:
   * [#3299](https://github.com/metasfresh/metasfresh/issues/3299) Automatic Picking
     * New Feature that allows to define Products in Planning Data, that shall be automatically picked after action receipt in manufacturing.
   * [#3302](https://github.com/metasfresh/metasfresh/issues/3302) Payment Discount on Orderline, Invoice Candidate
-    * Addin a Payment Discount overwrite to Orderlines and Invoicecandidates. With this feature one can add Payment Discounts as additional Discount Schema entry.
+    * Adding a Payment Discount overwrite to Orderlines and Invoicecandidates. With this feature one can add Payment Discounts as additional Discount Schema entry.
   * [#3317](https://github.com/metasfresh/metasfresh/issues/3317) Webui Window Design: Improve window Report & Process
     * New Window in WebUI for Process & Reports maintenance.
   * [#3318](https://github.com/metasfresh/metasfresh/issues/3318) Webui Window Design: Improve window Reference
