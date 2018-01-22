@@ -173,3 +173,18 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-22 07:43:12'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-22 07:43:27','YYYY-MM-DD HH24:MI:SS'),Name='Event Log Entry' WHERE AD_Field_ID=561296 AND AD_Language='en_US'
 ;
 
+-- 2018-01-22T07:51:21.506
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-22 07:51:21','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Event Log',WEBUI_NameBrowse='Event Log' WHERE AD_Menu_ID=541004 AND AD_Language='en_US'
+;
+
+-- 2018-01-22T07:51:39.240
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Name='Ereignis', WEBUI_NameBrowse='Ereignis',Updated=TO_TIMESTAMP('2018-01-22 07:51:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541006
+;
+
+-- 2018-01-22T07:53:23.954
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-22 07:53:23','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Event' WHERE AD_Menu_ID=541006 AND AD_Language='en_US'
+;
+
