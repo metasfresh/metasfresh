@@ -14,6 +14,10 @@ Here come the actual release notes:
 **release for week 2018-05**
 
 ## Features
+* metasfresh-webui-Frontend
+  * [#3329](https://github.com/metasfresh/metasfresh/issues/3329) Webui Window Design: Translate all in window Event store
+    * Improved Window, Tab and Fields translations.
+
 
 # metasfresh 5.42 (2018-04)
 **release for week 2018-04**
