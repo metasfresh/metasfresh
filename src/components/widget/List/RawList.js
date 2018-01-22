@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
+import TetherComponent from "react-tether";
 
 let lastKeyWasTab = false;
 
@@ -19,7 +20,6 @@ class RawList extends Component {
 
   componentWillMount() {
     window.addEventListener("keydown", this.handleTab);
-    window.addEventListener("click", this.handleTab);
   }
 
   componentDidMount = () => {
@@ -35,7 +35,6 @@ class RawList extends Component {
       mandatory,
       defaultValue,
       autofocus,
-      blur,
       property,
       initialFocus,
       selected,
@@ -44,12 +43,6 @@ class RawList extends Component {
       loading,
       disableAutofocus
     } = this.props;
-
-    if (prevProps.blur !== blur) {
-      if (blur) {
-        this.handleBlur();
-      }
-    }
 
     if (
       list.length === 0 &&
@@ -124,59 +117,11 @@ class RawList extends Component {
         selected: selected
       });
     }
-
-    const { isOpen } = this.state;
-
-    // trigger handleBlur action if dropdown is still opened
-    // after focus is lost
-    if (!this.isFocused && isOpen) {
-      this.handleBlur();
-    }
-
-    // no need for updating scroll
-    if (!this.isFocused || !isOpen || !list.length) {
-      return;
-    }
-
-    const { listScroll, items } = this;
-
-    const listElHeight = this.optionElement.offsetHeight;
-    const listVisible = Math.floor(listScroll.offsetHeight / listElHeight);
-    const shouldListScrollUpdate = listVisible <= items.childNodes.length;
-
-    if (!shouldListScrollUpdate) {
-      return;
-    }
-
-    const selectedIndex = this.getSelectedIndex();
-    const visibleMin = listScroll.scrollTop;
-    const visibleMax = visibleMin + listVisible * listElHeight;
-
-    //not visible from down
-    const scrollFromUp = listElHeight * (selectedIndex - listVisible + 1);
-
-    if (
-      (selectedIndex + 1) * listElHeight > visibleMax &&
-      listScroll.scrollTop !== scrollFromUp
-    ) {
-      listScroll.scrollTop = scrollFromUp;
-      return;
-    }
-
-    //not visible from above
-    const scrollFromDown = selectedIndex * listElHeight;
-
-    if (
-      selectedIndex * listElHeight < visibleMin &&
-      listScroll.scrollTop !== scrollFromDown
-    ) {
-      listScroll.scrollTop = scrollFromDown;
-    }
   };
 
   componentWillUnmount() {
     window.removeEventListener("keydown", this.handleTab);
-    window.removeEventListener("click", this.handleTab);
+    window.removeEventListener("click", this.handleBlur);
   }
 
   focus = () => {
@@ -277,14 +222,23 @@ class RawList extends Component {
     });
   };
 
-  handleBlur = () => {
-    if (!this.considerBlur) {
+  handleBlur = e => {
+    // if dropdown item is selected
+    // prevent blur event to keep the dropdown list displayed
+    if (!this.considerBlur || (e && this.dropdown.contains(e.target))) {
       return;
     }
 
+    if (e && this.dropdown.contains(e.target)) {
+      return;
+    }
     this.considerBlur = false;
 
-    const { selected, doNotOpenOnFocus } = this.props;
+    const {
+      selected,
+      doNotOpenOnFocus,
+      allowOutsideClickListener
+    } = this.props;
 
     this.isFocused = false;
 
@@ -296,6 +250,8 @@ class RawList extends Component {
       isOpen: false,
       selected: selected || 0
     });
+
+    allowOutsideClickListener && allowOutsideClickListener(true);
   };
 
   /*
@@ -314,6 +270,7 @@ class RawList extends Component {
     this.setState({
       isOpen: true
     });
+    window.addEventListener("click", this.handleBlur);
   };
 
   handleFocus = event => {
@@ -324,9 +281,15 @@ class RawList extends Component {
       event.preventDefault();
     }
 
-    const { onFocus, doNotOpenOnFocus, autofocus } = this.props;
+    const {
+      onFocus,
+      doNotOpenOnFocus,
+      autofocus,
+      allowOutsideClickListener
+    } = this.props;
 
     onFocus && onFocus();
+    allowOutsideClickListener && allowOutsideClickListener(false);
 
     if (!doNotOpenOnFocus && !autofocus) {
       this.openDropdown = true;
@@ -436,7 +399,6 @@ class RawList extends Component {
         className={classes.join(" ")}
         onMouseEnter={() => this.handleSwitch(option)}
         onClick={() => this.handleSelect(option)}
-        ref={option => (this.optionElement = option)}
       >
         <p className="input-dropdown-item-title">{option.caption}</p>
       </div>
@@ -453,11 +415,7 @@ class RawList extends Component {
     }
 
     return (
-      <div
-        ref={ref => {
-          this.items = ref;
-        }}
-      >
+      <div>
         {/* if field is not mandatory add extra empty row */}
         {emptyRow}
         {list.map(this.getRow)}
@@ -517,81 +475,92 @@ class RawList extends Component {
         }
         tabIndex={tabIndex ? tabIndex : 0}
         onFocus={readonly ? null : this.handleFocus}
-        onBlur={this.handleBlur}
         onClick={readonly ? null : this.handleClick}
         onKeyDown={this.handleKeyDown}
       >
-        <div
-          className={
-            "input-dropdown input-block input-readonly input-" +
-            (rank ? rank : "secondary") +
-            (updated ? " pulse " : " ") +
-            (mandatory && !selected ? "input-mandatory " : "") +
-            (validStatus &&
-            (!validStatus.valid && !validStatus.initialValue) &&
-            !isOpen
-              ? "input-error "
-              : "")
-          }
+        <TetherComponent
+          attachment="top left"
+          targetAttachment="bottom left"
+          constraints={[
+            {
+              to: "scrollParent"
+            },
+            {
+              to: "window",
+              pin: ["bottom"]
+            }
+          ]}
         >
           <div
             className={
-              "input-editable input-dropdown-focused " +
-              (align ? "text-xs-" + align + " " : "")
+              "input-dropdown input-block input-readonly input-" +
+              (rank ? rank : "secondary") +
+              (updated ? " pulse " : " ") +
+              (mandatory && !selected ? "input-mandatory " : "") +
+              (validStatus &&
+              (!validStatus.valid && !validStatus.initialValue) &&
+              !isOpen
+                ? "input-error "
+                : "")
             }
+            ref={c => (this.inputContainer = c)}
           >
-            <input
-              ref={c => (this.inputSearch = c)}
-              type="text"
-              className={
-                "input-field js-input-field " +
-                "font-weight-semibold " +
-                (disabled ? "input-disabled " : "")
-              }
-              readOnly
-              tabIndex={-1}
-              placeholder={placeholder}
-              value={value}
-              disabled={readonly || disabled}
-              onChange={this.handleChange}
-            />
-          </div>
-
-          <div className="input-icon">
-            <i className="meta-icon-down-1 input-icon-sm" />
-          </div>
-        </div>
-        {this.isFocused &&
-          isOpen && (
             <div
-              className="input-dropdown-list"
-              ref={ref => {
-                this.listScroll = ref;
-              }}
+              className={
+                "input-editable input-dropdown-focused " +
+                (align ? "text-xs-" + align + " " : "")
+              }
             >
-              {isListEmpty &&
-                loading === false && (
-                  <div className="input-dropdown-list-header">
-                    There is no choice available
-                  </div>
-                )}
-              {loading &&
-                isListEmpty && (
-                  <div className="input-dropdown-list-header">
-                    <ReactCSSTransitionGroup
-                      transitionName="rotate"
-                      transitionEnterTimeout={1000}
-                      transitionLeaveTimeout={1000}
-                    >
-                      <div className="rotate icon-rotate">
-                        <i className="meta-icon-settings" />
-                      </div>
-                    </ReactCSSTransitionGroup>
-                  </div>
-                )}
-              {this.renderOptions()}
+              <input
+                type="text"
+                className={
+                  "input-field js-input-field " +
+                  "font-weight-semibold " +
+                  (disabled ? "input-disabled " : "")
+                }
+                readOnly
+                tabIndex={-1}
+                placeholder={placeholder}
+                value={value}
+                disabled={readonly || disabled}
+                onChange={this.handleChange}
+              />
             </div>
-          )}
+
+            <div className="input-icon">
+              <i className="meta-icon-down-1 input-icon-sm" />
+            </div>
+          </div>
+          {this.isFocused &&
+            isOpen && (
+              <div
+                className="input-dropdown-list"
+                style={{ width: `${this.dropdown.offsetWidth}px` }}
+              >
+                {isListEmpty &&
+                  loading === false && (
+                    <div className="input-dropdown-list-header">
+                      There is no choice available
+                    </div>
+                  )}
+                {loading &&
+                  isListEmpty && (
+                    <div className="input-dropdown-list-header">
+                      <ReactCSSTransitionGroup
+                        transitionName="rotate"
+                        transitionEnterTimeout={1000}
+                        transitionLeaveTimeout={1000}
+                      >
+                        <div className="rotate icon-rotate">
+                          <i className="meta-icon-settings" />
+                        </div>
+                      </ReactCSSTransitionGroup>
+                    </div>
+                  )}
+                {this.renderOptions()}
+              </div>
+            )}
+        </TetherComponent>
       </div>
     );
   }
