@@ -130,14 +130,25 @@ class Labels extends Component {
     const typeAhead = event.target.innerHTML;
 
     if (typeAhead !== this.lastTypeAhead) {
-      const { windowId, docId, name } = this.props;
+      const {
+        windowType, // windowId
+        docId,
+        name,
+        entity,
+        subentity,
+        subentityId,
+        viewId
+      } = this.props;
 
       const response = await autocompleteRequest({
+        docType: windowType, // windowId
         docId,
-        entity: "window",
+        entity,
+        subentity,
+        subentityId,
+        viewId,
         propertyName: name,
-        query: typeAhead,
-        viewId: windowId
+        query: typeAhead
       });
 
       const { values } = response.data;
