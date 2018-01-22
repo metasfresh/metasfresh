@@ -706,10 +706,9 @@ class DocumentList extends Component {
       );
     }
 
-    let showQuickActions = true;
-    if (isModal && !inBackground && !selectionValid) {
-      showQuickActions = false;
-    }
+    const showQuickActions = Boolean(
+      !isModal || inBackground || selectionValid
+    );
 
     if (layout && data) {
       return (
