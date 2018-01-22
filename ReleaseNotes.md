@@ -78,6 +78,7 @@ Here come the actual release notes:
   * [#3339](https://github.com/metasfresh/metasfresh/issues/3339) Field "Doctype" is included twice in payment window
     * Fixes a doubled Field for Doctype in the payment window.
   * [#3350](https://github.com/metasfresh/metasfresh/issues/3350) Error creating movement from DDOrder
+    * Fixes an Error that prevented the creation of movements from Distribution Orders.
 
 * metasfresh-webui-api
   * [#775](https://github.com/metasfresh/metasfresh-webui-api/issues/775) destroyed HUs are still visible in material receipt
