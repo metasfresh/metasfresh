@@ -170,3 +170,33 @@ UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541403, SeqNo=20,Updated=TO_TIMES
 UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541403, SeqNo=30,Updated=TO_TIMESTAMP('2018-01-22 08:07:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550384
 ;
 
+-- 2018-01-22T08:09:52.576
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Feld Gruppe',Updated=TO_TIMESTAMP('2018-01-22 08:09:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=342
+;
+
+-- 2018-01-22T08:09:59.854
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Entitäts Art',Updated=TO_TIMESTAMP('2018-01-22 08:09:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=8353
+;
+
+-- 2018-01-22T08:10:02.833
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Feld Gruppe',Updated=TO_TIMESTAMP('2018-01-22 08:10:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=4271
+;
+
+-- 2018-01-22T08:10:28.195
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Standard Minimiert',Updated=TO_TIMESTAMP('2018-01-22 08:10:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=54348
+;
+
+-- 2018-01-22T08:10:33.139
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Standard minimiert',Updated=TO_TIMESTAMP('2018-01-22 08:10:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=54348
+;
+
+-- 2018-01-22T08:10:57.269
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Feld Gruppen Art',Updated=TO_TIMESTAMP('2018-01-22 08:10:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53002
+;
+
