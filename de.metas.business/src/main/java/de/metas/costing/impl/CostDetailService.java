@@ -10,7 +10,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -90,79 +89,21 @@ public class CostDetailService implements ICostDetailService
 	@Override
 	public void createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
-		final CostDetailQuery costDetailForDocumentQuery = CostDetailQuery.builder()
-				.acctSchemaId(request.getAcctSchemaId())
-				.attributeSetInstanceId(request.getAttributeSetInstanceId())
-				.documentRef(request.getDocumentRef())
-				.build();
+		extractCostElements(request)
+				.forEach(costElement -> {
+					final CostingMethodHandler costingMethodHandler = getCostingMethodHandler(costElement.getCostingMethod());
 
-		// Delete all unprocessed or zero differences for given document
-		costDetailsRepo.deleteUnprocessedWithNoChanges(costDetailForDocumentQuery);
+					final I_M_CostDetail costDetail = costingMethodHandler.createCost(request.toBuilder()
+							.costElementId(costElement.getId())
+							.build());
+					if(costDetail == null)
+					{
+						return;
+					}
 
-		//
-		// Create/Update the cost detail
-		I_M_CostDetail costDetail = costDetailsRepo.getCostDetailOrNull(costDetailForDocumentQuery);
-		if (costDetail == null)		// createNew
-		{
-			costDetail = createDraftCostDetail(request);
-		}
-		else
-		{
-			updateCostDetailFromCreateRequest(costDetail, request);
-		}
-		//
-		costDetailsRepo.save(costDetail);
-
-		//
-		// Process if needed
-		processIfCostImmediate(costDetail);
+					processIfCostImmediate(costDetail);
+				});
 	}
-
-	private I_M_CostDetail createDraftCostDetail(@NonNull final CostDetailCreateRequest request)
-	{
-		final I_M_CostDetail costDetail = InterfaceWrapperHelper.newInstance(I_M_CostDetail.class);
-		costDetail.setAD_Org_ID(request.getOrgId());
-		costDetail.setC_AcctSchema_ID(request.getAcctSchemaId());
-		costDetail.setM_Product_ID(request.getProductId());
-		costDetail.setM_AttributeSetInstance_ID(request.getAttributeSetInstanceId());
-
-		costDetail.setM_CostElement_ID(request.getCostElementId());
-
-		costDetail.setAmt(request.getAmt());
-		costDetail.setQty(request.getQty());
-		costDetail.setDescription(request.getDescription());
-
-		final CostingDocumentRef documentRef = request.getDocumentRef();
-		InterfaceWrapperHelper.setValue(costDetail, documentRef.getCostDetailColumnName(), documentRef.getRecordId());
-
-		if (documentRef.getOutboundTrx() != null)
-		{
-			costDetail.setIsSOTrx(documentRef.getOutboundTrx());
-		}
-
-		return costDetail;
-	}
-
-	private void updateCostDetailFromCreateRequest(final I_M_CostDetail costDetail, final CostDetailCreateRequest request)
-	{
-		final BigDecimal amt = request.getAmt();
-		final BigDecimal qty = request.getQty();
-		costDetail.setDeltaAmt(amt.subtract(costDetail.getAmt()));
-		costDetail.setDeltaQty(qty.subtract(costDetail.getQty()));
-		if (isDelta(costDetail))
-		{
-			costDetail.setProcessed(false);
-			costDetail.setAmt(amt);
-			costDetail.setQty(qty);
-		}
-	}
-
-	@Override
-	public boolean isDelta(final I_M_CostDetail costDetail)
-	{
-		return !(costDetail.getDeltaAmt().signum() == 0
-				&& costDetail.getDeltaQty().signum() == 0);
-	}	// isDelta
 
 	@Override
 	public void processIfCostImmediate(final I_M_CostDetail costDetail)
@@ -270,7 +211,10 @@ public class CostDetailService implements ICostDetailService
 		}
 
 		final CostSegment costSegment = extractCostSegment(costDetail);
-		extractCostElements(costDetail).forEach(costElement -> process(costDetail, costSegment, costElement));
+		extractCostElements(costDetail).forEach(costElement -> {
+			final CostDetailEvent event = createCostDetailEvent(costDetail, costSegment, costElement);
+			process(event, costSegment, costElement);
+		});
 
 		// Save it
 		costDetail.setDeltaAmt(null);
@@ -289,6 +233,22 @@ public class CostDetailService implements ICostDetailService
 		if (costElementId <= 0)
 		{
 			return costElementRepository.getMaterialCostingMethods(cd.getAD_Client_ID());
+		}
+		else
+		{
+			final CostElement ce = costElementRepository.getById(costElementId);
+			return ImmutableList.of(ce);
+		}
+	}
+
+	private List<CostElement> extractCostElements(final CostDetailCreateRequest request)
+	{
+		final ICostElementRepository costElementRepository = Services.get(ICostElementRepository.class);
+
+		final int costElementId = request.getCostElementId();
+		if (costElementId <= 0)
+		{
+			return costElementRepository.getMaterialCostingMethods(request.getClientId());
 		}
 		else
 		{
@@ -345,7 +305,10 @@ public class CostDetailService implements ICostDetailService
 	public void onCostDetailDeleted(final I_M_CostDetail costDetail)
 	{
 		final CostSegment costSegment = extractCostSegment(costDetail);
-		extractCostElements(costDetail).forEach(costElement -> process(costDetail, costSegment, costElement));
+		extractCostElements(costDetail).forEach(costElement -> {
+			final CostDetailEvent event = createCostDetailEvent(costDetail, costSegment, costElement);
+			process(event, costSegment, costElement);
+		});
 	}
 
 	private CostingMethodHandler getCostingMethodHandler(final String costingMethod)
@@ -413,12 +376,17 @@ public class CostDetailService implements ICostDetailService
 	/**
 	 * Process cost detail for cost record
 	 */
-	private void process(final I_M_CostDetail costDetail, final CostSegment costSegment, final CostElement costElement)
+	private void process(final CostDetailEvent event, final CostSegment costSegment, final CostElement costElement)
 	{
-		final CostDetailEvent event = createCostDetailEvent(costDetail, costSegment, costElement);
 		getCostingMethodHandler(event.getCostingMethod())
 				.process(event);
 	}
+
+	private static boolean isDelta(final I_M_CostDetail costDetail)
+	{
+		return !(costDetail.getDeltaAmt().signum() == 0
+				&& costDetail.getDeltaQty().signum() == 0);
+	}	// isDelta
 
 	private CostDetailEvent createCostDetailEvent(final I_M_CostDetail cd, final CostSegment costSegment, final CostElement costElement)
 	{

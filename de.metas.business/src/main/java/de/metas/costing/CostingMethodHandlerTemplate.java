@@ -1,25 +1,29 @@
 package de.metas.costing;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_Cost;
+import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_MovementLine;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductionLine;
+import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
+import org.compiere.model.MProduct;
+import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import lombok.Builder;
-import lombok.Getter;
+import de.metas.product.IProductBL;
 import lombok.NonNull;
-import lombok.Setter;
 
 /*
  * #%L
@@ -51,6 +55,198 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final int orderLineId)
 	{
 		return null;
+	}
+
+	@Override
+	public final I_M_CostDetail createCost(final CostDetailCreateRequest request)
+	{
+		final CostingDocumentRef documentRef = request.getDocumentRef();
+		final String documentTableName = documentRef.getTableName();
+		if (I_C_OrderLine.Table_Name.equals(documentTableName))
+		{
+			return createCostForPurchaseOrderLine(request);
+		}
+		else if (org.compiere.model.I_C_InvoiceLine.Table_Name.equals(documentTableName))
+		{
+			return createCostForPurchaseInvoice(request);
+		}
+		else if (I_M_InOutLine.Table_Name.equals(documentTableName))
+		{
+			return createCostForMaterialShipment(request);
+		}
+		else if (I_M_MovementLine.Table_Name.equals(documentTableName))
+		{
+			return createCostForMovementLine(request);
+		}
+		else if (I_M_InventoryLine.Table_Name.equals(documentTableName))
+		{
+			return createCostForInventoryLine(request);
+		}
+		else if (I_M_ProductionLine.Table_Name.equals(documentTableName))
+		{
+			return createCostForProductionLine(request);
+		}
+		else if (I_C_ProjectIssue.Table_Name.equals(documentTableName))
+		{
+			return createCostForProjectIssue(request);
+		}
+		else if (I_PP_Cost_Collector.Table_Name.equals(documentTableName))
+		{
+			return createCostForCostCollector(request);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown documentRef: " + documentRef);
+		}
+	}
+
+	protected I_M_CostDetail createCostForPurchaseOrderLine(CostDetailCreateRequest request)
+	{
+		// nothing on this level
+		return null;
+	}
+
+	protected I_M_CostDetail createCostForPurchaseInvoice(CostDetailCreateRequest request)
+	{
+		// nothing on this level
+		return null;
+	}
+
+	protected I_M_CostDetail createCostForMaterialShipment(CostDetailCreateRequest request)
+	{
+		return createOutboundCostDefaultImpl(request);
+	}
+
+	protected I_M_CostDetail createCostForMovementLine(CostDetailCreateRequest request)
+	{
+		return createOutboundCostDefaultImpl(request);
+	}
+
+	protected I_M_CostDetail createCostForInventoryLine(CostDetailCreateRequest request)
+	{
+		return createOutboundCostDefaultImpl(request);
+	}
+
+	protected I_M_CostDetail createCostForProductionLine(CostDetailCreateRequest request)
+	{
+		// nothing on this level
+		return null;
+	}
+
+	protected I_M_CostDetail createCostForProjectIssue(CostDetailCreateRequest request)
+	{
+		// nothing on this level
+		return null;
+	}
+
+	protected I_M_CostDetail createCostForCostCollector(CostDetailCreateRequest request)
+	{
+		// nothing on this level
+		return null;
+	}
+
+	protected I_M_CostDetail createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
+	{
+		return createCostDefaultImpl(request);
+	}
+
+	protected I_M_CostDetail createCostDefaultImpl(final CostDetailCreateRequest request)
+	{
+		final ICostDetailRepository costDetailsRepo = Services.get(ICostDetailRepository.class);
+
+		final CostDetailQuery costDetailForDocumentQuery = CostDetailQuery.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.costElementId(request.getCostElementId())
+				.documentRef(request.getDocumentRef())
+				.build();
+
+		// Delete all unprocessed or zero differences for given document
+		costDetailsRepo.deleteUnprocessedWithNoChanges(costDetailForDocumentQuery);
+
+		//
+		// Create/Update the cost detail
+		I_M_CostDetail costDetail = costDetailsRepo.getCostDetailOrNull(costDetailForDocumentQuery);
+		if (costDetail == null)		// createNew
+		{
+			costDetail = createDraftCostDetail(request);
+		}
+		else
+		{
+			updateCostDetailFromCreateRequest(costDetail, request);
+		}
+		//
+		costDetailsRepo.save(costDetail);
+
+		return costDetail;
+	}
+
+	private I_M_CostDetail createDraftCostDetail(@NonNull final CostDetailCreateRequest request)
+	{
+		final I_M_CostDetail costDetail = InterfaceWrapperHelper.newInstance(I_M_CostDetail.class);
+		costDetail.setAD_Org_ID(request.getOrgId());
+		costDetail.setC_AcctSchema_ID(request.getAcctSchemaId());
+		costDetail.setM_Product_ID(request.getProductId());
+		costDetail.setM_AttributeSetInstance_ID(request.getAttributeSetInstanceId());
+
+		costDetail.setM_CostElement_ID(request.getCostElementId());
+
+		costDetail.setAmt(request.getAmt());
+		costDetail.setQty(request.getQty());
+		costDetail.setDescription(request.getDescription());
+
+		final CostingDocumentRef documentRef = request.getDocumentRef();
+		InterfaceWrapperHelper.setValue(costDetail, documentRef.getCostDetailColumnName(), documentRef.getRecordId());
+
+		if (documentRef.getOutboundTrx() != null)
+		{
+			costDetail.setIsSOTrx(documentRef.getOutboundTrx());
+		}
+
+		return costDetail;
+	}
+
+	private void updateCostDetailFromCreateRequest(final I_M_CostDetail costDetail, final CostDetailCreateRequest request)
+	{
+		final BigDecimal amt = request.getAmt();
+		final BigDecimal qty = request.getQty();
+		costDetail.setDeltaAmt(amt.subtract(costDetail.getAmt()));
+		costDetail.setDeltaQty(qty.subtract(costDetail.getQty()));
+		if (isDelta(costDetail))
+		{
+			costDetail.setProcessed(false);
+			costDetail.setAmt(amt);
+			costDetail.setQty(qty);
+		}
+	}
+
+	private static boolean isDelta(final I_M_CostDetail costDetail)
+	{
+		return !(costDetail.getDeltaAmt().signum() == 0
+				&& costDetail.getDeltaQty().signum() == 0);
+	}	// isDelta
+
+	protected final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
+	{
+		final I_M_Product product = MProduct.get(Env.getCtx(), request.getProductId());
+		final MAcctSchema as = MAcctSchema.get(Env.getCtx(), request.getAcctSchemaId());
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final CostingLevel costingLevel = CostingLevel.forCode(productBL.getCostingLevel(product, as));
+		final int costTypeId = as.getM_CostType_ID();
+		final int precision = as.getCostingPrecision();
+
+		final CostSegment costSegment = CostSegment.builder()
+				.costingLevel(costingLevel)
+				.acctSchemaId(request.getAcctSchemaId())
+				.costTypeId(costTypeId)
+				.productId(request.getProductId())
+				.clientId(request.getClientId())
+				.orgId(request.getOrgId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.build();
+
+		final I_M_Cost costRecord = MCost.getOrCreate(costSegment, request.getCostElementId());
+		return toCurrentCost(costRecord, precision);
 	}
 
 	@Override
@@ -100,6 +296,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 		//
 		updateCostRecord(costRecord, cost);
+		// costRecord.setProcessed(true); // FIXME Processed is a virtual column ?!?! wtf?!
 		InterfaceWrapperHelper.save(costRecord);
 	}
 
@@ -173,70 +370,4 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		cost.setCumulatedAmt(from.getCumulatedAmt());
 		cost.setCumulatedQty(from.getCumulatedQty());
 	}
-
-	@Builder
-	@Getter
-	protected static final class CurrentCost
-	{
-		private final int precision;
-
-		@NonNull
-		@Setter
-		private BigDecimal currentCostPrice;
-		@NonNull
-		private BigDecimal currentCostPriceLL;
-		@NonNull
-		@Setter
-		private BigDecimal currentQty;
-
-		@NonNull
-		private BigDecimal cumulatedAmt;
-		@NonNull
-		private BigDecimal cumulatedQty;
-
-		/**
-		 * Add Cumulative Amt/Qty and Current Qty
-		 *
-		 * @param amt amt
-		 * @param qty qty
-		 */
-		public void add(@NonNull final BigDecimal amt, @NonNull final BigDecimal qty)
-		{
-			adjustCurrentQty(qty);
-			addCumulatedAmtAndQty(amt, qty);
-		}
-
-		/**
-		 * Add Amt/Qty and calculate weighted average.
-		 * ((OldAvg*OldQty)+(Price*Qty)) / (OldQty+Qty)
-		 *
-		 * @param amt total amt (price * qty)
-		 * @param qty qty
-		 */
-		public void addWeightedAverage(@NonNull final BigDecimal amt, @NonNull final BigDecimal qty)
-		{
-			final BigDecimal currentAmt = currentCostPrice.multiply(currentQty);
-			final BigDecimal newAmt = currentAmt.add(amt);
-			final BigDecimal newQty = currentQty.add(qty);
-			if (newQty.signum() != 0)
-			{
-				this.currentCostPrice = newAmt.divide(newQty, precision, RoundingMode.HALF_UP);
-			}
-			this.currentQty = newQty;
-
-			addCumulatedAmtAndQty(amt, qty);
-		}
-
-		public void addCumulatedAmtAndQty(@NonNull final BigDecimal amt, @NonNull final BigDecimal qty)
-		{
-			this.cumulatedAmt = this.cumulatedAmt.add(amt);
-			this.cumulatedQty = this.cumulatedQty.add(qty);
-		}
-
-		public void adjustCurrentQty(@NonNull final BigDecimal qtyToAdd)
-		{
-			this.currentQty = this.currentQty.add(qtyToAdd);
-		}
-	}
-
 }

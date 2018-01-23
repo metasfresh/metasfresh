@@ -247,6 +247,7 @@ public class Doc_Production extends Doc
 			Services.get(ICostDetailService.class)
 					.createCostDetail(CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getC_AcctSchema_ID())
+							.clientId(line.getAD_Client_ID())
 							.orgId(line.getAD_Org_ID())
 							.productId(line.getM_Product_ID())
 							.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())

@@ -42,7 +42,6 @@ import org.slf4j.Logger;
 
 import de.metas.costing.CostElement;
 import de.metas.costing.CostSegment;
-import de.metas.costing.CostSegment.CostSegmentBuilder;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
@@ -135,32 +134,16 @@ public class MCost extends X_M_Cost
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final CostingLevel costingLevel = CostingLevel.forCode(productBL.getCostingLevel(product, as));
-		final CostSegmentBuilder costSegmentBuilder = CostSegment.builder()
+		
+		return CostSegment.builder()
 				.costingLevel(costingLevel)
 				.acctSchemaId(as.getC_AcctSchema_ID())
 				.costTypeId(as.getM_CostType_ID())
 				.productId(product.getM_Product_ID())
-				.clientId(product.getAD_Client_ID());
-		if (costingLevel == CostingLevel.Client)
-		{
-			costSegmentBuilder
-					.orgId(0)
-					.attributeSetInstanceId(0);
-		}
-		else if (costingLevel == CostingLevel.Organization)
-		{
-			costSegmentBuilder
-					.orgId(AD_Org_ID)
-					.attributeSetInstanceId(0);
-		}
-		else if (costingLevel == CostingLevel.BatchLot)
-		{
-			costSegmentBuilder
-					.orgId(0)
-					.attributeSetInstanceId(M_AttributeSetInstance_ID);
-		}
-		
-		return costSegmentBuilder.build();
+				.clientId(product.getAD_Client_ID())
+				.orgId(AD_Org_ID)
+				.attributeSetInstanceId(M_AttributeSetInstance_ID)
+				.build();
 	}
 
 	/**

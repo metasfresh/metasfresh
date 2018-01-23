@@ -16,6 +16,7 @@ import de.metas.costing.CostDetailEvent;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethodHandlerTemplate;
+import de.metas.costing.CurrentCost;
 import de.metas.product.IProductBL;
 
 /*

@@ -3,11 +3,14 @@ package de.metas.costing.methods;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.MCostQueue;
 
+import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailEvent;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethodHandlerTemplate;
+import de.metas.costing.CurrentCost;
 import lombok.Data;
 import lombok.NonNull;
 
@@ -35,6 +38,12 @@ import lombok.NonNull;
 
 public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandlerTemplate
 {
+	@Override
+	protected I_M_CostDetail createCostForPurchaseInvoice(final CostDetailCreateRequest request)
+	{
+		return createCostDefaultImpl(request);
+	}
+
 	@Override
 	protected void processPurchaseInvoice(final CostDetailEvent event, final CurrentCost cost)
 	{
@@ -86,10 +95,10 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 		{
 			cost.setCurrentCostPrice(cQueue.get(0).getCurrentCostPrice());
 		}
-		
+
 		cost.adjustCurrentQty(qty);
 	}
-	
+
 	@Data
 	protected static class QtyCost
 	{
@@ -97,16 +106,16 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 		private BigDecimal qty;
 		@NonNull
 		private BigDecimal cost;
-		
+
 		public QtyCost(final BigDecimal qty, final BigDecimal cost)
 		{
 			this.qty = qty;
 			this.cost = cost;
 		}
-		
+
 		public void addQty(final BigDecimal qtyToAdd)
 		{
-			this.qty = this.qty.add(qtyToAdd);
+			qty = qty.add(qtyToAdd);
 		}
 	}
 

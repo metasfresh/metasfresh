@@ -364,7 +364,7 @@ public class CostEngine
 				{
 					cd.setDeltaAmt(amt.subtract(cd.getAmt()));
 					cd.setDeltaQty(mtrx.getMovementQty().subtract(cd.getQty()));
-					if (Services.get(ICostDetailService.class).isDelta(cd))
+					if (isDelta(cd))
 					{
 						cd.setProcessed(false);
 						cd.setAmt(amt);
@@ -377,6 +377,13 @@ public class CostEngine
 			} // for ELements
 		} // Account Schema
 	}
+	
+	private static boolean isDelta(final I_M_CostDetail costDetail)
+	{
+		return !(costDetail.getDeltaAmt().signum() == 0
+				&& costDetail.getDeltaQty().signum() == 0);
+	}	// isDelta
+
 
 	private static I_M_CostDetail createCostDetail(I_C_AcctSchema as, int AD_Org_ID,
 			int M_Product_ID, int M_AttributeSetInstance_ID,

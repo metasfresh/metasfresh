@@ -39,8 +39,6 @@ public interface ICostDetailService extends ISingletonService
 
 	void processAllForProduct(int productId);
 
-	boolean isDelta(I_M_CostDetail costDetail);
-
 	void onCostDetailDeleted(I_M_CostDetail costDetail);
 
 	/** @return seed cost or null */

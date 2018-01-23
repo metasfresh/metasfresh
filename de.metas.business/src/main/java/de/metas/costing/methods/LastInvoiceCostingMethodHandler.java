@@ -7,13 +7,16 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailEvent;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethodHandlerTemplate;
+import de.metas.costing.CurrentCost;
 
 /*
  * #%L
@@ -40,6 +43,12 @@ import de.metas.costing.CostingMethodHandlerTemplate;
 public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	@Override
+	protected I_M_CostDetail createCostForPurchaseInvoice(final CostDetailCreateRequest request)
+	{
+		return createCostDefaultImpl(request);
+	}
+
+	@Override
 	protected void processPurchaseInvoice(final CostDetailEvent event, final CurrentCost cost)
 	{
 		final BigDecimal amt = event.getAmt();
@@ -59,7 +68,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 				cost.setCurrentCostPrice(cCosts);
 			}
 		}
-		
+
 		cost.add(amt, qty);
 	}
 

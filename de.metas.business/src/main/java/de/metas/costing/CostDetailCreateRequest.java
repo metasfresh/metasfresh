@@ -31,10 +31,11 @@ import lombok.Value;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class CostDetailCreateRequest
 {
 	int acctSchemaId;
+	int clientId;
 	int orgId;
 	int productId;
 	int attributeSetInstanceId;
@@ -51,4 +52,6 @@ public class CostDetailCreateRequest
 
 	@Nullable
 	String description;
+
+	// TODO: validate: acctSchemaId > 0, clientId > 0 etc
 }

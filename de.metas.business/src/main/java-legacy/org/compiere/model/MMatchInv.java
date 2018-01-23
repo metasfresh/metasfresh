@@ -365,6 +365,7 @@ public class MMatchInv extends X_M_MatchInv
 			Services.get(ICostDetailService.class)
 					.createCostDetail(CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getC_AcctSchema_ID())
+							.clientId(getAD_Client_ID())
 							.orgId(getAD_Org_ID())
 							.productId(getM_Product_ID())
 							.attributeSetInstanceId(getM_AttributeSetInstance_ID())

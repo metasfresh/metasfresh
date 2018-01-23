@@ -1032,6 +1032,7 @@ public class MMatchPO extends X_M_MatchPO
 			Services.get(ICostDetailService.class)
 					.createCostDetail(CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getC_AcctSchema_ID())
+							.clientId(orderLine.getAD_Client_ID())
 							.orgId(orderLine.getAD_Org_ID())
 							.productId(getM_Product_ID())
 							.attributeSetInstanceId(getM_AttributeSetInstance_ID())

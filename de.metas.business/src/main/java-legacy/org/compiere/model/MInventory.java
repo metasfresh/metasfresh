@@ -1066,6 +1066,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 			Services.get(ICostDetailService.class)
 					.createCostDetail(CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getC_AcctSchema_ID())
+							.clientId(line.getAD_Client_ID())
 							.orgId(line.getAD_Org_ID())
 							.productId(line.getM_Product_ID())
 							.attributeSetInstanceId(M_AttributeSetInstance_ID)

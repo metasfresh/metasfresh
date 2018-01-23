@@ -32,6 +32,7 @@ public class CostDetailQuery
 {
 	int acctSchemaId; // shall be set
 	int attributeSetInstanceId;
+	int costElementId;
 	@NonNull
 	CostingDocumentRef documentRef;
 }

@@ -197,6 +197,7 @@ public class Doc_Movement extends Doc
 				final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
 				costDetailService.createCostDetail(CostDetailCreateRequest.builder()
 						.acctSchemaId(as.getC_AcctSchema_ID())
+						.clientId(line.getAD_Client_ID())
 						.orgId(dr.getAD_Org_ID())
 						.productId(line.getM_Product_ID())
 						.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
@@ -209,6 +210,7 @@ public class Doc_Movement extends Doc
 				//	Cost Detail To
 				costDetailService.createCostDetail(CostDetailCreateRequest.builder()
 						.acctSchemaId(as.getC_AcctSchema_ID())
+						.clientId(line.getAD_Client_ID())
 						.orgId(cr.getAD_Org_ID())
 						.productId(line.getM_Product_ID())
 						.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())

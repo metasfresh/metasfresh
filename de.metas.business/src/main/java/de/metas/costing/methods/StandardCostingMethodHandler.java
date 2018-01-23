@@ -3,11 +3,14 @@ package de.metas.costing.methods;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.MCost;
 
+import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailEvent;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethodHandlerTemplate;
+import de.metas.costing.CurrentCost;
 
 /*
  * #%L
@@ -34,6 +37,13 @@ import de.metas.costing.CostingMethodHandlerTemplate;
 public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	@Override
+	protected I_M_CostDetail createCostForPurchaseInvoice(final CostDetailCreateRequest request)
+	{
+		// TODO: use standard cost instead!
+		return createCostDefaultImpl(request);
+	}
+
+	@Override
 	protected void processPurchaseInvoice(final CostDetailEvent event, final CurrentCost cost)
 	{
 		final CostSegment costSegment = event.getCostSegment();
@@ -57,7 +67,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 				cost.setCurrentCostPrice(currentCostPrice);
 			}
 		}
-		
+
 		cost.add(amt, qty);
 	}
 
@@ -72,7 +82,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		if (addition)
 		{
 			cost.add(amt, qty);
-			
+
 			// Initial
 			if (cost.getCurrentCostPrice().signum() == 0
 					&& cost.getCurrentCostPriceLL().signum() == 0
