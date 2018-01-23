@@ -23,6 +23,8 @@ Here come the actual release notes:
     * New Windows for Reference No and Reference No Type maintenance.
 
 * metasfresh-webui-frontend
+  * [#1504](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1504) Make a difference between internal date format (ISO) and user friendly locale date
+    * Improved Handlign of Date Widget reponses. Now distiguishing between Date for API and Date presented to the user.
   * [#1514](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1514) Filter Dropdown dynamically extend height when dropdown list selected
     * Improved Dropdown behavior. Now showing a complete dropdown List in Filters also when at the bottom of a Filter list area.
 
