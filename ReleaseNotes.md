@@ -26,6 +26,11 @@ Here come the actual release notes:
   * [#1514](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1514) Filter Dropdown dynamically extend height when dropdown list selected
     * Improved Dropdown behavior. Now showing a complete dropdown List in Filters also when at the bottom of a Filter list area.
 
+## Fixes
+* metasfresh-webui-frontend
+  * [#1518](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1518) Create purchase orders: error in console
+    * Fixes a Bug that prevented the creation of Purchase orders from Sales Orders to be done without errors.
+
 
 # metasfresh 5.42 (2018-04)
 **release for week 2018-04**
