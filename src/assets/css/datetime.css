@@ -1,5 +1,6 @@
 .rdt {
     position: relative;
+    width: 100%;
     font-size: .8rem;
     color: $brand-font-color-secondary;
     font-weight:500;

@@ -85,16 +85,25 @@ class RawWidget extends Component {
     }
   };
 
+  generateMomentObj = value => {
+    if (Moment.isMoment(value)) {
+      return value;
+    }
+    return value ? Moment(value).format(DATE_FORMAT) : null;
+  };
+
   handlePatch = (property, value, id, valueTo) => {
     const { handlePatch } = this.props;
 
+    let momentValue = this.generateMomentObj(value);
+    let momentValueTo = this.generateMomentObj(valueTo);
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
-    if (this.willPatch(value, valueTo) && handlePatch) {
+    if (this.willPatch(momentValue, momentValueTo) && handlePatch) {
       this.setState({
         cachedValue: undefined
       });
-      return handlePatch(property, value, id, valueTo);
+      return handlePatch(property, momentValue, id, momentValueTo);
     }
 
     return null;
@@ -291,13 +300,10 @@ class RawWidget extends Component {
                   tabIndex: fullScreen ? -1 : tabIndex
                 }}
                 value={widgetValue || widgetData[0].value}
-                onChange={date => handleChange(widgetField, date)}
-                patch={date =>
-                  this.handlePatch(
-                    widgetField,
-                    date ? Moment(date).format(DATE_FORMAT) : null
-                  )
-                }
+                onChange={date => {
+                  handleChange(widgetField, date);
+                }}
+                patch={date => this.handlePatch(widgetField, date)}
                 {...{
                   allowOutsideClickListener,
                   handleBackdropLock
