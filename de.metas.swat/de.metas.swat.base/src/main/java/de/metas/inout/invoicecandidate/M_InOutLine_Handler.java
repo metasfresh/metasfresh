@@ -373,6 +373,19 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			// Corrected, voiced etc document. Set qty to zero.
 			ic.setQtyOrdered(BigDecimal.ZERO);
 		}
+
+		setC_PaymentTerm(ic);
+	}
+
+	private void setC_PaymentTerm(final I_C_Invoice_Candidate ic)
+	{
+		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
+		final org.compiere.model.I_M_InOut inOut = inOutLine.getM_InOut();
+		final I_C_Order order = inOut.getC_Order();
+		if (order != null && ic.getC_PaymentTerm() == null)
+		{
+			ic.setC_PaymentTerm(order.getC_PaymentTerm());
+		}
 	}
 
 	/**
@@ -485,11 +498,11 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_M_InOutLine inoutLine = getM_InOutLine(ic);
 		return calculatePriceAndQuantity(ic, inoutLine);
 	}
-	
+
 	public static PriceAndTax calculatePriceAndQuantity(final I_C_Invoice_Candidate ic, final org.compiere.model.I_M_InOutLine inoutLine)
 	{
 		final IPricingResult pricingResult = calculatePricingResult(inoutLine);
-		
+
 		final boolean taxIncluded;
 		if (ic.getC_Order_ID() > 0)
 		{
@@ -500,7 +513,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			taxIncluded = pricingResult.isTaxIncluded();
 		}
-		
+
 		return PriceAndTax.builder()
 				.pricingSystemId(pricingResult.getM_PricingSystem_ID())
 				// #367: there is a corner case where we need to know the PLV is order to later know the correct M_PriceList_ID.
@@ -517,14 +530,14 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				.discount(pricingResult.getDiscount())
 				.build();
 	}
-	
+
 	private static IPricingResult calculatePricingResult(final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
 		final IPricingContext pricingCtx = inOutBL.createPricingCtx(fromInOutLine);
 		return inOutBL.getProductPrice(pricingCtx);
 	}
-	
+
 	public static PriceAndTax calculatePriceAndQuantityAndUpdate(final I_C_Invoice_Candidate ic, final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{
 		try
