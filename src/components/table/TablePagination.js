@@ -224,10 +224,10 @@ class TablePagination extends Component {
   };
 
   renderSelectAll = () => {
-    const { selected, size, rowLength } = this.props;
+    const { selected, size, rowLength, pageLength } = this.props;
 
     const selectedWholePage = selected && selected.length === rowLength;
-
+    const isShowSelectAllItems = size > pageLength;
     return (
       <div className="hidden-sm-down">
         <div>
@@ -244,7 +244,7 @@ class TablePagination extends Component {
           }}
           title="Alt+A"
         >
-          {selectedWholePage
+          {selectedWholePage && isShowSelectAllItems
             ? counterpart.translate("view.selectAllItems.caption", {
                 size: size
               })
