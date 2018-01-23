@@ -442,7 +442,10 @@ class RawWidget extends Component {
       case "List":
         return (
           <List
-            {...{ attribute }}
+            {...{
+              attribute,
+              allowOutsideClickListener
+            }}
             dataId={dataId}
             entity={entity}
             subentity={subentity}
