@@ -96,7 +96,7 @@ public class CostDetailService implements ICostDetailService
 					final I_M_CostDetail costDetail = costingMethodHandler.createCost(request.toBuilder()
 							.costElementId(costElement.getId())
 							.build());
-					if(costDetail == null)
+					if (costDetail == null)
 					{
 						return;
 					}
@@ -211,10 +211,10 @@ public class CostDetailService implements ICostDetailService
 		}
 
 		final CostSegment costSegment = extractCostSegment(costDetail);
-		extractCostElements(costDetail).forEach(costElement -> {
-			final CostDetailEvent event = createCostDetailEvent(costDetail, costSegment, costElement);
-			process(event, costSegment, costElement);
-		});
+		extractCostElements(costDetail)
+				.stream()
+				.map(costElement -> createCostDetailEvent(costDetail, costSegment, costElement))
+				.forEach(this::process);
 
 		// Save it
 		costDetail.setDeltaAmt(null);
@@ -305,10 +305,10 @@ public class CostDetailService implements ICostDetailService
 	public void onCostDetailDeleted(final I_M_CostDetail costDetail)
 	{
 		final CostSegment costSegment = extractCostSegment(costDetail);
-		extractCostElements(costDetail).forEach(costElement -> {
-			final CostDetailEvent event = createCostDetailEvent(costDetail, costSegment, costElement);
-			process(event, costSegment, costElement);
-		});
+		extractCostElements(costDetail)
+				.stream()
+				.map(costElement -> createCostDetailEvent(costDetail, costSegment, costElement))
+				.forEach(this::process);
 	}
 
 	private CostingMethodHandler getCostingMethodHandler(final String costingMethod)
@@ -376,7 +376,7 @@ public class CostDetailService implements ICostDetailService
 	/**
 	 * Process cost detail for cost record
 	 */
-	private void process(final CostDetailEvent event, final CostSegment costSegment, final CostElement costElement)
+	private void process(final CostDetailEvent event)
 	{
 		getCostingMethodHandler(event.getCostingMethod())
 				.process(event);

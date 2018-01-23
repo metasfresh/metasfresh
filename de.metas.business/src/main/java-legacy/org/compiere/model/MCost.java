@@ -125,7 +125,7 @@ public class MCost extends X_M_Cost
 
 		return getCurrentCost(costSegment, costingMethodEffective, qty, C_OrderLine_ID, zeroCostsOK);
 	}	// getCurrentCost
-	
+
 	private static CostSegment createCostSegment(
 			final I_M_Product product,
 			final int M_AttributeSetInstance_ID,
@@ -134,7 +134,7 @@ public class MCost extends X_M_Cost
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final CostingLevel costingLevel = CostingLevel.forCode(productBL.getCostingLevel(product, as));
-		
+
 		return CostSegment.builder()
 				.costingLevel(costingLevel)
 				.acctSchemaId(as.getC_AcctSchema_ID())
@@ -302,7 +302,7 @@ public class MCost extends X_M_Cost
 		{
 			costs = costs.setScale(precision, RoundingMode.HALF_UP);
 		}
-		
+
 		return costs;
 	}	// getCurrentCost
 
@@ -491,13 +491,7 @@ public class MCost extends X_M_Cost
 	// metas: 01432: changed from protected to public
 	public static void create(final I_M_Product product)
 	{
-		forEachCostSegmentAndElement(product, (costSegment, costElement) -> {
-			final I_M_Cost cost = MCost.getOrCreate(costSegment, costElement.getId());
-			if (InterfaceWrapperHelper.isNew(cost))
-			{
-				InterfaceWrapperHelper.save(cost);
-			}
-		});
+		forEachCostSegmentAndElement(product, (costSegment, costElement) -> MCost.getOrCreate(costSegment, costElement.getId()));
 	}
 
 	/**
@@ -578,6 +572,7 @@ public class MCost extends X_M_Cost
 		if (cost == null)
 		{
 			cost = new MCost(costSegment, costElementId);
+			InterfaceWrapperHelper.save(cost);
 		}
 		return cost;
 	}	// get

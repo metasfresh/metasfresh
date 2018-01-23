@@ -353,6 +353,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	private CurrentCost toCurrentCost(final I_M_Cost costRecord, final int precision)
 	{
 		return CurrentCost.builder()
+				.id(costRecord.getM_Cost_ID())
 				.precision(precision)
 				.currentCostPrice(costRecord.getCurrentCostPrice())
 				.currentCostPriceLL(costRecord.getCurrentCostPriceLL())

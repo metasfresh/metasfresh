@@ -3,6 +3,8 @@ package de.metas.costing;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import org.adempiere.util.Check;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -18,30 +20,30 @@ import lombok.Setter;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-@Builder
 @Getter
 public final class CurrentCost
 {
+	private final int id;
+
 	private final int precision;
 
 	@NonNull
 	@Setter
 	private BigDecimal currentCostPrice;
 	@NonNull
-	private BigDecimal currentCostPriceLL;
+	private final BigDecimal currentCostPriceLL;
 	@NonNull
 	@Setter
 	private BigDecimal currentQty;
@@ -50,6 +52,28 @@ public final class CurrentCost
 	private BigDecimal cumulatedAmt;
 	@NonNull
 	private BigDecimal cumulatedQty;
+
+	@Builder
+	private CurrentCost(
+			final int id,
+			final int precision,
+			@NonNull final BigDecimal currentCostPrice,
+			@NonNull final BigDecimal currentCostPriceLL,
+			@NonNull final BigDecimal currentQty,
+			@NonNull final BigDecimal cumulatedAmt,
+			@NonNull final BigDecimal cumulatedQty)
+	{
+		Check.assume(id > 0, "id > 0");
+		Check.assume(precision > 0, "precision > 0");
+
+		this.id = id;
+		this.precision = precision;
+		this.currentCostPrice = currentCostPrice;
+		this.currentCostPriceLL = currentCostPriceLL;
+		this.currentQty = currentQty;
+		this.cumulatedAmt = cumulatedAmt;
+		this.cumulatedQty = cumulatedQty;
+	}
 
 	/**
 	 * Add Cumulative Amt/Qty and Current Qty
@@ -77,21 +101,21 @@ public final class CurrentCost
 		final BigDecimal newQty = currentQty.add(qty);
 		if (newQty.signum() != 0)
 		{
-			this.currentCostPrice = newAmt.divide(newQty, precision, RoundingMode.HALF_UP);
+			currentCostPrice = newAmt.divide(newQty, precision, RoundingMode.HALF_UP);
 		}
-		this.currentQty = newQty;
+		currentQty = newQty;
 
 		addCumulatedAmtAndQty(amt, qty);
 	}
 
 	public void addCumulatedAmtAndQty(@NonNull final BigDecimal amt, @NonNull final BigDecimal qty)
 	{
-		this.cumulatedAmt = this.cumulatedAmt.add(amt);
-		this.cumulatedQty = this.cumulatedQty.add(qty);
+		cumulatedAmt = cumulatedAmt.add(amt);
+		cumulatedQty = cumulatedQty.add(qty);
 	}
 
 	public void adjustCurrentQty(@NonNull final BigDecimal qtyToAdd)
 	{
-		this.currentQty = this.currentQty.add(qtyToAdd);
+		currentQty = currentQty.add(qtyToAdd);
 	}
 }

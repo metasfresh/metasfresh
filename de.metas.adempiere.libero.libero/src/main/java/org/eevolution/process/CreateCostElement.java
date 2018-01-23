@@ -133,7 +133,7 @@ public class CreateCostElement extends JavaProcess
 	{
 		final I_C_AcctSchema as = InterfaceWrapperHelper.create(getCtx(), p_C_AcctSchema_ID, I_C_AcctSchema.class, ITrx.TRXNAME_None);
 
-		int count_costs = 0, count_all = 0;
+		int count_all = 0;
 		for (final int orgId : getOrgs(as))
 		{
 			for (final I_M_Product product : getProducts())
@@ -153,19 +153,13 @@ public class CreateCostElement extends JavaProcess
 
 				for (final I_M_CostElement element : getElements())
 				{
-					final I_M_Cost cost = MCost.getOrCreate(costSegment, element.getM_CostElement_ID());
-					if(InterfaceWrapperHelper.isNew(cost))
-					if (cost == null)
-					{
-						InterfaceWrapperHelper.save(cost);
-						count_costs++;
-					}
+					MCost.getOrCreate(costSegment, element.getM_CostElement_ID());
 					count_all++;
 				}
 			}
 		}
 
-		return "@Created@ #" + count_costs + " / " + count_all;
+		return "@Created@/@Updated@ #" + count_all;
 	}
 
 	/**
