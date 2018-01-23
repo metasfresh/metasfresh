@@ -323,13 +323,9 @@ public class CostDetailService implements ICostDetailService
 
 	private CostingDocumentRef extractDocumentRef(final I_M_CostDetail cd)
 	{
-		if (cd.getC_OrderLine_ID() > 0)
+		if (cd.getM_MatchPO_ID() > 0)
 		{
-			if (cd.isSOTrx())
-			{
-				throw new AdempiereException("Sales order line not supported: " + cd);
-			}
-			return CostingDocumentRef.ofPurchaseOrderLineId(cd.getC_OrderLine_ID());
+			return CostingDocumentRef.ofMatchPOId(cd.getC_OrderLine_ID());
 		}
 		else if (cd.getC_InvoiceLine_ID() > 0)
 		{

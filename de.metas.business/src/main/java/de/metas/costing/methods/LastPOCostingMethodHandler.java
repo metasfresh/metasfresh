@@ -44,13 +44,13 @@ import de.metas.costing.CurrentCost;
 public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	@Override
-	protected I_M_CostDetail createCostForPurchaseOrderLine(final CostDetailCreateRequest request)
+	protected I_M_CostDetail createCostForMatchPO(final CostDetailCreateRequest request)
 	{
 		return createCostDefaultImpl(request);
 	}
 	
 	@Override
-	protected void processPurchaseOrderLine(final CostDetailEvent event, final CurrentCost cost)
+	protected void processMatchPO(final CostDetailEvent event, final CurrentCost cost)
 	{
 		final BigDecimal amt = event.getAmt();
 		final BigDecimal qty = event.getQty();

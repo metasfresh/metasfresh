@@ -5,20 +5,13 @@ import java.math.BigDecimal;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostDetail;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_InventoryLine;
-import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_ProductionLine;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
 import org.compiere.model.MProduct;
 import org.compiere.util.Env;
-import org.eevolution.model.I_PP_Cost_Collector;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -62,35 +55,35 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	{
 		final CostingDocumentRef documentRef = request.getDocumentRef();
 		final String documentTableName = documentRef.getTableName();
-		if (I_C_OrderLine.Table_Name.equals(documentTableName))
+		if (CostingDocumentRef.TABLE_NAME_M_MatchPO.equals(documentTableName))
 		{
-			return createCostForPurchaseOrderLine(request);
+			return createCostForMatchPO(request);
 		}
-		else if (org.compiere.model.I_C_InvoiceLine.Table_Name.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_C_InvoiceLine.equals(documentTableName))
 		{
 			return createCostForPurchaseInvoice(request);
 		}
-		else if (I_M_InOutLine.Table_Name.equals(documentTableName))
+		else if(CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(documentTableName))
 		{
 			return createCostForMaterialShipment(request);
 		}
-		else if (I_M_MovementLine.Table_Name.equals(documentTableName))
+		else if(CostingDocumentRef.TABLE_NAME_M_MovementLine.equals(documentTableName))
 		{
 			return createCostForMovementLine(request);
 		}
-		else if (I_M_InventoryLine.Table_Name.equals(documentTableName))
+		else if(CostingDocumentRef.TABLE_NAME_M_InventoryLine.equals(documentTableName))
 		{
 			return createCostForInventoryLine(request);
 		}
-		else if (I_M_ProductionLine.Table_Name.equals(documentTableName))
+		else if(CostingDocumentRef.TABLE_NAME_M_ProductionLine.equals(documentTableName))
 		{
 			return createCostForProductionLine(request);
 		}
-		else if (I_C_ProjectIssue.Table_Name.equals(documentTableName))
+		else if(CostingDocumentRef.TABLE_NAME_C_ProjectIssue.equals(documentTableName))
 		{
 			return createCostForProjectIssue(request);
 		}
-		else if (I_PP_Cost_Collector.Table_Name.equals(documentTableName))
+		else if(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector.equals(documentTableName))
 		{
 			return createCostForCostCollector(request);
 		}
@@ -100,7 +93,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		}
 	}
 
-	protected I_M_CostDetail createCostForPurchaseOrderLine(CostDetailCreateRequest request)
+	protected I_M_CostDetail createCostForMatchPO(CostDetailCreateRequest request)
 	{
 		// nothing on this level
 		return null;
@@ -257,35 +250,35 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 		final CostingDocumentRef documentRef = event.getDocumentRef();
 		final String documentTableName = documentRef.getTableName();
-		if (I_C_OrderLine.Table_Name.equals(documentTableName))
+		if (CostingDocumentRef.TABLE_NAME_M_MatchPO.equals(documentTableName))
 		{
-			processPurchaseOrderLine(event, cost);
+			processMatchPO(event, cost);
 		}
-		else if (org.compiere.model.I_C_InvoiceLine.Table_Name.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_C_InvoiceLine.equals(documentTableName))
 		{
 			processPurchaseInvoice(event, cost);
 		}
-		else if (I_M_InOutLine.Table_Name.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(documentTableName))
 		{
 			processMaterialShipment(event, cost);
 		}
-		else if (I_M_MovementLine.Table_Name.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_M_MovementLine.equals(documentTableName))
 		{
 			processMovementLine(event, cost);
 		}
-		else if (I_M_InventoryLine.Table_Name.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_M_InventoryLine.equals(documentTableName))
 		{
 			processInventoryLine(event, cost);
 		}
-		else if (I_M_ProductionLine.Table_Name.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_M_ProductionLine.equals(documentTableName))
 		{
 			processProductionLine(event, cost);
 		}
-		else if (I_C_ProjectIssue.Table_Name.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_C_ProjectIssue.equals(documentTableName))
 		{
 			processProjectIssue(event, cost);
 		}
-		else if (I_PP_Cost_Collector.Table_Name.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_PP_Cost_Collector.equals(documentTableName))
 		{
 			processCostCollector(event, cost);
 		}
@@ -300,7 +293,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		InterfaceWrapperHelper.save(costRecord);
 	}
 
-	protected void processPurchaseOrderLine(final CostDetailEvent event, final CurrentCost cost)
+	protected void processMatchPO(final CostDetailEvent event, final CurrentCost cost)
 	{
 		// nothing on this level
 	}

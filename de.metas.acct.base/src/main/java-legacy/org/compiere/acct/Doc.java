@@ -184,9 +184,9 @@ public abstract class Doc
 	public static final String DOCTYPE_PurchaseRequisition = "POR";
 
 	/** Static Log */
-	protected static Logger s_log = LogManager.getLogger(Doc.class);
+	private final static Logger s_log = LogManager.getLogger(Doc.class);
 	/** Log per Document */
-	protected Logger log = LogManager.getLogger(getClass());
+	protected final Logger log = LogManager.getLogger(getClass());
 
 	/**
 	 * @param docBuilder construction parameters

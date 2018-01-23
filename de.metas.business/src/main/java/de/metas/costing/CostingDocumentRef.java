@@ -4,11 +4,11 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InventoryLine;
+import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_ProductionLine;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -41,58 +41,67 @@ import lombok.Value;
 @Value
 public class CostingDocumentRef
 {
-	public static CostingDocumentRef ofPurchaseOrderLineId(final int orderLineId)
+	public static final String TABLE_NAME_M_MatchPO = I_M_MatchPO.Table_Name;
+	public static final String TABLE_NAME_C_InvoiceLine = I_C_InvoiceLine.Table_Name;
+	public static final String TABLE_NAME_M_InOutLine = I_M_InOutLine.Table_Name;
+	public static final String TABLE_NAME_M_InventoryLine = I_M_InventoryLine.Table_Name;
+	public static final String TABLE_NAME_M_MovementLine = I_M_MovementLine.Table_Name;
+	public static final String TABLE_NAME_M_ProductionLine = I_M_ProductionLine.Table_Name;
+	public static final String TABLE_NAME_C_ProjectIssue = I_C_ProjectIssue.Table_Name;
+	public static final String TABLE_NAME_PP_Cost_Collector = I_PP_Cost_Collector.Table_Name;
+
+	public static CostingDocumentRef ofMatchPOId(final int matchPOId)
 	{
 		final Boolean outboundTrx = Boolean.FALSE;
-		return new CostingDocumentRef(I_C_OrderLine.Table_Name, orderLineId, I_M_CostDetail.COLUMNNAME_C_OrderLine_ID, outboundTrx);
+		return new CostingDocumentRef(TABLE_NAME_M_MatchPO, matchPOId, I_M_CostDetail.COLUMNNAME_M_MatchPO_ID, outboundTrx);
 	}
 
 	public static CostingDocumentRef ofPurchaseInvoiceLineId(final int invoiceLineId)
 	{
 		final Boolean outboundTrx = Boolean.FALSE;
-		return new CostingDocumentRef(I_C_InvoiceLine.Table_Name, invoiceLineId, I_M_CostDetail.COLUMNNAME_C_InvoiceLine_ID, outboundTrx);
+		return new CostingDocumentRef(TABLE_NAME_C_InvoiceLine, invoiceLineId, I_M_CostDetail.COLUMNNAME_C_InvoiceLine_ID, outboundTrx);
 	}
 
 	public static CostingDocumentRef ofShipmentLineId(final int inOutLineId)
 	{
 		final Boolean outboundTrx = Boolean.TRUE;
-		return new CostingDocumentRef(I_M_InOutLine.Table_Name, inOutLineId, I_M_CostDetail.COLUMNNAME_M_InOutLine_ID, outboundTrx);
+		return new CostingDocumentRef(TABLE_NAME_M_InOutLine, inOutLineId, I_M_CostDetail.COLUMNNAME_M_InOutLine_ID, outboundTrx);
 	}
 
 	public static CostingDocumentRef ofInventoryLineId(final int inventoryLineId)
 	{
 		final Boolean outboundTrx = null;
-		return new CostingDocumentRef(I_M_InventoryLine.Table_Name, inventoryLineId, I_M_CostDetail.COLUMNNAME_M_InventoryLine_ID, outboundTrx);
+		return new CostingDocumentRef(TABLE_NAME_M_InventoryLine, inventoryLineId, I_M_CostDetail.COLUMNNAME_M_InventoryLine_ID, outboundTrx);
 	}
 
 	public static CostingDocumentRef ofOutboundMovementLineId(final int movementLineId)
 	{
 		final Boolean outboundTrx = Boolean.TRUE;
-		return new CostingDocumentRef(I_M_MovementLine.Table_Name, movementLineId, I_M_CostDetail.COLUMNNAME_M_MovementLine_ID, outboundTrx);
+		return new CostingDocumentRef(TABLE_NAME_M_MovementLine, movementLineId, I_M_CostDetail.COLUMNNAME_M_MovementLine_ID, outboundTrx);
 	}
 
 	public static CostingDocumentRef ofInboundMovementLineId(final int movementLineId)
 	{
 		final Boolean outboundTrx = Boolean.FALSE;
-		return new CostingDocumentRef(I_M_MovementLine.Table_Name, movementLineId, I_M_CostDetail.COLUMNNAME_M_MovementLine_ID, outboundTrx);
+		return new CostingDocumentRef(TABLE_NAME_M_MovementLine, movementLineId, I_M_CostDetail.COLUMNNAME_M_MovementLine_ID, outboundTrx);
 	}
 
 	public static CostingDocumentRef ofProductionLineId(final int productionLineId)
 	{
 		final Boolean outboundTrx = null;
-		return new CostingDocumentRef(I_M_ProductionLine.Table_Name, productionLineId, I_M_CostDetail.COLUMNNAME_M_ProductionLine_ID, outboundTrx);
+		return new CostingDocumentRef(TABLE_NAME_M_ProductionLine, productionLineId, I_M_CostDetail.COLUMNNAME_M_ProductionLine_ID, outboundTrx);
 	}
 
 	public static CostingDocumentRef ofProjectIssueId(final int projectIssueId)
 	{
 		final Boolean outboundTrx = null;
-		return new CostingDocumentRef(I_C_ProjectIssue.Table_Name, projectIssueId, I_M_CostDetail.COLUMNNAME_C_ProjectIssue_ID, outboundTrx);
+		return new CostingDocumentRef(TABLE_NAME_C_ProjectIssue, projectIssueId, I_M_CostDetail.COLUMNNAME_C_ProjectIssue_ID, outboundTrx);
 	}
 
 	public static CostingDocumentRef ofCostCollectorId(final int ppCostCollectorId)
 	{
 		final Boolean outboundTrx = null;
-		return new CostingDocumentRef(I_PP_Cost_Collector.Table_Name, ppCostCollectorId, I_M_CostDetail.COLUMNNAME_PP_Cost_Collector_ID, outboundTrx);
+		return new CostingDocumentRef(TABLE_NAME_PP_Cost_Collector, ppCostCollectorId, I_M_CostDetail.COLUMNNAME_PP_Cost_Collector_ID, outboundTrx);
 	}
 
 	private final String tableName;

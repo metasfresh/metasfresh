@@ -29,12 +29,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailService;
 import de.metas.currency.ICurrencyBL;
@@ -372,17 +372,10 @@ public class MMatchPO extends X_M_MatchPO
 	/** Static Logger */
 	private static Logger s_log = LogManager.getLogger(MMatchPO.class);
 
-	/**************************************************************************
-	 * Standard Constructor
-	 * 
-	 * @param ctx context
-	 * @param M_MatchPO_ID id
-	 * @param trxName transaction
-	 */
 	public MMatchPO(Properties ctx, int M_MatchPO_ID, String trxName)
 	{
 		super(ctx, M_MatchPO_ID, trxName);
-		if (M_MatchPO_ID == 0)
+		if (is_new())
 		{
 			// setC_OrderLine_ID (0);
 			// setDateTrx (new Timestamp(System.currentTimeMillis()));
@@ -396,13 +389,6 @@ public class MMatchPO extends X_M_MatchPO
 		}
 	}	// MMatchPO
 
-	/**
-	 * Load Construor
-	 * 
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
 	public MMatchPO(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
@@ -436,7 +422,7 @@ public class MMatchPO extends X_M_MatchPO
 	 * @param dateTrx optional date
 	 * @param qty matched quantity
 	 */
-	public MMatchPO(MInvoiceLine iLine, Timestamp dateTrx, BigDecimal qty)
+	private MMatchPO(MInvoiceLine iLine, Timestamp dateTrx, BigDecimal qty)
 	{
 		this(iLine.getCtx(), 0, iLine.get_TrxName());
 		setClientOrg(iLine);
@@ -451,100 +437,12 @@ public class MMatchPO extends X_M_MatchPO
 		setProcessed(true);		// auto
 	}	// MMatchPO
 
-	// /** Invoice Changed */
-	// private boolean m_isInvoiceLineChange = false;
-	// /** InOut Changed */
-	// private boolean m_isInOutLineChange = false;
-	// /** Order Line */
-
-	// /** Invoice Line */
-	// private MInvoiceLine m_iLine = null;
-
-	// /**
-	// * Set C_InvoiceLine_ID
-	// * @param line line
-	// */
-	// public void setC_InvoiceLine_ID (MInvoiceLine line)
-	// {
-	// m_iLine = line;
-	// if (line == null)
-	// setC_InvoiceLine_ID(0);
-	// else
-	// setC_InvoiceLine_ID(line.getC_InvoiceLine_ID());
-	// } // setC_InvoiceLine_ID
-
-	// /**
-	// * Set C_InvoiceLine_ID
-	// * @param C_InvoiceLine_ID id
-	// */
-	// @Override
-	// public void setC_InvoiceLine_ID (int C_InvoiceLine_ID)
-	// {
-	// int old = getC_InvoiceLine_ID();
-	// if (old != C_InvoiceLine_ID)
-	// {
-	// super.setC_InvoiceLine_ID (C_InvoiceLine_ID);
-	// m_isInvoiceLineChange = true;
-	// }
-	// } // setC_InvoiceLine_ID
-
-	// /**
-	// * Get Invoice Line
-	// * @return invoice line or null
-	// */
-	// public MInvoiceLine getInvoiceLine()
-	// {
-	// if (m_iLine == null && getC_InvoiceLine_ID() != 0)
-	// m_iLine = new MInvoiceLine(getCtx(), getC_InvoiceLine_ID(), get_TrxName());
-	// return m_iLine;
-	// } // getInvoiceLine
-
-	// /**
-	// * Set M_InOutLine_ID
-	// * @param M_InOutLine_ID id
-	// */
-	// @Override
-	// public void setM_InOutLine_ID (int M_InOutLine_ID)
-	// {
-	// int old = getM_InOutLine_ID();
-	// if (old != M_InOutLine_ID)
-	// {
-	// super.setM_InOutLine_ID (M_InOutLine_ID);
-	// m_isInOutLineChange = true;
-	// }
-	// } // setM_InOutLine_ID
-
-	// /**
-	// * Set C_OrderLine_ID
-	// * @param line line
-	// */
-	// public void setC_OrderLine_ID (MOrderLine line)
-	// {
-	// m_oLine = line;
-	// if (line == null)
-	// setC_OrderLine_ID(0);
-	// else
-	// setC_OrderLine_ID(line.getC_OrderLine_ID());
-	// } // setC_InvoiceLine_ID
-	//
-	// /**
-	// * Get Order Line
-	// * @return order line or null
-	// */
-	// public MOrderLine getOrderLine()
-	// {
-	// if ((m_oLine == null && getC_OrderLine_ID() != 0)
-	// || getC_OrderLine_ID() != m_oLine.getC_OrderLine_ID())
-	// m_oLine = new MOrderLine(getCtx(), getC_OrderLine_ID(), get_TrxName());
-	// return m_oLine;
-	// } // getOrderLine
-
 	/**
 	 * Get PriceActual from Invoice and convert it to Order Currency
 	 * 
 	 * @return Price Actual in Order Currency
 	 */
-	public BigDecimal getInvoicePriceActual()
+	private BigDecimal getInvoicePriceActual()
 	{
 		final I_C_InvoiceLine iLine = getC_InvoiceLine();
 		final I_C_Invoice invoice = iLine.getC_Invoice();
@@ -563,13 +461,14 @@ public class MMatchPO extends X_M_MatchPO
 	}
 
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		// Set Trx Date
 		if (getDateTrx() == null)
 		{
-			setDateTrx(new Timestamp(System.currentTimeMillis()));
+			setDateTrx(SystemTime.asDayTimestamp());
 		}
+		
 		// Set Acct Date
 		if (getDateAcct() == null)
 		{
@@ -580,6 +479,7 @@ public class MMatchPO extends X_M_MatchPO
 			}
 			setDateAcct(ts);
 		}
+		
 		// Set ASI from Receipt
 		final int mpoASIId = getM_AttributeSetInstance_ID();
 		if (mpoASIId <= 0 && getM_InOutLine_ID() > 0)
@@ -606,56 +506,52 @@ public class MMatchPO extends X_M_MatchPO
 		// end Bayu
 
 		// Find OrderLine
-		if (getC_OrderLine_ID() == 0)
+		if (getC_OrderLine_ID() <= 0)
 		{
-			I_C_InvoiceLine il = null;
-			if (getC_InvoiceLine_ID() != 0)
+			final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
+			if (invoiceLine != null && invoiceLine.getC_OrderLine_ID() > 0)
 			{
-				il = getC_InvoiceLine();
-				if (il.getC_OrderLine_ID() != 0)
-					setC_OrderLine_ID(il.getC_OrderLine_ID());
-			}	// get from invoice
-			if (getC_OrderLine_ID() == 0 && getM_InOutLine_ID() != 0)
+				setC_OrderLine_ID(invoiceLine.getC_OrderLine_ID());
+			}
+			
+			if (getC_OrderLine_ID() <= 0)
 			{
-				MInOutLine iol = new MInOutLine(getCtx(), getM_InOutLine_ID(), get_TrxName());
-				if (iol.getC_OrderLine_ID() != 0)
+				final I_M_InOutLine inoutLine = getM_InOutLine();
+				if (inoutLine != null && inoutLine.getC_OrderLine_ID() > 0)
 				{
-					setC_OrderLine_ID(iol.getC_OrderLine_ID());
-					if (il != null)
+					setC_OrderLine_ID(inoutLine.getC_OrderLine_ID());
+					if (invoiceLine != null)
 					{
-						il.setC_OrderLine_ID(iol.getC_OrderLine_ID());
-						InterfaceWrapperHelper.save(il);
+						invoiceLine.setC_OrderLine_ID(inoutLine.getC_OrderLine_ID());
+						InterfaceWrapperHelper.save(invoiceLine);
 					}
 				}
-			}	// get from shipment
+			}
 		}	// find order line
 
 		// Price Match Approval
-		if (getC_OrderLine_ID() != 0
-				&& getC_InvoiceLine_ID() != 0
-				&& (newRecord ||
-						is_ValueChanged("C_OrderLine_ID") || is_ValueChanged("C_InvoiceLine_ID")))
+		if (getC_OrderLine_ID() > 0
+				&& getC_InvoiceLine_ID() > 0
+				&& (newRecord || is_ValueChanged(COLUMNNAME_C_OrderLine_ID) || is_ValueChanged(COLUMNNAME_C_InvoiceLine_ID)))
 		{
-			BigDecimal poPrice = getC_OrderLine().getPriceActual();
-			BigDecimal invPrice = getInvoicePriceActual();
+			final BigDecimal poPrice = getC_OrderLine().getPriceActual();
+			final BigDecimal invPrice = getInvoicePriceActual();
 			BigDecimal difference = poPrice.subtract(invPrice);
 			if (difference.signum() != 0)
 			{
 				difference = difference.multiply(getQty());
 				setPriceMatchDifference(difference);
 				// Approval
-				MBPGroup group = MBPGroup.getOfBPartner(getCtx(), getC_OrderLine().getC_BPartner_ID());
-				BigDecimal mt = group.getPriceMatchTolerance();
-				if (mt != null && mt.signum() != 0)
+				final MBPGroup bpGroup = MBPGroup.getOfBPartner(getCtx(), getC_OrderLine().getC_BPartner_ID());
+				final BigDecimal matchTolerance = bpGroup.getPriceMatchTolerance();
+				if (matchTolerance != null && matchTolerance.signum() != 0)
 				{
-					BigDecimal poAmt = poPrice.multiply(getQty());
-					BigDecimal maxTolerance = poAmt.multiply(mt);
-					maxTolerance = maxTolerance.abs()
-							.divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP);
+					final BigDecimal poAmt = poPrice.multiply(getQty());
+					BigDecimal maxTolerance = poAmt.multiply(matchTolerance);
+					maxTolerance = maxTolerance.abs().divide(Env.ONEHUNDRED, 2, BigDecimal.ROUND_HALF_UP);
 					difference = difference.abs();
 					boolean ok = difference.compareTo(maxTolerance) <= 0;
-					log.info("Difference=" + getPriceMatchDifference()
-							+ ", Max=" + maxTolerance + " => " + ok);
+					log.info("Difference=" + getPriceMatchDifference() + ", Max=" + maxTolerance + " => " + ok);
 					setIsApproved(ok);
 				}
 			}
@@ -805,7 +701,7 @@ public class MMatchPO extends X_M_MatchPO
 	{
 		// Order Delivered/Invoiced
 		// (Reserved in VMatch and MInOut.completeIt)
-		if (success && getC_OrderLine_ID() != 0)
+		if (success && getC_OrderLine_ID() > 0)
 		{
 			// AZ Goodwill
 			deleteMatchPOCostDetail();
@@ -1036,8 +932,8 @@ public class MMatchPO extends X_M_MatchPO
 							.orgId(orderLine.getAD_Org_ID())
 							.productId(getM_Product_ID())
 							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
-							.documentRef(CostingDocumentRef.ofPurchaseOrderLineId(orderLine.getC_OrderLine_ID()))
-							.costElementId(0) // no cost element
+							.documentRef(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()))
+							.costElementId(0) // auto
 							.amt(tAmt)
 							.qty(tQty)
 							.description(orderLine.getDescription())
@@ -1050,23 +946,6 @@ public class MMatchPO extends X_M_MatchPO
 	private void deleteMatchPOCostDetail()
 	{
 		final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
-
-		final BigDecimal qty = getQty();
-
-		// Get Account Schemas to delete MCostDetail
-		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID()))
-		{
-			if (as.isSkipOrg(getAD_Org_ID()))
-			{
-				continue;
-			}
-
-			final CostDetailQuery costDetailQuery = CostDetailQuery.builder()
-					.acctSchemaId(as.getC_AcctSchema_ID())
-					.documentRef(CostingDocumentRef.ofPurchaseOrderLineId(getC_OrderLine_ID()))
-					.attributeSetInstanceId(getM_AttributeSetInstance_ID())
-					.build();
-			costDetailService.reversePartialQty(costDetailQuery, qty);
-		}
+		costDetailService.reverseAndDeleteForDocument(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()));
 	}
 }	// MMatchPO

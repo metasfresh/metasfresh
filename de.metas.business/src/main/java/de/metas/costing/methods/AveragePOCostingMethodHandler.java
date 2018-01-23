@@ -47,7 +47,7 @@ import de.metas.currency.ICurrencyBL;
 public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	@Override
-	protected I_M_CostDetail createCostForPurchaseOrderLine(final CostDetailCreateRequest request)
+	protected I_M_CostDetail createCostForMatchPO(final CostDetailCreateRequest request)
 	{
 		return createCostDefaultImpl(request);
 	}
@@ -55,12 +55,13 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected I_M_CostDetail createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
+		final CurrentCost currentCosts = getCurrentCost(request);
 		// TODO Auto-generated method stub
 		return super.createOutboundCostDefaultImpl(request);
 	}
 
 	@Override
-	protected void processPurchaseOrderLine(final CostDetailEvent event, final CurrentCost cost)
+	protected void processMatchPO(final CostDetailEvent event, final CurrentCost cost)
 	{
 		cost.addWeightedAverage(event.getAmt(), event.getQty());
 	}

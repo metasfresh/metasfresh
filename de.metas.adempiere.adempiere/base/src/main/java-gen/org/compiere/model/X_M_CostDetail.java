@@ -15,7 +15,7 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1863164494L;
+	private static final long serialVersionUID = -1822431918L;
 
     /** Standard Constructor */
     public X_M_CostDetail (Properties ctx, int M_CostDetail_ID, String trxName)
@@ -473,6 +473,43 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	public int getM_InventoryLine_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_InventoryLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_MatchPO getM_MatchPO() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_MatchPO_ID, org.compiere.model.I_M_MatchPO.class);
+	}
+
+	@Override
+	public void setM_MatchPO(org.compiere.model.I_M_MatchPO M_MatchPO)
+	{
+		set_ValueFromPO(COLUMNNAME_M_MatchPO_ID, org.compiere.model.I_M_MatchPO.class, M_MatchPO);
+	}
+
+	/** Set Abgleich Bestellung.
+		@param M_MatchPO_ID 
+		Match Purchase Order to Shipment/Receipt and Invoice
+	  */
+	@Override
+	public void setM_MatchPO_ID (int M_MatchPO_ID)
+	{
+		if (M_MatchPO_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_MatchPO_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_MatchPO_ID, Integer.valueOf(M_MatchPO_ID));
+	}
+
+	/** Get Abgleich Bestellung.
+		@return Match Purchase Order to Shipment/Receipt and Invoice
+	  */
+	@Override
+	public int getM_MatchPO_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_MatchPO_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

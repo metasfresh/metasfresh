@@ -37,8 +37,10 @@ import org.compiere.model.MTax;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
 
 /**
@@ -54,6 +56,8 @@ import de.metas.order.IOrderLineBL;
  */
 public class Doc_Order extends Doc
 {
+	private static final Logger logger = LogManager.getLogger(Doc_Order.class);
+
 	/**
 	 * Constructor
 	 * 
@@ -89,7 +93,7 @@ public class Doc_Order extends Doc
 		// Contained Objects
 		m_taxes = loadTaxes();
 		p_lines = loadLines(order);
-		// log.debug( "Lines=" + p_lines.length + ", Taxes=" + m_taxes.length);
+		// logger.debug( "Lines=" + p_lines.length + ", Taxes=" + m_taxes.length);
 		return null;
 	}   // loadDocumentDetails
 
@@ -130,7 +134,7 @@ public class Doc_Order extends Doc
 				if (!tax.isZeroTax())
 				{
 					BigDecimal LineNetAmtTax = tax.calculateTax(LineNetAmt, true, getStdPrecision());
-					log.debug("LineNetAmt=" + LineNetAmt + " - Tax=" + LineNetAmtTax);
+					logger.debug("LineNetAmt=" + LineNetAmt + " - Tax=" + LineNetAmtTax);
 					LineNetAmt = LineNetAmt.subtract(LineNetAmtTax);
 					for (int t = 0; t < m_taxes.length; t++)
 					{
@@ -209,7 +213,7 @@ public class Doc_Order extends Doc
 		}
 		catch (Exception e)
 		{
-			log.error(sql, e);
+			logger.error(sql, e);
 		}
 		finally
 		{
@@ -262,7 +266,7 @@ public class Doc_Order extends Doc
 		}
 		catch (SQLException e)
 		{
-			log.error(sql, e);
+			logger.error(sql, e);
 		}
 		finally
 		{
@@ -316,11 +320,11 @@ public class Doc_Order extends Doc
 		if (retValue.signum() != 0		// Sum of Cost(vs. Price) in lines may not add up
 				&& getDocumentType().equals(DOCTYPE_POrder))  	// PO
 		{
-			log.debug(toString() + " Balance=" + retValue + sb.toString() + " (ignored)");
+			logger.debug(toString() + " Balance=" + retValue + sb.toString() + " (ignored)");
 			retValue = Env.ZERO;
 		}
 		else
-			log.debug(toString() + " Balance=" + retValue + sb.toString());
+			logger.debug(toString() + " Balance=" + retValue + sb.toString());
 		return retValue;
 	}   // getBalance
 
@@ -374,7 +378,7 @@ public class Doc_Order extends Doc
 				if (offset == null)
 				{
 					p_Error = "@NotFound@ @CommitmentOffset_Acct@";
-					log.error(p_Error);
+					logger.error(p_Error);
 					return null;
 				}
 				fact.createLine(null, offset,
@@ -408,7 +412,7 @@ public class Doc_Order extends Doc
 					if (offset == null)
 					{
 						p_Error = "@NotFound@ @CommitmentOffset_Acct@";
-						log.error(p_Error);
+						logger.error(p_Error);
 						return null;
 					}
 					fact.createLine(null, offset,
@@ -443,7 +447,7 @@ public class Doc_Order extends Doc
 				if (offset == null)
 				{
 					p_Error = "@NotFound@ @CommitmentOffsetSales_Acct@";
-					log.error(p_Error);
+					logger.error(p_Error);
 					return null;
 				}
 				fact.createLine(null, offset,
@@ -488,7 +492,7 @@ public class Doc_Order extends Doc
 						+ " AND o.C_Order_ID=")
 				.append(get_ID()).append(")");
 		int no = DB.executeUpdate(sql.toString(), getTrxName());
-		log.debug("Updated=" + no);
+		logger.debug("Updated=" + no);
 	}	// updateProductPO
 
 	/**
@@ -558,7 +562,7 @@ public class Doc_Order extends Doc
 					if (!tax.isZeroTax())
 					{
 						BigDecimal LineNetAmtTax = tax.calculateTax(LineNetAmt, true, precision);
-						s_log.debug("LineNetAmt=" + LineNetAmt + " - Tax=" + LineNetAmtTax);
+						logger.debug("LineNetAmt=" + LineNetAmt + " - Tax=" + LineNetAmtTax);
 						LineNetAmt = LineNetAmt.subtract(LineNetAmtTax);
 						BigDecimal PriceListTax = tax.calculateTax(PriceList, true, precision);
 						PriceList = PriceList.subtract(PriceListTax);
@@ -571,7 +575,7 @@ public class Doc_Order extends Doc
 		}
 		catch (Exception e)
 		{
-			s_log.error(sql, e);
+			logger.error(sql, e);
 		}
 		finally
 		{
@@ -615,7 +619,7 @@ public class Doc_Order extends Doc
 			else if (C_Currency_ID != line.getC_Currency_ID())
 			{
 				doc.p_Error = "Different Currencies of Order Lines";
-				s_log.error(doc.p_Error);
+				logger.error(doc.p_Error);
 				return null;
 			}
 			BigDecimal cost = line.getAmtSource().multiply(multiplier);
@@ -631,7 +635,7 @@ public class Doc_Order extends Doc
 		if (offset == null)
 		{
 			doc.p_Error = "@NotFound@ @CommitmentOffset_Acct@";
-			s_log.error(doc.p_Error);
+			logger.error(doc.p_Error);
 			return null;
 		}
 		fact.createLine(null, offset,
@@ -701,7 +705,7 @@ public class Doc_Order extends Doc
 					if (!tax.isZeroTax())
 					{
 						BigDecimal LineNetAmtTax = tax.calculateTax(LineNetAmt, true, precision);
-						s_log.debug("LineNetAmt=" + LineNetAmt + " - Tax=" + LineNetAmtTax);
+						logger.debug("LineNetAmt=" + LineNetAmt + " - Tax=" + LineNetAmtTax);
 						LineNetAmt = LineNetAmt.subtract(LineNetAmtTax);
 						BigDecimal PriceListTax = tax.calculateTax(PriceList, true, precision);
 						PriceList = PriceList.subtract(PriceListTax);
@@ -714,7 +718,7 @@ public class Doc_Order extends Doc
 		}
 		catch (Exception e)
 		{
-			s_log.error(sql, e);
+			logger.error(sql, e);
 		}
 		finally
 		{
@@ -758,7 +762,7 @@ public class Doc_Order extends Doc
 			else if (C_Currency_ID != line.getC_Currency_ID())
 			{
 				doc.p_Error = "Different Currencies of Order Lines";
-				s_log.error(doc.p_Error);
+				logger.error(doc.p_Error);
 				return null;
 			}
 			BigDecimal cost = line.getAmtSource().multiply(multiplier);
@@ -774,7 +778,7 @@ public class Doc_Order extends Doc
 		if (offset == null)
 		{
 			doc.p_Error = "@NotFound@ @CommitmentOffsetSales_Acct@";
-			s_log.error(doc.p_Error);
+			logger.error(doc.p_Error);
 			return null;
 		}
 		fact.createLine(null, offset,

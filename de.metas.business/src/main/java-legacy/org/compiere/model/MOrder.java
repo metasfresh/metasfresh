@@ -2446,10 +2446,11 @@ public class MOrder extends X_C_Order implements IDocument
 			// delete Cost Detail if the Matched PO has been deleted
 			if (mPO.isEmpty())
 			{
+				// FIXME: costs shall be deleted before M_MatchPO is deleted
 				costDetailRepository
 						.delete(CostDetailQuery.builder()
 								.acctSchemaId(as.getC_AcctSchema_ID())
-								.documentRef(CostingDocumentRef.ofPurchaseOrderLineId(line.getC_OrderLine_ID()))
+								.documentRef(CostingDocumentRef.ofMatchPOId(0)) // FIXME
 								.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 								.build());
 			}
