@@ -228,7 +228,6 @@ class TablePagination extends Component {
 
     const selectedWholePage = selected && selected.length === rowLength;
     const isShowSelectAllItems = size > pageLength;
-    console.log('isShowSelectAllItems', isShowSelectAllItems);
     return (
       <div className="hidden-sm-down">
         <div>
