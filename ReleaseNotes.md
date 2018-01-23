@@ -23,6 +23,8 @@ Here come the actual release notes:
     * New Windows for Reference No and Reference No Type maintenance.
 
 * metasfresh-webui-frontend
+  * [#1252](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1252) Select all x items shall not be available when there is only one page of entries
+    * Improved Handling of the select all functioanlity in Grid View. Now only showing toggle option when more than 1 page.
   * [#1504](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1504) Make a difference between internal date format (ISO) and user friendly locale date
     * Improved Handlign of Date Widget reponses. Now distiguishing between Date for API and Date presented to the user.
   * [#1514](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1514) Filter Dropdown dynamically extend height when dropdown list selected
