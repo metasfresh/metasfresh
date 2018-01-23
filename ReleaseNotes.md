@@ -14,13 +14,26 @@ Here come the actual release notes:
 **release for week 2018-05**
 
 ## Features
-* metasfresh-webui-Frontend
+* metasfresh
   * [#3313](https://github.com/metasfresh/metasfresh/issues/3313) Webui Window Design: Improve window Field Group
     * New Window in WebUI for Field Group maintenance. This window can be used by System Admins.
   * [#3329](https://github.com/metasfresh/metasfresh/issues/3329) Webui Window Design: Translate all in window Event store
     * Improved Window, Tab and Fields translations.
   * [#3366](https://github.com/metasfresh/metasfresh/issues/3366) Webui Window: Create window for ReferenceNo and Reference Type
     * New Windows for Reference No and Reference No Type maintenance.
+
+* metasfresh-webui-frontend
+  * [#1252](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1252) Select all x items shall not be available when there is only one page of entries
+    * Improved Handling of the select all functioanlity in Grid View. Now only showing toggle option when more than 1 page.
+  * [#1504](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1504) Make a difference between internal date format (ISO) and user friendly locale date
+    * Improved Handlign of Date Widget reponses. Now distiguishing between Date for API and Date presented to the user.
+  * [#1514](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1514) Filter Dropdown dynamically extend height when dropdown list selected
+    * Improved Dropdown behavior. Now showing a complete dropdown List in Filters also when at the bottom of a Filter list area.
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1518](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1518) Create purchase orders: error in console
+    * Fixes a Bug that prevented the creation of Purchase orders from Sales Orders to be done without errors.
 
 
 # metasfresh 5.42 (2018-04)
