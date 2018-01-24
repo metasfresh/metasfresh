@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -128,7 +129,7 @@ class PurchaseRowsLoader
 		salesOrderLines.checkAvailabilityAsync((availabilityCheckResult, throwable) -> {
 
 			handleResultForAsyncAvailabilityCheck(availabilityCheckResult);
-			handleThrowableForAsyncAvailabilityCheck(throwable);
+			handleThrowableForAsyncAvailabilityCheck(Util.coalesce(throwable.getCause(), throwable));
 		});
 	}
 

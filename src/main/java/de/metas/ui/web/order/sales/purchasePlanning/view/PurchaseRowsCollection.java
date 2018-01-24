@@ -125,12 +125,8 @@ class PurchaseRowsCollection
 		{
 			return topLevelRowsById.values().stream();
 		}
-		else
-		{
-			return rowIds.stream()
-					.map(PurchaseRowId::fromDocumentId)
-					.map(this::getToplevelRowById);
-		}
+
+		return rowIds.stream().map(this::getById);
 	}
 
 	private void updateRow(@NonNull final PurchaseRowId rowId, @NonNull final PurchaseGroupRowEditor editor)
