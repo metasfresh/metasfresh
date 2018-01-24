@@ -21,6 +21,8 @@ Here come the actual release notes:
     * Improved Window, Tab and Fields translations.
   * [#3366](https://github.com/metasfresh/metasfresh/issues/3366) Webui Window: Create window for ReferenceNo and Reference Type
     * New Windows for Reference No and Reference No Type maintenance.
+  * [#3377](https://github.com/metasfresh/metasfresh/issues/3377) Add an ID to C_ReferenceNo_Type_Table
+    * Improvement of the Reference No Type Table, now having a Primary Key.
 
 * metasfresh-webui-frontend
   * [#1252](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1252) Select all x items shall not be available when there is only one page of entries
