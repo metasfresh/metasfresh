@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -288,28 +287,14 @@ public final class HUEditorRow implements IViewRow
 		return includedRows;
 	}
 
-	/** @return a stream of this row and all it's included rows recursively */
-	public Stream<HUEditorRow> streamRecursive()
-	{
-		return streamRecursive(this);
-	}
-
-	/** @return a stream of given row and all it's included rows recursively */
-	private static Stream<HUEditorRow> streamRecursive(final HUEditorRow row)
-	{
-		return row.getIncludedRows()
-				.stream()
-				.map(includedRow -> streamRecursive(includedRow))
-				.reduce(Stream.of(row), Stream::concat);
-	}
-
 	public Optional<HUEditorRow> getIncludedRowById(final DocumentId rowId)
 	{
 		return streamRecursive()
 				.filter(row -> rowId.equals(row.getId()))
+				.map(row -> (HUEditorRow)row)
 				.findFirst();
 	}
-	
+
 	public boolean hasDirectChild(final DocumentId childId)
 	{
 		return getIncludedRows()
@@ -737,10 +722,10 @@ public final class HUEditorRow implements IViewRow
 			return ImmutableList.copyOf(includedRows);
 		}
 	}
-	
+
 	@lombok.Builder
 	@lombok.Value
-	public static class HUEditorRowHierarchy 
+	public static class HUEditorRowHierarchy
 	{
 		@NonNull private final HUEditorRow cuRow;
 		@Nullable private final HUEditorRow parentRow;

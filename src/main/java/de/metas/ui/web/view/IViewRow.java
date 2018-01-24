@@ -3,6 +3,7 @@ package de.metas.ui.web.view;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.adempiere.util.NumberUtils;
 
@@ -123,4 +124,14 @@ public interface IViewRow
 	/** @return text to be displayed if {@link #isSingleColumn()} */
 	default ITranslatableString getSingleColumnCaption() { return ITranslatableString.empty(); }
 	// @formatter:on
+
+
+	/** @return a stream of given row and all it's included rows recursively */
+	public default Stream<IViewRow> streamRecursive()
+	{
+		return this.getIncludedRows()
+				.stream()
+				.map(includedRow -> includedRow.streamRecursive())
+				.reduce(Stream.of(this), Stream::concat);
+	}
 }

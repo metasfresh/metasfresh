@@ -69,7 +69,7 @@ interface HUEditorViewBuffer
 
 	/**
 	 * Stream all rows (including children) which match any of given <code>rowIds</code>.
-	 * 
+	 *
 	 * If a rowId is included in another row (which will be returned by this method), then that row will be excluded.
 	 * e.g.
 	 * Consider having following structure: rowId=1 which includes rowId=2 which includes rowId=3.
@@ -78,7 +78,7 @@ interface HUEditorViewBuffer
 	 * <li>When this method will be called with rowIds={3}, rowId=3 will be returned because it's not included in any of the rowIds we asked for.
 	 * <li>
 	 * </ul>
-	 * 
+	 *
 	 */
 	Stream<HUEditorRow> streamByIdsExcludingIncludedRows(HUEditorRowFilter filter);
 
@@ -93,9 +93,10 @@ interface HUEditorViewBuffer
 		final HUEditorRow topLevelRow = getById(topLevelRowId.toDocumentId());
 		return topLevelRow
 				.streamRecursive()
+				.map(row -> (HUEditorRow)row)
 				.filter(row -> row.hasDirectChild(childId))
 				.findFirst();
-			
+
 	}
 
 	/** @return SQL where clause using fully qualified table name (i.e. not table alias) */

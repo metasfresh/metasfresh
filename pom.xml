@@ -104,12 +104,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.vertical.pharma</groupId>
-			<artifactId>metasfresh-pharma</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 			<version>${metasfresh.version}</version>
@@ -207,11 +201,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<scope>test</scope>
-		</dependency>
+		
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>

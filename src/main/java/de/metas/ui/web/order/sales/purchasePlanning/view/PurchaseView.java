@@ -11,7 +11,7 @@ import org.compiere.util.Evaluatee;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IEditableView;
@@ -29,6 +29,7 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 
 /*
  * #%L
@@ -61,14 +62,17 @@ public class PurchaseView implements IEditableView
 
 	private final ViewId viewId;
 	private final PurchaseRowsCollection rows;
+	private final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
 
 	@Builder
 	private PurchaseView(
 			@NonNull final ViewId viewId,
-			@NonNull final PurchaseRowsSupplier rowsSupplier)
+			@NonNull final PurchaseRowsSupplier rowsSupplier,
+			@Singular final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
 		this.viewId = viewId;
-		rows = PurchaseRowsCollection.ofSupplier(rowsSupplier);
+		this.rows = PurchaseRowsCollection.ofSupplier(rowsSupplier);
+		this.additionalRelatedProcessDescriptors = ImmutableList.copyOf(additionalRelatedProcessDescriptors);
 	}
 
 	@Override
@@ -92,7 +96,7 @@ public class PurchaseView implements IEditableView
 	@Override
 	public String getTableNameOrNull(final DocumentId documentId)
 	{
-		return I_C_OLCand.Table_Name;
+		return null;
 	}
 
 	@Override
@@ -149,16 +153,26 @@ public class PurchaseView implements IEditableView
 	}
 
 	@Override
-	public IViewRow getById(final DocumentId rowId) throws EntityNotFoundException
+	public PurchaseRow getById(final DocumentId rowId) throws EntityNotFoundException
 	{
-		final PurchaseRowId olCandRowId = PurchaseRowId.fromDocumentId(rowId);
-		if (olCandRowId.isGroupRowId())
+		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(rowId);
+		if (purchaseRowId.isGroupRowId())
 		{
-			return rows.getById(olCandRowId);
+			return rows
+					.getById(purchaseRowId);
+		}
+		else if (purchaseRowId.isLineRowId())
+		{
+			return rows
+					.getById(purchaseRowId.toGroupRowId())
+					.getIncludedRowById(purchaseRowId);
 		}
 		else
 		{
-			return rows.getById(olCandRowId.toGroupRowId()).getIncludedRowById(olCandRowId);
+			return rows
+					.getById(purchaseRowId.toGroupRowId())
+					.getIncludedRowById(purchaseRowId.toLineRowId())
+					.getIncludedRowById(purchaseRowId);
 		}
 	}
 
@@ -241,5 +255,11 @@ public class PurchaseView implements IEditableView
 	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return additionalRelatedProcessDescriptors;
 	}
 }

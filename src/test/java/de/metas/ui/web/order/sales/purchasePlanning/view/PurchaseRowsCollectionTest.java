@@ -1,13 +1,14 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
-import de.metas.ui.web.pporder.PPOrderLineType;
-import de.metas.ui.web.view.IViewRowType;
+import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,28 +26,18 @@ import de.metas.ui.web.view.IViewRowType;
  * #L%
  */
 
-public enum PurchaseRowType implements IViewRowType
+public class PurchaseRowsCollectionTest
 {
-	GROUP(PPOrderLineType.MainProduct.getIconName()), //
-	LINE(PPOrderLineType.BOMLine_Component.getIconName()), //
-	AVAILABILITY_DETAIL(PPOrderLineType.BOMLine_ByCoProduct.getIconName());
 
-	private final String iconName;
-
-	PurchaseRowType(final String iconName)
+	@Test
+	public void test()
 	{
-		this.iconName = iconName;
+		final PurchaseRow purchaseRow = PurchaseRow.builder()
+				.rowId(PurchaseRowId.groupId(20))
+
+				.build();
+
+		PurchaseRowsCollection.ofSupplier(() -> ImmutableList.of(purchaseRow));
 	}
 
-	@Override
-	public String getName()
-	{
-		return iconName;
-	}
-
-	@Override
-	public String getIconName()
-	{
-		return iconName;
-	}
 }

@@ -3,11 +3,16 @@ package de.metas.ui.web.order.sales.purchasePlanning.view;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 
+import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult.Type;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 
 /*
@@ -40,13 +45,36 @@ public final class PurchaseRowId
 	{
 		final int vendorBPartnerId = -1;
 		final DocumentId documentId = null;
-		return new PurchaseRowId(salesOrderLineId, vendorBPartnerId, documentId);
+		final Type availabilityType = null;
+
+		return new PurchaseRowId(salesOrderLineId, vendorBPartnerId, availabilityType, documentId);
 	}
 
 	public static PurchaseRowId lineId(final int salesOrderLineId, final int vendorBPartnerId)
 	{
 		final DocumentId documentId = null;
-		return new PurchaseRowId(salesOrderLineId, vendorBPartnerId, documentId);
+		final Type availabilityType = null;
+
+		return new PurchaseRowId(
+				salesOrderLineId,
+				vendorBPartnerId,
+				availabilityType,
+				documentId);
+	}
+
+	public PurchaseRowId withAvailability(
+			final Type availabilityType)
+	{
+		Check.errorUnless(this.isLineRowId(),
+				"The method withAvailabilityId may only be invoked on a line row id; this={}", this);
+
+		final DocumentId documentId = null;
+
+		return new PurchaseRowId(
+				salesOrderLineId,
+				vendorBPartnerId,
+				availabilityType,
+				documentId);
 	}
 
 	public static PurchaseRowId fromDocumentId(final DocumentId documentId)
@@ -64,7 +92,7 @@ public final class PurchaseRowId
 	{
 		final List<String> parts = PARTS_SPLITTER.splitToList(json);
 		final int partsCount = parts.size();
-		if (partsCount < 1 || partsCount > 2)
+		if (partsCount < 1 || partsCount > 3)
 		{
 			throw new AdempiereException("Invalid format: " + json);
 		}
@@ -72,8 +100,10 @@ public final class PurchaseRowId
 		try
 		{
 			final int salesOrderLineId = Integer.parseInt(parts.get(0));
-			final int vendorBPartnerId = partsCount == 2 ? Integer.parseInt(parts.get(1)) : -1;
-			return new PurchaseRowId(salesOrderLineId, vendorBPartnerId, documentId);
+			final int vendorBPartnerId = partsCount >= 2 ? Integer.parseInt(parts.get(1)) : -1;
+			final Type availabilityType = partsCount >= 3 ? Type.valueOf(parts.get(2)) : null;
+
+			return new PurchaseRowId(salesOrderLineId, vendorBPartnerId, availabilityType, documentId);
 		}
 		catch (Exception ex)
 		{
@@ -81,15 +111,26 @@ public final class PurchaseRowId
 		}
 	}
 
-	private static final String PARTS_SEPARATOR = "_";
+	@VisibleForTesting
+	static final String PARTS_SEPARATOR = "_";
 	private static final Splitter PARTS_SPLITTER = Splitter.on(PARTS_SEPARATOR).omitEmptyStrings();
 
+	@Getter
 	private final int salesOrderLineId;
+
+	@Getter(AccessLevel.PACKAGE) // visible for testing
 	private final int vendorBPartnerId;
+
+	@Getter(AccessLevel.PACKAGE) // visible for testing
+	private final Type availabilityType;
 
 	private transient DocumentId _documentId; // lazy
 
-	private PurchaseRowId(final int salesOrderLineId, final int vendorBPartnerId, final DocumentId documentId)
+	private PurchaseRowId(
+			final int salesOrderLineId,
+			final int vendorBPartnerId,
+			final Type availabilityType,
+			final DocumentId documentId)
 	{
 		if (salesOrderLineId <= 0)
 		{
@@ -97,44 +138,68 @@ public final class PurchaseRowId
 		}
 		this.salesOrderLineId = salesOrderLineId;
 		this.vendorBPartnerId = vendorBPartnerId > 0 ? vendorBPartnerId : -1;
+		this.availabilityType = availabilityType;
+
 		this._documentId = documentId;
-	}
-	
-	public int getSalesOrderLineId()
-	{
-		return salesOrderLineId;
 	}
 
 	public DocumentId toDocumentId()
 	{
 		if (_documentId == null)
 		{
+			final StringBuilder sb = new StringBuilder();
+			sb.append(salesOrderLineId);
 			if (vendorBPartnerId > 0)
 			{
-				_documentId = DocumentId.ofString(salesOrderLineId + PARTS_SEPARATOR + vendorBPartnerId);
+				sb.append(PARTS_SEPARATOR);
+				sb.append(vendorBPartnerId);
 			}
-			else
+			if (availabilityType != null)
 			{
-				_documentId = DocumentId.of(salesOrderLineId);
+				sb.append(PARTS_SEPARATOR);
+				sb.append(availabilityType.toString());
 			}
+			_documentId = DocumentId.ofString(sb.toString());
 		}
 		return _documentId;
 	}
 
 	public PurchaseRowId toGroupRowId()
 	{
-		if (vendorBPartnerId <= 0)
+		if (isGroupRowId())
 		{
 			return this;
 		}
 		else
 		{
-			return new PurchaseRowId(salesOrderLineId, -1, null);
+			return new PurchaseRowId(salesOrderLineId, -1, null, null);
 		}
 	}
-	
+
+	public PurchaseRowId toLineRowId()
+	{
+		if (isLineRowId())
+		{
+			return this;
+		}
+		else
+		{
+			return new PurchaseRowId(salesOrderLineId, vendorBPartnerId, null, null);
+		}
+	}
+
 	public boolean isGroupRowId()
 	{
 		return vendorBPartnerId <= 0;
+	}
+
+	public boolean isLineRowId()
+	{
+		return vendorBPartnerId > 0 && availabilityType == null;
+	}
+
+	public boolean isAvailabilityRowId()
+	{
+		return availabilityType != null;
 	}
 }
