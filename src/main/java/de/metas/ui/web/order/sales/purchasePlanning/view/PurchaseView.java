@@ -155,25 +155,7 @@ public class PurchaseView implements IEditableView
 	@Override
 	public PurchaseRow getById(final DocumentId rowId) throws EntityNotFoundException
 	{
-		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(rowId);
-		if (purchaseRowId.isGroupRowId())
-		{
-			return rows
-					.getById(purchaseRowId);
-		}
-		else if (purchaseRowId.isLineRowId())
-		{
-			return rows
-					.getById(purchaseRowId.toGroupRowId())
-					.getIncludedRowById(purchaseRowId);
-		}
-		else
-		{
-			return rows
-					.getById(purchaseRowId.toGroupRowId())
-					.getIncludedRowById(purchaseRowId.toLineRowId())
-					.getIncludedRowById(purchaseRowId);
-		}
+		return rows.getById(rowId);
 	}
 
 	@Override
@@ -221,7 +203,7 @@ public class PurchaseView implements IEditableView
 	@Override
 	public Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
 	{
-		return rows.streamByIds(rowIds);
+		return rows.streamTopLevelRowsByIds(rowIds);
 	}
 
 	public List<PurchaseRow> getRows()

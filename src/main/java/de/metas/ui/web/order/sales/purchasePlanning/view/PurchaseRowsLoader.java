@@ -7,6 +7,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_C_OrderLine;
 
 import com.google.common.collect.ImmutableList;
@@ -14,6 +16,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityException;
 import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
@@ -106,10 +109,16 @@ class PurchaseRowsLoader
 	{
 		Check.assumeNotNull(purchaseCandidate2purchaseRow, "purchaseCandidate2purchaseRow was already loaded via load(); this={}", this);
 
-		final Multimap<PurchaseCandidate, AvailabilityResult> availabilityCheckResult = //
-				salesOrderLines.checkAvailability();
-
-		handleResultForAsyncAvailabilityCheck(availabilityCheckResult);
+		try
+		{
+			final Multimap<PurchaseCandidate, AvailabilityResult> availabilityCheckResult = //
+					salesOrderLines.checkAvailability();
+			handleResultForAsyncAvailabilityCheck(availabilityCheckResult);
+		}
+		catch (final Throwable throwable)
+		{
+			handleThrowableForAsyncAvailabilityCheck(throwable);
+		}
 	}
 
 	public void createAndAddAvailabilityResultRowsAsync()
@@ -118,14 +127,18 @@ class PurchaseRowsLoader
 
 		salesOrderLines.checkAvailabilityAsync((availabilityCheckResult, throwable) -> {
 
-			// TODO: handle throwable by displaying a line with dedicated error-message, or by displaying an error popup
 			handleResultForAsyncAvailabilityCheck(availabilityCheckResult);
+			handleThrowableForAsyncAvailabilityCheck(throwable);
 		});
 	}
 
 	private void handleResultForAsyncAvailabilityCheck(
-			@NonNull final Multimap<PurchaseCandidate, AvailabilityResult> availabilityCheckResult)
+			@Nullable final Multimap<PurchaseCandidate, AvailabilityResult> availabilityCheckResult)
 	{
+		if (availabilityCheckResult == null)
+		{
+			return;
+		}
 		final Set<Entry<PurchaseCandidate, Collection<AvailabilityResult>>> entrySet = //
 				availabilityCheckResult.asMap().entrySet();
 
@@ -134,22 +147,60 @@ class PurchaseRowsLoader
 		for (final Entry<PurchaseCandidate, Collection<AvailabilityResult>> entry : entrySet)
 		{
 			final PurchaseRow purchaseRowToAugment = purchaseCandidate2purchaseRow.get(entry.getKey());
-			final ArrayList<PurchaseRow> availabilityResultRows = new ArrayList<>();
+			final ImmutableList.Builder<PurchaseRow> availabilityResultRows = ImmutableList.builder();
 
 			for (final AvailabilityResult availabilityResult : entry.getValue())
 			{
-				final PurchaseRow availabilityResultRow = purchaseRowsFactory
-						.rowFromAvailabilityResultBuilder()
+				final PurchaseRow availabilityResultRow = purchaseRowsFactory.rowFromAvailabilityResultBuilder()
 						.parentRow(purchaseRowToAugment)
-						.availabilityResult(availabilityResult)
-						.build();
+						.availabilityResult(availabilityResult).build();
 
 				availabilityResultRows.add(availabilityResultRow);
 			}
-			purchaseRowToAugment.setAvailabilityInfoRows(availabilityResultRows);
+			purchaseRowToAugment.setAvailabilityInfoRows(availabilityResultRows.build());
 			changedRowIds.add(purchaseRowToAugment.getId());
 		}
 
+		notifyViewOfChanges(changedRowIds);
+	}
+
+	private void handleThrowableForAsyncAvailabilityCheck(@Nullable final Throwable throwable)
+	{
+		if (throwable == null)
+		{
+			return;
+		}
+		if (throwable instanceof AvailabilityException)
+		{
+			final AvailabilityException availabilityException = (AvailabilityException)throwable;
+
+			final List<DocumentId> changedRowIds = new ArrayList<>();
+
+			final Set<Entry<PurchaseCandidate, Throwable>> entrySet = availabilityException.getPurchaseCandidate2Throwable().entrySet();
+			for (final Entry<PurchaseCandidate, Throwable> purchaseCandidate2throwable : entrySet)
+			{
+				final PurchaseRow purchaseRowToAugment = purchaseCandidate2purchaseRow.get(purchaseCandidate2throwable.getKey());
+
+				final PurchaseRow availabilityResultRow = purchaseRowsFactory
+						.rowFromThrowableBuilder()
+						.parentRow(purchaseRowToAugment)
+						.throwable(purchaseCandidate2throwable.getValue())
+						.build();
+
+				purchaseRowToAugment.setAvailabilityInfoRows(ImmutableList.of(availabilityResultRow));
+				changedRowIds.add(purchaseRowToAugment.getId());
+			}
+
+			notifyViewOfChanges(changedRowIds);
+		}
+		else
+		{
+			// TODO: dispaly an error-message in the webui
+		}
+	}
+
+	private void notifyViewOfChanges(final List<DocumentId> changedRowIds)
+	{
 		final IView view = viewSupplier.get();
 		if (view != null)
 		{
@@ -157,11 +208,5 @@ class PurchaseRowsLoader
 					.getCurrentOrAutoflush()
 					.collectRowsChanged(view, DocumentIdsSelection.of(changedRowIds));
 		}
-	}
-
-	public void waitForAvilabilityQueryResult()
-	{
-		// TODO Auto-generated method stub
-
 	}
 }

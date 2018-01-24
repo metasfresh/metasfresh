@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import de.metas.product.IProductBL;
 import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult;
+import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult.Type;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
@@ -116,13 +118,12 @@ public class PurchaseRowFactory
 			@NonNull PurchaseRow parentRow,
 			@NonNull final AvailabilityResult availabilityResult)
 	{
-
 		final String availability = !Check.isEmpty(availabilityResult.getAvailabilityText(), true)
 				? availabilityResult.getAvailabilityText()
 				: availabilityResult.getType().translate();
 
 		return parentRow.toBuilder()
-				.rowId(parentRow.getRowId().withAvailability(availabilityResult.getType()))
+				.rowId(parentRow.getRowId().withAvailability(availabilityResult.getType(), createRandomString()))
 				.salesOrderId(parentRow.getSalesOrderId())
 				.rowType(PurchaseRowType.AVAILABILITY_DETAIL)
 				.qtyToPurchase(availabilityResult.getQty())
@@ -130,6 +131,30 @@ public class PurchaseRowFactory
 				.uomOrAvailablility(availability)
 				.datePromised(availabilityResult.getDatePromised())
 				.build();
+	}
+
+	@Builder(builderMethodName = "rowFromThrowableBuilder", builderClassName = "RowFromThrowableBuilder")
+	private PurchaseRow buildRowFromFromThrowable(
+			@NonNull final PurchaseRow parentRow,
+			@NonNull final Throwable throwable)
+	{
+		return parentRow.toBuilder()
+				.rowId(parentRow.getRowId().withAvailability(Type.NOT_AVAILABLE, createRandomString()))
+				.salesOrderId(parentRow.getSalesOrderId())
+				.rowType(PurchaseRowType.AVAILABILITY_DETAIL)
+				.qtyToPurchase(BigDecimal.ZERO)
+				.readonly(true)
+				.uomOrAvailablility(throwable.getLocalizedMessage())
+				.datePromised(null)
+				.build();
+	}
+
+	private static String createRandomString()
+	{
+		final boolean includeLetters = true;
+		final boolean includeNumbers = true;
+
+		return RandomStringUtils.random(8, includeLetters, includeNumbers);
 	}
 
 	private static JSONLookupValue createProductLookupValue(final int productId)

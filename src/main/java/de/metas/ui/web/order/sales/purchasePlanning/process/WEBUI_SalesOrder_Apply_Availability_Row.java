@@ -1,5 +1,6 @@
 package de.metas.ui.web.order.sales.purchasePlanning.process;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -7,6 +8,7 @@ import java.util.Set;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ListMultimap;
@@ -16,6 +18,7 @@ import com.google.common.collect.Multimaps;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult.Type;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRow;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowId;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseView;
@@ -70,12 +73,6 @@ public class WEBUI_SalesOrder_Apply_Availability_Row
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private static boolean hasMultipleAvailabilityRowsPerLineRow(final Multimap<PurchaseRow, PurchaseRow> lineRows2availabilityRows)
-	{
-		return lineRows2availabilityRows.asMap().entrySet().stream()
-				.anyMatch(lineRow2availabilityRows -> lineRow2availabilityRows.getValue().size() > 1);
-	}
-
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -99,6 +96,13 @@ public class WEBUI_SalesOrder_Apply_Availability_Row
 				.collectRowsChanged(getView(), DocumentIdsSelection.of(documentIdsToUpdate));
 
 		return MSG_OK;
+	}
+
+	private static boolean hasMultipleAvailabilityRowsPerLineRow(
+			@NonNull final Multimap<PurchaseRow, PurchaseRow> lineRows2availabilityRows)
+	{
+		return lineRows2availabilityRows.asMap().entrySet().stream()
+				.anyMatch(lineRow2availabilityRows -> lineRow2availabilityRows.getValue().size() > 1);
 	}
 
 	public DocumentId updateLineAndGroupRow(
@@ -125,12 +129,21 @@ public class WEBUI_SalesOrder_Apply_Availability_Row
 		final PurchaseView view = getView();
 
 		final ListMultimap<PurchaseRow, PurchaseRow> lineRow2AvailabilityRows = getSelectedRowIds().stream()
-				.map(PurchaseRowId::fromDocumentId)
+
+				.map(PurchaseRowId::fromDocumentId) // map to PurchaseRowIds
 				.filter(PurchaseRowId::isAvailabilityRowId)
-				.map(availabilityRowId -> ImmutablePair.of(
-						view.getById(availabilityRowId.toLineRowId().toDocumentId()),
+				.filter(availabilityRowId -> availabilityRowId.getAvailabilityType().equals(Type.AVAILABLE))
+
+				.map(availabilityRowId -> ImmutablePair.of( // map to pair (availabilityRowId, availabilityRow)
+						availabilityRowId,
 						view.getById(availabilityRowId.toDocumentId())))
+				.filter(availabilityRowId2row -> Util.coalesce(availabilityRowId2row.getRight().getQtyToPurchase(), BigDecimal.ZERO).signum() > 0)
+
+				.map(availabilityRowId2row -> ImmutablePair.of( // map to pair (lineRow, availabilityRow)
+						view.getById(availabilityRowId2row.getLeft().toLineRowId().toDocumentId()),
+						availabilityRowId2row.getRight()))
 				.filter(lineRow2availabilityRow -> !lineRow2availabilityRow.getLeft().isProcessed())
+
 				.collect(Multimaps.toMultimap(
 						IPair::getLeft,
 						IPair::getRight,

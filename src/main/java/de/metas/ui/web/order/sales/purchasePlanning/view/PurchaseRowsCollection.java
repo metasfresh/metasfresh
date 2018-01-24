@@ -3,7 +3,6 @@ package de.metas.ui.web.order.sales.purchasePlanning.view;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -17,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import lombok.NonNull;
@@ -86,7 +86,27 @@ class PurchaseRowsCollection
 		return ImmutableList.copyOf(topLevelRowsById.values());
 	}
 
-	public PurchaseRow getById(@NonNull final PurchaseRowId rowId) throws EntityNotFoundException
+	public PurchaseRow getById(@NonNull final DocumentId rowId) throws EntityNotFoundException
+	{
+		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(rowId);
+		if (purchaseRowId.isGroupRowId())
+		{
+			return getToplevelRowById(purchaseRowId);
+		}
+		else if (purchaseRowId.isLineRowId())
+		{
+			return getToplevelRowById(purchaseRowId.toGroupRowId())
+					.getIncludedRowById(purchaseRowId);
+		}
+		else
+		{
+			return getToplevelRowById(purchaseRowId.toGroupRowId())
+					.getIncludedRowById(purchaseRowId.toLineRowId())
+					.getIncludedRowById(purchaseRowId);
+		}
+	}
+
+	private PurchaseRow getToplevelRowById(@NonNull final PurchaseRowId rowId) throws EntityNotFoundException
 	{
 		final PurchaseRow topLevelRow = topLevelRowsById.get(rowId);
 		if (topLevelRow != null)
@@ -94,19 +114,12 @@ class PurchaseRowsCollection
 			return topLevelRow;
 		}
 
-		final Optional<PurchaseRow> recursivelyFoundRow = topLevelRowsById.values().stream()
-				.flatMap(IViewRow::streamRecursive)
-				.filter(row -> row.getId().equals(rowId.toDocumentId()))
-				.map(row -> (PurchaseRow)row)
-				.findAny();
-
-		return recursivelyFoundRow
-				.orElseThrow(() -> new EntityNotFoundException("Row not found")
-						.appendParametersToMessage()
-						.setParameter("rowId", rowId));
+		throw new EntityNotFoundException("topLevelRow not found")
+				.appendParametersToMessage()
+				.setParameter("rowId", rowId);
 	}
 
-	public Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
+	public Stream<? extends IViewRow> streamTopLevelRowsByIds(final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isAll())
 		{
@@ -116,7 +129,7 @@ class PurchaseRowsCollection
 		{
 			return rowIds.stream()
 					.map(PurchaseRowId::fromDocumentId)
-					.map(this::getById);
+					.map(this::getToplevelRowById);
 		}
 	}
 
@@ -125,7 +138,7 @@ class PurchaseRowsCollection
 		topLevelRowsById.compute(rowId.toGroupRowId(), (groupRowId, groupRow) -> {
 			if (groupRow == null)
 			{
-				throw new EntityNotFoundException("Row not found").setParameter("rowId", groupRowId);
+				throw new EntityNotFoundException("Row not found").appendParametersToMessage().setParameter("rowId", groupRowId);
 			}
 
 			final PurchaseRow newGroupRow = groupRow.copy();

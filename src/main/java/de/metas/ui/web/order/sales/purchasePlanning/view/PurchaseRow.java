@@ -1,7 +1,6 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +105,6 @@ public class PurchaseRow implements IViewRow
 	private final IViewRowType rowType;
 
 	private ImmutableList<PurchaseRow> includedRows;
-	private ImmutableMap<PurchaseRowId, PurchaseRow> includedRowsByRowId;
 
 	@Getter
 	private final int purchaseCandidateId;
@@ -158,8 +156,8 @@ public class PurchaseRow implements IViewRow
 		{
 			throw new AdempiereException("Lines does not allow included rows");
 		}
-		this.includedRows = includedRows;
-		includedRowsByRowId = includedRows.stream().collect(ImmutableMap.toImmutableMap(PurchaseRow::getRowId, Function.identity()));
+
+		setIncludedRows(includedRows);
 
 		this.purchaseCandidateId = purchaseCandidateId > 0 ? purchaseCandidateId : -1;
 		this.orgId = orgId;
@@ -189,8 +187,7 @@ public class PurchaseRow implements IViewRow
 		this.qtyToPurchase = from.qtyToPurchase;
 		this.datePromised = from.datePromised;
 
-		this.includedRows = from.includedRows.stream().map(PurchaseRow::new).collect(ImmutableList.toImmutableList());
-		this.includedRowsByRowId = this.includedRows.stream().collect(ImmutableMap.toImmutableMap(PurchaseRow::getRowId, Function.identity()));
+		setIncludedRows(from.includedRows.stream().map(PurchaseRow::copy).collect(ImmutableList.toImmutableList()));
 
 		this.purchaseCandidateId = from.purchaseCandidateId;
 		this.orgId = from.orgId;
@@ -276,8 +273,11 @@ public class PurchaseRow implements IViewRow
 		return includedRows;
 	}
 
-	public PurchaseRow getIncludedRowById(final PurchaseRowId rowId)
+	public PurchaseRow getIncludedRowById(@NonNull final PurchaseRowId rowId)
 	{
+		final ImmutableMap<PurchaseRowId, PurchaseRow> includedRowsByRowId = this.includedRows.stream()
+				.collect(ImmutableMap.toImmutableMap(PurchaseRow::getRowId, Function.identity()));
+
 		final PurchaseRow row = includedRowsByRowId.get(rowId);
 		if (row == null)
 		{
@@ -375,7 +375,7 @@ public class PurchaseRow implements IViewRow
 		return warehouseId;
 	}
 
-	public void setAvailabilityInfoRows(@NonNull final Collection<PurchaseRow> availabilityResultRows)
+	public void setAvailabilityInfoRows(@NonNull final ImmutableList<PurchaseRow> availabilityResultRows)
 	{
 		Check.assume(rowType == PurchaseRowType.LINE,
 				"The method changeQtyToPurchase() is only allowed for line rows; this={}", this);
@@ -384,12 +384,14 @@ public class PurchaseRow implements IViewRow
 						availabilityResultRow.getRowType() == PurchaseRowType.AVAILABILITY_DETAIL,
 						"The method changeQtyToPurchase() is only allowed for availability detail rows; this={} ", this));
 
-		synchronized (this)
-		{
-			this.includedRows = ImmutableList.copyOf(availabilityResultRows);
-			this.includedRowsByRowId = this.includedRows.stream()
-					.collect(ImmutableMap.toImmutableMap(PurchaseRow::getRowId, Function.identity()));
-		}
+		setIncludedRows(availabilityResultRows);
 	}
 
+	private void setIncludedRows(final ImmutableList<PurchaseRow> includedRows)
+	{
+		final ImmutableList<DocumentId> distinctRowIds = includedRows.stream().map(PurchaseRow::getId).distinct().collect(ImmutableList.toImmutableList());
+		Check.errorIf(distinctRowIds.size() != includedRows.size(), "The given includedRows contain at least one duplicates rowId; includedRows={}", includedRows);
+
+		this.includedRows = ImmutableList.copyOf(includedRows);
+	}
 }
