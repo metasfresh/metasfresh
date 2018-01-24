@@ -10,7 +10,10 @@ import java.util.function.BiConsumer;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 
@@ -18,6 +21,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
@@ -25,10 +29,13 @@ import de.metas.i18n.IMsgBL;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.model.AvailabilityRequest;
+import de.metas.vendor.gateway.api.model.AvailabilityRequestException;
 import de.metas.vendor.gateway.api.model.AvailabilityRequestItem;
 import de.metas.vendor.gateway.api.model.AvailabilityResponse;
 import de.metas.vendor.gateway.api.model.AvailabilityResponseItem;
+import groovy.transform.EqualsAndHashCode;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -133,13 +140,27 @@ public class AvailabilityCheck
 		}
 	}
 
+	@EqualsAndHashCode(callSuper = false)
+	public static class AvailabilityException extends AdempiereException
+	{
+		private static final long serialVersionUID = -3954110236473712582L;
+
+		@Getter
+		private final Map<PurchaseCandidate, Throwable> purchaseCandidate2Throwable;
+
+		private AvailabilityException(@NonNull final Map<PurchaseCandidate, Throwable> purchaseCandidate2Throwable)
+		{
+			this.purchaseCandidate2Throwable = purchaseCandidate2Throwable;
+		}
+	}
+
 	public Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability()
 	{
 		final Multimap<PurchaseCandidate, AvailabilityResult> result = ArrayListMultimap.create();
 
 		for (final int vendorId : vendorBParterId2PurchaseCandidates.keySet())
 		{
-			result.putAll(checkAvailability(vendorId));
+			result.putAll(checkAvailabilityAndConvertThrowable(vendorId));
 		}
 
 		return result;
@@ -154,7 +175,7 @@ public class AvailabilityCheck
 		for (final int vendorId : vendorBParterId2PurchaseCandidates.keySet())
 		{
 			CompletableFuture
-					.supplyAsync(() -> checkAvailability(vendorId))
+					.supplyAsync(() -> checkAvailabilityAndConvertThrowable(vendorId))
 					.whenComplete((result, throwable) -> {
 
 						final boolean resultWasFound = result != null && !result.isEmpty();
@@ -167,20 +188,34 @@ public class AvailabilityCheck
 		}
 	}
 
-	private Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability(final int vendorId)
+	private Multimap<PurchaseCandidate, AvailabilityResult> checkAvailabilityAndConvertThrowable(final int vendorId)
 	{
-		final Multimap<PurchaseCandidate, AvailabilityResult> result = ArrayListMultimap.create();
-
 		if (!vendorProvidesAvailabilityCheck(vendorId))
 		{
-			return result;
+			return ImmutableMultimap.of();
 		}
 
 		final Map<AvailabilityRequestItem, PurchaseCandidate> requestItem2purchaseCandidate = createRequestItems(vendorId);
 		if (requestItem2purchaseCandidate.isEmpty())
 		{
-			return result;
+			return ImmutableMultimap.of();
 		}
+
+		try
+		{
+			return checkAvailability0(vendorId, requestItem2purchaseCandidate);
+		}
+		catch (final Throwable t)
+		{
+			throw convertThrowable(t, requestItem2purchaseCandidate);
+		}
+	}
+
+	private Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability0(
+			final int vendorId,
+			@NonNull final Map<AvailabilityRequestItem, PurchaseCandidate> requestItem2purchaseCandidate)
+	{
+		final Multimap<PurchaseCandidate, AvailabilityResult> result = ArrayListMultimap.create();
 
 		final AvailabilityRequest availabilityRequest = AvailabilityRequest.builder()
 				.vendorId(vendorId)
@@ -207,6 +242,28 @@ public class AvailabilityCheck
 			}
 		}
 		return result;
+	}
+
+	private RuntimeException convertThrowable(
+			@NonNull final Throwable throwable,
+			@NonNull final Map<AvailabilityRequestItem, PurchaseCandidate> requestItem2purchaseCandidate)
+	{
+		final boolean isAvailabilityRequestException = throwable instanceof AvailabilityRequestException;
+		if (!isAvailabilityRequestException)
+		{
+			return AdempiereException.wrapIfNeeded(throwable);
+		}
+
+		final AvailabilityRequestException availabilityRequestException = (AvailabilityRequestException)throwable;
+
+		final ImmutableMap<PurchaseCandidate, Throwable> purchseCandidate2Throwable = //
+				availabilityRequestException.getRequestItem2Exception().entrySet().stream()
+						.map(entry -> ImmutablePair.of(
+								requestItem2purchaseCandidate.get(entry.getKey()),  // the requestItem's purchaseCandidate
+								entry.getValue())) // the throwable
+						.collect(ImmutableMap.toImmutableMap(IPair::getLeft, IPair::getRight));
+
+		return new AvailabilityException(purchseCandidate2Throwable);
 	}
 
 	private Map<AvailabilityRequestItem, PurchaseCandidate> createRequestItems(final int vendorId)

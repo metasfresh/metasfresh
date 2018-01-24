@@ -125,7 +125,15 @@ public class MSV3Client
 		}
 
 		// make the webservice call
-		final Object response = makeAvailabilityWebserviceCall(verfuegbarkeitsanfrageEinzelne);
+		final Object response;
+		try
+		{
+			response = makeAvailabilityWebserviceCall(verfuegbarkeitsanfrageEinzelne);
+		}
+		catch (final Throwable t)
+		{
+			throw MSV3ClientException.createAllItemsSameThrowable(request.getAvailabilityRequestItems(), t);
+		}
 
 		// process and return the results
 		if (response instanceof VerfuegbarkeitAnfragenResponse)
@@ -139,7 +147,9 @@ public class MSV3Client
 		}
 		else if (response instanceof Msv3FaultInfo)
 		{
-			throw new AdempiereException(response.toString());
+			final Msv3FaultInfo msv3FaultInfo = (Msv3FaultInfo)response;
+			throw MSV3ClientException
+					.createAllItemsSameFaultInfo(request.getAvailabilityRequestItems(), msv3FaultInfo);
 		}
 		else
 		{
@@ -175,10 +185,21 @@ public class MSV3Client
 		verfuegbarkeitAnfragen.setVerfuegbarkeitsanfrage(verfuegbarkeitsanfrageEinzelne);
 		verfuegbarkeitAnfragen.setClientSoftwareKennung(CLIENT_SOFTWARE_IDENTIFIER.get());
 
+		final Object response = makeWebserviceCall(
+				objectFactory.createVerfuegbarkeitAnfragen(verfuegbarkeitAnfragen),
+				URL_SUFFIX_RETRIEVE_AVAILABILITY);
+
+		return response;
+	}
+
+	private Object makeWebserviceCall(
+			@NonNull final Object requestPayload,
+			@NonNull final String urlSuffix)
+	{
 		final JAXBElement<?> responseElement = //
 				(JAXBElement<?>)webServiceTemplate.marshalSendAndReceive(
-						config.getBaseUrl() + URL_SUFFIX_RETRIEVE_AVAILABILITY,
-						objectFactory.createVerfuegbarkeitAnfragen(verfuegbarkeitAnfragen));
+						config.getBaseUrl() + urlSuffix,
+						requestPayload);
 
 		final Object response = responseElement.getValue();
 		return response;
@@ -224,7 +245,7 @@ public class MSV3Client
 
 		final Date datePromised = lieferzeitpunkt == null ? null : lieferzeitpunkt.toGregorianCalendar().getTime();
 
-		final Type type = VerfuegbarkeitRueckmeldungTyp.NORMAL.equals(singleAnteil.getTyp()) ? Type.AVAILABLE : Type.NOT_AVAILABLE;
+		final Type type = VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR.equals(singleAnteil.getTyp()) ? Type.NOT_AVAILABLE : Type.AVAILABLE;
 
 		final StringBuilder availabilityText = createAvailabilityText(singleAnteil);
 

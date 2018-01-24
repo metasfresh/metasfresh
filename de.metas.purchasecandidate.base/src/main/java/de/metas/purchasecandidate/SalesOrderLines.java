@@ -168,7 +168,13 @@ public class SalesOrderLines
 	public void checkAvailabilityAsync(
 			@NonNull final BiConsumer<Multimap<PurchaseCandidate, AvailabilityResult>, Throwable> callback)
 	{
-		prepareAvailabilityCheck().checkAvailabilityAsync(callback);
+
+		final BiConsumer<Multimap<PurchaseCandidate, AvailabilityResult>, Throwable> callbackWrapper = //
+				(availabilityCheckResult, throwable) -> callback.accept(
+						availabilityCheckResult,
+						throwable);
+
+		prepareAvailabilityCheck().checkAvailabilityAsync(callbackWrapper);
 	}
 
 	private AvailabilityCheck prepareAvailabilityCheck()
