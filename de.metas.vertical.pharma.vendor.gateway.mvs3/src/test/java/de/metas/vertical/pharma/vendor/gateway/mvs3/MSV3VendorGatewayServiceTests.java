@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_System;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import de.metas.vendor.gateway.api.model.AvailabilityRequest;
@@ -47,7 +48,8 @@ public class MSV3VendorGatewayServiceTests
 	}
 
 	@Test
-	public void test()
+	@Ignore
+	public void manualTest()
 	{
 		// AD_System is needed because we send the metasfresh-version to the MSV3 server
 		final I_AD_System adSystem = newInstance(I_AD_System.class);
@@ -61,7 +63,9 @@ public class MSV3VendorGatewayServiceTests
 		configRecord.setC_BPartner_ID(999);
 		save(configRecord);
 
-		final MSV3VendorGatewayService msv3VendorGatewayService = new MSV3VendorGatewayService(new MSV3ClientConfigRepository());
+		final MSV3VendorGatewayService msv3VendorGatewayService = new MSV3VendorGatewayService(
+				new MSV3ConnectionFactory(),
+				new MSV3ClientConfigRepository());
 
 		final AvailabilityRequest request = AvailabilityRequest.builder()
 				.vendorId(999)
