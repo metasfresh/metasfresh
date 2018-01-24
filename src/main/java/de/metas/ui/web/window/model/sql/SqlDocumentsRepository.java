@@ -918,7 +918,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			if (!listValuesToDelete.isEmpty())
 			{
 				final int countDeleted = lookup.retrieveExistingValuesRecordQuery(linkId)
-						.addInArrayFilter(lookup.getLabelsListColumnName(), listValuesToDelete)
+						.addInArrayFilter(lookup.getLabelsValueColumnName(), listValuesToDelete)
 						.create()
 						.delete();
 				if (countDeleted != listValuesToDelete.size())
@@ -942,7 +942,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final String listValue = listValueObj.toString();
 		final PO labelPO = TableModelLoader.instance.newPO(lookup.getLabelsTableName());
 		labelPO.set_ValueNoCheck(lookup.getLabelsLinkColumnName(), linkId);
-		labelPO.set_ValueNoCheck(lookup.getLabelsListColumnName(), listValue);
+		labelPO.set_ValueNoCheck(lookup.getLabelsValueColumnName(), listValue);
 		InterfaceWrapperHelper.save(labelPO);
 	}
 }

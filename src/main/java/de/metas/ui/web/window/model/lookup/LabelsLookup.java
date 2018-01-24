@@ -1,25 +1,19 @@
 package de.metas.ui.web.window.model.lookup;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -63,10 +57,10 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	private final String labelsTableName;
 	/** Labels reference List column name (e.g. C_BPartner_Attribute's Attribute) */
 	@Getter
-	private final String labelsListColumnName;
-	/** Labels list's AD_Reference_ID (e.g. C_BPartner_Attributes list) */
+	private final String labelsValueColumnName;
+	private final LookupDataSource labelsValuesLookupDataSource;
 	@Getter
-	private final int labelsListReferenceId;
+	private final boolean labelsValuesUseNumericKey;
 	/** Labels tableName's link column name (e.g. C_BPartner_Attribute's C_BPartner_ID) */
 	@Getter
 	private final String labelsLinkColumnName;
@@ -79,16 +73,19 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	private final Set<CtxName> parameters;
 
 	@Builder
-	private LabelsLookup(@NonNull final String labelsTableName,
-			@NonNull final String labelsListColumnName,
-			final int labelsListReferenceId,
-			@NonNull final String labelsLinkColumnName,
+	private LabelsLookup(
 			@NonNull final String tableName,
-			@NonNull final String linkColumnName)
+			@NonNull final String linkColumnName,
+			@NonNull final String labelsTableName,
+			@NonNull final String labelsValueColumnName,
+			@NonNull final String labelsLinkColumnName,
+			@NonNull final LookupDescriptor labelsValuesLookupDescriptor
+			)
 	{
 		this.labelsTableName = labelsTableName;
-		this.labelsListColumnName = labelsListColumnName;
-		this.labelsListReferenceId = labelsListReferenceId;
+		this.labelsValueColumnName = labelsValueColumnName;
+		this.labelsValuesLookupDataSource = LookupDataSourceFactory.instance.getLookupDataSource(labelsValuesLookupDescriptor);
+		this.labelsValuesUseNumericKey = labelsValuesLookupDescriptor.isNumericKey();
 		this.labelsLinkColumnName = labelsLinkColumnName;
 		this.tableName = tableName;
 		this.linkColumnName = linkColumnName;
@@ -102,11 +99,6 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		return DocumentFieldWidgetType.Labels.getValueClass();
 	}
 
-	private Map<String, ADRefListItem> getListItemsIndexedByValue()
-	{
-		return Services.get(IADReferenceDAO.class).retrieveListValuesMap(labelsListReferenceId);
-	}
-
 	public LookupValuesList retrieveExistingValues(final int linkId)
 	{
 		if (linkId <= 0)
@@ -116,18 +108,13 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 
 		final List<String> existingItems = retrieveExistingValuesRecordQuery(linkId)
 				.create()
-				.listDistinct(labelsListColumnName, String.class);
+				.listDistinct(labelsValueColumnName, String.class);
 		if (existingItems.isEmpty())
 		{
 			return LookupValuesList.EMPTY;
 		}
-
-		return getListItemsIndexedByValue()
-				.values()
-				.stream()
-				.filter(item -> existingItems.contains(item.getValue()))
-				.map(item -> toLookupValue(item))
-				.collect(LookupValuesList.collect());
+		
+		return labelsValuesLookupDataSource.findByIds(existingItems);
 	}
 
 	public IQueryBuilder<Object> retrieveExistingValuesRecordQuery(final int linkId)
@@ -213,13 +200,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 			throw new IllegalStateException("No ID provided in " + evalCtx);
 		}
 
-		final ADRefListItem item = getListItemsIndexedByValue().get(id);
-		if (item == null)
-		{
-			return LOOKUPVALUE_NULL;
-		}
-
-		return StringLookupValue.of(item.getValue(), item.getName());
+		return labelsValuesLookupDataSource.findById(id);
 	}
 
 	@Override
@@ -233,49 +214,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	@Override
 	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
-		final String adLanguage = evalCtx.getAD_Language();
 		final String filter = evalCtx.getFilter();
-		final String filterNorm;
-		final boolean matchAll;
-		if (filter == LookupDataSourceContext.FILTER_Any)
-		{
-			matchAll = true;
-			filterNorm = null; // does not matter
-		}
-		else if (Check.isEmpty(filter, true))
-		{
-			return LookupValuesList.EMPTY;
-		}
-		else
-		{
-			matchAll = false;
-			filterNorm = normalizeSearchString(filter);
-		}
-
-		return getListItemsIndexedByValue()
-				.values()
-				.stream()
-				.filter(item -> matchAll || matchesFilter(item, filterNorm, adLanguage))
-				.map(item -> toLookupValue(item))
-				.collect(LookupValuesList.collect());
-	}
-
-	private static final StringLookupValue toLookupValue(final ADRefListItem item)
-	{
-		return StringLookupValue.of(item.getValue(), item.getName());
-	}
-
-	private static boolean matchesFilter(final ADRefListItem item, final String filterNorm, final String adLanguage)
-	{
-		final ITranslatableString nameTrl = item.getName();
-		final String name = adLanguage != null ? nameTrl.translate(adLanguage) : nameTrl.getDefaultValue();
-		final String nameNorm = normalizeSearchString(name);
-
-		return nameNorm.indexOf(filterNorm) >= 0;
-	}
-
-	private static final String normalizeSearchString(final String str)
-	{
-		return str == null ? "" : str.trim().toUpperCase();
+		return labelsValuesLookupDataSource.findEntities(evalCtx, filter);
 	}
 }

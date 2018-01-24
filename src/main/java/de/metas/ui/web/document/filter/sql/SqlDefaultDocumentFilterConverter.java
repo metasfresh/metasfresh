@@ -442,7 +442,7 @@ import lombok.NonNull;
 		final String labelsTableName = lookup.getLabelsTableName();
 		final String labelsLinkColumnName = lookup.getLabelsLinkColumnName();
 		final String linkColumnName = lookup.getLinkColumnName();
-		final String labelsValueColumnName = lookup.getLabelsListColumnName();
+		final String labelsValueColumnName = lookup.getLabelsValueColumnName();
 
 		final StringBuilder sql = new StringBuilder();
 		for (final LookupValue lookupValue : lookupValues)
@@ -452,9 +452,11 @@ import lombok.NonNull;
 				sql.append(" AND ");
 			}
 
+			final Object labelValue = lookup.isLabelsValuesUseNumericKey() ? lookupValue.getIdAsInt() : lookupValue.getIdAsString();
+
 			sql.append("EXISTS (SELECT 1 FROM " + labelsTableName + " labels "
 					+ " WHERE labels." + labelsLinkColumnName + "=" + tableAlias + "." + linkColumnName
-					+ " AND labels." + labelsValueColumnName + "=" + sqlParams.placeholder(lookupValue.getIdAsString())
+					+ " AND labels." + labelsValueColumnName + "=" + sqlParams.placeholder(labelValue)
 					+ ")");
 		}
 

@@ -152,7 +152,11 @@ public class LayoutFactory
 		final List<I_AD_UI_Element> labelsUIElements = _uiProvider.getUIElementsOfTypeLabels(gridTabVO.getAD_Tab_ID());
 		descriptorsFactory = new GridTabVOBasedDocumentEntityDescriptorFactory(gridTabVO, parentTab, gridWindowVO.isSOTrx(), labelsUIElements);
 
-		this.childAdTabIdsToSkip = labelsUIElements.stream().map(I_AD_UI_Element::getLabels_Tab_ID).collect(ImmutableSet.toImmutableSet());
+		this.childAdTabIdsToSkip = labelsUIElements
+				.stream()
+				.filter(I_AD_UI_Element::isDisplayed) // hide the Tab only if the field is displayed. If the field is used only for filtering, we shall also have the tab.
+				.map(I_AD_UI_Element::getLabels_Tab_ID)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
