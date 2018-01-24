@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -23,25 +23,31 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.adempiere.service.IClientDAO;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_ClientInfo;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_OrderTax;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MRequisitionLine;
 import org.compiere.model.MTax;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
+import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.tax.api.ITaxBL;
 
 /**
  * Post Order Documents.
@@ -57,6 +63,9 @@ import de.metas.order.IOrderLineBL;
 public class Doc_Order extends Doc
 {
 	private static final Logger logger = LogManager.getLogger(Doc_Order.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 
 	/**
 	 * Constructor
@@ -71,9 +80,9 @@ public class Doc_Order extends Doc
 	}	// Doc_Order
 
 	/** Contained Optional Tax Lines */
-	private DocTax[] m_taxes = null;
+	private List<DocTax> _taxes = null;
 	/** Requisitions */
-	private DocLine[] m_requisitions = null;
+	private List<DocLine> _requisitionDocLines = null;
 
 	/**
 	 * Load Specific Document Details
@@ -83,7 +92,7 @@ public class Doc_Order extends Doc
 	@Override
 	protected String loadDocumentDetails()
 	{
-		MOrder order = (MOrder)getPO();
+		final I_C_Order order = getModel(I_C_Order.class);
 		setDateDoc(order.getDateOrdered());
 		// Amounts
 		setAmount(AMTTYPE_Gross, order.getGrandTotal());
@@ -91,117 +100,125 @@ public class Doc_Order extends Doc
 		setAmount(AMTTYPE_Charge, order.getChargeAmt());
 
 		// Contained Objects
-		m_taxes = loadTaxes();
 		p_lines = loadLines(order);
-		// logger.debug( "Lines=" + p_lines.length + ", Taxes=" + m_taxes.length);
 		return null;
 	}   // loadDocumentDetails
 
-	/**
-	 * Load Invoice Line
-	 * 
-	 * @param order order
-	 * @return DocLine Array
-	 */
-	private DocLine[] loadLines(MOrder order)
+	private DocLine[] loadLines(final I_C_Order order)
 	{
-		ArrayList<DocLine> list = new ArrayList<>();
-		MOrderLine[] lines = order.getLines();
-		for (int i = 0; i < lines.length; i++)
+		final List<DocLine> docLines = new ArrayList<>();
+		for (final I_C_OrderLine orderLine : orderDAO.retrieveOrderLines(order))
 		{
-			final MOrderLine line = lines[i];
-			final DocLine docLine = new DocLine(line, this);
-			docLine.setIsTaxIncluded(Services.get(IOrderLineBL.class).isTaxIncluded(line));
-			final BigDecimal Qty = line.getQtyOrdered();
-			docLine.setQty(Qty, order.isSOTrx());
+			final DocLine docLine = new DocLine(InterfaceWrapperHelper.getPO(orderLine), this);
+			docLine.setIsTaxIncluded(orderLineBL.isTaxIncluded(orderLine));
+			final BigDecimal qty = orderLine.getQtyOrdered();
+			docLine.setQty(qty, order.isSOTrx());
+
 			//
-			BigDecimal PriceActual = line.getPriceActual();
 			BigDecimal PriceCost = null;
 			if (getDocumentType().equals(DOCTYPE_POrder))  	// PO
-				PriceCost = line.getPriceCost();
-			BigDecimal LineNetAmt = null;
+			{
+				PriceCost = orderLine.getPriceCost();
+			}
+
+			BigDecimal lineNetAmt = null;
 			if (PriceCost != null && PriceCost.signum() != 0)
-				LineNetAmt = Qty.multiply(PriceCost);
+			{
+				lineNetAmt = qty.multiply(PriceCost);
+			}
 			else
-				LineNetAmt = line.getLineNetAmt();
-			docLine.setAmount(LineNetAmt);	// DR
-			BigDecimal PriceList = line.getPriceList();
-			int C_Tax_ID = docLine.getC_Tax_ID();
+			{
+				lineNetAmt = orderLine.getLineNetAmt();
+			}
+			docLine.setAmount(lineNetAmt);	// DR
+
+			BigDecimal priceList = orderLine.getPriceList();
+
 			// Correct included Tax
+			final int C_Tax_ID = docLine.getC_Tax_ID();
 			if (docLine.isTaxIncluded() && C_Tax_ID > 0)
 			{
-				MTax tax = MTax.get(getCtx(), C_Tax_ID);
+				final MTax tax = MTax.get(getCtx(), C_Tax_ID);
 				if (!tax.isZeroTax())
 				{
-					BigDecimal LineNetAmtTax = tax.calculateTax(LineNetAmt, true, getStdPrecision());
-					logger.debug("LineNetAmt=" + LineNetAmt + " - Tax=" + LineNetAmtTax);
-					LineNetAmt = LineNetAmt.subtract(LineNetAmtTax);
-					for (int t = 0; t < m_taxes.length; t++)
+					final BigDecimal lineNetAmtTax = taxBL.calculateTax(tax, lineNetAmt, true, getStdPrecision());
+					lineNetAmt = lineNetAmt.subtract(lineNetAmtTax);
+					for (final DocTax docTax : getDocTaxes())
 					{
-						if (m_taxes[t].getC_Tax_ID() == C_Tax_ID)
+						if (docTax.getC_Tax_ID() == C_Tax_ID)
 						{
-							m_taxes[t].addIncludedTax(LineNetAmtTax);
+							docTax.addIncludedTax(lineNetAmtTax);
 							break;
 						}
 					}
-					BigDecimal PriceListTax = tax.calculateTax(PriceList, true, getStdPrecision());
-					PriceList = PriceList.subtract(PriceListTax);
+
+					final BigDecimal priceListTax = taxBL.calculateTax(tax, priceList, true, getStdPrecision());
+					priceList = priceList.subtract(priceListTax);
 				}
 			}  	// correct included Tax
 
-			docLine.setAmount(LineNetAmt, PriceList, Qty);
-			list.add(docLine);
+			docLine.setAmount(lineNetAmt, priceList, qty);
+			docLines.add(docLine);
 		}
 
 		// Return Array
-		DocLine[] dl = new DocLine[list.size()];
-		list.toArray(dl);
-		return dl;
+		return docLines.toArray(new DocLine[docLines.size()]);
 	}	// loadLines
+
+	private List<DocLine> getRequisitionDocLines()
+	{
+		if (_requisitionDocLines == null)
+		{
+			_requisitionDocLines = loadRequisitions();
+		}
+		return _requisitionDocLines;
+	}
 
 	/**
 	 * Load Requisitions
 	 * 
 	 * @return requisition lines of Order
 	 */
-	private DocLine[] loadRequisitions()
+	private List<DocLine> loadRequisitions()
 	{
-		MOrder order = (MOrder)getPO();
-		MOrderLine[] oLines = order.getLines();
-		HashMap<Integer, BigDecimal> qtys = new HashMap<>();
-		for (int i = 0; i < oLines.length; i++)
+		I_C_Order order = getModel(I_C_Order.class);
+		final Map<Integer, BigDecimal> qtys = new HashMap<>();
+		for (I_C_OrderLine line : orderDAO.retrieveOrderLines(order))
 		{
-			MOrderLine line = oLines[i];
-			qtys.put(new Integer(line.getC_OrderLine_ID()), line.getQtyOrdered());
+			qtys.put(line.getC_OrderLine_ID(), line.getQtyOrdered());
 		}
+
 		//
-		ArrayList<DocLine> list = new ArrayList<>();
-		String sql = "SELECT * FROM M_RequisitionLine rl "
+		final String sql = "SELECT * FROM M_RequisitionLine rl "
 				+ "WHERE EXISTS (SELECT * FROM C_Order o "
 				+ " INNER JOIN C_OrderLine ol ON (o.C_Order_ID=ol.C_Order_ID) "
 				+ "WHERE ol.C_OrderLine_ID=rl.C_OrderLine_ID"
 				+ " AND o.C_Order_ID=?) "
 				+ "ORDER BY rl.C_OrderLine_ID";
+		final Object[] sqlParams = new Object[] { order.getC_Order_ID() };
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, order.getC_Order_ID());
+			DB.setParameters(pstmt, sqlParams);
+
 			rs = pstmt.executeQuery();
+
+			final List<DocLine> list = new ArrayList<>();
 			while (rs.next())
 			{
-				MRequisitionLine line = new MRequisitionLine(getCtx(), rs, null);
-				DocLine docLine = new DocLine(line, this);
+				final MRequisitionLine line = new MRequisitionLine(getCtx(), rs, null);
+				final DocLine docLine = new DocLine(line, this);
 				// Quantity - not more then OrderLine
 				// Issue: Split of Requisition to multiple POs & different price
-				Integer key = new Integer(line.getC_OrderLine_ID());
-				BigDecimal maxQty = qtys.get(key);
+				BigDecimal maxQty = qtys.get(line.getC_OrderLine_ID());
 				BigDecimal Qty = line.getQty().max(maxQty);
 				if (Qty.signum() == 0)
 					continue;
 				docLine.setQty(Qty, false);
-				qtys.put(key, maxQty.subtract(Qty));
+				qtys.put(line.getC_OrderLine_ID(), maxQty.subtract(Qty));
 				//
 				BigDecimal PriceActual = line.getPriceActual();
 				BigDecimal LineNetAmt = line.getLineNetAmt();
@@ -210,10 +227,12 @@ public class Doc_Order extends Doc
 				docLine.setAmount(LineNetAmt);	 // DR
 				list.add(docLine);
 			}
+
+			return list;
 		}
 		catch (Exception e)
 		{
-			logger.error(sql, e);
+			throw new DBException(e, sql, sqlParams);
 		}
 		finally
 		{
@@ -221,33 +240,40 @@ public class Doc_Order extends Doc
 			rs = null;
 			pstmt = null;
 		}
-
-		// Return Array
-		DocLine[] dls = new DocLine[list.size()];
-		list.toArray(dls);
-		return dls;
-	}	// loadRequisitions
+	}
+	
+	private List<DocTax> getDocTaxes()
+	{
+		if(_taxes == null)
+		{
+			_taxes = loadTaxes();
+		}
+		return _taxes;
+	}
 
 	/**
 	 * Load Invoice Taxes
 	 * 
 	 * @return DocTax Array
 	 */
-	private DocTax[] loadTaxes()
+	private List<DocTax> loadTaxes()
 	{
-		final List<DocTax> list = new ArrayList<>();
 		final String sql = "SELECT it.C_Tax_ID, t.Name, t.Rate, it.TaxBaseAmt, it.TaxAmt, t.IsSalesTax " // 1..6
 				+ ", it." + I_C_OrderTax.COLUMNNAME_IsTaxIncluded
 				+ " FROM C_Tax t, C_OrderTax it "
 				+ " WHERE t.C_Tax_ID=it.C_Tax_ID AND it.C_Order_ID=?";
+		final Object[] sqlParams = new Object[] { get_ID() };
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, getTrxName());
-			pstmt.setInt(1, get_ID());
+			DB.setParameters(pstmt, sqlParams);
+
 			rs = pstmt.executeQuery();
-			//
+
+			final ImmutableList.Builder<DocTax> list = ImmutableList.builder();
 			while (rs.next())
 			{
 				int C_Tax_ID = rs.getInt(1);
@@ -255,18 +281,20 @@ public class Doc_Order extends Doc
 				BigDecimal rate = rs.getBigDecimal(3);
 				BigDecimal taxBaseAmt = rs.getBigDecimal(4);
 				BigDecimal amount = rs.getBigDecimal(5);
-				boolean salesTax = "Y".equals(rs.getString(6));
-				final boolean taxIncluded = "Y".equals(rs.getString(7));
+				boolean salesTax = DisplayType.toBoolean(rs.getString(6));
+				final boolean taxIncluded = DisplayType.toBoolean(rs.getString(7));
 				//
 				final DocTax taxLine = new DocTax(getCtx(),
 						C_Tax_ID, name, rate,
 						taxBaseAmt, amount, salesTax, taxIncluded);
 				list.add(taxLine);
 			}
+
+			return list.build();
 		}
-		catch (SQLException e)
+		catch (SQLException ex)
 		{
-			logger.error(sql, e);
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{
@@ -274,11 +302,6 @@ public class Doc_Order extends Doc
 			rs = null;
 			pstmt = null;
 		}
-
-		// Return Array
-		DocTax[] tl = new DocTax[list.size()];
-		list.toArray(tl);
-		return tl;
 	}	// loadTaxes
 
 	/**************************************************************************
@@ -289,211 +312,195 @@ public class Doc_Order extends Doc
 	@Override
 	public BigDecimal getBalance()
 	{
-		BigDecimal retValue = Env.ZERO;
-		StringBuffer sb = new StringBuffer(" [");
+		// In case of purchase orders, sum of Cost(vs. Price) in lines may not add up, so we are returning ZERO
+		if (DOCTYPE_POrder.equals(getDocumentType()))
+		{
+			return BigDecimal.ZERO;
+		}
+
+		BigDecimal balance = BigDecimal.ZERO;
+
 		// Total
-		retValue = retValue.add(getAmount(Doc.AMTTYPE_Gross));
-		sb.append(getAmount(Doc.AMTTYPE_Gross));
+		balance = balance.add(getAmount(Doc.AMTTYPE_Gross));
+
 		// - Header Charge
-		retValue = retValue.subtract(getAmount(Doc.AMTTYPE_Charge));
-		sb.append("-").append(getAmount(Doc.AMTTYPE_Charge));
+		balance = balance.subtract(getAmount(Doc.AMTTYPE_Charge));
+
 		// - Tax
-		if (m_taxes != null)
+		for (final DocTax docTax : getDocTaxes())
 		{
-			for (int i = 0; i < m_taxes.length; i++)
-			{
-				retValue = retValue.subtract(m_taxes[i].getTaxAmt());
-				sb.append("-").append(m_taxes[i].getTaxAmt());
-			}
+			balance = balance.subtract(docTax.getTaxAmt());
 		}
+
 		// - Lines
-		if (p_lines != null)
+		for (final DocLine docLine : p_lines)
 		{
-			for (int i = 0; i < p_lines.length; i++)
-			{
-				retValue = retValue.subtract(p_lines[i].getAmtSource());
-				sb.append("-").append(p_lines[i].getAmtSource());
-			}
-			sb.append("]");
+			balance = balance.subtract(docLine.getAmtSource());
 		}
-		//
-		if (retValue.signum() != 0		// Sum of Cost(vs. Price) in lines may not add up
-				&& getDocumentType().equals(DOCTYPE_POrder))  	// PO
-		{
-			logger.debug(toString() + " Balance=" + retValue + sb.toString() + " (ignored)");
-			retValue = Env.ZERO;
-		}
-		else
-			logger.debug(toString() + " Balance=" + retValue + sb.toString());
-		return retValue;
+
+		return balance;
 	}   // getBalance
 
-	/*************************************************************************
-	 * Create Facts (the accounting logic) for
-	 * SOO, POO.
-	 * 
-	 * <pre>
-	 *  Reservation (release)
-	 * 		Expense			DR
-	 * 		Offset					CR
-	 *  Commitment
-	 *  (to be released by Invoice Matching)
-	 * 		Expense					CR
-	 * 		Offset			DR
-	 * </pre>
-	 * 
-	 * @param as accounting schema
-	 * @return Fact
-	 */
 	@Override
-	public ArrayList<Fact> createFacts(MAcctSchema as)
+	public List<Fact> createFacts(final MAcctSchema as)
 	{
-		ArrayList<Fact> facts = new ArrayList<>();
-		// Purchase Order
-		if (getDocumentType().equals(DOCTYPE_POrder))
+		final String docBaseType = getDocumentType();
+		if (DOCTYPE_POrder.equals(docBaseType))
 		{
-			updateProductPO(as);
-
-			BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
-
-			// Commitment
-			FactLine fl = null;
-			if (as.isCreatePOCommitment())
-			{
-				Fact fact = new Fact(this, as, Fact.POST_Commitment);
-				BigDecimal total = Env.ZERO;
-				for (int i = 0; i < p_lines.length; i++)
-				{
-					DocLine line = p_lines[i];
-					BigDecimal cost = line.getAmtSource();
-					total = total.add(cost);
-
-					// Account
-					MAccount expense = line.getAccount(ProductCost.ACCTTYPE_P_Expense, as);
-					fl = fact.createLine(line, expense,
-							getC_Currency_ID(), cost, null);
-				}
-				// Offset
-				MAccount offset = getAccount(ACCTTYPE_CommitmentOffset, as);
-				if (offset == null)
-				{
-					p_Error = "@NotFound@ @CommitmentOffset_Acct@";
-					logger.error(p_Error);
-					return null;
-				}
-				fact.createLine(null, offset,
-						getC_Currency_ID(), null, total);
-				//
-				facts.add(fact);
-			}
-
-			// Reverse Reservation
-			if (as.isCreateReservation())
-			{
-				Fact fact = new Fact(this, as, Fact.POST_Reservation);
-				BigDecimal total = Env.ZERO;
-				if (m_requisitions == null)
-					m_requisitions = loadRequisitions();
-				for (int i = 0; i < m_requisitions.length; i++)
-				{
-					DocLine line = m_requisitions[i];
-					BigDecimal cost = line.getAmtSource();
-					total = total.add(cost);
-
-					// Account
-					MAccount expense = line.getAccount(ProductCost.ACCTTYPE_P_Expense, as);
-					fl = fact.createLine(line, expense,
-							getC_Currency_ID(), null, cost);
-				}
-				// Offset
-				if (m_requisitions.length > 0)
-				{
-					MAccount offset = getAccount(ACCTTYPE_CommitmentOffset, as);
-					if (offset == null)
-					{
-						p_Error = "@NotFound@ @CommitmentOffset_Acct@";
-						logger.error(p_Error);
-						return null;
-					}
-					fact.createLine(null, offset,
-							getC_Currency_ID(), total, null);
-				}
-				//
-				facts.add(fact);
-			}  	// reservations
+			return createFacts_PurchaseOrder(as);
 		}
-		// SO
-		else if (getDocumentType().equals(DOCTYPE_SOrder))
+		else if (DOCTYPE_SOrder.equals(docBaseType))
 		{
-			// Commitment
-			FactLine fl = null;
-			if (as.isCreateSOCommitment())
-			{
-				Fact fact = new Fact(this, as, Fact.POST_Commitment);
-				BigDecimal total = Env.ZERO;
-				for (int i = 0; i < p_lines.length; i++)
-				{
-					DocLine line = p_lines[i];
-					BigDecimal cost = line.getAmtSource();
-					total = total.add(cost);
-
-					// Account
-					MAccount revenue = line.getAccount(ProductCost.ACCTTYPE_P_Revenue, as);
-					fl = fact.createLine(line, revenue,
-							getC_Currency_ID(), null, cost);
-				}
-				// Offset
-				MAccount offset = getAccount(ACCTTYPE_CommitmentOffsetSales, as);
-				if (offset == null)
-				{
-					p_Error = "@NotFound@ @CommitmentOffsetSales_Acct@";
-					logger.error(p_Error);
-					return null;
-				}
-				fact.createLine(null, offset,
-						getC_Currency_ID(), total, null);
-				//
-				facts.add(fact);
-			}
-
+			return createFacts_SalesOrder(as);
 		}
-		return facts;
+		else
+		{
+			throw newPostingException().setDetailMessage("Unknown @DocBaseType@: " + docBaseType);
+		}
 	}   // createFact
 
-	/**
-	 * Update ProductPO PriceLastPO
-	 * 
-	 * @param as accounting schema
-	 */
-	private void updateProductPO(MAcctSchema as)
+	private List<Fact> createFacts_PurchaseOrder(final MAcctSchema as)
 	{
-		final I_AD_ClientInfo ci = Services.get(IClientDAO.class).retrieveClientInfo(getCtx(), as.getAD_Client_ID());
-		if (ci.getC_AcctSchema1_ID() != as.getC_AcctSchema_ID())
-			return;
+		final List<Fact> facts = new ArrayList<>();
+		if (as.isCreatePOCommitment())
+		{
+			facts.addAll(createFacts_PurchaseOrder_Commitment(as));
+		}
+		if (as.isCreateReservation())
+		{
+			facts.addAll(createFacts_PurchaseOrder_Reservation(as));
+		}
 
-		StringBuffer sql = new StringBuffer(
-				"UPDATE M_Product_PO po "
-						+ "SET PriceLastPO = (SELECT currencyConvert(ol.PriceActual,ol.C_Currency_ID,po.C_Currency_ID,o.DateOrdered,o.C_ConversionType_ID,o.AD_Client_ID,o.AD_Org_ID) "
-						+ "FROM C_Order o, C_OrderLine ol "
-						+ "WHERE o.C_Order_ID=ol.C_Order_ID"
-						+ " AND po.M_Product_ID=ol.M_Product_ID AND po.C_BPartner_ID=o.C_BPartner_ID ");
-		// jz + " AND ROWNUM=1 AND o.C_Order_ID=").append(get_ID()).append(") ")
+		return facts;
+	}
 
-		sql.append(" AND ol.C_OrderLine_ID = (SELECT MIN(ol1.C_OrderLine_ID) "
-				+ "FROM C_Order o1, C_OrderLine ol1 "
-				+ "WHERE o1.C_Order_ID=ol1.C_Order_ID"
-				+ " AND po.M_Product_ID=ol1.M_Product_ID AND po.C_BPartner_ID=o1.C_BPartner_ID")
-				.append("  AND o1.C_Order_ID=").append(get_ID()).append(") ");
-		sql.append("  AND o.C_Order_ID=").append(get_ID()).append(") ")
-				.append("WHERE EXISTS (SELECT * "
-						+ "FROM C_Order o, C_OrderLine ol "
-						+ "WHERE o.C_Order_ID=ol.C_Order_ID"
-						+ " AND po.M_Product_ID=ol.M_Product_ID AND po.C_BPartner_ID=o.C_BPartner_ID"
-						+ " AND o.C_Order_ID=")
-				.append(get_ID()).append(")");
-		int no = DB.executeUpdate(sql.toString(), getTrxName());
-		logger.debug("Updated=" + no);
-	}	// updateProductPO
+	/**
+	 * Purchase Order Commitment (to be released by Invoice Matching).
+	 * PostingType: Commitment
+	 * 
+	 * <pre>
+	 * 		Product Expense     DR
+	 * 		CommitmentOffset            CR
+	 * </pre>
+	 */
+	private List<Fact> createFacts_PurchaseOrder_Commitment(final MAcctSchema as)
+	{
+		final List<Fact> facts = new ArrayList<>();
+		final Fact fact = new Fact(this, as, Fact.POST_Commitment);
+		facts.add(fact);
+
+		BigDecimal total = BigDecimal.ZERO;
+		for (final DocLine line : p_lines)
+		{
+			final BigDecimal cost = line.getAmtSource();
+			total = total.add(cost);
+
+			// DR Account
+			final MAccount expense = line.getAccount(ProductCost.ACCTTYPE_P_Expense, as);
+			fact.createLine(line, expense, getC_Currency_ID(), cost, null);
+		}
+
+		// CR Offset
+		final MAccount offset = getAccount(ACCTTYPE_CommitmentOffset, as);
+		if (offset == null)
+		{
+			throw newPostingException().setDetailMessage("@NotFound@ @CommitmentOffset_Acct@");
+		}
+		fact.createLine(null, offset, getC_Currency_ID(), null, total);
+
+		return facts;
+	}
+
+	/**
+	 * Purchase Order Reservation (release).
+	 * PostingType: Reservation
+	 * 
+	 * <pre>
+	 * 		Product Expense          CR
+	 * 		Commitment Offset   DR
+	 * </pre>
+	 */
+	private List<Fact> createFacts_PurchaseOrder_Reservation(final MAcctSchema as)
+	{
+		final List<Fact> facts = new ArrayList<>();
+		final Fact fact = new Fact(this, as, Fact.POST_Reservation);
+		facts.add(fact);
+
+		BigDecimal total = BigDecimal.ZERO;
+		final List<DocLine> requisitionDocLines = getRequisitionDocLines();
+		for (final DocLine line : requisitionDocLines)
+		{
+			BigDecimal cost = line.getAmtSource();
+			total = total.add(cost);
+
+			// Account
+			MAccount expense = line.getAccount(ProductCost.ACCTTYPE_P_Expense, as);
+			fact.createLine(line, expense, getC_Currency_ID(), null, cost);
+		}
+
+		// Offset
+		if (!requisitionDocLines.isEmpty())
+		{
+			MAccount offset = getAccount(ACCTTYPE_CommitmentOffset, as);
+			if (offset == null)
+			{
+				throw newPostingException().setDetailMessage("@NotFound@ @CommitmentOffset_Acct@");
+			}
+			fact.createLine(null, offset, getC_Currency_ID(), total, null);
+		}
+
+		return facts;
+	}
+
+	private List<Fact> createFacts_SalesOrder(final MAcctSchema as)
+	{
+		final List<Fact> facts = new ArrayList<>();
+
+		// Commitment
+		if (as.isCreateSOCommitment())
+		{
+			facts.addAll(createFacts_SalesOrder_Commitment(as));
+		}
+
+		return facts;
+	}
+
+	/**
+	 * Sales Order Commitment
+	 * PostingType: Commitment
+	 * 
+	 * <pre>
+	 * 		Product Revenue              CR
+	 * 		CommitmentOffsetSales   DR
+	 * </pre>
+	 */
+	private List<Fact> createFacts_SalesOrder_Commitment(final MAcctSchema as)
+	{
+		final List<Fact> facts = new ArrayList<>();
+		final Fact fact = new Fact(this, as, Fact.POST_Commitment);
+		facts.add(fact);
+
+		BigDecimal total = BigDecimal.ZERO;
+		for (DocLine line : p_lines)
+		{
+			final BigDecimal cost = line.getAmtSource();
+			total = total.add(cost);
+
+			// Account
+			final MAccount revenue = line.getAccount(ProductCost.ACCTTYPE_P_Revenue, as);
+			fact.createLine(line, revenue, getC_Currency_ID(), null, cost);
+		}
+
+		// Offset
+		final MAccount offset = getAccount(ACCTTYPE_CommitmentOffsetSales, as);
+		if (offset == null)
+		{
+			throw newPostingException().setDetailMessage("@NotFound@ @CommitmentOffsetSales_Acct@");
+		}
+		fact.createLine(null, offset, getC_Currency_ID(), total, null);
+
+		return facts;
+	}
 
 	/**
 	 * Get Commitments
@@ -503,20 +510,14 @@ public class Doc_Order extends Doc
 	 * @param C_InvoiceLine_ID invoice line
 	 * @return commitments (order lines)
 	 */
-	protected static DocLine[] getCommitments(Doc doc, BigDecimal maxQty, int C_InvoiceLine_ID)
+	private static DocLine[] retrieveCommitmentPurchaseReleaseDocLines(final Doc doc, BigDecimal maxQty, final int C_InvoiceLine_ID)
 	{
 		int precision = -1;
 		//
 		ArrayList<DocLine> list = new ArrayList<>();
-		String sql = "SELECT * FROM C_OrderLine ol "
-				+ "WHERE EXISTS "
-				+ "(SELECT * FROM C_InvoiceLine il "
-				+ "WHERE il.C_OrderLine_ID=ol.C_OrderLine_ID"
-				+ " AND il.C_InvoiceLine_ID=?)"
-				+ " OR EXISTS "
-				+ "(SELECT * FROM M_MatchPO po "
-				+ "WHERE po.C_OrderLine_ID=ol.C_OrderLine_ID"
-				+ " AND po.C_InvoiceLine_ID=?)";
+		final String sql = "SELECT * FROM C_OrderLine ol "
+				+ "WHERE EXISTS (SELECT * FROM C_InvoiceLine il WHERE il.C_OrderLine_ID=ol.C_OrderLine_ID AND il.C_InvoiceLine_ID=?)"
+				+ " OR EXISTS (SELECT * FROM M_MatchPO po WHERE po.C_OrderLine_ID=ol.C_OrderLine_ID AND po.C_InvoiceLine_ID=?)";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -596,50 +597,43 @@ public class Doc_Order extends Doc
 	 * 
 	 * @param as accounting schema
 	 * @param doc doc
-	 * @param Qty qty invoiced/matched
-	 * @param C_InvoiceLine_ID line
+	 * @param qty qty invoiced/matched
+	 * @param invoiceLineId line
 	 * @param multiplier 1 for accrual
 	 * @return Fact
 	 */
-	protected static Fact getCommitmentRelease(MAcctSchema as, Doc doc,
-			BigDecimal Qty, int C_InvoiceLine_ID, BigDecimal multiplier)
+	static Fact createFact_CommitmentPurchaseRelease(final MAcctSchema as, final Doc doc, final BigDecimal qty, final int invoiceLineId, final BigDecimal multiplier)
 	{
-		Fact fact = new Fact(doc, as, Fact.POST_Commitment);
-		DocLine[] commitments = Doc_Order.getCommitments(doc, Qty,
-				C_InvoiceLine_ID);
+		final Fact fact = new Fact(doc, as, Fact.POST_Commitment);
 
-		BigDecimal total = Env.ZERO;
-		FactLine fl = null;
-		int C_Currency_ID = -1;
-		for (int i = 0; i < commitments.length; i++)
+		BigDecimal total = BigDecimal.ZERO;
+		int currencyId = -1;
+		for (final DocLine line : retrieveCommitmentPurchaseReleaseDocLines(doc, qty, invoiceLineId))
 		{
-			DocLine line = commitments[i];
-			if (C_Currency_ID == -1)
-				C_Currency_ID = line.getC_Currency_ID();
-			else if (C_Currency_ID != line.getC_Currency_ID())
+			if (currencyId == -1)
 			{
-				doc.p_Error = "Different Currencies of Order Lines";
-				logger.error(doc.p_Error);
-				return null;
+				currencyId = line.getC_Currency_ID();
 			}
-			BigDecimal cost = line.getAmtSource().multiply(multiplier);
+			else if (currencyId != line.getC_Currency_ID())
+			{
+				throw doc.newPostingException().setDetailMessage("Different Currencies of Order Lines");
+			}
+			final BigDecimal cost = line.getAmtSource().multiply(multiplier);
 			total = total.add(cost);
 
 			// Account
-			MAccount expense = line.getAccount(ProductCost.ACCTTYPE_P_Expense, as);
-			fl = fact.createLine(line, expense,
-					C_Currency_ID, null, cost);
+			final MAccount expense = line.getAccount(ProductCost.ACCTTYPE_P_Expense, as);
+			fact.createLine(line, expense, currencyId, null, cost);
 		}
+
 		// Offset
-		MAccount offset = doc.getAccount(ACCTTYPE_CommitmentOffset, as);
+		final MAccount offset = doc.getAccount(ACCTTYPE_CommitmentOffset, as);
 		if (offset == null)
 		{
-			doc.p_Error = "@NotFound@ @CommitmentOffset_Acct@";
-			logger.error(doc.p_Error);
-			return null;
+			throw doc.newPostingException().setDetailMessage("@NotFound@ @CommitmentOffset_Acct@");
 		}
-		fact.createLine(null, offset,
-				C_Currency_ID, total, null);
+		fact.createLine(null, offset, currencyId, total, null);
+
 		return fact;
 	}	// getCommitmentRelease
 
@@ -651,16 +645,13 @@ public class Doc_Order extends Doc
 	 * @param C_OrderLine_ID invoice line
 	 * @return commitments (order lines)
 	 */
-	protected static DocLine[] getCommitmentsSales(Doc doc, BigDecimal maxQty, int M_InOutLine_ID)
+	private static DocLine[] retrieveCommitmentsSalesReleaseDocLines(final Doc doc, BigDecimal maxQty, final int M_InOutLine_ID)
 	{
 		int precision = -1;
 		//
 		ArrayList<DocLine> list = new ArrayList<>();
 		String sql = "SELECT * FROM C_OrderLine ol "
-				+ "WHERE EXISTS "
-				+ "(SELECT * FROM M_InOutLine il "
-				+ "WHERE il.C_OrderLine_ID=ol.C_OrderLine_ID"
-				+ " AND il.M_InOutLine_ID=?)";
+				+ "WHERE EXISTS (SELECT 1 FROM M_InOutLine il WHERE il.C_OrderLine_ID=ol.C_OrderLine_ID AND il.M_InOutLine_ID=?)";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -744,45 +735,34 @@ public class Doc_Order extends Doc
 	 * @param multiplier 1 for accrual
 	 * @return Fact
 	 */
-	protected static Fact getCommitmentSalesRelease(MAcctSchema as, Doc doc,
-			BigDecimal Qty, int M_InOutLine_ID, BigDecimal multiplier)
+	static Fact createFact_CommitmentSalesRelease(final MAcctSchema as, final Doc doc, final BigDecimal Qty, final int M_InOutLine_ID, final BigDecimal multiplier)
 	{
-		Fact fact = new Fact(doc, as, Fact.POST_Commitment);
-		DocLine[] commitments = Doc_Order.getCommitmentsSales(doc, Qty,
-				M_InOutLine_ID);
+		final Fact fact = new Fact(doc, as, Fact.POST_Commitment);
 
-		BigDecimal total = Env.ZERO;
-		FactLine fl = null;
+		BigDecimal total = BigDecimal.ZERO;
 		int C_Currency_ID = -1;
-		for (int i = 0; i < commitments.length; i++)
+		for (DocLine line : retrieveCommitmentsSalesReleaseDocLines(doc, Qty, M_InOutLine_ID))
 		{
-			DocLine line = commitments[i];
 			if (C_Currency_ID == -1)
 				C_Currency_ID = line.getC_Currency_ID();
 			else if (C_Currency_ID != line.getC_Currency_ID())
 			{
-				doc.p_Error = "Different Currencies of Order Lines";
-				logger.error(doc.p_Error);
-				return null;
+				throw doc.newPostingException().setDetailMessage("Different Currencies of Order Lines");
 			}
-			BigDecimal cost = line.getAmtSource().multiply(multiplier);
+			final BigDecimal cost = line.getAmtSource().multiply(multiplier);
 			total = total.add(cost);
 
 			// Account
-			MAccount revenue = line.getAccount(ProductCost.ACCTTYPE_P_Revenue, as);
-			fl = fact.createLine(line, revenue,
-					C_Currency_ID, cost, null);
+			final MAccount revenue = line.getAccount(ProductCost.ACCTTYPE_P_Revenue, as);
+			fact.createLine(line, revenue, C_Currency_ID, cost, null);
 		}
 		// Offset
-		MAccount offset = doc.getAccount(ACCTTYPE_CommitmentOffsetSales, as);
+		final MAccount offset = doc.getAccount(ACCTTYPE_CommitmentOffsetSales, as);
 		if (offset == null)
 		{
-			doc.p_Error = "@NotFound@ @CommitmentOffsetSales_Acct@";
-			logger.error(doc.p_Error);
-			return null;
+			throw doc.newPostingException().setDetailMessage("@NotFound@ @CommitmentOffsetSales_Acct@");
 		}
-		fact.createLine(null, offset,
-				C_Currency_ID, null, total);
+		fact.createLine(null, offset, C_Currency_ID, null, total);
 		return fact;
 	}	// getCommitmentSalesRelease
 }   // Doc_Order

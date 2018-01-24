@@ -13,17 +13,17 @@ package de.metas.currency.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 
 import org.adempiere.util.Check;
@@ -74,15 +74,20 @@ public final class CurrencyRate implements ICurrencyRate
 	@Override
 	public final BigDecimal convertAmount(final BigDecimal amount)
 	{
+		return convertAmount(amount, getCurrencyPrecision());
+	}
+
+	@Override
+	public final BigDecimal convertAmount(final BigDecimal amount, final int precision)
+	{
 		Check.assumeNotNull(amount, "amount not null");
 
 		final BigDecimal rate = getConversionRate();
 		BigDecimal amountConv = rate.multiply(amount);
 
-		final int precision = getCurrencyPrecision();
 		if (precision >= 0 && amountConv.scale() > precision)
 		{
-			amountConv = amountConv.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			amountConv = amountConv.setScale(precision, RoundingMode.HALF_UP);
 		}
 
 		return amountConv;
@@ -118,8 +123,7 @@ public final class CurrencyRate implements ICurrencyRate
 		return conversionDate;
 	}
 
-	@Override
-	public int getCurrencyPrecision()
+	private int getCurrencyPrecision()
 	{
 		return currencyPrecision;
 	}

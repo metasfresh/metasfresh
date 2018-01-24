@@ -34,8 +34,6 @@ public interface ICostDetailRepository extends ISingletonService
 
 	void delete(I_M_CostDetail costDetail);
 
-	void delete(CostDetailQuery query);
-
 	void deleteUnprocessedWithNoChanges(CostDetailQuery query);
 
 	I_M_CostDetail getCostDetailOrNull(CostDetailQuery query);

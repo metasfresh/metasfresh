@@ -37,7 +37,6 @@ import org.compiere.model.MTax;
 import org.compiere.model.PO;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.costing.CostDetailQuery;
@@ -92,15 +91,15 @@ public class DocLine
 
 	// -- GL Amounts
 	/** Debit Journal Amt */
-	private BigDecimal m_AmtSourceDr = Env.ZERO;
+	private BigDecimal m_AmtSourceDr = BigDecimal.ZERO;
 	/** Credit Journal Amt */
-	private BigDecimal m_AmtSourceCr = Env.ZERO;
+	private BigDecimal m_AmtSourceCr = BigDecimal.ZERO;
 	/** Net Line Amt */
 	private BigDecimal m_LineNetAmt = null;
 	/** List Amount */
-	private BigDecimal m_ListAmt = Env.ZERO;
+	private BigDecimal m_ListAmt = BigDecimal.ZERO;
 	/** Discount Amount */
-	private BigDecimal m_DiscountAmt = Env.ZERO;
+	private BigDecimal m_DiscountAmt = BigDecimal.ZERO;
 
 	/** Converted Amounts */
 	private BigDecimal m_AmtAcctDr = null;
@@ -235,8 +234,8 @@ public class DocLine
 	 */
 	protected final void setAmount(BigDecimal sourceAmt)
 	{
-		m_AmtSourceDr = sourceAmt == null ? Env.ZERO : sourceAmt;
-		m_AmtSourceCr = Env.ZERO;
+		m_AmtSourceDr = sourceAmt == null ? BigDecimal.ZERO : sourceAmt;
+		m_AmtSourceCr = BigDecimal.ZERO;
 	}   // setAmounts
 
 	/**
@@ -247,8 +246,8 @@ public class DocLine
 	 */
 	protected final void setAmount(BigDecimal amtSourceDr, BigDecimal amtSourceCr)
 	{
-		m_AmtSourceDr = amtSourceDr == null ? Env.ZERO : amtSourceDr;
-		m_AmtSourceCr = amtSourceCr == null ? Env.ZERO : amtSourceCr;
+		m_AmtSourceDr = amtSourceDr == null ? BigDecimal.ZERO : amtSourceDr;
+		m_AmtSourceCr = amtSourceCr == null ? BigDecimal.ZERO : amtSourceCr;
 	}   // setAmounts
 
 	protected final void setAmountDrOrCr(final BigDecimal amtSource, final boolean isAmountDR)
@@ -334,7 +333,7 @@ public class DocLine
 			if (bd != null)
 				return bd;
 		}
-		return Env.ZERO;
+		return BigDecimal.ZERO;
 	}   // getChargeAmt
 
 	/**
@@ -346,11 +345,11 @@ public class DocLine
 	 */
 	public final void setAmount(BigDecimal LineNetAmt, BigDecimal PriceList, BigDecimal Qty)
 	{
-		m_LineNetAmt = LineNetAmt == null ? Env.ZERO : LineNetAmt;
+		m_LineNetAmt = LineNetAmt == null ? BigDecimal.ZERO : LineNetAmt;
 
 		if (PriceList != null && Qty != null)
 			m_ListAmt = PriceList.multiply(Qty);
-		if (m_ListAmt.compareTo(Env.ZERO) == 0)
+		if (m_ListAmt.compareTo(BigDecimal.ZERO) == 0)
 			m_ListAmt = m_LineNetAmt;
 		m_DiscountAmt = m_ListAmt.subtract(m_LineNetAmt);
 		//
@@ -1030,7 +1029,7 @@ public class DocLine
 	public final void setQty(final BigDecimal qty, final boolean isSOTrx)
 	{
 		if (qty == null)
-			m_qty = Env.ZERO;
+			m_qty = BigDecimal.ZERO;
 		else if (isSOTrx)
 			m_qty = qty.negate();
 		else

@@ -227,4 +227,6 @@ public interface IOrderLineBL extends ISingletonService
 	 * @return true if the line shall be copied and false if not
 	 */
 	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);
+	
+	BigDecimal getCostPrice(org.compiere.model.I_C_OrderLine orderLine);
 }

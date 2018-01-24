@@ -45,9 +45,6 @@ import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.costing.CostDetailQuery;
-import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostDetailRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.documentNo.IDocumentNoBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
@@ -2036,11 +2033,6 @@ public class MOrder extends X_C_Order implements IDocument
 				line.setLineNetAmt(BigDecimal.ZERO);
 				line.save(get_TrxName());
 			}
-			// AZ Goodwill
-			if (!isSOTrx())
-			{
-				deleteMatchPOCostDetail(line);
-			}
 		}
 
 		// update taxes
@@ -2427,35 +2419,6 @@ public class MOrder extends X_C_Order implements IDocument
 	{
 		return getGrandTotal();
 	}	// getApprovalAmt
-
-	// AZ Goodwill
-	private static void deleteMatchPOCostDetail(final I_C_OrderLine line)
-	{
-		final ICostDetailRepository costDetailRepository = Services.get(ICostDetailRepository.class);
-		
-		// Get Account Schemas to delete MCostDetail
-		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(Env.getCtx(), line.getAD_Client_ID()))
-		{
-			if (as.isSkipOrg(line.getAD_Org_ID()))
-			{
-				continue;
-			}
-
-			// update/delete Cost Detail and recalculate Current Cost
-			final List<I_M_MatchPO> mPO = MMatchPO.getOrderLine(line.getC_OrderLine_ID());
-			// delete Cost Detail if the Matched PO has been deleted
-			if (mPO.isEmpty())
-			{
-				// FIXME: costs shall be deleted before M_MatchPO is deleted
-				costDetailRepository
-						.delete(CostDetailQuery.builder()
-								.acctSchemaId(as.getC_AcctSchema_ID())
-								.documentRef(CostingDocumentRef.ofMatchPOId(0)) // FIXME
-								.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
-								.build());
-			}
-		}
-	}
 
 	/**
 	 * Document Status is Complete or Closed

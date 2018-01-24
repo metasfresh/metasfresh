@@ -407,7 +407,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		//
 		// Don't calculate the discount in case we are dealing with a percentage discount compensation group line (task 3149)
-		if(orderLine.isGroupCompensationLine()
+		if (orderLine.isGroupCompensationLine()
 				&& X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount.equals(orderLine.getGroupCompensationType())
 				&& X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent.equals(orderLine.getGroupCompensationAmtType()))
 		{
@@ -878,7 +878,39 @@ public class OrderLineBL implements IOrderLineBL
 				line.setM_Product(counterProduct);
 			}
 		}
-
 	}
 
+	@Override
+	public BigDecimal getCostPrice(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final BigDecimal poCostPrice = orderLine.getPriceCost();
+		if (poCostPrice != null && poCostPrice.signum() != 0)
+		{
+			return poCostPrice;
+		}
+
+		BigDecimal priceActual = orderLine.getPriceActual();
+		if (!isTaxIncluded(orderLine))
+		{
+			return priceActual;
+		}
+
+		final int taxId = orderLine.getC_Tax_ID();
+		if (taxId <= 0)
+		{
+			// shall not happen
+			return priceActual;
+		}
+
+		final MTax tax = MTax.get(Env.getCtx(), taxId);
+		if (tax.isZeroTax())
+		{
+			return priceActual;
+		}
+
+		final int stdPrecision = getPrecision(orderLine);
+		final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(tax, priceActual, true/* taxIncluded */, stdPrecision);
+		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
+		return priceActualWithoutTax;
+	}
 }

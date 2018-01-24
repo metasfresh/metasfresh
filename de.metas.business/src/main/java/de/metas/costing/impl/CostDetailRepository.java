@@ -56,15 +56,6 @@ public class CostDetailRepository implements ICostDetailRepository
 	}
 
 	@Override
-	public void delete(@NonNull final CostDetailQuery query)
-	{
-		createQueryBuilder(query)
-				.create()
-				.list(I_M_CostDetail.class)
-				.forEach(this::delete);
-	}
-
-	@Override
 	public void deleteUnprocessedWithNoChanges(@NonNull final CostDetailQuery query)
 	{
 		final int countDeleted = createQueryBuilder(query)

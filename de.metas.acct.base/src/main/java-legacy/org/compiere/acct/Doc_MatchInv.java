@@ -357,7 +357,7 @@ public class Doc_MatchInv extends Doc
 		// Commitment release
 		if (as.isAccrual() && as.isCreatePOCommitment())
 		{
-			final Fact factCommitment = Doc_Order.getCommitmentRelease(as, this,
+			final Fact factCommitment = Doc_Order.createFact_CommitmentPurchaseRelease(as, this,
 					getQty(), m_invoiceLine.getC_InvoiceLine_ID(), Env.ONE);
 			if (factCommitment == null)
 				return null;

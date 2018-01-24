@@ -27,6 +27,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
@@ -35,9 +36,7 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
 import org.compiere.model.MInOut;
-import org.compiere.model.MOrderLine;
 import org.compiere.model.MProduct;
-import org.compiere.model.MTax;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 
@@ -307,7 +306,7 @@ public class Doc_InOut extends Doc
 		{
 			for (final DocLine line : p_lines)
 			{
-				final Fact factcomm = Doc_Order.getCommitmentSalesRelease(as, this, line.getQty(), line.get_ID(), BigDecimal.ONE);
+				final Fact factcomm = Doc_Order.createFact_CommitmentSalesRelease(as, this, line.getQty(), line.get_ID(), BigDecimal.ONE);
 				if (factcomm != null)
 					facts.add(factcomm);
 			}
@@ -428,8 +427,8 @@ public class Doc_InOut extends Doc
 			}
 
 			int currencyId = acctCurrencyId;
-			BigDecimal costs = null;
-
+			
+			final BigDecimal costs;
 			final String costingMethod = productBL.getCostingMethod(product, as);
 			if (MAcctSchema.COSTINGMETHOD_AveragePO.equals(costingMethod) ||
 					MAcctSchema.COSTINGMETHOD_LastPOPrice.equals(costingMethod))
@@ -438,28 +437,11 @@ public class Doc_InOut extends Doc
 				// Low - check if c_orderline_id is valid
 				if (orderLineId > 0)
 				{
-					MOrderLine orderLine = new MOrderLine(getCtx(), orderLineId, getTrxName());
-					// Elaine 2008/06/26
+					final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(getCtx(), orderLineId, I_C_OrderLine.class, getTrxName()); 
 					currencyId = orderLine.getC_Currency_ID();
-					//
-					costs = orderLine.getPriceCost();
-					if (costs == null || costs.signum() == 0)
-					{
-						costs = orderLine.getPriceActual();
-						// Goodwill: Correct included Tax
-						int C_Tax_ID = orderLine.getC_Tax_ID();
-						if (orderLineBL.isTaxIncluded(orderLine) && C_Tax_ID > 0)
-						{
-							final MTax tax = MTax.get(getCtx(), C_Tax_ID);
-							if (!tax.isZeroTax())
-							{
-								int stdPrecision = orderLineBL.getPrecision(orderLine);
-								BigDecimal costTax = taxBL.calculateTax(tax, costs, true, stdPrecision);
-								costs = costs.subtract(costTax);
-							}
-						}	// correct included Tax
-					}
-					costs = costs.multiply(line.getQty());
+					
+					final BigDecimal costPrice = Services.get(IOrderLineBL.class).getCostPrice(orderLine);
+					costs = costPrice.multiply(line.getQty());
 				}
 				else
 				{

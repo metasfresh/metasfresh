@@ -26,7 +26,6 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -38,10 +37,11 @@ import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailService;
 import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.ICurrencyRate;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
-import de.metas.tax.api.ITaxBL;
 
 /**
  * Match PO Model.
@@ -468,7 +468,7 @@ public class MMatchPO extends X_M_MatchPO
 		{
 			setDateTrx(SystemTime.asDayTimestamp());
 		}
-		
+
 		// Set Acct Date
 		if (getDateAcct() == null)
 		{
@@ -479,7 +479,7 @@ public class MMatchPO extends X_M_MatchPO
 			}
 			setDateAcct(ts);
 		}
-		
+
 		// Set ASI from Receipt
 		final int mpoASIId = getM_AttributeSetInstance_ID();
 		if (mpoASIId <= 0 && getM_InOutLine_ID() > 0)
@@ -513,7 +513,7 @@ public class MMatchPO extends X_M_MatchPO
 			{
 				setC_OrderLine_ID(invoiceLine.getC_OrderLine_ID());
 			}
-			
+
 			if (getC_OrderLine_ID() <= 0)
 			{
 				final I_M_InOutLine inoutLine = getM_InOutLine();
@@ -583,19 +583,19 @@ public class MMatchPO extends X_M_MatchPO
 	{
 		// Purchase Order Delivered/Invoiced
 		// (Reserved in VMatch and MInOut.completeIt)
-		if (success && getC_OrderLine_ID() != 0)
+		if (success && getC_OrderLine_ID() > 0)
 		{
 			final I_C_OrderLine orderLine = getC_OrderLine();
 
 			if (InterfaceWrapperHelper.isValueChanged(this, COLUMNNAME_M_InOutLine_ID) /* task 09084 => */ || newRecord)
 			{
-				if (getM_InOutLine_ID() != 0)
+				if (getM_InOutLine_ID() > 0)
 				{
 					// a new delivery line was linked to the order line => add the qty
 					orderLine.setQtyDelivered(orderLine.getQtyDelivered().add(getQty()));
 					orderLine.setDateDelivered(getDateTrx());	// overwrite=last
 				}
-				else if (getM_InOutLine_ID() == 0 && !newRecord)
+				else if (getM_InOutLine_ID() <= 0 && !newRecord)
 				{
 					// a previously linked delivery line was unlinked from an existing matchPO (and thus from the order line) => subtract the qty
 					orderLine.setQtyDelivered(orderLine.getQtyDelivered().subtract(getQty()));
@@ -604,13 +604,13 @@ public class MMatchPO extends X_M_MatchPO
 
 			if (InterfaceWrapperHelper.isValueChanged(this, COLUMNNAME_C_InvoiceLine_ID) /* task 09084 => */ || newRecord)
 			{
-				if (getC_InvoiceLine_ID() != 0)
+				if (getC_InvoiceLine_ID() > 0)
 				{
 					// a new invoice line was linked to the order line => add the qty
 					orderLine.setQtyInvoiced(orderLine.getQtyInvoiced().add(getQty()));
 					orderLine.setDateInvoiced(getDateTrx());	// overwrite=last
 				}
-				else if (getC_InvoiceLine_ID() == 0 && !newRecord)
+				else if (getC_InvoiceLine_ID() <= 0 && !newRecord)
 				{
 					// a previously linked invoice line was unlinked from an existing matchPO (and thus from the order line) => subtract the qty
 					orderLine.setQtyInvoiced(orderLine.getQtyInvoiced().subtract(getQty()));
@@ -619,7 +619,7 @@ public class MMatchPO extends X_M_MatchPO
 
 			// Update Order ASI if full match
 			if (orderLine.getM_AttributeSetInstance_ID() == 0
-					&& getM_InOutLine_ID() != 0)
+					&& getM_InOutLine_ID() > 0)
 			{
 				final I_M_InOutLine iol = getM_InOutLine();
 				if (iol.getMovementQty().compareTo(orderLine.getQtyOrdered()) == 0)
@@ -639,12 +639,12 @@ public class MMatchPO extends X_M_MatchPO
 	 * 
 	 * @return date or null
 	 */
-	public Timestamp getNewerDateAcct()
+	private Timestamp getNewerDateAcct()
 	{
 		Timestamp invoiceDate = null;
 		Timestamp shipDate = null;
 
-		if (getC_InvoiceLine_ID() != 0)
+		if (getC_InvoiceLine_ID() > 0)
 		{
 			String sql = "SELECT i.DateAcct "
 					+ "FROM C_InvoiceLine il"
@@ -653,7 +653,7 @@ public class MMatchPO extends X_M_MatchPO
 			invoiceDate = DB.getSQLValueTS(null, sql, getC_InvoiceLine_ID());
 		}
 		//
-		if (getM_InOutLine_ID() != 0)
+		if (getM_InOutLine_ID() > 0)
 		{
 			String sql = "SELECT io.DateAcct "
 					+ "FROM M_InOutLine iol"
@@ -672,11 +672,6 @@ public class MMatchPO extends X_M_MatchPO
 		return shipDate;
 	}	// getNewerDateAcct
 
-	/**
-	 * Before Delete
-	 * 
-	 * @return true if acct was deleted
-	 */
 	@Override
 	protected boolean beforeDelete()
 	{
@@ -686,8 +681,14 @@ public class MMatchPO extends X_M_MatchPO
 			setPosted(false);
 			Services.get(IFactAcctDAO.class).deleteForDocumentModel(this);
 		}
+
+		if (getC_OrderLine_ID() > 0)
+		{
+			deleteMatchPOCostDetail();
+		}
+
 		return true;
-	}	// beforeDelete
+	}
 
 	/**
 	 * After Delete.
@@ -697,48 +698,44 @@ public class MMatchPO extends X_M_MatchPO
 	 * @return success
 	 */
 	@Override
-	protected boolean afterDelete(boolean success)
+	protected boolean afterDelete(final boolean success)
 	{
+		if (!success)
+		{
+			return success;
+		}
+
 		// Order Delivered/Invoiced
 		// (Reserved in VMatch and MInOut.completeIt)
-		if (success && getC_OrderLine_ID() > 0)
+		final I_C_OrderLine orderLine = getC_OrderLine();
+		if (orderLine != null)
 		{
-			// AZ Goodwill
-			deleteMatchPOCostDetail();
-			// end AZ
-
-			final I_C_OrderLine orderLine = getC_OrderLine();
-			if (getM_InOutLine_ID() != 0)
+			if (getM_InOutLine_ID() > 0)
 			{
 				orderLine.setQtyDelivered(orderLine.getQtyDelivered().subtract(getQty()));
 			}
-			if (getC_InvoiceLine_ID() != 0)
+			if (getC_InvoiceLine_ID() > 0)
 			{
 				orderLine.setQtyInvoiced(orderLine.getQtyInvoiced().subtract(getQty()));
 			}
-			InterfaceWrapperHelper.save(orderLine, get_TrxName());
+			InterfaceWrapperHelper.save(orderLine);
 			return true;
 		}
 		return success;
 	}	// afterDelete
 
-	/**
-	 * String Representation
-	 * 
-	 * @return info
-	 */
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MMatchPO[");
-		sb.append(get_ID())
+		final StringBuilder sb = new StringBuilder("MMatchPO[");
+		sb.append(getM_MatchPO_ID())
 				.append(",Qty=").append(getQty())
 				.append(",C_OrderLine_ID=").append(getC_OrderLine_ID())
 				.append(",M_InOutLine_ID=").append(getM_InOutLine_ID())
 				.append(",C_InvoiceLine_ID=").append(getC_InvoiceLine_ID())
 				.append("]");
 		return sb.toString();
-	}	// toString
+	}
 
 	/**
 	 * Consolidate MPO entries.
@@ -824,6 +821,9 @@ public class MMatchPO extends X_M_MatchPO
 		}
 
 		final I_C_OrderLine orderLine = getC_OrderLine();
+		final BigDecimal costPrice = getCostPrice();
+		final BigDecimal qty = isReturnTrx() ? getQty().negate() : getQty();
+		final BigDecimal amt = costPrice.multiply(qty);
 
 		// Get Account Schemas to create MCostDetail
 		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID()))
@@ -833,113 +833,52 @@ public class MMatchPO extends X_M_MatchPO
 				continue;
 			}
 
-			// Purchase Order Line
-			BigDecimal poCostPrice = orderLine.getPriceCost();
-			if (poCostPrice == null || poCostPrice.signum() == 0)
+			final BigDecimal amtConv;
+			if (orderLine.getC_Currency_ID() == as.getC_Currency_ID())
 			{
-				poCostPrice = orderLine.getPriceActual();
-
-				// Goodwill: Correct included Tax
-				final int taxId = orderLine.getC_Tax_ID();
-				if (Services.get(IOrderLineBL.class).isTaxIncluded(orderLine) && taxId > 0)
-				{
-					final MTax tax = MTax.get(getCtx(), taxId);
-					if (!tax.isZeroTax())
-					{
-						final int stdPrecision = Services.get(IOrderLineBL.class).getPrecision(orderLine);
-						final BigDecimal costPriceTaxAmt = Services.get(ITaxBL.class).calculateTax(tax, poCostPrice, true, stdPrecision);
-						poCostPrice = poCostPrice.subtract(costPriceTaxAmt);
-					}
-				}
+				amtConv = amt;
 			}
-
-			// Source from Doc_MatchPO.createFacts(MAcctSchema)
-			final I_M_InOutLine receiptLine = getM_InOutLine();
-			final I_M_InOut receipt = receiptLine.getM_InOut();
-			final boolean isReturnTrx = receipt.getMovementType().equals(X_M_InOut.MOVEMENTTYPE_VendorReturns);
-
-			// Create PO Cost Detail Record first
-			// MZ Goodwill
-			// Create Cost Detail Matched PO using Total Amount and Total Qty based on OrderLine
-			BigDecimal tQty = BigDecimal.ZERO;
-			BigDecimal tAmt = BigDecimal.ZERO;
-			for (final I_M_MatchPO otherMatchPO : getOrderLine(orderLine.getC_OrderLine_ID()))
-			{
-				if (otherMatchPO.getM_AttributeSetInstance_ID() == getM_AttributeSetInstance_ID()
-						&& otherMatchPO.getM_MatchPO_ID() != getM_MatchPO_ID())
-				{
-					final BigDecimal qty = (isReturnTrx ? otherMatchPO.getQty().negate() : otherMatchPO.getQty());
-					tQty = tQty.add(qty);
-					tAmt = tAmt.add(poCostPrice.multiply(qty));
-				}
-			}
-
-			poCostPrice = poCostPrice.multiply(getQty());			// Delivered so far
-			tAmt = tAmt.add(isReturnTrx ? poCostPrice.negate() : poCostPrice);
-			tQty = tQty.add(isReturnTrx ? getQty().negate() : getQty());
-
-			// Different currency
-			if (orderLine.getC_Currency_ID() != as.getC_Currency_ID())
+			else
 			{
 				final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-
 				final I_C_Order order = orderLine.getC_Order();
-
-				// get costing method for product
-				final MProduct product = MProduct.get(getCtx(), getM_Product_ID());
-				final String costingMethod = product.getCostingMethod(as);
-
-				final Timestamp dateAcct;
-				if (X_C_AcctSchema.COSTINGMETHOD_AveragePO.equals(costingMethod) ||
-						X_C_AcctSchema.COSTINGMETHOD_LastPOPrice.equals(costingMethod))
-				{
-					dateAcct = receipt.getDateAcct(); 	// Movement Date
-				}
-				else
-				{
-					dateAcct = order.getDateAcct();
-				}
-
-				//
-				final BigDecimal rate = currencyConversionBL.getRate(
-						order.getC_Currency_ID(),
-						as.getC_Currency_ID(),
+				final Timestamp dateAcct = getM_InOutLine().getM_InOut().getDateAcct();
+				final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
 						dateAcct,
 						order.getC_ConversionType_ID(),
 						orderLine.getAD_Client_ID(),
 						orderLine.getAD_Org_ID());
-				if (rate == null)
-				{
-					throw new AdempiereException("Unable to convert"
-							+ " from currency " + order.getC_Currency().getCurSymbol()
-							+ " (purchase order " + order.getDocumentNo() + ")"
-							+ " to currency " + as.getC_Currency().getCurSymbol()
-							+ " (accounting schema " + as.getName() + ") ");
-				}
-
-				tAmt = tAmt.multiply(rate);
-				if (tAmt.scale() > as.getCostingPrecision())
-				{
-					tAmt = tAmt.setScale(as.getCostingPrecision(), BigDecimal.ROUND_HALF_UP);
-				}
+				final ICurrencyRate rate = currencyConversionBL.getCurrencyRate(conversionCtx, orderLine.getC_Currency_ID(), as.getC_Currency_ID());
+				amtConv = rate.convertAmount(amt, as.getCostingPrecision());
 			}
 
-			// Set Total Amount and Total Quantity from Matched PO
-			Services.get(ICostDetailService.class)
-					.createCostDetail(CostDetailCreateRequest.builder()
+			final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
+			costDetailService.createCostDetail(
+					CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getC_AcctSchema_ID())
 							.clientId(orderLine.getAD_Client_ID())
 							.orgId(orderLine.getAD_Org_ID())
 							.productId(getM_Product_ID())
 							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
 							.documentRef(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()))
-							.costElementId(0) // auto
-							.amt(tAmt)
-							.qty(tQty)
+							.amt(amtConv)
+							.qty(qty)
 							.description(orderLine.getDescription())
 							.build());
-			// end MZ
 		}
+	}
+
+	private BigDecimal getCostPrice()
+	{
+		final I_C_OrderLine orderLine = getC_OrderLine();
+		return Services.get(IOrderLineBL.class).getCostPrice(orderLine);
+	}
+
+	private boolean isReturnTrx()
+	{
+		final I_M_InOutLine receiptLine = getM_InOutLine();
+		final I_M_InOut receipt = receiptLine.getM_InOut();
+		return X_M_InOut.MOVEMENTTYPE_VendorReturns.equals(receipt.getMovementType());
 	}
 
 	// AZ Goodwill

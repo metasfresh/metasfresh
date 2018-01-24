@@ -45,7 +45,7 @@ public interface ICurrencyRate
 
 	Date getConversionDate();
 
-	int getCurrencyPrecision();
-
 	BigDecimal convertAmount(BigDecimal amount);
+
+	BigDecimal convertAmount(BigDecimal amount, int precision);
 }

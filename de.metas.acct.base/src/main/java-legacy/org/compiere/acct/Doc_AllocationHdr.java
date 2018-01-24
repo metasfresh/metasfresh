@@ -884,7 +884,7 @@ public class Doc_AllocationHdr extends Doc
 			final MInvoiceLine[] lines = invoicePO.getLines();
 			for (int i = 0; i < lines.length; i++)
 			{
-				Fact factC = Doc_Order.getCommitmentRelease(as, this,
+				Fact factC = Doc_Order.createFact_CommitmentPurchaseRelease(as, this,
 						lines[i].getQtyInvoiced(), lines[i].getC_InvoiceLine_ID(), new BigDecimal(percent));
 				if (factC == null)
 					return null;
