@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -113,6 +114,10 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHU extends PickingSlotsCleari
 		//
 		// Move the HU to an after picking locator
 		final I_M_Locator afterPickingLocator = huWarehouseDAO.suggestAfterPickingLocator(hu.getM_Locator());
+		if(afterPickingLocator == null)
+		{
+			throw new AdempiereException("No after picking locator found for " + hu.getM_Locator());
+		}
 		if (afterPickingLocator.getM_Locator_ID() != hu.getM_Locator_ID())
 		{
 			huMovementBL.moveHUsToLocator(ImmutableList.of(hu), afterPickingLocator);
