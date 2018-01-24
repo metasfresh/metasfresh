@@ -4,6 +4,7 @@ import de.metas.process.JavaProcess;
 import de.metas.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3Client;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientConfig;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
 
 /*
  * #%L
@@ -35,9 +36,10 @@ public class MSV3_Vendor_Config_TestConnection extends JavaProcess
 	{
 		final I_MSV3_Vendor_Config configDataRecord = getProcessInfo().getRecord(I_MSV3_Vendor_Config.class);
 
-		final MSV3ClientConfig configData = MSV3ClientConfig.ofdataRecord(configDataRecord);
+		final MSV3ConnectionFactory connectionFactory = new MSV3ConnectionFactory();
+		final MSV3ClientConfig config = MSV3ClientConfig.ofdataRecord(configDataRecord);
 
-		final MSV3Client msv3Client = new MSV3Client(configData);
+		final MSV3Client msv3Client = new MSV3Client(connectionFactory, config);
 		msv3Client.testConnection(); // if the connection is not OK, and exception will be thrown
 
 		return MSG_OK;

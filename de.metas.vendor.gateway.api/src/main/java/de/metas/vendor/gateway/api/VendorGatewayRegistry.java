@@ -47,7 +47,7 @@ public class VendorGatewayRegistry
 		logger.info("Services: {}", services);
 	}
 
-	public List<VendorGatewayService> getVendorGatewayService(final int vendorId)
+	public List<VendorGatewayService> getVendorGatewayServices(final int vendorId)
 	{
 		return services.stream()
 				.filter(service -> service.isProvidedForVendor(vendorId))

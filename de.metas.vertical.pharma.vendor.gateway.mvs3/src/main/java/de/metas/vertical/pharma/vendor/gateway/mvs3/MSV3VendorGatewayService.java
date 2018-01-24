@@ -32,28 +32,29 @@ import lombok.NonNull;
 @Service
 public class MSV3VendorGatewayService implements VendorGatewayService
 {
-
 	private final MSV3ClientConfigRepository configRepo;
+	private final MSV3ConnectionFactory connectionFactory;
 
-	public MSV3VendorGatewayService(@NonNull final MSV3ClientConfigRepository configRepo)
+	public MSV3VendorGatewayService(
+			@NonNull final MSV3ConnectionFactory connectionFactory,
+			@NonNull final MSV3ClientConfigRepository configRepo)
 	{
 		this.configRepo = configRepo;
-
+		this.connectionFactory = connectionFactory;
 	}
 
 	@Override
 	public AvailabilityResponse retrieveAvailability(@NonNull final AvailabilityRequest request)
 	{
-		final MSV3ClientConfig config = configRepo.getByVendorId(request.getVendorId());
-		final MSV3Client client = new MSV3Client(config);
+		final MSV3ClientConfig config = configRepo.retrieveByVendorId(request.getVendorId());
+		final MSV3Client client = new MSV3Client(connectionFactory, config);
 
 		return client.retrieveAvailability(request);
 	}
 
 	@Override
-	public boolean isProvidedForVendor(int vendorId)
+	public boolean isProvidedForVendor(final int vendorId)
 	{
-		return configRepo.getByVendorIdOrNull(vendorId) != null;
+		return configRepo.getretrieveByVendorIdOrNull(vendorId) != null;
 	}
-
 }

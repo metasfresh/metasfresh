@@ -40,6 +40,7 @@ import de.metas.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
 @DependsOn(Adempiere.BEAN_NAME)
 public class MSV3ClientConfigRepository
 {
+	/** null object, used to store "no config for this vendor" in the {@link #configDataRecords} cache */
 	private final static I_MSV3_Vendor_Config NULL_CONFIG_RECORD = newInstance(I_MSV3_Vendor_Config.class);
 
 	private final CCache<Integer, I_MSV3_Vendor_Config> configDataRecords = CCache.newCache(
@@ -50,16 +51,16 @@ public class MSV3ClientConfigRepository
 	/**
 	 * @param vendorId the C_BPartner_ID of the vendor we wish to order from
 	 *
-	 * @return
+	 * @return never returns {@code null}.
 	 */
-	public MSV3ClientConfig getByVendorId(final int vendorId)
+	public MSV3ClientConfig retrieveByVendorId(final int vendorId)
 	{
-		final MSV3ClientConfig config = getByVendorIdOrNull(vendorId);
+		final MSV3ClientConfig config = getretrieveByVendorIdOrNull(vendorId);
 		Check.errorIf(config == null, "Missing MSV3ClientConfig for vendorId={}", vendorId);
 		return config;
 	}
 
-	public MSV3ClientConfig getByVendorIdOrNull(final int vendorId)
+	public MSV3ClientConfig getretrieveByVendorIdOrNull(final int vendorId)
 	{
 		final Supplier<I_MSV3_Vendor_Config> recordLoader = () -> retrieveRecordFromDB(vendorId);
 
@@ -80,6 +81,7 @@ public class MSV3ClientConfigRepository
 				.addEqualsFilter(I_MSV3_Vendor_Config.COLUMN_C_BPartner_ID, vendorId)
 				.create()
 				.firstOnly(I_MSV3_Vendor_Config.class);
+
 		if (result == null)
 		{
 			return NULL_CONFIG_RECORD;

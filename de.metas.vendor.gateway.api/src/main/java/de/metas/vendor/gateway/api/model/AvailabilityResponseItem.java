@@ -1,7 +1,12 @@
 package de.metas.vendor.gateway.api.model;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
+import javax.annotation.Nullable;
+
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -27,9 +32,29 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public class AvailabilityResponseItem
 {
+	public enum Type
+	{
+		AVAILABLE, NOT_AVAILABLE;
+	}
+
+	@NonNull
+	AvailabilityRequestItem correspondingRequestItem;
+
+	@NonNull
 	String productIdentifier;
 
+	@NonNull
 	BigDecimal availableQuantity;
+
+	@Nullable
+	Date datePromised;
+
+	@NonNull
+	Type type;
+
+	@Nullable
+	String availabilityText;
 }

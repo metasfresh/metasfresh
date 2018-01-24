@@ -13,18 +13,30 @@
 
 	<properties>
 		<migration-sql-basedir>45-de.metas.purchasecandidate</migration-sql-basedir>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		
-				
-		<!--
-			Lombok
+		<!-- API to be invoked by the code -->
+		<dependency>
+			<groupId>de.metas.vertical.pharma</groupId>
+			<artifactId>metasfresh-pharma</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<!-- vendor-API's implementation to be discovered, registered and used behind the scenes, but not used directly -->
+		<dependency>
+			<groupId>de.metas.vertical.pharma</groupId>
+			<artifactId>metasfresh-pharma.vendor.gateway.mvs3</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+			
+		<!-- Lombok
 			See https://github.com/metasfresh/metasfresh/issues/1125
 			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
 			Also note that the version is managed by spring-boot.
@@ -34,11 +46,19 @@
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${metasfresh.version}</version>
+			<scope>test</scope>
+			<classifier>tests</classifier>
 		</dependency>
 	</dependencies>
 

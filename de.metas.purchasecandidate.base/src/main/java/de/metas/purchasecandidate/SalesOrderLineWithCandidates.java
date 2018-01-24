@@ -1,11 +1,17 @@
-package de.metas.vendor.gateway.api;
+package de.metas.purchasecandidate;
 
-import de.metas.vendor.gateway.api.model.AvailabilityRequest;
-import de.metas.vendor.gateway.api.model.AvailabilityResponse;
+import java.util.List;
+
+import org.compiere.model.I_C_OrderLine;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.vendor.gateway.api
+ * de.metas.purchasecandidate.base
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -25,13 +31,13 @@ import de.metas.vendor.gateway.api.model.AvailabilityResponse;
  * #L%
  */
 
-/**
- * Hint: obtain your instance(s) for a given vendor (if any!) via {@link VendorGatewayRegistry#getVendorGatewayServices(int)}.
- *
- */
-public interface VendorGatewayService
+@Value
+@Builder
+public class SalesOrderLineWithCandidates
 {
-	boolean isProvidedForVendor(int vendorId);
+	@NonNull
+	I_C_OrderLine salesOrderLine;
 
-	AvailabilityResponse retrieveAvailability(AvailabilityRequest request);
+	@Singular
+	List<PurchaseCandidate> purchaseCandidates;
 }
