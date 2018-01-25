@@ -35,6 +35,7 @@ import org.adempiere.util.lang.HashcodeBuilder;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import lombok.NonNull;
 
 /**
  * Allocation result that be created as an empty one and then can be altered by the code which dioes the allocating.
@@ -57,9 +58,9 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 	 * 
 	 * @param qtyToAllocate the qty that shall be allocated. This quantity is subsequently reduced.
 	 */
-	public MutableAllocationResult(final BigDecimal qtyToAllocate)
+	public MutableAllocationResult(@NonNull final BigDecimal qtyToAllocate)
 	{
-		Check.assume(qtyToAllocate.signum() >= 0, "qty >= 0 ({})", qtyToAllocate);
+		Check.errorIf(qtyToAllocate.signum() < 0, "The given qtyToAllocate={} needs to be >= 0", qtyToAllocate);
 
 		this.qtyToAllocateInitial = qtyToAllocate;
 		this.qtyToAllocate = qtyToAllocate;
