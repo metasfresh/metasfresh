@@ -232,6 +232,7 @@ class RawLookup extends Component {
   };
 
   handleBlur = callback => {
+    const { allowOutsideClickListener } = this.props;
     this.setState(
       {
         isOpen: false
@@ -242,6 +243,7 @@ class RawLookup extends Component {
         }
       }
     );
+    allowOutsideClickListener && allowOutsideClickListener(true);
   };
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {
@@ -259,8 +261,11 @@ class RawLookup extends Component {
       viewId,
       mainProperty,
       handleInputEmptyStatus,
-      enableAutofocus
+      enableAutofocus,
+      allowOutsideClickListener
     } = this.props;
+
+    allowOutsideClickListener && allowOutsideClickListener(false);
 
     enableAutofocus();
 
