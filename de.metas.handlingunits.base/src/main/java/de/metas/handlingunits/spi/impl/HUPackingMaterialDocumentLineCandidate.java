@@ -23,11 +23,10 @@ package de.metas.handlingunits.spi.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -35,12 +34,12 @@ import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.comparator.NullComparator;
-import org.apache.commons.collections4.list.UnmodifiableList;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
@@ -101,7 +100,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 	private BigDecimal qty = BigDecimal.ZERO;
 	private final I_M_Locator locator;
 	private final I_M_Material_Tracking materialTracking;
-	private final List<IHUPackingMaterialCollectorSource> sources = new ArrayList<>();
+	private final LinkedHashSet<IHUPackingMaterialCollectorSource> sources = new LinkedHashSet<>();
 
 	/**
 	 *
@@ -265,19 +264,16 @@ public final class HUPackingMaterialDocumentLineCandidate
 		}
 	}
 
-	private void addSources(final List<IHUPackingMaterialCollectorSource> huPackingMaterialCollectorSources)
+	private void addSources(final Set<IHUPackingMaterialCollectorSource> huPackingMaterialCollectorSources)
 	{
 		if (!huPackingMaterialCollectorSources.isEmpty())
 		{
 			sources.addAll(huPackingMaterialCollectorSources);
-			final List<IHUPackingMaterialCollectorSource> uniqueSources = new ArrayList<>(new LinkedHashSet<>(sources));
-			sources.clear();
-			sources.addAll(uniqueSources);
 		}
 	}
 
-	public List<IHUPackingMaterialCollectorSource> getSources()
+	public Set<IHUPackingMaterialCollectorSource> getSources()
 	{
-		return new UnmodifiableList<>(sources);
+		return ImmutableSet.copyOf(sources);
 	}
 }
