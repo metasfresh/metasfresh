@@ -89,6 +89,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#1196](https://github.com/metasfresh/metasfresh/issues/1196) Creating new product in new database causes error
   * [#3196](https://github.com/metasfresh/metasfresh/issues/3196) dunning run: Exception on PDF generation
   * [#3339](https://github.com/metasfresh/metasfresh/issues/3339) Field "Doctype" is included twice in payment window
     * Fixes a doubled Field for Doctype in the payment window.
