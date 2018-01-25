@@ -128,7 +128,12 @@ class RawList extends Component {
     const { top } = this.tetheredList.getBoundingClientRect();
     const { filter } = this.props;
     const { isOpen } = this.state;
-    if (isOpen && filter.visible && top + 20 > filter.boundingRect.bottom) {
+    if (
+      isOpen &&
+      filter.visible &&
+      (top + 20 > filter.boundingRect.bottom ||
+        top - 20 < filter.boundingRect.top)
+    ) {
       this.setState({ isOpen: false });
     }
   };

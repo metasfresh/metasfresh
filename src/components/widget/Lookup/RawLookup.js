@@ -1,6 +1,8 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import TetherComponent from "react-tether";
+import ReactDOM from "react-dom";
 
 import { autocompleteRequest } from "../../../actions/GenericActions";
 import { getViewAttributeTypeahead } from "../../../actions/ViewAttributesActions";
@@ -93,7 +95,26 @@ class RawLookup extends Component {
     if (fireDropdownList && prevProps.fireDropdownList !== fireDropdownList) {
       this.handleChange("", true);
     }
+
+    this.checkIfComponentOutOfFilter();
   }
+
+  checkIfComponentOutOfFilter = () => {
+    if (!this.lookupList) return;
+    // eslint-disable-next-line react/no-find-dom-node
+    let element = ReactDOM.findDOMNode(this.lookupList);
+    const { top } = element.getBoundingClientRect();
+    const { filter } = this.props;
+    const { isOpen } = this.state;
+    if (
+      isOpen &&
+      filter.visible &&
+      (top + 20 > filter.boundingRect.bottom ||
+        top - 20 < filter.boundingRect.top)
+    ) {
+      this.setState({ isOpen: false });
+    }
+  };
 
   clearState = () => {
     this.setState({
@@ -401,47 +422,68 @@ class RawLookup extends Component {
           (readonly ? " input-disabled" : "")
         }
         onKeyDown={this.handleKeyDown}
+        ref={c => (this.rawLookup = c)}
       >
-        <div className={"input-dropdown input-block"}>
-          <div
-            className={"input-editable" + (align ? " text-xs-" + align : "")}
-          >
-            <input
-              ref={c => (this.inputSearch = c)}
-              type="text"
-              className="input-field js-input-field font-weight-semibold"
-              readOnly={readonly}
-              disabled={readonly && !disabled}
-              tabIndex={tabIndex}
-              placeholder={placeholder}
-              onChange={this.handleChange}
-            />
+        <TetherComponent
+          attachment="top left"
+          targetAttachment="bottom left"
+          constraints={[
+            {
+              to: "scrollParent"
+            },
+            {
+              to: "window",
+              pin: ["bottom"]
+            }
+          ]}
+        >
+          <div className={"input-dropdown input-block"}>
+            <div
+              className={"input-editable" + (align ? " text-xs-" + align : "")}
+            >
+              <input
+                ref={c => (this.inputSearch = c)}
+                type="text"
+                className="input-field js-input-field font-weight-semibold"
+                readOnly={readonly}
+                disabled={readonly && !disabled}
+                tabIndex={tabIndex}
+                placeholder={placeholder}
+                onChange={this.handleChange}
+              />
+            </div>
           </div>
-        </div>
 
-        {isOpen &&
-          !isInputEmpty && (
-            <LookupList
-              loading={loading}
-              selected={selected}
-              list={list}
-              query={query}
-              isInputEmpty={isInputEmpty}
-              disableOnClickOutside={!isOpen}
-              creatingNewDisabled={isModal}
-              newRecordCaption={newRecordCaption}
-              handleSelect={this.handleSelect}
-              handleAddNew={this.handleAddNew}
-              onClickOutside={this.handleBlur}
-            />
-          )}
+          {isOpen &&
+            !isInputEmpty && (
+              <LookupList
+                ref={c => (this.lookupList = c)}
+                loading={loading}
+                selected={selected}
+                list={list}
+                query={query}
+                isInputEmpty={isInputEmpty}
+                disableOnClickOutside={!isOpen}
+                creatingNewDisabled={isModal}
+                newRecordCaption={newRecordCaption}
+                handleSelect={this.handleSelect}
+                handleAddNew={this.handleAddNew}
+                onClickOutside={this.handleBlur}
+                style={{ width: `${this.rawLookup.offsetWidth}px` }}
+              />
+            )}
+        </TetherComponent>
       </div>
     );
   }
 }
 
+const mapStateToProps = state => ({
+  filter: state.windowHandler.filter
+});
+
 RawLookup.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-export default connect()(RawLookup);
+export default connect(mapStateToProps)(RawLookup);
