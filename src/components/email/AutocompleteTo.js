@@ -21,7 +21,7 @@ class AutocompleteTo extends Component {
     let tagsUpdated = [];
 
     to.map(item => {
-      tagsUpdated.push(item[Object.keys(item)[0]]);
+      tagsUpdated.push(item.caption);
     });
     return tagsUpdated;
   };
@@ -61,11 +61,11 @@ class AutocompleteTo extends Component {
         ref={props.ref}
         suggestions={suggestions}
         shouldRenderSuggestions={value => value && value.trim().length > 0}
-        getSuggestionValue={s => s[Object.keys(s)[0]]}
-        renderSuggestion={s => <span>{s[Object.keys(s)[0]]}</span>}
+        getSuggestionValue={s => s.caption}
+        renderSuggestion={s => <span>{s.caption}</span>}
         inputProps={{ ...props, onChange: handleOnChange }}
         onSuggestionSelected={(e, { suggestion }) => {
-          addTag(suggestion[Object.keys(suggestion)[0]]);
+          addTag(suggestion.caption);
         }}
         onSuggestionsFetchRequested={this.suggestionsFetch}
         onSuggestionsClearRequested={() => this.setState({ suggestions: [] })}
