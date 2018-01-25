@@ -32,8 +32,8 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 
-import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import lombok.NonNull;
 
@@ -48,10 +48,10 @@ import lombok.NonNull;
 	private final BigDecimal qtyToAllocateInitial;
 	private BigDecimal qtyToAllocate;
 
-	private final List<IHUTransactionCandidate> transactions = new ArrayList<IHUTransactionCandidate>();
+	private final List<IHUTransactionCandidate> transactions = new ArrayList<>();
 	private final List<IHUTransactionCandidate> transactionsRO = Collections.unmodifiableList(transactions);
 
-	private final List<IHUTransactionAttribute> attributeTransactions = new ArrayList<IHUTransactionAttribute>();
+	private final List<IHUTransactionAttribute> attributeTransactions = new ArrayList<>();
 	private final List<IHUTransactionAttribute> attributeTransactionsRO = Collections.unmodifiableList(attributeTransactions);
 
 	/**
