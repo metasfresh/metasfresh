@@ -12,6 +12,7 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.soap.saaj.SaajSoapMessageFactory;
 import org.springframework.ws.transport.http.HttpComponentsMessageSender;
 
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.ObjectFactory;
 import lombok.NonNull;
 
 /*
@@ -45,7 +46,7 @@ public class MSV3ConnectionFactory
 				createMessageSender(config.getAuthUsername(), config.getAuthPassword());
 
 		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-		marshaller.setPackagesToScan(de.metas.vendor.gateway.msv3.schema.ObjectFactory.class.getPackage().getName());
+		marshaller.setPackagesToScan(ObjectFactory.class.getPackage().getName());
 
 		final WebServiceTemplate webServiceTemplate = new WebServiceTemplate();
 		webServiceTemplate.setMessageSender(messageSender);

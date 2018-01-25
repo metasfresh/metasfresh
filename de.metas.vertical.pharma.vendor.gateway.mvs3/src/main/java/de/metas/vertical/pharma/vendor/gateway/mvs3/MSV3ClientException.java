@@ -10,7 +10,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.vendor.gateway.api.model.AvailabilityRequestException;
 import de.metas.vendor.gateway.api.model.AvailabilityRequestItem;
-import de.metas.vendor.gateway.msv3.schema.Msv3FaultInfo;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
 import lombok.Getter;
 import lombok.NonNull;
 
