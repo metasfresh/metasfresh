@@ -1,6 +1,12 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import TetherComponent from "react-tether";
+import PropTypes from "prop-types";
+import {
+  allowOutsideClick,
+  disableOutsideClick
+} from "../../../actions/WindowActions";
 
 let lastKeyWasTab = false;
 
@@ -117,6 +123,23 @@ class RawList extends Component {
         selected: selected
       });
     }
+
+    this.checkIfDropDownListOutOfFilter();
+  };
+
+  checkIfDropDownListOutOfFilter = () => {
+    if (!this.tetheredList) return;
+    const { top } = this.tetheredList.getBoundingClientRect();
+    const { filter } = this.props;
+    const { isOpen } = this.state;
+    if (
+      isOpen &&
+      filter.visible &&
+      (top + 20 > filter.boundingRect.bottom ||
+        top - 20 < filter.boundingRect.top)
+    ) {
+      this.setState({ isOpen: false });
+    }
   };
 
   componentWillUnmount() {
@@ -223,6 +246,7 @@ class RawList extends Component {
   };
 
   handleBlur = e => {
+    const { dispatch } = this.props;
     // if dropdown item is selected
     // prevent blur event to keep the dropdown list displayed
     if (!this.considerBlur || (e && this.dropdown.contains(e.target))) {
@@ -252,6 +276,8 @@ class RawList extends Component {
     });
 
     allowOutsideClickListener && allowOutsideClickListener(true);
+
+    dispatch(allowOutsideClick());
   };
 
   /*
@@ -259,6 +285,7 @@ class RawList extends Component {
      * on focus.
      */
   handleClick = e => {
+    const { dispatch } = this.props;
     this.considerBlur = true;
 
     e.preventDefault();
@@ -271,6 +298,7 @@ class RawList extends Component {
       isOpen: true
     });
     window.addEventListener("click", this.handleBlur);
+    dispatch(disableOutsideClick());
   };
 
   handleFocus = event => {
@@ -536,6 +564,7 @@ class RawList extends Component {
               <div
                 className="input-dropdown-list"
                 style={{ width: `${this.dropdown.offsetWidth}px` }}
+                ref={c => (this.tetheredList = c)}
               >
                 {isListEmpty &&
                   loading === false && (
@@ -566,4 +595,13 @@ class RawList extends Component {
   }
 }
 
-export default RawList;
+const mapStateToProps = state => ({
+  filter: state.windowHandler.filter
+});
+
+RawList.propTypes = {
+  filter: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired
+};
+
+export default connect(mapStateToProps)(RawList);

@@ -410,7 +410,10 @@ class RawWidget extends Component {
       case "Lookup":
         return (
           <Lookup
-            {...{ attribute }}
+            {...{
+              attribute,
+              allowOutsideClickListener
+            }}
             entity={entity}
             subentity={subentity}
             subentityId={subentityId}

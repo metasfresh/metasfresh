@@ -257,7 +257,7 @@ td.rdtYear:hover {
 }
 
 .tether-element {
-    z-index: 9;
+    z-index: 999;
 }
 
 .tether-out-of-bounds-top .rdtPicker {

@@ -110,10 +110,20 @@ class LookupList extends Component {
   };
 
   render() {
-    const { loading, list, creatingNewDisabled, newRecordCaption } = this.props;
+    const {
+      loading,
+      list,
+      creatingNewDisabled,
+      newRecordCaption,
+      style
+    } = this.props;
 
     return (
-      <div className="input-dropdown-list" ref={c => (this.listScrollWrap = c)}>
+      <div
+        className="input-dropdown-list"
+        ref={c => (this.listScrollWrap = c)}
+        style={style}
+      >
         {loading && list.length === 0 && this.renderLoader()}
         {!loading && list.length === 0 && this.renderEmpty()}
         <div ref={c => (this.items = c)}>
@@ -132,4 +142,6 @@ LookupList.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-export default connect()(onClickOutside(LookupList));
+export default connect(false, false, false, { withRef: true })(
+  onClickOutside(LookupList)
+);

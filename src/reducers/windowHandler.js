@@ -5,18 +5,22 @@ import {
   ADD_NEW_ROW,
   ADD_ROW_DATA,
   ALLOW_SHORTCUT,
+  ALLOW_OUTSIDE_CLICK,
   CHANGE_INDICATOR_STATE,
   CLEAR_MASTER_DATA,
   CLOSE_MODAL,
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
+  CLOSE_FILTER_BOX,
   DELETE_ROW,
   DISABLE_SHORTCUT,
+  DISABLE_OUTSIDE_CLICK,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
   NO_CONNECTION,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
+  OPEN_FILTER_BOX,
   PATCH_FAILURE,
   PATCH_REQUEST,
   PATCH_RESET,
@@ -80,6 +84,7 @@ const initialState = {
   },
   indicator: "saved",
   allowShortcut: true,
+  allowOutsideClick: true,
   latestNewDocument: null,
   viewId: null,
   selections: {},
@@ -88,7 +93,8 @@ const initialState = {
       length: 0
     },
     success: true
-  }
+  },
+  filter: {}
 };
 
 export const NO_SELECTION = [];
@@ -449,6 +455,33 @@ export default function windowHandler(state = initialState, action) {
           viewId: action.viewId
         })
       });
+
+    case OPEN_FILTER_BOX:
+      return Object.assign({}, state, {
+        filter: Object.assign({}, state.filter, {
+          visible: true,
+          boundingRect: action.boundingRect
+        })
+      });
+
+    case CLOSE_FILTER_BOX:
+      return Object.assign({}, state, {
+        filter: Object.assign({}, state.filter, {
+          visible: false,
+          boundingRect: null
+        })
+      });
+    case ALLOW_OUTSIDE_CLICK:
+      return {
+        ...state,
+        allowOutsideClick: true
+      };
+
+    case DISABLE_OUTSIDE_CLICK:
+      return {
+        ...state,
+        allowOutsideClick: false
+      };
 
     case ALLOW_SHORTCUT:
       return {
