@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,7 +39,7 @@ import lombok.NonNull;
 
 /**
  * Allocation result that be created as an empty one and then can be altered by the code which dioes the allocating.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -55,7 +55,7 @@ import lombok.NonNull;
 	private final List<IHUTransactionAttribute> attributeTransactionsRO = Collections.unmodifiableList(attributeTransactions);
 
 	/**
-	 * 
+	 *
 	 * @param qtyToAllocate the qty that shall be allocated. This quantity is subsequently reduced.
 	 */
 	public MutableAllocationResult(@NonNull final BigDecimal qtyToAllocate)

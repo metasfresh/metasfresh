@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1958824287L;
+	private static final long serialVersionUID = -39099165L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -51,6 +51,40 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_BPartner_Product getC_BPartner_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Product_ID, org.compiere.model.I_C_BPartner_Product.class);
+	}
+
+	@Override
+	public void setC_BPartner_Product(org.compiere.model.I_C_BPartner_Product C_BPartner_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Product_ID, org.compiere.model.I_C_BPartner_Product.class, C_BPartner_Product);
+	}
+
+	/** Set Geschäftspartner-Produkt.
+		@param C_BPartner_Product_ID Geschäftspartner-Produkt	  */
+	@Override
+	public void setC_BPartner_Product_ID (int C_BPartner_Product_ID)
+	{
+		if (C_BPartner_Product_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Product_ID, Integer.valueOf(C_BPartner_Product_ID));
+	}
+
+	/** Get Geschäftspartner-Produkt.
+		@return Geschäftspartner-Produkt	  */
+	@Override
+	public int getC_BPartner_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_C_OrderLine getC_OrderLinePO() throws RuntimeException

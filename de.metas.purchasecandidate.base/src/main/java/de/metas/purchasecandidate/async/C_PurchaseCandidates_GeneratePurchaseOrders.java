@@ -48,9 +48,9 @@ import de.metas.purchasecandidate.order.PurchaseOrderFromCandidatesAggregator;
 
 /**
  * Aggregates enqueued {@link PurchaseCandidate}s and generates purchase orders.
- * 
+ *
  * Also, {@link #enqueue(Collection)} method is used to enqueue purchase candidates.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -58,7 +58,8 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 {
 	public static void enqueue(final Collection<Integer> purchaseCandidateIds)
 	{
-		final List<TableRecordReference> purchaseCandidateRecords = TableRecordReference.ofRecordIds(I_C_PurchaseCandidate.Table_Name, purchaseCandidateIds);
+		final List<TableRecordReference> purchaseCandidateRecords = //
+				TableRecordReference.ofRecordIds(I_C_PurchaseCandidate.Table_Name, purchaseCandidateIds);
 		if (purchaseCandidateRecords.isEmpty())
 		{
 			throw new AdempiereException("No purchase candidates to enqueue");

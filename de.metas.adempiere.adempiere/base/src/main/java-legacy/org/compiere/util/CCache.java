@@ -153,7 +153,6 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 			final int expireMinutes,
 			final CacheMapType cacheMapType)
 	{
-		super();
 		this.cacheId = NEXT_CACHE_ID.getAndIncrement();
 		this.initialCapacity = initialCapacity;
 		this.m_name = name;
