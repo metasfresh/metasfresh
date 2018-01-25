@@ -106,6 +106,7 @@ public class PurchaseCandidateTest
 				.productId(5)
 				.uomId(6)
 				.vendorBPartnerId(7)
+				.vendorProductInfo(new VendorProductInfo(10, 7, 20, "productNo", "productName"))
 				.qtyRequired(BigDecimal.ONE)
 				.datePromised(SystemTime.asDayTimestamp())
 				.processed(false)

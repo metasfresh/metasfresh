@@ -6,6 +6,8 @@ import org.adempiere.util.Check;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Util;
 
+import com.google.common.annotations.VisibleForTesting;
+
 // import de.metas.interfaces.I_C_BPartner_Product;
 import lombok.NonNull;
 import lombok.Value;
@@ -70,7 +72,8 @@ public class VendorProductInfo
 				productName);
 	}
 
-	private VendorProductInfo(
+	@VisibleForTesting
+	VendorProductInfo(
 			int bPartnerProductId,
 			int vendorBPartnerId,
 			int m_Product_ID,
