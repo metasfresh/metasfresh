@@ -341,10 +341,9 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 		public Stream<HUEditorRow> streamRecursive()
 		{
-			return rows.stream()
-					.map(row -> row)
-					.flatMap(row -> row.streamRecursive())
-					.map(row -> (HUEditorRow)row);
+			return stream()
+					.flatMap(HUEditorRow::streamRecursive)
+					.map(HUEditorRow::cast);
 		}
 
 		public long size()

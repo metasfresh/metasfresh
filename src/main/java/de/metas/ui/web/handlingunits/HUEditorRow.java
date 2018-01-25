@@ -291,7 +291,7 @@ public final class HUEditorRow implements IViewRow
 	{
 		return streamRecursive()
 				.filter(row -> rowId.equals(row.getId()))
-				.map(row -> (HUEditorRow)row)
+				.map(HUEditorRow::cast)
 				.findFirst();
 	}
 

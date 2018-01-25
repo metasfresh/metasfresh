@@ -93,7 +93,7 @@ interface HUEditorViewBuffer
 		final HUEditorRow topLevelRow = getById(topLevelRowId.toDocumentId());
 		return topLevelRow
 				.streamRecursive()
-				.map(row -> (HUEditorRow)row)
+				.map(HUEditorRow::cast)
 				.filter(row -> row.hasDirectChild(childId))
 				.findFirst();
 

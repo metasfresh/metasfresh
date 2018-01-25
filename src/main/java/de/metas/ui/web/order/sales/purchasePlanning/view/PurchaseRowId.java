@@ -95,7 +95,11 @@ public final class PurchaseRowId
 			@Nullable final DocumentId documentId)
 	{
 		final List<String> parts = PARTS_SPLITTER.splitToList(json);
-		final int partsCount = assertCorrectNumberOfParts(json, parts);
+		final int partsCount = parts.size();
+		if (partsCount < 1 || partsCount == 3 || partsCount > 4)
+		{
+			throw new AdempiereException("Invalid format: " + json);
+		}
 
 		try
 		{
@@ -115,16 +119,6 @@ public final class PurchaseRowId
 		{
 			throw new AdempiereException("Cannot convert '" + json + "' to " + PurchaseRowId.class, ex);
 		}
-	}
-
-	private static int assertCorrectNumberOfParts(final String json, final List<String> parts)
-	{
-		final int partsCount = parts.size();
-		if (partsCount < 1 || partsCount == 3 || partsCount > 4)
-		{
-			throw new AdempiereException("Invalid format: " + json);
-		}
-		return partsCount;
 	}
 
 	/** Please make sure this splitter is not included in the enum values of {@link Type}. */
