@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- Mit XMLSpy v2010 rel. 3 sp1 (x64) (http://www.altova.com) von Kirill 
+	Davletkildeev (Pharmatechnik GmbH & Co. KG) bearbeitet -->
+<!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by Kirill Davletkildeev 
+	(Pharmatechnik GmbH & Co. KG) -->
+<xs:schema xmlns:tns="urn:msv3:v2" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="urn:msv3:v2" version="2.0">
+	<xs:include schemaLocation="Msv3FachlicheFunktionen.xsd" />
+	<xs:element name="AuthorizationFaultInfo" type="tns:AuthorizationFaultInfo"
+		nillable="true" />
+	<xs:element name="ServerFaultInfo" type="tns:ServerFaultInfo"
+		nillable="true" />
+	<xs:element name="ValidationFault" type="tns:ValidationFaultInfo"
+		nillable="true" />
+	<xs:element name="DenialOfServiceFault" type="tns:DenialOfServiceFault"
+		nillable="true" />
+	<xs:element name="LieferscheinOderBarcodeUnbekanntFaultInfo" type="tns:LieferscheinOderBarcodeUnbekanntFaultInfo"
+		nillable="true" />
+	<xs:element name="bestellstatusAbfragen" type="tns:bestellstatusAbfragen" />
+	<xs:element name="bestellstatusAbfragenResponse" type="tns:bestellstatusAbfragenResponse" />
+	<xs:element name="vertragsdatenAbfragen" type="tns:vertragsdatenAbfragen" />
+	<xs:element name="vertragsdatenAbfragenResponse" type="tns:vertragsdatenAbfragenResponse" />
+	<xs:element name="bestellen" type="tns:bestellen" />
+	<xs:element name="bestellenResponse" type="tns:bestellenResponse" />
+	<xs:element name="ruecknahmeangebotAnfordern" type="tns:ruecknahmeangebotAnfordern" />
+	<xs:element name="ruecknahmeangebotAnfordernResponse" type="tns:ruecknahmeangebotAnfordernResponse" />
+	<xs:element name="verbindungTesten" type="tns:verbindungTesten" />
+	<xs:element name="verbindungTestenResponse" type="tns:verbindungTestenResponse" />
+	<xs:element name="verfuegbarkeitAnfragen" type="tns:verfuegbarkeitAnfragen" />
+	<xs:element name="verfuegbarkeitAnfragenBulk" type="tns:verfuegbarkeitAnfragenBulk" />
+	<xs:element name="verfuegbarkeitAnfragenBulkResponse" type="tns:verfuegbarkeitAnfragenBulkResponse" />
+	<xs:element name="verfuegbarkeitAnfragenResponse" type="tns:verfuegbarkeitAnfragenResponse" />
+	<xs:element name="lieferavisAbfrageHist" type="tns:lieferavisAbfrageHist" />
+	<xs:element name="lieferavisAbfrageHistResponse" type="tns:lieferavisAbfrageHistResponse" />
+	<xs:element name="lieferavisAbfrageNeu" type="tns:lieferavisAbfrageNeu" />
+	<xs:element name="lieferavisAbfrageNeuResponse" type="tns:lieferavisAbfrageNeuResponse" />
+	<xs:element name="lieferavisBestaetigen" type="tns:lieferavisBestaetigen" />
+	<xs:element name="lieferavisBestaetigenResponse" type="tns:lieferavisBestaetigenResponse" />
+	<xs:element name="retourenavisAnfragen" type="tns:retourenavisAnfragen" />
+	<xs:element name="retourenavisAnfragenResponse" type="tns:retourenavisAnfragenResponse" />
+	<xs:element name="retourenavisAnkuendigen" type="tns:retourenavisAnkuendigen" />
+	<xs:element name="retourenavisAnkuendigenResponse" type="tns:retourenavisAnkuendigenResponse" />
+	<xs:element name="dokumentAbfragen" type="tns:dokumentAbfragen" />
+	<xs:element name="dokumentAbfragenResponse" type="tns:dokumentAbfragenResponse" />
+
+	<xs:complexType name="verbindungTesten">
+		<xs:sequence>
+			<xs:element name="clientSoftwareKennung" type="tns:ClientSoftwareKennung" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="verbindungTestenResponse">
+		<xs:sequence />
+	</xs:complexType>
+	<xs:complexType name="verfuegbarkeitAnfragen">
+		<xs:sequence>
+			<xs:element name="clientSoftwareKennung" type="tns:ClientSoftwareKennung" />
+			<xs:element name="verfuegbarkeitsanfrage" type="tns:VerfuegbarkeitsanfrageEinzelne" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="verfuegbarkeitAnfragenResponse">
+		<xs:sequence>
+			<xs:element name="return"
+				type="tns:VerfuegbarkeitsanfrageEinzelneAntwort" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="bestellstatusAbfragen">
+		<xs:sequence>
+			<xs:element name="clientSoftwareKennung" type="tns:ClientSoftwareKennung" />
+			<xs:element name="bestellId" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="bestellstatusAbfragenResponse">
+		<xs:sequence>
+			<xs:element name="return" type="tns:BestellstatusAntwort" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="vertragsdatenAbfragen">
+		<xs:sequence>
+			<xs:element name="clientSoftwareKennung" type="tns:ClientSoftwareKennung" />
+			<xs:element name="manuelleAbfrage" type="xs:boolean" form="unqualified" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="vertragsdatenAbfragenResponse">
+		<xs:sequence>
+			<xs:element name="return" type="tns:VertragsdatenAntwort" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="bestellen">
+		<xs:sequence>
+			<xs:element name="clientSoftwareKennung" type="tns:ClientSoftwareKennung" />
+			<xs:element name="bestellung" type="tns:Bestellung" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="bestellenResponse">
+		<xs:sequence>
+			<xs:element name="return" type="tns:BestellungAntwort" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="verfuegbarkeitAnfragenBulk">
+		<xs:sequence>
+			<xs:element name="clientSoftwareKennung" type="tns:ClientSoftwareKennung" />
+			<xs:element name="verfuegbarkeitsanfrageBulk" type="tns:VerfuegbarkeitsanfrageBulk" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="verfuegbarkeitAnfragenBulkResponse">
+		<xs:sequence>
+			<xs:element name="return" type="tns:VerfuegbarkeitsanfrageBulkAntwort" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ruecknahmeangebotAnfordern">
+		<xs:sequence>
+			<xs:element name="clientSoftwareKennung" type="tns:ClientSoftwareKennung" />
+			<xs:element name="ruecknahmeangebot" type="tns:Ruecknahmeangebot" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ruecknahmeangebotAnfordernResponse">
+		<xs:sequence>
+			<xs:element name="return" type="tns:RuecknahmeangebotAntwort" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="lieferavisAbfrageNeu">
+		<xs:sequence>
+			<xs:element name="clientSoftwareKennung" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="lieferavisAbfrageNeuResponse">
+		<xs:sequence>
+			<xs:element name="return" type="tns:LieferavisAbfragenAntwort" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="lieferavisBestaetigen">
+		<xs:sequence>
+			<xs:element name="clientSoftwareKennung" type="xs:string" />
+			<xs:element name="lieferavisBestaetigenType" type="tns:LieferavisBestaetigenType" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="Void">
+		<xs:sequence>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="lieferavisBestaetigenResponse">
+		<xs:sequence />
+	</xs:complexType>
+	<xs:complexType name="lieferavisAbfrageHist">
+		<xs:sequence>
+			<xs:element name="clientSoftwareKennung" type="xs:string" />
+			<xs:element name="lieferavisAbfrageHistAbfrage" type="tns:LieferavisAbfrageHistAbfrage" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="lieferavisAbfrageHistResponse">
+		<xs:sequence>
+			<xs:element name="return" type="tns:LieferavisAbfragenAntwort" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="retourenavisAnfragen">
+		<xs:sequence>
+			<xs:element name="clientSoftwareKennung" type="xs:string"
+				form="unqualified" minOccurs="0" />
+			<xs:element name="retourenavisAnfrageType" type="tns:RetourenavisAnfrageType"
+				form="unqualified" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="retourenavisAnfragenResponse">
+		<xs:sequence>
+			<xs:element name="return" type="tns:RetourenavisAnfrageAntwort"
+				form="unqualified" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="retourenavisAnkuendigen">
+		<xs:sequence>
+			<xs:element name="clientSoftwareKennung" type="xs:string"
+				form="unqualified" minOccurs="0" />
+			<xs:element name="retourenavisAnkuendigungType" type="tns:RetourenavisAnkuendigungType"
+				form="unqualified" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="retourenavisAnkuendigenResponse">
+		<xs:sequence>
+			<xs:element name="return" type="tns:RetourenavisAnkuendigungAntwort"
+				form="unqualified" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="dokumentAbfragen">
+		<xs:sequence>
+			<xs:element name="clientSoftwareKennung" type="xs:string"
+				form="unqualified" minOccurs="0" />
+			<xs:element name="dokumentAbfragenType" type="tns:DokumentAbfragenType"
+				form="unqualified" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="dokumentAbfragenResponse">
+		<xs:sequence>
+			<xs:element name="return" type="tns:DokumentAbfragenAntwort"
+				form="unqualified" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="ServerFaultInfo">
+		<xs:complexContent>
+			<xs:extension base="tns:Msv3FaultInfo">
+				<xs:sequence />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ValidationFaultInfo">
+		<xs:complexContent>
+			<xs:extension base="tns:Msv3FaultInfo">
+				<xs:sequence />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="DenialOfServiceFault">
+		<xs:complexContent>
+			<xs:extension base="tns:Msv3FaultInfo">
+				<xs:sequence />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="AuthorizationFaultInfo">
+		<xs:complexContent>
+			<xs:extension base="tns:Msv3FaultInfo">
+				<xs:sequence />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="LieferscheinOderBarcodeUnbekanntFaultInfo">
+		<xs:complexContent>
+			<xs:extension base="tns:Msv3FaultInfo">
+				<xs:sequence />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

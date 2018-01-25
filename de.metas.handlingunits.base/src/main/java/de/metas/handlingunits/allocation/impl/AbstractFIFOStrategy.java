@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -23,8 +23,6 @@ package de.metas.handlingunits.allocation.impl;
  */
 
 import java.util.List;
-
-import org.adempiere.util.Check;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -35,6 +33,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import lombok.NonNull;
 
 /**
  * Abstract FIFO Allocation/Deallocation strategy
@@ -52,13 +51,12 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 	/**
 	 * Retrieves the given <code>hu</code>'s {@link I_M_HU_Item} and processes if their type is either {@link X_M_HU_PI_Item#ITEMTYPE_Material} or {@link X_M_HU_PI_Item#ITEMTYPE_HandlingUnit}, it allocates the request's (remaining) qty to them or to their child-elements.
 	 * Items with type {@link X_M_HU_PI_Item#ITEMTYPE_PackingMaterial} are ignored.
-	 *
 	 */
 	@Override
-	public final IAllocationResult execute(final I_M_HU hu, final IAllocationRequest request)
+	public final IAllocationResult execute(
+			@NonNull final I_M_HU hu,
+			@NonNull final IAllocationRequest request)
 	{
-		Check.assumeNotNull(hu, "Param 'hu' is not null");
-
 		//
 		// Create Initial Result
 		final IMutableAllocationResult allocationResult = AllocationUtils.createMutableAllocationResult(request);
@@ -98,7 +96,7 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 					|| X_M_HU_Item.ITEMTYPE_HUAggregate.equals(itemType))
 			{
 				final IAllocationRequest itemRequest = AllocationUtils.createQtyRequestForRemaining(request, allocationResult);
-				
+
 				// this doesn't do anything, unless there is a child HU attached to the item.
 				final IAllocationResult itemResult = allocateOnIncludedHUItem(item, itemRequest);
 				AllocationUtils.mergeAllocationResult(allocationResult, itemResult);
@@ -125,12 +123,10 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 	 *
 	 * The ItemType of given <code>item</code> can be anything (and it's not checked). So, this method can be used to allocate/deallocate on real included HUs or to allocate/deallocate to VHUs linked
 	 * to this material HU item.
-	 *
-	 * @param item
-	 * @param request
-	 * @return allocation result
 	 */
-	protected IAllocationResult allocateOnIncludedHUItem(final I_M_HU_Item item, final IAllocationRequest request)
+	protected IAllocationResult allocateOnIncludedHUItem(
+			final I_M_HU_Item item,
+			@NonNull final IAllocationRequest request)
 	{
 		//
 		// Create initial result
@@ -166,7 +162,9 @@ public abstract class AbstractFIFOStrategy extends AbstractAllocationStrategy
 	 * @param request
 	 * @return allocation result
 	 */
-	private IAllocationResult allocateOnMaterialItem(final I_M_HU_Item item, final IAllocationRequest request)
+	private IAllocationResult allocateOnMaterialItem(
+			final I_M_HU_Item item,
+			@NonNull final IAllocationRequest request)
 	{
 		// If there nothing requested to allocate, it's pointless to do something
 		if (request.isZeroQty())

@@ -117,7 +117,7 @@ public class PurchaseCandidateRepository
 		}
 
 		final Set<Integer> existingPurchaseCandidateIds = purchaseCandidatesToSave.stream()
-				.map(PurchaseCandidate::getRepoId)
+				.map(PurchaseCandidate::getPurchaseCandidateId)
 				.filter(id -> id > 0)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -139,7 +139,7 @@ public class PurchaseCandidateRepository
 		try
 		{
 			purchaseCandidatesToSave.forEach(purchaseCandidate -> {
-				final int repoId = purchaseCandidate.getRepoId();
+				final int repoId = purchaseCandidate.getPurchaseCandidateId();
 				final I_C_PurchaseCandidate existingRecord = repoId > 0 ? existingRecordsById.get(repoId) : null;
 				save(purchaseCandidate, existingRecord);
 			});
@@ -190,6 +190,7 @@ public class PurchaseCandidateRepository
 		record.setM_Product_ID(purchaseCandidate.getProductId());
 		record.setC_UOM_ID(purchaseCandidate.getUomId());
 		record.setVendor_ID(purchaseCandidate.getVendorBPartnerId());
+		record.setC_BPartner_Product_ID(purchaseCandidate.getVendorProductInfo().getBPartnerProductId());
 		record.setQtyRequiered(purchaseCandidate.getQtyRequired());
 		record.setDatePromised(TimeUtil.asTimestamp(purchaseCandidate.getDatePromised()));
 
@@ -207,7 +208,7 @@ public class PurchaseCandidateRepository
 		final boolean locked = Services.get(ILockManager.class).isLocked(purchaseCandidatePO);
 
 		return PurchaseCandidate.builder()
-				.repoId(purchaseCandidatePO.getC_PurchaseCandidate_ID())
+				.purchaseCandidateId(purchaseCandidatePO.getC_PurchaseCandidate_ID())
 				.salesOrderId(purchaseCandidatePO.getC_OrderSO_ID())
 				.salesOrderLineId(purchaseCandidatePO.getC_OrderLineSO_ID())
 				.orgId(purchaseCandidatePO.getAD_Org_ID())
@@ -215,6 +216,7 @@ public class PurchaseCandidateRepository
 				.productId(purchaseCandidatePO.getM_Product_ID())
 				.uomId(purchaseCandidatePO.getC_UOM_ID())
 				.vendorBPartnerId(purchaseCandidatePO.getVendor_ID())
+				.vendorProductInfo(VendorProductInfo.fromDataRecord(purchaseCandidatePO.getC_BPartner_Product()))
 				.qtyRequired(purchaseCandidatePO.getQtyRequiered())
 				.datePromised(purchaseCandidatePO.getDatePromised())
 				.processed(purchaseCandidatePO.isProcessed())
