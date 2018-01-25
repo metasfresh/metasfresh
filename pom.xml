@@ -52,10 +52,9 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		<module>assemblies</module>
 	</modules>
 
+<!-- 
 	<repositories>
-		<!-- 
-		    The repositories that we relate on are defined in this parent POM, 
-			because whether an artifact is found should not depend on a specific user's settings.xml -->
+
 		<repository>
 			<id>metasfresh-repo</id>
 			<name>metasfresh maven repository (master branch)</name>
@@ -68,7 +67,8 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		</repository>
 
 	</repositories>
-
+ -->
+ 
 	<pluginRepositories>
 		<!-- our main repo is also our plugin repo; also see https://maven.apache.org/pom.html#Plugin_Repositories -->
 		<!-- see https://github.com/metasfresh/metasfresh-parent/issues/3 -->
@@ -112,17 +112,17 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<version>${itext.version}</version>
 			</dependency>
 
-                        <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
-                        <dependency>
-                                <groupId>jp.osdn.ocra</groupId>
-                                <artifactId>jp.osdn.ocra</artifactId>
-                                <version>0.2</version>
-                        </dependency>
-                        <dependency>
-                                <groupId>jp.osdn.ocrb</groupId>
-                                <artifactId>jp.osdn.ocrb</artifactId>
-                                <version>0.2.1</version>
-                        </dependency>
+            <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
+			<dependency>
+				<groupId>jp.osdn.ocra</groupId>
+				<artifactId>jp.osdn.ocra</artifactId>
+				<version>0.2</version>
+			</dependency>
+			<dependency>
+				<groupId>jp.osdn.ocrb</groupId>
+				<artifactId>jp.osdn.ocrb</artifactId>
+				<version>0.2.1</version>
+			</dependency>
 
 		</dependencies>
 
@@ -157,10 +157,18 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 					</configuration>
 				</plugin>
 
+				<!-- note that currently we prefer org.jvnet.jaxb2.maven2:maven-jaxb2-plugin,
+					but don't have time to kick out this one  -->
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>jaxb2-maven-plugin</artifactId>
 					<version>2.3.1</version> <!-- https://github.com/metasfresh/metasfresh/issues/1598 -->
+				</plugin>
+
+				<plugin>
+					<groupId>org.jvnet.jaxb2.maven2</groupId>
+					<artifactId>maven-jaxb2-plugin</artifactId>
+					<version>0.13.1</version>
 				</plugin>
 
 				<plugin>
@@ -509,7 +517,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 				</plugins>
 			</build>
 		</profile>
-	
+
 		<profile>
 			<!-- If there is a configs directory, then this profile will activate and zip up the files in that directory -->
 			<id>configs</id>
