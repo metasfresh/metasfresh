@@ -66,7 +66,6 @@
 			<scope>test</scope>
 		</dependency>
 
-
 	</dependencies>
 
 	<build>
@@ -87,7 +86,7 @@
 					<wsdl>true</wsdl>
 					<xmlschema>false</xmlschema>
 					<schemaIncludes>*.wsdl</schemaIncludes>
-					<schemaDirectory>./src/main/resources/de/metas/vertical/pharma/vendor/gateway/msv3/schema/</schemaDirectory>
+					<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/pharma/vendor/gateway/msv3/schema/</schemaDirectory>
 					<schemaFiles>*.wsdl</schemaFiles>
 				</configuration>
 			</plugin>
