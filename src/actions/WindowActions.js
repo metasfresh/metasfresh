@@ -39,7 +39,9 @@ import {
   UPDATE_ROW_PROPERTY,
   UPDATE_ROW_STATUS,
   OPEN_FILTER_BOX,
-  CLOSE_FILTER_BOX
+  CLOSE_FILTER_BOX,
+  ALLOW_OUTSIDE_CLICK,
+  DISABLE_OUTSIDE_CLICK
 } from "../constants/ActionTypes";
 
 import {
@@ -94,6 +96,18 @@ export function openFilterBox(boundingRect) {
 export function closeFilterBox() {
   return {
     type: CLOSE_FILTER_BOX
+  };
+}
+
+export function allowOutsideClick() {
+  return {
+    type: ALLOW_OUTSIDE_CLICK
+  };
+}
+
+export function disableOutsideClick() {
+  return {
+    type: DISABLE_OUTSIDE_CLICK
   };
 }
 

@@ -416,10 +416,12 @@ class Table extends Component {
       showIncludedViewOnSelect,
       viewId,
       windowType,
-      inBackground
+      inBackground,
+      allowOutsideClick
     } = this.props;
 
     if (
+      allowOutsideClick &&
       event.target.parentNode !== document &&
       event.target.parentNode &&
       !event.target.parentNode.className.includes("notification") &&
@@ -1290,7 +1292,8 @@ class Table extends Component {
 }
 
 const mapStateToProps = state => ({
-  allowShortcut: state.windowHandler.allowShortcut
+  allowShortcut: state.windowHandler.allowShortcut,
+  allowOutsideClick: state.windowHandler.allowOutsideClick
 });
 
 export default connect(mapStateToProps, false, false, { withRef: true })(

@@ -3,6 +3,10 @@ import { connect } from "react-redux";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import TetherComponent from "react-tether";
 import PropTypes from "prop-types";
+import {
+  allowOutsideClick,
+  disableOutsideClick
+} from "../../../actions/WindowActions";
 
 let lastKeyWasTab = false;
 
@@ -242,6 +246,7 @@ class RawList extends Component {
   };
 
   handleBlur = e => {
+    const { dispatch } = this.props;
     // if dropdown item is selected
     // prevent blur event to keep the dropdown list displayed
     if (!this.considerBlur || (e && this.dropdown.contains(e.target))) {
@@ -271,6 +276,8 @@ class RawList extends Component {
     });
 
     allowOutsideClickListener && allowOutsideClickListener(true);
+
+    dispatch(allowOutsideClick());
   };
 
   /*
@@ -278,6 +285,7 @@ class RawList extends Component {
      * on focus.
      */
   handleClick = e => {
+    const { dispatch } = this.props;
     this.considerBlur = true;
 
     e.preventDefault();
@@ -290,6 +298,7 @@ class RawList extends Component {
       isOpen: true
     });
     window.addEventListener("click", this.handleBlur);
+    dispatch(disableOutsideClick());
   };
 
   handleFocus = event => {
@@ -591,7 +600,8 @@ const mapStateToProps = state => ({
 });
 
 RawList.propTypes = {
-  filter: PropTypes.object.isRequired
+  filter: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired
 };
 
 export default connect(mapStateToProps)(RawList);

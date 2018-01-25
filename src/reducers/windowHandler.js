@@ -5,6 +5,7 @@ import {
   ADD_NEW_ROW,
   ADD_ROW_DATA,
   ALLOW_SHORTCUT,
+  ALLOW_OUTSIDE_CLICK,
   CHANGE_INDICATOR_STATE,
   CLEAR_MASTER_DATA,
   CLOSE_MODAL,
@@ -13,6 +14,7 @@ import {
   CLOSE_FILTER_BOX,
   DELETE_ROW,
   DISABLE_SHORTCUT,
+  DISABLE_OUTSIDE_CLICK,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
   NO_CONNECTION,
@@ -82,6 +84,7 @@ const initialState = {
   },
   indicator: "saved",
   allowShortcut: true,
+  allowOutsideClick: true,
   latestNewDocument: null,
   viewId: null,
   selections: {},
@@ -468,6 +471,17 @@ export default function windowHandler(state = initialState, action) {
           boundingRect: null
         })
       });
+    case ALLOW_OUTSIDE_CLICK:
+      return {
+        ...state,
+        allowOutsideClick: true
+      };
+
+    case DISABLE_OUTSIDE_CLICK:
+      return {
+        ...state,
+        allowOutsideClick: false
+      };
 
     case ALLOW_SHORTCUT:
       return {
