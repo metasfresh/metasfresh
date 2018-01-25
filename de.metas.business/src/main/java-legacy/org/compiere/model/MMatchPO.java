@@ -562,11 +562,6 @@ public class MMatchPO extends X_M_MatchPO
 			}
 		}
 
-		if (newRecord || InterfaceWrapperHelper.isValueChanged(this, COLUMNNAME_M_InOutLine_ID))
-		{
-			createMatchPOCostDetail();
-		}
-
 		return true;
 	}	// beforeSave
 
@@ -581,6 +576,11 @@ public class MMatchPO extends X_M_MatchPO
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
+		if (newRecord || InterfaceWrapperHelper.isValueChanged(this, COLUMNNAME_M_InOutLine_ID))
+		{
+			createMatchPOCostDetail();
+		}
+
 		// Purchase Order Delivered/Invoiced
 		// (Reserved in VMatch and MInOut.completeIt)
 		if (success && getC_OrderLine_ID() > 0)
