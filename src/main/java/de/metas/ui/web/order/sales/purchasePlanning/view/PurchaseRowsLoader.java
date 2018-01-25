@@ -196,7 +196,7 @@ class PurchaseRowsLoader
 		}
 		else
 		{
-			// TODO: dispaly an error-message in the webui
+			// TODO: display an error-message in the webui
 		}
 	}
 

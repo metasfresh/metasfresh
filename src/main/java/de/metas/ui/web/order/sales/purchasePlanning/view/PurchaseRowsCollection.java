@@ -119,7 +119,7 @@ class PurchaseRowsCollection
 				.setParameter("rowId", rowId);
 	}
 
-	public Stream<? extends IViewRow> streamTopLevelRowsByIds(final DocumentIdsSelection rowIds)
+	public Stream<? extends IViewRow> streamTopLevelRowsByIds(@NonNull final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isAll())
 		{

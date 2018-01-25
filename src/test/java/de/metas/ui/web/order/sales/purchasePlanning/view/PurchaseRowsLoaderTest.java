@@ -57,7 +57,7 @@ public class PurchaseRowsLoaderTest
 {
 	@Mocked
 	private SalesOrderLines salesOrderLines;
-	private I_C_UOM uom;
+
 	private I_M_Product product;
 	private I_C_Order order;
 	private I_C_BPartner bPartnerVendor;
@@ -67,7 +67,7 @@ public class PurchaseRowsLoaderTest
 	{
 		AdempiereTestHelper.get().init();
 
-		uom = newInstance(I_C_UOM.class);
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		uom.setUOMSymbol("testUOMSympol");
 		save(uom);
 
