@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,10 +35,11 @@ import org.adempiere.util.lang.HashcodeBuilder;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import lombok.NonNull;
 
 /**
  * Allocation result that be created as an empty one and then can be altered by the code which dioes the allocating.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -54,12 +55,12 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 	private final List<IHUTransactionAttribute> attributeTransactionsRO = Collections.unmodifiableList(attributeTransactions);
 
 	/**
-	 * 
+	 *
 	 * @param qtyToAllocate the qty that shall be allocated. This quantity is subsequently reduced.
 	 */
-	public MutableAllocationResult(final BigDecimal qtyToAllocate)
+	public MutableAllocationResult(@NonNull final BigDecimal qtyToAllocate)
 	{
-		Check.assume(qtyToAllocate.signum() >= 0, "qty >= 0 ({})", qtyToAllocate);
+		Check.errorIf(qtyToAllocate.signum() < 0, "The given qtyToAllocate={} needs to be >= 0", qtyToAllocate);
 
 		this.qtyToAllocateInitial = qtyToAllocate;
 		this.qtyToAllocate = qtyToAllocate;

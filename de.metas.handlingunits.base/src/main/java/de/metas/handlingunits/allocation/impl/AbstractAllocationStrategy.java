@@ -12,12 +12,12 @@ import java.math.BigDecimal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,8 +39,8 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
 import de.metas.handlingunits.allocation.IAllocationStrategyFactory;
-import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -49,6 +49,7 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 {
@@ -105,7 +106,7 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 	 * Return an item storage to be used to derive the "actual" allocation request.
 	 * See {@link #createActualRequest(I_M_HU_Item, IAllocationRequest)}.
 	 * This method uses {@link IHUStorageFactory#getStorage(I_M_HU_Item)}, but can be overridden.
-	 * 
+	 *
 	 * @param item
 	 * @param request
 	 * @return
@@ -120,11 +121,11 @@ public abstract class AbstractAllocationStrategy implements IAllocationStrategy
 	 * Creates the actual request for allocation/deallocation that shall be used on given HU Item.
 	 * The actual request is computed based on item's current capacity and load.
 	 *
-	 * @param item
-	 * @param request
 	 * @return actual request to use used for allocation/deallocation be the {@link #allocateOnVirtualMaterialItem(I_M_HU_Item, IAllocationRequest)}.
 	 */
-	protected final IAllocationRequest createActualRequest(final I_M_HU_Item item, final IAllocationRequest request)
+	protected final IAllocationRequest createActualRequest(
+			@NonNull final I_M_HU_Item item,
+			@NonNull final IAllocationRequest request)
 	{
 		final IHUItemStorage storage = getHUItemStorage(item, request);
 
