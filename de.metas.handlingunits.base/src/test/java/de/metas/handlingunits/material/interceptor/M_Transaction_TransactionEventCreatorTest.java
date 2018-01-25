@@ -105,8 +105,7 @@ public class M_Transaction_TransactionEventCreatorTest
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_TEN);
-		assertThat(event.getShipmentScheduleIds2Qtys()).hasSize(1);
-		assertThat(event.getShipmentScheduleIds2Qtys()).containsEntry(0, MINUS_TEN);
+		assertThat(event.getShipmentScheduleIds2Qtys()).hasSize(0);
 	}
 
 	@Test
@@ -160,10 +159,7 @@ public class M_Transaction_TransactionEventCreatorTest
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_TEN);
 
 		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = event.getShipmentScheduleIds2Qtys();
-		assertThat(shipmentScheduleIds2Qtys).hasSize(2);
-		assertThat(shipmentScheduleIds2Qtys).containsOnly(
-				entry(0, MINUS_TEN.subtract(MINUS_ONE)),
-				entry(20, MINUS_ONE));
+		assertThat(shipmentScheduleIds2Qtys).containsOnly(entry(20, MINUS_ONE));
 
 	}
 
@@ -204,7 +200,6 @@ public class M_Transaction_TransactionEventCreatorTest
 
 		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = event.getShipmentScheduleIds2Qtys();
 		assertThat(shipmentScheduleIds2Qtys).containsOnly(
-				entry(0, MINUS_TEN.subtract(MINUS_ONE).subtract(MINUS_TWO)),
 				entry(20, MINUS_ONE),
 				entry(21, MINUS_TWO));
 	}

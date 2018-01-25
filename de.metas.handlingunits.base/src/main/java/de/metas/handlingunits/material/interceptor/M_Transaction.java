@@ -7,9 +7,6 @@ import org.adempiere.ad.modelvalidator.InterceptorUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.ModelValidator;
@@ -64,22 +61,14 @@ public class M_Transaction
 			@NonNull final ModelChangeType type)
 	{
 		final boolean deleted = type.isDelete() || InterceptorUtil.isJustDeactivated(transaction);
+		final List<MaterialEvent> events = new ArrayList<>();
 
-		Services.get(ITrxManager.class)
-				.getCurrentTrxListenerManagerOrAutoCommit()
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(localTrx -> {
+		events.addAll(M_Transaction_TransactionEventCreator.INSTANCE.createEventsForTransaction(transaction, deleted));
 
-					final List<MaterialEvent> events = new ArrayList<>();
-
-					events.addAll(M_Transaction_TransactionEventCreator.INSTANCE.createEventsForTransaction(transaction, deleted));
-
-					final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
-					for (final MaterialEvent event : events)
-					{
-						materialEventService.postEventNow(event);
-					}
-				});
+		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		for (final MaterialEvent event : events)
+		{
+			materialEventService.postEventAfterNextCommit(event);
+		}
 	}
-
 }
