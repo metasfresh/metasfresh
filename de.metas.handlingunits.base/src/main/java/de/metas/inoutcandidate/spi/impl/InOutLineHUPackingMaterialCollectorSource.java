@@ -3,6 +3,7 @@ package de.metas.inoutcandidate.spi.impl;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /*
@@ -27,6 +28,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@EqualsAndHashCode(of= {"productId", "recordId"})
 public class InOutLineHUPackingMaterialCollectorSource implements IHUPackingMaterialCollectorSource
 {
 	public static InOutLineHUPackingMaterialCollectorSource of(final I_M_InOutLine inoutLine)
@@ -37,12 +39,16 @@ public class InOutLineHUPackingMaterialCollectorSource implements IHUPackingMate
 				.build();
 	}
 
+	private final int productId;
+	private final int recordId;
 	private final I_M_InOutLine inoutLine;
 	private final boolean collectHUPipToSource;
 
 	@Builder
 	private InOutLineHUPackingMaterialCollectorSource(@NonNull final I_M_InOutLine inoutLine, final boolean collectHUPipToSource)
 	{
+		productId = inoutLine.getM_Product_ID();
+		recordId = inoutLine.getM_InOutLine_ID();
 		this.inoutLine = inoutLine;
 		this.collectHUPipToSource = collectHUPipToSource;
 	}
@@ -50,13 +56,13 @@ public class InOutLineHUPackingMaterialCollectorSource implements IHUPackingMate
 	@Override
 	public int getM_Product_ID()
 	{
-		return inoutLine.getM_Product_ID();
+		return productId;
 	}
 
 	@Override
 	public int getRecord_ID()
 	{
-		return inoutLine.getM_InOutLine_ID();
+		return recordId;
 	}
 
 	@Override
@@ -69,25 +75,4 @@ public class InOutLineHUPackingMaterialCollectorSource implements IHUPackingMate
 	{
 		return inoutLine;
 	}
-
-	@Override
-	public int hashCode()
-	{
-		int hash = 17;
-		hash = hash * 31 + getRecord_ID();
-		hash = hash * 31 + getM_Product_ID();
-		return hash;
-	}
-
-	@Override
-	public boolean equals(Object obj)
-	{
-		final InOutLineHUPackingMaterialCollectorSource source = (InOutLineHUPackingMaterialCollectorSource)obj;
-		if (getRecord_ID() == source.getRecord_ID() && getM_Product_ID() == source.getM_Product_ID())
-		{
-			return true;
-		}
-		return false;
-	}
-
 }

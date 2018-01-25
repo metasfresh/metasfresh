@@ -3,6 +3,7 @@ package de.metas.handlingunits.movement.spi.impl;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /*
@@ -27,6 +28,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@EqualsAndHashCode(of= {"productId", "recordId"})
 public class MovementLineHUPackingMaterialCollectorSource implements IHUPackingMaterialCollectorSource
 {
 	public static final MovementLineHUPackingMaterialCollectorSource of(final I_M_MovementLine movementLine)
@@ -37,56 +39,33 @@ public class MovementLineHUPackingMaterialCollectorSource implements IHUPackingM
 				.build();
 	}
 
-	private final I_M_MovementLine movementLine;
+	private final int productId;
+	private final int recordId;
 	private final boolean collectHUPipToSource;
 
 	@Builder
 	private MovementLineHUPackingMaterialCollectorSource(@NonNull final I_M_MovementLine movementLine, final boolean collectHUPipToSource)
 	{
-		this.movementLine = movementLine;
+		productId = movementLine.getM_Product_ID();
+		recordId = movementLine.getM_MovementLine_ID();
 		this.collectHUPipToSource = collectHUPipToSource;
 	}
 
 	@Override
 	public int getM_Product_ID()
 	{
-		return movementLine.getM_Product_ID();
+		return productId;
 	}
 
 	@Override
 	public int getRecord_ID()
 	{
-		return movementLine.getM_MovementLine_ID();
+		return recordId;
 	}
 
 	@Override
 	public boolean isCollectHUPipToSource()
 	{
 		return collectHUPipToSource;
-	}
-
-	public I_M_MovementLine getMovementLine()
-	{
-		return movementLine;
-	}
-
-	@Override
-	public int hashCode()
-	{
-		int hash = 17;
-		hash = hash * 31 + getRecord_ID();
-		hash = hash * 31 + getM_Product_ID();
-		return hash;
-	}
-
-	@Override
-	public boolean equals(Object obj)
-	{
-		final MovementLineHUPackingMaterialCollectorSource source = (MovementLineHUPackingMaterialCollectorSource)obj;
-		if (getRecord_ID() == source.getRecord_ID() && getM_Product_ID() == source.getM_Product_ID())
-		{
-			return true;
-		}
-		return false;
 	}
 }
