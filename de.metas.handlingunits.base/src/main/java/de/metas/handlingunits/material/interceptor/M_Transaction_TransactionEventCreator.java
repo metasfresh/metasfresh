@@ -197,10 +197,6 @@ public class M_Transaction_TransactionEventCreator
 			qtyLeftToDistribute = qtyLeftToDistribute.subtract(quantityForMaterialDescriptor);
 		}
 
-		if (qtyLeftToDistribute.signum() != 0)
-		{
-			shipmentScheduleId2quantity.put(0, qtyLeftToDistribute);
-		}
 		return shipmentScheduleId2quantity;
 	}
 
