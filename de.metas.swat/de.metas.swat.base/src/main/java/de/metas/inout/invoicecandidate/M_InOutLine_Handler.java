@@ -1,5 +1,7 @@
 package de.metas.inout.invoicecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -54,9 +56,12 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -70,6 +75,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import lombok.NonNull;
 
 /**
  * Creates {@link I_C_Invoice_Candidate}s from {@link I_M_InOutLine}s which do not reference an order line.
@@ -120,8 +126,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final I_M_InOutLine inOutLine = request.getModel(I_M_InOutLine.class);
 
-		final I_C_Invoice_Candidate invoiceCandidate = createCandidateForInOutLine(inOutLine);
-		return InvoiceCandidateGenerateResult.of(this, invoiceCandidate);
+		final List<I_C_Invoice_Candidate> invoiceCandidates = createCandidatesForInOutLine(inOutLine);
+		return InvoiceCandidateGenerateResult.of(this, invoiceCandidates);
 	}
 
 	/**
@@ -129,7 +135,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @param inOutLine
 	 * @return created invoice candidate or <code>null</code> if there was no need to create an invoice candidate
 	 */
-	private I_C_Invoice_Candidate createCandidateForInOutLine(final I_M_InOutLine inOutLine)
+	private List<I_C_Invoice_Candidate> createCandidatesForInOutLine(final I_M_InOutLine inOutLine)
 	{
 		// Don't create any invoice candidate if already created
 		if (inOutLine.isInvoiceCandidate())
@@ -137,8 +143,40 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			return null;
 		}
 
-		final I_M_InOut inOut = InterfaceWrapperHelper.create(inOutLine.getM_InOut(), I_M_InOut.class);
+		if (inOutLine.isPackagingMaterial())
+		{
+			final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+			final List<I_M_InOutLine> allReferencingLines = inOutDAO.retrieveAllReferencingLinesBuilder(inOutLine)
+					.create()
+					.list(I_M_InOutLine.class);
 
+			// creates multiple ICs which refer the packing material line if the package material line was created from several products
+			final List<I_C_Invoice_Candidate> candidates = allReferencingLines.stream()
+								.map(refInOutLine -> createInvoiceCandidateAndSetRefPackingInOutLine(inOutLine, refInOutLine))
+								.collect(ImmutableList.toImmutableList());
+			return candidates;
+		}
+
+		return ImmutableList.of(createInvoiceCandidateForInOutLine(inOutLine));
+	}
+
+	/**
+	 * creates the IC for corresponding inout line and set the reference to the initial inout line who generated the packing inout line
+	 * @param inOutLine
+	 * @param refInOutLine
+	 * @return
+	 */
+	private I_C_Invoice_Candidate createInvoiceCandidateAndSetRefPackingInOutLine(@NonNull final I_M_InOutLine inOutLine, @NonNull final I_M_InOutLine refInOutLine)
+	{
+		final I_C_Invoice_Candidate ic = createInvoiceCandidateForInOutLine(inOutLine);
+		ic.setRef_PackingMaterial_InOutLine(refInOutLine);
+		save(ic);
+		return ic;
+	}
+
+	private I_C_Invoice_Candidate createInvoiceCandidateForInOutLine(final I_M_InOutLine inOutLine)
+	{
+		final I_M_InOut inOut = InterfaceWrapperHelper.create(inOutLine.getM_InOut(), I_M_InOut.class);
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class, inOutLine);
 
 		final int adOrgId = inOutLine.getAD_Org_ID();
@@ -274,7 +312,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			InterfaceWrapperHelper.save(iciol);
 		}
 
-		//
 		return ic;
 	}
 
@@ -365,7 +402,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		if (docActionBL.isDocumentStatusOneOf(inOut, IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 		{
 			final BigDecimal qtyMultiplier = getQtyMultiplier(ic);
-			final BigDecimal qtyDelivered = inOutLine.getMovementQty().multiply(qtyMultiplier);
+			final BigDecimal qtyDelivered = extractQtyDelivered(ic).multiply(qtyMultiplier);
 			ic.setQtyOrdered(qtyDelivered);
 		}
 		else
@@ -375,17 +412,43 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		setC_PaymentTerm(ic);
+
+	}
+
+	private BigDecimal extractQtyDelivered(final I_C_Invoice_Candidate ic)
+	{
+		if (ic.isPackagingMaterial() && ic.getRef_PackingMaterial_InOutLine() != null)
+		{
+			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(ic.getRef_PackingMaterial_InOutLine(), I_M_InOutLine.class);
+			return inOutLine.getQtyEnteredTU();
+		}
+
+		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
+		return inOutLine.getMovementQty();
 	}
 
 	private void setC_PaymentTerm(final I_C_Invoice_Candidate ic)
 	{
-		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
-		final org.compiere.model.I_M_InOut inOut = inOutLine.getM_InOut();
-		final I_C_Order order = inOut.getC_Order();
-		if (order != null && ic.getC_PaymentTerm() == null)
+		final int paymentTermId;
+		final I_M_InOutLine inOutLine = ic.isPackagingMaterial() && ic.getRef_PackingMaterial_InOutLine() != null
+				? InterfaceWrapperHelper.create(ic.getRef_PackingMaterial_InOutLine(), I_M_InOutLine.class)
+				: getM_InOutLine(ic);
+
+		if (inOutLine.getC_OrderLine() != null
+				&& inOutLine.getC_OrderLine().getC_PaymentTerm_Override_ID() > 0)
 		{
-			ic.setC_PaymentTerm(order.getC_PaymentTerm());
+			paymentTermId = inOutLine.getC_OrderLine().getC_PaymentTerm_Override_ID();
 		}
+		else if (ic.getC_Order() != null)
+		{
+			paymentTermId = ic.getC_Order().getC_PaymentTerm_ID();
+		}
+		else
+		{
+			paymentTermId = -1;
+		}
+
+		ic.setC_PaymentTerm_ID(paymentTermId);
 	}
 
 	/**
