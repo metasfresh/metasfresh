@@ -1,7 +1,7 @@
 
 -- 2018-01-19T17:15:11.728
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy,WEBUI_NameBrowse) VALUES ('W',0,541013,0,540397,TO_TIMESTAMP('2018-01-19 17:15:11','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.vendor.gateway.mvs3','MSV3_Vendor_Config','Y','N','N','N','N','MSV3 Lieferanten Konfiguration',TO_TIMESTAMP('2018-01-19 17:15:11','YYYY-MM-DD HH24:MI:SS'),100,'MSV3 Lieferanten Konfiguration')
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy,WEBUI_NameBrowse) VALUES ('W',0,541013,0,540397,TO_TIMESTAMP('2018-01-19 17:15:11','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.vertical.pharma.vendor.gateway.mvs3','MSV3_Vendor_Config','Y','N','N','N','N','MSV3 Lieferanten Konfiguration',TO_TIMESTAMP('2018-01-19 17:15:11','YYYY-MM-DD HH24:MI:SS'),100,'MSV3 Lieferanten Konfiguration')
 ;
 
 -- 2018-01-19T17:15:11.729

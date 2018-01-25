@@ -20,7 +20,7 @@ UPDATE AD_Field SET IsSameLine='Y', SeqNo=15, SeqNoGrid=15,Updated=TO_TIMESTAMP(
 
 -- 2018-01-23T15:07:18.218
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,544632,0,TO_TIMESTAMP('2018-01-23 15:07:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.purchasecandidate','Y','Verfügbar','I',TO_TIMESTAMP('2018-01-23 15:07:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.purchasecandidate.AvailabilityResult_AVAILABLE')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,544632,0,TO_TIMESTAMP('2018-01-23 15:07:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.purchasecandidate','Y','VerfÃ¼gbar','I',TO_TIMESTAMP('2018-01-23 15:07:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.purchasecandidate.AvailabilityResult_AVAILABLE')
 ;
 
 -- 2018-01-23T15:07:18.228
@@ -80,7 +80,7 @@ UPDATE AD_Process SET Name='Bestellungen disponieren', Value='WEBUI_SalesOrder_P
 
 -- 2018-01-23T17:09:43.823
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,540916,'N','de.metas.ui.web.order.sales.purchasePlanning.process.WEBUI_SalesOrder_Apply_Availability_Row','N',TO_TIMESTAMP('2018-01-23 17:09:43','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.purchasecandidate','Y','N','Y','N','N','N','N','Y',0,'Zusagezeile übernehmen','N','N','Java',TO_TIMESTAMP('2018-01-23 17:09:43','YYYY-MM-DD HH24:MI:SS'),100,'WEBUI_SalesOrder_Apply_Availability_Row')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,540916,'N','de.metas.ui.web.order.sales.purchasePlanning.process.WEBUI_SalesOrder_Apply_Availability_Row','N',TO_TIMESTAMP('2018-01-23 17:09:43','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.purchasecandidate','Y','N','Y','N','N','N','N','Y',0,'Zusagezeile Ã¼bernehmen','N','N','Java',TO_TIMESTAMP('2018-01-23 17:09:43','YYYY-MM-DD HH24:MI:SS'),100,'WEBUI_SalesOrder_Apply_Availability_Row')
 ;
 
 -- 2018-01-23T17:09:43.825
