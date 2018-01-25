@@ -478,3 +478,18 @@ UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2018-01-25 16:54:3
 UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2018-01-25 16:54:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550465
 ;
 
+-- 2018-01-25T16:57:52.673
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='MSV3 Basis URL',Updated=TO_TIMESTAMP('2018-01-25 16:57:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=561509
+;
+
+-- 2018-01-25T16:58:38.755
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-25 16:58:38','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Description='Example: https://msv3-server:443/msv3/v2.0' WHERE AD_Field_ID=561509 AND AD_Language='en_US'
+;
+
+-- 2018-01-25T16:59:21.187
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-25 16:59:21','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='MSV3 Vendor Configuration' WHERE AD_Field_ID=561505 AND AD_Language='en_US'
+;
+
