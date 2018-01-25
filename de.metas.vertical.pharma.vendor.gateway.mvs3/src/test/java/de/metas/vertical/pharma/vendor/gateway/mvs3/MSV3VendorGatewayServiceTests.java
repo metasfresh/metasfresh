@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_System;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import de.metas.vendor.gateway.api.model.AvailabilityRequest;
@@ -47,7 +48,7 @@ public class MSV3VendorGatewayServiceTests
 	}
 
 	@Test
-	//@Ignore
+	@Ignore
 	public void manualTest()
 	{
 		// AD_System is needed because we send the metasfresh-version to the MSV3 server
