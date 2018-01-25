@@ -10,6 +10,7 @@ import {
   CLOSE_MODAL,
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
+  CLOSE_FILTER_BOX,
   DELETE_ROW,
   DISABLE_SHORTCUT,
   INIT_DATA_SUCCESS,
@@ -17,6 +18,7 @@ import {
   NO_CONNECTION,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
+  OPEN_FILTER_BOX,
   PATCH_FAILURE,
   PATCH_REQUEST,
   PATCH_RESET,
@@ -88,7 +90,8 @@ const initialState = {
       length: 0
     },
     success: true
-  }
+  },
+  filter: {}
 };
 
 export const NO_SELECTION = [];
@@ -447,6 +450,22 @@ export default function windowHandler(state = initialState, action) {
           visible: true,
           type: action.windowType,
           viewId: action.viewId
+        })
+      });
+
+    case OPEN_FILTER_BOX:
+      return Object.assign({}, state, {
+        filter: Object.assign({}, state.filter, {
+          visible: true,
+          boundingRect: action.boundingRect
+        })
+      });
+
+    case CLOSE_FILTER_BOX:
+      return Object.assign({}, state, {
+        filter: Object.assign({}, state.filter, {
+          visible: false,
+          boundingRect: null
         })
       });
 

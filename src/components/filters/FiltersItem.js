@@ -1,13 +1,15 @@
 import counterpart from "counterpart";
 import React, { Component } from "react";
+import { connect } from "react-redux";
+import PropTypes from "prop-types";
+import TetherComponent from "react-tether";
 
 import keymap from "../../shortcuts/keymap";
 import OverlayField from "../app/OverlayField";
 import ModalContextShortcuts from "../shortcuts/ModalContextShortcuts";
 import Tooltips from "../tooltips/Tooltips.js";
 import RawWidget from "../widget/RawWidget";
-import TetherComponent from "react-tether";
-
+import { openFilterBox, closeFilterBox } from "../../actions/WindowActions";
 class FiltersItem extends Component {
   constructor(props) {
     super(props);
@@ -28,6 +30,16 @@ class FiltersItem extends Component {
     if (JSON.stringify(active) !== JSON.stringify(props.active)) {
       this.init();
     }
+  }
+
+  componentDidMount() {
+    this.widgetsContainer.addEventListener("scroll", this.handleScroll);
+  }
+
+  componentWillUnmount() {
+    this.widgetsContainer.removeEventListener("scroll", this.handleScroll);
+    const { dispatch } = this.props;
+    dispatch(closeFilterBox());
   }
 
   init = () => {
@@ -96,6 +108,17 @@ class FiltersItem extends Component {
     }));
   };
 
+  handleScroll = () => {
+    const { dispatch } = this.props;
+    const {
+      top,
+      left,
+      bottom,
+      right
+    } = this.widgetsContainer.getBoundingClientRect();
+    dispatch(openFilterBox({ top, left, bottom, right }));
+  };
+
   handleApply = () => {
     const { applyFilters, closeFilterMenu } = this.props;
     const { filter } = this.state;
@@ -159,7 +182,10 @@ class FiltersItem extends Component {
             {...{ windowType, onShow, onHide, viewId }}
           />
         ) : (
-          <div className="filter-menu filter-widget">
+          <div
+            className="filter-menu filter-widget"
+            ref={c => (this.widgetsContainer = c)}
+          >
             <div>
               {counterpart.translate("window.activeFilter.caption")}:
               <span className="filter-active">{data.caption}</span>
@@ -251,4 +277,8 @@ class FiltersItem extends Component {
   }
 }
 
-export default FiltersItem;
+FiltersItem.propTypes = {
+  dispatch: PropTypes.func.isRequired
+};
+
+export default connect()(FiltersItem);

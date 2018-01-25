@@ -1,6 +1,8 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import TetherComponent from "react-tether";
+import PropTypes from "prop-types";
 
 let lastKeyWasTab = false;
 
@@ -116,6 +118,18 @@ class RawList extends Component {
       this.setState({
         selected: selected
       });
+    }
+
+    this.checkIfDropDownListOutOfFilter();
+  };
+
+  checkIfDropDownListOutOfFilter = () => {
+    if (!this.tetheredList) return;
+    const { top } = this.tetheredList.getBoundingClientRect();
+    const { filter } = this.props;
+    const { isOpen } = this.state;
+    if (isOpen && filter.visible && top + 20 > filter.boundingRect.bottom) {
+      this.setState({ isOpen: false });
     }
   };
 
@@ -536,6 +550,7 @@ class RawList extends Component {
               <div
                 className="input-dropdown-list"
                 style={{ width: `${this.dropdown.offsetWidth}px` }}
+                ref={c => (this.tetheredList = c)}
               >
                 {isListEmpty &&
                   loading === false && (
@@ -566,4 +581,12 @@ class RawList extends Component {
   }
 }
 
-export default RawList;
+const mapStateToProps = state => ({
+  filter: state.windowHandler.filter
+});
+
+RawList.propTypes = {
+  filter: PropTypes.object.isRequired
+};
+
+export default connect(mapStateToProps)(RawList);
