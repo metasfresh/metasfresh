@@ -10,12 +10,12 @@ package de.metas.handlingunits.inout.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -203,7 +204,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 			final I_M_InOutLine packingMaterialLine = createPackingMaterialLine(pmCandidate);
 
 			// task 09502: set the reference from line to packing-line
-			final List<IHUPackingMaterialCollectorSource> sourceIols = pmCandidate.getSources();
+			final Set<IHUPackingMaterialCollectorSource> sourceIols = pmCandidate.getSources();
 			for (final IHUPackingMaterialCollectorSource source : sourceIols)
 			{
 				if (source instanceof InOutLineHUPackingMaterialCollectorSource)
@@ -241,7 +242,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 	private final void collectHUs(final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
 	{
 		Check.assume(huPackingMaterialCollectorSource instanceof InOutLineHUPackingMaterialCollectorSource, huPackingMaterialCollectorSource + "must be a instance of " + InOutLineHUPackingMaterialCollectorSource.class);
-		
+
 		Check.assume(packingMaterialsCollector.getCountTUs() == 0, "At this point CountTUs shall be zero: {}", packingMaterialsCollector);
 
 		final boolean initializeOverrides = isUpdateOverrideValues();
@@ -251,18 +252,18 @@ public class HUShipmentPackingMaterialLinesBuilder
 		// NOTE: we are doing this because we also want to explicitly count them
 		// If we would fetch all HUs it could be to count more TUs than there are actually assigned to this particular inout line
 		final HUPackingMaterialsCollector packingMaterialsCollectorFromHUs = packingMaterialsCollector.splitNew();
-		
+
 		final InOutLineHUPackingMaterialCollectorSource shipmentLineSource = (InOutLineHUPackingMaterialCollectorSource) huPackingMaterialCollectorSource;
 		final I_M_InOutLine shipmentLine = shipmentLineSource.getM_InOutLine();
-		
+
 		final IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery = huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(shipmentLine);
 		packingMaterialsCollectorFromHUs.addTUHUsRecursively(tuAssignmentsQuery);
 		final int countTUs_Calculated = packingMaterialsCollectorFromHUs.getAndResetCountTUs();
 
-		
 
-		
-		
+
+
+
 		//
 		// Collect TU packing materials from overrides
 		int countTUs_Override = shipmentLine.getQtyTU_Override().intValueExact();
