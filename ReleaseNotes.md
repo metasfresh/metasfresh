@@ -114,6 +114,8 @@ Here come the actual release notes:
   * [#1498](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1498) frontend subscribscriptions to api's view topic get out of hand
   * [#1508](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1508) Scrollbar in Filter when hovering apply Button
     * Improvement of the Tooltip Layout for Apply Button in Filter Selection Dropdowns.
+  * [#1517](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1517) Discard changes in modal window
+    * Fixes the discard of incomplete rows because of not filled mandatory fields.
 
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**
