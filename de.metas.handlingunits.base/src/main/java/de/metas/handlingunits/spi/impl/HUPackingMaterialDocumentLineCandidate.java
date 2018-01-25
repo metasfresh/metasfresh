@@ -10,12 +10,12 @@ package de.metas.handlingunits.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,6 +25,7 @@ package de.metas.handlingunits.spi.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 
@@ -58,7 +59,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 {
 	/**
 	 * Creates a packing material line for given locator, empties product and empties count.
-	 * 
+	 *
 	 * @param locator on which locator the empties are
 	 * @param emptiesProduct empties product (e.g. IFCO)
 	 * @param emptiesCount how many empties we have (e.g. 5 IFCOs)
@@ -100,7 +101,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 	private BigDecimal qty = BigDecimal.ZERO;
 	private final I_M_Locator locator;
 	private final I_M_Material_Tracking materialTracking;
-	private final List<IHUPackingMaterialCollectorSource> sources = new ArrayList<IHUPackingMaterialCollectorSource>();
+	private final List<IHUPackingMaterialCollectorSource> sources = new ArrayList<>();
 
 	/**
 	 *
@@ -252,6 +253,8 @@ public final class HUPackingMaterialDocumentLineCandidate
 		}
 
 		qty = qty.add(candidateToAdd.qty);
+		// add sources; might be different
+		addSources(candidateToAdd.getSources());
 	}
 
 	public void addSourceIfNotNull(final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
@@ -262,8 +265,19 @@ public final class HUPackingMaterialDocumentLineCandidate
 		}
 	}
 
+	private void addSources(final List<IHUPackingMaterialCollectorSource> huPackingMaterialCollectorSources)
+	{
+		if (!huPackingMaterialCollectorSources.isEmpty())
+		{
+			sources.addAll(huPackingMaterialCollectorSources);
+			final List<IHUPackingMaterialCollectorSource> uniqueSources = new ArrayList<>(new LinkedHashSet<>(sources));
+			sources.clear();
+			sources.addAll(uniqueSources);
+		}
+	}
+
 	public List<IHUPackingMaterialCollectorSource> getSources()
 	{
-		return new UnmodifiableList<IHUPackingMaterialCollectorSource>(sources);
+		return new UnmodifiableList<>(sources);
 	}
 }

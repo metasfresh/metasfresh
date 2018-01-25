@@ -69,4 +69,24 @@ public class MovementLineHUPackingMaterialCollectorSource implements IHUPackingM
 	{
 		return movementLine;
 	}
+
+	@Override
+	public int hashCode()
+	{
+		int hash = 17;
+		hash = hash * 31 + getRecord_ID();
+		hash = hash * 31 + getM_Product_ID();
+		return hash;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		final MovementLineHUPackingMaterialCollectorSource source = (MovementLineHUPackingMaterialCollectorSource)obj;
+		if (getRecord_ID() == source.getRecord_ID() && getM_Product_ID() == source.getM_Product_ID())
+		{
+			return true;
+		}
+		return false;
+	}
 }

@@ -15,12 +15,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -69,4 +69,25 @@ public class InOutLineHUPackingMaterialCollectorSource implements IHUPackingMate
 	{
 		return inoutLine;
 	}
+
+	@Override
+	public int hashCode()
+	{
+		int hash = 17;
+		hash = hash * 31 + getRecord_ID();
+		hash = hash * 31 + getM_Product_ID();
+		return hash;
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		final InOutLineHUPackingMaterialCollectorSource source = (InOutLineHUPackingMaterialCollectorSource)obj;
+		if (getRecord_ID() == source.getRecord_ID() && getM_Product_ID() == source.getM_Product_ID())
+		{
+			return true;
+		}
+		return false;
+	}
+
 }

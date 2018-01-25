@@ -12,12 +12,12 @@ import java.math.BigDecimal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -91,12 +91,12 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	/**
 	 * List of M_HU_IDs to ADD which were already collected
 	 */
-	private Set<Integer> seenM_HU_IDs_ToAdd = new HashSet<Integer>();
+	private Set<Integer> seenM_HU_IDs_ToAdd = new HashSet<>();
 
 	/**
 	 * List of M_HU_IDs to REMOVE which were already collected
 	 */
-	private Set<Integer> seenM_HU_IDs_ToRemove = new HashSet<Integer>();
+	private Set<Integer> seenM_HU_IDs_ToRemove = new HashSet<>();
 
 	/**
 	 * Maps M_Product_ID to {@link HUPackingMaterialDocumentLineCandidate}s
@@ -105,7 +105,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	private int countTUs = 0;
 
 	/**
-	 * 
+	 *
 	 */
 	private final Map<HUpipToHUPackingMaterialCollectorSource, Integer> huPIPToSource = new TreeMap<>(Comparator.comparing(HUpipToHUPackingMaterialCollectorSource::getM_HU_PI_Item_Product_ID)
 			.thenComparing(HUpipToHUPackingMaterialCollectorSource::getOriginalSourceID));
@@ -190,9 +190,9 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 	/**
 	 * Add/Remove HU
-	 * 
+	 *
 	 * NOTE: this is the main method for collecting packing materials. All other helper methods are converging to this one.
-	 * 
+	 *
 	 * @param remove
 	 * @param hu
 	 * @param huUnitTypeOverride
@@ -721,11 +721,13 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		this.collectIfOwnPackingMaterialsOnly = collectIfOwnPackingMaterialsOnly;
 	}
 
+	@Override
 	public void setisCollectTUNumberPerOrigin(final boolean isCollectTUNumberPerOrigin)
 	{
 		this.isCollectTUNumberPerOrigin = isCollectTUNumberPerOrigin;
 	}
 
+	@Override
 	public void setisCollectAggregatedHUs(final boolean isCollectAggregatedHUs)
 	{
 		this.isCollectAggregatedHUs = isCollectAggregatedHUs;
