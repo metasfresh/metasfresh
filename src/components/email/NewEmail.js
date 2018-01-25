@@ -205,7 +205,7 @@ NewEmail.propTypes = {
   windowId: PropTypes.string,
   dispatch: PropTypes.func,
   docId: PropTypes.string,
-  handleCloseEmail: PropTypes.boolean
+  handleCloseEmail: PropTypes.func
 };
 
 export default connect()(NewEmail);
