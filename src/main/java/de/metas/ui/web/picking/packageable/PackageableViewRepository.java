@@ -24,7 +24,6 @@ import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -125,8 +124,6 @@ public class PackageableViewRepository
 				.documentPath(documentPath)
 				.viewId(viewId)
 				.id(rowId)
-				.type(DefaultRowType.Row)
-				.processed(false)
 				//
 				.order(orderLookup.get().findById(packageable.getC_Order_ID()))
 				.product(productLookup.get().findById(packageable.getM_Product_ID()))

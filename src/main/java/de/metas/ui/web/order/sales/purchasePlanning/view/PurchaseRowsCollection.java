@@ -9,12 +9,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import lombok.NonNull;
@@ -50,11 +52,11 @@ class PurchaseRowsCollection
 		return new PurchaseRowsCollection(rowsSupplier);
 	}
 
-	private final ConcurrentMap<PurchaseRowId, PurchaseRow> rowsById;
+	private final ConcurrentMap<PurchaseRowId, PurchaseRow> topLevelRowsById;
 
 	private PurchaseRowsCollection(@NonNull final PurchaseRowsSupplier rowsSupplier)
 	{
-		rowsById = rowsSupplier.retrieveRows()
+		topLevelRowsById = rowsSupplier.retrieveRows()
 				.stream()
 				.collect(Collectors.toConcurrentMap(PurchaseRow::getRowId, Function.identity()));
 	}
@@ -62,17 +64,17 @@ class PurchaseRowsCollection
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this).addValue(rowsById).toString();
+		return MoreObjects.toStringHelper(this).addValue(topLevelRowsById).toString();
 	}
 
 	public long size()
 	{
-		return rowsById.size();
+		return topLevelRowsById.size();
 	}
 
 	public List<PurchaseRow> getPage(final int firstRow, final int pageLength)
 	{
-		return rowsById.values().stream()
+		return topLevelRowsById.values().stream()
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : DEFAULT_PAGE_LENGTH)
 				.collect(ImmutableList.toImmutableList());
@@ -81,39 +83,58 @@ class PurchaseRowsCollection
 	public List<PurchaseRow> getAll()
 	{
 		// there are not so many, so we can afford to return all of them
-		return ImmutableList.copyOf(rowsById.values());
+		return ImmutableList.copyOf(topLevelRowsById.values());
 	}
 
-	public PurchaseRow getById(@NonNull final PurchaseRowId rowId) throws EntityNotFoundException
+	public PurchaseRow getById(@NonNull final DocumentId rowId) throws EntityNotFoundException
 	{
-		final PurchaseRow row = rowsById.get(rowId);
-		if (row == null)
+		final PurchaseRowId purchaseRowId = PurchaseRowId.fromDocumentId(rowId);
+		if (purchaseRowId.isGroupRowId())
 		{
-			throw new EntityNotFoundException("Row not found").setParameter("rowId", rowId);
+			return getToplevelRowById(purchaseRowId);
 		}
-		return row;
-	}
-
-	public Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
-	{
-		if (rowIds.isAll())
+		else if (purchaseRowId.isLineRowId())
 		{
-			return rowsById.values().stream();
+			return getToplevelRowById(purchaseRowId.toGroupRowId())
+					.getIncludedRowById(purchaseRowId);
 		}
 		else
 		{
-			return rowIds.stream()
-					.map(PurchaseRowId::fromDocumentId)
-					.map(this::getById);
+			return getToplevelRowById(purchaseRowId.toGroupRowId())
+					.getIncludedRowById(purchaseRowId.toLineRowId())
+					.getIncludedRowById(purchaseRowId);
 		}
 	}
 
-	private void updateRow(@NonNull final PurchaseRowId rowId, @NonNull final OLCandViewRowEditor editor)
+	private PurchaseRow getToplevelRowById(@NonNull final PurchaseRowId rowId) throws EntityNotFoundException
 	{
-		rowsById.compute(rowId.toGroupRowId(), (groupRowId, groupRow) -> {
+		final PurchaseRow topLevelRow = topLevelRowsById.get(rowId);
+		if (topLevelRow != null)
+		{
+			return topLevelRow;
+		}
+
+		throw new EntityNotFoundException("topLevelRow not found")
+				.appendParametersToMessage()
+				.setParameter("rowId", rowId);
+	}
+
+	public Stream<? extends IViewRow> streamTopLevelRowsByIds(@NonNull final DocumentIdsSelection rowIds)
+	{
+		if (rowIds.isAll())
+		{
+			return topLevelRowsById.values().stream();
+		}
+
+		return rowIds.stream().map(this::getById);
+	}
+
+	private void updateRow(@NonNull final PurchaseRowId rowId, @NonNull final PurchaseGroupRowEditor editor)
+	{
+		topLevelRowsById.compute(rowId.toGroupRowId(), (groupRowId, groupRow) -> {
 			if (groupRow == null)
 			{
-				throw new EntityNotFoundException("Row not found").setParameter("rowId", groupRowId);
+				throw new EntityNotFoundException("Row not found").appendParametersToMessage().setParameter("rowId", groupRowId);
 			}
 
 			final PurchaseRow newGroupRow = groupRow.copy();
@@ -132,17 +153,23 @@ class PurchaseRowsCollection
 		});
 	}
 
-	public void patchRow(final PurchaseRowId rowId, final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	public void patchRow(
+			final PurchaseRowId rowId,
+			final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		updateRow(rowId, (groupRow, includedRowId) -> applyFieldChangeRequests(groupRow, includedRowId, fieldChangeRequests));
+		updateRow(
+				rowId,
+				(groupRow, includedRowId) -> applyFieldChangeRequests(groupRow, includedRowId, fieldChangeRequests));
 	}
 
-	private void applyFieldChangeRequests(final PurchaseRow editableGroupRow, final PurchaseRowId includedRowId, final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	private void applyFieldChangeRequests(
+			@NonNull final PurchaseRow editableGroupRow,
+			final PurchaseRowId includedRowId,
+			@NonNull final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
-		if (includedRowId == null)
-		{
-			throw new AdempiereException("Only included rows are editable");
-		}
+		Check.errorIf(includedRowId == null,
+				"Only group rows with an includedRowId may be edited, but includedRowId=null; fieldChangeRequests={}; editableGroupRow={}",
+				fieldChangeRequests, editableGroupRow);
 
 		for (final JSONDocumentChangedEvent fieldChangeRequest : fieldChangeRequests)
 		{
@@ -165,7 +192,7 @@ class PurchaseRowsCollection
 	}
 
 	@FunctionalInterface
-	private static interface OLCandViewRowEditor
+	private static interface PurchaseGroupRowEditor
 	{
 		void edit(final PurchaseRow editableGroupRow, final PurchaseRowId includedRowId);
 	}

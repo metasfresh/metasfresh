@@ -139,7 +139,7 @@ public class ProcessRestController
 	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
 	public ResponseEntity<JSONProcessLayout> getLayout(
 			@PathVariable("processId") final String adProcessIdStr,
-			WebRequest request)
+			final WebRequest request)
 	{
 		userSession.assertLoggedIn();
 
@@ -156,7 +156,9 @@ public class ProcessRestController
 	}
 
 	@RequestMapping(value = "/{processId}", method = RequestMethod.POST)
-	public JSONProcessInstance createInstanceFromRequest(@PathVariable("processId") final String processIdStr, @RequestBody final JSONCreateProcessInstanceRequest jsonRequest)
+	public JSONProcessInstance createInstanceFromRequest(
+			@PathVariable("processId") final String processIdStr,
+			@RequestBody final JSONCreateProcessInstanceRequest jsonRequest)
 	{
 		userSession.assertLoggedIn();
 
@@ -196,8 +198,8 @@ public class ProcessRestController
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.GET)
 	public JSONProcessInstance getInstance(
-			@PathVariable("processId") final String processIdStr //
-			, @PathVariable("pinstanceId") final String pinstanceIdStr //
+			@PathVariable("processId") final String processIdStr,
+			@PathVariable("pinstanceId") final String pinstanceIdStr
 	)
 	{
 		userSession.assertLoggedIn();

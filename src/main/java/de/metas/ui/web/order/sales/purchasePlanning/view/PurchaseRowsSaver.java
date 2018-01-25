@@ -5,12 +5,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.printing.esb.base.util.Check;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import lombok.Builder;
@@ -61,12 +60,16 @@ class PurchaseRowsSaver
 				.filter(id -> id > 0)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<Integer, PurchaseCandidate> existingPurchaseCandidatesById = purchaseCandidatesRepo.streamAllBySalesOrderLineIds(salesOrderLineIds)
-				.collect(ImmutableMap.toImmutableMap(PurchaseCandidate::getRepoId, Function.identity()));
+		final Map<Integer, PurchaseCandidate> existingPurchaseCandidatesById = purchaseCandidatesRepo
+				.streamAllBySalesOrderLineIds(salesOrderLineIds)
+				.collect(ImmutableMap
+						.toImmutableMap(
+								PurchaseCandidate::getPurchaseCandidateId,
+								Function.identity()));
 
 		final List<PurchaseCandidate> purchaseCandidatesToSave = grouppingRows.stream()
 				.flatMap(grouppingRow -> grouppingRow.getIncludedRows().stream()) // purchase candidate lines
-				.map(row -> createOrUpdatePurchaseCandidate(row, existingPurchaseCandidatesById))
+				.map(row -> updatePurchaseCandidate(row, existingPurchaseCandidatesById))
 				.collect(ImmutableList.toImmutableList());
 
 		purchaseCandidatesRepo.saveAll(purchaseCandidatesToSave);
@@ -74,7 +77,7 @@ class PurchaseRowsSaver
 		//
 		// Delete remaining candidates:
 		final Set<Integer> purchaseCandidateIdsSaved = purchaseCandidatesToSave.stream()
-				.map(PurchaseCandidate::getRepoId)
+				.map(PurchaseCandidate::getPurchaseCandidateId)
 				.collect(ImmutableSet.toImmutableSet());
 		final Set<Integer> purchaseCandidateIdsToDelete = existingPurchaseCandidatesById.keySet().stream()
 				.filter(id -> !purchaseCandidateIdsSaved.contains(id))
@@ -84,35 +87,25 @@ class PurchaseRowsSaver
 		return purchaseCandidatesToSave;
 	}
 
-	private PurchaseCandidate createOrUpdatePurchaseCandidate(final PurchaseRow row, final Map<Integer, PurchaseCandidate> existingPurchaseCandidatesById)
+	private PurchaseCandidate updatePurchaseCandidate(
+			@NonNull final PurchaseRow purchaseRow,
+			@NonNull final Map<Integer, PurchaseCandidate> existingPurchaseCandidatesById)
 	{
-		PurchaseCandidate purchaseCandidate = existingPurchaseCandidatesById.get(row.getPurcaseCandidateRepoId());
-		if (purchaseCandidate == null)
-		{
-			purchaseCandidate = PurchaseCandidate.builder()
-					.salesOrderId(row.getSalesOrderId())
-					.salesOrderLineId(row.getSalesOrderLineId())
-					.orgId(row.getOrgId())
-					.warehouseId(row.getWarehouseId())
-					.productId(row.getProductId())
-					.uomId(row.getUOMId())
-					.vendorBPartnerId(row.getVendorBPartnerId())
-					.qtyRequired(row.getQtyToPurchase())
-					.datePromised(row.getDatePromised())
-					.processed(false)
-					.locked(false)
-					.build();
-		}
-		else
-		{
-			purchaseCandidate.setQtyRequired(row.getQtyToPurchase());
-			purchaseCandidate.setDatePromised(row.getDatePromised());
-			
-			if (purchaseCandidate.isProcessedOrLocked() && purchaseCandidate.hasChanges())
-			{
-				throw new AdempiereException("Purchase candidate is not editable: " + purchaseCandidate);
-			}
-		}
+		Check.errorUnless(PurchaseRowType.LINE.equals(purchaseRow.getType()),
+				"The given row's type needs to be {}, but is {}; purchaseRow={}", PurchaseRowType.LINE, purchaseRow.getType(), purchaseRow);
+
+		final PurchaseCandidate purchaseCandidate = existingPurchaseCandidatesById.get(purchaseRow.getPurchaseCandidateId());
+		Check.errorIf(purchaseCandidate == null,
+				"Missing purchaseCandidate with C_PurchaseCandidate_ID={}; purchaseRow={}, existingPurchaseCandidatesById={}",
+				purchaseRow.getPurchaseCandidateId(), purchaseRow, existingPurchaseCandidatesById);
+
+		purchaseCandidate.setQtyRequired(purchaseRow.getQtyToPurchase());
+		purchaseCandidate.setDatePromised(purchaseRow.getDatePromised());
+
+		Check.errorIf(
+				purchaseCandidate.isProcessedOrLocked() && purchaseCandidate.hasChanges(),
+				"The given purchaseRow has changes, but its PurchaseCandidate is not editable; purchaseRow={}; purchaseCandidate={}",
+				purchaseRow, purchaseCandidate);
 
 		return purchaseCandidate;
 	}

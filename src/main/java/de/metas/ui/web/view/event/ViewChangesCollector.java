@@ -24,6 +24,7 @@ import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -158,7 +159,7 @@ public class ViewChangesCollector implements AutoCloseable
 		}
 	}
 
-	private ViewChanges viewChanges(final IView view)
+	private ViewChanges viewChanges(@NonNull final IView view)
 	{
 		return viewChanges(view.getViewId());
 	}
@@ -169,21 +170,21 @@ public class ViewChangesCollector implements AutoCloseable
 		return viewChangesMap.computeIfAbsent(viewId, ViewChanges::new);
 	}
 
-	public void collectFullyChanged(final IView view)
+	public void collectFullyChanged(@NonNull final IView view)
 	{
 		viewChanges(view).setFullyChanged();
 
 		autoflushIfEnabled();
 	}
 
-	public void collectRowsChanged(final IView view, final DocumentIdsSelection rowIds)
+	public void collectRowsChanged(@NonNull final IView view, final DocumentIdsSelection rowIds)
 	{
 		viewChanges(view).addChangedRowIds(rowIds);
 
 		autoflushIfEnabled();
 	}
 
-	public void collectRowChanged(final IView view, final DocumentId rowId)
+	public void collectRowChanged(@NonNull final IView view, final DocumentId rowId)
 	{
 		viewChanges(view).addChangedRowId(rowId);
 

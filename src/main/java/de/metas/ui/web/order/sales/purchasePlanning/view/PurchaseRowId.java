@@ -2,12 +2,20 @@ package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
+import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
+
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 
+import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult.Type;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -38,15 +46,37 @@ public final class PurchaseRowId
 {
 	public static PurchaseRowId groupId(final int salesOrderLineId)
 	{
-		final int vendorBPartnerId = -1;
-		final DocumentId documentId = null;
-		return new PurchaseRowId(salesOrderLineId, vendorBPartnerId, documentId);
+		return new PurchaseRowId(
+				salesOrderLineId,
+				-1, // vendorBPartnerId
+				null, // availabilityType
+				null, // availabilityDistinguisher
+				null);  // documentId
 	}
 
 	public static PurchaseRowId lineId(final int salesOrderLineId, final int vendorBPartnerId)
 	{
-		final DocumentId documentId = null;
-		return new PurchaseRowId(salesOrderLineId, vendorBPartnerId, documentId);
+		return new PurchaseRowId(
+				salesOrderLineId,
+				vendorBPartnerId,
+				null, // availabilityType
+				null, // availabilityDistinguisher
+				null); // documentId
+	}
+
+	public PurchaseRowId withAvailability(
+			@NonNull final Type availabilityType,
+			@NonNull final String availabilityDistinguisher)
+	{
+		Check.errorUnless(this.isLineRowId(),
+				"The method withAvailabilityId may only be invoked on a line row id; this={}", this);
+
+		return new PurchaseRowId(
+				salesOrderLineId,
+				vendorBPartnerId,
+				availabilityType,
+				availabilityDistinguisher,
+				null); // documentId
 	}
 
 	public static PurchaseRowId fromDocumentId(final DocumentId documentId)
@@ -60,11 +90,13 @@ public final class PurchaseRowId
 		return fromJson(json, documentId);
 	}
 
-	private static final PurchaseRowId fromJson(final String json, final DocumentId documentId)
+	private static final PurchaseRowId fromJson(
+			@NonNull final String json,
+			@Nullable final DocumentId documentId)
 	{
 		final List<String> parts = PARTS_SPLITTER.splitToList(json);
 		final int partsCount = parts.size();
-		if (partsCount < 1 || partsCount > 2)
+		if (partsCount < 1 || partsCount == 3 || partsCount > 4)
 		{
 			throw new AdempiereException("Invalid format: " + json);
 		}
@@ -72,8 +104,16 @@ public final class PurchaseRowId
 		try
 		{
 			final int salesOrderLineId = Integer.parseInt(parts.get(0));
-			final int vendorBPartnerId = partsCount == 2 ? Integer.parseInt(parts.get(1)) : -1;
-			return new PurchaseRowId(salesOrderLineId, vendorBPartnerId, documentId);
+			final int vendorBPartnerId = partsCount >= 2 ? Integer.parseInt(parts.get(1)) : -1;
+			final Type availabilityType = partsCount >= 3 ? Type.valueOf(parts.get(2)) : null;
+			final String availabilityDistinguisher = partsCount >= 4 ? parts.get(3) : null;
+
+			return new PurchaseRowId(
+					salesOrderLineId,
+					vendorBPartnerId,
+					availabilityType,
+					availabilityDistinguisher,
+					documentId);
 		}
 		catch (Exception ex)
 		{
@@ -81,60 +121,117 @@ public final class PurchaseRowId
 		}
 	}
 
-	private static final String PARTS_SEPARATOR = "_";
+	/** Please make sure this splitter is not included in the enum values of {@link Type}. */
+	@VisibleForTesting
+	static final String PARTS_SEPARATOR = "-";
+
 	private static final Splitter PARTS_SPLITTER = Splitter.on(PARTS_SEPARATOR).omitEmptyStrings();
 
+	@Getter
 	private final int salesOrderLineId;
+
+	@Getter(AccessLevel.PACKAGE) // visible for testing
 	private final int vendorBPartnerId;
+
+	@Getter
+	private final Type availabilityType;
+
+	@Getter(AccessLevel.PACKAGE) // visible for testing
+	private final String availabilityDistinguisher;
 
 	private transient DocumentId _documentId; // lazy
 
-	private PurchaseRowId(final int salesOrderLineId, final int vendorBPartnerId, final DocumentId documentId)
+	private PurchaseRowId(
+			final int salesOrderLineId,
+			final int vendorBPartnerId,
+			final Type availabilityType,
+			final String availabilityDistinguisher,
+			final DocumentId documentId)
 	{
-		if (salesOrderLineId <= 0)
-		{
-			throw new AdempiereException("Invalid salesOrderLineId: " + salesOrderLineId);
-		}
+		Check.errorIf(salesOrderLineId <= 0, "The given salesOrderLineId={} may not be <= 0", salesOrderLineId);
+
+		Check.errorIf(availabilityType == null ^ Check.isEmpty(availabilityDistinguisher, true),
+				"The given availabilityType and availabilityDistinguisher need to be both either null/empty or both not-null/not-empty; availabilityType={}; availabilityDistinguisher={}",
+				availabilityType, availabilityDistinguisher);
+
+		Check.errorIf(availabilityDistinguisher != null && availabilityDistinguisher.contains(PARTS_SEPARATOR),
+				"The given availabilityDistinguisher string may not contain the PARTS_SEPARATOR string; PARTS_SEPARATOR={};availabilityDistinguisher={}",
+				PARTS_SEPARATOR, availabilityDistinguisher);
+
 		this.salesOrderLineId = salesOrderLineId;
 		this.vendorBPartnerId = vendorBPartnerId > 0 ? vendorBPartnerId : -1;
+		this.availabilityType = availabilityType;
+		this.availabilityDistinguisher = availabilityDistinguisher;
+
 		this._documentId = documentId;
-	}
-	
-	public int getSalesOrderLineId()
-	{
-		return salesOrderLineId;
 	}
 
 	public DocumentId toDocumentId()
 	{
 		if (_documentId == null)
 		{
+			final StringBuilder sb = new StringBuilder();
+			sb.append(salesOrderLineId);
 			if (vendorBPartnerId > 0)
 			{
-				_documentId = DocumentId.ofString(salesOrderLineId + PARTS_SEPARATOR + vendorBPartnerId);
+				sb.append(PARTS_SEPARATOR);
+				sb.append(vendorBPartnerId);
 			}
-			else
+			if (availabilityType != null)
 			{
-				_documentId = DocumentId.of(salesOrderLineId);
+				sb.append(PARTS_SEPARATOR);
+				sb.append(availabilityType.toString());
+				sb.append(PARTS_SEPARATOR);
+				sb.append(availabilityDistinguisher); // we verified in the constructor that it's not empty if availabilityType != null
 			}
+			_documentId = DocumentId.ofString(sb.toString());
 		}
 		return _documentId;
 	}
 
 	public PurchaseRowId toGroupRowId()
 	{
-		if (vendorBPartnerId <= 0)
+		if (isGroupRowId())
 		{
 			return this;
 		}
 		else
 		{
-			return new PurchaseRowId(salesOrderLineId, -1, null);
+			return new PurchaseRowId(salesOrderLineId,
+					-1, // vendorBPartnerId
+					null, // availabilityType
+					null, // availabilityDistinguisher
+					null); // documentId
 		}
 	}
-	
+
+	public PurchaseRowId toLineRowId()
+	{
+		if (isLineRowId())
+		{
+			return this;
+		}
+		else
+		{
+			return new PurchaseRowId(salesOrderLineId, vendorBPartnerId,
+					null, // availabilityType
+					null, // availabilityDistinguisher
+					null); // documentId
+		}
+	}
+
 	public boolean isGroupRowId()
 	{
 		return vendorBPartnerId <= 0;
+	}
+
+	public boolean isLineRowId()
+	{
+		return vendorBPartnerId > 0 && availabilityType == null;
+	}
+
+	public boolean isAvailabilityRowId()
+	{
+		return availabilityType != null;
 	}
 }

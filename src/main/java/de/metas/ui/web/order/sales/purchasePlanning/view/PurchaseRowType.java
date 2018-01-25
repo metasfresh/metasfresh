@@ -28,7 +28,8 @@ import de.metas.ui.web.view.IViewRowType;
 public enum PurchaseRowType implements IViewRowType
 {
 	GROUP(PPOrderLineType.MainProduct.getIconName()), //
-	LINE(PPOrderLineType.BOMLine_Component.getIconName());
+	LINE(PPOrderLineType.BOMLine_Component.getIconName()), //
+	AVAILABILITY_DETAIL(PPOrderLineType.BOMLine_ByCoProduct.getIconName());
 
 	private final String iconName;
 

@@ -24,6 +24,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
+import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
@@ -60,7 +61,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	private static final int STREAM_ALL_MAX_SIZE_ALLOWED = 200;
 
 	private final ViewEvaluationCtx viewEvaluationCtx;
-	
+
 	private final HUEditorViewRepository huEditorRepo;
 	private final ImmutableList<DocumentFilter> stickyFilters;
 
@@ -78,7 +79,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			final List<DocumentQueryOrderBy> orderBys)
 	{
 		this.viewEvaluationCtx = ViewEvaluationCtx.newInstanceFromCurrentContext();
-		
+
 		this.huEditorRepo = huEditorRepo;
 		this.stickyFilters = ImmutableList.copyOf(stickyFilters);
 
@@ -191,7 +192,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		final DocumentIdsSelection rowIds = HUEditorRowId.rowIdsFromTopLevelM_HU_IDs(huIdsToCheck);
 		return huEditorRepo.containsAnyOfRowIds(getDefaultSelection(), rowIds);
 	}
-	
+
 	private ViewEvaluationCtx getViewEvaluationCtx()
 	{
 		return viewEvaluationCtx;
@@ -207,7 +208,8 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		}
 
 		return streamPage(0, STREAM_ALL_MAX_SIZE_ALLOWED, filter, defaultSelection.getOrderBys())
-				.flatMap(row -> row.streamRecursive());
+				.flatMap(HUEditorRow::streamRecursive)
+				.map(HUEditorRow::cast);
 	}
 
 	@Override
