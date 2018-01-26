@@ -1,12 +1,17 @@
 package de.metas.vertical.pharma.vendor.gateway.mvs3;
 
+import java.math.RoundingMode;
 import java.util.UUID;
 
 import org.adempiere.ad.service.ISystemBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_AD_System;
 import org.compiere.util.Env;
+
+import de.metas.vendor.gateway.api.ProductAndQuantity;
 
 /*
  * #%L
@@ -21,17 +26,20 @@ import org.compiere.util.Env;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class MSV3Util
 {
+
+	public static final int MSV3_MAX_QUANTITY_99999 = 99999;
+
 	public static final ExtendedMemorizingSupplier<String> CLIENT_SOFTWARE_IDENTIFIER = ExtendedMemorizingSupplier
 			.of(() -> retrieveSoftwareIndentifier());
 
@@ -53,4 +61,26 @@ public class MSV3Util
 		return UUID.randomUUID().toString();
 	}
 
+	public static long extractPZN(final ProductAndQuantity requestItem)
+	{
+		final String productIdentifier = requestItem.getProductIdentifier();
+		try
+		{
+			return Long.parseLong(productIdentifier);
+		}
+		catch (NumberFormatException e)
+		{
+			throw new AdempiereException("Unable to parse a long value from productIdentifier=" + productIdentifier, e)
+					.appendParametersToMessage().setParameter("requestItem", requestItem);
+		}
+	}
+
+	public static int extractMenge(final ProductAndQuantity requestItem)
+	{
+		final int intValue = requestItem.getQuantity().setScale(0, RoundingMode.UP).intValue();
+		Check.errorIf(intValue > MSV3_MAX_QUANTITY_99999,
+				"The MSV3 standard allows a maximum quantity of {}; productAndQuantity={}",
+				MSV3_MAX_QUANTITY_99999, requestItem);
+		return intValue;
+	}
 }

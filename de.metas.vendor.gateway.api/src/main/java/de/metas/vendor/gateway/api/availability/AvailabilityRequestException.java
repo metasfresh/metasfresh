@@ -2,6 +2,8 @@ package de.metas.vendor.gateway.api.availability;
 
 import java.util.Map;
 
+import de.metas.vendor.gateway.api.ProductAndQuantity;
+
 /*
  * #%L
  * de.metas.vendor.gateway.api
@@ -26,5 +28,5 @@ import java.util.Map;
 
 public interface AvailabilityRequestException
 {
-	Map<AvailabilityRequestItem, Throwable> getRequestItem2Exception();
+	Map<ProductAndQuantity, Throwable> getRequestItem2Exception();
 }

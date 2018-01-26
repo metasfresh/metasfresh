@@ -70,10 +70,10 @@ public class MSV3VendorGatewayService implements VendorGatewayService
 	public PurchaseOrderResponse placePurchaseOrder(@NonNull final PurchaseOrderRequest request)
 	{
 		final MSV3ClientConfig config = configRepo.retrieveByVendorId(request.getVendorId());
-		final MSV3PurchaseOrderClient client = new MSV3PurchaseOrderClient(
-				connectionFactory,
-				purchaseOrderRepo,
-				config);
+		final MSV3PurchaseOrderClient client = MSV3PurchaseOrderClient.builder()
+				.config(config)
+				.connectionFactory(connectionFactory)
+				.purchaseOrderRepo(purchaseOrderRepo).build();
 
 		return client.placePurchaseOrder(request);
 	}

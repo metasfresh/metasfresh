@@ -2,6 +2,7 @@ package de.metas.vendor.gateway.api.order;
 
 import java.util.List;
 
+import de.metas.vendor.gateway.api.ProductAndQuantity;
 import lombok.Singular;
 import lombok.Value;
 
@@ -36,5 +37,5 @@ public class PurchaseOrderRequest
 	int vendorId;
 
 	@Singular
-	List<PurchaseOrderRequestItem> orderLines;
+	List<ProductAndQuantity> orderLines;
 }

@@ -1,16 +1,11 @@
 package de.metas.vertical.pharma.vendor.gateway.mvs3.testconnection;
 
-import javax.xml.bind.JAXBElement;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.ws.client.core.WebServiceTemplate;
-
+import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientBase;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3Util;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.ObjectFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerbindungTesten;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerbindungTestenResponse;
 import lombok.NonNull;
 
 /*
@@ -35,42 +30,30 @@ import lombok.NonNull;
  * #L%
  */
 
-public class MSV3TestConnectionClient
+public class MSV3TestConnectionClient extends MSV3ClientBase
 {
 	private static final String URL_SUFFIX_TEST_CONNECTION = "/verbindungTesten";
-
-	private final MSV3ClientConfig config;
-	private final WebServiceTemplate webServiceTemplate;
-	private final ObjectFactory objectFactory;
 
 	public MSV3TestConnectionClient(
 			@NonNull final MSV3ConnectionFactory connectionFactory,
 			@NonNull final MSV3ClientConfig config)
 	{
-		this.config = config;
-		objectFactory = new ObjectFactory();
-		webServiceTemplate = connectionFactory.createWebServiceTemplate(config);
+		super(connectionFactory, config);
 	}
-
-
 
 	public String testConnection()
 	{
+		final ObjectFactory objectFactory = getObjectFactory();
+
 		final VerbindungTesten verbindungTesten = objectFactory.createVerbindungTesten();
 		verbindungTesten.setClientSoftwareKennung(MSV3Util.CLIENT_SOFTWARE_IDENTIFIER.get());
 
-		final JAXBElement<?> responseElement = //
-				(JAXBElement<?>)webServiceTemplate.marshalSendAndReceive(
-						config.getBaseUrl() + URL_SUFFIX_TEST_CONNECTION,
-						objectFactory.createVerbindungTesten(verbindungTesten));
+		return sendMessage(objectFactory.createVerbindungTesten(verbindungTesten));
+	}
 
-		final Object value = responseElement.getValue();
-		if (value instanceof VerbindungTestenResponse)
-		{
-			return "ok";
-		}
-
-		throw new AdempiereException(value.toString()).appendParametersToMessage()
-				.setParameter("config", config);
+	@Override
+	public String getUrlSuffix()
+	{
+		return URL_SUFFIX_TEST_CONNECTION;
 	}
 }

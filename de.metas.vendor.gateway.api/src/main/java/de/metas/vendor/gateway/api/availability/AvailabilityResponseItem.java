@@ -5,6 +5,7 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
+import de.metas.vendor.gateway.api.ProductAndQuantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,7 +42,7 @@ public class AvailabilityResponseItem
 	}
 
 	@NonNull
-	AvailabilityRequestItem correspondingRequestItem;
+	ProductAndQuantity correspondingRequestItem;
 
 	@NonNull
 	String productIdentifier;

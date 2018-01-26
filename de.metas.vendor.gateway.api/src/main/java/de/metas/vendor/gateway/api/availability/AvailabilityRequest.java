@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.adempiere.util.Check;
 
+import de.metas.vendor.gateway.api.ProductAndQuantity;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -35,12 +36,12 @@ public class AvailabilityRequest
 {
 	int vendorId;
 
-	List<AvailabilityRequestItem> availabilityRequestItems;
+	List<ProductAndQuantity> availabilityRequestItems;
 
 	@Builder
 	private AvailabilityRequest(
 			final int vendorId,
-			@Singular final List<AvailabilityRequestItem> availabilityRequestItems)
+			@Singular final List<ProductAndQuantity> availabilityRequestItems)
 	{
 		Check.errorIf(vendorId <= 0,
 				"The parameter vendorId={} needs to be > 0; availabilityRequestItems={}",

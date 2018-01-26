@@ -1,12 +1,13 @@
-package de.metas.vendor.gateway.api.availability;
+package de.metas.vendor.gateway.api;
 
 import java.math.BigDecimal;
 
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.vendor.gateway.api
+ * metasfresh-pharma.vendor.gateway.mvs3
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,9 +28,11 @@ import lombok.Value;
  */
 
 @Value
-public class AvailabilityRequestItem
+public class ProductAndQuantity
 {
+	@NonNull
 	String productIdentifier;
 
-	BigDecimal requiredQuantity;
+	@NonNull
+	BigDecimal quantity;
 }

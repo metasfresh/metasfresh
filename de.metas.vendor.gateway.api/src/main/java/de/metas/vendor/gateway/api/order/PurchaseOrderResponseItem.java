@@ -2,6 +2,7 @@ package de.metas.vendor.gateway.api.order;
 
 import java.math.BigDecimal;
 
+import de.metas.vendor.gateway.api.ProductAndQuantity;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -31,7 +32,7 @@ import lombok.Value;
 public class PurchaseOrderResponseItem
 {
 	@NonNull
-	PurchaseOrderRequestItem correspondingRequestItem;
+	ProductAndQuantity correspondingRequestItem;
 
 	@NonNull
 	BigDecimal confirmedOrderQuantity;

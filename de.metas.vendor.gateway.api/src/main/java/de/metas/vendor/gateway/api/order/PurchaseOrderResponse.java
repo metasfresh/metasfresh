@@ -37,5 +37,5 @@ public class PurchaseOrderResponse
 	String uniqueOrderId;
 
 	@Singular
-	List<PurchaseOrderRequestItem> orderLine;
+	List<PurchaseOrderResponseItem> orderLine;
 }
