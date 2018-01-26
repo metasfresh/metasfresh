@@ -26,6 +26,7 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -142,7 +143,8 @@ public class TableRecordIdDAO implements ITableRecordIdDAO
 	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/3389
 	 */
-	private Set<Integer> retrieveDistinctIds(
+	@VisibleForTesting
+	Set<Integer> retrieveDistinctIds(
 			@NonNull final String tableName,
 			@NonNull final String idColumnName)
 	{
