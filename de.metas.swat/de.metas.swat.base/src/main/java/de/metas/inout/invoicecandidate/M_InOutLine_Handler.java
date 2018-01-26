@@ -150,11 +150,14 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 					.create()
 					.list(I_M_InOutLine.class);
 
-			// creates multiple ICs which refer the packing material line if the package material line was created from several products
-			final List<I_C_Invoice_Candidate> candidates = allReferencingLines.stream()
-								.map(refInOutLine -> createInvoiceCandidateAndSetRefPackingInOutLine(inOutLine, refInOutLine))
-								.collect(ImmutableList.toImmutableList());
-			return candidates;
+			if (!allReferencingLines.isEmpty())
+			{
+				// creates multiple ICs which refer the packing material line if the package material line was created from several products
+				return allReferencingLines.stream()
+									.map(refInOutLine -> createInvoiceCandidateAndSetRefPackingInOutLine(inOutLine, refInOutLine))
+									.collect(ImmutableList.toImmutableList());
+			}
+
 		}
 
 		return ImmutableList.of(createInvoiceCandidateForInOutLine(inOutLine));
