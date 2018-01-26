@@ -501,7 +501,6 @@ import de.metas.notification.INotificationBL;
 				final IEventBus eventBus = eventBusFactory.getEventBus(Async_Constants.EVENTBUS_WORKPACKAGE_PROCESSING_ERRORS);
 				trxManager.getCurrentTrxListenerManagerOrAutoCommit()
 						.newEventListener(TrxEventTiming.AFTER_COMMIT)
-						.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
 						.registerHandlingMethod(innerTrx -> eventBus.postEvent(createWorkpackageProcessingErrorEvent(workPackage, ex)));
 			}
 		}
@@ -550,12 +549,6 @@ import de.metas.notification.INotificationBL;
 	 */
 	private static final IWorkpackageSkipRequest getWorkpackageSkipRequest(final Throwable ex)
 	{
-		// internal method, "ex" is never null
-		// if (ex == null)
-		// {
-		// return null;
-		// }
-
 		if (ex instanceof IWorkpackageSkipRequest)
 		{
 			final IWorkpackageSkipRequest skipRequest = (IWorkpackageSkipRequest)ex;

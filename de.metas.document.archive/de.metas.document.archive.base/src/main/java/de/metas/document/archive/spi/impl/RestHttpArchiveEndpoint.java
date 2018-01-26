@@ -29,8 +29,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
@@ -46,12 +44,14 @@ import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.document.archive.esb.api.ArchiveGetDataRequest;
 import de.metas.document.archive.esb.api.ArchiveGetDataResponse;
 import de.metas.document.archive.esb.api.ArchiveSetDataRequest;
 import de.metas.document.archive.esb.api.ArchiveSetDataResponse;
 import de.metas.document.archive.esb.api.IArchiveEndpoint;
+import de.metas.logging.LogManager;
 
 /**
  * Rest HTTP Remote Archive Endpoint connector

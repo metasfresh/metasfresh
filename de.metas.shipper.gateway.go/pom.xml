@@ -16,7 +16,8 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<migration-sql-basedir>99-de.metas.shipper.gateway.go</migration-sql-basedir>
+		<migration-sql-basedir></migration-sql-basedir>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
 	<dependencies>
@@ -32,23 +33,23 @@
 		<dependency>
 			<groupId>de.metas.shipper.gateway</groupId>
 			<artifactId>de.metas.shipper.gateway.api</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
@@ -69,7 +70,6 @@
 			<plugin>
 				<groupId>org.jvnet.jaxb2.maven2</groupId>
 				<artifactId>maven-jaxb2-plugin</artifactId>
-				<version>0.13.1</version>
 				<executions>
 					<execution>
 						<goals>
@@ -82,7 +82,7 @@
 					<wsdl>true</wsdl>
 					<xmlschema>false</xmlschema>
 					<schemaIncludes>*.wsdl</schemaIncludes>
-					<schemaDirectory>./src/main/resources/de/metas/shipper/gateway/go/schema/</schemaDirectory>
+					<schemaDirectory>${project.basedir}/src/main/resources/de/metas/shipper/gateway/go/schema/</schemaDirectory>
 					<schemaFiles>GOWebService.wsdl</schemaFiles>
 				</configuration>
 			</plugin>

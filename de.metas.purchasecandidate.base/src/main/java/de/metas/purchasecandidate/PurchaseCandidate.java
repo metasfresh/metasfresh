@@ -37,8 +37,9 @@ import lombok.Setter;
 @Data
 public class PurchaseCandidate
 {
+
 	@Setter(AccessLevel.NONE)
-	private int repoId;
+	private int purchaseCandidateId;
 
 	private final int salesOrderId;
 	private final int salesOrderLineId;
@@ -53,25 +54,29 @@ public class PurchaseCandidate
 	private final int productId;
 	private final int uomId;
 	private final int vendorBPartnerId;
+	private final VendorProductInfo vendorProductInfo;
 
 	private BigDecimal qtyRequired;
 	@Setter(AccessLevel.NONE)
 	private BigDecimal qtyRequiredInitial;
 
 	private Date datePromised;
+
 	@Setter(AccessLevel.NONE)
 	private Date datePromisedInitial;
 
 	@Setter(AccessLevel.NONE)
 	private boolean processed;
+
 	@Setter(AccessLevel.NONE)
 	private boolean processedInitial;
+
 
 	private final boolean locked;
 
 	@Builder
 	private PurchaseCandidate(
-			final int repoId,
+			final int purchaseCandidateId,
 			final int salesOrderId,
 			final int salesOrderLineId,
 			final int purchaseOrderLineId,
@@ -80,6 +85,7 @@ public class PurchaseCandidate
 			final int productId,
 			final int uomId,
 			final int vendorBPartnerId,
+			@NonNull final VendorProductInfo vendorProductInfo,
 			@NonNull final BigDecimal qtyRequired,
 			@NonNull final Date datePromised,
 			final boolean processed,
@@ -93,7 +99,7 @@ public class PurchaseCandidate
 		Check.assume(uomId > 0, "uomId > 0");
 		Check.assume(vendorBPartnerId > 0, "vendorBPartnerId > 0");
 
-		this.repoId = repoId;
+		this.purchaseCandidateId = purchaseCandidateId;
 
 		this.salesOrderId = salesOrderId;
 		this.salesOrderLineId = salesOrderLineId;
@@ -105,6 +111,7 @@ public class PurchaseCandidate
 		this.productId = productId;
 		this.uomId = uomId;
 		this.vendorBPartnerId = vendorBPartnerId;
+		this.vendorProductInfo = vendorProductInfo;
 		this.qtyRequired = qtyRequired;
 		this.qtyRequiredInitial = qtyRequired;
 		this.datePromised = datePromised;
@@ -114,9 +121,9 @@ public class PurchaseCandidate
 		this.locked = locked;
 	}
 
-	private PurchaseCandidate(final PurchaseCandidate from)
+	private PurchaseCandidate(@NonNull final PurchaseCandidate from)
 	{
-		repoId = from.repoId;
+		purchaseCandidateId = from.purchaseCandidateId;
 		salesOrderId = from.salesOrderId;
 		salesOrderLineId = from.salesOrderLineId;
 		purchaseOrderLineId = from.purchaseOrderLineId;
@@ -127,6 +134,7 @@ public class PurchaseCandidate
 		productId = from.productId;
 		uomId = from.uomId;
 		vendorBPartnerId = from.vendorBPartnerId;
+		vendorProductInfo = from.vendorProductInfo;
 
 		qtyRequired = from.qtyRequired;
 		qtyRequiredInitial = from.qtyRequiredInitial;
@@ -160,17 +168,17 @@ public class PurchaseCandidate
 
 	public boolean hasChanges()
 	{
-		return repoId <= 0 // never saved
+		return purchaseCandidateId <= 0 // never saved
 				|| processed != processedInitial
 				|| purchaseOrderLineId != purchaseOrderLineIdInitial
 				|| qtyRequired.compareTo(qtyRequiredInitial) != 0
 				|| !Objects.equals(datePromised, datePromisedInitial);
 	}
 
-	public void markSaved(final int repoId)
+	public void markSaved(final int C_PurchaseCandidate_ID)
 	{
-		this.repoId = repoId;
-		
+		this.purchaseCandidateId = C_PurchaseCandidate_ID;
+
 		processedInitial = processed;
 		purchaseOrderLineIdInitial = purchaseOrderLineId;
 		qtyRequiredInitial = qtyRequired;

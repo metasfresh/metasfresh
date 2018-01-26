@@ -48,22 +48,12 @@ public class PurchaseOrderFromCandidatesAggregator extends MapReduceAggregator<P
 		setItemAggregationKeyBuilder(this::createHeaderAggregationKey);
 	}
 
-	public void addCandidate(final PurchaseCandidate candidate)
-	{
-		candidate.getVendorBPartnerId();
-		candidate.getDatePromised();
-	}
-
-	public void done()
-	{
-	}
-
 	private final PurchaseOrderAggregationKey createHeaderAggregationKey(final PurchaseCandidate candidate)
 	{
 		return PurchaseOrderAggregationKey.builder()
 				.orgId(candidate.getOrgId())
 				.warehouseId(candidate.getWarehouseId())
-				.vendorBPartnerId(candidate.getVendorBPartnerId())
+				.vendorBPartnerId(candidate.getVendorProductInfo().getVendorBPartnerId())
 				.datePromisedMillis(candidate.getDatePromised().getTime())
 				.build();
 	}

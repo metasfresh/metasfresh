@@ -47,6 +47,7 @@ import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 public final class AllocationUtils
 {
@@ -61,7 +62,7 @@ public final class AllocationUtils
 	 * @param qtyToAllocate
 	 * @return initial mutable result
 	 */
-	public static IMutableAllocationResult createMutableAllocationResult(final BigDecimal qtyToAllocate)
+	public static IMutableAllocationResult createMutableAllocationResult(@NonNull final BigDecimal qtyToAllocate)
 	{
 		return new MutableAllocationResult(qtyToAllocate);
 	}
@@ -72,9 +73,8 @@ public final class AllocationUtils
 	 * @param request
 	 * @return initial mutable result
 	 */
-	public static IMutableAllocationResult createMutableAllocationResult(final IAllocationRequest request)
+	public static IMutableAllocationResult createMutableAllocationResult(@NonNull final IAllocationRequest request)
 	{
-		Check.assumeNotNull(request, "request not null");
 		return createMutableAllocationResult(request.getQty());
 	}
 
