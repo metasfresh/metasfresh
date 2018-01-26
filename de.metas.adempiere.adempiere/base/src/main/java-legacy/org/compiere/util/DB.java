@@ -655,13 +655,6 @@ public final class DB
 		return prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, concurrency, null);
 	}	// prepareStatement
 
-	/**
-	 * Prepare Statement
-	 *
-	 * @param sql
-	 * @param trxName transaction
-	 * @return Prepared Statement
-	 */
 	public static CPreparedStatement prepareStatement(String sql, String trxName)
 	{
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
@@ -1821,7 +1814,7 @@ public final class DB
 	public static String TO_DATE(Timestamp day)
 	{
 		return TO_DATE(day, true);
-	} 
+	}
 
 	/**
 	 * Create SQL for formatted Date, Number
@@ -2347,7 +2340,7 @@ public final class DB
 	 * <pre>
 	 * WHERE M_ShipmentSchedule_ID IN (1150174'1150174',1150175'1150175',..
 	 * </pre>
-	 * 
+	 *
 	 * @param paramsIn
 	 * @param paramsOut
 	 * @return SQL list
