@@ -1,4 +1,3 @@
-import Moment from "moment";
 import counterpart from "counterpart";
 import React, { Component } from "react";
 
@@ -9,7 +8,6 @@ import Tooltips from "../tooltips/Tooltips.js";
 import RawWidget from "../widget/RawWidget";
 import TetherComponent from "react-tether";
 
-import { DATE_FIELDS } from "../../constants/Constants";
 class FiltersItem extends Component {
   constructor(props) {
     super(props);
@@ -30,22 +28,6 @@ class FiltersItem extends Component {
     if (JSON.stringify(active) !== JSON.stringify(props.active)) {
       this.init();
     }
-  }
-
-  componentDidMount() {
-    if (this.widgetsContainer) {
-      this.widgetsContainer.addEventListener("scroll", this.handleScroll);
-    }
-  }
-
-  componentWillUnmount() {
-    const { dispatch } = this.props;
-
-    if (this.widgetsContainer) {
-      this.widgetsContainer.removeEventListener("scroll", this.handleScroll);
-    }
-
-    dispatch(closeFilterBox());
   }
 
   init = () => {
@@ -91,35 +73,27 @@ class FiltersItem extends Component {
     }
   };
 
-  // TODO: Fix the timezone issue
-  // Right now, it's ignoring the returning timezone from back-end
-  // and use the browser's default timezone
-  parseDateToReadable = (widgetType, value) => {
-    if (DATE_FIELDS.indexOf(widgetType) > -1) {
+  parseDateToReadable = value => {
     if (value) {
-        if (Moment.isMoment(value)) {
-          return new Date(value);
-        } else {
-          const TIMEZONE_STRING_LENGTH = 7;
-          const newValue = value.substring(
-            0,
-            value.length - TIMEZONE_STRING_LENGTH
-          );
-          return new Date(newValue);
-        }
+      return new Date(value);
     }
-    }
-    return value;
   };
 
   mergeData = (property, value, valueTo) => {
+    const DATE_FIELD = "DateDoc";
     this.setState(prevState => ({
       filter: Object.assign({}, prevState.filter, {
         parameters: prevState.filter.parameters.map(param => {
           if (param.parameterName === property) {
             return Object.assign({}, param, {
-              value: this.parseDateToReadable(param.widgetType, value),
-              valueTo: this.parseDateToReadable(param.widgetType, valueTo)
+              value:
+                DATE_FIELD === property
+                  ? this.parseDateToReadable(value)
+                  : value,
+              valueTo:
+                DATE_FIELD === property
+                  ? this.parseDateToReadable(valueTo)
+                  : valueTo
             });
           } else {
             return param;

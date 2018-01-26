@@ -85,13 +85,6 @@ class RawWidget extends Component {
     }
   };
 
-  generateMomentObj = value => {
-    if (Moment.isMoment(value)) {
-      return value;
-    }
-    return value ? Moment(value).format(DATE_FORMAT) : null;
-  };
-
   handlePatch = (property, value, id, valueTo) => {
     const { handlePatch } = this.props;
 
@@ -298,11 +291,12 @@ class RawWidget extends Component {
                   tabIndex: fullScreen ? -1 : tabIndex
                 }}
                 value={widgetValue || widgetData[0].value}
-                onChange={date => {
-                  handleChange(widgetField, date);
-                }}
+                onChange={date => handleChange(widgetField, date)}
                 patch={date =>
-                  this.handlePatch(widgetField, this.generateMomentObj(date))
+                  this.handlePatch(
+                    widgetField,
+                    date ? Moment(date).format(DATE_FORMAT) : null
+                  )
                 }
                 {...{
                   allowOutsideClickListener,
