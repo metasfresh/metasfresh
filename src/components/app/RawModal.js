@@ -114,9 +114,9 @@ class RawModal extends Component {
       await closeCallback(isNew);
     }
 
-    await deleteView(windowType, viewId);
-
     await this.removeModal();
+
+    await deleteView(windowType, viewId);
   };
 
   removeModal = async () => {

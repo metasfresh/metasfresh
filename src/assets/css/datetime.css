@@ -1,5 +1,6 @@
 .rdt {
     position: relative;
+    width: 100%;
     font-size: .8rem;
     color: $brand-font-color-secondary;
     font-weight:500;
@@ -256,7 +257,7 @@ td.rdtYear:hover {
 }
 
 .tether-element {
-    z-index: 9;
+    z-index: 999;
 }
 
 .tether-out-of-bounds-top .rdtPicker {

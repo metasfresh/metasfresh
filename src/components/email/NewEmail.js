@@ -1,4 +1,5 @@
 import counterpart from "counterpart";
+import PropTypes from "prop-types";
 import React, { Component } from "react";
 import { connect } from "react-redux";
 
@@ -199,5 +200,12 @@ class NewEmail extends Component {
     );
   }
 }
+
+NewEmail.propTypes = {
+  windowId: PropTypes.string,
+  dispatch: PropTypes.func,
+  docId: PropTypes.string,
+  handleCloseEmail: PropTypes.func
+};
 
 export default connect()(NewEmail);
