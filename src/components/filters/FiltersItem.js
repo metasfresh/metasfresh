@@ -1,3 +1,4 @@
+import Moment from "moment";
 import counterpart from "counterpart";
 import React, { Component } from "react";
 import { connect } from "react-redux";
@@ -86,10 +87,22 @@ class FiltersItem extends Component {
     }
   };
 
+  // TODO: Fix the timezone issue
+  // Right now, it's ignoring the returning timezone from back-end
+  // and use the browser's default timezone
   parseDateToReadable = (widgetType, value) => {
     if (DATE_FIELDS.indexOf(widgetType) > -1) {
       if (value) {
-        return new Date(value);
+        if (Moment.isMoment(value)) {
+          return new Date(value);
+        } else {
+          const TIMEZONE_STRING_LENGTH = 7;
+          const newValue = value.substring(
+            0,
+            value.length - TIMEZONE_STRING_LENGTH
+          );
+          return new Date(newValue);
+        }
       }
     }
     return value;
