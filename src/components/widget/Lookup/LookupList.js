@@ -120,7 +120,7 @@ class LookupList extends Component {
 
     return (
       <div
-        className="input-dropdown-list"
+        className="input-dropdown-list lookuplist"
         ref={c => (this.listScrollWrap = c)}
         style={style}
       >

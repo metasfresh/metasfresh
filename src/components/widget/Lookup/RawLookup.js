@@ -418,7 +418,7 @@ class RawLookup extends Component {
     } = this.props;
 
     const { isInputEmpty, list, query, loading, selected, isOpen } = this.state;
-
+    const SEARCH_ICON_WIDTH = 38;
     return (
       <div
         className={
@@ -474,7 +474,9 @@ class RawLookup extends Component {
                 handleSelect={this.handleSelect}
                 handleAddNew={this.handleAddNew}
                 onClickOutside={this.handleBlur}
-                style={{ width: `${this.rawLookup.offsetWidth}px` }}
+                style={{
+                  width: `${this.rawLookup.offsetWidth + SEARCH_ICON_WIDTH}px`
+                }}
               />
             )}
         </TetherComponent>
