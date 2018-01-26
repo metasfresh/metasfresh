@@ -21,8 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.function.Consumer;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -34,11 +33,11 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MFactAcct;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyConversionContext;
+import de.metas.logging.LogManager;
 
 /**
  * Accounting Fact
@@ -369,7 +368,7 @@ public final class Fact
 	{
 		if (segmentType.equals(MAcctSchemaElement.ELEMENTTYPE_Organization))
 		{
-			HashMap<Integer, BigDecimal> map = new HashMap<Integer, BigDecimal>();
+			HashMap<Integer, BigDecimal> map = new HashMap<>();
 			// Add up values by key
 			for (int i = 0; i < m_lines.size(); i++)
 			{
@@ -433,7 +432,7 @@ public final class Fact
 		// Org
 		if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_Organization))
 		{
-			HashMap<Integer, Balance> map = new HashMap<Integer, Balance>();
+			HashMap<Integer, Balance> map = new HashMap<>();
 			// Add up values by key
 			for (int i = 0; i < m_lines.size(); i++)
 			{
@@ -753,6 +752,11 @@ public final class Fact
 	{
 		return m_trxName;
 	}	// getTrxName
+	
+	public void forEach(final Consumer<FactLine> consumer)
+	{
+		m_lines.forEach(consumer);
+	}
 
 	/**
 	 * Fact Balance Utility

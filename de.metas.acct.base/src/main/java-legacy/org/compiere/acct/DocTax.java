@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -23,7 +23,6 @@ import org.adempiere.acct.api.ITaxAcctBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.MAccount;
-import org.compiere.util.Env;
 
 /**
  * Document Tax Line
@@ -58,7 +57,7 @@ public final class DocTax
 			final boolean taxIncluded)
 	{
 		super();
-		
+
 		m_ctx = ctx;
 		m_C_Tax_ID = C_Tax_ID;
 		m_taxName = taxName;
@@ -81,7 +80,7 @@ public final class DocTax
 	/** Base Tax Amt */
 	private final BigDecimal m_taxBaseAmt;
 	/** Included Tax */
-	private BigDecimal m_includedTax = Env.ZERO;
+	private BigDecimal m_includedTax = BigDecimal.ZERO;
 	/** Sales Tax */
 	private final boolean m_salesTax;
 	private final boolean m_taxIncluded;
@@ -96,7 +95,7 @@ public final class DocTax
 	public static final int ACCTTYPE_TaxReceivables = ITaxAcctBL.ACCTTYPE_TaxReceivables;
 	/** Tax Expense */
 	public static final int ACCTTYPE_TaxExpense = ITaxAcctBL.ACCTTYPE_TaxExpense;
-	
+
 	private final Properties getCtx()
 	{
 		return m_ctx;
@@ -113,6 +112,16 @@ public final class DocTax
 	{
 		return taxAcctBL.getAccount(getCtx(), getC_Tax_ID(), as, AcctType);
 	}   // getAccount
+
+	public MAccount getAccount(final I_C_AcctSchema as)
+	{
+		return taxAcctBL.getAccount(getCtx(), getC_Tax_ID(), as, getAPTaxType());
+	}
+
+	public MAccount getTaxDueAcct(final I_C_AcctSchema as)
+	{
+		return taxAcctBL.getAccount(getCtx(), getC_Tax_ID(), as, ACCTTYPE_TaxDue);
+	}
 
 	/**
 	 * @return tax amount
@@ -199,7 +208,7 @@ public final class DocTax
 	 */
 	public boolean isIncludedTaxDifference()
 	{
-		return Env.ZERO.compareTo(getIncludedTaxDifference()) != 0;
+		return BigDecimal.ZERO.compareTo(getIncludedTaxDifference()) != 0;
 	}	// isIncludedTaxDifference
 
 	/**
