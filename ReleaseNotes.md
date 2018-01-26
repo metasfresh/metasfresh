@@ -95,26 +95,37 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#1196](https://github.com/metasfresh/metasfresh/issues/1196) Creating new product in new database causes error
-  * [#3196](https://github.com/metasfresh/metasfresh/issues/3196) dunning run: Exception on PDF generation
+    * Fixes the sequence for M_Product Values on new Database seeds.
+  * [#3196](https://github.com/metasfresh/metasfresh/issues/3196) Dunning run: Exception on PDF generation
+    * Fixes the Dunning Run Action. Now the automatic PDF Generation works smoothly again.
   * [#3339](https://github.com/metasfresh/metasfresh/issues/3339) Field "Doctype" is included twice in payment window
     * Fixes a doubled Field for Doctype in the payment window.
   * [#3350](https://github.com/metasfresh/metasfresh/issues/3350) Error creating movement from DDOrder
     * Fixes an Error that prevented the creation of movements from Distribution Orders.
 
 * metasfresh-webui-api
-  * [#775](https://github.com/metasfresh/metasfresh-webui-api/issues/775) destroyed HUs are still visible in material receipt
-  * [#777](https://github.com/metasfresh/metasfresh-webui-api/issues/777) date and time filter: truncate to Day when filtering
+  * [#775](https://github.com/metasfresh/metasfresh-webui-api/issues/775) Destroyed HUs are still visible in material receipt
+    * Destroyed HU are not shown in Handling Unit Editor anymore during the Material Receipt workflow.
+  * [#777](https://github.com/metasfresh/metasfresh-webui-api/issues/777) Date and time filter: truncate to Day when filtering
+    * Improvement of the Filter with Field format DateTime, now Truncating to Date when filtering.
   * [#781](https://github.com/metasfresh/metasfresh-webui-api/issues/781) HU editor view gets empty after splitting out one TU
-  * [#786](https://github.com/metasfresh/metasfresh-webui-api/issues/786) follow up destroyed HUs are still visible in material receipt
-  * [#787](https://github.com/metasfresh/metasfresh-webui-api/issues/787) deadlocks occuring around material cockpit
-  * [#796](https://github.com/metasfresh/metasfresh-webui-api/issues/796) error on filter with +/- buttons
+    * Now showing the newly split Transportation Unit in Handling Unit Editor after transform.
+  * [#786](https://github.com/metasfresh/metasfresh-webui-api/issues/786) Follow up destroyed HUs are still visible in material receipt
+    * Undisplaying destroyed Handling Units in Material Receipt.
+  * [#787](https://github.com/metasfresh/metasfresh-webui-api/issues/787) Deadlocks occurring around material cockpit
+    * Fixes some deadlocks that occurred through Material Cockpit logic.
+  * [#796](https://github.com/metasfresh/metasfresh-webui-api/issues/796) Error on filter with +/- buttons
+    * Fixes an error that occurred when using the new DateSwitcher Widget.
 
 * metasfresh-webui-frontend
   * [#1447](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1447) Picking window broken
+    * Fixes the Picking Terminal Picking Slot View. Now showing the proper information about the Picking Slot Content and Businesspartner reservation.
   * [#1494](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1494) Picking Tray Clearing window: fix: Warning: Failed prop type: Invalid prop `selected` of type `string` supplied to `DocumentList`, expected `array`
+    * Fixes the props validation in Picking Tray Clearing Window.
   * [#1495](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1495) Error on "add to transportation order"
     * Fixes a Bug that occurred in window Picking Tray Clearing when adding an HU to a Transportation Order.
-  * [#1498](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1498) frontend subscribscriptions to api's view topic get out of hand
+  * [#1498](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1498) Frontend subscriptions to api's view topic get out of hand
+    * Reducing the subscription amount per view, allowing to reduce the websocket connections "overload" on server side.
   * [#1508](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1508) Scrollbar in Filter when hovering apply Button
     * Improvement of the Tooltip Layout for Apply Button in Filter Selection Dropdowns.
   * [#1517](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1517) Discard changes in modal window
