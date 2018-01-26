@@ -592,4 +592,6 @@ RawList.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-export default connect(mapStateToProps)(RawList);
+export default connect(mapStateToProps, false, false, { withRef: true })(
+  RawList
+);

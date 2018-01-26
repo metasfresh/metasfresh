@@ -207,7 +207,7 @@ class List extends Component {
 
     return (
       <RawList
-        ref={c => (this.rawList = c)}
+        ref={c => (this.rawList = c && c.getWrappedInstance())}
         loading={loading}
         list={list || []}
         lookupList={lookupList}
