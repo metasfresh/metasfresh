@@ -1,3 +1,4 @@
+import Moment from "moment";
 import counterpart from "counterpart";
 import React, { Component } from "react";
 import { connect } from "react-redux";
@@ -10,6 +11,7 @@ import ModalContextShortcuts from "../shortcuts/ModalContextShortcuts";
 import Tooltips from "../tooltips/Tooltips.js";
 import RawWidget from "../widget/RawWidget";
 import { openFilterBox, closeFilterBox } from "../../actions/WindowActions";
+import { DATE_FIELDS } from "../../constants/Constants";
 class FiltersItem extends Component {
   constructor(props) {
     super(props);
@@ -85,27 +87,35 @@ class FiltersItem extends Component {
     }
   };
 
-  parseDateToReadable = value => {
-    if (value) {
-      return new Date(value);
+  // TODO: Fix the timezone issue
+  // Right now, it's ignoring the returning timezone from back-end
+  // and use the browser's default timezone
+  parseDateToReadable = (widgetType, value) => {
+    if (DATE_FIELDS.indexOf(widgetType) > -1) {
+      if (value) {
+        if (Moment.isMoment(value)) {
+          return new Date(value);
+        } else {
+          const TIMEZONE_STRING_LENGTH = 7;
+          const newValue = value.substring(
+            0,
+            value.length - TIMEZONE_STRING_LENGTH
+          );
+          return new Date(newValue);
+        }
+      }
     }
+    return value;
   };
 
   mergeData = (property, value, valueTo) => {
-    const DATE_FIELD = "DateDoc";
     this.setState(prevState => ({
       filter: Object.assign({}, prevState.filter, {
         parameters: prevState.filter.parameters.map(param => {
           if (param.parameterName === property) {
             return Object.assign({}, param, {
-              value:
-                DATE_FIELD === property
-                  ? this.parseDateToReadable(value)
-                  : value,
-              valueTo:
-                DATE_FIELD === property
-                  ? this.parseDateToReadable(valueTo)
-                  : valueTo
+              value: this.parseDateToReadable(param.widgetType, value),
+              valueTo: this.parseDateToReadable(param.widgetType, valueTo)
             });
           } else {
             return param;

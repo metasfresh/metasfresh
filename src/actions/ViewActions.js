@@ -1,6 +1,7 @@
 import axios from "axios";
 import Moment from "moment";
 import { getQueryString } from "./GenericActions";
+import { DATE_FORMAT } from "../constants/Constants";
 
 export function getViewLayout(windowId, viewType, viewProfileId = null) {
   return axios.get(
@@ -88,8 +89,10 @@ export function createViewRequest({
 export function filterViewRequest(windowId, viewId, filters) {
   filters.map(filter => {
     filter.parameters.map((param, index) => {
-      if (param.caption === "Date") {
-        filter.parameters[index].value = Moment(param.value).format();
+      if (param.widgetType === "Date") {
+        filter.parameters[index].value = Moment(param.value).format(
+          DATE_FORMAT
+        );
       }
     });
   });
