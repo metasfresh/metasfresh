@@ -8,6 +8,7 @@ import Tooltips from "../tooltips/Tooltips.js";
 import RawWidget from "../widget/RawWidget";
 import TetherComponent from "react-tether";
 
+import { DATE_FIELDS } from "../../constants/Constants";
 class FiltersItem extends Component {
   constructor(props) {
     super(props);
@@ -73,10 +74,13 @@ class FiltersItem extends Component {
     }
   };
 
-  parseDateToReadable = value => {
+  parseDateToReadable = (widgetType, value) => {
+    if (DATE_FIELDS.indexOf(widgetType) > -1) {
     if (value) {
       return new Date(value);
     }
+    }
+    return value;
   };
 
   mergeData = (property, value, valueTo) => {
@@ -85,8 +89,8 @@ class FiltersItem extends Component {
         parameters: prevState.filter.parameters.map(param => {
           if (param.parameterName === property) {
             return Object.assign({}, param, {
-              value: this.parseDateToReadable(value),
-              valueTo: this.parseDateToReadable(valueTo)
+              value: this.parseDateToReadable(param.widgetType, value),
+              valueTo: this.parseDateToReadable(param.widgetType, valueTo)
             });
           } else {
             return param;
