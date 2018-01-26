@@ -10,7 +10,7 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.CCache;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 
 import de.metas.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
 
@@ -36,7 +36,7 @@ import de.metas.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
  * #L%
  */
 
-@Service
+@Repository
 @DependsOn(Adempiere.BEAN_NAME)
 public class MSV3ClientConfigRepository
 {

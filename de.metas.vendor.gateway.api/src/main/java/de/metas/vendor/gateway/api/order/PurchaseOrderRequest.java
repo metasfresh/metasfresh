@@ -1,9 +1,9 @@
-package de.metas.vendor.gateway.api;
+package de.metas.vendor.gateway.api.order;
 
-import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
-import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
-import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
-import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
+import java.util.List;
+
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
@@ -27,15 +27,14 @@ import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
  * #L%
  */
 
-/**
- * Hint: obtain your instance(s) for a given vendor (if any!) via {@link VendorGatewayRegistry#getVendorGatewayServices(int)}.
- *
- */
-public interface VendorGatewayService
+@Value
+public class PurchaseOrderRequest
 {
-	boolean isProvidedForVendor(int vendorId);
+	/** The metasfresh {@code C_Order_ID}	 */
+	int orderId;
 
-	AvailabilityResponse retrieveAvailability(AvailabilityRequest request);
+	int vendorId;
 
-	PurchaseOrderResponse placePurchaseOrder(PurchaseOrderRequest request);
+	@Singular
+	List<PurchaseOrderRequestItem> orderLines;
 }

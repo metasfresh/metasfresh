@@ -1,8 +1,6 @@
-package de.metas.vendor.gateway.api.model;
+package de.metas.vendor.gateway.api.availability;
 
-import java.math.BigDecimal;
-
-import lombok.Value;
+import java.util.Map;
 
 /*
  * #%L
@@ -26,10 +24,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class AvailabilityRequestItem
+public interface AvailabilityRequestException
 {
-	String productIdentifier;
-
-	BigDecimal requiredQuantity;
+	Map<AvailabilityRequestItem, Throwable> getRequestItem2Exception();
 }

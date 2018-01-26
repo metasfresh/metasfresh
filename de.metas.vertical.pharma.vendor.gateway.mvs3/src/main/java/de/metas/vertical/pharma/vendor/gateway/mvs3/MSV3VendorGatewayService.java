@@ -3,8 +3,13 @@ package de.metas.vertical.pharma.vendor.gateway.mvs3;
 import org.springframework.stereotype.Service;
 
 import de.metas.vendor.gateway.api.VendorGatewayService;
-import de.metas.vendor.gateway.api.model.AvailabilityRequest;
-import de.metas.vendor.gateway.api.model.AvailabilityResponse;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
+import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
+import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
+import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.availability.MSV3AvailiabilityClient;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder.MSV3PurchaseOrderClient;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder.MSV3PurchaseOrderRepository;
 import lombok.NonNull;
 
 /*
@@ -34,27 +39,42 @@ public class MSV3VendorGatewayService implements VendorGatewayService
 {
 	private final MSV3ClientConfigRepository configRepo;
 	private final MSV3ConnectionFactory connectionFactory;
+	private final MSV3PurchaseOrderRepository purchaseOrderRepo;
 
 	public MSV3VendorGatewayService(
 			@NonNull final MSV3ConnectionFactory connectionFactory,
-			@NonNull final MSV3ClientConfigRepository configRepo)
+			@NonNull final MSV3ClientConfigRepository configRepo,
+			@NonNull final MSV3PurchaseOrderRepository purchaseOrderRepo)
 	{
 		this.configRepo = configRepo;
 		this.connectionFactory = connectionFactory;
-	}
-
-	@Override
-	public AvailabilityResponse retrieveAvailability(@NonNull final AvailabilityRequest request)
-	{
-		final MSV3ClientConfig config = configRepo.retrieveByVendorId(request.getVendorId());
-		final MSV3Client client = new MSV3Client(connectionFactory, config);
-
-		return client.retrieveAvailability(request);
+		this.purchaseOrderRepo = purchaseOrderRepo;
 	}
 
 	@Override
 	public boolean isProvidedForVendor(final int vendorId)
 	{
 		return configRepo.getretrieveByVendorIdOrNull(vendorId) != null;
+	}
+
+	@Override
+	public AvailabilityResponse retrieveAvailability(@NonNull final AvailabilityRequest request)
+	{
+		final MSV3ClientConfig config = configRepo.retrieveByVendorId(request.getVendorId());
+		final MSV3AvailiabilityClient client = new MSV3AvailiabilityClient(connectionFactory, config);
+
+		return client.retrieveAvailability(request);
+	}
+
+	@Override
+	public PurchaseOrderResponse placePurchaseOrder(@NonNull final PurchaseOrderRequest request)
+	{
+		final MSV3ClientConfig config = configRepo.retrieveByVendorId(request.getVendorId());
+		final MSV3PurchaseOrderClient client = new MSV3PurchaseOrderClient(
+				connectionFactory,
+				purchaseOrderRepo,
+				config);
+
+		return client.placePurchaseOrder(request);
 	}
 }

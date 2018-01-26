@@ -12,10 +12,11 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import de.metas.vendor.gateway.api.model.AvailabilityRequest;
-import de.metas.vendor.gateway.api.model.AvailabilityRequestItem;
-import de.metas.vendor.gateway.api.model.AvailabilityResponse;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
+import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
 import de.metas.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder.MSV3PurchaseOrderRepository;
 
 /*
  * #%L
@@ -65,7 +66,8 @@ public class MSV3VendorGatewayServiceTests
 
 		final MSV3VendorGatewayService msv3VendorGatewayService = new MSV3VendorGatewayService(
 				new MSV3ConnectionFactory(),
-				new MSV3ClientConfigRepository());
+				new MSV3ClientConfigRepository(),
+				new MSV3PurchaseOrderRepository());
 
 		final AvailabilityRequest request = AvailabilityRequest.builder()
 				.vendorId(999)

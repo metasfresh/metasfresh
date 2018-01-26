@@ -8,8 +8,8 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import de.metas.vendor.gateway.api.model.AvailabilityRequestException;
-import de.metas.vendor.gateway.api.model.AvailabilityRequestItem;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequestException;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
 import lombok.Getter;
 import lombok.NonNull;

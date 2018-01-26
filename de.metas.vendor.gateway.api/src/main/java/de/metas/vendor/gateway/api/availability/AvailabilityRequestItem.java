@@ -1,9 +1,8 @@
-package de.metas.vendor.gateway.api;
+package de.metas.vendor.gateway.api.availability;
 
-import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
-import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
-import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
-import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
+import java.math.BigDecimal;
+
+import lombok.Value;
 
 /*
  * #%L
@@ -27,15 +26,10 @@ import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
  * #L%
  */
 
-/**
- * Hint: obtain your instance(s) for a given vendor (if any!) via {@link VendorGatewayRegistry#getVendorGatewayServices(int)}.
- *
- */
-public interface VendorGatewayService
+@Value
+public class AvailabilityRequestItem
 {
-	boolean isProvidedForVendor(int vendorId);
+	String productIdentifier;
 
-	AvailabilityResponse retrieveAvailability(AvailabilityRequest request);
-
-	PurchaseOrderResponse placePurchaseOrder(PurchaseOrderRequest request);
+	BigDecimal requiredQuantity;
 }

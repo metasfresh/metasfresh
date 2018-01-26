@@ -1,9 +1,10 @@
-package de.metas.vendor.gateway.api.model;
+package de.metas.vendor.gateway.api.availability;
 
 import java.util.List;
 
+import org.adempiere.util.Check;
+
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -30,18 +31,21 @@ import lombok.Value;
  */
 
 @Value
-public class AvailabilityResponse
+public class AvailabilityRequest
 {
-	AvailabilityRequest originalRequest;
+	int vendorId;
 
-	List<AvailabilityResponseItem> availabilityResponseItems;
+	List<AvailabilityRequestItem> availabilityRequestItems;
 
 	@Builder
-	private AvailabilityResponse(
-			@NonNull final AvailabilityRequest originalRequest,
-			@Singular final List<AvailabilityResponseItem> availabilityResponseItems)
+	private AvailabilityRequest(
+			final int vendorId,
+			@Singular final List<AvailabilityRequestItem> availabilityRequestItems)
 	{
-		this.originalRequest = originalRequest;
-		this.availabilityResponseItems = availabilityResponseItems;
+		Check.errorIf(vendorId <= 0,
+				"The parameter vendorId={} needs to be > 0; availabilityRequestItems={}",
+				vendorId, availabilityRequestItems);
+		this.vendorId = vendorId;
+		this.availabilityRequestItems = availabilityRequestItems;
 	}
 }

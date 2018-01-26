@@ -1,17 +1,13 @@
-package de.metas.vendor.gateway.api.model;
+package de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
-import javax.annotation.Nullable;
-
+import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_PurchaseOrder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.vendor.gateway.api
+ * metasfresh-pharma.vendor.gateway.mvs3
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -32,29 +28,24 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class AvailabilityResponseItem
+public class MSV3PurchaseOrder
 {
-	public enum Type
+	public static MSV3PurchaseOrder ofDataRecord(@NonNull final I_MSV3_PurchaseOrder dataRecord)
 	{
-		AVAILABLE, NOT_AVAILABLE;
+		return new MSV3PurchaseOrder(
+				dataRecord.getSupportId(),
+				dataRecord.getC_Order_ID());
 	}
 
-	@NonNull
-	AvailabilityRequestItem correspondingRequestItem;
+	int supportId;
+	int orderId;
 
-	@NonNull
-	String productIdentifier;
-
-	@NonNull
-	BigDecimal availableQuantity;
-
-	@Nullable
-	Date datePromised;
-
-	@NonNull
-	Type type;
-
-	@Nullable
-	String availabilityText;
+	@Builder
+	private MSV3PurchaseOrder(
+			final int supportId,
+			final int orderId)
+	{
+		this.supportId = supportId;
+		this.orderId = orderId;
+	}
 }

@@ -1,6 +1,9 @@
-package de.metas.vendor.gateway.api.model;
+package de.metas.vendor.gateway.api.order;
 
-import java.util.Map;
+import java.math.BigDecimal;
+
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -24,7 +27,12 @@ import java.util.Map;
  * #L%
  */
 
-public interface AvailabilityRequestException
+@Value
+public class PurchaseOrderResponseItem
 {
-	Map<AvailabilityRequestItem, Throwable> getRequestItem2Exception();
+	@NonNull
+	PurchaseOrderRequestItem correspondingRequestItem;
+
+	@NonNull
+	BigDecimal confirmedOrderQuantity;
 }

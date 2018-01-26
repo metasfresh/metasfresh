@@ -34,10 +34,10 @@ public class AvailabilityCheckTest
 	@Test
 	public void  Type_ofAvailabilityResponseItemType()
 	{
-		final Type resultAvailable = Type.ofAvailabilityResponseItemType(de.metas.vendor.gateway.api.model.AvailabilityResponseItem.Type.AVAILABLE);
+		final Type resultAvailable = Type.ofAvailabilityResponseItemType(de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type.AVAILABLE);
 		assertThat(resultAvailable).isSameAs(Type.AVAILABLE);
 
-		final Type resultNotAvailable = Type.ofAvailabilityResponseItemType(de.metas.vendor.gateway.api.model.AvailabilityResponseItem.Type.NOT_AVAILABLE);
+		final Type resultNotAvailable = Type.ofAvailabilityResponseItemType(de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type.NOT_AVAILABLE);
 		assertThat(resultNotAvailable).isSameAs(Type.NOT_AVAILABLE);
 	}
 }

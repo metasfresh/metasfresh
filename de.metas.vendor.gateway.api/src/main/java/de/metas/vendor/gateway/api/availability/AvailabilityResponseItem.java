@@ -1,11 +1,12 @@
-package de.metas.vendor.gateway.api.model;
+package de.metas.vendor.gateway.api.availability;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.Date;
 
-import org.adempiere.util.Check;
+import javax.annotation.Nullable;
 
 import lombok.Builder;
-import lombok.Singular;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -31,21 +32,29 @@ import lombok.Value;
  */
 
 @Value
-public class AvailabilityRequest
+@Builder
+public class AvailabilityResponseItem
 {
-	int vendorId;
-
-	List<AvailabilityRequestItem> availabilityRequestItems;
-
-	@Builder
-	private AvailabilityRequest(
-			final int vendorId,
-			@Singular final List<AvailabilityRequestItem> availabilityRequestItems)
+	public enum Type
 	{
-		Check.errorIf(vendorId <= 0,
-				"The parameter vendorId={} needs to be > 0; availabilityRequestItems={}",
-				vendorId, availabilityRequestItems);
-		this.vendorId = vendorId;
-		this.availabilityRequestItems = availabilityRequestItems;
+		AVAILABLE, NOT_AVAILABLE;
 	}
+
+	@NonNull
+	AvailabilityRequestItem correspondingRequestItem;
+
+	@NonNull
+	String productIdentifier;
+
+	@NonNull
+	BigDecimal availableQuantity;
+
+	@Nullable
+	Date datePromised;
+
+	@NonNull
+	Type type;
+
+	@Nullable
+	String availabilityText;
 }

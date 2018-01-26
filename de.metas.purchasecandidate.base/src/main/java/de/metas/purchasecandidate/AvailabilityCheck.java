@@ -28,11 +28,11 @@ import com.google.common.collect.Multimaps;
 import de.metas.i18n.IMsgBL;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.VendorGatewayService;
-import de.metas.vendor.gateway.api.model.AvailabilityRequest;
-import de.metas.vendor.gateway.api.model.AvailabilityRequestException;
-import de.metas.vendor.gateway.api.model.AvailabilityRequestItem;
-import de.metas.vendor.gateway.api.model.AvailabilityResponse;
-import de.metas.vendor.gateway.api.model.AvailabilityResponseItem;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequestException;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
+import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
+import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
 import groovy.transform.EqualsAndHashCode;
 import lombok.Builder;
 import lombok.Getter;
@@ -105,9 +105,9 @@ public class AvailabilityCheck
 			}
 
 			public static Type ofAvailabilityResponseItemType(
-					@NonNull final de.metas.vendor.gateway.api.model.AvailabilityResponseItem.Type type)
+					@NonNull final de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type type)
 			{
-				if (de.metas.vendor.gateway.api.model.AvailabilityResponseItem.Type.AVAILABLE.equals(type))
+				if (de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type.AVAILABLE.equals(type))
 				{
 					return Type.AVAILABLE;
 				}

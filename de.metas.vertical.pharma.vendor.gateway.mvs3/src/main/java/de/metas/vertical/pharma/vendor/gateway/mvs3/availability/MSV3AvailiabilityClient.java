@@ -1,4 +1,4 @@
-package de.metas.vertical.pharma.vendor.gateway.mvs3;
+package de.metas.vertical.pharma.vendor.gateway.mvs3.availability;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -11,25 +11,22 @@ import java.util.UUID;
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.model.I_AD_System;
-import org.compiere.util.Env;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
-import de.metas.vendor.gateway.api.model.AvailabilityRequest;
-import de.metas.vendor.gateway.api.model.AvailabilityRequestItem;
-import de.metas.vendor.gateway.api.model.AvailabilityResponse;
-import de.metas.vendor.gateway.api.model.AvailabilityResponse.AvailabilityResponseBuilder;
-import de.metas.vendor.gateway.api.model.AvailabilityResponseItem;
-import de.metas.vendor.gateway.api.model.AvailabilityResponseItem.Type;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
+import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
+import de.metas.vendor.gateway.api.availability.AvailabilityResponse.AvailabilityResponseBuilder;
+import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
+import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientConfig;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientException;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3Util;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.ObjectFactory;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerbindungTesten;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerbindungTestenResponse;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitAnfragen;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitAnfragenResponse;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitAnteil;
@@ -63,48 +60,23 @@ import lombok.NonNull;
  * #L%
  */
 
-public class MSV3Client
+public class MSV3AvailiabilityClient
 {
 	private static final String URL_SUFFIX_RETRIEVE_AVAILABILITY = "/verfuegbarkeitAnfragen";
 
-	private static final String URL_SUFFIX_TEST_CONNECTION = "/verbindungTesten";
-
 	private static final int MSV3_MAX_QUANTITY_99999 = 99999;
-
-	private static final ExtendedMemorizingSupplier<String> CLIENT_SOFTWARE_IDENTIFIER = ExtendedMemorizingSupplier
-			.of(() -> retrieveSoftwareIndentifier());
 
 	private final MSV3ClientConfig config;
 	private final WebServiceTemplate webServiceTemplate;
 	private final ObjectFactory objectFactory;
 
-	public MSV3Client(
+	public MSV3AvailiabilityClient(
 			@NonNull final MSV3ConnectionFactory connectionFactory,
 			@NonNull final MSV3ClientConfig config)
 	{
 		this.config = config;
 		objectFactory = new ObjectFactory();
 		webServiceTemplate = connectionFactory.createWebServiceTemplate(config);
-	}
-
-	public String testConnection()
-	{
-		final VerbindungTesten verbindungTesten = objectFactory.createVerbindungTesten();
-		verbindungTesten.setClientSoftwareKennung(CLIENT_SOFTWARE_IDENTIFIER.get());
-
-		final JAXBElement<?> responseElement = //
-				(JAXBElement<?>)webServiceTemplate.marshalSendAndReceive(
-						config.getBaseUrl() + URL_SUFFIX_TEST_CONNECTION,
-						objectFactory.createVerbindungTesten(verbindungTesten));
-
-		final Object value = responseElement.getValue();
-		if (value instanceof VerbindungTestenResponse)
-		{
-			return "ok";
-		}
-
-		throw new AdempiereException(value.toString()).appendParametersToMessage()
-				.setParameter("config", config);
 	}
 
 	public AvailabilityResponse retrieveAvailability(@NonNull final AvailabilityRequest request)
@@ -183,7 +155,7 @@ public class MSV3Client
 	{
 		final VerfuegbarkeitAnfragen verfuegbarkeitAnfragen = new VerfuegbarkeitAnfragen();
 		verfuegbarkeitAnfragen.setVerfuegbarkeitsanfrage(verfuegbarkeitsanfrageEinzelne);
-		verfuegbarkeitAnfragen.setClientSoftwareKennung(CLIENT_SOFTWARE_IDENTIFIER.get());
+		verfuegbarkeitAnfragen.setClientSoftwareKennung(MSV3Util.CLIENT_SOFTWARE_IDENTIFIER.get());
 
 		final Object response = makeWebserviceCall(
 				objectFactory.createVerfuegbarkeitAnfragen(verfuegbarkeitAnfragen),
@@ -290,18 +262,5 @@ public class MSV3Client
 		}
 
 		return availabilityText;
-	}
-
-	private static String retrieveSoftwareIndentifier()
-	{
-		try
-		{
-			final I_AD_System adSystem = Services.get(ISystemBL.class).get(Env.getCtx());
-			return "metasfresh-" + adSystem.getDBVersion();
-		}
-		catch (final RuntimeException e)
-		{
-			return "metasfresh-<unable to retrieve version!>";
-		}
 	}
 }

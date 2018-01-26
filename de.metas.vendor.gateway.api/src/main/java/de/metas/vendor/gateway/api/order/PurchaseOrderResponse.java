@@ -1,9 +1,10 @@
-package de.metas.vendor.gateway.api;
+package de.metas.vendor.gateway.api.order;
 
-import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
-import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
-import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
-import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
+import java.util.List;
+
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
@@ -27,15 +28,14 @@ import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
  * #L%
  */
 
-/**
- * Hint: obtain your instance(s) for a given vendor (if any!) via {@link VendorGatewayRegistry#getVendorGatewayServices(int)}.
- *
- */
-public interface VendorGatewayService
+@Value
+public class PurchaseOrderResponse
 {
-	boolean isProvidedForVendor(int vendorId);
+	int supportId;
 
-	AvailabilityResponse retrieveAvailability(AvailabilityRequest request);
+	@NonNull
+	String uniqueOrderId;
 
-	PurchaseOrderResponse placePurchaseOrder(PurchaseOrderRequest request);
+	@Singular
+	List<PurchaseOrderRequestItem> orderLine;
 }
