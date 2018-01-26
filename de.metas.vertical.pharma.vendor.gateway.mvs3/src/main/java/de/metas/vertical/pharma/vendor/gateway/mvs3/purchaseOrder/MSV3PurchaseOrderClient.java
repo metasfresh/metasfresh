@@ -1,5 +1,9 @@
 package de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder;
 
+import java.util.List;
+
+import org.adempiere.util.Check;
+
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
 import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
@@ -9,7 +13,10 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3Util;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Auftragsart;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Bestellen;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellenResponse;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Bestellung;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwort;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwortAuftrag;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAuftrag;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungPosition;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Liefervorgabe;
@@ -46,8 +53,6 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 	private final ObjectFactory objectFactory;
 
 	private final MSV3PurchaseOrderRepository purchaseOrderRepo;
-
-
 
 	@Builder
 	private MSV3PurchaseOrderClient(
@@ -94,7 +99,13 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 		bestellen.setClientSoftwareKennung(MSV3Util.CLIENT_SOFTWARE_IDENTIFIER.get());
 		bestellen.setBestellung(bestellung);
 
-		sendMessage(objectFactory.createBestellen(bestellen));
+		final BestellenResponse bestellenResponse = sendAndReceive(
+				objectFactory.createBestellen(bestellen), BestellenResponse.class);
+
+		final BestellungAntwort bestellungAntwort = bestellenResponse.getReturn();
+		final List<BestellungAntwortAuftrag> auftraege = bestellungAntwort.getAuftraege();
+		Check.errorIf(auftraege.size() != 1, "We send 1 BestellungAuftrag, but received {} BestellungAntwortAuftrag", auftraege.size());
+
 
 		// TODO Auto-generated method stub
 		return null;

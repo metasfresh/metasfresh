@@ -6,6 +6,7 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3Util;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.ObjectFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerbindungTesten;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerbindungTestenResponse;
 import lombok.NonNull;
 
 /*
@@ -48,7 +49,11 @@ public class MSV3TestConnectionClient extends MSV3ClientBase
 		final VerbindungTesten verbindungTesten = objectFactory.createVerbindungTesten();
 		verbindungTesten.setClientSoftwareKennung(MSV3Util.CLIENT_SOFTWARE_IDENTIFIER.get());
 
-		return sendMessage(objectFactory.createVerbindungTesten(verbindungTesten));
+		sendAndReceive(
+				objectFactory.createVerbindungTesten(verbindungTesten),
+				VerbindungTestenResponse.class);
+
+		return "ok";
 	}
 
 	@Override

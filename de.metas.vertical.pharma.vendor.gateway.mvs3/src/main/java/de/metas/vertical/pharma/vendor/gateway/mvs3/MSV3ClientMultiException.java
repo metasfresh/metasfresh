@@ -36,26 +36,29 @@ import lombok.NonNull;
  * #L%
  */
 
-public class MSV3ClientException extends AdempiereException implements AvailabilityRequestException
+public class MSV3ClientMultiException extends AdempiereException implements AvailabilityRequestException
 {
-	public static MSV3ClientException createAllItemsSameThrowable(
+	public static MSV3ClientMultiException createAllItemsSameThrowable(
 			@NonNull final Collection<ProductAndQuantity> items,
 			@NonNull final Throwable throwable)
 	{
 		final ImmutableMap<ProductAndQuantity, Throwable> allItemsWithSameThrowable = //
 				Maps.toMap(items, requestItem -> throwable);
-		return new MSV3ClientException(allItemsWithSameThrowable);
+
+		return new MSV3ClientMultiException(allItemsWithSameThrowable);
 	}
 
-	public static MSV3ClientException createAllItemsSameFaultInfo(
+	public static MSV3ClientMultiException createAllItemsSameFaultInfo(
 			@NonNull final Collection<ProductAndQuantity> items,
 			@NonNull final Msv3FaultInfo msv3FaultInfo)
 	{
-		final Msv3FaultException msv3FaultException = new Msv3FaultException(msv3FaultInfo);
+		final Msv3ClientException msv3ClientException = //
+				Msv3ClientException.createForFaultInfo(msv3FaultInfo);
 
 		final ImmutableMap<ProductAndQuantity, Throwable> allItemsWithSameThrowable = //
-				Maps.toMap(items, requestItem -> msv3FaultException);
-		return new MSV3ClientException(allItemsWithSameThrowable);
+				Maps.toMap(items, requestItem -> msv3ClientException);
+
+		return new MSV3ClientMultiException(allItemsWithSameThrowable);
 	}
 
 	private static final long serialVersionUID = -8058915938494697758L;
@@ -63,39 +66,8 @@ public class MSV3ClientException extends AdempiereException implements Availabil
 	@Getter
 	private final Map<ProductAndQuantity, Throwable> requestItem2Exception;
 
-	private MSV3ClientException(@NonNull final Map<ProductAndQuantity, Throwable> requestItem2Exception)
+	private MSV3ClientMultiException(@NonNull final Map<ProductAndQuantity, Throwable> requestItem2Exception)
 	{
 		this.requestItem2Exception = ImmutableMap.copyOf(requestItem2Exception);
-	}
-
-	public static class Msv3FaultException extends RuntimeException
-	{
-		private static final long serialVersionUID = -8587023660085593406L;
-
-		private final String message;
-		private final String localizedMessage;
-
-		@Getter
-		private final String errorCode;
-
-		private Msv3FaultException(@NonNull final Msv3FaultInfo msv3FaultInfo)
-		{
-			message = msv3FaultInfo.getTechnischerFehlertext();
-			localizedMessage = msv3FaultInfo.getEndanwenderFehlertext();
-			errorCode = msv3FaultInfo.getErrorCode();
-		}
-
-		@Override
-		public String getMessage()
-		{
-			return message;
-		}
-
-		@Override
-		public String getLocalizedMessage()
-		{
-			return localizedMessage;
-		}
-
 	}
 }

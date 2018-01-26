@@ -5,8 +5,8 @@ import javax.xml.bind.JAXBElement;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.ObjectFactory;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerbindungTestenResponse;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -23,19 +23,20 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public abstract class MSV3ClientBase
 {
-	private final MSV3ClientConfig config;
 	private final WebServiceTemplate webServiceTemplate;
+	@Getter
+	private final MSV3ClientConfig config;
 
 	@Getter
 	private final ObjectFactory objectFactory;
@@ -51,21 +52,32 @@ public abstract class MSV3ClientBase
 
 	public abstract String getUrlSuffix();
 
-	public String sendMessage(
-			final JAXBElement<?> messagePayload)
+	/**
+	 * @param expectedResponseClass if the response is not an instance of this class, the method throws an exception.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T sendAndReceive(
+			@NonNull final JAXBElement<?> messagePayload,
+			@NonNull final Class<? extends T> expectedResponseClass)
 	{
-		final JAXBElement<?> responseElement = //
-				(JAXBElement<?>)webServiceTemplate.marshalSendAndReceive(
-						config.getBaseUrl() + getUrlSuffix(),
-						messagePayload);
+		final String uri = config.getBaseUrl() + getUrlSuffix();
+		final JAXBElement<?> responseElement = (JAXBElement<?>)webServiceTemplate.marshalSendAndReceive(uri, messagePayload);
 
-		final Object value = responseElement.getValue();
-		if (value instanceof VerbindungTestenResponse)
+		final Object responseValue = responseElement.getValue();
+		if (expectedResponseClass.isInstance(responseValue))
 		{
-			return "ok";
+			return (T)responseValue;
 		}
-
-		throw new AdempiereException(value.toString()).appendParametersToMessage()
-				.setParameter("config", config);
+		else if (Msv3FaultInfo.class.isInstance(responseValue))
+		{
+			throw Msv3ClientException.createForFaultInfo((Msv3FaultInfo)responseValue)
+					.setParameter("uri", uri)
+					.setParameter("config", config);
+		}
+		throw new AdempiereException("Webservice returned unexpected response")
+				.appendParametersToMessage()
+				.setParameter("uri", uri)
+				.setParameter("config", config)
+				.setParameter("response", responseValue);
 	}
 }

@@ -9,7 +9,6 @@ import java.util.UUID;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
 import de.metas.vendor.gateway.api.ProductAndQuantity;
@@ -20,10 +19,9 @@ import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientBase;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientConfig;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientException;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientMultiException;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3Util;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.ObjectFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitAnfragen;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitAnfragenResponse;
@@ -89,36 +87,22 @@ public class MSV3AvailiabilityClient extends MSV3ClientBase
 		}
 
 		// make the webservice call
-		final Object response;
+		final VerfuegbarkeitAnfragenResponse response;
 		try
 		{
 			response = makeAvailabilityWebserviceCall(verfuegbarkeitsanfrageEinzelne);
 		}
 		catch (final Throwable t)
 		{
-			throw MSV3ClientException.createAllItemsSameThrowable(request.getAvailabilityRequestItems(), t);
+			throw MSV3ClientMultiException.createAllItemsSameThrowable(request.getAvailabilityRequestItems(), t);
 		}
 
 		// process and return the results
-		if (response instanceof VerfuegbarkeitAnfragenResponse)
-		{
-			final AvailabilityResponseBuilder responseBuilder = prepareAvailabilityResponse(
-					(VerfuegbarkeitAnfragenResponse)response,
-					productIdentifier2requestItem);
+		final AvailabilityResponseBuilder responseBuilder = prepareAvailabilityResponse(
+				response,
+				productIdentifier2requestItem);
 
-			return responseBuilder
-					.originalRequest(request).build();
-		}
-		else if (response instanceof Msv3FaultInfo)
-		{
-			final Msv3FaultInfo msv3FaultInfo = (Msv3FaultInfo)response;
-			throw MSV3ClientException
-					.createAllItemsSameFaultInfo(request.getAvailabilityRequestItems(), msv3FaultInfo);
-		}
-		else
-		{
-			throw new AdempiereException(response.toString());
-		}
+		return responseBuilder.originalRequest(request).build();
 	}
 
 	private Artikel createArtikelForRequestItem(@NonNull final ProductAndQuantity requestItem)
@@ -131,15 +115,16 @@ public class MSV3AvailiabilityClient extends MSV3ClientBase
 		return singleArtikel;
 	}
 
-	private Object makeAvailabilityWebserviceCall(@NonNull final VerfuegbarkeitsanfrageEinzelne verfuegbarkeitsanfrageEinzelne)
+	private VerfuegbarkeitAnfragenResponse makeAvailabilityWebserviceCall(@NonNull final VerfuegbarkeitsanfrageEinzelne verfuegbarkeitsanfrageEinzelne)
 	{
 		final VerfuegbarkeitAnfragen verfuegbarkeitAnfragen = getObjectFactory().createVerfuegbarkeitAnfragen();
 
 		verfuegbarkeitAnfragen.setVerfuegbarkeitsanfrage(verfuegbarkeitsanfrageEinzelne);
 		verfuegbarkeitAnfragen.setClientSoftwareKennung(MSV3Util.CLIENT_SOFTWARE_IDENTIFIER.get());
 
-		final Object response = sendMessage(
-				getObjectFactory().createVerfuegbarkeitAnfragen(verfuegbarkeitAnfragen));
+		final VerfuegbarkeitAnfragenResponse response = sendAndReceive(
+				getObjectFactory().createVerfuegbarkeitAnfragen(verfuegbarkeitAnfragen),
+				VerfuegbarkeitAnfragenResponse.class);
 
 		return response;
 	}
