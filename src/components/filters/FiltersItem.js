@@ -35,12 +35,18 @@ class FiltersItem extends Component {
   }
 
   componentDidMount() {
-    this.widgetsContainer.addEventListener("scroll", this.handleScroll);
+    if (this.widgetsContainer) {
+      this.widgetsContainer.addEventListener("scroll", this.handleScroll);
+    }
   }
 
   componentWillUnmount() {
-    this.widgetsContainer.removeEventListener("scroll", this.handleScroll);
     const { dispatch } = this.props;
+
+    if (this.widgetsContainer) {
+      this.widgetsContainer.removeEventListener("scroll", this.handleScroll);
+    }
+
     dispatch(closeFilterBox());
   }
 
