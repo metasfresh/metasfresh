@@ -1,6 +1,7 @@
 package de.metas.costing;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
@@ -47,8 +48,13 @@ public class CostDetailCreateRequest
 
 	@NonNull
 	BigDecimal amt;
+	int currencyId;
 	@NonNull
 	BigDecimal qty;
+
+	int currencyConversionTypeId;
+	@NonNull
+	LocalDate date;
 
 	@Nullable
 	String description;

@@ -23,17 +23,16 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailService;
-import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
 import de.metas.invoice.IMatchInvDAO;
 
@@ -336,19 +335,7 @@ public class MMatchInv extends X_M_MatchInv
 			}
 			tAmt = tAmt.add(LineNetAmt); //Invoice Price
 			
-			// 	Different currency
 			I_C_Invoice invoice = invoiceLine.getC_Invoice();
-			if (as.getC_Currency_ID() != invoice.getC_Currency_ID())
-			{
-				tAmt = Services.get(ICurrencyBL.class).convert(getCtx(), tAmt, 
-					invoice.getC_Currency_ID(), as.getC_Currency_ID(),
-					invoice.getDateAcct(), invoice.getC_ConversionType_ID(),
-					invoice.getAD_Client_ID(), invoice.getAD_Org_ID());
-				if (tAmt == null)
-				{
-					throw new AdempiereException("AP Invoice not convertible - " + as.getName());
-				}
-			}			
 			
 			// set Qty to negative value when MovementType is Vendor Returns
 			final I_M_InOutLine receiptLine = getM_InOutLine();
@@ -371,8 +358,11 @@ public class MMatchInv extends X_M_MatchInv
 							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
 							.documentRef(CostingDocumentRef.ofPurchaseInvoiceLineId(invoiceLine.getC_InvoiceLine_ID()))
 							.costElementId(0)
-							.amt(tAmt)
 							.qty(tQty)
+							.amt(tAmt)
+							.currencyId(invoice.getC_Currency_ID())
+							.currencyConversionTypeId(invoice.getC_ConversionType_ID())
+							.date(TimeUtil.asLocalDate(invoice.getDateAcct()))
 							.description(getDescription())
 							.build());
 			// end MZ

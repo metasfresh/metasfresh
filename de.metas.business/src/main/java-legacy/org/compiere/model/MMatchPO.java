@@ -31,14 +31,13 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailService;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
-import de.metas.currency.ICurrencyRate;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
@@ -820,7 +819,12 @@ public class MMatchPO extends X_M_MatchPO
 			return;
 		}
 
+		final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
+
 		final I_C_OrderLine orderLine = getC_OrderLine();
+		final int currencyConversionTypeId = orderLine.getC_Order().getC_ConversionType_ID();
+		final Timestamp dateAcct = getM_InOutLine().getM_InOut().getDateAcct();
+
 		final BigDecimal costPrice = getCostPrice();
 		final BigDecimal qty = isReturnTrx() ? getQty().negate() : getQty();
 		final BigDecimal amt = costPrice.multiply(qty);
@@ -833,26 +837,6 @@ public class MMatchPO extends X_M_MatchPO
 				continue;
 			}
 
-			final BigDecimal amtConv;
-			if (orderLine.getC_Currency_ID() == as.getC_Currency_ID())
-			{
-				amtConv = amt;
-			}
-			else
-			{
-				final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-				final I_C_Order order = orderLine.getC_Order();
-				final Timestamp dateAcct = getM_InOutLine().getM_InOut().getDateAcct();
-				final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-						dateAcct,
-						order.getC_ConversionType_ID(),
-						orderLine.getAD_Client_ID(),
-						orderLine.getAD_Org_ID());
-				final ICurrencyRate rate = currencyConversionBL.getCurrencyRate(conversionCtx, orderLine.getC_Currency_ID(), as.getC_Currency_ID());
-				amtConv = rate.convertAmount(amt, as.getCostingPrecision());
-			}
-
-			final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
 			costDetailService.createCostDetail(
 					CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getC_AcctSchema_ID())
@@ -861,8 +845,11 @@ public class MMatchPO extends X_M_MatchPO
 							.productId(getM_Product_ID())
 							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
 							.documentRef(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()))
-							.amt(amtConv)
 							.qty(qty)
+							.amt(amt)
+							.currencyId(orderLine.getC_Currency_ID())
+							.currencyConversionTypeId(currencyConversionTypeId)
+							.date(TimeUtil.asLocalDate(dateAcct))
 							.description(orderLine.getDescription())
 							.build());
 		}

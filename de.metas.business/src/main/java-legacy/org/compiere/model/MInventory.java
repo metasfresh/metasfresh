@@ -27,6 +27,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
@@ -1022,20 +1023,17 @@ public class MInventory extends X_M_Inventory implements IDocument
 	 * @param Qty
 	 * @return an EMPTY String on success otherwise an ERROR message
 	 */
-	private String createCostDetail(MInventoryLine line, int M_AttributeSetInstance_ID, BigDecimal qty)
+	private String createCostDetail(final MInventoryLine line, final int M_AttributeSetInstance_ID, final BigDecimal qty)
 	{
 		// Get Account Schemas to create MCostDetail
-		MAcctSchema[] acctschemas = MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID());
-		for (int asn = 0; asn < acctschemas.length; asn++)
+		for (MAcctSchema as : MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID()))
 		{
-			MAcctSchema as = acctschemas[asn];
-
 			if (as.isSkipOrg(getAD_Org_ID()) || as.isSkipOrg(line.getAD_Org_ID()))
 			{
 				continue;
 			}
 
-			BigDecimal costs = BigDecimal.ZERO;
+			final BigDecimal costs;
 			if (isReversal())
 			{
 				String sql = "SELECT amt * -1 FROM M_CostDetail WHERE M_InventoryLine_ID=?"; // negate costs
@@ -1072,8 +1070,11 @@ public class MInventory extends X_M_Inventory implements IDocument
 							.attributeSetInstanceId(M_AttributeSetInstance_ID)
 							.documentRef(CostingDocumentRef.ofInventoryLineId(line.getM_InventoryLine_ID()))
 							.costElementId(0)
-							.amt(costs)
 							.qty(qty)
+							.amt(costs)
+							.currencyId(as.getC_Currency_ID())
+							// .currencyConversionTypeId(0) // N/A
+							.date(TimeUtil.asLocalDate(getMovementDate()))
 							.description(line.getDescription())
 							.build());
 		}

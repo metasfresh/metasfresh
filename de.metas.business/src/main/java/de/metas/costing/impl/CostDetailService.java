@@ -21,6 +21,7 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.X_M_CostElement;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -44,6 +45,9 @@ import de.metas.costing.methods.LastInvoiceCostingMethodHandler;
 import de.metas.costing.methods.LastPOCostingMethodHandler;
 import de.metas.costing.methods.LifoCostingMethodHandler;
 import de.metas.costing.methods.StandardCostingMethodHandler;
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyConversionContext;
+import de.metas.currency.ICurrencyRate;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import lombok.NonNull;
@@ -103,6 +107,35 @@ public class CostDetailService implements ICostDetailService
 
 					processIfCostImmediate(costDetail);
 				});
+	}
+
+	private CostDetailCreateRequest convertToAcctSchemaCurrency(final CostDetailCreateRequest request)
+	{
+		if (request.getAmt().signum() == 0)
+		{
+			return request;
+		}
+
+		final MAcctSchema as = MAcctSchema.get(Env.getCtx(), request.getAcctSchemaId());
+		final int acctCurrencyId = as.getC_Currency_ID();
+		if (request.getCurrencyId() == acctCurrencyId)
+		{
+			return request;
+		}
+
+		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+		final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
+				TimeUtil.asTimestamp(request.getDate()),
+				request.getCurrencyConversionTypeId(),
+				request.getClientId(),
+				request.getOrgId());
+		final ICurrencyRate rate = currencyConversionBL.getCurrencyRate(conversionCtx, request.getCurrencyId(), acctCurrencyId);
+		final BigDecimal amtConv = rate.convertAmount(request.getAmt(), as.getCostingPrecision());
+
+		return request.toBuilder()
+				.amt(amtConv)
+				.currencyId(acctCurrencyId)
+				.build();
 	}
 
 	@Override

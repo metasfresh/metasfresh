@@ -25,6 +25,7 @@ import org.compiere.model.MMovement;
 import org.compiere.model.MMovementLine;
 import org.compiere.model.ProductCost;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
@@ -203,8 +204,11 @@ public class Doc_Movement extends Doc
 						.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 						.documentRef(CostingDocumentRef.ofOutboundMovementLineId(line.get_ID()))
 						.costElementId(0)
-						.amt(costs.negate())
 						.qty(line.getQty().negate())
+						.amt(costs.negate())
+						.currencyId(as.getC_Currency_ID())
+						.currencyConversionTypeId(getC_ConversionType_ID())
+						.date(TimeUtil.asLocalDate(getDateAcct()))
 						.description(description + "(|->)")
 						.build());
 				//	Cost Detail To
@@ -216,8 +220,11 @@ public class Doc_Movement extends Doc
 						.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 						.documentRef(CostingDocumentRef.ofInboundMovementLineId(line.get_ID()))
 						.costElementId(0)
-						.amt(costs)
 						.qty(line.getQty())
+						.amt(costs)
+						.currencyId(as.getC_Currency_ID())
+						.currencyConversionTypeId(getC_ConversionType_ID())
+						.date(TimeUtil.asLocalDate(getDateAcct()))
 						.description(description + "(|<-)")
 						.build());
 			}

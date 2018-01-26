@@ -30,6 +30,7 @@ import org.compiere.model.X_M_ProductionLine;
 import org.compiere.model.X_M_ProductionPlan;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailQuery;
@@ -253,8 +254,11 @@ public class Doc_Production extends Doc
 							.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 							.documentRef(CostingDocumentRef.ofProductionLineId(line.get_ID()))
 							.costElementId(0)
-							.amt(costs)
 							.qty(line.getQty())
+							.amt(costs)
+							.currencyId(as.getC_Currency_ID())
+							.currencyConversionTypeId(getC_ConversionType_ID())
+							.date(TimeUtil.asLocalDate(getDateAcct()))
 							.description(description)
 							.build());
 		}

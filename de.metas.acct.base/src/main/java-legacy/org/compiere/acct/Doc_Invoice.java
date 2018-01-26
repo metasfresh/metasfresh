@@ -46,6 +46,7 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
@@ -601,8 +602,11 @@ public class Doc_Invoice extends Doc
 										.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 										.documentRef(CostingDocumentRef.ofPurchaseInvoiceLineId(line.get_ID()))
 										.costElementId(0)
-										.amt(line.getAmtSource())
 										.qty(line.getQty())
+										.amt(line.getAmtSource())
+										.currencyId(line.getC_Currency_ID())
+										.currencyConversionTypeId(getC_ConversionType_ID())
+										.date(TimeUtil.asLocalDate(getDateAcct()))
 										.description(line.getDescription())
 										.build());
 					}
@@ -730,8 +734,11 @@ public class Doc_Invoice extends Doc
 										.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 										.documentRef(CostingDocumentRef.ofPurchaseInvoiceLineId(line.get_ID()))
 										.costElementId(0)
-										.amt(line.getAmtSource().negate())
 										.qty(line.getQty().negate())
+										.amt(line.getAmtSource().negate())
+										.currencyId(line.getC_Currency_ID())
+										.currencyConversionTypeId(getC_ConversionType_ID())
+										.date(TimeUtil.asLocalDate(getDateAcct()))
 										.description(line.getDescription())
 										.build());
 					}
@@ -982,13 +989,6 @@ public class Doc_Invoice extends Doc
 
 			// Cost Detail - Convert to AcctCurrency
 			BigDecimal allocationAmt = lca.getAmt();
-			if (getC_Currency_ID() != as.getC_Currency_ID())
-				allocationAmt = currencyConversionBL.convert(getCtx(), allocationAmt,
-						getC_Currency_ID(), as.getC_Currency_ID(),
-						getDateAcct(), getC_ConversionType_ID(),
-						getAD_Client_ID(), getAD_Org_ID());
-			if (allocationAmt.scale() > as.getCostingPrecision())
-				allocationAmt = allocationAmt.setScale(as.getCostingPrecision(), BigDecimal.ROUND_HALF_UP);
 			if (!dr)
 				allocationAmt = allocationAmt.negate();
 			// AZ Goodwill
@@ -1002,8 +1002,11 @@ public class Doc_Invoice extends Doc
 							.attributeSetInstanceId(lca.getM_AttributeSetInstance_ID())
 							.documentRef(CostingDocumentRef.ofPurchaseInvoiceLineId(C_InvoiceLine_ID))
 							.costElementId(lca.getM_CostElement_ID())
-							.amt(allocationAmt)
 							.qty(lca.getQty())
+							.amt(allocationAmt)
+							.currencyId(getC_Currency_ID())
+							.currencyConversionTypeId(getC_ConversionType_ID())
+							.date(TimeUtil.asLocalDate(getDateAcct()))
 							.description(desc)
 							.build());
 			// end AZ

@@ -39,6 +39,7 @@ import org.compiere.model.MInOut;
 import org.compiere.model.MProduct;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
@@ -293,8 +294,11 @@ public class Doc_InOut extends Doc
 								.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 								.documentRef(CostingDocumentRef.ofShipmentLineId(line.get_ID()))
 								.costElementId(0)
-								.amt(costs)
 								.qty(line.getQty())
+								.amt(costs)
+								.currencyId(acctCurrencyId)
+								.currencyConversionTypeId(getC_ConversionType_ID())
+								.date(TimeUtil.asLocalDate(getDateAcct()))
 								.description(line.getDescription())
 								.build());
 			}
@@ -378,8 +382,11 @@ public class Doc_InOut extends Doc
 								.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 								.documentRef(CostingDocumentRef.ofShipmentLineId(line.get_ID()))
 								.costElementId(0)
-								.amt(costs)
 								.qty(line.getQty())
+								.amt(costs)
+								.currencyId(acctCurrencyId)
+								.currencyConversionTypeId(getC_ConversionType_ID())
+								.date(TimeUtil.asLocalDate(getDateAcct()))
 								.description(line.getDescription())
 								.build());
 			}
@@ -427,7 +434,7 @@ public class Doc_InOut extends Doc
 			}
 
 			int currencyId = acctCurrencyId;
-			
+
 			final BigDecimal costs;
 			final String costingMethod = productBL.getCostingMethod(product, as);
 			if (MAcctSchema.COSTINGMETHOD_AveragePO.equals(costingMethod) ||
@@ -437,9 +444,9 @@ public class Doc_InOut extends Doc
 				// Low - check if c_orderline_id is valid
 				if (orderLineId > 0)
 				{
-					final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(getCtx(), orderLineId, I_C_OrderLine.class, getTrxName()); 
+					final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(getCtx(), orderLineId, I_C_OrderLine.class, getTrxName());
 					currencyId = orderLine.getC_Currency_ID();
-					
+
 					final BigDecimal costPrice = Services.get(IOrderLineBL.class).getCostPrice(orderLine);
 					costs = costPrice.multiply(line.getQty());
 				}
