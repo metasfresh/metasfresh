@@ -1,5 +1,7 @@
 package de.metas.costing.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Iterator;
@@ -18,7 +20,6 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MProduct;
 import org.compiere.model.X_M_CostElement;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -93,11 +94,12 @@ public class CostDetailService implements ICostDetailService
 	@Override
 	public void createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
-		extractCostElements(request)
+		final CostDetailCreateRequest requestEffective = convertToAcctSchemaCurrency(request);
+		extractCostElements(requestEffective)
 				.forEach(costElement -> {
 					final CostingMethodHandler costingMethodHandler = getCostingMethodHandler(costElement.getCostingMethod());
 
-					final I_M_CostDetail costDetail = costingMethodHandler.createCost(request.toBuilder()
+					final I_M_CostDetail costDetail = costingMethodHandler.createCost(requestEffective.toBuilder()
 							.costElementId(costElement.getId())
 							.build());
 					if (costDetail == null)
@@ -298,7 +300,7 @@ public class CostDetailService implements ICostDetailService
 		// get costing level for product
 		final Properties ctx = Env.getCtx();
 		final I_C_AcctSchema acctSchema = MAcctSchema.get(ctx, acctSchemaId);
-		final I_M_Product product = MProduct.get(ctx, productId);
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
 		final CostingLevel costingLevel = CostingLevel.forCode(Services.get(IProductBL.class).getCostingLevel(product, acctSchema));
 
 		final int orgId;
