@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.Adempiere;
 import org.compiere.util.CCache;
 import org.springframework.context.annotation.DependsOn;
@@ -40,8 +41,15 @@ import de.metas.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
 @DependsOn(Adempiere.BEAN_NAME)
 public class MSV3ClientConfigRepository
 {
-	/** null object, used to store "no config for this vendor" in the {@link #configDataRecords} cache */
-	private final static I_MSV3_Vendor_Config NULL_CONFIG_RECORD = newInstance(I_MSV3_Vendor_Config.class);
+	/**
+	 * {@code null} object, used to store "no config for this vendor" in the {@link #configDataRecords} cache.
+	 * <p>
+	 * Notes: beside this bean being annotated to depending on {@link Adempiere#BEAN_NAME},<br>
+	 * there might not yet be a DB connection when this repository is initialized (in the swing client!).<br>
+	 * That's why we have the supplier.
+	 */
+	private final static Supplier<I_MSV3_Vendor_Config> NULL_CONFIG_RECORD = //
+			ExtendedMemorizingSupplier.of(() -> newInstance(I_MSV3_Vendor_Config.class));
 
 	private final CCache<Integer, I_MSV3_Vendor_Config> configDataRecords = CCache.newCache(
 			I_MSV3_Vendor_Config.Table_Name + "#by#" + I_MSV3_Vendor_Config.COLUMNNAME_C_BPartner_ID,
@@ -65,7 +73,7 @@ public class MSV3ClientConfigRepository
 		final Supplier<I_MSV3_Vendor_Config> recordLoader = () -> retrieveRecordFromDB(vendorId);
 
 		final I_MSV3_Vendor_Config configDataRecord = configDataRecords.get(vendorId, recordLoader);
-		if (configDataRecord == NULL_CONFIG_RECORD)
+		if (configDataRecord == NULL_CONFIG_RECORD.get())
 		{
 			return null;
 		}
@@ -84,7 +92,7 @@ public class MSV3ClientConfigRepository
 
 		if (result == null)
 		{
-			return NULL_CONFIG_RECORD;
+			return NULL_CONFIG_RECORD.get();
 		}
 		return result;
 	}

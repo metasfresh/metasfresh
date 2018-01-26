@@ -190,6 +190,7 @@ public class ScriptsApplier implements IScriptsApplier
 				if (error == null)
 				{
 					logger.info("... Applied in {}ms", durationMillis);
+					script.setLastDurationMillis(durationMillis);
 					listener.onScriptApplied(script);
 					return ScriptApplyResult.Applied;
 				}
