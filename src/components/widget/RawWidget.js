@@ -232,7 +232,6 @@ class RawWidget extends Component {
       allowShowPassword,
       onBlurWidget,
       defaultValue,
-      allowOutsideClickListener,
       isOpenDatePicker
     } = this.props;
     const widgetValue = data || widgetData[0].value;
@@ -305,7 +304,6 @@ class RawWidget extends Component {
                   this.handlePatch(widgetField, this.generateMomentObj(date))
                 }
                 {...{
-                  allowOutsideClickListener,
                   handleBackdropLock
                 }}
               />
@@ -411,8 +409,7 @@ class RawWidget extends Component {
         return (
           <Lookup
             {...{
-              attribute,
-              allowOutsideClickListener
+              attribute
             }}
             entity={entity}
             subentity={subentity}
@@ -452,8 +449,7 @@ class RawWidget extends Component {
         return (
           <List
             {...{
-              attribute,
-              allowOutsideClickListener
+              attribute
             }}
             dataId={dataId}
             entity={entity}

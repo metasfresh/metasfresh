@@ -200,8 +200,7 @@ class List extends Component {
       blur,
       initialFocus,
       lastProperty,
-      disableAutofocus,
-      allowOutsideClickListener
+      disableAutofocus
     } = this.props;
 
     const { list, loading, selectedItem } = this.state;
@@ -231,17 +230,13 @@ class List extends Component {
         onRequestListData={this.requestListData}
         onFocus={this.handleFocus}
         onSelect={option => this.handleSelect(option)}
-        {...{
-          allowOutsideClickListener
-        }}
       />
     );
   }
 }
 
 List.propTypes = {
-  dispatch: PropTypes.func.isRequired,
-  allowOutsideClickListener: PropTypes.func
+  dispatch: PropTypes.func.isRequired
 };
 
 export default connect(false, false, false, { withRef: true })(List);

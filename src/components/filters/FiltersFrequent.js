@@ -1,6 +1,7 @@
 import cx from "classnames";
 import counterpart from "counterpart";
 import React, { Component, Fragment } from "react";
+import { connect } from "react-redux";
 import onClickOutside from "react-onclickoutside";
 
 import { TableCell } from "../table/TableCell";
@@ -14,9 +15,6 @@ class FiltersFrequent extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      allowOutsideClickListener: true
-    };
   }
 
   toggleFilter = index => {
@@ -30,16 +28,11 @@ class FiltersFrequent extends Component {
   };
 
   outsideClick = () => {
-    const { widgetShown, dropdownToggled } = this.props;
-    const { allowOutsideClickListener } = this.state;
-    if (allowOutsideClickListener) {
+    const { widgetShown, dropdownToggled, allowOutsideClick } = this.props;
+    if (allowOutsideClick) {
       !widgetShown && this.toggleFilter(null);
       dropdownToggled();
     }
-  };
-
-  allowOutsideClickListener = value => {
-    this.setState({ allowOutsideClickListener: value });
   };
 
   render() {
@@ -129,7 +122,6 @@ class FiltersFrequent extends Component {
                   onHide={() => handleShow(false)}
                   viewId={viewId}
                   outsideClick={this.outsideClick}
-                  allowOutsideClickListener={this.allowOutsideClickListener}
                 />
               )}
             </div>
@@ -140,4 +132,8 @@ class FiltersFrequent extends Component {
   }
 }
 
-export default onClickOutside(FiltersFrequent);
+const mapStateToProps = state => ({
+  allowOutsideClick: state.windowHandler.allowOutsideClick
+});
+
+export default connect(mapStateToProps)(onClickOutside(FiltersFrequent));
