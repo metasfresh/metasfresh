@@ -2989,6 +2989,35 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
+	 * Set Ref_PackingMaterial_InOutLine_ID.
+	 * Reference the inout line from where the packing material input line was generated. Is filled up only if the IC is a packing material line.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRef_PackingMaterial_InOutLine_ID (int Ref_PackingMaterial_InOutLine_ID);
+
+	/**
+	 * Get Ref_PackingMaterial_InOutLine_ID.
+	 * Reference the inout line from where the packing material input line was generated. Is filled up only if the IC is a packing material line.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRef_PackingMaterial_InOutLine_ID();
+
+	public org.compiere.model.I_M_InOutLine getRef_PackingMaterial_InOutLine();
+
+	public void setRef_PackingMaterial_InOutLine(org.compiere.model.I_M_InOutLine Ref_PackingMaterial_InOutLine);
+
+    /** Column definition for Ref_PackingMaterial_InOutLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_InOutLine> COLUMN_Ref_PackingMaterial_InOutLine_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_InOutLine>(I_C_Invoice_Candidate.class, "Ref_PackingMaterial_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
+    /** Column name Ref_PackingMaterial_InOutLine_ID */
+    public static final String COLUMNNAME_Ref_PackingMaterial_InOutLine_ID = "Ref_PackingMaterial_InOutLine_ID";
+
+	/**
 	 * Set Status nach Akt..
 	 * Informationen des Aktualisierungsprozesses
 	 *
