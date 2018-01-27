@@ -15,6 +15,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#3310](https://github.com/metasfresh/metasfresh/issues/3310) Webui Window Design: Improve window System Issue Report
+    * New Window System Issue Report in WebUI, allowing teh System Administrator to check System Issues.
   * [#3313](https://github.com/metasfresh/metasfresh/issues/3313) Webui Window Design: Improve window Field Group
     * New Window in WebUI for Field Group maintenance. This window can be used by System Admins.
   * [#3329](https://github.com/metasfresh/metasfresh/issues/3329) Webui Window Design: Translate all in window Event store
