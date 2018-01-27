@@ -24,7 +24,7 @@ Here come the actual release notes:
   * [#3377](https://github.com/metasfresh/metasfresh/issues/3377) Add an ID to C_ReferenceNo_Type_Table
     * Improvement of the Reference No Type Table, now having a Primary Key.
   * [#3387](https://github.com/metasfresh/metasfresh/issues/3387) WebUI New Window for MSV3 Config
-    * New Configuration Window in WebUI for MSV3 Connections to vendors in german Pharma Indurstry.
+    * New Configuration Window in WebUI for MSV3 Connections to vendors in german Pharma Industry.
 
 * metasfresh-webui-frontend
   * [#1252](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1252) Select all x items shall not be available when there is only one page of entries
@@ -56,7 +56,7 @@ Here come the actual release notes:
   * [#3319](https://github.com/metasfresh/metasfresh/issues/3319) Webui Window Design: Improve window Message
     * Improvement of the WebUI message window.
   * [#3322](https://github.com/metasfresh/metasfresh/issues/3322) Webui Window Design: Improve window Validation Rule
-    * New Window for the maintenence of Validation Rules in metasfresh. This window can be used by System Admins.
+    * New Window for the maintenance of Validation Rules in metasfresh. This window can be used by System Admins.
   * [#3330](https://github.com/metasfresh/metasfresh/issues/3330) Webui Window Design: Improve window Entity Type
     * New Window for the maintenance of Entity Types. This window can be used by System Admins.
   * [#3338](https://github.com/metasfresh/metasfresh/issues/3338) Harmonize description field length between doctype and c_order / c_invoice
@@ -74,9 +74,9 @@ Here come the actual release notes:
   * [#766](https://github.com/metasfresh/metasfresh-webui-api/issues/766) Precision Layout in Price of Orderlines
     * New Precision Functionality in WebUI, now allowing to record and display more that 2 digits in precision.
   * [#772](https://github.com/metasfresh/metasfresh-webui-api/issues/772) EMail Attachment Name in WebUI
-    * Improvement of the eMail Attachement Name in WebUI eMail editor, now showing the Documenttype and Documentno as combined attachment Name.
+    * Improvement of the eMail Attachment Name in WebUI eMail editor, now showing the Documenttype and Documentno as combined attachment Name.
   * [#785](https://github.com/metasfresh/metasfresh-webui-api/issues/785) Act gracefully on old/invalid AD_UserQuery
-    * Improvementof the User Query Handling. Now allowing the WebUI to ract on old/ incompatible Queries instead of failing.
+    * Improvement of the User Query Handling. Now allowing the WebUI to ract on old/ incompatible Queries instead of failing.
   * [#788](https://github.com/metasfresh/metasfresh-webui-api/issues/788) Allow Filtering of Label-Type-Fields in WebUI
     * New Functionality that allows to add Label Type Fields in WebUI as Filter criteria.
   * [#793](https://github.com/metasfresh/metasfresh-webui-api/issues/793) Provide "loadDuration" when fetching document references
@@ -111,7 +111,7 @@ Here come the actual release notes:
   * [#781](https://github.com/metasfresh/metasfresh-webui-api/issues/781) HU editor view gets empty after splitting out one TU
     * Now showing the newly split Transportation Unit in Handling Unit Editor after transform.
   * [#786](https://github.com/metasfresh/metasfresh-webui-api/issues/786) Follow up destroyed HUs are still visible in material receipt
-    * Undisplaying destroyed Handling Units in Material Receipt.
+    * Hiding destroyed Handling Units in Material Receipt.
   * [#787](https://github.com/metasfresh/metasfresh-webui-api/issues/787) Deadlocks occurring around material cockpit
     * Fixes some deadlocks that occurred through Material Cockpit logic.
   * [#796](https://github.com/metasfresh/metasfresh-webui-api/issues/796) Error on filter with +/- buttons
