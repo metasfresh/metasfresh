@@ -848,3 +848,53 @@ UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=30,Updated=TO_
 UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=40,Updated=TO_TIMESTAMP('2018-01-27 08:03:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550485
 ;
 
+-- 2018-01-27T08:05:37.065
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Release Nr.',Updated=TO_TIMESTAMP('2018-01-27 08:05:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12667
+;
+
+-- 2018-01-27T08:05:42.220
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Quelle',Updated=TO_TIMESTAMP('2018-01-27 08:05:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12990
+;
+
+-- 2018-01-27T08:05:46.796
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Form',Updated=TO_TIMESTAMP('2018-01-27 08:05:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12991
+;
+
+-- 2018-01-27T08:06:16.259
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Problem Kurzfassung',Updated=TO_TIMESTAMP('2018-01-27 08:06:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12927
+;
+
+-- 2018-01-27T08:06:23.064
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Nachstellbar',Updated=TO_TIMESTAMP('2018-01-27 08:06:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12680
+;
+
+-- 2018-01-27T08:06:32.365
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Quelle Methode',Updated=TO_TIMESTAMP('2018-01-27 08:06:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12933
+;
+
+-- 2018-01-27T08:06:37.817
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Quelle Klasse',Updated=TO_TIMESTAMP('2018-01-27 08:06:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12932
+;
+
+-- 2018-01-27T08:06:52.239
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Zeile',Updated=TO_TIMESTAMP('2018-01-27 08:06:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12929
+;
+
+-- 2018-01-27T08:06:56.682
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Antwort Text',Updated=TO_TIMESTAMP('2018-01-27 08:06:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12671
+;
+
+-- 2018-01-27T08:07:23.716
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Anfrage Dokument Nr.',Updated=TO_TIMESTAMP('2018-01-27 08:07:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12664
+;
+
