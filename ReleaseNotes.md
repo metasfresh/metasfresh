@@ -32,7 +32,7 @@ Here come the actual release notes:
   * [#3299](https://github.com/metasfresh/metasfresh/issues/3299) Automatic Picking
     * New Feature that allows to define Products in Planning Data, that shall be automatically picked after action receipt in manufacturing.
   * [#3302](https://github.com/metasfresh/metasfresh/issues/3302) Payment Discount on Orderline, Invoice Candidate
-    * Adding a Payment Discount overwrite to Orderlines and Invoicecandidates. With this feature one can add Payment Discounts as additional Discount Schema entry.
+    * Adding a Payment Discount overwrite to Orderlines and Invoice Candidates. With this feature one can add Payment Discounts as additional Discount Schema entry.
   * [#3310](https://github.com/metasfresh/metasfresh/issues/3310) Webui Window Design: Improve window System Issue Report
     * New Window System Issue Report in WebUI, allowing teh System Administrator to check System Issues.
   * [#3313](https://github.com/metasfresh/metasfresh/issues/3313) Webui Window Design: Improve window Field Group
@@ -46,7 +46,7 @@ Here come the actual release notes:
   * [#3322](https://github.com/metasfresh/metasfresh/issues/3322) Webui Window Design: Improve window Validation Rule
     * New Window for the maintenance of Validation Rules in metasfresh. This window can be used by System Admins.
   * [#3329](https://github.com/metasfresh/metasfresh/issues/3329) Webui Window Design: Translate all in window Event store
-    * Improved Window, Tab and Fields translations.
+    * Improved Window, Tab and Fields translations in the Event Store Window..
   * [#3330](https://github.com/metasfresh/metasfresh/issues/3330) Webui Window Design: Improve window Entity Type
     * New Window for the maintenance of Entity Types. This window can be used by System Admins.
   * [#3338](https://github.com/metasfresh/metasfresh/issues/3338) Harmonize description field length between doctype and c_order / c_invoice
