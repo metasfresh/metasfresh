@@ -115,6 +115,7 @@ Here come the actual release notes:
   * [#3350](https://github.com/metasfresh/metasfresh/issues/3350) Error creating movement from DDOrder
     * Fixes an Error that prevented the creation of movements from Distribution Orders.
   * [#3386](https://github.com/metasfresh/metasfresh/issues/3386) Issued HUs retain I status after PP_Order unclose
+    * 
 
 * metasfresh-webui-api
   * [#775](https://github.com/metasfresh/metasfresh-webui-api/issues/775) Destroyed HUs are still visible in material receipt
@@ -129,8 +130,10 @@ Here come the actual release notes:
     * Fixes some deadlocks that occurred through Material Cockpit logic.
   * [#796](https://github.com/metasfresh/metasfresh-webui-api/issues/796) Error on filter with +/- buttons
     * Fixes an error that occurred when using the new DateSwitcher Widget.
-  * [#803](https://github.com/metasfresh/metasfresh-webui-api/issues/803) NPE in Picking Slot Clearing
+  * [#803](https://github.com/metasfresh/metasfresh-webui-api/issues/803) NPE in Picking Tray Clearing
+    * Fixes a Null Pointer Exception that ocurred under certain circumstances in Picking Tray Clearing Window in WebUI.
   * [#804](https://github.com/metasfresh/metasfresh-webui-api/issues/804) Error in Picking Tray Clearing when adding to existing HU
+    * Fixes an Error that occurred in Picking Tray Clearing after adding to an existing Handling Unit.
 
 * metasfresh-webui-frontend
   * [#1447](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1447) Picking window broken
@@ -148,7 +151,9 @@ Here come the actual release notes:
   * [#1518](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1518) Create purchase orders: error in console
     * Fixes a Bug that prevented the creation of Purchase orders from Sales Orders to be done without errors.
   * [#1520](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1520) Typeahead error in new Label Filter
+    * Fixes a Typeahead error in the new Label Filter in WebUI.
   * [#1529](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1529) Email To field does not work correctly
+    * Improves the mailTo Field in WebUI. Now showing the Username instead of the user ID.
 
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**
