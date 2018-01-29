@@ -28,7 +28,7 @@ import org.eevolution.model.MHRMovement;
  *  @author Jorg Janke
  *  @version  $Id: DocLine_Payroll.java,v 1.4 2005/10/17 23:43:52 jjanke Exp $
  */
-public class DocLine_Payroll extends DocLine
+public class DocLine_Payroll extends DocLine<Doc_HRProcess>
 {
 	/**
 	 *  Constructor
@@ -58,7 +58,7 @@ public class DocLine_Payroll extends DocLine
 	private int m_C_BPartner_ID  = 0;
 	private int m_C_Activity_ID  = 0;
 	private String m_AccountSign = "";
-	private BigDecimal m_Amount  = Env.ZERO;
+	private BigDecimal m_Amount  = BigDecimal.ZERO;
 	private int m_HR_Department_ID = 0;
 	private int m_C_BP_Group_ID = 0;
 	
@@ -74,10 +74,12 @@ public class DocLine_Payroll extends DocLine
 		return m_AccountSign;
 	}
 	
+	@Override
 	public int getC_BPartner_ID(){
 		return m_C_BPartner_ID;
 	}
 	
+	@Override
 	public int getC_Activity_ID(){
 		return m_C_Activity_ID;
 	}  

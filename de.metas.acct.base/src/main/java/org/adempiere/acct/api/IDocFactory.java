@@ -50,7 +50,7 @@ public interface IDocFactory extends ISingletonService
 	 * @return Document or <code>null</code> if there is no such accountable document for given AD_Table_ID/Record_ID
 	 * @throws PostingExecutionException if the document could not be created
 	 */
-	Doc getOrNull(final Properties ctx, MAcctSchema[] ass, int AD_Table_ID, int Record_ID, String trxName);
+	Doc<?> getOrNull(final Properties ctx, MAcctSchema[] ass, int AD_Table_ID, int Record_ID, String trxName);
 
 	/**
 	 * Create Accountable document
@@ -62,7 +62,7 @@ public interface IDocFactory extends ISingletonService
 	 * @return Document; never returns <code>null</code>
 	 * @throws PostingExecutionException if the document could not be created
 	 */
-	Doc get(final Properties ctx, IDocMetaInfo docMetaInfo, MAcctSchema[] ass, ResultSet rs, String trxName);
+	Doc<?> get(final Properties ctx, IDocMetaInfo docMetaInfo, MAcctSchema[] ass, ResultSet rs, String trxName);
 
 	/**
 	 * 

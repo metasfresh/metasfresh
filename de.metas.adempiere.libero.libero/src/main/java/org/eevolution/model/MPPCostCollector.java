@@ -1107,17 +1107,6 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		return false;
 	}
 
-	public boolean isFloorStock()
-	{
-		final String whereClause = I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID + "=?"
-				+ " AND " + I_PP_Order_BOMLine.COLUMNNAME_IssueMethod + "=?";
-		boolean isFloorStock = new Query(getCtx(), I_PP_Order_BOMLine.Table_Name, whereClause, get_TrxName())
-				.setOnlyActiveRecords(true)
-				.setParameters(new Object[] { getPP_Order_BOMLine_ID(), X_PP_Order_BOMLine.ISSUEMETHOD_FloorStock })
-				.match();
-		return isFloorStock;
-	}
-
 	/**
 	 * set Is SubContracting
 	 * 

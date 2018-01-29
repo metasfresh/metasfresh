@@ -41,7 +41,7 @@ public interface IDocMetaInfo
 
 	String getTableName();
 
-	Class<? extends Doc> getDocClass();
+	Class<? extends Doc<?>> getDocClass();
 
-	Constructor<? extends Doc> getDocConstructor();
+	Constructor<? extends Doc<?>> getDocConstructor();
 }

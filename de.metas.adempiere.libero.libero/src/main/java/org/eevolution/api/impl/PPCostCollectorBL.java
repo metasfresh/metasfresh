@@ -13,21 +13,21 @@ package org.eevolution.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
@@ -55,7 +55,7 @@ import lombok.NonNull;
 
 public class PPCostCollectorBL implements IPPCostCollectorBL
 {
-	//	private final transient Logger log = CLogMgt.getLogger(getClass());
+	// private final transient Logger log = CLogMgt.getLogger(getClass());
 
 	@Override
 	public ReceiptCostCollectorCandidateBuilder createReceiptCostCollectorCandidate()
@@ -191,8 +191,6 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		return X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl.equals(costCollectorType);
 	}
 
-
-
 	@Override
 	public I_PP_Cost_Collector createIssue(
 			final IContextAware context,
@@ -203,8 +201,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			final BigDecimal qtyIssue,
 			final BigDecimal qtyScrap,
 			final BigDecimal qtyReject,
-			final I_C_UOM qtyUOM
-			)
+			final I_C_UOM qtyUOM)
 	{
 		final I_PP_Order order = orderBOMLine.getPP_Order();
 
@@ -243,7 +240,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 				qtyRejectConv,													// Qty Rejected
 				0,																// durationSetup: not relevant
 				BigDecimal.ZERO													// duration: not relevant
-				);
+		);
 
 		return cc;
 	}
@@ -333,7 +330,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 					qtyToDeliver, qtyScrap, qtyReject,								// qty,scrap,reject
 					0,																// durationSetup
 					BigDecimal.ZERO													// duration
-					);
+			);
 		}
 
 		// TODO: review this part. Drop qtyDelivered parameter because we can fetch it from PP_Order.QtyDelivered...
@@ -391,4 +388,19 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		final boolean reversal = costCollectorId > reversalCostCollectorId;
 		return reversal;
 	}
+
+	@Override
+	public boolean isFloorStock(final I_PP_Cost_Collector cc)
+	{
+		final int ppOrderBOMLineId = cc.getPP_Order_BOMLine_ID();
+		
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Order_BOMLine.class)
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_PP_Order_BOMLine_ID, ppOrderBOMLineId)
+				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_IssueMethod, X_PP_Order_BOMLine.ISSUEMETHOD_FloorStock)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.match();
+	}
+
 }

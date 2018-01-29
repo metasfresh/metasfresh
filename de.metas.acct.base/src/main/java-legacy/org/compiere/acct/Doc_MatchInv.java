@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -35,12 +35,13 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MTax;
 import org.compiere.model.ProductCost;
-import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.tax.api.ITaxBL;
 
@@ -60,9 +61,10 @@ import de.metas.tax.api.ITaxBL;
  *          FR [ 1840016 ] Avoid usage of clearing accounts - subject to C_AcctSchema.IsPostIfClearingEqual Avoid posting if both accounts Not Invoiced Receipts and Inventory Clearing are equal BF [
  *          2789949 ] Multicurrency in matching posting
  */
-public class Doc_MatchInv extends Doc
+public class Doc_MatchInv extends Doc<DocLine<Doc_MatchInv>>
 {
 	// services
+	private static final Logger logger = LogManager.getLogger(Doc_MatchInv.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
 
@@ -84,13 +86,8 @@ public class Doc_MatchInv extends Doc
 
 	private ProductCost m_pc = null;
 
-	/**
-	 * Load Specific Document Details
-	 *
-	 * @return error message or null
-	 */
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
 		final I_M_MatchInv matchInv = getM_MatchInv();
 		setC_Currency_ID(Doc.NO_CURRENCY);
@@ -122,7 +119,7 @@ public class Doc_MatchInv extends Doc
 				{
 					final int taxPrecision = getStdPrecision();
 					final BigDecimal lineTaxAmt = taxBL.calculateTax(tax, invoiceLineNetAmt, true, taxPrecision);
-					log.debug("LineNetAmt={} - LineTaxAmt={}", new Object[] { invoiceLineNetAmt, lineTaxAmt });
+					logger.debug("LineNetAmt={} - LineTaxAmt={}", invoiceLineNetAmt, lineTaxAmt);
 					invoiceLineNetAmt = invoiceLineNetAmt.subtract(lineTaxAmt);
 				}
 			}	// correct included Tax
@@ -137,14 +134,11 @@ public class Doc_MatchInv extends Doc
 				getM_Product_ID(), matchInv.getM_AttributeSetInstance_ID(),
 				trxName);
 		m_pc.setQty(getQty());
-
-		return null;
-	}   // loadDocumentDetails
+	}
 
 	public I_M_MatchInv getM_MatchInv()
 	{
-		final I_M_MatchInv matchInv = InterfaceWrapperHelper.create(getPO(), I_M_MatchInv.class);
-		return matchInv;
+		return getModel(I_M_MatchInv.class);
 	}
 
 	/**************************************************************************
@@ -155,7 +149,7 @@ public class Doc_MatchInv extends Doc
 	@Override
 	public BigDecimal getBalance()
 	{
-		return Env.ZERO;
+		return BigDecimal.ZERO;
 	}   // getBalance
 
 	/**
@@ -195,7 +189,6 @@ public class Doc_MatchInv extends Doc
 			return facts;
 		}
 
-
 		//
 		// Nothing to do
 		if (getM_Product_ID() <= 0								// no Product
@@ -203,7 +196,7 @@ public class Doc_MatchInv extends Doc
 				|| m_receiptLine.getMovementQty().signum() == 0	// Qty = 0
 				|| getQtyInvoiced().signum() == 0) // 08643 avoid division by zero further down; note that we don't really know if and what to book in this case.
 		{
-			log.debug("No Product/Qty - M_Product_ID=" + getM_Product_ID()
+			logger.debug("No Product/Qty - M_Product_ID=" + getM_Product_ID()
 					+ ",Qty=" + getQty() + ",InOutQty=" + m_receiptLine.getMovementQty() + ",InvoiceQty=" + getQtyInvoiced());
 			return facts;
 		}
@@ -223,7 +216,7 @@ public class Doc_MatchInv extends Doc
 				.abs();
 		final FactLine dr = fact.createLine(null,
 				getAccount(Doc.ACCTTYPE_NotInvoicedReceipts, as),
-				as.getC_Currency_ID(), Env.ONE, null);			// updated below
+				as.getC_Currency_ID(), BigDecimal.ONE, null);			// updated below
 		if (dr == null)
 		{
 			throw newPostingException()
@@ -240,8 +233,7 @@ public class Doc_MatchInv extends Doc
 		if (!dr.updateReverseLine(I_M_InOut.Table_ID, 		// Amt updated
 				m_receiptLine.getM_InOut_ID(),
 				m_receiptLine.getM_InOutLine_ID(),
-				receiptQtyMultiplier)
-				)
+				receiptQtyMultiplier))
 		{
 			throw newPostingException()
 					.setC_AcctSchema(as)
@@ -254,8 +246,8 @@ public class Doc_MatchInv extends Doc
 					.setLogLevel(Level.INFO)
 					.setDetailMessage("Material Receipt (Line M_InOutLine_ID=" + m_receiptLine.getM_InOutLine_ID() + ") not posted yet");
 		}
-		if (log.isDebugEnabled())
-			log.debug("DR - Amt(" + dr.getAcctBalance() + ") - " + dr.toString());
+		if (logger.isDebugEnabled())
+			logger.debug("DR - Amt(" + dr.getAcctBalance() + ") - " + dr.toString());
 
 		//
 		// InventoryClearing CR
@@ -266,7 +258,7 @@ public class Doc_MatchInv extends Doc
 		final BigDecimal invoiceQtyMultiplier = getQty()
 				.divide(getQtyInvoiced(), 12, BigDecimal.ROUND_HALF_UP);
 
-		if (invoiceQtyMultiplier.compareTo(Env.ONE) != 0)
+		if (invoiceQtyMultiplier.compareTo(BigDecimal.ONE) != 0)
 		{
 			LineNetAmt = LineNetAmt.multiply(invoiceQtyMultiplier);
 		}
@@ -294,7 +286,7 @@ public class Doc_MatchInv extends Doc
 					.buildAndAdd();
 			if (cr == null)
 			{
-				log.debug("Line Net Amt=0 - M_Product_ID=" + getM_Product_ID() + ",Qty=" + getQty() + ",InOutQty=" + m_receiptLine.getMovementQty());
+				logger.debug("Line Net Amt=0 - M_Product_ID=" + getM_Product_ID() + ",Qty=" + getQty() + ",InOutQty=" + m_receiptLine.getMovementQty());
 				createFacts_InvoicePriceVariance(fact, dr, cr);
 
 				facts.add(fact);
@@ -302,8 +294,8 @@ public class Doc_MatchInv extends Doc
 			}
 			cr.setQty(getQty().negate());
 
-			if (log.isDebugEnabled())
-				log.debug("CR - Amt(" + cr.getAcctBalance() + ") - " + cr.toString());
+			if (logger.isDebugEnabled())
+				logger.debug("CR - Amt(" + cr.getAcctBalance() + ") - " + cr.toString());
 		}
 		else
 		// Cash Acct
@@ -357,18 +349,15 @@ public class Doc_MatchInv extends Doc
 		// Commitment release
 		if (as.isAccrual() && as.isCreatePOCommitment())
 		{
-			final Fact factCommitment = Doc_Order.createFact_CommitmentPurchaseRelease(as, this,
-					getQty(), m_invoiceLine.getC_InvoiceLine_ID(), Env.ONE);
-			if (factCommitment == null)
-				return null;
-			facts.add(factCommitment);
-		}	// Commitment
+			throw newPostingException().setC_AcctSchema(as).setDetailMessage("PO commitment release posting not supported");
+		}
 
 		return facts;
 	}   // createFact
 
 	/**
 	 * Create the InvoicePriceVariance fact line
+	 * 
 	 * @param fact
 	 * @param dr {@link Doc#ACCTTYPE_NotInvoicedReceipts} line (InOut)
 	 * @param cr {@link ProductCost#ACCTTYPE_P_InventoryClearing} line (Invoice)
@@ -411,7 +400,7 @@ public class Doc_MatchInv extends Doc
 		//
 		// In case the DR line (InOut - NotInvoicedReceipts) is zero,
 		// make sure sure our IPV line is not on the same DR/CR side as the CR line (Invoice - InventoryClearing)
-		if(dr.isZeroAmtSource()
+		if (dr.isZeroAmtSource()
 				&& cr != null && cr.isSameAmtSourceDrCrSideAs(ipvFactLine))
 		{
 			ipvFactLine.invertDrAndCrAmounts();
@@ -420,8 +409,8 @@ public class Doc_MatchInv extends Doc
 
 		updateFromInvoiceLine(ipvFactLine);
 
-		if (log.isDebugEnabled())
-			log.debug("IPV=" + ipvAmount + "; Balance=" + fact.getSourceBalance());
+		if (logger.isDebugEnabled())
+			logger.debug("IPV=" + ipvAmount + "; Balance=" + fact.getSourceBalance());
 	}
 
 	/**

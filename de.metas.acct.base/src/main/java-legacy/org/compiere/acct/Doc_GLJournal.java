@@ -41,7 +41,7 @@ import org.compiere.model.X_GL_JournalLine;
  * @author Jorg Janke
  * @version $Id: Doc_GLJournal.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
-public class Doc_GLJournal extends Doc
+public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 {
 	// Services
 	private final transient IGLJournalLineDAO glJournalLineDAO = Services.get(IGLJournalLineDAO.class);
@@ -63,23 +63,15 @@ public class Doc_GLJournal extends Doc
 	private String m_PostingType = null;
 	private int m_C_AcctSchema_ID = 0;
 
-	/**
-	 * Load Specific Document Details
-	 *
-	 * @return error message or null
-	 */
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
 		final I_GL_Journal journal = getModel(I_GL_Journal.class);
 		m_PostingType = journal.getPostingType();
 		m_C_AcctSchema_ID = journal.getC_AcctSchema_ID();
 
-		// Contained Objects
-		p_lines = loadLines(journal);
-		log.debug("Lines=" + p_lines.length);
-		return null;
-	}   // loadDocumentDetails
+		setDocLines(loadLines(journal));
+	}
 
 	/**
 	 * Load Invoice Line
@@ -87,14 +79,14 @@ public class Doc_GLJournal extends Doc
 	 * @param journal journal
 	 * @return DocLine Array
 	 */
-	private DocLine[] loadLines(final I_GL_Journal journal)
+	private List<DocLine_GLJournal> loadLines(final I_GL_Journal journal)
 	{
-		final List<DocLine> docLinesAll = new ArrayList<>();
+		final List<DocLine_GLJournal> docLinesAll = new ArrayList<>();
 		final List<I_GL_JournalLine> glJournalLines = glJournalLineDAO.retrieveLines(journal);
 		for (final I_GL_JournalLine glJournalLine : glJournalLines)
 		{
 			final String type = glJournalLine.getType();
-			final List<DocLine> docLines;
+			final List<DocLine_GLJournal> docLines;
 			if (X_GL_JournalLine.TYPE_Normal.equals(type))
 			{
 				docLines = createDocLines_Normal(glJournalLine);
@@ -111,8 +103,7 @@ public class Doc_GLJournal extends Doc
 			docLinesAll.addAll(docLines);
 		}
 
-		// Return Array
-		return docLinesAll.toArray(new DocLine[docLinesAll.size()]);
+		return docLinesAll;
 	}	// loadLines
 
 	/**
@@ -126,13 +117,13 @@ public class Doc_GLJournal extends Doc
 	 * @param glJournalLine
 	 * @return
 	 */
-	private final List<DocLine> createDocLines_Normal(final I_GL_JournalLine glJournalLine)
+	private final List<DocLine_GLJournal> createDocLines_Normal(final I_GL_JournalLine glJournalLine)
 	{
-		final List<DocLine> docLines = new ArrayList<>();
+		final List<DocLine_GLJournal> docLines = new ArrayList<>();
 
 		if (glJournalLine.isAllowAccountDR())
 		{
-			final DocLine docLineDR = createDocLine(glJournalLine);
+			final DocLine_GLJournal docLineDR = createDocLine(glJournalLine);
 			docLineDR.setAmount(glJournalLine.getAmtSourceDr(), BigDecimal.ZERO);
 			docLineDR.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
 			docLineDR.setConvertedAmt(glJournalLine.getAmtAcctDr(), BigDecimal.ZERO);
@@ -142,7 +133,7 @@ public class Doc_GLJournal extends Doc
 		}
 		if (glJournalLine.isAllowAccountCR())
 		{
-			final DocLine docLineCR = createDocLine(glJournalLine);
+			final DocLine_GLJournal docLineCR = createDocLine(glJournalLine);
 			docLineCR.setAmount(BigDecimal.ZERO, glJournalLine.getAmtSourceCr());
 			docLineCR.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
 			docLineCR.setConvertedAmt(BigDecimal.ZERO, glJournalLine.getAmtAcctCr());
@@ -154,7 +145,7 @@ public class Doc_GLJournal extends Doc
 		return docLines;
 	}
 
-	private final List<DocLine> createDocLines_Tax(final I_GL_JournalLine glJournalLine)
+	private final List<DocLine_GLJournal> createDocLines_Tax(final I_GL_JournalLine glJournalLine)
 	{
 		if (glJournalLine.isDR_AutoTaxAccount())
 		{
@@ -190,15 +181,15 @@ public class Doc_GLJournal extends Doc
 	 * @param glJournalLine
 	 * @return
 	 */
-	private final List<DocLine> createDocLines_Tax(final I_GL_JournalLine glJournalLine, final boolean isTaxOnDebit)
+	private final List<DocLine_GLJournal> createDocLines_Tax(final I_GL_JournalLine glJournalLine, final boolean isTaxOnDebit)
 	{
 		final ITaxAccountable autoTaxRecord = glJournalLineBL.asTaxAccountable(glJournalLine, isTaxOnDebit);
 
-		final List<DocLine> docLines = new ArrayList<>();
+		final List<DocLine_GLJournal> docLines = new ArrayList<>();
 
 		// Tax Total Amount (CR/DR)
 		{
-			final DocLine docLine_TaxTotalAmt = createDocLine(glJournalLine);
+			final DocLine_GLJournal docLine_TaxTotalAmt = createDocLine(glJournalLine);
 			docLine_TaxTotalAmt.setAmountDrOrCr(autoTaxRecord.getTaxTotalAmt(), !isTaxOnDebit);
 			docLine_TaxTotalAmt.setAccount(autoTaxRecord.getTaxTotal_Acct());
 			docLines.add(docLine_TaxTotalAmt);
@@ -206,7 +197,7 @@ public class Doc_GLJournal extends Doc
 
 		// Tax Base Amount (DR/CR)
 		{
-			final DocLine docLine_TaxBaseAmt = createDocLine(glJournalLine);
+			final DocLine_GLJournal docLine_TaxBaseAmt = createDocLine(glJournalLine);
 			docLine_TaxBaseAmt.setAmountDrOrCr(autoTaxRecord.getTaxBaseAmt(), isTaxOnDebit);
 			docLine_TaxBaseAmt.setAccount(autoTaxRecord.getTaxBase_Acct());
 			docLines.add(docLine_TaxBaseAmt);
@@ -214,7 +205,7 @@ public class Doc_GLJournal extends Doc
 
 		// Tax Amount (DR/CR)
 		{
-			final DocLine docLine_TaxAmt = createDocLine(glJournalLine);
+			final DocLine_GLJournal docLine_TaxAmt = createDocLine(glJournalLine);
 			docLine_TaxAmt.setAmountDrOrCr(autoTaxRecord.getTaxAmt(), isTaxOnDebit);
 			docLine_TaxAmt.setAccount(autoTaxRecord.getTax_Acct());
 			docLine_TaxAmt.setC_Tax_ID(autoTaxRecord.getC_Tax_ID());
@@ -224,7 +215,7 @@ public class Doc_GLJournal extends Doc
 		return docLines;
 	}
 
-	private final DocLine createDocLine(final I_GL_JournalLine glJournalLine)
+	private final DocLine_GLJournal createDocLine(final I_GL_JournalLine glJournalLine)
 	{
 		final DocLine_GLJournal docLine = new DocLine_GLJournal(glJournalLine, this);
 		docLine.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
@@ -243,7 +234,7 @@ public class Doc_GLJournal extends Doc
 	{
 		BigDecimal balance = BigDecimal.ZERO;
 
-		for (final DocLine docLine : p_lines)
+		for (final DocLine_GLJournal docLine : getDocLines())
 		{
 			final BigDecimal docLineBalance = docLine.getAmtSource();
 			balance = balance.add(docLineBalance);
@@ -280,19 +271,18 @@ public class Doc_GLJournal extends Doc
 		if (getDocumentType().equals(DOCTYPE_GLJournal))
 		{
 			// account DR CR
-			for (final DocLine line : p_lines)
+			for (final DocLine_GLJournal line : getDocLines())
 			{
-				final DocLine_GLJournal docLine = (DocLine_GLJournal)line;
-				if (docLine.getC_AcctSchema_ID() > 0 && docLine.getC_AcctSchema_ID() != as.getC_AcctSchema_ID())
+				if (line.getC_AcctSchema_ID() > 0 && line.getC_AcctSchema_ID() != as.getC_AcctSchema_ID())
 				{
 					continue;
 				}
 
-				fact.createLine(docLine,
-						docLine.getAccount(),
-						docLine.getC_Currency_ID(),
-						docLine.getAmtSourceDr(),
-						docLine.getAmtSourceCr());
+				fact.createLine(line,
+						line.getAccount(),
+						line.getC_Currency_ID(),
+						line.getAmtSourceDr(),
+						line.getAmtSourceCr());
 			}	// for all lines
 		}
 		else

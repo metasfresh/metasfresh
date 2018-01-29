@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -23,11 +23,10 @@ import java.util.Properties;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.acct.api.ProductAcctType;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.LegacyAdapters;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
@@ -36,54 +35,35 @@ import org.compiere.model.MProduct;
 import org.compiere.model.PO;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
 
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import lombok.NonNull;
 
 /**
  * Standard Document Line
  *
  * @author Jorg Janke
- * @author Armen Rizal, Goodwill Consulting <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
+ * @author Armen Rizal, Goodwill Consulting
+ *         <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  * @version $Id: DocLine.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
-public class DocLine
+public class DocLine<DT extends Doc<? extends DocLine<?>>>
 {
 	// services
-	protected final transient Logger log = LogManager.getLogger(getClass());
-
-	/**
-	 * Create Document Line
-	 *
-	 * @param linePO line persistent object
-	 * @param doc header
-	 */
-	public DocLine(final PO linePO, final Doc doc)
-	{
-		super();
-
-		Check.assumeNotNull(linePO, "linePO not null");
-		p_po = linePO;
-
-		Check.assumeNotNull(doc, "doc not null");
-		m_doc = doc;
-
-		//
-		// Document Consistency
-		if (p_po.getAD_Org_ID() <= 0)
-		{
-			p_po.setAD_Org_ID(m_doc.getAD_Org_ID());
-		}
-	}	// DocLine
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	/** Persistent Object */
 	private final PO p_po;
 	/** Parent */
-	private final Doc m_doc;
+	private final DT m_doc;
 
 	/** Qty */
 	private BigDecimal m_qty = null;
@@ -106,12 +86,6 @@ public class DocLine
 
 	/** Product Costs */
 	private ProductCost m_productCost = null;
-	/** Production indicator */
-	private boolean m_productionBOM = false;
-	/** Outside Processing */
-	private int m_PP_Cost_Collector_ID = 0;
-	/** Account used only for GL Journal */
-	private MAccount m_account = null;
 
 	/** Accounting Date */
 	private Timestamp m_DateAcct = null;
@@ -122,7 +96,7 @@ public class DocLine
 	/** Sales Region */
 	private int m_C_BPartner_ID = -1;
 	/** Location From */
-	private int m_C_LocFrom_ID = 0;
+	private final int m_C_LocFrom_ID = 0;
 	/** Location To */
 	private int m_C_LocTo_ID = 0;
 	/** Item */
@@ -138,6 +112,21 @@ public class DocLine
 	/** Is Tax Included ? */
 	private boolean _taxIncluded = false;
 
+	private int m_ReversalLine_ID = 0;
+
+	public DocLine(@NonNull final PO linePO, @NonNull final DT doc)
+	{
+		p_po = linePO;
+		m_doc = doc;
+
+		//
+		// Document Consistency
+		if (p_po.getAD_Org_ID() <= 0)
+		{
+			p_po.setAD_Org_ID(m_doc.getAD_Org_ID());
+		}
+	}	// DocLine
+
 	protected final Properties getCtx()
 	{
 		return m_doc.getCtx();
@@ -152,84 +141,62 @@ public class DocLine
 	{
 		return m_doc.getAD_Client_ID();
 	}
-	
+
+	private final PO getPO()
+	{
+		return p_po;
+	}
+
 	/**
 	 * @param modelType
 	 * @return underlying model
 	 */
 	protected final <T> T getModel(final Class<T> modelType)
 	{
-		return InterfaceWrapperHelper.create(p_po, modelType); 
+		return InterfaceWrapperHelper.create(getPO(), modelType);
 	}
 
-	/**
-	 * Get Currency
-	 * 
-	 * @return c_Currency_ID
-	 */
 	public final int getC_Currency_ID()
 	{
 		if (m_C_Currency_ID == null)
 		{
 			// Get it from underlying document line model
-			final int index = p_po.get_ColumnIndex("C_Currency_ID");
-			if (index != -1)
-			{
-				final Integer currencyIdObj = (Integer)p_po.get_Value(index);
-				if (currencyIdObj != null && currencyIdObj > 0)
-				{
-					m_C_Currency_ID = currencyIdObj;
-				}
-			}
-			
+			m_C_Currency_ID = getValue("C_Currency_ID");
+
 			// Get it from document header
 			if (m_C_Currency_ID == null || m_C_Currency_ID <= 0)
 			{
 				m_C_Currency_ID = m_doc.getC_Currency_ID();
 			}
 		}
-		
-		return m_C_Currency_ID;
-	}   // getC_Currency_ID
 
-	/**
-	 * Get Conversion Type
-	 * 
-	 * @return C_ConversionType_ID
-	 */
+		return m_C_Currency_ID;
+	}
+
 	public final int getC_ConversionType_ID()
 	{
 		if (m_C_ConversionType_ID == -1)
 		{
-			int index = p_po.get_ColumnIndex("C_ConversionType_ID");
-			if (index != -1)
-			{
-				Integer ii = (Integer)p_po.get_Value(index);
-				if (ii != null)
-					m_C_ConversionType_ID = ii.intValue();
-			}
+			m_C_ConversionType_ID = getValue("C_ConversionType_ID");
 			if (m_C_ConversionType_ID <= 0)
+			{
 				m_C_ConversionType_ID = m_doc.getC_ConversionType_ID();
+			}
 		}
 		return m_C_ConversionType_ID;
-	}   // getC_ConversionType_ID
+	}
 
-	/**
-	 * Set C_ConversionType_ID
-	 *
-	 * @param C_ConversionType_ID id
-	 */
-	protected final void setC_ConversionType_ID(int C_ConversionType_ID)
+	protected final void setC_ConversionType_ID(final int C_ConversionType_ID)
 	{
 		m_C_ConversionType_ID = C_ConversionType_ID;
-	}	// setC_ConversionType_ID
+	}
 
 	/**
 	 * Set Amount (DR)
-	 * 
+	 *
 	 * @param sourceAmt source amt
 	 */
-	protected final void setAmount(BigDecimal sourceAmt)
+	protected final void setAmount(final BigDecimal sourceAmt)
 	{
 		m_AmtSourceDr = sourceAmt == null ? BigDecimal.ZERO : sourceAmt;
 		m_AmtSourceCr = BigDecimal.ZERO;
@@ -237,11 +204,11 @@ public class DocLine
 
 	/**
 	 * Set Amounts
-	 * 
+	 *
 	 * @param amtSourceDr source amount dr
 	 * @param amtSourceCr source amount cr
 	 */
-	protected final void setAmount(BigDecimal amtSourceDr, BigDecimal amtSourceCr)
+	protected final void setAmount(final BigDecimal amtSourceDr, final BigDecimal amtSourceCr)
 	{
 		m_AmtSourceDr = amtSourceDr == null ? BigDecimal.ZERO : amtSourceDr;
 		m_AmtSourceCr = amtSourceCr == null ? BigDecimal.ZERO : amtSourceCr;
@@ -256,7 +223,7 @@ public class DocLine
 
 	/**
 	 * Set Converted Amounts. If converted amounts are set, they will be used as is, and no further convertion will be done.
-	 * 
+	 *
 	 * @param amtAcctDr acct amount dr
 	 * @param amtAcctCr acct amount cr
 	 */
@@ -268,7 +235,7 @@ public class DocLine
 
 	/**
 	 * Line Net Amount or Dr-Cr
-	 * 
+	 *
 	 * @return balance
 	 */
 	public final BigDecimal getAmtSource()
@@ -278,7 +245,7 @@ public class DocLine
 
 	/**
 	 * Get (Journal) Line Source Dr Amount
-	 * 
+	 *
 	 * @return DR source amount
 	 */
 	public final BigDecimal getAmtSourceDr()
@@ -288,7 +255,7 @@ public class DocLine
 
 	/**
 	 * Get (Journal) Line Source Cr Amount
-	 * 
+	 *
 	 * @return CR source amount
 	 */
 	public final BigDecimal getAmtSourceCr()
@@ -298,7 +265,7 @@ public class DocLine
 
 	/**
 	 * Line Journal Accounted Dr Amount
-	 * 
+	 *
 	 * @return DR accounted amount
 	 */
 	public final BigDecimal getAmtAcctDr()
@@ -308,7 +275,7 @@ public class DocLine
 
 	/**
 	 * Line Journal Accounted Cr Amount
-	 * 
+	 *
 	 * @return CR accounted amount
 	 */
 	public final BigDecimal getAmtAcctCr()
@@ -316,49 +283,38 @@ public class DocLine
 		return m_AmtAcctCr;
 	}   // getAmtAccrCr
 
-	/**
-	 * Charge Amount
-	 * 
-	 * @return charge amount
-	 */
 	public final BigDecimal getChargeAmt()
 	{
-		int index = p_po.get_ColumnIndex("ChargeAmt");
-		if (index != -1)
-		{
-			BigDecimal bd = (BigDecimal)p_po.get_Value(index);
-			if (bd != null)
-				return bd;
-		}
-		return BigDecimal.ZERO;
-	}   // getChargeAmt
+		return getValueAsBD("ChargeAmt", BigDecimal.ZERO);
+	}
 
 	/**
 	 * Set Product Amounts
-	 * 
+	 *
 	 * @param LineNetAmt Line Net Amt
 	 * @param PriceList Price List
 	 * @param Qty Qty for discount calc
 	 */
-	public final void setAmount(BigDecimal LineNetAmt, BigDecimal PriceList, BigDecimal Qty)
+	public final void setAmount(final BigDecimal LineNetAmt, final BigDecimal PriceList, final BigDecimal Qty)
 	{
 		m_LineNetAmt = LineNetAmt == null ? BigDecimal.ZERO : LineNetAmt;
 
 		if (PriceList != null && Qty != null)
+		{
 			m_ListAmt = PriceList.multiply(Qty);
+		}
 		if (m_ListAmt.compareTo(BigDecimal.ZERO) == 0)
+		{
 			m_ListAmt = m_LineNetAmt;
+		}
 		m_DiscountAmt = m_ListAmt.subtract(m_LineNetAmt);
 		//
 		setAmount(m_ListAmt, m_DiscountAmt);
-		// Log.trace(this,Log.l6_Database, "DocLine_Invoice.setAmount",
-		// "LineNet=" + m_LineNetAmt + ", List=" + m_ListAmt + ", Discount=" + m_DiscountAmt
-		// + " => Amount=" + getAmount());
-	}   // setAmounts
+	}
 
 	/**
 	 * Line Discount
-	 * 
+	 *
 	 * @return discount amount
 	 */
 	public final BigDecimal getDiscount()
@@ -368,7 +324,7 @@ public class DocLine
 
 	/**
 	 * Line List Amount
-	 * 
+	 *
 	 * @return list amount
 	 */
 	public final BigDecimal getListAmount()
@@ -387,94 +343,36 @@ public class DocLine
 		m_LineNetAmt = m_LineNetAmt.subtract(diff);
 		m_DiscountAmt = m_ListAmt.subtract(m_LineNetAmt);
 		setAmount(m_ListAmt, m_DiscountAmt);
-		
-		log.warn("Diff=" + diff + " - LineNetAmt=" + lineNetAmtOld + " -> " + m_LineNetAmt + " - " + this);
-	}	// setLineNetAmtDifference
 
-	/**************************************************************************
-	 * Set Accounting Date
-	 * 
-	 * @param dateAcct acct date
-	 */
-	public final void setDateAcct(Timestamp dateAcct)
-	{
-		m_DateAcct = dateAcct;
-	}   // setDateAcct
+		logger.warn("Diff={} - LineNetAmt={} -> {} - {}", diff, lineNetAmtOld, m_LineNetAmt, this);
+	}
 
-	/**
-	 * Get Accounting Date
-	 * 
-	 * @return accounting date
-	 */
 	public final Timestamp getDateAcct()
 	{
-		if (m_DateAcct != null)
-			return m_DateAcct;
-		int index = p_po.get_ColumnIndex("DateAcct");
-		if (index != -1)
+		if (m_DateAcct == null)
 		{
-			m_DateAcct = (Timestamp)p_po.get_Value(index);
-			if (m_DateAcct != null)
-				return m_DateAcct;
+			m_DateAcct = Util.coalesceSuppliers(
+					() -> getValueAsTSOrNull("DateAcct"),
+					() -> getDoc().getDateAcct());
 		}
-		m_DateAcct = m_doc.getDateAcct();
 		return m_DateAcct;
-	}   // getDateAcct
+	}
 
-	/**
-	 * Set Document Date
-	 * 
-	 * @param dateDoc doc date
-	 */
-	protected final void setDateDoc(Timestamp dateDoc)
+	protected final void setDateDoc(final Timestamp dateDoc)
 	{
 		m_DateDoc = dateDoc;
 	}   // setDateDoc
 
-	/**
-	 * Get Document Date
-	 * 
-	 * @return document date
-	 */
 	public final Timestamp getDateDoc()
 	{
-		if (m_DateDoc != null)
-			return m_DateDoc;
-		int index = p_po.get_ColumnIndex("DateDoc");
-		if (index != -1)
+		if (m_DateDoc == null)
 		{
-			m_DateDoc = (Timestamp)p_po.get_Value(index);
-			if (m_DateDoc != null)
-				return m_DateDoc;
+			m_DateDoc = Util.coalesceSuppliers(
+					() -> getValueAsTSOrNull("DateDoc"),
+					() -> getDoc().getDateAcct());
 		}
-		m_DateDoc = m_doc.getDateDoc();
 		return m_DateDoc;
-	}   // getDateDoc
-
-	/**************************************************************************
-	 * Set GL Journal Account
-	 * 
-	 * @param acct account
-	 */
-	public final void setAccount(MAccount acct)
-	{
-		m_account = acct;
-	}   // setAccount
-
-	public final void setAccount(I_C_ValidCombination acct)
-	{
-		m_account = LegacyAdapters.convertToPO(acct);
-	}   // setAccount
-
-	/**
-	 * Get GL Journal Account
-	 * 
-	 * @return account
-	 */
-	public final MAccount getAccount()
-	{
-		return m_account;
-	}   // getAccount
+	}
 
 	/**
 	 * Line Account from Product (or Charge).
@@ -484,18 +382,18 @@ public class DocLine
 	 * @return Requested Product Account
 	 */
 	@OverridingMethodsMustInvokeSuper
-	public MAccount getAccount(ProductAcctType AcctType, MAcctSchema as)
+	public MAccount getAccount(final ProductAcctType AcctType, final MAcctSchema as)
 	{
 		if (getM_Product_ID() <= 0 && getC_Charge_ID() > 0)
 		{
 			final MAccount acct;
 			if (!m_doc.isSOTrx())
 			{
-				acct = getChargeAccount(as, new BigDecimal(+1)); // Expense (+)
+				acct = getChargeAccount(as, BigDecimal.ONE); // Expense (+)
 			}
 			else
 			{
-				acct = getChargeAccount(as, new BigDecimal(-1)); // Revenue (-)
+				acct = getChargeAccount(as, BigDecimal.ONE.negate()); // Revenue (-)
 			}
 			if (acct != null)
 			{
@@ -509,122 +407,63 @@ public class DocLine
 
 	/**
 	 * Get Charge
-	 * 
+	 *
 	 * @return C_Charge_ID
 	 */
 	protected final int getC_Charge_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_Charge_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getC_Charge_ID
+		return getValue("C_Charge_ID");
+	}
 
 	/**
 	 * Get Charge Account
-	 * 
+	 *
 	 * @param as account schema
 	 * @param amount amount for expense(+)/revenue(-)
 	 * @return Charge Account or null
 	 */
-	protected final MAccount getChargeAccount(MAcctSchema as, BigDecimal amount)
+	protected final MAccount getChargeAccount(final MAcctSchema as, final BigDecimal amount)
 	{
-		int C_Charge_ID = getC_Charge_ID();
+		final int C_Charge_ID = getC_Charge_ID();
 		if (C_Charge_ID == 0)
+		{
 			return null;
+		}
 		return MCharge.getAccount(C_Charge_ID, as, amount);
-	}   // getChargeAccount
+	}
 
-	/**
-	 * Get Period
-	 * 
-	 * @return C_Period_ID
-	 */
 	protected final int getC_Period_ID()
 	{
 		if (m_C_Period_ID == -1)
 		{
-			int index = p_po.get_ColumnIndex("C_Period_ID");
-			if (index != -1)
+			m_C_Period_ID = getValue("C_Period_ID");
+			if (m_C_Period_ID <= 0)
 			{
-				Integer ii = (Integer)p_po.get_Value(index);
-				if (ii != null)
-					m_C_Period_ID = ii.intValue();
-			}
-			if (m_C_Period_ID == -1)
 				m_C_Period_ID = 0;
+			}
 		}
 		return m_C_Period_ID;
 	}	// getC_Period_ID
 
-	/**
-	 * Set C_Period_ID
-	 *
-	 * @param C_Period_ID id
-	 */
-	protected final void setC_Period_ID(int C_Period_ID)
+	protected final void setC_Period_ID(final int C_Period_ID)
 	{
 		m_C_Period_ID = C_Period_ID;
-	}	// setC_Period_ID
+	}
 
-	/**
-	 * Get Line ID
-	 *
-	 * @return id
-	 */
 	public final int get_ID()
 	{
-		return p_po.get_ID();
-	}	// get_ID
+		return getPO().get_ID();
+	}
 
-	/**
-	 * Get AD_Org_ID
-	 *
-	 * @return org
-	 */
 	public final int getAD_Org_ID()
 	{
-		return p_po.getAD_Org_ID();
-	}	// getAD_Org_ID
+		return getPO().getAD_Org_ID();
+	}
 
-	/**
-	 * Get Order AD_Org_ID
-	 *
-	 * @return order org if defined
-	 */
-	public final int getOrder_Org_ID()
-	{
-		int C_OrderLine_ID = getC_OrderLine_ID();
-		if (C_OrderLine_ID != 0)
-		{
-			String sql = "SELECT AD_Org_ID FROM C_OrderLine WHERE C_OrderLine_ID=?";
-			int AD_Org_ID = DB.getSQLValue(null, sql, C_OrderLine_ID);
-			if (AD_Org_ID > 0)
-				return AD_Org_ID;
-		}
-		return getAD_Org_ID();
-	}	// getOrder_Org_ID
-
-	/**
-	 * Product
-	 * 
-	 * @return M_Product_ID
-	 */
 	public final int getM_Product_ID()
 	{
-		int index = p_po.get_ColumnIndex("M_Product_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}   // getM_Product_ID
+		return getValue("M_Product_ID");
+	}
 
 	/**
 	 * Is this an stockable item Product (vs. not a Service, a charge)
@@ -634,12 +473,14 @@ public class DocLine
 	public final boolean isItem()
 	{
 		if (m_isItem != null)
+		{
 			return m_isItem.booleanValue();
+		}
 
 		m_isItem = Boolean.FALSE;
 		if (getM_Product_ID() > 0)
 		{
-			final I_M_Product product = MProduct.get(getCtx(), getM_Product_ID());
+			final I_M_Product product = InterfaceWrapperHelper.load(getM_Product_ID(), I_M_Product.class);
 			final IProductBL productBL = Services.get(IProductBL.class);
 
 			// NOTE: we are considering the product as Item only if it's stockable.
@@ -651,202 +492,62 @@ public class DocLine
 		}
 		return m_isItem.booleanValue();
 	}	// isItem
-	
+
 	public final boolean isService()
 	{
 		return !isItem();
 	}
 
-	/**
-	 * ASI
-	 * 
-	 * @return M_AttributeSetInstance_ID
-	 */
 	public final int getM_AttributeSetInstance_ID()
 	{
-		int index = p_po.get_ColumnIndex("M_AttributeSetInstance_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}   // getM_AttributeSetInstance_ID
+		return getValue("M_AttributeSetInstance_ID");
+	}
 
-	/**
-	 * Get Warehouse Locator (from)
-	 * 
-	 * @return M_Locator_ID
-	 */
 	public final int getM_Locator_ID()
 	{
-		int index = p_po.get_ColumnIndex("M_Locator_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}   // getM_Locator_ID
+		return getValue("M_Locator_ID");
+	}
 
-	/**
-	 * Get Warehouse Locator To
-	 * 
-	 * @return M_Locator_ID
-	 */
-	public final int getM_LocatorTo_ID()
-	{
-		int index = p_po.get_ColumnIndex("M_LocatorTo_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}   // getM_LocatorTo_ID
-
-	/**
-	 * Set Production BOM flag
-	 *
-	 * @param productionBOM flag
-	 */
-	public final void setProductionBOM(boolean productionBOM)
-	{
-		m_productionBOM = productionBOM;
-	}	// setProductionBOM
-
-	/**
-	 * Is this the BOM to be produced
-	 *
-	 * @return true if BOM
-	 */
-	public final boolean isProductionBOM()
-	{
-		return m_productionBOM;
-	}	// isProductionBOM
-
-	/**
-	 * Get Production Plan
-	 * 
-	 * @return M_ProductionPlan_ID
-	 */
-	public final int getM_ProductionPlan_ID()
-	{
-		int index = p_po.get_ColumnIndex("M_ProductionPlan_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}   // getM_ProductionPlan_ID
-
-	/**
-	 * Get Order Line Reference
-	 * 
-	 * @return C_OrderLine_ID
-	 */
 	public final int getC_OrderLine_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_OrderLine_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}   // getC_OrderLine_ID
+		return getValue("C_OrderLine_ID");
+	}
 
-	/**
-	 * Get C_LocFrom_ID
-	 *
-	 * @return loc from
-	 */
 	public final int getC_LocFrom_ID()
 	{
 		return m_C_LocFrom_ID;
-	}	// getC_LocFrom_ID
+	}
 
-	/**
-	 * Set C_LocFrom_ID
-	 *
-	 * @param C_LocFrom_ID loc from
-	 */
-	public final void setC_LocFrom_ID(int C_LocFrom_ID)
-	{
-		m_C_LocFrom_ID = C_LocFrom_ID;
-	}	// setC_LocFrom_ID
-
-	/**
-	 * Get PP_Cost_Collector_ID
-	 *
-	 * @return Cost Collector ID
-	 */
-	public final int getPP_Cost_Collector_ID()
-	{
-		return m_PP_Cost_Collector_ID;
-	}	// getC_LocFrom_ID
-
-	/**
-	 * Get PP_Cost_Collector_ID
-	 *
-	 * @return Cost Collector ID
-	 */
-	public final int setPP_Cost_Collector_ID(int PP_Cost_Collector_ID)
-	{
-		return m_PP_Cost_Collector_ID;
-	}	// getC_LocFrom_ID
-
-	/**
-	 * Get C_LocTo_ID
-	 *
-	 * @return loc to
-	 */
 	public final int getC_LocTo_ID()
 	{
 		return m_C_LocTo_ID;
-	}	// getC_LocTo_ID
+	}
 
-	/**
-	 * Set C_LocTo_ID
-	 *
-	 * @param C_LocTo_ID loc to
-	 */
-	public final void setC_LocTo_ID(int C_LocTo_ID)
+	public final void setC_LocTo_ID(final int C_LocTo_ID)
 	{
 		m_C_LocTo_ID = C_LocTo_ID;
 	}	// setC_LocTo_ID
 
-	/**
-	 * Get Product Cost Info
-	 *
-	 * @return product cost
-	 */
 	private final ProductCost getProductCost()
 	{
 		if (m_productCost == null)
 		{
-			m_productCost = new ProductCost(getCtx(), getM_Product_ID(), getM_AttributeSetInstance_ID(), p_po.get_TrxName());
+			m_productCost = new ProductCost(getCtx(), getM_Product_ID(), getM_AttributeSetInstance_ID(), ITrx.TRXNAME_ThreadInherited);
 		}
 		return m_productCost;
-	}	// getProductCost
+	}
 
 	// MZ Goodwill
 	/**
 	 * Get Total Product Costs from Cost Detail or from Current Cost
-	 * 
+	 *
 	 * @param as accounting schema
 	 * @param AD_Org_ID trx org
 	 * @param zeroCostsOK zero/no costs are OK
 	 * @param whereClause null are OK
 	 * @return costs
 	 */
-	public final BigDecimal getProductCosts(MAcctSchema as, int AD_Org_ID, boolean zeroCostsOK, CostingDocumentRef documentRef)
+	public final BigDecimal getProductCosts(final MAcctSchema as, final int AD_Org_ID, final boolean zeroCostsOK, final CostingDocumentRef documentRef)
 	{
 		if (documentRef != null)
 		{
@@ -868,20 +569,22 @@ public class DocLine
 
 	/**
 	 * Get Total Product Costs
-	 * 
+	 *
 	 * @param as accounting schema
 	 * @param AD_Org_ID trx org
 	 * @param zeroCostsOK zero/no costs are OK
 	 * @return costs
 	 */
-	public final BigDecimal getProductCosts(MAcctSchema as, int AD_Org_ID, boolean zeroCostsOK)
+	public final BigDecimal getProductCosts(final MAcctSchema as, final int AD_Org_ID, final boolean zeroCostsOK)
 	{
-		ProductCost pc = getProductCost();
-		int C_OrderLine_ID = getC_OrderLine_ID();
-		String costingMethod = null;
-		BigDecimal costs = pc.getProductCosts(as, AD_Org_ID, costingMethod, C_OrderLine_ID, zeroCostsOK);
+		final ProductCost pc = getProductCost();
+		final int C_OrderLine_ID = getC_OrderLine_ID();
+		final String costingMethod = null;
+		final BigDecimal costs = pc.getProductCosts(as, AD_Org_ID, costingMethod, C_OrderLine_ID, zeroCostsOK);
 		if (costs != null)
+		{
 			return costs;
+		}
 		return BigDecimal.ZERO;
 	}   // getProductCosts
 
@@ -897,60 +600,70 @@ public class DocLine
 
 	/**
 	 * Get Revenue Recognition
-	 * 
+	 *
 	 * @return C_RevenueRecognition_ID or 0
 	 */
 	public final int getC_RevenueRecognition_ID()
 	{
-		MProduct product = getProduct();
+		final MProduct product = getProduct();
 		if (product != null)
+		{
 			return product.getC_RevenueRecognition_ID();
+		}
 		return 0;
 	}   // getC_RevenueRecognition_ID
 
 	/**
 	 * Quantity UOM
-	 * 
+	 *
 	 * @return Transaction or Storage M_UOM_ID
 	 */
 	public final int getC_UOM_ID()
 	{
 		// Trx UOM
-		int index = p_po.get_ColumnIndex("C_UOM_ID");
-		if (index != -1)
+		final int uomId = getValue("C_UOM_ID");
+		if (uomId > 0)
 		{
-			final Integer uomId = (Integer)p_po.get_Value(index);
-			if (uomId != null)
-				return uomId.intValue();
+			return uomId;
 		}
+
 		// Storage UOM
-		MProduct product = getProduct();
+		final MProduct product = getProduct();
 		if (product != null)
+		{
 			return product.getC_UOM_ID();
+		}
+
 		//
 		return 0;
-	}   // getC_UOM
+	}
 
 	/**
 	 * Quantity
-	 * 
+	 *
 	 * @param qty transaction Qty
 	 * @param isSOTrx SL order trx (i.e. negative qty)
 	 */
 	public final void setQty(final BigDecimal qty, final boolean isSOTrx)
 	{
 		if (qty == null)
+		{
 			m_qty = BigDecimal.ZERO;
+		}
 		else if (isSOTrx)
+		{
 			m_qty = qty.negate();
+		}
 		else
+		{
 			m_qty = qty;
+		}
 		getProductCost().setQty(qty);
 	}   // setQty
 
 	/**
 	 * Quantity
-	 * 
+	 *
 	 * @return transaction Qty
 	 */
 	public final BigDecimal getQty()
@@ -958,289 +671,192 @@ public class DocLine
 		return m_qty;
 	}   // getQty
 
-	/**
-	 * Description
-	 * 
-	 * @return doc line description
-	 */
 	public final String getDescription()
 	{
-		int index = p_po.get_ColumnIndex("Description");
-		if (index != -1)
-			return (String)p_po.get_Value(index);
-		return null;
-	}	// getDescription
-
-	/**
-	 * Line Tax
-	 * 
-	 * @return C_Tax_ID
-	 */
-	public final int getC_Tax_ID()
-	{
-		if (m_C_Tax_ID != null)
-		{
-			return m_C_Tax_ID;
-		}
-
-		final int index = p_po.get_ColumnIndex("C_Tax_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getC_Tax_ID
-
-	public final void setC_Tax_ID(final Integer taxId)
-	{
-		this.m_C_Tax_ID = taxId;
+		return getValueAsString("Description");
 	}
 
-	/**
-	 * Get Line Number
-	 * 
-	 * @return line no
-	 */
+	public final int getC_Tax_ID()
+	{
+		if (m_C_Tax_ID == null)
+		{
+			m_C_Tax_ID = getValue("C_Tax_ID");
+		}
+		return m_C_Tax_ID;
+	}
+
+	public final void setC_Tax_ID(final int taxId)
+	{
+		m_C_Tax_ID = taxId;
+	}
+
 	public final int getLine()
 	{
-		int index = p_po.get_ColumnIndex("Line");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}   // getLine
+		return getValue("Line");
+	}
 
-	/**
-	 * Get BPartner
-	 * 
-	 * @return C_BPartner_ID
-	 */
 	public int getC_BPartner_ID()
 	{
 		if (m_C_BPartner_ID == -1)
 		{
-			int index = p_po.get_ColumnIndex("C_BPartner_ID");
-			if (index != -1)
-			{
-				Integer ii = (Integer)p_po.get_Value(index);
-				if (ii != null)
-					m_C_BPartner_ID = ii.intValue();
-			}
+			m_C_BPartner_ID = Util.coalesceSuppliers(
+					() -> getValue("C_BPartner_ID"),
+					() -> m_doc.getC_BPartner_ID());
 			if (m_C_BPartner_ID <= 0)
-				m_C_BPartner_ID = m_doc.getC_BPartner_ID();
+			{
+				m_C_BPartner_ID = 0;
+			}
 		}
 		return m_C_BPartner_ID;
-	}   // getC_BPartner_ID
+	}
 
-	/**
-	 * Set C_BPartner_ID
-	 *
-	 * @param C_BPartner_ID id
-	 */
-	protected final void setC_BPartner_ID(int C_BPartner_ID)
+	protected final void setC_BPartner_ID(final int C_BPartner_ID)
 	{
 		m_C_BPartner_ID = C_BPartner_ID;
 	}	// setC_BPartner_ID
 
-	/**
-	 * Get C_BPartner_Location_ID
-	 *
-	 * @return BPartner Location
-	 */
-	public final int getC_BPartner_Location_ID()
+	private final int getC_BPartner_Location_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_BPartner_Location_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return m_doc.getC_BPartner_Location_ID();
-	}	// getC_BPartner_Location_ID
+		return Util.coalesceSuppliers(
+				() -> getValue("C_BPartner_Location_ID"),
+				() -> m_doc.getC_BPartner_Location_ID());
+	}
 
-	/**
-	 * Get TrxOrg
-	 * 
-	 * @return AD_OrgTrx_ID
-	 */
 	public final int getAD_OrgTrx_ID()
 	{
-		int index = p_po.get_ColumnIndex("AD_OrgTrx_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}   // getAD_OrgTrx_ID
+		return getValue("AD_OrgTrx_ID");
+	}
 
 	/**
 	 * Get SalesRegion.
 	 * - get Sales Region from BPartner
-	 * 
+	 *
 	 * @return C_SalesRegion_ID
 	 */
 	public final int getC_SalesRegion_ID()
 	{
 		if (m_C_SalesRegion_ID == -1)	// never tried
 		{
-			if (getC_BPartner_Location_ID() != 0)
+			final int bpartnerLocationId = getC_BPartner_Location_ID();
+			if (bpartnerLocationId > 0)
 			// && m_acctSchema.isAcctSchemaElement(MAcctSchemaElement.ELEMENTTYPE_SalesRegion))
 			{
-				String sql = "SELECT COALESCE(C_SalesRegion_ID,0) FROM C_BPartner_Location WHERE C_BPartner_Location_ID=?";
-				m_C_SalesRegion_ID = DB.getSQLValue(null,
-						sql, getC_BPartner_Location_ID());
-				log.debug("C_SalesRegion_ID=" + m_C_SalesRegion_ID + " (from BPL)");
+				final String sql = "SELECT COALESCE(C_SalesRegion_ID,0) FROM C_BPartner_Location WHERE C_BPartner_Location_ID=?";
+				m_C_SalesRegion_ID = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, bpartnerLocationId);
 				if (m_C_SalesRegion_ID == 0)
+				{
 					m_C_SalesRegion_ID = -2;	// don't try again
+				}
 			}
 			else
+			{
 				m_C_SalesRegion_ID = -2;		// don't try again
+			}
 		}
-		if (m_C_SalesRegion_ID < 0)				// invalid
+		if (m_C_SalesRegion_ID < 0)
+		{
 			return 0;
+		}
 		return m_C_SalesRegion_ID;
 	}   // getC_SalesRegion_ID
 
-	/**
-	 * Get Project
-	 * 
-	 * @return C_Project_ID
-	 */
 	public final int getC_Project_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_Project_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}   // getC_Project_ID
+		return getValue("C_Project_ID");
+	}
 
-	/**
-	 * Get Campaign
-	 * 
-	 * @return C_Campaign_ID
-	 */
 	public final int getC_Campaign_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_Campaign_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}   // getC_Campaign_ID
+		return getValue("C_Campaign_ID");
+	}
 
-	// 07689
-	// ActivityFrom
-	/**
-	 * Get Activity From
-	 * 
-	 * @return C_ActivityFrom_ID
-	 */
 	public final int getC_ActivityFrom_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_ActivityFrom_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}   // getC_ActivityFrom_ID
+		return getValue("C_ActivityFrom_ID");
+	}
 
-	/**
-	 * Get Activity
-	 * 
-	 * @return C_Activity_ID
-	 */
 	public int getC_Activity_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_Activity_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}   // getC_Activity_ID
+		return getValue("C_Activity_ID");
+	}
 
-	/**
-	 * Get User 1
-	 * 
-	 * @return user defined 1
-	 */
 	public final int getUser1_ID()
 	{
-		int index = p_po.get_ColumnIndex("User1_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}   // getUser1_ID
+		return getValue("User1_ID");
+	}
 
-	/**
-	 * Get User 2
-	 * 
-	 * @return user defined 2
-	 */
 	public final int getUser2_ID()
 	{
-		int index = p_po.get_ColumnIndex("User2_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}   // getUser2_ID
+		return getValue("User2_ID");
+	}
 
 	/**
 	 * Get User Defined Column
-	 * 
-	 * @param ColumnName column name
+	 *
+	 * @param columnName column name
 	 * @return user defined column value
 	 */
-	public final int getValue(String ColumnName)
+	public final int getValue(final String columnName)
 	{
-		int index = p_po.get_ColumnIndex(ColumnName);
+		final PO po = getPO();
+		final int index = po.get_ColumnIndex(columnName);
 		if (index != -1)
 		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
+			final Integer valueInt = (Integer)po.get_Value(index);
+			if (valueInt != null)
+			{
+				return valueInt.intValue();
+			}
 		}
 		return 0;
-	}   // getValue
+	}
 
-	// AZ Goodwill
-	private int m_ReversalLine_ID = 0;
+	private final BigDecimal getValueAsBD(final String columnName, final BigDecimal defaultValue)
+	{
+		final PO po = getPO();
+		final int index = po.get_ColumnIndex(columnName);
+		if (index != -1)
+		{
+			final Object valueObj = po.get_Value(index);
+			return NumberUtils.asBigDecimal(valueObj, defaultValue);
+		}
+
+		return defaultValue;
+	}
+
+	private final Timestamp getValueAsTSOrNull(final String columnName)
+	{
+		final PO po = getPO();
+		final int index = po.get_ColumnIndex(columnName);
+		if (index != -1)
+		{
+			final Timestamp valueDate = (Timestamp)po.get_Value(index);
+			return valueDate;
+		}
+
+		return null;
+	}
+
+	private final String getValueAsString(final String columnName)
+	{
+		final PO po = getPO();
+		final int index = po.get_ColumnIndex(columnName);
+		if (index != -1)
+		{
+			final Object valueObj = po.get_Value(index);
+			return valueObj != null ? valueObj.toString() : null;
+		}
+
+		return null;
+	}
 
 	/**
 	 * Set ReversalLine_ID
 	 * store original (voided/reversed) document line
-	 * 
+	 *
 	 * @param ReversalLine_ID
 	 */
-	public final void setReversalLine_ID(int ReversalLine_ID)
+	public final void setReversalLine_ID(final int ReversalLine_ID)
 	{
 		m_ReversalLine_ID = ReversalLine_ID;
 	}   // setReversalLine_ID
@@ -1248,7 +864,7 @@ public class DocLine
 	/**
 	 * Get ReversalLine_ID
 	 * get original (voided/reversed) document line
-	 * 
+	 *
 	 * @return ReversalLine_ID
 	 */
 	public final int getReversalLine_ID()
@@ -1256,27 +872,18 @@ public class DocLine
 		return m_ReversalLine_ID;
 	}   // getReversalLine_ID
 
-	// end AZ Goodwill
-
-	/**
-	 * String representation
-	 * 
-	 * @return String
-	 */
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder("DocLine=[");
-		sb.append(p_po.get_ID());
-		if (getDescription() != null)
-			sb.append(",").append(getDescription());
-		if (getM_Product_ID() != 0)
-			sb.append(",M_Product_ID=").append(getM_Product_ID());
-		sb.append(",Qty=").append(m_qty)
-				.append(",Amt=").append(getAmtSource())
-				.append("]");
-		return sb.toString();
-	}	// toString
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("id", get_ID())
+				.add("description", getDescription())
+				.add("productId", getM_Product_ID())
+				.add("qty", m_qty)
+				.add("amtSource", getAmtSource())
+				.toString();
+	}
 
 	/**
 	 * Is Tax Included
@@ -1295,9 +902,9 @@ public class DocLine
 	 */
 	protected final void setIsTaxIncluded(final boolean taxIncluded)
 	{
-		this._taxIncluded = taxIncluded;
+		_taxIncluded = taxIncluded;
 	}
-	
+
 	/**
 	 * @see Doc#isSOTrx()
 	 */
@@ -1316,17 +923,15 @@ public class DocLine
 	}
 
 	/** @return document (header) */
-	// NOTE: this method is not final because some DocLine implementions would like to cast the return of this method to specific Doc implementation.
-	@OverridingMethodsMustInvokeSuper
-	protected Doc getDoc()
+	protected final DT getDoc()
 	{
 		return m_doc;
 	}
 
-	public PostingException newPostingException(final Throwable e)
+	public final PostingException newPostingException(final Throwable e)
 	{
 		return m_doc.newPostingException(e)
 				.setDocument(m_doc)
 				.setDocLine(this);
 	}
-}	// DocumentLine
+}

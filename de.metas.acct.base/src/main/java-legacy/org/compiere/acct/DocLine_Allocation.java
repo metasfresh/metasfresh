@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -25,15 +25,16 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MAllocationLine;
 import org.compiere.util.DB;
 
 import de.metas.currency.ICurrencyBL;
@@ -45,18 +46,11 @@ import de.metas.currency.ICurrencyConversionContext;
  * @author Jorg Janke
  * @version $Id: DocLine_Allocation.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
-class DocLine_Allocation extends DocLine
+class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 {
-
-	/**
-	 * DocLine_Allocation
-	 *
-	 * @param line allocation line
-	 * @param doc header
-	 */
-	public DocLine_Allocation(final MAllocationLine line, final Doc doc)
+	public DocLine_Allocation(final I_C_AllocationLine line, final Doc_AllocationHdr doc)
 	{
-		super(line, doc);
+		super(InterfaceWrapperHelper.getPO(line), doc);
 
 		//
 		// Invoice
@@ -73,8 +67,8 @@ class DocLine_Allocation extends DocLine
 			creditMemoInvoice = false;
 			soTrxInvoice = null;
 		}
-		
-        this.m_Counter_AllocationLine_ID = line.getCounter_AllocationLine_ID();
+
+		this.m_Counter_AllocationLine_ID = line.getCounter_AllocationLine_ID();
 
 		//
 		// Order (used for prepayments)
@@ -119,7 +113,7 @@ class DocLine_Allocation extends DocLine
 	private final int m_Counter_AllocationLine_ID;
 	private DocLine_Allocation counterDocLine;
 	private final Set<Integer> salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds = new HashSet<>();
-	
+
 	private final int m_C_Payment_ID;
 	private final I_C_Payment payment;
 	private ICurrencyConversionContext paymentCurrencyConversionCtx;
@@ -172,7 +166,7 @@ class DocLine_Allocation extends DocLine
 		}
 		return allocatedAmt;
 	}
-	
+
 	/**
 	 * @return Returns the discountAmt.
 	 */
@@ -250,17 +244,17 @@ class DocLine_Allocation extends DocLine
 	{
 		return invoice;
 	}
-	
+
 	public int getCounter_AllocationLine_ID()
 	{
 		return m_Counter_AllocationLine_ID;
 	}
-	
+
 	public DocLine_Allocation getCounterDocLine()
 	{
 		return counterDocLine;
 	}
-	
+
 	void setCounterDocLine(final DocLine_Allocation counterDocLine)
 	{
 		Check.assumeNotNull(counterDocLine, "counterDocLine not null");
@@ -268,7 +262,7 @@ class DocLine_Allocation extends DocLine
 		Check.assume(counterDocLine.get_ID() == counterDocLineId, "Counter docline shall have ID={}: {}", counterDocLineId, counterDocLine);
 		this.counterDocLine = counterDocLine;
 	}
-	
+
 	/** @return true if this is a sales/purchase compensation line which was not already compensated */
 	public boolean isSalesPurchaseInvoiceToCompensate(final MAcctSchema as)
 	{
@@ -277,7 +271,7 @@ class DocLine_Allocation extends DocLine
 		{
 			return false;
 		}
-		
+
 		// Shall have an invoice set
 		if (!hasInvoiceDocument())
 		{
@@ -295,13 +289,13 @@ class DocLine_Allocation extends DocLine
 		{
 			return false;
 		}
-		
+
 		// The counter line shall have a invoice set
 		if (!counterLine.hasInvoiceDocument())
 		{
 			return false;
 		}
-		
+
 		// The counter line's invoice shall not be a credit memo
 		if (counterLine.isCreditMemoInvoice())
 		{
@@ -313,10 +307,10 @@ class DocLine_Allocation extends DocLine
 		{
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	public void markAsSalesPurchaseInvoiceCompensated(final MAcctSchema as)
 	{
 		final boolean added = salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds.add(as.getC_AcctSchema_ID());
@@ -436,7 +430,7 @@ class DocLine_Allocation extends DocLine
 	 */
 	private MAccount getPaymentAcct(final MAcctSchema as, final int C_Payment_ID)
 	{
-		final Doc doc = getDoc();
+		final Doc_AllocationHdr doc = getDoc();
 		doc.setC_BP_BankAccount_ID(0);
 		// Doc.ACCTTYPE_UnallocatedCash (AR) or C_Prepayment
 		// or Doc.ACCTTYPE_PaymentSelect (AP) or V_Prepayment
@@ -505,14 +499,13 @@ class DocLine_Allocation extends DocLine
 	 */
 	private final MAccount getCashAcct(final MAcctSchema as, final int C_CashLine_ID)
 	{
-		final Doc doc = getDoc();
+		final Doc_AllocationHdr doc = getDoc();
 		final String sql = "SELECT c.C_CashBook_ID "
 				+ "FROM C_Cash c, C_CashLine cl "
 				+ "WHERE c.C_Cash_ID=cl.C_Cash_ID AND cl.C_CashLine_ID=?";
 		doc.setC_CashBook_ID(DB.getSQLValue(ITrx.TRXNAME_ThreadInherited, sql, C_CashLine_ID));
 		if (doc.getC_CashBook_ID() <= 0)
 		{
-			log.error("NONE for C_CashLine_ID=" + C_CashLine_ID);
 			throw doc.newPostingException()
 					.setDocLine(this)
 					.setC_AcctSchema(as)
@@ -602,7 +595,7 @@ class DocLine_Allocation extends DocLine
 
 		return getC_BPartner_ID();
 	}
-	
+
 	public boolean isPaymentReceipt()
 	{
 		Check.assumeNotNull(paymentReceipt, "payment document exists");

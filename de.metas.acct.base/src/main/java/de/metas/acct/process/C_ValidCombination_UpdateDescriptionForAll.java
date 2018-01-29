@@ -24,8 +24,6 @@ package de.metas.acct.process;
 
 
 import java.util.Iterator;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 
 import org.adempiere.acct.api.IAccountBL;

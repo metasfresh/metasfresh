@@ -1,10 +1,7 @@
 package org.compiere.acct;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.I_C_ValidCombination;
-import org.compiere.model.I_GL_JournalLine;
-import org.compiere.model.MAccount;
+import org.compiere.model.I_M_MovementLine;
 
 /*
  * #%L
@@ -28,34 +25,20 @@ import org.compiere.model.MAccount;
  * #L%
  */
 
-class DocLine_GLJournal extends DocLine<Doc_GLJournal>
+public class DocLine_Movement extends DocLine<Doc_Movement>
 {
-	private int acctSchemaId = 0;
-	private MAccount m_account = null;
 
-	public DocLine_GLJournal(final I_GL_JournalLine glJournalLine, final Doc_GLJournal doc)
+	public DocLine_Movement(final I_M_MovementLine movementLine, final Doc_Movement doc)
 	{
-		super(InterfaceWrapperHelper.getPO(glJournalLine), doc);
+		super(InterfaceWrapperHelper.getPO(movementLine), doc);
 	}
 
-	public final int getC_AcctSchema_ID()
+	/**
+	 * @return Get Warehouse Locator To
+	 */
+	public final int getM_LocatorTo_ID()
 	{
-		return acctSchemaId;
+		final I_M_MovementLine movementLine = getModel(I_M_MovementLine.class);
+		return movementLine.getM_LocatorTo_ID();
 	}
-
-	public final void setC_AcctSchema_ID(final int acctSchemaId)
-	{
-		this.acctSchemaId = acctSchemaId;
-	}
-
-	public final void setAccount(final I_C_ValidCombination acct)
-	{
-		m_account = LegacyAdapters.convertToPO(acct);
-	}
-
-	public final MAccount getAccount()
-	{
-		return m_account;
-	}   // getAccount
-
 }

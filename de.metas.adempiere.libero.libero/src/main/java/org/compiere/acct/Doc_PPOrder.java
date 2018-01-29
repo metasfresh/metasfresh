@@ -13,15 +13,14 @@ package org.compiere.acct;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -30,21 +29,21 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_PP_Order;
 
-public class Doc_PPOrder extends Doc
+public class Doc_PPOrder extends Doc<DocLine<Doc_PPOrder>>
 {
 
 	public Doc_PPOrder(final IDocBuilder docBuilder)
 	{
 		super(docBuilder, X_C_DocType.DOCBASETYPE_ManufacturingOrder);
-		
+
 		final I_PP_Order ppOrder = getModel(I_PP_Order.class);
 		setDateAcct(ppOrder.getDateOrdered());
 	}
 
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
-		return null;
+		// nothing
 	}
 
 	@Override
@@ -58,7 +57,7 @@ public class Doc_PPOrder extends Doc
 	{
 		// NOTHING
 
-		final ArrayList<Fact> facts = new ArrayList<Fact>();
+		final ArrayList<Fact> facts = new ArrayList<>();
 		return facts;
 	}
 

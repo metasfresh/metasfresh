@@ -32,10 +32,6 @@ package org.adempiere.process;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.adempiere.acct.api.IDocFactory;
 import org.adempiere.acct.api.IDocMetaInfo;
@@ -48,6 +44,9 @@ import org.compiere.model.MClient;
 import org.compiere.model.MCost;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
+
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Client Accounting Processor
@@ -166,7 +165,7 @@ public class ClientAcctProcessor extends JavaProcess
 					Trx innerTrx = Trx.get(innerTrxName, true);
 					try
 					{
-						Doc doc = docFactory.get(getCtx(), docMetaInfo, m_ass, rs, innerTrxName);
+						Doc<?> doc = docFactory.get(getCtx(), docMetaInfo, m_ass, rs, innerTrxName);
 						if (doc == null)
 						{
 							log.error(getName() + ": No Doc for " + TableName);

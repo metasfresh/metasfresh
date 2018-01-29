@@ -30,20 +30,19 @@ import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.acct.Fact.FactLineBuilder;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MAllocationHdr;
-import org.compiere.model.MAllocationLine;
 import org.compiere.model.MInvoice;
-import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
 import org.compiere.model.MTax;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;
 
@@ -64,52 +63,31 @@ import de.metas.logging.LogManager;
  * @author phib BF [ 2019262 ] Allocation posting currency gain/loss omits line reference
  *
  */
-public class Doc_AllocationHdr extends Doc
+public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 {
-	/**
-	 * Constructor
-	 *
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
+	private static final Logger logger = LogManager.getLogger(Doc_AllocationHdr.class);
+	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+
 	public Doc_AllocationHdr(final IDocBuilder docBuilder)
 	{
 		super(docBuilder, DOCTYPE_Allocation);
 	}   // Doc_Allocation
 
-	/** Facts */
-	private ArrayList<Fact> m_facts = null;
-
-	/**
-	 * Load Specific Document Details
-	 *
-	 * @return error message or null
-	 */
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
-		MAllocationHdr alloc = (MAllocationHdr)getPO();
+		final I_C_AllocationHdr alloc = getModel(I_C_AllocationHdr.class);
 		setDateDoc(alloc.getDateTrx());
-		// Contained Objects
-		p_lines = loadLines(alloc);
-		return null;
-	}   // loadDocumentDetails
+		setDocLines(loadLines(alloc));
+	}
 
-	/**
-	 * Load Invoice Line
-	 *
-	 * @param alloc header
-	 * @return DocLine Array
-	 */
-	private DocLine[] loadLines(final MAllocationHdr alloc)
+	private List<DocLine_Allocation> loadLines(final I_C_AllocationHdr alloc)
 	{
 		final List<DocLine_Allocation> docLines = new ArrayList<>();
 		final Map<Integer, DocLine_Allocation> id2docLine = new HashMap<>();
-		for (final MAllocationLine line : alloc.getLines(false))
+		for (final I_C_AllocationLine line : allocationDAO.retrieveAllLines(alloc))
 		{
 			final DocLine_Allocation docLine = new DocLine_Allocation(line, this);
-			log.debug("Line: {}", docLine);
 
 			docLines.add(docLine);
 			id2docLine.put(docLine.get_ID(), docLine);
@@ -128,21 +106,14 @@ public class Doc_AllocationHdr extends Doc
 			docLine.setCounterDocLine(counterDocLine);
 		}
 
-		// Return Array
-		return docLines.toArray(new DocLine[docLines.size()]);
+		return docLines;
 	}	// loadLines
 
-	/**************************************************************************
-	 * Get Source Currency Balance - subtracts line and tax amounts from total - no rounding
-	 *
-	 * @return positive amount, if total invoice is bigger than lines
-	 */
 	@Override
 	public BigDecimal getBalance()
 	{
-		BigDecimal retValue = Env.ZERO;
-		return retValue;
-	}   // getBalance
+		return BigDecimal.ZERO;
+	}
 
 	/**
 	 * Create Facts (the accounting logic) for CMA.
@@ -187,18 +158,17 @@ public class Doc_AllocationHdr extends Doc
 	 * @return Fact
 	 */
 	@Override
-	public ArrayList<Fact> createFacts(final MAcctSchema as)
+	public List<Fact> createFacts(final MAcctSchema as)
 	{
-		m_facts = new ArrayList<>();
+		final List<Fact> facts = new ArrayList<>();
 
 		// create Fact Header
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 
 		int countPayments = 0;
 		int countInvoices = 0;
-		for (int i = 0; i < p_lines.length; i++)
+		for (final DocLine_Allocation line : getDocLines())
 		{
-			final DocLine_Allocation line = (DocLine_Allocation)p_lines[i];
 			if (line.hasInvoiceDocument())
 			{
 				countInvoices++;
@@ -214,21 +184,20 @@ public class Doc_AllocationHdr extends Doc
 		if (countPayments > 0 && countInvoices == 0)
 		{
 			createFacts_PaymentAllocation(fact);
-			m_facts.add(fact);
-			return m_facts;
+			facts.add(fact);
+			return facts;
 		}
 
-		for (int i = 0; i < p_lines.length; i++)
+		for (final DocLine_Allocation line : getDocLines())
 		{
-			final DocLine_Allocation line = (DocLine_Allocation)p_lines[i];
 			setC_BPartner_ID(line.getC_BPartner_ID());
 
 			// CashBankTransfer - all references null and Discount/WriteOff = 0
 			if (line.getC_Payment_ID() > 0
 					&& line.getC_Invoice_ID() <= 0 && line.getC_Order_ID() <= 0
 					&& line.getC_CashLine_ID() <= 0 && line.getC_BPartner_ID() <= 0
-					&& Env.ZERO.compareTo(line.getDiscountAmt()) == 0
-					&& Env.ZERO.compareTo(line.getWriteOffAmt()) == 0)
+					&& BigDecimal.ZERO.compareTo(line.getDiscountAmt()) == 0
+					&& BigDecimal.ZERO.compareTo(line.getWriteOffAmt()) == 0)
 			{
 				continue;
 			}
@@ -257,7 +226,7 @@ public class Doc_AllocationHdr extends Doc
 					// log.error(p_Error);
 					// return null;
 					assert line.getC_OrderLine_ID() > 0 || line.getC_Order_ID() > 0 : line;
-					return m_facts;
+					return facts;
 					// metas end
 				}
 			}
@@ -311,8 +280,8 @@ public class Doc_AllocationHdr extends Doc
 		// reset line info
 		setC_BPartner_ID(0);
 		//
-		m_facts.add(fact);
-		return m_facts;
+		facts.add(fact);
+		return facts;
 	}   // createFact
 
 	/**
@@ -325,10 +294,8 @@ public class Doc_AllocationHdr extends Doc
 	{
 		final MAcctSchema as = fact.getAcctSchema();
 
-		for (int i = 0; i < p_lines.length; i++)
+		for (final DocLine_Allocation line : getDocLines())
 		{
-			final DocLine_Allocation line = (DocLine_Allocation)p_lines[i];
-
 			// FRESH-523: Make sure the partner of the payment is set in the Doc. It will be needed when selecting the correct Account
 			setC_BPartner_ID(line.getPaymentBPartner_ID());
 
@@ -540,7 +507,7 @@ public class Doc_AllocationHdr extends Doc
 			final BigDecimal discountFactor = calculateDiscountFactor(discountAmt_Abs, invoice);
 
 			// split discount for different taxes
-			BigDecimal discountSum = Env.ZERO;
+			BigDecimal discountSum = BigDecimal.ZERO;
 			for (int i = 0; i < taxes.length; i++)
 			{
 				// TaxDiscountAmt = TaxBaseAmt * Skonto * (1+TaxRate)
@@ -630,7 +597,7 @@ public class Doc_AllocationHdr extends Doc
 					.addDetailMessage("Cannot calculate the discount factor when invoice grand total is ZERO")
 					.setParameter("DiscountAmt", discountAmt)
 					.setParameter("C_Invoice_ID", invoice);
-			log.warn("Cannot calculate the discount factor when invoice grand total is ZERO. Considering ZERO", ex);
+			logger.warn("Cannot calculate the discount factor when invoice grand total is ZERO. Considering ZERO", ex);
 			return BigDecimal.ZERO;
 		}
 
@@ -860,12 +827,11 @@ public class Doc_AllocationHdr extends Doc
 		final MAcctSchema as = fact.getAcctSchema();
 		final I_C_Invoice invoice = line.getC_Invoice();
 
-		BigDecimal allocationAccounted = Env.ZERO;
+		BigDecimal allocationAccounted = BigDecimal.ZERO;
 		// Multiplier
 		double percent = invoice.getGrandTotal().doubleValue() / allocationSource.doubleValue();
 		if (percent > 0.99 && percent < 1.01)
 			percent = 1.0;
-		log.info("Multiplier=" + percent + " - GrandTotal=" + invoice.getGrandTotal() + " - Allocation Source=" + allocationSource);
 
 		// Get Invoice Postings
 		Doc_Invoice docInvoice = (Doc_Invoice)getDocFactory().getOrNull(
@@ -875,22 +841,12 @@ public class Doc_AllocationHdr extends Doc
 				getTrxName());
 		docInvoice.loadDocumentDetails();
 		allocationAccounted = docInvoice.createFactCash(as, fact, new BigDecimal(percent));
-		log.info("Allocation Accounted=" + allocationAccounted);
 
 		// Cash Based Commitment Release
 		if (as.isCreatePOCommitment() && !invoice.isSOTrx())
 		{
-			final MInvoice invoicePO = LegacyAdapters.convertToPO(invoice);
-			final MInvoiceLine[] lines = invoicePO.getLines();
-			for (int i = 0; i < lines.length; i++)
-			{
-				Fact factC = Doc_Order.createFact_CommitmentPurchaseRelease(as, this,
-						lines[i].getQtyInvoiced(), lines[i].getC_InvoiceLine_ID(), new BigDecimal(percent));
-				if (factC == null)
-					return null;
-				m_facts.add(factC);
-			}
-		}            	// Commitment
+			throw newPostingException().setC_AcctSchema(as).setDetailMessage("PO commitment release posting not supported");
+		}
 
 		return allocationAccounted;
 	}	// createCashBasedAcct
@@ -1068,7 +1024,7 @@ public class Doc_AllocationHdr extends Doc
 					.setDetailMessage("Invoice not posted yet - " + line);
 		}
 		taxCorrection.addInvoiceFacts(invoiceFactLines);
-		
+
 		taxCorrection.createEntries(fact, line);
 	}	// createTaxCorrection
 }   // Doc_Allocation
@@ -1160,30 +1116,30 @@ public class Doc_AllocationHdr extends Doc
 		Check.assumeNotNull(_invoiceGrandTotalFact, "_invoiceGrandTotalFact not null");
 		return _invoiceGrandTotalFact;
 	}
-	
+
 	private BigDecimal getInvoiceGrandTotalAmt()
 	{
 		final I_Fact_Acct invoiceGrandTotalFact = getInvoiceGrandTotalFact();
 		final BigDecimal amtSourceDr = invoiceGrandTotalFact.getAmtAcctDr();
-		if(amtSourceDr.signum() != 0)
+		if (amtSourceDr.signum() != 0)
 		{
 			return amtSourceDr;
 		}
-		
+
 		final BigDecimal amtSourceCr = invoiceGrandTotalFact.getAmtAcctCr();
-		if(amtSourceCr.signum() != 0)
+		if (amtSourceCr.signum() != 0)
 		{
 			return amtSourceCr;
 		}
-		
+
 		return BigDecimal.ZERO;
 	}
-	
+
 	private List<I_Fact_Acct> getInvoiceTaxFacts()
 	{
 		return _invoiceTaxFacts;
 	}
-	
+
 	public boolean hasInvoiceTaxFacts()
 	{
 		return !_invoiceTaxFacts.isEmpty();
@@ -1214,7 +1170,7 @@ public class Doc_AllocationHdr extends Doc
 		{
 			return;
 		}
-		
+
 		final MAcctSchema as = fact.getAcctSchema();
 
 		//

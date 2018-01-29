@@ -27,16 +27,18 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MInOutLine;
-import org.compiere.model.MMatchPO;
 import org.compiere.model.MProduct;
 import org.compiere.model.ProductCost;
 import org.compiere.model.X_M_InOut;
+import org.slf4j.Logger;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
 
 /**
@@ -50,8 +52,10 @@ import de.metas.order.IOrderLineBL;
  * @author Jorg Janke
  * @version $Id: Doc_MatchPO.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
-public class Doc_MatchPO extends Doc
+public class Doc_MatchPO extends Doc<DocLine<Doc_MatchPO>>
 {
+	private static final Logger logger = LogManager.getLogger(Doc_MatchPO.class);
+
 	/** Shall we create accounting facts (08555) */
 	private static final String SYSCONFIG_NoFactRecords = "org.compiere.acct.Doc_MatchPO.NoFactAccts";
 	private static final boolean DEFAULT_NoFactRecords = true;
@@ -81,16 +85,11 @@ public class Doc_MatchPO extends Doc
 	/** Shall we create accounting facts? (08555) */
 	private boolean noFactRecords = false;
 
-	/**
-	 * Load Specific Document Details
-	 * 
-	 * @return error message or null
-	 */
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
 		setC_Currency_ID(Doc.NO_CURRENCY);
-		MMatchPO matchPO = (MMatchPO)getPO();
+		I_M_MatchPO matchPO = getModel(I_M_MatchPO.class);
 		setDateDoc(matchPO.getDateTrx());
 		//
 		m_M_AttributeSetInstance_ID = matchPO.getM_AttributeSetInstance_ID();
@@ -109,9 +108,7 @@ public class Doc_MatchPO extends Doc
 		m_pc.setQty(getQty());
 
 		this.noFactRecords = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_NoFactRecords, DEFAULT_NoFactRecords);
-
-		return null;
-	}   // loadDocumentDetails
+	}
 
 	/**************************************************************************
 	 * Get Source Currency Balance - subtracts line and tax amounts from total - no rounding
@@ -215,7 +212,7 @@ public class Doc_MatchPO extends Doc
 			// Nothing to post
 			if (difference.signum() == 0)
 			{
-				log.debug("No Cost Difference for M_Product_ID=" + getM_Product_ID());
+				logger.debug("No Cost Difference for M_Product_ID={}", getM_Product_ID());
 				return facts;
 			}
 

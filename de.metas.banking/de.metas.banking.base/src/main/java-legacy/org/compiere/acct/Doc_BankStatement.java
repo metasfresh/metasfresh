@@ -21,16 +21,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.acct.Fact.FactLineBuilder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MBankStatement;
-import org.compiere.model.MBankStatementLine;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.I_C_BankStatement;
+import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.service.IBankStatementDAO;
 
 /**
  * Post Bank Statement Documents.
@@ -48,29 +50,17 @@ import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *
  */
-public class Doc_BankStatement extends Doc
+public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 {
-	/**
-	 * Constructor
-	 *
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
 	public Doc_BankStatement(final IDocBuilder docBuilder)
 	{
 		super(docBuilder, DOCTYPE_BankStatement);
 	}	// Doc_Bank
 
-	/**
-	 * Load Specific Document Details
-	 *
-	 * @return error message or null
-	 */
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
-		final MBankStatement bs = (MBankStatement)getPO();
+		final I_C_BankStatement bs = getModel(I_C_BankStatement.class);
 		setDateDoc(bs.getStatementDate());
 		setDateAcct(bs.getStatementDate());	// Overwritten on Line Level
 		setC_BP_BankAccount_ID(bs.getC_BP_BankAccount_ID());
@@ -82,15 +72,13 @@ public class Doc_BankStatement extends Doc
 		final I_C_BP_BankAccount ba = getC_BP_BankAccount(); // shall not be null
 		setC_Currency_ID(ba.getC_Currency_ID());
 
-		// Contained Objects
-		p_lines = loadLines(bs);
-		return null;
-	}   // loadDocumentDetails
+		setDocLines(loadLines(bs));
+	}
 
-	private DocLine[] loadLines(final MBankStatement bs)
+	private List<DocLine_BankStatement> loadLines(final I_C_BankStatement bs)
 	{
-		final List<DocLine> docLines = new ArrayList<>();
-		for (final MBankStatementLine line : bs.getLines(false))
+		final List<DocLine_BankStatement> docLines = new ArrayList<>();
+		for (final I_C_BankStatementLine line : Services.get(IBankStatementDAO.class).retrieveLines(bs, I_C_BankStatementLine.class))
 		{
 			final DocLine_BankStatement docLine = new DocLine_BankStatement(line, this);
 
@@ -103,7 +91,7 @@ public class Doc_BankStatement extends Doc
 			docLines.add(docLine);
 		}
 
-		return docLines.toArray(new DocLine[docLines.size()]);
+		return docLines;
 	}
 
 	@Override
@@ -115,9 +103,9 @@ public class Doc_BankStatement extends Doc
 		retValue = retValue.add(getAmount(Doc.AMTTYPE_Gross));
 
 		// minus Lines
-		for (int i = 0; i < p_lines.length; i++)
+		for (DocLine_BankStatement line : getDocLines())
 		{
-			final BigDecimal lineBalance = ((DocLine_BankStatement)p_lines[i]).getStmtAmt();
+			final BigDecimal lineBalance = line.getStmtAmt();
 			retValue = retValue.subtract(lineBalance);
 		}
 
@@ -144,9 +132,8 @@ public class Doc_BankStatement extends Doc
 		final int bankOrgId = getBank_Org_ID();	// Bank Account Organization
 
 		// Lines
-		for (int i = 0; i < p_lines.length; i++)
+		for (DocLine_BankStatement line : getDocLines())
 		{
-			final DocLine_BankStatement line = (DocLine_BankStatement)p_lines[i];
 			final int C_BPartner_ID = line.getC_BPartner_ID();
 
 			//

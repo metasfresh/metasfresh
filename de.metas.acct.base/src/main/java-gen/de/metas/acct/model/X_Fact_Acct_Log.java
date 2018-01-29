@@ -20,7 +20,6 @@ package de.metas.acct.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for Fact_Acct_Log
  *  @author Adempiere (generated) 
@@ -41,15 +40,15 @@ public class X_Fact_Acct_Log extends org.compiere.model.PO implements I_Fact_Acc
       /** if (Fact_Acct_Log_ID == 0)
         {
 			setAction (null);
-			setAmtAcctCr (Env.ZERO);
-			setAmtAcctDr (Env.ZERO);
+			setAmtAcctCr (BigDecimal.ZERO);
+			setAmtAcctDr (BigDecimal.ZERO);
 			setC_AcctSchema_ID (0);
 			setC_ElementValue_ID (0);
 			setC_Period_ID (0);
 			setDateAcct (new Timestamp( System.currentTimeMillis() ));
 			setFact_Acct_ID (0);
 			setPostingType (null);
-			setQty (Env.ZERO);
+			setQty (BigDecimal.ZERO);
         } */
     }
 
@@ -117,7 +116,7 @@ public class X_Fact_Acct_Log extends org.compiere.model.PO implements I_Fact_Acc
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctCr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -139,7 +138,7 @@ public class X_Fact_Acct_Log extends org.compiere.model.PO implements I_Fact_Acc
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctDr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -376,7 +375,7 @@ public class X_Fact_Acct_Log extends org.compiere.model.PO implements I_Fact_Acc
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

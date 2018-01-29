@@ -18,13 +18,15 @@ package org.compiere.acct;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 
+import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Movement;
+import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MMovement;
-import org.compiere.model.MMovementLine;
 import org.compiere.model.ProductCost;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.costing.CostDetailCreateRequest;
@@ -42,7 +44,7 @@ import de.metas.costing.ICostDetailService;
  * 			<li>BF [ 1745154 ] Cost in Reversing Material Related Docs
  *  @version  $Id: Doc_Movement.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
-public class Doc_Movement extends Doc
+public class Doc_Movement extends Doc<DocLine_Movement>
 {
 	private int				m_Reversal_ID = 0;
 	private String			m_DocStatus = "";
@@ -58,48 +60,30 @@ public class Doc_Movement extends Doc
 		super (docBuilder, DOCTYPE_MatMovement);
 	}   //  Doc_Movement
 
-	/**
-	 *  Load Document Details
-	 *  @return error message or null
-	 */
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
 		setC_Currency_ID(NO_CURRENCY);
-		MMovement move = (MMovement)getPO();
+		final I_M_Movement move = getModel(I_M_Movement.class);
 		setDateDoc (move.getMovementDate());
 		setDateAcct(move.getMovementDate());
 		m_Reversal_ID = move.getReversal_ID();//store original (voided/reversed) document
 		m_DocStatus = move.getDocStatus();
-		//	Contained Objects
-		p_lines = loadLines(move);
-		log.debug("Lines=" + p_lines.length);
-		return null;
-	}   //  loadDocumentDetails
+		setDocLines(loadLines(move));
+	}
 
-	/**
-	 *	Load Invoice Line
-	 *	@param move move
-	 *  @return document lines (DocLine_Material)
-	 */
-	private DocLine[] loadLines(MMovement move)
+	private List<DocLine_Movement> loadLines(I_M_Movement move)
 	{
-		ArrayList<DocLine> list = new ArrayList<>();
-		MMovementLine[] lines = move.getLines(true);
-		for (int i = 0; i < lines.length; i++)
+		final List<DocLine_Movement> list = new ArrayList<>();
+		for (I_M_MovementLine line : Services.get(IMovementDAO.class).retrieveLines(move))
 		{
-			MMovementLine line = lines[i];
-			DocLine docLine = new DocLine (line, this);
+			final DocLine_Movement docLine = new DocLine_Movement(line, this);
 			docLine.setQty(line.getMovementQty(), false);
 			docLine.setReversalLine_ID(line.getReversalLine_ID());
-			log.debug(docLine.toString());
 			list.add (docLine);
 		}
 
-		//	Return Array
-		DocLine[] dls = new DocLine[list.size()];
-		list.toArray(dls);
-		return dls;
+		return list;
 	}	//	loadLines
 
 	/**
@@ -109,8 +93,7 @@ public class Doc_Movement extends Doc
 	@Override
 	public BigDecimal getBalance()
 	{
-		BigDecimal retValue = Env.ZERO;
-		return retValue;
+		return BigDecimal.ZERO;
 	}   //  getBalance
 
 	/**
@@ -135,9 +118,8 @@ public class Doc_Movement extends Doc
 		FactLine dr = null;
 		FactLine cr = null;
 
-		for (int i = 0; i < p_lines.length; i++)
+		for (final DocLine_Movement line : getDocLines())
 		{
-			DocLine line = p_lines[i];
 			// MZ Goodwill
 			// if Inventory Move CostDetail exist then get Cost from Cost Detail 
 			BigDecimal costs = line.getProductCosts(as, line.getAD_Org_ID(), true, CostingDocumentRef.ofInboundMovementLineId(line.get_ID()));
@@ -155,11 +137,9 @@ public class Doc_Movement extends Doc
 			if (m_DocStatus.equals(MMovement.DOCSTATUS_Reversed) && m_Reversal_ID !=0 && line.getReversalLine_ID() != 0)
 			{
 				//	Set AmtAcctDr from Original Movement
-				if (!dr.updateReverseLine (MMovement.Table_ID, 
-						m_Reversal_ID, line.getReversalLine_ID(),Env.ONE))
+				if (!dr.updateReverseLine (MMovement.Table_ID, m_Reversal_ID, line.getReversalLine_ID(),BigDecimal.ONE))
 				{
-					p_Error = "Original Inventory Move not posted yet";
-					return null;
+					throw newPostingException().setDetailMessage("Original Inventory Move not posted yet");
 				}
 			}
 			
@@ -175,11 +155,9 @@ public class Doc_Movement extends Doc
 			if (m_DocStatus.equals(MMovement.DOCSTATUS_Reversed) && m_Reversal_ID !=0 && line.getReversalLine_ID() != 0)
 			{
 				//	Set AmtAcctCr from Original Movement
-				if (!cr.updateReverseLine (MMovement.Table_ID, 
-						m_Reversal_ID, line.getReversalLine_ID(),Env.ONE))
+				if (!cr.updateReverseLine (MMovement.Table_ID, m_Reversal_ID, line.getReversalLine_ID(),BigDecimal.ONE))
 				{
-					p_Error = "Original Inventory Move not posted yet";
-					return null;
+					throw newPostingException().setDetailMessage("Original Inventory Move not posted yet");
 				}
 				costs = cr.getAcctBalance(); //get original cost
 			}

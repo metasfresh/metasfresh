@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -23,7 +23,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MPeriod;
 
 import com.google.common.collect.ImmutableList;
@@ -41,7 +40,7 @@ import de.metas.currency.ICurrencyDAO;
  * @author Jorg Janke
  * @version $Id: DocLine_Bank.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
-class DocLine_BankStatement extends DocLine
+class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 {
 	// services
 	private final transient IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
@@ -54,9 +53,9 @@ class DocLine_BankStatement extends DocLine
 	 * @param line statement line
 	 * @param doc header
 	 */
-	public DocLine_BankStatement(final MBankStatementLine line, final Doc_BankStatement doc)
+	public DocLine_BankStatement(final I_C_BankStatementLine line, final Doc_BankStatement doc)
 	{
-		super(line, doc);
+		super(InterfaceWrapperHelper.getPO(line), doc);
 
 		final I_C_Payment payment = line.getC_Payment();
 		if (payment == null || payment.getC_Payment_ID() <= 0)
@@ -77,7 +76,7 @@ class DocLine_BankStatement extends DocLine
 		setC_BPartner_ID(line.getC_BPartner_ID());
 
 		this._bankStatementLineReferences = ImmutableList.copyOf(bankStatementDAO.retrieveLineReferences(line));
-		
+
 		//
 		// Period
 		final MPeriod period = MPeriod.get(getCtx(), line.getDateAcct(), line.getAD_Org_ID());
@@ -176,7 +175,8 @@ class DocLine_BankStatement extends DocLine
 	}   // getTrxAmt
 
 	/**
-	 * @return <ul>
+	 * @return
+	 *         <ul>
 	 *         <li>true if this line is an inbound transaction (i.e. we received money in our bank account)
 	 *         <li>false if this line is an outbound transaction (i.e. we paid money from our bank account)
 	 *         </ul>
@@ -225,4 +225,3 @@ class DocLine_BankStatement extends DocLine
 		return true;
 	}
 }
-

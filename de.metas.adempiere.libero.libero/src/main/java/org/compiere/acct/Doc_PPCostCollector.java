@@ -47,6 +47,7 @@ import java.util.Properties;
 import org.adempiere.acct.api.ProductAcctType;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_CostDetail;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
@@ -54,13 +55,16 @@ import org.compiere.model.ProductCost;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_CostElement;
-import org.compiere.util.Env;
-import org.eevolution.model.MPPCostCollector;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.X_PP_Cost_Collector;
+import org.slf4j.Logger;
 
 import de.metas.costing.CostElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICostElementRepository;
+import de.metas.logging.LogManager;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 
@@ -74,9 +78,17 @@ import de.metas.material.planning.RoutingServiceFactory;
  * 
  * @author victor.perez@e-evolution.com http://www.e-evolution.com
  */
-public class Doc_PPCostCollector extends Doc
+public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 {
+	private static final Logger logger = LogManager.getLogger(Doc_PPCostCollector.class);
 	private final ICostElementRepository costElementsRepo = Services.get(ICostElementRepository.class);
+
+	/** Pseudo Line */
+	protected DocLine_CostCollector m_line = null;
+	/** Collector Cost */
+	protected I_PP_Cost_Collector m_cc = null;
+	/** Routing Service */
+	protected RoutingService m_routingService = null;
 
 	/**
 	 * Constructor
@@ -90,25 +102,11 @@ public class Doc_PPCostCollector extends Doc
 		super(docBuilder, X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
 	}   // Doc Cost Collector
 
-	/** Pseudo Line */
-	protected DocLine_CostCollector m_line = null;
-
-	/** Collector Cost */
-	protected MPPCostCollector m_cc = null;
-
-	/** Routing Service */
-	protected RoutingService m_routingService = null;
-
-	/**
-	 * Load Document Details
-	 * 
-	 * @return error message or null
-	 */
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
 		setC_Currency_ID(NO_CURRENCY);
-		m_cc = (MPPCostCollector)getPO();
+		m_cc = getModel(I_PP_Cost_Collector.class);
 		setDateDoc(m_cc.getMovementDate());
 		setDateAcct(m_cc.getMovementDate());
 
@@ -117,69 +115,59 @@ public class Doc_PPCostCollector extends Doc
 		m_line.setQty(m_cc.getMovementQty(), false);    // sets Trx and Storage Qty
 
 		// Pseudo Line Check
-		if (m_line.getM_Product_ID() == 0)
-			log.warn(m_line.toString() + " - No Product");
-		log.debug(m_line.toString());
+		if (m_line.getM_Product_ID() <= 0)
+		{
+			logger.warn("{} - No Product", m_line);
+		}
 
 		// Load the RoutingService
 		m_routingService = RoutingServiceFactory.get().getRoutingService(m_cc.getAD_Client_ID());
-
-		return null;
-	}   // loadDocumentDetails
+	}
 
 	/**
-	 * Get Balance
-	 * 
 	 * @return Zero (always balanced)
 	 */
 	@Override
 	public BigDecimal getBalance()
 	{
-		BigDecimal retValue = Env.ZERO;
-		return retValue;
+		return BigDecimal.ZERO;
 	}   // getBalance
 
-	/**
-	 * Create Facts (the accounting logic) for
-	 * 
-	 * @param as accounting schema
-	 * @return Fact
-	 */
 	@Override
-	public ArrayList<Fact> createFacts(MAcctSchema as)
+	public ArrayList<Fact> createFacts(final MAcctSchema as)
 	{
 		setC_Currency_ID(as.getC_Currency_ID());
 		final ArrayList<Fact> facts = new ArrayList<>();
 
-		if (MPPCostCollector.COSTCOLLECTORTYPE_MaterialReceipt.equals(m_cc.getCostCollectorType()))
+		if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt.equals(m_cc.getCostCollectorType()))
 		{
 			facts.add(createMaterialReceipt(as));
 		}
-		else if (MPPCostCollector.COSTCOLLECTORTYPE_ComponentIssue.equals(m_cc.getCostCollectorType()))
+		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue.equals(m_cc.getCostCollectorType()))
 		{
 			facts.add(createComponentIssue(as));
 		}
-		else if (MPPCostCollector.COSTCOLLECTORTYPE_MethodChangeVariance.equals(m_cc.getCostCollectorType()))
+		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance.equals(m_cc.getCostCollectorType()))
 		{
 			facts.add(createVariance(as, ProductCost.ACCTTYPE_P_MethodChangeVariance));
 		}
-		else if (MPPCostCollector.COSTCOLLECTORTYPE_UsegeVariance.equals(m_cc.getCostCollectorType()))
+		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance.equals(m_cc.getCostCollectorType()))
 		{
 			facts.add(createVariance(as, ProductCost.ACCTTYPE_P_UsageVariance));
 		}
-		else if (MPPCostCollector.COSTCOLLECTORTYPE_UsegeVariance.equals(m_cc.getCostCollectorType()))
+		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance.equals(m_cc.getCostCollectorType()))
 		{
 			facts.add(createVariance(as, ProductCost.ACCTTYPE_P_UsageVariance));
 		}
-		else if (MPPCostCollector.COSTCOLLECTORTYPE_RateVariance.equals(m_cc.getCostCollectorType()))
+		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_RateVariance.equals(m_cc.getCostCollectorType()))
 		{
 			facts.add(createVariance(as, ProductCost.ACCTTYPE_P_RateVariance));
 		}
-		else if (MPPCostCollector.COSTCOLLECTORTYPE_MixVariance.equals(m_cc.getCostCollectorType()))
+		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance.equals(m_cc.getCostCollectorType()))
 		{
 			facts.add(createVariance(as, ProductCost.ACCTTYPE_P_MixVariance));
 		}
-		else if (MPPCostCollector.COSTCOLLECTORTYPE_ActivityControl.equals(m_cc.getCostCollectorType()))
+		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl.equals(m_cc.getCostCollectorType()))
 		{
 			facts.addAll(createActivityControl(as));
 		}
@@ -187,15 +175,19 @@ public class Doc_PPCostCollector extends Doc
 		return facts;
 	}   // createFact
 
-	protected void createLines(CostElement element, MAcctSchema as, Fact fact, MProduct product,
+	protected void createLines(CostElement element, MAcctSchema as, Fact fact, I_M_Product product,
 			MAccount debit, MAccount credit, BigDecimal cost, BigDecimal qty)
 	{
 		if (cost == null || debit == null || credit == null)
 			return;
 
-		log.info("CostElement: " + element + "Product: " + product.getName()
-				+ " Debit: " + debit.getDescription() + " Credit: " + credit.getDescription()
-				+ " Cost: " + cost + " Qty: " + qty);
+		if (logger.isInfoEnabled())
+		{
+			logger.info("CostElement: " + element + "Product: " + product.getName()
+					+ " Debit: " + debit.getDescription() + " Credit: " + credit.getDescription()
+					+ " Cost: " + cost + " Qty: " + qty);
+		}
+
 		// Line pointers
 		FactLine dr = null;
 		FactLine cr = null;
@@ -248,7 +240,7 @@ public class Doc_PPCostCollector extends Doc
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 
-		final MProduct product = m_cc.getM_Product();
+		final I_M_Product product = m_cc.getM_Product();
 		final MAccount credit = m_line.getAccount(ProductCost.ACCTTYPE_P_WorkInProcess, as);
 
 		for (I_M_CostDetail cd : getCostDetails())
@@ -301,11 +293,11 @@ public class Doc_PPCostCollector extends Doc
 	protected Fact createComponentIssue(MAcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
-		final MProduct product = m_cc.getM_Product();
+		final I_M_Product product = m_cc.getM_Product();
 
 		MAccount debit = m_line.getAccount(ProductCost.ACCTTYPE_P_WorkInProcess, as);
 		MAccount credit = m_line.getAccount(ProductCost.ACCTTYPE_P_Asset, as);
-		if (m_cc.isFloorStock())
+		if (Services.get(IPPCostCollectorBL.class).isFloorStock(m_cc))
 		{
 			credit = m_line.getAccount(ProductCost.ACCTTYPE_P_FloorStock, as);
 		}
@@ -339,7 +331,7 @@ public class Doc_PPCostCollector extends Doc
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		facts.add(fact);
 
-		final MProduct product = m_cc.getM_Product();
+		final I_M_Product product = m_cc.getM_Product();
 
 		MAccount debit = m_line.getAccount(ProductCost.ACCTTYPE_P_WorkInProcess, as);
 
@@ -359,7 +351,7 @@ public class Doc_PPCostCollector extends Doc
 	protected Fact createVariance(MAcctSchema as, ProductAcctType VarianceAcctType)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
-		final MProduct product = m_cc.getM_Product();
+		final I_M_Product product = m_cc.getM_Product();
 
 		MAccount debit = m_line.getAccount(VarianceAcctType, as);
 		MAccount credit = m_line.getAccount(ProductCost.ACCTTYPE_P_WorkInProcess, as);

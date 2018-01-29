@@ -11,11 +11,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -135,7 +135,7 @@ public class GLDistributionBuilder
 		{
 			final BigDecimal qtyToDistribute = getQtyToDistribute();
 			final BigDecimal qtyNotDistributed = qtyToDistribute.subtract(qtyDistributed);
-			if (qtyNotDistributed.compareTo(Env.ZERO) != 0)
+			if (qtyNotDistributed.compareTo(BigDecimal.ZERO) != 0)
 			{
 				if (resultLine_ZeroPercent != null)
 				{

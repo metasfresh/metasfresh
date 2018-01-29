@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -39,6 +39,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -55,6 +56,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable2;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyBL;
@@ -120,11 +122,12 @@ import de.metas.logging.LogManager;
  * </pre>
  *
  * @author Jorg Janke
- * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>FR [ 2520591 ] Support multiples calendar for Org
+ * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
+ *         <li>FR [ 2520591 ] Support multiples calendar for Org
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  * @version $Id: Doc.java,v 1.6 2006/07/30 00:53:33 jjanke Exp $
  */
-public abstract class Doc
+public abstract class Doc<DocLineType extends DocLine<?>>
 {
 	private final String SYSCONFIG_CREATE_NOTE_ON_ERROR = "org.compiere.acct.Doc.createNoteOnPostError";
 
@@ -183,15 +186,13 @@ public abstract class Doc
 	/** Purchase Requisition */
 	public static final String DOCTYPE_PurchaseRequisition = "POR";
 
-	/** Static Log */
-	private final static Logger s_log = LogManager.getLogger(Doc.class);
 	/** Log per Document */
-	protected final Logger log = LogManager.getLogger(getClass());
+	private final Logger log = LogManager.getLogger(getClass());
 
 	/**
 	 * @param docBuilder construction parameters
 	 */
-	/* package */Doc(final IDocBuilder docBuilder)
+	/* package */ Doc(final IDocBuilder docBuilder)
 	{
 		this(docBuilder, (String)null); // defaultDocBaseType=null
 	}
@@ -200,7 +201,7 @@ public abstract class Doc
 	 * @param docBuilder construction parameters
 	 * @param defaultDocBaseType suggested DocBaseType to be used
 	 */
-	/* package */Doc(final IDocBuilder docBuilder, final String defaultDocBaseType)
+	/* package */ Doc(final IDocBuilder docBuilder, final String defaultDocBaseType)
 	{
 		super();
 
@@ -257,7 +258,7 @@ public abstract class Doc
 	/** Transaction Name */
 	private String m_trxName = null;
 	/** The Document */
-	protected final PO p_po;
+	private final PO p_po;
 	/** Document Type */
 	private String m_DocumentType = null;
 	/** Document Status */
@@ -280,11 +281,7 @@ public abstract class Doc
 	private Timestamp m_DateAcct = null;
 	/** Document Date */
 	private Timestamp m_DateDoc = null;
-	// /** Tax Included */
-	// private boolean m_TaxIncluded = false;
-	/**
-	 * Is (Source) Multi-Currency Document - i.e. the document has different currencies (if true, the document will not be source balanced)
-	 */
+	/** Is (Source) Multi-Currency Document - i.e. the document has different currencies (if true, the document will not be source balanced) */
 	private boolean m_MultiCurrency = false;
 	/** BP Sales Region */
 	private int m_BP_C_SalesRegion_ID = -1;
@@ -302,7 +299,7 @@ public abstract class Doc
 	private int m_precision = -1;
 
 	/** Contained Doc Lines */
-	protected DocLine[] p_lines;
+	private List<DocLineType> docLines;
 
 	/** Facts */
 	private List<Fact> m_fact = null;
@@ -310,62 +307,35 @@ public abstract class Doc
 	/** No Currency in Document Indicator (-2) */
 	protected static final int NO_CURRENCY = -2;
 
-	// /** Actual Posting Status (see STATUS_* constants) */
-	// protected String p_Status = null;
-	/**
-	 * Error Message (legacy)
-	 *
-	 * Please use {@link #newPostingException()} instead
-	 */
-	@Deprecated
-	protected String p_Error = null;
-
-	/**
-	 * Get Context
-	 *
-	 * @return context
-	 */
 	protected final Properties getCtx()
 	{
 		return m_ctx;
-	}	// getCtx
+	}
 
-	/**
-	 * Get Table Name
-	 *
-	 * @return table name
-	 */
 	protected final String get_TableName()
 	{
-		return p_po.get_TableName();
-	}	// get_TableName
+		return getPO().get_TableName();
+	}
 
-	/**
-	 * Get Table ID
-	 *
-	 * @return table id
-	 */
 	protected final int get_Table_ID()
 	{
-		return p_po.get_Table_ID();
-	}	// get_Table_ID
+		return getPO().get_Table_ID();
+	}
 
 	/**
-	 * Get Record_ID
-	 *
 	 * @return record id
 	 */
 	protected final int get_ID()
 	{
-		return p_po.get_ID();
-	}	// get_ID
+		return getPO().get_ID();
+	}
 
 	/**
 	 * Get Persistent Object
 	 *
 	 * @return po
 	 */
-	protected final PO getPO()
+	private final PO getPO()
 	{
 		return p_po;
 	}	// getPO
@@ -375,9 +345,14 @@ public abstract class Doc
 		return InterfaceWrapperHelper.create(getPO(), modelClass);
 	}
 
-	protected final DocLine[] getDocLines()
+	public final void setDocLines(final List<DocLineType> docLines)
 	{
-		return p_lines;
+		this.docLines = docLines;
+	}
+
+	protected final List<DocLineType> getDocLines()
+	{
+		return docLines;
 	}
 
 	/**
@@ -407,7 +382,7 @@ public abstract class Doc
 		{
 			lock(trxNameInitial, force, repost);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			final String errmsg = e.getLocalizedMessage();
 			log.error("Failed to lock: " + errmsg, e);
@@ -449,7 +424,7 @@ public abstract class Doc
 				final PostingException postingException = newPostingException(e);
 				error.setValue(postingException);
 
-				final boolean createNote = sysConfigBL.getBooleanValue(SYSCONFIG_CREATE_NOTE_ON_ERROR, false, p_po.getAD_Client_ID(), p_po.getAD_Org_ID());
+				final boolean createNote = sysConfigBL.getBooleanValue(SYSCONFIG_CREATE_NOTE_ON_ERROR, false, getAD_Client_ID(), getAD_Org_ID());
 				if (createNote)
 				{
 					createErrorNote(postingException);
@@ -504,9 +479,9 @@ public abstract class Doc
 
 		//
 		// Validate document's AD_Client_ID
-		if (p_po.getAD_Client_ID() != m_ass[0].getAD_Client_ID())
+		if (getAD_Client_ID() != m_ass[0].getAD_Client_ID())
 		{
-			final String errmsg = "AD_Client_ID Conflict - Document=" + p_po.getAD_Client_ID()
+			final String errmsg = "AD_Client_ID Conflict - Document=" + getAD_Client_ID()
 					+ ", AcctSchema=" + m_ass[0].getAD_Client_ID();
 			throw newPostingException()
 					.setPreserveDocumentPostedStatus()
@@ -517,16 +492,11 @@ public abstract class Doc
 		// Load document details
 		try
 		{
-			final String errmsg = loadDocumentDetails();
-			if (errmsg != null)
-			{
-				throw newPostingException()
-						.setDetailMessage(errmsg);
-			}
+			loadDocumentDetails();
 		}
-		catch (Exception e)
+		catch (final Exception ex)
 		{
-			throw newPostingException(e)
+			throw newPostingException(ex)
 					.setPreserveDocumentPostedStatus();
 		}
 
@@ -554,6 +524,7 @@ public abstract class Doc
 		//
 		// Create Fact per AcctSchema
 		m_fact = new ArrayList<>();
+		List<DocLineType> p_lines = getDocLines();
 		// for all Accounting Schema
 		{
 			for (final MAcctSchema acctSchema : m_ass)
@@ -567,11 +538,13 @@ public abstract class Doc
 					// Line Level Org
 					if (p_lines != null)
 					{
-						for (int line = 0; skip && line < p_lines.length; line++)
+						for (int line = 0; skip && line < p_lines.size(); line++)
 						{
-							skip = acctSchema.isSkipOrg(p_lines[line].getAD_Org_ID());
+							skip = acctSchema.isSkipOrg(p_lines.get(line).getAD_Org_ID());
 							if (!skip)
+							{
 								break;
+							}
 						}
 					}
 				}
@@ -615,7 +588,7 @@ public abstract class Doc
 		//
 		// Dispose facts
 		// Dispose lines
-		for (Fact fact : m_fact)
+		for (final Fact fact : m_fact)
 		{
 			if (fact != null)
 			{
@@ -665,7 +638,6 @@ public abstract class Doc
 		//
 		// Create facts for accounting schema
 		final List<Fact> facts = createFacts(acctSchema);
-		throwPostingExpectionIfError();
 		if (facts == null)
 		{
 			throw newPostingException()
@@ -701,7 +673,7 @@ public abstract class Doc
 			{
 				fact.distribute();
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				throw newPostingException(e)
 						.setC_AcctSchema(acctSchema)
@@ -897,7 +869,7 @@ public abstract class Doc
 					m_GL_Category_ID = rsDT.getInt(2);
 				}
 			}
-			catch (SQLException e)
+			catch (final SQLException e)
 			{
 				log.error(sql, e);
 			}
@@ -926,9 +898,11 @@ public abstract class Doc
 				pstmt.setString(2, m_DocumentType);
 				rsDT = pstmt.executeQuery();
 				if (rsDT.next())
+				{
 					m_GL_Category_ID = rsDT.getInt(1);
+				}
 			}
-			catch (SQLException e)
+			catch (final SQLException e)
 			{
 				log.error(sql, e);
 			}
@@ -952,11 +926,13 @@ public abstract class Doc
 				pstmt.setInt(1, getAD_Client_ID());
 				rsDT = pstmt.executeQuery();
 				if (rsDT.next())
+				{
 					m_GL_Category_ID = rsDT.getInt(1);
+				}
 				rsDT.close();
 				pstmt.close();
 			}
-			catch (SQLException e)
+			catch (final SQLException e)
 			{
 				log.error(sql, e);
 			}
@@ -967,10 +943,14 @@ public abstract class Doc
 		}
 		//
 		if (m_GL_Category_ID <= 0)
+		{
 			log.error("No default GL_Category - " + toString());
+		}
 
 		if (m_DocumentType == null)
+		{
 			throw new IllegalStateException("Document Type not found");
+		}
 	}	// setDocumentType
 
 	/**************************************************************************
@@ -982,13 +962,19 @@ public abstract class Doc
 	{
 		// Multi-Currency documents are source balanced by definition
 		if (isMultiCurrency())
+		{
 			return true;
+		}
 		//
-		boolean retValue = getBalance().signum() == 0;
+		final boolean retValue = getBalance().signum() == 0;
 		if (retValue)
+		{
 			log.debug("Yes - {}", this);
+		}
 		else
+		{
 			log.warn("NO - {}", this);
+		}
 		return retValue;
 	}	// isBalanced
 
@@ -1005,17 +991,20 @@ public abstract class Doc
 			log.debug("(none) - {}", this);
 			return;
 		}
-		
+
 		// Get All Currencies
 		final Set<Integer> currencyIds = new HashSet<>();
 		currencyIds.add(getC_Currency_ID());
-		if (p_lines != null)
+		final List<DocLineType> docLines = getDocLines();
+		if (docLines != null)
 		{
-			for (final DocLine docLine : p_lines)
+			for (final DocLineType docLine : docLines)
 			{
 				final int currencyId = docLine.getC_Currency_ID();
 				if (currencyId != NO_CURRENCY)
+				{
 					currencyIds.add(currencyId);
+				}
 			}
 		}
 
@@ -1027,18 +1016,18 @@ public abstract class Doc
 			{
 				continue;
 			}
-			
+
 			if (currencyId == acctCurrencyId)
 			{
 				continue;
 			}
-			
+
 			final ICurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(getDateAcct(), getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
 			try
 			{
 				currencyConversionBL.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);
 			}
-			catch (NoCurrencyRateFoundException e)
+			catch (final NoCurrencyRateFoundException e)
 			{
 				throw newPostingException(e)
 						.setC_AcctSchema(acctSchema)
@@ -1058,15 +1047,16 @@ public abstract class Doc
 		}
 
 		// Period defined in GL Journal (e.g. adjustment period)
-		int index = p_po.get_ColumnIndex("C_Period_ID");
-		if (index != -1)
+		final int periodId = getValueAsIntOrZero("C_Period_ID");
+		if (periodId > 0)
 		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				m_period = MPeriod.get(getCtx(), ii.intValue());
+			m_period = MPeriod.get(getCtx(), periodId);
 		}
 		if (m_period == null)
+		{
 			m_period = MPeriod.get(getCtx(), getDateAcct(), getAD_Org_ID());
+		}
+
 		// Is Period Open?
 		if (m_period != null
 				&& m_period.isOpen(getDocumentType(), getDateAcct(), getAD_Org_ID()))
@@ -1074,21 +1064,17 @@ public abstract class Doc
 			m_C_Period_ID = m_period.getC_Period_ID();
 		}
 		else
+		{
 			m_C_Period_ID = -1;
-		//
-		log.debug(	// + AD_Client_ID + " - "
-		getDateAcct() + " - " + getDocumentType() + " => " + m_C_Period_ID);
-	}   // setC_Period_ID
+		}
+	}
 
-	/**
-	 * Get C_Period_ID
-	 *
-	 * @return period
-	 */
 	protected final int getC_Period_ID()
 	{
 		if (m_period == null)
+		{
 			setPeriod();
+		}
 		return m_C_Period_ID;
 	}	// getC_Period_ID
 
@@ -1100,11 +1086,15 @@ public abstract class Doc
 	private final boolean isPeriodOpen()
 	{
 		setPeriod();
-		boolean open = m_C_Period_ID > 0;
+		final boolean open = m_C_Period_ID > 0;
 		if (open)
+		{
 			log.debug("Yes - " + toString());
+		}
 		else
+		{
 			log.warn("NO - " + toString());
+		}
 		return open;
 	}	// isPeriodOpen
 
@@ -1129,10 +1119,12 @@ public abstract class Doc
 	 * @param AmtType see AMTTYPE_*
 	 * @return Amount
 	 */
-	protected final BigDecimal getAmount(int AmtType)
+	protected final BigDecimal getAmount(final int AmtType)
 	{
 		if (AmtType < 0 || AmtType >= m_Amounts.length)
+		{
 			return null;
+		}
 		return m_Amounts[AmtType];
 	}	// getAmount
 
@@ -1142,14 +1134,20 @@ public abstract class Doc
 	 * @param AmtType see AMTTYPE_*
 	 * @param amt Amount
 	 */
-	protected final void setAmount(int AmtType, BigDecimal amt)
+	protected final void setAmount(final int AmtType, final BigDecimal amt)
 	{
 		if (AmtType < 0 || AmtType >= m_Amounts.length)
+		{
 			return;
+		}
 		if (amt == null)
-			m_Amounts[AmtType] = Env.ZERO;
+		{
+			m_Amounts[AmtType] = BigDecimal.ZERO;
+		}
 		else
+		{
 			m_Amounts[AmtType] = amt;
+		}
 	}	// setAmount
 
 	/**
@@ -1162,33 +1160,19 @@ public abstract class Doc
 		return m_Amounts[0];
 	}   // getAmount
 
-	/**
-	 * Set Quantity
-	 *
-	 * @param qty Quantity
-	 */
-	protected final void setQty(BigDecimal qty)
+	protected final void setQty(final BigDecimal qty)
 	{
 		m_qty = qty;
-	}   // setQty
+	}
 
-	/**
-	 * Get Quantity
-	 *
-	 * @return Quantity
-	 */
 	protected final BigDecimal getQty()
 	{
 		if (m_qty == null)
 		{
-			int index = p_po.get_ColumnIndex("Qty");
-			if (index != -1)
-				m_qty = (BigDecimal)p_po.get_Value(index);
-			else
-				m_qty = Env.ZERO;
+			m_qty = getValueAsBD("Qty", BigDecimal.ZERO);
 		}
 		return m_qty;
-	}   // getQty
+	}
 
 	/*************************************************************************/
 
@@ -1271,13 +1255,19 @@ public abstract class Doc
 		/** Account Type - Invoice */
 		if (AcctType == ACCTTYPE_Charge)	// see getChargeAccount in DocLine
 		{
-			int cmp = getAmount(AMTTYPE_Charge).compareTo(Env.ZERO);
+			final int cmp = getAmount(AMTTYPE_Charge).compareTo(BigDecimal.ZERO);
 			if (cmp == 0)
+			{
 				return 0;
+			}
 			else if (cmp < 0)
+			{
 				sql = "SELECT CH_Expense_Acct FROM C_Charge_Acct WHERE C_Charge_ID=? AND C_AcctSchema_ID=?";
+			}
 			else
+			{
 				sql = "SELECT CH_Revenue_Acct FROM C_Charge_Acct WHERE C_Charge_ID=? AND C_AcctSchema_ID=?";
+			}
 			para_1 = getC_Charge_ID();
 		}
 		else if (AcctType == ACCTTYPE_V_Liability)
@@ -1457,8 +1447,10 @@ public abstract class Doc
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			if (para_1 == -1)   // GL Accounts
+			if (para_1 == -1)
+			{
 				pstmt.setInt(1, as.getC_AcctSchema_ID());
+			}
 			else
 			{
 				pstmt.setInt(1, para_1);
@@ -1466,9 +1458,11 @@ public abstract class Doc
 			}
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				Account_ID = rs.getInt(1);
+			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.error("AcctType=" + AcctType + " - SQL=" + sql, e);
 			return 0;
@@ -1497,9 +1491,11 @@ public abstract class Doc
 	 */
 	protected final MAccount getAccount(final int AcctType, final I_C_AcctSchema as)
 	{
-		int C_ValidCombination_ID = getValidCombination_ID(AcctType, as);
+		final int C_ValidCombination_ID = getValidCombination_ID(AcctType, as);
 		if (C_ValidCombination_ID <= 0)
+		{
 			return null;
+		}
 		// Return Account
 		final MAccount acct = accountDAO.retrieveAccountById(getCtx(), C_ValidCombination_ID);
 		return acct;
@@ -1515,154 +1511,89 @@ public abstract class Doc
 		return accountDAO.retrieveAccountById(as.getCtx(), as.getAcctSchemaDefault().getRealizedLoss_Acct());
 	}
 
-	/**
-	 * String Representation
-	 *
-	 * @return String
-	 */
 	@Override
 	public String toString()
 	{
-		return p_po.toString();
-	}   // toString
+		return getPO().toString();
+	}
 
-	/**
-	 * Get AD_Client_ID
-	 *
-	 * @return client
-	 */
 	public final int getAD_Client_ID()
 	{
-		return p_po.getAD_Client_ID();
-	}	// getAD_Client_ID
+		return getPO().getAD_Client_ID();
+	}
 
-	/**
-	 * Get AD_Org_ID
-	 *
-	 * @return org
-	 */
 	public final int getAD_Org_ID()
 	{
-		return p_po.getAD_Org_ID();
-	}	// getAD_Org_ID
+		return getPO().getAD_Org_ID();
+	}
 
-	/**
-	 * Get Document No
-	 *
-	 * @return document No
-	 */
 	public String getDocumentNo()
 	{
-		if (m_DocumentNo != null)
-			return m_DocumentNo;
-		int index = p_po.get_ColumnIndex("DocumentNo");
-		if (index == -1)
-			index = p_po.get_ColumnIndex("Name");
-		if (index == -1)
-			throw new UnsupportedOperationException("No DocumentNo");
-		m_DocumentNo = (String)p_po.get_Value(index);
+		if (m_DocumentNo == null)
+		{
+			m_DocumentNo = Util.coalesceSuppliers(
+					() -> getValueAsString("DocumentNo"),
+					() -> getValueAsString("Name"),
+					() -> {
+						throw new AdempiereException("DocumentNo not found");
+					});
+		}
 		return m_DocumentNo;
-	}	// getDocumentNo
+	}
 
 	public final String getDocStatus()
 	{
 		return m_DocStatus;
 	}
 
-	/**
-	 * Get Description
-	 *
-	 * @return Description
-	 */
 	public final String getDescription()
 	{
 		if (m_Description == null)
 		{
-			int index = p_po.get_ColumnIndex("Description");
-			if (index != -1)
-				m_Description = (String)p_po.get_Value(index);
-			else
+			m_Description = getValueAsString("Description");
+			if (m_Description == null)
+			{
 				m_Description = "";
+			}
 		}
 		return m_Description;
-	}	// getDescription
+	}
 
-	/**
-	 * Get C_Currency_ID
-	 *
-	 * @return currency
-	 */
 	public final int getC_Currency_ID()
 	{
 		if (m_C_Currency_ID == -1)
 		{
-			final int index = p_po.get_ColumnIndex("C_Currency_ID");
-			if (index != -1)
+			m_C_Currency_ID = getValueAsIntOrZero("C_Currency_ID");
+			if (m_C_Currency_ID <= 0)
 			{
-				final Integer ii = (Integer)p_po.get_Value(index);
-				if (ii != null)
-					m_C_Currency_ID = ii.intValue();
-			}
-			if (m_C_Currency_ID == -1)
 				m_C_Currency_ID = NO_CURRENCY;
+			}
 		}
 		return m_C_Currency_ID;
-	}	// getC_Currency_ID
+	}
 
-	/**
-	 * Set C_Currency_ID
-	 *
-	 * @param C_Currency_ID id
-	 */
-	protected final void setC_Currency_ID(int C_Currency_ID)
+	protected final void setC_Currency_ID(final int C_Currency_ID)
 	{
 		m_C_Currency_ID = C_Currency_ID;
 		m_precision = -1;
-	}	// setC_Currency_ID
+	}
 
-	/**
-	 * Is Multi Currency
-	 *
-	 * @return mc
-	 */
 	public final boolean isMultiCurrency()
 	{
 		return m_MultiCurrency;
-	}	// isMultiCurrency
+	}
 
-	/**
-	 * Set Multi Currency
-	 *
-	 * @param mc multi currency
-	 */
-	protected final void setIsMultiCurrency(boolean mc)
+	protected final void setIsMultiCurrency(final boolean mc)
 	{
 		m_MultiCurrency = mc;
-	}	// setIsMultiCurrency
+	}
 
-	/**
-	 * Get C_ConversionType_ID
-	 *
-	 * @return ConversionType
-	 */
 	public final int getC_ConversionType_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_ConversionType_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return ICurrencyBL.DEFAULT_ConversionType_ID;
-	}	// getC_ConversionType_ID
+		final int conversionTypeId = getValueAsIntOrZero("C_ConversionType_ID");
+		return conversionTypeId > 0 ? conversionTypeId : ICurrencyBL.DEFAULT_ConversionType_ID;
+	}
 
-	/**
-	 * Get Currency Precision
-	 *
-	 * @return precision
-	 * @see #getC_Currency_ID()
-	 */
 	protected final int getStdPrecision()
 	{
 		if (m_precision == -1)
@@ -1670,189 +1601,89 @@ public abstract class Doc
 			m_precision = currencyDAO.getStdPrecision(getCtx(), getC_Currency_ID());
 		}
 		return m_precision;
-	}	// getPrecision
+	}
 
-	/**
-	 * Get GL_Category_ID
-	 *
-	 * @return category
-	 */
 	public final int getGL_Category_ID()
 	{
 		return m_GL_Category_ID;
-	}	// getGL_Category_ID
+	}
 
-	/**
-	 * Get GL_Category_ID
-	 *
-	 * @return category
-	 */
 	public final int getGL_Budget_ID()
 	{
-		int index = p_po.get_ColumnIndex("GL_Budget_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getGL_Budget_ID
+		return getValueAsIntOrZero("GL_Budget_ID");
+	}
 
-	/**
-	 * Get Accounting Date
-	 *
-	 * @return currency
-	 */
 	public final Timestamp getDateAcct()
 	{
-		if (m_DateAcct != null)
-			return m_DateAcct;
-		int index = p_po.get_ColumnIndex("DateAcct");
-		if (index != -1)
-		{
-			m_DateAcct = (Timestamp)p_po.get_Value(index);
-			if (m_DateAcct != null)
-				return m_DateAcct;
-		}
-		throw new IllegalStateException("No DateAcct");
-	}	// getDateAcct
+		return Util.coalesceSuppliers(
+				() -> m_DateAcct,
+				() -> getValueAsTSOrNull("DateAcct"),
+				() -> {
+					throw new AdempiereException("No DateAcct");
+				});
+	}
 
-	/**
-	 * Set Date Acct
-	 *
-	 * @param da accounting date
-	 */
-	protected final void setDateAcct(Timestamp da)
+	protected final void setDateAcct(final Timestamp dateAcct)
 	{
-		m_DateAcct = da;
-	}	// setDateAcct
+		m_DateAcct = dateAcct;
+	}
 
-	/**
-	 * Get Document Date
-	 *
-	 * @return currency
-	 */
 	public final Timestamp getDateDoc()
 	{
-		if (m_DateDoc != null)
-			return m_DateDoc;
-		int index = p_po.get_ColumnIndex("DateDoc");
-		if (index == -1)
-			index = p_po.get_ColumnIndex("MovementDate");
-		if (index != -1)
-		{
-			m_DateDoc = (Timestamp)p_po.get_Value(index);
-			if (m_DateDoc != null)
-				return m_DateDoc;
-		}
-		throw new IllegalStateException("No DateDoc");
-	}	// getDateDoc
+		return Util.coalesceSuppliers(
+				() -> m_DateDoc,
+				() -> getValueAsTSOrNull("DateDoc"),
+				() -> getValueAsTSOrNull("MovementDate"),
+				() -> {
+					throw new AdempiereException("No DateDoc");
+				});
+	}
 
-	/**
-	 * Set Date Doc
-	 *
-	 * @param dd document date
-	 */
-	protected final void setDateDoc(Timestamp dd)
+	protected final void setDateDoc(final Timestamp dateDoc)
 	{
-		m_DateDoc = dd;
-	}	// setDateDoc
+		m_DateDoc = dateDoc;
+	}
 
-	/**
-	 * Is Document Posted
-	 *
-	 * @return true if posted
-	 */
 	public final boolean isPosted()
 	{
-		int index = p_po.get_ColumnIndex("Posted");
-		if (index != -1)
+		final Boolean posted = getValueAsBoolean("Posted", null);
+		if (posted == null)
 		{
-			final Object posted = p_po.get_Value(index);
-			if (posted instanceof Boolean)
-				return ((Boolean)posted).booleanValue();
-			if (posted instanceof String)
-				return "Y".equals(posted);
+			throw new AdempiereException("Posted column is missing or it's null");
 		}
-		throw new IllegalStateException("No Posted");
-	}	// isPosted
+		return posted;
+	}
 
-	/**
-	 * Is Sales Trx
-	 *
-	 * @return true if posted
-	 */
 	public final boolean isSOTrx()
 	{
-		int index = p_po.get_ColumnIndex("IsSOTrx");
-		if (index == -1)
-			index = p_po.get_ColumnIndex("IsReceipt");
-		if (index != -1)
-		{
-			final Object isSOTrxObj = p_po.get_Value(index);
-			return DisplayType.toBoolean(isSOTrxObj);
-		}
-		return false;
-	}	// isSOTrx
+		return Util.coalesceSuppliers(
+				() -> getValueAsBoolean("IsSOTrx", null),
+				() -> getValueAsBoolean("IsReceipt", null),
+				() -> false);
+	}
 
-	/**
-	 * Get C_DocType_ID
-	 *
-	 * @return DocType
-	 */
 	public final int getC_DocType_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_DocType_ID");
-		if (index != -1)
+		final int docTypeId = getValueAsIntOrZero("C_DocType_ID");
+		if (docTypeId > 0)
 		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			// DocType does not exist - get DocTypeTarget
-			if (ii != null && ii.intValue() == 0)
-			{
-				index = p_po.get_ColumnIndex("C_DocTypeTarget_ID");
-				if (index != -1)
-					ii = (Integer)p_po.get_Value(index);
-			}
-			if (ii != null)
-				return ii.intValue();
+			return docTypeId;
 		}
-		return 0;
-	}	// getC_DocType_ID
 
-	/**
-	 * Get header level C_Charge_ID
-	 *
-	 * @return Charge
-	 */
+		// fallback
+		final int docTypeTargetId = getValueAsIntOrZero("C_DocTypeTarget_ID");
+		return docTypeTargetId;
+	}
+
 	public final int getC_Charge_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_Charge_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getC_Charge_ID
+		return getValueAsIntOrZero("C_Charge_ID");
+	}
 
-	/**
-	 * Get SalesRep_ID
-	 *
-	 * @return SalesRep
-	 */
 	public final int getSalesRep_ID()
 	{
-		int index = p_po.get_ColumnIndex("SalesRep_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getSalesRep_ID
+		return getValueAsIntOrZero("SalesRep_ID");
+	}
 
 	/**
 	 * Get C_BP_BankAccount_ID if it was previously set using {@link #setC_BP_BankAccount_ID(int)}, or attempts to get it from our <code>p_po</code> (document record).
@@ -1863,35 +1694,21 @@ public abstract class Doc
 	{
 		if (m_C_BP_BankAccount_ID == -1)
 		{
-			int index = p_po.get_ColumnIndex(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID);
-			if (index != -1)
-			{
-				final Integer ii = (Integer)p_po.get_Value(index);
-				if (ii != null)
-				{
-					m_C_BP_BankAccount_ID = ii.intValue();
-				}
-			}
-			if (m_C_BP_BankAccount_ID == -1)
+			m_C_BP_BankAccount_ID = getValueAsIntOrZero(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID);
+			if (m_C_BP_BankAccount_ID <= 0)
 			{
 				m_C_BP_BankAccount_ID = 0;
 			}
 		}
 		return m_C_BP_BankAccount_ID;
-	}	// getC_BP_BankAccount_ID
+	}
 
-	/**
-	 * Sets C_BP_BankAccount_ID
-	 *
-	 * @param C_BP_BankAccount_ID bank acct
-	 */
-	final void setC_BP_BankAccount_ID(int C_BP_BankAccount_ID)
+	final void setC_BP_BankAccount_ID(final int C_BP_BankAccount_ID)
 	{
 		m_C_BP_BankAccount_ID = C_BP_BankAccount_ID;
-	}	// setC_BP_BankAccount_ID
+	}
 
 	/**
-	 *
 	 * @return bank account or <code>null</code>
 	 */
 	protected final I_C_BP_BankAccount getC_BP_BankAccount()
@@ -1908,54 +1725,28 @@ public abstract class Doc
 		return bpBankAccount;
 	}
 
-	/**
-	 * Get C_CashBook_ID
-	 *
-	 * @return CashBook
-	 */
 	public final int getC_CashBook_ID()
 	{
 		if (m_C_CashBook_ID == -1)
 		{
-			int index = p_po.get_ColumnIndex("C_CashBook_ID");
-			if (index != -1)
+			m_C_CashBook_ID = getValueAsIntOrZero("C_CashBook_ID");
+			if (m_C_CashBook_ID <= 0)
 			{
-				Integer ii = (Integer)p_po.get_Value(index);
-				if (ii != null)
-					m_C_CashBook_ID = ii.intValue();
-			}
-			if (m_C_CashBook_ID == -1)
 				m_C_CashBook_ID = 0;
+			}
 		}
 		return m_C_CashBook_ID;
-	}	// getC_CashBook_ID
+	}
 
-	/**
-	 * Set C_CashBook_ID
-	 *
-	 * @param C_CashBook_ID cash book
-	 */
-	protected final void setC_CashBook_ID(int C_CashBook_ID)
+	protected final void setC_CashBook_ID(final int C_CashBook_ID)
 	{
 		m_C_CashBook_ID = C_CashBook_ID;
-	}	// setC_CashBook_ID
+	}
 
-	/**
-	 * Get M_Warehouse_ID
-	 *
-	 * @return Warehouse
-	 */
 	public final int getM_Warehouse_ID()
 	{
-		int index = p_po.get_ColumnIndex("M_Warehouse_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getM_Warehouse_ID
+		return getValueAsIntOrZero("M_Warehouse_ID");
+	}
 
 	/**
 	 * Get C_BPartner_ID
@@ -1966,280 +1757,177 @@ public abstract class Doc
 	{
 		if (m_C_BPartner_ID == -1)
 		{
-			int index = p_po.get_ColumnIndex("C_BPartner_ID");
-			if (index != -1)
+			m_C_BPartner_ID = getValueAsIntOrZero("C_BPartner_ID");
+			if (m_C_BPartner_ID <= 0)
 			{
-				Integer ii = (Integer)p_po.get_Value(index);
-				if (ii != null)
-					m_C_BPartner_ID = ii.intValue();
-			}
-			if (m_C_BPartner_ID == -1)
 				m_C_BPartner_ID = 0;
+			}
 		}
 		return m_C_BPartner_ID;
-	}	// getC_BPartner_ID
+	}
 
-	/**
-	 * Set C_BPartner_ID
-	 *
-	 * @param C_BPartner_ID bp
-	 */
-	protected final void setC_BPartner_ID(int C_BPartner_ID)
+	protected final void setC_BPartner_ID(final int C_BPartner_ID)
 	{
 		m_C_BPartner_ID = C_BPartner_ID;
-	}	// setC_BPartner_ID
+	}
 
-	/**
-	 * Get C_BPartner_Location_ID
-	 *
-	 * @return BPartner Location
-	 */
 	public final int getC_BPartner_Location_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_BPartner_Location_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getC_BPartner_Location_ID
+		return getValueAsIntOrZero("C_BPartner_Location_ID");
+	}
 
-	/**
-	 * Get C_Project_ID
-	 *
-	 * @return Project
-	 */
 	public final int getC_Project_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_Project_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getC_Project_ID
+		return getValueAsIntOrZero("C_Project_ID");
+	}
 
-	/**
-	 * Get C_SalesRegion_ID
-	 *
-	 * @return Sales Region
-	 */
 	public final int getC_SalesRegion_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_SalesRegion_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getC_SalesRegion_ID
+		return getValueAsIntOrZero("C_SalesRegion_ID");
+	}
 
-	/**
-	 * Get C_SalesRegion_ID
-	 *
-	 * @return Sales Region
-	 */
 	public final int getBP_C_SalesRegion_ID()
 	{
 		if (m_BP_C_SalesRegion_ID == -1)
 		{
-			int index = p_po.get_ColumnIndex("C_SalesRegion_ID");
-			if (index != -1)
+			m_BP_C_SalesRegion_ID = getC_SalesRegion_ID();
+			if (m_BP_C_SalesRegion_ID <= 0)
 			{
-				Integer ii = (Integer)p_po.get_Value(index);
-				if (ii != null)
-					m_BP_C_SalesRegion_ID = ii.intValue();
-			}
-			if (m_BP_C_SalesRegion_ID == -1)
 				m_BP_C_SalesRegion_ID = 0;
+			}
 		}
 		return m_BP_C_SalesRegion_ID;
-	}	// getBP_C_SalesRegion_ID
+	}
 
 	/**
-	 * Set C_SalesRegion_ID
-	 *
-	 * @param C_SalesRegion_ID id
+	 * Set BPartner's C_SalesRegion_ID
 	 */
-	protected final void setBP_C_SalesRegion_ID(int C_SalesRegion_ID)
+	protected final void setBP_C_SalesRegion_ID(final int C_SalesRegion_ID)
 	{
 		m_BP_C_SalesRegion_ID = C_SalesRegion_ID;
-	}	// setBP_C_SalesRegion_ID
+	}
 
-	/**
-	 * Get C_Activity_ID
-	 *
-	 * @return Activity
-	 */
 	public final int getC_Activity_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_Activity_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getC_Activity_ID
+		return getValueAsIntOrZero("C_Activity_ID");
+	}
 
-	/**
-	 * Get C_Campaign_ID
-	 *
-	 * @return Campaign
-	 */
 	public final int getC_Campaign_ID()
 	{
-		int index = p_po.get_ColumnIndex("C_Campaign_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getC_Campaign_ID
+		return getValueAsIntOrZero("C_Campaign_ID");
+	}
 
-	/**
-	 * Get M_Product_ID
-	 *
-	 * @return Product
-	 */
 	public final int getM_Product_ID()
 	{
-		int index = p_po.get_ColumnIndex("M_Product_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getM_Product_ID
+		return getValueAsIntOrZero("M_Product_ID");
+	}
 
-	/**
-	 * Get AD_OrgTrx_ID
-	 *
-	 * @return Trx Org
-	 */
 	public final int getAD_OrgTrx_ID()
 	{
-		int index = p_po.get_ColumnIndex("AD_OrgTrx_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getAD_OrgTrx_ID
+		return getValueAsIntOrZero("AD_OrgTrx_ID");
+	}
 
-	/**
-	 * Get C_LocFrom_ID
-	 *
-	 * @return loc from
-	 */
 	public final int getC_LocFrom_ID()
 	{
 		return m_C_LocFrom_ID;
-	}	// getC_LocFrom_ID
+	}
 
-	/**
-	 * Set C_LocFrom_ID
-	 *
-	 * @param C_LocFrom_ID loc from
-	 */
-	protected final void setC_LocFrom_ID(int C_LocFrom_ID)
+	protected final void setC_LocFrom_ID(final int C_LocFrom_ID)
 	{
 		m_C_LocFrom_ID = C_LocFrom_ID;
-	}	// setC_LocFrom_ID
+	}
 
-	/**
-	 * Get C_LocTo_ID
-	 *
-	 * @return loc to
-	 */
 	public final int getC_LocTo_ID()
 	{
 		return m_C_LocTo_ID;
-	}	// getC_LocTo_ID
+	}
 
-	/**
-	 * Set C_LocTo_ID
-	 *
-	 * @param C_LocTo_ID loc to
-	 */
-	protected final void setC_LocTo_ID(int C_LocTo_ID)
+	protected final void setC_LocTo_ID(final int C_LocTo_ID)
 	{
 		m_C_LocTo_ID = C_LocTo_ID;
-	}	// setC_LocTo_ID
+	}
 
-	/**
-	 * Get User1_ID
-	 *
-	 * @return Campaign
-	 */
 	public final int getUser1_ID()
 	{
-		int index = p_po.get_ColumnIndex("User1_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getUser1_ID
+		return getValueAsIntOrZero("User1_ID");
+	}
 
-	/**
-	 * Get User2_ID
-	 *
-	 * @return Campaign
-	 */
 	public final int getUser2_ID()
 	{
-		int index = p_po.get_ColumnIndex("User2_ID");
-		if (index != -1)
-		{
-			Integer ii = (Integer)p_po.get_Value(index);
-			if (ii != null)
-				return ii.intValue();
-		}
-		return 0;
-	}	// getUser2_ID
+		return getValueAsIntOrZero("User2_ID");
+	}
 
-	/**
-	 * Get User Defined value
-	 *
-	 * @return User defined
-	 */
-	public final int getValue(String ColumnName)
+	protected final int getValueAsIntOrZero(final String ColumnName)
 	{
-		int index = p_po.get_ColumnIndex(ColumnName);
+		final PO po = getPO();
+		final int index = po.get_ColumnIndex(ColumnName);
 		if (index != -1)
 		{
-			Integer ii = (Integer)p_po.get_Value(index);
+			final Integer ii = (Integer)po.get_Value(index);
 			if (ii != null)
+			{
 				return ii.intValue();
+			}
 		}
 		return 0;
 	}	// getValue
 
-	/*************************************************************************/
-	// To be overwritten by Subclasses
+	private final Timestamp getValueAsTSOrNull(final String columnName)
+	{
+		final PO po = getPO();
+		final int index = po.get_ColumnIndex(columnName);
+		if (index != -1)
+		{
+			final Timestamp valueDate = (Timestamp)po.get_Value(index);
+			return valueDate;
+		}
+
+		return null;
+	}
+
+	private final Boolean getValueAsBoolean(final String columnName, final Boolean defaultValue)
+	{
+		final PO po = getPO();
+		final int index = po.get_ColumnIndex(columnName);
+		if (index != -1)
+		{
+			final Object valueObj = po.get_Value(index);
+			return DisplayType.toBoolean(valueObj, defaultValue);
+		}
+
+		return defaultValue;
+	}
+
+	private final BigDecimal getValueAsBD(final String columnName, final BigDecimal defaultValue)
+	{
+		final PO po = getPO();
+		final int index = po.get_ColumnIndex(columnName);
+		if (index != -1)
+		{
+			final Object valueObj = po.get_Value(index);
+			return NumberUtils.asBigDecimal(valueObj, defaultValue);
+		}
+
+		return defaultValue;
+	}
+
+	private final String getValueAsString(final String columnName)
+	{
+		final PO po = getPO();
+		final int index = po.get_ColumnIndex(columnName);
+		if (index != -1)
+		{
+			final Object valueObj = po.get_Value(index);
+			return valueObj != null ? valueObj.toString() : null;
+		}
+
+		return null;
+	}
 
 	/**
 	 * Load Document Details
-	 *
-	 * @return error message or null
 	 */
-	protected abstract String loadDocumentDetails();
+	protected abstract void loadDocumentDetails();
 
 	/**
 	 * Get Source Currency Balance - subtracts line (and tax) amounts from total - no rounding
@@ -2295,22 +1983,6 @@ public abstract class Doc
 		return postingException;
 	}
 
-	/**
-	 * Checks {@link #p_Error} status and in case is not empty, it will throw an error.
-	 *
-	 * This method is used to support the legacy {@link #p_Error} field.
-	 */
-	private final void throwPostingExpectionIfError()
-	{
-		if (Check.isEmpty(p_Error, true))
-		{
-			return;
-		}
-
-		throw newPostingException()
-				.setDetailMessage(p_Error);
-	}
-
 	private final void createErrorNote(final PostingException e)
 	{
 		DB.saveConstraints();
@@ -2321,9 +1993,10 @@ public abstract class Doc
 			// Insert Note
 			final PostingStatus postingStatus = e.getPostingStatus(PostingStatus.Error);
 			final String AD_MessageValue = postingStatus.getAD_Message();
-			final int AD_User_ID = p_po.getUpdatedBy();
+			final PO po = getPO();
+			final int AD_User_ID = po.getUpdatedBy();
 			final MNote note = new MNote(getCtx(), AD_MessageValue, AD_User_ID, getAD_Client_ID(), getAD_Org_ID(), ITrx.TRXNAME_None);
-			note.setRecord(p_po.get_Table_ID(), p_po.get_ID());
+			note.setRecord(po.get_Table_ID(), po.get_ID());
 			// Reference
 			note.setReference(toString());	// Document
 			// Text
@@ -2337,7 +2010,7 @@ public abstract class Doc
 
 			final String cn = getClass().getName();
 			text.append(" - ").append(cn.substring(cn.lastIndexOf('.')));
-			final boolean loaded = p_lines != null;
+			final boolean loaded = getDocLines() != null;
 			if (loaded)
 			{
 				text.append(" (").append(getDocumentType())

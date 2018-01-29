@@ -33,7 +33,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
@@ -78,7 +77,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			// setC_Currency_ID (0);
 			// setC_DocType_ID (0);
 			//
-			setCurrencyRate(Env.ONE);
+			setCurrencyRate(BigDecimal.ONE);
 			// setC_ConversionType_ID(0);
 			setDateAcct(new Timestamp(System.currentTimeMillis()));
 			setDateDoc(new Timestamp(System.currentTimeMillis()));
@@ -88,8 +87,8 @@ public class MJournal extends X_GL_Journal implements IDocument
 			// setDocumentNo (null);
 			// setGL_Category_ID (0);
 			setPostingType(POSTINGTYPE_Actual);
-			setTotalCr(Env.ZERO);
-			setTotalDr(Env.ZERO);
+			setTotalCr(BigDecimal.ZERO);
+			setTotalDr(BigDecimal.ZERO);
 			setIsApproved(false);
 			setIsPrinted(false);
 			setPosted(false);
@@ -192,7 +191,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			setC_Currency_ID(C_Currency_ID);
 		if (C_ConversionType_ID != 0)
 			setC_ConversionType_ID(C_ConversionType_ID);
-		if (CurrencyRate != null && CurrencyRate.compareTo(Env.ZERO) == 0)
+		if (CurrencyRate != null && CurrencyRate.compareTo(BigDecimal.ZERO) == 0)
 			setCurrencyRate(CurrencyRate);
 	}	// setCurrency
 
@@ -464,8 +463,8 @@ public class MJournal extends X_GL_Journal implements IDocument
 		}
 
 		// Add up Amounts
-		BigDecimal AmtAcctDr = Env.ZERO;
-		BigDecimal AmtAcctCr = Env.ZERO;
+		BigDecimal AmtAcctDr = BigDecimal.ZERO;
+		BigDecimal AmtAcctCr = BigDecimal.ZERO;
 		for (final I_GL_JournalLine line : lines)
 		{
 			if (!isActive())
@@ -489,7 +488,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		setTotalCr(AmtAcctCr);
 
 		// Control Amount
-		if (Env.ZERO.compareTo(getControlAmt()) != 0
+		if (BigDecimal.ZERO.compareTo(getControlAmt()) != 0
 				&& getControlAmt().compareTo(getTotalDr()) != 0)
 		{
 			throw new AdempiereException("@ControlAmtError@");

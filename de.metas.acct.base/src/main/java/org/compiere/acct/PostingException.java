@@ -21,8 +21,8 @@ public final class PostingException extends AdempiereException
 	private static final long serialVersionUID = -1591542147723525989L;
 
 	//
-	private Doc _document;
-	private DocLine _docLine;
+	private Doc<?> _document;
+	private DocLine<?> _docLine;
 	private PostingStatus _postingStatus;
 	private I_C_AcctSchema _acctSchema;
 	private Fact _fact;
@@ -31,12 +31,12 @@ public final class PostingException extends AdempiereException
 	private boolean _preserveDocumentPostedStatus = false;
 	private Level _logLevel = Level.ERROR;
 
-	public PostingException(final Doc document)
+	public PostingException(final Doc<?> document)
 	{
 		this(document, (Throwable)null);
 	}
 
-	public PostingException(final Doc document, final Throwable cause)
+	public PostingException(final Doc<?> document, final Throwable cause)
 	{
 		super(cause);
 
@@ -74,12 +74,12 @@ public final class PostingException extends AdempiereException
 		}
 
 		// Document
-		final Doc document = getDocument();
+		final Doc<?> document = getDocument();
 		if (document != null)
 		{
 			message.append("\n @Document@: ").append(document);
 		}
-		final DocLine documentLine = getDocLine();
+		final DocLine<?> documentLine = getDocLine();
 		if (documentLine != null)
 		{
 			message.append("\n @Line@: ").append(documentLine);
@@ -113,13 +113,13 @@ public final class PostingException extends AdempiereException
 		return message.toString();
 	}
 
-	public PostingException setDocument(final Doc document)
+	public PostingException setDocument(final Doc<?> document)
 	{
 		this._document = document;
 		return this;
 	}
 
-	public Doc getDocument()
+	public Doc<?> getDocument()
 	{
 		return _document;
 	}
@@ -258,14 +258,14 @@ public final class PostingException extends AdempiereException
 		return this;
 	}
 
-	public PostingException setDocLine(final DocLine docLine)
+	public PostingException setDocLine(final DocLine<?> docLine)
 	{
 		_docLine = docLine;
 		resetMessageBuilt();
 		return this;
 	}
 
-	public DocLine getDocLine()
+	public DocLine<?> getDocLine()
 	{
 		return _docLine;
 	}

@@ -1,5 +1,6 @@
 package org.adempiere.acct.api.impl;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /*
@@ -39,7 +40,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
-import org.compiere.util.Env;
 
 import de.metas.document.engine.IDocument;
 
@@ -75,8 +75,8 @@ public class GLJournalDAO implements IGLJournalDAO
 
 		// Exclude the entries that don't have either Credit or Debit amounts. These entries will produce 0 in posting
 		final ICompositeQueryFilter<I_GL_Journal> nonZeroFilter = queryBL.createCompositeQueryFilter(I_GL_Journal.class).setJoinOr()
-				.addNotEqualsFilter(I_GL_Journal.COLUMNNAME_TotalCr, Env.ZERO)
-				.addNotEqualsFilter(I_GL_Journal.COLUMNNAME_TotalDr, Env.ZERO);
+				.addNotEqualsFilter(I_GL_Journal.COLUMNNAME_TotalCr, BigDecimal.ZERO)
+				.addNotEqualsFilter(I_GL_Journal.COLUMNNAME_TotalDr, BigDecimal.ZERO);
 
 		queryBuilder.filter(nonZeroFilter);
 

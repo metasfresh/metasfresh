@@ -51,9 +51,7 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 public class DocFactory implements IDocFactory
@@ -83,13 +81,13 @@ public class DocFactory implements IDocFactory
 		}
 
 		@Override
-		public Doc build()
+		public Doc<?> build()
 		{
 			try
 			{
 				final IDocMetaInfo docMetaInfo = getDocMetaInfo();
 				// Get the accountable document instance
-				final Doc doc = docMetaInfo.getDocConstructor().newInstance(this);
+				final Doc<?> doc = docMetaInfo.getDocConstructor().newInstance(this);
 
 				// Return it
 				return doc;
@@ -153,7 +151,7 @@ public class DocFactory implements IDocFactory
 	}
 
 	@Override
-	public Doc getOrNull(final Properties ctx, final MAcctSchema[] ass, final int AD_Table_ID, final int Record_ID, final String trxName)
+	public Doc<?> getOrNull(final Properties ctx, final MAcctSchema[] ass, final int AD_Table_ID, final int Record_ID, final String trxName)
 	{
 		final IDocMetaInfo docMetaInfo = getDocMetaInfoOrNull(AD_Table_ID);
 		if (docMetaInfo == null)
@@ -180,7 +178,7 @@ public class DocFactory implements IDocFactory
 	}
 
 	@Override
-	public final Doc get(final Properties ctx, final IDocMetaInfo docMetaInfo, final MAcctSchema[] ass, final ResultSet rs, final String trxName)
+	public final Doc<?> get(final Properties ctx, final IDocMetaInfo docMetaInfo, final MAcctSchema[] ass, final ResultSet rs, final String trxName)
 	{
 		Check.assumeNotNull(docMetaInfo, "docMetaInfo not null");
 
@@ -292,8 +290,8 @@ public class DocFactory implements IDocFactory
 			}
 
 			@SuppressWarnings("unchecked")
-			final Class<? extends Doc> docClass = (Class<? extends Doc>)classLoader.loadClass(className);
-			final Constructor<? extends Doc> docConstructor = docClass.getConstructor(new Class[] { IDocBuilder.class });
+			final Class<? extends Doc<?>> docClass = (Class<? extends Doc<?>>)classLoader.loadClass(className);
+			final Constructor<? extends Doc<?>> docConstructor = docClass.getConstructor(new Class[] { IDocBuilder.class });
 			docConstructor.setAccessible(true);
 
 			final DocMetaInfo docMetaInfo = new DocMetaInfo(adTableId, tableName, docClass, docConstructor);

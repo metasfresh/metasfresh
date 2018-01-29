@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.minventory.api.IInventoryDAO;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
@@ -152,6 +154,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 	 * @param requery requery
 	 * @return array of lines
 	 */
+	@Deprecated
 	public MInventoryLine[] getLines(boolean requery)
 	{
 		if (m_lines != null && !requery)
@@ -160,11 +163,8 @@ public class MInventory extends X_M_Inventory implements IDocument
 			return m_lines;
 		}
 		//
-		List<MInventoryLine> list = new Query(getCtx(), MInventoryLine.Table_Name, "M_Inventory_ID=?", get_TrxName())
-				.setParameters(new Object[] { get_ID() })
-				.setOrderBy(MInventoryLine.COLUMNNAME_Line)
-				.list();
-		m_lines = list.toArray(new MInventoryLine[list.size()]);
+		final List<I_M_InventoryLine> lines = Services.get(IInventoryDAO.class).retrieveLinesForInventory(this);
+		m_lines = LegacyAdapters.convertToPOArray(lines, MInventoryLine.class);
 		return m_lines;
 	}	// getLines
 

@@ -1,10 +1,7 @@
 package org.compiere.acct;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.I_C_ValidCombination;
-import org.compiere.model.I_GL_JournalLine;
-import org.compiere.model.MAccount;
+import org.compiere.model.I_C_OrderLine;
 
 /*
  * #%L
@@ -28,34 +25,11 @@ import org.compiere.model.MAccount;
  * #L%
  */
 
-class DocLine_GLJournal extends DocLine<Doc_GLJournal>
+public class DocLine_Order extends DocLine<Doc_Order>
 {
-	private int acctSchemaId = 0;
-	private MAccount m_account = null;
-
-	public DocLine_GLJournal(final I_GL_JournalLine glJournalLine, final Doc_GLJournal doc)
+	public DocLine_Order(final I_C_OrderLine orderLine, final Doc_Order doc)
 	{
-		super(InterfaceWrapperHelper.getPO(glJournalLine), doc);
+		super(InterfaceWrapperHelper.getPO(orderLine), doc);
 	}
-
-	public final int getC_AcctSchema_ID()
-	{
-		return acctSchemaId;
-	}
-
-	public final void setC_AcctSchema_ID(final int acctSchemaId)
-	{
-		this.acctSchemaId = acctSchemaId;
-	}
-
-	public final void setAccount(final I_C_ValidCombination acct)
-	{
-		m_account = LegacyAdapters.convertToPO(acct);
-	}
-
-	public final MAccount getAccount()
-	{
-		return m_account;
-	}   // getAccount
 
 }

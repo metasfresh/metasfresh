@@ -29,7 +29,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
@@ -110,8 +109,8 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			setPostingType (POSTINGTYPE_Actual);
 			setDocAction (DOCACTION_Complete);
 			setDocStatus (DOCSTATUS_Drafted);
-			setTotalCr (Env.ZERO);
-			setTotalDr (Env.ZERO);
+			setTotalCr (BigDecimal.ZERO);
+			setTotalDr (BigDecimal.ZERO);
 			setProcessed (false);
 			setProcessing (false);
 			setIsApproved(false);
@@ -244,8 +243,8 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			toJournal.setDateAcct(getDateAcct());
 			toJournal.setDocStatus(MJournal.DOCSTATUS_Drafted);
 			toJournal.setDocAction(MJournal.DOCACTION_Complete);
-			toJournal.setTotalCr(Env.ZERO);
-			toJournal.setTotalDr(Env.ZERO);
+			toJournal.setTotalCr(BigDecimal.ZERO);
+			toJournal.setTotalDr(BigDecimal.ZERO);
 			toJournal.setIsApproved(false);
 			toJournal.setIsPrinted(false);
 			toJournal.setPosted(false);
@@ -326,8 +325,8 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			return IDocument.STATUS_Invalid;
 		}
 		
-		BigDecimal TotalDr = Env.ZERO;
-		BigDecimal TotalCr = Env.ZERO;		
+		BigDecimal TotalDr = BigDecimal.ZERO;
+		BigDecimal TotalCr = BigDecimal.ZERO;		
 		for (int i = 0; i < journals.length; i++)
 		{
 			MJournal journal = journals[i];
@@ -360,7 +359,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		setTotalCr(TotalCr);
 		
 		//	Control Amount
-		if (Env.ZERO.compareTo(getControlAmt()) != 0
+		if (BigDecimal.ZERO.compareTo(getControlAmt()) != 0
 			&& getControlAmt().compareTo(getTotalDr()) != 0)
 		{
 			m_processMsg = "@ControlAmtError@";
@@ -427,8 +426,8 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 
 		//	Add up Amounts & complete them
 		MJournal[] journals = getJournals(true);
-		BigDecimal TotalDr = Env.ZERO;
-		BigDecimal TotalCr = Env.ZERO;		
+		BigDecimal TotalDr = BigDecimal.ZERO;
+		BigDecimal TotalCr = BigDecimal.ZERO;		
 		for (int i = 0; i < journals.length; i++)
 		{
 			MJournal journal = journals[i];

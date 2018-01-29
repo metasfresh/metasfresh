@@ -21,15 +21,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
+import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Production;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.ProductCost;
-import org.compiere.model.X_M_Production;
 import org.compiere.model.X_M_ProductionLine;
 import org.compiere.model.X_M_ProductionPlan;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.costing.CostDetailCreateRequest;
@@ -47,7 +48,7 @@ import de.metas.costing.ICostDetailService;
  *  @author Jorg Janke
  *  @version  $Id: Doc_Production.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
-public class Doc_Production extends Doc
+public class Doc_Production extends Doc<DocLine_Production>
 {
 	/**
 	 *  Constructor
@@ -60,31 +61,19 @@ public class Doc_Production extends Doc
 		super (docBuilder, DOCTYPE_MatProduction);
 	}   //  Doc_Production
 
-	/**
-	 *  Load Document Details
-	 *  @return error message or null
-	 */
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
 		setC_Currency_ID (NO_CURRENCY);
-		X_M_Production prod = (X_M_Production)getPO();
+		I_M_Production prod = getModel(I_M_Production.class);
 		setDateDoc (prod.getMovementDate());
 		setDateAcct(prod.getMovementDate());
-		//	Contained Objects
-		p_lines = loadLines(prod);
-		log.debug("Lines=" + p_lines.length);
-		return null;
-	}   //  loadDocumentDetails
+		setDocLines(loadLines(prod));
+	}
 
-	/**
-	 *	Load Invoice Line
-	 *	@param prod production
-	 *  @return DoaLine Array
-	 */
-	private DocLine[] loadLines(X_M_Production prod)
+	private List<DocLine_Production> loadLines(I_M_Production prod)
 	{
-		ArrayList<DocLine> list = new ArrayList<>();
+		final List<DocLine_Production> list = new ArrayList<>();
 		//	Production
 		//	-- ProductionPlan
 		//	-- -- ProductionLine	- the real level
@@ -116,15 +105,13 @@ public class Doc_Production extends Doc
 						X_M_ProductionLine line = new X_M_ProductionLine(getCtx(), rsPL, getTrxName());
 						if (line.getMovementQty().signum() == 0)
 						{
-							log.info("LineQty=0 - " + line);
 							continue;
 						}
-						DocLine docLine = new DocLine (line, this);
+						DocLine_Production docLine = new DocLine_Production(line, this);
 						docLine.setQty (line.getMovementQty(), false);
 						//	Identify finished BOM Product
 						docLine.setProductionBOM(line.getM_Product_ID() == M_Product_ID);
 						//
-						log.debug(docLine.toString());
 						list.add (docLine);
 					}
 					rsPL.close();
@@ -132,7 +119,7 @@ public class Doc_Production extends Doc
 				}
 				catch (Exception ee)
 				{
-					log.error(sqlPL, ee);
+					throw new DBException(ee, sqlPL);
 				}
 			}
 			rsPP.close();
@@ -140,13 +127,11 @@ public class Doc_Production extends Doc
 		}
 		catch (SQLException e)
 		{
-			log.error(sqlPP, e);
+			throw new DBException(e, sqlPP);
 		}
-		//	Return Array
-		DocLine[] dl = new DocLine[list.size()];
-		list.toArray(dl);
-		return dl;
-	}	//	loadLines
+		
+		return list;
+	}
 
 	/**
 	 *  Get Balance
@@ -155,7 +140,7 @@ public class Doc_Production extends Doc
 	@Override
 	public BigDecimal getBalance()
 	{
-		BigDecimal retValue = Env.ZERO;
+		BigDecimal retValue = BigDecimal.ZERO;
 		return retValue;
 	}   //  getBalance
 
@@ -178,9 +163,8 @@ public class Doc_Production extends Doc
 
 		//  Line pointer
 		FactLine fl = null;
-		for (int i = 0; i < p_lines.length; i++)
+		for (DocLine_Production line : getDocLines())
 		{
-			DocLine line = p_lines[i];
 			//	Calculate Costs
 			BigDecimal costs = null;
 			
@@ -201,10 +185,9 @@ public class Doc_Production extends Doc
 				if (line.isProductionBOM())
 				{
 					//	Get BOM Cost - Sum of individual lines
-					BigDecimal bomCost = Env.ZERO;
-					for (int ii = 0; ii < p_lines.length; ii++)
+					BigDecimal bomCost = BigDecimal.ZERO;
+					for (DocLine_Production line0 : getDocLines())
 					{
-						DocLine line0 = p_lines[ii];
 						if (line0.getM_ProductionPlan_ID() != line.getM_ProductionPlan_ID())
 							continue;
 						if (!line0.isProductionBOM())
@@ -233,8 +216,7 @@ public class Doc_Production extends Doc
 				as.getC_Currency_ID(), costs);
 			if (fl == null)
 			{
-				p_Error = "No Costs for Line " + line.getLine() + " - " + line;
-				return null;
+				throw newPostingException().setDetailMessage("No Costs for Line " + line.getLine() + " - " + line);
 			}
 			fl.setM_Locator_ID(line.getM_Locator_ID());
 			fl.setQty(line.getQty());

@@ -18,10 +18,6 @@
 package org.compiere.process;
 
 import java.util.List;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.adempiere.acct.api.IFactAcctCubeBL;
 import org.adempiere.ad.dao.IQueryBL;
@@ -29,6 +25,9 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.Services;
 import org.compiere.model.I_PA_ReportCube;
+
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /*
  * Populate Fact_Acct_Summary table with pre-calculated totals of

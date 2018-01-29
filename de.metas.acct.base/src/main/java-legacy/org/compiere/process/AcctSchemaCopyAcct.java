@@ -17,10 +17,6 @@
 package org.compiere.process;
 
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.MAccount;
@@ -31,6 +27,9 @@ import org.compiere.model.MAcctSchemaGL;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.KeyNamePair;
+
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * 	Copy Accounts from one Acct Schema to another

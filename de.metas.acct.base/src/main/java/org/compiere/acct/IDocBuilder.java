@@ -35,7 +35,7 @@ import org.compiere.model.MAcctSchema;
 public interface IDocBuilder
 {
 	/** @return {@link Doc} instance */ 
-	Doc build();
+	Doc<?> build();
 
 	MAcctSchema[] getAcctSchemas();
 

@@ -40,8 +40,9 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_PA_ReportCube;
 import org.compiere.model.MAcctSchemaElement;
@@ -55,9 +56,8 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
 
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
-import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Financial Report Engine
@@ -118,7 +118,7 @@ public class FinReport extends JavaProcess
 	/** Parameter Where Clause */
 	private final StringBuilder m_parameterWhere = new StringBuilder();
 	/** Parameter Where Clause SQL params */
-	private final List<Object> m_parameterWhereParams = new ArrayList<Object>();
+	private final List<Object> m_parameterWhereParams = new ArrayList<>();
 	/** The Report Columns */
 	private MReportColumn[] m_columns;
 	/** The Report Lines */
@@ -303,7 +303,7 @@ public class FinReport extends JavaProcess
 	{
 		log.info("C_Calendar_ID=" + m_report.getC_Calendar_ID());
 		Timestamp today = TimeUtil.getDay(System.currentTimeMillis());
-		ArrayList<FinReportPeriod> list = new ArrayList<FinReportPeriod>();
+		ArrayList<FinReportPeriod> list = new ArrayList<>();
 
 		String sql = "SELECT p.C_Period_ID, p.Name, p.StartDate, p.EndDate, MIN(p1.StartDate) "
 				+ "FROM C_Period p "
@@ -441,7 +441,7 @@ public class FinReport extends JavaProcess
 		final boolean isSuppressZeroLine = paReportLine.isSuppressZeroLine();	// metas-2009_0021_AP1_CR080
 		boolean isZeroLine = isSuppressZeroLine ? true : false;					// metas-2009_0021_AP1_CR080
 		final StringBuilder update = new StringBuilder();
-		final List<Object> updateSqlParams = new ArrayList<Object>();
+		final List<Object> updateSqlParams = new ArrayList<>();
 
 		// for all columns
 		for (int paReportColumnIndex = 0; paReportColumnIndex < m_columns.length; paReportColumnIndex++)
@@ -458,7 +458,7 @@ public class FinReport extends JavaProcess
 			info.append("Line=").append(paReportLineIndex).append(",Col=").append(paReportColumnIndex);
 
 			// SELECT SUM()
-			final List<Object> selectSqlParams = new ArrayList<Object>();
+			final List<Object> selectSqlParams = new ArrayList<>();
 			final StringBuilder select = new StringBuilder("SELECT ");
 			if (paReportLine.getPAAmountType() != null)				// line amount type overwrites column
 			{
@@ -1089,7 +1089,7 @@ public class FinReport extends JavaProcess
 		// task 07429
 		final MReportSource[] lineSources = currentReportLine.getSources(); // get the line sources, we will evaluate them all
 		final int idxLineSources = 0; // start with the first one
-		final List<Pair<String, Integer>> higherLevelRecords = new ArrayList<Pair<String, Integer>>(); // this list (now empty) contains the column and ID of the respective higher level sources.
+		final List<IPair<String, Integer>> higherLevelRecords = new ArrayList<>(); // this list (now empty) contains the column and ID of the respective higher level sources.
 
 		final String variable = insertLineSource(currentReportLine, lineSources, idxLineSources, higherLevelRecords);
 
@@ -1113,7 +1113,7 @@ public class FinReport extends JavaProcess
 			final MReportLine currentReportLine,
 			final MReportSource[] lineSources,
 			final int idxLineSources,
-			final List<Pair<String, Integer>> higherLevelRecords)
+			final List<IPair<String, Integer>> higherLevelRecords)
 	{
 		if (lineSources.length <= idxLineSources)
 		{
@@ -1130,7 +1130,7 @@ public class FinReport extends JavaProcess
 		log.debug("Variable=" + variable);
 
 		// INSERT INTO
-		final List<Object> insertSqlParams = new ArrayList<Object>();
+		final List<Object> insertSqlParams = new ArrayList<>();
 		final StringBuilder insert = new StringBuilder("INSERT INTO T_Report " + "(AD_PInstance_ID, PA_ReportLine_ID, Record_ID,Fact_Acct_ID,LevelNo ");
 		for (int paReportColumnIndex = 0; paReportColumnIndex < m_columns.length; paReportColumnIndex++)
 		{
@@ -1168,7 +1168,7 @@ public class FinReport extends JavaProcess
 
 			// SELECT SUM()
 			final StringBuilder select = new StringBuilder("SELECT ");
-			final List<Object> selectSqlParams = new ArrayList<Object>();
+			final List<Object> selectSqlParams = new ArrayList<>();
 			if (currentReportLine.getPAAmountType() != null)				// line amount type overwrites column
 			{
 				select.append(currentReportLine.getSelectClause(true));
@@ -1223,9 +1223,9 @@ public class FinReport extends JavaProcess
 			select.append(" AND fb.").append(variable).append("=x.").append(variable);
 
 			// task 07429
-			for (final Pair<String, Integer> higlerlevel : higherLevelRecords)
+			for (final IPair<String, Integer> higlerlevel : higherLevelRecords)
 			{
-				select.append(" AND fb.").append(higlerlevel.getFirst()).append("=x.").append(higlerlevel.getFirst());
+				select.append(" AND fb.").append(higlerlevel.getLeft()).append("=x.").append(higlerlevel.getLeft());
 			}
 
 			// PostingType
@@ -1285,9 +1285,9 @@ public class FinReport extends JavaProcess
 		where.append(variable).append(" IS NOT NULL");
 
 		// task 07429
-		for (final Pair<String, Integer> higlerlevel : higherLevelRecords)
+		for (final IPair<String, Integer> higlerlevel : higherLevelRecords)
 		{
-			where.append(" AND x.").append(higlerlevel.getFirst()).append("=").append(higlerlevel.getSecond());
+			where.append(" AND x.").append(higlerlevel.getLeft()).append("=").append(higlerlevel.getRight());
 		}
 
 		if (p_PA_ReportCube_ID > 0)
@@ -1308,9 +1308,9 @@ public class FinReport extends JavaProcess
 		// Append GROUP BYs
 		insert.append(" GROUP BY ").append(variable);
 		// task 07429: append the parent
-		for (final Pair<String, Integer> higlerlevel : higherLevelRecords)
+		for (final IPair<String, Integer> higlerlevel : higherLevelRecords)
 		{
-			insert.append(", ").append(higlerlevel.getFirst());
+			insert.append(", ").append(higlerlevel.getLeft());
 		}
 
 		insert.append(" RETURNING RECORD_ID ");
@@ -1335,8 +1335,8 @@ public class FinReport extends JavaProcess
 						{
 							count[0]++;
 							final int insertedRecordId = rs.getInt(1);
-							final List<Pair<String, Integer>> newParentList = new ArrayList<Pair<String, Integer>>(higherLevelRecords);
-							newParentList.add(new Pair<String, Integer>(variable, insertedRecordId));
+							final List<IPair<String, Integer>> newParentList = new ArrayList<>(higherLevelRecords);
+							newParentList.add(ImmutablePair.of(variable, insertedRecordId));
 
 							insertLineSource(currentReportLine, lineSources, idxLineSources + 1, newParentList);
 						}
@@ -1672,7 +1672,7 @@ public class FinReport extends JavaProcess
 		do
 		{
 			changed = false;
-			ArrayList<MReportLine> list = new ArrayList<MReportLine>();
+			ArrayList<MReportLine> list = new ArrayList<>();
 			for (int line = 0; line < m_lines.length; line++)
 			{
 				if (m_lines[line].isLineTypeIncluded())
@@ -1790,7 +1790,7 @@ public class FinReport extends JavaProcess
 
 	private Collection<Integer> getAllLineIDs(int... ids)
 	{
-		Collection<Integer> list = new TreeSet<Integer>();
+		Collection<Integer> list = new TreeSet<>();
 		for (int id : ids)
 		{
 			MReportLine line = findReportLine(id, m_report.getLineSet());
@@ -1812,7 +1812,7 @@ public class FinReport extends JavaProcess
 		int firstPA_ReportLine_ID = 0;
 		int lastPA_ReportLine_ID = 0;
 
-		Collection<Integer> ids = new TreeSet<Integer>();
+		Collection<Integer> ids = new TreeSet<>();
 		MReportLine line1 = findReportLine(fromID, m_report.getLineSet());
 		MReportLine line2 = findReportLine(toID, m_report.getLineSet());
 		if (line1 == null)

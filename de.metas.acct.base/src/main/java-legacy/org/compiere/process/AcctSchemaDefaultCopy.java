@@ -17,15 +17,14 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaDefault;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
+
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * 	Add or Copy Acct Schema Default Accounts
@@ -44,6 +43,7 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare ()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -66,6 +66,7 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 	 *	@return message
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		log.info("C_AcctSchema_ID=" + p_C_AcctSchema_ID

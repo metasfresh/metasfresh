@@ -237,7 +237,7 @@ import lombok.NonNull;
 		{
 			final MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(ctx, AD_Client_ID);
 
-			final Doc doc = docFactory.getOrNull(ctx, ass, AD_Table_ID, Record_ID, trxName);
+			final Doc<?> doc = docFactory.getOrNull(ctx, ass, AD_Table_ID, Record_ID, trxName);
 			if (doc == null)
 			{
 				throw new PostingExecutionException("No accountable document found: " + this);

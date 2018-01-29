@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.acct.api.GLDistributionBuilder;
 import org.adempiere.acct.api.GLDistributionResult;
@@ -21,9 +19,10 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.MAccount;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -141,7 +140,7 @@ import com.google.common.collect.ImmutableList;
 	{
 		final Properties ctx = baseLine.getCtx();
 		final String postingType = baseLine.getPostingType();
-		final Doc doc = baseLine.getDoc();
+		final Doc<?> doc = baseLine.getDoc();
 		final int docTypeId = doc.getC_DocType_ID();
 
 		final List<I_GL_Distribution> distributions = glDistributionDAO.retrieve(ctx, baseLineDimension, postingType, docTypeId);
@@ -192,8 +191,8 @@ import com.google.common.collect.ImmutableList;
 			return null;
 		}
 
-		final Doc doc = baseLine.getDoc();
-		final DocLine docLine = baseLine.getDocLine();
+		final Doc<?> doc = baseLine.getDoc();
+		final DocLine<?> docLine = baseLine.getDocLine();
 		final Properties ctx = doc.getCtx();
 
 		final IAccountDimension accountDimension = glDistributionLine.getAccountDimension();

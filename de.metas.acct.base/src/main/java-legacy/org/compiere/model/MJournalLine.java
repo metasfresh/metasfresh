@@ -21,8 +21,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import org.compiere.util.Env;
-
 /**
  * Journal Line Model
  *
@@ -54,11 +52,11 @@ public class MJournalLine extends X_GL_JournalLine
 			// setC_Currency_ID (0);
 			// setC_ValidCombination_ID (0);
 			setLine(0);
-			setAmtAcctCr(Env.ZERO);
-			setAmtAcctDr(Env.ZERO);
-			setAmtSourceCr(Env.ZERO);
-			setAmtSourceDr(Env.ZERO);
-			setCurrencyRate(Env.ONE);
+			setAmtAcctCr(BigDecimal.ZERO);
+			setAmtAcctDr(BigDecimal.ZERO);
+			setAmtSourceCr(BigDecimal.ZERO);
+			setAmtSourceDr(BigDecimal.ZERO);
+			setCurrencyRate(BigDecimal.ONE);
 			// setC_ConversionType_ID (0);
 			setDateAcct(new Timestamp(System.currentTimeMillis()));
 			setIsGenerated(true);
@@ -124,12 +122,12 @@ public class MJournalLine extends X_GL_JournalLine
 		if (CurrencyRate == null)
 		{
 			log.warn("was NULL - set to 1");
-			super.setCurrencyRate(Env.ONE);
+			super.setCurrencyRate(BigDecimal.ONE);
 		}
 		else if (CurrencyRate.signum() < 0)
 		{
 			log.warn("negative - " + CurrencyRate + " - set to 1");
-			super.setCurrencyRate(Env.ONE);
+			super.setCurrencyRate(BigDecimal.ONE);
 		}
 		else
 			super.setCurrencyRate(CurrencyRate);

@@ -48,7 +48,6 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductBL;
-import de.metas.tax.api.ITaxBL;
 
 /**
  * Post Shipment/Receipt Documents.
@@ -69,16 +68,13 @@ import de.metas.tax.api.ITaxBL;
  *         <li>BF [ 2858043 ] Correct Included Tax in Average Costing
  * 
  */
-public class Doc_InOut extends Doc
+public class Doc_InOut extends Doc<DocLine_InOut>
 {
-	// private static final Logger logger = LogManager.getLogger(Doc_InOut.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_InOut.PostMatchInvs";
@@ -93,32 +89,31 @@ public class Doc_InOut extends Doc
 	private String m_DocStatus = "";
 
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
 		setC_Currency_ID(NO_CURRENCY);
-		final I_M_InOut inout = InterfaceWrapperHelper.create(getPO(), I_M_InOut.class);
+		final I_M_InOut inout = getModel(I_M_InOut.class);
 		setDateDoc(inout.getMovementDate());
 		m_Reversal_ID = inout.getReversal_ID();// store original (voided/reversed) document
 		m_DocStatus = inout.getDocStatus();
-		p_lines = loadLines(inout);
-		return null;
+		setDocLines(loadLines(inout));
 	}
 
-	private DocLine[] loadLines(final I_M_InOut inout)
+	private List<DocLine_InOut> loadLines(final I_M_InOut inout)
 	{
 		final boolean isSOTrx = DOCTYPE_MatShipment.equals(getDocumentType());
 
-		final List<DocLine> docLines = new ArrayList<>();
+		final List<DocLine_InOut> docLines = new ArrayList<>();
 		for (final I_M_InOutLine inoutLine : inOutDAO.retrieveAllLines(inout))
 		{
 			if (inoutLine.isDescription()
-					|| inoutLine.getM_Product_ID() == 0
+					|| inoutLine.getM_Product_ID() <= 0
 					|| inoutLine.getMovementQty().signum() == 0)
 			{
 				continue;
 			}
 
-			final DocLine docLine = new DocLine(InterfaceWrapperHelper.getPO(inoutLine), this);
+			final DocLine_InOut docLine = new DocLine_InOut(inoutLine, this);
 
 			if (inOutBL.isReversal(inoutLine))
 			{
@@ -144,7 +139,7 @@ public class Doc_InOut extends Doc
 		}
 
 		//
-		return docLines.toArray(new DocLine[docLines.size()]);
+		return docLines;
 	}	// loadLines
 
 	/** @return zero (always balanced) */
@@ -217,7 +212,7 @@ public class Doc_InOut extends Doc
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		facts.add(fact);
 
-		for (final DocLine line : p_lines)
+		for (final DocLine_InOut line : getDocLines())
 		{
 			// Skip not stockable (e.g. service products) because they have no cost
 			final I_M_Product product = line.getProduct();
@@ -308,13 +303,8 @@ public class Doc_InOut extends Doc
 		// Commitment release
 		if (as.isAccrual() && as.isCreateSOCommitment())
 		{
-			for (final DocLine line : p_lines)
-			{
-				final Fact factcomm = Doc_Order.createFact_CommitmentSalesRelease(as, this, line.getQty(), line.get_ID(), BigDecimal.ONE);
-				if (factcomm != null)
-					facts.add(factcomm);
-			}
-		}	// Commitment
+			throw newPostingException().setC_AcctSchema(as).setDetailMessage("SO commitment release not supported");
+		}
 
 		return facts;
 	}
@@ -327,7 +317,7 @@ public class Doc_InOut extends Doc
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		facts.add(fact);
 
-		for (final DocLine line : p_lines)
+		for (final DocLine_InOut line : getDocLines())
 		{
 			// Skip not stockable (e.g. service products) because they have no cost
 			final I_M_Product product = line.getProduct();
@@ -424,7 +414,7 @@ public class Doc_InOut extends Doc
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		facts.add(fact);
 
-		for (final DocLine line : p_lines)
+		for (final DocLine_InOut line : getDocLines())
 		{
 			// Skip not stockable (e.g. service products) because they have no cost
 			final MProduct product = line.getProduct();
@@ -540,7 +530,7 @@ public class Doc_InOut extends Doc
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		facts.add(fact);
 
-		for (final DocLine line : p_lines)
+		for (final DocLine_InOut line : getDocLines())
 		{
 			// Skip not stockable (e.g. service products) because they have no cost
 			final MProduct product = line.getProduct();
@@ -629,7 +619,7 @@ public class Doc_InOut extends Doc
 		}
 
 		final Set<Integer> inoutLineIds = new HashSet<>();
-		for (final DocLine docLine : getDocLines())
+		for (final DocLine_InOut docLine : getDocLines())
 		{
 			inoutLineIds.add(docLine.get_ID());
 		}

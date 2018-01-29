@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -27,7 +27,6 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCharge;
-import org.compiere.util.Env;
 
 /**
  * Post Payment Documents.
@@ -40,7 +39,7 @@ import org.compiere.util.Env;
  * @author Jorg Janke
  * @version $Id: Doc_Payment.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
-public class Doc_Payment extends Doc
+public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 {
 	// services
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -62,13 +61,8 @@ public class Doc_Payment extends Doc
 	/** Prepayment */
 	private boolean m_Prepayment = false;
 
-	/**
-	 * Load Specific Document Details
-	 * 
-	 * @return error message or null
-	 */
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
 		final I_C_Payment pay = getModel(I_C_Payment.class);
 		setDateDoc(pay.getDateTrx());
@@ -78,9 +72,7 @@ public class Doc_Payment extends Doc
 
 		// Amount
 		setAmount(Doc.AMTTYPE_Gross, pay.getPayAmt());
-
-		return null;
-	}   // loadDocumentDetails
+	}
 
 	/**************************************************************************
 	 * Get Source Currency Balance - always zero
@@ -90,9 +82,7 @@ public class Doc_Payment extends Doc
 	@Override
 	public BigDecimal getBalance()
 	{
-		BigDecimal retValue = Env.ZERO;
-		// log.info( toString() + " Balance=" + retValue);
-		return retValue;
+		return BigDecimal.ZERO;
 	}   // getBalance
 
 	/**
@@ -125,7 +115,7 @@ public class Doc_Payment extends Doc
 		// Cash Transfer
 		if ("X".equals(getTenderType()) && !isCashAsPayment())
 		{
-			final ArrayList<Fact> facts = new ArrayList<Fact>();
+			final ArrayList<Fact> facts = new ArrayList<>();
 			facts.add(fact);
 			return facts;
 		}
@@ -185,7 +175,7 @@ public class Doc_Payment extends Doc
 		}
 
 		//
-		final ArrayList<Fact> facts = new ArrayList<Fact>();
+		final ArrayList<Fact> facts = new ArrayList<>();
 		facts.add(fact);
 		return facts;
 	}   // createFact

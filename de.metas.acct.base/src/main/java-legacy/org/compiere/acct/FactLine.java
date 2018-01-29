@@ -21,8 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -39,7 +37,6 @@ import org.compiere.model.MRevenueRecognitionPlan;
 import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.model.X_Fact_Acct;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import de.metas.acct.IVATCodeDAO;
 import de.metas.acct.VATCode;
@@ -85,11 +82,11 @@ final class FactLine extends X_Fact_Acct
 		setAD_Client_ID(0);							// do not derive
 		setAD_Org_ID(0);							// do not derive
 		//
-		setAmtAcctCr(Env.ZERO);
-		setAmtAcctDr(Env.ZERO);
+		setAmtAcctCr(BigDecimal.ZERO);
+		setAmtAcctDr(BigDecimal.ZERO);
 		setCurrencyRate(BigDecimal.ONE);
-		setAmtSourceCr(Env.ZERO);
-		setAmtSourceDr(Env.ZERO);
+		setAmtSourceCr(BigDecimal.ZERO);
+		setAmtSourceDr(BigDecimal.ZERO);
 		// Log.trace(this,Log.l1_User, "FactLine " + AD_Table_ID + ":" + Record_ID);
 		setAD_Table_ID(AD_Table_ID);
 		setRecord_ID(Record_ID);
@@ -101,9 +98,9 @@ final class FactLine extends X_Fact_Acct
 	/** Accounting Schema */
 	private MAcctSchema m_acctSchema = null;
 	/** Document Header */
-	private Doc m_doc = null;
+	private Doc<?> m_doc = null;
 	/** Document Line */
-	private DocLine m_docLine = null;
+	private DocLine<?> m_docLine = null;
 	private ICurrencyConversionContext currencyConversionCtx = null;
 
 	/**
@@ -178,7 +175,7 @@ final class FactLine extends X_Fact_Acct
 				{
 					if (m_doc == null)
 						throw new IllegalArgumentException("Document not set yet");
-					ID1 = m_doc.getValue(ColumnName1);
+					ID1 = m_doc.getValueAsIntOrZero(ColumnName1);
 				}
 				if (ID1 != 0)
 					setUserElement1_ID(ID1);
@@ -197,7 +194,7 @@ final class FactLine extends X_Fact_Acct
 				{
 					if (m_doc == null)
 						throw new IllegalArgumentException("Document not set yet");
-					ID2 = m_doc.getValue(ColumnName2);
+					ID2 = m_doc.getValueAsIntOrZero(ColumnName2);
 				}
 				if (ID2 != 0)
 					setUserElement2_ID(ID2);
@@ -249,18 +246,18 @@ final class FactLine extends X_Fact_Acct
 			// fix Debit & Credit
 			if (AmtSourceDr != null)
 			{
-				if (AmtSourceDr.compareTo(Env.ZERO) == -1)
+				if (AmtSourceDr.compareTo(BigDecimal.ZERO) == -1)
 				{
 					AmtSourceCr = AmtSourceDr.abs();
-					AmtSourceDr = Env.ZERO;
+					AmtSourceDr = BigDecimal.ZERO;
 				}
 			}
 			if (AmtSourceCr != null)
 			{
-				if (AmtSourceCr.compareTo(Env.ZERO) == -1)
+				if (AmtSourceCr.compareTo(BigDecimal.ZERO) == -1)
 				{
 					AmtSourceDr = AmtSourceCr.abs();
-					AmtSourceCr = Env.ZERO;
+					AmtSourceCr = BigDecimal.ZERO;
 				}
 			}
 			// end Victor Perez e-evolution 30.08.2005
@@ -286,15 +283,15 @@ final class FactLine extends X_Fact_Acct
 		{
 			// begin Victor Perez e-evolution 30.08.2005
 			// fix Debit & Credit
-			if (AmtAcctDr.compareTo(Env.ZERO) == -1)
+			if (AmtAcctDr.compareTo(BigDecimal.ZERO) == -1)
 			{
 				AmtAcctCr = AmtAcctDr.abs();
-				AmtAcctDr = Env.ZERO;
+				AmtAcctDr = BigDecimal.ZERO;
 			}
-			if (AmtAcctCr.compareTo(Env.ZERO) == -1)
+			if (AmtAcctCr.compareTo(BigDecimal.ZERO) == -1)
 			{
 				AmtAcctDr = AmtAcctCr.abs();
-				AmtAcctCr = Env.ZERO;
+				AmtAcctCr = BigDecimal.ZERO;
 			}
 			// end Victor Perez e-evolution 30.08.2005
 		}
@@ -395,7 +392,7 @@ final class FactLine extends X_Fact_Acct
 	 * @param doc document
 	 * @param docLine doc line
 	 */
-	protected void setDocumentInfo(final Doc doc, final DocLine docLine)
+	protected void setDocumentInfo(final Doc<?> doc, final DocLine<?> docLine)
 	{
 		m_doc = doc;
 		m_docLine = docLine;
@@ -529,7 +526,7 @@ final class FactLine extends X_Fact_Acct
 		// References in setAccount
 	}   // setDocumentInfo
 	
-	public final Doc getDoc()
+	public final Doc<?> getDoc()
 	{
 		return m_doc;
 	}
@@ -539,7 +536,7 @@ final class FactLine extends X_Fact_Acct
 	 *
 	 * @return doc line
 	 */
-	public final DocLine getDocLine()
+	public final DocLine<?> getDocLine()
 	{
 		return m_docLine;
 	}	// getDocLine
@@ -712,9 +709,9 @@ final class FactLine extends X_Fact_Acct
 	public BigDecimal getSourceBalance()
 	{
 		if (getAmtSourceDr() == null)
-			setAmtSourceDr(Env.ZERO);
+			setAmtSourceDr(BigDecimal.ZERO);
 		if (getAmtSourceCr() == null)
-			setAmtSourceCr(Env.ZERO);
+			setAmtSourceCr(BigDecimal.ZERO);
 		//
 		return getAmtSourceDr().subtract(getAmtSourceCr());
 	}   // getSourceBalance
@@ -737,9 +734,9 @@ final class FactLine extends X_Fact_Acct
 	public BigDecimal getAcctBalance()
 	{
 		if (getAmtAcctDr() == null)
-			setAmtAcctDr(Env.ZERO);
+			setAmtAcctDr(BigDecimal.ZERO);
 		if (getAmtAcctCr() == null)
-			setAmtAcctCr(Env.ZERO);
+			setAmtAcctCr(BigDecimal.ZERO);
 		return getAmtAcctDr().subtract(getAmtAcctCr());
 	}   // getAcctBalance
 
@@ -858,7 +855,7 @@ final class FactLine extends X_Fact_Acct
 	 */
 	public void currencyCorrect(BigDecimal deltaAmount)
 	{
-		boolean negative = deltaAmount.compareTo(Env.ZERO) < 0;
+		boolean negative = deltaAmount.compareTo(BigDecimal.ZERO) < 0;
 		boolean adjustDr = getAmtAcctDr().abs().compareTo(getAmtAcctCr().abs()) > 0;
 
 		log.debug(deltaAmount.toString()
@@ -1061,7 +1058,7 @@ final class FactLine extends X_Fact_Acct
 	@Override
 	public int getC_SalesRegion_ID()
 	{
-		if (super.getC_SalesRegion_ID() != 0)
+		if (super.getC_SalesRegion_ID() > 0)
 			return super.getC_SalesRegion_ID();
 		//
 		if (m_docLine != null)
@@ -1408,14 +1405,14 @@ final class FactLine extends X_Fact_Acct
 		//
 		// Get context
 		final boolean isSOTrx;
-		final DocLine docLine = getDocLine();
+		final DocLine<?> docLine = getDocLine();
 		if (docLine != null)
 		{
 			isSOTrx = docLine.isSOTrx();
 		}
 		else
 		{
-			final Doc doc = getDoc();
+			final Doc<?> doc = getDoc();
 			isSOTrx = doc.isSOTrx();
 		}
 		

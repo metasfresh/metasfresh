@@ -154,4 +154,6 @@ public interface IPPCostCollectorBL extends ISingletonService
 	 * @return true if given cost collector is actually a reversal.
 	 */
 	boolean isReversal(I_PP_Cost_Collector cc);
+
+	boolean isFloorStock(I_PP_Cost_Collector cc);
 }

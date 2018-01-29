@@ -13,8 +13,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 /*
  * #%L

@@ -19,13 +19,6 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
-import de.metas.logging.LogManager;
 
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
@@ -40,7 +33,11 @@ import org.compiere.model.MOrg;
 import org.compiere.model.Query;
 import org.compiere.model.X_T_InvoiceGL;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * 	Invoice Not realized Gain & Loss.
@@ -252,8 +249,8 @@ public class InvoiceNGL extends JavaProcess
 			return " - Could not create Batch";
 		//
 		MJournal journal = null;
-		BigDecimal drTotal = Env.ZERO;
-		BigDecimal crTotal = Env.ZERO;
+		BigDecimal drTotal = BigDecimal.ZERO;
+		BigDecimal crTotal = BigDecimal.ZERO;
 		int AD_Org_ID = 0;
 		for (int i = 0; i < list.size(); i++)
 		{
@@ -302,8 +299,8 @@ public class InvoiceNGL extends JavaProcess
 				createBalancing (asDefaultAccts, journal, drTotal, crTotal, AD_Org_ID, (i+1) * 10);
 				//
 				AD_Org_ID = gl.getAD_Org_ID();
-				drTotal = Env.ZERO;
-				crTotal = Env.ZERO;
+				drTotal = BigDecimal.ZERO;
+				crTotal = BigDecimal.ZERO;
 				journal = null;
 			}
 		}

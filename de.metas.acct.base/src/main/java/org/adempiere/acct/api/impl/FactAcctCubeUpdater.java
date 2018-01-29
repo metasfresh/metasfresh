@@ -35,8 +35,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.Check;
 import org.compiere.model.I_PA_ReportCube;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.KeyNamePair;
 

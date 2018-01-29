@@ -29,17 +29,17 @@ import java.util.Set;
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MInvoice;
-import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
@@ -61,22 +61,10 @@ import com.google.common.collect.ImmutableList;
  *
  * @version $Id: Doc_Invoice.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
-public class Doc_Invoice extends Doc
+public class Doc_Invoice extends Doc<DocLine_Invoice>
 {
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_Invoice.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
-
-	/**
-	 * Constructor
-	 *
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
-	public Doc_Invoice(final IDocBuilder docBuilder)
-	{
-		super(docBuilder);
-	}	// Doc_Invoice
 
 	/** Contained Optional Tax Lines */
 	private List<DocTax> _taxes = null;
@@ -85,25 +73,23 @@ public class Doc_Invoice extends Doc
 	/** All lines are product item */
 	private boolean m_allLinesItem = true;
 
-	/**
-	 * Load Specific Document Details
-	 *
-	 * @return error message or null
-	 */
-	@Override
-	protected String loadDocumentDetails()
+	public Doc_Invoice(final IDocBuilder docBuilder)
 	{
-		final MInvoice invoice = (MInvoice)getPO();
+		super(docBuilder);
+	}	// Doc_Invoice
+
+	@Override
+	protected void loadDocumentDetails()
+	{
+		final I_C_Invoice invoice = getModel(I_C_Invoice.class);
 		setDateDoc(invoice.getDateInvoiced());
 		// Amounts
 		setAmount(Doc.AMTTYPE_Gross, invoice.getGrandTotal());
 		setAmount(Doc.AMTTYPE_Net, invoice.getTotalLines());
 		setAmount(Doc.AMTTYPE_Charge, invoice.getChargeAmt());
 
-		// Contained Objects
-		p_lines = loadLines(invoice);
-		return null;
-	}   // loadDocumentDetails
+		setDocLines(loadLines(invoice));
+	}
 
 	private List<DocTax> getTaxes()
 	{
@@ -161,18 +147,11 @@ public class Doc_Invoice extends Doc
 		}
 	}	// loadTaxes
 
-	/**
-	 * Load Invoice Line
-	 *
-	 * @param invoice invoice
-	 * @return DocLine Array
-	 */
-	private DocLine[] loadLines(final MInvoice invoice)
+	private List<DocLine_Invoice> loadLines(final I_C_Invoice invoice)
 	{
-		final ArrayList<DocLine> list = new ArrayList<>();
+		final List<DocLine_Invoice> docLines = new ArrayList<>();
 		//
-		final MInvoiceLine[] lines = invoice.getLines(false);
-		for (final MInvoiceLine line : lines)
+		for (final I_C_InvoiceLine line : Services.get(IInvoiceDAO.class).retrieveLines(invoice))
 		{
 			// Skip invoice description lines
 			if (line.isDescription())
@@ -205,14 +184,8 @@ public class Doc_Invoice extends Doc
 				m_allLinesItem = false;
 			}
 
-			//
-			log.debug("{}", docLine);
-			list.add(docLine);
+			docLines.add(docLine);
 		}
-
-		// Convert to Array
-		final DocLine[] dls = new DocLine[list.size()];
-		list.toArray(dls);
 
 		// Included Tax - make sure that no difference
 		for (final DocTax docTax : getTaxes())
@@ -225,19 +198,19 @@ public class Doc_Invoice extends Doc
 			if (docTax.isIncludedTaxDifference())
 			{
 				final BigDecimal diff = docTax.getIncludedTaxDifference();
-				for (int j = 0; j < dls.length; j++)
+				for (final DocLine_Invoice docLine : docLines)
 				{
-					if (dls[j].getC_Tax_ID() == docTax.getC_Tax_ID())
+					if (docLine.getC_Tax_ID() == docTax.getC_Tax_ID())
 					{
-						dls[j].setLineNetAmtDifference(diff);
+						docLine.setLineNetAmtDifference(diff);
 						break;
 					}
 				} 	// for all lines
 			} 	// tax difference
 		} 	// for all taxes
 
-		// Return Array
-		return dls;
+		//
+		return docLines;
 	}	// loadLines
 
 	final boolean isCreditMemo()
@@ -270,9 +243,9 @@ public class Doc_Invoice extends Doc
 		}
 
 		// - Lines
-		for (final DocLine docLine : p_lines)
+		for (final DocLine_Invoice line : getDocLines())
 		{
-			retValue = retValue.subtract(docLine.getAmtSource());
+			retValue = retValue.subtract(line.getAmtSource());
 		}
 
 		return retValue;
@@ -404,26 +377,26 @@ public class Doc_Invoice extends Doc
 		}
 
 		// Revenue CR
-		for (int i = 0; i < p_lines.length; i++)
+		for (final DocLine_Invoice line : getDocLines())
 		{
-			BigDecimal lineAmt = p_lines[i].getAmtSource();
+			BigDecimal lineAmt = line.getAmtSource();
 			BigDecimal dAmt = null;
 			if (as.isTradeDiscountPosted())
 			{
-				final BigDecimal discount = p_lines[i].getDiscount();
+				final BigDecimal discount = line.getDiscount();
 				if (discount != null && discount.signum() != 0)
 				{
 					lineAmt = lineAmt.add(discount);
 					dAmt = discount;
-					fact.createLine(p_lines[i],
-							p_lines[i].getAccount(ProductCost.ACCTTYPE_P_TDiscountGrant, as),
+					fact.createLine(line,
+							line.getAccount(ProductCost.ACCTTYPE_P_TDiscountGrant, as),
 							getC_Currency_ID(), dAmt, null);
 				}
 			}
-			fact.createLine(p_lines[i],
-					p_lines[i].getAccount(ProductCost.ACCTTYPE_P_Revenue, as),
+			fact.createLine(line,
+					line.getAccount(ProductCost.ACCTTYPE_P_Revenue, as),
 					getC_Currency_ID(), null, lineAmt);
-			if (!p_lines[i].isItem())
+			if (!line.isItem())
 			{
 				grossAmt = grossAmt.subtract(lineAmt);
 				serviceAmt = serviceAmt.add(lineAmt);
@@ -506,26 +479,26 @@ public class Doc_Invoice extends Doc
 			}
 		}
 		// Revenue CR
-		for (int i = 0; i < p_lines.length; i++)
+		for (final DocLine_Invoice line : getDocLines())
 		{
-			BigDecimal lineAmt = p_lines[i].getAmtSource();
+			BigDecimal lineAmt = line.getAmtSource();
 			BigDecimal dAmt = null;
 			if (as.isTradeDiscountPosted())
 			{
-				final BigDecimal discount = p_lines[i].getDiscount();
+				final BigDecimal discount = line.getDiscount();
 				if (discount != null && discount.signum() != 0)
 				{
 					lineAmt = lineAmt.add(discount);
 					dAmt = discount;
-					fact.createLine(p_lines[i],
-							p_lines[i].getAccount(ProductCost.ACCTTYPE_P_TDiscountGrant, as),
+					fact.createLine(line,
+							line.getAccount(ProductCost.ACCTTYPE_P_TDiscountGrant, as),
 							getC_Currency_ID(), null, dAmt);
 				}
 			}
-			fact.createLine(p_lines[i],
-					p_lines[i].getAccount(ProductCost.ACCTTYPE_P_Revenue, as),
+			fact.createLine(line,
+					line.getAccount(ProductCost.ACCTTYPE_P_Revenue, as),
 					getC_Currency_ID(), lineAmt, null);
-			if (!p_lines[i].isItem())
+			if (!line.isItem())
 			{
 				grossAmt = grossAmt.subtract(lineAmt);
 				serviceAmt = serviceAmt.add(lineAmt);
@@ -602,9 +575,8 @@ public class Doc_Invoice extends Doc
 		}
 
 		// Expense/InventoryClearing DR
-		for (int i = 0; i < p_lines.length; i++)
+		for (final DocLine_Invoice line : getDocLines())
 		{
-			final DocLine_Invoice line = (DocLine_Invoice)p_lines[i];
 			BigDecimal amt = line.getAmtSource();
 			BigDecimal dAmt = null;
 			if (as.isTradeDiscountPosted() && !line.isItem())
@@ -710,9 +682,8 @@ public class Doc_Invoice extends Doc
 			}
 		}
 		// Expense CR
-		for (int i = 0; i < p_lines.length; i++)
+		for (final DocLine_Invoice line : getDocLines())
 		{
-			final DocLine_Invoice line = (DocLine_Invoice)p_lines[i];
 			BigDecimal amt = line.getAmtSource();
 			BigDecimal dAmt = null;
 			if (as.isTradeDiscountPosted() && !line.isItem())
@@ -803,9 +774,9 @@ public class Doc_Invoice extends Doc
 		}
 
 		final Set<Integer> invoiceLineIds = new HashSet<>();
-		for (final DocLine docLine : getDocLines())
+		for (final DocLine_Invoice line : getDocLines())
 		{
-			invoiceLineIds.add(docLine.get_ID());
+			invoiceLineIds.add(line.get_ID());
 		}
 
 		// 08643
@@ -847,11 +818,9 @@ public class Doc_Invoice extends Doc
 		BigDecimal acctAmt = BigDecimal.ZERO;
 		FactLine fl = null;
 		// Revenue/Cost
-		for (int i = 0; i < p_lines.length; i++)
+		for (final DocLine_Invoice line : getDocLines())
 		{
-			final DocLine line = p_lines[i];
-			MAccount acct = line.getAccount(
-					payables ? ProductCost.ACCTTYPE_P_Expense : ProductCost.ACCTTYPE_P_Revenue, as);
+			MAccount acct = line.getAccount(payables ? ProductCost.ACCTTYPE_P_Expense : ProductCost.ACCTTYPE_P_Revenue, as);
 			if (payables)
 			{
 				// if Fixed Asset

@@ -38,8 +38,11 @@ public class InventoryDAO implements IInventoryDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class, inventory)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventory.getM_Inventory_ID())
-				.create().list();
+				.addEqualsFilter(I_M_InventoryLine.COLUMN_M_Inventory_ID, inventory.getM_Inventory_ID())
+				.orderBy(I_M_InventoryLine.COLUMN_Line)
+				.orderBy(I_M_InventoryLine.COLUMN_M_InventoryLine_ID)
+				.create()
+				.list(I_M_InventoryLine.class);
 	}
 
 }

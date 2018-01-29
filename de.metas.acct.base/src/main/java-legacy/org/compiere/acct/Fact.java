@@ -56,7 +56,7 @@ public final class Fact
 	 * @param acctSchema Account Schema to create accounts
 	 * @param defaultPostingType the default Posting type (actual,..) for this posting
 	 */
-	public Fact(final Doc document, final MAcctSchema acctSchema, final String defaultPostingType)
+	public Fact(final Doc<?> document, final MAcctSchema acctSchema, final String defaultPostingType)
 	{
 		super();
 
@@ -79,7 +79,7 @@ public final class Fact
 	private static final transient Logger log = LogManager.getLogger(Fact.class);
 
 	/** Document */
-	private final Doc m_doc;
+	private final Doc<?> m_doc;
 	/** Accounting Schema */
 	private final MAcctSchema m_acctSchema;
 	/** Transaction */
@@ -122,7 +122,7 @@ public final class Fact
 	 * @param creditAmt credit amount, can be null
 	 * @return Fact Line
 	 */
-	public FactLine createLine(final DocLine docLine,
+	public FactLine createLine(final DocLine<?> docLine,
 			final MAccount account,
 			final int C_Currency_ID,
 			final BigDecimal debitAmt, final BigDecimal creditAmt)
@@ -151,7 +151,7 @@ public final class Fact
 	 * @param qty quantity, can be null and in that case the standard qty from DocLine/Doc will be used.
 	 * @return Fact Line or null
 	 */
-	public FactLine createLine(final DocLine docLine,
+	public FactLine createLine(final DocLine<?> docLine,
 			final MAccount account,
 			final int C_Currency_ID,
 			final BigDecimal debitAmt, final BigDecimal creditAmt,
@@ -196,7 +196,7 @@ public final class Fact
 	 * @param Amt if negative Cr else Dr
 	 * @return FactLine
 	 */
-	public FactLine createLine(DocLine docLine, MAccount accountDr, MAccount accountCr, int C_Currency_ID, BigDecimal Amt)
+	public FactLine createLine(DocLine<?> docLine, MAccount accountDr, MAccount accountCr, int C_Currency_ID, BigDecimal Amt)
 	{
 		return createLine()
 				.setDocLine(docLine)
@@ -214,7 +214,7 @@ public final class Fact
 	 * @param Amt if negative Cr else Dr
 	 * @return FactLine
 	 */
-	public FactLine createLine(DocLine docLine, MAccount account, int C_Currency_ID, BigDecimal Amt)
+	public FactLine createLine(DocLine<?> docLine, MAccount account, int C_Currency_ID, BigDecimal Amt)
 	{
 		return createLine()
 				.setDocLine(docLine)
@@ -275,7 +275,7 @@ public final class Fact
 		BigDecimal balance = getSourceBalance();
 		boolean retValue = balance.signum() == 0;
 		if (retValue)
-			log.trace(toString());
+			log.trace("{}", this);
 		else
 			log.warn("NO - Diff=" + balance + " - " + toString());
 		return retValue;
@@ -288,7 +288,7 @@ public final class Fact
 	 */
 	protected BigDecimal getSourceBalance()
 	{
-		BigDecimal result = Env.ZERO;
+		BigDecimal result = BigDecimal.ZERO;
 		for (int i = 0; i < m_lines.size(); i++)
 		{
 			FactLine line = m_lines.get(i);
@@ -321,10 +321,10 @@ public final class Fact
 
 		// Amount
 		if (diff.signum() < 0)   // negative balance => DR
-			line.setAmtSource(m_doc.getC_Currency_ID(), diff.abs(), Env.ZERO);
+			line.setAmtSource(m_doc.getC_Currency_ID(), diff.abs(), BigDecimal.ZERO);
 		else
 			// positive balance => CR
-			line.setAmtSource(m_doc.getC_Currency_ID(), Env.ZERO, diff);
+			line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, diff);
 
 		// Convert
 		line.convert();
@@ -470,12 +470,12 @@ public final class Fact
 						if (difference.isReversal())
 						{
 							line.setAccount(m_acctSchema, m_acctSchema.getDueTo_Acct(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), Env.ZERO, difference.getPostBalance());
+							line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, difference.getPostBalance());
 						}
 						else
 						{
 							line.setAccount(m_acctSchema, m_acctSchema.getDueFrom_Acct(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), difference.getPostBalance(), Env.ZERO);
+							line.setAmtSource(m_doc.getC_Currency_ID(), difference.getPostBalance(), BigDecimal.ZERO);
 						}
 					}
 					else
@@ -483,12 +483,12 @@ public final class Fact
 						if (difference.isReversal())
 						{
 							line.setAccount(m_acctSchema, m_acctSchema.getDueFrom_Acct(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), difference.getPostBalance(), Env.ZERO);
+							line.setAmtSource(m_doc.getC_Currency_ID(), difference.getPostBalance(), BigDecimal.ZERO);
 						}
 						else
 						{
 							line.setAccount(m_acctSchema, m_acctSchema.getDueTo_Acct(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), Env.ZERO, difference.getPostBalance());
+							line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, difference.getPostBalance());
 						}
 					}
 					line.convert();
@@ -528,7 +528,7 @@ public final class Fact
 	 */
 	protected BigDecimal getAcctBalance()
 	{
-		BigDecimal result = Env.ZERO;
+		BigDecimal result = BigDecimal.ZERO;
 		for (int i = 0; i < m_lines.size(); i++)
 		{
 			FactLine line = m_lines.get(i);
@@ -552,9 +552,9 @@ public final class Fact
 				+ " - " + toString());
 		FactLine line = null;
 
-		BigDecimal BSamount = Env.ZERO;
+		BigDecimal BSamount = BigDecimal.ZERO;
 		FactLine BSline = null;
-		BigDecimal PLamount = Env.ZERO;
+		BigDecimal PLamount = BigDecimal.ZERO;
 		FactLine PLline = null;
 
 		//
@@ -590,11 +590,11 @@ public final class Fact
 			line.setAccount(m_acctSchema, m_acctSchema.getCurrencyBalancing_Acct());
 
 			// Amount
-			line.setAmtSource(m_doc.getC_Currency_ID(), Env.ZERO, Env.ZERO);
+			line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, BigDecimal.ZERO);
 			line.convert();
 			// Accounted
-			BigDecimal drAmt = Env.ZERO;
-			BigDecimal crAmt = Env.ZERO;
+			BigDecimal drAmt = BigDecimal.ZERO;
+			BigDecimal crAmt = BigDecimal.ZERO;
 			boolean isDR = diff.signum() < 0;
 			BigDecimal difference = diff.abs();
 			if (isDR)
@@ -607,8 +607,8 @@ public final class Fact
 					|| (!BSline.isDrSourceBalance() && !isDR));
 			if (switchIt)
 			{
-				drAmt = Env.ZERO;
-				crAmt = Env.ZERO;
+				drAmt = BigDecimal.ZERO;
+				crAmt = BigDecimal.ZERO;
 				if (isDR)
 					crAmt = difference.negate();
 				else
@@ -780,9 +780,9 @@ public final class Fact
 		}
 
 		/** DR Amount */
-		private BigDecimal DR = Env.ZERO;
+		private BigDecimal DR = BigDecimal.ZERO;
 		/** CR Amount */
-		private BigDecimal CR = Env.ZERO;
+		private BigDecimal CR = BigDecimal.ZERO;
 
 		/**
 		 * Add
@@ -862,7 +862,7 @@ public final class Fact
 
 		@ToStringBuilder(skip = true)
 		private final Fact fact;
-		private DocLine docLine = null;
+		private DocLine<?> docLine = null;
 		private Integer subLineId = null;
 
 		private MAccount account = null;
@@ -916,8 +916,8 @@ public final class Fact
 			}
 
 			//
-			final Doc doc = getDoc();
-			final DocLine docLine = getDocLine();
+			final Doc<?> doc = getDoc();
+			final DocLine<?> docLine = getDocLine();
 			final FactLine line = new FactLine(doc.getCtx(),
 					doc.get_Table_ID(), // AD_Table_ID
 					doc.get_ID(), // Record_ID
@@ -1035,19 +1035,19 @@ public final class Fact
 			return account;
 		}
 
-		private final Doc getDoc()
+		private final Doc<?> getDoc()
 		{
 			return fact.m_doc;
 		}
 
-		public final FactLineBuilder setDocLine(DocLine docLine)
+		public final FactLineBuilder setDocLine(DocLine<?> docLine)
 		{
 			assertNotBuild();
 			this.docLine = docLine;
 			return this;
 		}
 
-		private final DocLine getDocLine()
+		private final DocLine<?> getDocLine()
 		{
 			return docLine;
 		}

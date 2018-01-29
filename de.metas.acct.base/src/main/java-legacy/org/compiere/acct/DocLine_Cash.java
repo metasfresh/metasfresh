@@ -18,9 +18,9 @@ package org.compiere.acct;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.MCashLine;
-import org.compiere.model.MInvoice;
-import org.compiere.util.Env;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_CashLine;
+import org.compiere.model.I_C_Invoice;
 
 /**
  *  Cash Journal Line
@@ -28,23 +28,23 @@ import org.compiere.util.Env;
  *  @author Jorg Janke
  *  @version  $Id: DocLine_Cash.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
-public class DocLine_Cash extends DocLine
+public class DocLine_Cash extends DocLine<Doc_Cash>
 {
 	/**
 	 *  Constructor
 	 *  @param line cash line
 	 *  @param doc header
 	 */
-	public DocLine_Cash (MCashLine line, Doc_Cash doc)
+	public DocLine_Cash (I_C_CashLine line, Doc_Cash doc)
 	{
-		super (line, doc);
+		super (InterfaceWrapperHelper.getPO(line), doc);
 		m_CashType = line.getCashType();
 		m_C_BP_BankAccount_ID = line.getC_BP_BankAccount_ID();
 		m_C_Invoice_ID = line.getC_Invoice_ID();
 		//
-		if (m_C_Invoice_ID != 0)
+		if (m_C_Invoice_ID > 0)
 		{
-			MInvoice invoice = MInvoice.get(line.getCtx(), m_C_Invoice_ID);
+			I_C_Invoice invoice = line.getC_Invoice();
 			setC_BPartner_ID(invoice.getC_BPartner_ID());
 		}
 
@@ -79,9 +79,9 @@ public class DocLine_Cash extends DocLine
 	private int     m_C_Invoice_ID = 0;
 
 	//  Amounts
-	private BigDecimal      m_Amount = Env.ZERO;
-	private BigDecimal      m_DiscountAmt = Env.ZERO;
-	private BigDecimal      m_WriteOffAmt = Env.ZERO;
+	private BigDecimal      m_Amount = BigDecimal.ZERO;
+	private BigDecimal      m_DiscountAmt = BigDecimal.ZERO;
+	private BigDecimal      m_WriteOffAmt = BigDecimal.ZERO;
 
 
 	/**
