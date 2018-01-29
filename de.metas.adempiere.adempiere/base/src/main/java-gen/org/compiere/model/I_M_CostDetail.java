@@ -504,6 +504,35 @@ public interface I_M_CostDetail
     public static final String COLUMNNAME_M_InventoryLine_ID = "M_InventoryLine_ID";
 
 	/**
+	 * Set Abgleich Rechnung.
+	 * Match Shipment/Receipt to Invoice
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_MatchInv_ID (int M_MatchInv_ID);
+
+	/**
+	 * Get Abgleich Rechnung.
+	 * Match Shipment/Receipt to Invoice
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_MatchInv_ID();
+
+	public org.compiere.model.I_M_MatchInv getM_MatchInv();
+
+	public void setM_MatchInv(org.compiere.model.I_M_MatchInv M_MatchInv);
+
+    /** Column definition for M_MatchInv_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_M_MatchInv> COLUMN_M_MatchInv_ID = new org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_M_MatchInv>(I_M_CostDetail.class, "M_MatchInv_ID", org.compiere.model.I_M_MatchInv.class);
+    /** Column name M_MatchInv_ID */
+    public static final String COLUMNNAME_M_MatchInv_ID = "M_MatchInv_ID";
+
+	/**
 	 * Set Abgleich Bestellung.
 	 * Match Purchase Order to Shipment/Receipt and Invoice
 	 *
