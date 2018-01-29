@@ -134,6 +134,7 @@ Here come the actual release notes:
     * Fixes the discard of incomplete rows because of not filled mandatory fields.
   * [#1518](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1518) Create purchase orders: error in console
     * Fixes a Bug that prevented the creation of Purchase orders from Sales Orders to be done without errors.
+  * [#1529](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1529) Email To field does not work correctly
 
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**
