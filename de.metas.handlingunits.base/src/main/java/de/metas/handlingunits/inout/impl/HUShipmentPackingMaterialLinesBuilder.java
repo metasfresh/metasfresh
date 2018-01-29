@@ -53,6 +53,7 @@ import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
+import lombok.NonNull;
 
 /**
  * Builder class to generate packing material shipment lines for a given shipment.
@@ -204,27 +205,27 @@ public class HUShipmentPackingMaterialLinesBuilder
 		for (final HUPackingMaterialDocumentLineCandidate pmCandidate : packingMaterialsCollector.getAndClearCandidates())
 		{
 			final I_M_InOutLine packingMaterialLine = createPackingMaterialLine(pmCandidate);
-
-			// task 09502: set the reference from line to packing-line
 			final Set<IHUPackingMaterialCollectorSource> sourceIols = pmCandidate.getSources();
-			for (final IHUPackingMaterialCollectorSource source : sourceIols)
-			{
-				if (source instanceof InOutLineHUPackingMaterialCollectorSource)
-				{
-					final InOutLineHUPackingMaterialCollectorSource inOutLineSource = (InOutLineHUPackingMaterialCollectorSource)source;
-					final I_M_InOutLine sourceIol = inOutLineSource.getM_InOutLine();
-					final I_M_HU_PI_Version huPiVersion = sourceIol.getM_HU_PI_Item_Product_Override().getM_HU_PI_Item().getM_HU_PI_Version();
-					final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO.retrievePackingMaterial(huPiVersion, sourceIol.getM_InOut().getC_BPartner());
-					if (packingMaterial != null && packingMaterial.getM_Product_ID() == packingMaterialLine.getM_Product_ID())
-					{
-						sourceIol.setM_PackingMaterial_InOutLine(packingMaterialLine);
-						InterfaceWrapperHelper.save(sourceIol);
-					}
-				}
-			}
+			sourceIols.stream()
+					.filter(source -> source instanceof InOutLineHUPackingMaterialCollectorSource)
+					.map(source -> (InOutLineHUPackingMaterialCollectorSource)source)
+					.forEach(inOutLineSource -> linkInOutLineToPakcingMaterialLine(inOutLineSource, packingMaterialLine));
 		}
 
 		configurable = false;
+	}
+
+	// task 09502: set the reference from line to packing-line
+	private void linkInOutLineToPakcingMaterialLine(@NonNull final InOutLineHUPackingMaterialCollectorSource inOutLineSource, @NonNull final I_M_InOutLine packingMaterialLine)
+	{
+		final I_M_InOutLine sourceIol = inOutLineSource.getM_InOutLine();
+		final I_M_HU_PI_Version huPiVersion = sourceIol.getM_HU_PI_Item_Product_Override().getM_HU_PI_Item().getM_HU_PI_Version();
+		final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO.retrievePackingMaterial(huPiVersion, sourceIol.getM_InOut().getC_BPartner());
+		if (packingMaterial != null && packingMaterial.getM_Product_ID() == packingMaterialLine.getM_Product_ID())
+		{
+			sourceIol.setM_PackingMaterial_InOutLine(packingMaterialLine);
+			InterfaceWrapperHelper.save(sourceIol);
+		}
 	}
 
 	/**
