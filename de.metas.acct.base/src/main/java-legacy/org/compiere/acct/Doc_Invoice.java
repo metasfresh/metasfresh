@@ -40,18 +40,12 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
-import org.compiere.model.MLandedCostAllocation;
 import org.compiere.model.MPeriod;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
-
-import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostDetailService;
 
 /**
  * Post Invoice Documents.
@@ -445,7 +439,8 @@ public class Doc_Invoice extends Doc
 		// Receivables DR
 		final int receivables_ID = getValidCombination_ID(Doc.ACCTTYPE_C_Receivable, as);
 		final int receivablesServices_ID = getValidCombination_ID(Doc.ACCTTYPE_C_Receivable_Services, as);
-		if (m_allLinesItem || !as.isPostServices()
+		if (m_allLinesItem
+				|| !as.isPostServices()
 				|| receivables_ID == receivablesServices_ID)
 		{
 			grossAmt = getAmount(Doc.AMTTYPE_Gross);
@@ -541,11 +536,12 @@ public class Doc_Invoice extends Doc
 			fl.setLocationFromOrg(fl.getAD_Org_ID(), true);      // from Loc
 			fl.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
 		});
-		
+
 		// Receivables CR
 		final int receivables_ID = getValidCombination_ID(Doc.ACCTTYPE_C_Receivable, as);
 		final int receivablesServices_ID = getValidCombination_ID(Doc.ACCTTYPE_C_Receivable_Services, as);
-		if (m_allLinesItem || !as.isPostServices()
+		if (m_allLinesItem
+				|| !as.isPostServices()
 				|| receivables_ID == receivablesServices_ID)
 		{
 			grossAmt = getAmount(Doc.AMTTYPE_Gross);
@@ -609,88 +605,45 @@ public class Doc_Invoice extends Doc
 		for (int i = 0; i < p_lines.length; i++)
 		{
 			final DocLine_Invoice line = (DocLine_Invoice)p_lines[i];
-			final boolean landedCost = landedCost(as, fact, line, true);
-			if (landedCost && as.isExplicitCostAdjustment())
+			BigDecimal amt = line.getAmtSource();
+			BigDecimal dAmt = null;
+			if (as.isTradeDiscountPosted() && !line.isItem())
 			{
-				fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Expense, as),
-						getC_Currency_ID(), line.getAmtSource(), null);
-				//
-				final FactLine fl = fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Expense, as),
-						getC_Currency_ID(), null, line.getAmtSource());
-				String desc = line.getDescription();
-				if (desc == null)
+				final BigDecimal discount = line.getDiscount();
+				if (discount != null && discount.signum() != 0)
 				{
-					desc = "100%";
+					amt = amt.add(discount);
+					dAmt = discount;
+					final MAccount tradeDiscountReceived = line.getAccount(ProductCost.ACCTTYPE_P_TDiscountRec, as);
+					fact.createLine(line, tradeDiscountReceived, getC_Currency_ID(), null, dAmt);
 				}
-				else
-				{
-					desc += " 100%";
-				}
-				fl.setDescription(desc);
 			}
 
-			if (!landedCost)
+			if (line.isItem())  // stockable item
 			{
-				BigDecimal amt = line.getAmtSource();
-				BigDecimal dAmt = null;
-				if (as.isTradeDiscountPosted() && !line.isItem())
-				{
-					final BigDecimal discount = line.getDiscount();
-					if (discount != null && discount.signum() != 0)
-					{
-						amt = amt.add(discount);
-						dAmt = discount;
-						final MAccount tradeDiscountReceived = line.getAccount(ProductCost.ACCTTYPE_P_TDiscountRec, as);
-						fact.createLine(line, tradeDiscountReceived, getC_Currency_ID(), null, dAmt);
-					}
-				}
+				final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
+				fact.createLine(line,
+						line.getAccount(ProductCost.ACCTTYPE_P_InventoryClearing, as),
+						getC_Currency_ID(),
+						amtReceived, null,  // DR/CR
+						line.getQtyReceivedAbs());
 
-				if (line.isItem())  // stockable item
-				{
-					final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
-					fact.createLine(line,
-							line.getAccount(ProductCost.ACCTTYPE_P_InventoryClearing, as),
-							getC_Currency_ID(),
-							amtReceived, null,  // DR/CR
-							line.getQtyReceivedAbs());
+				final BigDecimal amtNotReceived = amt.subtract(amtReceived);
+				fact.createLine(line,
+						line.getAccount(ProductCost.ACCTTYPE_P_Expense, as),
+						getC_Currency_ID(),
+						amtNotReceived, null,  // DR/CR
+						line.getQtyNotReceivedAbs());
+			}
+			else // service
+			{
+				fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Expense, as), getC_Currency_ID(), amt, null);
+			}
 
-					final BigDecimal amtNotReceived = amt.subtract(amtReceived);
-					fact.createLine(line,
-							line.getAccount(ProductCost.ACCTTYPE_P_Expense, as),
-							getC_Currency_ID(),
-							amtNotReceived, null,  // DR/CR
-							line.getQtyNotReceivedAbs());
-				}
-				else // service
-				{
-					fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Expense, as), getC_Currency_ID(), amt, null);
-				}
-
-				if (!line.isItem())
-				{
-					grossAmt = grossAmt.subtract(amt);
-					serviceAmt = serviceAmt.add(amt);
-				}
-				//
-				if (line.getM_Product_ID() > 0 && line.isService())  // otherwise Inv Matching
-				{
-					Services.get(ICostDetailService.class)
-							.createCostDetail(CostDetailCreateRequest.builder()
-									.acctSchemaId(as.getC_AcctSchema_ID())
-									.clientId(line.getAD_Client_ID())
-									.orgId(line.getAD_Org_ID())
-									.productId(line.getM_Product_ID())
-									.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
-									.documentRef(CostingDocumentRef.ofPurchaseInvoiceLineId(line.get_ID()))
-									.costElementId(0)
-									.qty(line.getQty())
-									.amt(line.getAmtSource())
-									.currencyId(line.getC_Currency_ID())
-									.currencyConversionTypeId(getC_ConversionType_ID())
-									.date(TimeUtil.asLocalDate(getDateAcct()))
-									.description(line.getDescription())
-									.build());
-				}
+			if (!line.isItem())
+			{
+				grossAmt = grossAmt.subtract(amt);
+				serviceAmt = serviceAmt.add(amt);
 			}
 		}
 		// Set Locations
@@ -702,7 +655,8 @@ public class Doc_Invoice extends Doc
 		// Liability CR
 		final int payables_ID = getValidCombination_ID(Doc.ACCTTYPE_V_Liability, as);
 		final int payablesServices_ID = getValidCombination_ID(Doc.ACCTTYPE_V_Liability_Services, as);
-		if (m_allLinesItem || !as.isPostServices()
+		if (m_allLinesItem
+				|| !as.isPostServices()
 				|| payables_ID == payablesServices_ID)
 		{
 			grossAmt = getAmount(Doc.AMTTYPE_Gross);
@@ -759,88 +713,45 @@ public class Doc_Invoice extends Doc
 		for (int i = 0; i < p_lines.length; i++)
 		{
 			final DocLine_Invoice line = (DocLine_Invoice)p_lines[i];
-			final boolean landedCost = landedCost(as, fact, line, false);
-			if (landedCost && as.isExplicitCostAdjustment())
+			BigDecimal amt = line.getAmtSource();
+			BigDecimal dAmt = null;
+			if (as.isTradeDiscountPosted() && !line.isItem())
 			{
-				fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Expense, as),
-						getC_Currency_ID(), null, line.getAmtSource());
-				//
-				final FactLine fl = fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Expense, as),
-						getC_Currency_ID(), line.getAmtSource(), null);
-				String desc = line.getDescription();
-				if (desc == null)
+				final BigDecimal discount = line.getDiscount();
+				if (discount != null && discount.signum() != 0)
 				{
-					desc = "100%";
+					amt = amt.add(discount);
+					dAmt = discount;
+					final MAccount tradeDiscountReceived = line.getAccount(ProductCost.ACCTTYPE_P_TDiscountRec, as);
+					fact.createLine(line, tradeDiscountReceived, getC_Currency_ID(), dAmt, null);
 				}
-				else
-				{
-					desc += " 100%";
-				}
-				fl.setDescription(desc);
 			}
-			if (!landedCost)
+
+			if (line.isItem())  // stockable item
 			{
-				BigDecimal amt = line.getAmtSource();
-				BigDecimal dAmt = null;
-				if (as.isTradeDiscountPosted() && !line.isItem())
-				{
-					final BigDecimal discount = line.getDiscount();
-					if (discount != null && discount.signum() != 0)
-					{
-						amt = amt.add(discount);
-						dAmt = discount;
-						final MAccount tradeDiscountReceived = line.getAccount(ProductCost.ACCTTYPE_P_TDiscountRec, as);
-						fact.createLine(line, tradeDiscountReceived, getC_Currency_ID(), dAmt, null);
-					}
-				}
+				final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
+				fact.createLine(line,
+						line.getAccount(ProductCost.ACCTTYPE_P_InventoryClearing, as),
+						getC_Currency_ID(),
+						null, amtReceived,  // DR/CR
+						line.getQtyReceivedAbs());
 
-				if (line.isItem())  // stockable item
-				{
-					final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
-					fact.createLine(line,
-							line.getAccount(ProductCost.ACCTTYPE_P_InventoryClearing, as),
-							getC_Currency_ID(),
-							null, amtReceived,  // DR/CR
-							line.getQtyReceivedAbs());
+				final BigDecimal amtNotReceived = amt.subtract(amtReceived);
+				fact.createLine(line,
+						line.getAccount(ProductCost.ACCTTYPE_P_Expense, as),
+						getC_Currency_ID(),
+						null, amtNotReceived,  // DR/CR
+						line.getQtyNotReceivedAbs());
+			}
+			else // service
+			{
+				fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Expense, as), getC_Currency_ID(), null, amt);
+			}
 
-					final BigDecimal amtNotReceived = amt.subtract(amtReceived);
-					fact.createLine(line,
-							line.getAccount(ProductCost.ACCTTYPE_P_Expense, as),
-							getC_Currency_ID(),
-							null, amtNotReceived,  // DR/CR
-							line.getQtyNotReceivedAbs());
-				}
-				else // service
-				{
-					fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Expense, as), getC_Currency_ID(), null, amt);
-				}
-
-				if (!line.isItem())
-				{
-					grossAmt = grossAmt.subtract(amt);
-					serviceAmt = serviceAmt.add(amt);
-				}
-
-				//
-				if (line.getM_Product_ID() > 0 && line.isService()) 	// otherwise Inv Matching
-				{
-					Services.get(ICostDetailService.class)
-							.createCostDetail(CostDetailCreateRequest.builder()
-									.acctSchemaId(as.getC_AcctSchema_ID())
-									.clientId(line.getAD_Client_ID())
-									.orgId(line.getAD_Org_ID())
-									.productId(line.getM_Product_ID())
-									.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
-									.documentRef(CostingDocumentRef.ofPurchaseInvoiceLineId(line.get_ID()))
-									.costElementId(0)
-									.qty(line.getQty().negate())
-									.amt(line.getAmtSource().negate())
-									.currencyId(line.getC_Currency_ID())
-									.currencyConversionTypeId(getC_ConversionType_ID())
-									.date(TimeUtil.asLocalDate(getDateAcct()))
-									.description(line.getDescription())
-									.build());
-				}
+			if (!line.isItem())
+			{
+				grossAmt = grossAmt.subtract(amt);
+				serviceAmt = serviceAmt.add(amt);
 			}
 		}
 		// Set Locations
@@ -848,11 +759,12 @@ public class Doc_Invoice extends Doc
 			fl.setLocationFromBPartner(getC_BPartner_Location_ID(), true);  // from Loc
 			fl.setLocationFromOrg(fl.getAD_Org_ID(), false);    // to Loc
 		});
-		
+
 		// Liability DR
 		final int payables_ID = getValidCombination_ID(Doc.ACCTTYPE_V_Liability, as);
 		final int payablesServices_ID = getValidCombination_ID(Doc.ACCTTYPE_V_Liability_Services, as);
-		if (m_allLinesItem || !as.isPostServices()
+		if (m_allLinesItem
+				|| !as.isPostServices()
 				|| payables_ID == payablesServices_ID)
 		{
 			grossAmt = getAmount(Doc.AMTTYPE_Gross);
@@ -938,63 +850,37 @@ public class Doc_Invoice extends Doc
 		for (int i = 0; i < p_lines.length; i++)
 		{
 			final DocLine line = p_lines[i];
-			boolean landedCost = false;
+			MAccount acct = line.getAccount(
+					payables ? ProductCost.ACCTTYPE_P_Expense : ProductCost.ACCTTYPE_P_Revenue, as);
 			if (payables)
 			{
-				landedCost = landedCost(as, fact, line, false);
+				// if Fixed Asset
+				if (line.isItem())
+				{
+					acct = line.getAccount(ProductCost.ACCTTYPE_P_InventoryClearing, as);
+				}
 			}
-			if (landedCost && as.isExplicitCostAdjustment())
+			BigDecimal amt = line.getAmtSource().multiply(multiplier);
+			BigDecimal amt2 = null;
+			if (creditMemo)
 			{
-				fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Expense, as),
-						getC_Currency_ID(), null, line.getAmtSource());
-				//
-				fl = fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Expense, as),
-						getC_Currency_ID(), line.getAmtSource(), null);
-				String desc = line.getDescription();
-				if (desc == null)
-				{
-					desc = "100%";
-				}
-				else
-				{
-					desc += " 100%";
-				}
-				fl.setDescription(desc);
+				amt2 = amt;
+				amt = null;
 			}
-			if (!landedCost)
+			if (payables)
 			{
-				MAccount acct = line.getAccount(
-						payables ? ProductCost.ACCTTYPE_P_Expense : ProductCost.ACCTTYPE_P_Revenue, as);
-				if (payables)
-				{
-					// if Fixed Asset
-					if (line.isItem())
-					{
-						acct = line.getAccount(ProductCost.ACCTTYPE_P_InventoryClearing, as);
-					}
-				}
-				BigDecimal amt = line.getAmtSource().multiply(multiplier);
-				BigDecimal amt2 = null;
-				if (creditMemo)
-				{
-					amt2 = amt;
-					amt = null;
-				}
-				if (payables)
-				{
-					fl = fact.createLine(line, acct,
-							getC_Currency_ID(), amt, amt2);
-				}
-				else
-				{
-					// Customer = CR
-					fl = fact.createLine(line, acct,
-							getC_Currency_ID(), amt2, amt);
-				}
-				if (fl != null)
-				{
-					acctAmt = acctAmt.add(fl.getAcctBalance());
-				}
+				fl = fact.createLine(line, acct,
+						getC_Currency_ID(), amt, amt2);
+			}
+			else
+			{
+				// Customer = CR
+				fl = fact.createLine(line, acct,
+						getC_Currency_ID(), amt2, amt);
+			}
+			if (fl != null)
+			{
+				acctAmt = acctAmt.add(fl.getAcctBalance());
 			}
 		}
 		// Tax
@@ -1043,105 +929,6 @@ public class Doc_Invoice extends Doc
 		}
 		return acctAmt;
 	}	// createFactCash
-
-	/**
-	 * Create Landed Cost accounting & Cost lines
-	 *
-	 * @param as accounting schema
-	 * @param fact fact
-	 * @param line document line
-	 * @param dr DR entry (normal api)
-	 * @return true if landed costs were created
-	 */
-	private boolean landedCost(final MAcctSchema as, final Fact fact, final DocLine line, final boolean dr)
-	{
-		final int C_InvoiceLine_ID = line.get_ID();
-		final MLandedCostAllocation[] lcas = MLandedCostAllocation.getOfInvoiceLine(
-				getCtx(), C_InvoiceLine_ID, getTrxName());
-		if (lcas.length == 0)
-		{
-			return false;
-		}
-
-		// Calculate Total Base
-		double totalBase = 0;
-		for (int i = 0; i < lcas.length; i++)
-		{
-			totalBase += lcas[i].getBase().doubleValue();
-		}
-
-		// Create New
-		final MInvoiceLine il = new MInvoiceLine(getCtx(), C_InvoiceLine_ID, getTrxName());
-		for (int i = 0; i < lcas.length; i++)
-		{
-			final MLandedCostAllocation lca = lcas[i];
-			if (lca.getBase().signum() == 0)
-			{
-				continue;
-			}
-			final double percent = lca.getBase().doubleValue() / totalBase;
-			String desc = il.getDescription();
-			if (desc == null)
-			{
-				desc = percent + "%";
-			}
-			else
-			{
-				desc += " - " + percent + "%";
-			}
-			if (line.getDescription() != null)
-			{
-				desc += " - " + line.getDescription();
-			}
-
-			// Accounting
-			final ProductCost pc = new ProductCost(getCtx(),
-					lca.getM_Product_ID(), lca.getM_AttributeSetInstance_ID(), getTrxName());
-			BigDecimal drAmt = null;
-			BigDecimal crAmt = null;
-			if (dr)
-			{
-				drAmt = lca.getAmt();
-			}
-			else
-			{
-				crAmt = lca.getAmt();
-			}
-			final FactLine fl = fact.createLine(line, pc.getAccount(ProductCost.ACCTTYPE_P_CostAdjustment, as),
-					getC_Currency_ID(), drAmt, crAmt);
-			fl.setDescription(desc);
-			fl.setM_Product_ID(lca.getM_Product_ID());
-
-			// Cost Detail - Convert to AcctCurrency
-			BigDecimal allocationAmt = lca.getAmt();
-			if (!dr)
-			{
-				allocationAmt = allocationAmt.negate();
-			}
-			// AZ Goodwill
-			// use createInvoice to create/update non Material Cost Detail
-			Services.get(ICostDetailService.class)
-					.createCostDetail(CostDetailCreateRequest.builder()
-							.acctSchemaId(as.getC_AcctSchema_ID())
-							.clientId(lca.getAD_Client_ID())
-							.orgId(lca.getAD_Org_ID())
-							.productId(lca.getM_Product_ID())
-							.attributeSetInstanceId(lca.getM_AttributeSetInstance_ID())
-							.documentRef(CostingDocumentRef.ofPurchaseInvoiceLineId(C_InvoiceLine_ID))
-							.costElementId(lca.getM_CostElement_ID())
-							.qty(lca.getQty())
-							.amt(allocationAmt)
-							.currencyId(getC_Currency_ID())
-							.currencyConversionTypeId(getC_ConversionType_ID())
-							.date(TimeUtil.asLocalDate(getDateAcct()))
-							.description(desc)
-							.build());
-			// end AZ
-		}
-
-		log.info("Created #{}", lcas.length);
-		return true;
-	}	// landedCosts
 
 	public static void unpost(final I_C_Invoice invoice)
 	{

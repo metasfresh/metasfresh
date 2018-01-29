@@ -45,7 +45,7 @@ import de.metas.product.IProductBL;
 public class CostsAdjustmentsCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	@Override
-	protected void processPurchaseInvoice(final CostDetailEvent event, final CurrentCost cost)
+	protected void processMatchInvoice(final CostDetailEvent event, final CurrentCost cost)
 	{
 		final CostSegment costSegment = event.getCostSegment();
 		final BigDecimal amt = event.getAmt();

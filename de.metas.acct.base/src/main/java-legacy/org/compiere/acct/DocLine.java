@@ -33,7 +33,6 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCharge;
 import org.compiere.model.MProduct;
-import org.compiere.model.MTax;
 import org.compiere.model.PO;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
@@ -104,8 +103,6 @@ public class DocLine
 	/** Converted Amounts */
 	private BigDecimal m_AmtAcctDr = null;
 	private BigDecimal m_AmtAcctCr = null;
-	/** Acct Schema */
-	private int m_C_AcctSchema_ID = 0;
 
 	/** Product Costs */
 	private ProductCost m_productCost = null;
@@ -511,77 +508,6 @@ public class DocLine
 	}
 
 	/**
-	 * This is {@link #getAccount(int, MAcctSchema)} variant for German/DATEV accounting.
-	 * 
-	 * We are not using it anymore (07089), but i am keeping it here for history and later use.
-	 * 
-	 * @param AcctType
-	 * @param as
-	 * @return account
-	 * @deprecated Use it only if u know what are u doing. Else, use {@link #getAccount()}.
-	 */
-	@SuppressWarnings("unused")
-	@Deprecated
-	private final MAccount getAccount_DE(final ProductAcctType AcctType, MAcctSchema as)
-	{
-		// Charge Account
-		// CHANGED: taxdependant receipts account
-		// metas-mo: if charge, SOTrx and ACCTTYPE_P_Revenue, then use the tax revenue.
-		// Otherwise, use getChargeAccount as before
-		if (getM_Product_ID() <= 0 && getC_Charge_ID() != 0)
-		{
-			final MAccount acct;
-			if (!m_doc.isSOTrx())
-			{
-				acct = getChargeAccount(as, new BigDecimal(+1)); // Expense (+)
-			}
-			else if (AcctType != ProductCost.ACCTTYPE_P_Revenue)
-			{
-				acct = getChargeAccount(as, new BigDecimal(-1)); // Revenue (-)
-			}
-			else
-			{
-				acct = getTaxAccount(as);
-			}
-			if (acct != null)
-				return acct;
-		}
-		// CHANGED: taxdependant receipts account
-		if (AcctType == ProductCost.ACCTTYPE_P_Revenue)
-		{
-			MAccount acct = getTaxAccount(as);
-			if (acct != null)
-			{
-				return acct;
-			}
-		}
-		// end changed
-		// Product Account
-		return getProductCost().getAccount(AcctType, as);
-	} // getAccount
-
-	// CHANGED metas - method getTaxAccount() added
-	/**
-	 * Returns the receipts account dependent on the tax (for ProductExpense/Revenue only).
-	 * 
-	 * @param taxId
-	 * @return
-	 */
-	private final MAccount getTaxAccount(MAcctSchema as)
-	{
-		// ValidCombination mit
-		// passender org/accountId
-		int C_Tax_ID = getC_Tax_ID();
-		if (C_Tax_ID <= 0)
-		{
-			return null;
-		}
-		return MTax.getRevenueAccount(C_Tax_ID, as);
-	}
-
-	// ende changed
-
-	/**
 	 * Get Charge
 	 * 
 	 * @return C_Charge_ID
@@ -605,7 +531,7 @@ public class DocLine
 	 * @param amount amount for expense(+)/revenue(-)
 	 * @return Charge Account or null
 	 */
-	public final MAccount getChargeAccount(MAcctSchema as, BigDecimal amount)
+	protected final MAccount getChargeAccount(MAcctSchema as, BigDecimal amount)
 	{
 		int C_Charge_ID = getC_Charge_ID();
 		if (C_Charge_ID == 0)
@@ -644,21 +570,6 @@ public class DocLine
 	{
 		m_C_Period_ID = C_Period_ID;
 	}	// setC_Period_ID
-
-	/**************************************************************************
-	 * Get (Journal) AcctSchema
-	 * 
-	 * @return C_AcctSchema_ID
-	 */
-	public final int getC_AcctSchema_ID()
-	{
-		return m_C_AcctSchema_ID;
-	}   // getC_AcctSchema_ID
-
-	public final void setC_AcctSchema_ID(final int acctSchemaId)
-	{
-		this.m_C_AcctSchema_ID = acctSchemaId;
-	}
 
 	/**
 	 * Get Line ID
@@ -916,7 +827,7 @@ public class DocLine
 	 *
 	 * @return product cost
 	 */
-	public final ProductCost getProductCost()
+	private final ProductCost getProductCost()
 	{
 		if (m_productCost == null)
 		{

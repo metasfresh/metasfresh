@@ -2,13 +2,10 @@ package de.metas.costing.methods;
 
 import java.math.BigDecimal;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_CostDetail;
-import org.compiere.model.MCost;
 
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailEvent;
-import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
 
@@ -37,38 +34,24 @@ import de.metas.costing.CurrentCost;
 public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	@Override
-	protected I_M_CostDetail createCostForPurchaseInvoice(final CostDetailCreateRequest request)
+	protected I_M_CostDetail createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		// TODO: use standard cost instead!
-		return createCostDefaultImpl(request);
+		final CurrentCost currentCost = getCurrentCost(request);
+		final BigDecimal amt = request.getQty().multiply(currentCost.getCurrentCostPrice());
+
+		return createCostDefaultImpl(request.toBuilder()
+				.amt(amt)
+				.build());
 	}
 
 	@Override
-	protected void processPurchaseInvoice(final CostDetailEvent event, final CurrentCost cost)
+	protected void processMatchInvoice(final CostDetailEvent event, final CurrentCost cost)
 	{
-		final CostSegment costSegment = event.getCostSegment();
-		final String costingMethod = event.getCostingMethod();
 		final BigDecimal amt = event.getAmt();
 		final BigDecimal qty = event.getQty();
-		final BigDecimal price = event.getPrice();
 
-		// Update cost record only if newly created.
-		// Elsewhere we risk to set the CurrentCostPrice to an undesired price.
-		if (InterfaceWrapperHelper.isNew(cost)
-				&& cost.getCurrentCostPrice().signum() == 0
-				&& cost.getCurrentCostPriceLL().signum() == 0)
-		{
-			cost.setCurrentCostPrice(price);
-			// seed initial price
-			if (cost.getCurrentCostPrice().signum() == 0)
-			{
-				final int orderLineId = 0; // N/A
-				final BigDecimal currentCostPrice = MCost.getSeedCosts(costSegment, costingMethod, orderLineId);
-				cost.setCurrentCostPrice(currentCostPrice);
-			}
-		}
-
-		cost.add(amt, qty);
+		cost.adjustCurrentQty(qty);
+		cost.addCumulatedAmtAndQty(amt, qty);
 	}
 
 	@Override
@@ -77,19 +60,11 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 		final BigDecimal amt = event.getAmt();
 		final BigDecimal qty = event.getQty();
 		final boolean addition = qty.signum() > 0;
-		final BigDecimal price = event.getPrice();
 
+		cost.adjustCurrentQty(qty);
 		if (addition)
 		{
-			cost.add(amt, qty);
-
-			// Initial
-			if (cost.getCurrentCostPrice().signum() == 0
-					&& cost.getCurrentCostPriceLL().signum() == 0
-					&& InterfaceWrapperHelper.isNew(cost))
-			{
-				cost.setCurrentCostPrice(price);
-			}
+			cost.addCumulatedAmtAndQty(amt, qty);
 		}
 		else
 		{

@@ -59,9 +59,9 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		{
 			return createCostForMatchPO(request);
 		}
-		else if (CostingDocumentRef.TABLE_NAME_C_InvoiceLine.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_M_MatchInv.equals(documentTableName))
 		{
-			return createCostForPurchaseInvoice(request);
+			return createCostForMatchInvoice(request);
 		}
 		else if(CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(documentTableName))
 		{
@@ -99,7 +99,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return null;
 	}
 
-	protected I_M_CostDetail createCostForPurchaseInvoice(CostDetailCreateRequest request)
+	protected I_M_CostDetail createCostForMatchInvoice(CostDetailCreateRequest request)
 	{
 		// nothing on this level
 		return null;
@@ -254,9 +254,9 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		{
 			processMatchPO(event, cost);
 		}
-		else if (CostingDocumentRef.TABLE_NAME_C_InvoiceLine.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_M_MatchInv.equals(documentTableName))
 		{
-			processPurchaseInvoice(event, cost);
+			processMatchInvoice(event, cost);
 		}
 		else if (CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(documentTableName))
 		{
@@ -298,7 +298,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		// nothing on this level
 	}
 
-	protected void processPurchaseInvoice(final CostDetailEvent event, final CurrentCost cost)
+	protected void processMatchInvoice(final CostDetailEvent event, final CurrentCost cost)
 	{
 		// nothing on this level
 	}

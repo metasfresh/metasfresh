@@ -3,11 +3,11 @@ package de.metas.costing;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
-import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InventoryLine;
+import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_ProductionLine;
@@ -42,7 +42,7 @@ import lombok.Value;
 public class CostingDocumentRef
 {
 	public static final String TABLE_NAME_M_MatchPO = I_M_MatchPO.Table_Name;
-	public static final String TABLE_NAME_C_InvoiceLine = I_C_InvoiceLine.Table_Name;
+	public static final String TABLE_NAME_M_MatchInv = I_M_MatchInv.Table_Name;
 	public static final String TABLE_NAME_M_InOutLine = I_M_InOutLine.Table_Name;
 	public static final String TABLE_NAME_M_InventoryLine = I_M_InventoryLine.Table_Name;
 	public static final String TABLE_NAME_M_MovementLine = I_M_MovementLine.Table_Name;
@@ -56,10 +56,10 @@ public class CostingDocumentRef
 		return new CostingDocumentRef(TABLE_NAME_M_MatchPO, matchPOId, I_M_CostDetail.COLUMNNAME_M_MatchPO_ID, outboundTrx);
 	}
 
-	public static CostingDocumentRef ofPurchaseInvoiceLineId(final int invoiceLineId)
+	public static CostingDocumentRef ofMatchInvoiceId(final int matchInvId)
 	{
 		final Boolean outboundTrx = Boolean.FALSE;
-		return new CostingDocumentRef(TABLE_NAME_C_InvoiceLine, invoiceLineId, I_M_CostDetail.COLUMNNAME_C_InvoiceLine_ID, outboundTrx);
+		return new CostingDocumentRef(TABLE_NAME_M_MatchInv, matchInvId, I_M_CostDetail.COLUMNNAME_M_MatchInv_ID, outboundTrx);
 	}
 
 	public static CostingDocumentRef ofShipmentLineId(final int inOutLineId)

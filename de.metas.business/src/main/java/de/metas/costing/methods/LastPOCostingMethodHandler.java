@@ -48,7 +48,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		return createCostDefaultImpl(request);
 	}
-	
+
 	@Override
 	protected void processMatchPO(final CostDetailEvent event, final CurrentCost cost)
 	{
@@ -68,8 +68,9 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 				cost.setCurrentCostPrice(cCosts);
 			}
 		}
-		
-		cost.add(amt, qty);
+
+		cost.adjustCurrentQty(qty);
+		cost.addCumulatedAmtAndQty(amt, qty);
 	}
 
 	@Override
@@ -78,7 +79,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final BigDecimal qty = event.getQty();
 		cost.adjustCurrentQty(qty);
 	}
-	
+
 	@Override
 	public BigDecimal calculateSeedCosts(CostSegment costSegment, int orderLineId)
 	{
@@ -89,7 +90,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 			costs = getLastPOPrice(costSegment);
 		return costs;
 	}
-	
+
 	/**
 	 * Get PO Price in currency
 	 * 

@@ -360,15 +360,15 @@ public class CostDetailService implements ICostDetailService
 	{
 		if (cd.getM_MatchPO_ID() > 0)
 		{
-			return CostingDocumentRef.ofMatchPOId(cd.getC_OrderLine_ID());
+			return CostingDocumentRef.ofMatchPOId(cd.getM_MatchPO_ID());
 		}
-		else if (cd.getC_InvoiceLine_ID() > 0)
+		else if (cd.getM_MatchInv_ID() > 0)
 		{
 			if (cd.isSOTrx())
 			{
 				throw new AdempiereException("Sales invoice line not supported: " + cd);
 			}
-			return CostingDocumentRef.ofPurchaseInvoiceLineId(cd.getC_InvoiceLine_ID());
+			return CostingDocumentRef.ofMatchInvoiceId(cd.getM_MatchInv_ID());
 		}
 		else if (cd.getM_InOutLine_ID() > 0)
 		{

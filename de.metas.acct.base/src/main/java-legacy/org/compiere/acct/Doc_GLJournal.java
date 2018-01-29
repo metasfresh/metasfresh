@@ -24,14 +24,11 @@ import org.adempiere.acct.api.IGLJournalLineBL;
 import org.adempiere.acct.api.IGLJournalLineDAO;
 import org.adempiere.acct.api.ITaxAccountable;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.PO;
 import org.compiere.model.X_GL_JournalLine;
-import org.compiere.util.Env;
 
 /**
  * Post GL Journal Documents.
@@ -229,8 +226,7 @@ public class Doc_GLJournal extends Doc
 
 	private final DocLine createDocLine(final I_GL_JournalLine glJournalLine)
 	{
-		final PO glJournalLinePO = InterfaceWrapperHelper.getPO(glJournalLine);
-		final DocLine docLine = new DocLine(glJournalLinePO, this);
+		final DocLine_GLJournal docLine = new DocLine_GLJournal(glJournalLine, this);
 		docLine.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
 		docLine.setC_Tax_ID(0); // avoid setting C_Tax_ID by default
 		docLine.setC_AcctSchema_ID(m_C_AcctSchema_ID);
@@ -245,7 +241,7 @@ public class Doc_GLJournal extends Doc
 	@Override
 	public BigDecimal getBalance()
 	{
-		BigDecimal balance = Env.ZERO;
+		BigDecimal balance = BigDecimal.ZERO;
 
 		for (final DocLine docLine : p_lines)
 		{
@@ -269,7 +265,7 @@ public class Doc_GLJournal extends Doc
 	@Override
 	public List<Fact> createFacts(final MAcctSchema as)
 	{
-		final List<Fact> facts = new ArrayList<Fact>();
+		final List<Fact> facts = new ArrayList<>();
 
 		// Other Acct Schema
 		if (as.getC_AcctSchema_ID() != m_C_AcctSchema_ID)
@@ -284,8 +280,9 @@ public class Doc_GLJournal extends Doc
 		if (getDocumentType().equals(DOCTYPE_GLJournal))
 		{
 			// account DR CR
-			for (final DocLine docLine : p_lines)
+			for (final DocLine line : p_lines)
 			{
+				final DocLine_GLJournal docLine = (DocLine_GLJournal)line;
 				if (docLine.getC_AcctSchema_ID() > 0 && docLine.getC_AcctSchema_ID() != as.getC_AcctSchema_ID())
 				{
 					continue;

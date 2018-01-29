@@ -46,13 +46,13 @@ import de.metas.currency.ICurrencyBL;
 public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemplate
 {
 	@Override
-	protected I_M_CostDetail createCostForPurchaseInvoice(final CostDetailCreateRequest request)
+	protected I_M_CostDetail createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
 		return createCostDefaultImpl(request);
 	}
 
 	@Override
-	protected void processPurchaseInvoice(final CostDetailEvent event, final CurrentCost cost)
+	protected void processMatchInvoice(final CostDetailEvent event, final CurrentCost cost)
 	{
 		cost.addWeightedAverage(event.getAmt(), event.getQty());
 	}
