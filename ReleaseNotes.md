@@ -15,31 +15,13 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
-  * [#3310](https://github.com/metasfresh/metasfresh/issues/3310) Webui Window Design: Improve window System Issue Report
-    * New Window System Issue Report in WebUI, allowing teh System Administrator to check System Issues.
-  * [#3313](https://github.com/metasfresh/metasfresh/issues/3313) Webui Window Design: Improve window Field Group
-    * New Window in WebUI for Field Group maintenance. This window can be used by System Admins.
-  * [#3329](https://github.com/metasfresh/metasfresh/issues/3329) Webui Window Design: Translate all in window Event store
-    * Improved Window, Tab and Fields translations.
-  * [#3366](https://github.com/metasfresh/metasfresh/issues/3366) Webui Window: Create window for ReferenceNo and Reference Type
-    * New Windows for Reference No and Reference No Type maintenance.
-  * [#3377](https://github.com/metasfresh/metasfresh/issues/3377) Add an ID to C_ReferenceNo_Type_Table
-    * Improvement of the Reference No Type Table, now having a Primary Key.
-  * [#3387](https://github.com/metasfresh/metasfresh/issues/3387) WebUI New Window for MSV3 Config
-    * New Configuration Window in WebUI for MSV3 Connections to vendors in german Pharma Industry.
+
 
 * metasfresh-webui-frontend
-  * [#1252](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1252) Select all x items shall not be available when there is only one page of entries
-    * Improved Handling of the select all functioanlity in Grid View. Now only showing toggle option when more than 1 page.
-  * [#1504](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1504) Make a difference between internal date format (ISO) and user friendly locale date
-    * Improved Handlign of Date Widget reponses. Now distiguishing between Date for API and Date presented to the user.
-  * [#1514](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1514) Filter Dropdown dynamically extend height when dropdown list selected
-    * Improved Dropdown behavior. Now showing a complete dropdown List in Filters also when at the bottom of a Filter list area.
+
 
 ## Fixes
 * metasfresh-webui-frontend
-  * [#1518](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1518) Create purchase orders: error in console
-    * Fixes a Bug that prevented the creation of Purchase orders from Sales Orders to be done without errors.
 
 
 # metasfresh 5.42 (2018-04)
@@ -51,6 +33,10 @@ Here come the actual release notes:
     * New Feature that allows to define Products in Planning Data, that shall be automatically picked after action receipt in manufacturing.
   * [#3302](https://github.com/metasfresh/metasfresh/issues/3302) Payment Discount on Orderline, Invoice Candidate
     * Adding a Payment Discount overwrite to Orderlines and Invoicecandidates. With this feature one can add Payment Discounts as additional Discount Schema entry.
+  * [#3310](https://github.com/metasfresh/metasfresh/issues/3310) Webui Window Design: Improve window System Issue Report
+    * New Window System Issue Report in WebUI, allowing teh System Administrator to check System Issues.
+  * [#3313](https://github.com/metasfresh/metasfresh/issues/3313) Webui Window Design: Improve window Field Group
+    * New Window in WebUI for Field Group maintenance. This window can be used by System Admins.
   * [#3317](https://github.com/metasfresh/metasfresh/issues/3317) Webui Window Design: Improve window Report & Process
     * New Window in WebUI for Process & Reports maintenance.
   * [#3318](https://github.com/metasfresh/metasfresh/issues/3318) Webui Window Design: Improve window Reference
@@ -59,6 +45,8 @@ Here come the actual release notes:
     * Improvement of the WebUI message window.
   * [#3322](https://github.com/metasfresh/metasfresh/issues/3322) Webui Window Design: Improve window Validation Rule
     * New Window for the maintenance of Validation Rules in metasfresh. This window can be used by System Admins.
+  * [#3329](https://github.com/metasfresh/metasfresh/issues/3329) Webui Window Design: Translate all in window Event store
+    * Improved Window, Tab and Fields translations.
   * [#3330](https://github.com/metasfresh/metasfresh/issues/3330) Webui Window Design: Improve window Entity Type
     * New Window for the maintenance of Entity Types. This window can be used by System Admins.
   * [#3338](https://github.com/metasfresh/metasfresh/issues/3338) Harmonize description field length between doctype and c_order / c_invoice
@@ -70,7 +58,13 @@ Here come the actual release notes:
   * [#3349](https://github.com/metasfresh/metasfresh/issues/3349) Add BPartner to User Window
     * New Field in Window User, allowing to see and maintain the Business Partner.
   * [#3359](https://github.com/metasfresh/metasfresh/issues/3359) User Window unlock Account Action
-    * Adding new Action in User Window in WebUI allowing to unlock the User Account.
+    * Adding new Action in User Window in WebUI allowing to unlock the User Account.  
+  * [#3366](https://github.com/metasfresh/metasfresh/issues/3366) Webui Window: Create window for ReferenceNo and Reference Type
+    * New Windows for Reference No and Reference No Type maintenance.
+  * [#3377](https://github.com/metasfresh/metasfresh/issues/3377) Add an ID to C_ReferenceNo_Type_Table
+    * Improvement of the Reference No Type Table, now having a Primary Key.
+  * [#3387](https://github.com/metasfresh/metasfresh/issues/3387) WebUI New Window for MSV3 Config
+    * New Configuration Window in WebUI for MSV3 Connections to vendors in german Pharma Industry.
 
 * metasfresh-webui-api
   * [#766](https://github.com/metasfresh/metasfresh-webui-api/issues/766) Precision Layout in Price of Orderlines
@@ -87,12 +81,18 @@ Here come the actual release notes:
     * Internal Housekeeping improvement. Now providing the evaluateDuration of Actions in WebUI.
 
 * metasfresh-webui-frontend
-  * [#1428](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1428) Calendar icon covers date field
-    * Refining the look and feel of the calendar icon behavior in WebUI grid views.
+  * [#1252](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1252) Select all x items shall not be available when there is only one page of entries
+    * Improved Handling of the select all functioanlity in Grid View. Now only showing toggle option when more than 1 page.
   * [#1502](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1502) Missing PropTypes Validation for noLabel isOpenDatePicker
     * Internal Housekeeping Issue. Adding PropType Validation for isOpenDatePicker.
+  * [#1504](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1504) Make a difference between internal date format (ISO) and user friendly locale date
+    * Improved Handlign of Date Widget reponses. Now distiguishing between Date for API and Date presented to the user.
   * [#1509](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1509) Harmonize details calendar widget with daterange widget in Filter
     * Improving the Layout of Date Picker, harmonizing with the look and feel of Date Range Widget.
+  * [#1514](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1514) Filter Dropdown dynamically extend height when dropdown list selected
+    * Improved Dropdown behavior. Now showing a complete dropdown List in Filters also when at the bottom of a Filter list area.
+  * [#1428](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1428) Calendar icon covers date field
+    * Refining the look and feel of the calendar icon behavior in WebUI grid views.
 
 ## Fixes
 * metasfresh
@@ -132,6 +132,8 @@ Here come the actual release notes:
     * Improvement of the Tooltip Layout for Apply Button in Filter Selection Dropdowns.
   * [#1517](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1517) Discard changes in modal window
     * Fixes the discard of incomplete rows because of not filled mandatory fields.
+  * [#1518](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1518) Create purchase orders: error in console
+    * Fixes a Bug that prevented the creation of Purchase orders from Sales Orders to be done without errors.
 
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**
