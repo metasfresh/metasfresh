@@ -32,8 +32,8 @@ import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MInOutLine;
-import org.compiere.model.MProduct;
 import org.compiere.model.ProductCost;
+import org.compiere.model.X_C_AcctSchema;
 import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
 
@@ -191,12 +191,11 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		}
 
 		// Calculate PPV for standard costing
-		final MProduct product = MProduct.get(getCtx(), getM_Product_ID());
-		final String costingMethod = product.getCostingMethod(as);
+		final String costingMethod = docLine.getProductCostingMethod(as);
 		// get standard cost and also make sure cost for other costing method is updated
 		final BigDecimal costs = m_pc.getProductCosts(as, getAD_Org_ID(), MAcctSchema.COSTINGMETHOD_StandardCosting, m_C_OrderLine_ID, false);	// non-zero costs
 
-		if (MAcctSchema.COSTINGMETHOD_StandardCosting.equals(costingMethod))
+		if (X_C_AcctSchema.COSTINGMETHOD_StandardCosting.equals(costingMethod))
 		{
 			// No Costs yet - no PPV
 			if (ProductCost.isNoCosts(costs))
@@ -204,7 +203,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 				throw newPostingException()
 						.setC_AcctSchema(as)
 						.setFact(fact)
-						.setDetailMessage("Resubmit - No Costs for " + product.getName());
+						.setDetailMessage("Resubmit - No Costs for " + docLine.getProduct().getName());
 			}
 
 			// Difference
