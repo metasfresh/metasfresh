@@ -1,8 +1,8 @@
+﻿
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Details ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
+DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Details;
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Aggregation_Details ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
-DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Aggregation_Details;
-
-CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Aggregation_Details
+CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Details
 (
 	CustomerArticleNumber Character Varying,
 	Name Character Varying,
@@ -11,18 +11,13 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Agg
 	HUName Text,
 	qtyEntered Numeric,
 	UOMSymbol Character Varying (10),
-	QtyPattern text,
-	Transp bigint
+	QtyPattern text
 );
 
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Aggregation_Details ( IN Record_ID numeric, IN AD_Language Character Varying (6) )
-RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Aggregation_Details AS
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Details ( IN Record_ID numeric, IN AD_Language Character Varying (6) )
+RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Details AS
 $$
-SELECT
-	CustomerArticleNumber, name, attributes, SUM(HUQty), HUName, SUM(QtyEntered), UOMSymbol, QtyPattern, transp
-FROM
-(
 SELECT
 	COALESCE( bpp.ProductNo, p.value ) AS CustomerArticleNumber,
 	COALESCE(pt.Name, p.name) AS Name,
@@ -31,40 +26,21 @@ SELECT
 	pi.name AS HUName,
 	QtyEntered * COALESCE (multiplyrate, 1) AS QtyEntered,
 	COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOMSymbol,
-	CASE WHEN StdPrecision = 0 THEN '#,##0' ELSE Substring( '#,##0.000' FROM 0 FOR 7+StdPrecision::integer) END AS QtyPattern,
-	transp
+	CASE WHEN StdPrecision = 0 THEN '#,##0' ELSE Substring( '#,##0.000' FROM 0 FOR 7+StdPrecision::integer) END AS QtyPattern
 FROM
-	-- Begin from a prefiltered InOut Table so InOutLines can be joined using the Index
-	-- assign an alias to each inout: 1st inout = 1, 2nd inout = 2, and so on
-	(
-		SELECT	*, rank() OVER ( PARTITION BY '' ORDER BY MovementDate, M_InOut_ID ) as transp
-		FROM	M_InOut io 
-		WHERE 	io.DocStatus = 'CO' 
-			AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1)
-			AND AD_Org_ID = ( SELECT AD_Org_ID FROM M_InOut WHERE M_InOut_ID = $1)
-			AND C_BPartner_ID = ( SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = $1) 
-			AND io.isActive = 'Y' 
-	) io
-	LEFT OUTER JOIN M_InOutLine iol	ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
-	LEFT OUTER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+	M_InOutLine iol
+	INNER JOIN M_InOut io 				ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
+	LEFT OUTER JOIN C_BPartner bp			ON io.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
 	LEFT OUTER JOIN (
 		SELECT 	AVG(ic.PriceEntered_Override) AS PriceEntered_Override, AVG(ic.PriceEntered) AS PriceEntered,
 			AVG(ic.PriceActual_Override) AS PriceActual_Override, AVG(ic.PriceActual) AS PriceActual,
-			AVG(ic.Discount_Override) AS Discount_Override, AVG(ic.Discount) AS Discount, ic.Price_UOM_ID, iol.M_InOutLine_ID
-		FROM 	
-			(SELECT * FROM M_InOut io WHERE io.DocStatus = 'CO' 
-										AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1 )  
-										AND AD_Org_ID = ( SELECT AD_Org_ID FROM M_InOut WHERE M_InOut_ID = $1 )
-										AND C_BPartner_ID = ( SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = $1 )
-										AND io.isActive = 'Y') io
-			LEFT OUTER JOIN M_InOutLine iol	ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
+			AVG(ic.Discount_Override) AS Discount_Override, AVG(ic.Discount) AS Discount, Price_UOM_ID, iol.M_InOutLine_ID
+		FROM 	M_InOutLine iol
 			INNER JOIN C_InvoiceCandidate_InOutLine iciol ON iol.M_InOutLine_ID = iciol.M_InOutLine_ID AND iciol.isActive = 'Y'
 			INNER JOIN C_Invoice_Candidate ic ON iciol.C_Invoice_Candidate_ID = ic.C_Invoice_Candidate_ID AND ic.isActive = 'Y'
-				AND ic.AD_Table_ID = (SELECT Get_Table_ID('C_OrderLine')) -- needs to be here for index scan
-			LEFT OUTER JOIN C_Orderline ol ON ic.Record_ID = ol.C_OrderLine_ID AND ol.isActive = 'Y'
-			LEFT OUTER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID AND o.isActive = 'Y'
-		GROUP BY 
-			ic.Price_UOM_ID, iol.M_InOutLine_ID, ol.line, o.documentno
+		WHERE
+			iol.M_InOut_ID = $1 AND iol.isActive = 'Y'
+		GROUP BY 	Price_UOM_ID, iol.M_InOutLine_ID
 	) ic ON iol.M_InOutLine_ID = ic.M_InOutLine_ID
 	-- Get Packing instruction
 	LEFT OUTER JOIN
@@ -77,12 +53,7 @@ FROM
 					COALESCE ( pifb.name, pi.name ) AS name,
 					iol.M_InOutLine_ID
 				FROM
-					(SELECT * FROM M_InOut io WHERE io.DocStatus = 'CO' 
-													AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1)  
-													AND AD_Org_ID = ( SELECT AD_Org_ID FROM M_InOut WHERE M_InOut_ID = $1)  
-													AND C_BPartner_ID = ( SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = $1)  
-													AND io.isActive = 'Y') io
-					LEFT OUTER JOIN M_InOutLine iol	ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
+					M_InOutLine iol
 					-- Get PI directly from InOutLine (1 to 1) 
 					LEFT OUTER JOIN M_HU_PI_Item_Product pi ON iol.M_HU_PI_Item_Product_ID = pi.M_HU_PI_Item_Product_ID AND pi.isActive = 'Y'
 					LEFT OUTER JOIN M_HU_PI_Item piit ON piit.M_HU_PI_Item_ID = pi.M_HU_PI_Item_ID AND piit.isActive = 'Y'
@@ -96,7 +67,8 @@ FROM
 					LEFT OUTER JOIN M_HU_PI_Version piv ON piv.M_HU_PI_Version_ID = COALESCE(tu.M_HU_PI_Version_ID, piit.M_HU_PI_Version_ID) AND piv.isActive = 'Y'
 				WHERE
 					piv.M_HU_PI_Version_ID != 101
-			) x
+					AND iol.M_InOut_ID = $1
+			) x	
 		GROUP BY M_InOutLine_ID
 	) pi ON iol.M_InOutLine_ID = pi.M_InOutLine_ID
 	-- Product and its translation
@@ -113,19 +85,16 @@ FROM
 		AND conv.isActive = 'Y'
 	-- Attributes
 	LEFT OUTER JOIN	(
-		SELECT 	String_agg ( ai_value, ', ' ORDER BY Length(ai_value), ai_value ) AS Attributes, M_AttributeSetInstance_ID 
-		FROM 	Report.fresh_Attributes
+		SELECT 	String_agg ( ai_value, ', ' ORDER BY Length(ai_value), ai_value ) AS Attributes, M_AttributeSetInstance_ID FROM Report.fresh_Attributes
 		WHERE	at_value IN ('1000015', '1000001') -- Marke (ADR), Herkunft
-		GROUP BY M_AttributeSetInstance_ID
+		GROUP BY	M_AttributeSetInstance_ID
 	) att ON iol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
 WHERE
-	pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
+	iol.M_InOut_ID = $1 AND iol.isActive = 'Y'
+	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
 	AND QtyEntered != 0 -- Don't display lines without a Qty. See fresh_08293
-) x
-GROUP BY
-	CustomerArticleNumber, name, attributes, HUName, UOMSymbol, QtyPattern, transp
 ORDER BY
-	CustomerArticleNumber, transp, name 
+	COALESCE( bpp.ProductNo, p.value ) 
 $$
 LANGUAGE sql STABLE
 ;
