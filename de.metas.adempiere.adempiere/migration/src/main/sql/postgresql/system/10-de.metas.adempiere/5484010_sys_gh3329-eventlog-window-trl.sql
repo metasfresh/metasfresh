@@ -448,3 +448,8 @@ UPDATE AD_Field SET Name='Ereignis Log Eintrag ',Updated=TO_TIMESTAMP('2018-01-2
 UPDATE AD_Field SET Name='Ereignis Log Eintrag',Updated=TO_TIMESTAMP('2018-01-29 08:09:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=561296
 ;
 
+-- 2018-01-29T09:08:21.669
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-29 09:08:21','YYYY-MM-DD HH24:MI:SS'),WEBUI_NameBrowse='Event' WHERE AD_Menu_ID=541006 AND AD_Language='en_US'
+;
+
