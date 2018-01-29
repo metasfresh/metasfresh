@@ -44,6 +44,8 @@ import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
@@ -211,8 +213,13 @@ public class HUShipmentPackingMaterialLinesBuilder
 				{
 					final InOutLineHUPackingMaterialCollectorSource inOutLineSource = (InOutLineHUPackingMaterialCollectorSource)source;
 					final I_M_InOutLine sourceIol = inOutLineSource.getM_InOutLine();
-					sourceIol.setM_PackingMaterial_InOutLine(packingMaterialLine);
-					InterfaceWrapperHelper.save(sourceIol);
+					final I_M_HU_PI_Version huPiVersion = sourceIol.getM_HU_PI_Item_Product_Override().getM_HU_PI_Item().getM_HU_PI_Version();
+					final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO.retrievePackingMaterial(huPiVersion, sourceIol.getM_InOut().getC_BPartner());
+					if (packingMaterial != null && packingMaterial.getM_Product_ID() == packingMaterialLine.getM_Product_ID())
+					{
+						sourceIol.setM_PackingMaterial_InOutLine(packingMaterialLine);
+						InterfaceWrapperHelper.save(sourceIol);
+					}
 				}
 			}
 		}
