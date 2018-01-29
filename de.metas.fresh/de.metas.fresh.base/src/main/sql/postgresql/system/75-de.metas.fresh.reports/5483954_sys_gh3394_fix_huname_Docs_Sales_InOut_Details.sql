@@ -1,7 +1,7 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_ConcreteADR ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
-DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_ConcreteADR;
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
+DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details;
 
-CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_ConcreteADR
+CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details
 (
 	Line Numeric (10,0),
 	Name Character Varying,
@@ -15,13 +15,22 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_Concret
 	LineNetAmt Numeric,
 	Discount Numeric,
 	IsDiscountPrinted Character (1),
-	QtyPattern text
+	QtyPattern text,
+	Description Character Varying,
+	bp_product_no character varying(30),
+	bp_product_name character varying(100),
+	best_before_date text,
+	lotno character varying,
+	p_value character varying(30),
+	p_description character varying(255), 
+	inout_description character varying(255)
 );
 
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_ConcreteADR ( IN Record_ID numeric, IN AD_Language Character Varying (6) )
-RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_ConcreteADR AS
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details ( IN Record_ID numeric, IN AD_Language Character Varying (6) )
+RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details AS
 $$
+
 SELECT
 	iol.line,
 	COALESCE(pt.Name, p.name) AS Name,
@@ -38,7 +47,16 @@ SELECT
 	COALESCE(ic.PriceActual_Override, ic.PriceActual) * iol.MovementQty * COALESCE (multiplyrate, 1) AS linenetamt,
 	COALESCE(ic.Discount_Override, ic.Discount) AS Discount,
 	bp.isDiscountPrinted,
-	CASE WHEN StdPrecision = 0 THEN '#,##0' ELSE Substring( '#,##0.000' FROM 0 FOR 7+StdPrecision::integer) END AS QtyPattern
+	CASE WHEN StdPrecision = 0 THEN '#,##0' ELSE Substring( '#,##0.000' FROM 0 FOR 7+StdPrecision::integer) END AS QtyPattern,
+	iol.Description,
+	-- in case there is no C_BPartner_Product, fallback to the default ones
+	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
+	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
+	to_char(att.best_before_date::date, 'MM.YYYY') AS best_before_date,
+	att.lotno,
+	p.value AS p_value,
+	p.description AS p_description,
+	io.description AS inout_description
 FROM
 	M_InOutLine iol
 	INNER JOIN M_InOut io 			ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
@@ -87,19 +105,32 @@ FROM
 	LEFT OUTER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
 	LEFT OUTER JOIN M_Product_Trl pt 		ON iol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive = 'Y'
 	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+	
+	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
+		AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'	
 	-- Unit of measurement and its translation
 	LEFT OUTER JOIN C_UOM uom			ON ic.Price_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 	LEFT OUTER JOIN C_UOM_Trl uomt			ON ic.Price_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y'
-	LEFT OUTER JOIN C_UOM_Conversion conv		ON conv.C_UOM_ID = iol.C_UOM_ID
+	LEFT OUTER JOIN C_UOM_Conversion conv		ON conv.C_UOM_ID = iol.C_UOM_ID 
 		AND conv.C_UOM_To_ID = ic.Price_UOM_ID
 		AND iol.M_Product_ID = conv.M_Product_ID
 		AND conv.isActive = 'Y'
 	-- Attributes
 	LEFT OUTER JOIN	(
-		SELECT 	String_agg ( at.ai_value, ', ' ORDER BY Length(ai_value), at.ai_value ) AS Attributes, at.M_AttributeSetInstance_ID FROM Report.fresh_Attributes_ConcreteADR at
+		SELECT 	String_agg ( at.ai_value, ', ' ORDER BY Length(at.ai_value), at.ai_value )
+					FILTER (WHERE at.at_value not in ('HU_BestBeforeDate', 'Lot-Nummer'))
+				AS Attributes, 
+
+				at.M_AttributeSetInstance_ID ,
+				String_agg (replace(at.ai_value, 'MHD: ', ''), ', ') 
+					FILTER (WHERE at.at_value like 'HU_BestBeforeDate') 
+				AS best_before_date,
+				String_agg(ai_value, ', ') FILTER (WHERE at.at_value like 'Lot-Nummer') AS lotno
+				
+		FROM Report.fresh_Attributes at
 		JOIN M_InOutLine iol ON at.M_AttributeSetInstance_ID = iol.M_AttributeSetInstance_ID AND iol.isActive = 'Y'
-		WHERE	at.at_value IN ('1000002', '1000001', '1000030', '1000015') -- Label, Herkunft, Aktionen, Marke (ADR)
-				AND iol.M_InOut_ID = $1
+		WHERE	at.at_value IN ('1000002', '1000001', '1000030', '1000015', 'HU_BestBeforeDate', 'Lot-Nummer') -- Label, Herkunft, Aktionen, Marke (ADR)
+			AND iol.M_InOut_ID = $1
 		GROUP BY	at.M_AttributeSetInstance_ID
 	) att ON iol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
 WHERE
@@ -108,6 +139,7 @@ WHERE
 	AND QtyEntered != 0 -- Don't display lines without a Qty. See 08293
 ORDER BY
 	line
+
 $$
 LANGUAGE sql STABLE
 ;

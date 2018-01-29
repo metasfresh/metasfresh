@@ -38,7 +38,6 @@ public class NullScriptExecutor implements IScriptExecutor
 	// because de.metas.migration.executor.impl.DefaultScriptExecutorFactory.createScriptExecutor(IDatabase, IScript) relies on this
 	public NullScriptExecutor(final IDatabase database)
 	{
-		super();
 		// nothing
 	}
 
