@@ -68,10 +68,11 @@ class RawWidget extends Component {
     handleFocus && handleFocus();
   };
 
-  willPatch = (value, valueTo) => {
+  willPatch = (value, valueTo, isForce) => {
     const { widgetData } = this.props;
     const { cachedValue } = this.state;
     return (
+      isForce ||
       JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
       JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
       (cachedValue !== undefined &&
@@ -92,12 +93,15 @@ class RawWidget extends Component {
     return value ? Moment(value).format(DATE_FORMAT) : null;
   };
 
-  handlePatch = (property, value, id, valueTo) => {
+  // isForce will be used for Datepicker
+  // Datepicker is checking the cached value in datepicker component itself
+  // and send a patch request only if date is changed
+  handlePatch = (property, value, id, valueTo, isForce) => {
     const { handlePatch } = this.props;
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
-    if (this.willPatch(value, valueTo) && handlePatch) {
+    if (this.willPatch(value, valueTo, isForce) && handlePatch) {
       this.setState({
         cachedValue: undefined
       });
@@ -302,7 +306,13 @@ class RawWidget extends Component {
                   handleChange(widgetField, date);
                 }}
                 patch={date =>
-                  this.handlePatch(widgetField, this.generateMomentObj(date))
+                  this.handlePatch(
+                    widgetField,
+                    this.generateMomentObj(date),
+                    null,
+                    null,
+                    true
+                  )
                 }
                 {...{
                   allowOutsideClickListener,
@@ -354,7 +364,10 @@ class RawWidget extends Component {
                 patch={date =>
                   this.handlePatch(
                     widgetField,
-                    date ? Moment(date).format(DATE_FORMAT) : null
+                    this.generateMomentObj(date),
+                    null,
+                    null,
+                    true
                   )
                 }
                 tabIndex={fullScreen ? -1 : tabIndex}
@@ -399,7 +412,10 @@ class RawWidget extends Component {
               patch={date =>
                 this.handlePatch(
                   widgetField,
-                  date ? Moment(date).format(DATE_FORMAT) : null
+                  this.generateMomentObj(date),
+                  null,
+                  null,
+                  true
                 )
               }
               tabIndex={fullScreen ? -1 : tabIndex}

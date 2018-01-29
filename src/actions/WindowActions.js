@@ -4,6 +4,8 @@ import { push, replace } from "react-router-redux";
 import SockJs from "sockjs-client";
 
 import Stomp from "stompjs/lib/stomp.min.js";
+import { DATE_FIELDS } from "../constants/Constants";
+import Moment from "moment";
 
 import {
   ACTIVATE_TAB,
@@ -610,7 +612,6 @@ export function patch(
 
       const data =
         response.data instanceof Array ? response.data : [response.data];
-
       await dispatch(
         mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
       );
@@ -1139,7 +1140,6 @@ export function deleteLocal(tabid, rowsid, scope, response) {
     dispatch(updateStatus(response.data));
   };
 }
-
 // END PROCESS ACTIONS
 
 // UTILITIES
@@ -1152,6 +1152,23 @@ export function parseToDisplay(fieldsByName) {
   return parseDateToReadable(nullToEmptyStrings(fieldsByName));
 }
 
+// i.e 2018-01-27T17:00:00.000-06:00
+function parseDateWithCurrenTimezone(value) {
+  if (value) {
+    if (Moment.isMoment(value)) {
+      return new Date(value);
+    } else {
+      const TIMEZONE_STRING_LENGTH = 7;
+      const newValue = value.substring(
+        0,
+        value.length - TIMEZONE_STRING_LENGTH
+      );
+      return new Date(newValue);
+    }
+  }
+  return "";
+}
+
 function parseDateToReadable(fieldsByName) {
   const dateParse = ["Date", "DateTime", "Time"];
 
@@ -1161,7 +1178,7 @@ function parseDateToReadable(fieldsByName) {
     acc[fieldName] =
       isDateField && field.value
         ? Object.assign({}, field, {
-            value: field.value ? new Date(field.value) : ""
+            value: parseDateWithCurrenTimezone(field.value)
           })
         : field;
     return acc;
