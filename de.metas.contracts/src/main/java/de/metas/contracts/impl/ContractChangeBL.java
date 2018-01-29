@@ -26,11 +26,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.invoice.service.IInvoiceCreditContext;
+import org.adempiere.invoice.service.impl.InvoiceCreditContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -39,8 +43,10 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
+import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeDAO;
 import de.metas.contracts.IContractsDAO;
@@ -53,6 +59,8 @@ import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -159,6 +167,8 @@ public class ContractChangeBL implements IContractChangeBL
 		InterfaceWrapperHelper.save(currentTerm);
 
 		cancelNextContractIfNeeded(currentTerm, contractChangeParameters);
+		creditInvoicesIfNeeded(currentTerm, contractChangeParameters);
+
 		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(currentTerm);
 	}
 
@@ -238,6 +248,39 @@ public class ContractChangeBL implements IContractChangeBL
 		{
 			cancelContractIfNotCanceledAlready(currentTerm.getC_FlatrateTerm_Next(), contractChangeParameters);
 		}
+	}
+
+	private void creditInvoicesIfNeeded(@NonNull final I_C_Flatrate_Term currentTerm,
+			@NonNull final ContractChangeParameters contractChangeParameters)
+	{
+		final boolean isCreditOpenInvoices = contractChangeParameters.isCreditOpenInvoices();
+		if (isCreditOpenInvoices)
+		{
+			final List<I_C_Invoice> invoices = new ArrayList<>();
+			invoices.forEach(openInvoice -> creditInvoice(openInvoice, contractChangeParameters.getTerminationReason()));
+		}
+	}
+
+	private void creditInvoice(@NonNull final I_C_Invoice openInvoice, final String reason)
+	{
+		final String docbasetype = openInvoice.isSOTrx() ? X_C_DocType.DOCBASETYPE_ARCreditMemo : X_C_DocType.DOCBASETYPE_APCreditMemo;
+		final int targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(docbasetype)
+				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+				.adClientId(openInvoice.getAD_Client_ID())
+				.adOrgId(openInvoice.getAD_Org_ID())
+				.build());
+
+		final IInvoiceCreditContext creditCtx = new InvoiceCreditContext(
+				targetDocTypeID, // C_DocType_ID
+				true, // completeAndAllocate
+				true, // isReferenceOriginalOrder
+				true, // isReferenceInvoice
+				false);
+
+		final I_C_Invoice creditMemoInvoice = Services.get(IInvoiceBL.class).creditInvoice(openInvoice, creditCtx);
+		creditMemoInvoice.setDescription(reason);
+		InterfaceWrapperHelper.save(creditMemoInvoice);
 	}
 
 	private void createCompesationOrderIfNeeded(@NonNull final ContextForCompesationOrder compensationOrderContext)
@@ -375,8 +418,6 @@ public class ContractChangeBL implements IContractChangeBL
 
 		return surplusQty;
 	}
-
-
 
 	private void setQuitContractStatus(@NonNull final I_C_SubscriptionProgress progress)
 	{
