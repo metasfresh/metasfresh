@@ -57,6 +57,7 @@ Here come the actual release notes:
     * Dropping the legacy Costing Functionality, making place for the new Costing Engine to come.
   * [#3349](https://github.com/metasfresh/metasfresh/issues/3349) Add BPartner to User Window
     * New Field in Window User, allowing to see and maintain the Business Partner.
+  * [#3353](https://github.com/metasfresh/metasfresh/issues/3353) Implement MSV3 availability query
   * [#3359](https://github.com/metasfresh/metasfresh/issues/3359) User Window unlock Account Action
     * Adding new Action in User Window in WebUI allowing to unlock the User Account.  
   * [#3366](https://github.com/metasfresh/metasfresh/issues/3366) Webui Window: Create window for ReferenceNo and Reference Type
@@ -65,8 +66,11 @@ Here come the actual release notes:
     * Improvement of the Reference No Type Table, now having a Primary Key.
   * [#3387](https://github.com/metasfresh/metasfresh/issues/3387) WebUI New Window for MSV3 Config
     * New Configuration Window in WebUI for MSV3 Connections to vendors in german Pharma Industry.
+  * [#3385](https://github.com/metasfresh/metasfresh/issues/3385) Enlarge column AD_EntityType.EntityType
+  * [#3389](https://github.com/metasfresh/metasfresh/issues/3389) Performance issue related to zooming table record references
 
 * metasfresh-webui-api
+  * [#744](https://github.com/metasfresh/metasfresh-webui-api/issues/744) Support Export of massive records to Excel
   * [#766](https://github.com/metasfresh/metasfresh-webui-api/issues/766) Precision Layout in Price of Orderlines
     * New Precision Functionality in WebUI, now allowing to record and display more that 2 digits in precision.
   * [#772](https://github.com/metasfresh/metasfresh-webui-api/issues/772) EMail Attachment Name in WebUI
@@ -79,6 +83,7 @@ Here come the actual release notes:
     * Internal Housekeeping improvement. Now providing the loadDuration of Document References in WebUI.
   * [#794](https://github.com/metasfresh/metasfresh-webui-api/issues/794) Provide actions evaluateDuration
     * Internal Housekeeping improvement. Now providing the evaluateDuration of Actions in WebUI.
+  * [#798](https://github.com/metasfresh/metasfresh-webui-api/issues/798) Allow Filtering for Table References and show table identifier
 
 * metasfresh-webui-frontend
   * [#1252](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1252) Select all x items shall not be available when there is only one page of entries
@@ -104,6 +109,7 @@ Here come the actual release notes:
     * Fixes a doubled Field for Doctype in the payment window.
   * [#3350](https://github.com/metasfresh/metasfresh/issues/3350) Error creating movement from DDOrder
     * Fixes an Error that prevented the creation of movements from Distribution Orders.
+  * [#3386](https://github.com/metasfresh/metasfresh/issues/3386) Issued HUs retain I status after PP_Order unclose
 
 * metasfresh-webui-api
   * [#775](https://github.com/metasfresh/metasfresh-webui-api/issues/775) Destroyed HUs are still visible in material receipt
@@ -118,6 +124,8 @@ Here come the actual release notes:
     * Fixes some deadlocks that occurred through Material Cockpit logic.
   * [#796](https://github.com/metasfresh/metasfresh-webui-api/issues/796) Error on filter with +/- buttons
     * Fixes an error that occurred when using the new DateSwitcher Widget.
+  * [#803](https://github.com/metasfresh/metasfresh-webui-api/issues/803) NPE in Picking Slot Clearing
+  * [#804](https://github.com/metasfresh/metasfresh-webui-api/issues/804) Error in Picking Tray Clearing when adding to existing HU
 
 * metasfresh-webui-frontend
   * [#1447](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1447) Picking window broken
@@ -134,6 +142,7 @@ Here come the actual release notes:
     * Fixes the discard of incomplete rows because of not filled mandatory fields.
   * [#1518](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1518) Create purchase orders: error in console
     * Fixes a Bug that prevented the creation of Purchase orders from Sales Orders to be done without errors.
+  * [#1520](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1520) Typeahead error in new Label Filter
   * [#1529](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1529) Email To field does not work correctly
 
 # metasfresh 5.41 (2018-03)
