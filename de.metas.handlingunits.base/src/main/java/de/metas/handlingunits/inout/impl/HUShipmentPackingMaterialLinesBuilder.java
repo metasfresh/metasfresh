@@ -209,14 +209,14 @@ public class HUShipmentPackingMaterialLinesBuilder
 			sourceIols.stream()
 					.filter(source -> source instanceof InOutLineHUPackingMaterialCollectorSource)
 					.map(source -> (InOutLineHUPackingMaterialCollectorSource)source)
-					.forEach(inOutLineSource -> linkInOutLineToPakcingMaterialLine(inOutLineSource, packingMaterialLine));
+					.forEach(inOutLineSource -> linkInOutLineToPackingMaterialLine(inOutLineSource, packingMaterialLine));
 		}
 
 		configurable = false;
 	}
 
 	// task 09502: set the reference from line to packing-line
-	private void linkInOutLineToPakcingMaterialLine(@NonNull final InOutLineHUPackingMaterialCollectorSource inOutLineSource, @NonNull final I_M_InOutLine packingMaterialLine)
+	private void linkInOutLineToPackingMaterialLine(@NonNull final InOutLineHUPackingMaterialCollectorSource inOutLineSource, @NonNull final I_M_InOutLine packingMaterialLine)
 	{
 		final I_M_InOutLine sourceIol = inOutLineSource.getM_InOutLine();
 		final I_M_HU_PI_Version huPiVersion = sourceIol.getM_HU_PI_Item_Product_Override().getM_HU_PI_Item().getM_HU_PI_Version();
