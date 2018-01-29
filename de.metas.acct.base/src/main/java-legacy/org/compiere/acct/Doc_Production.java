@@ -27,12 +27,12 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Production;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.ProductCost;
 import org.compiere.model.X_M_ProductionLine;
 import org.compiere.model.X_M_ProductionPlan;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
+import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostingDocumentRef;
@@ -212,7 +212,7 @@ public class Doc_Production extends Doc<DocLine_Production>
 			
 			//  Inventory       DR      CR
 			fl = fact.createLine(line,
-				line.getAccount(ProductCost.ACCTTYPE_P_Asset, as),
+				line.getAccount(ProductAcctType.Asset, as),
 				as.getC_Currency_ID(), costs);
 			if (fl == null)
 			{

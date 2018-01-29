@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -38,6 +39,7 @@ import org.compiere.model.ProductCost;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import de.metas.acct.api.ProductAcctType;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
@@ -61,18 +63,16 @@ import de.metas.tax.api.ITaxBL;
  *          FR [ 1840016 ] Avoid usage of clearing accounts - subject to C_AcctSchema.IsPostIfClearingEqual Avoid posting if both accounts Not Invoiced Receipts and Inventory Clearing are equal BF [
  *          2789949 ] Multicurrency in matching posting
  */
-public class Doc_MatchInv extends Doc<DocLine<Doc_MatchInv>>
+public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(Doc_MatchInv.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
 
-	public Doc_MatchInv(final IDocBuilder docBuilder)
-	{
-		super(docBuilder, DOCTYPE_MatMatchInv);
-	}   // Doc_MatchInv
-
+	/** pseudo line */
+	private DocLine_MatchInv docLine = null;
+	
 	/** Invoice Line */
 	private I_C_InvoiceLine m_invoiceLine = null;
 	private int invoiceCurrencyId;
@@ -86,6 +86,11 @@ public class Doc_MatchInv extends Doc<DocLine<Doc_MatchInv>>
 
 	private ProductCost m_pc = null;
 
+	public Doc_MatchInv(final IDocBuilder docBuilder)
+	{
+		super(docBuilder, DOCTYPE_MatMatchInv);
+	}
+
 	@Override
 	protected void loadDocumentDetails()
 	{
@@ -93,8 +98,8 @@ public class Doc_MatchInv extends Doc<DocLine<Doc_MatchInv>>
 		setC_Currency_ID(Doc.NO_CURRENCY);
 		setDateDoc(matchInv.getDateTrx());
 		setQty(matchInv.getQty());
-
-		final String trxName = getTrxName();
+		
+		docLine = new DocLine_MatchInv(matchInv, this); 
 
 		// Invoice Info
 		{
@@ -132,7 +137,7 @@ public class Doc_MatchInv extends Doc<DocLine<Doc_MatchInv>>
 		// Product costing
 		m_pc = new ProductCost(getCtx(),
 				getM_Product_ID(), matchInv.getM_AttributeSetInstance_ID(),
-				trxName);
+				ITrx.TRXNAME_ThreadInherited);
 		m_pc.setQty(getQty());
 	}
 
@@ -252,7 +257,7 @@ public class Doc_MatchInv extends Doc<DocLine<Doc_MatchInv>>
 		//
 		// InventoryClearing CR
 		// From Invoice
-		final MAccount expense = m_pc.getAccount(m_pc.isService() ? ProductCost.ACCTTYPE_P_Expense : ProductCost.ACCTTYPE_P_InventoryClearing, as);
+		final MAccount expense = docLine.getAccount(docLine.isService() ? ProductAcctType.Expense : ProductAcctType.InventoryClearing, as);
 		BigDecimal LineNetAmt = getInvoiceLineNetAmt();
 
 		final BigDecimal invoiceQtyMultiplier = getQty()
@@ -262,7 +267,7 @@ public class Doc_MatchInv extends Doc<DocLine<Doc_MatchInv>>
 		{
 			LineNetAmt = LineNetAmt.multiply(invoiceQtyMultiplier);
 		}
-		if (m_pc.isService())
+		if (docLine.isService())
 		{
 			// TODO: evaluate if this logic is correct
 			LineNetAmt = dr.getAcctBalance();	// book out exact receipt amt
@@ -395,7 +400,7 @@ public class Doc_MatchInv extends Doc<DocLine<Doc_MatchInv>>
 
 		//
 		// Create the invoice price variance fact line, if needed
-		final FactLine ipvFactLine = fact.createLine(null, m_pc.getAccount(ProductCost.ACCTTYPE_P_IPV, as), ipvCurrencyId, ipvAmount);
+		final FactLine ipvFactLine = fact.createLine(null, docLine.getAccount(ProductAcctType.IPV, as), ipvCurrencyId, ipvAmount);
 
 		//
 		// In case the DR line (InOut - NotInvoicedReceipts) is zero,

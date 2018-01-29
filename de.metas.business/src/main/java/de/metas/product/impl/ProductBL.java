@@ -280,6 +280,14 @@ public final class ProductBL implements IProductBL
 		}
 		return costingMethod;
 	}
+	
+	@Override
+	public String getCostingMethod(final int productId, final I_C_AcctSchema as)
+	{
+		final I_M_Product product = InterfaceWrapperHelper.loadOutOfTrx(productId, I_M_Product.class);
+		return getCostingMethod(product, as);
+	}
+
 
 	@Override
 	public boolean isTradingProduct(final I_M_Product product)

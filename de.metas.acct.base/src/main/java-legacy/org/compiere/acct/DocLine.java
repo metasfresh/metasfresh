@@ -22,16 +22,20 @@ import java.util.Properties;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.acct.api.ProductAcctType;
+import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Acct;
+import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCharge;
-import org.compiere.model.MProduct;
 import org.compiere.model.PO;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
@@ -40,11 +44,13 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.acct.api.IProductAcctDAO;
 import lombok.NonNull;
 
 /**
@@ -59,6 +65,8 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 {
 	// services
 	private final transient Logger logger = LogManager.getLogger(getClass());
+	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+	private final transient IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	/** Persistent Object */
 	private final PO p_po;
@@ -84,6 +92,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private BigDecimal m_AmtAcctDr = null;
 	private BigDecimal m_AmtAcctCr = null;
 
+	private I_M_Product _product; // lazy
 	/** Product Costs */
 	private ProductCost m_productCost = null;
 
@@ -377,13 +386,15 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	/**
 	 * Line Account from Product (or Charge).
 	 *
-	 * @param AcctType see ProductCost.ACCTTYPE_* (0..3)
+	 * @param acctType see ProductCost.ACCTTYPE_* (0..3)
 	 * @param as Accounting schema
 	 * @return Requested Product Account
 	 */
 	@OverridingMethodsMustInvokeSuper
-	public MAccount getAccount(final ProductAcctType AcctType, final MAcctSchema as)
+	public MAccount getAccount(final ProductAcctType acctType, final I_C_AcctSchema as)
 	{
+		//
+		// Charge account
 		if (getM_Product_ID() <= 0 && getC_Charge_ID() > 0)
 		{
 			final MAccount acct;
@@ -395,15 +406,59 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			{
 				acct = getChargeAccount(as, BigDecimal.ONE.negate()); // Revenue (-)
 			}
-			if (acct != null)
+			if (acct == null)
 			{
-				return acct;
+				throw new AdempiereException("No charge account was found for acctType=" + acctType + ", " + as);
 			}
+			return acct;
+		}
+		//
+		// Product Account
+		else
+		{
+			return getProductAccount(acctType, as);
+		}
+	}
+
+	private MAccount getProductAccount(final ProductAcctType acctType, final I_C_AcctSchema as)
+	{
+		// No Product - get Default from Product Category
+		final int productId = getM_Product_ID();
+		if (productId <= 0)
+		{
+			return getAccountDefault(acctType, as);
 		}
 
-		// Product Account
-		return getProductCost().getAccount(AcctType, as);
+		final I_M_Product_Acct productAcct = productAcctDAO.retrieveProductAcctOrNull(as, productId);
+		Check.assumeNotNull(productAcct, "Product {} has accounting records", productId);
+		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(productAcct, acctType.getColumnName());
+		if (validCombinationId == null || validCombinationId <= 0)
+		{
+			return null;
+		}
+
+		return accountDAO.retrieveAccountById(getCtx(), validCombinationId);
 	}
+	
+	/**
+	 * Account from Default Product Category
+	 *
+	 * @param AcctType see ACCTTYPE_* (1..8)
+	 * @param as accounting schema
+	 * @return Requested Product Account
+	 */
+	private final MAccount getAccountDefault(final ProductAcctType acctType, final I_C_AcctSchema as)
+	{
+		final I_M_Product_Category_Acct pcAcct = productAcctDAO.retrieveDefaultProductCategoryAcct(as);
+		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(pcAcct, acctType.getColumnName());
+		if(validCombinationId == null || validCombinationId <= 0)
+		{
+			return null;
+		}
+		
+		return accountDAO.retrieveAccountById(getCtx(), validCombinationId);
+	}
+
 
 	/**
 	 * Get Charge
@@ -422,7 +477,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * @param amount amount for expense(+)/revenue(-)
 	 * @return Charge Account or null
 	 */
-	protected final MAccount getChargeAccount(final MAcctSchema as, final BigDecimal amount)
+	protected final MAccount getChargeAccount(final I_C_AcctSchema as, final BigDecimal amount)
 	{
 		final int C_Charge_ID = getC_Charge_ID();
 		if (C_Charge_ID == 0)
@@ -497,6 +552,19 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		return !isItem();
 	}
+	
+	public final String getProductCostingMethod(final I_C_AcctSchema as)
+	{
+		final I_M_Product product = getProduct();
+		return Services.get(IProductBL.class).getCostingMethod(product, as);
+	}
+	
+	public final String getProductCostingLevel(final I_C_AcctSchema as)
+	{
+		final I_M_Product product = getProduct();
+		return Services.get(IProductBL.class).getCostingLevel(product, as);
+	}
+
 
 	public final int getM_AttributeSetInstance_ID()
 	{
@@ -589,14 +657,20 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	}   // getProductCosts
 
 	/**
-	 * Get Product
-	 *
 	 * @return product or null if no product
 	 */
-	public final MProduct getProduct()
+	public final I_M_Product getProduct()
 	{
-		return getProductCost().getProduct();
-	}	// getProduct
+		if(_product == null)
+		{
+			final int productId = getM_Product_ID();
+			if(productId > 0)
+			{
+				_product = InterfaceWrapperHelper.loadOutOfTrx(productId, I_M_Product.class);
+			}
+		}
+		return _product;
+	}
 
 	/**
 	 * Get Revenue Recognition
@@ -605,7 +679,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 */
 	public final int getC_RevenueRecognition_ID()
 	{
-		final MProduct product = getProduct();
+		final I_M_Product product = getProduct();
 		if (product != null)
 		{
 			return product.getC_RevenueRecognition_ID();
@@ -628,7 +702,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		}
 
 		// Storage UOM
-		final MProduct product = getProduct();
+		final I_M_Product product = getProduct();
 		if (product != null)
 		{
 			return product.getC_UOM_ID();

@@ -2,8 +2,12 @@ package org.compiere.acct;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.MAccount;
 import org.compiere.util.DB;
+
+import de.metas.acct.api.ProductAcctType;
 
 /*
  * #%L
@@ -37,7 +41,7 @@ public class DocLine_InOut extends DocLine<Doc_InOut>
 		super(InterfaceWrapperHelper.getPO(inoutLine), doc);
 	}
 
-	public final int getPP_Cost_Collector_ID()
+	private final int getPP_Cost_Collector_ID()
 	{
 		return m_PP_Cost_Collector_ID;
 	}
@@ -65,4 +69,21 @@ public class DocLine_InOut extends DocLine<Doc_InOut>
 		return getAD_Org_ID();
 	}
 
+	public MAccount getProductAssetAccount(final I_C_AcctSchema as)
+	{
+		if (isItem())
+		{
+			return getAccount(ProductAcctType.Asset, as);
+		}
+		// if the line is a Outside Processing then DR WIP
+		else if (getPP_Cost_Collector_ID() > 0)
+		{
+			return getAccount(ProductAcctType.WorkInProcess, as);
+		}
+		else
+		{
+			return getAccount(ProductAcctType.Expense, as);
+		}
+
+	}
 }

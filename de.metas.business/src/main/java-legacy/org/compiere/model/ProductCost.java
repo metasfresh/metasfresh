@@ -19,16 +19,9 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IAccountDAO;
-import org.adempiere.acct.api.ProductAcctType;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.product.IProductBL;
-import de.metas.product.acct.api.IProductAcctDAO;
 
 /**
  * Product Cost Model. Summarizes Info in MCost
@@ -40,8 +33,6 @@ public class ProductCost
 {
 	// services
 	private static final transient Logger log = LogManager.getLogger(ProductCost.class);
-	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
-	private final transient IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
 	/**
 	 * Constructor
@@ -80,30 +71,6 @@ public class ProductCost
 	private BigDecimal m_qty = BigDecimal.ZERO;
 
 	/**
-	 * Get Product
-	 * 
-	 * @return Product might be null
-	 */
-	public MProduct getProduct()
-	{
-		return m_product;
-	}   // getProduct
-
-	/**
-	 * Is this a Service
-	 *
-	 * @return true if service
-	 */
-	public boolean isService()
-	{
-		if (m_product != null)
-		{
-			return !Services.get(IProductBL.class).isItem(m_product);
-		}
-		return false;
-	}	// isService
-
-	/**
 	 * Set Quantity in Storage UOM
 	 * 
 	 * @param qty quantity
@@ -130,96 +97,6 @@ public class ProductCost
 		else
 			m_C_UOM_ID = C_UOM_ID;
 	}   // setQty
-
-	/** Product Revenue Acct */
-	public static final ProductAcctType ACCTTYPE_P_Revenue = ProductAcctType.Revenue;
-	/** Product Expense Acct */
-	public static final ProductAcctType ACCTTYPE_P_Expense = ProductAcctType.Expense;
-	/** Product Asset Acct */
-	public static final ProductAcctType ACCTTYPE_P_Asset = ProductAcctType.Asset;
-	/** Product COGS Acct */
-	public static final ProductAcctType ACCTTYPE_P_Cogs = ProductAcctType.Cogs;
-	/** Purchase Price Variance */
-	public static final ProductAcctType ACCTTYPE_P_PPV = ProductAcctType.PPV;
-	/** Invoice Price Variance */
-	public static final ProductAcctType ACCTTYPE_P_IPV = ProductAcctType.IPV;
-	/** Trade Discount Revenue */
-	public static final ProductAcctType ACCTTYPE_P_TDiscountRec = ProductAcctType.TDiscountRec;
-	/** Trade Discount Costs */
-	public static final ProductAcctType ACCTTYPE_P_TDiscountGrant = ProductAcctType.TDiscountGrant;
-	/** Cost Adjustment */
-	public static final ProductAcctType ACCTTYPE_P_CostAdjustment = ProductAcctType.CostAdjustment;
-	/** Inventory Clearing */
-	public static final ProductAcctType ACCTTYPE_P_InventoryClearing = ProductAcctType.InventoryClearing;
-	/** Work in Process */
-	public static final ProductAcctType ACCTTYPE_P_WorkInProcess = ProductAcctType.WorkInProcess;
-	/** Method Change Variance */
-	public static final ProductAcctType ACCTTYPE_P_MethodChangeVariance = ProductAcctType.MethodChangeVariance;
-	/** Material Usage Variance */
-	public static final ProductAcctType ACCTTYPE_P_UsageVariance = ProductAcctType.UsageVariance;
-	/** Material Rate Variance */
-	public static final ProductAcctType ACCTTYPE_P_RateVariance = ProductAcctType.RateVariance;
-	/** Mix Variance */
-	public static final ProductAcctType ACCTTYPE_P_MixVariance = ProductAcctType.MixVariance;
-	/** Floor Stock */
-	public static final ProductAcctType ACCTTYPE_P_FloorStock = ProductAcctType.FloorStock;
-	/** Cost Production */
-	public static final ProductAcctType ACCTTYPE_P_CostOfProduction = ProductAcctType.CostOfProduction;
-	/** Labor */
-	public static final ProductAcctType ACCTTYPE_P_Labor = ProductAcctType.Labor;
-	/** Burden */
-	public static final ProductAcctType ACCTTYPE_P_Burden = ProductAcctType.Burden;
-	/** Outside Processing */
-	public static final ProductAcctType ACCTTYPE_P_OutsideProcessing = ProductAcctType.OutsideProcessing;
-	/** Outside Overhead */
-	public static final ProductAcctType ACCTTYPE_P_Overhead = ProductAcctType.Overhead;
-	/** Outside Processing */
-	public static final ProductAcctType ACCTTYPE_P_Scrap = ProductAcctType.Scrap;
-
-	/**
-	 * Line Account from Product
-	 *
-	 * @param AcctType see ACCTTYPE_* (1..8)
-	 * @param as Accounting Schema
-	 * @return Requested Product Account
-	 */
-	public MAccount getAccount(final ProductAcctType acctType, final MAcctSchema as)
-	{
-		// No Product - get Default from Product Category
-		if (m_M_Product_ID <= 0)
-		{
-			return getAccountDefault(acctType, as);
-		}
-
-		final I_M_Product_Acct productAcct = productAcctDAO.retrieveProductAcctOrNull(as, m_M_Product_ID);
-		Check.assumeNotNull(productAcct, "Product {} has accounting records", m_M_Product_ID);
-		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(productAcct, acctType.getColumnName());
-		if(validCombinationId == null || validCombinationId <= 0)
-		{
-			return null;
-		}
-		
-		return accountDAO.retrieveAccountById(as.getCtx(), validCombinationId);
-	}   // getAccount
-
-	/**
-	 * Account from Default Product Category
-	 *
-	 * @param AcctType see ACCTTYPE_* (1..8)
-	 * @param as accounting schema
-	 * @return Requested Product Account
-	 */
-	private final MAccount getAccountDefault(final ProductAcctType acctType, final MAcctSchema as)
-	{
-		final I_M_Product_Category_Acct pcAcct = productAcctDAO.retrieveDefaultProductCategoryAcct(as);
-		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(pcAcct, acctType.getColumnName());
-		if(validCombinationId == null || validCombinationId <= 0)
-		{
-			return null;
-		}
-		
-		return accountDAO.retrieveAccountById(as.getCtx(), validCombinationId);
-	}   // getAccountDefault
 
 	/**************************************************************************
 	 * Get Total Costs (amt*qty) in Accounting Schema Currency

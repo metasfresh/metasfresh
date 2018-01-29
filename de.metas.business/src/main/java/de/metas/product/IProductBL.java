@@ -101,6 +101,9 @@ public interface IProductBL extends ISingletonService
 	 * @return product costing method
 	 */
 	String getCostingMethod(I_M_Product product, I_C_AcctSchema as);
+	
+	String getCostingMethod(int productId, I_C_AcctSchema as);
+
 
 	/**
 	 * Gets UOM used in material storage of given <code>product</code>.

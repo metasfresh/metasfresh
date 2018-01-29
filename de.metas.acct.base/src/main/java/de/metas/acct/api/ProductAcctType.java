@@ -1,4 +1,4 @@
-package org.adempiere.acct.api;
+package de.metas.acct.api;
 
 import java.util.Map;
 

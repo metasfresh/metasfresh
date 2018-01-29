@@ -32,6 +32,7 @@ import org.compiere.model.MInventory;
 import org.compiere.model.MProduct;
 import org.compiere.model.ProductCost;
 
+import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostingDocumentRef;
 
 /**
@@ -170,7 +171,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 			}
 			// Inventory DR CR
 			dr = fact.createLine(line,
-					line.getAccount(ProductCost.ACCTTYPE_P_Asset, as),
+					line.getAccount(ProductAcctType.Asset, as),
 					as.getC_Currency_ID(), costs);
 			// may be zero difference - no line created.
 			if (dr == null)

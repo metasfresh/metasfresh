@@ -21,7 +21,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 
-import org.adempiere.acct.api.ProductAcctType;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Project;
@@ -29,10 +28,10 @@ import org.compiere.model.I_C_ProjectIssue;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
-import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.ProductAcctType;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
@@ -148,10 +147,10 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 
 		// Inventory CR
 		{
-			ProductAcctType acctType = ProductCost.ACCTTYPE_P_Asset;
+			ProductAcctType acctType = ProductAcctType.Asset;
 			if (Services.get(IProductBL.class).isService(product))
 			{
-				acctType = ProductCost.ACCTTYPE_P_Expense;
+				acctType = ProductAcctType.Expense;
 			}
 			cr = fact.createLine(m_line,
 					m_line.getAccount(acctType, as),

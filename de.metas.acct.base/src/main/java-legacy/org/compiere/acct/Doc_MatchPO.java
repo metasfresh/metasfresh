@@ -37,6 +37,7 @@ import org.compiere.model.ProductCost;
 import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.ProductAcctType;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
@@ -52,7 +53,7 @@ import de.metas.order.IOrderLineBL;
  * @author Jorg Janke
  * @version $Id: Doc_MatchPO.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
-public class Doc_MatchPO extends Doc<DocLine<Doc_MatchPO>>
+public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 {
 	private static final Logger logger = LogManager.getLogger(Doc_MatchPO.class);
 
@@ -60,18 +61,9 @@ public class Doc_MatchPO extends Doc<DocLine<Doc_MatchPO>>
 	private static final String SYSCONFIG_NoFactRecords = "org.compiere.acct.Doc_MatchPO.NoFactAccts";
 	private static final boolean DEFAULT_NoFactRecords = true;
 
-	/**
-	 * Constructor
-	 * 
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
-	public Doc_MatchPO(final IDocBuilder docBuilder)
-	{
-		super(docBuilder, DOCTYPE_MatMatchPO);
-	}   // Doc_MatchPO
-
+	/** pseudo line */
+	private DocLine_MatchPO docLine;
+	
 	private int m_C_OrderLine_ID = 0;
 	private I_C_OrderLine m_oLine = null;
 	//
@@ -85,12 +77,20 @@ public class Doc_MatchPO extends Doc<DocLine<Doc_MatchPO>>
 	/** Shall we create accounting facts? (08555) */
 	private boolean noFactRecords = false;
 
+	public Doc_MatchPO(final IDocBuilder docBuilder)
+	{
+		super(docBuilder, DOCTYPE_MatMatchPO);
+	}
+
 	@Override
 	protected void loadDocumentDetails()
 	{
 		setC_Currency_ID(Doc.NO_CURRENCY);
-		I_M_MatchPO matchPO = getModel(I_M_MatchPO.class);
+		final I_M_MatchPO matchPO = getModel(I_M_MatchPO.class);
 		setDateDoc(matchPO.getDateTrx());
+		
+		docLine = new DocLine_MatchPO(matchPO, this);
+		
 		//
 		m_M_AttributeSetInstance_ID = matchPO.getM_AttributeSetInstance_ID();
 		setQty(matchPO.getQty());
@@ -218,7 +218,7 @@ public class Doc_MatchPO extends Doc<DocLine<Doc_MatchPO>>
 
 			// Product PPV
 			final FactLine cr = fact.createLine(null,
-					m_pc.getAccount(ProductCost.ACCTTYPE_P_PPV, as),
+					docLine.getAccount(ProductAcctType.PPV, as),
 					as.getC_Currency_ID(), isReturnTrx ? difference.negate() : difference);
 			if (cr != null)
 			{

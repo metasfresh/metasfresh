@@ -26,7 +26,8 @@ import org.compiere.model.I_M_RequisitionLine;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MRequisition;
-import org.compiere.model.ProductCost;
+
+import de.metas.acct.api.ProductAcctType;
 
 /**
  * Post Order Documents.
@@ -117,7 +118,7 @@ public class Doc_Requisition extends Doc<DocLine_Requisition>
 				BigDecimal cost = line.getAmtSource();
 				total = total.add(cost);
 				// Account
-				MAccount expense = line.getAccount(ProductCost.ACCTTYPE_P_Expense, as);
+				MAccount expense = line.getAccount(ProductAcctType.Expense, as);
 				//
 				fact.createLine(line, expense, as.getC_Currency_ID(), cost, null);
 			}

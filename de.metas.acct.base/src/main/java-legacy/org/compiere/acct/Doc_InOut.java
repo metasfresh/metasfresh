@@ -32,15 +32,16 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
 import org.compiere.model.MInOut;
 import org.compiere.model.MProduct;
 import org.compiere.model.ProductCost;
+import org.compiere.model.X_C_AcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
+import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailService;
@@ -239,7 +240,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 			//
 			// CoGS DR
-			final FactLine dr = fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Cogs, as), acctCurrencyId, mkCostsValueToUse(acctCurrencyId, costs), null);
+			final FactLine dr = fact.createLine(line, line.getAccount(ProductAcctType.Cogs, as), acctCurrencyId, mkCostsValueToUse(acctCurrencyId, costs), null);
 			if (dr == null)
 			{
 				throw newPostingException().setDetailMessage("FactLine DR not created: " + line);
@@ -260,7 +261,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 			//
 			// Inventory CR
-			final FactLine cr = fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Asset, as), acctCurrencyId, null, mkCostsValueToUse(acctCurrencyId, costs));
+			final FactLine cr = fact.createLine(line, line.getAccount(ProductAcctType.Asset, as), acctCurrencyId, null, mkCostsValueToUse(acctCurrencyId, costs));
 			if (cr == null)
 			{
 				throw newPostingException().setDetailMessage("FactLine CR not created: " + line);
@@ -343,7 +344,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 			//
 			// Inventory DR
-			final FactLine dr = fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Asset, as), acctCurrencyId, mkCostsValueToUse(acctCurrencyId, costs), null);
+			final FactLine dr = fact.createLine(line, line.getAccount(ProductAcctType.Asset, as), acctCurrencyId, mkCostsValueToUse(acctCurrencyId, costs), null);
 			if (dr == null)
 			{
 				throw newPostingException().addDetailMessage("FactLine DR not created: " + line);
@@ -383,7 +384,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 			//
 			// CoGS CR
-			final FactLine cr = fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Cogs, as), acctCurrencyId, null, mkCostsValueToUse(acctCurrencyId, costs));
+			final FactLine cr = fact.createLine(line, line.getAccount(ProductAcctType.Cogs, as), acctCurrencyId, null, mkCostsValueToUse(acctCurrencyId, costs));
 			if (cr == null)
 			{
 				throw newPostingException().setDetailMessage("FactLine CR not created: " + line);
@@ -417,8 +418,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		for (final DocLine_InOut line : getDocLines())
 		{
 			// Skip not stockable (e.g. service products) because they have no cost
-			final MProduct product = line.getProduct();
-			if (!productBL.isStocked(product))
+			if(!line.isItem())
 			{
 				continue;
 			}
@@ -426,9 +426,9 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			int currencyId = acctCurrencyId;
 
 			final BigDecimal costs;
-			final String costingMethod = productBL.getCostingMethod(product, as);
-			if (MAcctSchema.COSTINGMETHOD_AveragePO.equals(costingMethod) ||
-					MAcctSchema.COSTINGMETHOD_LastPOPrice.equals(costingMethod))
+			final String costingMethod = line.getProductCostingMethod(as);
+			if (X_C_AcctSchema.COSTINGMETHOD_AveragePO.equals(costingMethod) ||
+					X_C_AcctSchema.COSTINGMETHOD_LastPOPrice.equals(costingMethod))
 			{
 				final int orderLineId = line.getC_OrderLine_ID();
 				// Low - check if c_orderline_id is valid
@@ -462,25 +462,10 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 			//
 			// Inventory/Asset DR
-			final MAccount assets;
-			if (productBL.isService(product))
-			{
-				// if the line is a Outside Processing then DR WIP
-				if (line.getPP_Cost_Collector_ID() > 0)
-				{
-					assets = line.getAccount(ProductCost.ACCTTYPE_P_WorkInProcess, as);
-				}
-				else
-				{
-					assets = line.getAccount(ProductCost.ACCTTYPE_P_Expense, as);
-				}
-			}
-			else
-			{
-				assets = line.getAccount(ProductCost.ACCTTYPE_P_Asset, as);
-			}
-			//
-			final FactLine dr = fact.createLine(line, assets, currencyId, mkCostsValueToUse(currencyId, costs), null);
+			final FactLine dr = fact.createLine(line,
+					line.getProductAssetAccount(as),
+					currencyId,
+					mkCostsValueToUse(currencyId, costs), null);
 			if (dr == null)
 			{
 				throw newPostingException().setDetailMessage("DR not created: " + line);
@@ -533,8 +518,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		for (final DocLine_InOut line : getDocLines())
 		{
 			// Skip not stockable (e.g. service products) because they have no cost
-			final MProduct product = line.getProduct();
-			if (!productBL.isStocked(product))
+			if (!line.isItem())
 			{
 				continue;
 			}
@@ -544,7 +528,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			if (ProductCost.isNoCosts(costs))
 			{
 				// 08447: we shall allow zero costs in case CostingMethod=Standard costing
-				final String costingMethod = productBL.getCostingMethod(product, as);
+				final String costingMethod = line.getProductCostingMethod(as);
 				if (!MAcctSchema.COSTINGMETHOD_StandardCosting.equals(costingMethod))
 				{
 					throw newPostingException().setDetailMessage("Resubmit - No Costs for product=" + line.getProduct()
@@ -574,17 +558,10 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 			//
 			// Inventory/Asset CR
-			final MAccount assets;
-			if (productBL.isService(product))
-			{
-				assets = line.getAccount(ProductCost.ACCTTYPE_P_Expense, as);
-			}
-			else
-			{
-				assets = line.getAccount(ProductCost.ACCTTYPE_P_Asset, as);
-			}
-			//
-			final FactLine cr = fact.createLine(line, assets, currency, null, mkCostsValueToUse(currency, costs));
+			final FactLine cr = fact.createLine(line,
+					line.getProductAssetAccount(as),
+					currency,
+					null, mkCostsValueToUse(currency, costs));
 			if (cr == null)
 			{
 				throw newPostingException().setDetailMessage("CR not created: " + line);

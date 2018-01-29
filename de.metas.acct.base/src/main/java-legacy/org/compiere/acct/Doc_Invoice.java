@@ -41,11 +41,12 @@ import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MPeriod;
-import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.acct.api.ProductAcctType;
 
 /**
  * Post Invoice Documents.
@@ -389,12 +390,12 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					lineAmt = lineAmt.add(discount);
 					dAmt = discount;
 					fact.createLine(line,
-							line.getAccount(ProductCost.ACCTTYPE_P_TDiscountGrant, as),
+							line.getAccount(ProductAcctType.TDiscountGrant, as),
 							getC_Currency_ID(), dAmt, null);
 				}
 			}
 			fact.createLine(line,
-					line.getAccount(ProductCost.ACCTTYPE_P_Revenue, as),
+					line.getAccount(ProductAcctType.Revenue, as),
 					getC_Currency_ID(), null, lineAmt);
 			if (!line.isItem())
 			{
@@ -491,12 +492,12 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					lineAmt = lineAmt.add(discount);
 					dAmt = discount;
 					fact.createLine(line,
-							line.getAccount(ProductCost.ACCTTYPE_P_TDiscountGrant, as),
+							line.getAccount(ProductAcctType.TDiscountGrant, as),
 							getC_Currency_ID(), null, dAmt);
 				}
 			}
 			fact.createLine(line,
-					line.getAccount(ProductCost.ACCTTYPE_P_Revenue, as),
+					line.getAccount(ProductAcctType.Revenue, as),
 					getC_Currency_ID(), lineAmt, null);
 			if (!line.isItem())
 			{
@@ -586,7 +587,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				{
 					amt = amt.add(discount);
 					dAmt = discount;
-					final MAccount tradeDiscountReceived = line.getAccount(ProductCost.ACCTTYPE_P_TDiscountRec, as);
+					final MAccount tradeDiscountReceived = line.getAccount(ProductAcctType.TDiscountRec, as);
 					fact.createLine(line, tradeDiscountReceived, getC_Currency_ID(), null, dAmt);
 				}
 			}
@@ -595,21 +596,21 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			{
 				final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
 				fact.createLine(line,
-						line.getAccount(ProductCost.ACCTTYPE_P_InventoryClearing, as),
+						line.getAccount(ProductAcctType.InventoryClearing, as),
 						getC_Currency_ID(),
 						amtReceived, null,  // DR/CR
 						line.getQtyReceivedAbs());
 
 				final BigDecimal amtNotReceived = amt.subtract(amtReceived);
 				fact.createLine(line,
-						line.getAccount(ProductCost.ACCTTYPE_P_Expense, as),
+						line.getAccount(ProductAcctType.Expense, as),
 						getC_Currency_ID(),
 						amtNotReceived, null,  // DR/CR
 						line.getQtyNotReceivedAbs());
 			}
 			else // service
 			{
-				fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Expense, as), getC_Currency_ID(), amt, null);
+				fact.createLine(line, line.getAccount(ProductAcctType.Expense, as), getC_Currency_ID(), amt, null);
 			}
 
 			if (!line.isItem())
@@ -693,7 +694,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				{
 					amt = amt.add(discount);
 					dAmt = discount;
-					final MAccount tradeDiscountReceived = line.getAccount(ProductCost.ACCTTYPE_P_TDiscountRec, as);
+					final MAccount tradeDiscountReceived = line.getAccount(ProductAcctType.TDiscountRec, as);
 					fact.createLine(line, tradeDiscountReceived, getC_Currency_ID(), dAmt, null);
 				}
 			}
@@ -702,21 +703,21 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			{
 				final BigDecimal amtReceived = line.calculateAmtOfQtyReceived(amt);
 				fact.createLine(line,
-						line.getAccount(ProductCost.ACCTTYPE_P_InventoryClearing, as),
+						line.getAccount(ProductAcctType.InventoryClearing, as),
 						getC_Currency_ID(),
 						null, amtReceived,  // DR/CR
 						line.getQtyReceivedAbs());
 
 				final BigDecimal amtNotReceived = amt.subtract(amtReceived);
 				fact.createLine(line,
-						line.getAccount(ProductCost.ACCTTYPE_P_Expense, as),
+						line.getAccount(ProductAcctType.Expense, as),
 						getC_Currency_ID(),
 						null, amtNotReceived,  // DR/CR
 						line.getQtyNotReceivedAbs());
 			}
 			else // service
 			{
-				fact.createLine(line, line.getAccount(ProductCost.ACCTTYPE_P_Expense, as), getC_Currency_ID(), null, amt);
+				fact.createLine(line, line.getAccount(ProductAcctType.Expense, as), getC_Currency_ID(), null, amt);
 			}
 
 			if (!line.isItem())
@@ -820,13 +821,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// Revenue/Cost
 		for (final DocLine_Invoice line : getDocLines())
 		{
-			MAccount acct = line.getAccount(payables ? ProductCost.ACCTTYPE_P_Expense : ProductCost.ACCTTYPE_P_Revenue, as);
+			MAccount acct = line.getAccount(payables ? ProductAcctType.Expense : ProductAcctType.Revenue, as);
 			if (payables)
 			{
 				// if Fixed Asset
 				if (line.isItem())
 				{
-					acct = line.getAccount(ProductCost.ACCTTYPE_P_InventoryClearing, as);
+					acct = line.getAccount(ProductAcctType.InventoryClearing, as);
 				}
 			}
 			BigDecimal amt = line.getAmtSource().multiply(multiplier);

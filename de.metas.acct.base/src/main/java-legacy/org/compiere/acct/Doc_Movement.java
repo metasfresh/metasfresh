@@ -26,9 +26,9 @@ import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MMovement;
-import org.compiere.model.ProductCost;
 import org.compiere.util.TimeUtil;
 
+import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailService;
@@ -127,7 +127,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 
 			//  ** Inventory       DR      CR
 			dr = fact.createLine(line,
-				line.getAccount(ProductCost.ACCTTYPE_P_Asset, as),
+				line.getAccount(ProductAcctType.Asset, as),
 				as.getC_Currency_ID(), costs.negate());		//	from (-) CR
 			if (dr == null)
 				continue;
@@ -145,7 +145,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 			
 			//  ** InventoryTo     DR      CR
 			cr = fact.createLine(line,
-				line.getAccount(ProductCost.ACCTTYPE_P_Asset, as),
+				line.getAccount(ProductAcctType.Asset, as),
 				as.getC_Currency_ID(), costs);			//	to (+) DR
 			if (cr == null)
 				continue;
@@ -165,7 +165,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 			//	Only for between-org movements
 			if (dr.getAD_Org_ID() != cr.getAD_Org_ID())
 			{
-				String costingLevel = line.getProduct().getCostingLevel(as);
+				String costingLevel = line.getProductCostingLevel(as);
 				if (!MAcctSchema.COSTINGLEVEL_Organization.equals(costingLevel))
 					continue;
 				//
