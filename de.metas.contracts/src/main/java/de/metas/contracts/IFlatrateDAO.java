@@ -30,6 +30,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -220,7 +221,9 @@ public interface IFlatrateDAO extends ISingletonService
 	 * @return
 	 */
 	I_C_Flatrate_Data retriveOrCreateFlatrateData(I_C_BPartner bPartner);
-	
+
 	I_C_Flatrate_Term retrieveAncestorFlatrateTerm(I_C_Flatrate_Term contract);
+
+	List<I_C_Invoice> retrieveInvoicesForCurrentContract(I_C_Flatrate_Term contract);
 
 }
