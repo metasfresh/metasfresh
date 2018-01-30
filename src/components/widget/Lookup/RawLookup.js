@@ -6,7 +6,11 @@ import ReactDOM from "react-dom";
 
 import { autocompleteRequest } from "../../../actions/GenericActions";
 import { getViewAttributeTypeahead } from "../../../actions/ViewAttributesActions";
-import { openModal } from "../../../actions/WindowActions";
+import {
+  openModal,
+  allowOutsideClick,
+  disableOutsideClick
+} from "../../../actions/WindowActions";
 import LookupList from "./LookupList";
 
 class RawLookup extends Component {
@@ -232,7 +236,7 @@ class RawLookup extends Component {
   };
 
   handleBlur = callback => {
-    const { allowOutsideClickListener } = this.props;
+    const { dispatch } = this.props;
     this.setState(
       {
         isOpen: false
@@ -243,7 +247,7 @@ class RawLookup extends Component {
         }
       }
     );
-    allowOutsideClickListener && allowOutsideClickListener(true);
+    dispatch(allowOutsideClick());
   };
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {
@@ -262,10 +266,10 @@ class RawLookup extends Component {
       mainProperty,
       handleInputEmptyStatus,
       enableAutofocus,
-      allowOutsideClickListener
+      dispatch
     } = this.props;
 
-    allowOutsideClickListener && allowOutsideClickListener(false);
+    dispatch(disableOutsideClick());
 
     enableAutofocus();
 

@@ -197,8 +197,7 @@ class Lookup extends Component {
       subentityId,
       viewId,
       autoFocus,
-      newRecordWindowId,
-      allowOutsideClickListener
+      newRecordWindowId
     } = this.props;
 
     const {
@@ -259,7 +258,6 @@ class Lookup extends Component {
                   handleInputEmptyStatus={this.handleInputEmptyStatus}
                   enableAutofocus={this.enableAutofocus}
                   {...{
-                    allowOutsideClickListener,
                     placeholder,
                     readonly,
                     tabIndex,

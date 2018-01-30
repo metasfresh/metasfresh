@@ -3,6 +3,10 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import TetheredDateTime from "./TetheredDateTime";
 import { addNotification } from "../../actions/AppActions";
+import {
+  allowOutsideClick,
+  disableOutsideClick
+} from "../../actions/WindowActions";
 
 const propTypes = {
   dispatch: PropTypes.func.isRequired,
@@ -10,8 +14,7 @@ const propTypes = {
   patch: PropTypes.func,
   field: PropTypes.string,
   value: PropTypes.any,
-  isOpenDatePicker: PropTypes.bool,
-  allowOutsideClickListener: PropTypes.func // function to manage outside Click Listener from FilterFrequency component
+  isOpenDatePicker: PropTypes.bool
 };
 
 class DatePicker extends Component {
@@ -56,20 +59,20 @@ class DatePicker extends Component {
   };
 
   handleFocus = () => {
-    const { value, allowOutsideClickListener } = this.props;
+    const { value, dispatch } = this.props;
     this.setState({
       cache: value,
       open: true
     });
-    allowOutsideClickListener && allowOutsideClickListener(false);
+    dispatch(disableOutsideClick());
   };
 
   handleClose = () => {
-    const { allowOutsideClickListener } = this.props;
+    const { dispatch } = this.props;
     this.setState({
       open: false
     });
-    allowOutsideClickListener && allowOutsideClickListener(true);
+    dispatch(allowOutsideClick());
   };
 
   handleClickOutside = () => {

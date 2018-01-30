@@ -258,11 +258,7 @@ class RawList extends Component {
     }
     this.considerBlur = false;
 
-    const {
-      selected,
-      doNotOpenOnFocus,
-      allowOutsideClickListener
-    } = this.props;
+    const { selected, doNotOpenOnFocus } = this.props;
 
     this.isFocused = false;
 
@@ -274,8 +270,6 @@ class RawList extends Component {
       isOpen: false,
       selected: selected || 0
     });
-
-    allowOutsideClickListener && allowOutsideClickListener(true);
 
     dispatch(allowOutsideClick());
   };
@@ -309,15 +303,9 @@ class RawList extends Component {
       event.preventDefault();
     }
 
-    const {
-      onFocus,
-      doNotOpenOnFocus,
-      autofocus,
-      allowOutsideClickListener
-    } = this.props;
+    const { onFocus, doNotOpenOnFocus, autofocus } = this.props;
 
     onFocus && onFocus();
-    allowOutsideClickListener && allowOutsideClickListener(false);
 
     if (!doNotOpenOnFocus && !autofocus) {
       this.openDropdown = true;
@@ -604,4 +592,6 @@ RawList.propTypes = {
   dispatch: PropTypes.func.isRequired
 };
 
-export default connect(mapStateToProps)(RawList);
+export default connect(mapStateToProps, false, false, { withRef: true })(
+  RawList
+);
