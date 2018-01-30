@@ -73,6 +73,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.util.stream.StreamUtils;
 import lombok.NonNull;
 
 public class FlatrateDAO implements IFlatrateDAO
@@ -851,10 +852,11 @@ public class FlatrateDAO implements IFlatrateDAO
 		final List<I_C_Invoice_Candidate> icsForCurrentTerm = Services.get(IInvoiceCandDAO.class).fetchInvoiceCandidates(ctx, I_C_Flatrate_Term.Table_Name, contract.getC_Flatrate_Term_ID(), trxName);
 		icsForCurrentTerm.forEach(ic -> {
 			final List<I_C_InvoiceLine> iclList = Services.get(IInvoiceCandDAO.class).retrieveIlForIc(ic);
+
 			iclList.stream()
-					.filter(il -> !currentFlatRateTermInvoices.contains(il.getC_Invoice()))
-					.map(il -> il.getC_Invoice())
-					.forEach(currentFlatRateTermInvoices::add);
+			  .filter(StreamUtils.distinctByKey(I_C_InvoiceLine::getC_Invoice_ID))
+			  .map(il -> il.getC_Invoice())
+			  .forEach(currentFlatRateTermInvoices::add);
 		});
 		return currentFlatRateTermInvoices;
 	}
