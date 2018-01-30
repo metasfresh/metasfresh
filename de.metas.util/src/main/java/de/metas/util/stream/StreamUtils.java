@@ -3,6 +3,10 @@ package de.metas.util.stream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.adempiere.util.collections.IteratorUtils;
@@ -20,12 +24,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -58,5 +62,14 @@ public final class StreamUtils
 		}
 
 		return !list.isEmpty() ? list : null;
+	}
+
+	/**
+	 * Thanks to https://stackoverflow.com/a/27872852/1012103
+	 */
+	public static <T> Predicate<T> distinctByKey(@NonNull final Function<? super T, Object> keyExtractor)
+	{
+		final Map<Object, Boolean> seen = new ConcurrentHashMap<>();
+		return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
 	}
 }
