@@ -52,6 +52,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
@@ -437,10 +438,23 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				? InterfaceWrapperHelper.create(ic.getRef_PackingMaterial_InOutLine(), I_M_InOutLine.class)
 				: getM_InOutLine(ic);
 
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+		final List<org.compiere.model.I_M_InOutLine> lines = inoutDAO.retrieveAllLines(inOutLine.getM_InOut());
+		final List<I_C_OrderLine> orderLinesWithPaymentTerm = lines.stream()
+				.filter(ioline -> ioline.getC_OrderLine_ID() > 0)
+				.map(ioline -> ioline.getC_OrderLine())
+				.filter(oline -> oline.getC_PaymentTerm_Override_ID() > 0)
+				.collect(ImmutableList.toImmutableList());
+
 		if (inOutLine.getC_OrderLine() != null
 				&& inOutLine.getC_OrderLine().getC_PaymentTerm_Override_ID() > 0)
 		{
 			paymentTermId = inOutLine.getC_OrderLine().getC_PaymentTerm_Override_ID();
+		}
+		// if exists order lines with payment term overwritten, take it from the first line
+		else if (!orderLinesWithPaymentTerm.isEmpty())
+		{
+			paymentTermId = orderLinesWithPaymentTerm.get(0).getC_PaymentTerm_Override_ID();
 		}
 		else if (ic.getC_Order() != null)
 		{
