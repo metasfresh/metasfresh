@@ -5,6 +5,8 @@ import javax.xml.bind.JAXBElement;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
+import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3ClientException;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.config.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.ObjectFactory;
 import lombok.Getter;

@@ -1,7 +1,6 @@
 package de.metas.vertical.pharma.vendor.gateway.mvs3.availability;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,12 +15,13 @@ import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse.AvailabilityResponseBuilder;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
+import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.AvailabilityResponseItemBuilder;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientBase;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientConfig;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientMultiException;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3Util;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.common.MSV3ClientMultiException;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.config.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.ObjectFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitAnfragen;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitAnfragenResponse;
@@ -69,6 +69,18 @@ public class MSV3AvailiabilityClient extends MSV3ClientBase
 
 	public AvailabilityResponse retrieveAvailability(@NonNull final AvailabilityRequest request)
 	{
+		try
+		{
+			return retrieveAvailability0(request);
+		}
+		catch (final Throwable t)
+		{
+			throw MSV3ClientMultiException.createAllItemsSameThrowable(request.getAvailabilityRequestItems(), t);
+		}
+	}
+
+	private AvailabilityResponse retrieveAvailability0(@NonNull final AvailabilityRequest request)
+	{
 		final ObjectFactory objectFactory = getObjectFactory();
 
 		// create request data
@@ -87,15 +99,7 @@ public class MSV3AvailiabilityClient extends MSV3ClientBase
 		}
 
 		// make the webservice call
-		final VerfuegbarkeitAnfragenResponse response;
-		try
-		{
-			response = makeAvailabilityWebserviceCall(verfuegbarkeitsanfrageEinzelne);
-		}
-		catch (final Throwable t)
-		{
-			throw MSV3ClientMultiException.createAllItemsSameThrowable(request.getAvailabilityRequestItems(), t);
-		}
+		final VerfuegbarkeitAnfragenResponse response = makeAvailabilityWebserviceCall(verfuegbarkeitsanfrageEinzelne);
 
 		// process and return the results
 		final AvailabilityResponseBuilder responseBuilder = prepareAvailabilityResponse(
@@ -138,14 +142,19 @@ public class MSV3AvailiabilityClient extends MSV3ClientBase
 
 		final AvailabilityResponseBuilder responseBuilder = AvailabilityResponse.builder();
 
+		final AvailabilityPersistanceMapper mapper = AvailabilityPersistanceMapper.newInstace();
+		mapper.store(verfuegbarkeitsanfrageEinzelneAntwort);
+
 		for (final VerfuegbarkeitsantwortArtikel singleArtikel : verfuegbarkeitsanfrageEinzelneAntwort.getArtikel())
 		{
 			for (final VerfuegbarkeitAnteil singleAnteil : singleArtikel.getAnteile())
 			{
-				final AvailabilityResponseItem availabilityResponseItem = createAvailabilityResponseItem(
+				final AvailabilityResponseItem availabilityResponseItem = prepareResponseItemBuilder(
 						productIdentifier2requestItem,
 						singleArtikel,
-						singleAnteil);
+						singleAnteil)
+								.internalId(mapper.getVerfuegbarkeitAnteilDataRecordId(singleAnteil))
+								.build();
 
 				responseBuilder.availabilityResponseItem(availabilityResponseItem);
 			}
@@ -153,7 +162,7 @@ public class MSV3AvailiabilityClient extends MSV3ClientBase
 		return responseBuilder;
 	}
 
-	private AvailabilityResponseItem createAvailabilityResponseItem(
+	private AvailabilityResponseItemBuilder prepareResponseItemBuilder(
 			@NonNull final Map<Long, ProductAndQuantity> productIdentifier2requestItem,
 			@NonNull final VerfuegbarkeitsantwortArtikel singleArtikel,
 			@NonNull final VerfuegbarkeitAnteil singleAnteil)
@@ -167,22 +176,20 @@ public class MSV3AvailiabilityClient extends MSV3ClientBase
 
 		final XMLGregorianCalendar lieferzeitpunkt = singleAnteil.getLieferzeitpunkt();
 
-		final Date datePromised = lieferzeitpunkt == null ? null : lieferzeitpunkt.toGregorianCalendar().getTime();
-
 		final Type type = VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR.equals(singleAnteil.getTyp()) ? Type.NOT_AVAILABLE : Type.AVAILABLE;
 
 		final StringBuilder availabilityText = createAvailabilityText(singleAnteil);
 
 		// create & return the response item
-		final AvailabilityResponseItem availabilityResponseItem = AvailabilityResponseItem.builder()
+		final AvailabilityResponseItemBuilder availabilityResponseItemBuilder = AvailabilityResponseItem.builder();
+		availabilityResponseItemBuilder
 				.correspondingRequestItem(correspondingRequestItem)
 				.productIdentifier(productIdentifier)
 				.availableQuantity(availableQuantity)
-				.datePromised(datePromised)
+				.datePromised(MSV3Util.toDateOrNull(lieferzeitpunkt))
 				.type(type)
-				.availabilityText(availabilityText.toString())
-				.build();
-		return availabilityResponseItem;
+				.availabilityText(availabilityText.toString());
+		return availabilityResponseItemBuilder;
 	}
 
 	private StringBuilder createAvailabilityText(@NonNull final VerfuegbarkeitAnteil singleAnteil)

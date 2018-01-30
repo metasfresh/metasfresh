@@ -1,13 +1,9 @@
 package de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
-
-import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_PurchaseOrder;
 
 /*
  * #%L
@@ -34,21 +30,11 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_PurchaseOrder;
 @Repository
 public class MSV3PurchaseOrderRepository
 {
-	public MSV3PurchaseOrder retrieveOrCreate(final int orderId)
+	public void retrieveOrCreate(final int orderId)
 	{
-		final I_MSV3_PurchaseOrder existingMsv3PurchaseOrder = Services.get(IQueryBL.class).createQueryBuilder(I_MSV3_PurchaseOrder.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MSV3_PurchaseOrder.COLUMN_C_Order_ID, orderId)
-				.create()
-				.firstOnly(I_MSV3_PurchaseOrder.class);
-		if (existingMsv3PurchaseOrder != null)
-		{
-			return MSV3PurchaseOrder.ofDataRecord(existingMsv3PurchaseOrder);
-		}
+		final int supportId = DB.getNextID(Env.getCtx(), "MSV3_PurchaseOrder_SupportId", ITrx.TRXNAME_None);
 
-		final int supportId = DB.getNextID(Env.getCtx(), I_MSV3_PurchaseOrder.Table_Name + "_SupportId", ITrx.TRXNAME_None);
-
-		return MSV3PurchaseOrder.builder().orderId(orderId)
-				.supportId(supportId).build();
 	}
+
+
 }

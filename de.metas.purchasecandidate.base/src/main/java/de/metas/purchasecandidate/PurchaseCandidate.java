@@ -6,11 +6,13 @@ import java.util.Objects;
 
 import org.adempiere.util.Check;
 
+import de.metas.vendor.gateway.api.ProductAndQuantity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.experimental.Delegate;
 
 /*
  * #%L
@@ -37,24 +39,13 @@ import lombok.Setter;
 @Data
 public class PurchaseCandidate
 {
-
 	@Setter(AccessLevel.NONE)
 	private int purchaseCandidateId;
-
-	private final int salesOrderId;
-	private final int salesOrderLineId;
 
 	@Setter(AccessLevel.NONE)
 	private int purchaseOrderLineId;
 	@Setter(AccessLevel.NONE)
 	private int purchaseOrderLineIdInitial;
-
-	private final int orgId;
-	private final int warehouseId;
-	private final int productId;
-	private final int uomId;
-	private final int vendorBPartnerId;
-	private final VendorProductInfo vendorProductInfo;
 
 	private BigDecimal qtyRequired;
 	@Setter(AccessLevel.NONE)
@@ -65,14 +56,10 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private Date datePromisedInitial;
 
-	@Setter(AccessLevel.NONE)
-	private boolean processed;
+	@Delegate
+	private final PurchaseCandidateImmutableFields identifier;
 
-	@Setter(AccessLevel.NONE)
-	private boolean processedInitial;
-
-
-	private final boolean locked;
+	private final PurchaseCandidateState state;
 
 	@Builder
 	private PurchaseCandidate(
@@ -101,50 +88,43 @@ public class PurchaseCandidate
 
 		this.purchaseCandidateId = purchaseCandidateId;
 
-		this.salesOrderId = salesOrderId;
-		this.salesOrderLineId = salesOrderLineId;
+		this.identifier = PurchaseCandidateImmutableFields.builder()
+				.orgId(orgId)
+				.productId(productId)
+				.salesOrderId(salesOrderId)
+				.salesOrderLineId(salesOrderLineId)
+				.uomId(uomId)
+				.vendorBPartnerId(vendorBPartnerId)
+				.vendorProductInfo(vendorProductInfo)
+				.warehouseId(warehouseId).build();
+
+		this.state = PurchaseCandidateState.builder()
+				.locked(locked)
+				.processed(processed).build();
+
 		this.purchaseOrderLineId = purchaseOrderLineId > 0 ? purchaseOrderLineId : 0;
 		this.purchaseOrderLineIdInitial = this.purchaseOrderLineId;
 
-		this.orgId = orgId;
-		this.warehouseId = warehouseId;
-		this.productId = productId;
-		this.uomId = uomId;
-		this.vendorBPartnerId = vendorBPartnerId;
-		this.vendorProductInfo = vendorProductInfo;
 		this.qtyRequired = qtyRequired;
 		this.qtyRequiredInitial = qtyRequired;
 		this.datePromised = datePromised;
 		this.datePromisedInitial = datePromised;
-		this.processed = processed;
-		this.processedInitial = processed;
-		this.locked = locked;
 	}
 
 	private PurchaseCandidate(@NonNull final PurchaseCandidate from)
 	{
 		purchaseCandidateId = from.purchaseCandidateId;
-		salesOrderId = from.salesOrderId;
-		salesOrderLineId = from.salesOrderLineId;
+
 		purchaseOrderLineId = from.purchaseOrderLineId;
 		purchaseOrderLineIdInitial = from.purchaseOrderLineIdInitial;
-
-		orgId = from.orgId;
-		warehouseId = from.warehouseId;
-		productId = from.productId;
-		uomId = from.uomId;
-		vendorBPartnerId = from.vendorBPartnerId;
-		vendorProductInfo = from.vendorProductInfo;
 
 		qtyRequired = from.qtyRequired;
 		qtyRequiredInitial = from.qtyRequiredInitial;
 		datePromised = from.datePromised;
 		datePromisedInitial = from.datePromisedInitial;
 
-		processed = from.processed;
-		processedInitial = from.processedInitial;
-
-		locked = from.locked;
+		identifier = from.identifier;
+		state = from.state.createCopy();
 	}
 
 	public PurchaseCandidate copy()
@@ -154,22 +134,27 @@ public class PurchaseCandidate
 
 	public void setPurchaseOrderLineIdAndMarkProcessed(final int purchaseOrderLineId)
 	{
-		Check.assume(!processed, "already processed: {}", this);
+		Check.assume(!state.isProcessed(), "already processed: {}", this);
 		Check.assume(purchaseOrderLineId > 0, "purchaseOrderLineId > 0");
 
-		this.processed = true;
+		state.setProcessed();
 		this.purchaseOrderLineId = purchaseOrderLineId;
 	}
 
 	public boolean isProcessedOrLocked()
 	{
-		return isProcessed() || isLocked();
+		return state.isProcessed() || state.isLocked();
+	}
+
+	public boolean isProcessed()
+	{
+		return state.isProcessed();
 	}
 
 	public boolean hasChanges()
 	{
 		return purchaseCandidateId <= 0 // never saved
-				|| processed != processedInitial
+				|| state.hasChanges()
 				|| purchaseOrderLineId != purchaseOrderLineIdInitial
 				|| qtyRequired.compareTo(qtyRequiredInitial) != 0
 				|| !Objects.equals(datePromised, datePromisedInitial);
@@ -179,9 +164,18 @@ public class PurchaseCandidate
 	{
 		this.purchaseCandidateId = C_PurchaseCandidate_ID;
 
-		processedInitial = processed;
+		state.markSaved();
+
 		purchaseOrderLineIdInitial = purchaseOrderLineId;
 		qtyRequiredInitial = qtyRequired;
 		datePromisedInitial = datePromised;
+	}
+
+	public ProductAndQuantity createRequestItem()
+	{
+		final String productValue = identifier.getVendorProductInfo().getProductNo();
+		final BigDecimal qtyRequired = getQtyRequired();
+
+		return new ProductAndQuantity(productValue, qtyRequired);
 	}
 }

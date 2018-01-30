@@ -8,8 +8,9 @@ import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
 import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.availability.MSV3AvailiabilityClient;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.config.MSV3ClientConfig;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.config.MSV3ClientConfigRepository;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder.MSV3PurchaseOrderClient;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder.MSV3PurchaseOrderRepository;
 import lombok.NonNull;
 
 /*
@@ -39,16 +40,13 @@ public class MSV3VendorGatewayService implements VendorGatewayService
 {
 	private final MSV3ClientConfigRepository configRepo;
 	private final MSV3ConnectionFactory connectionFactory;
-	private final MSV3PurchaseOrderRepository purchaseOrderRepo;
 
 	public MSV3VendorGatewayService(
 			@NonNull final MSV3ConnectionFactory connectionFactory,
-			@NonNull final MSV3ClientConfigRepository configRepo,
-			@NonNull final MSV3PurchaseOrderRepository purchaseOrderRepo)
+			@NonNull final MSV3ClientConfigRepository configRepo)
 	{
 		this.configRepo = configRepo;
 		this.connectionFactory = connectionFactory;
-		this.purchaseOrderRepo = purchaseOrderRepo;
 	}
 
 	@Override
@@ -72,8 +70,7 @@ public class MSV3VendorGatewayService implements VendorGatewayService
 		final MSV3ClientConfig config = configRepo.retrieveByVendorId(request.getVendorId());
 		final MSV3PurchaseOrderClient client = MSV3PurchaseOrderClient.builder()
 				.config(config)
-				.connectionFactory(connectionFactory)
-				.purchaseOrderRepo(purchaseOrderRepo).build();
+				.connectionFactory(connectionFactory).build();
 
 		return client.placePurchaseOrder(request);
 	}

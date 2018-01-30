@@ -1,10 +1,14 @@
 package de.metas.vertical.pharma.vendor.gateway.mvs3.process;
 
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.vendor.gateway.msv3.model.I_MSV3_Vendor_Config;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientConfig;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.config.MSV3ClientConfig;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_Vendor_Config;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.testconnection.MSV3TestConnectionClient;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -28,13 +32,24 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.testconnection.MSV3TestConne
  * #L%
  */
 
-public class MSV3_Vendor_Config_TestConnection extends JavaProcess
+public class MSV3_Vendor_Config_TestConnection
+		extends JavaProcess
+		implements IProcessPrecondition
 {
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(
+			@NonNull final IProcessPreconditionsContext context)
+	{
+		return ProcessPreconditionsResolution
+				.acceptIf(context.isSingleSelection());
+
+	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_MSV3_Vendor_Config configDataRecord = getProcessInfo().getRecord(I_MSV3_Vendor_Config.class);
+		final I_MSV3_Vendor_Config configDataRecord = getRecord(I_MSV3_Vendor_Config.class);
 
 		final MSV3ConnectionFactory connectionFactory = new MSV3ConnectionFactory();
 		final MSV3ClientConfig config = MSV3ClientConfig.ofdataRecord(configDataRecord);
@@ -44,5 +59,4 @@ public class MSV3_Vendor_Config_TestConnection extends JavaProcess
 
 		return MSG_OK;
 	}
-
 }

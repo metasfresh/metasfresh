@@ -58,4 +58,9 @@ public class AvailabilityResponseItem
 
 	@Nullable
 	String availabilityText;
+
+	/**
+	 * The caller doesn't have to care about this IDs meaning, but they can pass it back to the respective service provider to create a purchase order.
+	 */
+	int internalId;
 }

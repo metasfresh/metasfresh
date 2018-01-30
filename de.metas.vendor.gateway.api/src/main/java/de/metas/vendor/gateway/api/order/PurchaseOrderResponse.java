@@ -1,9 +1,6 @@
 package de.metas.vendor.gateway.api.order;
 
-import java.util.List;
-
-import lombok.NonNull;
-import lombok.Singular;
+import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -29,13 +26,9 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public class PurchaseOrderResponse
 {
-	int supportId;
-
-	@NonNull
-	String uniqueOrderId;
-
-	@Singular
-	List<PurchaseOrderResponseItem> orderLine;
+	String createdTableName;
+	int createdRecordId;
 }

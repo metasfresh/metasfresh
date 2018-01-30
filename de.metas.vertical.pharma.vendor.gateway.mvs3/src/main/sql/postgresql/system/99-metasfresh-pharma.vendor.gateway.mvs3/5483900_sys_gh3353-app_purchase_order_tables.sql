@@ -303,21 +303,6 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558646 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
--- 2018-01-26T06:29:33.020
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ CREATE TABLE public.MSV3_PurchaseOrder (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, C_Order_ID NUMERIC(10), Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, MSV3_PurchaseOrder_ID NUMERIC(10) NOT NULL, SupportId NUMERIC(10), Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, UUID VARCHAR(40) NOT NULL, CONSTRAINT COrder_MSV3PurchaseOrder FOREIGN KEY (C_Order_ID) REFERENCES public.C_Order DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MSV3_PurchaseOrder_Key PRIMARY KEY (MSV3_PurchaseOrder_ID))
-;
-
--- 2018-01-26T06:29:40.070
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ CREATE TABLE public.MSV3_PurchaseOrderLine (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, C_OrderLine_ID NUMERIC(10), Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, MSV3_PurchaseOrder_ID NUMERIC(10) NOT NULL, MSV3_PurchaseOrderLine_ID NUMERIC(10) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT COrderLine_MSV3PurchaseOrderLi FOREIGN KEY (C_OrderLine_ID) REFERENCES public.C_OrderLine DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MSV3PurchaseOrder_MSV3Purchase FOREIGN KEY (MSV3_PurchaseOrder_ID) REFERENCES public.MSV3_PurchaseOrder DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MSV3_PurchaseOrderLine_Key PRIMARY KEY (MSV3_PurchaseOrderLine_ID))
-;
-
--- 2018-01-26T06:33:12.414
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('msv3_purchaseorderline','C_OrderLine_ID','NUMERIC(10)',null,null)
-;
-
 -- 2018-01-26T06:51:35.705
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,554478,TO_TIMESTAMP('2018-01-26 06:51:35','YYYY-MM-DD HH24:MI:SS'),100,1,50000,'Colous SupportId of table MSV3_PurchaseOrder',1,'Y','N','Y','N','MSV3_PurchaseOrder_SupportId','N',1000000,TO_TIMESTAMP('2018-01-26 06:51:35','YYYY-MM-DD HH24:MI:SS'),100)

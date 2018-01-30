@@ -1,9 +1,9 @@
 package de.metas.vertical.pharma.vendor.gateway.mvs3.testconnection;
 
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientBase;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3Util;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.config.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.ObjectFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerbindungTesten;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerbindungTestenResponse;

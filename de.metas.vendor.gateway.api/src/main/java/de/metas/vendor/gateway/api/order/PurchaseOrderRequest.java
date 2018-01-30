@@ -2,7 +2,6 @@ package de.metas.vendor.gateway.api.order;
 
 import java.util.List;
 
-import de.metas.vendor.gateway.api.ProductAndQuantity;
 import lombok.Singular;
 import lombok.Value;
 
@@ -31,11 +30,11 @@ import lombok.Value;
 @Value
 public class PurchaseOrderRequest
 {
-	/** The metasfresh {@code C_Order_ID}	 */
-	int orderId;
+	/** The metasfresh purchaseOrder's {@code C_Order_ID} */
+	int purchaseOrderId;
 
 	int vendorId;
 
 	@Singular
-	List<ProductAndQuantity> orderLines;
+	List<PurchaseOrderRequestItem> orderLines;
 }

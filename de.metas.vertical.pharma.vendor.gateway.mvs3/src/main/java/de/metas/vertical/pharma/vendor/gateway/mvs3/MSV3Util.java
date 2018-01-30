@@ -1,7 +1,12 @@
 package de.metas.vertical.pharma.vendor.gateway.mvs3;
 
 import java.math.RoundingMode;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -82,5 +87,17 @@ public class MSV3Util
 				"The MSV3 standard allows a maximum quantity of {}; productAndQuantity={}",
 				MSV3_MAX_QUANTITY_99999, requestItem);
 		return intValue;
+	}
+
+	public static Timestamp toTimestampOrNull(@Nullable final XMLGregorianCalendar xmlGregorianCalendar)
+	{
+		final Date datePromised = toDateOrNull(xmlGregorianCalendar);
+		return new Timestamp(datePromised.getTime());
+	}
+
+	public static Date toDateOrNull(@Nullable final XMLGregorianCalendar xmlGregorianCalendar)
+	{
+		final Date datePromised = xmlGregorianCalendar == null ? null : xmlGregorianCalendar.toGregorianCalendar().getTime();
+		return datePromised;
 	}
 }

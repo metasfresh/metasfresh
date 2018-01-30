@@ -6,11 +6,15 @@ import org.adempiere.util.Check;
 
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
+import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
 import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientBase;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3Util;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3ClientException;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.config.MSV3ClientConfig;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_Bestellung_Transaction;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder.Msv3PurchaseOrderTransaction.Msv3PurchaseOrderTransactionBuilder;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Auftragsart;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Bestellen;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellenResponse;
@@ -20,6 +24,7 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwortAuft
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAuftrag;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungPosition;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Liefervorgabe;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.ObjectFactory;
 import lombok.Builder;
 import lombok.NonNull;
@@ -52,63 +57,106 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 
 	private final ObjectFactory objectFactory;
 
-	private final MSV3PurchaseOrderRepository purchaseOrderRepo;
-
 	@Builder
 	private MSV3PurchaseOrderClient(
 			@NonNull final MSV3ConnectionFactory connectionFactory,
-			@NonNull final MSV3ClientConfig config,
-			@NonNull final MSV3PurchaseOrderRepository purchaseOrderRepo)
+			@NonNull final MSV3ClientConfig config)
 	{
 		super(connectionFactory, config);
 
-		this.purchaseOrderRepo = purchaseOrderRepo;
 		this.objectFactory = new ObjectFactory();
 	}
 
 	public PurchaseOrderResponse placePurchaseOrder(@NonNull final PurchaseOrderRequest request)
 	{
+		final Bestellung bestellung = createBestellung(request);
 
+		final Msv3PurchaseOrderTransactionBuilder purchaseTransactionBuilder = Msv3PurchaseOrderTransaction.builder();
+		performOrderingAndAugmentTransactionBuilder(bestellung, purchaseTransactionBuilder);
+
+		final I_MSV3_Bestellung_Transaction purchaseTransactionRecord = purchaseTransactionBuilder.build().store();;
+
+		return PurchaseOrderResponse.builder()
+				.createdRecordId(purchaseTransactionRecord.getMSV3_Bestellung_Transaction_ID())
+				.createdTableName(I_MSV3_Bestellung_Transaction.Table_Name)
+				.build();
+	}
+
+	private void performOrderingAndAugmentTransactionBuilder(
+			final Bestellung bestellung,
+			final Msv3PurchaseOrderTransactionBuilder purchaseTransactionBuilder)
+	{
+		try
+		{
+			purchaseTransactionBuilder.bestellung(bestellung);
+
+			final Bestellen bestellen = objectFactory.createBestellen();
+			bestellen.setClientSoftwareKennung(MSV3Util.CLIENT_SOFTWARE_IDENTIFIER.get());
+			bestellen.setBestellung(bestellung);
+
+			final BestellenResponse bestellenResponse = sendAndReceive(
+					objectFactory.createBestellen(bestellen), BestellenResponse.class);
+
+			final BestellungAntwort bestellungAntwort = bestellenResponse.getReturn();
+
+			purchaseTransactionBuilder.bestellungAntwort(bestellungAntwort);
+
+			final List<BestellungAntwortAuftrag> auftraege = bestellungAntwort.getAuftraege();
+			Check.errorIf(auftraege.size() != 1,
+					"We send 1 BestellungAuftrag, but received {} BestellungAntwortAuftrag", auftraege.size());
+
+			final BestellungAntwortAuftrag bestellungAntwortAuftrag = auftraege.get(0);
+
+			// bestellungAntwortAuftrag.getAuftragsart();
+			final Msv3FaultInfo auftragsfehler = bestellungAntwortAuftrag.getAuftragsfehler();
+			if (auftragsfehler != null)
+			{
+				purchaseTransactionBuilder.faultInfo(auftragsfehler);
+			}
+		}
+		catch (final Msv3ClientException msv3ClientException)
+		{
+			purchaseTransactionBuilder.faultInfo(msv3ClientException.getMsv3FaultInfo());
+		}
+		catch (final Exception e)
+		{
+			purchaseTransactionBuilder.otherException(e);
+		}
+		finally
+		{
+			purchaseTransactionBuilder.build().store();
+		}
+	}
+
+	private Bestellung createBestellung(@NonNull final PurchaseOrderRequest request)
+	{
 		final Bestellung bestellung = objectFactory.createBestellung();
 		bestellung.setId(MSV3Util.createUniqueId());
 
-		final MSV3PurchaseOrder msv3Order = purchaseOrderRepo.retrieveOrCreate(request.getOrderId());
-		bestellung.setBestellSupportId(msv3Order.getSupportId());
+		final int supportId = request.getPurchaseOrderId();
+		bestellung.setBestellSupportId(supportId);
 
 		final BestellungAuftrag bestellungAuftrag = objectFactory.createBestellungAuftrag();
 		bestellungAuftrag.setAuftragsart(Auftragsart.NORMAL);
-		bestellungAuftrag.setAuftragskennung(Integer.toString(msv3Order.getSupportId()));
-		bestellungAuftrag.setAuftragsSupportID(msv3Order.getSupportId());
-		bestellungAuftrag.setGebindeId(Integer.toString(msv3Order.getSupportId()));
+		bestellungAuftrag.setAuftragskennung(Integer.toString(supportId));
+		bestellungAuftrag.setAuftragsSupportID(supportId);
+
 		bestellungAuftrag.setId(MSV3Util.createUniqueId());
 
 		bestellung.getAuftraege().add(bestellungAuftrag);
 
-		for (final ProductAndQuantity orderLine : request.getOrderLines())
+		for (final PurchaseOrderRequestItem orderLine : request.getOrderLines())
 		{
 			final BestellungPosition bestellungPosition = objectFactory.createBestellungPosition();
 			bestellungPosition.setLiefervorgabe(Liefervorgabe.NORMAL);
 
-			bestellungPosition.setMenge(MSV3Util.extractMenge(orderLine));
-			bestellungPosition.setPzn(MSV3Util.extractPZN(orderLine));
+			final ProductAndQuantity productAndQuantity = orderLine.getProductAndQuantity();
+			bestellungPosition.setMenge(MSV3Util.extractMenge(productAndQuantity));
+			bestellungPosition.setPzn(MSV3Util.extractPZN(productAndQuantity));
 
 			bestellungAuftrag.getPositionen().add(bestellungPosition);
 		}
-
-		final Bestellen bestellen = objectFactory.createBestellen();
-		bestellen.setClientSoftwareKennung(MSV3Util.CLIENT_SOFTWARE_IDENTIFIER.get());
-		bestellen.setBestellung(bestellung);
-
-		final BestellenResponse bestellenResponse = sendAndReceive(
-				objectFactory.createBestellen(bestellen), BestellenResponse.class);
-
-		final BestellungAntwort bestellungAntwort = bestellenResponse.getReturn();
-		final List<BestellungAntwortAuftrag> auftraege = bestellungAntwort.getAuftraege();
-		Check.errorIf(auftraege.size() != 1, "We send 1 BestellungAuftrag, but received {} BestellungAntwortAuftrag", auftraege.size());
-
-
-		// TODO Auto-generated method stub
-		return null;
+		return bestellung;
 	}
 
 	@Override

@@ -25,7 +25,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 import de.metas.interfaces.I_C_BPartner_Product;
-import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult;
+import de.metas.purchasecandidate.availability.AvailabilityCheck;
+import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import lombok.Builder;
 import lombok.NonNull;
@@ -58,7 +59,7 @@ public class SalesOrderLines
 {
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 
-	private ExtendedMemorizingSupplier<ImmutableList<SalesOrderLineWithCandidates>> salesOrderLine2purchaseCandidates //
+	private ExtendedMemorizingSupplier<ImmutableList<SalesOrderLineWithCandidates>> salesOrderLineWithCandidates //
 			= ExtendedMemorizingSupplier.of(() -> loadOrCreatePurchaseCandidates0());
 
 	private final ImmutableList<Integer> salesOrderLineIds;
@@ -185,9 +186,9 @@ public class SalesOrderLines
 				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(I_C_BPartner_Product::getC_BPartner_ID));
 	}
 
-	public List<SalesOrderLineWithCandidates> getOrderedSalesOrderLines()
+	public List<SalesOrderLineWithCandidates> getSalesOrderLinesWithCandidates()
 	{
-		return salesOrderLine2purchaseCandidates.get();
+		return salesOrderLineWithCandidates.get();
 	}
 
 	public Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability()
@@ -209,7 +210,7 @@ public class SalesOrderLines
 
 	private AvailabilityCheck prepareAvailabilityCheck()
 	{
-		final ImmutableList<PurchaseCandidate> allPurchaseCandidates = salesOrderLine2purchaseCandidates.get().stream()
+		final ImmutableList<PurchaseCandidate> allPurchaseCandidates = salesOrderLineWithCandidates.get().stream()
 				.flatMap(item -> item.getPurchaseCandidates().stream())
 				.collect(ImmutableList.toImmutableList());
 
