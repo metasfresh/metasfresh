@@ -1,4 +1,18 @@
 
+
+--
+-- enlarge AD_Table.TalbeName from 40 to 80
+--
+-- 2018-01-29T10:46:26.445
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=80,Updated=TO_TIMESTAMP('2018-01-29 10:46:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=107
+;
+
+-- 2018-01-29T10:46:32.743
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('ad_table','TableName','VARCHAR(80)',null,null)
+;
+
 DROP VIEW IF EXISTS db_columns_fk;
 CREATE OR REPLACE VIEW db_columns_fk AS
 SELECT
