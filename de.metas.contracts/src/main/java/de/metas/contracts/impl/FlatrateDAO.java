@@ -45,6 +45,8 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -68,6 +70,7 @@ import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.document.engine.IDocument;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -281,7 +284,7 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		// retrieve the flatrate terms that reference 'fc'
 		final StringBuilder wc = new StringBuilder();
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 		if (term == null)
 		{
 			ctx = InterfaceWrapperHelper.getCtx(fc);
@@ -348,7 +351,7 @@ public class FlatrateDAO implements IFlatrateDAO
 			return resultAll;
 		}
 
-		final List<I_C_Flatrate_DataEntry> resultNonSim = new ArrayList<I_C_Flatrate_DataEntry>();
+		final List<I_C_Flatrate_DataEntry> resultNonSim = new ArrayList<>();
 		for (final I_C_Flatrate_DataEntry de : resultAll)
 		{
 			if (de.isSimulation())
@@ -505,7 +508,7 @@ public class FlatrateDAO implements IFlatrateDAO
 			final Timestamp dateFrom, final Timestamp dateTo,
 			final I_C_UOM uom)
 	{
-		final List<I_C_Flatrate_DataEntry> result = new ArrayList<I_C_Flatrate_DataEntry>();
+		final List<I_C_Flatrate_DataEntry> result = new ArrayList<>();
 
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 		final List<I_C_Flatrate_DataEntry> entriesToCorrect = flatrateDB.retrieveDataEntries(flatrateTerm, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uom);
@@ -578,7 +581,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(fc);
 		final String trxName = InterfaceWrapperHelper.getTrxName(fc);
 
-		final List<I_M_Product> result = new ArrayList<I_M_Product>();
+		final List<I_M_Product> result = new ArrayList<>();
 
 		final String wc = I_C_Flatrate_Matching.COLUMNNAME_C_Flatrate_Conditions_ID + "=?";
 
@@ -638,28 +641,23 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(dataEntry);
 
-		trxManager.run(trxName, new TrxRunnable()
-		{
-			@Override
-			public void run(final String trxName)
+		trxManager.run(trxName, (TrxRunnable)trxName1 -> {
+			final PreparedStatement pstmt = DB.prepareStatement(sql, trxName1);
+
+			try
 			{
-				final PreparedStatement pstmt = DB.prepareStatement(sql, trxName);
+				pstmt.setBigDecimal(1, dataEntry.getActualQty());
+				pstmt.setInt(2, dataEntry.getC_Flatrate_Term_ID());
+				pstmt.setString(3, dataEntry.getType());
+				pstmt.setInt(4, dataEntry.getC_Period_ID());
+				pstmt.setInt(5, dataEntry.getC_UOM_ID());
 
-				try
-				{
-					pstmt.setBigDecimal(1, dataEntry.getActualQty());
-					pstmt.setInt(2, dataEntry.getC_Flatrate_Term_ID());
-					pstmt.setString(3, dataEntry.getType());
-					pstmt.setInt(4, dataEntry.getC_Period_ID());
-					pstmt.setInt(5, dataEntry.getC_UOM_ID());
-
-					final int count = pstmt.executeUpdate();
-					logger.debug("Updated " + count + " dataEntries for " + dataEntry);
-				}
-				catch (final SQLException e)
-				{
-					throw new DBException(e);
-				}
+				final int count = pstmt.executeUpdate();
+				logger.debug("Updated " + count + " dataEntries for " + dataEntry);
+			}
+			catch (final SQLException e)
+			{
+				throw new DBException(e);
 			}
 		});
 	}
@@ -761,7 +759,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 		final String trxName = InterfaceWrapperHelper.getTrxName(product);
 		final StringBuilder wc = new StringBuilder();
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 
 		wc.append(I_C_Flatrate_DataEntry.COLUMNNAME_M_Product_DataEntry_ID + " =?");
 		params.add(product.getM_Product_ID());
@@ -780,7 +778,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 		final String trxName = InterfaceWrapperHelper.getTrxName(product);
 		final StringBuilder wc = new StringBuilder();
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 
 		wc.append("( EXISTS (SELECT * FROM ")
 				.append(I_C_Flatrate_Term.Table_Name + " ft INNER JOIN ")
@@ -842,5 +840,22 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID, contract.getC_Flatrate_Term_ID())
 				.create()
 				.firstOnly(I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	public List<I_C_Invoice> retrieveInvoicesForCurrentContract(@NonNull final I_C_Flatrate_Term contract)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(contract);
+		final String trxName = InterfaceWrapperHelper.getTrxName(contract);
+		final List<I_C_Invoice> currentFlatRateTermInvoices = new ArrayList<>();
+		final List<I_C_Invoice_Candidate> icsForCurrentTerm = Services.get(IInvoiceCandDAO.class).fetchInvoiceCandidates(ctx, I_C_Flatrate_Term.Table_Name, contract.getC_Flatrate_Term_ID(), trxName);
+		icsForCurrentTerm.forEach(ic -> {
+			final List<I_C_InvoiceLine> iclList = Services.get(IInvoiceCandDAO.class).retrieveIlForIc(ic);
+			iclList.stream()
+					.filter(il -> !currentFlatRateTermInvoices.contains(il.getC_Invoice()))
+					.map(il -> il.getC_Invoice())
+					.forEach(currentFlatRateTermInvoices::add);
+		});
+		return currentFlatRateTermInvoices;
 	}
 }
