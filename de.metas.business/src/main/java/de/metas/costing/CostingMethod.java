@@ -45,7 +45,7 @@ public enum CostingMethod
 	ExternalProcessing(X_M_CostElement.COSTINGMETHOD__) //
 
 	;
-	
+
 	public static final int AD_REFERENCE_ID = X_M_CostElement.COSTINGMETHOD_AD_Reference_ID;
 
 	@Getter
@@ -67,7 +67,7 @@ public enum CostingMethod
 
 	public static CostingMethod ofCode(final String code)
 	{
-		CostingMethod costingMethod = code2type.get(code);
+		final CostingMethod costingMethod = code2type.get(code);
 		if (costingMethod == null)
 		{
 			throw new NoSuchElementException("No " + CostingMethod.class + " found for code: " + code);
