@@ -193,16 +193,13 @@ public class MCost extends X_M_Cost
 					final BigDecimal percent = rs.getBigDecimal(4);
 					// M_CostElement_ID = rs.getInt(5);
 
-					if (currentCostPrice.signum() != 0 || currentCostPriceLL.signum() != 0)
+					if (recordCostingMethod != null)
 					{
-						if (recordCostingMethod != null)
-						{
-							materialCostEach = materialCostEach.add(currentCostPrice).add(currentCostPriceLL);
-						}
-						else
-						{
-							otherCostEach = otherCostEach.add(currentCostPrice).add(currentCostPriceLL);
-						}
+						materialCostEach = materialCostEach.add(currentCostPrice).add(currentCostPriceLL);
+					}
+					else
+					{
+						otherCostEach = otherCostEach.add(currentCostPrice).add(currentCostPriceLL);
 					}
 
 					if (percent != null && percent.signum() != 0)
