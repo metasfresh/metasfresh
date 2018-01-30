@@ -4,7 +4,6 @@ import { push, replace } from "react-router-redux";
 import SockJs from "sockjs-client";
 
 import Stomp from "stompjs/lib/stomp.min.js";
-import { DATE_FIELDS } from "../constants/Constants";
 import Moment from "moment";
 
 import {
@@ -1153,7 +1152,7 @@ export function parseToDisplay(fieldsByName) {
 }
 
 // i.e 2018-01-27T17:00:00.000-06:00
-function parseDateWithCurrenTimezone(value) {
+export function parseDateWithCurrenTimezone(value) {
   if (value) {
     if (Moment.isMoment(value)) {
       return new Date(value);
