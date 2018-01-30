@@ -45,6 +45,7 @@ public class CostElementRepository implements ICostElementRepository
 	public CostElement getById(final int costElementId)
 	{
 		// TODO: enable table level caching for M_CostElement
+		// or better, load all elements in memory 
 		final I_M_CostElement ce = InterfaceWrapperHelper.loadOutOfTrx(costElementId, I_M_CostElement.class);
 		return toCostElement(ce);
 	}
