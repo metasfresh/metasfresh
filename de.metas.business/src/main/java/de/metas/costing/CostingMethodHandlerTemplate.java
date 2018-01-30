@@ -5,11 +5,8 @@ import java.math.BigDecimal;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCost;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -235,15 +232,14 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 				.attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.build();
 
-		final I_M_Cost costRecord = MCost.getOrCreate(costSegment, request.getCostElementId());
-		return toCurrentCost(costRecord, as.getC_Currency_ID(), as.getCostingPrecision());
+		return Services.get(ICurrenctCostsRepository.class).getOrCreate(costSegment, request.getCostElementId());
 	}
 
 	@Override
 	public final void process(final CostDetailEvent event)
 	{
-		final I_M_Cost costRecord = MCost.getOrCreate(event.getCostSegment(), event.getCostElementId());
-		final CurrentCost cost = toCurrentCost(costRecord, event.getCurrencyId(), event.getPrecision());
+		final ICurrenctCostsRepository currenctCostsRepository = Services.get(ICurrenctCostsRepository.class);
+		final CurrentCost cost = currenctCostsRepository.getOrCreate(event.getCostSegment(), event.getCostElementId());
 
 		final CostingDocumentRef documentRef = event.getDocumentRef();
 		final String documentTableName = documentRef.getTableName();
@@ -284,10 +280,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			processOther(event, cost);
 		}
 
-		//
-		updateCostRecord(costRecord, cost);
-		// costRecord.setProcessed(true); // FIXME Processed is a virtual column ?!?! wtf?!
-		InterfaceWrapperHelper.save(costRecord);
+		currenctCostsRepository.save(cost);
 	}
 
 	protected void processMatchPO(final CostDetailEvent event, final CurrentCost cost)
@@ -338,35 +331,5 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	protected void processOther(final CostDetailEvent event, final CurrentCost cost)
 	{
 		logger.warn("Skip event because document is not handled: {}", event);
-	}
-
-	private CurrentCost toCurrentCost(
-			final I_M_Cost costRecord,
-			final int currencyId,
-			final int precision)
-	{
-		final IProductBL productBL = Services.get(IProductBL.class);
-		final I_C_UOM uom = productBL.getStockingUOM(costRecord.getM_Product_ID());
-
-		return CurrentCost.builder()
-				.id(costRecord.getM_Cost_ID())
-				.currencyId(currencyId)
-				.precision(precision)
-				.uom(uom)
-				.currentCostPrice(costRecord.getCurrentCostPrice())
-				.currentCostPriceLL(costRecord.getCurrentCostPriceLL())
-				.currentQty(costRecord.getCurrentQty())
-				.cumulatedAmt(costRecord.getCumulatedAmt())
-				.cumulatedQty(costRecord.getCumulatedQty())
-				.build();
-	}
-
-	private void updateCostRecord(final I_M_Cost cost, final CurrentCost from)
-	{
-		cost.setCurrentCostPrice(from.getCurrentCostPrice().getValue());
-		cost.setCurrentCostPriceLL(from.getCurrentCostPriceLL().getValue());
-		cost.setCurrentQty(from.getCurrentQty().getQty());
-		cost.setCumulatedAmt(from.getCumulatedAmt().getValue());
-		cost.setCumulatedQty(from.getCumulatedQty().getQty());
 	}
 }

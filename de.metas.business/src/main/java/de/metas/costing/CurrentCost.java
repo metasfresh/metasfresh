@@ -38,13 +38,14 @@ import lombok.NonNull;
 public final class CurrentCost
 {
 	private final int id;
+	private final CostSegment costSegment;
 
 	private final int currencyId;
 	private final int precision;
 	private final I_C_UOM uom;
 
 	private CostAmount currentCostPrice;
-	private final CostAmount currentCostPriceLL;
+	private CostAmount currentCostPriceLL;
 	private Quantity currentQty;
 
 	private CostAmount cumulatedAmt;
@@ -53,6 +54,7 @@ public final class CurrentCost
 	@Builder
 	private CurrentCost(
 			final int id,
+			@NonNull final CostSegment costSegment,
 			final int currencyId,
 			final int precision,
 			@NonNull final I_C_UOM uom,
@@ -67,6 +69,8 @@ public final class CurrentCost
 		Check.assume(precision >= 0, "precision >= 0");
 
 		this.id = id;
+		this.costSegment = costSegment;
+		
 		this.currencyId = currencyId;
 		this.precision = precision;
 		this.uom = uom;
@@ -146,12 +150,18 @@ public final class CurrentCost
 	public void setCurrentCostPrice(@NonNull final CostAmount costPrice)
 	{
 		assertCostCurrency(costPrice);
-		this.currentCostPrice = costPrice;
+		currentCostPrice = costPrice;
+	}
+
+	public void setCurrentCostPriceLL(@NonNull final CostAmount costPrice)
+	{
+		assertCostCurrency(costPrice);
+		currentCostPriceLL = costPrice;
 	}
 
 	public void setCurrentQty(@NonNull final Quantity qty)
 	{
 		assertUOM(qty);
-		this.currentQty = qty;
+		currentQty = qty;
 	}
 }

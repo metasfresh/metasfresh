@@ -32,13 +32,13 @@ import lombok.Value;
 @Value
 public class CostSegment
 {
-	CostingLevel costingLevel;
-
 	int acctSchemaId;
 	int costTypeId;
-	int productId;
+	CostingLevel costingLevel;
+	
 	int clientId;
 	int orgId;
+	int productId;
 	int attributeSetInstanceId;
 
 	@Builder(toBuilder = true)

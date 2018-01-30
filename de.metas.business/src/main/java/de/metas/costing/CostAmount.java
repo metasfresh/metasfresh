@@ -41,6 +41,11 @@ public class CostAmount
 		return new CostAmount(value, currencyId);
 	}
 
+	public static final CostAmount zero(final int currencyId)
+	{
+		return new CostAmount(BigDecimal.ZERO, currencyId);
+	}
+
 	BigDecimal value;
 	int currencyId;
 
@@ -147,5 +152,15 @@ public class CostAmount
 			return this;
 		}
 		return new CostAmount(value.subtract(amtToSubtract.value), currencyId);
+	}
+
+	public CostAmount subtract(@NonNull final BigDecimal amtToSubtract)
+	{
+		if (amtToSubtract.signum() == 0)
+		{
+			return this;
+		}
+
+		return new CostAmount(value.subtract(amtToSubtract), currencyId);
 	}
 }

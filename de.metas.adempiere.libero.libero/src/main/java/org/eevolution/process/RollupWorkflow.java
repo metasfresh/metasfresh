@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved.               *
- * Contributor(s): Victor Perez www.e-evolution.com                           *
- *                 Bogdan Ioan, www.arhipac.ro                                *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
+ * Contributor(s): Victor Perez www.e-evolution.com *
+ * Bogdan Ioan, www.arhipac.ro *
  *****************************************************************************/
 
 package org.eevolution.process;
@@ -30,11 +30,11 @@ package org.eevolution.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -70,35 +70,35 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 
 /**
- *	RollUp of Cost Manufacturing Workflow
- *	This process calculate the Labor, Overhead, Burden Cost
- *  @author Victor Perez, e-Evolution, S.C.
- *  @version $Id: RollupWorkflow.java,v 1.1 2004/06/22 05:24:03 vpj-cd Exp $
+ * RollUp of Cost Manufacturing Workflow
+ * This process calculate the Labor, Overhead, Burden Cost
+ * 
+ * @author Victor Perez, e-Evolution, S.C.
+ * @version $Id: RollupWorkflow.java,v 1.1 2004/06/22 05:24:03 vpj-cd Exp $
  *
- *  @author Bogdan Ioan, www.arhipac.ro
- *  		<li>BF [ 2093001 ] Error in Cost Workflow & Process Details
+ * @author Bogdan Ioan, www.arhipac.ro
+ *         <li>BF [ 2093001 ] Error in Cost Workflow & Process Details
  */
 public class RollupWorkflow extends JavaProcess
 {
 	private final ICostElementRepository costElementsRepo = Services.get(ICostElementRepository.class);
 
-	/* Organization     */
-	private int		 		p_AD_Org_ID = 0;
-	/* Account Schema   */
-	private int             p_C_AcctSchema_ID = 0;
-	/* Cost Type 		*/
-	private int             p_M_CostType_ID = 0;
-	/* Product 			*/
-	private int             p_M_Product_ID = 0;
+	/* Organization */
+	private int p_AD_Org_ID = 0;
+	/* Account Schema */
+	private int p_C_AcctSchema_ID = 0;
+	/* Cost Type */
+	private int p_M_CostType_ID = 0;
+	/* Product */
+	private int p_M_Product_ID = 0;
 	/* Product Category */
-	private int 			p_M_Product_Category_ID = 0;
-	/* Costing Method 	*/
-	private String 			p_ConstingMethod = CostingMethod.StandardCosting.getCode();
+	private int p_M_Product_Category_ID = 0;
+	/* Costing Method */
+	private String p_ConstingMethod = CostingMethod.StandardCosting.getCode();
 
 	private MAcctSchema m_as = null;
 
 	private RoutingService m_routingService = null;
-
 
 	@Override
 	protected void prepare()
@@ -111,15 +111,15 @@ public class RollupWorkflow extends JavaProcess
 				;
 			else if (name.equals(I_M_Cost.COLUMNNAME_AD_Org_ID))
 				p_AD_Org_ID = para.getParameterAsInt();
-			else if (name.equals(MCost.COLUMNNAME_C_AcctSchema_ID))
+			else if (name.equals(I_M_Cost.COLUMNNAME_C_AcctSchema_ID))
 			{
 				p_C_AcctSchema_ID = para.getParameterAsInt();
 				m_as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
 			}
-			else if (name.equals(MCost.COLUMNNAME_M_CostType_ID))
+			else if (name.equals(I_M_Cost.COLUMNNAME_M_CostType_ID))
 				p_M_CostType_ID = para.getParameterAsInt();
 			else if (name.equals(X_M_CostElement.COLUMNNAME_CostingMethod))
-				p_ConstingMethod=(String)para.getParameter();
+				p_ConstingMethod = (String)para.getParameter();
 			else if (name.equals(MProduct.COLUMNNAME_M_Product_ID))
 				p_M_Product_ID = para.getParameterAsInt();
 			else if (name.equals(MProduct.COLUMNNAME_M_Product_Category_ID))
@@ -127,7 +127,7 @@ public class RollupWorkflow extends JavaProcess
 			else
 				log.error("prepare - Unknown Parameter: " + name);
 		}
-	}	//	prepare
+	}	// prepare
 
 	@SuppressWarnings("deprecation") // hide those to not polute our Warnings
 	@Override
@@ -137,28 +137,28 @@ public class RollupWorkflow extends JavaProcess
 
 		for (MProduct product : getProducts())
 		{
-			log.info("Product: "+product);
+			log.info("Product: " + product);
 			int AD_Workflow_ID = 0;
 			MPPProductPlanning pp = null;
 			if (AD_Workflow_ID <= 0)
 			{
 				AD_Workflow_ID = Services.get(IPPWorkflowDAO.class).retrieveWorkflowIdForProduct(product);
 			}
-			if(AD_Workflow_ID <= 0)
+			if (AD_Workflow_ID <= 0)
 			{
 				pp = MPPProductPlanning.find(getCtx(), p_AD_Org_ID, 0, 0, product.get_ID(), get_TrxName());
 
 				if (pp != null)
 				{
-				AD_Workflow_ID = pp.getAD_Workflow_ID();
+					AD_Workflow_ID = pp.getAD_Workflow_ID();
 				}
 				else
 				{
-				createNotice(product, "@NotFound@ @PP_Product_Planning_ID@");
+					createNotice(product, "@NotFound@ @PP_Product_Planning_ID@");
 				}
 			}
 
-			if(AD_Workflow_ID <= 0)
+			if (AD_Workflow_ID <= 0)
 			{
 				createNotice(product, "@NotFound@ @AD_Workflow_ID@");
 				continue;
@@ -176,7 +176,6 @@ public class RollupWorkflow extends JavaProcess
 		}
 		return "@OK@";
 	}
-
 
 	private Collection<MProduct> getProducts()
 	{
@@ -201,18 +200,17 @@ public class RollupWorkflow extends JavaProcess
 			params.add(p_M_Product_Category_ID);
 		}
 
-		Collection<MProduct> products = new Query(getCtx(),MProduct.Table_Name, whereClause.toString(), get_TrxName())
-											.setOrderBy(MProduct.COLUMNNAME_LowLevel)
-											.setParameters(params)
-											.list();
+		Collection<MProduct> products = new Query(getCtx(), MProduct.Table_Name, whereClause.toString(), get_TrxName())
+				.setOrderBy(MProduct.COLUMNNAME_LowLevel)
+				.setParameters(params)
+				.list();
 		return products;
 	}
 
-
 	public void rollup(MProduct product, MWorkflow workflow)
 	{
-		log.info("Workflow: "+workflow);
-		workflow.setCost(Env.ZERO);
+		log.info("Workflow: " + workflow);
+		workflow.setCost(BigDecimal.ZERO);
 		double Yield = 1;
 		int QueuingTime = 0;
 		int SetupTime = 0;
@@ -224,7 +222,7 @@ public class RollupWorkflow extends JavaProcess
 		MWFNode[] nodes = workflow.getNodes(false, getAD_Client_ID());
 		for (MWFNode node : nodes)
 		{
-			node.setCost(Env.ZERO);
+			node.setCost(BigDecimal.ZERO);
 			if (node.getYield() != 0)
 			{
 				Yield = Yield * ((double)node.getYield() / 100);
@@ -241,7 +239,7 @@ public class RollupWorkflow extends JavaProcess
 			MovingTime += node.getMovingTime();
 			WorkingTime += node.getWorkingTime();
 		}
-		workflow.setCost(Env.ZERO);
+		workflow.setCost(BigDecimal.ZERO);
 		workflow.setYield((int)(Yield * 100));
 		workflow.setQueuingTime(QueuingTime);
 		workflow.setSetupTime(SetupTime);
@@ -261,11 +259,11 @@ public class RollupWorkflow extends JavaProcess
 			for (MCost cost : costs)
 			{
 				final int precision = MAcctSchema.get(Env.getCtx(), cost.getC_AcctSchema_ID()).getCostingPrecision();
-				BigDecimal segmentCost = Env.ZERO;
+				BigDecimal segmentCost = BigDecimal.ZERO;
 				for (MWFNode node : nodes)
 				{
 					final CostEngine costEngine = CostEngineFactory.getCostEngine(node.getAD_Client_ID());
-					final BigDecimal rate = costEngine.getResourceActualCostRate(null, node.getS_Resource_ID(), d, get_TrxName());
+					final BigDecimal rate = costEngine.getResourceActualCostRate(null, node.getS_Resource_ID(), d, get_TrxName()).getValue();
 					final BigDecimal baseValue = m_routingService.getResourceBaseValue(node.getS_Resource_ID(), node);
 					BigDecimal nodeCost = baseValue.multiply(rate);
 					if (nodeCost.scale() > precision)
@@ -273,9 +271,9 @@ public class RollupWorkflow extends JavaProcess
 						nodeCost = nodeCost.setScale(precision, RoundingMode.HALF_UP);
 					}
 					segmentCost = segmentCost.add(nodeCost);
-					log.info("Element : "+element+", Node="+node
-							+", BaseValue="+baseValue+", rate="+rate
-							+", nodeCost="+nodeCost+" => Cost="+segmentCost);
+					log.info("Element : " + element + ", Node=" + node
+							+ ", BaseValue=" + baseValue + ", rate=" + rate
+							+ ", nodeCost=" + nodeCost + " => Cost=" + segmentCost);
 					// Update AD_WF_Node.Cost:
 					node.setCost(node.getCost().add(nodeCost));
 				}
@@ -286,24 +284,25 @@ public class RollupWorkflow extends JavaProcess
 				workflow.setCost(workflow.getCost().add(segmentCost));
 			} // MCost
 		} // Cost Elements
-		//
-		// Save Workflow & Nodes
+			 //
+			 // Save Workflow & Nodes
 		for (MWFNode node : nodes)
 		{
 			node.saveEx();
 		}
 		workflow.saveEx();
-		log.info("Product: "+product.getName()+" WFCost: " + workflow.getCost());
+		log.info("Product: " + product.getName() + " WFCost: " + workflow.getCost());
 	}
 
 	/**
 	 * Create Cost Rollup Notice
+	 * 
 	 * @param product
 	 * @param msg
 	 */
 	private void createNotice(MProduct product, String msg)
 	{
 		String productValue = product != null ? product.getValue() : "-";
-		addLog("WARNING: Product "+productValue+": "+msg);
+		addLog("WARNING: Product " + productValue + ": " + msg);
 	}
 }

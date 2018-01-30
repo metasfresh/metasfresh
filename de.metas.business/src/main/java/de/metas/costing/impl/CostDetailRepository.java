@@ -102,7 +102,7 @@ public class CostDetailRepository implements ICostDetailRepository
 		{
 			queryBuilder.addInArrayFilter(I_M_CostDetail.COLUMN_M_AttributeSetInstance_ID, null, 0);
 		}
-		
+
 		queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMN_M_CostElement_ID, query.getCostElementId() > 0 ? query.getCostElementId() : null);
 
 		if (documentRef.getOutboundTrx() != null)

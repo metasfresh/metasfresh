@@ -98,7 +98,7 @@ public class CostBillOfMaterial extends JavaProcess
 				;
 			else if (name.equals(I_M_Cost.COLUMNNAME_AD_Org_ID))
 				p_AD_Org_ID = para.getParameterAsInt();
-			else if (name.equals(MCost.COLUMNNAME_C_AcctSchema_ID))
+			else if (name.equals(I_M_Cost.COLUMNNAME_C_AcctSchema_ID))
 			{
 				p_C_AcctSchema_ID= para.getParameterAsInt();
 				m_as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
@@ -242,17 +242,17 @@ public class CostBillOfMaterial extends JavaProcess
 			//
 			// Set Costs:
 			final CostEngine engine = CostEngineFactory.getCostEngine(getAD_Client_ID());
-			Collection <MCost> costs = engine.getByElement(
+			Collection<MCost> costs = engine.getByElement(
 					product,
 					m_as,
 					p_M_CostType_ID,
 					p_AD_Org_ID,
 					0, // ASI
 					costElement.getId());
-			BigDecimal currentCostPrice = Env.ZERO;
-			BigDecimal currentCostPriceLL = Env.ZERO;
-			BigDecimal futureCostPrice = Env.ZERO;
-			BigDecimal futureCostPriceLL = Env.ZERO;
+			BigDecimal currentCostPrice = BigDecimal.ZERO;
+			BigDecimal currentCostPriceLL = BigDecimal.ZERO;
+			BigDecimal futureCostPrice = BigDecimal.ZERO;
+			BigDecimal futureCostPriceLL = BigDecimal.ZERO;
 			boolean isCostFrozen = false;
 			for (MCost cost : costs)
 			{

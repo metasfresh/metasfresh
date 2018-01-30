@@ -31,9 +31,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCost;
 import org.compiere.model.MInOut;
-import org.compiere.model.MProduct;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.ProductAcctType;
@@ -55,7 +53,6 @@ import de.metas.inout.IInOutDAO;
  * metas:
  * <li>copied from // metas: from https://adempiere.svn.sourceforge.net/svnroot/adempiere/branches/metas/mvcForms/base/src/org/compiere/acct/Doc_InOut.java, Rev 10177
  * <li>Changed for "US330: Geschaeftsvorfall (G113d): Summen-/ Saldenliste (2010070510000637)"
- * <li>Goal: Use {@link MCost#getSeedCosts(MProduct, int, MAcctSchema, int, String, int)}, if a product has no cost yet
  * 
  * @author Jorg Janke
  * @author Armen Rizal, Goodwill Consulting

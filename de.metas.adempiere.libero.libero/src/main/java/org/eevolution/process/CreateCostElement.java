@@ -53,10 +53,10 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MCost;
 
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
+import de.metas.costing.ICurrenctCostsRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductBL;
@@ -71,6 +71,8 @@ import de.metas.product.IProductBL;
  */
 public class CreateCostElement extends JavaProcess
 {
+	private final ICurrenctCostsRepository currenctCostsRepository = Services.get(ICurrenctCostsRepository.class);
+	
 	private Integer p_AD_Org_ID = null;
 	private int p_C_AcctSchema_ID = 0;
 	private int p_M_CostType_ID = 0;
@@ -152,7 +154,7 @@ public class CreateCostElement extends JavaProcess
 
 				for (final I_M_CostElement element : getElements())
 				{
-					MCost.getOrCreate(costSegment, element.getM_CostElement_ID());
+					currenctCostsRepository.createIfMissing(costSegment, element.getM_CostElement_ID());
 					count_all++;
 				}
 			}

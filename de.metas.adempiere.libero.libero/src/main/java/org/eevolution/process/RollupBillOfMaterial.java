@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved.               *
- * Contributor(s): Victor Perez www.e-evolution.com                           *
- *                 Teo Sarca, www.arhipac.ro                                  *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
+ * Contributor(s): Victor Perez www.e-evolution.com *
+ * Teo Sarca, www.arhipac.ro *
  *****************************************************************************/
 
 package org.eevolution.process;
@@ -30,11 +30,11 @@ package org.eevolution.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -44,8 +44,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.engines.CostDimension;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
@@ -53,11 +51,9 @@ import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_CostType;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCost;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.MPPProductBOM;
@@ -66,11 +62,16 @@ import org.eevolution.model.MPPProductPlanning;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.mrp.api.IMRPDAO;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
+import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostElementRepository;
+import de.metas.costing.ICurrenctCostsRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductBL;
@@ -87,70 +88,91 @@ import de.metas.product.IProductBL;
 public class RollupBillOfMaterial extends JavaProcess
 {
 	private final ICostElementRepository costElementsRepo = Services.get(ICostElementRepository.class);
-	
-	/* Organization 		*/
-	private int		 		p_AD_Org_ID = 0;
-	/* Account Schema 		*/
-	private int				p_C_AcctSchema_ID = 0;
-	/* Cost Type			*/
-	private int				p_M_CostType_ID = 0;
-	/* Costing Method 		*/
-	private String 			p_ConstingMethod = CostingMethod.StandardCosting.getCode();
-	/* Product 				*/
-	private int				p_M_Product_ID = 0;
-	/* Product Category  	*/
-	private int				p_M_Product_Category_ID = 0;
-	/* Product Type			*/
-	private String			p_ProductType = null;
+	private final ICurrenctCostsRepository currenctCostsRepository = Services.get(ICurrenctCostsRepository.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
+	/* Organization */
+	private int p_AD_Org_ID = 0;
+	/* Account Schema */
+	private int p_C_AcctSchema_ID = 0;
+	/* Cost Type */
+	private int p_M_CostType_ID = 0;
+	/* Costing Method */
+	private String p_ConstingMethod = CostingMethod.StandardCosting.getCode();
+	/* Product */
+	private int p_M_Product_ID = 0;
+	/* Product Category */
+	private int p_M_Product_Category_ID = 0;
+	/* Product Type */
+	private String p_ProductType = null;
 
 	/**
-	 *  Prepare - e.g., get Parameters.
+	 * Prepare - e.g., get Parameters.
 	 */
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParametersAsArray())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
-			String name = para.getParameterName();
+			final String name = para.getParameterName();
 
 			if (para.getParameter() == null)
+			{
 				;
+			}
 			else if (name.equals(I_M_CostElement.COLUMNNAME_AD_Org_ID))
+			{
 				p_AD_Org_ID = para.getParameterAsInt();
+			}
 			else if (name.equals(I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID))
+			{
 				p_C_AcctSchema_ID = para.getParameterAsInt();
+			}
 			else if (name.equals(I_M_CostType.COLUMNNAME_M_CostType_ID))
+			{
 				p_M_CostType_ID = para.getParameterAsInt();
+			}
 			else if (name.equals(I_M_CostElement.COLUMNNAME_CostingMethod))
-				p_ConstingMethod=(String)para.getParameter();
+			{
+				p_ConstingMethod = (String)para.getParameter();
+			}
 			else if (name.equals(I_M_Product.COLUMNNAME_M_Product_ID))
+			{
 				p_M_Product_ID = para.getParameterAsInt();
+			}
 			else if (name.equals(I_M_Product.COLUMNNAME_M_Product_Category_ID))
+			{
 				p_M_Product_Category_ID = para.getParameterAsInt();
+			}
 			else if (name.equals(I_M_Product.COLUMNNAME_ProductType))
+			{
 				p_ProductType = para.getParameter() == null ? null : para.getParameter().toString();
+			}
 			else
+			{
 				log.error("prepare - Unknown Parameter: " + name);
+			}
 		}
-	}	//	prepare
+	}	// prepare
 
 	/**
-	 * 	Generate Calculate Cost
-	 *	@return info
-	 *	@throws Exception
+	 * Generate Calculate Cost
+	 * 
+	 * @return info
+	 * @throws Exception
 	 */
 	@Override
 	protected String doIt() throws Exception
 	{
 		resetCostsLLForLLC0();
 		//
-		int maxLowLevel = Services.get(IMRPDAO.class).getMaxLowLevel(this);
+		final int maxLowLevel = Services.get(IMRPDAO.class).getMaxLowLevel(this);
 		// Cost Roll-up for all levels
 		for (int lowLevel = maxLowLevel; lowLevel >= 0; lowLevel--)
 		{
-			for (MProduct product : getProducts(lowLevel))
+			for (final MProduct product : getProducts(lowLevel))
 			{
-				I_PP_Product_Planning pp = MPPProductPlanning.find(getCtx(), p_AD_Org_ID,
+				final I_PP_Product_Planning pp = MPPProductPlanning.find(getCtx(), p_AD_Org_ID,
 						0, // M_Warehouse_ID
 						0, // S_Resource_ID
 						product.getM_Product_ID(),
@@ -169,7 +191,7 @@ public class RollupBillOfMaterial extends JavaProcess
 				{
 					PP_Product_BOM_ID = Services.get(IProductBOMDAO.class).retrieveDefaultBOMId(product);
 				}
-				MPPProductBOM bom = MPPProductBOM.get(getCtx(), PP_Product_BOM_ID);
+				final MPPProductBOM bom = MPPProductBOM.get(getCtx(), PP_Product_BOM_ID);
 				if (bom == null)
 				{
 					createNotice(product, "@NotFound@ @PP_Product_BOM_ID@");
@@ -180,166 +202,185 @@ public class RollupBillOfMaterial extends JavaProcess
 		return "@OK@";
 	}
 
-	protected void rollup(MProduct product, MPPProductBOM bom)
+	protected void rollup(final MProduct product, final MPPProductBOM bom)
 	{
-		for (CostElement element : getCostElements())
+		for (final CostElement element : getCostElements())
 		{
-			for (MCost cost : getCosts(product, element.getId()))
+			for (final CurrentCost cost : getCosts(product, element.getId()))
 			{
-				log.info("Calculate Lower Cost for: "+ bom);
-				BigDecimal price = getCurrentCostPriceLL(bom, element);
-				log.info(element.getName() + " Cost Low Level:" + price);
+				log.info("Calculate Lower Cost for: {}", bom);
+				final CostAmount price = getCurrentCostPriceLL(bom, element);
+				log.info("{} Cost Low Level: {}", element, price);
 				cost.setCurrentCostPriceLL(price);
-				updateCoProductCosts(bom, cost);
-				cost.saveEx();
+				updateCoProductCosts(bom, cost, element);
+				currenctCostsRepository.save(cost);
 			} // for each Costs
 		} // for Elements
 	}
 
 	/**
 	 * Update costs for co-products on BOM Lines from given BOM
+	 *
 	 * @param bom product's BOM
-	 * @param element cost element
+	 * @param costElement cost element
 	 * @param baseCost base product cost (BOM Cost)
+	 * @param costElement
 	 */
-	private void updateCoProductCosts(MPPProductBOM bom, MCost baseCost)
+	private void updateCoProductCosts(final MPPProductBOM bom, final CurrentCost baseCost, final CostElement costElement)
 	{
 		// Skip if not BOM found
 		if (bom == null)
+		{
 			return;
+		}
 
-		BigDecimal costPriceTotal = Env.ZERO;
-		for (MPPProductBOMLine bomline : bom.getLines())
+		CostAmount costPriceTotal = zeroCosts();
+		for (final MPPProductBOMLine bomline : bom.getLines())
 		{
 			if (!bomline.isCoProduct())
 			{
 				continue;
 			}
-			final BigDecimal costPrice = baseCost.getCurrentCostPriceLL().multiply(bomline.getCostAllocationPerc());
+			final CostAmount costPrice = baseCost.getCurrentCostPriceLL().multiply(bomline.getCostAllocationPerc());
 			//
 			// Get/Create Cost
 
-			final CostSegment costSegment = extractCostSegment(baseCost);
-			final I_M_Cost cost = MCost.getOrCreate(costSegment, baseCost.getM_CostElement_ID());
+			final CostSegment costSegment = baseCost.getCostSegment()
+					.toBuilder()
+					.productId(bomline.getM_Product_ID())
+					.build();
+			final CurrentCost cost = currenctCostsRepository.getOrCreate(costSegment, costElement.getId());
 			cost.setCurrentCostPriceLL(costPrice);
-			InterfaceWrapperHelper.save(cost);
-			
+			currenctCostsRepository.save(cost);
+
 			costPriceTotal = costPriceTotal.add(costPrice);
 		}
 		// Update Base Cost:
-		if(costPriceTotal.signum() != 0)
+		if (costPriceTotal.signum() != 0)
 		{
 			baseCost.setCurrentCostPriceLL(costPriceTotal);
 		}
 	}
-	
-	private static CostSegment extractCostSegment(final I_M_Cost cost)
-	{
-		final I_C_AcctSchema as = InterfaceWrapperHelper.load(cost.getC_AcctSchema_ID(), I_C_AcctSchema.class);
-		final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(cost.getM_Product_ID(), as);
-
-		return CostSegment.builder()
-				.costingLevel(costingLevel)
-				.acctSchemaId(cost.getC_AcctSchema_ID())
-				.costTypeId(cost.getM_CostType_ID())
-				.productId(cost.getM_Product_ID())
-				.clientId(cost.getAD_Client_ID())
-				.orgId(cost.getAD_Org_ID())
-				.attributeSetInstanceId(cost.getM_AttributeSetInstance_ID())
-				.build();
-	}
-
 
 	/**
-	 * Get the sum Current Cost Price Level Low for this Cost Element
-	 * @param bom MPPProductBOM
-	 * @param element MCostElement
 	 * @return Cost Price Lower Level
 	 */
-	private BigDecimal getCurrentCostPriceLL(MPPProductBOM bom, CostElement element)
+	private CostAmount getCurrentCostPriceLL(final MPPProductBOM bom, final CostElement element)
 	{
-		log.info("Element: "+ element);
-		BigDecimal costPriceLL = Env.ZERO;
-		if(bom == null)
+		log.info("Element: {}", element);
+		CostAmount costPriceLL = zeroCosts();
+		if (bom == null)
+		{
 			return costPriceLL;
+		}
 
-		for (MPPProductBOMLine bomline : bom.getLines())
+		for (final MPPProductBOMLine bomline : bom.getLines())
 		{
 			// Skip co-product
 			if (bomline.isCoProduct())
 			{
 				continue;
 			}
-			//06005
+			// 06005
 			if (X_PP_Order_BOMLine.COMPONENTTYPE_Variant.equals(bomline.getComponentType()))
 			{
 				continue;
 			}
+
 			//
-			MProduct component = MProduct.get(getCtx(), bomline.getM_Product_ID());
+			final MProduct component = MProduct.get(getCtx(), bomline.getM_Product_ID());
 			// get the rate for this resource
-			for (MCost cost : getCosts(component, element.getId()))
+			for (final CurrentCost cost : getCosts(component, element.getId()))
 			{
-				BigDecimal qty = bomline.getQty(true);
+				final BigDecimal qty = bomline.getQty(true);
 
 				// ByProducts
 				if (bomline.isByProduct())
 				{
-					cost.setCurrentCostPriceLL(Env.ZERO);
+					cost.setCurrentCostPriceLL(zeroCosts());
 				}
 
-				BigDecimal costPrice = cost.getCurrentCostPrice().add(cost.getCurrentCostPriceLL());
-				BigDecimal componentCost = costPrice.multiply(qty);
+				final CostAmount costPrice = cost.getCurrentCostPrice().add(cost.getCurrentCostPriceLL());
+				final CostAmount componentCost = costPrice.multiply(qty);
 				costPriceLL = costPriceLL.add(componentCost);
-				log.info("CostElement: "+element.getName()
-						+ ", Component: "+component.getValue()
-						+ ", CostPrice: "+costPrice
+				log.info("CostElement: " + element.getName()
+						+ ", Component: " + component.getValue()
+						+ ", CostPrice: " + costPrice
 						+ ", Qty: " + qty
 						+ ", Cost: " + componentCost
-						+ " => Total Cost Element: " +  costPriceLL);
+						+ " => Total Cost Element: " + costPriceLL);
 			} // for each cost
 		} // for each BOM line
 		return costPriceLL;
 	}
 
-	private Collection<MCost> getCosts(MProduct product, int M_CostElement_ID)
+	private Collection<CurrentCost> getCosts(final MProduct product, final int costElementId)
 	{
-		MAcctSchema as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
-		CostDimension d = new CostDimension(product, as, p_M_CostType_ID, p_AD_Org_ID, 0, M_CostElement_ID);
-		return d.toQuery(MCost.class, get_TrxName()).list();
+		final CostSegment costSegment = createCostSegment(product);
+		final CurrentCost cost = currenctCostsRepository.getOrNull(costSegment, costElementId);
+		return cost != null ? ImmutableList.of(cost) : ImmutableList.of();
 	}
 
-	private Collection<MProduct> getProducts(int lowLevel)
+	private CostSegment createCostSegment(final I_M_Product product)
 	{
-		List<Object> params = new ArrayList<>();
-		StringBuffer whereClause = new StringBuffer("AD_Client_ID=?")
-						.append(" AND ").append(MProduct.COLUMNNAME_LowLevel).append("=?")
-		;
+		final MAcctSchema as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
+
+		final int productId = product.getM_Product_ID();
+		final CostingLevel costingLevel = productBL.getCostingLevel(productId, as);
+
+		return CostSegment.builder()
+				.costingLevel(costingLevel)
+				.acctSchemaId(as.getC_AcctSchema_ID())
+				.costTypeId(p_M_CostType_ID)
+				.productId(productId)
+				.clientId(product.getAD_Client_ID())
+				.orgId(p_AD_Org_ID)
+				.attributeSetInstanceId(0)
+				.build();
+
+	}
+
+	private int getCurrencyId()
+	{
+		final MAcctSchema as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
+		return as.getC_Currency_ID();
+	}
+
+	private CostAmount zeroCosts()
+	{
+		return CostAmount.zero(getCurrencyId());
+	}
+
+	private Collection<MProduct> getProducts(final int lowLevel)
+	{
+		final List<Object> params = new ArrayList<>();
+		final StringBuffer whereClause = new StringBuffer("AD_Client_ID=?")
+				.append(" AND ").append(I_M_Product.COLUMNNAME_LowLevel).append("=?");
 		params.add(getAD_Client_ID());
 		params.add(lowLevel);
 
-		whereClause.append(" AND ").append(MProduct.COLUMNNAME_IsBOM).append("=?");
+		whereClause.append(" AND ").append(I_M_Product.COLUMNNAME_IsBOM).append("=?");
 		params.add(true);
 
 		if (p_M_Product_ID > 0)
 		{
-			whereClause.append(" AND ").append(MProduct.COLUMNNAME_M_Product_ID).append("=?");
+			whereClause.append(" AND ").append(I_M_Product.COLUMNNAME_M_Product_ID).append("=?");
 			params.add(p_M_Product_ID);
 		}
 		else if (p_M_Product_Category_ID > 0)
 		{
-			whereClause.append(" AND ").append(MProduct.COLUMNNAME_M_Product_Category_ID).append("=?");
+			whereClause.append(" AND ").append(I_M_Product.COLUMNNAME_M_Product_Category_ID).append("=?");
 			params.add(p_M_Product_Category_ID);
 		}
 		if (p_M_Product_ID <= 0 && p_ProductType != null)
 		{
-			whereClause.append(" AND ").append(MProduct.COLUMNNAME_ProductType).append("=?");
+			whereClause.append(" AND ").append(I_M_Product.COLUMNNAME_ProductType).append("=?");
 			params.add(p_ProductType);
 		}
 
-		return new Query(getCtx(),MProduct.Table_Name, whereClause.toString(), get_TrxName())
-		.setParameters(params)
-		.list();
+		return new Query(getCtx(), I_M_Product.Table_Name, whereClause.toString(), get_TrxName())
+				.setParameters(params)
+				.list();
 	}
 
 	/**
@@ -347,30 +388,31 @@ public class RollupBillOfMaterial extends JavaProcess
 	 */
 	private void resetCostsLLForLLC0()
 	{
-		List<Object> params = new ArrayList<>();
-		StringBuffer productWhereClause = new StringBuffer();
-		productWhereClause.append("AD_Client_ID=? AND "+MProduct.COLUMNNAME_LowLevel+"=?");
+		final List<Object> params = new ArrayList<>();
+		final StringBuffer productWhereClause = new StringBuffer();
+		productWhereClause.append("AD_Client_ID=? AND " + I_M_Product.COLUMNNAME_LowLevel + "=?");
 		params.add(getAD_Client_ID());
 		params.add(0);
 		if (p_M_Product_ID > 0)
 		{
-			productWhereClause.append(" AND ").append(MProduct.COLUMNNAME_M_Product_ID).append("=?");
+			productWhereClause.append(" AND ").append(I_M_Product.COLUMNNAME_M_Product_ID).append("=?");
 			params.add(p_M_Product_ID);
 		}
 		else if (p_M_Product_Category_ID > 0)
 		{
-			productWhereClause.append(" AND ").append(MProduct.COLUMNNAME_M_Product_Category_ID).append("=?");
+			productWhereClause.append(" AND ").append(I_M_Product.COLUMNNAME_M_Product_Category_ID).append("=?");
 			params.add(p_M_Product_Category_ID);
 		}
 		//
-		final String sql = "UPDATE M_Cost c SET "+MCost.COLUMNNAME_CurrentCostPriceLL+"=0"
-		+" WHERE EXISTS (SELECT 1 FROM M_Product p WHERE p.M_Product_ID=c.M_Product_ID"
-						+" AND "+productWhereClause+")";
-		int no = DB.executeUpdateEx(sql, params.toArray(), get_TrxName());
-		log.info("Updated #"+no);
+		final String sql = "UPDATE M_Cost c SET " + I_M_Cost.COLUMNNAME_CurrentCostPriceLL + "=0"
+				+ " WHERE EXISTS (SELECT 1 FROM M_Product p WHERE p.M_Product_ID=c.M_Product_ID"
+				+ " AND " + productWhereClause + ")";
+		final int no = DB.executeUpdateEx(sql, params.toArray(), get_TrxName());
+		log.info("Updated #" + no);
 	}
 
 	private List<CostElement> m_costElements = null;
+
 	private List<CostElement> getCostElements()
 	{
 		if (m_costElements == null)
@@ -382,12 +424,13 @@ public class RollupBillOfMaterial extends JavaProcess
 
 	/**
 	 * Create Cost Rollup Notice
+	 * 
 	 * @param product
 	 * @param msg
 	 */
-	private void createNotice(MProduct product, String msg)
+	private void createNotice(final MProduct product, final String msg)
 	{
-		String productValue = product != null ? product.getValue() : "-";
-		addLog("WARNING: Product "+productValue+": "+msg);
+		final String productValue = product != null ? product.getValue() : "-";
+		addLog("WARNING: Product " + productValue + ": " + msg);
 	}
 }

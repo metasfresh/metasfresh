@@ -16,24 +16,24 @@ package de.metas.adempiere.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Iterator;
 
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MCost;
 import org.compiere.model.MProduct;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 
+import de.metas.costing.ICurrenctCostsRepository;
 import de.metas.process.JavaProcess;
 
 /**
@@ -51,26 +51,26 @@ public class CreateProductCosts extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		int count_all = 0;
-		Iterator<PO> it = getProductsQuery().iterate(null, false); // metas: guaranteed = false because we are not changing the products 
-		while(it.hasNext())
+		Iterator<PO> it = getProductsQuery().iterate(null, false); // metas: guaranteed = false because we are not changing the products
+		while (it.hasNext())
 		{
 			MProduct product = (MProduct)it.next();
 			process(product);
 			count_all++;
 		}
-		return "@Updated@ #"+count_all;
+		return "@Updated@ #" + count_all;
 	}
 
-	private void process(MProduct product)
+	private void process(final I_M_Product product)
 	{
 		try
 		{
-			MCost.create(product);
+			Services.get(ICurrenctCostsRepository.class).createDefaultProductCosts(product);
 			commitEx();
 		}
 		catch (Exception e)
 		{
-			addLog("Error on "+product.getName()+": "+e.getLocalizedMessage());
+			addLog("Error on " + product.getName() + ": " + e.getLocalizedMessage());
 		}
 	}
 

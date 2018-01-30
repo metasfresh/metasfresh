@@ -30,6 +30,7 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 
 import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICurrenctCostsRepository;
 import de.metas.product.IProductBL;
 
 /**
@@ -307,7 +308,7 @@ public class MProduct extends X_M_Product
 		// New Costing
 		if (newRecord || is_ValueChanged(COLUMNNAME_M_Product_Category_ID))
 		{
-			MCost.create(this);
+			Services.get(ICurrenctCostsRepository.class).createDefaultProductCosts(this);
 		}
 
 		return success;
@@ -353,7 +354,7 @@ public class MProduct extends X_M_Product
 
 		}
 		
-		MCost.delete(this);
+		Services.get(ICurrenctCostsRepository.class).deleteForProduct(this);
 
 		//
 		return delete_Accounting(I_M_Product_Acct.Table_Name);

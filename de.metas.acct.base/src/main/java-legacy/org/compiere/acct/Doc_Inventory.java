@@ -26,9 +26,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCost;
 import org.compiere.model.MInventory;
-import org.compiere.model.MProduct;
 import org.compiere.model.ProductCost;
 
 import com.google.common.collect.ImmutableList;
@@ -47,7 +45,6 @@ import de.metas.costing.CostingDocumentRef;
  * metas:
  * <li>copied from https://adempiere.svn.sourceforge.net/svnroot/adempiere/branches/metas/mvcForms/base/src/org/compiere/acct/Doc_Inventory.java, Rev 14597
  * <li>Changed for "US330: Geschaeftsvorfall (G113d): Summen-/ Saldenliste (2010070510000637)"
- * <li>Goal: Use {@link MCost#getSeedCosts(MProduct, int, MAcctSchema, int, String, int)}, if a product has no cost yet
  * 
  * @author Jorg Janke
  * @author Armen Rizal, Goodwill Consulting

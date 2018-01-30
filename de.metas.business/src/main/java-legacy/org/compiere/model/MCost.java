@@ -23,9 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
-import java.util.function.BiConsumer;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -45,13 +43,14 @@ import de.metas.costing.CostElementType;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
+import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
+import de.metas.costing.ICurrenctCostsRepository;
 import de.metas.costing.methods.LastInvoiceCostingMethodHandler;
 import de.metas.costing.methods.LastPOCostingMethodHandler;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
-import lombok.NonNull;
 
 /**
  * Product Cost Model
@@ -323,10 +322,10 @@ public class MCost extends X_M_Cost
 		if (costingMethod != CostingMethod.StandardCosting)
 		{
 			final CostElement ce = Services.get(ICostElementRepository.class).getOrCreateMaterialCostElement(costSegment.getClientId(), CostingMethod.StandardCosting);
-			final I_M_Cost cost = get(costSegment, ce.getId());
+			final CurrentCost cost = Services.get(ICurrenctCostsRepository.class).getOrNull(costSegment, ce.getId());
 			if (cost != null && cost.getCurrentCostPrice().signum() != 0)
 			{
-				return cost.getCurrentCostPrice();
+				return cost.getCurrentCostPrice().getValue();
 			}
 		}
 
@@ -439,7 +438,7 @@ public class MCost extends X_M_Cost
 								0, // C_OrderLine_ID
 								false, // zeroCostsOK: create non-zero costs
 								ITrx.TRXNAME_ThreadInherited);
-						s_log.info("{} = {}", product.getName(), cost);
+						s_log.info("{} = {}", product, cost);
 					}
 				})
 				.process(products);
@@ -463,119 +462,6 @@ public class MCost extends X_M_Cost
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.iterate(I_M_Product.class);
 	}
-
-	/**
-	 * Create standard Costing records for Product
-	 *
-	 * @param product product
-	 */
-	// metas: 01432: changed from protected to public
-	public static void create(final I_M_Product product)
-	{
-		forEachCostSegmentAndElement(product, (costSegment, costElement) -> MCost.getOrCreate(costSegment, costElement.getId()));
-	}
-
-	/**
-	 * Delete standard Costing records for Product
-	 *
-	 * @param product product
-	 */
-	protected static void delete(final I_M_Product product)
-	{
-		forEachCostSegmentAndElement(product, (costSegment, costElement) -> {
-			final I_M_Cost cost = get(costSegment, costElement.getId());
-			if (cost != null)
-			{
-				InterfaceWrapperHelper.delete(cost);
-			}
-		});
-	}
-
-	private static void forEachCostSegmentAndElement(final I_M_Product product, final BiConsumer<CostSegment, CostElement> consumer)
-	{
-		final Properties ctx = Env.getCtx();
-		final List<CostElement> costElements = Services.get(ICostElementRepository.class).getCostElementsWithCostingMethods(product.getAD_Client_ID());
-
-		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(ctx, product.getAD_Client_ID()))
-		{
-			if (as.isSkipOrg(product.getAD_Org_ID()))
-			{
-				continue;
-			}
-
-			final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
-
-			// Create Std Costing
-			if (costingLevel == CostingLevel.Client)
-			{
-				final CostSegment costSegment = CostSegment.builder()
-						.costingLevel(costingLevel)
-						.acctSchemaId(as.getC_AcctSchema_ID())
-						.costTypeId(as.getM_CostType_ID())
-						.productId(product.getM_Product_ID())
-						.clientId(product.getAD_Client_ID())
-						.orgId(0)
-						.attributeSetInstanceId(0)
-						.build();
-
-				costElements.forEach(costElement -> consumer.accept(costSegment, costElement));
-			}
-			else if (costingLevel == CostingLevel.Organization)
-			{
-				for (final I_AD_Org org : MOrg.getOfClient(ctx, product.getAD_Client_ID()))
-				{
-					final CostSegment costSegment = CostSegment.builder()
-							.costingLevel(costingLevel)
-							.acctSchemaId(as.getC_AcctSchema_ID())
-							.costTypeId(as.getM_CostType_ID())
-							.productId(product.getM_Product_ID())
-							.clientId(product.getAD_Client_ID())
-							.orgId(org.getAD_Org_ID())
-							.attributeSetInstanceId(0)
-							.build();
-
-					costElements.forEach(costElement -> consumer.accept(costSegment, costElement));
-				}
-			}
-			else
-			{
-				s_log.warn("{}'s costing Level {} not supported", product.getName(), costingLevel);
-			}
-		}	// accounting schema loop
-	}	// create
-
-	/**
-	 * Get/Create Cost Record.
-	 */
-	public static I_M_Cost getOrCreate(@NonNull final CostSegment costSegment, final int costElementId)
-	{
-		I_M_Cost cost = get(costSegment, costElementId);
-		if (cost == null)
-		{
-			cost = new MCost(costSegment, costElementId);
-			InterfaceWrapperHelper.save(cost);
-		}
-		return cost;
-	}	// get
-
-	/**
-	 * Get Cost Record
-	 *
-	 * @return cost or null
-	 */
-	public static I_M_Cost get(@NonNull final CostSegment costSegment, final int costElementId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Cost.class)
-				.addEqualsFilter(I_M_Cost.COLUMN_AD_Org_ID, costSegment.getOrgId())
-				.addEqualsFilter(I_M_Cost.COLUMN_M_Product_ID, costSegment.getProductId())
-				.addEqualsFilter(I_M_Cost.COLUMN_M_AttributeSetInstance_ID, costSegment.getAttributeSetInstanceId())
-				.addEqualsFilter(I_M_Cost.COLUMN_M_CostType_ID, costSegment.getCostTypeId())
-				.addEqualsFilter(I_M_Cost.COLUMN_C_AcctSchema_ID, costSegment.getAcctSchemaId())
-				.addEqualsFilter(I_M_Cost.COLUMN_M_CostElement_ID, costElementId)
-				.create()
-				.firstOnly(I_M_Cost.class);
-	}	// get
 
 	/** Logger */
 	private static Logger s_log = LogManager.getLogger(MCost.class);
@@ -605,28 +491,6 @@ public class MCost extends X_M_Cost
 	public MCost(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-		m_manual = false;
-	}	// MCost
-
-	/**
-	 * Parent Constructor
-	 *
-	 * @param product Product
-	 * @param M_AttributeSetInstance_ID asi
-	 * @param as Acct Schema
-	 * @param AD_Org_ID org
-	 * @param M_CostElement_ID cost element
-	 */
-	public MCost(final CostSegment costSegment, final int M_CostElement_ID)
-	{
-		this(Env.getCtx(), 0, ITrx.TRXNAME_ThreadInherited);
-		setAD_Org_ID(costSegment.getOrgId());
-		setC_AcctSchema_ID(costSegment.getAcctSchemaId());
-		setM_CostType_ID(costSegment.getCostTypeId());
-		setM_Product_ID(costSegment.getProductId());
-		setM_AttributeSetInstance_ID(costSegment.getAttributeSetInstanceId());
-		setM_CostElement_ID(M_CostElement_ID);
-		//
 		m_manual = false;
 	}	// MCost
 

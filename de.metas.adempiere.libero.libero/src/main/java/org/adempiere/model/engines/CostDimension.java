@@ -13,15 +13,14 @@ package org.adempiere.model.engines;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -41,6 +40,7 @@ import org.compiere.model.MProduct;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 
+import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
 import de.metas.product.IProductBL;
 
@@ -306,6 +306,21 @@ public final class CostDimension
 		}
 
 		return queryBuilder;
+	}
+
+	public CostSegment toCostSegment()
+	{
+		final I_C_AcctSchema as = MAcctSchema.get(Env.getCtx(), C_AcctSchema_ID);
+		return CostSegment.builder()
+				.clientId(AD_Client_ID)
+				.orgId(AD_Org_ID)
+				.productId(M_Product_ID)
+				.attributeSetInstanceId(M_AttributeSetInstance_ID)
+				.costTypeId(M_CostType_ID)
+				.acctSchemaId(C_AcctSchema_ID)
+				.costingLevel(CostingLevel.forCode(as.getCostingLevel()))
+				.costTypeId(as.getM_CostType_ID())
+				.build();
 	}
 
 	@Override

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.LegacyAdapters;
@@ -67,7 +66,7 @@ public class MAcctSchema extends X_C_AcctSchema
 		}
 		
 		// NOTE: we assume the C_AcctSchema is cached (see org.adempiere.acct.model.validator.AcctModuleInterceptor.setupCaching(IModelCacheService) )
-		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.create(ctx, C_AcctSchema_ID, I_C_AcctSchema.class, ITrx.TRXNAME_None);
+		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.loadOutOfTrx(C_AcctSchema_ID, I_C_AcctSchema.class);
 		return LegacyAdapters.convertToPO(acctSchema);
 	}	//	get
 
