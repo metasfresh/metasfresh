@@ -47,10 +47,9 @@ public class M_CostType
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void beforeDelete(final I_M_CostType costType)
 	{
-		final MAcctSchema[] ass = MAcctSchema.getClientAcctSchema(Env.getCtx(), costType.getAD_Client_ID());
-		for (int i = 0; i < ass.length; i++)
+		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(Env.getCtx(), costType.getAD_Client_ID()))
 		{
-			if (ass[i].getM_CostType_ID() == costType.getM_CostType_ID())
+			if (as.getM_CostType_ID() == costType.getM_CostType_ID())
 			{
 				throw new AdempiereException("@CannotDelete@ @C_AcctSchema_ID@");
 			}
