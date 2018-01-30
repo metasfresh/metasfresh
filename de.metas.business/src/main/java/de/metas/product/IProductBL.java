@@ -34,6 +34,7 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
+import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 
 public interface IProductBL extends ISingletonService
@@ -94,7 +95,7 @@ public interface IProductBL extends ISingletonService
 	 * @param as accounting schema
 	 * @return product costing level
 	 */
-	String getCostingLevel(I_M_Product product, I_C_AcctSchema as);
+	CostingLevel getCostingLevel(I_M_Product product, I_C_AcctSchema as);
 
 	/**
 	 * Get Product Costing Method

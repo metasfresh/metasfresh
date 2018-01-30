@@ -39,9 +39,9 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.POInfo;
-import org.compiere.model.X_C_AcctSchema;
 import org.compiere.util.Env;
 
+import de.metas.costing.CostingLevel;
 import de.metas.product.IProductBL;
 
 /**
@@ -144,17 +144,17 @@ public final class CostDimension
 		{
 			as = MAcctSchema.get(getCtx(), this.C_AcctSchema_ID);
 		}
-		final String CostingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
-		if (X_C_AcctSchema.COSTINGLEVEL_Client.equals(CostingLevel))
+		final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
+		if (CostingLevel.Client.equals(costingLevel))
 		{
 			AD_Org_ID = 0;
 			M_AttributeSetInstance_ID = 0;
 		}
-		else if (X_C_AcctSchema.COSTINGLEVEL_Organization.equals(CostingLevel))
+		else if (CostingLevel.Organization.equals(costingLevel))
 		{
 			M_AttributeSetInstance_ID = 0;
 		}
-		else if (X_C_AcctSchema.COSTINGLEVEL_BatchLot.equals(CostingLevel))
+		else if (CostingLevel.BatchLot.equals(costingLevel))
 		{
 			AD_Org_ID = 0;
 		}

@@ -33,6 +33,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostDetailService;
 import de.metas.document.documentNo.IDocumentNoBuilder;
@@ -1037,12 +1038,13 @@ public class MInventory extends X_M_Inventory implements IDocument
 			final BigDecimal costs;
 			if (isReversal())
 			{
+				I_M_Product product = line.getM_Product();
+				final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
+				
 				String sql = "SELECT amt * -1 FROM M_CostDetail WHERE M_InventoryLine_ID=?"; // negate costs
-				MProduct product = new MProduct(getCtx(), line.getM_Product_ID(), line.get_TrxName());
-				String CostingLevel = product.getCostingLevel(as);
-				if (MAcctSchema.COSTINGLEVEL_Organization.equals(CostingLevel))
+				if (CostingLevel.Organization.equals(costingLevel))
 					sql = sql + " AND AD_Org_ID=" + getAD_Org_ID();
-				else if (MAcctSchema.COSTINGLEVEL_BatchLot.equals(CostingLevel) && M_AttributeSetInstance_ID != 0)
+				else if (CostingLevel.BatchLot.equals(costingLevel) && M_AttributeSetInstance_ID != 0)
 					sql = sql + " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
 				costs = DB.getSQLValueBD(line.get_TrxName(), sql, line.getReversalLine_ID());
 			}

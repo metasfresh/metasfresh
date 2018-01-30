@@ -48,6 +48,7 @@ import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
@@ -238,7 +239,7 @@ public final class ProductBL implements IProductBL
 	}	// get
 
 	@Override
-	public String getCostingLevel(final I_M_Product product, final I_C_AcctSchema as)
+	public CostingLevel getCostingLevel(final I_M_Product product, final I_C_AcctSchema as)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 		final String trxName = InterfaceWrapperHelper.getTrxName(product);
@@ -259,7 +260,7 @@ public final class ProductBL implements IProductBL
 			costingLevel = as.getCostingLevel();
 		}
 
-		return costingLevel;
+		return CostingLevel.forCode(costingLevel);
 	}
 
 	@Override

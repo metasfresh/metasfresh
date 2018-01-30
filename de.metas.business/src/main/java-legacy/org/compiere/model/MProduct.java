@@ -29,7 +29,7 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.costing.CostingMethod;
+import de.metas.costing.CostingLevel;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.product.IProductBL;
 
@@ -676,12 +676,13 @@ public class MProduct extends X_M_Product
 			{
 				continue;
 			}
-			final String cl = Services.get(IProductBL.class).getCostingLevel(this, as);
-			if (MAcctSchema.COSTINGLEVEL_BatchLot.equals(cl))
+			final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(this, as);
+			if (CostingLevel.BatchLot == costingLevel)
 			{
 				return true;
 			}
 		}
+		
 		//
 		// Check Attribute Set settings
 		final int M_AttributeSet_ID = Services.get(IProductBL.class).getM_AttributeSet_ID(this);
@@ -707,31 +708,5 @@ public class MProduct extends X_M_Product
 		//
 		// Default not mandatory
 		return false;
-	}
-
-	/**
-	 * Get Product Costing Level
-	 *
-	 * @param as accounting schema
-	 * @return product costing level
-	 * @deprecated Please use {@link IProductBL#getCostingLevel(I_M_Product, I_C_AcctSchema)}.
-	 */
-	@Deprecated
-	public String getCostingLevel(final I_C_AcctSchema as)
-	{
-		return Services.get(IProductBL.class).getCostingLevel(this, as);
-	}
-
-	/**
-	 * Get Product Costing Method
-	 *
-	 * @param C_AcctSchema_ID accounting schema ID
-	 * @return product costing method
-	 * @deprecated Please use {@link IProductBL#getCostingMethod(I_M_Product, I_C_AcctSchema)}.
-	 */
-	@Deprecated
-	public CostingMethod getCostingMethod(I_C_AcctSchema as)
-	{
-		return Services.get(IProductBL.class).getCostingMethod(this, as);
 	}
 }	// MProduct

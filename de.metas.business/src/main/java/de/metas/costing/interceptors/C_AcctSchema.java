@@ -7,10 +7,10 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostType;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.X_C_AcctSchema;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
+import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 
@@ -62,7 +62,7 @@ public class C_AcctSchema
 
 		// Default Costing Level
 		if (acctSchema.getCostingLevel() == null)
-			acctSchema.setCostingLevel(X_C_AcctSchema.COSTINGLEVEL_Client);
+			acctSchema.setCostingLevel(CostingLevel.Client.getCode());
 		if (acctSchema.getCostingMethod() == null)
 			acctSchema.setCostingMethod(CostingMethod.StandardCosting.getCode());
 	}	// checkCosting

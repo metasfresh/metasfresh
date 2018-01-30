@@ -301,7 +301,7 @@ public class CostDetailService implements ICostDetailService
 		final Properties ctx = Env.getCtx();
 		final I_C_AcctSchema acctSchema = MAcctSchema.get(ctx, acctSchemaId);
 		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
-		final CostingLevel costingLevel = CostingLevel.forCode(Services.get(IProductBL.class).getCostingLevel(product, acctSchema));
+		final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, acctSchema);
 
 		final int orgId;
 		final int attributeSetInstanceId;

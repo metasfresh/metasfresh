@@ -77,7 +77,6 @@ import org.slf4j.Logger;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostSegment;
-import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
@@ -200,7 +199,7 @@ public class CostEngine
 
 		final I_M_Cost newCostRecord = new MCost(
 				CostSegment.builder()
-						.costingLevel(CostingLevel.forCode(Services.get(IProductBL.class).getCostingLevel(product, as)))
+						.costingLevel(Services.get(IProductBL.class).getCostingLevel(product, as))
 						.acctSchemaId(as.getC_AcctSchema_ID())
 						.costTypeId(as.getM_CostType_ID())
 						.productId(product.getM_Product_ID())

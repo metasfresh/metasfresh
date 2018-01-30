@@ -135,7 +135,7 @@ public class MCost extends X_M_Cost
 			final int AD_Org_ID)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final CostingLevel costingLevel = CostingLevel.forCode(productBL.getCostingLevel(product, as));
+		final CostingLevel costingLevel = productBL.getCostingLevel(product, as);
 
 		return CostSegment.builder()
 				.costingLevel(costingLevel)
@@ -518,7 +518,7 @@ public class MCost extends X_M_Cost
 				continue;
 			}
 
-			final CostingLevel costingLevel = CostingLevel.forCode(Services.get(IProductBL.class).getCostingLevel(product, as));
+			final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
 
 			// Create Std Costing
 			if (costingLevel == CostingLevel.Client)
@@ -699,15 +699,15 @@ public class MCost extends X_M_Cost
 		{
 			final MAcctSchema as = new MAcctSchema(getCtx(), getC_AcctSchema_ID(), null);
 			final MProduct product = MProduct.get(getCtx(), getM_Product_ID());
-			final String CostingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
-			if (X_C_AcctSchema.COSTINGLEVEL_Client.equals(CostingLevel))
+			final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
+			if (CostingLevel.Client.equals(costingLevel))
 			{
 				if (getAD_Org_ID() != 0 || getM_AttributeSetInstance_ID() != 0)
 				{
 					throw new AdempiereException("@CostingLevelClient@");
 				}
 			}
-			else if (X_C_AcctSchema.COSTINGLEVEL_BatchLot.equals(CostingLevel))
+			else if (CostingLevel.BatchLot.equals(costingLevel))
 			{
 				if (getM_AttributeSetInstance_ID() == 0
 						&& ce.isCostingMethod())

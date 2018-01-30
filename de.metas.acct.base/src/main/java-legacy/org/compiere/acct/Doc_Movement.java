@@ -31,6 +31,7 @@ import org.compiere.util.TimeUtil;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CostingLevel;
 import de.metas.costing.ICostDetailService;
 
 /**
@@ -165,9 +166,12 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 			//	Only for between-org movements
 			if (dr.getAD_Org_ID() != cr.getAD_Org_ID())
 			{
-				String costingLevel = line.getProductCostingLevel(as);
-				if (!MAcctSchema.COSTINGLEVEL_Organization.equals(costingLevel))
+				final CostingLevel costingLevel = line.getProductCostingLevel(as);
+				if (CostingLevel.Organization != costingLevel)
+				{
 					continue;
+				}
+				
 				//
 				String description = line.getDescription();
 				if (description == null)

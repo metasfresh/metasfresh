@@ -54,7 +54,6 @@ import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MCost;
-import org.compiere.model.X_C_AcctSchema;
 
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
@@ -139,7 +138,7 @@ public class CreateCostElement extends JavaProcess
 			for (final I_M_Product product : getProducts())
 			{
 				final int product_id = product.getM_Product_ID();
-				final CostingLevel costingLevel = CostingLevel.forCode(Services.get(IProductBL.class).getCostingLevel(product, as));
+				final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
 
 				final CostSegment costSegment = CostSegment.builder()
 						.costingLevel(costingLevel)
@@ -171,8 +170,8 @@ public class CreateCostElement extends JavaProcess
 	private List<Integer> getOrgs(final I_C_AcctSchema as)
 	{
 		// Set the Costing Level
-		final String CostingLevel = as.getCostingLevel();
-		if (X_C_AcctSchema.COSTINGLEVEL_Client.equals(CostingLevel))
+		final CostingLevel costingLevel = CostingLevel.forCode(as.getCostingLevel());
+		if (CostingLevel.Client.equals(costingLevel))
 		{
 			p_AD_Org_ID = 0;
 			p_M_AttributeSetInstance_ID = 0;

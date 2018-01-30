@@ -47,6 +47,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.logging.LogManager;
@@ -560,7 +561,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return Services.get(IProductBL.class).getCostingMethod(product, as);
 	}
 	
-	public final String getProductCostingLevel(final I_C_AcctSchema as)
+	public final CostingLevel getProductCostingLevel(final I_C_AcctSchema as)
 	{
 		final I_M_Product product = getProduct();
 		return Services.get(IProductBL.class).getCostingLevel(product, as);

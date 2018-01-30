@@ -224,7 +224,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		final I_M_Product product = MProduct.get(Env.getCtx(), request.getProductId());
 		final MAcctSchema as = MAcctSchema.get(Env.getCtx(), request.getAcctSchemaId());
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final CostingLevel costingLevel = CostingLevel.forCode(productBL.getCostingLevel(product, as));
+		final CostingLevel costingLevel = productBL.getCostingLevel(product, as);
 		final int costTypeId = as.getM_CostType_ID();
 		final int precision = as.getCostingPrecision();
 

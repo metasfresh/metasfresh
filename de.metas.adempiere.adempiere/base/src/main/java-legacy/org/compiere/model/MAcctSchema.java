@@ -95,7 +95,7 @@ public class MAcctSchema extends X_C_AcctSchema
 	public MAcctSchema (Properties ctx, int C_AcctSchema_ID, String trxName)
 	{
 		super (ctx, C_AcctSchema_ID, trxName);
-		if (C_AcctSchema_ID == 0)
+		if (is_new())
 		{
 		//	setC_Currency_ID (0);
 		//	setName (null);
@@ -419,38 +419,6 @@ public class MAcctSchema extends X_C_AcctSchema
 		return m_costPrecision;
 	}	//	getCostingPrecision
 	
-	
-	
-	/**
-	 * 	Is Client Costing Level (default)
-	 *	@return true if Client
-	 */
-	public boolean isCostingLevelClient()
-	{
-		String s = getCostingLevel();
-		if (s == null || COSTINGLEVEL_Client.equals(s))
-			return true;
-		return false;
-	}	//	isCostingLevelClient
-	
-	/**
-	 * 	Is Org Costing Level
-	 *	@return true if Org
-	 */
-	public boolean isCostingLevelOrg()
-	{
-		return COSTINGLEVEL_Organization.equals(getCostingLevel());
-	}	//	isCostingLevelOrg
-	
-	/**
-	 * 	Is Batch Costing Level
-	 *	@return true if Batch
-	 */
-	public boolean isCostingLevelBatch()
-	{
-		return COSTINGLEVEL_BatchLot.equals(getCostingLevel());
-	}	//	isCostingLevelBatch
-
 	/**
 	 * 	Create PO Commitment Accounting
 	 *	@return true if creaet commitments
