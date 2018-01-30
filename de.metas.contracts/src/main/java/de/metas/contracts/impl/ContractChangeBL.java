@@ -26,7 +26,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -39,6 +38,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MOrder;
@@ -46,7 +46,6 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeDAO;
 import de.metas.contracts.IContractsDAO;
@@ -256,12 +255,15 @@ public class ContractChangeBL implements IContractChangeBL
 		final boolean isCreditOpenInvoices = contractChangeParameters.isCreditOpenInvoices();
 		if (isCreditOpenInvoices)
 		{
-			final List<I_C_Invoice> invoices = new ArrayList<>();
-			invoices.forEach(openInvoice -> creditInvoice(openInvoice, contractChangeParameters.getTerminationReason()));
+			final List<I_C_Invoice> invoices = Services.get(IFlatrateDAO.class).retrieveInvoicesForCurrentContract(currentTerm);
+			invoices.stream()
+					.filter(invoice -> !invoice.isPaid())
+					.forEach(openInvoice -> creditInvoice(InterfaceWrapperHelper.create(openInvoice, de.metas.adempiere.model.I_C_Invoice.class),
+							contractChangeParameters.getTerminationReason()));
 		}
 	}
 
-	private void creditInvoice(@NonNull final I_C_Invoice openInvoice, final String reason)
+	private void creditInvoice(@NonNull final de.metas.adempiere.model.I_C_Invoice openInvoice, final String reason)
 	{
 		final String docbasetype = openInvoice.isSOTrx() ? X_C_DocType.DOCBASETYPE_ARCreditMemo : X_C_DocType.DOCBASETYPE_APCreditMemo;
 		final int targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
