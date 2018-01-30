@@ -10,7 +10,7 @@ import org.adempiere.util.Check;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 
-import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult.Type;
+import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;

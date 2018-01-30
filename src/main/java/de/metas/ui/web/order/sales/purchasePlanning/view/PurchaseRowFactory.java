@@ -20,10 +20,10 @@ import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import de.metas.product.IProductBL;
-import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult;
-import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult.Type;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.availability.AvailabilityResult;
+import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.Builder;
 import lombok.NonNull;

@@ -22,12 +22,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
 import de.metas.interfaces.I_C_BPartner_Product;
-import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult;
-import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult.Type;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
 import de.metas.purchasecandidate.SalesOrderLines;
 import de.metas.purchasecandidate.VendorProductInfo;
+import de.metas.purchasecandidate.availability.AvailabilityResult;
+import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import mockit.Expectations;
 import mockit.Mocked;
 
@@ -108,7 +108,7 @@ public class PurchaseRowsLoaderTest
 		// @formatter:off
 		new Expectations()
 		{{
-			salesOrderLines.getOrderedSalesOrderLines();
+			salesOrderLines.getSalesOrderLinesWithCandidates();
 			result = salesOrderLinesWithPurchaseCandidates;
 		}};	// @formatter:on
 
