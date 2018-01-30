@@ -145,6 +145,10 @@ public class SQLHelper
 		{
 			pstmt.setInt(index, ((Integer)param).intValue());
 		}
+		else if (param instanceof Long)
+		{
+			pstmt.setLong(index, ((Long)param).longValue());
+		}
 		else if (param instanceof BigDecimal)
 		{
 			pstmt.setBigDecimal(index, (BigDecimal)param);

@@ -29,7 +29,7 @@ ALTER TABLE C_OrderLine ADD CONSTRAINT CPaymentTermOverride_COrderLin FOREIGN KE
 ;
 
 
-ALTER TABLE C_OrderLine DROP COLUMN C_PaymentTerm_ID;
+SELECT public.db_alter_table('C_OrderLine','ALTER TABLE C_OrderLine DROP COLUMN C_PaymentTerm_ID');
 
 
 
