@@ -34,7 +34,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCharge;
 import org.compiere.model.PO;
 import org.compiere.model.ProductCost;
@@ -441,7 +440,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 		return accountDAO.retrieveAccountById(getCtx(), validCombinationId);
 	}
-	
+
 	/**
 	 * Account from Default Product Category
 	 *
@@ -453,14 +452,13 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		final I_M_Product_Category_Acct pcAcct = productAcctDAO.retrieveDefaultProductCategoryAcct(as);
 		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(pcAcct, acctType.getColumnName());
-		if(validCombinationId == null || validCombinationId <= 0)
+		if (validCombinationId == null || validCombinationId <= 0)
 		{
 			return null;
 		}
-		
+
 		return accountDAO.retrieveAccountById(getCtx(), validCombinationId);
 	}
-
 
 	/**
 	 * Get Charge
@@ -554,19 +552,18 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		return !isItem();
 	}
-	
+
 	public final CostingMethod getProductCostingMethod(final I_C_AcctSchema as)
 	{
 		final I_M_Product product = getProduct();
 		return Services.get(IProductBL.class).getCostingMethod(product, as);
 	}
-	
+
 	public final CostingLevel getProductCostingLevel(final I_C_AcctSchema as)
 	{
 		final I_M_Product product = getProduct();
 		return Services.get(IProductBL.class).getCostingLevel(product, as);
 	}
-
 
 	public final int getM_AttributeSetInstance_ID()
 	{
@@ -617,7 +614,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * @param whereClause null are OK
 	 * @return costs
 	 */
-	public final BigDecimal getProductCosts(final MAcctSchema as, final int AD_Org_ID, final boolean zeroCostsOK, final CostingDocumentRef documentRef)
+	public final BigDecimal getProductCosts(final I_C_AcctSchema as, final int AD_Org_ID, final boolean zeroCostsOK, final CostingDocumentRef documentRef)
 	{
 		if (documentRef != null)
 		{
@@ -645,7 +642,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 * @param zeroCostsOK zero/no costs are OK
 	 * @return costs
 	 */
-	public final BigDecimal getProductCosts(final MAcctSchema as, final int AD_Org_ID, final boolean zeroCostsOK)
+	public final BigDecimal getProductCosts(final I_C_AcctSchema as, final int AD_Org_ID, final boolean zeroCostsOK)
 	{
 		final ProductCost pc = getProductCost();
 		final int C_OrderLine_ID = getC_OrderLine_ID();
@@ -663,10 +660,10 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 */
 	public final I_M_Product getProduct()
 	{
-		if(_product == null)
+		if (_product == null)
 		{
 			final int productId = getM_Product_ID();
-			if(productId > 0)
+			if (productId > 0)
 			{
 				_product = InterfaceWrapperHelper.loadOutOfTrx(productId, I_M_Product.class);
 			}
@@ -1004,10 +1001,17 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return m_doc;
 	}
 
-	public final PostingException newPostingException(final Throwable e)
+	public final PostingException newPostingException()
 	{
-		return m_doc.newPostingException(e)
-				.setDocument(m_doc)
+		return m_doc.newPostingException()
+				.setDocument(getDoc())
+				.setDocLine(this);
+	}
+
+	public final PostingException newPostingException(final Throwable ex)
+	{
+		return m_doc.newPostingException(ex)
+				.setDocument(getDoc())
 				.setDocLine(this);
 	}
 }

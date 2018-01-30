@@ -1,13 +1,20 @@
 package org.compiere.acct;
 
-import org.adempiere.ad.trx.api.ITrx;
+import java.math.BigDecimal;
+
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MAccount;
-import org.compiere.util.DB;
+import org.compiere.model.ProductCost;
 
 import de.metas.acct.api.ProductAcctType;
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CostingMethod;
+import de.metas.order.IOrderLineBL;
 
 /*
  * #%L
@@ -31,7 +38,7 @@ import de.metas.acct.api.ProductAcctType;
  * #L%
  */
 
-public class DocLine_InOut extends DocLine<Doc_InOut>
+class DocLine_InOut extends DocLine<Doc_InOut>
 {
 	/** Outside Processing */
 	private int m_PP_Cost_Collector_ID = 0;
@@ -51,22 +58,19 @@ public class DocLine_InOut extends DocLine<Doc_InOut>
 		return m_PP_Cost_Collector_ID;
 	}
 
+	public final I_C_OrderLine getOrderLineOrNull()
+	{
+		return getModel(I_M_InOutLine.class)
+				.getC_OrderLine();
+	}
+
 	/**
 	 * @return order's org if defined, else doc line's org
 	 */
 	public final int getOrder_Org_ID()
 	{
-		final int C_OrderLine_ID = getC_OrderLine_ID();
-		if (C_OrderLine_ID > 0)
-		{
-			final String sql = "SELECT AD_Org_ID FROM C_OrderLine WHERE C_OrderLine_ID=?";
-			final int AD_Org_ID = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, C_OrderLine_ID);
-			if (AD_Org_ID > 0)
-			{
-				return AD_Org_ID;
-			}
-		}
-		return getAD_Org_ID();
+		final I_C_OrderLine orderLine = getOrderLineOrNull();
+		return orderLine != null ? orderLine.getAD_Org_ID() : getAD_Org_ID();
 	}
 
 	public MAccount getProductAssetAccount(final I_C_AcctSchema as)
@@ -84,6 +88,54 @@ public class DocLine_InOut extends DocLine<Doc_InOut>
 		{
 			return getAccount(ProductAcctType.Expense, as);
 		}
+	}
 
+	public CostAmount getPurchaseCosts(final I_C_AcctSchema as)
+	{
+		final CostingMethod costingMethod = getProductCostingMethod(as);
+		if (CostingMethod.AveragePO == costingMethod || CostingMethod.LastPOPrice == costingMethod)
+		{
+			final I_C_OrderLine orderLine = getOrderLineOrNull();
+			if (orderLine != null)
+			{
+				final int currencyId = orderLine.getC_Currency_ID();
+				final BigDecimal costPrice = Services.get(IOrderLineBL.class).getCostPrice(orderLine);
+				final BigDecimal costs = costPrice.multiply(getQty());
+
+				return CostAmount.of(costs, currencyId);
+			}
+		}
+
+		final BigDecimal costs = getProductCosts(as, getAD_Org_ID(), false); // current costs
+		if (ProductCost.isNoCosts(costs))
+		{
+			// 08447: we shall allow zero costs in case CostingMethod=Standard costing
+			if (CostingMethod.StandardCosting != costingMethod)
+			{
+				throw newPostingException().setDetailMessage("Resubmit - No Costs for product=" + getProduct()
+						+ ", product is stocked and costing method=" + costingMethod + " is != " + CostingMethod.StandardCosting);
+			}
+		}
+
+		return CostAmount.of(costs != null ? costs : BigDecimal.ZERO, as.getC_Currency_ID());
+	}
+
+	public CostAmount getShipmentCosts(final I_C_AcctSchema as)
+	{
+		// metas-ts: US330: call with zeroCostsOK=false, because we want the system to return the result of MCost.getSeedCosts(), if there are no current costs yet
+		final BigDecimal costs = getProductCosts(as, getAD_Org_ID(), false, CostingDocumentRef.ofShipmentLineId(get_ID()));
+		if (ProductCost.isNoCosts(costs) || costs.signum() == 0)
+		{
+			final CostingMethod costingMethod = getProductCostingMethod(as);
+			if (CostingMethod.StandardCosting != costingMethod)
+			{
+				// 08447: we shall allow zero costs in case CostingMethod=Standard costing
+				throw newPostingException()
+						.setDetailMessage("No Costs for product=" + getProduct()
+								+ ", product is stocked and costing method=" + costingMethod + " is != " + CostingMethod.StandardCosting);
+			}
+		}
+
+		return CostAmount.of(costs != null ? costs : BigDecimal.ZERO, as.getC_Currency_ID());
 	}
 }

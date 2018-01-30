@@ -31,6 +31,7 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
@@ -525,14 +526,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 						}
 						if (QtyMA.signum() != 0)
 						{
-							String err = createCostDetail(line, ma.getM_AttributeSetInstance_ID(), QtyMA.negate());
-							// metas: tsa: fixed/changed
-							if (err != null && err.length() > 0)
-							{
-								m_processMsg = err;
-								return IDocument.STATUS_Invalid;
-							}
-							// if(err != null && err.length() > 0) return err;
+							createCostDetail(line, ma.getM_AttributeSetInstance_ID(), QtyMA.negate());
 						}
 
 						qtyDiff = QtyNew;
@@ -596,14 +590,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 
 					if (qtyDiff.signum() != 0)
 					{
-						String err = createCostDetail(line, line.getM_AttributeSetInstance_ID(), qtyDiff);
-						// metas: tsa: fixed/changed
-						if (err != null && err.length() > 0)
-						{
-							m_processMsg = err;
-							return IDocument.STATUS_Invalid;
-						}
-						// if(err != null && err.length() > 0) return err;
+						createCostDetail(line, line.getM_AttributeSetInstance_ID(), qtyDiff);
 					}
 				}	// Fallback
 			}	// stock movement
@@ -1020,15 +1007,11 @@ public class MInventory extends X_M_Inventory implements IDocument
 
 	/**
 	 * Create Cost Detail
-	 *
-	 * @param line
-	 * @param Qty
-	 * @return an EMPTY String on success otherwise an ERROR message
 	 */
-	private String createCostDetail(final MInventoryLine line, final int M_AttributeSetInstance_ID, final BigDecimal qty)
+	private void createCostDetail(final MInventoryLine line, final int M_AttributeSetInstance_ID, final BigDecimal qty)
 	{
 		// Get Account Schemas to create MCostDetail
-		for (MAcctSchema as : MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID()))
+		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID()))
 		{
 			if (as.isSkipOrg(getAD_Org_ID()) || as.isSkipOrg(line.getAD_Org_ID()))
 			{
@@ -1060,7 +1043,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 			// Validate the cost price
 			if (ProductCost.isNoCosts(costs))
 			{
-				return "No Costs for " + line.getProduct().getName();
+				throw new AdempiereException("No Costs for " + line.getProduct().getName());
 			}
 
 			// Set Total Amount and Total Quantity from Inventory
@@ -1074,15 +1057,12 @@ public class MInventory extends X_M_Inventory implements IDocument
 							.documentRef(CostingDocumentRef.ofInventoryLineId(line.getM_InventoryLine_ID()))
 							.costElementId(0)
 							.qty(qty)
-							.amt(costs)
-							.currencyId(as.getC_Currency_ID())
+							.amt(CostAmount.of(costs, as.getC_Currency_ID()))
 							// .currencyConversionTypeId(0) // N/A
 							.date(TimeUtil.asLocalDate(getMovementDate()))
 							.description(line.getDescription())
 							.build());
 		}
-
-		return "";
 	}
 
 	/**

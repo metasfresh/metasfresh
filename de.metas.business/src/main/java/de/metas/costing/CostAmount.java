@@ -2,6 +2,8 @@ package de.metas.costing;
 
 import java.math.BigDecimal;
 
+import org.adempiere.util.Check;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -29,26 +31,37 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class CostDetailEvent
+public class CostAmount
 {
-	@NonNull
-	CostSegment costSegment;
-	int costElementId;
-	CostingMethod costingMethod;
+	public static final CostAmount of(@NonNull final BigDecimal value, final int currencyId)
+	{
+		return new CostAmount(value, currencyId);
+	}
 
-	@NonNull
-	CostingDocumentRef documentRef;
-	
-	@NonNull
-	BigDecimal amt;
-	@NonNull
-	BigDecimal qty;
-	@NonNull
-	BigDecimal price;
-	
+	BigDecimal value;
 	int currencyId;
-	int precision;
-	
-	// TODO: validate 
+
+	@Builder
+	private CostAmount(@NonNull final BigDecimal value, final int currencyId)
+	{
+		Check.assume(currencyId > 0, "currencyId > 0");
+		this.value = value;
+		this.currencyId = currencyId;
+	}
+
+	public int signum()
+	{
+		return value.signum();
+	}
+
+	public CostAmount negate()
+	{
+		if (value.signum() == 0)
+		{
+			return this;
+		}
+
+		return new CostAmount(value.negate(), currencyId);
+	}
+
 }

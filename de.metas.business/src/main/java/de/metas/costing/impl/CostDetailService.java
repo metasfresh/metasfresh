@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailEvent;
 import de.metas.costing.CostDetailQuery;
@@ -120,7 +121,7 @@ public class CostDetailService implements ICostDetailService
 
 		final MAcctSchema as = MAcctSchema.get(Env.getCtx(), request.getAcctSchemaId());
 		final int acctCurrencyId = as.getC_Currency_ID();
-		if (request.getCurrencyId() == acctCurrencyId)
+		if (request.getAmt().getCurrencyId() == acctCurrencyId)
 		{
 			return request;
 		}
@@ -131,12 +132,11 @@ public class CostDetailService implements ICostDetailService
 				request.getCurrencyConversionTypeId(),
 				request.getClientId(),
 				request.getOrgId());
-		final ICurrencyRate rate = currencyConversionBL.getCurrencyRate(conversionCtx, request.getCurrencyId(), acctCurrencyId);
-		final BigDecimal amtConv = rate.convertAmount(request.getAmt(), as.getCostingPrecision());
+		final ICurrencyRate rate = currencyConversionBL.getCurrencyRate(conversionCtx, request.getAmt().getCurrencyId(), acctCurrencyId);
+		final BigDecimal amtConv = rate.convertAmount(request.getAmt().getValue(), as.getCostingPrecision());
 
 		return request.toBuilder()
-				.amt(amtConv)
-				.currencyId(acctCurrencyId)
+				.amt(CostAmount.of(amtConv, acctCurrencyId))
 				.build();
 	}
 
@@ -435,6 +435,7 @@ public class CostDetailService implements ICostDetailService
 		}
 
 		final MAcctSchema as = MAcctSchema.get(Env.getCtx(), costSegment.getAcctSchemaId());
+		final int currencyId = as.getC_Currency_ID();
 		final int precision = as.getCostingPrecision();
 		final BigDecimal price;
 		if (qty.signum() != 0)
@@ -454,6 +455,7 @@ public class CostDetailService implements ICostDetailService
 				.amt(amt)
 				.qty(qty)
 				.price(price)
+				.currencyId(currencyId)
 				.precision(precision)
 				.build();
 	}

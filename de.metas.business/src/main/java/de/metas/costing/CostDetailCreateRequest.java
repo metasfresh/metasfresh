@@ -47,8 +47,8 @@ public class CostDetailCreateRequest
 	int costElementId;
 
 	@NonNull
-	BigDecimal amt;
-	int currencyId;
+	CostAmount amt;
+	
 	@NonNull
 	BigDecimal qty;
 

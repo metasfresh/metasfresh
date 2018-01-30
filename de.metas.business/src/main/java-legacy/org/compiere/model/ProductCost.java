@@ -109,7 +109,7 @@ public class ProductCost
 	 * @param zeroCostsOK zero/no costs are OK
 	 * @return cost or null, if qty or costs cannot be determined
 	 */
-	public BigDecimal getProductCosts(MAcctSchema as, int AD_Org_ID, CostingMethod costingMethod, int C_OrderLine_ID, boolean zeroCostsOK)
+	public BigDecimal getProductCosts(I_C_AcctSchema as, int AD_Org_ID, CostingMethod costingMethod, int C_OrderLine_ID, boolean zeroCostsOK)
 	{
 		if (m_qty == null)
 		{

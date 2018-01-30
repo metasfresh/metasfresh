@@ -93,7 +93,7 @@ public class MCost extends X_M_Cost
 	public static BigDecimal getCurrentCost(
 			final I_M_Product product,
 			final int M_AttributeSetInstance_ID,
-			final MAcctSchema as,
+			final I_C_AcctSchema as,
 			final int AD_Org_ID,
 			final CostingMethod costingMethod,
 			final BigDecimal qty,
@@ -131,7 +131,7 @@ public class MCost extends X_M_Cost
 	private static CostSegment createCostSegment(
 			final I_M_Product product,
 			final int M_AttributeSetInstance_ID,
-			final MAcctSchema as,
+			final I_C_AcctSchema as,
 			final int AD_Org_ID)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);

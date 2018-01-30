@@ -28,6 +28,7 @@ import org.adempiere.util.time.SystemTime;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailService;
@@ -266,8 +267,7 @@ public class MMatchInv extends X_M_MatchInv
 							.documentRef(CostingDocumentRef.ofMatchInvoiceId(getM_MatchInv_ID()))
 							.costElementId(0)
 							.qty(matchQty)
-							.amt(matchAmt)
-							.currencyId(invoice.getC_Currency_ID())
+							.amt(CostAmount.of(matchAmt, invoice.getC_Currency_ID()))
 							.currencyConversionTypeId(invoice.getC_ConversionType_ID())
 							.date(TimeUtil.asLocalDate(invoice.getDateAcct()))
 							.description(getDescription())

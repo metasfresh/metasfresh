@@ -1,7 +1,13 @@
 package org.compiere.acct;
 
+import java.math.BigDecimal;
+
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_MovementLine;
+
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostingDocumentRef;
 
 /*
  * #%L
@@ -25,7 +31,7 @@ import org.compiere.model.I_M_MovementLine;
  * #L%
  */
 
-public class DocLine_Movement extends DocLine<Doc_Movement>
+class DocLine_Movement extends DocLine<Doc_Movement>
 {
 
 	public DocLine_Movement(final I_M_MovementLine movementLine, final Doc_Movement doc)
@@ -40,5 +46,11 @@ public class DocLine_Movement extends DocLine<Doc_Movement>
 	{
 		final I_M_MovementLine movementLine = getModel(I_M_MovementLine.class);
 		return movementLine.getM_LocatorTo_ID();
+	}
+
+	public final CostAmount getCosts(final I_C_AcctSchema as)
+	{
+		final BigDecimal costs = getProductCosts(as, getAD_Org_ID(), true, CostingDocumentRef.ofInboundMovementLineId(get_ID()));
+		return CostAmount.of(costs != null ? costs : BigDecimal.ZERO, as.getC_Currency_ID());
 	}
 }

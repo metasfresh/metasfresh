@@ -34,6 +34,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailService;
@@ -846,8 +847,7 @@ public class MMatchPO extends X_M_MatchPO
 							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
 							.documentRef(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()))
 							.qty(qty)
-							.amt(amt)
-							.currencyId(orderLine.getC_Currency_ID())
+							.amt(CostAmount.of(amt, orderLine.getC_Currency_ID()))
 							.currencyConversionTypeId(currencyConversionTypeId)
 							.date(TimeUtil.asLocalDate(dateAcct))
 							.description(orderLine.getDescription())

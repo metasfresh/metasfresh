@@ -37,6 +37,7 @@ public final class CurrentCost
 {
 	private final int id;
 
+	private final int currencyId;
 	private final int precision;
 
 	@NonNull
@@ -56,6 +57,7 @@ public final class CurrentCost
 	@Builder
 	private CurrentCost(
 			final int id,
+			final int currencyId,
 			final int precision,
 			@NonNull final BigDecimal currentCostPrice,
 			@NonNull final BigDecimal currentCostPriceLL,
@@ -64,9 +66,11 @@ public final class CurrentCost
 			@NonNull final BigDecimal cumulatedQty)
 	{
 		Check.assume(id > 0, "id > 0");
+		Check.assume(currencyId > 0, "currencyId > 0");
 		Check.assume(precision > 0, "precision > 0");
 
 		this.id = id;
+		this.currencyId = currencyId;
 		this.precision = precision;
 		this.currentCostPrice = currentCostPrice;
 		this.currentCostPriceLL = currentCostPriceLL;

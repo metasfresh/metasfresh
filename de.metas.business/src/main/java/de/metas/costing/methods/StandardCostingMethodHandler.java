@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.compiere.model.I_M_CostDetail;
 
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailEvent;
 import de.metas.costing.CostingMethodHandlerTemplate;
@@ -38,9 +39,9 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	{
 		final CurrentCost currentCost = getCurrentCost(request);
 		final BigDecimal amt = request.getQty().multiply(currentCost.getCurrentCostPrice());
-
+		
 		return createCostDefaultImpl(request.toBuilder()
-				.amt(amt)
+				.amt(CostAmount.of(amt, currentCost.getCurrencyId()))
 				.build());
 	}
 

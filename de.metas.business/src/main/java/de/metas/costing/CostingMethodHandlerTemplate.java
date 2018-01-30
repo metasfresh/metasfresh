@@ -1,6 +1,7 @@
 package de.metas.costing;
 
 import java.math.BigDecimal;
+import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -184,7 +185,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 		costDetail.setM_CostElement_ID(request.getCostElementId());
 
-		costDetail.setAmt(request.getAmt());
+		costDetail.setAmt(request.getAmt().getValue());
 		costDetail.setQty(request.getQty());
 		costDetail.setDescription(request.getDescription());
 
@@ -201,7 +202,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	private void updateCostDetailFromCreateRequest(final I_M_CostDetail costDetail, final CostDetailCreateRequest request)
 	{
-		final BigDecimal amt = request.getAmt();
+		final BigDecimal amt = request.getAmt().getValue();
 		final BigDecimal qty = request.getQty();
 		costDetail.setDeltaAmt(amt.subtract(costDetail.getAmt()));
 		costDetail.setDeltaQty(qty.subtract(costDetail.getQty()));
@@ -221,12 +222,12 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	protected final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
 	{
-		final I_M_Product product = MProduct.get(Env.getCtx(), request.getProductId());
-		final MAcctSchema as = MAcctSchema.get(Env.getCtx(), request.getAcctSchemaId());
+		final Properties ctx = Env.getCtx();
+		final I_M_Product product = MProduct.get(ctx, request.getProductId());
+		final MAcctSchema as = MAcctSchema.get(ctx, request.getAcctSchemaId());
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final CostingLevel costingLevel = productBL.getCostingLevel(product, as);
 		final int costTypeId = as.getM_CostType_ID();
-		final int precision = as.getCostingPrecision();
 
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(costingLevel)
@@ -239,14 +240,14 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 				.build();
 
 		final I_M_Cost costRecord = MCost.getOrCreate(costSegment, request.getCostElementId());
-		return toCurrentCost(costRecord, precision);
+		return toCurrentCost(costRecord, as.getC_Currency_ID(), as.getCostingPrecision());
 	}
 
 	@Override
 	public final void process(final CostDetailEvent event)
 	{
 		final I_M_Cost costRecord = MCost.getOrCreate(event.getCostSegment(), event.getCostElementId());
-		final CurrentCost cost = toCurrentCost(costRecord, event.getPrecision());
+		final CurrentCost cost = toCurrentCost(costRecord, event.getCurrencyId(), event.getPrecision());
 
 		final CostingDocumentRef documentRef = event.getDocumentRef();
 		final String documentTableName = documentRef.getTableName();
@@ -343,10 +344,14 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		logger.warn("Skip event because document is not handled: {}", event);
 	}
 
-	private CurrentCost toCurrentCost(final I_M_Cost costRecord, final int precision)
+	private CurrentCost toCurrentCost(
+			final I_M_Cost costRecord,
+			final int currencyId, 
+			final int precision)
 	{
 		return CurrentCost.builder()
 				.id(costRecord.getM_Cost_ID())
+				.currencyId(currencyId)
 				.precision(precision)
 				.currentCostPrice(costRecord.getCurrentCostPrice())
 				.currentCostPriceLL(costRecord.getCurrentCostPriceLL())
