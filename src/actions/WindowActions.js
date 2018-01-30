@@ -1154,7 +1154,9 @@ export function parseToDisplay(fieldsByName) {
 // i.e 2018-01-27T17:00:00.000-06:00
 export function parseDateWithCurrenTimezone(value) {
   if (value) {
-    if (Moment.isMoment(value)) {
+    if (value instanceof Date) {
+      return value;
+    } else if (Moment.isMoment(value)) {
       return new Date(value);
     } else {
       const TIMEZONE_STRING_LENGTH = 7;
