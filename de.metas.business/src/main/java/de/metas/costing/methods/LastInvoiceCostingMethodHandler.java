@@ -12,6 +12,7 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailEvent;
 import de.metas.costing.CostSegment;
@@ -51,10 +52,10 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	@Override
 	protected void processMatchInvoice(final CostDetailEvent event, final CurrentCost cost)
 	{
-		final BigDecimal amt = event.getAmt();
+		final CostAmount amt = event.getAmt();
 		final BigDecimal qty = event.getQty();
 		final boolean isReturnTrx = qty.signum() < 0;
-		final BigDecimal price = event.getPrice();
+		final CostAmount price = event.getPrice();
 
 		if (!isReturnTrx)
 		{
@@ -64,8 +65,8 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 			}
 			else
 			{
-				final BigDecimal cCosts = cost.getCurrentCostPrice().add(amt);
-				cost.setCurrentCostPrice(cCosts);
+				final CostAmount costPrice = cost.getCurrentCostPrice().add(amt);
+				cost.setCurrentCostPrice(costPrice);
 			}
 		}
 

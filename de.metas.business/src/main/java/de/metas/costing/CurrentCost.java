@@ -3,6 +3,7 @@ package de.metas.costing;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
 import lombok.Builder;
@@ -40,18 +41,13 @@ public final class CurrentCost
 	private final int currencyId;
 	private final int precision;
 
-	@NonNull
 	@Setter
-	private BigDecimal currentCostPrice;
-	@NonNull
-	private final BigDecimal currentCostPriceLL;
-	@NonNull
+	private CostAmount currentCostPrice;
+	private final CostAmount currentCostPriceLL;
 	@Setter
 	private BigDecimal currentQty;
 
-	@NonNull
-	private BigDecimal cumulatedAmt;
-	@NonNull
+	private CostAmount cumulatedAmt;
 	private BigDecimal cumulatedQty;
 
 	@Builder
@@ -67,16 +63,22 @@ public final class CurrentCost
 	{
 		Check.assume(id > 0, "id > 0");
 		Check.assume(currencyId > 0, "currencyId > 0");
-		Check.assume(precision > 0, "precision > 0");
+		Check.assume(precision >= 0, "precision >= 0");
 
 		this.id = id;
 		this.currencyId = currencyId;
 		this.precision = precision;
-		this.currentCostPrice = currentCostPrice;
-		this.currentCostPriceLL = currentCostPriceLL;
+		this.currentCostPrice = CostAmount.of(currentCostPrice, currencyId);
+		this.currentCostPriceLL = CostAmount.of(currentCostPriceLL, currencyId);
 		this.currentQty = currentQty;
-		this.cumulatedAmt = cumulatedAmt;
+		this.cumulatedAmt = CostAmount.of(cumulatedAmt, currencyId);
 		this.cumulatedQty = cumulatedQty;
+	}
+
+	@Deprecated
+	public void add(@NonNull final BigDecimal amt, @NonNull final BigDecimal qty)
+	{
+		add(CostAmount.of(amt, getCurrencyId()), qty);
 	}
 
 	/**
@@ -85,10 +87,25 @@ public final class CurrentCost
 	 * @param amt amt
 	 * @param qty qty
 	 */
-	public void add(@NonNull final BigDecimal amt, @NonNull final BigDecimal qty)
+	public void add(@NonNull final CostAmount amt, @NonNull final BigDecimal qty)
 	{
+		assertCostCurrency(amt);
 		adjustCurrentQty(qty);
 		addCumulatedAmtAndQty(amt, qty);
+	}
+
+	private void assertCostCurrency(@NonNull final CostAmount amt)
+	{
+		if (amt.getCurrencyId() != getCurrencyId())
+		{
+			throw new AdempiereException("Invalid amount currency for `" + amt + "`. Expected: " + getCurrencyId());
+		}
+	}
+
+	@Deprecated
+	public void addWeightedAverage(@NonNull final BigDecimal amt, @NonNull final BigDecimal qty)
+	{
+		addWeightedAverage(CostAmount.of(amt, getCurrencyId()), qty);
 	}
 
 	/**
@@ -98,10 +115,12 @@ public final class CurrentCost
 	 * @param amt total amt (price * qty)
 	 * @param qty qty
 	 */
-	public void addWeightedAverage(@NonNull final BigDecimal amt, @NonNull final BigDecimal qty)
+	public void addWeightedAverage(@NonNull final CostAmount amt, @NonNull final BigDecimal qty)
 	{
-		final BigDecimal currentAmt = currentCostPrice.multiply(currentQty);
-		final BigDecimal newAmt = currentAmt.add(amt);
+		assertCostCurrency(amt);
+
+		final CostAmount currentAmt = currentCostPrice.multiply(currentQty);
+		final CostAmount newAmt = currentAmt.add(amt);
 		final BigDecimal newQty = currentQty.add(qty);
 		if (newQty.signum() != 0)
 		{
@@ -112,8 +131,16 @@ public final class CurrentCost
 		addCumulatedAmtAndQty(amt, qty);
 	}
 
+	@Deprecated
 	public void addCumulatedAmtAndQty(@NonNull final BigDecimal amt, @NonNull final BigDecimal qty)
 	{
+		addCumulatedAmtAndQty(CostAmount.of(amt, getCurrencyId()), qty);
+	}
+
+	public void addCumulatedAmtAndQty(@NonNull final CostAmount amt, @NonNull final BigDecimal qty)
+	{
+		assertCostCurrency(amt);
+
 		cumulatedAmt = cumulatedAmt.add(amt);
 		cumulatedQty = cumulatedQty.add(qty);
 	}

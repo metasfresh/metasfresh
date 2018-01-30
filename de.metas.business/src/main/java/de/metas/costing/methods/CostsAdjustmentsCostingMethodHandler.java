@@ -1,6 +1,7 @@
 package de.metas.costing.methods;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -11,6 +12,7 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailEvent;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
@@ -48,7 +50,7 @@ public class CostsAdjustmentsCostingMethodHandler extends CostingMethodHandlerTe
 	protected void processMatchInvoice(final CostDetailEvent event, final CurrentCost cost)
 	{
 		final CostSegment costSegment = event.getCostSegment();
-		final BigDecimal amt = event.getAmt();
+		final CostAmount amt = event.getAmt();
 		final BigDecimal qty = event.getQty();
 		final int precision = event.getPrecision();
 
@@ -84,9 +86,9 @@ public class CostsAdjustmentsCostingMethodHandler extends CostingMethodHandlerTe
 			final BigDecimal qtyOnhand = DB.getSQLValueBDEx(ITrx.TRXNAME_ThreadInherited, sql);
 			if (qtyOnhand.signum() != 0)
 			{
-				final BigDecimal oldSum = cost.getCurrentCostPrice().multiply(cost.getCurrentQty());
-				final BigDecimal sumAmt = oldSum.add(amt);	// amt is total already
-				final BigDecimal costs = sumAmt.divide(qtyOnhand, precision, BigDecimal.ROUND_HALF_UP);
+				final CostAmount oldSum = cost.getCurrentCostPrice().multiply(cost.getCurrentQty());
+				final CostAmount sumAmt = oldSum.add(amt);	// amt is total already
+				final CostAmount costs = sumAmt.divide(qtyOnhand, precision, RoundingMode.HALF_UP);
 				cost.setCurrentCostPrice(costs);
 			}
 			cost.setCurrentQty(qtyOnhand);
@@ -95,8 +97,8 @@ public class CostsAdjustmentsCostingMethodHandler extends CostingMethodHandlerTe
 		}
 		else // original logic from Compiere
 		{
-			final BigDecimal cCosts = cost.getCurrentCostPrice().add(amt);
-			cost.setCurrentCostPrice(cCosts);
+			final CostAmount costPrice = cost.getCurrentCostPrice().add(amt);
+			cost.setCurrentCostPrice(costPrice);
 			cost.add(amt, qty);
 		}
 	}

@@ -38,17 +38,17 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	protected I_M_CostDetail createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCost = getCurrentCost(request);
-		final BigDecimal amt = request.getQty().multiply(currentCost.getCurrentCostPrice());
+		final CostAmount amt = currentCost.getCurrentCostPrice().multiply(request.getQty());
 		
 		return createCostDefaultImpl(request.toBuilder()
-				.amt(CostAmount.of(amt, currentCost.getCurrencyId()))
+				.amt(amt)
 				.build());
 	}
 
 	@Override
 	protected void processMatchInvoice(final CostDetailEvent event, final CurrentCost cost)
 	{
-		final BigDecimal amt = event.getAmt();
+		final CostAmount amt = event.getAmt();
 		final BigDecimal qty = event.getQty();
 
 		cost.adjustCurrentQty(qty);
@@ -58,7 +58,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CurrentCost cost)
 	{
-		final BigDecimal amt = event.getAmt();
+		final CostAmount amt = event.getAmt();
 		final BigDecimal qty = event.getQty();
 		final boolean addition = qty.signum() > 0;
 

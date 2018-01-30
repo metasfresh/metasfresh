@@ -1,7 +1,9 @@
 package de.metas.costing;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
 import lombok.Builder;
@@ -54,6 +56,11 @@ public class CostAmount
 		return value.signum();
 	}
 
+	public boolean isZero()
+	{
+		return signum() == 0;
+	}
+
 	public CostAmount negate()
 	{
 		if (value.signum() == 0)
@@ -64,4 +71,38 @@ public class CostAmount
 		return new CostAmount(value.negate(), currencyId);
 	}
 
+	public CostAmount multiply(@NonNull final BigDecimal multiplicand)
+	{
+		if (BigDecimal.ONE.compareTo(multiplicand) == 0)
+		{
+			return this;
+		}
+
+		return new CostAmount(value.multiply(multiplicand), currencyId);
+	}
+
+	public CostAmount add(@NonNull final CostAmount amtToAdd)
+	{
+		if (currencyId != amtToAdd.currencyId)
+		{
+			throw new AdempiereException("Amount has invalid currency: " + amtToAdd + ". Expected: " + currencyId);
+		}
+
+		if (amtToAdd.isZero())
+		{
+			return this;
+		}
+		if (isZero())
+		{
+			return amtToAdd;
+		}
+
+		return new CostAmount(value.add(amtToAdd.value), currencyId);
+	}
+
+	public CostAmount divide(final BigDecimal divisor, final int precision, final RoundingMode roundingMode)
+	{
+		final BigDecimal valueNew = value.divide(divisor, precision, roundingMode);
+		return new CostAmount(valueNew, currencyId);
+	}
 }

@@ -4,8 +4,11 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.compiere.model.I_M_CostDetail;
+import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCostQueue;
+import org.compiere.util.Env;
 
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailEvent;
 import de.metas.costing.CostSegment;
@@ -51,18 +54,20 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 		final CostSegment costSegment = event.getCostSegment();
 		final int costElementId = event.getCostElementId();
 		final CostingMethod costingMethod = event.getCostingMethod();
-		final BigDecimal amt = event.getAmt();
+		final CostAmount amt = event.getAmt();
 		final BigDecimal qty = event.getQty();
 		final int precision = event.getPrecision();
 
 		final MCostQueue cq = MCostQueue.get(costSegment, costElementId);
-		cq.setCosts(amt, qty, precision);
+		cq.setCosts(amt.getValue(), qty, precision);
 		cq.save();
 
 		final List<MCostQueue> cQueue = MCostQueue.getQueue(costSegment, costElementId, costingMethod);
 		if (!cQueue.isEmpty())
 		{
-			cost.setCurrentCostPrice(cQueue.get(0).getCurrentCostPrice());
+			final MAcctSchema as = MAcctSchema.get(Env.getCtx(), costSegment.getAcctSchemaId());
+			final int currencyId = as.getC_Currency_ID();
+			cost.setCurrentCostPrice(CostAmount.of(cQueue.get(0).getCurrentCostPrice(), currencyId));
 		}
 		cost.add(amt, qty);
 	}
@@ -73,7 +78,7 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 		final CostSegment costSegment = event.getCostSegment();
 		final int costElementId = event.getCostElementId();
 		final CostingMethod costingMethod = event.getCostingMethod();
-		final BigDecimal amt = event.getAmt();
+		final CostAmount amt = event.getAmt();
 		final BigDecimal qty = event.getQty();
 		final boolean addition = qty.signum() > 0;
 		final int precision = event.getPrecision();
@@ -82,7 +87,7 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 		{
 			// Real ASI - costing level Org
 			final MCostQueue cq = MCostQueue.get(costSegment, costElementId);
-			cq.setCosts(amt, qty, precision);
+			cq.setCosts(amt.getValue(), qty, precision);
 			cq.save();
 		}
 		else
@@ -94,7 +99,9 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 		final List<MCostQueue> cQueue = MCostQueue.getQueue(costSegment, costElementId, costingMethod);
 		if (!cQueue.isEmpty())
 		{
-			cost.setCurrentCostPrice(cQueue.get(0).getCurrentCostPrice());
+			final MAcctSchema as = MAcctSchema.get(Env.getCtx(), costSegment.getAcctSchemaId());
+			final int currencyId = as.getC_Currency_ID();
+			cost.setCurrentCostPrice(CostAmount.of(cQueue.get(0).getCurrentCostPrice(), currencyId));
 		}
 
 		cost.adjustCurrentQty(qty);

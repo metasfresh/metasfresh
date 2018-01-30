@@ -363,10 +363,10 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	private void updateCostRecord(final I_M_Cost cost, final CurrentCost from)
 	{
-		cost.setCurrentCostPrice(from.getCurrentCostPrice());
-		cost.setCurrentCostPriceLL(from.getCurrentCostPriceLL());
+		cost.setCurrentCostPrice(from.getCurrentCostPrice().getValue());
+		cost.setCurrentCostPriceLL(from.getCurrentCostPriceLL().getValue());
 		cost.setCurrentQty(from.getCurrentQty());
-		cost.setCumulatedAmt(from.getCumulatedAmt());
+		cost.setCumulatedAmt(from.getCumulatedAmt().getValue());
 		cost.setCumulatedQty(from.getCumulatedQty());
 	}
 }

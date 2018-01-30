@@ -15,6 +15,7 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailEvent;
 import de.metas.costing.CostSegment;
@@ -69,7 +70,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CurrentCost cost)
 	{
-		final BigDecimal amt = event.getAmt();
+		final CostAmount amt = event.getAmt();
 		final BigDecimal qty = event.getQty();
 		final boolean addition = qty.signum() > 0;
 
