@@ -2,8 +2,6 @@ package de.metas.costing;
 
 import javax.annotation.Nullable;
 
-import org.compiere.model.X_M_CostElement;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,16 +36,16 @@ public class CostElement
 	@NonNull
 	String name;
 	@NonNull
-	String costElementType;
+	CostElementType costElementType;
 	@Nullable
 	CostingMethod costingMethod;
 	boolean calculated;
 
 	// TODO: validate: id > 0 etc
-	
+
 	public boolean isCostingMethod()
 	{
-		return X_M_CostElement.COSTELEMENTTYPE_Material.equals(getCostElementType())
+		return CostElementType.Material == getCostElementType()
 				&& getCostingMethod() != null;
 	}
 

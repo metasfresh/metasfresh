@@ -48,9 +48,9 @@ import org.compiere.model.MCost;
 import org.compiere.model.MPriceListVersion;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductPrice;
-import org.compiere.model.X_M_CostElement;
 
 import de.metas.costing.CostElement;
+import de.metas.costing.CostElementType;
 import de.metas.costing.ICostElementRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.material.planning.pporder.LiberoException;
@@ -117,7 +117,7 @@ public class CopyPriceToStandard extends JavaProcess
 	{
 		MAcctSchema as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
 		CostElement element = Services.get(ICostElementRepository.class).getById(p_M_CostElement_ID);
-		if (!X_M_CostElement.COSTELEMENTTYPE_Material.equals(element.getCostElementType()))
+		if (CostElementType.Material != element.getCostElementType())
 		{
 			throw new LiberoException("Only Material Cost Elements are allowed");
 		}

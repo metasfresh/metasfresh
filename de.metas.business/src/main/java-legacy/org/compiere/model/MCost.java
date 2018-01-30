@@ -41,6 +41,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.costing.CostElement;
+import de.metas.costing.CostElementType;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
@@ -729,7 +730,7 @@ public class MCost extends X_M_Cost
 		if (ce != null)
 		{
 			if (ce.isCalculated()
-					|| X_M_CostElement.COSTELEMENTTYPE_Material.equals(ce.getCostElementType())
+					|| CostElementType.Material.equals(ce.getCostElementType())
 							&& getPercent() != 0)
 			{
 				setPercent(0);

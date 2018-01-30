@@ -13,9 +13,10 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.X_M_CostElement;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
+
+import de.metas.costing.CostElementType;
 
 /*
  * #%L
@@ -46,18 +47,19 @@ public class M_CostElement
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_CostElement.COLUMNNAME_CostingMethod)
 	public void assertUniqueCostingMethod(final I_M_CostElement costElement)
 	{
-		if (X_M_CostElement.COSTELEMENTTYPE_Material.equals(costElement.getCostElementType())
-				// || COSTELEMENTTYPE_Resource.equals(getCostElementType())
-				// || COSTELEMENTTYPE_BurdenMOverhead.equals(getCostElementType())
-				// || COSTELEMENTTYPE_Overhead.equals(getCostElementType())
-				|| X_M_CostElement.COSTELEMENTTYPE_OutsideProcessing.equals(costElement.getCostElementType()))
+		final CostElementType costElementType = CostElementType.ofCode(costElement.getCostElementType());
+		if (CostElementType.Material.equals(costElementType)
+				// || COSTELEMENTTYPE_Resource.equals(costElementType)
+				// || COSTELEMENTTYPE_BurdenMOverhead.equals(costElementType)
+				// || COSTELEMENTTYPE_Overhead.equals(costElementType)
+				|| CostElementType.OutsideProcessing.equals(costElementType))
 		{
 			final boolean costingMethodAlreadyExists = Services.get(IQueryBL.class)
 					.createQueryBuilder(I_M_CostElement.class)
 					.addNotEqualsFilter(I_M_CostElement.COLUMN_M_CostElement_ID, costElement.getM_CostElement_ID())
 					.addEqualsFilter(I_M_CostElement.COLUMN_AD_Client_ID, costElement.getAD_Client_ID())
 					.addEqualsFilter(I_M_CostElement.COLUMN_CostingMethod, costElement.getCostingMethod())
-					.addEqualsFilter(I_M_CostElement.COLUMN_CostElementType, costElement.getCostElementType())
+					.addEqualsFilter(I_M_CostElement.COLUMN_CostElementType, costElementType.getCode())
 					.create()
 					.match();
 			if (costingMethodAlreadyExists)
@@ -97,7 +99,8 @@ public class M_CostElement
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void beforeDelete(final I_M_CostElement costElement)
 	{
-		final boolean isCostingMethod = X_M_CostElement.COSTELEMENTTYPE_Material.equals(costElement.getCostElementType())
+		final CostElementType costElementType = CostElementType.ofCode(costElement.getCostElementType());
+		final boolean isCostingMethod = CostElementType.Material.equals(costElementType)
 				&& costElement.getCostingMethod() != null;
 		if (!isCostingMethod)
 		{

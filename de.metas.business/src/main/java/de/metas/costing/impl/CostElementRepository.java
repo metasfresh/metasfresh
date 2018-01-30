@@ -8,12 +8,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_CostElement;
-import org.compiere.model.X_M_CostElement;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.costing.CostElement;
+import de.metas.costing.CostElementType;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 import lombok.NonNull;
@@ -58,7 +58,7 @@ public class CostElementRepository implements ICostElementRepository
 				.createQueryBuilderOutOfTrx(I_M_CostElement.class)
 				.addEqualsFilter(I_M_CostElement.COLUMN_AD_Client_ID, adClientId)
 				.addEqualsFilter(I_M_CostElement.COLUMN_CostingMethod, costingMethod.getCode())
-				.addEqualsFilter(I_M_CostElement.COLUMN_CostElementType, X_M_CostElement.COSTELEMENTTYPE_Material)
+				.addEqualsFilter(I_M_CostElement.COLUMN_CostElementType, CostElementType.Material.getCode())
 				.orderBy(I_M_CostElement.COLUMN_AD_Org_ID)
 				.create()
 				.firstOnly(I_M_CostElement.class);
@@ -77,7 +77,7 @@ public class CostElementRepository implements ICostElementRepository
 			name = costingMethod.name();
 		}
 		newCostElement.setName(name);
-		newCostElement.setCostElementType(X_M_CostElement.COSTELEMENTTYPE_Material);
+		newCostElement.setCostElementType(CostElementType.Material.getCode());
 		newCostElement.setCostingMethod(costingMethod.getCode());
 		newCostElement.setIsCalculated(false);
 		InterfaceWrapperHelper.save(newCostElement);
@@ -92,7 +92,7 @@ public class CostElementRepository implements ICostElementRepository
 				.id(costElement.getM_CostElement_ID())
 				.name(costElement.getName())
 				.costingMethod(CostingMethod.ofNullableCode(costElement.getCostingMethod()))
-				.costElementType(costElement.getCostElementType())
+				.costElementType(CostElementType.ofCode(costElement.getCostElementType()))
 				.calculated(costElement.isCalculated())
 				.build();
 	}
@@ -120,7 +120,7 @@ public class CostElementRepository implements ICostElementRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_CostElement.COLUMN_AD_Client_ID, adClientId)
 				.addNotNull(I_M_CostElement.COLUMN_CostingMethod)
-				.addEqualsFilter(I_M_CostElement.COLUMN_CostElementType, X_M_CostElement.COSTELEMENTTYPE_Material)
+				.addEqualsFilter(I_M_CostElement.COLUMN_CostElementType, CostElementType.Material.getCode())
 				.orderBy(I_M_CostElement.COLUMN_M_CostElement_ID)
 				.create()
 				.stream(I_M_CostElement.class)

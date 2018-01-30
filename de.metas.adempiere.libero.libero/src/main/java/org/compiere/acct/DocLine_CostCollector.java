@@ -8,12 +8,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.X_M_CostElement;
 import org.compiere.util.DB;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostElement;
+import de.metas.costing.CostElementType;
 import de.metas.material.planning.pporder.LiberoException;
 
 /**
@@ -29,25 +29,25 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 
 	public MAccount getAccount(final MAcctSchema as, final CostElement element)
 	{
-		final String costElementType = element.getCostElementType();
+		final CostElementType costElementType = element.getCostElementType();
 		final ProductAcctType acctType;
-		if (X_M_CostElement.COSTELEMENTTYPE_Material.equals(costElementType))
+		if (CostElementType.Material.equals(costElementType))
 		{
 			acctType = ProductAcctType.Asset;
 		}
-		else if (X_M_CostElement.COSTELEMENTTYPE_Resource.equals(costElementType))
+		else if (CostElementType.Resource.equals(costElementType))
 		{
 			acctType = ProductAcctType.Labor;
 		}
-		else if (X_M_CostElement.COSTELEMENTTYPE_BurdenMOverhead.equals(costElementType))
+		else if (CostElementType.BurdenMOverhead.equals(costElementType))
 		{
 			acctType = ProductAcctType.Burden;
 		}
-		else if (X_M_CostElement.COSTELEMENTTYPE_Overhead.equals(costElementType))
+		else if (CostElementType.Overhead.equals(costElementType))
 		{
 			acctType = ProductAcctType.Overhead;
 		}
-		else if (X_M_CostElement.COSTELEMENTTYPE_OutsideProcessing.equals(costElementType))
+		else if (CostElementType.OutsideProcessing.equals(costElementType))
 		{
 			acctType = ProductAcctType.OutsideProcessing;
 		}

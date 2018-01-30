@@ -64,7 +64,6 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MTransaction;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.model.X_M_CostElement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPCostCollectorDAO;
@@ -76,6 +75,7 @@ import org.eevolution.model.X_PP_Cost_Collector;
 import org.slf4j.Logger;
 
 import de.metas.costing.CostElement;
+import de.metas.costing.CostElementType;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
@@ -436,10 +436,10 @@ public class CostEngine
 
 	public static boolean isActivityControlElement(CostElement element)
 	{
-		String costElementType = element.getCostElementType();
-		return X_M_CostElement.COSTELEMENTTYPE_Resource.equals(costElementType)
-				|| X_M_CostElement.COSTELEMENTTYPE_Overhead.equals(costElementType)
-				|| X_M_CostElement.COSTELEMENTTYPE_BurdenMOverhead.equals(costElementType);
+		CostElementType costElementType = element.getCostElementType();
+		return CostElementType.Resource.equals(costElementType)
+				|| CostElementType.Overhead.equals(costElementType)
+				|| CostElementType.BurdenMOverhead.equals(costElementType);
 	}
 
 	private List<CostElement> getCostElements()
