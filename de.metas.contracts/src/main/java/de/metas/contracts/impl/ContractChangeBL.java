@@ -107,7 +107,7 @@ public class ContractChangeBL implements IContractChangeBL
 				ancestor.setC_FlatrateTerm_Next(null);
 				ancestor.setAD_PInstance_EndOfTerm(null);
 				setAncestorMasterEndDateWhenUnlinkContract(ancestor);
-				InterfaceWrapperHelper.save(ancestor);
+				save(ancestor);
 			}
 		}
 	}
@@ -163,7 +163,7 @@ public class ContractChangeBL implements IContractChangeBL
 		currentTerm.setIsAutoRenew(false);
 		setContractStatus(currentTerm, contractChangeParameters);
 		setClosedDocStatusIfNeeded(currentTerm, contractChangeParameters);
-		InterfaceWrapperHelper.save(currentTerm);
+		save(currentTerm);
 
 		cancelNextContractIfNeeded(currentTerm, contractChangeParameters);
 		creditInvoicesIfNeeded(currentTerm, contractChangeParameters);
@@ -282,7 +282,7 @@ public class ContractChangeBL implements IContractChangeBL
 
 		final I_C_Invoice creditMemoInvoice = Services.get(IInvoiceBL.class).creditInvoice(openInvoice, creditCtx);
 		creditMemoInvoice.setDescription(reason);
-		InterfaceWrapperHelper.save(creditMemoInvoice);
+		save(creditMemoInvoice);
 	}
 
 	private void createCompesationOrderIfNeeded(@NonNull final ContextForCompesationOrder compensationOrderContext)
@@ -318,7 +318,7 @@ public class ContractChangeBL implements IContractChangeBL
 		termChangeOrder.setDateOrdered(SystemTime.asDayTimestamp());
 		termChangeOrder.setDatePromised(changeDate);
 		termChangeOrder.setDocAction(IDocument.ACTION_Complete);
-		InterfaceWrapperHelper.save(termChangeOrder);
+		save(termChangeOrder);
 
 		return termChangeOrder;
 	}
@@ -427,7 +427,7 @@ public class ContractChangeBL implements IContractChangeBL
 		if (today.after(progress.getEventDate()))
 		{
 			progress.setContractStatus(X_C_SubscriptionProgress.CONTRACTSTATUS_Quit);
-			InterfaceWrapperHelper.save(progress);
+			save(progress);
 		}
 	}
 
@@ -446,7 +446,7 @@ public class ContractChangeBL implements IContractChangeBL
 		chargeOlPO.setPriceActual(additionalCharge.add(chargeOlPO.getPriceActual()));
 		chargeOlPO.setPriceEntered(additionalCharge.add(chargeOlPO.getPriceEntered()));
 
-		InterfaceWrapperHelper.save(chargeOl);
+		save(chargeOl);
 
 		logger.debug("created new order line " + chargeOlPO);
 		return chargeOl;
@@ -499,6 +499,6 @@ public class ContractChangeBL implements IContractChangeBL
 		Check.assumeNotNull(currentTerm, "Param 'currentTerm' not null");
 		currentTerm.setIsAutoRenew(false);
 		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract);
-		InterfaceWrapperHelper.save(currentTerm);
+		save(currentTerm);
 	}
 }
