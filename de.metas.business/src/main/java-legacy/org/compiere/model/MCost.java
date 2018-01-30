@@ -697,7 +697,7 @@ public class MCost extends X_M_Cost
 			else if (CostingLevel.BatchLot.equals(costingLevel))
 			{
 				if (getM_AttributeSetInstance_ID() == 0
-						&& ce.isCostingMethod())
+						&& ce.isMaterialCostingMethod())
 				{
 					throw new FillMandatoryException(I_M_Cost.COLUMNNAME_M_AttributeSetInstance_ID);
 				}
