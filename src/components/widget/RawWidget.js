@@ -68,11 +68,10 @@ class RawWidget extends Component {
     handleFocus && handleFocus();
   };
 
-  willPatch = (value, valueTo, isForce) => {
+  willPatch = (value, valueTo) => {
     const { widgetData } = this.props;
     const { cachedValue } = this.state;
     return (
-      isForce ||
       JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
       JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
       (cachedValue !== undefined &&
@@ -101,7 +100,7 @@ class RawWidget extends Component {
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
-    if (this.willPatch(value, valueTo, isForce) && handlePatch) {
+    if ((isForce || this.willPatch(value, valueTo)) && handlePatch) {
       this.setState({
         cachedValue: undefined
       });
