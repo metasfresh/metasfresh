@@ -177,7 +177,8 @@ public class MCost extends X_M_Cost
 					+ " AND c.AD_Org_ID=?" // #2
 					+ " AND c.M_Product_ID=?" // #3
 					+ " AND (c.M_AttributeSetInstance_ID=? OR c.M_AttributeSetInstance_ID=0)"	// #4
-					+ " AND c.M_CostType_ID=? AND c.C_AcctSchema_ID=?"	// #5/6
+					+ " AND c.M_CostType_ID=?" // #5
+					+ " AND c.C_AcctSchema_ID=?" // #6
 					+ " AND (ce.CostingMethod IS NULL OR ce.CostingMethod=?) "	// #7
 					+ " GROUP BY ce.CostElementType, ce.CostingMethod, c.Percent, c.M_CostElement_ID";
 			PreparedStatement pstmt = null;
