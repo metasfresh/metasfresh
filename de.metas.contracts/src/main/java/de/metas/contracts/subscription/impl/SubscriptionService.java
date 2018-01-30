@@ -31,12 +31,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -84,6 +84,8 @@ public class SubscriptionService
 		int DropShip_Location_ID;
 		int DropShip_User_ID;
 
+		boolean IsPermanentRecipient;
+
 		@Builder
 		private ChangeRecipientsRequest(
 				@NonNull final I_C_Flatrate_Term term,
@@ -91,7 +93,8 @@ public class SubscriptionService
 				@NonNull final Timestamp dateTo,
 				final int DropShip_BPartner_ID,
 				final int DropShip_Location_ID,
-				final int DropShip_User_ID)
+				final int DropShip_User_ID,
+				boolean IsPermanentRecipient)
 		{
 			this.term = term;
 
@@ -105,6 +108,8 @@ public class SubscriptionService
 			Preconditions.checkArgument(DropShip_Location_ID > 0, "The given DropShip_Location_ID may not be <= 0");
 			this.DropShip_Location_ID = DropShip_Location_ID;
 			this.DropShip_User_ID = DropShip_User_ID;
+
+			this.IsPermanentRecipient = IsPermanentRecipient;
 		}
 	}
 
@@ -115,14 +120,14 @@ public class SubscriptionService
 	{
 		new RemovePauses(this).removePausesAroundTimeframe(term, pauseFrom, pauseUntil);
 	}
-	
+
 	public void removePausesAroundDate(
-			@NonNull final I_C_Flatrate_Term term, 
+			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final Timestamp date)
 	{
 		new RemovePauses(this).removePausesAroundTimeframe(term, date, date);
 	}
-	
+
 
 	public void removeAllPauses(final I_C_Flatrate_Term term)
 	{
