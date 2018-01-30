@@ -30,6 +30,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
@@ -52,6 +53,7 @@ import de.metas.costing.ICostDetailRepository;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.acct.api.IProductAcctDAO;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /**
@@ -75,7 +77,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private final DT m_doc;
 
 	/** Qty */
-	private BigDecimal m_qty = null;
+	private Quantity m_qty = null;
 
 	// -- GL Amounts
 	/** Debit Journal Amt */
@@ -94,6 +96,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private BigDecimal m_AmtAcctCr = null;
 
 	private I_M_Product _product; // lazy
+	private Boolean _productIsItem = null; // lazy
 	/** Product Costs */
 	private ProductCost m_productCost = null;
 
@@ -109,8 +112,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private final int m_C_LocFrom_ID = 0;
 	/** Location To */
 	private int m_C_LocTo_ID = 0;
-	/** Item */
-	private Boolean m_isItem = null;
 	/** Currency */
 	private Integer m_C_Currency_ID = null;
 	/** Conversion Type */
@@ -379,6 +380,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		{
 			m_DateDoc = Util.coalesceSuppliers(
 					() -> getValueAsTSOrNull("DateDoc"),
+					() -> getValueAsTSOrNull("DateTrx"),
 					() -> getDoc().getDateAcct());
 		}
 		return m_DateDoc;
@@ -527,26 +529,27 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 */
 	public final boolean isItem()
 	{
-		if (m_isItem != null)
+		if (_productIsItem == null)
 		{
-			return m_isItem.booleanValue();
+			_productIsItem = checkIsItem();
+		}
+		return _productIsItem;
+	}
+
+	private final boolean checkIsItem()
+	{
+		final I_M_Product product = getProduct();
+		if (product == null)
+		{
+			return false;
 		}
 
-		m_isItem = Boolean.FALSE;
-		if (getM_Product_ID() > 0)
-		{
-			final I_M_Product product = InterfaceWrapperHelper.load(getM_Product_ID(), I_M_Product.class);
-			final IProductBL productBL = Services.get(IProductBL.class);
+		final IProductBL productBL = Services.get(IProductBL.class);
 
-			// NOTE: we are considering the product as Item only if it's stockable.
-			// Before changing this logic, pls evaluate the Doc_Invoice which is booking on P_InventoryClearing account when the product is stockable
-			if (product.getM_Product_ID() == getM_Product_ID() && productBL.isStocked(product))
-			{
-				m_isItem = Boolean.TRUE;
-			}
-		}
-		return m_isItem.booleanValue();
-	}	// isItem
+		// NOTE: we are considering the product as Item only if it's stockable.
+		// Before changing this logic, pls evaluate the Doc_Invoice which is booking on P_InventoryClearing account when the product is stockable
+		return productBL.isStocked(product);
+	}
 
 	public final boolean isService()
 	{
@@ -595,7 +598,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		m_C_LocTo_ID = C_LocTo_ID;
 	}	// setC_LocTo_ID
 
-	private final ProductCost getProductCost()
+	protected final ProductCost getProductCost()
 	{
 		if (m_productCost == null)
 		{
@@ -671,6 +674,13 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return _product;
 	}
 
+	protected final I_C_UOM getProductStockingUOM()
+	{
+		final I_M_Product product = getProduct();
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
+		return uom;
+	}
+
 	/**
 	 * Get Revenue Recognition
 	 *
@@ -714,32 +724,28 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	/**
 	 * Quantity
 	 *
-	 * @param qty transaction Qty
+	 * @param quantity transaction Qty
 	 * @param isSOTrx SL order trx (i.e. negative qty)
 	 */
-	public final void setQty(final BigDecimal qty, final boolean isSOTrx)
+	protected final void setQty(@NonNull final Quantity quantity, final boolean isSOTrx)
 	{
-		if (qty == null)
+		if (isSOTrx)
 		{
-			m_qty = BigDecimal.ZERO;
-		}
-		else if (isSOTrx)
-		{
-			m_qty = qty.negate();
+			m_qty = quantity.negate();
 		}
 		else
 		{
-			m_qty = qty;
+			m_qty = quantity;
 		}
-		getProductCost().setQty(qty);
-	}   // setQty
+		getProductCost().setQty(quantity.getQty());
+	}
 
 	/**
 	 * Quantity
 	 *
 	 * @return transaction Qty
 	 */
-	public final BigDecimal getQty()
+	public final Quantity getQty()
 	{
 		return m_qty;
 	}   // getQty

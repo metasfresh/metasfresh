@@ -1,7 +1,11 @@
 package org.compiere.acct;
 
+import java.math.BigDecimal;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InventoryLine;
+
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -30,6 +34,22 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 	public DocLine_Inventory(final I_M_InventoryLine inventoryLine, final Doc_Inventory doc)
 	{
 		super(InterfaceWrapperHelper.getPO(inventoryLine), doc);
+
+		BigDecimal qty = inventoryLine.getQtyInternalUse();
+		if (qty.signum() != 0)
+		{
+			qty = qty.negate();		// Internal Use entered positive
+		}
+		else
+		{
+			BigDecimal QtyBook = inventoryLine.getQtyBook();
+			BigDecimal QtyCount = inventoryLine.getQtyCount();
+			qty = QtyCount.subtract(QtyBook);
+		}
+
+		setQty(Quantity.of(qty, getProductStockingUOM()), false);		// -5 => -5
+
+		setReversalLine_ID(inventoryLine.getReversalLine_ID());
 	}
 
 }

@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.costing.CostAmount;
 import de.metas.interfaces.I_C_OrderLine;
 
 public interface IOrderLineBL extends ISingletonService
@@ -228,5 +229,5 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);
 	
-	BigDecimal getCostPrice(org.compiere.model.I_C_OrderLine orderLine);
+	CostAmount getCostPrice(org.compiere.model.I_C_OrderLine orderLine);
 }

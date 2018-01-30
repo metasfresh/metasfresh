@@ -3,6 +3,8 @@ package org.compiere.acct;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_RequisitionLine;
 
+import de.metas.quantity.Quantity;
+
 /*
  * #%L
  * de.metas.acct.base
@@ -31,6 +33,9 @@ final class DocLine_Requisition extends DocLine<Doc_Requisition>
 	public DocLine_Requisition(final I_M_RequisitionLine line, final Doc_Requisition doc)
 	{
 		super(InterfaceWrapperHelper.getPO(line), doc);
+
+		setQty(Quantity.of(line.getQty(), getProductStockingUOM()), false);
+		setAmount(line.getLineNetAmt());	 // DR
 	}
 
 }

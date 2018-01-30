@@ -1,7 +1,5 @@
 package de.metas.costing.methods;
 
-import java.math.BigDecimal;
-
 import org.compiere.model.I_M_CostDetail;
 
 import de.metas.costing.CostAmount;
@@ -9,6 +7,7 @@ import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailEvent;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -49,7 +48,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	protected void processMatchInvoice(final CostDetailEvent event, final CurrentCost cost)
 	{
 		final CostAmount amt = event.getAmt();
-		final BigDecimal qty = event.getQty();
+		final Quantity qty = event.getQty();
 
 		cost.adjustCurrentQty(qty);
 		cost.addCumulatedAmtAndQty(amt, qty);
@@ -59,7 +58,7 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CurrentCost cost)
 	{
 		final CostAmount amt = event.getAmt();
-		final BigDecimal qty = event.getQty();
+		final Quantity qty = event.getQty();
 		final boolean addition = qty.signum() > 0;
 
 		cost.adjustCurrentQty(qty);

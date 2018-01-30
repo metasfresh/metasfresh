@@ -34,7 +34,6 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
 import org.compiere.model.MInOut;
 import org.compiere.model.MProduct;
-import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.ProductAcctType;
@@ -44,7 +43,6 @@ import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailService;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
-import de.metas.product.IProductBL;
 
 /**
  * Post Shipment/Receipt Documents.
@@ -68,7 +66,6 @@ import de.metas.product.IProductBL;
 public class Doc_InOut extends Doc<DocLine_InOut>
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
@@ -98,8 +95,6 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	private List<DocLine_InOut> loadLines(final I_M_InOut inout)
 	{
-		final boolean isSOTrx = DOCTYPE_MatShipment.equals(getDocumentType());
-
 		final List<DocLine_InOut> docLines = new ArrayList<>();
 		for (final I_M_InOutLine inoutLine : inOutDAO.retrieveAllLines(inout))
 		{
@@ -111,24 +106,12 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			}
 
 			final DocLine_InOut docLine = new DocLine_InOut(inoutLine, this);
-
 			if (inOutBL.isReversal(inoutLine))
 			{
 				// NOTE: to be consistent with current logic
 				// we are setting docLine's ReversalLine_ID only if this is the actual reversal line
 				// and not the line which was reversed
 				docLine.setReversalLine_ID(inoutLine.getReversalLine_ID());
-			}
-
-			final BigDecimal qty = inoutLine.getMovementQty();
-			docLine.setQty(qty, isSOTrx);
-
-			// Define if Outside Processing
-			if (inoutLine.getC_OrderLine_ID() > 0)
-			{
-				final String sql = "SELECT PP_Cost_Collector_ID  FROM C_OrderLine WHERE C_OrderLine_ID=? AND PP_Cost_Collector_ID IS NOT NULL";
-				int PP_Cost_Collector_ID = DB.getSQLValueEx(getTrxName(), sql, new Object[] { inoutLine.getC_OrderLine_ID() });
-				docLine.setPP_Cost_Collector_ID(PP_Cost_Collector_ID);
 			}
 
 			//
@@ -313,7 +296,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		return facts;
 	}
-	
+
 	private void createFacts_SalesReturnLine(final Fact fact, final DocLine_InOut line)
 	{
 		// Skip not stockable (e.g. service products) because they have no cost
@@ -321,7 +304,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		{
 			return;
 		}
-		
+
 		final I_C_AcctSchema as = fact.getAcctSchema();
 		CostAmount costs = line.getShipmentCosts(as);
 
@@ -391,7 +374,6 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			}
 		}
 	}
-
 
 	private List<Fact> createFacts_PurchasingReceipt(final MAcctSchema as)
 	{

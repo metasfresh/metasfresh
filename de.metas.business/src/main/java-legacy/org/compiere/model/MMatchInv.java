@@ -33,6 +33,8 @@ import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailService;
 import de.metas.inout.IInOutBL;
+import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 
 /**
  * Match Invoice (Receipt<>Invoice) Model.
@@ -249,6 +251,7 @@ public class MMatchInv extends X_M_MatchInv
 		final I_M_InOut receipt = getM_InOutLine().getM_InOut();
 		final boolean isReturnTrx = inOutBL.isReturnMovementType(receipt.getMovementType());
 		final BigDecimal matchQty = isReturnTrx ? getQty().negate() : getQty();
+		final I_C_UOM matchQtyUOM = Services.get(IProductBL.class).getStockingUOM(getM_Product_ID());
 
 		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID()))
 		{
@@ -266,7 +269,7 @@ public class MMatchInv extends X_M_MatchInv
 							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
 							.documentRef(CostingDocumentRef.ofMatchInvoiceId(getM_MatchInv_ID()))
 							.costElementId(0)
-							.qty(matchQty)
+							.qty(Quantity.of(matchQty, matchQtyUOM))
 							.amt(CostAmount.of(matchAmt, invoice.getC_Currency_ID()))
 							.currencyConversionTypeId(invoice.getC_ConversionType_ID())
 							.date(TimeUtil.asLocalDate(invoice.getDateAcct()))

@@ -31,5 +31,4 @@ public class DocLine_Order extends DocLine<Doc_Order>
 	{
 		super(InterfaceWrapperHelper.getPO(orderLine), doc);
 	}
-
 }

@@ -7,6 +7,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
@@ -20,6 +21,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
 import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -51,14 +53,18 @@ public class CostsAdjustmentsCostingMethodHandler extends CostingMethodHandlerTe
 	{
 		final CostSegment costSegment = event.getCostSegment();
 		final CostAmount amt = event.getAmt();
-		final BigDecimal qty = event.getQty();
+		final Quantity qty = event.getQty();
 		final int precision = event.getPrecision();
 
 		// AZ Goodwill
 		// get costing method for product
 		final I_C_AcctSchema as = MAcctSchema.get(Env.getCtx(), costSegment.getAcctSchemaId());
-		final I_M_Product product = InterfaceWrapperHelper.loadOutOfTrx(costSegment.getProductId(), I_M_Product.class);
-		final CostingMethod productCostingMethod = Services.get(IProductBL.class).getCostingMethod(product, as);
+		final int productId = costSegment.getProductId();
+		final I_M_Product product = InterfaceWrapperHelper.loadOutOfTrx(productId, I_M_Product.class);
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final CostingMethod productCostingMethod = productBL.getCostingMethod(product, as);
+		final I_C_UOM productUOM = productBL.getStockingUOM(product);
+		
 		if (CostingMethod.AveragePO.equals(productCostingMethod) ||
 				CostingMethod.AverageInvoice.equals(productCostingMethod))
 		{
@@ -71,7 +77,7 @@ public class CostsAdjustmentsCostingMethodHandler extends CostingMethodHandlerTe
 			 */
 			String sql = "SELECT COALESCE(SUM(QtyOnHand),0) FROM M_Storage"
 					+ " WHERE AD_Client_ID=" + costSegment.getClientId()
-					+ " AND M_Product_ID=" + costSegment.getProductId();
+					+ " AND M_Product_ID=" + productId;
 			// Costing Level
 			final CostingLevel costingLevel = costSegment.getCostingLevel();
 			if (costingLevel == CostingLevel.Organization)
@@ -83,15 +89,15 @@ public class CostsAdjustmentsCostingMethodHandler extends CostingMethodHandlerTe
 				sql += " AND M_AttributeSetInstance_ID=" + costSegment.getAttributeSetInstanceId();
 			}
 			//
-			final BigDecimal qtyOnhand = DB.getSQLValueBDEx(ITrx.TRXNAME_ThreadInherited, sql);
-			if (qtyOnhand.signum() != 0)
+			final BigDecimal qtyOnHand = DB.getSQLValueBDEx(ITrx.TRXNAME_ThreadInherited, sql);
+			if (qtyOnHand.signum() != 0)
 			{
 				final CostAmount oldSum = cost.getCurrentCostPrice().multiply(cost.getCurrentQty());
 				final CostAmount sumAmt = oldSum.add(amt);	// amt is total already
-				final CostAmount costs = sumAmt.divide(qtyOnhand, precision, RoundingMode.HALF_UP);
+				final CostAmount costs = sumAmt.divide(qtyOnHand, precision, RoundingMode.HALF_UP);
 				cost.setCurrentCostPrice(costs);
 			}
-			cost.setCurrentQty(qtyOnhand);
+			cost.setCurrentQty(Quantity.of(qtyOnHand, productUOM));
 			
 			cost.addCumulatedAmtAndQty(amt, qty);
 		}

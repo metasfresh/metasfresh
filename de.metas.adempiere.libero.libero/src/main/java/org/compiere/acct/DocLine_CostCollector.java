@@ -15,6 +15,7 @@ import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementType;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.quantity.Quantity;
 
 /**
  * @author Teo Sarca, www.arhipac.ro
@@ -25,6 +26,8 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 	public DocLine_CostCollector(final I_PP_Cost_Collector cc, final Doc_PPCostCollector doc)
 	{
 		super(InterfaceWrapperHelper.getPO(cc), doc);
+
+		setQty(Quantity.of(cc.getMovementQty(), getProductStockingUOM()), false);
 	}
 
 	public MAccount getAccount(final MAcctSchema as, final CostElement element)

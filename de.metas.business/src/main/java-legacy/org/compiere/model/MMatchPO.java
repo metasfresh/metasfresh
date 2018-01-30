@@ -42,6 +42,8 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
+import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 
 /**
  * Match PO Model.
@@ -826,9 +828,11 @@ public class MMatchPO extends X_M_MatchPO
 		final int currencyConversionTypeId = orderLine.getC_Order().getC_ConversionType_ID();
 		final Timestamp dateAcct = getM_InOutLine().getM_InOut().getDateAcct();
 
-		final BigDecimal costPrice = getCostPrice();
 		final BigDecimal qty = isReturnTrx() ? getQty().negate() : getQty();
-		final BigDecimal amt = costPrice.multiply(qty);
+		final I_C_UOM qtyUOM = Services.get(IProductBL.class).getStockingUOM(getM_Product_ID());
+		
+		final CostAmount costPrice = getCostPrice();
+		final CostAmount amt = costPrice.multiply(qty);
 
 		// Get Account Schemas to create MCostDetail
 		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID()))
@@ -846,8 +850,8 @@ public class MMatchPO extends X_M_MatchPO
 							.productId(getM_Product_ID())
 							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
 							.documentRef(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()))
-							.qty(qty)
-							.amt(CostAmount.of(amt, orderLine.getC_Currency_ID()))
+							.qty(Quantity.of(qty, qtyUOM))
+							.amt(amt)
 							.currencyConversionTypeId(currencyConversionTypeId)
 							.date(TimeUtil.asLocalDate(dateAcct))
 							.description(orderLine.getDescription())
@@ -855,7 +859,7 @@ public class MMatchPO extends X_M_MatchPO
 		}
 	}
 
-	private BigDecimal getCostPrice()
+	private CostAmount getCostPrice()
 	{
 		final I_C_OrderLine orderLine = getC_OrderLine();
 		return Services.get(IOrderLineBL.class).getCostPrice(orderLine);

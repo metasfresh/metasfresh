@@ -5,11 +5,12 @@ import java.math.RoundingMode;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.compiere.model.I_C_UOM;
 
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 
 /*
  * #%L
@@ -40,21 +41,21 @@ public final class CurrentCost
 
 	private final int currencyId;
 	private final int precision;
+	private final I_C_UOM uom;
 
-	@Setter
 	private CostAmount currentCostPrice;
 	private final CostAmount currentCostPriceLL;
-	@Setter
-	private BigDecimal currentQty;
+	private Quantity currentQty;
 
 	private CostAmount cumulatedAmt;
-	private BigDecimal cumulatedQty;
+	private Quantity cumulatedQty;
 
 	@Builder
 	private CurrentCost(
 			final int id,
 			final int currencyId,
 			final int precision,
+			@NonNull final I_C_UOM uom,
 			@NonNull final BigDecimal currentCostPrice,
 			@NonNull final BigDecimal currentCostPriceLL,
 			@NonNull final BigDecimal currentQty,
@@ -68,17 +69,13 @@ public final class CurrentCost
 		this.id = id;
 		this.currencyId = currencyId;
 		this.precision = precision;
+		this.uom = uom;
+
 		this.currentCostPrice = CostAmount.of(currentCostPrice, currencyId);
 		this.currentCostPriceLL = CostAmount.of(currentCostPriceLL, currencyId);
-		this.currentQty = currentQty;
+		this.currentQty = Quantity.of(currentQty, uom);
 		this.cumulatedAmt = CostAmount.of(cumulatedAmt, currencyId);
-		this.cumulatedQty = cumulatedQty;
-	}
-
-	@Deprecated
-	public void add(@NonNull final BigDecimal amt, @NonNull final BigDecimal qty)
-	{
-		add(CostAmount.of(amt, getCurrencyId()), qty);
+		this.cumulatedQty = Quantity.of(cumulatedQty, uom);
 	}
 
 	/**
@@ -87,14 +84,14 @@ public final class CurrentCost
 	 * @param amt amt
 	 * @param qty qty
 	 */
-	public void add(@NonNull final CostAmount amt, @NonNull final BigDecimal qty)
+	public void add(@NonNull final CostAmount amt, @NonNull final Quantity qty)
 	{
 		assertCostCurrency(amt);
 		adjustCurrentQty(qty);
 		addCumulatedAmtAndQty(amt, qty);
 	}
 
-	private void assertCostCurrency(@NonNull final CostAmount amt)
+	private final void assertCostCurrency(@NonNull final CostAmount amt)
 	{
 		if (amt.getCurrencyId() != getCurrencyId())
 		{
@@ -102,10 +99,12 @@ public final class CurrentCost
 		}
 	}
 
-	@Deprecated
-	public void addWeightedAverage(@NonNull final BigDecimal amt, @NonNull final BigDecimal qty)
+	private final void assertUOM(@NonNull final Quantity qty)
 	{
-		addWeightedAverage(CostAmount.of(amt, getCurrencyId()), qty);
+		if (qty.getUOM().getC_UOM_ID() != uom.getC_UOM_ID())
+		{
+			throw new AdempiereException("Invalid UOM for `" + qty + "`. Expected: " + uom);
+		}
 	}
 
 	/**
@@ -115,29 +114,23 @@ public final class CurrentCost
 	 * @param amt total amt (price * qty)
 	 * @param qty qty
 	 */
-	public void addWeightedAverage(@NonNull final CostAmount amt, @NonNull final BigDecimal qty)
+	public void addWeightedAverage(@NonNull final CostAmount amt, @NonNull final Quantity qty)
 	{
 		assertCostCurrency(amt);
 
 		final CostAmount currentAmt = currentCostPrice.multiply(currentQty);
 		final CostAmount newAmt = currentAmt.add(amt);
-		final BigDecimal newQty = currentQty.add(qty);
+		final Quantity newQty = currentQty.add(qty);
 		if (newQty.signum() != 0)
 		{
-			currentCostPrice = newAmt.divide(newQty, precision, RoundingMode.HALF_UP);
+			currentCostPrice = newAmt.divide(newQty.getQty(), precision, RoundingMode.HALF_UP);
 		}
 		currentQty = newQty;
 
 		addCumulatedAmtAndQty(amt, qty);
 	}
 
-	@Deprecated
-	public void addCumulatedAmtAndQty(@NonNull final BigDecimal amt, @NonNull final BigDecimal qty)
-	{
-		addCumulatedAmtAndQty(CostAmount.of(amt, getCurrencyId()), qty);
-	}
-
-	public void addCumulatedAmtAndQty(@NonNull final CostAmount amt, @NonNull final BigDecimal qty)
+	public void addCumulatedAmtAndQty(@NonNull final CostAmount amt, @NonNull final Quantity qty)
 	{
 		assertCostCurrency(amt);
 
@@ -145,8 +138,20 @@ public final class CurrentCost
 		cumulatedQty = cumulatedQty.add(qty);
 	}
 
-	public void adjustCurrentQty(@NonNull final BigDecimal qtyToAdd)
+	public void adjustCurrentQty(@NonNull final Quantity qtyToAdd)
 	{
 		currentQty = currentQty.add(qtyToAdd);
+	}
+
+	public void setCurrentCostPrice(@NonNull final CostAmount costPrice)
+	{
+		assertCostCurrency(costPrice);
+		this.currentCostPrice = costPrice;
+	}
+
+	public void setCurrentQty(@NonNull final Quantity qty)
+	{
+		assertUOM(qty);
+		this.currentQty = qty;
 	}
 }

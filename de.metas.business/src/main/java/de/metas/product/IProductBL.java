@@ -115,6 +115,9 @@ public interface IProductBL extends ISingletonService
 	 * @return UOM; never return null;
 	 */
 	I_C_UOM getStockingUOM(I_M_Product product);
+	
+	I_C_UOM getStockingUOM(int productId);
+
 
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.

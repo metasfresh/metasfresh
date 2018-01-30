@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.util.Check;
 
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,7 +39,7 @@ public class CostDetailEvent
 	CostingMethod costingMethod;
 	CostingDocumentRef documentRef;
 
-	BigDecimal qty;
+	Quantity qty;
 	CostAmount amt;
 	CostAmount price;
 
@@ -52,8 +53,8 @@ public class CostDetailEvent
 			final CostingMethod costingMethod,
 			@NonNull final CostingDocumentRef documentRef,
 			@NonNull final BigDecimal amt,
-			@NonNull final BigDecimal qty,
 			@NonNull final BigDecimal price,
+			@NonNull final Quantity qty,
 			final int currencyId,
 			final int precision)
 	{

@@ -68,7 +68,6 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 
 		// Pseudo Line
 		m_line = new DocLine_ProjectIssue(m_issue, this);
-		m_line.setQty(m_issue.getMovementQty(), true);    // sets Trx and Storage Qty
 	}
 
 	/**

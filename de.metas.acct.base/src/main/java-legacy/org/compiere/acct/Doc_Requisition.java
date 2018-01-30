@@ -67,10 +67,6 @@ public class Doc_Requisition extends Doc<DocLine_Requisition>
 		for (final I_M_RequisitionLine line : reqPO.getLines())
 		{
 			DocLine_Requisition docLine = new DocLine_Requisition(line, this);
-			BigDecimal Qty = line.getQty();
-			docLine.setQty(Qty, false);
-			BigDecimal LineNetAmt = line.getLineNetAmt();
-			docLine.setAmount(LineNetAmt);	 // DR
 			list.add(docLine);
 		}
 		

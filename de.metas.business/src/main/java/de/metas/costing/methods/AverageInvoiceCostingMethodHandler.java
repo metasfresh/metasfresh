@@ -21,6 +21,7 @@ import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
 import de.metas.currency.ICurrencyBL;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -62,7 +63,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CurrentCost cost)
 	{
 		final CostAmount amt = event.getAmt();
-		final BigDecimal qty = event.getQty();
+		final Quantity qty = event.getQty();
 		final boolean addition = qty.signum() > 0;
 
 		if (addition)

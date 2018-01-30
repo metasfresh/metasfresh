@@ -6,6 +6,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_Product;
@@ -64,27 +65,27 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		{
 			return createCostForMatchInvoice(request);
 		}
-		else if(CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(documentTableName))
 		{
 			return createCostForMaterialShipment(request);
 		}
-		else if(CostingDocumentRef.TABLE_NAME_M_MovementLine.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_M_MovementLine.equals(documentTableName))
 		{
 			return createCostForMovementLine(request);
 		}
-		else if(CostingDocumentRef.TABLE_NAME_M_InventoryLine.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_M_InventoryLine.equals(documentTableName))
 		{
 			return createCostForInventoryLine(request);
 		}
-		else if(CostingDocumentRef.TABLE_NAME_M_ProductionLine.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_M_ProductionLine.equals(documentTableName))
 		{
 			return createCostForProductionLine(request);
 		}
-		else if(CostingDocumentRef.TABLE_NAME_C_ProjectIssue.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_C_ProjectIssue.equals(documentTableName))
 		{
 			return createCostForProjectIssue(request);
 		}
-		else if(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector.equals(documentTableName))
+		else if (CostingDocumentRef.TABLE_NAME_PP_Cost_Collector.equals(documentTableName))
 		{
 			return createCostForCostCollector(request);
 		}
@@ -186,7 +187,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		costDetail.setM_CostElement_ID(request.getCostElementId());
 
 		costDetail.setAmt(request.getAmt().getValue());
-		costDetail.setQty(request.getQty());
+		costDetail.setQty(request.getQty().getQty());
 		costDetail.setDescription(request.getDescription());
 
 		final CostingDocumentRef documentRef = request.getDocumentRef();
@@ -203,7 +204,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	private void updateCostDetailFromCreateRequest(final I_M_CostDetail costDetail, final CostDetailCreateRequest request)
 	{
 		final BigDecimal amt = request.getAmt().getValue();
-		final BigDecimal qty = request.getQty();
+		final BigDecimal qty = request.getQty().getQty();
 		costDetail.setDeltaAmt(amt.subtract(costDetail.getAmt()));
 		costDetail.setDeltaQty(qty.subtract(costDetail.getQty()));
 		if (isDelta(costDetail))
@@ -346,13 +347,17 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	private CurrentCost toCurrentCost(
 			final I_M_Cost costRecord,
-			final int currencyId, 
+			final int currencyId,
 			final int precision)
 	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final I_C_UOM uom = productBL.getStockingUOM(costRecord.getM_Product_ID());
+
 		return CurrentCost.builder()
 				.id(costRecord.getM_Cost_ID())
 				.currencyId(currencyId)
 				.precision(precision)
+				.uom(uom)
 				.currentCostPrice(costRecord.getCurrentCostPrice())
 				.currentCostPriceLL(costRecord.getCurrentCostPriceLL())
 				.currentQty(costRecord.getCurrentQty())
@@ -365,8 +370,8 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	{
 		cost.setCurrentCostPrice(from.getCurrentCostPrice().getValue());
 		cost.setCurrentCostPriceLL(from.getCurrentCostPriceLL().getValue());
-		cost.setCurrentQty(from.getCurrentQty());
+		cost.setCurrentQty(from.getCurrentQty().getQty());
 		cost.setCumulatedAmt(from.getCumulatedAmt().getValue());
-		cost.setCumulatedQty(from.getCumulatedQty());
+		cost.setCumulatedQty(from.getCumulatedQty().getQty());
 	}
 }

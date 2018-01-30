@@ -351,13 +351,14 @@ public final class Quantity
 	 */
 	public Quantity negateIf(final boolean condition)
 	{
-		if (!condition)
-		{
-			return this;
-		}
-
-		return negate();
+		return condition ? negate() : this;
 	}
+	
+	public Quantity negateIfNot(final boolean condition)
+	{
+		return !condition ? negate() : this;
+	}
+
 
 	/**
 	 * Calculates the Weighted Average between this Quantity and a previous given average.

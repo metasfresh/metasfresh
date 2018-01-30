@@ -37,6 +37,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 
 /**
@@ -91,20 +92,21 @@ public class Doc_Order extends Doc<DocLine_Order>
 		{
 			final DocLine_Order docLine = new DocLine_Order(orderLine, this);
 			docLine.setIsTaxIncluded(orderLineBL.isTaxIncluded(orderLine));
-			final BigDecimal qty = orderLine.getQtyOrdered();
-			docLine.setQty(qty, order.isSOTrx());
+
+			final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
+			docLine.setQty(Quantity.of(qtyOrdered, docLine.getProductStockingUOM()), order.isSOTrx());
 
 			//
-			BigDecimal PriceCost = null;
-			if (getDocumentType().equals(DOCTYPE_POrder))  	// PO
+			BigDecimal priceCost = null;
+			if (DOCTYPE_POrder.equals(getDocumentType()))  	// PO
 			{
-				PriceCost = orderLine.getPriceCost();
+				priceCost = orderLine.getPriceCost();
 			}
 
 			BigDecimal lineNetAmt = null;
-			if (PriceCost != null && PriceCost.signum() != 0)
+			if (priceCost != null && priceCost.signum() != 0)
 			{
-				lineNetAmt = qty.multiply(PriceCost);
+				lineNetAmt = qtyOrdered.multiply(priceCost);
 			}
 			else
 			{
@@ -137,7 +139,8 @@ public class Doc_Order extends Doc<DocLine_Order>
 				}
 			}  	// correct included Tax
 
-			docLine.setAmount(lineNetAmt, priceList, qty);
+			docLine.setAmount(lineNetAmt, priceList, qtyOrdered);
+			
 			docLines.add(docLine);
 		}
 

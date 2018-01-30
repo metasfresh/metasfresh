@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 
 public class DocLine_Invoice extends DocLine<Doc_Invoice>
@@ -57,9 +58,8 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 		setIsTaxIncluded(invoiceBL.isTaxIncluded(invoiceLine));
 
 		// Qty
-		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
-		final boolean isCreditMemo = doc.isCreditMemo();
-		setQty(isCreditMemo ? qtyInvoiced.negate() : qtyInvoiced, doc.isSOTrx());
+		final Quantity qtyInvoiced = Quantity.of(invoiceLine.getQtyInvoiced(), getProductStockingUOM());
+		setQty(qtyInvoiced.negateIf(doc.isCreditMemo()), doc.isSOTrx());
 
 		//
 		BigDecimal lineNetAmt = invoiceLine.getLineNetAmt();
@@ -84,7 +84,7 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 			}
 		}	// correct included Tax
 
-		setAmount(lineNetAmt, priceList, qtyInvoiced);	// qty for discount calc
+		setAmount(lineNetAmt, priceList, qtyInvoiced.getQty());	// qty for discount calc
 	}
 
 	public final I_C_InvoiceLine getC_InvoiceLine()

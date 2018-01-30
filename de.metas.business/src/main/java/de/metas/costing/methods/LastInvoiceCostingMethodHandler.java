@@ -18,6 +18,7 @@ import de.metas.costing.CostDetailEvent;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -53,7 +54,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	protected void processMatchInvoice(final CostDetailEvent event, final CurrentCost cost)
 	{
 		final CostAmount amt = event.getAmt();
-		final BigDecimal qty = event.getQty();
+		final Quantity qty = event.getQty();
 		final boolean isReturnTrx = qty.signum() < 0;
 		final CostAmount price = event.getPrice();
 
@@ -76,7 +77,7 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	@Override
 	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CurrentCost cost)
 	{
-		final BigDecimal qty = event.getQty();
+		final Quantity qty = event.getQty();
 		cost.adjustCurrentQty(qty);
 	}
 

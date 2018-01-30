@@ -17,6 +17,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAcctSchema;
@@ -52,6 +53,7 @@ import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyRate;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -446,6 +448,8 @@ public class CostDetailService implements ICostDetailService
 		{
 			price = amt;
 		}
+		
+		final I_C_UOM qtyUOM = Services.get(IProductBL.class).getStockingUOM(cd.getM_Product_ID());
 
 		return CostDetailEvent.builder()
 				.costSegment(costSegment)
@@ -453,7 +457,7 @@ public class CostDetailService implements ICostDetailService
 				.costingMethod(costElement.getCostingMethod())
 				.documentRef(extractDocumentRef(cd))
 				.amt(amt)
-				.qty(qty)
+				.qty(Quantity.of(qty, qtyUOM))
 				.price(price)
 				.currencyId(currencyId)
 				.precision(precision)

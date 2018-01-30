@@ -3,6 +3,8 @@ package org.compiere.acct;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ProjectIssue;
 
+import de.metas.quantity.Quantity;
+
 /*
  * #%L
  * de.metas.acct.base
@@ -31,6 +33,7 @@ public class DocLine_ProjectIssue extends DocLine<Doc_ProjectIssue>
 	public DocLine_ProjectIssue(I_C_ProjectIssue projectIssue, Doc_ProjectIssue doc)
 	{
 		super(InterfaceWrapperHelper.getPO(projectIssue), doc);
+		setQty(Quantity.of(projectIssue.getMovementQty(), getProductStockingUOM()), true);
 	}
 
 }

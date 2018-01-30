@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 
 /**
  * Cost Queue Model
@@ -118,14 +119,14 @@ public class MCostQueue extends X_M_CostQueue
 	 * 
 	 * @return cost price reduced or null of error
 	 */
-	public static BigDecimal adjustQty(final CostSegment costSegment, final int costElementId, final CostingMethod costingMethod, final BigDecimal Qty)
+	public static BigDecimal adjustQty(final CostSegment costSegment, final int costElementId, final CostingMethod costingMethod, final Quantity Qty)
 	{
 		if (Qty.signum() == 0)
 		{
 			return BigDecimal.ZERO;
 		}
 
-		BigDecimal remainingQty = Qty;
+		BigDecimal remainingQty = Qty.getQty();
 		for (final MCostQueue queue : getQueue(costSegment, costElementId, costingMethod))
 		{
 			// Negative Qty i.e. add
@@ -323,19 +324,19 @@ public class MCostQueue extends X_M_CostQueue
 	 * @param qty quantity
 	 * @param precision costing precision
 	 */
-	public void setCosts(final BigDecimal amt, final BigDecimal qty, final int precision)
+	public void setCosts(final BigDecimal amt, final Quantity qty, final int precision)
 	{
 		final BigDecimal oldSum = getCurrentCostPrice().multiply(getCurrentQty());
 		final BigDecimal newSum = amt;	// is total already
 		final BigDecimal sumAmt = oldSum.add(newSum);
-		final BigDecimal sumQty = getCurrentQty().add(qty);
+		final BigDecimal sumQty = getCurrentQty().add(qty.getQty());
 		if (sumQty.signum() != 0)
 		{
 			final BigDecimal cost = sumAmt.divide(sumQty, precision, BigDecimal.ROUND_HALF_UP);
 			setCurrentCostPrice(cost);
 		}
 		//
-		setCurrentQty(getCurrentQty().add(qty));
+		setCurrentQty(getCurrentQty().add(qty.getQty()));
 	}	// update
 
 }	// MCostQueue

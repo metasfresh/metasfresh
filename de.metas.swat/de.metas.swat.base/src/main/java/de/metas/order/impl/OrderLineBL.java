@@ -60,6 +60,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.costing.CostAmount;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -881,36 +882,38 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public BigDecimal getCostPrice(final org.compiere.model.I_C_OrderLine orderLine)
+	public CostAmount getCostPrice(final org.compiere.model.I_C_OrderLine orderLine)
 	{
+		final int currencyId = orderLine.getC_Currency_ID();
+		
 		final BigDecimal poCostPrice = orderLine.getPriceCost();
 		if (poCostPrice != null && poCostPrice.signum() != 0)
 		{
-			return poCostPrice;
+			return CostAmount.of(poCostPrice, currencyId);
 		}
 
 		BigDecimal priceActual = orderLine.getPriceActual();
 		if (!isTaxIncluded(orderLine))
 		{
-			return priceActual;
+			return CostAmount.of(priceActual, currencyId);
 		}
 
 		final int taxId = orderLine.getC_Tax_ID();
 		if (taxId <= 0)
 		{
 			// shall not happen
-			return priceActual;
+			return CostAmount.of(priceActual, currencyId);
 		}
 
 		final MTax tax = MTax.get(Env.getCtx(), taxId);
 		if (tax.isZeroTax())
 		{
-			return priceActual;
+			return CostAmount.of(priceActual, currencyId);
 		}
 
 		final int stdPrecision = getPrecision(orderLine);
 		final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(tax, priceActual, true/* taxIncluded */, stdPrecision);
 		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
-		return priceActualWithoutTax;
+		return CostAmount.of(priceActualWithoutTax, currencyId);
 	}
 }

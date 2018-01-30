@@ -15,6 +15,7 @@ import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
+import de.metas.quantity.Quantity;
 import lombok.Data;
 import lombok.NonNull;
 
@@ -55,7 +56,7 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 		final int costElementId = event.getCostElementId();
 		final CostingMethod costingMethod = event.getCostingMethod();
 		final CostAmount amt = event.getAmt();
-		final BigDecimal qty = event.getQty();
+		final Quantity qty = event.getQty();
 		final int precision = event.getPrecision();
 
 		final MCostQueue cq = MCostQueue.get(costSegment, costElementId);
@@ -79,7 +80,7 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 		final int costElementId = event.getCostElementId();
 		final CostingMethod costingMethod = event.getCostingMethod();
 		final CostAmount amt = event.getAmt();
-		final BigDecimal qty = event.getQty();
+		final Quantity qty = event.getQty();
 		final boolean addition = qty.signum() > 0;
 		final int precision = event.getPrecision();
 

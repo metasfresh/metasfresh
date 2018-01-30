@@ -45,6 +45,8 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.ICurrencyRate;
+import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /**
  * Accounting Fact Entry.
@@ -1425,5 +1427,11 @@ final class FactLine extends X_Fact_Acct
 				.build());
 		
 		this.setVATCode(vatCode.getCode());
+	}
+	
+	public void setQty(@NonNull final Quantity quantity)
+	{
+		setQty(quantity.getQty());
+		setC_UOM(quantity.getUOM());
 	}
 }	// FactLine

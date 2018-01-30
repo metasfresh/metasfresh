@@ -1,10 +1,10 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -50,7 +50,7 @@ public class CostDetailCreateRequest
 	CostAmount amt;
 	
 	@NonNull
-	BigDecimal qty;
+	Quantity qty;
 
 	int currencyConversionTypeId;
 	@NonNull

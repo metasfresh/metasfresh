@@ -108,13 +108,6 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 		// Pseudo Line
 		m_line = new DocLine_CostCollector(m_cc, this);
-		m_line.setQty(m_cc.getMovementQty(), false);    // sets Trx and Storage Qty
-
-		// Pseudo Line Check
-		if (m_line.getM_Product_ID() <= 0)
-		{
-			logger.warn("{} - No Product", m_line);
-		}
 
 		// Load the RoutingService
 		m_routingService = RoutingServiceFactory.get().getRoutingService(m_cc.getAD_Client_ID());

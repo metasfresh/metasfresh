@@ -17,14 +17,12 @@
 package org.compiere.acct;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Movement;
-import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MMovement;
 import org.compiere.util.TimeUtil;
@@ -80,19 +78,14 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 		setDocLines(loadLines(move));
 	}
 
-	private List<DocLine_Movement> loadLines(I_M_Movement move)
+	private List<DocLine_Movement> loadLines(final I_M_Movement movement)
 	{
-		final List<DocLine_Movement> list = new ArrayList<>();
-		for (I_M_MovementLine line : Services.get(IMovementDAO.class).retrieveLines(move))
-		{
-			final DocLine_Movement docLine = new DocLine_Movement(line, this);
-			docLine.setQty(line.getMovementQty(), false);
-			docLine.setReversalLine_ID(line.getReversalLine_ID());
-			list.add(docLine);
-		}
-
-		return list;
-	}	// loadLines
+		return Services.get(IMovementDAO.class)
+				.retrieveLines(movement)
+				.stream()
+				.map(movementLine -> new DocLine_Movement(movementLine, this))
+				.collect(ImmutableList.toImmutableList());
+	}
 
 	/**
 	 * Get Balance
@@ -103,7 +96,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 	public BigDecimal getBalance()
 	{
 		return BigDecimal.ZERO;
-	}   // getBalance
+	}
 
 	/**
 	 * Create Facts (the accounting logic) for

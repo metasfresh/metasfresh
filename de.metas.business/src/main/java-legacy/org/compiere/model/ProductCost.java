@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 
 import de.metas.costing.CostingMethod;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 
 /**
  * Product Cost Model. Summarizes Info in MCost
@@ -54,7 +55,7 @@ public class ProductCost
 		{
 			m_product = null;
 		}
-		
+
 		m_M_AttributeSetInstance_ID = M_AttributeSetInstance_ID;
 		m_trxName = trxName;
 	}	// ProductCost
@@ -80,6 +81,11 @@ public class ProductCost
 	{
 		m_qty = qty;
 	}   // setQty
+
+	public void setQty(Quantity qty)
+	{
+		setQty(qty.getQty(), qty.getUOM().getC_UOM_ID());
+	}
 
 	/**
 	 * Set Quantity in UOM
@@ -152,6 +158,7 @@ public class ProductCost
 
 	/**
 	 * Checks if given <code>costs</code> represent no costs.
+	 * 
 	 * @param costs
 	 * @return true if no costs
 	 */

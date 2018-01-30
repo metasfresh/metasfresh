@@ -17,30 +17,23 @@
 package org.compiere.acct;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
-import org.compiere.model.MInOutLine;
-import org.compiere.model.ProductCost;
-import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
 
 import de.metas.acct.api.ProductAcctType;
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostingMethod;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
-import de.metas.order.IOrderLineBL;
 
 /**
  * Post MatchPO Documents.
@@ -63,16 +56,12 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 
 	/** pseudo line */
 	private DocLine_MatchPO docLine;
-	
-	private int m_C_OrderLine_ID = 0;
-	private I_C_OrderLine m_oLine = null;
-	//
-	private int m_M_InOutLine_ID = 0;
-	private I_M_InOutLine m_ioLine = null;
-	// private int m_C_InvoiceLine_ID = 0;
 
-	private ProductCost m_pc;
-	private int m_M_AttributeSetInstance_ID = 0;
+//	private int m_C_OrderLine_ID = 0;
+//	private I_C_OrderLine m_oLine = null;
+//	//
+//	private int m_M_InOutLine_ID = 0;
+//	private I_M_InOutLine m_ioLine = null;
 
 	/** Shall we create accounting facts? (08555) */
 	private boolean noFactRecords = false;
@@ -86,26 +75,10 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	protected void loadDocumentDetails()
 	{
 		setC_Currency_ID(Doc.NO_CURRENCY);
-		final I_M_MatchPO matchPO = getModel(I_M_MatchPO.class);
-		setDateDoc(matchPO.getDateTrx());
+		docLine = new DocLine_MatchPO(getModel(I_M_MatchPO.class), this);
 		
-		docLine = new DocLine_MatchPO(matchPO, this);
-		
-		//
-		m_M_AttributeSetInstance_ID = matchPO.getM_AttributeSetInstance_ID();
-		setQty(matchPO.getQty());
-		//
-		m_C_OrderLine_ID = matchPO.getC_OrderLine_ID();
-		m_oLine = InterfaceWrapperHelper.create(getCtx(), m_C_OrderLine_ID, I_C_OrderLine.class, getTrxName());
-		//
-		m_M_InOutLine_ID = matchPO.getM_InOutLine_ID();
-		m_ioLine = new MInOutLine(getCtx(), m_M_InOutLine_ID, null);
+		setDateDoc(docLine.getDateDoc());
 
-		// m_C_InvoiceLine_ID = matchPO.getC_InvoiceLine_ID();
-
-		//
-		m_pc = new ProductCost(getCtx(), getM_Product_ID(), m_M_AttributeSetInstance_ID, getTrxName());
-		m_pc.setQty(getQty());
 
 		this.noFactRecords = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_NoFactRecords, DEFAULT_NoFactRecords);
 	}
@@ -146,9 +119,9 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		}
 
 		//
-		if (getM_Product_ID() <= 0		// Nothing to do if no Product
-				|| getQty().signum() == 0
-				|| m_M_InOutLine_ID <= 0)	// No posting if not matched to Shipment
+		if (docLine.getM_Product_ID() <= 0		// Nothing to do if no Product
+				|| docLine.getQty().signum() == 0
+				|| docLine.getM_InOutLine_ID() <= 0)	// No posting if not matched to Material Receipt
 		{
 			return facts;
 		}
@@ -158,56 +131,19 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		setC_Currency_ID(as.getC_Currency_ID());
 		boolean isInterOrg = isInterOrg(as);
 
-		// Purchase Order Line
+		boolean isReturnTrx = docLine.isReturnTrx();
 
-		final BigDecimal poCostPrice = Services.get(IOrderLineBL.class).getCostPrice(m_oLine);
-
-		final I_M_InOutLine receiptLine = m_ioLine;
-		final I_M_InOut inOut = receiptLine.getM_InOut();
-		boolean isReturnTrx = inOut.getMovementType().equals(X_M_InOut.MOVEMENTTYPE_VendorReturns);
-
-		// calculate po cost
-		BigDecimal poCost = poCostPrice.multiply(getQty());			// Delivered so far
-
-		// Different currency
-		if (m_oLine.getC_Currency_ID() != as.getC_Currency_ID())
-		{
-			final I_C_Order order = m_oLine.getC_Order();
-			final Timestamp dateAcct = order.getDateAcct();
-			final BigDecimal rate = currencyConversionBL.getRate(
-					order.getC_Currency_ID(), as.getC_Currency_ID(),
-					dateAcct, order.getC_ConversionType_ID(),
-					m_oLine.getAD_Client_ID(), m_oLine.getAD_Org_ID());
-			if (rate == null)
-			{
-				throw newPostingException()
-						.setC_AcctSchema(as)
-						.setFact(fact)
-						.setDetailMessage("Purchase Order not convertible");
-			}
-			poCost = poCost.multiply(rate);
-			if (poCost.scale() > as.getCostingPrecision())
-				poCost = poCost.setScale(as.getCostingPrecision(), BigDecimal.ROUND_HALF_UP);
-		}
+		final CostAmount poCost = docLine.getPOCosts(as);
 
 		// Calculate PPV for standard costing
-		final CostingMethod costingMethod = docLine.getProductCostingMethod(as);
 		// get standard cost and also make sure cost for other costing method is updated
-		final BigDecimal costs = m_pc.getProductCosts(as, getAD_Org_ID(), CostingMethod.StandardCosting, m_C_OrderLine_ID, false);	// non-zero costs
+		final CostAmount standardCosts = docLine.getStandardCosts(as);
 
+		final CostingMethod costingMethod = docLine.getProductCostingMethod(as);
 		if (CostingMethod.StandardCosting.equals(costingMethod))
 		{
-			// No Costs yet - no PPV
-			if (ProductCost.isNoCosts(costs))
-			{
-				throw newPostingException()
-						.setC_AcctSchema(as)
-						.setFact(fact)
-						.setDetailMessage("Resubmit - No Costs for " + docLine.getProduct().getName());
-			}
-
 			// Difference
-			BigDecimal difference = poCost.subtract(costs);
+			final CostAmount difference = poCost.subtract(standardCosts);
 			// Nothing to post
 			if (difference.signum() == 0)
 			{
@@ -218,43 +154,44 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 			// Product PPV
 			final FactLine cr = fact.createLine(null,
 					docLine.getAccount(ProductAcctType.PPV, as),
-					as.getC_Currency_ID(), isReturnTrx ? difference.negate() : difference);
+					difference.getCurrencyId(),
+					difference.negateIf(isReturnTrx).getValue());
 			if (cr != null)
 			{
-				cr.setQty(isReturnTrx ? getQty().negate() : getQty());
-				cr.setC_BPartner_ID(m_oLine.getC_BPartner_ID());
-				cr.setC_Activity_ID(m_oLine.getC_Activity_ID());
-				cr.setC_Campaign_ID(m_oLine.getC_Campaign_ID());
-				cr.setC_Project_ID(m_oLine.getC_Project_ID());
-				cr.setC_UOM_ID(m_oLine.getPrice_UOM_ID());
-				cr.setUser1_ID(m_oLine.getUser1_ID());
-				cr.setUser2_ID(m_oLine.getUser2_ID());
+				final I_C_OrderLine orderLine = docLine.getOrderLine();
+				cr.setQty(docLine.getQty().negateIf(isReturnTrx));
+				cr.setC_UOM_ID(orderLine.getPrice_UOM_ID());
+				cr.setC_BPartner_ID(orderLine.getC_BPartner_ID());
+				cr.setC_Activity_ID(orderLine.getC_Activity_ID());
+				cr.setC_Campaign_ID(orderLine.getC_Campaign_ID());
+				cr.setC_Project_ID(orderLine.getC_Project_ID());
+				cr.setUser1_ID(orderLine.getUser1_ID());
+				cr.setUser2_ID(orderLine.getUser2_ID());
 			}
 
 			// PPV Offset
 			final FactLine dr = fact.createLine(null,
 					getAccount(Doc.ACCTTYPE_PPVOffset, as),
-					as.getC_Currency_ID(), isReturnTrx ? difference : difference.negate());
+					difference.getCurrencyId(),
+					difference.negateIfNot(isReturnTrx).getValue());
 			if (dr != null)
 			{
-				dr.setQty(isReturnTrx ? getQty() : getQty().negate());
-				dr.setC_BPartner_ID(m_oLine.getC_BPartner_ID());
-				dr.setC_Activity_ID(m_oLine.getC_Activity_ID());
-				dr.setC_Campaign_ID(m_oLine.getC_Campaign_ID());
-				dr.setC_Project_ID(m_oLine.getC_Project_ID());
-				final I_C_OrderLine ol = InterfaceWrapperHelper.create(m_oLine, I_C_OrderLine.class);
-				dr.setC_UOM_ID(ol.getPrice_UOM_ID());
-				dr.setUser1_ID(m_oLine.getUser1_ID());
-				dr.setUser2_ID(m_oLine.getUser2_ID());
+				final I_C_OrderLine orderLine = docLine.getOrderLine();
+				dr.setQty(docLine.getQty().negateIfNot(isReturnTrx));
+				dr.setC_UOM_ID(orderLine.getPrice_UOM_ID());
+				dr.setC_BPartner_ID(orderLine.getC_BPartner_ID());
+				dr.setC_Activity_ID(orderLine.getC_Activity_ID());
+				dr.setC_Campaign_ID(orderLine.getC_Campaign_ID());
+				dr.setC_Project_ID(orderLine.getC_Project_ID());
+				dr.setUser1_ID(orderLine.getUser1_ID());
+				dr.setUser2_ID(orderLine.getUser2_ID());
 			}
 
 			// Avoid usage of clearing accounts
 			// If both accounts Purchase Price Variance and Purchase Price Variance Offset are equal
 			// then remove the posting
-
-			MAccount acct_db = dr.getAccount(); // PPV
-			MAccount acct_cr = cr.getAccount(); // PPV Offset
-
+			final MAccount acct_db = dr.getAccount(); // PPV
+			final MAccount acct_cr = cr.getAccount(); // PPV Offset
 			if ((!as.isPostIfClearingEqual()) && acct_db.equals(acct_cr) && (!isInterOrg))
 			{
 
@@ -285,7 +222,7 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 	 * 
 	 * @return true if there are more than one org involved on the posting
 	 */
-	private boolean isInterOrg(MAcctSchema as)
+	private boolean isInterOrg(final MAcctSchema as)
 	{
 		final MAcctSchemaElement elementorg = as.getAcctSchemaElement(MAcctSchemaElement.ELEMENTTYPE_Organization);
 		if (elementorg == null || !elementorg.isBalanced())
@@ -296,9 +233,11 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 
 		// verify if org of receipt line is different from org of order line
 		// ignoring invoice line org as not used in posting
-		if (m_ioLine != null
-				&& m_oLine != null
-				&& m_ioLine.getAD_Org_ID() != m_oLine.getAD_Org_ID())
+		final I_M_InOutLine receiptLine = docLine.getReceiptLine();
+		final I_C_OrderLine orderLine = docLine.getOrderLine();
+		if (receiptLine != null
+				&& orderLine != null
+				&& receiptLine.getAD_Org_ID() != orderLine.getAD_Org_ID())
 		{
 			return true;
 		}

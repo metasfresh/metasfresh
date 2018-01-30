@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -51,6 +52,14 @@ public class CostAmount
 		this.currencyId = currencyId;
 	}
 
+	private final void assertCurrencyMatching(final CostAmount amt)
+	{
+		if (currencyId != amt.currencyId)
+		{
+			throw new AdempiereException("Amount has invalid currency: " + amt + ". Expected: " + currencyId);
+		}
+	}
+
 	public int signum()
 	{
 		return value.signum();
@@ -71,6 +80,16 @@ public class CostAmount
 		return new CostAmount(value.negate(), currencyId);
 	}
 
+	public CostAmount negateIf(final boolean condition)
+	{
+		return condition ? negate() : this;
+	}
+
+	public CostAmount negateIfNot(final boolean condition)
+	{
+		return !condition ? negate() : this;
+	}
+
 	public CostAmount multiply(@NonNull final BigDecimal multiplicand)
 	{
 		if (BigDecimal.ONE.compareTo(multiplicand) == 0)
@@ -81,12 +100,14 @@ public class CostAmount
 		return new CostAmount(value.multiply(multiplicand), currencyId);
 	}
 
+	public CostAmount multiply(@NonNull final Quantity quantity)
+	{
+		return multiply(quantity.getQty());
+	}
+
 	public CostAmount add(@NonNull final CostAmount amtToAdd)
 	{
-		if (currencyId != amtToAdd.currencyId)
-		{
-			throw new AdempiereException("Amount has invalid currency: " + amtToAdd + ". Expected: " + currencyId);
-		}
+		assertCurrencyMatching(amtToAdd);
 
 		if (amtToAdd.isZero())
 		{
@@ -104,5 +125,27 @@ public class CostAmount
 	{
 		final BigDecimal valueNew = value.divide(divisor, precision, roundingMode);
 		return new CostAmount(valueNew, currencyId);
+	}
+
+	public CostAmount roundToPrecisionIfNeeded(final int precision)
+	{
+		if (value.scale() <= precision)
+		{
+			return this;
+		}
+
+		final BigDecimal valueNew = value.setScale(precision, RoundingMode.HALF_UP);
+		return new CostAmount(valueNew, currencyId);
+	}
+
+	public CostAmount subtract(@NonNull final CostAmount amtToSubtract)
+	{
+		assertCurrencyMatching(amtToSubtract);
+
+		if (amtToSubtract.isZero())
+		{
+			return this;
+		}
+		return new CostAmount(value.subtract(amtToSubtract.value), currencyId);
 	}
 }

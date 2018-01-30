@@ -9,12 +9,14 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MAccount;
 import org.compiere.model.ProductCost;
+import org.compiere.util.DB;
 
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.order.IOrderLineBL;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -41,21 +43,35 @@ import de.metas.order.IOrderLineBL;
 class DocLine_InOut extends DocLine<Doc_InOut>
 {
 	/** Outside Processing */
-	private int m_PP_Cost_Collector_ID = 0;
+	private Integer ppCostCollectorId = null;
 
 	public DocLine_InOut(final I_M_InOutLine inoutLine, final Doc_InOut doc)
 	{
 		super(InterfaceWrapperHelper.getPO(inoutLine), doc);
+
+		final Quantity qty = Quantity.of(inoutLine.getMovementQty(), getProductStockingUOM());
+		setQty(qty, doc.isSOTrx());
 	}
 
 	private final int getPP_Cost_Collector_ID()
 	{
-		return m_PP_Cost_Collector_ID;
+		if (ppCostCollectorId == null)
+		{
+			ppCostCollectorId = retrievePPCostCollectorId();
+		}
+		return ppCostCollectorId;
 	}
 
-	public final int setPP_Cost_Collector_ID(int PP_Cost_Collector_ID)
+	private final int retrievePPCostCollectorId()
 	{
-		return m_PP_Cost_Collector_ID;
+		final int orderLineId = getC_OrderLine_ID();
+		if (orderLineId > 0)
+		{
+			final String sql = "SELECT PP_Cost_Collector_ID  FROM C_OrderLine WHERE C_OrderLine_ID=? AND PP_Cost_Collector_ID IS NOT NULL";
+			return DB.getSQLValueEx(getTrxName(), sql, new Object[] { orderLineId });
+		}
+
+		return 0;
 	}
 
 	public final I_C_OrderLine getOrderLineOrNull()
@@ -98,11 +114,9 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 			final I_C_OrderLine orderLine = getOrderLineOrNull();
 			if (orderLine != null)
 			{
-				final int currencyId = orderLine.getC_Currency_ID();
-				final BigDecimal costPrice = Services.get(IOrderLineBL.class).getCostPrice(orderLine);
-				final BigDecimal costs = costPrice.multiply(getQty());
-
-				return CostAmount.of(costs, currencyId);
+				final CostAmount costPrice = Services.get(IOrderLineBL.class).getCostPrice(orderLine);
+				final CostAmount costs = costPrice.multiply(getQty());
+				return costs;
 			}
 		}
 

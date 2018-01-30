@@ -24,13 +24,14 @@ import org.adempiere.minventory.api.IInventoryDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
 import org.compiere.model.MInventory;
 import org.compiere.model.MProduct;
 import org.compiere.model.ProductCost;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostingDocumentRef;
@@ -82,43 +83,15 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 		setDocLines(loadLines(inventory));
 	}
 
-	/**
-	 * Load Invoice Line
-	 * 
-	 * @param inventory inventory
-	 * @return DocLine Array
-	 */
 	private List<DocLine_Inventory> loadLines(final I_M_Inventory inventory)
 	{
-		final List<DocLine_Inventory> list = new ArrayList<>();
-		for (final I_M_InventoryLine line : Services.get(IInventoryDAO.class).retrieveLinesForInventory(inventory))
-		{
-			// nothing to post
-			if (line.getQtyBook().compareTo(line.getQtyCount()) == 0
-					&& line.getQtyInternalUse().signum() == 0)
-			{
-				continue;
-			}
-			//
-			DocLine_Inventory docLine = new DocLine_Inventory(line, this);
-			BigDecimal Qty = line.getQtyInternalUse();
-			if (Qty.signum() != 0)
-			{
-				Qty = Qty.negate();		// Internal Use entered positive
-			}
-			else
-			{
-				BigDecimal QtyBook = line.getQtyBook();
-				BigDecimal QtyCount = line.getQtyCount();
-				Qty = QtyCount.subtract(QtyBook);
-			}
-			docLine.setQty(Qty, false);		// -5 => -5
-			docLine.setReversalLine_ID(line.getReversalLine_ID());
-			list.add(docLine);
-		}
-
-		return list;
-	}	// loadLines
+		return Services.get(IInventoryDAO.class)
+				.retrieveLinesForInventory(inventory)
+				.stream()
+				.map(line -> new DocLine_Inventory(line, this))
+				.filter(docLine -> !docLine.getQty().isZero())
+				.collect(ImmutableList.toImmutableList());
+	}
 
 	/**
 	 * Get Balance
@@ -129,7 +102,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 	public BigDecimal getBalance()
 	{
 		return BigDecimal.ZERO;
-	}   // getBalance
+	}
 
 	/**
 	 * Create Facts (the accounting logic) for

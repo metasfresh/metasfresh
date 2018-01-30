@@ -8,6 +8,7 @@ import org.compiere.model.I_M_MovementLine;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -37,6 +38,9 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 	public DocLine_Movement(final I_M_MovementLine movementLine, final Doc_Movement doc)
 	{
 		super(InterfaceWrapperHelper.getPO(movementLine), doc);
+
+		setQty(Quantity.of(movementLine.getMovementQty(), getProductStockingUOM()), false);
+		setReversalLine_ID(movementLine.getReversalLine_ID());
 	}
 
 	/**

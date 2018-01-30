@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.minventory.api.IInventoryDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
@@ -44,6 +45,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
+import de.metas.quantity.Quantity;
 
 /**
  * Physical Inventory Model
@@ -449,8 +451,8 @@ public class MInventory extends X_M_Inventory implements IDocument
 				checkMaterialPolicy(line, qtyDiff);
 
 			// Stock Movement - Counterpart MOrder.reserveStock
-			if (product != null
-					&& Services.get(IProductBL.class).isStocked(product))
+			final IProductBL productBL = Services.get(IProductBL.class);
+			if (product != null && productBL.isStocked(product))
 			{
 				log.debug("Material Transaction");
 				MTransaction mtrx = null;
@@ -526,7 +528,9 @@ public class MInventory extends X_M_Inventory implements IDocument
 						}
 						if (QtyMA.signum() != 0)
 						{
-							createCostDetail(line, ma.getM_AttributeSetInstance_ID(), QtyMA.negate());
+							createCostDetail(line,
+									ma.getM_AttributeSetInstance_ID(),
+									Quantity.of(QtyMA.negate(), productBL.getStockingUOM(product)));
 						}
 
 						qtyDiff = QtyNew;
@@ -545,8 +549,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 							line.getM_AttributeSetInstance_ID(), 0,
 							qtyDiff, BigDecimal.ZERO, BigDecimal.ZERO, get_TrxName()))
 					{
-						m_processMsg = "Cannot correct Inventory (MA)";
-						return IDocument.STATUS_Invalid;
+						throw new AdempiereException("Cannot correct Inventory (MA)");
 					}
 
 					// Only Update Date Last Inventory if is a Physical Inventory
@@ -559,11 +562,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 								get_TrxName());
 
 						storage.setDateLastInventory(getMovementDate());
-						if (!storage.save(get_TrxName()))
-						{
-							m_processMsg = "Storage not updated(2)";
-							return IDocument.STATUS_Invalid;
-						}
+						InterfaceWrapperHelper.save(storage);
 					}
 
 					String m_MovementType = null;
@@ -582,15 +581,13 @@ public class MInventory extends X_M_Inventory implements IDocument
 							getMovementDate(),
 							get_TrxName());
 					mtrx.setM_InventoryLine_ID(line.getM_InventoryLine_ID());
-					if (!mtrx.save())
-					{
-						m_processMsg = "Transaction not inserted(2)";
-						return IDocument.STATUS_Invalid;
-					}
+					InterfaceWrapperHelper.save(mtrx);
 
 					if (qtyDiff.signum() != 0)
 					{
-						createCostDetail(line, line.getM_AttributeSetInstance_ID(), qtyDiff);
+						createCostDetail(line,
+								line.getM_AttributeSetInstance_ID(),
+								Quantity.of(qtyDiff.negate(), productBL.getStockingUOM(product)));
 					}
 				}	// Fallback
 			}	// stock movement
@@ -1008,7 +1005,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 	/**
 	 * Create Cost Detail
 	 */
-	private void createCostDetail(final MInventoryLine line, final int M_AttributeSetInstance_ID, final BigDecimal qty)
+	private void createCostDetail(final MInventoryLine line, final int M_AttributeSetInstance_ID, final Quantity qty)
 	{
 		// Get Account Schemas to create MCostDetail
 		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID()))
