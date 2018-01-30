@@ -49,7 +49,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_M_CostElement;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Cost_Collector;
@@ -58,6 +57,7 @@ import org.slf4j.Logger;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICostElementRepository;
 import de.metas.logging.LogManager;
@@ -366,7 +366,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 	public Collection<CostElement> getCostElements()
 	{
-		final String costingMethod = X_M_CostElement.COSTINGMETHOD_StandardCosting;
+		final CostingMethod costingMethod = CostingMethod.StandardCosting;
 		final Collection<CostElement> elements = costElementsRepo.getByCostingMethod(costingMethod);
 		return elements;
 	}

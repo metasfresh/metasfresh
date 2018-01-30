@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.methods.LastInvoiceCostingMethodHandler;
@@ -93,7 +94,7 @@ public class MCost extends X_M_Cost
 			final int M_AttributeSetInstance_ID,
 			final MAcctSchema as,
 			final int AD_Org_ID,
-			final String costingMethod,
+			final CostingMethod costingMethod,
 			final BigDecimal qty,
 			final int C_OrderLine_ID,
 			final boolean zeroCostsOK,
@@ -105,7 +106,7 @@ public class MCost extends X_M_Cost
 
 		//
 		// Costing Method
-		final String costingMethodEffective;
+		final CostingMethod costingMethodEffective;
 		if (costingMethod == null)
 		{
 			final IProductBL productBL = Services.get(IProductBL.class);
@@ -153,7 +154,7 @@ public class MCost extends X_M_Cost
 	 */
 	private static BigDecimal getCurrentCost(
 			final CostSegment costSegment,
-			final String costingMethod,
+			final CostingMethod costingMethod,
 			final BigDecimal qty,
 			final int C_OrderLine_ID,
 			final boolean zeroCostsOK)
@@ -192,7 +193,7 @@ public class MCost extends X_M_Cost
 				pstmt.setInt(4, costSegment.getAttributeSetInstanceId());
 				pstmt.setInt(5, costSegment.getCostTypeId());
 				pstmt.setInt(6, costSegment.getAcctSchemaId());
-				pstmt.setString(7, costingMethod);
+				pstmt.setString(7, costingMethod != null ? costingMethod.getCode() : null);
 				rs = pstmt.executeQuery();
 				while (rs.next())
 				{
@@ -246,7 +247,7 @@ public class MCost extends X_M_Cost
 
 			// Case: we are using StandardCosting and user explicitly set the M_Cost.CurrentCostPrice to ZERO.
 			// We shall respect that.
-			if (X_M_CostElement.COSTINGMETHOD_StandardCosting.equals(costingMethod) && countCostRecords > 0)
+			if (CostingMethod.StandardCosting.equals(costingMethod) && countCostRecords > 0)
 			{
 				return BigDecimal.ZERO;
 			}
@@ -260,13 +261,13 @@ public class MCost extends X_M_Cost
 
 		// Material Costs
 		BigDecimal materialCost = materialCostEach.multiply(qty);
-		if (X_M_CostElement.COSTINGMETHOD_StandardCosting.equals(costingMethod))
+		if (CostingMethod.StandardCosting.equals(costingMethod))
 		{
 			// Standard costs - just Material Costs
 			return materialCost;
 		}
-		else if (X_M_CostElement.COSTINGMETHOD_Fifo.equals(costingMethod)
-				|| X_M_CostElement.COSTINGMETHOD_Lifo.equals(costingMethod))
+		else if (CostingMethod.FIFO.equals(costingMethod)
+				|| CostingMethod.LIFO.equals(costingMethod))
 		{
 			final CostElement ce = Services.get(ICostElementRepository.class).getOrCreateMaterialCostElement(costSegment.getClientId(), costingMethod);
 			materialCost = MCostQueue.getCosts(costSegment, ce.getId(), ce.getCostingMethod(), qty);
@@ -309,18 +310,11 @@ public class MCost extends X_M_Cost
 
 	/**
 	 * Get Seed Costs
-	 *
-	 * @param product product
-	 * @param M_ASI_ID costing level asi
-	 * @param as accounting schema
-	 * @param Org_ID costing level org
-	 * @param costingMethod costing method
-	 * @param C_OrderLine_ID optional order line
 	 * @return price or null
 	 */
 	public static BigDecimal getSeedCosts(
 			final CostSegment costSegment,
-			final String costingMethod,
+			final CostingMethod costingMethod,
 			final int C_OrderLine_ID)
 	{
 		BigDecimal retValue = Services.get(ICostDetailService.class).calculateSeedCosts(costSegment, costingMethod, C_OrderLine_ID);
@@ -340,9 +334,9 @@ public class MCost extends X_M_Cost
 		}
 
 		// Look for Standard Costs first
-		if (!X_M_CostElement.COSTINGMETHOD_StandardCosting.equals(costingMethod))
+		if (costingMethod != CostingMethod.StandardCosting)
 		{
-			final CostElement ce = Services.get(ICostElementRepository.class).getOrCreateMaterialCostElement(costSegment.getClientId(), X_M_CostElement.COSTINGMETHOD_StandardCosting);
+			final CostElement ce = Services.get(ICostElementRepository.class).getOrCreateMaterialCostElement(costSegment.getClientId(), CostingMethod.StandardCosting);
 			final I_M_Cost cost = get(costSegment, ce.getId());
 			if (cost != null && cost.getCurrentCostPrice().signum() != 0)
 			{
@@ -352,9 +346,9 @@ public class MCost extends X_M_Cost
 
 		// We do not have a price
 		// PO first
-		if (X_M_CostElement.COSTINGMETHOD_AveragePO.equals(costingMethod)
-				|| X_M_CostElement.COSTINGMETHOD_LastPOPrice.equals(costingMethod)
-				|| X_M_CostElement.COSTINGMETHOD_StandardCosting.equals(costingMethod))
+		if (CostingMethod.AveragePO.equals(costingMethod)
+				|| CostingMethod.LastPOPrice.equals(costingMethod)
+				|| CostingMethod.StandardCosting.equals(costingMethod))
 		{
 			// try Last PO
 			retValue = LastPOCostingMethodHandler.getLastPOPrice(costSegment);
@@ -383,9 +377,9 @@ public class MCost extends X_M_Cost
 
 		// Still Nothing
 		// Inv second
-		if (X_M_CostElement.COSTINGMETHOD_AveragePO.equals(costingMethod)
-				|| X_M_CostElement.COSTINGMETHOD_LastPOPrice.equals(costingMethod)
-				|| X_M_CostElement.COSTINGMETHOD_StandardCosting.equals(costingMethod))
+		if (CostingMethod.AveragePO.equals(costingMethod)
+				|| CostingMethod.LastPOPrice.equals(costingMethod)
+				|| CostingMethod.StandardCosting.equals(costingMethod))
 		{
 			// try last Inv
 			retValue = LastInvoiceCostingMethodHandler.getLastInvoicePrice(costSegment);

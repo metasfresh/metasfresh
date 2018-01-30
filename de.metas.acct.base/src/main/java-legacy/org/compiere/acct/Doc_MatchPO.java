@@ -33,11 +33,11 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MInOutLine;
 import org.compiere.model.ProductCost;
-import org.compiere.model.X_C_AcctSchema;
 import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
 
 import de.metas.acct.api.ProductAcctType;
+import de.metas.costing.CostingMethod;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
@@ -191,11 +191,11 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		}
 
 		// Calculate PPV for standard costing
-		final String costingMethod = docLine.getProductCostingMethod(as);
+		final CostingMethod costingMethod = docLine.getProductCostingMethod(as);
 		// get standard cost and also make sure cost for other costing method is updated
-		final BigDecimal costs = m_pc.getProductCosts(as, getAD_Org_ID(), MAcctSchema.COSTINGMETHOD_StandardCosting, m_C_OrderLine_ID, false);	// non-zero costs
+		final BigDecimal costs = m_pc.getProductCosts(as, getAD_Org_ID(), CostingMethod.StandardCosting, m_C_OrderLine_ID, false);	// non-zero costs
 
-		if (X_C_AcctSchema.COSTINGMETHOD_StandardCosting.equals(costingMethod))
+		if (CostingMethod.StandardCosting.equals(costingMethod))
 		{
 			// No Costs yet - no PPV
 			if (ProductCost.isNoCosts(costs))

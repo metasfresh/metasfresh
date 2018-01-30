@@ -62,6 +62,7 @@ import org.eevolution.api.IPPWorkflowDAO;
 import org.eevolution.model.MPPProductPlanning;
 
 import de.metas.costing.CostElement;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
@@ -92,7 +93,7 @@ public class RollupWorkflow extends JavaProcess
 	/* Product Category */
 	private int 			p_M_Product_Category_ID = 0;
 	/* Costing Method 	*/
-	private String 			p_ConstingMethod = X_M_CostElement.COSTINGMETHOD_StandardCosting;
+	private String 			p_ConstingMethod = CostingMethod.StandardCosting.getCode();
 
 	private MAcctSchema m_as = null;
 
@@ -249,7 +250,7 @@ public class RollupWorkflow extends JavaProcess
 		workflow.setMovingTime(MovingTime);
 		workflow.setWorkingTime(WorkingTime);
 
-		for (CostElement element : costElementsRepo.getByCostingMethod(p_ConstingMethod))
+		for (CostElement element : costElementsRepo.getByCostingMethod(CostingMethod.ofCode(p_ConstingMethod)))
 		{
 			if (!CostEngine.isActivityControlElement(element))
 			{

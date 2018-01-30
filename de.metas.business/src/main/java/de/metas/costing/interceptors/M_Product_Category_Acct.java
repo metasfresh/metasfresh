@@ -8,6 +8,7 @@ import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 
 /*
@@ -43,7 +44,7 @@ public class M_Product_Category_Acct
 		final String costingMethod = pca.getCostingMethod();
 		if (!Check.isEmpty(costingMethod, true))
 		{
-			Services.get(ICostElementRepository.class).getOrCreateMaterialCostElement(pca.getAD_Client_ID(), costingMethod);
+			Services.get(ICostElementRepository.class).getOrCreateMaterialCostElement(pca.getAD_Client_ID(), CostingMethod.ofNullableCode(costingMethod));
 		}
 	}
 }

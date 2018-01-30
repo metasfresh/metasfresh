@@ -78,6 +78,7 @@ import org.slf4j.Logger;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
 import de.metas.document.engine.IDocument;
@@ -100,9 +101,9 @@ public class CostEngine
 	/** Logger */
 	protected transient Logger log = LogManager.getLogger(getClass());
 
-	public String getCostingMethod()
+	public CostingMethod getCostingMethod()
 	{
-		return X_M_CostElement.COSTINGMETHOD_StandardCosting;
+		return CostingMethod.StandardCosting;
 	}
 
 	public BigDecimal getResourceStandardCostRate(I_PP_Cost_Collector cc, int S_Resource_ID, CostDimension d, String trxName)
@@ -312,7 +313,7 @@ public class CostEngine
 		{
 			// Cost Detail
 			final I_M_Product product = MProduct.get(ctx, mtrx.getM_Product_ID());
-			final String costingMethod = Services.get(IProductBL.class).getCostingMethod(product, as);
+			final CostingMethod costingMethod = Services.get(IProductBL.class).getCostingMethod(product, as);
 			// Check costing method
 			if (!getCostingMethod().equals(costingMethod))
 			{

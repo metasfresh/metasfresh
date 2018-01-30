@@ -56,7 +56,6 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
 import org.compiere.model.MProduct;
 import org.compiere.model.Query;
-import org.compiere.model.X_M_CostElement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IProductBOMDAO;
@@ -70,6 +69,7 @@ import org.eevolution.mrp.api.IMRPDAO;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -95,7 +95,7 @@ public class RollupBillOfMaterial extends JavaProcess
 	/* Cost Type			*/
 	private int				p_M_CostType_ID = 0;
 	/* Costing Method 		*/
-	private String 			p_ConstingMethod = X_M_CostElement.COSTINGMETHOD_StandardCosting;
+	private String 			p_ConstingMethod = CostingMethod.StandardCosting.getCode();
 	/* Product 				*/
 	private int				p_M_Product_ID = 0;
 	/* Product Category  	*/
@@ -376,7 +376,7 @@ public class RollupBillOfMaterial extends JavaProcess
 	{
 		if (m_costElements == null)
 		{
-			m_costElements = costElementsRepo.getByCostingMethod(p_ConstingMethod);
+			m_costElements = costElementsRepo.getByCostingMethod(CostingMethod.ofCode(p_ConstingMethod));
 		}
 		return m_costElements;
 	}

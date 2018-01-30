@@ -34,6 +34,8 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
+import de.metas.costing.CostingMethod;
+
 public interface IProductBL extends ISingletonService
 {
 	int getUOMPrecision(I_M_Product product);
@@ -100,9 +102,9 @@ public interface IProductBL extends ISingletonService
 	 * @param C_AcctSchema_ID accounting schema ID
 	 * @return product costing method
 	 */
-	String getCostingMethod(I_M_Product product, I_C_AcctSchema as);
+	CostingMethod getCostingMethod(I_M_Product product, I_C_AcctSchema as);
 	
-	String getCostingMethod(int productId, I_C_AcctSchema as);
+	CostingMethod getCostingMethod(int productId, I_C_AcctSchema as);
 
 
 	/**

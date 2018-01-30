@@ -20,7 +20,6 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.X_M_CostElement;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -35,6 +34,7 @@ import de.metas.costing.CostElement;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandler;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICostDetailService;
@@ -81,14 +81,14 @@ public class CostDetailService implements ICostDetailService
 
 	private final ICostDetailRepository costDetailsRepo = Services.get(ICostDetailRepository.class);
 
-	private final ImmutableMap<String, CostingMethodHandler> costingMethodHandlers = ImmutableMap.<String, CostingMethodHandler> builder()
-			.put(X_M_CostElement.COSTINGMETHOD_AveragePO, new AveragePOCostingMethodHandler())
-			.put(X_M_CostElement.COSTINGMETHOD_LastPOPrice, new LastPOCostingMethodHandler())
-			.put(X_M_CostElement.COSTINGMETHOD_AverageInvoice, new AverageInvoiceCostingMethodHandler())
-			.put(X_M_CostElement.COSTINGMETHOD_LastInvoice, new LastInvoiceCostingMethodHandler())
-			.put(X_M_CostElement.COSTINGMETHOD_Fifo, new FifoCostingMethodHandler())
-			.put(X_M_CostElement.COSTINGMETHOD_Lifo, new LifoCostingMethodHandler())
-			.put(X_M_CostElement.COSTINGMETHOD_StandardCosting, new StandardCostingMethodHandler())
+	private final ImmutableMap<CostingMethod, CostingMethodHandler> costingMethodHandlers = ImmutableMap.<CostingMethod, CostingMethodHandler> builder()
+			.put(CostingMethod.AveragePO, new AveragePOCostingMethodHandler())
+			.put(CostingMethod.LastPOPrice, new LastPOCostingMethodHandler())
+			.put(CostingMethod.AverageInvoice, new AverageInvoiceCostingMethodHandler())
+			.put(CostingMethod.LastInvoice, new LastInvoiceCostingMethodHandler())
+			.put(CostingMethod.FIFO, new FifoCostingMethodHandler())
+			.put(CostingMethod.LIFO, new LifoCostingMethodHandler())
+			.put(CostingMethod.StandardCosting, new StandardCostingMethodHandler())
 			.build();
 
 	@Override
@@ -346,7 +346,7 @@ public class CostDetailService implements ICostDetailService
 				.forEach(this::process);
 	}
 
-	private CostingMethodHandler getCostingMethodHandler(final String costingMethod)
+	private CostingMethodHandler getCostingMethodHandler(final CostingMethod costingMethod)
 	{
 		final CostingMethodHandler costingMethodHandler = costingMethodHandlers.get(costingMethod);
 		if (costingMethodHandler == null)
@@ -459,7 +459,7 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
-	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final String costingMethod, final int orderLineId)
+	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final CostingMethod costingMethod, final int orderLineId)
 	{
 		return getCostingMethodHandler(costingMethod)
 				.calculateSeedCosts(costSegment, orderLineId);

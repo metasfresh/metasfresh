@@ -40,7 +40,7 @@ public class CostElement
 	@NonNull
 	String costElementType;
 	@Nullable
-	String costingMethod;
+	CostingMethod costingMethod;
 	boolean calculated;
 
 	// TODO: validate: id > 0 etc

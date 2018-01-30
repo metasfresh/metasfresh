@@ -11,6 +11,7 @@ import org.compiere.model.X_C_AcctSchema;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 
 /*
@@ -57,13 +58,13 @@ public class C_AcctSchema
 		}
 
 		// Create Cost Elements
-		Services.get(ICostElementRepository.class).getOrCreateMaterialCostElement(acctSchema.getAD_Client_ID(), acctSchema.getCostingMethod());
+		Services.get(ICostElementRepository.class).getOrCreateMaterialCostElement(acctSchema.getAD_Client_ID(), CostingMethod.ofNullableCode(acctSchema.getCostingMethod()));
 
 		// Default Costing Level
 		if (acctSchema.getCostingLevel() == null)
 			acctSchema.setCostingLevel(X_C_AcctSchema.COSTINGLEVEL_Client);
 		if (acctSchema.getCostingMethod() == null)
-			acctSchema.setCostingMethod(X_C_AcctSchema.COSTINGMETHOD_StandardCosting);
+			acctSchema.setCostingMethod(CostingMethod.StandardCosting.getCode());
 	}	// checkCosting
 
 }

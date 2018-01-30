@@ -42,6 +42,6 @@ public interface ICostDetailService extends ISingletonService
 	void onCostDetailDeleted(I_M_CostDetail costDetail);
 
 	/** @return seed cost or null */
-	BigDecimal calculateSeedCosts(CostSegment costSegment, String costingMethod, final int orderLineId);
+	BigDecimal calculateSeedCosts(CostSegment costSegment, CostingMethod costingMethod, final int orderLineId);
 
 }

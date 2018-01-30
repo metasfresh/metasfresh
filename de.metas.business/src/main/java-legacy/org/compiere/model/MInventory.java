@@ -33,6 +33,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostDetailService;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
@@ -1050,7 +1051,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 				ProductCost pc = new ProductCost(getCtx(),
 						line.getM_Product_ID(), M_AttributeSetInstance_ID, line.get_TrxName());
 				pc.setQty(qty);
-				costs = pc.getProductCosts(as, line.getAD_Org_ID(), as.getCostingMethod(), 0, false);
+				costs = pc.getProductCosts(as, line.getAD_Org_ID(), CostingMethod.ofNullableCode(as.getCostingMethod()), 0, false);
 			}
 
 			//

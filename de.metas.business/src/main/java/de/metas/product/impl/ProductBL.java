@@ -48,6 +48,7 @@ import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.costing.CostingMethod;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import lombok.NonNull;
@@ -262,7 +263,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public String getCostingMethod(final I_M_Product product, final I_C_AcctSchema as)
+	public CostingMethod getCostingMethod(final I_M_Product product, final I_C_AcctSchema as)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 		final String trxName = InterfaceWrapperHelper.getTrxName(product);
@@ -278,11 +279,11 @@ public final class ProductBL implements IProductBL
 		{
 			costingMethod = as.getCostingMethod();
 		}
-		return costingMethod;
+		return CostingMethod.ofCode(costingMethod);
 	}
 	
 	@Override
-	public String getCostingMethod(final int productId, final I_C_AcctSchema as)
+	public CostingMethod getCostingMethod(final int productId, final I_C_AcctSchema as)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.loadOutOfTrx(productId, I_M_Product.class);
 		return getCostingMethod(product, as);

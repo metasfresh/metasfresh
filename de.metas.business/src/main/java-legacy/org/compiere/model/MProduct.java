@@ -29,6 +29,7 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.product.IProductBL;
 
@@ -729,7 +730,7 @@ public class MProduct extends X_M_Product
 	 * @deprecated Please use {@link IProductBL#getCostingMethod(I_M_Product, I_C_AcctSchema)}.
 	 */
 	@Deprecated
-	public String getCostingMethod(I_C_AcctSchema as)
+	public CostingMethod getCostingMethod(I_C_AcctSchema as)
 	{
 		return Services.get(IProductBL.class).getCostingMethod(this, as);
 	}

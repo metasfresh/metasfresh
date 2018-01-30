@@ -37,13 +37,13 @@ import org.compiere.model.MCost;
 import org.compiere.model.MInOut;
 import org.compiere.model.MProduct;
 import org.compiere.model.ProductCost;
-import org.compiere.model.X_C_AcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostDetailService;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
@@ -228,13 +228,13 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			BigDecimal costs = line.getProductCosts(as, line.getAD_Org_ID(), false, CostingDocumentRef.ofShipmentLineId(line.get_ID()));
 			if (ProductCost.isNoCosts(costs) || costs.signum() == 0)
 			{
-				final String costingMethod = productBL.getCostingMethod(product, as);
-				if (!MAcctSchema.COSTINGMETHOD_StandardCosting.equals(costingMethod))
+				final CostingMethod costingMethod = productBL.getCostingMethod(product, as);
+				if (CostingMethod.StandardCosting != costingMethod)
 				{
 					// 08447: we shall allow zero costs in case CostingMethod=Standard costing
 					throw newPostingException()
 							.setDetailMessage("No Costs for product=" + line.getProduct()
-									+ ", product is stocked and costing method=" + costingMethod + " is != " + MAcctSchema.COSTINGMETHOD_StandardCosting);
+									+ ", product is stocked and costing method=" + costingMethod + " is != " + CostingMethod.StandardCosting);
 				}
 			}
 
@@ -332,13 +332,13 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			BigDecimal costs = line.getProductCosts(as, line.getAD_Org_ID(), true, CostingDocumentRef.ofShipmentLineId(line.get_ID()));
 			if (ProductCost.isNoCosts(costs) || costs.signum() == 0)	// zero costs OK
 			{
-				final String costingMethod = productBL.getCostingMethod(product, as);
-				if (!MAcctSchema.COSTINGMETHOD_StandardCosting.equals(costingMethod))
+				final CostingMethod costingMethod = productBL.getCostingMethod(product, as);
+				if (CostingMethod.StandardCosting != costingMethod)
 				{
 					// 08447: we shall allow zero costs in case CostingMethod=Standard costing
 					throw newPostingException()
 							.setDetailMessage("No Costs for product=" + line.getProduct()
-									+ ", product is stocked and costing method=" + costingMethod + " is != " + MAcctSchema.COSTINGMETHOD_StandardCosting);
+									+ ", product is stocked and costing method=" + costingMethod + " is != " + CostingMethod.StandardCosting);
 				}
 			}
 
@@ -426,9 +426,9 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			int currencyId = acctCurrencyId;
 
 			final BigDecimal costs;
-			final String costingMethod = line.getProductCostingMethod(as);
-			if (X_C_AcctSchema.COSTINGMETHOD_AveragePO.equals(costingMethod) ||
-					X_C_AcctSchema.COSTINGMETHOD_LastPOPrice.equals(costingMethod))
+			final CostingMethod costingMethod = line.getProductCostingMethod(as);
+			if (CostingMethod.AveragePO.equals(costingMethod) ||
+					CostingMethod.LastPOPrice.equals(costingMethod))
 			{
 				final int orderLineId = line.getC_OrderLine_ID();
 				// Low - check if c_orderline_id is valid
@@ -453,10 +453,10 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			if (ProductCost.isNoCosts(costs))
 			{
 				// 08447: we shall allow zero costs in case CostingMethod=Standard costing
-				if (!MAcctSchema.COSTINGMETHOD_StandardCosting.equals(costingMethod))
+				if (!CostingMethod.StandardCosting.equals(costingMethod))
 				{
 					throw newPostingException().setDetailMessage("Resubmit - No Costs for product=" + line.getProduct()
-							+ ", product is stocked and costing method=" + costingMethod + " is != " + MAcctSchema.COSTINGMETHOD_StandardCosting);
+							+ ", product is stocked and costing method=" + costingMethod + " is != " + CostingMethod.StandardCosting);
 				}
 			}
 
@@ -528,11 +528,11 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			if (ProductCost.isNoCosts(costs))
 			{
 				// 08447: we shall allow zero costs in case CostingMethod=Standard costing
-				final String costingMethod = line.getProductCostingMethod(as);
-				if (!MAcctSchema.COSTINGMETHOD_StandardCosting.equals(costingMethod))
+				final CostingMethod costingMethod = line.getProductCostingMethod(as);
+				if (!CostingMethod.StandardCosting.equals(costingMethod))
 				{
 					throw newPostingException().setDetailMessage("Resubmit - No Costs for product=" + line.getProduct()
-							+ ", product is stocked and costing method=" + costingMethod + " is != " + MAcctSchema.COSTINGMETHOD_StandardCosting);
+							+ ", product is stocked and costing method=" + costingMethod + " is != " + CostingMethod.StandardCosting);
 				}
 			}
 

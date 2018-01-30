@@ -8,13 +8,13 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.X_C_AcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.costing.CostDetailEvent;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
 import de.metas.product.IProductBL;
@@ -56,9 +56,9 @@ public class CostsAdjustmentsCostingMethodHandler extends CostingMethodHandlerTe
 		// get costing method for product
 		final I_C_AcctSchema as = MAcctSchema.get(Env.getCtx(), costSegment.getAcctSchemaId());
 		final I_M_Product product = InterfaceWrapperHelper.loadOutOfTrx(costSegment.getProductId(), I_M_Product.class);
-		final String productCostingMethod = Services.get(IProductBL.class).getCostingMethod(product, as);
-		if (X_C_AcctSchema.COSTINGMETHOD_AveragePO.equals(productCostingMethod) ||
-				X_C_AcctSchema.COSTINGMETHOD_AverageInvoice.equals(productCostingMethod))
+		final CostingMethod productCostingMethod = Services.get(IProductBL.class).getCostingMethod(product, as);
+		if (CostingMethod.AveragePO.equals(productCostingMethod) ||
+				CostingMethod.AverageInvoice.equals(productCostingMethod))
 		{
 			/**
 			 * Problem with Landed Costs: certain cost element may not occur in every purchases,

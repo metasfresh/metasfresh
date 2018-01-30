@@ -31,6 +31,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostingMethod;
 import de.metas.logging.LogManager;
 
 /**
@@ -79,7 +80,7 @@ public class MCostQueue extends X_M_CostQueue
 	 * 
 	 * @return cost queue or null
 	 */
-	public static List<MCostQueue> getQueue(final CostSegment costSegment, final int costElementId, final String costingMethod)
+	public static List<MCostQueue> getQueue(final CostSegment costSegment, final int costElementId, final CostingMethod costingMethod)
 	{
 		final IQueryBuilder<I_M_CostQueue> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_CostQueue.class)
@@ -95,11 +96,11 @@ public class MCostQueue extends X_M_CostQueue
 			queryBuilder.addEqualsFilter(I_M_CostQueue.COLUMN_M_AttributeSetInstance_ID, costSegment.getAttributeSetInstanceId());
 		}
 
-		if (X_M_CostElement.COSTINGMETHOD_Fifo.equals(costingMethod))
+		if (costingMethod == CostingMethod.FIFO)
 		{
 			queryBuilder.orderBy(I_M_CostQueue.COLUMN_M_AttributeSetInstance_ID);
 		}
-		else if (X_M_CostElement.COSTINGMETHOD_Lifo.equals(costingMethod))
+		else if (costingMethod == CostingMethod.LIFO)
 		{
 			queryBuilder.orderByDescending(I_M_CostQueue.COLUMNNAME_M_AttributeSetInstance_ID);
 		}
@@ -117,7 +118,7 @@ public class MCostQueue extends X_M_CostQueue
 	 * 
 	 * @return cost price reduced or null of error
 	 */
-	public static BigDecimal adjustQty(final CostSegment costSegment, final int costElementId, final String costingMethod, final BigDecimal Qty)
+	public static BigDecimal adjustQty(final CostSegment costSegment, final int costElementId, final CostingMethod costingMethod, final BigDecimal Qty)
 	{
 		if (Qty.signum() == 0)
 		{
@@ -185,7 +186,7 @@ public class MCostQueue extends X_M_CostQueue
 	 * 
 	 * @return cost for qty or null of error
 	 */
-	public static BigDecimal getCosts(final CostSegment costSegment, final int costElementId, final String costingMethod, final BigDecimal Qty)
+	public static BigDecimal getCosts(final CostSegment costSegment, final int costElementId, final CostingMethod costingMethod, final BigDecimal Qty)
 	{
 		if (Qty.signum() == 0)
 		{

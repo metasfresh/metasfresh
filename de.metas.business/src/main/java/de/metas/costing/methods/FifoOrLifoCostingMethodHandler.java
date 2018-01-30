@@ -9,6 +9,7 @@ import org.compiere.model.MCostQueue;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailEvent;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
 import lombok.Data;
@@ -49,7 +50,7 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 	{
 		final CostSegment costSegment = event.getCostSegment();
 		final int costElementId = event.getCostElementId();
-		final String costingMethod = event.getCostingMethod();
+		final CostingMethod costingMethod = event.getCostingMethod();
 		final BigDecimal amt = event.getAmt();
 		final BigDecimal qty = event.getQty();
 		final int precision = event.getPrecision();
@@ -71,7 +72,7 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 	{
 		final CostSegment costSegment = event.getCostSegment();
 		final int costElementId = event.getCostElementId();
-		final String costingMethod = event.getCostingMethod();
+		final CostingMethod costingMethod = event.getCostingMethod();
 		final BigDecimal amt = event.getAmt();
 		final BigDecimal qty = event.getQty();
 		final boolean addition = qty.signum() > 0;

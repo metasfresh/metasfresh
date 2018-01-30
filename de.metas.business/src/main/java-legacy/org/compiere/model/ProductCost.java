@@ -21,6 +21,7 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 
+import de.metas.costing.CostingMethod;
 import de.metas.logging.LogManager;
 
 /**
@@ -108,7 +109,7 @@ public class ProductCost
 	 * @param zeroCostsOK zero/no costs are OK
 	 * @return cost or null, if qty or costs cannot be determined
 	 */
-	public BigDecimal getProductCosts(MAcctSchema as, int AD_Org_ID, String costingMethod, int C_OrderLine_ID, boolean zeroCostsOK)
+	public BigDecimal getProductCosts(MAcctSchema as, int AD_Org_ID, CostingMethod costingMethod, int C_OrderLine_ID, boolean zeroCostsOK)
 	{
 		if (m_qty == null)
 		{

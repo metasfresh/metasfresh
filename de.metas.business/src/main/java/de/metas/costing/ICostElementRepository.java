@@ -30,7 +30,7 @@ public interface ICostElementRepository extends ISingletonService
 {
 	CostElement getById(int costElementId);
 
-	CostElement getOrCreateMaterialCostElement(int adClientId, String costingMethod);
+	CostElement getOrCreateMaterialCostElement(int adClientId, CostingMethod costingMethod);
 
 	List<CostElement> getCostElementsWithCostingMethods(int adClientId);
 
@@ -38,6 +38,6 @@ public interface ICostElementRepository extends ISingletonService
 
 	List<CostElement> getNonCostingMethods(int adClientId);
 
-	List<CostElement> getByCostingMethod(String CostingMethod);
+	List<CostElement> getByCostingMethod(CostingMethod costingMethod);
 
 }

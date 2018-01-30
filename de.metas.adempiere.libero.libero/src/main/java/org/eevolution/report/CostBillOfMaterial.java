@@ -60,6 +60,7 @@ import org.eevolution.model.MPPProductBOMLine;
 import org.eevolution.model.X_T_BOMLine;
 
 import de.metas.costing.CostElement;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.process.JavaProcess;
@@ -80,7 +81,7 @@ public class CostBillOfMaterial extends JavaProcess
 	private int p_C_AcctSchema_ID = 0;
 	private int p_M_Product_ID = 0;
 	private int p_M_CostType_ID = 0;
-	private String p_ConstingMethod = X_M_CostElement.COSTINGMETHOD_StandardCosting;
+	private String p_ConstingMethod = CostingMethod.StandardCosting.getCode();
 	private boolean p_implosion = false;
 	//
 	private int m_LevelNo = 0;
@@ -287,7 +288,7 @@ public class CostBillOfMaterial extends JavaProcess
 	{
 		if (m_costElements == null)
 		{
-			m_costElements = Services.get(ICostElementRepository.class).getByCostingMethod(p_ConstingMethod);
+			m_costElements = Services.get(ICostElementRepository.class).getByCostingMethod(CostingMethod.ofCode(p_ConstingMethod));
 		}
 		return m_costElements;
 	}

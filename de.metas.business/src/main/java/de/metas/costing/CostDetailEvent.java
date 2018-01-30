@@ -35,7 +35,7 @@ public class CostDetailEvent
 	@NonNull
 	CostSegment costSegment;
 	int costElementId;
-	String costingMethod;
+	CostingMethod costingMethod;
 
 	@NonNull
 	CostingDocumentRef documentRef;

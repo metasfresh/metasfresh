@@ -14,6 +14,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.costing.CostElement;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 import lombok.NonNull;
 
@@ -45,18 +46,18 @@ public class CostElementRepository implements ICostElementRepository
 	public CostElement getById(final int costElementId)
 	{
 		// TODO: enable table level caching for M_CostElement
-		// or better, load all elements in memory 
+		// or better, load all elements in memory
 		final I_M_CostElement ce = InterfaceWrapperHelper.loadOutOfTrx(costElementId, I_M_CostElement.class);
 		return toCostElement(ce);
 	}
 
 	@Override
-	public CostElement getOrCreateMaterialCostElement(final int adClientId, @NonNull final String costingMethod)
+	public CostElement getOrCreateMaterialCostElement(final int adClientId, @NonNull final CostingMethod costingMethod)
 	{
 		final I_M_CostElement costElement = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_CostElement.class)
 				.addEqualsFilter(I_M_CostElement.COLUMN_AD_Client_ID, adClientId)
-				.addEqualsFilter(I_M_CostElement.COLUMN_CostingMethod, costingMethod)
+				.addEqualsFilter(I_M_CostElement.COLUMN_CostingMethod, costingMethod.getCode())
 				.addEqualsFilter(I_M_CostElement.COLUMN_CostElementType, X_M_CostElement.COSTELEMENTTYPE_Material)
 				.orderBy(I_M_CostElement.COLUMN_AD_Org_ID)
 				.create()
@@ -70,14 +71,14 @@ public class CostElementRepository implements ICostElementRepository
 		final I_M_CostElement newCostElement = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
 		InterfaceWrapperHelper.setValue(newCostElement, I_M_CostElement.COLUMNNAME_AD_Client_ID, adClientId);
 		newCostElement.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
-		String name = Services.get(IADReferenceDAO.class).retrieveListNameTrl(X_M_CostElement.COSTINGMETHOD_AD_Reference_ID, costingMethod);
+		String name = Services.get(IADReferenceDAO.class).retrieveListNameTrl(CostingMethod.AD_REFERENCE_ID, costingMethod.getCode());
 		if (Check.isEmpty(name, true))
 		{
-			name = costingMethod;
+			name = costingMethod.name();
 		}
 		newCostElement.setName(name);
 		newCostElement.setCostElementType(X_M_CostElement.COSTELEMENTTYPE_Material);
-		newCostElement.setCostingMethod(costingMethod);
+		newCostElement.setCostingMethod(costingMethod.getCode());
 		newCostElement.setIsCalculated(false);
 		InterfaceWrapperHelper.save(newCostElement);
 
@@ -90,7 +91,7 @@ public class CostElementRepository implements ICostElementRepository
 		return CostElement.builder()
 				.id(costElement.getM_CostElement_ID())
 				.name(costElement.getName())
-				.costingMethod(costElement.getCostingMethod())
+				.costingMethod(CostingMethod.ofNullableCode(costElement.getCostingMethod()))
 				.costElementType(costElement.getCostElementType())
 				.calculated(costElement.isCalculated())
 				.build();
@@ -144,7 +145,7 @@ public class CostElementRepository implements ICostElementRepository
 	}
 
 	@Override
-	public List<CostElement> getByCostingMethod(String CostingMethod)
+	public List<CostElement> getByCostingMethod(@NonNull final CostingMethod costingMethod)
 	{
 		// modernizing this to get rid of the debug-message
 		// org.adempiere.exceptions.AdempiereException: Query does not have a modelClass defined and no 'clazz' was specified as parameter.We need to avoid this case, but for now we are trying to do a force casting
@@ -153,7 +154,7 @@ public class CostElementRepository implements ICostElementRepository
 				.createQueryBuilderOutOfTrx(I_M_CostElement.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_M_CostElement.COLUMNNAME_CostingMethod, CostingMethod)
+				.addEqualsFilter(I_M_CostElement.COLUMNNAME_CostingMethod, costingMethod.getCode())
 				//
 				.orderBy(I_M_CostElement.COLUMN_M_CostElement_ID)
 				.create()
