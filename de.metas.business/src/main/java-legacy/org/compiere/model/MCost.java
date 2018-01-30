@@ -103,14 +103,22 @@ public class MCost extends X_M_Cost
 	{
 		//
 		// Cost segment
-		final CostSegment costSegment = createCostSegment(product, M_AttributeSetInstance_ID, as, AD_Org_ID);
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final CostSegment costSegment = CostSegment.builder()
+				.costingLevel(productBL.getCostingLevel(product, as))
+				.acctSchemaId(as.getC_AcctSchema_ID())
+				.costTypeId(as.getM_CostType_ID())
+				.productId(product.getM_Product_ID())
+				.clientId(product.getAD_Client_ID())
+				.orgId(AD_Org_ID)
+				.attributeSetInstanceId(M_AttributeSetInstance_ID)
+				.build();
 
 		//
 		// Costing Method
 		final CostingMethod costingMethodEffective;
 		if (costingMethod == null)
 		{
-			final IProductBL productBL = Services.get(IProductBL.class);
 			costingMethodEffective = productBL.getCostingMethod(product, as);
 			if (costingMethodEffective == null)
 			{
@@ -127,26 +135,6 @@ public class MCost extends X_M_Cost
 
 		return getCurrentCost(costSegment, costingMethodEffective, qty, C_OrderLine_ID, zeroCostsOK);
 	}	// getCurrentCost
-
-	private static CostSegment createCostSegment(
-			final I_M_Product product,
-			final int M_AttributeSetInstance_ID,
-			final I_C_AcctSchema as,
-			final int AD_Org_ID)
-	{
-		final IProductBL productBL = Services.get(IProductBL.class);
-		final CostingLevel costingLevel = productBL.getCostingLevel(product, as);
-
-		return CostSegment.builder()
-				.costingLevel(costingLevel)
-				.acctSchemaId(as.getC_AcctSchema_ID())
-				.costTypeId(as.getM_CostType_ID())
-				.productId(product.getM_Product_ID())
-				.clientId(product.getAD_Client_ID())
-				.orgId(AD_Org_ID)
-				.attributeSetInstanceId(M_AttributeSetInstance_ID)
-				.build();
-	}
 
 	/**
 	 * Get Current Cost Price for Costing Level
