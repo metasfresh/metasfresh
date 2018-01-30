@@ -87,7 +87,7 @@ public class MUOM extends X_C_UOM
 	/*************************************************************************/
 
 	/** UOM Cache */
-	private static CCache<Integer, MUOM> s_cache = new CCache<Integer, MUOM>(Table_Name, 30);
+	private static CCache<Integer, MUOM> s_cache = new CCache<>(Table_Name, 30);
 
 	/**
 	 * Get UOM from Cache
@@ -119,6 +119,7 @@ public class MUOM extends X_C_UOM
 	 * @return MUOM if found, null if not found
 	 * @deprecated Deprecated because it's error phrone (no AD_Client_ID is enforced) and because it's used only in one AIT.
 	 */
+	@Deprecated
 	public static MUOM get(Properties ctx, String name, String trxName)
 	{
 		MUOM uom = (MUOM)TableModelLoader.instance.getPO(ctx, Table_Name, "Name = ?", new Object[] { name }, trxName);
@@ -155,17 +156,10 @@ public class MUOM extends X_C_UOM
 		}
 	}	// loadUOMs
 
-	/**************************************************************************
-	 * Constructor.
-	 *
-	 * @param ctx context
-	 * @param C_UOM_ID UOM ID
-	 * @param trxName transaction
-	 */
 	public MUOM(Properties ctx, int C_UOM_ID, String trxName)
 	{
 		super(ctx, C_UOM_ID, trxName);
-		if (C_UOM_ID == 0)
+		if (is_new())
 		{
 			// setName (null);
 			// setX12DE355 (null);
@@ -175,30 +169,8 @@ public class MUOM extends X_C_UOM
 		}
 	}	// UOM
 
-	/**
-	 * Load Constructor.
-	 *
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
 	public MUOM(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
 	}	// UOM
-
-	/**
-	 * String Representation
-	 *
-	 * @return info
-	 */
-	@Override
-	public String toString()
-	{
-		StringBuffer sb = new StringBuffer("UOM[");
-		sb.append("ID=").append(get_ID())
-				.append(", Name=").append(getName()).append("]");
-		return sb.toString();
-	}	// toString
-
 }	// MUOM

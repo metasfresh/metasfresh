@@ -22,7 +22,10 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.util.Services;
 import org.compiere.util.DB;
+
+import de.metas.product.IProductBL;
 
 /**
  * Physical Inventory Line Model
@@ -255,7 +258,7 @@ public class MInventoryLine extends X_M_InventoryLine
 	 * @return true if can be saved
 	 */
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		if (newRecord && getParent().isComplete())
 		{
@@ -264,10 +267,9 @@ public class MInventoryLine extends X_M_InventoryLine
 		if (newRecord && m_isManualEntry)
 		{
 			// Product requires ASI
-			if (getM_AttributeSetInstance_ID() == 0)
+			if (getM_AttributeSetInstance_ID() <= 0)
 			{
-				final MProduct product = MProduct.get(getCtx(), getM_Product_ID());
-				if (product != null && product.isASIMandatory(isSOTrx()))
+				if(Services.get(IProductBL.class).isASIMandatory(getM_Product_ID(), isSOTrx()))
 				{
 					throw new FillMandatoryException(COLUMNNAME_M_AttributeSetInstance_ID);
 				}

@@ -44,6 +44,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Product_Category_Acct;
+import org.compiere.model.MAcctSchema;
+import org.compiere.model.MAttributeSet;
 import org.compiere.model.MProductCategory;
 import org.compiere.model.MProductCategoryAcct;
 import org.compiere.model.X_M_Product;
@@ -330,4 +332,58 @@ public final class ProductBL implements IProductBL
 		return product.isPurchased()
 				&& product.isSold();
 	}
+
+	@Override
+	public boolean isASIMandatory(@NonNull final I_M_Product product, final boolean isSOTrx)
+	{
+		//
+		// If CostingLevel is BatchLot ASI is always mandatory - check all client acct schemas
+		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(Env.getCtx(), product.getAD_Client_ID()))
+		{
+			if(as.isSkipOrg(product.getAD_Org_ID()))
+			{
+				continue;
+			}
+			final CostingLevel costingLevel = getCostingLevel(product, as);
+			if (CostingLevel.BatchLot == costingLevel)
+			{
+				return true;
+			}
+		}
+		
+		//
+		// Check Attribute Set settings
+		final int M_AttributeSet_ID = getM_AttributeSet_ID(product);
+		if (M_AttributeSet_ID > 0)
+		{
+			final MAttributeSet mas = MAttributeSet.get(Env.getCtx(), M_AttributeSet_ID);
+			if (mas == null || !mas.isInstanceAttribute())
+			{
+				return false;
+			}
+			// Outgoing transaction
+			else if (isSOTrx)
+			{
+				return mas.isMandatory();
+			}
+			// Incoming transaction
+			else
+			{
+				// isSOTrx == false
+				return mas.isMandatoryAlways();
+			}
+		}
+		//
+		// Default not mandatory
+		return false;
+	}
+
+	@Override
+	public boolean isASIMandatory(final int productId, final boolean isSOTrx)
+	{
+		Check.assume(productId > 0, "productId > 0");
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		return isASIMandatory(product, isSOTrx);
+	}
+
 }

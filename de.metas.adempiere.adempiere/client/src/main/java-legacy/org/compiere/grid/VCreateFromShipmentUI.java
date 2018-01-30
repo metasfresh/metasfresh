@@ -48,12 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.JCheckBox;
@@ -66,24 +61,28 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 
+import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 import org.compiere.grid.ed.VLocator;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.MLocator;
 import org.compiere.model.MLocatorLookup;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
-import org.compiere.model.MProduct;
 import org.compiere.model.Query;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
 
 public class VCreateFromShipmentUI extends CreateFromShipment implements ActionListener, VetoableChangeListener
 {
@@ -151,6 +150,7 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 	 *  @throws Exception if Lookups cannot be initialized
 	 *  @return true if initialized
 	 */
+	@Override
 	public boolean dynInit() throws Exception
 	{
 		log.info("");
@@ -249,6 +249,7 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 	 *  Action Listener
 	 *  @param e event
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		log.info("Action=" + e.getActionCommand());
@@ -309,6 +310,7 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 	 *  Change Listener
 	 *  @param e event
 	 */
+	@Override
 	public void vetoableChange (PropertyChangeEvent e)
 	{
 		log.info(e.getPropertyName() + "=" + e.getNewValue());
@@ -464,11 +466,13 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 		configureMiniTable(dialog.getMiniTable());
 	}   //  loadOrder
 	
+	@Override
 	public void showWindow()
 	{
 		dialog.setVisible(true);
 	}
 	
+	@Override
 	public void closeWindow()
 	{
 		dialog.dispose();
@@ -483,10 +487,9 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 		String upc = upcField.getText();
 		DefaultTableModel model = (DefaultTableModel)dialog.getMiniTable().getModel();
 		// Lookup UPC
-		List<MProduct> products = MProduct.getByUPC(Env.getCtx(), upc, null);
-		for (MProduct product : products)
 		{
-			int row = findProductRow(product.get_ID());
+			final I_M_Product product = Services.get(IProductDAO.class).retrieveProductByUPC(Env.getCtx(), upc);
+			int row = findProductRow(product.getM_Product_ID());
 			if (row >= 0)
 			{
 				BigDecimal qty = (BigDecimal)model.getValueAt(row, 1);
@@ -543,6 +546,7 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 		KeyNamePair currentValue;
 		JTextField 	editor;
 
+		@Override
 		public Object getCellEditorValue() {
 			String locatorValue = editor.getText();
 			MLocator loc = null;
@@ -563,6 +567,7 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 
 		}
 
+		@Override
 		public Component getTableCellEditorComponent(JTable table,
 				Object value, boolean isSelected, int row, int column) {
 

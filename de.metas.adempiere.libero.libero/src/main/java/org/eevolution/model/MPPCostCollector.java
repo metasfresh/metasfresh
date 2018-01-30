@@ -438,7 +438,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		else if (isIssue())
 		{
 			MProduct product = getM_Product();
-			if (getM_AttributeSetInstance_ID() == 0 && product.isASIMandatory(false))
+			if (getM_AttributeSetInstance_ID() <= 0 && Services.get(IProductBL.class).isASIMandatory(product, false))
 			{
 				throw new LiberoException("@M_AttributeSet_ID@ @IsMandatory@ @M_Product_ID@=" + product.getValue());
 			}
@@ -447,7 +447,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		else if (isReceipt())
 		{
 			MProduct product = getM_Product();
-			if (getM_AttributeSetInstance_ID() == 0 && product.isASIMandatory(true))
+			if (getM_AttributeSetInstance_ID() <= 0 && Services.get(IProductBL.class).isASIMandatory(product, true))
 			{
 				throw new LiberoException("@M_AttributeSet_ID@ @IsMandatory@ @M_Product_ID@=" + product.getValue());
 			}

@@ -1189,9 +1189,11 @@ public class MInOut extends X_M_InOut implements IDocument
 				Weight = Weight.add(product.getWeight().multiply(line.getMovementQty()));
 			}
 			//
-			if (line.getM_AttributeSetInstance_ID() != 0)
+			if (line.getM_AttributeSetInstance_ID() > 0)
+			{
 				continue;
-			if (product != null && product.isASIMandatory(isSOTrx()))
+			}
+			if(Services.get(IProductBL.class).isASIMandatory(product, isSOTrx()))
 			{
 				throw new ProductASIMandatoryException(this, product, lines[i].getLine());
 			}

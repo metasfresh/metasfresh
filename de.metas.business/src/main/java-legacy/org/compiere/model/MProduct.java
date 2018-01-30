@@ -20,17 +20,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
-import de.metas.costing.CostingLevel;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.product.IProductBL;
 
@@ -63,38 +61,6 @@ public class MProduct extends X_M_Product
 		return LegacyAdapters.convertToPO(product);
 	}	// get
 
-	/**
-	 * Get MProduct from Cache
-	 *
-	 * @param ctx context
-	 * @param whereClause sql where clause
-	 * @param trxName trx
-	 * @return MProduct
-	 */
-	public static MProduct[] get(Properties ctx, String whereClause, String trxName)
-	{
-		int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		List<MProduct> list = new Query(ctx, Table_Name, "AD_Client_ID=? AND " + whereClause, trxName)
-				.setParameters(new Object[] { AD_Client_ID })
-				.list();
-		return list.toArray(new MProduct[list.size()]);
-	}	// get
-
-	/**
-	 * Get MProduct using UPC/EAN (case sensitive)
-	 *
-	 * @param ctx Context
-	 * @param upc The upc to look for
-	 * @return List of MProduct
-	 */
-	public static List<MProduct> getByUPC(Properties ctx, String upc, String trxName)
-	{
-		String whereClause = "AD_Client_ID=? AND UPC=?";
-		Query q = new Query(ctx, Table_Name, whereClause, trxName);
-		q.setParameters(new Object[] { Env.getAD_Client_ID(ctx), upc });
-		return (q.list());
-	}
-
 	public MProduct(Properties ctx, int M_Product_ID, String trxName)
 	{
 		super(ctx, M_Product_ID, trxName);
@@ -122,13 +88,6 @@ public class MProduct extends X_M_Product
 		}
 	}	// MProduct
 
-	/**
-	 * Load constructor
-	 *
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
 	public MProduct(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
@@ -219,7 +178,7 @@ public class MProduct extends X_M_Product
 	}	// isOneAssetPerUOM
 
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		// Check Storage
 		if (!newRecord && 	//
@@ -286,10 +245,11 @@ public class MProduct extends X_M_Product
 	private boolean hasInventoryOrCost()
 	{
 		// check if it has transactions
-		final boolean hasTrx = new Query(getCtx(), MTransaction.Table_Name,
-				MTransaction.COLUMNNAME_M_Product_ID + "=?", get_TrxName())
-				.setOnlyActiveRecords(true)
-				.setParameters(new Object[] { get_ID() })
+		final boolean hasTrx = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Transaction.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Transaction.COLUMN_M_Product_ID, getM_Product_ID())
+				.create()
 				.match();
 		if (hasTrx)
 		{
@@ -398,55 +358,4 @@ public class MProduct extends X_M_Product
 		//
 		return delete_Accounting(I_M_Product_Acct.Table_Name);
 	}	// beforeDelete
-
-	/**
-	 * Check if ASI is mandatory
-	 *
-	 * @param isSOTrx is outgoing trx?
-	 * @return true if ASI is mandatory, false otherwise
-	 */
-	public boolean isASIMandatory(boolean isSOTrx)
-	{
-		//
-		// If CostingLevel is BatchLot ASI is always mandatory - check all client acct schemas
-		final MAcctSchema[] mass = MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID());
-		for (final MAcctSchema as : mass)
-		{
-			if(as.isSkipOrg(getAD_Org_ID()))
-			{
-				continue;
-			}
-			final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(this, as);
-			if (CostingLevel.BatchLot == costingLevel)
-			{
-				return true;
-			}
-		}
-		
-		//
-		// Check Attribute Set settings
-		final int M_AttributeSet_ID = Services.get(IProductBL.class).getM_AttributeSet_ID(this);
-		if (M_AttributeSet_ID > 0)
-		{
-			final MAttributeSet mas = MAttributeSet.get(getCtx(), M_AttributeSet_ID);
-			if (mas == null || !mas.isInstanceAttribute())
-			{
-				return false;
-			}
-			// Outgoing transaction
-			else if (isSOTrx)
-			{
-				return mas.isMandatory();
-			}
-			// Incoming transaction
-			else
-			{
-				// isSOTrx == false
-				return mas.isMandatoryAlways();
-			}
-		}
-		//
-		// Default not mandatory
-		return false;
-	}
 }	// MProduct

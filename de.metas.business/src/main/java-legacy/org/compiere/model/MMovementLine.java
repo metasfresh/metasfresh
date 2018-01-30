@@ -223,23 +223,25 @@ public class MMovementLine extends X_M_MovementLine
 		
 		//      Mandatory Instance
 		MProduct product = getProduct();
-		if (getM_AttributeSetInstance_ID() == 0)
+		if (getM_AttributeSetInstance_ID() <= 0)
 		{
-			if (product != null && product.isASIMandatory(false))
+			if(Services.get(IProductBL.class).isASIMandatory(getM_Product_ID(), false))
 			{
 				throw new FillMandatoryException(I_M_MovementLine.COLUMNNAME_M_AttributeSetInstance_ID);
 			}
 		}
-		if (getM_AttributeSetInstanceTo_ID() == 0)
+		if (getM_AttributeSetInstanceTo_ID() <= 0)
 		{
 			//instance id default to same for movement between locator 
 			if (getM_Locator_ID() != getM_LocatorTo_ID())
 			{
-				if (getM_AttributeSetInstance_ID() != 0)        //set to from
+				if (getM_AttributeSetInstance_ID() > 0)        //set to from
+				{
 					setM_AttributeSetInstanceTo_ID(getM_AttributeSetInstance_ID());
+				}
 			}
 			
-			if (product != null && product.isASIMandatory(true) && getM_AttributeSetInstanceTo_ID() == 0)
+			if(Services.get(IProductBL.class).isASIMandatory(getM_Product_ID(), true) && getM_AttributeSetInstanceTo_ID() <= 0)
 			{
 				throw new FillMandatoryException(I_M_MovementLine.COLUMNNAME_M_AttributeSetInstanceTo_ID);
 			}

@@ -140,4 +140,15 @@ public interface IProductBL extends ISingletonService
 	 * @return true if it's a trading product
 	 */
 	boolean isTradingProduct(I_M_Product product);
+
+	/**
+	 * Check if ASI is mandatory
+	 *
+	 * @param product
+	 * @param isSOTrx is outgoing trx?
+	 * @return true if ASI is mandatory, false otherwise
+	 */
+	boolean isASIMandatory(I_M_Product product, boolean isSOTrx);
+
+	boolean isASIMandatory(int productId, boolean isSOTrx);
 }
