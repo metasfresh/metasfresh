@@ -137,14 +137,14 @@ public class CreateCostElement extends JavaProcess
 		{
 			for (final I_M_Product product : getProducts())
 			{
-				final int product_id = product.getM_Product_ID();
+				final int productId = product.getM_Product_ID();
 				final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
 
 				final CostSegment costSegment = CostSegment.builder()
 						.costingLevel(costingLevel)
 						.acctSchemaId(as.getC_AcctSchema_ID())
 						.costTypeId(p_M_CostType_ID)
-						.productId(product_id)
+						.productId(productId)
 						.clientId(getAD_Client_ID())
 						.orgId(orgId)
 						.attributeSetInstanceId(0)

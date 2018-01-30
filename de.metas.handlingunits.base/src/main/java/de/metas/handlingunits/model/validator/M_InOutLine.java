@@ -160,7 +160,7 @@ public class M_InOutLine
 				// Case: there is no line were we can add the difference, so we are creating one now
 				else
 				{
-					final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(inOutLine.getM_Product()); // we assume MovementQty is in product's stocking UOM
+					final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(inOutLine.getM_Product_ID()); // we assume MovementQty is in product's stocking UOM
 					final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 					final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked adjustments_allocNew = shipmentScheduleAllocBL.addQtyPicked(adjustments_shipmentSchedule, qtyPickedToAdd, uom);
 					adjustments_allocNew.setM_InOutLine(inOutLine);

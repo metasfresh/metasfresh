@@ -204,21 +204,14 @@ public class MRPBL implements IMRPBL
 	public I_C_UOM getC_UOM(final I_PP_MRP mrp)
 	{
 		Check.assumeNotNull(mrp, "mrp not null");
-
-		final I_M_Product product = mrp.getM_Product();
-		Check.assume(product != null && product.getM_Product_ID() > 0, "MRP record shall have the Product set: {}", mrp);
-		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(product);
-		return productUOM;
+		return Services.get(IProductBL.class).getStockingUOM(mrp.getM_Product_ID());
 	}
 
 	@Override
 	public I_C_UOM getC_UOM(final I_PP_MRP_Alternative mrpAlternative)
 	{
 		Check.assumeNotNull(mrpAlternative, "mrpAlternative not null");
-		final I_M_Product product = mrpAlternative.getM_Product();
-		Check.assume(product != null && product.getM_Product_ID() > 0, "MRP alternative record shall have the Product set: {}", mrpAlternative);
-		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(product);
-		return productUOM;
+		return Services.get(IProductBL.class).getStockingUOM(mrpAlternative.getM_Product_ID());
 	}
 
 	@Override
@@ -279,7 +272,7 @@ public class MRPBL implements IMRPBL
 		});
 	}
 
-	private final transient InheritableThreadLocal<IMaterialPlanningContext> mrpContextThreadLocal = new InheritableThreadLocal<IMaterialPlanningContext>();
+	private final transient InheritableThreadLocal<IMaterialPlanningContext> mrpContextThreadLocal = new InheritableThreadLocal<>();
 
 	@Override
 	public BigDecimal getQtyAbs(final I_PP_MRP mrp)

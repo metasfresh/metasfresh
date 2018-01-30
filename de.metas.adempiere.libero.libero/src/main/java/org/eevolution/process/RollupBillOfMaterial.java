@@ -235,9 +235,8 @@ public class RollupBillOfMaterial extends JavaProcess
 	
 	private static CostSegment extractCostSegment(final I_M_Cost cost)
 	{
-		final I_M_Product product = InterfaceWrapperHelper.load(cost.getM_Product_ID(), I_M_Product.class);
 		final I_C_AcctSchema as = InterfaceWrapperHelper.load(cost.getC_AcctSchema_ID(), I_C_AcctSchema.class);
-		final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
+		final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(cost.getM_Product_ID(), as);
 
 		return CostSegment.builder()
 				.costingLevel(costingLevel)

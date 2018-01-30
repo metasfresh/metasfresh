@@ -48,9 +48,7 @@ public class MovementBL implements IMovementBL
 	@Override
 	public I_C_UOM getC_UOM(final I_M_MovementLine movementLine)
 	{
-		final I_M_Product product = movementLine.getM_Product();
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
-		return uom;
+		return Services.get(IProductBL.class).getStockingUOM(movementLine.getM_Product_ID());
 	}
 
 	@Override

@@ -669,8 +669,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		final BigDecimal qtyReservedActual = orderBOMLine.getQtyReserved();
 		BigDecimal qtyReservedTarget = qtyReservedRequested;
 		final BigDecimal qtyReservedDiff;
-		final I_M_Product product = orderBOMLine.getM_Product();
-		if (!Services.get(IProductBL.class).isStocked(product))
+		final int productId = orderBOMLine.getM_Product_ID();
+		if (!Services.get(IProductBL.class).isStocked(productId))
 		{
 			//
 			// Case: we are dealing with a product which is not stocked
@@ -700,7 +700,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			final String trxName = InterfaceWrapperHelper.getTrxName(orderBOMLine);
 			Services.get(IStorageBL.class).addQtyReserved(ctx,
 					locator,
-					product.getM_Product_ID(),
+					productId,
 					orderBOMLine.getM_AttributeSetInstance_ID(),
 					qtyReservedDiff,
 					trxName);

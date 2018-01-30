@@ -68,6 +68,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 {
 	// services
 	private final transient Logger logger = LogManager.getLogger(getClass());
+	protected final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
 	private final transient IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 
@@ -544,8 +545,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			return false;
 		}
 
-		final IProductBL productBL = Services.get(IProductBL.class);
-
 		// NOTE: we are considering the product as Item only if it's stockable.
 		// Before changing this logic, pls evaluate the Doc_Invoice which is booking on P_InventoryClearing account when the product is stockable
 		return productBL.isStocked(product);
@@ -558,14 +557,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	public final CostingMethod getProductCostingMethod(final I_C_AcctSchema as)
 	{
-		final I_M_Product product = getProduct();
-		return Services.get(IProductBL.class).getCostingMethod(product, as);
+		return productBL.getCostingMethod(getM_Product_ID(), as);
 	}
 
 	public final CostingLevel getProductCostingLevel(final I_C_AcctSchema as)
 	{
-		final I_M_Product product = getProduct();
-		return Services.get(IProductBL.class).getCostingLevel(product, as);
+		return productBL.getCostingLevel(getM_Product_ID(), as);
 	}
 
 	public final int getM_AttributeSetInstance_ID()
@@ -676,9 +673,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	protected final I_C_UOM getProductStockingUOM()
 	{
-		final I_M_Product product = getProduct();
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
-		return uom;
+		return productBL.getStockingUOM(getM_Product_ID());
 	}
 
 	/**

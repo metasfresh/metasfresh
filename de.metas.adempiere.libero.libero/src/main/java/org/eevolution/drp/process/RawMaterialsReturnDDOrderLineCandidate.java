@@ -107,7 +107,7 @@ import lombok.NonNull;
 		this.ctx = ctx;
 
 		this.attributeSetInstanceAware = attributeSetInstanceAware;
-		this.uom = productBL.getStockingUOM(attributeSetInstanceAware.getM_Product());
+		this.uom = productBL.getStockingUOM(attributeSetInstanceAware.getM_Product_ID());
 
 		this.locator = locator;
 

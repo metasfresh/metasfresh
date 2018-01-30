@@ -41,7 +41,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
@@ -80,8 +79,7 @@ public class PP_Order
 		// If UOM not filled, get it from Product
 		if (ppOrder.getC_UOM_ID() <= 0 && ppOrder.getM_Product_ID() > 0)
 		{
-			final I_M_Product product = ppOrder.getM_Product();
-			final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
+			final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(ppOrder.getM_Product_ID());
 			ppOrder.setC_UOM(uom);
 		}
 

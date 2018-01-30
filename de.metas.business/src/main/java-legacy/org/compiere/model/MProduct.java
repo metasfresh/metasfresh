@@ -16,12 +16,13 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -47,20 +48,10 @@ import de.metas.product.IProductBL;
  */
 public class MProduct extends X_M_Product
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 285926961771269935L;
 
-	/**
-	 * Get MProduct from Cache
-	 *
-	 * @param ctx context
-	 * @param M_Product_ID id
-	 * @return MProduct or null
-	 */
 	@Deprecated
-	public static MProduct get(Properties ctx, int M_Product_ID)
+	public static MProduct get(final Properties ctx_NOTUSED, final int M_Product_ID)
 	{
 		if (M_Product_ID <= 0)
 		{
@@ -68,7 +59,7 @@ public class MProduct extends X_M_Product
 		}
 
 		// NOTE: we rely on table cache config
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, M_Product_ID, I_M_Product.class, ITrx.TRXNAME_None);
+		final I_M_Product product = loadOutOfTrx(M_Product_ID, I_M_Product.class);
 		return LegacyAdapters.convertToPO(product);
 	}	// get
 
@@ -104,48 +95,10 @@ public class MProduct extends X_M_Product
 		return (q.list());
 	}
 
-	/**
-	 * Is Product Stocked
-	 *
-	 * @param ctx context
-	 * @param M_Product_ID id
-	 * @return true if found and stocked - false otherwise
-	 * @deprecated Please use {@link IProductBL#isStocked(I_M_Product)}
-	 */
-	@Deprecated
-	public static boolean isProductStocked(Properties ctx, int M_Product_ID)
-	{
-		final MProduct product = get(ctx, M_Product_ID);
-		return Services.get(IProductBL.class).isStocked(product);
-	}	// isProductStocked
-
-	/**
-	 * Product is an Item and Stocked
-	 *
-	 * @param product
-	 * @return true if stocked and item
-	 * @deprecated Please use {@link IProductBL#isStocked(I_M_Product)}
-	 */
-	@Deprecated
-	public static boolean isProductStocked(final I_M_Product product)
-	{
-		return Services.get(IProductBL.class).isStocked(product);
-	}
-
-//	/** Cache */
-//	private static CCache<Integer, MProduct> s_cache = new CCache<>(Table_Name, 40, 5);	// 5 minutes
-
-	/**************************************************************************
-	 * Standard Constructor
-	 *
-	 * @param ctx context
-	 * @param M_Product_ID id
-	 * @param trxName transaction
-	 */
 	public MProduct(Properties ctx, int M_Product_ID, String trxName)
 	{
 		super(ctx, M_Product_ID, trxName);
-		if (M_Product_ID == 0)
+		if (is_new())
 		{
 			// setValue (null);
 			// setName (null);
@@ -182,33 +135,6 @@ public class MProduct extends X_M_Product
 	}	// MProduct
 
 	/**
-	 * Parent Constructor
-	 *
-	 * @param et parent
-	 */
-	public MProduct(MExpenseType et)
-	{
-		this(et.getCtx(), 0, et.get_TrxName());
-		setProductType(X_M_Product.PRODUCTTYPE_ExpenseType);
-		setExpenseType(et);
-	}	// MProduct
-
-//	/**
-//	 * Parent Constructor
-//	 *
-//	 * @param resource parent
-//	 * @param resourceType resource type
-//	 */
-//	public MProduct(MResource resource, MResourceType resourceType)
-//	{
-//		this(resource.getCtx(), 0, resource.get_TrxName());
-//		setAD_Org_ID(resource.getAD_Org_ID());
-//		setProductType(X_M_Product.PRODUCTTYPE_Resource);
-//		setResource(resource);
-//		setResource(resourceType);
-//	}	// MProduct
-
-	/**
 	 * Import Constructor
 	 *
 	 * @param impP import
@@ -240,64 +166,6 @@ public class MProduct extends X_M_Product
 		setIsStocked(impP.isStocked());
 	}	// MProduct
 
-	/** Additional Downloads */
-	private MProductDownload[] m_downloads = null;
-
-	/**
-	 * Set Expense Type
-	 *
-	 * @param parent expense type
-	 * @return true if changed
-	 */
-	public boolean setExpenseType(MExpenseType parent)
-	{
-		boolean changed = false;
-		if (!PRODUCTTYPE_ExpenseType.equals(getProductType()))
-		{
-			setProductType(PRODUCTTYPE_ExpenseType);
-			changed = true;
-		}
-		if (parent.getS_ExpenseType_ID() != getS_ExpenseType_ID())
-		{
-			setS_ExpenseType_ID(parent.getS_ExpenseType_ID());
-			changed = true;
-		}
-		if (parent.isActive() != isActive())
-		{
-			setIsActive(parent.isActive());
-			changed = true;
-		}
-		//
-		if (!parent.getValue().equals(getValue()))
-		{
-			setValue(parent.getValue());
-			changed = true;
-		}
-		if (!parent.getName().equals(getName()))
-		{
-			setName(parent.getName());
-			changed = true;
-		}
-		if ((parent.getDescription() == null && getDescription() != null)
-				|| (parent.getDescription() != null && !parent.getDescription().equals(getDescription())))
-		{
-			setDescription(parent.getDescription());
-			changed = true;
-		}
-		if (parent.getC_UOM_ID() != getC_UOM_ID())
-		{
-			setC_UOM_ID(parent.getC_UOM_ID());
-			changed = true;
-		}
-		if (parent.getM_Product_Category_ID() != getM_Product_Category_ID())
-		{
-			setM_Product_Category_ID(parent.getM_Product_Category_ID());
-			changed = true;
-		}
-
-		// metas 05129 end
-		return changed;
-	}	// setExpenseType
 
 	/** UOM Precision */
 	private Integer m_precision = null;
@@ -324,17 +192,6 @@ public class MProduct extends X_M_Product
 	}	// getUOMPrecision
 
 	/**
-	 * Create Asset Group for this product
-	 *
-	 * @return asset group id
-	 */
-	public int getA_Asset_Group_ID()
-	{
-		MProductCategory pc = MProductCategory.get(getCtx(), getM_Product_Category_ID());
-		return pc.getA_Asset_Group_ID();
-	}	// getA_Asset_Group_ID
-
-	/**
 	 * Create Asset for this product
 	 *
 	 * @return true if asset is created
@@ -344,34 +201,6 @@ public class MProduct extends X_M_Product
 		MProductCategory pc = MProductCategory.get(getCtx(), getM_Product_Category_ID());
 		return pc.getA_Asset_Group_ID() != 0;
 	}	// isCreated
-
-	/**
-	 * Get Attribute Set
-	 *
-	 * @return set or null
-	 * @deprecated Please use {@link IProductBL#getM_AttributeSet(I_M_Product)}
-	 */
-	@Deprecated
-	public I_M_AttributeSet getAttributeSet()
-	{
-		return Services.get(IProductBL.class).getM_AttributeSet(this);
-	}	// getAttributeSet
-
-	/**
-	 * Has the Product Instance Attribute
-	 *
-	 * @return true if instance attributes
-	 */
-	public boolean isInstanceAttribute()
-	{
-		I_M_AttributeSet mas = Services.get(IProductBL.class).getM_AttributeSet(this);
-
-		if (mas == null)
-		{
-			return false;
-		}
-		return mas.isInstanceAttribute();
-	}	// isInstanceAttribute
 
 	/**
 	 * Create One Asset Per UOM
@@ -389,76 +218,20 @@ public class MProduct extends X_M_Product
 		return ag.isOneAssetPerUOM();
 	}	// isOneAssetPerUOM
 
-	/**
-	 * Get UOM Symbol
-	 *
-	 * @return UOM Symbol
-	 */
-	public String getUOMSymbol()
-	{
-		int C_UOM_ID = getC_UOM_ID();
-		if (C_UOM_ID == 0)
-		{
-			return "";
-		}
-		return MUOM.get(getCtx(), C_UOM_ID).getUOMSymbol();
-	}	// getUOMSymbol
-
-	/**
-	 * Get Active(!) Product Downloads
-	 *
-	 * @param requery requery
-	 * @return array of downloads
-	 */
-	public MProductDownload[] getProductDownloads(boolean requery)
-	{
-		if (m_downloads != null && !requery)
-		{
-			return m_downloads;
-		}
-		//
-		List<MProductDownload> list = new Query(getCtx(), MProductDownload.Table_Name, "M_Product_ID=?", get_TrxName())
-				.setOnlyActiveRecords(true)
-				.setOrderBy(MProductDownload.COLUMNNAME_Name)
-				.setParameters(new Object[] { get_ID() })
-				.list();
-		m_downloads = list.toArray(new MProductDownload[list.size()]);
-		return m_downloads;
-	}	// getProductDownloads
-
-	/**
-	 * Does the product have downloads
-	 *
-	 * @return true if downloads exists
-	 */
-	public boolean hasDownloads()
-	{
-		return getProductDownloads(false).length > 0;
-	}	// hasDownloads
-
-	@Override
-	public String toString()
-	{
-		StringBuffer sb = new StringBuffer("MProduct[");
-		sb.append(get_ID()).append("-").append(getValue()).append("_").append(getName())
-				.append("]");
-		return sb.toString();
-	}	// toString
-
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
 		// Check Storage
 		if (!newRecord && 	//
-				((is_ValueChanged("IsActive") && !isActive())		// now not active
-						|| (is_ValueChanged("IsStocked") && !Services.get(IProductBL.class).isStocked(this))	// now not stocked
-				|| (is_ValueChanged("ProductType") 					// from Item
-				&& PRODUCTTYPE_Item.equals(get_ValueOld("ProductType")))))
+				((is_ValueChanged(COLUMNNAME_IsActive) && !isActive())		// now not active
+						|| (is_ValueChanged(COLUMNNAME_IsStocked) && !Services.get(IProductBL.class).isStocked(this))	// now not stocked
+				|| (is_ValueChanged(COLUMNNAME_ProductType) // from Item
+				&& PRODUCTTYPE_Item.equals(get_ValueOld(COLUMNNAME_ProductType)))))
 		{
 			MStorage[] storages = MStorage.getOfProduct(getCtx(), get_ID(), get_TrxName());
-			BigDecimal OnHand = Env.ZERO;
-			BigDecimal Ordered = Env.ZERO;
-			BigDecimal Reserved = Env.ZERO;
+			BigDecimal OnHand = BigDecimal.ZERO;
+			BigDecimal Ordered = BigDecimal.ZERO;
+			BigDecimal Reserved = BigDecimal.ZERO;
 			for (int i = 0; i < storages.length; i++)
 			{
 				OnHand = OnHand.add(storages[i].getQtyOnHand());
@@ -485,7 +258,7 @@ public class MProduct extends X_M_Product
 		}	// storage
 
 		// it checks if UOM has been changed , if so disallow the change if the condition is true.
-		if ((!newRecord) && is_ValueChanged("C_UOM_ID") && hasInventoryOrCost())
+		if ((!newRecord) && is_ValueChanged(COLUMNNAME_C_UOM_ID) && hasInventoryOrCost())
 		{
 			throw new AdempiereException("@SaveUomError@");
 		}
@@ -499,7 +272,7 @@ public class MProduct extends X_M_Product
 		}
 
 		// UOM reset
-		if (m_precision != null && is_ValueChanged("C_UOM_ID"))
+		if (m_precision != null && is_ValueChanged(COLUMNNAME_C_UOM_ID))
 		{
 			m_precision = null;
 		}
@@ -508,14 +281,12 @@ public class MProduct extends X_M_Product
 	}	// beforeSave
 
 	/**
-	 * HasInventoryOrCost
-	 *
 	 * @return true if it has Inventory or Cost
 	 */
-	protected boolean hasInventoryOrCost()
+	private boolean hasInventoryOrCost()
 	{
 		// check if it has transactions
-		boolean hasTrx = new Query(getCtx(), MTransaction.Table_Name,
+		final boolean hasTrx = new Query(getCtx(), MTransaction.Table_Name,
 				MTransaction.COLUMNNAME_M_Product_ID + "=?", get_TrxName())
 				.setOnlyActiveRecords(true)
 				.setParameters(new Object[] { get_ID() })
@@ -536,7 +307,7 @@ public class MProduct extends X_M_Product
 	}
 
 	@Override
-	protected boolean afterSave(boolean newRecord, boolean success)
+	protected boolean afterSave(final boolean newRecord, final boolean success)
 	{
 		if (!success)
 		{
@@ -544,13 +315,13 @@ public class MProduct extends X_M_Product
 		}
 
 		// Value/Name change in Account
-		if (!newRecord && (is_ValueChanged("Value") || is_ValueChanged("Name")))
+		if (!newRecord && (is_ValueChanged(COLUMNNAME_Value) || is_ValueChanged(COLUMNNAME_Name)))
 		{
 			MAccount.updateValueDescription(getCtx(), "M_Product_ID=" + getM_Product_ID(), get_TrxName());
 		}
 
 		// Name/Description Change in Asset MAsset.setValueNameDescription
-		if (!newRecord && (is_ValueChanged("Name") || is_ValueChanged("Description")))
+		if (!newRecord && (is_ValueChanged(COLUMNNAME_Name) || is_ValueChanged(COLUMNNAME_Description)))
 		{
 			String sql = DB.convertSqlToNative("UPDATE A_Asset a "
 					+ "SET (Name, Description)="
@@ -593,9 +364,9 @@ public class MProduct extends X_M_Product
 		if (Services.get(IProductBL.class).isStocked(this) || PRODUCTTYPE_Item.equals(getProductType()))
 		{
 			MStorage[] storages = MStorage.getOfProduct(getCtx(), get_ID(), get_TrxName());
-			BigDecimal OnHand = Env.ZERO;
-			BigDecimal Ordered = Env.ZERO;
-			BigDecimal Reserved = Env.ZERO;
+			BigDecimal OnHand = BigDecimal.ZERO;
+			BigDecimal Ordered = BigDecimal.ZERO;
+			BigDecimal Reserved = BigDecimal.ZERO;
 			for (int i = 0; i < storages.length; i++)
 			{
 				OnHand = OnHand.add(storages[i].getQtyOnHand());
@@ -624,40 +395,9 @@ public class MProduct extends X_M_Product
 		
 		MCost.delete(this);
 
-		// [ 1674225 ] Delete Product: Costing deletion error
-		/*
-		 * MAcctSchema[] mass = MAcctSchema.getClientAcctSchema(getCtx(),getAD_Client_ID(), get_TrxName()); for(int i=0; i<mass.length; i++) { // Get Cost Elements MCostElement[] ces =
-		 * MCostElement.getMaterialWithCostingMethods(this); MCostElement ce = null; for(int j=0; j<ces.length; j++) { if(MCostElement.COSTINGMETHOD_StandardCosting.equals(ces[i].getCostingMethod()))
-		 * { ce = ces[i]; break; } }
-		 *
-		 * if(ce == null) continue;
-		 *
-		 * MCost mcost = MCost.get(this, 0, mass[i], 0, ce.getM_CostElement_ID()); mcost.delete(true, get_TrxName()); }
-		 */
-
 		//
-		return delete_Accounting("M_Product_Acct");
+		return delete_Accounting(I_M_Product_Acct.Table_Name);
 	}	// beforeDelete
-
-	@Override
-	protected boolean afterDelete(boolean success)
-	{
-//		if (success)
-//			delete_Tree(X_AD_Tree.TREETYPE_Product);
-		return success;
-	}	// afterDelete
-
-	/**
-	 * Gets Material Management Policy. Tries: Product Category, Client (in this order)
-	 *
-	 * @return Material Management Policy
-	 * @deprecated Please use {@link IProductBL#getMMPolicy(I_M_Product)}
-	 */
-	@Deprecated
-	public String getMMPolicy()
-	{
-		return Services.get(IProductBL.class).getMMPolicy(this);
-	}
 
 	/**
 	 * Check if ASI is mandatory

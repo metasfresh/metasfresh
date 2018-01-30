@@ -32,7 +32,6 @@ import org.compiere.model.MMovementLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MOrg;
-import org.compiere.model.MProduct;
 import org.compiere.model.MRequisition;
 import org.compiere.model.MRequisitionLine;
 import org.compiere.model.MStorage;
@@ -50,6 +49,7 @@ import de.metas.i18n.Msg;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.IProductBL;
 
 /**
  *	Replenishment Report
@@ -534,8 +534,7 @@ public class ReplenishReport extends JavaProcess
 			//	To
 			int M_LocatorTo_ID = wh.getDefaultLocator().getM_Locator_ID();
 			//	From: Look-up Storage
-			MProduct product = MProduct.get(getCtx(), replenish.getM_Product_ID());
-			String MMPolicy = product.getMMPolicy();
+			final String MMPolicy = Services.get(IProductBL.class).getMMPolicy(replenish.getM_Product_ID());
 			MStorage[] storages = MStorage.getWarehouse(getCtx(),
 				whSource.getM_Warehouse_ID(), replenish.getM_Product_ID(), 0, 0,
 				true, null,

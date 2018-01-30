@@ -1537,11 +1537,11 @@ public class MOrder extends X_C_Order implements IDocument
 						// if it is from the selected warehouse
 						MWarehouse wh = MWarehouse.get(getCtx(), lineWarehouseId);
 						M_Locator_ID = product.getM_Locator_ID();
-						if (M_Locator_ID != 0)
+						if (M_Locator_ID > 0)
 						{
 							MLocator locator = new MLocator(getCtx(), product.getM_Locator_ID(), get_TrxName());
 							// product has default locator defined but is not from the order warehouse
-							if (locator.getM_Warehouse_ID() != wh.get_ID())
+							if (locator.getM_Warehouse_ID() != wh.getM_Warehouse_ID())
 							{
 								M_Locator_ID = wh.getDefaultLocator().getM_Locator_ID();
 							}

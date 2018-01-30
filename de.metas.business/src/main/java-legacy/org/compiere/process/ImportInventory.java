@@ -20,10 +20,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.Services;
@@ -36,6 +32,8 @@ import org.compiere.model.X_I_Inventory;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductBL;
 
 /**
@@ -60,6 +58,7 @@ public class ImportInventory extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -89,6 +88,7 @@ public class ImportInventory extends JavaProcess
 	 *  @return Message
 	 *  @throws Exception
 	 */
+	@Override
 	protected String doIt() throws java.lang.Exception
 	{
 		log.info("M_Locator_ID=" + p_M_Locator_ID + ",MovementDate=" + p_MovementDate);
@@ -266,10 +266,10 @@ public class ImportInventory extends JavaProcess
 				int M_AttributeSetInstance_ID = 0;
 				if (imp.getLot() != null || imp.getSerNo() != null)
 				{
-					MProduct product = MProduct.get(getCtx(), imp.getM_Product_ID());
-					if (product.isInstanceAttribute())
+					final MProduct product = MProduct.get(getCtx(), imp.getM_Product_ID());
+					I_M_AttributeSet mas = Services.get(IProductBL.class).getM_AttributeSet(product);
+					if (mas != null && mas.isInstanceAttribute())
 					{
-						I_M_AttributeSet mas = Services.get(IProductBL.class).getM_AttributeSet(product);
 						MAttributeSetInstance masi = new MAttributeSetInstance(getCtx(), 0, mas.getM_AttributeSet_ID(), get_TrxName());
 						if (mas.isLot() && imp.getLot() != null)
 							masi.setLot(imp.getLot(), imp.getM_Product_ID());

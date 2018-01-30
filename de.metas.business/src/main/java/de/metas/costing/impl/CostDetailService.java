@@ -1,7 +1,5 @@
 package de.metas.costing.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Iterator;
@@ -19,7 +17,6 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_CostDetail;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -302,8 +299,7 @@ public class CostDetailService implements ICostDetailService
 		// get costing level for product
 		final Properties ctx = Env.getCtx();
 		final I_C_AcctSchema acctSchema = MAcctSchema.get(ctx, acctSchemaId);
-		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
-		final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, acctSchema);
+		final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(productId, acctSchema);
 
 		final int orgId;
 		final int attributeSetInstanceId;

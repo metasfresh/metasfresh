@@ -311,14 +311,14 @@ public class CostEngine
 		for (I_C_AcctSchema as : getAcctSchema(mtrx))
 		{
 			// Cost Detail
-			final I_M_Product product = MProduct.get(ctx, mtrx.getM_Product_ID());
-			final CostingMethod costingMethod = Services.get(IProductBL.class).getCostingMethod(product, as);
+			final CostingMethod costingMethod = Services.get(IProductBL.class).getCostingMethod(mtrx.getM_Product_ID(), as);
 			// Check costing method
 			if (!getCostingMethod().equals(costingMethod))
 			{
 				throw new LiberoException("Costing method not supported - " + costingMethod);
 			}
 			//
+			final I_M_Product product = MProduct.get(ctx, mtrx.getM_Product_ID());
 			for (CostElement element : getCostElements())
 			{
 				//

@@ -13,15 +13,14 @@ package de.metas.product;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Properties;
@@ -43,6 +42,8 @@ public interface IProductBL extends ISingletonService
 
 	String getMMPolicy(I_M_Product product);
 
+	String getMMPolicy(int productId);
+
 	/**
 	 * @param product
 	 * @return true if item
@@ -61,6 +62,8 @@ public interface IProductBL extends ISingletonService
 	 * @return true if stocked and item
 	 */
 	boolean isStocked(I_M_Product product);
+
+	boolean isStocked(int productId);
 
 	/**
 	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
@@ -97,6 +100,8 @@ public interface IProductBL extends ISingletonService
 	 */
 	CostingLevel getCostingLevel(I_M_Product product, I_C_AcctSchema as);
 
+	CostingLevel getCostingLevel(int productId, I_C_AcctSchema as);
+
 	/**
 	 * Get Product Costing Method
 	 *
@@ -104,9 +109,8 @@ public interface IProductBL extends ISingletonService
 	 * @return product costing method
 	 */
 	CostingMethod getCostingMethod(I_M_Product product, I_C_AcctSchema as);
-	
-	CostingMethod getCostingMethod(int productId, I_C_AcctSchema as);
 
+	CostingMethod getCostingMethod(int productId, I_C_AcctSchema as);
 
 	/**
 	 * Gets UOM used in material storage of given <code>product</code>.
@@ -115,9 +119,8 @@ public interface IProductBL extends ISingletonService
 	 * @return UOM; never return null;
 	 */
 	I_C_UOM getStockingUOM(I_M_Product product);
-	
-	I_C_UOM getStockingUOM(int productId);
 
+	I_C_UOM getStockingUOM(int productId);
 
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.

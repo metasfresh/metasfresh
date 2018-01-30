@@ -1239,8 +1239,7 @@ public class CalloutOrder extends CalloutEngine
 		if (M_Product_ID > 0 && orderLine.getC_Order().isSOTrx()
 				&& QtyOrdered.signum() > 0)  // no negative (returns)
 		{
-			I_M_Product product = orderLine.getM_Product();
-			if (Services.get(IProductBL.class).isStocked(product))
+			if (Services.get(IProductBL.class).isStocked(M_Product_ID))
 			{
 				int M_Warehouse_ID = orderLine.getM_Warehouse_ID();
 				int M_AttributeSetInstance_ID = orderLine.getM_AttributeSetInstance_ID();

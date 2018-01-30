@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.eevolution.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -47,7 +49,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -120,9 +121,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 			final BigDecimal qtyToDeliver = bomLineModel.getQtyToDeliver();
 			final BigDecimal qtyScrapComponent = bomLineModel.getQtyScrapComponent();
 
-			final I_M_Product product = InterfaceWrapperHelper.create(order.getCtx(), I_M_Product.Table_Name, M_Product_ID, I_M_Product.class, order.get_TrxName());
-
-			if (product != null && Services.get(IProductBL.class).isStocked(product))
+			if (M_Product_ID > 0 && Services.get(IProductBL.class).isStocked(M_Product_ID))
 			{
 				int M_AttributeSetInstance_ID = 0;
 				if (value == null && isSelected)
@@ -183,14 +182,14 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		return isCompleteQtyDeliver;
 	}
 
-	public static MStorage[] getStorages(
+	private static MStorage[] getStorages(
 			Properties ctx,
 			int M_Product_ID,
 			int M_Warehouse_ID,
 			int M_ASI_ID,
 			Timestamp minGuaranteeDate, String trxName)
 	{
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, M_Product_ID, I_M_Product.class, ITrx.TRXNAME_None);
+		final I_M_Product product = loadOutOfTrx(M_Product_ID, I_M_Product.class);
 		if (product != null && Services.get(IProductBL.class).isStocked(product))
 		{
 			String MMPolicy = Services.get(IProductBL.class).getMMPolicy(product);
@@ -1135,8 +1134,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 	public static boolean isQtyAvailable(MPPOrder order, I_PP_Order_BOMLine line)
 	{
-		final I_M_Product product = line.getM_Product();
-		if (product == null || !Services.get(IProductBL.class).isStocked(product))
+		final int productId = line.getM_Product_ID();
+		if (productId <=0 || !Services.get(IProductBL.class).isStocked(productId))
 		{
 			return true;
 		}

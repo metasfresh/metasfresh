@@ -167,8 +167,7 @@ public class DD_OrderLine
 				&& QtyOrdered.signum() > 0		// no negative (returns)
 				&& ddOrderLine.getDD_Order().isSOTrx())
 		{
-			MProduct product = MProduct.get(ctx, M_Product_ID);
-			if (Services.get(IProductBL.class).isStocked(product))
+			if (Services.get(IProductBL.class).isStocked(M_Product_ID))
 			{
 				final int M_Locator_ID = ddOrderLine.getM_Locator_ID();
 				int M_AttributeSetInstance_ID = ddOrderLine.getM_AttributeSetInstance_ID();

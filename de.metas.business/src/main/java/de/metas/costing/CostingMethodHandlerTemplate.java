@@ -1,7 +1,6 @@
 package de.metas.costing;
 
 import java.math.BigDecimal;
-import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -9,10 +8,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostDetail;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
-import org.compiere.model.MProduct;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -223,11 +220,9 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	protected final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
 	{
-		final Properties ctx = Env.getCtx();
-		final I_M_Product product = MProduct.get(ctx, request.getProductId());
-		final MAcctSchema as = MAcctSchema.get(ctx, request.getAcctSchemaId());
+		final MAcctSchema as = MAcctSchema.get(Env.getCtx(), request.getAcctSchemaId());
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final CostingLevel costingLevel = productBL.getCostingLevel(product, as);
+		final CostingLevel costingLevel = productBL.getCostingLevel(request.getProductId(), as);
 		final int costTypeId = as.getM_CostType_ID();
 
 		final CostSegment costSegment = CostSegment.builder()

@@ -219,8 +219,8 @@ public class PPOrderBL implements IPPOrderBL
 		final BigDecimal qtyReservedActual = ppOrder.getQtyReserved();
 		BigDecimal qtyReservedTarget = qtyReservedRequested;
 		final BigDecimal qtyReservedDiff;
-		final I_M_Product product = ppOrder.getM_Product();
-		if (!Services.get(IProductBL.class).isStocked(product))
+		final int productId = ppOrder.getM_Product_ID();
+		if (!Services.get(IProductBL.class).isStocked(productId))
 		{
 			//
 			// Case: we are dealing with a product which is not stocked
@@ -250,7 +250,7 @@ public class PPOrderBL implements IPPOrderBL
 			final String trxName = InterfaceWrapperHelper.getTrxName(ppOrder);
 			Services.get(IStorageBL.class).addQtyOrdered(ctx,
 					locator,
-					product.getM_Product_ID(),
+					productId,
 					ppOrder.getM_AttributeSetInstance_ID(),
 					qtyReservedDiff,
 					trxName);

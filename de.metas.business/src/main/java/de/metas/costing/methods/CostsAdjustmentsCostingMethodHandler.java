@@ -4,11 +4,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -60,10 +58,9 @@ public class CostsAdjustmentsCostingMethodHandler extends CostingMethodHandlerTe
 		// get costing method for product
 		final I_C_AcctSchema as = MAcctSchema.get(Env.getCtx(), costSegment.getAcctSchemaId());
 		final int productId = costSegment.getProductId();
-		final I_M_Product product = InterfaceWrapperHelper.loadOutOfTrx(productId, I_M_Product.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final CostingMethod productCostingMethod = productBL.getCostingMethod(product, as);
-		final I_C_UOM productUOM = productBL.getStockingUOM(product);
+		final CostingMethod productCostingMethod = productBL.getCostingMethod(productId, as);
+		final I_C_UOM productUOM = productBL.getStockingUOM(productId);
 		
 		if (CostingMethod.AveragePO.equals(productCostingMethod) ||
 				CostingMethod.AverageInvoice.equals(productCostingMethod))

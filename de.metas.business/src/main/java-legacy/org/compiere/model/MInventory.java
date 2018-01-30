@@ -656,7 +656,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 			}
 			else	// Outgoing Trx
 			{
-				String MMPolicy = product.getMMPolicy();
+				final String MMPolicy = Services.get(IProductBL.class).getMMPolicy(line.getM_Product_ID());
 				MStorage[] storages = MStorage.getWarehouse(getCtx(), getM_Warehouse_ID(), line.getM_Product_ID(), 0,
 						null, MClient.MMPOLICY_FiFo.equals(MMPolicy), true, line.getM_Locator_ID(), get_TrxName());
 
@@ -1018,8 +1018,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 			final BigDecimal costs;
 			if (isReversal())
 			{
-				I_M_Product product = line.getM_Product();
-				final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
+				final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(line.getM_Product_ID(), as);
 				
 				String sql = "SELECT amt * -1 FROM M_CostDetail WHERE M_InventoryLine_ID=?"; // negate costs
 				if (CostingLevel.Organization.equals(costingLevel))

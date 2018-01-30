@@ -1,5 +1,7 @@
 package de.metas.product.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -76,6 +78,14 @@ public final class ProductBL implements IProductBL
 			policy = Services.get(IClientDAO.class).retriveClient(Env.getCtx()).getMMPolicy();
 		}
 		return policy;
+	}
+	
+	@Override
+	public String getMMPolicy(final int productId)
+	{
+		Check.assume(productId > 0, "productId > 0");
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		return getMMPolicy(product);
 	}
 
 	@Override
@@ -175,6 +185,14 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public boolean isStocked(final int productId)
+	{
+		Check.assume(productId > 0, "productId > 0");
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		return isStocked(product);
+	}
+
+	@Override
 	public int getM_AttributeSet_ID(final I_M_Product product)
 	{
 		int attributeSet_ID = product.getM_AttributeSet_ID();
@@ -205,7 +223,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public I_M_AttributeSet getM_AttributeSet(I_M_Product product)
+	public I_M_AttributeSet getM_AttributeSet(final I_M_Product product)
 	{
 		if (product.getM_AttributeSet_ID() > 0)
 		{
@@ -222,7 +240,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public I_M_AttributeSetInstance getCreateASI(Properties ctx, int M_AttributeSetInstance_ID, int M_Product_ID)
+	public I_M_AttributeSetInstance getCreateASI(final Properties ctx, final int M_AttributeSetInstance_ID, final int M_Product_ID)
 	{
 		// Load Instance if not 0
 		if (M_AttributeSetInstance_ID > 0)
@@ -272,6 +290,13 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public CostingLevel getCostingLevel(final int productId, final I_C_AcctSchema as)
+	{
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
+		return getCostingLevel(product, as);
+	}
+
+	@Override
 	public CostingMethod getCostingMethod(final I_M_Product product, final I_C_AcctSchema as)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
@@ -294,7 +319,7 @@ public final class ProductBL implements IProductBL
 	@Override
 	public CostingMethod getCostingMethod(final int productId, final I_C_AcctSchema as)
 	{
-		final I_M_Product product = InterfaceWrapperHelper.loadOutOfTrx(productId, I_M_Product.class);
+		final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
 		return getCostingMethod(product, as);
 	}
 

@@ -89,11 +89,11 @@ public class StorageEngine
 			boolean isSOTrx
 			)
 	{
-		MProduct product = MProduct.get(docLine.getCtx(), docLine.getM_Product_ID());
+		final int productId = docLine.getM_Product_ID();
 		// Incoming Trx
 		boolean incomingTrx = MovementType.charAt(1) == '+';	// V+ Vendor Receipt
 
-		if (product != null && Services.get(IProductBL.class).isStocked(product))
+		if (productId > 0 && Services.get(IProductBL.class).isStocked(productId))
 		{
 			// Ignore the Material Policy when is Reverse Correction
 			if (!isReversal)

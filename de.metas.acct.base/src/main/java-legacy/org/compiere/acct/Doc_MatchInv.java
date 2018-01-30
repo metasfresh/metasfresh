@@ -30,7 +30,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaElement;
@@ -188,8 +187,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		//
 		// Skip not stockable (e.g. service products) because they have no cost
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final I_M_Product product = getM_MatchInv().getM_Product();
-		if (!productBL.isStocked(product))
+		final int productId = getM_MatchInv().getM_Product_ID();
+		if (!productBL.isStocked(productId))
 		{
 			return facts;
 		}

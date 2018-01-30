@@ -698,8 +698,7 @@ public class MCost extends X_M_Cost
 		if (m_manual)
 		{
 			final MAcctSchema as = new MAcctSchema(getCtx(), getC_AcctSchema_ID(), null);
-			final MProduct product = MProduct.get(getCtx(), getM_Product_ID());
-			final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(product, as);
+			final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(getM_Product_ID(), as);
 			if (CostingLevel.Client.equals(costingLevel))
 			{
 				if (getAD_Org_ID() != 0 || getM_AttributeSetInstance_ID() != 0)
