@@ -15,7 +15,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 545146725L;
+	private static final long serialVersionUID = -1587126729L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (Properties ctx, int PP_Product_Planning_ID, String trxName)
@@ -458,6 +458,28 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return ii.intValue();
 	}
 
+	/** Set Product Planning Schema.
+		@param M_Product_PlanningSchema_ID Product Planning Schema	  */
+	@Override
+	public void setM_Product_PlanningSchema_ID (int M_Product_PlanningSchema_ID)
+	{
+		if (M_Product_PlanningSchema_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_PlanningSchema_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_PlanningSchema_ID, Integer.valueOf(M_Product_PlanningSchema_ID));
+	}
+
+	/** Get Product Planning Schema.
+		@return Product Planning Schema	  */
+	@Override
+	public int getM_Product_PlanningSchema_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_PlanningSchema_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
 	{
@@ -743,6 +765,43 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource)
+	{
+		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
+	}
+
+	/** Set Ressource.
+		@param S_Resource_ID 
+		Resource
+	  */
+	@Override
+	public void setS_Resource_ID (int S_Resource_ID)
+	{
+		if (S_Resource_ID < 1) 
+			set_Value (COLUMNNAME_S_Resource_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_Resource_ID, Integer.valueOf(S_Resource_ID));
+	}
+
+	/** Get Ressource.
+		@return Resource
+	  */
+	@Override
+	public int getS_Resource_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_S_Resource_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Safety Stock Qty.
 		@param SafetyStock 
 		Safety stock is a term used to describe a level of stock that is maintained below the cycle stock to buffer against stock-outs
@@ -782,43 +841,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public int getSeqNo () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
-	}
-
-	/** Set Ressource.
-		@param S_Resource_ID 
-		Resource
-	  */
-	@Override
-	public void setS_Resource_ID (int S_Resource_ID)
-	{
-		if (S_Resource_ID < 1) 
-			set_Value (COLUMNNAME_S_Resource_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_Resource_ID, Integer.valueOf(S_Resource_ID));
-	}
-
-	/** Get Ressource.
-		@return Resource
-	  */
-	@Override
-	public int getS_Resource_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_S_Resource_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

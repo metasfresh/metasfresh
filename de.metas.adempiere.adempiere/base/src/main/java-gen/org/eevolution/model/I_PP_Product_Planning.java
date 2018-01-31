@@ -486,6 +486,29 @@ public interface I_PP_Product_Planning
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Product Planning Schema.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_PlanningSchema_ID (int M_Product_PlanningSchema_ID);
+
+	/**
+	 * Get Product Planning Schema.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_PlanningSchema_ID();
+
+    /** Column definition for M_Product_PlanningSchema_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_M_Product_PlanningSchema_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "M_Product_PlanningSchema_ID", null);
+    /** Column name M_Product_PlanningSchema_ID */
+    public static final String COLUMNNAME_M_Product_PlanningSchema_ID = "M_Product_PlanningSchema_ID";
+
+	/**
 	 * Set Lager.
 	 * Storage Warehouse and Service Point
 	 *
@@ -761,6 +784,35 @@ public interface I_PP_Product_Planning
     public static final String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
 
 	/**
+	 * Set Ressource.
+	 * Resource
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Ressource.
+	 * Resource
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getS_Resource_ID();
+
+	public org.compiere.model.I_S_Resource getS_Resource();
+
+	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
+
+    /** Column definition for S_Resource_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_S_Resource>(I_PP_Product_Planning.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
+    /** Column name S_Resource_ID */
+    public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+
+	/**
 	 * Set Safety Stock Qty.
 	 * Safety stock is a term used to describe a level of stock that is maintained below the cycle stock to buffer against stock-outs
 	 *
@@ -811,35 +863,6 @@ public interface I_PP_Product_Planning
     public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "SeqNo", null);
     /** Column name SeqNo */
     public static final String COLUMNNAME_SeqNo = "SeqNo";
-
-	/**
-	 * Set Ressource.
-	 * Resource
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setS_Resource_ID (int S_Resource_ID);
-
-	/**
-	 * Get Ressource.
-	 * Resource
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getS_Resource_ID();
-
-	public org.compiere.model.I_S_Resource getS_Resource();
-
-	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
-
-    /** Column definition for S_Resource_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_S_Resource>(I_PP_Product_Planning.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
-    /** Column name S_Resource_ID */
-    public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
 	 * Set StorageAttributesKey (technical).
