@@ -1,12 +1,17 @@
 package de.metas.ui.web.pickingslotsClearing.process;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -36,6 +41,9 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 
 public class WEBUI_PickingSlotsClearingView_TakeOutTUAndAddToLU extends PickingSlotsClearingViewBasedProcess implements IProcessPrecondition
 {
+	@Autowired
+	private PickingCandidateService pickingCandidateService;
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -48,7 +56,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutTUAndAddToLU extends PickingS
 		final PickingSlotRow pickingSlotRow = getSingleSelectedPickingSlotRow();
 		if (!pickingSlotRow.isTU())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("select an TU");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("select a TU");
 		}
 
 		//
@@ -80,8 +88,15 @@ public class WEBUI_PickingSlotsClearingView_TakeOutTUAndAddToLU extends PickingS
 
 		final BigDecimal qtyTU = BigDecimal.ONE;
 
-		HUTransformService.newInstance()
+		final List<Integer> huIdsDestroyedCollector = new ArrayList<>();
+
+		HUTransformService.builder()
+				.emptyHUListener(EmptyHUListener.doBeforeDestroyed(hu -> huIdsDestroyedCollector.add(hu.getM_HU_ID())))
+				.build()
 				.tuToExistingLU(tuHU, qtyTU, luHU);
+
+		// Remove from picking slots all destroyed HUs
+		pickingCandidateService.inactivateForHUIds(huIdsDestroyedCollector);
 
 		return MSG_OK;
 	}
