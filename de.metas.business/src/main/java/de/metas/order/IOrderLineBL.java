@@ -25,6 +25,7 @@ package de.metas.order;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -122,6 +123,8 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param orderLine
 	 * @return C_TaxCategory_ID
 	 * @see org.adempiere.util.Check#assume(boolean, String, Object...)
+	 *
+	 * @throws ProductNotOnPriceListException if the product's pricing info could not be retrieved.
 	 */
 	int getC_TaxCategory_ID(org.compiere.model.I_C_OrderLine orderLine);
 
@@ -211,7 +214,7 @@ public interface IOrderLineBL extends ISingletonService
 
 	/**
 	 * Copy the details from the original order line into the new order line of the counter document
-	 * 
+	 *
 	 * @param line
 	 * @param fromLine
 	 */
@@ -222,7 +225,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * For the time being, make sure the packaging material lines are not copied.
 	 * The reason for this is that the packing instructions are not the same for both orgs and we cannot use them inter-org.
 	 * Later in the life of the counter document the packing material lines will be created based on the correct data from the new org.
-	 * 
+	 *
 	 * @param fromLine
 	 * @return true if the line shall be copied and false if not
 	 */
