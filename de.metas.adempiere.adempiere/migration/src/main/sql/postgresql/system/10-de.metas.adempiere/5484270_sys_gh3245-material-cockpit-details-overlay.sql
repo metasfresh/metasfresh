@@ -68,3 +68,8 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-31 12:32:02'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-31 12:32:06','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=561313 AND AD_Language='en_US'
 ;
 
+-- 2018-01-31T12:37:21.494
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-31 12:37:21','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Document Details' WHERE AD_Process_ID=540910 AND AD_Language='en_US'
+;
+
