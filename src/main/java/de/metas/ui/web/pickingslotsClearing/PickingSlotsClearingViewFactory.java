@@ -23,6 +23,7 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotViewRepository;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutHU;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToHU;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU;
+import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PickingSlotsClearingView_TakeOutTUAndAddToLU;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
@@ -144,6 +145,7 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 		return ImmutableList.of(
 				createProcessDescriptor(WEBUI_PickingSlotsClearingView_TakeOutHU.class),
 				createProcessDescriptor(WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToHU.class),
+				createProcessDescriptor(WEBUI_PickingSlotsClearingView_TakeOutTUAndAddToLU.class),
 				createProcessDescriptor(WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU.class),
 				createProcessDescriptor(de.metas.ui.web.process.adprocess.WEBUI_TestParentChildViewParams.class));
 	}
