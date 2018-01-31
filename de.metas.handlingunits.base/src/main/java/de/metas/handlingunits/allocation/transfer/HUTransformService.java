@@ -136,7 +136,7 @@ public class HUTransformService
 	{
 		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
 
-		final Properties effectiveCtx = Util.coalesce(ctx, Env.getCtx());
+		final Properties effectiveCtx = ctx != null ? ctx : Env.getCtx();
 		final String effectiveTrxName = Util.coalesce(trxName, ITrx.TRXNAME_ThreadInherited);
 		final IMutableHUContext mutableHUContext = Services.get(IHUContextFactory.class).createMutableHUContext(effectiveCtx, effectiveTrxName);
 		if (emptyHUListener != null)
