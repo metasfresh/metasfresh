@@ -72,7 +72,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToHU extends PickingS
 		}
 
 		//
-		// Validate the picking slots clearing selected row
+		// Validate the picking slots clearing selected row (left side)
 		final PickingSlotRow pickingSlotRow = getSingleSelectedPickingSlotRow();
 		if (!pickingSlotRow.isPickedHURow())
 		{
@@ -84,7 +84,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToHU extends PickingS
 		}
 
 		//
-		// Validate the packing HUs selected row
+		// Validate the packing HUs selected row (right side)
 		final HUEditorRow packingHURow = getSingleSelectedPackingHUsRow();
 		if (!packingHURow.isTopLevel())
 		{
