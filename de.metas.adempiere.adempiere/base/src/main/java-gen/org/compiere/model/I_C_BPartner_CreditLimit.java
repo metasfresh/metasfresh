@@ -97,7 +97,7 @@ public interface I_C_BPartner_CreditLimit
 	 * Set Approved By.
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setApprovedBy_ID (int ApprovedBy_ID);
@@ -106,7 +106,7 @@ public interface I_C_BPartner_CreditLimit
 	 * Get Approved By.
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getApprovedBy_ID();

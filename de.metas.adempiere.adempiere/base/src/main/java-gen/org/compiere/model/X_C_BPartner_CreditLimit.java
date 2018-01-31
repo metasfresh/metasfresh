@@ -15,7 +15,7 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -512303772L;
+	private static final long serialVersionUID = 1945448948L;
 
     /** Standard Constructor */
     public X_C_BPartner_CreditLimit (Properties ctx, int C_BPartner_CreditLimit_ID, String trxName)
@@ -24,6 +24,7 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
       /** if (C_BPartner_CreditLimit_ID == 0)
         {
 			setAmount (BigDecimal.ZERO);
+			setApprovedBy_ID (0); // @CreatedBy@
 			setC_BPartner_CreditLimit_ID (0);
 			setType (null);
         } */
@@ -180,10 +181,10 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
 	 * Reference name: CreditLimit_Type
 	 */
 	public static final int TYPE_AD_Reference_ID=540830;
-	/** Ins = Ins */
-	public static final String TYPE_Ins = "Ins";
-	/** Man = Man */
-	public static final String TYPE_Man = "Man";
+	/** Ins = 2_Ins */
+	public static final String TYPE_Ins = "2_Ins";
+	/** Man = 1_Man */
+	public static final String TYPE_Man = "1_Man";
 	/** Set Art.
 		@param Type 
 		Type of Validation (SQL, Java Script, Java Language)
