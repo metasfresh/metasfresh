@@ -983,3 +983,202 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2018-01-31 16:13:35',
 
 
 
+Alter table C_BPartner_CreditLimit add CONSTRAINT CreditLimit_UQTypeBP UNIQUE (C_BPartner_ID, Type);
+
+
+
+
+-- 2018-01-31T16:59:11.072
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Value='2_Ins',Updated=TO_TIMESTAMP('2018-01-31 16:59:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541585
+;
+
+-- 2018-01-31T16:59:15.866
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Value='1_Man',Updated=TO_TIMESTAMP('2018-01-31 16:59:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541586
+;
+
+-- 2018-01-31T16:59:31.412
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FieldLength=10,Updated=TO_TIMESTAMP('2018-01-31 16:59:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558978
+;
+
+-- 2018-01-31T16:59:33.668
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner_creditlimit','Type','VARCHAR(10)',null,null)
+;
+
+
+
+
+
+
+-- 2018-01-31T17:05:33.122
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,543845,0,'CreditLimitUsage',TO_TIMESTAMP('2018-01-31 17:05:32','YYYY-MM-DD HH24:MI:SS'),100,'Percent of Credit used from the limit','D','','Y','Credit limit Usage','Credit limit Usage',TO_TIMESTAMP('2018-01-31 17:05:32','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-01-31T17:05:33.124
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Element_ID, t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Element_ID=543845 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2018-01-31T17:05:41.815
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Credit limit usage', PrintName='Credit limit usage',Updated=TO_TIMESTAMP('2018-01-31 17:05:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543845
+;
+
+-- 2018-01-31T17:05:41.825
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='CreditLimitUsage', Name='Credit limit usage', Description='Percent of Credit used from the limit', Help='' WHERE AD_Element_ID=543845
+;
+
+-- 2018-01-31T17:05:41.836
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='CreditLimitUsage', Name='Credit limit usage', Description='Percent of Credit used from the limit', Help='', AD_Element_ID=543845 WHERE UPPER(ColumnName)='CREDITLIMITUSAGE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2018-01-31T17:05:41.839
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='CreditLimitUsage', Name='Credit limit usage', Description='Percent of Credit used from the limit', Help='' WHERE AD_Element_ID=543845 AND IsCentrallyMaintained='Y'
+;
+
+-- 2018-01-31T17:05:41.840
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Credit limit usage', Description='Percent of Credit used from the limit', Help='' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=543845) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 543845)
+;
+
+-- 2018-01-31T17:05:41.854
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Credit limit usage', Name='Credit limit usage' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=543845)
+;
+
+-- 2018-01-31T17:06:15.325
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET ColumnName='CreditLimitIndicator', Name='Credit limit indicator', PrintName='Credit limit indicator',Updated=TO_TIMESTAMP('2018-01-31 17:06:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543845
+;
+
+-- 2018-01-31T17:06:15.329
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='CreditLimitIndicator', Name='Credit limit indicator', Description='Percent of Credit used from the limit', Help='' WHERE AD_Element_ID=543845
+;
+
+-- 2018-01-31T17:06:15.342
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='CreditLimitIndicator', Name='Credit limit indicator', Description='Percent of Credit used from the limit', Help='', AD_Element_ID=543845 WHERE UPPER(ColumnName)='CREDITLIMITINDICATOR' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2018-01-31T17:06:15.343
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='CreditLimitIndicator', Name='Credit limit indicator', Description='Percent of Credit used from the limit', Help='' WHERE AD_Element_ID=543845 AND IsCentrallyMaintained='Y'
+;
+
+-- 2018-01-31T17:06:15.345
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Credit limit indicator', Description='Percent of Credit used from the limit', Help='' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=543845) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 543845)
+;
+
+-- 2018-01-31T17:06:15.357
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Credit limit indicator', Name='Credit limit indicator' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=543845)
+;
+
+-- 2018-01-31T17:08:18.433
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,FormatPattern,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,558986,543845,0,22,291,'N','CreditLimitIndicator','(select round((cl.Amount - s.SO_CreditUsed)/cl.Amount,3), cl.Type from C_BPartner_Stats s join C_BPartner_CreditLimit cl on (s.C_BPartner_ID = cl.C_Bpartner_ID and s.C_Bpartner_ID = C_Bpartner.C_Bpartner_ID) order by Type limit 1)',TO_TIMESTAMP('2018-01-31 17:08:18','YYYY-MM-DD HH24:MI:SS'),100,'N','Percent of Credit used from the limit','D',14,'#,##.#%','','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Credit limit indicator',0,0,TO_TIMESTAMP('2018-01-31 17:08:18','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2018-01-31T17:08:18.439
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558986 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-01-31T17:08:48.040
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,558986,561919,0,220,0,TO_TIMESTAMP('2018-01-31 17:08:47','YYYY-MM-DD HH24:MI:SS'),100,'Percent of Credit used from the limit',0,'D','',0,'Y','Y','Y','N','N','N','N','N','Credit limit indicator',350,340,0,1,1,TO_TIMESTAMP('2018-01-31 17:08:47','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-01-31T17:08:48.043
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=561919 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2018-01-31T17:08:48.051
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543845,NULL) 
+;
+
+-- 2018-01-31T17:10:29.065
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,1000003,541428,TO_TIMESTAMP('2018-01-31 17:10:28','YYYY-MM-DD HH24:MI:SS'),100,'Y','creditlimit',16,TO_TIMESTAMP('2018-01-31 17:10:28','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-01-31T17:10:49.735
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,561919,0,220,550549,541428,'F',TO_TIMESTAMP('2018-01-31 17:10:49','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','Credit limit indicator',10,0,0,TO_TIMESTAMP('2018-01-31 17:10:49','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-01-31T17:11:36.964
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnSQL='(select round((cl.Amount - s.SO_CreditUsed)/cl.Amount,3), cl.Type from C_BPartner_Stats s join C_BPartner_CreditLimit cl on (s.C_BPartner_ID = cl.C_Bpartner_ID and s.C_Bpartner_ID = C_Bpartner.C_BPartner_ID) order by Type limit 1)',Updated=TO_TIMESTAMP('2018-01-31 17:11:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
+
+-- 2018-01-31T17:11:44.079
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnSQL='(select round((cl.Amount - s.SO_CreditUsed)/cl.Amount,3), cl.Type from C_BPartner_Stats s join C_BPartner_CreditLimit cl on (s.C_BPartner_ID = cl.C_Bpartner_ID and s.C_Bpartner_ID = C_BPartner.C_BPartner_ID) order by Type limit 1)',Updated=TO_TIMESTAMP('2018-01-31 17:11:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
+
+-- 2018-01-31T17:16:23.843
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnSQL='(select round((cl.Amount - s.SO_CreditUsed)/cl.Amount,3) from C_BPartner_Stats s join C_BPartner_CreditLimit cl on (s.C_BPartner_ID = cl.C_Bpartner_ID and s.C_Bpartner_ID = C_BPartner.C_BPartner_ID) order by Type limit 1)',Updated=TO_TIMESTAMP('2018-01-31 17:16:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
+
+-- 2018-01-31T17:18:28.042
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=11,Updated=TO_TIMESTAMP('2018-01-31 17:18:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
+
+-- 2018-01-31T17:18:56.335
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=22,Updated=TO_TIMESTAMP('2018-01-31 17:18:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
+
+-- 2018-01-31T17:26:52.453
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FormatPattern='%#,##.#',Updated=TO_TIMESTAMP('2018-01-31 17:26:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
+
+-- 2018-01-31T17:28:39.240
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Credit limit indicator %', PrintName='Credit limit indicator %',Updated=TO_TIMESTAMP('2018-01-31 17:28:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543845
+;
+
+-- 2018-01-31T17:28:39.241
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='CreditLimitIndicator', Name='Credit limit indicator %', Description='Percent of Credit used from the limit', Help='' WHERE AD_Element_ID=543845
+;
+
+-- 2018-01-31T17:28:39.255
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='CreditLimitIndicator', Name='Credit limit indicator %', Description='Percent of Credit used from the limit', Help='', AD_Element_ID=543845 WHERE UPPER(ColumnName)='CREDITLIMITINDICATOR' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2018-01-31T17:28:39.256
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='CreditLimitIndicator', Name='Credit limit indicator %', Description='Percent of Credit used from the limit', Help='' WHERE AD_Element_ID=543845 AND IsCentrallyMaintained='Y'
+;
+
+-- 2018-01-31T17:28:39.257
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Credit limit indicator %', Description='Percent of Credit used from the limit', Help='' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=543845) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 543845)
+;
+
+-- 2018-01-31T17:28:39.279
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Credit limit indicator %', Name='Credit limit indicator %' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=543845)
+;
+
+
+
+
+
