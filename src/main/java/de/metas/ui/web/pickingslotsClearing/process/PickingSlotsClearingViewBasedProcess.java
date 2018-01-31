@@ -66,6 +66,7 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		return getSelectedRowIds().isSingleDocumentId();
 	}
 
+	/** @return single selected picking slot row (left side) */
 	protected final PickingSlotRow getSingleSelectedPickingSlotRow()
 	{
 		return PickingSlotRow.cast(super.getSingleSelectedRow());
