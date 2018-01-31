@@ -13,11 +13,11 @@ package de.metas.product.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,9 +34,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.product.IProductDAO;
@@ -127,6 +129,25 @@ public class ProductDAO implements IProductDAO
 				.addNotEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 				.create()
 				.list(de.metas.product.model.I_M_Product.class);
+	}
+
+	@Override
+	public List<I_M_Product> retrieveProductsWithNoProductPlanning()
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQuery<I_PP_Product_Planning> existentProductPlanning = queryBL.createQueryBuilder(I_PP_Product_Planning.class, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.create();
+
+		return queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addNotInSubQueryFilter(I_M_Product.COLUMNNAME_M_Product_ID, I_PP_Product_Planning.COLUMNNAME_M_Product_ID, existentProductPlanning)
+				.create()
+				.list();
+
 	}
 
 }
