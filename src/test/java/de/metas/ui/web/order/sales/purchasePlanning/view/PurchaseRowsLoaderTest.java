@@ -159,7 +159,7 @@ public class PurchaseRowsLoaderTest
 				.orgId(20)
 				.datePromised(orderLine.getDatePromised())
 				.productId(orderLine.getM_Product_ID())
-				.qtyRequired(orderLine.getQtyOrdered())
+				.qtyToPurchase(orderLine.getQtyOrdered())
 				.salesOrderId(orderLine.getC_Order_ID())
 				.salesOrderLineId(orderLine.getC_OrderLine_ID())
 				.uomId(orderLine.getM_Product().getC_UOM_ID())

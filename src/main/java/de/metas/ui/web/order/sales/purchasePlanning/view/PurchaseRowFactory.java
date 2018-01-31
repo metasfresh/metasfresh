@@ -17,6 +17,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import de.metas.product.IProductBL;
@@ -81,7 +82,7 @@ public class PurchaseRowFactory
 				.rowType(PurchaseRowType.LINE)
 				.product(product)
 				.uomOrAvailablility(uom)
-				.qtyToPurchase(purchaseCandidate.getQtyRequired())
+				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
 				.datePromised(datePromised)
 				.vendorBPartner(vendorBPartner)
 				.purchaseCandidateId(purchaseCandidate.getPurchaseCandidateId())
@@ -144,7 +145,7 @@ public class PurchaseRowFactory
 				.rowType(PurchaseRowType.AVAILABILITY_DETAIL)
 				.qtyToPurchase(BigDecimal.ZERO)
 				.readonly(true)
-				.uomOrAvailablility(throwable.getLocalizedMessage())
+				.uomOrAvailablility(Util.coalesce(throwable.getLocalizedMessage(), throwable.getMessage(), throwable.getClass().getName()))
 				.datePromised(null)
 				.build();
 	}
