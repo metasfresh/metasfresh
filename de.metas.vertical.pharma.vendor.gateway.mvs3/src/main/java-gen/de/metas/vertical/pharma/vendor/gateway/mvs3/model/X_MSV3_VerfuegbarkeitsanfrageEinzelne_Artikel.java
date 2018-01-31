@@ -14,7 +14,7 @@ public class X_MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel extends org.compiere.
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1294244950L;
+	private static final long serialVersionUID = 1497991242L;
 
     /** Standard Constructor */
     public X_MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel (Properties ctx, int MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel_ID, String trxName)
@@ -41,6 +41,65 @@ public class X_MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel extends org.compiere.
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLineSO() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLineSO_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLineSO(org.compiere.model.I_C_OrderLine C_OrderLineSO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLineSO_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLineSO);
+	}
+
+	/** Set Auftragsposition.
+		@param C_OrderLineSO_ID 
+		Auftragsposition
+	  */
+	@Override
+	public void setC_OrderLineSO_ID (int C_OrderLineSO_ID)
+	{
+		if (C_OrderLineSO_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderLineSO_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderLineSO_ID, Integer.valueOf(C_OrderLineSO_ID));
+	}
+
+	/** Get Auftragsposition.
+		@return Auftragsposition
+	  */
+	@Override
+	public int getC_OrderLineSO_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLineSO_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Purchase candidate.
+		@param C_PurchaseCandidate_ID Purchase candidate	  */
+	@Override
+	public void setC_PurchaseCandidate_ID (int C_PurchaseCandidate_ID)
+	{
+		if (C_PurchaseCandidate_ID < 1) 
+			set_Value (COLUMNNAME_C_PurchaseCandidate_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PurchaseCandidate_ID, Integer.valueOf(C_PurchaseCandidate_ID));
+	}
+
+	/** Get Purchase candidate.
+		@return Purchase candidate	  */
+	@Override
+	public int getC_PurchaseCandidate_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_PurchaseCandidate_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** 
 	 * MSV3_Bedarf AD_Reference_ID=540826

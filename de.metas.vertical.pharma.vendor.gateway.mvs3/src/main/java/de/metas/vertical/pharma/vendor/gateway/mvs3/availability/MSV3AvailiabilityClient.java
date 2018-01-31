@@ -12,6 +12,7 @@ import org.adempiere.util.Check;
 
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse.AvailabilityResponseBuilder;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
@@ -21,6 +22,7 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientBase;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3Util;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.common.MSV3ClientMultiException;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3ClientException;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.config.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.ObjectFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitAnfragen;
@@ -88,25 +90,53 @@ public class MSV3AvailiabilityClient extends MSV3ClientBase
 				objectFactory.createVerfuegbarkeitsanfrageEinzelne();
 		verfuegbarkeitsanfrageEinzelne.setId(UUID.randomUUID().toString());
 
-		final List<Artikel> artikel = verfuegbarkeitsanfrageEinzelne.getArtikel();
-		final Map<Long, ProductAndQuantity> productIdentifier2requestItem = new HashMap<>();
+		final MSV3AvailabilityTransaction availabilityTransaction = MSV3AvailabilityTransaction.builder()
+				.vendorId(request.getVendorId())
+				.verfuegbarkeitsanfrageEinzelne(verfuegbarkeitsanfrageEinzelne)
+				.build();
 
-		for (final ProductAndQuantity requestItem : request.getAvailabilityRequestItems())
+		final List<Artikel> artikel = verfuegbarkeitsanfrageEinzelne.getArtikel();
+		final Map<Long, AvailabilityRequestItem> productIdentifier2requestItem = new HashMap<>();
+
+		for (final AvailabilityRequestItem requestItem : request.getAvailabilityRequestItems())
 		{
-			final Artikel singleArtikel = createArtikelForRequestItem(requestItem);
+			final Artikel singleArtikel = createArtikelForRequestItem(requestItem.getProductAndQuantity());
 			productIdentifier2requestItem.put(singleArtikel.getPzn(), requestItem);
 			artikel.add(singleArtikel);
+
+			availabilityTransaction.putContextInfo(singleArtikel, MSV3ArtikelContextInfo.forRequestItem(requestItem));
 		}
 
-		// make the webservice call
-		final VerfuegbarkeitAnfragenResponse response = makeAvailabilityWebserviceCall(verfuegbarkeitsanfrageEinzelne);
+		try
+		{
+			// make the webservice call
+			final VerfuegbarkeitAnfragenResponse response = makeAvailabilityWebserviceCall(verfuegbarkeitsanfrageEinzelne);
 
-		// process and return the results
-		final AvailabilityResponseBuilder responseBuilder = prepareAvailabilityResponse(
-				response,
-				productIdentifier2requestItem);
+			availabilityTransaction.setVerfuegbarkeitsanfrageEinzelneAntwort(response.getReturn());
 
-		return responseBuilder.originalRequest(request).build();
+			// process and return the results
+			final AvailabilityResponseBuilder responseBuilder = prepareAvailabilityResponse(
+					response,
+					productIdentifier2requestItem,
+					availabilityTransaction);
+
+			return responseBuilder.originalRequest(request).build();
+		}
+		catch (final Msv3ClientException e)
+		{
+			availabilityTransaction.setFaultInfo(e.getMsv3FaultInfo());
+			throw e;
+		}
+		catch (final Exception e)
+		{
+			availabilityTransaction.setOtherException(e);
+			throw e;
+		}
+		finally
+		{
+			availabilityTransaction.store();
+		}
+
 	}
 
 	private Artikel createArtikelForRequestItem(@NonNull final ProductAndQuantity requestItem)
@@ -133,28 +163,32 @@ public class MSV3AvailiabilityClient extends MSV3ClientBase
 		return response;
 	}
 
+	/**
+	 * @param verfuegbarkeitAnfragenResponse
+	 * @param productIdentifier2requestItem
+	 * @param availabilityTransaction passed so that its {@link MSV3AvailabilityTransaction#putContextInfo(VerfuegbarkeitsantwortArtikel, MSV3ArtikelContextInfo)} can be called.
+	 */
 	private AvailabilityResponseBuilder prepareAvailabilityResponse(
 			@NonNull final VerfuegbarkeitAnfragenResponse verfuegbarkeitAnfragenResponse,
-			@NonNull final Map<Long, ProductAndQuantity> productIdentifier2requestItem)
+			@NonNull final Map<Long, AvailabilityRequestItem> productIdentifier2requestItem,
+			@NonNull final MSV3AvailabilityTransaction availabilityTransaction)
 	{
 		final VerfuegbarkeitsanfrageEinzelneAntwort verfuegbarkeitsanfrageEinzelneAntwort //
 				= verfuegbarkeitAnfragenResponse.getReturn();
 
 		final AvailabilityResponseBuilder responseBuilder = AvailabilityResponse.builder();
 
-		final AvailabilityPersistanceMapper mapper = AvailabilityPersistanceMapper.newInstace();
-		mapper.store(verfuegbarkeitsanfrageEinzelneAntwort);
-
 		for (final VerfuegbarkeitsantwortArtikel singleArtikel : verfuegbarkeitsanfrageEinzelneAntwort.getArtikel())
 		{
+			final AvailabilityRequestItem availabilityRequestItem = productIdentifier2requestItem.get(singleArtikel.getAnfragePzn());
+			availabilityTransaction.putContextInfo(singleArtikel, MSV3ArtikelContextInfo.forRequestItem(availabilityRequestItem));
+
 			for (final VerfuegbarkeitAnteil singleAnteil : singleArtikel.getAnteile())
 			{
 				final AvailabilityResponseItem availabilityResponseItem = prepareResponseItemBuilder(
 						productIdentifier2requestItem,
 						singleArtikel,
-						singleAnteil)
-								.internalId(mapper.getVerfuegbarkeitAnteilDataRecordId(singleAnteil))
-								.build();
+						singleAnteil).build();
 
 				responseBuilder.availabilityResponseItem(availabilityResponseItem);
 			}
@@ -163,12 +197,12 @@ public class MSV3AvailiabilityClient extends MSV3ClientBase
 	}
 
 	private AvailabilityResponseItemBuilder prepareResponseItemBuilder(
-			@NonNull final Map<Long, ProductAndQuantity> productIdentifier2requestItem,
+			@NonNull final Map<Long, AvailabilityRequestItem> productIdentifier2requestItem,
 			@NonNull final VerfuegbarkeitsantwortArtikel singleArtikel,
 			@NonNull final VerfuegbarkeitAnteil singleAnteil)
 	{
 		// get the data to pass to the response item's builder
-		final ProductAndQuantity correspondingRequestItem = productIdentifier2requestItem.get(singleArtikel.getAnfragePzn());
+		final AvailabilityRequestItem correspondingRequestItem = productIdentifier2requestItem.get(singleArtikel.getAnfragePzn());
 
 		final String productIdentifier = Long.toString(singleArtikel.getAnfragePzn());
 

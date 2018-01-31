@@ -4277,8 +4277,499 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558853 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
+-- 2018-01-30T16:40:36.123
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Value='SPEZIFISCH',Updated=TO_TIMESTAMP('2018-01-30 16:40:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541530
+;
+
+-- 2018-01-30T16:40:45.864
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Value='UNSPEZIFISCH',Updated=TO_TIMESTAMP('2018-01-30 16:40:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541531
+;
+
+-- 2018-01-30T17:19:39.436
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:19:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540916
+;
+
+-- 2018-01-30T17:19:41.253
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:19:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540914
+;
+
+-- 2018-01-30T17:19:46.091
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:19:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540911
+;
+
+-- 2018-01-30T17:19:47.769
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:19:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540912
+;
+
+-- 2018-01-30T17:19:49.396
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:19:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540913
+;
+
+-- 2018-01-30T17:19:51.028
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:19:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540917
+;
+
+-- 2018-01-30T17:20:34.707
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:20:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540918
+;
+
+-- 2018-01-30T17:20:36.443
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:20:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540927
+;
+
+-- 2018-01-30T17:20:38.179
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:20:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540915
+;
+
+-- 2018-01-30T17:20:41.635
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:20:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540908
+;
+
+-- 2018-01-30T17:20:43.852
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:20:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540910
+;
+
+-- 2018-01-30T17:20:45.690
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:20:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540909
+;
+
+-- 2018-01-30T17:22:20.565
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:22:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540919
+;
+
+-- 2018-01-30T17:22:22.933
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:22:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540906
+;
+
+-- 2018-01-30T17:22:24.597
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:22:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540920
+;
+
+-- 2018-01-30T17:22:26.133
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:22:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540907
+;
+
+-- 2018-01-30T17:22:28.685
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-01-30 17:22:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540921
+;
+
+-- 2018-01-30T17:27:13.112
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Value='DISPO',Updated=TO_TIMESTAMP('2018-01-30 17:27:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541548
+;
+
+-- 2018-01-30T17:27:24.301
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Value='NACHLIEFERUNG',Updated=TO_TIMESTAMP('2018-01-30 17:27:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541547
+;
+
+-- 2018-01-30T17:29:54.091
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Value='Spezifisch',Updated=TO_TIMESTAMP('2018-01-30 17:29:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541530
+;
+
+-- 2018-01-30T17:29:59.020
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Value='Unspezifisch',Updated=TO_TIMESTAMP('2018-01-30 17:29:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541531
+;
+
+
+
+
 -- 2018-01-29T16:45:13.276
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */ CREATE TABLE public.MSV3_Bestellung_Transaction (AD_Client_ID NUMERIC(10) NOT NULL, AD_Issue_ID NUMERIC(10), AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, MSV3_BestellungAntwort_ID NUMERIC(10), MSV3_Bestellung_ID NUMERIC(10) NOT NULL, MSV3_Bestellung_Transaction_ID NUMERIC(10) NOT NULL, MSV3_FaultInfo_ID NUMERIC(10), Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT ADIssue_MSV3BestellungTransaction FOREIGN KEY (AD_Issue_ID) REFERENCES public.AD_Issue DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MSV3BestellungAntwort_MSV3BestellungTran FOREIGN KEY (MSV3_BestellungAntwort_ID) REFERENCES public.MSV3_BestellungAntwort DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MSV3Bestellung_MSV3BestellungTransaction FOREIGN KEY (MSV3_Bestellung_ID) REFERENCES public.MSV3_Bestellung DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MSV3_Bestellung_Transaction_Key PRIMARY KEY (MSV3_Bestellung_Transaction_ID), CONSTRAINT MSV3FaultInfo_MSV3BestellungTransaction FOREIGN KEY (MSV3_FaultInfo_ID) REFERENCES public.MSV3_FaultInfo DEFERRABLE INITIALLY DEFERRED)
 ;
 
+
+-- 2018-01-31T10:06:50.729
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,558937,558,0,30,540927,'N','C_Order_ID',TO_TIMESTAMP('2018-01-31 10:06:50','YYYY-MM-DD HH24:MI:SS'),100,'N','Auftrag','de.metas.vertical.pharma.vendor.gateway.mvs3',10,'The Order is a control document.  The  Order is complete when the quantity ordered is the same as the quantity shipped and invoiced.  When you cloase an order, unshipped (backordered) quantities are cancelled.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Auftrag',0,0,TO_TIMESTAMP('2018-01-31 10:06:50','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2018-01-31T10:06:50.738
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558937 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-01-31T10:06:54.682
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('MSV3_Bestellung_Transaction','ALTER TABLE public.MSV3_Bestellung_Transaction ADD COLUMN C_Order_ID NUMERIC(10)')
+;
+
+-- 2018-01-31T10:06:54.695
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE MSV3_Bestellung_Transaction ADD CONSTRAINT COrder_MSV3BestellungTransaction FOREIGN KEY (C_Order_ID) REFERENCES public.C_Order DEFERRABLE INITIALLY DEFERRED
+;
+
+-- 2018-01-31T10:08:26.603
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('msv3_bestellung_transaction','C_Order_ID','NUMERIC(10)',null,null)
+;
+
+-- 2018-01-31T10:10:06.650
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,558938,542435,0,19,540921,'N','C_OrderLineSO_ID',TO_TIMESTAMP('2018-01-31 10:10:06','YYYY-MM-DD HH24:MI:SS'),100,'N','Auftragsposition','de.metas.vertical.pharma.vendor.gateway.mvs3',10,'"Auftragsposition" bezeichnet eine einzelne Position in einem Auftrag.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Auftragsposition',0,0,TO_TIMESTAMP('2018-01-31 10:10:06','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2018-01-31T10:10:06.652
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558938 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-01-31T10:11:31.519
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30, AD_Reference_Value_ID=271,Updated=TO_TIMESTAMP('2018-01-31 10:11:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558938
+;
+
+-- 2018-01-31T10:11:37.033
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('MSV3_Verfuegbarkeit_Transaction','ALTER TABLE public.MSV3_Verfuegbarkeit_Transaction ADD COLUMN C_OrderLineSO_ID NUMERIC(10)')
+;
+
+-- 2018-01-31T10:11:37.041
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE MSV3_Verfuegbarkeit_Transaction ADD CONSTRAINT COrderLineSO_MSV3VerfuegbarkeitTransacti FOREIGN KEY (C_OrderLineSO_ID) REFERENCES public.C_OrderLine DEFERRABLE INITIALLY DEFERRED
+;
+
+-- 2018-01-31T10:12:21.320
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_Value_ID=290,Updated=TO_TIMESTAMP('2018-01-31 10:12:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558937
+;
+
+-- 2018-01-31T10:13:27.679
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_Value_ID=540250,Updated=TO_TIMESTAMP('2018-01-31 10:13:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558937
+;
+
+-- 2018-01-31T10:13:54.724
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET WhereClause='',Updated=TO_TIMESTAMP('2018-01-31 10:13:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540250
+;
+
+-- 2018-01-31T10:14:09.307
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('msv3_bestellung_transaction','C_Order_ID','NUMERIC(10)',null,null)
+;
+
+-- 2018-01-31T10:51:44.059
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRangeFilter,IsSelectionColumn,IsShowFilterIncrementButtons,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,558939,2887,0,30,540921,'N','AD_Issue_ID',TO_TIMESTAMP('2018-01-31 10:51:43','YYYY-MM-DD HH24:MI:SS'),100,'N','Automatically created or manually entered System Issue','de.metas.vertical.pharma.vendor.gateway.mvs3',10,'System Issues are created to speed up the resolution of any system related issues (potential bugs).  If enabled, they are automatically reported to Adempiere.  No data or confidential information is transferred.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','System-Problem',0,0,TO_TIMESTAMP('2018-01-31 10:51:43','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2018-01-31T10:51:44.060
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558939 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-01-31T10:51:49.131
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('MSV3_Verfuegbarkeit_Transaction','ALTER TABLE public.MSV3_Verfuegbarkeit_Transaction ADD COLUMN AD_Issue_ID NUMERIC(10)')
+;
+
+-- 2018-01-31T10:51:49.142
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE MSV3_Verfuegbarkeit_Transaction ADD CONSTRAINT ADIssue_MSV3VerfuegbarkeitTransaction FOREIGN KEY (AD_Issue_ID) REFERENCES public.AD_Issue DEFERRABLE INITIALLY DEFERRED
+;
+
+-- 2018-01-31T10:51:56.439
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2018-01-31 10:51:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558939
+;
+
+-- 2018-01-31T10:51:58.205
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('msv3_verfuegbarkeit_transaction','AD_Issue_ID','NUMERIC(10)',null,null)
+;
+
+-- 2018-01-31T12:41:25.826
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AllowZoomTo,ColumnName,IsGenericZoomOrigin,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsRangeFilter,IsShowFilterIncrementButtons,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,SelectionColumnSeqNo,AD_Org_ID,Name,AD_Element_ID,EntityType) VALUES (30,10,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2018-01-31 12:41:25','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','Y','N',TO_TIMESTAMP('2018-01-31 12:41:25','YYYY-MM-DD HH24:MI:SS'),100,'N','N',540921,'N','N','C_PurchaseCandidate_ID','N',558940,'N','N','N','N','N','N','N','N',0,0,'Purchase candidate',543476,'de.metas.vertical.pharma.vendor.gateway.mvs3')
+;
+
+-- 2018-01-31T12:41:25.828
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558940 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-01-31T12:41:31.237
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('MSV3_Verfuegbarkeit_Transaction','ALTER TABLE public.MSV3_Verfuegbarkeit_Transaction ADD COLUMN C_PurchaseCandidate_ID NUMERIC(10)')
+;
+
+-- 2018-01-31T12:41:31.246
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE MSV3_Verfuegbarkeit_Transaction ADD CONSTRAINT CPurchaseCandidate_MSV3VerfuegbarkeitTra FOREIGN KEY (C_PurchaseCandidate_ID) REFERENCES public.C_PurchaseCandidate DEFERRABLE INITIALLY DEFERRED
+;
+
+ALTER TABLE MSV3_Verfuegbarkeit_Transaction DROP COLUMN C_PurchaseCandidate_ID;
+ALTER TABLE MSV3_Verfuegbarkeit_Transaction DROP COLUMN C_OrderLineSO_ID;
+
+-- 2018-01-31T12:47:20.764
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=558938
+;
+
+-- 2018-01-31T12:47:20.770
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Column WHERE AD_Column_ID=558938
+;
+
+-- 2018-01-31T12:48:24.943
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AllowZoomTo,Help,AD_Reference_Value_ID,ColumnName,IsGenericZoomOrigin,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsRangeFilter,IsShowFilterIncrementButtons,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,Description,SelectionColumnSeqNo,AD_Org_ID,Name,AD_Element_ID,EntityType) VALUES (30,10,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2018-01-31 12:48:24','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','Y','N',TO_TIMESTAMP('2018-01-31 12:48:24','YYYY-MM-DD HH24:MI:SS'),100,'N','N',540921,'N','N','The Order is a control document.  The  Order is complete when the quantity ordered is the same as the quantity shipped and invoiced.  When you cloase an order, unshipped (backordered) quantities are cancelled.',540250,'C_Order_ID','N',558941,'N','N','N','N','N','N','N','N','Auftrag',0,0,'Auftrag',558,'de.metas.vertical.pharma.vendor.gateway.mvs3')
+;
+
+-- 2018-01-31T12:48:24.945
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558941 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-01-31T12:48:28.404
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('MSV3_Verfuegbarkeit_Transaction','ALTER TABLE public.MSV3_Verfuegbarkeit_Transaction ADD COLUMN C_Order_ID NUMERIC(10)')
+;
+
+-- 2018-01-31T12:48:28.415
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE MSV3_Verfuegbarkeit_Transaction ADD CONSTRAINT COrder_MSV3VerfuegbarkeitTransaction FOREIGN KEY (C_Order_ID) REFERENCES public.C_Order DEFERRABLE INITIALLY DEFERRED
+;
+
+-- 2018-01-31T12:49:10.502
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AllowZoomTo,ColumnName,IsGenericZoomOrigin,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsRangeFilter,IsShowFilterIncrementButtons,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,SelectionColumnSeqNo,AD_Org_ID,Name,AD_Element_ID,EntityType) VALUES (30,10,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2018-01-31 12:49:10','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','Y','N',TO_TIMESTAMP('2018-01-31 12:49:10','YYYY-MM-DD HH24:MI:SS'),100,'N','N',540920,'N','N','C_PurchaseCandidate_ID','N',558942,'N','N','N','N','N','N','N','N',0,0,'Purchase candidate',543476,'de.metas.vertical.pharma.vendor.gateway.mvs3')
+;
+
+-- 2018-01-31T12:49:10.504
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558942 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-01-31T12:49:12.799
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel','ALTER TABLE public.MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel ADD COLUMN C_PurchaseCandidate_ID NUMERIC(10)')
+;
+
+-- 2018-01-31T12:49:12.806
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel ADD CONSTRAINT CPurchaseCandidate_MSV3Verfuegbarkeitsan FOREIGN KEY (C_PurchaseCandidate_ID) REFERENCES public.C_PurchaseCandidate DEFERRABLE INITIALLY DEFERRED
+;
+
+-- 2018-01-31T12:49:53.939
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AllowZoomTo,Help,ColumnName,IsGenericZoomOrigin,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsRangeFilter,IsShowFilterIncrementButtons,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,Description,SelectionColumnSeqNo,AD_Org_ID,Name,AD_Element_ID,EntityType) VALUES (19,10,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2018-01-31 12:49:53','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','Y','N',TO_TIMESTAMP('2018-01-31 12:49:53','YYYY-MM-DD HH24:MI:SS'),100,'N','N',540920,'N','N','"Auftragsposition" bezeichnet eine einzelne Position in einem Auftrag.','C_OrderLineSO_ID','N',558943,'N','N','N','N','N','N','N','N','Auftragsposition',0,0,'Auftragsposition',542435,'de.metas.vertical.pharma.vendor.gateway.mvs3')
+;
+
+-- 2018-01-31T12:49:53.940
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558943 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-01-31T12:50:05.546
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30, AD_Reference_Value_ID=271,Updated=TO_TIMESTAMP('2018-01-31 12:50:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558943
+;
+
+-- 2018-01-31T12:50:15.389
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel','ALTER TABLE public.MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel ADD COLUMN C_OrderLineSO_ID NUMERIC(10)')
+;
+
+-- 2018-01-31T12:50:15.396
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE MSV3_VerfuegbarkeitsanfrageEinzelne_Artikel ADD CONSTRAINT COrderLineSO_MSV3VerfuegbarkeitsanfrageE FOREIGN KEY (C_OrderLineSO_ID) REFERENCES public.C_OrderLine DEFERRABLE INITIALLY DEFERRED
+;
+
+-- 2018-01-31T12:50:25.453
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('msv3_verfuegbarkeitsanfrageeinzelne_artikel','C_PurchaseCandidate_ID','NUMERIC(10)',null,null)
+;
+
+-- 2018-01-31T12:51:13.493
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET Help=NULL, AD_Reference_Value_ID=540100, ColumnName='C_OrderSO_ID', Description='Auftrag', Name='Auftrag', AD_Element_ID=543479,Updated=TO_TIMESTAMP('2018-01-31 12:51:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558941
+;
+
+-- 2018-01-31T12:51:13.495
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Auftrag', Description='Auftrag', Help=NULL WHERE AD_Column_ID=558941
+;
+
+-- 2018-01-31T12:51:58.520
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET EntityType='D', WhereClause='',Updated=TO_TIMESTAMP('2018-01-31 12:51:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540100
+;
+
+-- 2018-01-31T12:52:09.365
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('MSV3_Verfuegbarkeit_Transaction','ALTER TABLE public.MSV3_Verfuegbarkeit_Transaction ADD COLUMN C_OrderSO_ID NUMERIC(10)')
+;
+
+-- 2018-01-31T12:52:09.373
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE MSV3_Verfuegbarkeit_Transaction ADD CONSTRAINT COrderSO_MSV3VerfuegbarkeitTransaction FOREIGN KEY (C_OrderSO_ID) REFERENCES public.C_Order DEFERRABLE INITIALLY DEFERRED
+;
+
+ALTER TABLE MSV3_Verfuegbarkeit_Transaction DROP COLUMN C_Order_ID;
+-- 2018-01-31T12:53:15.756
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AllowZoomTo,ColumnName,IsGenericZoomOrigin,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsRangeFilter,IsShowFilterIncrementButtons,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,SelectionColumnSeqNo,AD_Org_ID,Name,AD_Element_ID,EntityType) VALUES (30,10,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2018-01-31 12:53:15','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','Y','N',TO_TIMESTAMP('2018-01-31 12:53:15','YYYY-MM-DD HH24:MI:SS'),100,'N','N',540907,'N','N','C_PurchaseCandidate_ID','N',558944,'N','N','N','N','N','N','N','N',0,0,'Purchase candidate',543476,'de.metas.vertical.pharma.vendor.gateway.mvs3')
+;
+
+-- 2018-01-31T12:53:15.757
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558944 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-01-31T12:53:27.096
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('MSV3_VerfuegbarkeitsantwortArtikel','ALTER TABLE public.MSV3_VerfuegbarkeitsantwortArtikel ADD COLUMN C_PurchaseCandidate_ID NUMERIC(10)')
+;
+
+-- 2018-01-31T12:53:27.104
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE MSV3_VerfuegbarkeitsantwortArtikel ADD CONSTRAINT CPurchaseCandidate_MSV3Verfuegbarkeitsan FOREIGN KEY (C_PurchaseCandidate_ID) REFERENCES public.C_PurchaseCandidate DEFERRABLE INITIALLY DEFERRED
+;
+
+-- 2018-01-31T12:53:50.297
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AllowZoomTo,Help,AD_Reference_Value_ID,ColumnName,IsGenericZoomOrigin,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsRangeFilter,IsShowFilterIncrementButtons,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,Description,SelectionColumnSeqNo,AD_Org_ID,Name,AD_Element_ID,EntityType) VALUES (30,10,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2018-01-31 12:53:50','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','Y','N',TO_TIMESTAMP('2018-01-31 12:53:50','YYYY-MM-DD HH24:MI:SS'),100,'N','N',540907,'N','N','"Auftragsposition" bezeichnet eine einzelne Position in einem Auftrag.',271,'C_OrderLineSO_ID','N',558945,'N','N','N','N','N','N','N','N','Auftragsposition',0,0,'Auftragsposition',542435,'de.metas.vertical.pharma.vendor.gateway.mvs3')
+;
+
+-- 2018-01-31T12:53:50.298
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558945 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-01-31T12:53:52.476
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('MSV3_VerfuegbarkeitsantwortArtikel','ALTER TABLE public.MSV3_VerfuegbarkeitsantwortArtikel ADD COLUMN C_OrderLineSO_ID NUMERIC(10)')
+;
+
+-- 2018-01-31T12:53:52.483
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE MSV3_VerfuegbarkeitsantwortArtikel ADD CONSTRAINT COrderLineSO_MSV3VerfuegbarkeitsantwortA FOREIGN KEY (C_OrderLineSO_ID) REFERENCES public.C_OrderLine DEFERRABLE INITIALLY DEFERRED
+;
+
+ALTER TABLE MSV3_Bestellung_Transaction DROP COLUMN C_Order_ID;
+-- 2018-01-31T14:19:07.911
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=558937
+;
+
+-- 2018-01-31T14:19:07.915
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Column WHERE AD_Column_ID=558937
+;
+
+-- 2018-01-31T14:23:42.315
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AllowZoomTo,AD_Reference_Value_ID,ColumnName,IsGenericZoomOrigin,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsRangeFilter,IsShowFilterIncrementButtons,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,Description,SelectionColumnSeqNo,AD_Org_ID,Name,AD_Element_ID,EntityType) VALUES (30,10,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2018-01-31 14:23:42','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','Y','N',TO_TIMESTAMP('2018-01-31 14:23:42','YYYY-MM-DD HH24:MI:SS'),100,'N','N',540927,'N','N',540250,'C_OrderPO_ID','N',558984,'N','N','N','N','N','N','N','N','Bestellung',0,0,'Bestellung',2180,'de.metas.vertical.pharma.vendor.gateway.mvs3')
+;
+
+-- 2018-01-31T14:23:42.317
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=558984 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-01-31T14:23:56.496
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('MSV3_Bestellung_Transaction','ALTER TABLE public.MSV3_Bestellung_Transaction ADD COLUMN C_OrderPO_ID NUMERIC(10)')
+;
+
+-- 2018-01-31T14:23:56.506
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE MSV3_Bestellung_Transaction ADD CONSTRAINT COrderPO_MSV3BestellungTransaction FOREIGN KEY (C_OrderPO_ID) REFERENCES public.C_Order DEFERRABLE INITIALLY DEFERRED
+;
+
+-- 2018-01-31T14:59:40.518
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Sequence SET Description='Support IDs for different parts of MSV purchase order SOAP messages',Updated=TO_TIMESTAMP('2018-01-31 14:59:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=554478
+;
+
+-- 2018-01-31T15:01:10.977
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Sequence SET Description='Support IDs for different parts of MSV purchase order SOAP messages. Please keep the name in sync with MSV3Util', Name='MSV3_SupportId',Updated=TO_TIMESTAMP('2018-01-31 15:01:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=554478
+;
+
+-- 2018-01-31T15:41:32.076
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Index_Table_Trl WHERE AD_Index_Table_ID=540416
+;
+
+-- 2018-01-31T15:41:32.080
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Index_Table WHERE AD_Index_Table_ID=540416
+;
+
+-- 2018-01-31T15:43:57.049
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,ErrorMsg,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540417,0,540898,TO_TIMESTAMP('2018-01-31 15:43:56','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.vertical.pharma.vendor.gateway.mvs3','Pro Geschäftspartner ist nur ein aktiver Eintrag erlaubt.','Y','Y','MSV3_Vendor_Config_C_BPartner_ID','N',TO_TIMESTAMP('2018-01-31 15:43:56','YYYY-MM-DD HH24:MI:SS'),100,'IsActive=''Y''')
+;
+
+-- 2018-01-31T15:43:57.051
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Index_Table_ID=540417 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+;
+
+-- 2018-01-31T15:44:07.293
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Index_Table_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-31 15:44:07','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Language='de_CH' AND AD_Index_Table_ID=540417
+;
+
+-- 2018-01-31T15:45:01.147
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Index_Table_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2018-01-31 15:45:01','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',ErrorMsg='There can be only one active record per partner.' WHERE AD_Language='en_US' AND AD_Index_Table_ID=540417
+;
+
+-- 2018-01-31T15:45:12.523
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,558605,540833,540417,0,TO_TIMESTAMP('2018-01-31 15:45:12','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.vertical.pharma.vendor.gateway.mvs3','Y',10,TO_TIMESTAMP('2018-01-31 15:45:12','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2018-01-31T15:45:16.130
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE UNIQUE INDEX MSV3_Vendor_Config_C_BPartner_ID ON MSV3_Vendor_Config (C_BPartner_ID) WHERE IsActive='Y'
+;
+
+
+CREATE INDEX msv3_verfuegbarkeit_transaction_c_orderso_id
+   ON public.msv3_verfuegbarkeit_transaction (c_orderso_id ASC NULLS LAST);
+CREATE INDEX msv3_verfuegbarkeit_transaction_c_purchasecandidate_id
+   ON public.msv3_verfuegbarkeit_transaction (c_purchasecandidate_id ASC NULLS LAST);   
+CREATE INDEX msv3_verfuegbarkeitanteil_msv3_verfuegbarkeitsantwortartikel_id
+   ON public.msv3_verfuegbarkeitanteil (msv3_verfuegbarkeitsantwortartikel_id ASC NULLS LAST);  
+CREATE INDEX msv3_verfuegbarkeitsanfrageeinzelne_artikel_msv3_verfuegbarkeitsanfrageeinzelne_id
+   ON public.msv3_verfuegbarkeitsanfrageeinzelne_artikel (msv3_verfuegbarkeitsanfrageeinzelne_id ASC NULLS LAST);  
+CREATE INDEX msv3_verfuegbarkeitsanfrageeinzelne_artikel_c_orderlineso_id
+   ON public.msv3_verfuegbarkeitsanfrageeinzelne_artikel (c_orderlineso_id ASC NULLS LAST);  
+CREATE INDEX msv3_verfuegbarkeitsantwortartikel_msv3_verfuegbarkeitsanfrageeinzelneantwort_id
+   ON public.msv3_verfuegbarkeitsantwortartikel (msv3_verfuegbarkeitsanfrageeinzelneantwort_id ASC NULLS LAST);  
+CREATE INDEX msv3_bestellunganteil_msv3_bestellungantwortposition_id
+   ON public.msv3_bestellunganteil (msv3_bestellungantwortposition_id ASC NULLS LAST);  
+CREATE INDEX msv3_bestellungauftrag_msv3_bestellung_id
+   ON public.msv3_bestellungauftrag (msv3_bestellung_id ASC NULLS LAST);  
+CREATE INDEX msv3_bestellungposition_msv3_bestellungauftrag_id
+   ON public.msv3_bestellungposition (msv3_bestellungauftrag_id ASC NULLS LAST);  
+CREATE INDEX msv3_tour_msv3_verfuegbarkeitanteil_id
+   ON public.msv3_tour (msv3_verfuegbarkeitanteil_id ASC NULLS LAST);  
+  

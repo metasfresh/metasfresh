@@ -77,7 +77,7 @@ import lombok.NonNull;
 				.orElseGet(() -> orderFactory.newOrderLine()
 						.productId(candidate.getProductId()));
 
-		orderLineBuilder.addQty(candidate.getQtyRequired(), candidate.getUomId());
+		orderLineBuilder.addQty(candidate.getQtyToPurchase(), candidate.getUomId());
 
 		purchaseCandidate2OrderLineBuilder.put(candidate, orderLineBuilder);
 	}
@@ -98,7 +98,9 @@ import lombok.NonNull;
 		}
 	}
 
-	private void updatePurchaseCandidateFromOrderLineBuilder(final PurchaseCandidate candidate, final OrderLineBuilder orderLineBuilder)
+	private void updatePurchaseCandidateFromOrderLineBuilder(
+			@NonNull final PurchaseCandidate candidate,
+			@NonNull final OrderLineBuilder orderLineBuilder)
 	{
 		candidate.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderLineId());
 	}

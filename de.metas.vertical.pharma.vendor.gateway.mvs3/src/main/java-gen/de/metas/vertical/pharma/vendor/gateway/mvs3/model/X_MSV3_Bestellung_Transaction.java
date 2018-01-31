@@ -14,7 +14,7 @@ public class X_MSV3_Bestellung_Transaction extends org.compiere.model.PO impleme
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -668059339L;
+	private static final long serialVersionUID = -253686264L;
 
     /** Standard Constructor */
     public X_MSV3_Bestellung_Transaction (Properties ctx, int MSV3_Bestellung_Transaction_ID, String trxName)
@@ -74,6 +74,43 @@ public class X_MSV3_Bestellung_Transaction extends org.compiere.model.PO impleme
 	public int getAD_Issue_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Issue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_OrderPO() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderPO_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_OrderPO(org.compiere.model.I_C_Order C_OrderPO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderPO_ID, org.compiere.model.I_C_Order.class, C_OrderPO);
+	}
+
+	/** Set Bestellung.
+		@param C_OrderPO_ID 
+		Bestellung
+	  */
+	@Override
+	public void setC_OrderPO_ID (int C_OrderPO_ID)
+	{
+		if (C_OrderPO_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderPO_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderPO_ID, Integer.valueOf(C_OrderPO_ID));
+	}
+
+	/** Get Bestellung.
+		@return Bestellung
+	  */
+	@Override
+	public int getC_OrderPO_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderPO_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

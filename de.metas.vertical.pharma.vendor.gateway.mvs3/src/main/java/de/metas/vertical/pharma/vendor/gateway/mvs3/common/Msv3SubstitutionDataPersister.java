@@ -5,11 +5,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import javax.annotation.Nullable;
 
-import org.springframework.stereotype.Service;
-
 import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_Substitution;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungSubstitution;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitSubstitution;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 
 /*
  * #%L
@@ -33,9 +33,16 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.VerfuegbarkeitSubstit
  * #L%
  */
 
-@Service
-public class SubstitutionSaver
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class Msv3SubstitutionDataPersister
 {
+	public static Msv3SubstitutionDataPersister newInstanceWithOrgId(final int orgId)
+	{
+		return new Msv3SubstitutionDataPersister(orgId);
+	}
+
+	private final int orgId;
+
 	public I_MSV3_Substitution storeSubstitutionOrNull(@Nullable final BestellungSubstitution substitution)
 	{
 		if (substitution == null)
@@ -44,9 +51,10 @@ public class SubstitutionSaver
 		}
 
 		final I_MSV3_Substitution substitutionRecord = newInstance(I_MSV3_Substitution.class);
+		substitutionRecord.setAD_Org_ID(orgId);
 		substitutionRecord.setMSV3_Grund(substitution.getGrund().toString());
 		substitutionRecord.setMSV3_LieferPzn(Long.toString(substitution.getLieferPzn()));
-		substitutionRecord.setMSV3_Substitutionsgrund(substitution.getSubstitutionsgrund().toString());
+		substitutionRecord.setMSV3_Substitutionsgrund(substitution.getSubstitutionsgrund().value());
 		save(substitutionRecord);
 
 		return substitutionRecord;
@@ -62,7 +70,7 @@ public class SubstitutionSaver
 		final I_MSV3_Substitution substitutionRecord = newInstance(I_MSV3_Substitution.class);
 		substitutionRecord.setMSV3_Grund(substitution.getGrund().toString());
 		substitutionRecord.setMSV3_LieferPzn(Long.toString(substitution.getLieferPzn()));
-		substitutionRecord.setMSV3_Substitutionsgrund(substitution.getSubstitutionsgrund().toString());
+		substitutionRecord.setMSV3_Substitutionsgrund(substitution.getSubstitutionsgrund().value());
 		save(substitutionRecord);
 
 		return substitutionRecord;

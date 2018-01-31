@@ -8,8 +8,8 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestException;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
 import lombok.Getter;
 import lombok.NonNull;
@@ -39,23 +39,23 @@ import lombok.NonNull;
 public class MSV3ClientMultiException extends AdempiereException implements AvailabilityRequestException
 {
 	public static MSV3ClientMultiException createAllItemsSameThrowable(
-			@NonNull final Collection<ProductAndQuantity> items,
+			@NonNull final Collection<AvailabilityRequestItem> items,
 			@NonNull final Throwable throwable)
 	{
-		final ImmutableMap<ProductAndQuantity, Throwable> allItemsWithSameThrowable = //
+		final ImmutableMap<AvailabilityRequestItem, Throwable> allItemsWithSameThrowable = //
 				Maps.toMap(items, requestItem -> throwable);
 
 		return new MSV3ClientMultiException(allItemsWithSameThrowable);
 	}
 
 	public static MSV3ClientMultiException createAllItemsSameFaultInfo(
-			@NonNull final Collection<ProductAndQuantity> items,
+			@NonNull final Collection<AvailabilityRequestItem> items,
 			@NonNull final Msv3FaultInfo msv3FaultInfo)
 	{
 		final Msv3ClientException msv3ClientException = //
-				Msv3ClientException.createForFaultInfo(msv3FaultInfo);
+				Msv3ClientException.builder().msv3FaultInfo(msv3FaultInfo).build();
 
-		final ImmutableMap<ProductAndQuantity, Throwable> allItemsWithSameThrowable = //
+		final ImmutableMap<AvailabilityRequestItem, Throwable> allItemsWithSameThrowable = //
 				Maps.toMap(items, requestItem -> msv3ClientException);
 
 		return new MSV3ClientMultiException(allItemsWithSameThrowable);
@@ -64,9 +64,9 @@ public class MSV3ClientMultiException extends AdempiereException implements Avai
 	private static final long serialVersionUID = -8058915938494697758L;
 
 	@Getter
-	private final Map<ProductAndQuantity, Throwable> requestItem2Exception;
+	private final Map<AvailabilityRequestItem, Throwable> requestItem2Exception;
 
-	private MSV3ClientMultiException(@NonNull final Map<ProductAndQuantity, Throwable> requestItem2Exception)
+	private MSV3ClientMultiException(@NonNull final Map<AvailabilityRequestItem, Throwable> requestItem2Exception)
 	{
 		this.requestItem2Exception = ImmutableMap.copyOf(requestItem2Exception);
 	}

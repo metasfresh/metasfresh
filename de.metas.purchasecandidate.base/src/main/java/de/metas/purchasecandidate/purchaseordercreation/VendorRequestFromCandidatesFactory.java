@@ -8,9 +8,9 @@ import org.compiere.Adempiere;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.VendorGatewayService;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
 import lombok.Builder;
@@ -110,8 +110,9 @@ import lombok.NonNull;
 		@Override
 		public void addCandidate(final PurchaseCandidate candidate)
 		{
-			final ProductAndQuantity productAndQty = candidate.createRequestItem();
-			final PurchaseOrderRequestItem purchaseOrderRequestItem = new PurchaseOrderRequestItem(productAndQty, -1);
+			final AvailabilityRequestItem availabilityRequestItem = candidate.createRequestItem();
+			final PurchaseOrderRequestItem purchaseOrderRequestItem = new PurchaseOrderRequestItem(
+					availabilityRequestItem.getProductAndQuantity());
 
 			purchaseCandidate2OrderLine.put(candidate, purchaseOrderRequestItem);
 		}

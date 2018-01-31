@@ -14,7 +14,6 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3Util;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3ClientException;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.config.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_Bestellung_Transaction;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder.Msv3PurchaseOrderTransaction.Msv3PurchaseOrderTransactionBuilder;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Auftragsart;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Bestellen;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellenResponse;
@@ -71,25 +70,29 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 	{
 		final Bestellung bestellung = createBestellung(request);
 
-		final Msv3PurchaseOrderTransactionBuilder purchaseTransactionBuilder = Msv3PurchaseOrderTransaction.builder();
-		performOrderingAndAugmentTransactionBuilder(bestellung, purchaseTransactionBuilder);
+		final MSV3PurchaseOrderTransaction purchaseTransaction = //
+				MSV3PurchaseOrderTransaction.builder()
+						.purchaseOrderId(request.getPurchaseOrderId())
+						.bestellung(bestellung)
+						.build();
 
-		final I_MSV3_Bestellung_Transaction purchaseTransactionRecord = purchaseTransactionBuilder.build().store();;
+		performOrdering(bestellung, purchaseTransaction);
+
+		final I_MSV3_Bestellung_Transaction purchaseTransactionRecord = purchaseTransaction.store();
 
 		return PurchaseOrderResponse.builder()
 				.createdRecordId(purchaseTransactionRecord.getMSV3_Bestellung_Transaction_ID())
 				.createdTableName(I_MSV3_Bestellung_Transaction.Table_Name)
+				.exception(purchaseTransaction.getExceptionOrNull())
 				.build();
 	}
 
-	private void performOrderingAndAugmentTransactionBuilder(
-			final Bestellung bestellung,
-			final Msv3PurchaseOrderTransactionBuilder purchaseTransactionBuilder)
+	private void performOrdering(
+			@NonNull final Bestellung bestellung,
+			@NonNull final MSV3PurchaseOrderTransaction purchaseTransaction)
 	{
 		try
 		{
-			purchaseTransactionBuilder.bestellung(bestellung);
-
 			final Bestellen bestellen = objectFactory.createBestellen();
 			bestellen.setClientSoftwareKennung(MSV3Util.CLIENT_SOFTWARE_IDENTIFIER.get());
 			bestellen.setBestellung(bestellung);
@@ -99,7 +102,7 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 
 			final BestellungAntwort bestellungAntwort = bestellenResponse.getReturn();
 
-			purchaseTransactionBuilder.bestellungAntwort(bestellungAntwort);
+			purchaseTransaction.setBestellungAntwort(bestellungAntwort);
 
 			final List<BestellungAntwortAuftrag> auftraege = bestellungAntwort.getAuftraege();
 			Check.errorIf(auftraege.size() != 1,
@@ -111,20 +114,16 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 			final Msv3FaultInfo auftragsfehler = bestellungAntwortAuftrag.getAuftragsfehler();
 			if (auftragsfehler != null)
 			{
-				purchaseTransactionBuilder.faultInfo(auftragsfehler);
+				purchaseTransaction.setFaultInfo(auftragsfehler);
 			}
 		}
 		catch (final Msv3ClientException msv3ClientException)
 		{
-			purchaseTransactionBuilder.faultInfo(msv3ClientException.getMsv3FaultInfo());
+			purchaseTransaction.setFaultInfo(msv3ClientException.getMsv3FaultInfo());
 		}
 		catch (final Exception e)
 		{
-			purchaseTransactionBuilder.otherException(e);
-		}
-		finally
-		{
-			purchaseTransactionBuilder.build().store();
+			purchaseTransaction.setOtherException(e);
 		}
 	}
 
@@ -133,7 +132,7 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 		final Bestellung bestellung = objectFactory.createBestellung();
 		bestellung.setId(MSV3Util.createUniqueId());
 
-		final int supportId = request.getPurchaseOrderId();
+		final int supportId = MSV3Util.retrieveNextSupportId();
 		bestellung.setBestellSupportId(supportId);
 
 		final BestellungAuftrag bestellungAuftrag = objectFactory.createBestellungAuftrag();

@@ -14,7 +14,7 @@ public class X_MSV3_Verfuegbarkeit_Transaction extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -653770024L;
+	private static final long serialVersionUID = 1275920869L;
 
     /** Standard Constructor */
     public X_MSV3_Verfuegbarkeit_Transaction (Properties ctx, int MSV3_Verfuegbarkeit_Transaction_ID, String trxName)
@@ -40,6 +40,65 @@ public class X_MSV3_Verfuegbarkeit_Transaction extends org.compiere.model.PO imp
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_AD_Issue getAD_Issue() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
+	}
+
+	@Override
+	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class, AD_Issue);
+	}
+
+	/** Set System-Problem.
+		@param AD_Issue_ID 
+		Automatically created or manually entered System Issue
+	  */
+	@Override
+	public void setAD_Issue_ID (int AD_Issue_ID)
+	{
+		if (AD_Issue_ID < 1) 
+			set_Value (COLUMNNAME_AD_Issue_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
+	}
+
+	/** Get System-Problem.
+		@return Automatically created or manually entered System Issue
+	  */
+	@Override
+	public int getAD_Issue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Issue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Purchase candidate.
+		@param C_PurchaseCandidate_ID Purchase candidate	  */
+	@Override
+	public void setC_PurchaseCandidate_ID (int C_PurchaseCandidate_ID)
+	{
+		if (C_PurchaseCandidate_ID < 1) 
+			set_Value (COLUMNNAME_C_PurchaseCandidate_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PurchaseCandidate_ID, Integer.valueOf(C_PurchaseCandidate_ID));
+	}
+
+	/** Get Purchase candidate.
+		@return Purchase candidate	  */
+	@Override
+	public int getC_PurchaseCandidate_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_PurchaseCandidate_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_FaultInfo getMSV3_FaultInfo() throws RuntimeException

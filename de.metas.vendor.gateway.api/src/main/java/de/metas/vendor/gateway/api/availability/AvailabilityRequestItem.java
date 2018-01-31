@@ -1,13 +1,12 @@
-package de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder;
+package de.metas.vendor.gateway.api.availability;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Repository;
+import de.metas.vendor.gateway.api.ProductAndQuantity;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
- * metasfresh-pharma.vendor.gateway.mvs3
+ * de.metas.vendor.gateway.api
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -18,23 +17,22 @@ import org.springframework.stereotype.Repository;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Repository
-public class MSV3PurchaseOrderRepository
+@Value
+@Builder
+public class AvailabilityRequestItem
 {
-	public void retrieveOrCreate(final int orderId)
-	{
-		final int supportId = DB.getNextID(Env.getCtx(), "MSV3_PurchaseOrder_SupportId", ITrx.TRXNAME_None);
+	ProductAndQuantity productAndQuantity;
 
-	}
+	int salesOrderLineId;
 
-
+	int purchaseCandidateId;
 }

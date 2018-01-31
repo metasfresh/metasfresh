@@ -1,22 +1,20 @@
-package de.metas.vertical.pharma.vendor.gateway.mvs3;
+package de.metas.vertical.pharma.vendor.gateway.mvs3.availability;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_System;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.config.MSV3ClientConfigRepository;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_Vendor_Config;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3TestingTools;
 
 /*
  * #%L
@@ -40,7 +38,7 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_Vendor_Config;
  * #L%
  */
 
-public class MSV3VendorGatewayServiceTests
+public class MSV3AvailiabilityClientTests
 {
 	@Before
 	public void init()
@@ -52,27 +50,21 @@ public class MSV3VendorGatewayServiceTests
 	@Ignore
 	public void manualTest()
 	{
-		// AD_System is needed because we send the metasfresh-version to the MSV3 server
-		final I_AD_System adSystem = newInstance(I_AD_System.class);
-		adSystem.setDBVersion("test-setDBVersion");
-		save(adSystem);
+		MSV3TestingTools.setDBVersion(MSV3AvailiabilityClientTests.class.getSimpleName());
 
-		final I_MSV3_Vendor_Config configRecord = newInstance(I_MSV3_Vendor_Config.class);
-		configRecord.setMSV3_BaseUrl("http://localhost:8089/msv3/v2.0");
-		configRecord.setUserID("PLA\\apotheke1");
-		configRecord.setPassword("passwort");
-		configRecord.setC_BPartner_ID(999);
-		save(configRecord);
-
-		final MSV3VendorGatewayService msv3VendorGatewayService = new MSV3VendorGatewayService(
-				new MSV3ConnectionFactory(),
-				new MSV3ClientConfigRepository());
+		final ProductAndQuantity productAndQuantity = new ProductAndQuantity("10055555", BigDecimal.TEN);
+		final AvailabilityRequestItem availabilityRequestItem = AvailabilityRequestItem.builder()
+				.productAndQuantity(productAndQuantity).build();
 
 		final AvailabilityRequest request = AvailabilityRequest.builder()
 				.vendorId(999)
-				.availabilityRequestItem(new ProductAndQuantity("10055555", BigDecimal.TEN)).build();
+				.availabilityRequestItem(availabilityRequestItem).build();
 
-		final AvailabilityResponse response = msv3VendorGatewayService.retrieveAvailability(request);
+		final MSV3AvailiabilityClient msv3AvailiabilityClient = new MSV3AvailiabilityClient(
+				new MSV3ConnectionFactory(),
+				MSV3TestingTools.createMSV3ClientConfig());
+
+		final AvailabilityResponse response = msv3AvailiabilityClient.retrieveAvailability(request);
 		assertThat(response).isNotNull();
 	}
 }

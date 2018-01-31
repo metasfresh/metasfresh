@@ -1,10 +1,13 @@
 package de.metas.vertical.pharma.vendor.gateway.mvs3.common;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -28,24 +31,31 @@ import lombok.NonNull;
  * #L%
  */
 
-public class Msv3ClientException extends AdempiereException
+public class Msv3ClientException
+		extends AdempiereException
 {
-	public static Msv3ClientException createForFaultInfo(@NonNull final Msv3FaultInfo msv3FaultInfo)
-	{
-		return new Msv3ClientException(msv3FaultInfo);
-	}
-
 	private static final long serialVersionUID = -8587023660085593406L;
 
 	@Getter
 	private final Msv3FaultInfo msv3FaultInfo;
 
-	private Msv3ClientException(@NonNull final Msv3FaultInfo msv3FaultInfo)
+	@Builder
+	private Msv3ClientException(
+			@Nullable final Msv3FaultInfo msv3FaultInfo,
+			@Nullable final Throwable cause)
 	{
+		super(cause);
 		this.msv3FaultInfo = msv3FaultInfo;
-		this.appendParametersToMessage()
-				.setParameter("TechnischerFehlertext", msv3FaultInfo.getTechnischerFehlertext())
-				.setParameter("EndanwenderFehlertext", msv3FaultInfo.getEndanwenderFehlertext())
-				.setParameter("ErrorCode", msv3FaultInfo.getErrorCode());
+
+		Check.errorIf(msv3FaultInfo == null && cause == null,
+				"At elast one of the given msv3FaultInfo and cause parameters need to be not-null");
+
+		if (msv3FaultInfo != null)
+		{
+			this.appendParametersToMessage()
+					.setParameter("TechnischerFehlertext", msv3FaultInfo.getTechnischerFehlertext())
+					.setParameter("EndanwenderFehlertext", msv3FaultInfo.getEndanwenderFehlertext())
+					.setParameter("ErrorCode", msv3FaultInfo.getErrorCode());
+		}
 	}
 }

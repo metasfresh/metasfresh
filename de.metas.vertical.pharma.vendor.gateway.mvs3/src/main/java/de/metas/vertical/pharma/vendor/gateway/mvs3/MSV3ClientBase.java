@@ -58,7 +58,7 @@ public abstract class MSV3ClientBase
 	 * @param expectedResponseClass if the response is not an instance of this class, the method throws an exception.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T sendAndReceive(
+	protected <T> T sendAndReceive(
 			@NonNull final JAXBElement<?> messagePayload,
 			@NonNull final Class<? extends T> expectedResponseClass)
 	{
@@ -72,7 +72,8 @@ public abstract class MSV3ClientBase
 		}
 		else if (Msv3FaultInfo.class.isInstance(responseValue))
 		{
-			throw Msv3ClientException.createForFaultInfo((Msv3FaultInfo)responseValue)
+			throw Msv3ClientException.builder()
+					.msv3FaultInfo((Msv3FaultInfo)responseValue).build()
 					.setParameter("uri", uri)
 					.setParameter("config", config);
 		}

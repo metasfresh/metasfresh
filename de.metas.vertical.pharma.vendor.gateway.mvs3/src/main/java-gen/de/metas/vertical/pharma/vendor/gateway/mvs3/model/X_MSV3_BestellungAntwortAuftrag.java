@@ -14,7 +14,7 @@ public class X_MSV3_BestellungAntwortAuftrag extends org.compiere.model.PO imple
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 525790698L;
+	private static final long serialVersionUID = -1702629910L;
 
     /** Standard Constructor */
     public X_MSV3_BestellungAntwortAuftrag (Properties ctx, int MSV3_BestellungAntwortAuftrag_ID, String trxName)
@@ -52,10 +52,10 @@ public class X_MSV3_BestellungAntwortAuftrag extends org.compiere.model.PO imple
 	public static final int MSV3_AUFTRAGSART_AD_Reference_ID=540825;
 	/** Normal = NORMAL */
 	public static final String MSV3_AUFTRAGSART_Normal = "NORMAL";
-	/** Stapel = STAPEL */
-	public static final String MSV3_AUFTRAGSART_Stapel = "STAPEL";
-	/** Sonder = SONDER */
-	public static final String MSV3_AUFTRAGSART_Sonder = "SONDER";
+	/** Stapel = SONDER */
+	public static final String MSV3_AUFTRAGSART_Stapel = "SONDER";
+	/** Sonder = STAPEL */
+	public static final String MSV3_AUFTRAGSART_Sonder = "STAPEL";
 	/** Versand = VERSAND */
 	public static final String MSV3_AUFTRAGSART_Versand = "VERSAND";
 	/** Set Auftragsart.

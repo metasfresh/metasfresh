@@ -16,9 +16,9 @@ public interface I_MSV3_Verfuegbarkeit_Transaction
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org
+    /** AccessLevel = 3 - Client - Org
      */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
@@ -38,6 +38,35 @@ public interface I_MSV3_Verfuegbarkeit_Transaction
     public static final org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, org.compiere.model.I_AD_Client>(I_MSV3_Verfuegbarkeit_Transaction.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set System-Problem.
+	 * Automatically created or manually entered System Issue
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Issue_ID (int AD_Issue_ID);
+
+	/**
+	 * Get System-Problem.
+	 * Automatically created or manually entered System Issue
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Issue_ID();
+
+	public org.compiere.model.I_AD_Issue getAD_Issue();
+
+	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue);
+
+    /** Column definition for AD_Issue_ID */
+    public static final org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, org.compiere.model.I_AD_Issue> COLUMN_AD_Issue_ID = new org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, org.compiere.model.I_AD_Issue>(I_MSV3_Verfuegbarkeit_Transaction.class, "AD_Issue_ID", org.compiere.model.I_AD_Issue.class);
+    /** Column name AD_Issue_ID */
+    public static final String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
 
 	/**
 	 * Set Sektion.
@@ -67,6 +96,29 @@ public interface I_MSV3_Verfuegbarkeit_Transaction
     public static final org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, org.compiere.model.I_AD_Org>(I_MSV3_Verfuegbarkeit_Transaction.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Purchase candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_PurchaseCandidate_ID (int C_PurchaseCandidate_ID);
+
+	/**
+	 * Get Purchase candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_PurchaseCandidate_ID();
+
+    /** Column definition for C_PurchaseCandidate_ID */
+    public static final org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, Object> COLUMN_C_PurchaseCandidate_ID = new org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, Object>(I_MSV3_Verfuegbarkeit_Transaction.class, "C_PurchaseCandidate_ID", null);
+    /** Column name C_PurchaseCandidate_ID */
+    public static final String COLUMNNAME_C_PurchaseCandidate_ID = "C_PurchaseCandidate_ID";
 
 	/**
 	 * Get Erstellt.

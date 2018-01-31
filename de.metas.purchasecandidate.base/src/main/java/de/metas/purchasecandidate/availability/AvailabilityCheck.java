@@ -4,13 +4,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.Adempiere;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
@@ -21,11 +24,11 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestException;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
 import lombok.NonNull;
@@ -63,10 +66,11 @@ public class AvailabilityCheck
 	private final List<PurchaseCandidate> purchaseCandidates;
 	private final ImmutableListMultimap<Integer, PurchaseCandidate> vendorBParterId2PurchaseCandidates;
 
-	private AvailabilityCheck(@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
+	private AvailabilityCheck(
+			@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
 	{
 		this.purchaseCandidates = ImmutableList.copyOf(purchaseCandidates);
-		vendorBParterId2PurchaseCandidates = Multimaps.index(this.purchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
+		this.vendorBParterId2PurchaseCandidates = Multimaps.index(this.purchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
 	}
 
 	public Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability()
@@ -87,10 +91,17 @@ public class AvailabilityCheck
 	public void checkAvailabilityAsync(
 			@NonNull final BiConsumer<Multimap<PurchaseCandidate, AvailabilityResult>, Throwable> callback)
 	{
+		final Properties localCtx = Env.copyCtx(Env.getCtx());
+
 		for (final int vendorId : vendorBParterId2PurchaseCandidates.keySet())
 		{
 			CompletableFuture
-					.supplyAsync(() -> checkAvailabilityAndConvertThrowable(vendorId))
+					.supplyAsync(() -> {
+						try (final IAutoCloseable ctxWithinAsyncThread = Env.switchContext(localCtx))
+						{
+							return checkAvailabilityAndConvertThrowable(vendorId);
+						}
+					})
 					.whenComplete((result, throwable) -> {
 
 						final boolean resultWasFound = result != null && !result.isEmpty();
@@ -110,7 +121,8 @@ public class AvailabilityCheck
 			return ImmutableMultimap.of();
 		}
 
-		final Map<ProductAndQuantity, PurchaseCandidate> requestItem2purchaseCandidate = createRequestItems(vendorId);
+		final Map<AvailabilityRequestItem, PurchaseCandidate> requestItem2purchaseCandidate = //
+				createRequestItems(vendorId);
 		if (requestItem2purchaseCandidate.isEmpty())
 		{
 			return ImmutableMultimap.of();
@@ -128,7 +140,7 @@ public class AvailabilityCheck
 
 	private Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability0(
 			final int vendorId,
-			@NonNull final Map<ProductAndQuantity, PurchaseCandidate> requestItem2purchaseCandidate)
+			@NonNull final Map<AvailabilityRequestItem, PurchaseCandidate> requestItem2purchaseCandidate)
 	{
 		final Multimap<PurchaseCandidate, AvailabilityResult> result = ArrayListMultimap.create();
 
@@ -138,13 +150,15 @@ public class AvailabilityCheck
 				.build();
 
 		final VendorGatewayRegistry vendorGatewayRegistry = Adempiere.getBean(VendorGatewayRegistry.class);
-		final Optional<VendorGatewayService> vendorGatewayService = vendorGatewayRegistry.getSingleVendorGatewayService(vendorId);
+		final Optional<VendorGatewayService> vendorGatewayService = //
+				vendorGatewayRegistry.getSingleVendorGatewayService(vendorId);
 		if (!vendorGatewayService.isPresent())
 		{
 			return result;
 		}
 
-		final AvailabilityResponse availabilityResponse = vendorGatewayService.get().retrieveAvailability(availabilityRequest);
+		final AvailabilityResponse availabilityResponse = //
+				vendorGatewayService.get().retrieveAvailability(availabilityRequest);
 
 		for (final AvailabilityResponseItem responseItem : availabilityResponse.getAvailabilityResponseItems())
 		{
@@ -166,7 +180,7 @@ public class AvailabilityCheck
 
 	private RuntimeException convertThrowable(
 			@NonNull final Throwable throwable,
-			@NonNull final Map<ProductAndQuantity, PurchaseCandidate> requestItem2purchaseCandidate)
+			@NonNull final Map<AvailabilityRequestItem, PurchaseCandidate> requestItem2purchaseCandidate)
 	{
 		final boolean isAvailabilityRequestException = throwable instanceof AvailabilityRequestException;
 		if (!isAvailabilityRequestException)
@@ -186,9 +200,9 @@ public class AvailabilityCheck
 		return new AvailabilityException(purchseCandidate2Throwable);
 	}
 
-	private Map<ProductAndQuantity, PurchaseCandidate> createRequestItems(final int vendorId)
+	private Map<AvailabilityRequestItem, PurchaseCandidate> createRequestItems(final int vendorId)
 	{
-		final ImmutableMap.Builder<ProductAndQuantity, PurchaseCandidate> result = ImmutableMap.builder();
+		final ImmutableMap.Builder<AvailabilityRequestItem, PurchaseCandidate> result = ImmutableMap.builder();
 
 		for (final PurchaseCandidate purchaseCandidate : vendorBParterId2PurchaseCandidates.get(vendorId))
 		{

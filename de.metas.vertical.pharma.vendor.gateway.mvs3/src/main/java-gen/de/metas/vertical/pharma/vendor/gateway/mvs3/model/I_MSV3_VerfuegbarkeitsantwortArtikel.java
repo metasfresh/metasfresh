@@ -16,9 +16,9 @@ public interface I_MSV3_VerfuegbarkeitsantwortArtikel
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org
+    /** AccessLevel = 3 - Client - Org
      */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
@@ -67,6 +67,58 @@ public interface I_MSV3_VerfuegbarkeitsantwortArtikel
     public static final org.adempiere.model.ModelColumn<I_MSV3_VerfuegbarkeitsantwortArtikel, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_MSV3_VerfuegbarkeitsantwortArtikel, org.compiere.model.I_AD_Org>(I_MSV3_VerfuegbarkeitsantwortArtikel.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Auftragsposition.
+	 * Auftragsposition
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_OrderLineSO_ID (int C_OrderLineSO_ID);
+
+	/**
+	 * Get Auftragsposition.
+	 * Auftragsposition
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_OrderLineSO_ID();
+
+	public org.compiere.model.I_C_OrderLine getC_OrderLineSO();
+
+	public void setC_OrderLineSO(org.compiere.model.I_C_OrderLine C_OrderLineSO);
+
+    /** Column definition for C_OrderLineSO_ID */
+    public static final org.adempiere.model.ModelColumn<I_MSV3_VerfuegbarkeitsantwortArtikel, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLineSO_ID = new org.adempiere.model.ModelColumn<I_MSV3_VerfuegbarkeitsantwortArtikel, org.compiere.model.I_C_OrderLine>(I_MSV3_VerfuegbarkeitsantwortArtikel.class, "C_OrderLineSO_ID", org.compiere.model.I_C_OrderLine.class);
+    /** Column name C_OrderLineSO_ID */
+    public static final String COLUMNNAME_C_OrderLineSO_ID = "C_OrderLineSO_ID";
+
+	/**
+	 * Set Purchase candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_PurchaseCandidate_ID (int C_PurchaseCandidate_ID);
+
+	/**
+	 * Get Purchase candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_PurchaseCandidate_ID();
+
+    /** Column definition for C_PurchaseCandidate_ID */
+    public static final org.adempiere.model.ModelColumn<I_MSV3_VerfuegbarkeitsantwortArtikel, Object> COLUMN_C_PurchaseCandidate_ID = new org.adempiere.model.ModelColumn<I_MSV3_VerfuegbarkeitsantwortArtikel, Object>(I_MSV3_VerfuegbarkeitsantwortArtikel.class, "C_PurchaseCandidate_ID", null);
+    /** Column name C_PurchaseCandidate_ID */
+    public static final String COLUMNNAME_C_PurchaseCandidate_ID = "C_PurchaseCandidate_ID";
 
 	/**
 	 * Get Erstellt.

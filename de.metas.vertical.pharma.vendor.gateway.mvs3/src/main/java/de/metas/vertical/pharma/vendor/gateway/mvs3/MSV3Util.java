@@ -1,19 +1,25 @@
 package de.metas.vertical.pharma.vendor.gateway.mvs3;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.Properties;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_AD_System;
+import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 
 import de.metas.vendor.gateway.api.ProductAndQuantity;
@@ -44,6 +50,9 @@ public class MSV3Util
 {
 
 	public static final int MSV3_MAX_QUANTITY_99999 = 99999;
+
+	public static final int MSV3_MAX_SUPPORT_ID_999999 = 999999;
+	private static final String MSV3_SUPPORT_ID_SEQUENCE = "MSV3_SupportId";
 
 	public static final ExtendedMemorizingSupplier<String> CLIENT_SOFTWARE_IDENTIFIER = ExtendedMemorizingSupplier
 			.of(() -> retrieveSoftwareIndentifier());
@@ -92,6 +101,10 @@ public class MSV3Util
 	public static Timestamp toTimestampOrNull(@Nullable final XMLGregorianCalendar xmlGregorianCalendar)
 	{
 		final Date datePromised = toDateOrNull(xmlGregorianCalendar);
+		if (datePromised == null)
+		{
+			return null;
+		}
 		return new Timestamp(datePromised.getTime());
 	}
 
@@ -99,5 +112,24 @@ public class MSV3Util
 	{
 		final Date datePromised = xmlGregorianCalendar == null ? null : xmlGregorianCalendar.toGregorianCalendar().getTime();
 		return datePromised;
+	}
+
+	public static int retrieveNextSupportId()
+	{
+		final int supportId = MSequence.getNextID(Env.CTXVALUE_AD_Client_ID_System, MSV3_SUPPORT_ID_SEQUENCE);
+		if (supportId <= MSV3_MAX_SUPPORT_ID_999999)
+		{
+			return supportId;
+		}
+
+		final Properties sysContext = Env.createSysContext(Env.getCtx());
+		final I_AD_Sequence tableSequence = Services.get(ISequenceDAO.class).retrieveTableSequenceOrNull(
+				sysContext, MSV3_SUPPORT_ID_SEQUENCE);
+
+		tableSequence.setCurrentNext(2);
+		tableSequence.setCurrentNextSys(2);
+		save(tableSequence);
+
+		return 1;
 	}
 }

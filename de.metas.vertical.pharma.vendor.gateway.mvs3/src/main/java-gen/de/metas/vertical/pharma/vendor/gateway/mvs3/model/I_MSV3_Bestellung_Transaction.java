@@ -16,9 +16,9 @@ public interface I_MSV3_Bestellung_Transaction
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org
+    /** AccessLevel = 3 - Client - Org
      */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
@@ -96,6 +96,35 @@ public interface I_MSV3_Bestellung_Transaction
     public static final org.adempiere.model.ModelColumn<I_MSV3_Bestellung_Transaction, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_MSV3_Bestellung_Transaction, org.compiere.model.I_AD_Org>(I_MSV3_Bestellung_Transaction.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Bestellung.
+	 * Bestellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_OrderPO_ID (int C_OrderPO_ID);
+
+	/**
+	 * Get Bestellung.
+	 * Bestellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_OrderPO_ID();
+
+	public org.compiere.model.I_C_Order getC_OrderPO();
+
+	public void setC_OrderPO(org.compiere.model.I_C_Order C_OrderPO);
+
+    /** Column definition for C_OrderPO_ID */
+    public static final org.adempiere.model.ModelColumn<I_MSV3_Bestellung_Transaction, org.compiere.model.I_C_Order> COLUMN_C_OrderPO_ID = new org.adempiere.model.ModelColumn<I_MSV3_Bestellung_Transaction, org.compiere.model.I_C_Order>(I_MSV3_Bestellung_Transaction.class, "C_OrderPO_ID", org.compiere.model.I_C_Order.class);
+    /** Column name C_OrderPO_ID */
+    public static final String COLUMNNAME_C_OrderPO_ID = "C_OrderPO_ID";
 
 	/**
 	 * Get Erstellt.

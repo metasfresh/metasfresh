@@ -5,10 +5,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import javax.annotation.Nullable;
 
-import org.springframework.stereotype.Service;
-
 import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 
 /*
  * #%L
@@ -32,9 +32,16 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
  * #L%
  */
 
-@Service
-public class FaultInfoSaver
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class Msv3FaultInfoDataPersister
 {
+	public static Msv3FaultInfoDataPersister newInstanceWithOrgId(final int orgId)
+	{
+		return new Msv3FaultInfoDataPersister(orgId);
+	}
+
+	private final int orgId;
+
 	public I_MSV3_FaultInfo storeMsv3FaultInfoOrNull(@Nullable final Msv3FaultInfo msv3FaultInfo)
 	{
 		if (msv3FaultInfo == null)
@@ -43,6 +50,7 @@ public class FaultInfoSaver
 		}
 
 		final I_MSV3_FaultInfo faultInfoRecord = newInstance(I_MSV3_FaultInfo.class);
+		faultInfoRecord.setAD_Org_ID(orgId);
 		faultInfoRecord.setMSV3_EndanwenderFehlertext(msv3FaultInfo.getEndanwenderFehlertext());
 		faultInfoRecord.setMSV3_ErrorCode(msv3FaultInfo.getErrorCode());
 		faultInfoRecord.setMSV3_FaultInfoType(msv3FaultInfo.getClass().getSimpleName());

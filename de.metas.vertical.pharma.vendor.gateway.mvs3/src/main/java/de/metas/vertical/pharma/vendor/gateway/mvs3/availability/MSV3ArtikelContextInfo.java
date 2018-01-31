@@ -1,11 +1,12 @@
-package de.metas.vendor.gateway.api.order;
+package de.metas.vertical.pharma.vendor.gateway.mvs3.availability;
 
-import de.metas.vendor.gateway.api.ProductAndQuantity;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.vendor.gateway.api
+ * metasfresh-pharma.vendor.gateway.mvs3
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -26,7 +27,25 @@ import lombok.Value;
  */
 
 @Value
-public class PurchaseOrderRequestItem
+public class MSV3ArtikelContextInfo
 {
-	ProductAndQuantity productAndQuantity;
+	public static MSV3ArtikelContextInfo forRequestItem(
+			@NonNull final AvailabilityRequestItem availabilityRequestItem)
+	{
+		return new MSV3ArtikelContextInfo(
+				availabilityRequestItem.getSalesOrderLineId(),
+				availabilityRequestItem.getPurchaseCandidateId());
+	}
+
+	int salesOrderLineId;
+	int purchaseCandidateId;
+
+	private MSV3ArtikelContextInfo(
+			final int salesOrderLineId,
+			final int purchaseCandidateId)
+	{
+		this.salesOrderLineId = salesOrderLineId;
+		this.purchaseCandidateId = purchaseCandidateId;
+	}
+
 }

@@ -1,12 +1,16 @@
 package de.metas.purchasecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
 
 import org.adempiere.util.Check;
+import org.compiere.model.I_C_OrderLine;
 
 import de.metas.vendor.gateway.api.ProductAndQuantity;
+import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -44,12 +48,14 @@ public class PurchaseCandidate
 
 	@Setter(AccessLevel.NONE)
 	private int purchaseOrderLineId;
+
 	@Setter(AccessLevel.NONE)
 	private int purchaseOrderLineIdInitial;
 
-	private BigDecimal qtyRequired;
+	private BigDecimal qtyToPurchase;
+
 	@Setter(AccessLevel.NONE)
-	private BigDecimal qtyRequiredInitial;
+	private BigDecimal qtyToPurchaseInitial;
 
 	private Date datePromised;
 
@@ -73,7 +79,7 @@ public class PurchaseCandidate
 			final int uomId,
 			final int vendorBPartnerId,
 			@NonNull final VendorProductInfo vendorProductInfo,
-			@NonNull final BigDecimal qtyRequired,
+			@NonNull final BigDecimal qtyToPurchase,
 			@NonNull final Date datePromised,
 			final boolean processed,
 			final boolean locked)
@@ -105,8 +111,8 @@ public class PurchaseCandidate
 		this.purchaseOrderLineId = purchaseOrderLineId > 0 ? purchaseOrderLineId : 0;
 		this.purchaseOrderLineIdInitial = this.purchaseOrderLineId;
 
-		this.qtyRequired = qtyRequired;
-		this.qtyRequiredInitial = qtyRequired;
+		this.qtyToPurchase = qtyToPurchase;
+		this.qtyToPurchaseInitial = qtyToPurchase;
 		this.datePromised = datePromised;
 		this.datePromisedInitial = datePromised;
 	}
@@ -118,8 +124,8 @@ public class PurchaseCandidate
 		purchaseOrderLineId = from.purchaseOrderLineId;
 		purchaseOrderLineIdInitial = from.purchaseOrderLineIdInitial;
 
-		qtyRequired = from.qtyRequired;
-		qtyRequiredInitial = from.qtyRequiredInitial;
+		qtyToPurchase = from.qtyToPurchase;
+		qtyToPurchaseInitial = from.qtyToPurchaseInitial;
 		datePromised = from.datePromised;
 		datePromisedInitial = from.datePromisedInitial;
 
@@ -156,7 +162,7 @@ public class PurchaseCandidate
 		return purchaseCandidateId <= 0 // never saved
 				|| state.hasChanges()
 				|| purchaseOrderLineId != purchaseOrderLineIdInitial
-				|| qtyRequired.compareTo(qtyRequiredInitial) != 0
+				|| qtyToPurchase.compareTo(qtyToPurchaseInitial) != 0
 				|| !Objects.equals(datePromised, datePromisedInitial);
 	}
 
@@ -167,15 +173,24 @@ public class PurchaseCandidate
 		state.markSaved();
 
 		purchaseOrderLineIdInitial = purchaseOrderLineId;
-		qtyRequiredInitial = qtyRequired;
+		qtyToPurchaseInitial = qtyToPurchase;
 		datePromisedInitial = datePromised;
 	}
 
-	public ProductAndQuantity createRequestItem()
+	public AvailabilityRequestItem createRequestItem()
 	{
 		final String productValue = identifier.getVendorProductInfo().getProductNo();
-		final BigDecimal qtyRequired = getQtyRequired();
 
-		return new ProductAndQuantity(productValue, qtyRequired);
+		final I_C_OrderLine salesOrderLine = load(identifier.getSalesOrderLineId(), I_C_OrderLine.class);
+
+		final ProductAndQuantity productAndQuantity = new ProductAndQuantity(
+				productValue,
+				salesOrderLine.getQtyReserved());
+
+		return AvailabilityRequestItem.builder()
+				.productAndQuantity(productAndQuantity)
+				.purchaseCandidateId(purchaseCandidateId)
+				.salesOrderLineId(getSalesOrderLineId())
+				.build();
 	}
 }

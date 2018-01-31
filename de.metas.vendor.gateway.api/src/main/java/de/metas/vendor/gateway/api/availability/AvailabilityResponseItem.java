@@ -5,7 +5,6 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import de.metas.vendor.gateway.api.ProductAndQuantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -42,7 +41,7 @@ public class AvailabilityResponseItem
 	}
 
 	@NonNull
-	ProductAndQuantity correspondingRequestItem;
+	AvailabilityRequestItem correspondingRequestItem;
 
 	@NonNull
 	String productIdentifier;
@@ -58,9 +57,4 @@ public class AvailabilityResponseItem
 
 	@Nullable
 	String availabilityText;
-
-	/**
-	 * The caller doesn't have to care about this IDs meaning, but they can pass it back to the respective service provider to create a purchase order.
-	 */
-	int internalId;
 }

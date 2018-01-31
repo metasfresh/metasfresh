@@ -14,7 +14,7 @@ public class X_MSV3_VerfuegbarkeitsantwortArtikel extends org.compiere.model.PO 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1914613877L;
+	private static final long serialVersionUID = 1121230409L;
 
     /** Standard Constructor */
     public X_MSV3_VerfuegbarkeitsantwortArtikel (Properties ctx, int MSV3_VerfuegbarkeitsantwortArtikel_ID, String trxName)
@@ -41,6 +41,65 @@ public class X_MSV3_VerfuegbarkeitsantwortArtikel extends org.compiere.model.PO 
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLineSO() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLineSO_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLineSO(org.compiere.model.I_C_OrderLine C_OrderLineSO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLineSO_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLineSO);
+	}
+
+	/** Set Auftragsposition.
+		@param C_OrderLineSO_ID 
+		Auftragsposition
+	  */
+	@Override
+	public void setC_OrderLineSO_ID (int C_OrderLineSO_ID)
+	{
+		if (C_OrderLineSO_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderLineSO_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderLineSO_ID, Integer.valueOf(C_OrderLineSO_ID));
+	}
+
+	/** Get Auftragsposition.
+		@return Auftragsposition
+	  */
+	@Override
+	public int getC_OrderLineSO_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLineSO_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Purchase candidate.
+		@param C_PurchaseCandidate_ID Purchase candidate	  */
+	@Override
+	public void setC_PurchaseCandidate_ID (int C_PurchaseCandidate_ID)
+	{
+		if (C_PurchaseCandidate_ID < 1) 
+			set_Value (COLUMNNAME_C_PurchaseCandidate_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PurchaseCandidate_ID, Integer.valueOf(C_PurchaseCandidate_ID));
+	}
+
+	/** Get Purchase candidate.
+		@return Purchase candidate	  */
+	@Override
+	public int getC_PurchaseCandidate_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_PurchaseCandidate_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set AnfrageMenge.
 		@param MSV3_AnfrageMenge AnfrageMenge	  */
