@@ -96,7 +96,9 @@ public class ReceiptScheduleEventHandler
 		createAndHandleDetailRequest(event, identifier);
 	}
 
-	private void createAndHandleMainDataEvent(final AbstractReceiptScheduleEvent event, final MainDataRecordIdentifier identifier)
+	private void createAndHandleMainDataEvent(
+			@NonNull final AbstractReceiptScheduleEvent event,
+			@NonNull final MainDataRecordIdentifier identifier)
 	{
 		if (event.getOrderedQuantityDelta().signum() == 0
 				&& event.getReservedQuantityDelta().signum() == 0)
@@ -162,6 +164,7 @@ public class ReceiptScheduleEventHandler
 		addDetailsRequest
 				.qtyOrdered(receiptScheduleCreatedEvent.getMaterialDescriptor().getQuantity())
 				.qtyReserved(receiptScheduleCreatedEvent.getReservedQuantity())
+				.docTypeId(orderLineDescriptor.getDocTypeId())
 				.orderId(orderLineDescriptor.getOrderId())
 				.orderLineId(orderLineDescriptor.getOrderLineId())
 				.bPartnerId(orderLineDescriptor.getOrderBPartnerId());
