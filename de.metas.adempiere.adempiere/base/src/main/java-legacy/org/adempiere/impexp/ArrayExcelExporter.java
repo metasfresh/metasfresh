@@ -91,7 +91,7 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 	}
 
 	@Override
-	public boolean isFunctionRow()
+	public boolean isFunctionRow(final int row)
 	{
 		return false;
 	}
@@ -100,10 +100,5 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 	public boolean isPageBreak(final int row, final int col)
 	{
 		return false;
-	}
-
-	@Override
-	protected void setCurrentRow(final int row)
-	{
 	}
 }
