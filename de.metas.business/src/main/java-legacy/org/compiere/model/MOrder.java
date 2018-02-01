@@ -1257,9 +1257,9 @@ public class MOrder extends X_C_Order implements IDocument
 
 			if (stats.getSOCreditUsed().add(getGrandTotal()).compareTo(creditLimit) > 0 )
 			{
-				throw new AdempiereException("@BPartnerCreditStop@ - @TotalOpenBalance@="
-						+ stats.getTotalOpenBalance()
-						+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit());
+				throw new AdempiereException("@SO_CreditUsed@ + @GrandTotal@="
+						+ stats.getSOCreditUsed().add(getGrandTotal())
+						+ ", @SO_CreditLimit@=" + creditLimit);
 			}
 		}
 
