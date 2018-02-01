@@ -2,16 +2,21 @@ package de.metas.ui.web.view;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractExcelExporter;
 import org.adempiere.impexp.CellValue;
 import org.adempiere.impexp.CellValues;
+import org.adempiere.util.Check;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.view.util.PageIndex;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
@@ -45,11 +50,9 @@ import lombok.NonNull;
 
 /* package */ class ViewExcelExporter extends AbstractExcelExporter
 {
-	private final IView view;
+	private final RowsSupplier rows;
 	private final ViewLayout layout;
 	private final String adLanguage;
-	/** Selected rowIds. Might be null in case ALL rows shall be exported. */
-	private final List<DocumentId> rowIds;
 
 	@Builder
 	private ViewExcelExporter(
@@ -58,13 +61,12 @@ import lombok.NonNull;
 			@NonNull final ViewLayout layout,
 			@NonNull final String adLanguage)
 	{
-		this.view = view;
 		this.layout = layout;
 		this.adLanguage = adLanguage;
 
 		if (rowIds.isAll())
 		{
-			this.rowIds = null;
+			this.rows = new AllRowsSupplier(view);
 		}
 		else if (rowIds.isEmpty())
 		{
@@ -72,7 +74,7 @@ import lombok.NonNull;
 		}
 		else
 		{
-			this.rowIds = ImmutableList.copyOf(rowIds.toSet());
+			this.rows = new ListRowsSupplier(view, rowIds);
 		}
 
 		setFreezePane(0, 1);
@@ -80,27 +82,7 @@ import lombok.NonNull;
 
 	private IViewRow getRow(final int rowIndex)
 	{
-		if (rowIds == null) // All rows
-		{
-			final int firstRow = rowIndex;
-			final int pageLength = 1;
-			final List<DocumentQueryOrderBy> orderBys = ImmutableList.of(); // default
-			final ViewResult page = view.getPage(firstRow, pageLength, orderBys);
-			final List<IViewRow> rows = page.getPage();
-			if (rows.isEmpty())
-			{
-				return null;
-			}
-			else
-			{
-				return rows.get(0);
-			}
-		}
-		else
-		{
-			final DocumentId rowId = rowIds.get(rowIndex);
-			return view.getById(rowId);
-		}
+		return rows.getRow(rowIndex);
 	}
 
 	private String getFieldName(final int columnIndex)
@@ -115,7 +97,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public boolean isFunctionRow()
+	public boolean isFunctionRow(final int row)
 	{
 		return false;
 	}
@@ -129,20 +111,7 @@ import lombok.NonNull;
 	@Override
 	public int getRowCount()
 	{
-		if (rowIds == null)
-		{
-			return (int)view.size();
-		}
-		else
-		{
-			return rowIds.size();
-		}
-	}
-
-	@Override
-	protected void setCurrentRow(final int row)
-	{
-		// nothing
+		return rows.getRowCount();
 	}
 
 	@Override
@@ -202,4 +171,101 @@ import lombok.NonNull;
 		return false;
 	}
 
+	private static interface RowsSupplier
+	{
+		IViewRow getRow(int rowIndex);
+
+		int getRowCount();
+	}
+
+	private static class AllRowsSupplier implements RowsSupplier
+	{
+		private static final int PAGE_LENGTH = 100;
+		private final IView view;
+		private LoadingCache<PageIndex, ViewResult> cache = CacheBuilder.newBuilder()
+				.maximumSize(2) // cache max 2 pages
+				.build(new CacheLoader<PageIndex, ViewResult>()
+				{
+					@Override
+					public ViewResult load(final PageIndex pageIndex)
+					{
+						final List<DocumentQueryOrderBy> orderBys = ImmutableList.of(); // default
+						return view.getPage(pageIndex.getFirstRow(), pageIndex.getPageLength(), orderBys);
+					}
+
+				});
+
+		private AllRowsSupplier(@NonNull final IView view)
+		{
+			this.view = view;
+		}
+
+		private ViewResult getPage(final PageIndex pageIndex)
+		{
+			try
+			{
+				return cache.get(pageIndex);
+			}
+			catch (ExecutionException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e);
+			}
+		}
+
+		@Override
+		public IViewRow getRow(final int rowIndex)
+		{
+			final ViewResult page = getPage(PageIndex.getPageContainingRow(rowIndex, PAGE_LENGTH));
+
+			final int rowIndexInPage = rowIndex - page.getFirstRow();
+			if (rowIndexInPage < 0)
+			{
+				// shall not happen
+				return null;
+			}
+
+			final List<IViewRow> rows = page.getPage();
+			if (rowIndexInPage >= rows.size())
+			{
+				return null;
+			}
+
+			return rows.get(rowIndexInPage);
+		}
+
+		@Override
+		public int getRowCount()
+		{
+			return (int)view.size();
+		}
+	}
+
+	private static class ListRowsSupplier implements RowsSupplier
+	{
+		private final ImmutableList<IViewRow> rows;
+
+		private ListRowsSupplier(@NonNull final IView view, @NonNull DocumentIdsSelection rowIds)
+		{
+			Check.assume(!rowIds.isAll(), "rowIds is not ALL");
+
+			this.rows = view.streamByIds(rowIds).collect(ImmutableList.toImmutableList());
+		}
+
+		@Override
+		public IViewRow getRow(final int rowIndex)
+		{
+			Check.assume(rowIndex >= 0, "rowIndex >= 0");
+
+			final int rowsCount = rows.size();
+			Check.assume(rowIndex < rowsCount, "rowIndex < {}", rowsCount);
+
+			return rows.get(rowIndex);
+		}
+
+		@Override
+		public int getRowCount()
+		{
+			return rows.size();
+		}
+	}
 }
