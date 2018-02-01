@@ -24,13 +24,15 @@ class DataLayoutWrapper extends Component {
   };
 
   handleChange = (field, value) => {
-    this.setState(prevState => ({
-      data: Object.assign({}, prevState.data, {
-        [field]: Object.assign({}, prevState.data[field], {
+    this.setState({
+      data: {
+        ...this.state.data,
+        [field]: {
+          ...this.state.data[field],
           value
-        })
-      })
-    }));
+        }
+      }
+    });
   };
 
   handlePatch = (prop, value, cb) => {
@@ -79,27 +81,27 @@ class DataLayoutWrapper extends Component {
   };
 
   render() {
-    const { layout, data, dataId } = this.state;
-
+    const { layout, data } = this.state;
     const { children, className } = this.props;
+
+    // sometimes it's a number, and React complaints about wrong type
+    const dataId = this.state.dataId + "";
 
     return (
       <div className={className}>
         {// The nameing of props has a significant prefix
         // to suggest dev that these props are from wrapper
-        cloneElement(
-          children,
-          Object.assign({}, this.props, {
-            DLWrapperData: data,
-            DLWrapperDataId: dataId,
-            DLWrapperLayout: layout,
+        cloneElement(children, {
+          ...this.props,
+          DLWrapperData: data,
+          DLWrapperDataId: dataId,
+          DLWrapperLayout: layout,
 
-            DLWrapperSetData: this.setData,
-            DLWrapperSetLayout: this.setLayout,
-            DLWrapperHandleChange: this.handleChange,
-            DLWrapperHandlePatch: this.handlePatch
-          })
-        )}
+          DLWrapperSetData: this.setData,
+          DLWrapperSetLayout: this.setLayout,
+          DLWrapperHandleChange: this.handleChange,
+          DLWrapperHandlePatch: this.handlePatch
+        })}
       </div>
     );
   }
