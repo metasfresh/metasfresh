@@ -10,12 +10,12 @@ package org.adempiere.invoice.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,12 +25,15 @@ package org.adempiere.invoice.service.impl;
 
 import org.adempiere.invoice.service.IInvoiceCreditContext;
 
+import lombok.Builder;
+
 /**
  * Holds configuration parameters when crediting an invoice. See {@link IInvoiceCreditContext}
- * 
+ *
  * @author al
- * 
+ *
  */
+
 public class InvoiceCreditContext implements IInvoiceCreditContext
 {
 	private final int C_DocType_ID;
@@ -46,17 +49,18 @@ public class InvoiceCreditContext implements IInvoiceCreditContext
 	 * @param isReferenceInvoice see {@link #isReferenceInvoice()}
 	 * @param isCreditedInvoiceReinvoicable see {@link #isCreditedInvoiceReinvoicable()}
 	 */
-	public InvoiceCreditContext(final int C_DocType_ID,
+	@Builder
+	private InvoiceCreditContext(final int C_DocType_ID,
 			final boolean completeAndAllocate,
-			final boolean isReferenceOriginalOrder,
-			final boolean isReferenceInvoice,
-			final boolean isCreditedInvoiceReinvoicable)
+			final boolean referenceOriginalOrder,
+			final boolean referenceInvoice,
+			final boolean creditedInvoiceReinvoicable)
 	{
 		this.C_DocType_ID = C_DocType_ID;
 		this.completeAndAllocate = completeAndAllocate;
-		this.isReferenceOriginalOrder = isReferenceOriginalOrder;
-		this.isReferenceInvoice = isReferenceInvoice;
-		this.isCreditedInvoiceReinvoicable = isCreditedInvoiceReinvoicable;
+		this.isReferenceOriginalOrder = referenceOriginalOrder;
+		this.isReferenceInvoice = referenceInvoice;
+		this.isCreditedInvoiceReinvoicable = creditedInvoiceReinvoicable;
 	}
 
 	@Override
