@@ -115,7 +115,8 @@ Here come the actual release notes:
   * [#3350](https://github.com/metasfresh/metasfresh/issues/3350) Error creating movement from DDOrder
     * Fixes an Error that prevented the creation of movements from Distribution Orders.
   * [#3386](https://github.com/metasfresh/metasfresh/issues/3386) Issued HUs retain I status after PP_Order unclose
-    * 
+  * [#3426](https://github.com/metasfresh/metasfresh/issues/3426) Dunning Level is not set in invoice after generating dunning doc
+
 
 * metasfresh-webui-api
   * [#775](https://github.com/metasfresh/metasfresh-webui-api/issues/775) Destroyed HUs are still visible in material receipt
