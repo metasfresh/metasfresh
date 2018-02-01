@@ -5,12 +5,14 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -18,6 +20,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IView;
@@ -81,8 +84,6 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 
 		this.pickingCandidateService = pickingCandidateService;
 	}
-
-
 
 	@Override
 	public Set<DocumentPath> getReferencingDocumentPaths()
@@ -162,5 +163,21 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 	public PickingSlotView computePickingSlotViewIfAbsent(@NonNull final DocumentId rowId, @NonNull final Supplier<PickingSlotView> pickingSlotViewFactory)
 	{
 		return pickingSlotsViewByRowId.computeIfAbsent(rowId, id -> pickingSlotViewFactory.get());
+	}
+
+	@Override
+	protected Stream<DocumentId> extractDocumentIdsToInvalidate(final TableRecordReference recordRef)
+	{
+		final String tableName = recordRef.getTableName();
+		if (I_M_ShipmentSchedule.Table_Name.equals(tableName))
+		{
+			final int shipmentScheduleId = recordRef.getRecord_ID();
+			final TableRecordReference recordRefEffective = PackageableRow.createTableRecordReferenceFromShipmentScheduleId(shipmentScheduleId);
+			return super.extractDocumentIdsToInvalidate(recordRefEffective);
+		}
+		else
+		{
+			return Stream.empty();
+		}
 	}
 }
