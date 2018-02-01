@@ -10,8 +10,8 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.43 (2018-05)
-**release for week 2018-05**
+# metasfresh 5.43 (2018-06)
+**release for week 2018-06**
 
 ## Features
 * metasfresh
@@ -26,8 +26,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
 
 
-# metasfresh 5.42 (2018-04)
-**release for week 2018-04**
+# metasfresh 5.42 (2018-05)
+**release for week 2018-05**
 
 ## Features
 * metasfresh
@@ -117,7 +117,7 @@ Here come the actual release notes:
   * [#3350](https://github.com/metasfresh/metasfresh/issues/3350) Error creating movement from DDOrder
     * Fixes an Error that prevented the creation of movements from Distribution Orders.
   * [#3386](https://github.com/metasfresh/metasfresh/issues/3386) Issued HUs retain I status after PP_Order unclose
-    * 
+    * Improvement of the status Handling after unclosing Manufacturing Orders.
 
 * metasfresh-webui-api
   * [#775](https://github.com/metasfresh/metasfresh-webui-api/issues/775) Destroyed HUs are still visible in material receipt
