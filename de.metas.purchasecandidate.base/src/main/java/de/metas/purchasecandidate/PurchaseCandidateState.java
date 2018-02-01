@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
@@ -28,6 +29,7 @@ import lombok.Setter;
  */
 
 @Data
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PurchaseCandidateState
 {
 	private boolean processed;
@@ -44,16 +46,6 @@ public class PurchaseCandidateState
 	{
 		this.processed = processed;
 		this.processedInitial = processed;
-		this.locked = locked;
-	}
-
-	private PurchaseCandidateState(
-			boolean processed,
-			boolean processedInitial,
-			boolean locked)
-	{
-		this.processed = processed;
-		this.processedInitial = processedInitial;
 		this.locked = locked;
 	}
 

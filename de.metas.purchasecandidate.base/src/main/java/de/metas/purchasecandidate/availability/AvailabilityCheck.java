@@ -1,7 +1,6 @@
 package de.metas.purchasecandidate.availability;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -16,7 +15,6 @@ import org.compiere.Adempiere;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
@@ -63,14 +61,12 @@ public class AvailabilityCheck
 		return new AvailabilityCheck(purchaseCandidates);
 	}
 
-	private final List<PurchaseCandidate> purchaseCandidates;
 	private final ImmutableListMultimap<Integer, PurchaseCandidate> vendorBParterId2PurchaseCandidates;
 
 	private AvailabilityCheck(
 			@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
 	{
-		this.purchaseCandidates = ImmutableList.copyOf(purchaseCandidates);
-		this.vendorBParterId2PurchaseCandidates = Multimaps.index(this.purchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
+		this.vendorBParterId2PurchaseCandidates = Multimaps.index(purchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
 	}
 
 	public Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability()

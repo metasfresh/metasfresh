@@ -12,6 +12,7 @@ import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.purchaseordercreation.vendorgateway.VendorGatewayInvoker;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -49,7 +50,7 @@ import lombok.NonNull;
 	private final IdentityHashMap<PurchaseCandidate, OrderLineBuilder> purchaseCandidate2OrderLineBuilder = new IdentityHashMap<>();
 	private final OrderUserNotifications userNotifications;
 
-	private final VendorRequestFromCandidatesFactory vendorRequestFromCandidatesFactory;
+	private final VendorGatewayInvoker vendorRequestFromCandidatesFactory;
 
 	@Builder
 	private PurchaseOrderFromCandidatesFactory(
@@ -64,7 +65,7 @@ import lombok.NonNull;
 				.shipBPartner(vendorBPartnerId)
 				.datePromised(orderAggregationKey.getDatePromised());
 
-		this.vendorRequestFromCandidatesFactory = VendorRequestFromCandidatesFactory.createForVendorId(vendorBPartnerId);
+		this.vendorRequestFromCandidatesFactory = VendorGatewayInvoker.createForVendorId(vendorBPartnerId);
 
 		this.userNotifications = userNotifications;
 	}
