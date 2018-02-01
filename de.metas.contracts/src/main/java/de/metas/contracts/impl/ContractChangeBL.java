@@ -255,7 +255,7 @@ public class ContractChangeBL implements IContractChangeBL
 		final boolean isCreditOpenInvoices = contractChangeParameters.isCreditOpenInvoices();
 		if (isCreditOpenInvoices)
 		{
-			final List<I_C_Invoice> invoices = Services.get(IFlatrateDAO.class).retrieveInvoicesForCurrentContract(currentTerm);
+			final List<I_C_Invoice> invoices = Services.get(IFlatrateDAO.class).retrieveInvoicesForFlatrateTerm(currentTerm);
 			invoices.stream()
 					.filter(invoice -> !invoice.isPaid())
 					.forEach(openInvoice -> creditInvoice(InterfaceWrapperHelper.create(openInvoice, de.metas.adempiere.model.I_C_Invoice.class),
