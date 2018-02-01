@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
@@ -42,6 +43,7 @@ import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.Adempiere;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -1248,11 +1250,12 @@ public class MOrder extends X_C_Order implements IDocument
 		// Credit Limit
 		if (isSOTrx())
 		{
-			final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-			final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+			final I_C_BPartner partner = InterfaceWrapperHelper.load(getC_BPartner_ID(),  I_C_BPartner.class);
+			final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
+			final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+			final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimit(partner);
 
-//			if (stats.getSOCreditUsed().add(getGrandTotal()).compareTo(val))
+			if (stats.getSOCreditUsed().add(getGrandTotal()).compareTo(creditLimit) > 0 )
 			{
 				throw new AdempiereException("@BPartnerCreditStop@ - @TotalOpenBalance@="
 						+ stats.getTotalOpenBalance()

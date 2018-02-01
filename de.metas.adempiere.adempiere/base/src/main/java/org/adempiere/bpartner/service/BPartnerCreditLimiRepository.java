@@ -42,9 +42,9 @@ import lombok.NonNull;
 @Repository
 public class BPartnerCreditLimiRepository
 {
-	public BigDecimal findBankBySwiftCode(@NonNull final I_C_BPartner bpartner)
+	public BigDecimal retrieveCreditLimit(@NonNull final I_C_BPartner bpartner)
 	{
-		return Services.get(IQueryBL.class)
+		final I_C_BPartner_CreditLimit bpCreditLimit = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
 				.addOnlyActiveRecordsFilter()
@@ -52,5 +52,13 @@ public class BPartnerCreditLimiRepository
 				.orderBy(I_C_BPartner_CreditLimit.COLUMNNAME_Type)
 				.create()
 				.first();
+
+		if (bpCreditLimit == null)
+		{
+			return BigDecimal.ZERO;
+		}
+
+		return bpCreditLimit.getAmount();
+
 	}
 }
