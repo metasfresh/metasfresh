@@ -10,14 +10,14 @@ package org.adempiere.invoice.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -33,8 +33,8 @@ import org.adempiere.util.Services;
 import org.compiere.apps.AEnv;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 public class CreateCreditMemoFromInvoice extends JavaProcess
 {
@@ -67,11 +67,12 @@ public class CreateCreditMemoFromInvoice extends JavaProcess
 		final Properties ctx = getCtx();
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(ctx, getRecord_ID(), de.metas.adempiere.model.I_C_Invoice.class, get_TrxName());
 
-		final IInvoiceCreditContext creditCtx = new InvoiceCreditContext(C_DocType_ID,
-				completeIt,
-				referenceOriginalOrder,
-				referenceInvoice,
-				creditedInvoiceReinvoicable);
+		final IInvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
+				.C_DocType_ID(C_DocType_ID)
+				.completeAndAllocate(completeIt)
+				.referenceOriginalOrder(referenceOriginalOrder)
+				.referenceInvoice(referenceInvoice)
+				.creditedInvoiceReinvoicable(creditedInvoiceReinvoicable).build();
 
 		creditMemo = Services.get(IInvoiceBL.class).creditInvoice(invoice, creditCtx);
 

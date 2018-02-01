@@ -154,6 +154,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		assertThat(flatrateTerm.getMasterEndDate()).isEqualTo(cancelinglDate);
 		assertThat(flatrateTerm.getTerminationMemo()).isEqualTo(terminationMemo);
 		assertThat(flatrateTerm.getTerminationReason()).isEqualTo(X_C_Flatrate_Term.TERMINATIONREASON_General);
+		assertThat(flatrateTerm.getTerminationDate()).isEqualTo(SystemTime.asDayTimestamp());
 	}
 
 	private void assertSubscriptionProgress(@NonNull final I_C_Flatrate_Term flatrateTerm, final int expected)
