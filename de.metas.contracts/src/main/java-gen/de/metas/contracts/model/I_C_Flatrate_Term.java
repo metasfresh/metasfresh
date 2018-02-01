@@ -1422,6 +1422,29 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_StartDate = "StartDate";
 
 	/**
+	 * Set Termination Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTerminationDate (java.sql.Timestamp TerminationDate);
+
+	/**
+	 * Get Termination Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getTerminationDate();
+
+    /** Column definition for TerminationDate */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_TerminationDate = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "TerminationDate", null);
+    /** Column name TerminationDate */
+    public static final String COLUMNNAME_TerminationDate = "TerminationDate";
+
+	/**
 	 * Set Termination Memo.
 	 *
 	 * <br>Type: Text

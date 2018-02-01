@@ -157,7 +157,7 @@ public class ContractChangeBL implements IContractChangeBL
 		}
 
 		createCompesationOrderAndDeleteDeliveriesIfNeeded(currentTerm, contractChangeParameters);
-		setTerminatioReasonAndMemo(currentTerm, contractChangeParameters);
+		setTerminatioReasonMemoAndDate(currentTerm, contractChangeParameters);
 		setMasterDates(currentTerm, contractChangeParameters);
 		currentTerm.setIsCloseInvoiceCandidate(contractChangeParameters.isCloseInvoiceCandidate());
 		currentTerm.setIsAutoRenew(false);
@@ -349,8 +349,10 @@ public class ContractChangeBL implements IContractChangeBL
 		return new Timestamp(changeDate.getTime());
 	}
 
-	private void setTerminatioReasonAndMemo(@NonNull final I_C_Flatrate_Term currentTerm, final @NonNull ContractChangeParameters contractChangeParameters)
+	private void setTerminatioReasonMemoAndDate(@NonNull final I_C_Flatrate_Term currentTerm, final @NonNull ContractChangeParameters contractChangeParameters)
 	{
+		currentTerm.setTerminationDate(SystemTime.asDayTimestamp());
+
 		final String terminationMemo = contractChangeParameters.getTerminationMemo();
 		final String terminationReason = contractChangeParameters.getTerminationReason();
 		if (!Check.isEmpty(terminationReason, true))
