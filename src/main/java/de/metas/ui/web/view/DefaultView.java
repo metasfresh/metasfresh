@@ -82,7 +82,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class DefaultView implements IEditableView
+public final class DefaultView implements IEditableView
 {
 	public static final Builder builder(final IViewDataRepository viewDataRepository)
 	{
@@ -92,6 +92,7 @@ public class DefaultView implements IEditableView
 	private static final Logger logger = LogManager.getLogger(DefaultView.class);
 
 	private final IViewDataRepository viewDataRepository;
+	private final IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
 
 	private final ViewId viewId;
 	private final AtomicBoolean closed = new AtomicBoolean(false);
@@ -523,13 +524,9 @@ public class DefaultView implements IEditableView
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		final String viewTableName = getTableNameOrNull(null);
-
 		final DocumentIdsSelection rowIds = recordRefs.stream()
-				.filter(recordRef -> Objects.equals(viewTableName, recordRef.getTableName()))
-				.map(recordRef -> DocumentId.of(recordRef.getRecord_ID()))
+				.flatMap(recordRef -> viewInvalidationAdvisor.findAffectedRowIds(recordRef, this))
 				.collect(DocumentIdsSelection.toDocumentIdsSelection());
-
 		if (rowIds.isEmpty())
 		{
 			return;
