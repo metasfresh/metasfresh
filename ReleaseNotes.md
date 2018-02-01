@@ -59,6 +59,7 @@ Here come the actual release notes:
     * New Field in Window User, allowing to see and maintain the Business Partner.
   * [#3353](https://github.com/metasfresh/metasfresh/issues/3353) Implement MSV3 availability query
     * New vertical Feature for the Pharma Industry. Now it's able to do MSV3 Queries to vendors via metasfresh.
+  * [#3355](https://github.com/metasfresh/metasfresh/issues/3355) Add option to automatically credit open invoice for terminated contract / subscription
   * [#3359](https://github.com/metasfresh/metasfresh/issues/3359) User Window unlock Account Action
     * Adding new Action in User Window in WebUI allowing to unlock the User Account.  
   * [#3366](https://github.com/metasfresh/metasfresh/issues/3366) Webui Window: Create window for ReferenceNo and Reference Type
@@ -71,6 +72,7 @@ Here come the actual release notes:
     * Resizing the Field entitytype from 40 to 512 chars.
   * [#3389](https://github.com/metasfresh/metasfresh/issues/3389) Performance issue related to zooming table record references
     * Improved Performance for table record references.
+  * [#3416](https://github.com/metasfresh/metasfresh/issues/3416) Save termination date explicitly
 
 * metasfresh-webui-api
   * [#744](https://github.com/metasfresh/metasfresh-webui-api/issues/744) Support Export of massive records to Excel
@@ -89,6 +91,7 @@ Here come the actual release notes:
     * Internal Housekeeping improvement. Now providing the evaluateDuration of Actions in WebUI.
   * [#798](https://github.com/metasfresh/metasfresh-webui-api/issues/798) Allow Filtering for Table References and show table identifier
     * New Feature in Labels widget. Now allowing to add and use Table references instead of reference lists. Also possible to add Label to Filter list.
+  * [#813](https://github.com/metasfresh/metasfresh-webui-api/issues/813) Reduce Export Time for massive Exports
 
 * metasfresh-webui-frontend
   * [#1252](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1252) Select all x items shall not be available when there is only one page of entries
@@ -115,7 +118,8 @@ Here come the actual release notes:
   * [#3350](https://github.com/metasfresh/metasfresh/issues/3350) Error creating movement from DDOrder
     * Fixes an Error that prevented the creation of movements from Distribution Orders.
   * [#3386](https://github.com/metasfresh/metasfresh/issues/3386) Issued HUs retain I status after PP_Order unclose
-    * 
+  * [#3426](https://github.com/metasfresh/metasfresh/issues/3426) Dunning Level is not set in invoice after generating dunning doc
+
 
 * metasfresh-webui-api
   * [#775](https://github.com/metasfresh/metasfresh-webui-api/issues/775) Destroyed HUs are still visible in material receipt

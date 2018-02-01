@@ -10,12 +10,12 @@ package test.integration.swat.sales.invoice;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -202,7 +202,7 @@ public class InvoiceTests extends AIntegrationTestDriver
 	}
 
 	/**
-	 * 
+	 *
 	 * @param taxIncluded
 	 * @param payAmtParam
 	 * @param invoiceNo
@@ -242,12 +242,13 @@ public class InvoiceTests extends AIntegrationTestDriver
 
 		final boolean isCreditedInvoiceReinvoicable = false;
 
-		final IInvoiceCreditContext creditCtx = new InvoiceCreditContext(
-				getHelper().getConfig().getC_DocType_CreditMemo_ID(), // C_DocType_ID
-				true, // completeAndAllocate
-				true, // isReferenceOriginalOrder
-				true, // isReferenceInvoice
-				isCreditedInvoiceReinvoicable);
+		final IInvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
+				.C_DocType_ID(getHelper().getConfig().getC_DocType_CreditMemo_ID())
+				.completeAndAllocate(true)
+				.referenceOriginalOrder(true)
+				.referenceInvoice(true)
+				.creditedInvoiceReinvoicable(isCreditedInvoiceReinvoicable)
+				.build();
 
 		final Mutable<I_C_Invoice> creditMemoRef = new Mutable<I_C_Invoice>();
 		Services.get(ITrxManager.class).run(new TrxRunnable()
@@ -291,27 +292,27 @@ public class InvoiceTests extends AIntegrationTestDriver
 
 	/**
 	 * Creates a test invoice. The invoice contains lines with two different taxes.
-	 * 
+	 *
 	 * @param taxIncluded specifies if the invoice is created with <code>IsTaxIncluded='Y'</code>
 	 * @param invoiceNo decided which test invoice the method shall create:
-	 * 
+	 *
 	 *            <pre>
 	 * No	 Line	TaxCategory	PriceActual
 	 * 1	 10	 	8%	 		130
 	 * 1	 20	 	8%	 		50
 	 * 1	 30	 	2,5%		250
 	 * 1	 40	 	2,5%		60
-	 * 
+	 *
 	 * 2	 10	 	8%	 		179.99
 	 * 2	 20	 	8%	 		0.01
 	 * 2	 30	 	2,5%		0.01
 	 * 2	 40	 	2,5%		309.99
-	 * 
+	 *
 	 * 3	 10	 	8%	 		0.01
 	 * 3	 20	 	2,5%		179.99
 	 * 3	 30	 	2,5%		309.99
 	 *            </pre>
-	 * 
+	 *
 	 * @return
 	 */
 	private I_C_Invoice mkInvoice(final boolean taxIncluded, final int invoiceNo)
