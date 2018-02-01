@@ -103,3 +103,18 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000071, SeqNo=6, Updated=now(), UpdatedBy=10
 UPDATE AD_Process SET Classname='de.metas.ui.web.product.process.WEBUI_Create_Default_ProductPlanningData',Updated=TO_TIMESTAMP('2018-02-01 12:28:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540918
 ;
 
+-- 2018-02-01T16:53:37.023
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET AccessLevel='7',Updated=TO_TIMESTAMP('2018-02-01 16:53:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540918
+;
+
+-- 2018-02-01T16:56:18.498
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET AccessLevel='3',Updated=TO_TIMESTAMP('2018-02-01 16:56:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540918
+;
+
+-- 2018-02-01T17:02:07.687
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Classname='de.metas.product.process.M_ProductPlanning_Create_Default_ProductPlanningData',Updated=TO_TIMESTAMP('2018-02-01 17:02:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540918
+;
+
