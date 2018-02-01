@@ -1,11 +1,14 @@
 package de.metas.ui.web.view;
 
 import java.util.Objects;
-import java.util.stream.Stream;
+import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -38,17 +41,25 @@ public final class DefaultViewInvalidationAdvisor implements IViewInvalidationAd
 	}
 
 	@Override
-	public Stream<DocumentId> findAffectedRowIds(final TableRecordReference recordRef, final IView view)
+	public WindowId getWindowId()
+	{
+		// this method shall never be called
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Set<DocumentId> findAffectedRowIds(final Set<TableRecordReference> recordRefs, final IView view)
 	{
 		final String viewTableName = view.getTableNameOrNull();
-		if (viewTableName != null && Objects.equals(viewTableName, recordRef.getTableName()))
+		if (viewTableName == null)
 		{
-			return Stream.of(DocumentId.of(recordRef.getRecord_ID()));
+			return ImmutableSet.of();
 		}
-		else
-		{
-			return Stream.empty();
-		}
+
+		return recordRefs.stream()
+				.filter(recordRef -> Objects.equals(viewTableName, recordRef.getTableName()))
+				.map(recordRef -> DocumentId.of(recordRef.getRecord_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 }

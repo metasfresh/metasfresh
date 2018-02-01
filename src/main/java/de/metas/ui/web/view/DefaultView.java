@@ -92,7 +92,6 @@ public final class DefaultView implements IEditableView
 	private static final Logger logger = LogManager.getLogger(DefaultView.class);
 
 	private final IViewDataRepository viewDataRepository;
-	private final IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
 
 	private final ViewId viewId;
 	private final AtomicBoolean closed = new AtomicBoolean(false);
@@ -123,6 +122,8 @@ public final class DefaultView implements IEditableView
 	// Caching
 	private final transient CCache<DocumentId, IViewRow> cache_rowsById;
 
+	private final IViewInvalidationAdvisor viewInvalidationAdvisor;
+
 	private DefaultView(final Builder builder)
 	{
 		viewId = builder.getViewId();
@@ -132,6 +133,7 @@ public final class DefaultView implements IEditableView
 		viewType = builder.getViewType();
 		profileId = builder.getProfileId();
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
+		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
 
 		//
 		// Filters
@@ -524,9 +526,7 @@ public final class DefaultView implements IEditableView
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		final DocumentIdsSelection rowIds = recordRefs.stream()
-				.flatMap(recordRef -> viewInvalidationAdvisor.findAffectedRowIds(recordRef, this))
-				.collect(DocumentIdsSelection.toDocumentIdsSelection());
+		final Set<DocumentId> rowIds = viewInvalidationAdvisor.findAffectedRowIds(recordRefs, this);
 		if (rowIds.isEmpty())
 		{
 			return;
@@ -660,6 +660,8 @@ public final class DefaultView implements IEditableView
 
 		private LinkedHashMap<String, DocumentFilter> _stickyFiltersById;
 		private LinkedHashMap<String, DocumentFilter> _filtersById = new LinkedHashMap<>();
+
+		private IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
 
 		private Builder(@NonNull final IViewDataRepository viewDataRepository)
 		{
@@ -808,6 +810,17 @@ public final class DefaultView implements IEditableView
 		{
 			filters.forEach(filter -> _filtersById.putIfAbsent(filter.getFilterId(), filter));
 			return this;
+		}
+
+		public Builder viewInvalidationAdvisor(@NonNull final IViewInvalidationAdvisor viewInvalidationAdvisor)
+		{
+			this.viewInvalidationAdvisor = viewInvalidationAdvisor;
+			return this;
+		}
+		
+		private IViewInvalidationAdvisor getViewInvalidationAdvisor()
+		{
+			return viewInvalidationAdvisor;
 		}
 	}
 }

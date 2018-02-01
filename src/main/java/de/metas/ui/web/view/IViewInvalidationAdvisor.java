@@ -1,10 +1,12 @@
 package de.metas.ui.web.view;
 
-import java.util.stream.Stream;
+import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.stereotype.Component;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -28,7 +30,17 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  * #L%
  */
 
+/**
+ * Implementations of this interface are advising views how to convert the changed {@link TableRecordReference}s to rowIds.
+ * 
+ * Please annotate your implementation with {@link Component} and it will be automatically discovered and used for {@link #getWindowId()}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IViewInvalidationAdvisor
 {
-	Stream<DocumentId> findAffectedRowIds(TableRecordReference recordRef, IView view);
+	WindowId getWindowId();
+
+	Set<DocumentId> findAffectedRowIds(final Set<TableRecordReference> recordRefs, IView view);
 }
