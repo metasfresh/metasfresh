@@ -1,5 +1,8 @@
 package de.metas.contracts.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+
 /*
  * #%L
  * de.metas.contracts
@@ -57,6 +60,8 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.contracts.IFlatrateDAO;
@@ -88,8 +93,8 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Invoice_Candidate ic)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
+		final Properties ctx = getCtx(ic);
+		final String trxName = getTrxName(ic);
 
 		final int bill_BPartner_ID = ic.getBill_BPartner_ID();
 		final Timestamp dateOrdered = ic.getDateOrdered();
@@ -148,8 +153,8 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_C_Flatrate_Matching> retrieveFlatrateMatchings(final I_C_Flatrate_Conditions conditions)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(conditions);
-		final String trxName = InterfaceWrapperHelper.getTrxName(conditions);
+		final Properties ctx = getCtx(conditions);
+		final String trxName = getTrxName(conditions);
 		final int flatrateConditionsId = conditions.getC_Flatrate_Conditions_ID();
 
 		return retrieveFlatrateMatchings(ctx, flatrateConditionsId, trxName);
@@ -176,8 +181,8 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(final I_C_Flatrate_DataEntry dataEntry)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(dataEntry);
-		final String trxName = InterfaceWrapperHelper.getTrxName(dataEntry);
+		final Properties ctx = getCtx(dataEntry);
+		final String trxName = getTrxName(dataEntry);
 
 		final String wc = I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_DataEntry_ID + "=?";
 
@@ -227,8 +232,8 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(final I_C_Flatrate_Term term)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final String trxName = InterfaceWrapperHelper.getTrxName(term);
+		final Properties ctx = getCtx(term);
+		final String trxName = getTrxName(term);
 
 		final String wc = I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_Term_ID + "=?";
 
@@ -245,8 +250,8 @@ public class FlatrateDAO implements IFlatrateDAO
 			final I_C_Invoice_Candidate invoiceCandToClear,
 			final I_C_Flatrate_DataEntry dataEntry)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceCandToClear);
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceCandToClear);
+		final Properties ctx = getCtx(invoiceCandToClear);
+		final String trxName = getTrxName(invoiceCandToClear);
 
 		final String wc = I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Cand_ToClear_ID + "=? AND "
 				+ " COALESCE (" + I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_DataEntry_ID + ",0)=?";
@@ -288,8 +293,8 @@ public class FlatrateDAO implements IFlatrateDAO
 		final List<Object> params = new ArrayList<>();
 		if (term == null)
 		{
-			ctx = InterfaceWrapperHelper.getCtx(fc);
-			trxName = InterfaceWrapperHelper.getTrxName(fc);
+			ctx = getCtx(fc);
+			trxName = getTrxName(fc);
 
 			Check.assume(fc != null, "term is null, so fc is not null");
 			wc.append(
@@ -303,8 +308,8 @@ public class FlatrateDAO implements IFlatrateDAO
 		}
 		else
 		{
-			ctx = InterfaceWrapperHelper.getCtx(term);
-			trxName = InterfaceWrapperHelper.getTrxName(term);
+			ctx = getCtx(term);
+			trxName = getTrxName(term);
 
 			wc.append(
 					// entry's term must reference the given fc
@@ -452,8 +457,8 @@ public class FlatrateDAO implements IFlatrateDAO
 			final String dataEntryType,
 			final I_C_UOM uom)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(flatrateTerm);
-		final String trxName = InterfaceWrapperHelper.getTrxName(flatrateTerm);
+		final Properties ctx = getCtx(flatrateTerm);
+		final String trxName = getTrxName(flatrateTerm);
 
 		final String wc = I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID + "=? AND "
 				+ I_C_Flatrate_DataEntry.COLUMNNAME_C_Period_ID + "=? AND "
@@ -474,8 +479,8 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_C_Invoice_Clearing_Alloc> retrieveOpenClearingAllocs(final I_C_Flatrate_DataEntry dataEntry)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(dataEntry);
-		final String trxName = InterfaceWrapperHelper.getTrxName(dataEntry);
+		final Properties ctx = getCtx(dataEntry);
+		final String trxName = getTrxName(dataEntry);
 
 		final I_C_Period period = dataEntry.getC_Period();
 		final Timestamp startDate = period.getStartDate();
@@ -530,8 +535,8 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public I_C_Flatrate_DataEntry retrieveDataEntryOrNull(final I_C_Invoice_Candidate ic)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
+		final Properties ctx = getCtx(ic);
+		final String trxName = getTrxName(ic);
 
 		final String wc = I_C_Flatrate_DataEntry.COLUMNNAME_C_Invoice_Candidate_ID + "=?";
 
@@ -579,8 +584,8 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_M_Product> retrieveHoldingFeeProducts(final I_C_Flatrate_Conditions fc)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(fc);
-		final String trxName = InterfaceWrapperHelper.getTrxName(fc);
+		final Properties ctx = getCtx(fc);
+		final String trxName = getTrxName(fc);
 
 		final List<I_M_Product> result = new ArrayList<>();
 
@@ -640,7 +645,7 @@ public class FlatrateDAO implements IFlatrateDAO
 				+ I_C_Flatrate_DataEntry.COLUMNNAME_C_Period_ID + "=? AND "
 				+ I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID + "!=?";
 
-		final String trxName = InterfaceWrapperHelper.getTrxName(dataEntry);
+		final String trxName = getTrxName(dataEntry);
 
 		trxManager.run(trxName, (TrxRunnable)trxName1 -> {
 			final PreparedStatement pstmt = DB.prepareStatement(sql, trxName1);
@@ -666,8 +671,8 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_C_Invoice_Candidate> updateCandidates(final I_C_Flatrate_DataEntry dataEntry)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(dataEntry);
-		final String trxName = InterfaceWrapperHelper.getTrxName(dataEntry);
+		final Properties ctx = getCtx(dataEntry);
+		final String trxName = getTrxName(dataEntry);
 
 		final String wc = I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + " >= ? AND "
 				+ I_C_Invoice_Candidate.COLUMNNAME_DateOrdered + " <= ? AND "
@@ -741,8 +746,8 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_C_Flatrate_Transition> retrieveTransitionsForCalendar(final I_C_Calendar calendar)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(calendar);
-		final String trxName = InterfaceWrapperHelper.getTrxName(calendar);
+		final Properties ctx = getCtx(calendar);
+		final String trxName = getTrxName(calendar);
 
 		final String whereClause = I_C_Flatrate_Transition.COLUMNNAME_C_Calendar_Contract_ID + " =?";
 
@@ -757,8 +762,8 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_C_Flatrate_DataEntry> retrieveDataEntriesForProduct(final org.compiere.model.I_M_Product product)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-		final String trxName = InterfaceWrapperHelper.getTrxName(product);
+		final Properties ctx = getCtx(product);
+		final String trxName = getTrxName(product);
 		final StringBuilder wc = new StringBuilder();
 		final List<Object> params = new ArrayList<>();
 
@@ -776,8 +781,8 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public I_C_Flatrate_DataEntry retrieveRefundableDataEntry(final int bPartner_ID, final Timestamp movementDate, final org.compiere.model.I_M_Product product)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
-		final String trxName = InterfaceWrapperHelper.getTrxName(product);
+		final Properties ctx = getCtx(product);
+		final String trxName = getTrxName(product);
 		final StringBuilder wc = new StringBuilder();
 		final List<Object> params = new ArrayList<>();
 
@@ -820,9 +825,9 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		if (existingData == null)
 		{
-			existingData = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(bPartner),
+			existingData = InterfaceWrapperHelper.create(getCtx(bPartner),
 					I_C_Flatrate_Data.class,
-					InterfaceWrapperHelper.getTrxName(bPartner));
+					getTrxName(bPartner));
 			existingData.setAD_Org_ID(bPartner.getAD_Org_ID());
 			existingData.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 			existingData.setHasContracts(false);
@@ -844,20 +849,24 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public List<I_C_Invoice> retrieveInvoicesForCurrentContract(@NonNull final I_C_Flatrate_Term contract)
+	public List<I_C_Invoice> retrieveInvoicesForFlatrateTerm(@NonNull final I_C_Flatrate_Term contract)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(contract);
-		final String trxName = InterfaceWrapperHelper.getTrxName(contract);
-		final List<I_C_Invoice> currentFlatRateTermInvoices = new ArrayList<>();
-		final List<I_C_Invoice_Candidate> icsForCurrentTerm = Services.get(IInvoiceCandDAO.class).fetchInvoiceCandidates(ctx, I_C_Flatrate_Term.Table_Name, contract.getC_Flatrate_Term_ID(), trxName);
-		icsForCurrentTerm.forEach(ic -> {
-			final List<I_C_InvoiceLine> iclList = Services.get(IInvoiceCandDAO.class).retrieveIlForIc(ic);
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-			iclList.stream()
-			  .filter(StreamUtils.distinctByKey(I_C_InvoiceLine::getC_Invoice_ID))
-			  .map(il -> il.getC_Invoice())
-			  .forEach(currentFlatRateTermInvoices::add);
-		});
+		final List<I_C_Invoice_Candidate> icsForCurrentTerm = invoiceCandDAO
+				.fetchInvoiceCandidates(
+				getCtx(contract),
+				I_C_Flatrate_Term.Table_Name,
+				contract.getC_Flatrate_Term_ID(),
+				getTrxName(contract));
+
+		final List<I_C_Invoice> currentFlatRateTermInvoices = icsForCurrentTerm
+				.stream()
+				.flatMap(ic -> invoiceCandDAO.retrieveIlForIc(ic).stream())
+				.filter(StreamUtils.distinctByKey(I_C_InvoiceLine::getC_Invoice_ID))
+				.map(il -> il.getC_Invoice())
+				.collect(ImmutableList.toImmutableList());
+
 		return currentFlatRateTermInvoices;
 	}
 }
