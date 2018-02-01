@@ -71,6 +71,7 @@ Here come the actual release notes:
     * Resizing the Field entitytype from 40 to 512 chars.
   * [#3389](https://github.com/metasfresh/metasfresh/issues/3389) Performance issue related to zooming table record references
     * Improved Performance for table record references.
+  * [#3416](https://github.com/metasfresh/metasfresh/issues/3416) Save termination date explicitly
 
 * metasfresh-webui-api
   * [#744](https://github.com/metasfresh/metasfresh-webui-api/issues/744) Support Export of massive records to Excel
