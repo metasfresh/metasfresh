@@ -4754,8 +4754,6 @@ CREATE UNIQUE INDEX MSV3_Vendor_Config_C_BPartner_ID ON MSV3_Vendor_Config (C_BP
 
 CREATE INDEX msv3_verfuegbarkeit_transaction_c_orderso_id
    ON public.msv3_verfuegbarkeit_transaction (c_orderso_id ASC NULLS LAST);
-CREATE INDEX msv3_verfuegbarkeit_transaction_c_purchasecandidate_id
-   ON public.msv3_verfuegbarkeit_transaction (c_purchasecandidate_id ASC NULLS LAST);   
 CREATE INDEX msv3_verfuegbarkeitanteil_msv3_verfuegbarkeitsantwortartikel_id
    ON public.msv3_verfuegbarkeitanteil (msv3_verfuegbarkeitsantwortartikel_id ASC NULLS LAST);  
 CREATE INDEX msv3_verfuegbarkeitsanfrageeinzelne_artikel_msv3_verfuegbarkeitsanfrageeinzelne_id
