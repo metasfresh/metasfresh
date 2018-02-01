@@ -15,6 +15,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#3428](https://github.com/metasfresh/metasfresh/issues/3428) Switch off Daterange in Preparation date Filer temporarily
+    * Changes the Filter of Preparation Date to simple Date instead of Daterange.
 
 
 * metasfresh-webui-frontend
