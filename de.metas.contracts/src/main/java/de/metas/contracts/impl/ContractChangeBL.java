@@ -273,12 +273,13 @@ public class ContractChangeBL implements IContractChangeBL
 				.adOrgId(openInvoice.getAD_Org_ID())
 				.build());
 
-		final IInvoiceCreditContext creditCtx = new InvoiceCreditContext(
-				targetDocTypeID, // C_DocType_ID
-				true, // completeAndAllocate
-				true, // isReferenceOriginalOrder
-				true, // isReferenceInvoice
-				false);
+		final IInvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
+				.C_DocType_ID(targetDocTypeID)
+				.completeAndAllocate(true)
+				.referenceOriginalOrder(true)
+				.referenceInvoice(true)
+				.creditedInvoiceReinvoicable(false)
+				.build();
 
 		final I_C_Invoice creditMemoInvoice = Services.get(IInvoiceBL.class).creditInvoice(openInvoice, creditCtx);
 		creditMemoInvoice.setDescription(reason);
