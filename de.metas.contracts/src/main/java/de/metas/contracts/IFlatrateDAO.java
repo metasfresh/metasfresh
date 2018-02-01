@@ -224,6 +224,6 @@ public interface IFlatrateDAO extends ISingletonService
 
 	I_C_Flatrate_Term retrieveAncestorFlatrateTerm(I_C_Flatrate_Term contract);
 
-	List<I_C_Invoice> retrieveInvoicesForCurrentContract(I_C_Flatrate_Term contract);
+	List<I_C_Invoice> retrieveInvoicesForFlatrateTerm(I_C_Flatrate_Term contract);
 
 }
