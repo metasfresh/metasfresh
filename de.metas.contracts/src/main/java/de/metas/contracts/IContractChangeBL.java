@@ -55,6 +55,8 @@ public interface IContractChangeBL extends ISingletonService
 		@NonNull
 		private final Timestamp changeDate;
 		private final boolean isCloseInvoiceCandidate;
+		@Default
+		private boolean isCreditOpenInvoices = false;
 		private final String terminationMemo;
 		private final String terminationReason;
 		@Default
