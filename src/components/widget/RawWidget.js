@@ -300,9 +300,7 @@ class RawWidget extends Component {
                   tabIndex: fullScreen ? -1 : tabIndex
                 }}
                 value={widgetValue || widgetData[0].value}
-                onChange={date => {
-                  handleChange(widgetField, date);
-                }}
+                onChange={date => handleChange(widgetField, date.utc(true))}
                 patch={date =>
                   this.handlePatch(
                     widgetField,
