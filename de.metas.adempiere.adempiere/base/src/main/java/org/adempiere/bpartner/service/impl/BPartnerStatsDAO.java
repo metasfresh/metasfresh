@@ -8,12 +8,14 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.X_C_BPartner_Stats;
@@ -30,12 +32,12 @@ import org.compiere.util.Env;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -67,7 +69,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 	/**
 	 * Create the C_BPartner_Stats entry for the given bpartner.
-	 * 
+	 *
 	 * @param partner
 	 * @return
 	 */
@@ -76,7 +78,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner_Stats stat = InterfaceWrapperHelper.newInstance(I_C_BPartner_Stats.class);
 
 		stat.setC_BPartner(partner);
-		stat.setSOCreditStatus(X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
+		stat.setSOCreditStatus(X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK);
 		stat.setActualLifeTimeValue(BigDecimal.ZERO);
 		stat.setSO_CreditUsed(BigDecimal.ZERO);
 		stat.setTotalOpenBalance(BigDecimal.ZERO);
@@ -238,7 +240,8 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 		final I_C_BPartner partner = retrieveC_BPartner(bpStats);
 
-		final BigDecimal creditLimit = partner.getSO_CreditLimit();
+		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimit(partner);
 
 		final String initialCreditStatus = bpStats.getSOCreditStatus();
 
@@ -248,7 +251,9 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
 				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus)
 				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
+		{
 			return;
+		}
 
 		// Above Credit Limit
 		if (creditLimit.compareTo(retrieveTotalOpenBalance(bpStats)) < 0)
@@ -312,7 +317,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	private I_C_BPartner_Stats getC_BPartner_Stats(final IBPartnerStats bpStats)
 	{
 		final BPartnerStats bpStatsInstance;
-		
+
 		if (InterfaceWrapperHelper.isInstanceOf(bpStats, BPartnerStats.class))
 		{
 			bpStatsInstance = (BPartnerStats)bpStats;

@@ -33,7 +33,6 @@ import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
 import org.adempiere.exceptions.BPartnerNoShipToAddressException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -1247,23 +1246,6 @@ public class MOrder extends X_C_Order implements IDocument
 			return IDocument.STATUS_Invalid;
 		}
 
-		// Credit Limit
-		if (isSOTrx())
-		{
-			final I_C_BPartner partner = InterfaceWrapperHelper.load(getC_BPartner_ID(),  I_C_BPartner.class);
-			final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
-			final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-			final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimit(partner);
-
-			if (stats.getSOCreditUsed().add(getGrandTotal()).compareTo(creditLimit) > 0 )
-			{
-				throw new AdempiereException("@SO_CreditUsed@ + @GrandTotal@="
-						+ stats.getSOCreditUsed().add(getGrandTotal())
-						+ ", @SO_CreditLimit@=" + creditLimit);
-			}
-		}
-
-
 		// Lines
 		MOrderLine[] lines = getLines(true, MOrderLine.COLUMNNAME_M_Product_ID);
 		if (lines.length == 0)
@@ -1383,24 +1365,27 @@ public class MOrder extends X_C_Order implements IDocument
 				final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 				final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
-				final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
+				final I_C_BPartner partner = InterfaceWrapperHelper.load(getC_BPartner_ID(),  I_C_BPartner.class);
 				final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
-
 				final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
 				final String soCreditStatus = stats.getSOCreditStatus();
+
+				final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+				final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimit(partner);
+
 
 				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 				{
 					m_processMsg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
 							+ totalOpenBalance
-							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
+							+ ", @SO_CreditLimit@=" + creditLimit;
 					return IDocument.STATUS_Invalid;
 				}
 				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
 				{
 					m_processMsg = "@BPartnerCreditHold@ - @TotalOpenBalance@="
 							+ totalOpenBalance
-							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
+							+ ", @SO_CreditLimit@=" + creditLimit;
 					return IDocument.STATUS_Invalid;
 				}
 				BigDecimal grandTotal = Services.get(ICurrencyBL.class).convertBase(getCtx(),
@@ -1413,7 +1398,7 @@ public class MOrder extends X_C_Order implements IDocument
 				{
 					m_processMsg = "@BPartnerOverOCreditHold@ - @TotalOpenBalance@="
 							+ totalOpenBalance + ", @GrandTotal@=" + grandTotal
-							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
+							+ ", @SO_CreditLimit@=" + creditLimit;
 					return IDocument.STATUS_Invalid;
 				}
 
