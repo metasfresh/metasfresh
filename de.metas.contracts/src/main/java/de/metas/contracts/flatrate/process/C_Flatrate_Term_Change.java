@@ -32,6 +32,8 @@ public class C_Flatrate_Term_Change extends JavaProcess
 
 	public static final String PARAM_ONLY_TERMINATE_CURRENT_TERM = "OnlyTerminateCurrentTerm";
 
+	public static final String PARAM_IsCreditOpenInvoices ="IsCreditOpenInvoices";
+
 	@Param(parameterName = PARAM_ACTION, mandatory = true)
 	private String action;
 
@@ -43,6 +45,9 @@ public class C_Flatrate_Term_Change extends JavaProcess
 
 	@Param(parameterName = PARAM_TERMINATION_REASON, mandatory = false)
 	private String terminationReason;
+
+	@Param(parameterName = PARAM_IsCreditOpenInvoices, mandatory = false)
+	private boolean isCreditOpenInvoices;
 
 	@Override
 	@RunOutOfTrx
@@ -70,6 +75,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 				.isCloseInvoiceCandidate(true)
 				.terminationMemo(terminationMemo)
 				.terminationReason(terminationReason)
+				.isCreditOpenInvoices(isCreditOpenInvoices)
 				.action(action)
 				.build();
 
