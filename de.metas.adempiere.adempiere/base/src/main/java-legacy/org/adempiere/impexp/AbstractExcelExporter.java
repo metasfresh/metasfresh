@@ -57,7 +57,7 @@ public abstract class AbstractExcelExporter
 	 * 
 	 * @return true if function row
 	 */
-	public abstract boolean isFunctionRow();
+	public abstract boolean isFunctionRow(int row);
 
 	/**
 	 * Get Columns Count
@@ -72,13 +72,6 @@ public abstract class AbstractExcelExporter
 	 * @return number of rows
 	 */
 	public abstract int getRowCount();
-
-	/**
-	 * Set current row
-	 * 
-	 * @param row row index
-	 */
-	protected abstract void setCurrentRow(int row);
 
 	/**
 	 * Check if column is printed (displayed)
@@ -168,19 +161,20 @@ public abstract class AbstractExcelExporter
 		return m_lang;
 	}
 
-	private HSSFFont getFont(final boolean isHeader)
+	private HSSFFont getHeaderFont()
+	{
+		if (m_fontHeader == null)
+		{
+			m_fontHeader = m_workbook.createFont();
+			m_fontHeader.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		}
+		return m_fontHeader;
+	}
+
+	private HSSFFont getFont(final int row)
 	{
 		HSSFFont font = null;
-		if (isHeader)
-		{
-			if (m_fontHeader == null)
-			{
-				m_fontHeader = m_workbook.createFont();
-				m_fontHeader.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
-			}
-			font = m_fontHeader;
-		}
-		else if (isFunctionRow())
+		if (isFunctionRow(row))
 		{
 			font = m_workbook.createFont();
 			font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
@@ -252,7 +246,7 @@ public abstract class AbstractExcelExporter
 		{
 			boolean isHighlightNegativeNumbers = true;
 			cs = m_workbook.createCellStyle();
-			HSSFFont font = getFont(false);
+			HSSFFont font = getFont(row);
 			cs.setFont(font);
 			// Border
 			cs.setBorderLeft((short)1);
@@ -281,7 +275,7 @@ public abstract class AbstractExcelExporter
 		HSSFCellStyle cs_header = m_styles.get(key);
 		if (cs_header == null)
 		{
-			HSSFFont font_header = getFont(true);
+			HSSFFont font_header = getHeaderFont();
 			cs_header = m_workbook.createCellStyle();
 			cs_header.setFont(font_header);
 			cs_header.setBorderLeft((short)2);
@@ -396,7 +390,7 @@ public abstract class AbstractExcelExporter
 	 * @param out
 	 * @throws Exception
 	 */
-	public void export(final OutputStream out) throws Exception
+	public final void export(final OutputStream out) throws Exception
 	{
 		HSSFSheet sheet = createTableSheet();
 		String sheetName = null;
@@ -404,8 +398,6 @@ public abstract class AbstractExcelExporter
 		int colnumMax = 0;
 		for (int rownum = 0, xls_rownum = 1; rownum < getRowCount(); rownum++, xls_rownum++)
 		{
-			setCurrentRow(rownum);
-
 			boolean isPageBreak = false;
 			final HSSFRow row = sheet.createRow(xls_rownum);
 			// for all columns
