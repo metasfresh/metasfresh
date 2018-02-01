@@ -61,6 +61,7 @@ Here come the actual release notes:
     * New Field in Window User, allowing to see and maintain the Business Partner.
   * [#3353](https://github.com/metasfresh/metasfresh/issues/3353) Implement MSV3 availability query
     * New vertical Feature for the Pharma Industry. Now it's able to do MSV3 Queries to vendors via metasfresh.
+  * [#3354](https://github.com/metasfresh/metasfresh/issues/3354) Different subscription Receiver for ever
   * [#3355](https://github.com/metasfresh/metasfresh/issues/3355) Add option to automatically credit open invoice for terminated contract / subscription
   * [#3359](https://github.com/metasfresh/metasfresh/issues/3359) User Window unlock Account Action
     * Adding new Action in User Window in WebUI allowing to unlock the User Account.  
