@@ -91,6 +91,7 @@ Here come the actual release notes:
     * Internal Housekeeping improvement. Now providing the evaluateDuration of Actions in WebUI.
   * [#798](https://github.com/metasfresh/metasfresh-webui-api/issues/798) Allow Filtering for Table References and show table identifier
     * New Feature in Labels widget. Now allowing to add and use Table references instead of reference lists. Also possible to add Label to Filter list.
+  * [#813](https://github.com/metasfresh/metasfresh-webui-api/issues/813) Reduce Export Time for massive Exports
 
 * metasfresh-webui-frontend
   * [#1252](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1252) Select all x items shall not be available when there is only one page of entries

@@ -150,15 +150,9 @@ public class PrintDataExcelExporter
 	}
 
 	@Override
-	protected void setCurrentRow(final int row)
+	public boolean isFunctionRow(final int row)
 	{
-		m_printData.setRowIndex(row);
-	}
-
-	@Override
-	public boolean isFunctionRow()
-	{
-		return m_printData.isFunctionRow();
+		return m_printData.isFunctionRow(row);
 	}
 
 	@Override
