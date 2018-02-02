@@ -18,18 +18,16 @@ package org.eevolution.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.MResource;
 import org.compiere.model.Query;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.wf.MWorkflow;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Product Data Planning 
@@ -181,40 +179,7 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 		return plant_id;
 	}
 	
-	@Override
-	protected boolean beforeSave(boolean newRecord)
-	{
-		//
-		// Set default : Order_Policy
-		if (getOrder_Policy() == null)
-		{
-			setOrder_Policy(ORDER_POLICY_Lot_For_Lot);
-		}
-		//
-		// Check Order_Min < Order_Max
-		if (getOrder_Min().signum() > 0
-				&& getOrder_Max().signum() > 0
-				&& getOrder_Min().compareTo(getOrder_Max()) > 0)
-		{
-			throw new AdempiereException("@Order_Min@ > @Order_Max@");
-		}
-		//
-		// Check Order_Period
-		if (ORDER_POLICY_PeriodOrderQuantity.equals(getOrder_Policy())
-				&& getOrder_Period().signum() <= 0)
-		{
-			throw new AdempiereException("@Order_Period@ <= 0");
-		}
-		//
-		// Check Order_Qty
-		if (ORDER_POLICY_FixedOrderQuantity.equals(getOrder_Policy())
-				&& getOrder_Qty().signum() <= 0)
-		{
-			throw new AdempiereException("@Order_Qty@ <= 0");
-		}
-		//
-		return true;
-	}
+	
 	
 	@Override
 	public MPPProductBOM getPP_Product_BOM()
@@ -271,11 +236,6 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 		log.info("  Network Distribution: " + getDD_NetworkDistribution_ID());
 		log.info("Delivery Time Promised: " + getDeliveryTime_Promised());
 		log.info("         TransfertTime: " + getTransfertTime ());
-		log.info("         Order Min/Max: " + getOrder_Min() + " / " + getOrder_Max());
-		log.info("            Order Pack: " + getOrder_Pack());
-		log.info("          Safety Stock: " + getSafetyStock());
-		log.info("          Order Period: " + getOrder_Period());
-		log.info("          Order Policy: " + getOrder_Policy());
 		log.info("             Warehouse: " + getM_Warehouse_ID());
 		log.info("               Planner: " + getPlanner_ID());
 		log.info("              Supplier: " + getC_BPartner_ID());
