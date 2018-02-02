@@ -15,7 +15,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -39099165L;
+	private static final long serialVersionUID = 1832310961L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (Properties ctx, int C_PurchaseCandidate_ID, String trxName)
@@ -32,7 +32,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 			setM_Warehouse_ID (0);
 			setProcessed (false); // N
 			setProcessing (false); // N
-			setQtyRequiered (BigDecimal.ZERO);
+			setQtyToPurchase (BigDecimal.ZERO);
 			setVendor_ID (0);
         } */
     }
@@ -395,20 +395,20 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
-	/** Set Menge angefragt.
-		@param QtyRequiered Menge angefragt	  */
+	/** Set Bestellmenge.
+		@param QtyToPurchase Bestellmenge	  */
 	@Override
-	public void setQtyRequiered (java.math.BigDecimal QtyRequiered)
+	public void setQtyToPurchase (java.math.BigDecimal QtyToPurchase)
 	{
-		set_Value (COLUMNNAME_QtyRequiered, QtyRequiered);
+		set_Value (COLUMNNAME_QtyToPurchase, QtyToPurchase);
 	}
 
-	/** Get Menge angefragt.
-		@return Menge angefragt	  */
+	/** Get Bestellmenge.
+		@return Bestellmenge	  */
 	@Override
-	public java.math.BigDecimal getQtyRequiered () 
+	public java.math.BigDecimal getQtyToPurchase () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyRequiered);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToPurchase);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
