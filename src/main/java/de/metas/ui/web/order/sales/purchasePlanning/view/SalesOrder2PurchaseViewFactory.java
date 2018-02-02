@@ -198,10 +198,7 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		final PurchaseRowsSupplier rowsSupplier = () -> {
 
 			final List<PurchaseRow> loadResult = rowsLoader.load();
-
-			// note that this depends on https://github.com/metasfresh/metasfresh-webui-frontend/issues/1528
-			//rowsLoader.createAndAddAvailabilityResultRowsAsync();
-			rowsLoader.createAndAddAvailabilityResultRows();
+			rowsLoader.createAndAddAvailabilityResultRowsAsync();
 
 			return loadResult;
 		};
