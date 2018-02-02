@@ -35,4 +35,6 @@ public interface IProductPlanningSchemaBL extends ISingletonService
 
 	void updateProductPlanningFromSchema(I_PP_Product_Planning productPlanning, I_M_Product_PlanningSchema schema);
 
+	void createDefaultProductPlanningsForAllProducts();
+
 }

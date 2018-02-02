@@ -3,10 +3,14 @@ package de.metas.product.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.util.List;
+
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
 
+import de.metas.product.IProductDAO;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.IProductPlanningSchemaDAO;
 import de.metas.product.model.I_M_Product_PlanningSchema;
@@ -35,6 +39,7 @@ import de.metas.product.model.I_M_Product_PlanningSchema;
 
 public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 {
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductPlanningSchemaDAO productPlanningSchemaDAO = Services.get(IProductPlanningSchemaDAO.class);
 	
 	@Override
@@ -79,5 +84,28 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 		productPlanning.setIsPickDirectlyIfFeasible(schema.isPickDirectlyIfFeasible());
 		
 		save(productPlanning);
+	}
+	
+	@Override
+	public void createDefaultProductPlanningsForAllProducts()
+	{
+		final List<I_M_Product> productsWithNoProductPlanning = productDAO.retrieveProductsWithNoProductPlanning();
+
+		for (final I_M_Product product : productsWithNoProductPlanning)
+		{
+			final String productPlanningSchemaSelector = product.getM_ProductPlanningSchema_Selector();
+			if (Check.isEmpty(productPlanningSchemaSelector))
+			{
+				// nothing to do
+				continue;
+			}
+
+			final List<I_M_Product_PlanningSchema> productPlanningSchemas = productPlanningSchemaDAO.retrieveSchemasForSelector(productPlanningSchemaSelector);
+
+			for (final I_M_Product_PlanningSchema productPlanningSchema : productPlanningSchemas)
+			{
+				createUpdateProductPlanning(product, productPlanningSchema);
+			}
+		}
 	}
 }

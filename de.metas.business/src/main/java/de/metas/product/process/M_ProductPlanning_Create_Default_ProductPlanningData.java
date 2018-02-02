@@ -1,16 +1,9 @@
 package de.metas.product.process;
 
-import java.util.List;
-
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Product;
 
 import de.metas.process.JavaProcess;
-import de.metas.product.IProductDAO;
 import de.metas.product.IProductPlanningSchemaBL;
-import de.metas.product.IProductPlanningSchemaDAO;
-import de.metas.product.model.I_M_Product_PlanningSchema;
 
 /*
  * #%L
@@ -36,32 +29,14 @@ import de.metas.product.model.I_M_Product_PlanningSchema;
 
 public class M_ProductPlanning_Create_Default_ProductPlanningData extends JavaProcess
 {
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IProductPlanningSchemaDAO productPlanningSchemaDAO = Services.get(IProductPlanningSchemaDAO.class);
-
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final List<I_M_Product> productsWithNoProductPlanning = productDAO.retrieveProductsWithNoProductPlanning();
 
-		for (final I_M_Product product : productsWithNoProductPlanning)
-		{
-			final String productPlanningSchemaSelector = product.getM_ProductPlanningSchema_Selector();
-			if (Check.isEmpty(productPlanningSchemaSelector))
-			{
-				// nothing to do
-				continue;
-			}
+		productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
 
-			final List<I_M_Product_PlanningSchema> productPlanningSchemas = productPlanningSchemaDAO.retrieveSchemasForSelector(productPlanningSchemaSelector);
-
-			for (final I_M_Product_PlanningSchema productPlanningSchema : productPlanningSchemas)
-			{
-				productPlanningSchemaBL.createUpdateProductPlanning(product, productPlanningSchema);
-			}
-		}
 		return MSG_OK;
 	}
 
