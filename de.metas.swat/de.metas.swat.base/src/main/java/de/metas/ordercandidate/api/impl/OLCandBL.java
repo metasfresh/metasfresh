@@ -1154,7 +1154,7 @@ public class OLCandBL implements IOLCandBL
 
 			pricingCtx.setDisallowDiscount(olCand.isManualDiscount());
 
-			final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, dropShipLocation.getC_BPartner_Location_ID(), true, trxName);
+			final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(pricingSystemId, dropShipLocation, true);
 
 			if (pl == null)
 			{

@@ -34,6 +34,7 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.db.IDatabaseBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -46,7 +47,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
@@ -83,6 +83,7 @@ import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
+import lombok.NonNull;
 
 public class ProductPA implements IProductPA
 {
@@ -520,11 +521,17 @@ public class ProductPA implements IProductPA
 	}
 
 	@Override
-	@Cached(cacheName = I_M_PriceList.Table_Name + "-" + I_C_Location.Table_Name)
+	public I_M_PriceList retrievePriceListByPricingSyst(final int pricingSystemId, @NonNull final I_C_BPartner_Location bpartnerLocation, final boolean isSOPriceList)
+	{
+		final int countryId = bpartnerLocation.getC_Location().getC_Country_ID();
+		return retrievePriceListByPricingSyst(Env.getCtx(), pricingSystemId, countryId, isSOPriceList, ITrx.TRXNAME_None);
+	}
+	
+	@Cached(cacheName = I_M_PriceList.Table_Name + "#by#M_PricingSystem_ID#C_Country_ID")
 	public I_M_PriceList retrievePriceListByPricingSyst(
 			final @CacheCtx Properties ctx,
 			final int pricingSystemId,
-			final int bPartnerLocationId,
+			final int countryId,
 			final boolean isSOPriceList,
 			final @CacheTrx String trxName)
 	{
@@ -536,11 +543,7 @@ public class ProductPA implements IProductPA
 			return pl;
 		}
 
-		final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.create(ctx, bPartnerLocationId, I_C_BPartner_Location.class, trxName);
-		final int countryId = bPartnerLocation.getC_Location().getC_Country_ID();
-
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		return queryBL.createQueryBuilder(I_M_PriceList.class)
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, pricingSystemId)
 				.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, isSOPriceList)

@@ -339,7 +339,7 @@ public class AggregationEngine implements IAggregationEngine
 			final IProductPA productPA = Services.get(IProductPA.class);
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 
-			final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, ic.getM_PricingSystem_ID(), ic.getBill_Location_ID(), ic.isSOTrx(), ITrx.TRXNAME_None);
+			final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ic.getM_PricingSystem_ID(), ic.getBill_Location(), ic.isSOTrx());
 			if (pl == null)
 			{
 				throw new AdempiereException(Env.getAD_Language(ctx), ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,

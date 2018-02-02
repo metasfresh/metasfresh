@@ -1,5 +1,7 @@
 package de.metas.order.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -218,19 +220,17 @@ public class OrderBL implements IOrderBL
 
 	private I_M_PriceList retrievePriceListOrNull(final I_C_Order order, final BillBPartnerAndShipToLocation bpartnerAndLocation)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-
-		if (bpartnerAndLocation.getShip_BPartner_Location_ID() <= 0)
+		final int shipBPLocationId = bpartnerAndLocation.getShip_BPartner_Location_ID();
+		if (shipBPLocationId <= 0)
 		{
 			return null;
 		}
 
 		final IProductPA productPA = Services.get(IProductPA.class);
 		final int M_PricingSystem_ID = order.getM_PricingSystem_ID();
-		final int shipBPartnerLocationId = bpartnerAndLocation.getShip_BPartner_Location_ID();
+		final I_C_BPartner_Location shipBPLocation = loadOutOfTrx(shipBPLocationId, I_C_BPartner_Location.class);
 		final boolean isSOTrx = order.isSOTrx();
-		final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, M_PricingSystem_ID, shipBPartnerLocationId, isSOTrx, trxName);
+		final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(M_PricingSystem_ID, shipBPLocation, isSOTrx);
 		return pl;
 	}
 

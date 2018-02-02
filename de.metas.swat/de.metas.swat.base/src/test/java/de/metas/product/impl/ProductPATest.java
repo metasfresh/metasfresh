@@ -4,7 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
@@ -13,7 +12,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
-import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -85,8 +83,7 @@ public class ProductPATest
 		bpl.setC_BPartner(bpartner);
 		save(bpl);
 
-		final I_M_PriceList pl = Services.get(IProductPA.class).retrievePriceListByPricingSyst(Env.getCtx(), pricingSystem.getM_PricingSystem_ID(),
-				bpl.getC_BPartner_Location_ID(), true, ITrx.TRXNAME_None);
+		final I_M_PriceList pl = Services.get(IProductPA.class).retrievePriceListByPricingSyst(pricingSystem.getM_PricingSystem_ID(), bpl, true);
 
 		assertThat(pl).isNotNull();
 		assertThat(pl.getM_PriceList_ID()).isEqualByComparingTo(pl2.getM_PriceList_ID());
@@ -121,8 +118,7 @@ public class ProductPATest
 		bpl.setC_BPartner(bpartner);
 		save(bpl);
 
-		final I_M_PriceList pl = Services.get(IProductPA.class).retrievePriceListByPricingSyst(Env.getCtx(), pricingSystem.getM_PricingSystem_ID(),
-				bpl.getC_BPartner_Location_ID(), true, ITrx.TRXNAME_None);
+		final I_M_PriceList pl = Services.get(IProductPA.class).retrievePriceListByPricingSyst(pricingSystem.getM_PricingSystem_ID(), bpl, true);
 
 		assertThat(pl).isNotNull();
 		assertThat(pl.getM_PriceList_ID()).isEqualByComparingTo(pl1.getM_PriceList_ID());

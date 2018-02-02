@@ -12,6 +12,7 @@ import org.adempiere.pricing.api.IEditablePricingContext;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
@@ -85,17 +86,18 @@ public class FlatrateTermPricing
 
 	private I_M_PriceList retrievePriceListForTerm()
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
-		final String trxName = InterfaceWrapperHelper.getTrxName(term);
-
 		final int pricingSystemIdToUse = Util.firstGreaterThanZero(term.getM_PricingSystem_ID(), term.getC_Flatrate_Conditions().getM_PricingSystem_ID());
-		final int locationIdToUse = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());
+		final I_C_BPartner_Location bpLocationToUse = Util.coalesceSuppliers(
+				() -> term.getDropShip_Location(),
+				() -> term.getBill_Location());
 
 		final IProductPA productPA = Services.get(IProductPA.class);
 
-		final I_M_PriceList priceList = productPA.retrievePriceListByPricingSyst(ctx, pricingSystemIdToUse, locationIdToUse, true, trxName);
+		final I_M_PriceList priceList = productPA.retrievePriceListByPricingSyst(pricingSystemIdToUse, bpLocationToUse, true);
 		if (priceList == null)
 		{
+			final Properties ctx = InterfaceWrapperHelper.getCtx(term);
+			final String trxName = InterfaceWrapperHelper.getTrxName(term);
 			throw new AdempiereException(
 					Services.get(IMsgBL.class).getMsg(ctx, MSG_FLATRATEBL_PRICE_LIST_MISSING_2P,
 							new Object[] {

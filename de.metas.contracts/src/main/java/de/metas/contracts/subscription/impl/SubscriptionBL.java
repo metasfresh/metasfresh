@@ -707,11 +707,9 @@ public class SubscriptionBL implements ISubscriptionBL
 		final IProductPA productPA = Services.get(IProductPA.class);
 		final I_M_PriceList pl = InterfaceWrapperHelper.create(
 				productPA.retrievePriceListByPricingSyst(
-						ctx,
 						mPricingSystemId,
-						ol.getC_BPartner_Location_ID(),
-						true,
-						trxName),
+						ol.getC_BPartner_Location(),
+						true),
 				I_M_PriceList.class);
 
 		final BigDecimal newPrice = productPA.retrievePriceStd(

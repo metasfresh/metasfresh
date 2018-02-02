@@ -13,15 +13,14 @@ package de.metas.product;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -30,6 +29,7 @@ import java.util.Properties;
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
@@ -96,15 +96,9 @@ public interface IProductPA extends ISingletonService
 	MPriceList retrievePriceListBySibling(Properties ctx, int priceListId, int bPartnerLocationId, String trxName);
 
 	/**
-	 * 
-	 * @param ctx
-	 * @param pricingSystemId
-	 * @param locationId
-	 * @param isSOPriceList
-	 * @param trxName
 	 * @return the price list for the given pricing system and location or <code>null</code>.
 	 */
-	I_M_PriceList retrievePriceListByPricingSyst(Properties ctx, int pricingSystemId, int bPartnerLocationId, boolean isSOPriceList, String trxName);
+	I_M_PriceList retrievePriceListByPricingSyst(int pricingSystemId, I_C_BPartner_Location bpartnerLocation, boolean isSOPriceList);
 
 	/**
 	 * 
@@ -116,7 +110,7 @@ public interface IProductPA extends ISingletonService
 	 * @return
 	 * @throws ProductNotOnPriceListException
 	 */
-	BigDecimal retrievePriceStd(int productId, int bPartnerId, int priceListId,	BigDecimal qty, boolean soTrx);
+	BigDecimal retrievePriceStd(int productId, int bPartnerId, int priceListId, BigDecimal qty, boolean soTrx);
 
 	Collection<MProductPrice> retrieveProductPrices(int priceListVersionId, String trxName);
 

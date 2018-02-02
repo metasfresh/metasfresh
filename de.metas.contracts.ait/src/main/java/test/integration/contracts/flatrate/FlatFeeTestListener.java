@@ -181,7 +181,7 @@ public class FlatFeeTestListener
 		final MProductPricing pp = new MProductPricing(flatrateProduct.getM_Product_ID(), term.getBill_BPartner_ID(), qty_Reported, true);
 
 		final IProductPA productPA = Services.get(IProductPA.class);
-		final I_M_PriceList priceList = productPA.retrievePriceListByPricingSyst(driver.getCtx(), conditions.getM_PricingSystem_ID(), term.getBill_Location_ID(), true, driver.getTrxName());
+		final I_M_PriceList priceList = productPA.retrievePriceListByPricingSyst(conditions.getM_PricingSystem_ID(), term.getBill_Location(), true);
 
 		assertThat(
 				"Expected correct C_Currency_ID for I_C_Flatrate_DataEntry_ID=" + dataEntryGrid.getC_Flatrate_DataEntry_ID(),
