@@ -31,20 +31,18 @@ class TableCell extends Component {
   }
 
   handleBackdropLock = state => {
-    this.setState(
-      Object.assign({}, this.state, {
-        backdropLock: !!state
-      })
-    );
+    this.setState({
+      backdropLock: !!state
+    });
   };
 
   handleClickOutside = e => {
-    const { onClickOutside } = this.props;
+    const { onClickOutside, isEdited } = this.props;
     const { backdropLock } = this.state;
 
     //We can handle click outside only if
     //nested elements has no click oustide listening pending
-    if (!backdropLock) {
+    if (!backdropLock && !isEdited) {
       //it is important to change focus before collapsing to
       //blur Widget field and patch data
       this.cell && this.cell.focus();
@@ -149,7 +147,6 @@ class TableCell extends Component {
       isEdited,
       widgetData,
       item,
-      docId,
       type,
       rowId,
       tabId,
@@ -169,7 +166,7 @@ class TableCell extends Component {
       onCellChange,
       viewId
     } = this.props;
-
+    const docId = this.props.docId + "";
     const tdValue = !isEdited
       ? TableCell.fieldValueToString(
           widgetData[0].value,
@@ -178,6 +175,7 @@ class TableCell extends Component {
         )
       : null;
     const isOpenDatePicker = isEdited && item.widgetType === "Date";
+
     return (
       <td
         tabIndex={tabIndex}
