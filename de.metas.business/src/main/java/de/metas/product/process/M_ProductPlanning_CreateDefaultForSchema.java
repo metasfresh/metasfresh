@@ -4,13 +4,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.delete;
 
 import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.process.JavaProcess;
-import de.metas.process.Param;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.IProductPlanningSchemaDAO;
 import de.metas.product.model.I_M_Product_PlanningSchema;
@@ -42,16 +41,15 @@ public class M_ProductPlanning_CreateDefaultForSchema extends JavaProcess
 	final IProductPlanningSchemaDAO productPlanningSchemaDAO = Services.get(IProductPlanningSchemaDAO.class);
 	final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 
-	@Param(parameterName = I_M_Product_PlanningSchema.COLUMNNAME_M_Product_PlanningSchema_ID)
-	private int p_productPlanningSchemaID;
-
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_M_Product_PlanningSchema productPlanningSchema = InterfaceWrapperHelper.create(getCtx(), p_productPlanningSchemaID, I_M_Product_PlanningSchema.class, getTrxName());
+		final I_M_Product_PlanningSchema productPlanningSchema = getRecord(I_M_Product_PlanningSchema.class);
+		Check.assumeNotNull(productPlanningSchema, "@NoSelection@");
+
 		final String schemaSelector = productPlanningSchema.getM_ProductPlanningSchema_Selector();
 
-		final List<I_PP_Product_Planning> productPlanningsForSchema = productPlanningSchemaDAO.retrieveProductPlanningsForSchemaID(p_productPlanningSchemaID);
+		final List<I_PP_Product_Planning> productPlanningsForSchema = productPlanningSchemaDAO.retrieveProductPlanningsForSchemaID(productPlanningSchema.getM_Product_PlanningSchema_ID());
 
 		for (final I_PP_Product_Planning planning : productPlanningsForSchema)
 		{
@@ -63,9 +61,9 @@ public class M_ProductPlanning_CreateDefaultForSchema extends JavaProcess
 
 			productPlanningSchemaBL.updateProductPlanningFromSchema(planning, productPlanningSchema);
 		}
-		
+
 		final List<I_M_Product> productsForSelector = productPlanningSchemaDAO.retrieveProductsForSchemaSelector(schemaSelector);
-		for(final I_M_Product product: productsForSelector)
+		for (final I_M_Product product : productsForSelector)
 		{
 			productPlanningSchemaBL.createUpdateProductPlanning(product, productPlanningSchema);
 		}
