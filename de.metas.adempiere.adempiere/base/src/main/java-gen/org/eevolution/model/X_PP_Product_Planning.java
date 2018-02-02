@@ -15,7 +15,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1587126729L;
+	private static final long serialVersionUID = 99375460L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (Properties ctx, int PP_Product_Planning_ID, String trxName)
@@ -26,10 +26,8 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 			setIsAttributeDependant (false); // N
 			setIsCreatePlan (true); // Y
 			setIsDocComplete (false); // N
-			setIsPhantom (false);
 			setIsPickDirectlyIfFeasible (false); // N
 			setM_Product_ID (0);
-			setPP_POQ_AggregateOnBPartnerLevel (false); // N
 			setPP_Product_Planning_ID (0);
         } */
     }
@@ -303,32 +301,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return false;
 	}
 
-	/** Set Phantom.
-		@param IsPhantom 
-		Phantom Component
-	  */
-	@Override
-	public void setIsPhantom (boolean IsPhantom)
-	{
-		set_Value (COLUMNNAME_IsPhantom, Boolean.valueOf(IsPhantom));
-	}
-
-	/** Get Phantom.
-		@return Phantom Component
-	  */
-	@Override
-	public boolean isPhantom () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsPhantom);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Sofort Kommissionieren wenn möglich.
 		@param IsPickDirectlyIfFeasible 
 		Falls "Ja" und ein Bestand wird für einen bestimmten Lieferdispo-Eintrag bereit gestellt oder produziert, dann wird dieser sofort zugeordnet und als kommissioniert markiert.
@@ -517,138 +489,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return ii.intValue();
 	}
 
-	/** Set Maximum Order Qty.
-		@param Order_Max 
-		Maximum order quantity in UOM
-	  */
-	@Override
-	public void setOrder_Max (java.math.BigDecimal Order_Max)
-	{
-		set_Value (COLUMNNAME_Order_Max, Order_Max);
-	}
-
-	/** Get Maximum Order Qty.
-		@return Maximum order quantity in UOM
-	  */
-	@Override
-	public java.math.BigDecimal getOrder_Max () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Max);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Mindestbestellmenge.
-		@param Order_Min 
-		Minimum order quantity in UOM
-	  */
-	@Override
-	public void setOrder_Min (java.math.BigDecimal Order_Min)
-	{
-		set_Value (COLUMNNAME_Order_Min, Order_Min);
-	}
-
-	/** Get Mindestbestellmenge.
-		@return Minimum order quantity in UOM
-	  */
-	@Override
-	public java.math.BigDecimal getOrder_Min () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Min);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Packungsgröße.
-		@param Order_Pack 
-		Package order size in UOM (e.g. order set of 5 units)
-	  */
-	@Override
-	public void setOrder_Pack (java.math.BigDecimal Order_Pack)
-	{
-		set_Value (COLUMNNAME_Order_Pack, Order_Pack);
-	}
-
-	/** Get Packungsgröße.
-		@return Package order size in UOM (e.g. order set of 5 units)
-	  */
-	@Override
-	public java.math.BigDecimal getOrder_Pack () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Pack);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Order Period.
-		@param Order_Period Order Period	  */
-	@Override
-	public void setOrder_Period (java.math.BigDecimal Order_Period)
-	{
-		set_Value (COLUMNNAME_Order_Period, Order_Period);
-	}
-
-	/** Get Order Period.
-		@return Order Period	  */
-	@Override
-	public java.math.BigDecimal getOrder_Period () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Period);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** 
-	 * Order_Policy AD_Reference_ID=53228
-	 * Reference name: PP_Product_Planning Order Policy
-	 */
-	public static final int ORDER_POLICY_AD_Reference_ID=53228;
-	/** Fixed Order Quantity = FOQ */
-	public static final String ORDER_POLICY_FixedOrderQuantity = "FOQ";
-	/** Lot-for-Lot = LFL */
-	public static final String ORDER_POLICY_Lot_For_Lot = "LFL";
-	/** Period Order Quantity = POQ */
-	public static final String ORDER_POLICY_PeriodOrderQuantity = "POQ";
-	/** Set Order Policy.
-		@param Order_Policy Order Policy	  */
-	@Override
-	public void setOrder_Policy (java.lang.String Order_Policy)
-	{
-
-		set_Value (COLUMNNAME_Order_Policy, Order_Policy);
-	}
-
-	/** Get Order Policy.
-		@return Order Policy	  */
-	@Override
-	public java.lang.String getOrder_Policy () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Order_Policy);
-	}
-
-	/** Set Order Qty.
-		@param Order_Qty Order Qty	  */
-	@Override
-	public void setOrder_Qty (java.math.BigDecimal Order_Qty)
-	{
-		set_Value (COLUMNNAME_Order_Qty, Order_Qty);
-	}
-
-	/** Get Order Qty.
-		@return Order Qty	  */
-	@Override
-	public java.math.BigDecimal getOrder_Qty () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Order_Qty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	@Override
 	public org.compiere.model.I_AD_User getPlanner() throws RuntimeException
 	{
@@ -681,29 +521,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Aggregate on BPartner Level.
-		@param PP_POQ_AggregateOnBPartnerLevel Aggregate on BPartner Level	  */
-	@Override
-	public void setPP_POQ_AggregateOnBPartnerLevel (boolean PP_POQ_AggregateOnBPartnerLevel)
-	{
-		set_Value (COLUMNNAME_PP_POQ_AggregateOnBPartnerLevel, Boolean.valueOf(PP_POQ_AggregateOnBPartnerLevel));
-	}
-
-	/** Get Aggregate on BPartner Level.
-		@return Aggregate on BPartner Level	  */
-	@Override
-	public boolean isPP_POQ_AggregateOnBPartnerLevel () 
-	{
-		Object oo = get_Value(COLUMNNAME_PP_POQ_AggregateOnBPartnerLevel);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
 	}
 
 	@Override
@@ -802,28 +619,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return ii.intValue();
 	}
 
-	/** Set Safety Stock Qty.
-		@param SafetyStock 
-		Safety stock is a term used to describe a level of stock that is maintained below the cycle stock to buffer against stock-outs
-	  */
-	@Override
-	public void setSafetyStock (java.math.BigDecimal SafetyStock)
-	{
-		set_Value (COLUMNNAME_SafetyStock, SafetyStock);
-	}
-
-	/** Get Safety Stock Qty.
-		@return Safety stock is a term used to describe a level of stock that is maintained below the cycle stock to buffer against stock-outs
-	  */
-	@Override
-	public java.math.BigDecimal getSafetyStock () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SafetyStock);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Reihenfolge.
 		@param SeqNo 
 		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
@@ -860,25 +655,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public java.lang.String getStorageAttributesKey () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_StorageAttributesKey);
-	}
-
-	/** Set Time Fence.
-		@param TimeFence Time Fence	  */
-	@Override
-	public void setTimeFence (java.math.BigDecimal TimeFence)
-	{
-		set_Value (COLUMNNAME_TimeFence, TimeFence);
-	}
-
-	/** Get Time Fence.
-		@return Time Fence	  */
-	@Override
-	public java.math.BigDecimal getTimeFence () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TimeFence);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	/** Set Transfert Time.
