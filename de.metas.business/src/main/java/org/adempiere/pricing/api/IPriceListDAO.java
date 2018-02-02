@@ -35,6 +35,8 @@ import org.compiere.model.I_M_ProductPrice;
 
 public interface IPriceListDAO extends ISingletonService
 {
+	public static final int M_PricingSystem_ID_None = 100;
+	
 	I_M_PriceList retrievePriceList(Properties ctx, int priceListId);
 
 	/**
