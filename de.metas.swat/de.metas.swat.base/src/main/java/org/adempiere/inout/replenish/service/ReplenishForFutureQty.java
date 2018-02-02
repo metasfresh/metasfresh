@@ -24,7 +24,11 @@ package org.adempiere.inout.replenish.service;
 
 
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -36,10 +40,13 @@ import org.adempiere.util.CustomColNames;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Period;
+import org.compiere.model.I_M_Requisition;
 import org.compiere.model.I_M_RequisitionLine;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_T_Replenish;
+import org.compiere.model.MRequisitionLine;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -50,6 +57,13 @@ import de.metas.product.IStoragePA;
 public final class ReplenishForFutureQty implements IReplenishForFutureQty {
 
 	private static final Logger logger = LogManager.getLogger(ReplenishForFutureQty.class);
+
+	private static final String SQL_REQUISITION_LINE = //
+			"SELECT rl.* " //
+					+ " FROM M_RequisitionLine rl LEFT JOIN M_Requisition r ON rl.M_Requisition_ID=r.M_Requisition_ID "
+					+ " WHERE " //
+					+ "    r.DocStatus='CO' " //
+					+ "    AND rl.M_Product_ID=? and r.M_WareHouse_ID=?";
 
 	@Override
 	public BigDecimal getQtyToOrder(final I_M_Warehouse warehouse,
@@ -125,8 +139,7 @@ public final class ReplenishForFutureQty implements IReplenishForFutureQty {
 		// yet ordered.
 		final IProductPA product = Services.get(IProductPA.class);
 
-		final Collection<I_M_RequisitionLine> reqLines = product
-				.retrieveRequisitionlines(replenish.getM_Product_ID(),
+		final Collection<I_M_RequisitionLine> reqLines = retrieveRequisitionlines(replenish.getM_Product_ID(),
 						replenish.getM_Warehouse_ID(), trxName);
 
 		for (final I_M_RequisitionLine requisitionLine : reqLines) {
@@ -136,5 +149,46 @@ public final class ReplenishForFutureQty implements IReplenishForFutureQty {
 			}
 		}
 		return qtyToOrder;
+	}
+	
+	/**
+	 * Loads the lines of completed {@link I_M_Requisition}s for a product and warehouse.
+	 * 
+	 * @param productId
+	 * @param warehouseId
+	 * @param trxName
+	 * @return the requisition lines for the given product and warehouse.
+	 */
+	private Collection<I_M_RequisitionLine> retrieveRequisitionlines(int productId, int warehouseId, String trxName)
+	{
+
+		final PreparedStatement pstmt = DB.prepareStatement(SQL_REQUISITION_LINE, trxName);
+
+		ResultSet rs = null;
+
+		try
+		{
+			pstmt.setInt(1, productId);
+			pstmt.setInt(2, warehouseId);
+
+			final ArrayList<I_M_RequisitionLine> result = new ArrayList<>();
+
+			rs = pstmt.executeQuery();
+
+			while (rs.next())
+			{
+				result.add(new MRequisitionLine(Env.getCtx(), rs, trxName));
+			}
+			return result;
+
+		}
+		catch (SQLException e)
+		{
+			throw new RuntimeException(e);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
 	}
 }

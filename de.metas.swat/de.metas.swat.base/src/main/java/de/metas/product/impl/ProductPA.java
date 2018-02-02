@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.db.IDatabaseBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,30 +40,11 @@ import org.adempiere.model.X_M_ProductScalePrice;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.I_M_Product_PO;
-import org.compiere.model.I_M_Replenish;
-import org.compiere.model.I_M_Requisition;
-import org.compiere.model.I_M_RequisitionLine;
-import org.compiere.model.MAttributeSet;
 import org.compiere.model.MAttributeSetInstance;
-import org.compiere.model.MPriceList;
-import org.compiere.model.MPriceListVersion;
-import org.compiere.model.MProduct;
-import org.compiere.model.MProductPO;
-import org.compiere.model.MProductPrice;
 import org.compiere.model.MProductPricing;
-import org.compiere.model.MRequisition;
-import org.compiere.model.MRequisitionLine;
-import org.compiere.model.MUOM;
 import org.compiere.model.Query;
-import org.compiere.model.X_M_Replenish;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -88,60 +67,11 @@ public class ProductPA implements IProductPA
 
 	private static final Logger logger = LogManager.getLogger(ProductPA.class);
 
-	public static final String SQL_PRODUCT = "SELECT * FROM "
-			+ I_M_Product.Table_Name + " WHERE " + I_M_Product.COLUMNNAME_Value + "=?";
-
 	private static final String SQL_SELECT_ASI = "SELECT asi.* "
 			+ " FROM " + I_M_AttributeSetInstance.Table_Name + " asi"
 			+ " WHERE "//
 			+ "    asi." + I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSet_ID + "=?"
 			+ "    AND asi." + I_M_AttributeSetInstance.COLUMNNAME_SerNo + "=? ";
-
-	public static final String SQL_PRODUCT_PO = //
-			"SELECT * FROM "
-					+ I_M_Product_PO.Table_Name //
-					+ " WHERE " //
-					+ I_M_Product_PO.COLUMNNAME_M_Product_ID + "=? AND "
-					+ I_M_Product_PO.COLUMNNAME_C_BPartner_ID + "=?";
-
-	public static final String SQL_REQUISITION_LINE = //
-			"SELECT rl.* " //
-					+ " FROM M_RequisitionLine rl LEFT JOIN M_Requisition r ON rl.M_Requisition_ID=r.M_Requisition_ID "
-					+ " WHERE " //
-					+ "    r.DocStatus='CO' " //
-					+ "    AND rl.M_Product_ID=? and r.M_WareHouse_ID=?";
-
-	public static final String SQL_REQUISITION_LINES = //
-			"SELECT rl.* " //
-					+ " FROM M_RequisitionLine rl LEFT JOIN M_Requisition r ON rl.M_Requisition_ID=r.M_Requisition_ID "
-					+ " WHERE " //
-					+ "    r.DocumentNo=? ";
-
-	public static final String SQL_REQUISITIONS = //
-			"SELECT * " //
-					+ " FROM M_Requisition " //
-					+ " WHERE DocStatus=? ";
-
-	public static final String SQL_REPLENISH = //
-			"SELECT * " //
-					+ " FROM M_Replenish " //
-					+ " WHERE M_Product_ID=? AND M_Warehouse_ID=?";
-
-	/**
-	 * Selects price lists that have the same M_PricingSystem_ID as a given PL and have a certain C_Country_ID.
-	 */
-	public static final String SQL_PRICELIST_BY_SIBLING = //
-			"SELECT p.* " //
-					+ " FROM M_PriceList p " //
-					+ " LEFT JOIN C_Location l " //
-					+ "    ON l.C_Country_ID=p.C_Country_ID" //
-					+ " WHERE (l.C_Location_ID=? OR l.C_Location_ID=0 OR l.C_Location_ID IS NULL)" //
-					+ "    AND EXISTS (" //
-					+ "          SELECT * FROM M_PriceList p2 " //
-					+ "          WHERE p2.M_PricingSystem_ID=p.M_PricingSystem_ID AND p2.M_PriceList_ID=? AND p2.IsSOPriceList=p.IsSOPriceList" //
-					+ "    ) " //
-					+ "    AND p.IsActive='Y' AND l.IsActive='Y'"
-					+ " ORDER BY coalesce(l.C_Location_ID, 0) DESC";
 
 	private final static String SQL_SCALEPRICE_FOR_QTY = //
 			" SELECT * "//
@@ -263,209 +193,6 @@ public class ProductPA implements IProductPA
 	}
 
 	@Override
-	public MProductPO retrieveProductPO(final int productId,
-			final int bPartnerId, String trxName)
-	{
-
-		final PreparedStatement pstmt = DB.prepareStatement(SQL_PRODUCT_PO,
-				trxName);
-
-		ResultSet rs = null;
-
-		try
-		{
-			pstmt.setInt(1, productId);
-			pstmt.setInt(2, bPartnerId);
-
-			rs = pstmt.executeQuery();
-
-			if (rs.next())
-			{
-				return new MProductPO(Env.getCtx(), rs, trxName);
-			}
-
-			if (logger.isDebugEnabled())
-			{
-				logger.debug("There is no M_ProductPO entry for productId "
-						+ productId + " and bPartnerId " + bPartnerId
-						+ ". Returning null");
-			}
-			return null;
-
-		}
-		catch (SQLException e)
-		{
-			throw new RuntimeException(e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-	}
-
-	@Override
-	public Collection<I_M_RequisitionLine> retrieveRequisitionlines(
-			int productId, int warehouseId, String trxName)
-	{
-
-		final PreparedStatement pstmt = DB.prepareStatement(
-				SQL_REQUISITION_LINE, trxName);
-
-		ResultSet rs = null;
-
-		try
-		{
-			pstmt.setInt(1, productId);
-			pstmt.setInt(2, warehouseId);
-
-			final ArrayList<I_M_RequisitionLine> result = new ArrayList<>();
-
-			rs = pstmt.executeQuery();
-
-			while (rs.next())
-			{
-				result.add(new MRequisitionLine(Env.getCtx(), rs, trxName));
-			}
-			return result;
-
-		}
-		catch (SQLException e)
-		{
-			throw new RuntimeException(e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-	}
-
-	@Override
-	public I_M_Requisition retrieveRequisition(int requisitionId, String trxName)
-	{
-		return new MRequisition(Env.getCtx(), requisitionId, trxName);
-	}
-
-	@Override
-	public Collection<I_M_RequisitionLine> retrieveRequisitionlines(
-			String docNo, String trxName)
-	{
-
-		final PreparedStatement pstmt = DB.prepareStatement(
-				SQL_REQUISITION_LINES, trxName);
-
-		ResultSet rs = null;
-
-		try
-		{
-			pstmt.setString(1, docNo);
-
-			final ArrayList<I_M_RequisitionLine> result = new ArrayList<>();
-
-			rs = pstmt.executeQuery();
-
-			while (rs.next())
-			{
-				result.add(new MRequisitionLine(Env.getCtx(), rs, trxName));
-			}
-			return result;
-
-		}
-		catch (SQLException e)
-		{
-			throw new RuntimeException(e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-	}
-
-	@Override
-	public Collection<I_M_Requisition> retrieveRequisitions(
-			final String docStatus, final String trxName)
-	{
-
-		final PreparedStatement pstmt = DB.prepareStatement(SQL_REQUISITIONS,
-				trxName);
-
-		ResultSet rs = null;
-
-		try
-		{
-			pstmt.setString(1, docStatus);
-
-			final ArrayList<I_M_Requisition> result = new ArrayList<>();
-
-			rs = pstmt.executeQuery();
-
-			while (rs.next())
-			{
-				result.add(new MRequisition(Env.getCtx(), rs, trxName));
-			}
-			return result;
-
-		}
-		catch (SQLException e)
-		{
-			throw new RuntimeException(e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-	}
-
-	@Override
-	public I_M_Replenish retrieveReplenish(int productId, int warehouseId,
-			String trxName)
-	{
-
-		final PreparedStatement pstmt = DB.prepareStatement(SQL_REPLENISH,
-				trxName);
-
-		ResultSet rs = null;
-
-		try
-		{
-			pstmt.setInt(1, productId);
-			pstmt.setInt(2, warehouseId);
-
-			rs = pstmt.executeQuery();
-
-			if (rs.next())
-			{
-				return new X_M_Replenish(Env.getCtx(), rs, trxName);
-			}
-			return null;
-
-		}
-		catch (SQLException e)
-		{
-			throw new RuntimeException(e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-	}
-
-	/**
-	 * Invokes {@link MAttributeSet#MAttributeSet(java.util.Properties, int, String)}.
-	 */
-	@Override
-	public MAttributeSet retrieveAttributeSet(final int attributeSetId,
-			final String trxName)
-	{
-		return new MAttributeSet(Env.getCtx(), attributeSetId, trxName);
-	}
-
-	@Override
-	public I_M_PriceList retrievePriceList(int priceListId, String trxName)
-	{
-		return InterfaceWrapperHelper.create(new MPriceList(Env.getCtx(), priceListId, trxName), I_M_PriceList.class);
-	}
-
-	@Override
 	public BigDecimal retrievePriceStd(final int productId,
 			final int partnerId, final int priceListId, final BigDecimal qty,
 			final boolean soTrx)
@@ -485,48 +212,6 @@ public class ProductPA implements IProductPA
 	}
 
 	@Override
-	@Cached
-	public MPriceList retrievePriceListBySibling(
-			@CacheCtx final Properties ctx,
-			final int priceListId,
-			final int bPartnerLocationId,
-			@CacheTrx final String trxName)
-	{
-		final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.create(ctx, bPartnerLocationId, I_C_BPartner_Location.class, trxName);
-
-		final IDatabaseBL databaseBL = Services.get(IDatabaseBL.class);
-
-		final List<MPriceList> result = databaseBL.retrieveList(
-				SQL_PRICELIST_BY_SIBLING, new Object[] { priceListId,
-						bPartnerLocation.getC_Location_ID() },
-				MPriceList.class, trxName);
-
-		final MPriceList pl;
-
-		if (result.isEmpty())
-		{
-			pl = null;
-		}
-		else
-		{
-			pl = result.get(0);
-		}
-		return pl;
-	}
-
-	@Override
-	public Collection<MProductPrice> retrieveProductPrices(
-			final int priceListVersionId, final String trxName)
-	{
-		return new Query(Env.getCtx(), I_M_ProductPrice.Table_Name, WHERE_PRODUCT_PRICE, trxName)
-				.setParameters(new Object[] { priceListVersionId })
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.list();
-
-	}
-
-	@Override
 	public Collection<I_M_ProductScalePrice> retrieveScalePrices(final int productPriceId, final String trxName)
 	{
 		return new Query(Env.getCtx(), I_M_ProductScalePrice.Table_Name, WHERE_PRODUCT_SCALE_PRICE, trxName)
@@ -542,23 +227,9 @@ public class ProductPA implements IProductPA
 	 * @param trxName
 	 * @return
 	 */
-	@Override
-	public I_M_ProductScalePrice createScalePrice(final String trxName)
+	private I_M_ProductScalePrice createScalePrice(final String trxName)
 	{
 		return InterfaceWrapperHelper.newInstance(I_M_ProductScalePrice.class, PlainContextAware.newWithTrxName(Env.getCtx(), trxName));
-	}
-
-	/**
-	 * Invokes {@link MPriceListVersion#MPriceListVersion(java.util.Properties, int, String)} .
-	 */
-	@Cached
-	@Override
-	public I_M_PriceList_Version retrievePriceListVersion(
-			final @CacheCtx Properties ctx,
-			final int plvId,
-			final String trxName)
-	{
-		return new MPriceListVersion(ctx, plvId, trxName);
 	}
 
 	/**
@@ -615,29 +286,5 @@ public class ProductPA implements IProductPA
 		{
 			DB.close(rs, pstmt);
 		}
-	}
-
-	@Override
-	public MProduct retrieveCategoryProduct(final Properties ctx, final I_M_Product_Category category, final String trxName)
-	{
-		final String wc = I_M_Product.COLUMNNAME_IsCategoryProduct + "='Y' AND " + I_M_Product.COLUMNNAME_M_Product_Category_ID + "=?";
-
-		return new Query(ctx, I_M_Product.Table_Name, wc, trxName)
-				.setParameters(category.getM_Product_Category_ID())
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
-				.first();
-	}
-
-	@Override
-	public I_C_UOM retrieveProductUOM(final Properties ctx, final int productId)
-	{
-		final MProduct product = MProduct.get(ctx, productId);
-		if (product == null)
-		{
-			throw new AdempiereException("@NotFound@ @M_Product_ID@ (ID=" + productId + ")");
-		}
-
-		return MUOM.get(ctx, product.getC_UOM_ID());
 	}
 }
