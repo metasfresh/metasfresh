@@ -58,8 +58,10 @@ public class M_ProductPlanning_CreateDefaultForSchema extends JavaProcess
 			{
 				delete(planning);
 			}
-
-			productPlanningSchemaBL.updateProductPlanningFromSchema(planning, productPlanningSchema);
+			else
+			{
+				productPlanningSchemaBL.updateProductPlanningFromSchema(planning, productPlanningSchema);
+			}
 		}
 
 		final List<I_M_Product> productsForSelector = productPlanningSchemaDAO.retrieveProductsForSchemaSelector(schemaSelector);
