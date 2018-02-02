@@ -299,7 +299,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.orderBys(sqlViewBinding.getDefaultOrderBys())
 					.setActions(request.getActions())
 					.setAdditionalRelatedProcessDescriptors(request.getAdditionalRelatedProcessDescriptors())
-					.setHUEditorViewRepository(huEditorViewRepository);
+					.setHUEditorViewRepository(huEditorViewRepository)
+					.setParameters(request.getParameters());
 
 			//
 			// Call view customizers

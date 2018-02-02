@@ -1,5 +1,8 @@
 package de.metas.ui.web.view;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -10,13 +13,16 @@ import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.permissions.WindowMaxQueryRecordsConstraint;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
@@ -286,5 +292,34 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	public void scheduleDeleteSelections(final Set<String> viewIds)
 	{
 		SqlViewSelectionToDeleteHelper.scheduleDeleteSelections(viewIds);
+	}
+
+	public static Set<Integer> retrieveRecordIdsForLineIds(final ViewId viewId, final Set<Integer> lineIds)
+	{
+		final SqlAndParams sqlAndParams = SqlViewSelectionQueryBuilder.buildSqlSelectRecordIdsForLineIds(viewId.getViewId(), lineIds);
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sqlAndParams.getSql(), ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sqlAndParams.getSqlParams());
+			rs = pstmt.executeQuery();
+
+			final ImmutableSet.Builder<Integer> recordIds = ImmutableSet.builder();
+			while (rs.next())
+			{
+				final int recordId = rs.getInt(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID);
+				recordIds.add(recordId);
+			}
+			return recordIds.build();
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, sqlAndParams.getSql(), sqlAndParams.getSqlParams());
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
 	}
 }

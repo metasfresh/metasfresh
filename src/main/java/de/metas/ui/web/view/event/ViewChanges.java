@@ -1,5 +1,6 @@
 package de.metas.ui.web.view.event;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -125,6 +126,16 @@ public class ViewChanges
 			changedRowIds.addAll(rowIds.toSet());
 		}
 	}
+	
+	public void addChangedRowIds(final Collection<DocumentId> rowIds)
+	{
+		if (changedRowIds == null)
+		{
+			changedRowIds = new HashSet<>();
+		}
+		changedRowIds.addAll(rowIds);
+	}
+
 
 	public void addChangedRowId(@NonNull final DocumentId rowId)
 	{
