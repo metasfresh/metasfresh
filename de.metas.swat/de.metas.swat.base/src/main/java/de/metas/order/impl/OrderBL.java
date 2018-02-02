@@ -71,7 +71,6 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderPA;
-import de.metas.product.IProductPA;
 
 public class OrderBL implements IOrderBL
 {
@@ -226,11 +225,11 @@ public class OrderBL implements IOrderBL
 			return null;
 		}
 
-		final IProductPA productPA = Services.get(IProductPA.class);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final int M_PricingSystem_ID = order.getM_PricingSystem_ID();
 		final I_C_BPartner_Location shipBPLocation = loadOutOfTrx(shipBPLocationId, I_C_BPartner_Location.class);
 		final boolean isSOTrx = order.isSOTrx();
-		final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(M_PricingSystem_ID, shipBPLocation, isSOTrx);
+		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(M_PricingSystem_ID, shipBPLocation, isSOTrx);
 		return pl;
 	}
 

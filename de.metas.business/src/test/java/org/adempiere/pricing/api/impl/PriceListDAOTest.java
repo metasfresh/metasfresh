@@ -1,10 +1,11 @@
-package de.metas.product.impl;
+package org.adempiere.pricing.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
@@ -16,9 +17,30 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Location;
-import de.metas.product.IProductPA;
 
-public class ProductPATest
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2018 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+public class PriceListDAOTest
 {
 	private static I_M_PricingSystem pricingSystem;
 	private static I_C_Country country;
@@ -83,7 +105,8 @@ public class ProductPATest
 		bpl.setC_BPartner(bpartner);
 		save(bpl);
 
-		final I_M_PriceList pl = Services.get(IProductPA.class).retrievePriceListByPricingSyst(pricingSystem.getM_PricingSystem_ID(), bpl, true);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(pricingSystem.getM_PricingSystem_ID(), bpl, true);
 
 		assertThat(pl).isNotNull();
 		assertThat(pl.getM_PriceList_ID()).isEqualByComparingTo(pl2.getM_PriceList_ID());
@@ -118,7 +141,8 @@ public class ProductPATest
 		bpl.setC_BPartner(bpartner);
 		save(bpl);
 
-		final I_M_PriceList pl = Services.get(IProductPA.class).retrievePriceListByPricingSyst(pricingSystem.getM_PricingSystem_ID(), bpl, true);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(pricingSystem.getM_PricingSystem_ID(), bpl, true);
 
 		assertThat(pl).isNotNull();
 		assertThat(pl.getM_PriceList_ID()).isEqualByComparingTo(pl1.getM_PriceList_ID());

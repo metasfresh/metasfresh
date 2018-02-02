@@ -31,6 +31,7 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
@@ -42,7 +43,6 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
-import de.metas.product.IProductPA;
 
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
@@ -110,9 +110,9 @@ public class C_OrderLine
 			final boolean isSOTrx)
 	{
 		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
-		final IProductPA productPA = Services.get(IProductPA.class);
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 		final I_C_Flatrate_Conditions flatrateConditions = ol.getC_Flatrate_Conditions();
 		final I_C_Order order = ol.getC_Order();
@@ -132,7 +132,7 @@ public class C_OrderLine
 
 		final Timestamp date = order.getDateOrdered();
 
-		final I_M_PriceList subscriptionPL = productPA.retrievePriceListByPricingSyst(pricingSysytemId, bpLocation, isSOTrx);
+		final I_M_PriceList subscriptionPL = priceListDAO.retrievePriceListByPricingSyst(pricingSysytemId, bpLocation, isSOTrx);
 
 		final int numberOfRuns = subscriptionBL.computeNumberOfRuns(flatrateConditions.getC_Flatrate_Transition(), date);
 

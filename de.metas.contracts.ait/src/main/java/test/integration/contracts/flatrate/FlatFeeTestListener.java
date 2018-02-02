@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
@@ -61,7 +62,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.product.IProductPA;
 import test.integration.contracts.ContractsHelper;
 import test.integration.contracts.ContractsTestConfig;
 import test.integration.swat.sales.SalesTestDriver;
@@ -180,8 +180,8 @@ public class FlatFeeTestListener
 		final I_M_Product flatrateProduct = helper.getM_Product(testConfig.getCustomParamStr(FlatFeeScenario.PARAM_STR_PRODUCT_FLATRATE_VALUE));
 		final MProductPricing pp = new MProductPricing(flatrateProduct.getM_Product_ID(), term.getBill_BPartner_ID(), qty_Reported, true);
 
-		final IProductPA productPA = Services.get(IProductPA.class);
-		final I_M_PriceList priceList = productPA.retrievePriceListByPricingSyst(conditions.getM_PricingSystem_ID(), term.getBill_Location(), true);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(conditions.getM_PricingSystem_ID(), term.getBill_Location(), true);
 
 		assertThat(
 				"Expected correct C_Currency_ID for I_C_Flatrate_DataEntry_ID=" + dataEntryGrid.getC_Flatrate_DataEntry_ID(),

@@ -9,6 +9,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.util.Services;
@@ -21,7 +22,6 @@ import org.compiere.util.Util;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.i18n.IMsgBL;
-import de.metas.product.IProductPA;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -87,13 +87,10 @@ public class FlatrateTermPricing
 	private I_M_PriceList retrievePriceListForTerm()
 	{
 		final int pricingSystemIdToUse = Util.firstGreaterThanZero(term.getM_PricingSystem_ID(), term.getC_Flatrate_Conditions().getM_PricingSystem_ID());
-		final I_C_BPartner_Location bpLocationToUse = Util.coalesceSuppliers(
-				() -> term.getDropShip_Location(),
-				() -> term.getBill_Location());
+		final I_C_BPartner_Location bpLocationToUse = Util.coalesceSuppliers(term::getDropShip_Location, term::getBill_Location);
 
-		final IProductPA productPA = Services.get(IProductPA.class);
-
-		final I_M_PriceList priceList = productPA.retrievePriceListByPricingSyst(pricingSystemIdToUse, bpLocationToUse, true);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemIdToUse, bpLocationToUse, true);
 		if (priceList == null)
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(term);

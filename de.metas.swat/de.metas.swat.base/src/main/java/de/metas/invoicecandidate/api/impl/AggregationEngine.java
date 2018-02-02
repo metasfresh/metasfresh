@@ -35,6 +35,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.ILoggable;
@@ -70,7 +71,6 @@ import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
-import de.metas.product.IProductPA;
 import lombok.NonNull;
 
 public class AggregationEngine implements IAggregationEngine
@@ -336,12 +336,11 @@ public class AggregationEngine implements IAggregationEngine
 		}
 		else
 		{
-			final IProductPA productPA = Services.get(IProductPA.class);
-			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-
-			final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ic.getM_PricingSystem_ID(), ic.getBill_Location(), ic.isSOTrx());
+			final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(ic.getM_PricingSystem_ID(), ic.getBill_Location(), ic.isSOTrx());
 			if (pl == null)
 			{
+				final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 				throw new AdempiereException(Env.getAD_Language(ctx), ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
 						new Object[] {
 								InterfaceWrapperHelper.create(ctx, ic.getM_PricingSystem_ID(), I_M_PricingSystem.class, ITrx.TRXNAME_None).getName(),

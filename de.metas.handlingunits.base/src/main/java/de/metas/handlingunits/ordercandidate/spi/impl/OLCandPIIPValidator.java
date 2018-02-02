@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.api.IEditablePricingContext;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
@@ -43,7 +44,6 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValdiator;
-import de.metas.product.IProductPA;
 
 public class OLCandPIIPValidator implements IOLCandValdiator
 {
@@ -97,7 +97,7 @@ public class OLCandPIIPValidator implements IOLCandValdiator
 		final Timestamp datePromisedEffective = olCandEffectiveValuesBL.getDatePromisedEffective(olCand);
 		final I_C_BPartner_Location billBPLocation = olCandEffectiveValuesBL.getBill_Location_Effective(olCand);
 
-		final I_M_PriceList pl = Services.get(IProductPA.class).retrievePriceListByPricingSyst(pricingSystemId, billBPLocation, true);
+		final I_M_PriceList pl = Services.get(IPriceListDAO.class).retrievePriceListByPricingSyst(pricingSystemId, billBPLocation, true);
 		if (pl == null)
 		{
 			throw new AdempiereException("@PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + billBPLocation);
