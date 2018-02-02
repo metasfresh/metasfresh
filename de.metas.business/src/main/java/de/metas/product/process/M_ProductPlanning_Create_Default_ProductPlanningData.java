@@ -55,14 +55,13 @@ public class M_ProductPlanning_Create_Default_ProductPlanningData extends JavaPr
 				continue;
 			}
 
-			final List<I_M_Product_PlanningSchema> productPlanningSchemas = productPlanningSchemaDAO.returnSchemasForSelector(productPlanningSchemaSelector);
+			final List<I_M_Product_PlanningSchema> productPlanningSchemas = productPlanningSchemaDAO.retrieveSchemasForSelector(productPlanningSchemaSelector);
 
 			for (final I_M_Product_PlanningSchema productPlanningSchema : productPlanningSchemas)
 			{
-				productPlanningSchemaBL.createProductPlanning(product, productPlanningSchema);
+				productPlanningSchemaBL.createUpdateProductPlanning(product, productPlanningSchema);
 			}
 		}
-
 		return MSG_OK;
 	}
 

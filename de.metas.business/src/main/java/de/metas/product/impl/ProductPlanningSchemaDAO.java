@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Product;
+import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.product.IProductPlanningSchemaDAO;
 import de.metas.product.model.I_M_Product_PlanningSchema;
@@ -34,7 +36,7 @@ import de.metas.product.model.I_M_Product_PlanningSchema;
 public class ProductPlanningSchemaDAO implements IProductPlanningSchemaDAO
 {
 	@Override
-	public List<I_M_Product_PlanningSchema> returnSchemasForSelector(final String productPlanningSchemaSelector)
+	public List<I_M_Product_PlanningSchema> retrieveSchemasForSelector(final String productPlanningSchemaSelector)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product_PlanningSchema.class)
 				.addOnlyActiveRecordsFilter()
@@ -42,6 +44,40 @@ public class ProductPlanningSchemaDAO implements IProductPlanningSchemaDAO
 				.addEqualsFilter(I_M_Product_PlanningSchema.COLUMNNAME_M_ProductPlanningSchema_Selector, productPlanningSchemaSelector)
 				.create()
 				.list();
+	}
+	
+	@Override
+	public List<I_PP_Product_Planning> retrieveProductPlanningsForSchemaID(final int productPlanningSchemaID)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Product_Planning.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_PlanningSchema_ID, productPlanningSchemaID)
+				.create()
+				.list();
+	}
+	
+	@Override
+	public List<I_M_Product> retrieveProductsForSchemaSelector(final String productPlanningSchemaSelector)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_M_ProductPlanningSchema_Selector, productPlanningSchemaSelector)
+				.create()
+				.list();
+	}
+
+	@Override
+	public I_PP_Product_Planning retrievePlanningForProductAndSchema(final I_M_Product product, final I_M_Product_PlanningSchema schema)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Product_Planning.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_PlanningSchema_ID, schema.getM_Product_PlanningSchema_ID())
+				.create()
+				.first();
 	}
 
 }

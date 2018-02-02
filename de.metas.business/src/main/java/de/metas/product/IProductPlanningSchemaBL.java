@@ -31,6 +31,8 @@ import de.metas.product.model.I_M_Product_PlanningSchema;
 public interface IProductPlanningSchemaBL extends ISingletonService
 {
 
-	I_PP_Product_Planning createProductPlanning(I_M_Product product, I_M_Product_PlanningSchema schema);
+	I_PP_Product_Planning createUpdateProductPlanning(I_M_Product product, I_M_Product_PlanningSchema schema);
+
+	void updateProductPlanningFromSchema(I_PP_Product_Planning productPlanning, I_M_Product_PlanningSchema schema);
 
 }

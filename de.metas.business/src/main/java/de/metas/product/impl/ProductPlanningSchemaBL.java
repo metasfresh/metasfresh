@@ -3,10 +3,12 @@ package de.metas.product.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.product.IProductPlanningSchemaBL;
+import de.metas.product.IProductPlanningSchemaDAO;
 import de.metas.product.model.I_M_Product_PlanningSchema;
 
 /*
@@ -33,13 +35,37 @@ import de.metas.product.model.I_M_Product_PlanningSchema;
 
 public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 {
+	private final IProductPlanningSchemaDAO productPlanningSchemaDAO = Services.get(IProductPlanningSchemaDAO.class);
+	
 	@Override
-	public I_PP_Product_Planning createProductPlanning(final I_M_Product product, final I_M_Product_PlanningSchema schema)
+	public I_PP_Product_Planning createUpdateProductPlanning(final I_M_Product product, final I_M_Product_PlanningSchema schema)
 	{
-		final I_PP_Product_Planning productPlanning = newInstance(I_PP_Product_Planning.class);
+		final I_PP_Product_Planning productPlanning = getCreateProductPlanningForProductAndSchema(product, schema);
+		
+		
 		productPlanning.setM_Product(product);
 		productPlanning.setM_Product_PlanningSchema_ID(schema.getM_Product_PlanningSchema_ID());
 
+		updateProductPlanningFromSchema(productPlanning, schema);
+
+		return productPlanning;
+	}
+	
+	private I_PP_Product_Planning getCreateProductPlanningForProductAndSchema(final I_M_Product product, final I_M_Product_PlanningSchema schema)
+	{
+		I_PP_Product_Planning productPlanning = productPlanningSchemaDAO.retrievePlanningForProductAndSchema(product, schema);
+		
+		if(productPlanning == null)
+		{
+			productPlanning =  newInstance(I_PP_Product_Planning.class);
+		}
+		
+		return productPlanning;
+	}
+
+	@Override
+	public void updateProductPlanningFromSchema(final I_PP_Product_Planning productPlanning, final I_M_Product_PlanningSchema schema)
+	{
 		productPlanning.setAD_Org(schema.getAD_Org());
 		productPlanning.setIsAttributeDependant(schema.isAttributeDependant());
 		productPlanning.setS_Resource_ID(schema.getS_Resource_ID());
@@ -53,7 +79,5 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 		productPlanning.setIsPickDirectlyIfFeasible(schema.isPickDirectlyIfFeasible());
 		
 		save(productPlanning);
-
-		return productPlanning;
 	}
 }

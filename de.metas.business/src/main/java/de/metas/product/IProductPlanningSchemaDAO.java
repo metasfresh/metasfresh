@@ -3,6 +3,8 @@ package de.metas.product;
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_M_Product;
+import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.product.model.I_M_Product_PlanningSchema;
 
@@ -31,6 +33,12 @@ import de.metas.product.model.I_M_Product_PlanningSchema;
 public interface IProductPlanningSchemaDAO extends ISingletonService
 {
 
-	List<I_M_Product_PlanningSchema> returnSchemasForSelector(String productPlanningSchemaSelector);
+	List<I_M_Product_PlanningSchema> retrieveSchemasForSelector(String productPlanningSchemaSelector);
+
+	List<I_PP_Product_Planning> retrieveProductPlanningsForSchemaID(int productPlanningSchemaID);
+
+	List<I_M_Product> retrieveProductsForSchemaSelector(String productPlanningSchemaSelector);
+
+	I_PP_Product_Planning retrievePlanningForProductAndSchema(I_M_Product product, I_M_Product_PlanningSchema schema);
 
 }
