@@ -30,20 +30,20 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
 /**
- * Product Data Planning 
- *	
- * @author Victor Perez www.e-evolution.com     
+ * Product Data Planning
+ *
+ * @author Victor Perez www.e-evolution.com
  * @author Teo Sarca, www.arhipac.ro
  */
 public class MPPProductPlanning extends X_PP_Product_Planning
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -3061309620804116277L;
-	
+
 	/** Log									*/
-	private static Logger log = LogManager.getLogger(MPPProductPlanning.class); 
+	private static Logger log = LogManager.getLogger(MPPProductPlanning.class);
 
 
 	/**************************************************************************
@@ -51,13 +51,13 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 	 *	@param ctx context
 	 *	@param pp_product_planning_id id
 	 *	@param trxName
-	 *  @return MPPProductPlanning Data Product Planning 
+	 *  @return MPPProductPlanning Data Product Planning
 	 */
 	public MPPProductPlanning(Properties ctx, int pp_product_planning_id, String trxname)
 	{
 		super(ctx, pp_product_planning_id, trxname);
 		if (pp_product_planning_id == 0)
-		{    
+		{
 		}
 	}	//	MPPProductPlanning
 
@@ -66,7 +66,7 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 	 *	@param ctx context
 	 *	@param rs result set
 	 *	@param trxName Transaction Name
-	 *	@return MPPProductPlanning Data Product Planning 
+	 *	@return MPPProductPlanning Data Product Planning
 	 */
 	public MPPProductPlanning(Properties ctx, ResultSet rs, String trxname)
 	{
@@ -78,12 +78,12 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 	 * @param ctx Context
 	 * @param ad_org_id Organization ID
 	 * @param m_product_id Product ID
-	 * @param trxName Transaction Name 
+	 * @param trxName Transaction Name
 	 * @return MPPProductPlanning
-	 */    
+	 */
 	public static MPPProductPlanning get(Properties ctx, int ad_client_id, int ad_org_id,
 											int m_product_id,
-											String trxname)               
+											String trxname)
 	{
 		int M_Warehouse_ID = MOrgInfo.get(ctx, ad_org_id).getM_Warehouse_ID();
 		if(M_Warehouse_ID <= 0)
@@ -91,7 +91,7 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 			return null;
 		}
 
-		int S_Resource_ID = getPlantForWarehouse(M_Warehouse_ID); 
+		int S_Resource_ID = getPlantForWarehouse(M_Warehouse_ID);
 		if (S_Resource_ID <= 0)
 			return null;
 
@@ -99,7 +99,7 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 	}
 
 	/**
-	 * Get Data Product Planning 
+	 * Get Data Product Planning
 	 * @param ctx Context
 	 * @param AD_Client_ID ID Organization
 	 * @param AD_Org_ID ID Organization
@@ -108,7 +108,7 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 	 * @param M_Product_ID ID Product
 	 * @param trxname Trx Name
 	 * @return MPPProductPlanning
-	 */     
+	 */
 	public static MPPProductPlanning get(Properties ctx, int ad_client_id, int ad_org_id,
 											int m_warehouse_id, int s_resource_id, int m_product_id,
 											String trxname)
@@ -129,12 +129,12 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 		return new Query(ctx, MPPProductPlanning.Table_Name, whereClause, trxname)
 			.setParameters(new Object[]{ad_client_id, ad_org_id, m_product_id, m_warehouse_id, s_resource_id})
 			.firstOnly();
-	}       
+	}
 
 
 	/**
 	 * Find data planning, try find the specific planning data
-	 * if do not found then try find data planning general 
+	 * if do not found then try find data planning general
 	 * @param ctx Context
 	 * @param AD_Org_ID Organization ID
 	 * @param M_Warehouse_ID Resource ID
@@ -142,7 +142,7 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 	 * @param M_Product_ID Product ID
 	 * @param trxName Transaction Name
 	 * @return MPPProductPlanning Planning Data
-	 * 
+	 *
 	 * @deprecated Please use IProductPlanningDAO#find
 	 */
 	@Deprecated
@@ -174,25 +174,23 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 							+" FROM "+MResource.Table_Name
 							+" WHERE "+MResource.COLUMNNAME_IsManufacturingResource+"=?"
 							+" AND "+MResource.COLUMNNAME_ManufacturingResourceType+"=?"
-							+" AND "+MResource.COLUMNNAME_M_Warehouse_ID+"=?"; 
+							+" AND "+MResource.COLUMNNAME_M_Warehouse_ID+"=?";
 		int plant_id = DB.getSQLValueEx(null, sql, true, MResource.MANUFACTURINGRESOURCETYPE_Plant, M_Warehouse_ID);
 		return plant_id;
 	}
-	
-	
-	
+
 	@Override
 	public MPPProductBOM getPP_Product_BOM()
 	{
 		return MPPProductBOM.get(getCtx(), getPP_Product_BOM_ID());
 	}
-	
+
 	@Override
 	public MWorkflow getAD_Workflow()
 	{
 		return MWorkflow.get(getCtx(), getAD_Workflow_ID());
 	}
-	
+
 	@Override
 	public MResource getS_Resource()
 	{
@@ -202,7 +200,7 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 
 
 	private int m_C_BPartner_ID = 0;
-	
+
 	/**
 	 * Set Supplier
 	 * @param C_BPartner_ID
@@ -212,7 +210,7 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 	{
 		this.m_C_BPartner_ID = C_BPartner_ID;
 	}
-	
+
 	/**
 	 * @return Supplier
 	 */
@@ -230,7 +228,7 @@ public class MPPProductPlanning extends X_PP_Product_Planning
 		log.info("------------ Planning Data --------------");
 		log.info("           Create Plan: " + isCreatePlan());
 		log.info("              Resource: " + getS_Resource_ID());
-		log.info("          M_Product_ID: " + getM_Product_ID()); 
+		log.info("          M_Product_ID: " + getM_Product_ID());
 		log.info("                   BOM: " + getPP_Product_BOM_ID());
 		log.info("              Workflow: " + getAD_Workflow_ID());
 		log.info("  Network Distribution: " + getDD_NetworkDistribution_ID());
