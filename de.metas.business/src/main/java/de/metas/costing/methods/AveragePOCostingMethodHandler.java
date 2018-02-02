@@ -58,6 +58,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	protected I_M_CostDetail createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCosts = getCurrentCost(request);
+		
 		// TODO Auto-generated method stub
 		return super.createOutboundCostDefaultImpl(request);
 	}

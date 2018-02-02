@@ -173,7 +173,7 @@ public class CostEngine
 	{
 		final CurrentCost cost = retrieveOrCreateCostRecord(cc, product, as, element, trxName);
 
-		final CostAmount price = cost.getCurrentCostPrice().add(cost.getCurrentCostPriceLL());
+		final CostAmount price = cost.getCurrentCostPriceTotal();
 		return roundCost(price, as.getC_AcctSchema_ID());
 	}
 

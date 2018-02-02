@@ -300,7 +300,7 @@ public class RollupBillOfMaterial extends JavaProcess
 					cost.setCurrentCostPriceLL(zeroCosts());
 				}
 
-				final CostAmount costPrice = cost.getCurrentCostPrice().add(cost.getCurrentCostPriceLL());
+				final CostAmount costPrice = cost.getCurrentCostPriceTotal();
 				final CostAmount componentCost = costPrice.multiply(qty);
 				costPriceLL = costPriceLL.add(componentCost);
 				log.info("CostElement: " + element.getName()

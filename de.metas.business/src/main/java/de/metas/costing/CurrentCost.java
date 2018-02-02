@@ -146,6 +146,11 @@ public final class CurrentCost
 	{
 		currentQty = currentQty.add(qtyToAdd);
 	}
+	
+	public CostAmount getCurrentCostPriceTotal()
+	{
+		return currentCostPrice.add(currentCostPriceLL);
+	}
 
 	public void setCurrentCostPrice(@NonNull final CostAmount costPrice)
 	{
