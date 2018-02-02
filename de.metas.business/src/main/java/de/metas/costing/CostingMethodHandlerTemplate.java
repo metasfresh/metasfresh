@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.MAcctSchema;
@@ -173,6 +174,8 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	private I_M_CostDetail createDraftCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
 		final I_M_CostDetail costDetail = InterfaceWrapperHelper.newInstance(I_M_CostDetail.class);
+		final int costDetailClientId = costDetail.getAD_Client_ID();
+		Check.assume(costDetailClientId == request.getClientId(), "same AD_Client_ID: {} vs {}", costDetailClientId, request.getClientId());
 		costDetail.setAD_Org_ID(request.getOrgId());
 		costDetail.setC_AcctSchema_ID(request.getAcctSchemaId());
 		costDetail.setM_Product_ID(request.getProductId());
@@ -182,6 +185,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 		costDetail.setAmt(request.getAmt().getValue());
 		costDetail.setQty(request.getQty().getQty());
+
 		costDetail.setDescription(request.getDescription());
 
 		final CostingDocumentRef documentRef = request.getDocumentRef();
