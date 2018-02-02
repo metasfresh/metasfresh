@@ -196,7 +196,7 @@ public class HUShippingFacade
 		final List<Integer> invoiceCandidateIds = invoiceCandDAO.retrieveInvoiceCandidatesQueryForInOuts(shipments).listIds();
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(InvoiceMode.AllWithoutInvoiceSchedule == invoiceMode);
+		invoicingParams.setIgnoreInvoiceSchedule(InvoiceMode.AllWithoutInvoiceSchedule != invoiceMode);
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 				.setLoggable(loggable)
