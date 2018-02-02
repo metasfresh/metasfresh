@@ -27,8 +27,10 @@ import java.util.Collection;
 import java.util.Properties;
 
 import org.adempiere.model.I_M_ProductScalePrice;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
@@ -98,7 +100,11 @@ public interface IProductPA extends ISingletonService
 	/**
 	 * @return the price list for the given pricing system and location or <code>null</code>.
 	 */
-	I_M_PriceList retrievePriceListByPricingSyst(int pricingSystemId, I_C_BPartner_Location bpartnerLocation, boolean isSOPriceList);
+	@Deprecated
+	default I_M_PriceList retrievePriceListByPricingSyst(int pricingSystemId, I_C_BPartner_Location bpartnerLocation, boolean isSOPriceList)
+	{
+		return Services.get(IPriceListDAO.class).retrievePriceListByPricingSyst(pricingSystemId, bpartnerLocation, isSOPriceList);
+	}
 
 	/**
 	 * 

@@ -32,9 +32,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.db.IDatabaseBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -43,7 +40,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.X_M_ProductScalePrice;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner_Location;
@@ -61,7 +57,6 @@ import org.compiere.model.MAttributeSet;
 import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
-import org.compiere.model.MPricingSystem;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductPO;
 import org.compiere.model.MProductPrice;
@@ -83,7 +78,6 @@ import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
-import lombok.NonNull;
 
 public class ProductPA implements IProductPA
 {
@@ -518,43 +512,6 @@ public class ProductPA implements IProductPA
 			pl = result.get(0);
 		}
 		return pl;
-	}
-
-	@Override
-	public I_M_PriceList retrievePriceListByPricingSyst(final int pricingSystemId, @NonNull final I_C_BPartner_Location bpartnerLocation, final boolean isSOPriceList)
-	{
-		final int countryId = bpartnerLocation.getC_Location().getC_Country_ID();
-		return retrievePriceListByPricingSyst(Env.getCtx(), pricingSystemId, countryId, isSOPriceList, ITrx.TRXNAME_None);
-	}
-	
-	@Cached(cacheName = I_M_PriceList.Table_Name + "#by#M_PricingSystem_ID#C_Country_ID")
-	public I_M_PriceList retrievePriceListByPricingSyst(
-			final @CacheCtx Properties ctx,
-			final int pricingSystemId,
-			final int countryId,
-			final boolean isSOPriceList,
-			final @CacheTrx String trxName)
-	{
-		// In case we are dealing with Pricing System None, return the PriceList none
-		if (pricingSystemId == MPricingSystem.M_PricingSystem_ID_None)
-		{
-			final I_M_PriceList pl = InterfaceWrapperHelper.create(ctx, MPriceList.M_PriceList_ID_None, I_M_PriceList.class, trxName);
-			Check.assumeNotNull(pl, "pl not null");
-			return pl;
-		}
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilder(I_M_PriceList.class)
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, pricingSystemId)
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, isSOPriceList)
-				.addInArrayFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, countryId, null)
-				.addOnlyContextClient()
-				.addOnlyActiveRecordsFilter()
-				.orderBy()
-				.addColumn(I_M_PriceList.COLUMNNAME_C_Country_ID, Direction.Ascending, Nulls.Last)
-				.endOrderBy()
-				.create()
-				.first(I_M_PriceList.class);
 	}
 
 	@Override

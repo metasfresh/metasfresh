@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -58,6 +59,11 @@ public interface IPriceListDAO extends ISingletonService
 	 * @return
 	 */
 	Iterator<I_M_PriceList> retrievePriceLists(I_M_PricingSystem pricingSystem, I_C_Country country, boolean isSOTrx);
+
+	/**
+	 * @return the price list for the given pricing system and location or <code>null</code>.
+	 */
+	I_M_PriceList retrievePriceListByPricingSyst(int pricingSystemId, I_C_BPartner_Location bpartnerLocation, boolean isSOPriceList);
 
 
 	/**
