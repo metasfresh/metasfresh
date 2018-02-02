@@ -93,7 +93,9 @@ public final class ViewColumnHelper
 		}
 	}
 
-	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClass(final Class<?> dataType, @NonNull final JSONViewDataType viewType)
+	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClass(
+			@NonNull final Class<?> dataType,
+			@NonNull final JSONViewDataType viewType)
 	{
 		return getDescriptor(dataType)
 				.getColumns().stream()
@@ -103,7 +105,9 @@ public final class ViewColumnHelper
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClassAndFieldNames(@NonNull final Class<?> dataType, @NonNull final String... fieldNames)
+	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClassAndFieldNames(
+			@NonNull final Class<?> dataType,
+			@NonNull final String... fieldNames)
 	{
 		Check.assumeNotEmpty(fieldNames, "fieldNames is not empty");
 
@@ -128,7 +132,7 @@ public final class ViewColumnHelper
 		}
 
 		return ClassViewDescriptor.builder()
-				// .className(dataType.getName())
+
 				.columns(columns)
 				.build();
 
@@ -170,9 +174,13 @@ public final class ViewColumnHelper
 				.addField(DocumentLayoutElementFieldDescriptor.builder(column.getFieldName()));
 	}
 
-	public static <T extends IViewRow> ImmutableMap<String, Object> extractJsonMap(final T row)
+	/**
+	 * This helper method is intended to support individual implementations of {@link IViewRow#getFieldNameAndJsonValues()}.
+	 */
+	public static <T extends IViewRow> ImmutableMap<String, Object> extractJsonMap(@NonNull final T row)
 	{
 		final Class<? extends IViewRow> rowClass = row.getClass();
+
 		final LinkedHashMap<String, Object> result = new LinkedHashMap<>();
 		getDescriptor(rowClass)
 				.getColumns()
@@ -180,7 +188,7 @@ public final class ViewColumnHelper
 					final Object value = extractFieldValueAsJson(row, column);
 					if (value != null)
 					{
-						result.put(column.getFieldName(), value);
+					result.put(column.getFieldName(), value);
 					}
 				});
 
