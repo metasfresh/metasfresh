@@ -10,11 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.43 (2018-05)
-**release for week 2018-05**
+# metasfresh 5.43 (2018-06)
+**release for week 2018-06**
 
 ## Features
 * metasfresh
+  * [#3428](https://github.com/metasfresh/metasfresh/issues/3428) Switch off Daterange in Preparation date Filer temporarily
+    * Changes the Filter of Preparation Date to simple Date instead of Daterange.
 
 
 * metasfresh-webui-frontend
@@ -24,8 +26,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
 
 
-# metasfresh 5.42 (2018-04)
-**release for week 2018-04**
+# metasfresh 5.42 (2018-05)
+**release for week 2018-05**
 
 ## Features
 * metasfresh
@@ -59,6 +61,7 @@ Here come the actual release notes:
     * New Field in Window User, allowing to see and maintain the Business Partner.
   * [#3353](https://github.com/metasfresh/metasfresh/issues/3353) Implement MSV3 availability query
     * New vertical Feature for the Pharma Industry. Now it's able to do MSV3 Queries to vendors via metasfresh.
+  * [#3354](https://github.com/metasfresh/metasfresh/issues/3354) Different subscription Receiver for ever
   * [#3355](https://github.com/metasfresh/metasfresh/issues/3355) Add option to automatically credit open invoice for terminated contract / subscription
   * [#3359](https://github.com/metasfresh/metasfresh/issues/3359) User Window unlock Account Action
     * Adding new Action in User Window in WebUI allowing to unlock the User Account.  
@@ -118,8 +121,14 @@ Here come the actual release notes:
   * [#3350](https://github.com/metasfresh/metasfresh/issues/3350) Error creating movement from DDOrder
     * Fixes an Error that prevented the creation of movements from Distribution Orders.
   * [#3386](https://github.com/metasfresh/metasfresh/issues/3386) Issued HUs retain I status after PP_Order unclose
+<<<<<<< HEAD
+    * Improvement of the status Handling after unclosing Manufacturing Orders.
+||||||| merged common ancestors
+    * 
+=======
   * [#3426](https://github.com/metasfresh/metasfresh/issues/3426) Dunning Level is not set in invoice after generating dunning doc
 
+>>>>>>> c97900ff3ce7942e0628aebbf73a5d630b8a00ab
 
 * metasfresh-webui-api
   * [#775](https://github.com/metasfresh/metasfresh-webui-api/issues/775) Destroyed HUs are still visible in material receipt
