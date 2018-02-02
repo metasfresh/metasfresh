@@ -251,6 +251,7 @@ class MasterWidget extends Component {
     } = this.props;
 
     const { updated, data } = this.state;
+    const handleFocusFn = handleBackdropLock ? handleBackdropLock : () => {};
 
     return (
       <RawWidget
@@ -286,6 +287,8 @@ class MasterWidget extends Component {
           onBlurWidget,
           isOpenDatePicker
         }}
+        handleFocus={() => handleFocusFn(true)}
+        handleBlur={() => handleFocusFn(false)}
         handlePatch={this.handlePatch}
         handleChange={this.handleChange}
         handleProcess={this.handleProcess}
