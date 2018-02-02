@@ -18,7 +18,7 @@ import com.google.common.collect.Multimaps;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult.Type;
+import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRow;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowId;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseView;
