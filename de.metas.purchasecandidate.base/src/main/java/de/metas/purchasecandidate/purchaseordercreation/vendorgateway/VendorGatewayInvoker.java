@@ -1,5 +1,6 @@
 package de.metas.purchasecandidate.purchaseordercreation.vendorgateway;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.compiere.Adempiere;
@@ -32,21 +33,9 @@ import de.metas.vendor.gateway.api.VendorGatewayService;
 
 public interface VendorGatewayInvoker
 {
-	void addCandidate(PurchaseCandidate candidate);
+	List<PurchaseCandidate> placeRemotePurchaseOrder(List<PurchaseCandidate> purchaseCandidates);
 
-	/**
-	 * The {@code C_Order_ID} of the purchase order we just created.
-	 */
-	VendorGatewayStatus createAndComplete(int purchaseOrderId);
-
-	public enum VendorGatewayStatus
-	{
-		NO_GATEWAY_SERVICE,
-
-		SERVICE_ORDER_CREATED,
-
-		SERVICE_ORDER_NEEDS_ATENTION,
-	}
+	void setPurchaseOrderId(int purchaseOrderId);
 
 	public static VendorGatewayInvoker createForVendorId(final int vendorBPartnerId)
 	{

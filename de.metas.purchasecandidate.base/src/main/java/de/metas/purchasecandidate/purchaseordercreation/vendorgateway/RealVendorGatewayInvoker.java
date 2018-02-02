@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.purchaseordercreation.vendorgateway;
 
 import java.util.IdentityHashMap;
+import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
@@ -9,6 +10,7 @@ import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
+import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -64,13 +66,13 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 	}
 
 	@Override
-	public VendorGatewayStatus createAndComplete(final int purchaseOrderId)
+	public List<PurchaseCandidate> createAndComplete(final int purchaseOrderId)
 	{
 		final ImmutableList<PurchaseOrderRequestItem> values = ImmutableList.copyOf(purchaseCandidate2OrderLine.values());
 
 		final PurchaseOrderRequest purchaseOrderRequest = new PurchaseOrderRequest(purchaseOrderId, vendorBPartnerId, values);
 
-		vendorGatewayService.placePurchaseOrder(purchaseOrderRequest);
+		final PurchaseOrderResponse purchaseOrderResponse = vendorGatewayService.placePurchaseOrder(purchaseOrderRequest);
 		return VendorGatewayStatus.SERVICE_ORDER_CREATED;
 	}
 }

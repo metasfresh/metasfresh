@@ -182,10 +182,11 @@ public class PurchaseCandidate
 		final String productValue = identifier.getVendorProductInfo().getProductNo();
 
 		final I_C_OrderLine salesOrderLine = load(identifier.getSalesOrderLineId(), I_C_OrderLine.class);
+		final BigDecimal qtyToDeliver = salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered());
 
 		final ProductAndQuantity productAndQuantity = new ProductAndQuantity(
 				productValue,
-				salesOrderLine.getQtyReserved());
+				qtyToDeliver);
 
 		return AvailabilityRequestItem.builder()
 				.productAndQuantity(productAndQuantity)

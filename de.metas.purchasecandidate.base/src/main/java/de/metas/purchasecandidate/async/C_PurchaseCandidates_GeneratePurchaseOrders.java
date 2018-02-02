@@ -10,7 +10,9 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
 
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -85,6 +87,9 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
 		final List<PurchaseCandidate> purchaseCandidates = getPurchaseCandidates();
+
+		final ImmutableListMultimap<Integer, PurchaseCandidate> vendorId2purchaseCandidate = //
+				Multimaps.index(purchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
 
 		final PurchaseOrderFromCandidatesAggregator purchaseOrdersAggregator = PurchaseOrderFromCandidatesAggregator.newInstance();
 		purchaseOrdersAggregator.addAll(purchaseCandidates.iterator());

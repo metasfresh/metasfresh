@@ -12,7 +12,6 @@ import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.purchaseordercreation.vendorgateway.VendorGatewayInvoker;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -50,8 +49,6 @@ import lombok.NonNull;
 	private final IdentityHashMap<PurchaseCandidate, OrderLineBuilder> purchaseCandidate2OrderLineBuilder = new IdentityHashMap<>();
 	private final OrderUserNotifications userNotifications;
 
-	private final VendorGatewayInvoker vendorRequestFromCandidatesFactory;
-
 	@Builder
 	private PurchaseOrderFromCandidatesFactory(
 			@NonNull final PurchaseOrderAggregationKey orderAggregationKey,
@@ -65,15 +62,11 @@ import lombok.NonNull;
 				.shipBPartner(vendorBPartnerId)
 				.datePromised(orderAggregationKey.getDatePromised());
 
-		this.vendorRequestFromCandidatesFactory = VendorGatewayInvoker.createForVendorId(vendorBPartnerId);
-
 		this.userNotifications = userNotifications;
 	}
 
 	public void addCandidate(final PurchaseCandidate candidate)
 	{
-		vendorRequestFromCandidatesFactory.addCandidate(candidate);
-
 		final OrderLineBuilder orderLineBuilder = orderFactory.orderLineByProductAndUom(candidate.getProductId(), candidate.getUomId())
 				.orElseGet(() -> orderFactory.newOrderLine()
 						.productId(candidate.getProductId()));
@@ -86,8 +79,6 @@ import lombok.NonNull;
 	public void createAndComplete()
 	{
 		final I_C_Order order = orderFactory.createAndComplete();
-
-		vendorRequestFromCandidatesFactory.createAndComplete(order.getC_Order_ID());
 
 		purchaseCandidate2OrderLineBuilder.forEach(this::updatePurchaseCandidateFromOrderLineBuilder);
 
