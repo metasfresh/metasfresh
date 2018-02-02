@@ -501,11 +501,10 @@ export function getTab(tabId, windowType, docId, orderBy) {
   ).then(
     res =>
       res.data &&
-      res.data.map(row =>
-        Object.assign({}, row, {
-          fieldsByName: parseToDisplay(row.fieldsByName)
-        })
-      )
+      res.data.map(row => ({
+        ...row,
+        fieldsByName: parseToDisplay(row.fieldsByName)
+      }))
   );
 }
 
@@ -724,9 +723,10 @@ function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
   return dispatch => {
     data.map((item, index) => {
       const parsedItem = item.fieldsByName
-        ? Object.assign({}, item, {
+        ? {
+            ...item,
             fieldsByName: parseToDisplay(item.fieldsByName)
-          })
+          }
         : item;
 
       // First item in response is direct one for action that called it.
@@ -965,9 +965,10 @@ export function createProcess({
 
           await dispatch(setProcessSaved());
 
-          const preparedLayout = Object.assign({}, response.data, {
+          const preparedLayout = {
+            ...response.data,
             pinstanceId: pid
-          });
+          };
 
           await dispatch(initLayoutSuccess(preparedLayout, "modal"));
         } catch (error) {
@@ -1178,9 +1179,10 @@ function parseDateToReadable(fieldsByName) {
     const isDateField = dateParse.indexOf(field.widgetType) > -1;
     acc[fieldName] =
       isDateField && field.value
-        ? Object.assign({}, field, {
+        ? {
+            ...field,
             value: parseDateWithCurrenTimezone(field.value)
-          })
+          }
         : field;
     return acc;
   }, {});
@@ -1190,7 +1192,7 @@ function nullToEmptyStrings(fieldsByName) {
   return Object.keys(fieldsByName).reduce((acc, fieldName) => {
     acc[fieldName] =
       fieldsByName[fieldName].value === null
-        ? Object.assign({}, fieldsByName[fieldName], { value: "" })
+        ? { ...fieldsByName[fieldName], value: "" }
         : fieldsByName[fieldName];
     return acc;
   }, {});
@@ -1242,9 +1244,10 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
   let ind = indent ? indent : [];
   let result = [];
 
-  const nodeCopy = Object.assign({}, node, {
+  const nodeCopy = {
+    ...node,
     indent: ind
-  });
+  };
 
   result = result.concat([nodeCopy]);
 
@@ -1257,9 +1260,10 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
       let copy = node.includedDocuments[i];
       copy.fieldsByName = parseToDisplay(copy.fieldsByName);
       if (i === node.includedDocuments.length - 1) {
-        copy = Object.assign({}, copy, {
+        copy = {
+          ...copy,
           lastChild: true
-        });
+        };
       }
 
       result = result.concat(
