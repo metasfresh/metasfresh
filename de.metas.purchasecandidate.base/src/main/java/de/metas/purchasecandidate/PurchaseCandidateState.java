@@ -1,7 +1,6 @@
 package de.metas.purchasecandidate;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
@@ -29,7 +28,6 @@ import lombok.Setter;
  */
 
 @Data
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PurchaseCandidateState
 {
 	private boolean processed;
@@ -41,12 +39,28 @@ public class PurchaseCandidateState
 
 	@Builder
 	private PurchaseCandidateState(
-			boolean processed,
-			boolean locked)
+			final boolean processed,
+			final boolean locked)
 	{
 		this.processed = processed;
 		this.processedInitial = processed;
 		this.locked = locked;
+	}
+
+	// don't use @lombok.AllArgsConstructor, because we might get the parameter ordering wrong.
+	private PurchaseCandidateState(
+			final boolean processed,
+			final boolean processedInitial,
+			final boolean locked)
+	{
+		this.processed = processed;
+		this.processedInitial = processedInitial;
+		this.locked = locked;
+	}
+
+	public PurchaseCandidateState createCopy()
+	{
+		return new PurchaseCandidateState(processed, processedInitial, locked);
 	}
 
 	public void setProcessed()
@@ -64,8 +78,4 @@ public class PurchaseCandidateState
 		processedInitial = processed;
 	}
 
-	public PurchaseCandidateState createCopy()
-	{
-		return new PurchaseCandidateState(processed, processedInitial, locked);
-	}
 }

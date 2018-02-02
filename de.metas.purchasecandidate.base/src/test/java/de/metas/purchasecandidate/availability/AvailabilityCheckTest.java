@@ -1,10 +1,11 @@
-package de.metas.purchasecandidate;
+package de.metas.purchasecandidate.availability;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
+import de.metas.vendor.gateway.api.availability.AvailabilityResponseItem;
 
 /*
  * #%L
@@ -34,10 +35,10 @@ public class AvailabilityCheckTest
 	@Test
 	public void  Type_ofAvailabilityResponseItemType()
 	{
-		final Type resultAvailable = Type.ofAvailabilityResponseItemType(de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type.AVAILABLE);
+		final Type resultAvailable = Type.ofAvailabilityResponseItemType(AvailabilityResponseItem.Type.AVAILABLE);
 		assertThat(resultAvailable).isSameAs(Type.AVAILABLE);
 
-		final Type resultNotAvailable = Type.ofAvailabilityResponseItemType(de.metas.vendor.gateway.api.availability.AvailabilityResponseItem.Type.NOT_AVAILABLE);
+		final Type resultNotAvailable = Type.ofAvailabilityResponseItemType(AvailabilityResponseItem.Type.NOT_AVAILABLE);
 		assertThat(resultNotAvailable).isSameAs(Type.NOT_AVAILABLE);
 	}
 }
