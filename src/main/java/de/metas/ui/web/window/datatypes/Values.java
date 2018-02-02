@@ -46,6 +46,9 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class Values
 {
+	/**
+	 * Invokes {@link #valueToJsonObject(Object, UnaryOperator)} with {@link UnaryOperator#identity()}.
+	 */
 	public static final Object valueToJsonObject(final Object value)
 	{
 		return valueToJsonObject(value, UnaryOperator.identity());
@@ -54,7 +57,7 @@ public final class Values
 	/**
 	 * Convert value to JSON.
 	 *
-	 * @param value may be {@code null}. In that case, an empty string is returned.
+	 * @param value may be {@code null}. In that case, {@link JSONNullValue#instance} is returned.
 	 * @param fallbackMapper mapper called when value could not be converted to JSON; takes as input the <code>value</code>
 	 * @return JSON value
 	 */
