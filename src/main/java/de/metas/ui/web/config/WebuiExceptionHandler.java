@@ -27,6 +27,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -246,7 +247,9 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		final StringWriter stackTrace = new StringWriter();
 		error.printStackTrace(new PrintWriter(stackTrace));
 		stackTrace.flush();
-		errorAttributes.put(ATTR_Stacktrace, stackTrace.toString());
+		final String stackTraceStr = stackTrace.toString();
+		final Iterable<String> stackTraceList = Splitter.on("\n").split(stackTraceStr);
+		errorAttributes.put(ATTR_Stacktrace, stackTraceList);
 	}
 
 	private void addPath(final Map<String, Object> errorAttributes, final RequestAttributes requestAttributes)

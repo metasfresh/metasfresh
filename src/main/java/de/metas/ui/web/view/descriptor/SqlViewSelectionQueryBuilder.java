@@ -2,6 +2,7 @@ package de.metas.ui.web.view.descriptor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -694,4 +695,18 @@ public final class SqlViewSelectionQueryBuilder
 				+ " WHERE " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + "=" + DB.TO_STRING(selectionId);
 	}
 
+	public static SqlAndParams buildSqlSelectRecordIdsForLineIds(@NonNull final String selectionId, final Collection<Integer> lineIds)
+	{
+		Check.assumeNotEmpty(lineIds, "lineIds is not empty");
+
+		final List<Object> sqlParams = new ArrayList<>();
+		sqlParams.add(selectionId);
+
+		final String sql = "SELECT " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID
+				+ " FROM " + I_T_WEBUI_ViewSelectionLine.Table_Name
+				+ " WHERE " + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + "=?"
+				+ " AND " + DB.buildSqlList(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID, lineIds, sqlParams);
+
+		return SqlAndParams.of(sql, sqlParams);
+	}
 }

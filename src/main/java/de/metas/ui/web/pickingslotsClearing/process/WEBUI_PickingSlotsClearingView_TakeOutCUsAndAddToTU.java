@@ -1,19 +1,22 @@
 package de.metas.ui.web.pickingslotsClearing.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -44,10 +47,9 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
  * #L%
  */
 
-public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToHU extends PickingSlotsClearingViewBasedProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
+public class WEBUI_PickingSlotsClearingView_TakeOutCUsAndAddToTU extends PickingSlotsClearingViewBasedProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	// services
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
 
@@ -61,34 +63,31 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToHU extends PickingS
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		//
-		// Make sure we have something selected on left side and right side view
+		// Validate the picking slots clearing selected row (left side)
 		if (!isSingleSelectedPickingSlotRow())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select one and only one picking slots HU");
 		}
-		if (!isSingleSelectedPackingHUsRow())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("select one and only one HU to pack to");
-		}
-
-		//
-		// Validate the picking slots clearing selected row
 		final PickingSlotRow pickingSlotRow = getSingleSelectedPickingSlotRow();
 		if (!pickingSlotRow.isPickedHURow())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select an HU");
 		}
-		if (!pickingSlotRow.isTopLevelHU())
+		if (!pickingSlotRow.isTU())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("select an top level HU");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("select a TU");
 		}
 
 		//
-		// Validate the packing HUs selected row
-		final HUEditorRow packingHURow = getSingleSelectedPackingHUsRow();
-		if (!packingHURow.isTopLevel())
+		// Validate the packing HUs selected row (right side)
+		if (!isSingleSelectedPackingHUsRow())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("select an top level HU to pack too");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("select one and only one HU to pack to");
+		}
+		final HUEditorRow packingHURow = getSingleSelectedPackingHUsRow();
+		if (!packingHURow.isTU())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("select a TU to pack too");
 		}
 
 		//
@@ -117,32 +116,52 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToHU extends PickingS
 			throw new FillMandatoryException(PARAM_QtyCU);
 		}
 
-		final I_M_HU fromHU = getSingleSelectedPickingSlotTopLevelHU();
-		final IAllocationSource source = HUListAllocationSourceDestination.of(fromHU)
+		final I_M_HU fromTU = getSourceTU();
+		final IAllocationSource source = HUListAllocationSourceDestination.of(fromTU)
 				.setDestroyEmptyHUs(true);
-		final IAllocationDestination destination = HUListAllocationSourceDestination.of(getTargetHU());
+
+		final IAllocationDestination destination = HUListAllocationSourceDestination.of(getTargetTU());
+
+		final List<Integer> huIdsDestroyedCollector = new ArrayList<>();
+
 		HULoader.of(source, destination)
 				.setAllowPartialUnloads(false)
 				.setAllowPartialLoads(false)
-				.load(prepareUnloadRequest(fromHU, qtyCU).create());
+				.load(prepareUnloadRequest(fromTU, qtyCU)
+						.setForceQtyAllocation(true)
+						.addEmptyHUListener(EmptyHUListener.doBeforeDestroyed(hu -> huIdsDestroyedCollector.add(hu.getM_HU_ID())))
+						.create());
 
-		// If the source HU was destroyed, then "remove" it from picking slots
-		if (handlingUnitsBL.isDestroyedRefreshFirst(fromHU))
+		// Remove from picking slots all destroyed HUs
+		pickingCandidateService.inactivateForHUIds(huIdsDestroyedCollector);
+
+		return MSG_OK;
+	}
+
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		if (!success)
 		{
-			pickingCandidateService.inactivateForHUId(fromHU.getM_HU_ID());
+			return;
 		}
 
 		// Invalidate views
 		getPickingSlotsClearingView().invalidateAll();
 		getPackingHUsView().invalidateAll();
-
-		return MSG_OK;
 	}
 
-	private I_M_HU getTargetHU()
+	private I_M_HU getSourceTU()
+	{
+		final PickingSlotRow huRow = getSingleSelectedPickingSlotRow();
+		Check.assume(huRow.isTU(), "row {} shall be a TU", huRow);
+		return load(huRow.getHuId(), I_M_HU.class);
+	}
+
+	private I_M_HU getTargetTU()
 	{
 		final HUEditorRow huRow = getSingleSelectedPackingHUsRow();
-		Check.assume(huRow.isTopLevel(), "row {} shall be a top level HU", huRow);
+		Check.assume(huRow.isTU(), "row {} shall be a TU", huRow);
 		return huRow.getM_HU();
 	}
 }
