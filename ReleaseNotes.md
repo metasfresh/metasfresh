@@ -17,7 +17,7 @@ Here come the actual release notes:
 * metasfresh
   * [#3428](https://github.com/metasfresh/metasfresh/issues/3428) Switch off Daterange in Preparation date Filer temporarily
     * Changes the Filter of Preparation Date to simple Date instead of Daterange.
-  * [#3439](https://github.com/metasfresh/metasfresh/issues/3439 Improvement of GO Delivery Order Window
+  * [#3439](https://github.com/metasfresh/metasfresh/issues/3439) Improvement of GO Delivery Order Window
     * Improved the visibility of important information in the GO! Delivery Window in WebUI.
 
 
