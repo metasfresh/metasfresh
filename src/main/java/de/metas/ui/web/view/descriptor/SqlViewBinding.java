@@ -29,6 +29,8 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
+import de.metas.ui.web.view.DefaultViewInvalidationAdvisor;
+import de.metas.ui.web.view.IViewInvalidationAdvisor;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewRowCustomizer;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
@@ -84,6 +86,8 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	private final SqlViewGroupingBinding groupingBinding;
 	private final SqlDocumentFilterConverterDecorator filterConverterDecorator;
+
+	private final IViewInvalidationAdvisor viewInvalidationAdvisor;
 
 	public static final Builder builder()
 	{
@@ -143,6 +147,8 @@ public class SqlViewBinding implements SqlEntityBinding
 		filterConverterDecorator = builder.sqlDocumentFilterConverterDecorator;
 
 		rowIdsConverter = builder.getRowIdsConverter();
+
+		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
 	}
 
 	@Override
@@ -321,6 +327,11 @@ public class SqlViewBinding implements SqlEntityBinding
 		return groupingBinding.isAggregated(fieldName);
 	}
 
+	public IViewInvalidationAdvisor getViewInvalidationAdvisor()
+	{
+		return viewInvalidationAdvisor;
+	}
+
 	@lombok.Value
 	private static final class OrderByFieldNameAliasMap
 	{
@@ -373,6 +384,8 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		private SqlViewGroupingBinding groupingBinding;
 		private SqlDocumentFilterConverterDecorator sqlDocumentFilterConverterDecorator = null;
+
+		private IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
 
 		private Builder()
 		{
@@ -584,6 +597,17 @@ public class SqlViewBinding implements SqlEntityBinding
 		private ViewRowCustomizer getRowCustomizer()
 		{
 			return rowCustomizer;
+		}
+
+		public Builder viewInvalidationAdvisor(@NonNull final IViewInvalidationAdvisor viewInvalidationAdvisor)
+		{
+			this.viewInvalidationAdvisor = viewInvalidationAdvisor;
+			return this;
+		}
+
+		private IViewInvalidationAdvisor getViewInvalidationAdvisor()
+		{
+			return viewInvalidationAdvisor;
 		}
 	}
 }
