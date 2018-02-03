@@ -24,7 +24,6 @@ class RawLookup extends Component {
       selected: null,
       loading: false,
       oldValue: "",
-      isOpen: false,
       shouldBeFocused: true,
       validLocal: true
     };
@@ -108,15 +107,15 @@ class RawLookup extends Component {
     // eslint-disable-next-line react/no-find-dom-node
     let element = ReactDOM.findDOMNode(this.lookupList);
     const { top } = element.getBoundingClientRect();
-    const { filter } = this.props;
-    const { isOpen } = this.state;
+    const { filter, isOpen } = this.props;
+
     if (
       isOpen &&
       filter.visible &&
       (top + 20 > filter.boundingRect.bottom ||
         top - 20 < filter.boundingRect.top)
     ) {
-      this.setState({ isOpen: false });
+      this.props.onDropdownListToggle(false);
     }
   };
 
@@ -236,17 +235,12 @@ class RawLookup extends Component {
   };
 
   handleBlur = callback => {
-    const { dispatch } = this.props;
-    this.setState(
-      {
-        isOpen: false
-      },
-      () => {
-        if (callback) {
-          callback();
-        }
-      }
-    );
+    const { dispatch, onHandleBlur } = this.props;
+
+    this.props.onDropdownListToggle(false);
+    callback && callback();
+
+    onHandleBlur && onHandleBlur();
     dispatch(allowOutsideClick());
   };
 
@@ -279,9 +273,10 @@ class RawLookup extends Component {
       this.setState({
         isInputEmpty: false,
         loading: true,
-        query: this.inputSearch.value,
-        isOpen: true
+        query: this.inputSearch.value
       });
+
+      this.props.onDropdownListToggle(true);
 
       let typeaheadRequest;
       if (entity === "documentView" && !filterWidget) {
@@ -418,10 +413,11 @@ class RawLookup extends Component {
       placeholder,
       readonly,
       disabled,
-      tabIndex
+      tabIndex,
+      isOpen
     } = this.props;
 
-    const { isInputEmpty, list, query, loading, selected, isOpen } = this.state;
+    const { isInputEmpty, list, query, loading, selected } = this.state;
     const SEARCH_ICON_WIDTH = 38;
     return (
       <div

@@ -22,7 +22,8 @@ class Lookup extends Component {
       initialFocus: false,
       localClearing: false,
       fireDropdownList: false,
-      autofocusDisabled: false
+      autofocusDisabled: false,
+      isDropdownListOpen: false
     };
   }
 
@@ -116,6 +117,20 @@ class Lookup extends Component {
     );
   };
 
+  dropdownListToggle = value => {
+    const { onFocus, onHandleBlur } = this.props;
+
+    this.setState({
+      isDropdownListOpen: value
+    });
+
+    if (value && onFocus) {
+      onFocus();
+    } else if (!value && onHandleBlur) {
+      onHandleBlur();
+    }
+  };
+
   resetLocalClearing = () => {
     this.setState({
       localClearing: false
@@ -123,17 +138,19 @@ class Lookup extends Component {
   };
 
   handleClickOutside = () => {
-    this.setState(
-      {
-        fireClickOutside: true,
-        property: ""
-      },
-      () => {
-        this.setState({
-          fireClickOutside: false
-        });
-      }
-    );
+    if (this.state.isDropdownListOpen) {
+      this.setState(
+        {
+          fireClickOutside: true,
+          property: ""
+        },
+        () => {
+          this.setState({
+            fireClickOutside: false
+          });
+        }
+      );
+    }
   };
 
   handleInputEmptyStatus = isEmpty => {
@@ -257,6 +274,9 @@ class Lookup extends Component {
                   fireDropdownList={fireDropdownList}
                   handleInputEmptyStatus={this.handleInputEmptyStatus}
                   enableAutofocus={this.enableAutofocus}
+                  onHandleBlur={this.props.onHandleBlur}
+                  isOpen={this.state.isDropdownListOpen}
+                  onDropdownListToggle={this.dropdownListToggle}
                   {...{
                     placeholder,
                     readonly,
@@ -324,6 +344,8 @@ class Lookup extends Component {
                     setNextProperty={this.setNextProperty}
                     disableAutofocus={this.disableAutofocus}
                     enableAutofocus={this.enableAutofocus}
+                    onFocus={this.props.onFocus}
+                    onHandleBlur={this.props.onHandleBlur}
                     {...{
                       dataId,
                       entity,

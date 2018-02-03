@@ -40,19 +40,21 @@ class Attributes extends Component {
       property: prop,
       value
     }).then(response => {
-      const fields = response.data[0].fieldsByName;
-      Object.keys(fields).map(fieldName => {
-        this.setState(
-          prevState => ({
-            data: Object.assign({}, prevState.data, {
-              [fieldName]: Object.assign({}, prevState.data[fieldName], {
-                value
+      if (response.data && response.data.length) {
+        const fields = response.data[0].fieldsByName;
+        Object.keys(fields).map(fieldName => {
+          this.setState(
+            prevState => ({
+              data: Object.assign({}, prevState.data, {
+                [fieldName]: Object.assign({}, prevState.data[fieldName], {
+                  value
+                })
               })
-            })
-          }),
-          () => cb && cb()
-        );
-      });
+            }),
+            () => cb && cb()
+          );
+        });
+      }
     });
   };
 
@@ -125,10 +127,7 @@ class Attributes extends Component {
   };
 
   handleCompletion = () => {
-    const { attributeType, patch } = this.props;
     const { data } = this.state;
-    const attrId = data && data.ID ? data.ID.value : -1;
-
     const mandatory = Object.keys(data).filter(
       fieldName => data[fieldName].mandatory
     );
@@ -142,9 +141,17 @@ class Attributes extends Component {
       return;
     }
 
+    this.doCompleteRequest();
+    this.handleToggle(false);
+  };
+
+  doCompleteRequest = () => {
+    const { attributeType, patch } = this.props;
+    const { data } = this.state;
+    const attrId = data && data.ID ? data.ID.value : -1;
+
     completeRequest(attributeType, attrId).then(response => {
       patch(response.data);
-      this.handleToggle(false);
     });
   };
 
@@ -209,7 +216,8 @@ class Attributes extends Component {
 }
 
 Attributes.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
+  patch: PropTypes.func
 };
 
 export default connect()(Attributes);

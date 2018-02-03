@@ -100,9 +100,13 @@ class List extends Component {
   };
 
   handleFocus = () => {
+    const { onFocus } = this.props;
+
     if (this.state && !this.state.list && !this.state.loading) {
       this.requestListData();
     }
+
+    onFocus && onFocus();
   };
 
   focus = () => {
@@ -198,6 +202,7 @@ class List extends Component {
       lookupList,
       autofocus,
       blur,
+      onHandleBlur,
       initialFocus,
       lastProperty,
       disableAutofocus
@@ -227,6 +232,7 @@ class List extends Component {
         lastProperty={lastProperty}
         disableAutofocus={disableAutofocus}
         blur={blur}
+        onHandleBlur={onHandleBlur}
         onRequestListData={this.requestListData}
         onFocus={this.handleFocus}
         onSelect={option => this.handleSelect(option)}

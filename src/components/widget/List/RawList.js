@@ -246,7 +246,7 @@ class RawList extends Component {
   };
 
   handleBlur = e => {
-    const { dispatch } = this.props;
+    const { dispatch, onHandleBlur } = this.props;
     // if dropdown item is selected
     // prevent blur event to keep the dropdown list displayed
     if (!this.considerBlur || (e && this.dropdown.contains(e.target))) {
@@ -270,6 +270,8 @@ class RawList extends Component {
       isOpen: false,
       selected: selected || 0
     });
+
+    onHandleBlur && onHandleBlur();
 
     dispatch(allowOutsideClick());
   };
