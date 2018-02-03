@@ -34,7 +34,6 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
 
-
 ## Fixes
 * metasfresh
   * [#3394](https://github.com/metasfresh/metasfresh/issues/3394) Sales inout Jasper: HU name taken from line
