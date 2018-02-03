@@ -419,27 +419,27 @@ public interface I_C_PurchaseCandidate
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Menge angefragt.
+	 * Set Bestellmenge.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyRequiered (java.math.BigDecimal QtyRequiered);
+	public void setQtyToPurchase (java.math.BigDecimal QtyToPurchase);
 
 	/**
-	 * Get Menge angefragt.
+	 * Get Bestellmenge.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyRequiered();
+	public java.math.BigDecimal getQtyToPurchase();
 
-    /** Column definition for QtyRequiered */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_QtyRequiered = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "QtyRequiered", null);
-    /** Column name QtyRequiered */
-    public static final String COLUMNNAME_QtyRequiered = "QtyRequiered";
+    /** Column definition for QtyToPurchase */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_QtyToPurchase = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "QtyToPurchase", null);
+    /** Column name QtyToPurchase */
+    public static final String COLUMNNAME_QtyToPurchase = "QtyToPurchase";
 
 	/**
 	 * Get Aktualisiert.

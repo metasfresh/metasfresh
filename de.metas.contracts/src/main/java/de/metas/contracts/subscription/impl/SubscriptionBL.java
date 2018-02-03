@@ -39,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -704,16 +705,15 @@ public class SubscriptionBL implements ISubscriptionBL
 				deliveries.get(0).getC_Flatrate_Term().getC_OrderLine_Term(),
 				I_C_OrderLine.class);
 
-		final IProductPA productPA = Services.get(IProductPA.class);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final I_M_PriceList pl = InterfaceWrapperHelper.create(
-				productPA.retrievePriceListByPricingSyst(
-						ctx,
+				priceListDAO.retrievePriceListByPricingSyst(
 						mPricingSystemId,
-						ol.getC_BPartner_Location_ID(),
-						true,
-						trxName),
+						ol.getC_BPartner_Location(),
+						true),
 				I_M_PriceList.class);
 
+		final IProductPA productPA = Services.get(IProductPA.class);
 		final BigDecimal newPrice = productPA.retrievePriceStd(
 				ol.getM_Product_ID(),
 				ol.getC_BPartner_ID(),

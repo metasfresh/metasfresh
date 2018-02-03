@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
@@ -66,6 +68,22 @@ public class PickingCandidateRepository
 				.create()
 				.list();
 		return scheds;
+	}
+
+	public Set<Integer> retrieveShipmentScheduleIdsForPickingCandidateIds(final Collection<Integer> pickingCandidateIds)
+	{
+		if (pickingCandidateIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_Picking_Candidate_ID, pickingCandidateIds)
+				.create()
+				.listDistinct(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, Integer.class)
+				.stream()
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public List<I_M_Picking_Candidate> retrievePickingCandidatesByHUIds(@NonNull final Collection<Integer> huIds)

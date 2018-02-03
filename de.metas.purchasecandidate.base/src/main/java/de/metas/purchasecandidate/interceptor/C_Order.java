@@ -48,7 +48,7 @@ public class C_Order
 			return;
 		}
 
-		final List<Integer> purchaseCandidateIds = purchaseCandidateRepo.getAllPurchaseCandidateIdsBySalesOrderId(order.getC_Order_ID());
+		final List<Integer> purchaseCandidateIds = purchaseCandidateRepo.retrievePurchaseCandidateIdsBySalesOrderIdFilterQtyToPurchase(order.getC_Order_ID());
 		if (purchaseCandidateIds.isEmpty())
 		{
 			return;
