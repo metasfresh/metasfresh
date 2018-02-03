@@ -48,3 +48,13 @@ UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541350, SeqNo=90,Updated=TO_TIMES
 UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=541350, SeqNo=100,Updated=TO_TIMESTAMP('2018-02-03 08:07:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550089
 ;
 
+-- 2018-02-03T08:12:37.416
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=541352
+;
+
+-- 2018-02-03T08:12:55.408
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_ElementGroup SET SeqNo=20,Updated=TO_TIMESTAMP('2018-02-03 08:12:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=541351
+;
+
