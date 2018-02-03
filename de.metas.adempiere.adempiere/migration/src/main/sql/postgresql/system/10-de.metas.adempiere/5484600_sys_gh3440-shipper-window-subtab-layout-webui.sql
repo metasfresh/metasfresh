@@ -148,3 +148,38 @@ UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2018-02-03 08:32:
 UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2018-02-03 08:32:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550559
 ;
 
+-- 2018-02-03T08:35:28.943
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='GO! URL',Updated=TO_TIMESTAMP('2018-02-03 08:35:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=561328
+;
+
+-- 2018-02-03T08:35:38.731
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Auth Passwort',Updated=TO_TIMESTAMP('2018-02-03 08:35:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=561330
+;
+
+-- 2018-02-03T08:35:46.638
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Auth Benutzername',Updated=TO_TIMESTAMP('2018-02-03 08:35:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=561329
+;
+
+-- 2018-02-03T08:35:52.867
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Request Benutzername',Updated=TO_TIMESTAMP('2018-02-03 08:35:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=561331
+;
+
+-- 2018-02-03T08:36:24.619
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='GO Lieferweg Konfiguration',Updated=TO_TIMESTAMP('2018-02-03 08:36:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=561327
+;
+
+-- 2018-02-03T08:37:00.068
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='GO! Konfiguration',Updated=TO_TIMESTAMP('2018-02-03 08:37:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540982
+;
+
+-- 2018-02-03T08:37:32.685
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Fracht Kategorie',Updated=TO_TIMESTAMP('2018-02-03 08:37:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=7053
+;
+
