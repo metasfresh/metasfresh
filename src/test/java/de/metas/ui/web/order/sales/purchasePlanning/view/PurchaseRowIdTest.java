@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
+import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult.Type;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*

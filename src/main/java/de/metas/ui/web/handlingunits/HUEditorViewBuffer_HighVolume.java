@@ -24,6 +24,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
+import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
@@ -208,8 +209,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 
 		return streamPage(0, STREAM_ALL_MAX_SIZE_ALLOWED, filter, defaultSelection.getOrderBys())
 				.flatMap(HUEditorRow::streamRecursive)
-				.map(HUEditorRow::cast)
-				.filter(HUEditorRowFilters.toPredicate(filter));
+				.map(HUEditorRow::cast);
 	}
 
 	@Override

@@ -395,16 +395,6 @@ public final class PickingSlotRow implements IViewRow
 		return huTopLevel;
 	}
 
-	public boolean isLU()
-	{
-		return isPickedHURow() && getType().isLU();
-	}
-
-	public boolean isTU()
-	{
-		return isPickedHURow() && getType().isTU();
-	}
-
 	/**
 	 * 
 	 * @return {@code true} if this row represents an HU that is a source-HU for fine-picking.

@@ -87,7 +87,7 @@ public class MaterialCockpitRowRepository
 			}
 
 			@Override
-			public ListMultimap<TableRecordReference, MaterialCockpitRow> getTableRecordReference2rows()
+			public Map<TableRecordReference, Collection<MaterialCockpitRow>> getTableRecordReference2rows()
 			{
 				return extractTableRecordReference2DocumentId2(getDocumentId2AllRows().values());
 			}
@@ -155,7 +155,7 @@ public class MaterialCockpitRowRepository
 		return products;
 	}
 
-	private static ListMultimap<TableRecordReference, MaterialCockpitRow> extractTableRecordReference2DocumentId2(
+	private Map<TableRecordReference, Collection<MaterialCockpitRow>> extractTableRecordReference2DocumentId2(
 			@NonNull final Collection<MaterialCockpitRow> allRows)
 	{
 		final ListMultimap<TableRecordReference, MaterialCockpitRow> recordReference2DocumentId = ArrayListMultimap.create();
@@ -173,6 +173,6 @@ public class MaterialCockpitRowRepository
 							.put(TableRecordReference.of(I_MD_Stock.Table_Name, stockRecordId), materialCockpitRow));
 		}
 
-		return recordReference2DocumentId;
+		return recordReference2DocumentId.asMap();
 	}
 }

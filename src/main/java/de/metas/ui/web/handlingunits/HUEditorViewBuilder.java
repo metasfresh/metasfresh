@@ -3,7 +3,6 @@ package de.metas.ui.web.handlingunits;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
@@ -267,12 +266,6 @@ public final class HUEditorViewBuilder
 			}
 		}
 
-		return this;
-	}
-
-	public HUEditorViewBuilder setParameters(final Map<String, Object> parameters)
-	{
-		parameters.forEach(this::setParameter);
 		return this;
 	}
 

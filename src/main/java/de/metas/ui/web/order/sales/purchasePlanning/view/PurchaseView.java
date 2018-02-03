@@ -217,21 +217,14 @@ public class PurchaseView implements IEditableView
 	}
 
 	@Override
-	public void patchViewRow(
-			@NonNull final RowEditingContext ctx,
-			@NonNull final List<JSONDocumentChangedEvent> fieldChangeRequests)
+	public void patchViewRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
 		final PurchaseRowId rowId = PurchaseRowId.fromDocumentId(ctx.getRowId());
 		rows.patchRow(rowId, fieldChangeRequests);
 
-		// notify the frontend
-		final DocumentId groupRowDocumentId = PurchaseRowId.fromDocumentId(ctx.getRowId())
-				.toGroupRowId()
-				.toDocumentId();
-
-		ViewChangesCollector
-				.getCurrentOrAutoflush()
-				.collectRowChanged(this, groupRowDocumentId);
+		// i.e. notify frontend that given row and it's parent changed.
+		// better invalidate all then trying to figure out which rows where changed, precisely
+		invalidateAll();
 	}
 
 	@Override

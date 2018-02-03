@@ -3,7 +3,6 @@ package de.metas.ui.web.view;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -13,7 +12,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.collections.ListUtils;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.process.RelatedProcessDescriptor;
@@ -155,9 +153,6 @@ public final class CreateViewRequest
 
 	ViewActionDescriptorsList actions;
 	ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
-	
-	ImmutableMap<String, Object> parameters;
-
 
 	private CreateViewRequest(final Builder builder)
 	{
@@ -176,8 +171,6 @@ public final class CreateViewRequest
 
 		actions = builder.getActions();
 		additionalRelatedProcessDescriptors = ImmutableList.copyOf(builder.getAdditionalRelatedProcessDescriptors());
-		
-		parameters = builder.getParameters();
 	}
 
 	private CreateViewRequest(@NonNull final CreateViewRequest from, @NonNull final DocumentFiltersList filters)
@@ -197,8 +190,6 @@ public final class CreateViewRequest
 
 		actions = from.actions;
 		additionalRelatedProcessDescriptors = from.additionalRelatedProcessDescriptors;
-		
-		parameters = from.parameters;
 	}
 
 	public Characteristic getViewTypeRequiredFieldCharacteristic()
@@ -283,8 +274,6 @@ public final class CreateViewRequest
 
 		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
 		private final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = new ArrayList<>();
-		
-		private LinkedHashMap<String, Object> parameters;
 
 		private Builder(
 				@NonNull final ViewId viewId,
@@ -468,30 +457,5 @@ public final class CreateViewRequest
 			return this;
 		}
 
-		public Builder setParameter(final String name, final Object value)
-		{
-			if (value == null)
-			{
-				if (parameters != null)
-				{
-					parameters.remove(name);
-				}
-			}
-			else
-			{
-				if (parameters == null)
-				{
-					parameters = new LinkedHashMap<>();
-					parameters.put(name, value);
-				}
-			}
-
-			return this;
-		}
-
-		private ImmutableMap<String, Object> getParameters()
-		{
-			return parameters != null ? ImmutableMap.copyOf(parameters) : ImmutableMap.of();
-		}
 	}
 }

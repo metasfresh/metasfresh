@@ -111,10 +111,7 @@ public class HUEditorRowFilters
 	{
 		final IHUQueryBuilder huQueryBuilder = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder();
 
-		//
 		// Filter by row type
-		// IMPORTANT: don't filter out TUs/CUs because it might be that we are searching for included rows too
-		// and in case we are filtering them out here the included TUs/CUs won't be found later...
 		final Select rowType = filter.getSelect();
 		if (rowType == Select.ALL)
 		{

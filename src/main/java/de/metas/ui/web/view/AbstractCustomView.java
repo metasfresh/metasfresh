@@ -3,8 +3,11 @@ package de.metas.ui.web.view;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
@@ -12,7 +15,6 @@ import org.compiere.util.Evaluatee;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -262,13 +264,11 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	}
 
 	@Override
-	public final void notifyRecordsChanged(@NonNull final Set<TableRecordReference> recordRefs)
+	@OverridingMethodsMustInvokeSuper
+	public void notifyRecordsChanged(@NonNull final Set<TableRecordReference> recordRefs)
 	{
-		final ImmutableList<DocumentId> affectedRowIds = recordRefs.stream()
-				.filter(this::isEligibleInvalidateEvent)
-				.flatMap(this::extractDocumentIdsToInvalidate)
-				.collect(ImmutableList.toImmutableList());
-		if (affectedRowIds.isEmpty())
+		final ImmutableList<DocumentId> changedDocumentIds = extractDocumentIds(recordRefs);
+		if (changedDocumentIds.isEmpty())
 		{
 			return; // nothing to do
 		}
@@ -276,20 +276,22 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		rowsData.invalidateAll();
 		ViewChangesCollector
 				.getCurrentOrAutoflush()
-				.collectRowsChanged(this, DocumentIdsSelection.of(affectedRowIds));
+				.collectRowsChanged(this, DocumentIdsSelection.of(changedDocumentIds));
 	}
 
-	protected boolean isEligibleInvalidateEvent(final TableRecordReference recordRef)
+	private ImmutableList<DocumentId> extractDocumentIds(
+			@NonNull final Set<TableRecordReference> recordRefs)
 	{
-		return true;
-	}
+		final Map<TableRecordReference, Collection<T>> recordReference2DocumentId = //
+				rowsData.getTableRecordReference2rows();
 
-	protected Stream<DocumentId> extractDocumentIdsToInvalidate(final TableRecordReference recordRef)
-	{
-		return rowsData.getTableRecordReference2rows()
-				.get(recordRef)
-				.stream()
-				.map(IViewRow::getId);
+		final ImmutableList<DocumentId> changedDocumentIds = recordRefs.stream()
+				.map(recordReference2DocumentId::get)
+				.filter(Objects::nonNull)
+				.flatMap(rows -> rows.stream())
+				.map(IViewRow::getId)
+				.collect(ImmutableList.toImmutableList());
+		return changedDocumentIds;
 	}
 
 	private static class RowsDataTool
@@ -331,7 +333,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 			return RowsDataTool.extractAllRows(getDocumentId2TopLevelRows().values());
 		}
 
-		ListMultimap<TableRecordReference, T> getTableRecordReference2rows();
+		Map<TableRecordReference, Collection<T>> getTableRecordReference2rows();
 
 		void invalidateAll();
 	}

@@ -50,7 +50,7 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 {
 	// services
 	protected final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-
+	
 	public final PickingSlotsClearingView getPickingSlotsClearingView()
 	{
 		return getView(PickingSlotsClearingView.class);
@@ -66,7 +66,6 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		return getSelectedRowIds().isSingleDocumentId();
 	}
 
-	/** @return single selected picking slot row (left side) */
 	protected final PickingSlotRow getSingleSelectedPickingSlotRow()
 	{
 		return PickingSlotRow.cast(super.getSingleSelectedRow());
@@ -79,7 +78,7 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		final I_M_HU fromHU = InterfaceWrapperHelper.load(huRow.getHuId(), I_M_HU.class);
 		return fromHU;
 	}
-
+	
 	protected final BigDecimal retrieveQtyCU(@NonNull final I_M_HU hu)
 	{
 		final IHUContext huContext = huContextFactory.createMutableHUContext();
@@ -90,10 +89,10 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		{
 			return BigDecimal.ZERO;
 		}
-
+		
 		final IHUProductStorage productStorage = fromHUStorage.getProductStorage(product);
 		return productStorage.getQty();
-
+		
 	}
 
 	/** @return the actual picking slow row (the top level row) */
@@ -125,7 +124,7 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		final DocumentId rowId = selectedRowIds.getSingleDocumentId();
 		return getPackingHUsView().getById(rowId);
 	}
-
+	
 	protected IAllocationRequestBuilder prepareUnloadRequest(@NonNull final I_M_HU fromHU, @NonNull final BigDecimal qtyCU)
 	{
 		Check.assume(qtyCU.signum() > 0, "qtyCU > 0");

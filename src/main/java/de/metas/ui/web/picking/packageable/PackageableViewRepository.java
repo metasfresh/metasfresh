@@ -2,21 +2,30 @@ package de.metas.ui.web.picking.packageable;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Maps;
 
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.ui.web.picking.PickingConstants;
+import de.metas.ui.web.view.AbstractCustomView.IRowsData;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -108,26 +117,70 @@ public class PackageableViewRepository
 
 	private PackageableRow createPickingRow(final ViewId viewId, final I_M_Packageable_V packageable)
 	{
+		final DocumentId rowId = DocumentId.of(packageable.getM_ShipmentSchedule_ID());
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingView, rowId);
+
 		return PackageableRow.builder()
-				.shipmentScheduleId(packageable.getM_ShipmentSchedule_ID())
+				.documentPath(documentPath)
 				.viewId(viewId)
+				.id(rowId)
 				//
 				.order(orderLookup.get().findById(packageable.getC_Order_ID()))
 				.product(productLookup.get().findById(packageable.getM_Product_ID()))
 				.bpartner(bpartnerLookup.get().findById(packageable.getC_BPartner_ID()))
 				.preparationDate(packageable.getPreparationDate())
 				.qtyToDeliver(packageable.getQtyToDeliver())
+				.shipmentScheduleId(packageable.getM_ShipmentSchedule_ID())
 				.qtyPickedPlanned(packageable.getQtyPickedPlanned())
 				//
 				.build();
 	}
 
-	public PackageableRowsData createRowsData(
+	public IRowsData<PackageableRow> createRowsData(
 			@NonNull final ViewId viewId,
 			@NonNull final Collection<Integer> filterOnlyIds)
 	{
-		// this is never null, empty means "no restriction"
-		final Set<DocumentId> rowIds = filterOnlyIds.stream().map(DocumentId::of).collect(ImmutableSet.toImmutableSet());
-		return PackageableRowsData.ofSupplier(() -> retrieveRowsByIds(viewId, rowIds));
+		final Set<DocumentId> rowIds = filterOnlyIds // this is never null, empty means "no restriction"
+				.stream().map(DocumentId::of).collect(ImmutableSet.toImmutableSet());
+
+		return new IRowsData<PackageableRow>()
+		{
+			private final ExtendedMemorizingSupplier<List<PackageableRow>> topLevelRows = //
+					ExtendedMemorizingSupplier.of(() -> retrieveRowsByIds(viewId, rowIds));
+
+			@Override
+			public Map<DocumentId, PackageableRow> getDocumentId2TopLevelRows()
+			{
+				return Maps.uniqueIndex(topLevelRows.get(), row -> row.getId());
+			}
+
+			@Override
+			public Map<TableRecordReference, Collection<PackageableRow>> getTableRecordReference2rows()
+			{
+				return extractTableRecordReference2DocumentId2(getDocumentId2AllRows().values());
+			}
+
+			@Override
+			public void invalidateAll()
+			{
+				topLevelRows.forget();
+			}
+		};
+	}
+
+	private Map<TableRecordReference, Collection<PackageableRow>> extractTableRecordReference2DocumentId2(
+			@NonNull final Collection<PackageableRow> allRows)
+	{
+		final ListMultimap<TableRecordReference, PackageableRow> recordReference2DocumentId = ArrayListMultimap.create();
+
+		for (final PackageableRow packageableRow : allRows)
+		{
+			recordReference2DocumentId.put(
+					TableRecordReference.of(
+							I_M_Packageable_V.Table_Name,
+							packageableRow.getShipmentScheduleId()),
+					packageableRow);
+		}
+		return recordReference2DocumentId.asMap();
 	}
 }

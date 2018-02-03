@@ -12,10 +12,8 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.CCache;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -23,7 +21,6 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilter.Builder;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
@@ -86,13 +83,10 @@ import lombok.Value;
 @Service
 public class SqlViewFactory implements IViewFactory
 {
-	private static final Logger logger = LogManager.getLogger(SqlViewFactory.class);
-
 	private final DocumentDescriptorFactory documentDescriptorFactory;
 	private final DocumentReferencesService documentReferencesService;
 
 	private final ImmutableMap<WindowId, SqlDocumentFilterConverterDecorator> windowId2SqlDocumentFilterConverterDecorator;
-	private final ImmutableMap<WindowId, IViewInvalidationAdvisor> viewInvalidationAdvisorsByWindowId;
 
 	@Value
 	private static final class SqlViewBindingKey
@@ -117,26 +111,16 @@ public class SqlViewFactory implements IViewFactory
 			@NonNull final DocumentReferencesService documentReferencesService,
 			@NonNull final List<SqlViewCustomizer> viewCustomizers,
 			@NonNull final List<DefaultViewProfileIdProvider> defaultViewProfileIdProviders,
-			@NonNull final List<SqlDocumentFilterConverterDecorator> converterDecorators,
-			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors)
+			@NonNull final List<SqlDocumentFilterConverterDecorator> converterDecorators)
 	{
 		this.documentDescriptorFactory = documentDescriptorFactory;
 		this.documentReferencesService = documentReferencesService;
 
 		this.windowId2SqlDocumentFilterConverterDecorator = makeDecoratorsMapAndHandleDuplicates(converterDecorators);
-		logger.info("Filter converter decorators: {}", windowId2SqlDocumentFilterConverterDecorator);
 
 		this.viewProfiles = makeViewProfilesMap(viewCustomizers);
-		logger.info("View profiles: {}", this.viewProfiles);
-
 		this.viewCustomizers = makeViewCustomizersMap(viewCustomizers);
-		logger.info("View customizers: {}", this.viewCustomizers);
-
 		this.defaultProfileIdProvider = makeDefaultProfileIdProvider(defaultViewProfileIdProviders, viewCustomizers);
-		logger.info("Default ProfileId providers: {}", this.defaultProfileIdProvider);
-
-		this.viewInvalidationAdvisorsByWindowId = makeViewInvalidationAdvisorsMap(viewInvalidationAdvisors);
-		logger.info("view invalidation advisors: {}", this.viewInvalidationAdvisorsByWindowId);
 	}
 
 	private static ImmutableListMultimap<WindowId, ViewProfile> makeViewProfilesMap(Collection<SqlViewCustomizer> viewCustomizers)
@@ -182,25 +166,6 @@ public class SqlViewFactory implements IViewFactory
 			final String message = "The given collection of SqlDocumentFilterConverterDecoratorProvider implementors contains more than one element with the same window-id";
 			throw new AdempiereException(message, e)
 					.setParameter("sqlDocumentFilterConverterDecoratorProviders", providers)
-					.appendParametersToMessage();
-		}
-	}
-
-	private ImmutableMap<WindowId, IViewInvalidationAdvisor> makeViewInvalidationAdvisorsMap(final List<IViewInvalidationAdvisor> viewInvalidationAdvisors)
-	{
-		try
-		{
-			return Maps.uniqueIndex(viewInvalidationAdvisors, advisor -> {
-				final WindowId windowId = advisor.getWindowId();
-				Check.assumeNotNull(windowId, "windowId shall not be null for {}", advisor);
-				return windowId;
-			});
-		}
-		catch (IllegalArgumentException e)
-		{
-			final String message = "The given collection of " + IViewInvalidationAdvisor.class + " implementors contains more than one element with the same window-id";
-			throw new AdempiereException(message, e)
-					.setParameter("viewInvalidationAdvisors", viewInvalidationAdvisors)
 					.appendParametersToMessage();
 		}
 	}
@@ -291,8 +256,7 @@ public class SqlViewFactory implements IViewFactory
 				.setParentViewId(request.getParentViewId())
 				.setParentRowId(request.getParentRowId())
 				.addStickyFilters(request.getStickyFilters())
-				.addStickyFilter(extractReferencedDocumentFilter(windowId, request.getSingleReferencingDocumentPathOrNull()))
-				.viewInvalidationAdvisor(sqlViewBinding.getViewInvalidationAdvisor());
+				.addStickyFilter(extractReferencedDocumentFilter(windowId, request.getSingleReferencingDocumentPathOrNull()));
 
 		final DocumentFiltersList filters = request.getFilters();
 		if (filters.isJson())
@@ -403,8 +367,7 @@ public class SqlViewFactory implements IViewFactory
 		final DocumentFilterDescriptorsProvider filterDescriptors = entityDescriptor.getFilterDescriptors();
 
 		final SqlViewBinding.Builder builder = createBuilderForEntityBindingAndFieldNames(entityBinding, displayFieldNames)
-				.filterDescriptors(filterDescriptors)
-				.viewInvalidationAdvisor(getViewInvalidationAdvisor(windowId));
+				.filterDescriptors(filterDescriptors);
 
 		if (windowId2SqlDocumentFilterConverterDecorator.containsKey(windowId))
 		{
@@ -474,11 +437,7 @@ public class SqlViewFactory implements IViewFactory
 				.fieldLoader(new DocumentFieldValueLoaderAsSqlViewRowFieldLoader(documentField.getDocumentFieldValueLoader(), isDisplayColumnAvailable))
 		//
 		;
-	}
 
-	private IViewInvalidationAdvisor getViewInvalidationAdvisor(final WindowId windowId)
-	{
-		return viewInvalidationAdvisorsByWindowId.getOrDefault(windowId, DefaultViewInvalidationAdvisor.instance);
 	}
 
 	@Value

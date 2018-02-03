@@ -8,8 +8,6 @@ import java.util.Optional;
 import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
 
-import com.google.common.base.Predicates;
-
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -71,7 +69,6 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 		return new HashSet<>(ids)
 				.stream()
 				.map(this::findById)
-				.filter(Predicates.notNull())
 				.collect(LookupValuesList.collect());
 	}
 

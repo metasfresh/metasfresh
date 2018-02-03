@@ -99,12 +99,12 @@ class PurchaseRowsSaver
 				"Missing purchaseCandidate with C_PurchaseCandidate_ID={}; purchaseRow={}, existingPurchaseCandidatesById={}",
 				purchaseRow.getPurchaseCandidateId(), purchaseRow, existingPurchaseCandidatesById);
 
-		purchaseCandidate.setQtyToPurchase(purchaseRow.getQtyToPurchase());
+		purchaseCandidate.setQtyRequired(purchaseRow.getQtyToPurchase());
 		purchaseCandidate.setDatePromised(purchaseRow.getDatePromised());
 
 		Check.errorIf(
 				purchaseCandidate.isProcessedOrLocked() && purchaseCandidate.hasChanges(),
-				"The given purchaseRow has changes, but its purchaseCandidate is not editable; purchaseRow={}; purchaseCandidate={}",
+				"The given purchaseRow has changes, but its PurchaseCandidate is not editable; purchaseRow={}; purchaseCandidate={}",
 				purchaseRow, purchaseCandidate);
 
 		return purchaseCandidate;

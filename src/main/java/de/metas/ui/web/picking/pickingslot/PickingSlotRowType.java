@@ -1,7 +1,5 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import javax.annotation.Nullable;
-
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.ui.web.handlingunits.HUEditorRowType;
@@ -39,27 +37,14 @@ public class PickingSlotRowType implements IViewRowType
 
 	public static PickingSlotRowType forPickingSlotRow()
 	{
-		final HUEditorRowType huEditorRowType = null;
-		return new PickingSlotRowType(M_PICKING_SLOT, huEditorRowType);
+		return new PickingSlotRowType(M_PICKING_SLOT);
 	}
 
 	public static PickingSlotRowType forPickingHuRow(@NonNull final HUEditorRowType huEditorRowType)
 	{
-		return new PickingSlotRowType(huEditorRowType.getName(), huEditorRowType);
+		return new PickingSlotRowType(huEditorRowType.getName());
 	}
 
 	@NonNull
 	String name;
-	@Nullable
-	HUEditorRowType huEditorRowType;
-
-	public boolean isLU()
-	{
-		return huEditorRowType != null && huEditorRowType == HUEditorRowType.LU;
-	}
-
-	public boolean isTU()
-	{
-		return huEditorRowType != null && huEditorRowType == HUEditorRowType.TU;
-	}
 }

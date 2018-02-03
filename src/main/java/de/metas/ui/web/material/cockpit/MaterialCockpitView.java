@@ -1,10 +1,13 @@
 package de.metas.ui.web.material.cockpit;
 
 import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
@@ -78,14 +81,30 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 	{
 		return filters;
 	}
-	
+
 	@Override
-	protected boolean isEligibleInvalidateEvent(final TableRecordReference recordRef)
+	public void notifyRecordsChanged(@NonNull final Set<TableRecordReference> recordRefs)
 	{
-		final String tableName = recordRef.getTableName();
-		return I_MD_Cockpit.Table_Name.equals(tableName)
-				|| I_MD_Stock.Table_Name.equals(tableName);
+		final ImmutableSet<TableRecordReference> recordRefsWithRelatedTable = filterForRelevantTableName(recordRefs);
+		if (recordRefsWithRelatedTable.isEmpty())
+		{
+			return;
+		}
+		super.notifyRecordsChanged(recordRefs);
 	}
+
+	private ImmutableSet<TableRecordReference> filterForRelevantTableName(
+			@NonNull final Set<TableRecordReference> recordRefs)
+	{
+		final Predicate<TableRecordReference> isRelatedTable = //
+				ref -> I_MD_Cockpit.Table_Name.equals(ref.getTableName())
+						|| I_MD_Stock.Table_Name.equals(ref.getTableName());
+		final ImmutableSet<TableRecordReference> recordRefsWithRelatedTable = recordRefs.stream()
+				.filter(isRelatedTable)
+				.collect(ImmutableSet.toImmutableSet());
+		return recordRefsWithRelatedTable;
+	}
+
 
 	@Override
 	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()

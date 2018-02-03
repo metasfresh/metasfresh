@@ -17,11 +17,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityException;
+import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.SalesOrderLineWithCandidates;
 import de.metas.purchasecandidate.SalesOrderLines;
-import de.metas.purchasecandidate.availability.AvailabilityException;
-import de.metas.purchasecandidate.availability.AvailabilityResult;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -78,7 +78,7 @@ class PurchaseRowsLoader
 		final ImmutableList.Builder<PurchaseRow> result = ImmutableList.builder();
 		ImmutableMap.Builder<PurchaseCandidate, PurchaseRow> purchaseCandidate2purchaseRowBuilder = ImmutableMap.builder();
 
-		for (final SalesOrderLineWithCandidates salesOrderLineWithCandidates : salesOrderLines.getSalesOrderLinesWithCandidates())
+		for (final SalesOrderLineWithCandidates salesOrderLineWithCandidates : salesOrderLines.getOrderedSalesOrderLines())
 		{
 			final I_C_OrderLine salesOrderLine = salesOrderLineWithCandidates.getSalesOrderLine();
 

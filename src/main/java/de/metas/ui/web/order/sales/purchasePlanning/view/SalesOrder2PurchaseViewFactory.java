@@ -237,7 +237,6 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		{
 			final Set<Integer> purchaseCandidateIds = purchaseCandidates.stream()
 					.filter(purchaseCandidate -> !purchaseCandidate.isProcessedOrLocked())
-					.filter(purchaseCandidate -> purchaseCandidate.getQtyToPurchase().signum() > 0)
 					.map(PurchaseCandidate::getPurchaseCandidateId)
 					.collect(ImmutableSet.toImmutableSet());
 			if (purchaseCandidateIds.size() > 0)

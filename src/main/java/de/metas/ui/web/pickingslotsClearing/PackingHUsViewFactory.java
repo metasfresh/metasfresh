@@ -14,7 +14,6 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.handlingunits.DefaultHUEditorViewFactory;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
-import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Transform;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PackingHUsView_AddHUsToShipperTransportation;
 import de.metas.ui.web.pickingslotsClearing.process.WEBUI_PackingHUsView_AddHUsToShipperTransportationShipAndInvoice;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -152,7 +151,6 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 				.addStickyFilters(HUIdsFilterHelper.createFilter(huQuery))
 				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_PackingHUsView_AddHUsToShipperTransportation.class))
 				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_PackingHUsView_AddHUsToShipperTransportationShipAndInvoice.class))
-				.setParameter(WEBUI_M_HU_Transform.PARAM_CheckExistingHUsInsideView, true)
 				.build();
 
 		return huEditorViewFactory.createView(request);
