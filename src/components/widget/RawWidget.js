@@ -50,9 +50,13 @@ class RawWidget extends Component {
   }
 
   focus = () => {
+    const { handleFocus } = this.props;
+
     if (this.rawWidget && this.rawWidget.focus) {
       this.rawWidget.focus();
     }
+
+    handleFocus && handleFocus();
   };
 
   handleFocus = e => {
@@ -66,6 +70,22 @@ class RawWidget extends Component {
     });
     listenOnKeysFalse && listenOnKeysFalse();
     handleFocus && handleFocus();
+  };
+
+  handleBlur = (widgetField, value, id) => {
+    const { dispatch, handleBlur, listenOnKeysTrue } = this.props;
+
+    dispatch(allowShortcut());
+
+    handleBlur && handleBlur(this.willPatch(value));
+
+    this.setState({
+      isEdited: false
+    });
+
+    listenOnKeysTrue && listenOnKeysTrue();
+
+    this.handlePatch(widgetField, value, id);
   };
 
   willPatch = (value, valueTo) => {
@@ -108,22 +128,6 @@ class RawWidget extends Component {
     }
 
     return null;
-  };
-
-  handleBlur = (widgetField, value, id) => {
-    const { dispatch, handleBlur, listenOnKeysTrue } = this.props;
-
-    dispatch(allowShortcut());
-
-    handleBlur && handleBlur(this.willPatch(value));
-
-    this.setState({
-      isEdited: false
-    });
-
-    listenOnKeysTrue && listenOnKeysTrue();
-
-    this.handlePatch(widgetField, value, id);
   };
 
   handleProcess = () => {
@@ -454,6 +458,8 @@ class RawWidget extends Component {
             listenOnKeys={listenOnKeys}
             listenOnKeysFalse={listenOnKeysFalse}
             closeTableField={closeTableField}
+            onFocus={this.focus}
+            onHandleBlur={this.handleBlur}
             onChange={this.handlePatch}
             onBlurWidget={onBlurWidget}
           />
@@ -476,6 +482,8 @@ class RawWidget extends Component {
             windowType={windowType}
             rowId={rowId}
             tabId={tabId}
+            onFocus={this.focus}
+            onHandleBlur={this.handleBlur}
             onChange={option => this.handlePatch(widgetField, option, id)}
             align={gridAlign}
             updated={updated}

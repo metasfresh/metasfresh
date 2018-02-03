@@ -128,7 +128,6 @@ class Attributes extends Component {
 
   handleCompletion = () => {
     const { data } = this.state;
-
     const mandatory = Object.keys(data).filter(
       fieldName => data[fieldName].mandatory
     );
