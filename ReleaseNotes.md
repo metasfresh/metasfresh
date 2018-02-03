@@ -15,6 +15,11 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#3022](https://github.com/metasfresh/metasfresh/issues/3022) Contracts: ContractDocumentNo is 0 all the time
+  * [#3410](https://github.com/metasfresh/metasfresh/issues/3410) Enlarge AD_Table.TableName
+  * [#3411](https://github.com/metasfresh/metasfresh/issues/3411) Implement MSV3 purchase order
+  * [#3417](https://github.com/metasfresh/metasfresh/issues/3417) Support new VAT rate of 7.7% in Switzerland from 01.01.2018
+  * [#3419](https://github.com/metasfresh/metasfresh/issues/3419) Throw meaningful exception if MOrderLine.beforeSave has problems
   * [#3428](https://github.com/metasfresh/metasfresh/issues/3428) Switch off Daterange in Preparation date Filer temporarily
     * Changes the Filter of Preparation Date to simple Date instead of Daterange.
   * [#3439](https://github.com/metasfresh/metasfresh/issues/3439) Improvement of GO Delivery Order Window
@@ -22,13 +27,30 @@ Here come the actual release notes:
   * [#3440](https://github.com/metasfresh/metasfresh/issues/3440) Improvement of Shipper Window in WebUI
     * Extends the Shipper Window in WebUI, now also allowing the recording of the GO! Shipper Configuration.
 
+* metasfresh-webui-api
+  * [#812](https://github.com/metasfresh/metasfresh-webui-api/issues/812) Picking Tray Clearing: Action take out and add to LU/ TU
+  * [#815](https://github.com/metasfresh/metasfresh-webui-api/issues/815) Transform TU to exiting LU takes too long for Handling Unit Dropdown List
+  * [#817](https://github.com/metasfresh/metasfresh-webui-api/issues/817) Include stacktrace when providing the error to frontend
 
 * metasfresh-webui-frontend
 
 
 ## Fixes
-* metasfresh-webui-frontend
+* metasfresh
+  * [#3394](https://github.com/metasfresh/metasfresh/issues/3394) Sales inout Jasper: HU name taken from line
+  * [#3402](https://github.com/metasfresh/metasfresh/issues/3402) Can't credit memo a partially paid invoice
+    * Improvement of the status Handling after unclosing Manufacturing Orders.
 
+* metasfresh-webui-api
+  * [#617](https://github.com/metasfresh/metasfresh-webui-api/issues/617) Cache is not invalidated on country change
+  * [#801](https://github.com/metasfresh/metasfresh-webui-api/issues/801) Transforming aggregated CU with "CU to existing TU" not working correctly
+  * [#802](https://github.com/metasfresh/metasfresh-webui-api/issues/802) Transforming aggregated CU with "CU to new TU" not working correctly
+  * [#810](https://github.com/metasfresh/metasfresh-webui-api/issues/810) Update QtyPicked after picking
+  * [#811](https://github.com/metasfresh/metasfresh-webui-api/issues/811) Java Nullpointer Exception in special case with multiple attribute and multi column layout
+
+* metasfresh-webui-frontend
+  * [#1538](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1538) Date Fields not patched
+  * [#1543](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1543) Sales Order window Purchase Order modal overlay broken again
 
 # metasfresh 5.42 (2018-05)
 **release for week 2018-05**
@@ -125,14 +147,7 @@ Here come the actual release notes:
   * [#3350](https://github.com/metasfresh/metasfresh/issues/3350) Error creating movement from DDOrder
     * Fixes an Error that prevented the creation of movements from Distribution Orders.
   * [#3386](https://github.com/metasfresh/metasfresh/issues/3386) Issued HUs retain I status after PP_Order unclose
-<<<<<<< HEAD
-    * Improvement of the status Handling after unclosing Manufacturing Orders.
-||||||| merged common ancestors
-    * 
-=======
   * [#3426](https://github.com/metasfresh/metasfresh/issues/3426) Dunning Level is not set in invoice after generating dunning doc
-
->>>>>>> c97900ff3ce7942e0628aebbf73a5d630b8a00ab
 
 * metasfresh-webui-api
   * [#775](https://github.com/metasfresh/metasfresh-webui-api/issues/775) Destroyed HUs are still visible in material receipt
