@@ -13,14 +13,15 @@ package de.metas.contracts.subscription.callout;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -31,10 +32,8 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 
@@ -43,6 +42,7 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.contracts.subscription.model.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
+import de.metas.product.IProductPA;
 
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
@@ -92,8 +92,11 @@ public class C_OrderLine
 	public void onQtyEntered(final I_C_OrderLine ol, final ICalloutField field)
 	{
 
+
 		final I_C_Order order = ol.getC_Order();
 		final boolean isSOTrx = order.isSOTrx();
+
+
 
 		if (!isSOTrx || ol.getC_Flatrate_Conditions_ID() <= 0)
 		{
@@ -110,9 +113,9 @@ public class C_OrderLine
 			final boolean isSOTrx)
 	{
 		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
+		final IProductPA productPA = Services.get(IProductPA.class);
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 		final I_C_Flatrate_Conditions flatrateConditions = ol.getC_Flatrate_Conditions();
 		final I_C_Order order = ol.getC_Order();
@@ -128,19 +131,21 @@ public class C_OrderLine
 			pricingSysytemId = order.getM_PricingSystem_ID();
 		}
 
-		final I_C_BPartner_Location bpLocation = ol.getC_BPartner_Location();
+		final int bPartnerLocationId = ol.getC_BPartner_Location_ID();
 
 		final Timestamp date = order.getDateOrdered();
 
-		final I_M_PriceList subscriptionPL = priceListDAO.retrievePriceListByPricingSyst(pricingSysytemId, bpLocation, isSOTrx);
+		final I_M_PriceList subscriptionPL =
+				productPA.retrievePriceListByPricingSyst(ctx, pricingSysytemId, bPartnerLocationId, isSOTrx, ITrx.TRXNAME_None);
 
-		final int numberOfRuns = subscriptionBL.computeNumberOfRuns(flatrateConditions.getC_Flatrate_Transition(), date);
+		final int numberOfRuns =
+				subscriptionBL.computeNumberOfRuns(flatrateConditions.getC_Flatrate_Transition(), date);
 
-		final I_C_Flatrate_Matching matching = subscriptionBL.retrieveMatching(
-				ctx,
-				ol.getC_Flatrate_Conditions_ID(),
-				ol.getM_Product(),
-				ITrx.TRXNAME_None);
+		final I_C_Flatrate_Matching matching =
+				subscriptionBL.retrieveMatching(ctx,
+						ol.getC_Flatrate_Conditions_ID(),
+						ol.getM_Product(),
+						ITrx.TRXNAME_None);
 
 		final BigDecimal qtyPerRun;
 		final BigDecimal qtyEnteredInProductUOM = uomConversionBL.convertToProductUOM(ctx,

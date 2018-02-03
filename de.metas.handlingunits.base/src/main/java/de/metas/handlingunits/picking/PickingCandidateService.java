@@ -1,6 +1,5 @@
 package de.metas.handlingunits.picking;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.OptionalInt;
 
@@ -145,19 +144,13 @@ public class PickingCandidateService
 	public void inactivateForHUId(final int huId)
 	{
 		Check.assume(huId > 0, "huId > 0");
-		inactivateForHUIds(ImmutableList.of(huId));
-	}
+		
+		pickingCandidateRepository.retrievePickingCandidatesByHUIds(ImmutableList.of(huId))
+				.forEach(pickingCandidate -> {
+					pickingCandidate.setIsActive(false);
+					pickingCandidate.setStatus(X_M_Picking_Candidate.STATUS_CL);
+					InterfaceWrapperHelper.save(pickingCandidate);
+				});
 
-	public void inactivateForHUIds(final Collection<Integer> huIds)
-	{
-		pickingCandidateRepository.retrievePickingCandidatesByHUIds(huIds)
-				.forEach(this::inactivate);
-	}
-
-	private void inactivate(final I_M_Picking_Candidate pickingCandidate)
-	{
-		pickingCandidate.setIsActive(false);
-		pickingCandidate.setStatus(X_M_Picking_Candidate.STATUS_CL);
-		InterfaceWrapperHelper.save(pickingCandidate);
 	}
 }

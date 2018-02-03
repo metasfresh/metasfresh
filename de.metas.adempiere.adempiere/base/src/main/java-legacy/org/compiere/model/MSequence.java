@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software; you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program; if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -32,7 +32,6 @@ import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere.RunMode;
@@ -43,69 +42,69 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
 /**
- * Sequence Model.
- *
- * @see org.compiere.process.SequenceCheck
- * @author Jorg Janke
- * @version $Id: MSequence.java,v 1.3 2006/07/30 00:58:04 jjanke Exp $
+ *	Sequence Model.
+ *	@see org.compiere.process.SequenceCheck
+ *  @author Jorg Janke
+ *  @version $Id: MSequence.java,v 1.3 2006/07/30 00:58:04 jjanke Exp $
  */
 public class MSequence extends X_AD_Sequence
 {
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = -6827013120475678483L;
 
 	public static final String SYSCONFIG_DICTIONARY_ID_USE_CENTRALIZED_ID = "DICTIONARY_ID_USE_CENTRALIZED_ID";
 	public static final String SYSCONFIG_PROJECT_ID_USE_CENTRALIZED_ID = "PROJECT_ID_USE_CENTRALIZED_ID";
-
-	/** Use SQL procedure to get next id */
-	// begin vpj-cd e-evolution 02/11/2005 PostgreSQL
-	// private static final boolean USE_PROCEDURE = true;
+	
+	/** Use SQL procedure to get next id			*/
+	  //begin vpj-cd e-evolution 02/11/2005  PostgreSQL
+	//private static final boolean USE_PROCEDURE = true;
 	private static boolean USE_PROCEDURE = false;
-	// end vpj-cd e-evolution 02/11/2005
+	//end vpj-cd e-evolution 02/11/2005
 
 	public static final int QUERY_TIME_OUT = 10;
 
-	public static int getNextID(int AD_Client_ID, String TableName)
+	public static int getNextID (int AD_Client_ID, String TableName)
 	{
 		return getNextID(AD_Client_ID, TableName, ITrx.TRXNAME_None);
 	}
 
 	/**
 	 *
-	 * Get next number for Key column = 0 is Error.
-	 *
-	 * @param AD_Client_ID client
-	 * @param TableName table name
-	 * @param trxName_NOT_USED deprecated, not used anymore. The value is obtained out of transaction (task 08240).
-	 * @return next no or (-1=not found, -2=error)
+	 *	Get next number for Key column = 0 is Error.
+	 *  @param AD_Client_ID client
+	 *  @param TableName table name
+	 * 	@param trxName_NOT_USED deprecated, not used anymore. The value is obtained out of transaction (task 08240).
+	 *  @return next no or (-1=not found, -2=error)
 	 */
 	// metas: 01558 - refactored in order to use newly introduced methods
-	public static int getNextID(int AD_Client_ID, String TableName, String trxName_NOT_USED)
+	public static int getNextID (int AD_Client_ID, String TableName, String trxName_NOT_USED)
 	{
-		// FIXME: 08240 because we had big issues with AD_Sequence getting locked, we decided to acquire next sequence out of transaction (as a workaround)
+		// FIXME: 08240 because we had big issues with AD_Sequence getting locked, we decided to acquire next sequence out of transaction (as a workaround) 
 		final String trxName = ITrx.TRXNAME_None;
-
-		Check.assumeNotEmpty(TableName, "The given parameter tableName is not empty");
+		
+		if (TableName == null || TableName.length() == 0)
+			throw new IllegalArgumentException("TableName missing");
 
 		int retValue = -1;
 
-		// Check AdempiereSys
+		//	Check AdempiereSys
 		final boolean adempiereSys = isAdempiereSys(AD_Client_ID);
 		//
 		if (s_log.isTraceEnabled())
-			s_log.trace(TableName + " - AdempiereSys=" + adempiereSys + " [" + trxName + "]");
-		// begin vpj-cd e-evolution 09/02/2005 PostgreSQL
+			s_log.trace(TableName + " - AdempiereSys=" + adempiereSys  + " [" + trxName + "]");
+		  //begin vpj-cd e-evolution 09/02/2005 PostgreSQL
 		final String selectSQL = "SELECT CurrentNext, CurrentNextSys, IncrementNo, AD_Sequence_ID "
 				+ "FROM AD_Sequence "
 				+ "WHERE Name=?"
 				+ " AND IsActive='Y' AND IsTableID='Y' AND IsAutoSequence='Y' "
 				+ " FOR UPDATE OF AD_Sequence ";
-		USE_PROCEDURE = false;
+		USE_PROCEDURE=false;
+		
 
-		// hengsin: executing getNextID in transaction create huge performance and locking issue
-		// Trx trx = trxName == null ? null : Trx.get(trxName, true);
+		//hengsin: executing getNextID in transaction create huge performance and locking issue
+		//Trx trx = trxName == null ? null : Trx.get(trxName, true);
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -114,12 +113,12 @@ public class MSequence extends X_AD_Sequence
 			try
 			{
 				conn = DB.getConnectionID();
-				// Error
+				//	Error
 				if (conn == null)
 					return -1;
 
 				pstmt = conn.prepareStatement(selectSQL,
-						ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+					ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 				pstmt.setString(1, TableName);
 				//
 				if (!USE_PROCEDURE && DB.getDatabase().isQueryTimeoutSupported())
@@ -127,10 +126,10 @@ public class MSequence extends X_AD_Sequence
 				rs = pstmt.executeQuery();
 				if (LogManager.isLevelFinest())
 					s_log.trace("AC=" + conn.getAutoCommit() + ", RO=" + conn.isReadOnly()
-							+ " - Isolation=" + conn.getTransactionIsolation() + "(" + Connection.TRANSACTION_READ_COMMITTED
-							+ ") - RSType=" + pstmt.getResultSetType() + "(" + ResultSet.TYPE_SCROLL_SENSITIVE
-							+ "), RSConcur=" + pstmt.getResultSetConcurrency() + "(" + ResultSet.CONCUR_UPDATABLE
-							+ ")");
+						+ " - Isolation=" + conn.getTransactionIsolation() + "(" + Connection.TRANSACTION_READ_COMMITTED
+						+ ") - RSType=" + pstmt.getResultSetType() + "(" + ResultSet.TYPE_SCROLL_SENSITIVE
+						+ "), RSConcur=" + pstmt.getResultSetConcurrency() + "(" + ResultSet.CONCUR_UPDATABLE
+						+ ")");
 				if (rs.next())
 				{
 
@@ -142,18 +141,14 @@ public class MSequence extends X_AD_Sequence
 					{
 						// get ID from http site
 						retValue = getNextOfficialID_HTTP(TableName);
-						if (retValue > 0)
-						{
+						if (retValue > 0) {
 							PreparedStatement updateSQL;
 							updateSQL = conn.prepareStatement("UPDATE AD_Sequence SET CurrentNextSys = ? + 1 WHERE AD_Sequence_ID = ?");
-							try
-							{
+							try {
 								updateSQL.setInt(1, retValue);
 								updateSQL.setInt(2, AD_Sequence_ID);
 								updateSQL.executeUpdate();
-							}
-							finally
-							{
+							} finally {
 								updateSQL.close();
 							}
 						}
@@ -163,28 +158,23 @@ public class MSequence extends X_AD_Sequence
 					// If not official dictionary try to get the ID from http custom server - if configured
 					if (isQueryProjectIDServer(TableName, AD_Client_ID))
 					{
-						// get ID from http site
-						retValue = getNextProjectID_HTTP(TableName);
-						if (retValue > 0)
-						{
-							PreparedStatement updateSQL;
-							updateSQL = conn.prepareStatement("UPDATE AD_Sequence SET CurrentNext = GREATEST(CurrentNext, ? + 1) WHERE AD_Sequence_ID = ?");
-							try
-							{
-								updateSQL.setInt(1, retValue);
-								updateSQL.setInt(2, AD_Sequence_ID);
-								updateSQL.executeUpdate();
+							// get ID from http site
+							retValue = getNextProjectID_HTTP(TableName);
+							if (retValue > 0) {
+								PreparedStatement updateSQL;
+								updateSQL = conn.prepareStatement("UPDATE AD_Sequence SET CurrentNext = GREATEST(CurrentNext, ? + 1) WHERE AD_Sequence_ID = ?");
+								try {
+									updateSQL.setInt(1, retValue);
+									updateSQL.setInt(2, AD_Sequence_ID);
+									updateSQL.executeUpdate();
+								} finally {
+									updateSQL.close();
+								}
 							}
-							finally
-							{
-								updateSQL.close();
-							}
-						}
-						gotFromHTTP = true;
+							gotFromHTTP = true;
 					}
 
-					if (!gotFromHTTP)
-					{
+					if (! gotFromHTTP) {
 						//
 						if (USE_PROCEDURE)
 						{
@@ -194,39 +184,33 @@ public class MSequence extends X_AD_Sequence
 						{
 							PreparedStatement updateSQL;
 							int incrementNo = rs.getInt(3);
-							if (adempiereSys)
-							{
+							if (adempiereSys) {
 								updateSQL = conn
 										.prepareStatement("UPDATE AD_Sequence SET CurrentNextSys = CurrentNextSys + ? WHERE AD_Sequence_ID = ?");
 								retValue = rs.getInt(2);
-							}
-							else
-							{
+							} else {
 								updateSQL = conn
 										.prepareStatement("UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ?");
 								retValue = rs.getInt(1);
 							}
-							try
-							{
+							try {
 								updateSQL.setInt(1, incrementNo);
 								updateSQL.setInt(2, AD_Sequence_ID);
 								updateSQL.executeUpdate();
-							}
-							finally
-							{
+							} finally {
 								updateSQL.close();
 							}
 						}
 					}
 
-					// if (trx == null)
+					//if (trx == null)
 					conn.commit();
 				}
 				else
 					s_log.error("No record found - " + TableName);
 
 				//
-				break;		// EXIT
+				break;		//	EXIT
 			}
 			catch (Exception e)
 			{
@@ -235,10 +219,7 @@ public class MSequence extends X_AD_Sequence
 				{
 					if (conn != null)
 						conn.rollback();
-				}
-				catch (SQLException e1)
-				{
-				}
+				} catch (SQLException e1) { }
 			}
 			finally
 			{
@@ -247,32 +228,28 @@ public class MSequence extends X_AD_Sequence
 				rs = null;
 				if (conn != null)
 				{
-					try
-					{
+					try {
 						conn.close();
-					}
-					catch (SQLException e)
-					{
-					}
+					} catch (SQLException e) {}
 					conn = null;
 				}
 			}
-			Thread.yield();		// give it time
+			Thread.yield();		//	give it time
 		}
 
-		// s_log.trace(retValue + " - Table=" + TableName + " [" + trx + "]");
+
+		//s_log.trace(retValue + " - Table=" + TableName + " [" + trx + "]");
 		return retValue;
-	}	// getNextID
+	}	//	getNextID
 
 	/**
-	 * Get Next ID
-	 *
-	 * @param conn connection
-	 * @param AD_Sequence_ID sequence
-	 * @param adempiereSys sys
-	 * @return next id or -1 (error) or -3 (parameter)
+	 * 	Get Next ID
+	 *	@param conn connection
+	 *	@param AD_Sequence_ID sequence
+	 *	@param adempiereSys sys
+	 *	@return next id or -1 (error) or -3 (parameter)
 	 */
-	static int nextID(Connection conn, int AD_Sequence_ID, boolean adempiereSys)
+	static int nextID (Connection conn, int AD_Sequence_ID, boolean adempiereSys)
 	{
 		if (conn == null || AD_Sequence_ID == 0)
 			return -3;
@@ -282,8 +259,8 @@ public class MSequence extends X_AD_Sequence
 		CallableStatement cstmt = null;
 		try
 		{
-			cstmt = conn.prepareCall(sqlUpdate,
-					ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			cstmt = conn.prepareCall (sqlUpdate,
+				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			cstmt.setInt(1, AD_Sequence_ID);
 			cstmt.setString(2, adempiereSys ? "Y" : "N");
 			cstmt.registerOutParameter(3, Types.INTEGER);
@@ -303,11 +280,10 @@ public class MSequence extends X_AD_Sequence
 			DB.close(cstmt);
 		}
 		return retValue;
-	}	// nextID
+	}	//	nextID
 
 	/**
 	 * Get next id by year
-	 *
 	 * @param conn
 	 * @param AD_Sequence_ID
 	 * @param incrementNo
@@ -315,16 +291,14 @@ public class MSequence extends X_AD_Sequence
 	 * @return next id
 	 */
 	static int nextIDByYear(Connection conn, int AD_Sequence_ID,
-			int incrementNo, String calendarYear)
-	{
+			int incrementNo, String calendarYear) {
 		if (conn == null || AD_Sequence_ID == 0)
 			return -3;
 		//
 		int retValue = -1;
 		String sqlUpdate = "{call nextIDByYear(?,?,?,?)}";
 		CallableStatement cstmt = null;
-		try
-		{
+		try {
 			cstmt = conn.prepareCall(sqlUpdate, ResultSet.TYPE_FORWARD_ONLY,
 					ResultSet.CONCUR_READ_ONLY);
 
@@ -338,36 +312,31 @@ public class MSequence extends X_AD_Sequence
 			}
 			cstmt.execute();
 			retValue = cstmt.getInt(4);
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			s_log.error(e.toString());
-		}
-		finally
-		{
+		} finally {
 			DB.close(cstmt);
 		}
 		return retValue;
 	} // nextID
 
 	/**************************************************************************
-	 * Check/Initialize Client DocumentNo/Value Sequences
-	 *
-	 * @param ctx context
-	 * @param AD_Client_ID client
-	 * @param trxName transaction
-	 * @return true if no error
+	 *	Check/Initialize Client DocumentNo/Value Sequences
+	 *	@param ctx context
+	 *	@param AD_Client_ID client
+	 *	@param trxName transaction
+	 *	@return true if no error
 	 */
-	public static boolean checkClientSequences(Properties ctx, int AD_Client_ID, String trxName)
+	public static boolean checkClientSequences (Properties ctx, int AD_Client_ID, String trxName)
 	{
 		String sql = "SELECT TableName "
-				+ "FROM AD_Table t "
-				+ "WHERE IsActive='Y' AND IsView='N'"
-				// Get all Tables with DocumentNo or Value
-				+ " AND AD_Table_ID IN "
+			+ "FROM AD_Table t "
+			+ "WHERE IsActive='Y' AND IsView='N'"
+			//	Get all Tables with DocumentNo or Value
+			+ " AND AD_Table_ID IN "
 				+ "(SELECT AD_Table_ID FROM AD_Column " + "WHERE ColumnName = 'DocumentNo' OR ColumnName = 'Value')"
-				// Ability to run multiple times
-				+ " AND 'DocumentNo_' || TableName NOT IN (SELECT Name FROM AD_Sequence s " + "WHERE s.AD_Client_ID=?)";
+			//	Ability to run multiple times
+			+ " AND 'DocumentNo_' || TableName NOT IN (SELECT Name FROM AD_Sequence s " + "WHERE s.AD_Client_ID=?)";
 		int counter = 0;
 		boolean success = true;
 		//
@@ -382,13 +351,13 @@ public class MSequence extends X_AD_Sequence
 			{
 				String tableName = rs.getString(1);
 				s_log.debug("Add: " + tableName);
-				MSequence seq = new MSequence(ctx, AD_Client_ID, tableName, trxName);
+				MSequence seq = new MSequence (ctx, AD_Client_ID, tableName, trxName);
 				if (seq.save())
 					counter++;
 				else
 				{
 					s_log.error("Not created - AD_Client_ID=" + AD_Client_ID
-							+ " - " + tableName);
+						+ " - "  + tableName);
 					success = false;
 				}
 			}
@@ -404,146 +373,141 @@ public class MSequence extends X_AD_Sequence
 			pstmt = null;
 		}
 		s_log.info("AD_Client_ID=" + AD_Client_ID
-				+ " - created #" + counter
-				+ " - success=" + success);
+			+ " - created #" + counter
+			+ " - success=" + success);
 		return success;
-	}	// checkClientSequences
+	}	//	checkClientSequences
 
 	/**
-	 * Get Sequence
-	 *
-	 * @param ctx context
-	 * @param tableName table name
-	 * @return Sequence
+	 * 	Get Sequence
+	 *	@param ctx context
+	 *	@param tableName table name
+	 *	@return Sequence
 	 * @deprecated Please use {@link ISequenceDAO#retrieveTableSequenceOrNull(Properties, String)}
 	 */
 	@Deprecated
-	public static MSequence get(Properties ctx, String tableName)
+	public static MSequence get (Properties ctx, String tableName)
 	{
 		return get(ctx, tableName, null);
 	}
 
 	/**
-	 * Get Sequence
-	 *
-	 * @param ctx context
-	 * @param tableName table name
-	 * @param trxName optional transaction name
-	 * @return Sequence
+	 * 	Get Sequence
+	 *	@param ctx context
+	 *	@param tableName table name
+	 *  @param trxName optional transaction name
+	 *	@return Sequence
 	 * @deprecated Please use {@link ISequenceDAO#retrieveTableSequenceOrNull(Properties, String, String)}
 	 */
 	@Deprecated
-	public static MSequence get(Properties ctx, String tableName, String trxName)
+	public static MSequence get (Properties ctx, String tableName, String trxName)
 	{
 		final I_AD_Sequence seq = Services.get(ISequenceDAO.class).retrieveTableSequenceOrNull(ctx, tableName, trxName);
 		final MSequence seqPO = LegacyAdapters.convertToPO(seq);
 		return seqPO;
-	}	// get
+	}	//	get
 
-	/** Sequence for Table Document No's */
+
+	/**	Sequence for Table Document No's	*/
 	public static final String PREFIX_DOCSEQ = "DocumentNo_";
-	/** Start Number */
-	public static final int INIT_NO = 1000000;	// 1 Mio
-	/** Start System Number */
-	// public static final int INIT_SYS_NO = 100; // start number for Compiere
-	public static final int INIT_SYS_NO = 50000;   // start number for Adempiere
-	/** Static Logger */
-	private static Logger s_log = LogManager.getLogger(MSequence.class);
+	/**	Start Number			*/
+	public static final int		INIT_NO = 1000000;	//	1 Mio
+	/**	Start System Number		*/
+	// public static final int		INIT_SYS_NO = 100; // start number for Compiere
+	public static final int		INIT_SYS_NO = 50000;   // start number for Adempiere
+	/** Static Logger			*/
+	private static Logger 		s_log = LogManager.getLogger(MSequence.class);
+
 
 	/**************************************************************************
-	 * Standard Constructor
-	 *
-	 * @param ctx context
-	 * @param AD_Sequence_ID id
-	 * @param trxName transaction
+	 *	Standard Constructor
+	 *	@param ctx context
+	 *	@param AD_Sequence_ID id
+	 *	@param trxName transaction
 	 */
-	public MSequence(Properties ctx, int AD_Sequence_ID, String trxName)
+	public MSequence (Properties ctx, int AD_Sequence_ID, String trxName)
 	{
 		super(ctx, AD_Sequence_ID, trxName);
 		if (AD_Sequence_ID == 0)
 		{
-			// setName (null);
+		//	setName (null);
 			//
 			setIsTableID(false);
-			setStartNo(INIT_NO);
-			setCurrentNext(INIT_NO);
-			setCurrentNextSys(INIT_SYS_NO);
-			setIncrementNo(1);
-			setIsAutoSequence(true);
+			setStartNo (INIT_NO);
+			setCurrentNext (INIT_NO);
+			setCurrentNextSys (INIT_SYS_NO);
+			setIncrementNo (1);
+			setIsAutoSequence (true);
 			setIsAudited(false);
 			setStartNewYear(false);
 		}
-	}	// MSequence
+	}	//	MSequence
 
 	/**
-	 * Load Constructor
-	 *
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
+	 * 	Load Constructor
+	 *	@param ctx context
+	 *	@param rs result set
+	 *	@param trxName transaction
 	 */
-	public MSequence(Properties ctx, ResultSet rs, String trxName)
+	public MSequence (Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MSequence
+	}	//	MSequence
 
 	/**
-	 * New Document Sequence Constructor
-	 *
-	 * @param ctx context
-	 * @param AD_Client_ID owner
-	 * @param tableName name
-	 * @param trxName transaction
+	 * 	New Document Sequence Constructor
+	 *	@param ctx context
+	 *	@param AD_Client_ID owner
+	 *	@param tableName name
+	 *	@param trxName transaction
 	 */
-	public MSequence(Properties ctx, int AD_Client_ID, String tableName, String trxName)
+	public MSequence (Properties ctx, int AD_Client_ID, String tableName, String trxName)
 	{
-		this(ctx, 0, trxName);
-		setClientOrg(AD_Client_ID, 0);			// Client Ownership
+		this (ctx, 0, trxName);
+		setClientOrg(AD_Client_ID, 0);			//	Client Ownership
 		setName(PREFIX_DOCSEQ + tableName);
 		setDescription("DocumentNo/Value for Table " + tableName);
-	}	// MSequence;
+	}	//	MSequence;
 
 	/**
-	 * New Document Sequence Constructor
-	 *
-	 * @param ctx context
-	 * @param AD_Client_ID owner
-	 * @param sequenceName name
-	 * @param StartNo start
-	 * @param trxName trx
+	 * 	New Document Sequence Constructor
+	 *	@param ctx context
+	 *	@param AD_Client_ID owner
+	 *	@param sequenceName name
+	 *	@param StartNo start
+	 *	@param trxName trx
 	 */
-	public MSequence(Properties ctx, int AD_Client_ID, String sequenceName, int StartNo, String trxName)
+	public MSequence (Properties ctx, int AD_Client_ID, String sequenceName, int StartNo, String trxName)
 	{
-		this(ctx, 0, trxName);
-		setClientOrg(AD_Client_ID, 0);			// Client Ownership
+		this (ctx, 0, trxName);
+		setClientOrg(AD_Client_ID, 0);			//	Client Ownership
 		setName(sequenceName);
 		setDescription(sequenceName);
 		setStartNo(StartNo);
 		setCurrentNext(StartNo);
-		setCurrentNextSys(StartNo / 10);
-	}	// MSequence;
+		setCurrentNextSys(StartNo/10);
+	}	//	MSequence;
+
 
 	/**************************************************************************
-	 * Get Next No and increase current next
-	 *
-	 * @return next no to use
+	 * 	Get Next No and increase current next
+	 *	@return next no to use
 	 */
 	public int getNextID()
 	{
 		int retValue = getCurrentNext();
 		setCurrentNext(retValue + getIncrementNo());
 		return retValue;
-	}	// getNextNo
+	}	//	getNextNo
 
 	/**
-	 * Get next number for Key column
-	 *
-	 * @param AD_Client_ID client
-	 * @param TableName table name
-	 * @param trxName optional Transaction Name
-	 * @return next no or (-1=error)
+	 *	Get next number for Key column
+	 *  @param AD_Client_ID client
+	 *  @param TableName table name
+	 * 	@param trxName optional Transaction Name
+	 *  @return next no or (-1=error)
 	 */
-	public static synchronized int getNextOfficialID_HTTP(String TableName)
+	public static synchronized int getNextOfficialID_HTTP (String TableName)
 	{
 		String website = MSysConfig.getValue("DICTIONARY_ID_WEBSITE"); // "http://developer.adempiere.com/cgi-bin/get_ID";
 		String prm_USER = MSysConfig.getValue("DICTIONARY_ID_USER");  // "globalqss";
@@ -558,14 +522,13 @@ public class MSequence extends X_AD_Sequence
 	}
 
 	/**
-	 * Get next number for Key column
-	 *
-	 * @param AD_Client_ID client
-	 * @param TableName table name
-	 * @param trxName optional Transaction Name
-	 * @return next no or (-1=error)
+	 *	Get next number for Key column
+	 *  @param AD_Client_ID client
+	 *  @param TableName table name
+	 * 	@param trxName optional Transaction Name
+	 *  @return next no or (-1=error)
 	 */
-	public static synchronized int getNextProjectID_HTTP(String TableName)
+	public static synchronized int getNextProjectID_HTTP (String TableName)
 	{
 		String website = MSysConfig.getValue("PROJECT_ID_WEBSITE"); // "http://developer.adempiere.com/cgi-bin/get_ID";
 		String prm_USER = MSysConfig.getValue("PROJECT_ID_USER");  // "globalqss";
@@ -582,12 +545,10 @@ public class MSequence extends X_AD_Sequence
 	private static int getNextID_HTTP(String TableName,
 			String website, String prm_USER, String prm_PASSWORD,
 			String prm_TABLE, String prm_ALTKEY, String prm_COMMENT,
-			String prm_PROJECT)
-	{
+			String prm_PROJECT) {
 		final StringBuilder response = new StringBuilder();
 		int retValue = -1;
-		try
-		{
+		try {
 			String completeUrl = website + "?" + "USER="
 					+ URLEncoder.encode(prm_USER, "UTF-8") + "&PASSWORD="
 					+ URLEncoder.encode(prm_PASSWORD, "UTF-8") + "&PROJECT="
@@ -599,18 +560,16 @@ public class MSequence extends X_AD_Sequence
 			// Now use the URL class to parse the user-specified URL into
 			// its various parts: protocol, host, port, filename.
 			URL url = new URL(completeUrl);
-
+			
 			InputStream from_server = url.openStream();
 
 			// Now read the server's response, and write it to the file
 			byte[] buffer = new byte[4096];
 			int bytes_read;
-			while ((bytes_read = from_server.read(buffer)) != -1)
-			{
-				for (int i = 0; i < bytes_read; i++)
-				{
+			while((bytes_read = from_server.read(buffer)) != -1) {
+				for (int i = 0; i < bytes_read; i++) {
 					if (buffer[i] != 10)
-						response.append((char)buffer[i]);
+						response.append((char) buffer[i]);
 				}
 			}
 
@@ -620,8 +579,8 @@ public class MSequence extends X_AD_Sequence
 		}
 		catch (Exception e)
 		{    // Report any errors that arise
-			    // System.err.println(e);
-			    // retValue = -1;
+			//System.err.println(e);
+			//retValue = -1;
 			final String errmsg = "Failed fetching next ID from HTTP service"
 					+ "\n URL: " + website
 					+ "\n Project: " + prm_PROJECT
@@ -635,10 +594,9 @@ public class MSequence extends X_AD_Sequence
 		return retValue;
 	}
 
-	private static boolean isExceptionCentralized(String tableName)
-	{
-		String[] exceptionTables = new String[] {
-				"AD_ACCESSLOG",
+	private static boolean isExceptionCentralized(String tableName) {
+		String [] exceptionTables = new String[] {
+				"AD_ACCESSLOG", 
 				"AD_Attachment",
 				"AD_ALERTPROCESSORLOG",
 				"AD_CHANGELOG",
@@ -660,7 +618,7 @@ public class MSequence extends X_AD_Sequence
 				"AD_SESSION",
 				"AD_WORKFLOWPROCESSORLOG",
 				"CM_WEBACCESSLOG",
-				"C_ACCTPROCESSORLOG",
+				"C_ACCTPROCESSORLOG", 
 				"IMP_ProcessorLog",
 				"K_INDEXLOG",
 				"R_REQUESTPROCESSORLOG",
@@ -677,13 +635,12 @@ public class MSequence extends X_AD_Sequence
 				"T_SPOOL",
 				"T_TRANSACTION",
 				"T_TRIALBALANCE"
-		};
-		for (int i = 0; i < exceptionTables.length; i++)
-		{
+			};
+		for (int i = 0; i < exceptionTables.length; i++) {
 			if (tableName.equalsIgnoreCase(exceptionTables[i]))
 				return true;
 		}
-
+		
 		// If MigrationLogger is ignoring it, for sure we don't need a Centralized ID
 		if (Services.get(IMigrationLogger.class).getTablesToIgnoreUC().contains(tableName.toUpperCase()))
 		{
@@ -695,7 +652,7 @@ public class MSequence extends X_AD_Sequence
 	}
 
 	/**
-	 *
+	 * 
 	 * @param AD_Client_ID
 	 * @return true if we need to use system IDs
 	 */
@@ -707,9 +664,9 @@ public class MSequence extends X_AD_Sequence
 			adempiereSys = false;
 		return adempiereSys;
 	}
-
+	
 	/**
-	 *
+	 * 
 	 * @param TableName table name or null
 	 * @param AD_Client_ID
 	 * @return true if we need to query Centralized Dictionary ID Server
@@ -743,7 +700,7 @@ public class MSequence extends X_AD_Sequence
 	}
 
 	/**
-	 *
+	 * 
 	 * @param TableName table name or null
 	 * @param AD_Client_ID
 	 * @return true if we need to query Project ID Server
@@ -787,18 +744,18 @@ public class MSequence extends X_AD_Sequence
 			return queryProjectIdServer;
 		}
 	}
-
+	
 	/**
-	 *
-	 * @param TableName table name or null
-	 * @param AD_Client_ID
+	 * 
+	 * @param TableName table name or null 
+	 * @param AD_Client_ID 
 	 * @return true if we use an external ID system (e.g. centralized ID server, project ID server)
 	 */
 	// metas: 01558
 	public static boolean isUseExternalIDSystem(final String TableName, final int AD_Client_ID)
 	{
 		return isQueryCentralizedIDServer(TableName, AD_Client_ID)
-				|| isQueryProjectIDServer(TableName, AD_Client_ID);
+		|| isQueryProjectIDServer(TableName, AD_Client_ID);
 	}
 
 	/**
@@ -807,7 +764,7 @@ public class MSequence extends X_AD_Sequence
 	public static boolean isExternalIDSystemEnabled()
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
+		
 		if (sysConfigBL.getBooleanValue(SYSCONFIG_PROJECT_ID_USE_CENTRALIZED_ID, false))
 		{
 			return true;
@@ -816,8 +773,8 @@ public class MSequence extends X_AD_Sequence
 		{
 			return true;
 		}
-
+		
 		return false;
 	}
 
-}	// MSequence
+}	//	MSequence

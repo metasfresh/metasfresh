@@ -92,11 +92,11 @@ public class ShipmentScheduleEventHandler
 		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.createForMaterial(materialDescriptor);
 
-		createAndHandleMainDataRequest(event, identifier);
+		createAndHandleDataUpdateRequestForEvent(event, identifier);
 		createAndHandleDetailRequest(event, identifier);
 	}
 
-	private void createAndHandleMainDataRequest(
+	private void createAndHandleDataUpdateRequestForEvent(
 			@NonNull final AbstractShipmentScheduleEvent shipmentScheduleEvent,
 			@NonNull final MainDataRecordIdentifier identifier)
 	{

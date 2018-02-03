@@ -327,7 +327,7 @@ public class OrderLineBL implements IOrderLineBL
 		final IPricingResult pricingResult = Services.get(IPricingBL.class).calculatePrice(pricingCtx);
 		if (!pricingResult.isCalculated())
 		{
-			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine());
+			return -1;
 		}
 		return pricingResult.getC_TaxCategory_ID();
 	}

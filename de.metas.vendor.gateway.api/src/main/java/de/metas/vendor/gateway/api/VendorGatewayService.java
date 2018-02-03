@@ -1,9 +1,7 @@
 package de.metas.vendor.gateway.api;
 
-import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
-import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
-import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
-import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
+import de.metas.vendor.gateway.api.model.AvailabilityRequest;
+import de.metas.vendor.gateway.api.model.AvailabilityResponse;
 
 /*
  * #%L
@@ -36,6 +34,4 @@ public interface VendorGatewayService
 	boolean isProvidedForVendor(int vendorId);
 
 	AvailabilityResponse retrieveAvailability(AvailabilityRequest request);
-
-	PurchaseOrderResponse placePurchaseOrder(PurchaseOrderRequest request);
 }

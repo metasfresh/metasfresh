@@ -62,10 +62,7 @@ public class DetailDataRequestHandler
 		documentDetailRecord.setC_Flatrate_Term_ID(insertDetailRequest.getSubscriptionId());
 		documentDetailRecord.setC_SubscriptionProgress_ID(insertDetailRequest.getSubscriptionLineId());
 
-		if (insertDetailRequest.getDocTypeId() > 0)
-		{ // don't set it to 0, because C_DocType_ID = 0 won't end up as "none" but as "new"
-			documentDetailRecord.setC_DocType_ID(insertDetailRequest.getDocTypeId());
-		}
+		documentDetailRecord.setC_DocType_ID(insertDetailRequest.getDocTypeId());
 
 		save(documentDetailRecord);
 	}

@@ -1,7 +1,5 @@
 package de.metas.handlingunits.allocation.impl;
 
-import java.util.ArrayList;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -15,32 +13,28 @@ import java.util.ArrayList;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+
 import java.util.Date;
-import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
-import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.quantity.Quantity;
-import lombok.NonNull;
 
 /* package */class AllocationRequestBuilder implements IAllocationRequestBuilder
 {
@@ -52,7 +46,6 @@ import lombok.NonNull;
 	private Boolean forceQtyAllocation = null;
 	private ITableRecordReference fromReferencedTableRecord;
 	private boolean fromReferencedTableRecordSet = false;
-	private List<EmptyHUListener> emptyHUListeners = null;
 
 	@Override
 	public String toString()
@@ -86,23 +79,14 @@ import lombok.NonNull;
 	{
 		if (huContext != null)
 		{
-			if (emptyHUListeners != null && !emptyHUListeners.isEmpty())
-			{
-				Check.assumeInstanceOf(huContext, IMutableHUContext.class, "huContext");
-				final IMutableHUContext mutableHUContext = (IMutableHUContext)huContext;
-				emptyHUListeners.forEach(mutableHUContext::addEmptyHUListener);
-			}
 			return huContext;
 		}
 		else if (baseAllocationRequest != null)
 		{
-			Check.assume(emptyHUListeners == null || emptyHUListeners.isEmpty(), "emptyHUListeners shall be empty");
 			return baseAllocationRequest.getHUContext();
 		}
-		else
-		{
-			throw new AdempiereException("HUContext not set in " + this);
-		}
+
+		throw new AdempiereException("HUContext not set in " + this);
 	}
 
 	@Override
@@ -233,17 +217,6 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IAllocationRequestBuilder addEmptyHUListener(@NonNull final EmptyHUListener emptyHUListener)
-	{
-		if (emptyHUListeners == null)
-		{
-			emptyHUListeners = new ArrayList<>();
-		}
-		emptyHUListeners.add(emptyHUListener);
-		return this;
-	}
-
-	@Override
 	public IAllocationRequest create()
 	{
 		final IHUContext huContext = getHUContextToUse();
@@ -259,7 +232,8 @@ import lombok.NonNull;
 				quantity,
 				date,
 				fromTableRecord,
-				forceQtyAllocation);
+				forceQtyAllocation
+				);
 		return request;
 	}
 }

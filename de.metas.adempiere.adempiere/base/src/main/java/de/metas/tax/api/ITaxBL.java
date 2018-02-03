@@ -10,17 +10,18 @@ package de.metas.tax.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -78,8 +79,7 @@ public interface ITaxBL extends ISingletonService
 	 * @param taxCategoryId
 	 * @param isSOTrx
 	 * @param trxName
-	 * @param throwEx if <code>true</code>, and no <code>C_Tax</code> record can be found, then throw an exception that contains the failed query. <br>
-	 * 			Otherwise, just log and return <code>-1</code>.
+	 * @param throwEx if <code>true</code>, and no <code>C_Tax</code> record can be found, then throw an exception that contains the failed query. Otherwise, jsut log and return <code>-1</code>.
 	 * @return taxId
 	 */
 	int retrieveTaxIdForCategory(Properties ctx,
@@ -89,7 +89,7 @@ public interface ITaxBL extends ISingletonService
 			Timestamp billDate,
 			int taxCategoryId,
 			boolean isSOTrx,
-			String trxName,
+			String trxName, 
 			boolean throwEx);
 
 	/**
@@ -113,10 +113,10 @@ public interface ITaxBL extends ISingletonService
 	 * @return
 	 */
 	BigDecimal calculateBaseAmt(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
-
+	
 	/**
 	 * Get Tax ID - converts parameters to call Get Tax.
-	 *
+	 * 
 	 * <pre>
 	 * 	M_Product_ID/C_Charge_ID	->	C_TaxCategory_ID
 	 * 	billDate, shipDate			->	billDate, shipDate
@@ -124,10 +124,10 @@ public interface ITaxBL extends ISingletonService
 	 * 	M_Warehouse_ID				->	shipFromC_Location_ID
 	 * 	billC_BPartner_Location_ID  ->	billToC_Location_ID
 	 * 	shipC_BPartner_Location_ID 	->	shipToC_Location_ID
-	 *
+	 * 
 	 *  if IsSOTrx is false, bill and ship are reversed
 	 * </pre>
-	 *
+	 * 
 	 * @param ctx context
 	 * @param M_Product_ID product
 	 * @param C_Charge_ID product
@@ -149,7 +149,7 @@ public interface ITaxBL extends ISingletonService
 
 	/**
 	 * Get Exempt Tax Code
-	 *
+	 * 
 	 * @param ctx context
 	 * @param AD_Org_ID org to find client
 	 * @return C_Tax_ID
@@ -159,7 +159,7 @@ public interface ITaxBL extends ISingletonService
 
 	/**
 	 * Sets the correct flags if given tax has {@link I_C_Tax#isWholeTax()} set.
-	 *
+	 * 
 	 * @param tax
 	 */
 	void setupIfIsWholeTax(final I_C_Tax tax);

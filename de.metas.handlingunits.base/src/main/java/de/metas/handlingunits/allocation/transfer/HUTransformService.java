@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -15,7 +16,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
@@ -106,7 +106,7 @@ public class HUTransformService
 	{
 		return builderForHUcontext().huContext(huContext).build();
 	}
-
+	
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUDocumentFactoryService huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
@@ -136,7 +136,7 @@ public class HUTransformService
 	{
 		this.referencedObjects = referencedObjects != null ? ImmutableList.copyOf(referencedObjects) : ImmutableList.of();
 
-		final Properties effectiveCtx = ctx != null ? ctx : Env.getCtx();
+		final Properties effectiveCtx = Util.coalesce(ctx, Env.getCtx());
 		final String effectiveTrxName = Util.coalesce(trxName, ITrx.TRXNAME_ThreadInherited);
 		final IMutableHUContext mutableHUContext = Services.get(IHUContextFactory.class).createMutableHUContext(effectiveCtx, effectiveTrxName);
 		if (emptyHUListener != null)
@@ -295,18 +295,8 @@ public class HUTransformService
 			@NonNull final BigDecimal qtyCU,
 			@NonNull final I_M_HU targetTuHU)
 	{
-		// NOTE: because this method does several non-atomic operations it is important to glue them together in a transaction
-		return trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> cuToExistingTU_InTrx(sourceCuHU, qtyCU, targetTuHU));
-	}
-
-	private List<I_M_HU> cuToExistingTU_InTrx(
-			@NonNull final I_M_HU sourceCuHU,
-			@NonNull final BigDecimal qtyCU,
-			@NonNull final I_M_HU targetTuHU)
-	{
 		final IAllocationDestination destination;
-		final boolean isTargetAggregatedTU = handlingUnitsBL.isAggregateHU(targetTuHU);
-		if (isTargetAggregatedTU)
+		if (handlingUnitsBL.isAggregateHU(targetTuHU))
 		{
 			// we will load directly to the given tuHU which is actually a VHU
 			destination = HUListAllocationSourceDestination.of(targetTuHU);
@@ -345,10 +335,12 @@ public class HUTransformService
 					.performSplit();
 		}
 
-		if (isTargetAggregatedTU)
+
+		if (handlingUnitsBL.isAggregateHU(targetTuHU))
 		{
-			return ImmutableList.of(); // we are done; no attaching
+			return Collections.emptyList(); // we are done; no attaching
 		}
+
 
 		// we attach the
 		final List<I_M_HU> childCUs;
@@ -361,35 +353,37 @@ public class HUTransformService
 			// destination must be the HUProducerDestination we created further up, otherwise we would already have returned
 			childCUs = ((HUProducerDestination)destination).getCreatedHUs(); // i think there will be just one, but no need to bother
 		}
+		
 
 		// get *the* MI HU_Item of 'tuHU'. There must be exactly one, otherwise, tuHU wouldn't exist here in the first place.
-		final I_M_HU_Item tuMaterialItem = handlingUnitsDAO.retrieveItems(targetTuHU)
+		final List<I_M_HU_Item> tuMaterialItem = handlingUnitsDAO.retrieveItems(targetTuHU)
 				.stream()
 				.filter(piItem -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(piItem.getItemType()))
-				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Param 'tuHU' does not have one 'MI' item; tuHU=" + targetTuHU)));
+				.collect(Collectors.toList());
+		Check.errorUnless(tuMaterialItem.size() == 1, "Param 'tuHU' does not have one 'MI' item; tuHU={}", targetTuHU);
 
 		// finally do the attaching
 
 		// iterate the child CUs and set their parent item
-		childCUs.forEach(childCU -> {
-			setParent(childCU,
-					tuMaterialItem,
+		childCUs.forEach(newChildCU -> {
+			setParent(newChildCU,
+					tuMaterialItem.get(0),
 
 					// before the newChildCU's parent item is set,
 					localHuContext -> {
-						final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(childCU);
+						final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
 						final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
-						updateAllocation(oldParentLU, oldParentTU, childCU, qtyCU, true, localHuContext);
+						updateAllocation(oldParentLU, oldParentTU, sourceCuHU, qtyCU, true, localHuContext);
 					},
 
 					// after the newChildCU's parent item is set,
 					localHuContext -> {
-						final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(childCU);
+						final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
 						final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
-						updateAllocation(newParentLU, newParentTU, childCU, qtyCU, false, localHuContext);
+						updateAllocation(newParentLU, newParentTU, newChildCU, qtyCU, false, localHuContext);
 					});
 		});
-
+		
 		return childCUs;
 	}
 

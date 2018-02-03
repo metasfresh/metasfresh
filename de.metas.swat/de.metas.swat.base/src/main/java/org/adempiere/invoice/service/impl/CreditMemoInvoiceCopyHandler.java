@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -139,14 +140,21 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 		//
 		// Get the C_InvoiceTax records of 'invoice' taxes, ordered by tax rate, with the biggest tax rate first
 		final List<I_C_InvoiceTax> invoiceTaxes = invoicePA.retrieveTaxes(invoice);
-		Collections.sort(invoiceTaxes, (o1, o2) -> o1.getC_Tax().getRate().compareTo(o2.getC_Tax().getRate()) * -1);
+		Collections.sort(invoiceTaxes, new Comparator<I_C_InvoiceTax>()
+		{
+			@Override
+			public int compare(final I_C_InvoiceTax o1, final I_C_InvoiceTax o2)
+			{
+				return o1.getC_Tax().getRate().compareTo(o2.getC_Tax().getRate()) * -1;
+			}
+		});
 
 		BigDecimal creditMemoGrandTotal = BigDecimal.ZERO;
-		final Map<I_C_InvoiceTax, BigDecimal> newTaxAmounts = new IdentityHashMap<>();
+		final Map<I_C_InvoiceTax, BigDecimal> newTaxAmounts = new IdentityHashMap<I_C_InvoiceTax, BigDecimal>();
 
 		//
 		// For every I_C_InvoiceTax of 'invoice', we get the fraction of the tax amount that shall be credited
-		final Map<Integer, I_C_InvoiceTax> taxId2Invoicetax = new HashMap<>();
+		final Map<Integer, I_C_InvoiceTax> taxId2Invoicetax = new HashMap<Integer, I_C_InvoiceTax>();
 		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
 		{
 			final BigDecimal taxGrossAmt = invoiceTax.getTaxBaseAmt().add(invoiceTax.getTaxAmt());
@@ -188,7 +196,7 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 		//
 		// Now that we have computed the tax values where we need to end up with our credit memo,
 		// We do basically the same on invoice line level. The credit memo lines were copied from the invoice lines, so they still contain the original amounts which we can use
-		final Map<I_C_InvoiceTax, List<I_C_InvoiceLine>> tax2lines = new IdentityHashMap<>();
+		final Map<I_C_InvoiceTax, List<I_C_InvoiceLine>> tax2lines = new IdentityHashMap<I_C_InvoiceTax, List<I_C_InvoiceLine>>();
 
 		final List<de.metas.adempiere.model.I_C_InvoiceLine> lines = invoicePA.retrieveLines(creditMemo, trxName);
 		for (final I_C_InvoiceLine creditMemoLine : lines)
@@ -201,14 +209,14 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 			List<I_C_InvoiceLine> linesForInvoiceTax = tax2lines.get(invoiceTax);
 			if (linesForInvoiceTax == null)
 			{
-				linesForInvoiceTax = new ArrayList<>();
+				linesForInvoiceTax = new ArrayList<I_C_InvoiceLine>();
 				tax2lines.put(invoiceTax, linesForInvoiceTax);
 
 			}
 			linesForInvoiceTax.add(creditMemoLine);
 		}
 
-		final Map<I_C_InvoiceLine, BigDecimal> line2newLineGrossAmt = new IdentityHashMap<>();
+		final Map<I_C_InvoiceLine, BigDecimal> line2newLineGrossAmt = new IdentityHashMap<I_C_InvoiceLine, BigDecimal>();
 		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
 		{
 			BigDecimal sumPerTax = BigDecimal.ZERO;
@@ -264,11 +272,6 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 
 			InterfaceWrapperHelper.save(creditMemoLine);
 		}
-
-		// make sure new credit memo grand total is set
-		creditMemo.setGrandTotal(creditMemoGrandTotal);
-		InterfaceWrapperHelper.save(creditMemo);
-
 	}
 
 	private void completeAndAllocateCreditMemo(final de.metas.adempiere.model.I_C_Invoice invoice, final de.metas.adempiere.model.I_C_Invoice creditMemo)

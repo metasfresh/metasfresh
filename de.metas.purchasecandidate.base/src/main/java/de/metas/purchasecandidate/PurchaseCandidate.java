@@ -1,22 +1,16 @@
 package de.metas.purchasecandidate;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
 
 import org.adempiere.util.Check;
-import org.compiere.model.I_C_OrderLine;
 
-import de.metas.vendor.gateway.api.ProductAndQuantity;
-import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.experimental.Delegate;
 
 /*
  * #%L
@@ -43,29 +37,42 @@ import lombok.experimental.Delegate;
 @Data
 public class PurchaseCandidate
 {
+
 	@Setter(AccessLevel.NONE)
 	private int purchaseCandidateId;
 
+	private final int salesOrderId;
+	private final int salesOrderLineId;
+
 	@Setter(AccessLevel.NONE)
 	private int purchaseOrderLineId;
-
 	@Setter(AccessLevel.NONE)
 	private int purchaseOrderLineIdInitial;
 
-	private BigDecimal qtyToPurchase;
+	private final int orgId;
+	private final int warehouseId;
+	private final int productId;
+	private final int uomId;
+	private final int vendorBPartnerId;
+	private final VendorProductInfo vendorProductInfo;
 
+	private BigDecimal qtyRequired;
 	@Setter(AccessLevel.NONE)
-	private BigDecimal qtyToPurchaseInitial;
+	private BigDecimal qtyRequiredInitial;
 
 	private Date datePromised;
 
 	@Setter(AccessLevel.NONE)
 	private Date datePromisedInitial;
 
-	@Delegate
-	private final PurchaseCandidateImmutableFields identifier;
+	@Setter(AccessLevel.NONE)
+	private boolean processed;
 
-	private final PurchaseCandidateState state;
+	@Setter(AccessLevel.NONE)
+	private boolean processedInitial;
+
+
+	private final boolean locked;
 
 	@Builder
 	private PurchaseCandidate(
@@ -79,7 +86,7 @@ public class PurchaseCandidate
 			final int uomId,
 			final int vendorBPartnerId,
 			@NonNull final VendorProductInfo vendorProductInfo,
-			@NonNull final BigDecimal qtyToPurchase,
+			@NonNull final BigDecimal qtyRequired,
 			@NonNull final Date datePromised,
 			final boolean processed,
 			final boolean locked)
@@ -94,43 +101,50 @@ public class PurchaseCandidate
 
 		this.purchaseCandidateId = purchaseCandidateId;
 
-		this.identifier = PurchaseCandidateImmutableFields.builder()
-				.orgId(orgId)
-				.productId(productId)
-				.salesOrderId(salesOrderId)
-				.salesOrderLineId(salesOrderLineId)
-				.uomId(uomId)
-				.vendorBPartnerId(vendorBPartnerId)
-				.vendorProductInfo(vendorProductInfo)
-				.warehouseId(warehouseId).build();
-
-		this.state = PurchaseCandidateState.builder()
-				.locked(locked)
-				.processed(processed).build();
-
+		this.salesOrderId = salesOrderId;
+		this.salesOrderLineId = salesOrderLineId;
 		this.purchaseOrderLineId = purchaseOrderLineId > 0 ? purchaseOrderLineId : 0;
 		this.purchaseOrderLineIdInitial = this.purchaseOrderLineId;
 
-		this.qtyToPurchase = qtyToPurchase;
-		this.qtyToPurchaseInitial = qtyToPurchase;
+		this.orgId = orgId;
+		this.warehouseId = warehouseId;
+		this.productId = productId;
+		this.uomId = uomId;
+		this.vendorBPartnerId = vendorBPartnerId;
+		this.vendorProductInfo = vendorProductInfo;
+		this.qtyRequired = qtyRequired;
+		this.qtyRequiredInitial = qtyRequired;
 		this.datePromised = datePromised;
 		this.datePromisedInitial = datePromised;
+		this.processed = processed;
+		this.processedInitial = processed;
+		this.locked = locked;
 	}
 
 	private PurchaseCandidate(@NonNull final PurchaseCandidate from)
 	{
 		purchaseCandidateId = from.purchaseCandidateId;
-
+		salesOrderId = from.salesOrderId;
+		salesOrderLineId = from.salesOrderLineId;
 		purchaseOrderLineId = from.purchaseOrderLineId;
 		purchaseOrderLineIdInitial = from.purchaseOrderLineIdInitial;
 
-		qtyToPurchase = from.qtyToPurchase;
-		qtyToPurchaseInitial = from.qtyToPurchaseInitial;
+		orgId = from.orgId;
+		warehouseId = from.warehouseId;
+		productId = from.productId;
+		uomId = from.uomId;
+		vendorBPartnerId = from.vendorBPartnerId;
+		vendorProductInfo = from.vendorProductInfo;
+
+		qtyRequired = from.qtyRequired;
+		qtyRequiredInitial = from.qtyRequiredInitial;
 		datePromised = from.datePromised;
 		datePromisedInitial = from.datePromisedInitial;
 
-		identifier = from.identifier;
-		state = from.state.createCopy();
+		processed = from.processed;
+		processedInitial = from.processedInitial;
+
+		locked = from.locked;
 	}
 
 	public PurchaseCandidate copy()
@@ -140,29 +154,24 @@ public class PurchaseCandidate
 
 	public void setPurchaseOrderLineIdAndMarkProcessed(final int purchaseOrderLineId)
 	{
-		Check.assume(!state.isProcessed(), "already processed: {}", this);
+		Check.assume(!processed, "already processed: {}", this);
 		Check.assume(purchaseOrderLineId > 0, "purchaseOrderLineId > 0");
 
-		state.setProcessed();
+		this.processed = true;
 		this.purchaseOrderLineId = purchaseOrderLineId;
 	}
 
 	public boolean isProcessedOrLocked()
 	{
-		return state.isProcessed() || state.isLocked();
-	}
-
-	public boolean isProcessed()
-	{
-		return state.isProcessed();
+		return isProcessed() || isLocked();
 	}
 
 	public boolean hasChanges()
 	{
 		return purchaseCandidateId <= 0 // never saved
-				|| state.hasChanges()
+				|| processed != processedInitial
 				|| purchaseOrderLineId != purchaseOrderLineIdInitial
-				|| qtyToPurchase.compareTo(qtyToPurchaseInitial) != 0
+				|| qtyRequired.compareTo(qtyRequiredInitial) != 0
 				|| !Objects.equals(datePromised, datePromisedInitial);
 	}
 
@@ -170,27 +179,9 @@ public class PurchaseCandidate
 	{
 		this.purchaseCandidateId = C_PurchaseCandidate_ID;
 
-		state.markSaved();
-
+		processedInitial = processed;
 		purchaseOrderLineIdInitial = purchaseOrderLineId;
-		qtyToPurchaseInitial = qtyToPurchase;
+		qtyRequiredInitial = qtyRequired;
 		datePromisedInitial = datePromised;
-	}
-
-	public AvailabilityRequestItem createRequestItem()
-	{
-		final String productValue = identifier.getVendorProductInfo().getProductNo();
-
-		final I_C_OrderLine salesOrderLine = load(identifier.getSalesOrderLineId(), I_C_OrderLine.class);
-
-		final ProductAndQuantity productAndQuantity = new ProductAndQuantity(
-				productValue,
-				salesOrderLine.getQtyReserved());
-
-		return AvailabilityRequestItem.builder()
-				.productAndQuantity(productAndQuantity)
-				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderLineId(getSalesOrderLineId())
-				.build();
 	}
 }

@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.MoreCollectors;
 
 import lombok.NonNull;
 
@@ -48,10 +47,11 @@ public class VendorGatewayRegistry
 		logger.info("Services: {}", services);
 	}
 
-	public Optional<VendorGatewayService> getSingleVendorGatewayService(final int vendorId)
+	public List<VendorGatewayService> getVendorGatewayServices(final int vendorId)
 	{
 		return services.stream()
 				.filter(service -> service.isProvidedForVendor(vendorId))
-				.collect(MoreCollectors.toOptional());
+				.collect(ImmutableList.toImmutableList());
+
 	}
 }

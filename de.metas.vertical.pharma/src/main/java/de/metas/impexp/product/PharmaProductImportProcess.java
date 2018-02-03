@@ -34,7 +34,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
 import org.compiere.process.MProductPriceCloningCommand;
 
-import de.metas.pricing.ProductPrices;
 import de.metas.product.IProductDAO;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_M_Product;
@@ -507,7 +506,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 			plv = createPriceListVersion(priceList, validDate);
 		}
 
-		createProductPriceOrUpdateExistentOne(productPriceCtx, plv);
+		createProductPrice(productPriceCtx, plv);
 	}
 
 	private boolean isValidPriceRecord(@NonNull final ProductPriceContext productPriceCtx)
@@ -518,15 +517,11 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 				&& productPriceCtx.getValidDate() != null;
 	}
 
-	private I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull final ProductPriceContext productPriceCtx, @NonNull final I_M_PriceList_Version plv)
+	private I_M_ProductPrice createProductPrice(@NonNull final ProductPriceContext productPriceCtx, @NonNull final I_M_PriceList_Version plv)
 	{
 		final I_C_TaxCategory taxCategory = productPriceCtx.getTaxCategory();
 		final BigDecimal price = productPriceCtx.getPrice();
-		I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plv, productPriceCtx.getProduct().getM_Product_ID());
-		if (pp == null)
-		{
-			pp = newInstance(I_M_ProductPrice.class, plv);
-		}
+		final I_M_ProductPrice pp = newInstance(I_M_ProductPrice.class, plv);
 		pp.setM_PriceList_Version(plv);
 		pp.setM_Product(productPriceCtx.getProduct());
 		pp.setPriceLimit(price);
@@ -545,16 +540,7 @@ public class PharmaProductImportProcess extends AbstractImportProcess<I_I_Pharma
 		plv.setName(priceList.getName() + validFrom);
 		plv.setValidFrom(validFrom);
 		plv.setM_PriceList(priceList);
-		plv.setProcessed(true);
 		save(plv);
-
-		// now set the previous one as base list
-		final I_M_PriceList_Version previousPlv = Services.get(IPriceListDAO.class).retrievePreviousVersionOrNull(plv);
-		if (previousPlv != null)
-		{
-			plv.setM_Pricelist_Version_Base(previousPlv);
-			save(plv);
-		}
 
 		return plv;
 	}

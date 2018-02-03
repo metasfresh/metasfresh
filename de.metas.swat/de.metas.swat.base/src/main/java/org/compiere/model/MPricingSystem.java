@@ -26,17 +26,14 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.pricing.api.IPriceListDAO;
-
 public class MPricingSystem extends X_M_PricingSystem {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -3696311474689460049L;
-
-	@Deprecated
-	public static final int M_PricingSystem_ID_None = IPriceListDAO.M_PricingSystem_ID_None;
+	
+	public static final int M_PricingSystem_ID_None = 100;
 
 	public MPricingSystem(Properties ctx, int M_PricingSystem_ID, String trxName) {
 		super(ctx, M_PricingSystem_ID, trxName);

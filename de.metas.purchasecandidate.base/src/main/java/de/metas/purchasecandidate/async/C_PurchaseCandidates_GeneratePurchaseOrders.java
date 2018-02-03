@@ -22,7 +22,7 @@ import de.metas.lock.api.LockOwner;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
-import de.metas.purchasecandidate.purchaseordercreation.PurchaseOrderFromCandidatesAggregator;
+import de.metas.purchasecandidate.order.PurchaseOrderFromCandidatesAggregator;
 
 /*
  * #%L

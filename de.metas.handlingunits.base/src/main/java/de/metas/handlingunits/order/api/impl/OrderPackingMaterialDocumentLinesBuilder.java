@@ -72,7 +72,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 		//
 		// Add Packing Material Order Lines first
 		// and gather regular order lines (sources for packing materials)
-		final List<IPackingMaterialDocumentLineSource> lines = new ArrayList<>();
+		final List<IPackingMaterialDocumentLineSource> lines = new ArrayList<IPackingMaterialDocumentLineSource>();
 		for (final I_C_OrderLine orderLine : orderLinesAll)
 		{
 			if (orderLine.isPackagingMaterial())
@@ -178,7 +178,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 		final OrderLinePackingMaterialDocumentLine orderLinePMLine = toImpl(pmLine);
 		final I_C_OrderLine pmOrderLine = orderLinePMLine.getC_OrderLine();
 
-		// qtyOrdered is in the product's UOM whereas QtyEntered is in the order line's UOM. They don't have to be the same.
+		// not cool: qtyOrdered is in the product's UOM whereas QtyEntered is in the order lines UOM. They don't have to be the same.
 		// pmOrderLine.setQtyEntered(pmOrderLine.getQtyOrdered());
 
 		pmOrderLine.setIsActive(true);

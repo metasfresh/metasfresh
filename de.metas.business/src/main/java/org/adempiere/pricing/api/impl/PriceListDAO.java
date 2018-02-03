@@ -3,9 +3,9 @@ package org.adempiere.pricing.api.impl;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -21,20 +21,14 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MPriceList;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.util.CacheCtx;
-import de.metas.adempiere.util.CacheTrx;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -72,48 +66,29 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public I_M_PriceList retrievePriceListByPricingSyst(final int pricingSystemId, @NonNull final I_C_BPartner_Location bpartnerLocation, final boolean isSOPriceList)
-	{
-		// In case we are dealing with Pricing System None, return the PriceList none
-		if (pricingSystemId == M_PricingSystem_ID_None)
-		{
-			final I_M_PriceList pl = InterfaceWrapperHelper.loadOutOfTrx(MPriceList.M_PriceList_ID_None, I_M_PriceList.class);
-			Check.assumeNotNull(pl, "pl not null");
-			return pl;
-		}
-
-		final int countryId = bpartnerLocation.getC_Location().getC_Country_ID();
-		final List<I_M_PriceList> priceLists = retrievePriceLists(Env.getCtx(), pricingSystemId, countryId, isSOPriceList, ITrx.TRXNAME_None);
-		return !priceLists.isEmpty() ? priceLists.get(0) : null;
-	}
-
-	@Override
 	public Iterator<I_M_PriceList> retrievePriceLists(final I_M_PricingSystem pricingSystem, final I_C_Country country, final boolean isSOTrx)
 	{
-		return retrievePriceLists(Env.getCtx(), pricingSystem.getM_PricingSystem_ID(), country.getC_Country_ID(), isSOTrx, ITrx.TRXNAME_None)
-				.iterator();
-	}
-
-	@Cached(cacheName = I_M_PriceList.Table_Name + "#by#M_PricingSystem_ID#C_Country_ID")
-	public ImmutableList<I_M_PriceList> retrievePriceLists(
-			final @CacheCtx Properties ctx,
-			final int pricingSystemId,
-			final int countryId,
-			final boolean isSOTrx,
-			final @CacheTrx String trxName)
-	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilder(I_M_PriceList.class)
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, pricingSystemId)
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, isSOTrx)
-				.addInArrayFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, countryId, null)
-				.addOnlyContextClient()
-				.addOnlyActiveRecordsFilter()
+		final IQueryBuilder<I_M_PriceList> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class, pricingSystem)
+				.addOnlyActiveRecordsFilter();
+
+		final ICompositeQueryFilter<I_M_PriceList> filters = queryBL.<I_M_PriceList> createCompositeQueryFilter(I_M_PriceList.class)
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, pricingSystem.getM_PricingSystem_ID())
+				.addEqualsFilter(org.compiere.model.I_M_PriceList.COLUMNNAME_IsSOPriceList, isSOTrx);
+
+		final ICompositeQueryFilter<I_M_PriceList> countryFilter = queryBL.<I_M_PriceList> createCompositeQueryFilter(I_M_PriceList.class)
+				.setJoinOr()
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, country.getC_Country_ID())
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, null);
+		filters
+				.addFilter(countryFilter);
+
+		return queryBuilder
+				.filter(filters)
 				.orderBy()
-				.addColumn(I_M_PriceList.COLUMNNAME_C_Country_ID, Direction.Ascending, Nulls.Last)
-				.endOrderBy()
+				.addColumn(I_M_PriceList.COLUMNNAME_C_Country_ID, Direction.Ascending, Nulls.Last).endOrderBy()
 				.create()
-				.listImmutable(I_M_PriceList.class);
+				.iterate(I_M_PriceList.class);
 	}
 
 	@Override

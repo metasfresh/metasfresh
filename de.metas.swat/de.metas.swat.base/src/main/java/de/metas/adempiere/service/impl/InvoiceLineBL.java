@@ -122,11 +122,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				countryFromId,
 				io.getAD_Org_ID(),
 				locationTo,
-				shipDate,
-				taxCategoryId,
+				shipDate, taxCategoryId,
 				il.getC_Invoice().isSOTrx(),
-				trxName,
-				false);
+				trxName, false);
 
 		if (taxId <= 0)
 		{
@@ -200,12 +198,12 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	}
 
 	private int getTaxCategoryFromProductPrice(
-			final org.compiere.model.I_C_InvoiceLine invoiceLine,
+			final org.compiere.model.I_C_InvoiceLine invoiceLine, 
 			final I_C_Invoice invoice)
 	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
-
+		
 		final I_M_PriceList priceList = invoice.getM_PriceList();
 
 
@@ -224,12 +222,12 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	}
 
 	private int getTaxCategoryFromOrder(
-			final org.compiere.model.I_C_InvoiceLine invoiceLine,
+			final org.compiere.model.I_C_InvoiceLine invoiceLine, 
 			final I_C_Invoice invoice)
 	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
-
+				
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceLine);
 
@@ -248,7 +246,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				.orElseThrow(() -> new TaxCategoryNotFoundException(invoiceLine));
 		return productPrice.getC_TaxCategory_ID();
 	}
-
+	
 	@Override
 	public void setQtyInvoicedInPriceUOM(final I_C_InvoiceLine invoiceLine)
 	{
@@ -401,11 +399,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// Issue https://github.com/metasfresh/metasfresh/issues/2400:
 		// If the line has a discout, we assome it was manually added and stick with it
 		// When invoices are created by the system, there is no need to change an already-set discound (and this code is executed only once anyways)
-		if (invoiceLine.getDiscount().signum() == 0)
+		if (invoiceLine.getDiscount().signum() == 0)   
 		{
 			invoiceLine.setDiscount(pricingResult.getDiscount());
 		}
-
+		
 		//
 		// Calculate PriceActual from PriceEntered and Discount
 		calculatePriceActual(invoiceLine, pricingResult.getPrecision());

@@ -2,7 +2,6 @@ package de.metas.purchasecandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -26,8 +25,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 import de.metas.interfaces.I_C_BPartner_Product;
-import de.metas.purchasecandidate.availability.AvailabilityCheck;
-import de.metas.purchasecandidate.availability.AvailabilityResult;
+import de.metas.purchasecandidate.AvailabilityCheck.AvailabilityResult;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import lombok.Builder;
 import lombok.NonNull;
@@ -55,12 +53,12 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString(exclude = { "purchaseCandidateRepository", "salesOrderLineWithCandidates" })
+@ToString(exclude = { "purchaseCandidateRepository", "salesOrderLine2purchaseCandidates" })
 public class SalesOrderLines
 {
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 
-	private ExtendedMemorizingSupplier<ImmutableList<SalesOrderLineWithCandidates>> salesOrderLineWithCandidates //
+	private ExtendedMemorizingSupplier<ImmutableList<SalesOrderLineWithCandidates>> salesOrderLine2purchaseCandidates //
 			= ExtendedMemorizingSupplier.of(() -> loadOrCreatePurchaseCandidates0());
 
 	private final ImmutableList<Integer> salesOrderLineIds;
@@ -76,45 +74,40 @@ public class SalesOrderLines
 
 	private ImmutableList<SalesOrderLineWithCandidates> loadOrCreatePurchaseCandidates0()
 	{
-		final ImmutableMultimap.Builder<I_C_OrderLine, PurchaseCandidate> resultBuilder = ImmutableMultimap.builder();
-
 		final Map<Integer, I_C_OrderLine> salesOrderLineId2Line = deriveOrderLineId2OrderLine();
 
-		//
-		// add pre-existing purchase candidates to the result
-		final ImmutableListMultimap<Integer, PurchaseCandidate> salesOrderLineId2PreExistingPurchaseCandidates = //
+		final ImmutableListMultimap<Integer, PurchaseCandidate> salesOrderLineId2ExistingPurchaseCandidates = //
 				purchaseCandidateRepository
 						.streamAllBySalesOrderLineIds(salesOrderLineIds)
 						.collect(GuavaCollectors.toImmutableListMultimap(PurchaseCandidate::getSalesOrderLineId));
 
-		for (int salesOrderLineId : salesOrderLineId2PreExistingPurchaseCandidates.keySet())
+		final ImmutableMultimap.Builder<I_C_OrderLine, PurchaseCandidate> salesOrderLineId2PurchaseCandidates = ImmutableMultimap.builder();
+		for (int salesOrderLineId : salesOrderLineId2ExistingPurchaseCandidates.keySet())
 		{
-			resultBuilder.putAll(
+			salesOrderLineId2PurchaseCandidates.putAll(
 					salesOrderLineId2Line.get(salesOrderLineId),
-					salesOrderLineId2PreExistingPurchaseCandidates.get(salesOrderLineId));
+					salesOrderLineId2ExistingPurchaseCandidates.get(salesOrderLineId));
 		}
 
-		final Set<Integer> alreadySeenVendorProductInfoIds = salesOrderLineId2PreExistingPurchaseCandidates.values().stream()
+		final Set<Integer> vendorProductInfoIdsConsidered = salesOrderLineId2ExistingPurchaseCandidates.values().stream()
 				.map(purchaseCandidate -> purchaseCandidate.getVendorProductInfo().getBPartnerProductId())
 				.collect(ImmutableSet.toImmutableSet());
 
-		//
-		// create and add new purchase candidates
 		for (final I_C_OrderLine salesOrderLine : salesOrderLineId2Line.values())
 		{
 			final int salesOrderLineId = salesOrderLine.getC_OrderLine_ID();
 
 			final ImmutableList<PurchaseCandidate> newPurchaseCandidateForOrderLine = createMissingPurchaseCandidates(
 					salesOrderLine,
-					alreadySeenVendorProductInfoIds);
+					vendorProductInfoIdsConsidered);
 
 			purchaseCandidateRepository.saveAll(newPurchaseCandidateForOrderLine);
 
-			resultBuilder.putAll(salesOrderLineId2Line.get(salesOrderLineId), newPurchaseCandidateForOrderLine);
+			salesOrderLineId2PurchaseCandidates.putAll(salesOrderLineId2Line.get(salesOrderLineId), newPurchaseCandidateForOrderLine);
 		}
 
 		final ImmutableList<SalesOrderLineWithCandidates> salesOrderLine2purchaseCandidates = //
-				deriveSalesOrderLineWithCandidates(resultBuilder);
+				deriveSalesOrderLineWithCandidates(salesOrderLineId2PurchaseCandidates);
 
 		return salesOrderLine2purchaseCandidates;
 	}
@@ -163,31 +156,21 @@ public class SalesOrderLines
 		final Map<Integer, I_C_BPartner_Product> vendorId2VendorProductInfo = retriveVendorId2VendorProductInfo(salesOrderLine);
 
 		final ImmutableList<PurchaseCandidate> newPurchaseCandidateForOrderLine = vendorId2VendorProductInfo.values().stream()
-
-				// only if vendor was not already considered (i.e. there was no purchase candidate for it)
-				.filter(vendorProductInfo -> !vendorIdsToExclude.contains(vendorProductInfo.getC_BPartner_Product_ID()))
-
-				// create and collect them
-				.map(vendorProductInfo -> createPurchaseCandidate(salesOrderLine, vendorProductInfo))
+				.filter(vendorProductInfo -> !vendorIdsToExclude.contains(vendorProductInfo.getC_BPartner_Product_ID())) // only if vendor was not already considered (i.e. there was no purchase candidate for it)
+				.map(vendorProductInfo -> PurchaseCandidate.builder()
+						.datePromised(salesOrderLine.getDatePromised())
+						.orgId(salesOrderLine.getAD_Org_ID())
+						.productId(vendorProductInfo.getM_Product_ID())
+						.qtyRequired(salesOrderLine.getQtyEntered())
+						.salesOrderId(salesOrderLine.getC_Order_ID())
+						.salesOrderLineId(salesOrderLine.getC_OrderLine_ID())
+						.uomId(salesOrderLine.getC_UOM_ID())
+						.vendorProductInfo(VendorProductInfo.fromDataRecord(vendorProductInfo))
+						.vendorBPartnerId(vendorProductInfo.getC_BPartner_ID())
+						.warehouseId(salesOrderLine.getM_Warehouse_ID())
+						.build())
 				.collect(ImmutableList.toImmutableList());
-
 		return newPurchaseCandidateForOrderLine;
-	}
-
-	private PurchaseCandidate createPurchaseCandidate(final I_C_OrderLine salesOrderLine, I_C_BPartner_Product vendorProductInfo)
-	{
-		return PurchaseCandidate.builder()
-				.datePromised(salesOrderLine.getDatePromised())
-				.orgId(salesOrderLine.getAD_Org_ID())
-				.productId(vendorProductInfo.getM_Product_ID())
-				.qtyToPurchase(BigDecimal.ZERO)
-				.salesOrderId(salesOrderLine.getC_Order_ID())
-				.salesOrderLineId(salesOrderLine.getC_OrderLine_ID())
-				.uomId(salesOrderLine.getC_UOM_ID())
-				.vendorProductInfo(VendorProductInfo.fromDataRecord(vendorProductInfo))
-				.vendorBPartnerId(vendorProductInfo.getC_BPartner_ID())
-				.warehouseId(salesOrderLine.getM_Warehouse_ID())
-				.build();
 	}
 
 	private Map<Integer, I_C_BPartner_Product> retriveVendorId2VendorProductInfo(@NonNull final I_C_OrderLine salesOrderLine)
@@ -202,9 +185,9 @@ public class SalesOrderLines
 				.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(I_C_BPartner_Product::getC_BPartner_ID));
 	}
 
-	public List<SalesOrderLineWithCandidates> getSalesOrderLinesWithCandidates()
+	public List<SalesOrderLineWithCandidates> getOrderedSalesOrderLines()
 	{
-		return salesOrderLineWithCandidates.get();
+		return salesOrderLine2purchaseCandidates.get();
 	}
 
 	public Multimap<PurchaseCandidate, AvailabilityResult> checkAvailability()
@@ -226,7 +209,7 @@ public class SalesOrderLines
 
 	private AvailabilityCheck prepareAvailabilityCheck()
 	{
-		final ImmutableList<PurchaseCandidate> allPurchaseCandidates = salesOrderLineWithCandidates.get().stream()
+		final ImmutableList<PurchaseCandidate> allPurchaseCandidates = salesOrderLine2purchaseCandidates.get().stream()
 				.flatMap(item -> item.getPurchaseCandidates().stream())
 				.collect(ImmutableList.toImmutableList());
 
