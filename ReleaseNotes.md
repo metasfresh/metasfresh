@@ -185,6 +185,8 @@ Here come the actual release notes:
     * Fixes a Typeahead error in the new Label Filter in WebUI.
   * [#1529](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1529) Email To field does not work correctly
     * Improves the mailTo Field in WebUI. Now showing the Username instead of the user ID.
+  * [#1536](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1536) Cannot set attributes in orderline
+  * [#1552](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1552) Selecting country in dropdown with mouse click not possible
 
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**
