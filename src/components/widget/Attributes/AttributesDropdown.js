@@ -19,6 +19,10 @@ class AttributesDropdown extends Component {
     const { onClickOutside } = this.props;
     const { focused } = this.state;
 
+    if (focused) {
+      return;
+    }
+
     //we need to blur all fields, to patch them before completion
     this.dropdown.focus();
 
