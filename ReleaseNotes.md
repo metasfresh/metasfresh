@@ -19,6 +19,8 @@ Here come the actual release notes:
     * Changes the Filter of Preparation Date to simple Date instead of Daterange.
   * [#3439](https://github.com/metasfresh/metasfresh/issues/3439) Improvement of GO Delivery Order Window
     * Improved the visibility of important information in the GO! Delivery Window in WebUI.
+  * [#3440](https://github.com/metasfresh/metasfresh/issues/3440) Improvement of Shipper Window in WebUI
+    * Extends the Shipper Window in WebUI, now also allowing the recording of the GO! Shipper Configuration.
 
 
 * metasfresh-webui-frontend
