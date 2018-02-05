@@ -11,6 +11,7 @@ import org.adempiere.util.GuavaCollectors;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import lombok.Builder;
 import lombok.ToString;
 import lombok.Value;
@@ -136,9 +137,9 @@ public final class DocumentQueryOrderBy
 
 	@FunctionalInterface
 	public static interface FieldValueExtractor<T>
-		{
+	{
 		Object getFieldValue(T object, String fieldName);
-		}
+	}
 
 	@ToString
 	private static final class ValueComparator implements Comparator<Object>
@@ -176,11 +177,11 @@ public final class DocumentQueryOrderBy
 			{
 				return 0;
 			}
-			else if (o1 == null)
+			else if (o1 == null || o1 instanceof JSONNullValue)
 			{
 				return nullsLast ? +1 : -1;
 			}
-			else if (o2 == null)
+			else if (o2 == null || o2 instanceof JSONNullValue)
 			{
 				return nullsLast ? -1 : +1;
 			}
