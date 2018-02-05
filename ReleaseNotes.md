@@ -15,11 +15,14 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
-  * [#3022](https://github.com/metasfresh/metasfresh/issues/3022) Contracts: ContractDocumentNo is 0 all the time
   * [#3410](https://github.com/metasfresh/metasfresh/issues/3410) Enlarge AD_Table.TableName
+    * Resizing the Fields for Tablename in Applicaiton Dictionary, now allowing 80 chars.
   * [#3411](https://github.com/metasfresh/metasfresh/issues/3411) Implement MSV3 purchase order
+    * New Feature in Pharma Vertical, allowing to create MSV3 Purchase Orders.
   * [#3417](https://github.com/metasfresh/metasfresh/issues/3417) Support new VAT rate of 7.7% in Switzerland from 01.01.2018
+    * New Tax Masterdate for VAT in Switzerland valid from 01-01-2018.
   * [#3419](https://github.com/metasfresh/metasfresh/issues/3419) Throw meaningful exception if MOrderLine.beforeSave has problems
+    * Improving error messages in Orderline, now returning meaningful information to the user.
   * [#3428](https://github.com/metasfresh/metasfresh/issues/3428) Switch off Daterange in Preparation date Filer temporarily
     * Changes the Filter of Preparation Date to simple Date instead of Daterange.
   * [#3439](https://github.com/metasfresh/metasfresh/issues/3439) Improvement of GO Delivery Order Window
@@ -35,13 +38,16 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
 
 ## Fixes
-* metasfresh-webui-frontend
-  * [#1528](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1528) Added subrow is not shown in the frontend
-    * Improved response from MSV3 request so that purchase candidate row is shown and user can directly start editing.
 * metasfresh
+  * [#3022](https://github.com/metasfresh/metasfresh/issues/3022) Contracts: ContractDocumentNo is 0 all the time
+    * Fixes the automatic Document No generation in Contracts, now not leaving Document No 0 there anymore.
   * [#3394](https://github.com/metasfresh/metasfresh/issues/3394) Sales inout Jasper: HU name taken from line
   * [#3402](https://github.com/metasfresh/metasfresh/issues/3402) Can't credit memo a partially paid invoice
     * Improvement of the status Handling after unclosing Manufacturing Orders.
+
+* metasfresh-webui-frontend
+  * [#1528](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1528) Added subrow is not shown in the frontend
+    * Improved response from MSV3 request so that purchase candidate row is shown and user can directly start editing.
 
 * metasfresh-webui-api
   * [#617](https://github.com/metasfresh/metasfresh-webui-api/issues/617) Cache is not invalidated on country change
