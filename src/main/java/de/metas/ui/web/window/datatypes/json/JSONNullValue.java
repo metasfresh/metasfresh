@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.swagger.annotations.ApiModel;
@@ -56,5 +58,14 @@ public final class JSONNullValue
 	public String toString()
 	{
 		return "null";
+	}
+
+	public static Object toNullIfInstance(@Nullable final Object jsonValueObj)
+	{
+		if (jsonValueObj instanceof JSONNullValue)
+		{
+			return null;
+		}
+		return jsonValueObj;
 	}
 }

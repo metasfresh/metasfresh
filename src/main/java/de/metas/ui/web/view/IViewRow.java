@@ -81,7 +81,7 @@ public interface IViewRow
 	default int getFieldJsonValueAsInt(@NonNull final String fieldName, final int defaultValueIfNotFound)
 	{
 		final Object jsonValueObj = getFieldNameAndJsonValues().get(fieldName);
-		if (jsonValueObj == null || jsonValueObj instanceof JSONNullValue)
+		if (JSONNullValue.toNullIfInstance(jsonValueObj) == null)
 		{
 			return defaultValueIfNotFound;
 		}
@@ -99,10 +99,15 @@ public interface IViewRow
 		}
 	}
 
-	default BigDecimal getFieldJsonValueAsBigDecimal(@NonNull final String fieldName, final BigDecimal defaultValueIfNotFoundOrError)
+	default BigDecimal getFieldJsonValueAsBigDecimal(
+			@NonNull final String fieldName,
+			final BigDecimal defaultValueIfNotFoundOrError)
 	{
 		final Object jsonValueObj = getFieldNameAndJsonValues().get(fieldName);
-		return NumberUtils.asBigDecimal(jsonValueObj, defaultValueIfNotFoundOrError);
+
+		return NumberUtils.asBigDecimal(
+				JSONNullValue.toNullIfInstance(jsonValueObj),
+				defaultValueIfNotFoundOrError);
 	}
 
 	default Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
