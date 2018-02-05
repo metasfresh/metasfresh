@@ -32,8 +32,22 @@ import de.metas.product.model.I_M_Product_PlanningSchema;
 public interface IProductPlanningSchemaBL extends ISingletonService
 {
 
+	/**
+	 * Create Product Planning entries for all the product that don't have any, based on the Product Planning Schema Selectors set in products and the schemas existing in the database.
+	 * A product will have a product planning if it has the same selector as an existing schema.
+	 * 
+	 * @return all the product planning entries that were created
+	 */
 	List<I_PP_Product_Planning> createDefaultProductPlanningsForAllProducts();
 
+	/**
+	 * Create product planning entries for all products with the same Product Planning Schema Selector as the given schema.
+	 * In case something changed in the schema, update the product plannings that were already created.
+	 * In case the schema selector was changed in the schema or the product with existing product plannings, delete the old plannings.
+	 * 
+	 * @param productPlanningSchema
+	 * @return all the product planning entries that were created
+	 */
 	List<I_PP_Product_Planning> createUpdateDefaultProductPlanningsForSchema(I_M_Product_PlanningSchema productPlanningSchema);
 
 }
