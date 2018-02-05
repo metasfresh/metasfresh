@@ -29,6 +29,7 @@ package de.metas.invoicecandidate.modelvalidator;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
@@ -40,6 +41,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
+import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -173,5 +175,11 @@ public class ConfigValidator extends AbstractModuleInterceptor
 			newDest.setName(Services.get(IMsgBL.class).translate(ctx, "C_Invoice_ID"));
 			InterfaceWrapperHelper.save(newDest);
 		}
+	}
+	
+	@Override
+	protected void setupCaching(final IModelCacheService cachingService)
+	{
+		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_C_Invoice_Candidate.Table_Name);
 	}
 }
