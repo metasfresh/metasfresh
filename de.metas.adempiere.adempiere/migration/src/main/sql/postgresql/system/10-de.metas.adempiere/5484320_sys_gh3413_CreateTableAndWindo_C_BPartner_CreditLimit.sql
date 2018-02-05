@@ -1180,5 +1180,6 @@ UPDATE AD_PrintFormatItem pi SET PrintName='Credit limit indicator %', Name='Cre
 
 
 
+CREATE INDEX C_BPartner_CreditLimit_bpIdIndex ON public.C_BPartner_CreditLimit (C_BPartner_ID);
 
 
