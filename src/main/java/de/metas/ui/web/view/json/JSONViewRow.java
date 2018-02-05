@@ -91,8 +91,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 			}
 
 			// Append the other fields
-			row.getFieldNameAndJsonValues()
-					.entrySet()
+			row.getFieldNames()
 					.stream()
 					.map(createJSONDocumentField(row))
 					.forEach(jsonField -> jsonFields.put(jsonField.getField(), jsonField));
@@ -141,14 +140,14 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		return jsonRow;
 	}
 
-	private static final Function<Map.Entry<String, Object>, JSONDocumentField> createJSONDocumentField(final IViewRow row)
+	private static final Function<String, JSONDocumentField> createJSONDocumentField(final IViewRow row)
 	{
+		final Map<String, Object> valuesByFieldName = row.getFieldNameAndJsonValues();
 		final Map<String, DocumentFieldWidgetType> widgetTypesByFieldName = row.getWidgetTypesByFieldName();
 		final Map<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName = row.getViewEditorRenderModeByFieldName();
 
-		return fieldNameAndValue -> {
-			final String fieldName = fieldNameAndValue.getKey();
-			final Object value = fieldNameAndValue.getValue();
+		return fieldName -> {
+			final Object value = valuesByFieldName.get(fieldName);
 			return JSONDocumentField.ofNameAndValue(fieldName, value)
 					.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetTypesByFieldName.get(fieldName)))
 					.setViewEditorRenderMode(viewEditorRenderModeByFieldName.get(fieldName));

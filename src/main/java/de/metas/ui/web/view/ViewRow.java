@@ -139,7 +139,7 @@ public final class ViewRow implements IViewRow
 	{
 		return processed;
 	}
-
+	
 	@Override
 	public Map<String, Object> getFieldNameAndJsonValues()
 	{

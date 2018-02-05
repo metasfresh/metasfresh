@@ -188,7 +188,7 @@ public final class ViewColumnHelper
 					final Object value = extractFieldValueAsJson(row, column);
 					if (value != null)
 					{
-					result.put(column.getFieldName(), value);
+						result.put(column.getFieldName(), value);
 					}
 				});
 
