@@ -982,8 +982,8 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2018-01-31 16:13:35',
 ;
 
 
-
-Alter table C_BPartner_CreditLimit add CONSTRAINT CreditLimit_UQTypeBP UNIQUE (C_BPartner_ID, Type);
+/* DDL */ SELECT public.db_alter_table('C_BPartner_CreditLimit','ALTER TABLE public.C_BPartner_CreditLimit ADD CONSTRAINT CreditLimit_UQTypeBP UNIQUE (C_BPartner_ID, Type)')
+;
 
 
 

@@ -10,22 +10,52 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.43 (2018-05)
-**release for week 2018-05**
+# metasfresh 5.43 (2018-06)
+**release for week 2018-06**
 
 ## Features
 * metasfresh
+  * [#3022](https://github.com/metasfresh/metasfresh/issues/3022) Contracts: ContractDocumentNo is 0 all the time
+  * [#3410](https://github.com/metasfresh/metasfresh/issues/3410) Enlarge AD_Table.TableName
+  * [#3411](https://github.com/metasfresh/metasfresh/issues/3411) Implement MSV3 purchase order
+  * [#3417](https://github.com/metasfresh/metasfresh/issues/3417) Support new VAT rate of 7.7% in Switzerland from 01.01.2018
+  * [#3419](https://github.com/metasfresh/metasfresh/issues/3419) Throw meaningful exception if MOrderLine.beforeSave has problems
+  * [#3428](https://github.com/metasfresh/metasfresh/issues/3428) Switch off Daterange in Preparation date Filer temporarily
+    * Changes the Filter of Preparation Date to simple Date instead of Daterange.
+  * [#3439](https://github.com/metasfresh/metasfresh/issues/3439) Improvement of GO Delivery Order Window
+    * Improved the visibility of important information in the GO! Delivery Window in WebUI.
+  * [#3440](https://github.com/metasfresh/metasfresh/issues/3440) Improvement of Shipper Window in WebUI
+    * Extends the Shipper Window in WebUI, now also allowing the recording of the GO! Shipper Configuration.
 
+* metasfresh-webui-api
+  * [#812](https://github.com/metasfresh/metasfresh-webui-api/issues/812) Picking Tray Clearing: Action take out and add to LU/ TU
+  * [#815](https://github.com/metasfresh/metasfresh-webui-api/issues/815) Transform TU to exiting LU takes too long for Handling Unit Dropdown List
+  * [#817](https://github.com/metasfresh/metasfresh-webui-api/issues/817) Include stacktrace when providing the error to frontend
 
 * metasfresh-webui-frontend
-
 
 ## Fixes
 * metasfresh-webui-frontend
+  * [#1528](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1528) Added subrow is not shown in the frontend
+    * Improved response from MSV3 request so that purchase candidate row is shown and user can directly start editing.
+* metasfresh
+  * [#3394](https://github.com/metasfresh/metasfresh/issues/3394) Sales inout Jasper: HU name taken from line
+  * [#3402](https://github.com/metasfresh/metasfresh/issues/3402) Can't credit memo a partially paid invoice
+    * Improvement of the status Handling after unclosing Manufacturing Orders.
 
+* metasfresh-webui-api
+  * [#617](https://github.com/metasfresh/metasfresh-webui-api/issues/617) Cache is not invalidated on country change
+  * [#801](https://github.com/metasfresh/metasfresh-webui-api/issues/801) Transforming aggregated CU with "CU to existing TU" not working correctly
+  * [#802](https://github.com/metasfresh/metasfresh-webui-api/issues/802) Transforming aggregated CU with "CU to new TU" not working correctly
+  * [#810](https://github.com/metasfresh/metasfresh-webui-api/issues/810) Update QtyPicked after picking
+  * [#811](https://github.com/metasfresh/metasfresh-webui-api/issues/811) Java Nullpointer Exception in special case with multiple attribute and multi column layout
 
-# metasfresh 5.42 (2018-04)
-**release for week 2018-04**
+* metasfresh-webui-frontend
+  * [#1538](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1538) Date Fields not patched
+  * [#1543](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1543) Sales Order window Purchase Order modal overlay broken again
+
+# metasfresh 5.42 (2018-05)
+**release for week 2018-05**
 
 ## Features
 * metasfresh
@@ -121,7 +151,6 @@ Here come the actual release notes:
   * [#3386](https://github.com/metasfresh/metasfresh/issues/3386) Issued HUs retain I status after PP_Order unclose
   * [#3426](https://github.com/metasfresh/metasfresh/issues/3426) Dunning Level is not set in invoice after generating dunning doc
 
-
 * metasfresh-webui-api
   * [#775](https://github.com/metasfresh/metasfresh-webui-api/issues/775) Destroyed HUs are still visible in material receipt
     * Destroyed HU are not shown in Handling Unit Editor anymore during the Material Receipt workflow.
@@ -159,6 +188,8 @@ Here come the actual release notes:
     * Fixes a Typeahead error in the new Label Filter in WebUI.
   * [#1529](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1529) Email To field does not work correctly
     * Improves the mailTo Field in WebUI. Now showing the Username instead of the user ID.
+  * [#1536](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1536) Cannot set attributes in orderline
+  * [#1552](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1552) Selecting country in dropdown with mouse click not possible
 
 # metasfresh 5.41 (2018-03)
 **release for week 2018-03**
