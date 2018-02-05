@@ -147,4 +147,9 @@ UPDATE AD_Table SET IsChangeLog='Y',Updated=TO_TIMESTAMP('2018-02-05 17:00:22','
 ;
 
 
+/* DDL */ SELECT public.db_alter_table('C_BPartner_CreditLimit','ALTER TABLE public.C_BPartner_CreditLimit DROP CONSTRAINT creditlimit_uqtypebp')
+;
 
+
+/* DDL */ SELECT public.db_alter_table('C_BPartner_CreditLimit','ALTER TABLE public.C_BPartner_CreditLimit ADD CONSTRAINT creditlimit_uqtype_datebp UNIQUE (C_BPartner_ID, Type, DateTo, DateFrom)')
+;
