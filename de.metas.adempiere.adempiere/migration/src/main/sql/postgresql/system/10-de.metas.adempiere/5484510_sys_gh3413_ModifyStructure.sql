@@ -113,3 +113,38 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET Name='Datum von',Updated=TO_TIMESTAMP('2018-02-05 15:06:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550546
 ;
 
+
+
+-- 2018-02-05T16:25:19.051
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET FormatPattern='',Updated=TO_TIMESTAMP('2018-02-05 16:25:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
+
+
+-- 2018-02-05T16:28:58.024
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnSQL='coalesce(select round((s.SO_CreditUsed*100) /cl.Amount,3) from C_BPartner_Stats s join C_BPartner_CreditLimit cl on (s.C_BPartner_ID = cl.C_Bpartner_ID and s.C_Bpartner_ID = C_BPartner.C_BPartner_ID) order by Type limit 1),0)',Updated=TO_TIMESTAMP('2018-02-05 16:28:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
+
+-- 2018-02-05T16:30:08.646
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnSQL='select round((s.SO_CreditUsed*100) /cl.Amount,3) from C_BPartner_Stats s join C_BPartner_CreditLimit cl on (s.C_BPartner_ID = cl.C_Bpartner_ID and s.C_Bpartner_ID = C_BPartner.C_BPartner_ID) order by Type limit 1)',Updated=TO_TIMESTAMP('2018-02-05 16:30:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
+
+-- 2018-02-05T16:30:44.092
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnSQL='(select round((s.SO_CreditUsed*100) /cl.Amount,3) from C_BPartner_Stats s join C_BPartner_CreditLimit cl on (s.C_BPartner_ID = cl.C_Bpartner_ID and s.C_Bpartner_ID = C_BPartner.C_BPartner_ID) order by Type limit 1)',Updated=TO_TIMESTAMP('2018-02-05 16:30:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
+
+-- 2018-02-05T16:32:51.125
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnSQL='(coalesce((select round((s.SO_CreditUsed*100) /cl.Amount,3) from C_BPartner_Stats s  join C_BPartner_CreditLimit cl on (s.C_BPartner_ID = cl.C_Bpartner_ID and s.C_Bpartner_ID = C_BPartner.C_BPartner_ID) order by Type limit 1),0))',Updated=TO_TIMESTAMP('2018-02-05 16:32:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
+
+-- 2018-02-05T17:00:22.808
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET IsChangeLog='Y',Updated=TO_TIMESTAMP('2018-02-05 17:00:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540929
+;
+
+
+
