@@ -1,5 +1,11 @@
 package de.metas.inoutcandidate.spi.impl;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import lombok.Builder;
@@ -74,5 +80,17 @@ public class InOutLineHUPackingMaterialCollectorSource implements IHUPackingMate
 	public I_M_InOutLine getM_InOutLine()
 	{
 		return inoutLine;
+	}
+
+	public void linkInOutLineToPackingMaterialLine(@NonNull final I_M_InOutLine packingMaterialLine)
+	{
+		final I_M_InOutLine sourceIol = getM_InOutLine();
+		final I_M_HU_PI_Version huPiVersion = sourceIol.getM_HU_PI_Item_Product_Override().getM_HU_PI_Item().getM_HU_PI_Version();
+		final I_M_HU_PackingMaterial packingMaterial = Services.get(IHandlingUnitsDAO.class).retrievePackingMaterial(huPiVersion, sourceIol.getM_InOut().getC_BPartner());
+		if (packingMaterial != null && packingMaterial.getM_Product_ID() == packingMaterialLine.getM_Product_ID())
+		{
+			sourceIol.setM_PackingMaterial_InOutLine(packingMaterialLine);
+			InterfaceWrapperHelper.save(sourceIol);
+		}
 	}
 }
