@@ -193,8 +193,6 @@ public class HUShippingFacade
 			return;
 		}
 
-		// invoiceMode == InvoiceMode.AllWithoutInvoiceSchedule
-		// InvoiceMode.AllWithoutInvoiceSchedule != invoiceMode is never true
 		final List<Integer> invoiceCandidateIds = invoiceCandDAO.retrieveInvoiceCandidatesQueryForInOuts(shipments).listIds();
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();

@@ -39,17 +39,16 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	private static final String PARAMETERNAME_IsCompleteShipments = ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments;
 	private static final String PARAMETERNAME_InvoiceMode = "InvoiceMode";
 
-	/**
-	 *
-	 */
 	public static enum BillAssociatedInvoiceCandidates
 	{
-		/** don't invoice any associated ICs (the default) */
+		/**
+		 * don't invoice any associated ICs (the default)
+		 */
 		NO,
 
 		/**
-		 * Invoice those related invoice candidates that do not have an invoice schedule (e.g. "every 14 days")
-		 * and therefore do not have an explicit {@link de.metas.invoicecandidate.model.I_C_Invoice_Candidate#COLUMN_DateToInvoice} value set.
+		 * Invoice those related invoice candidates whose {@link de.metas.invoicecandidate.model.I_C_Invoice_Candidate#COLUMN_DateToInvoice_Effective}
+		 * value allows this.
 		 */
 		IF_INVOICE_SCHEDULE_PERMITS,
 	};
