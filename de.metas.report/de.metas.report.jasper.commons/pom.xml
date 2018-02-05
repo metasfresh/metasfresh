@@ -96,6 +96,12 @@ Therefore we just add this dependency to both
 			<version>1.0</version>
 		</dependency>
  -->		
+ 		<!-- thx to  http://blog.itcrowd.pl/2013/11/bold-style-missing-in-jasperreports.html -->
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports-fonts</artifactId>
+			<version>4.0.0</version>
+		</dependency>
 	</dependencies>
 
 
