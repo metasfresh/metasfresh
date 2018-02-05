@@ -32,8 +32,11 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#812](https://github.com/metasfresh/metasfresh-webui-api/issues/812) Picking Tray Clearing: Action take out and add to LU/ TU
+    * New Action for Picking Tray Handlung Unit removals and automatic adding to an exiting Logistics Unit.
   * [#815](https://github.com/metasfresh/metasfresh-webui-api/issues/815) Transform TU to exiting LU takes too long for Handling Unit Dropdown List
+    * Performance Improvement of Transformation List Dropdown in HU Editor.
   * [#817](https://github.com/metasfresh/metasfresh-webui-api/issues/817) Include stacktrace when providing the error to frontend
+    * Now providing the stacktrace from Backend to Frontend. Can be switched on in Frontend config for testing purpose.
 
 * metasfresh-webui-frontend
 
@@ -42,6 +45,7 @@ Here come the actual release notes:
   * [#3022](https://github.com/metasfresh/metasfresh/issues/3022) Contracts: ContractDocumentNo is 0 all the time
     * Fixes the automatic Document No generation in Contracts, now not leaving Document No 0 there anymore.
   * [#3394](https://github.com/metasfresh/metasfresh/issues/3394) Sales inout Jasper: HU name taken from line
+    * Fix for the Packing Instruction shown in Sales Inout Document when using manual Packing Material.
   * [#3402](https://github.com/metasfresh/metasfresh/issues/3402) Can't credit memo a partially paid invoice
     * Improvement of the status Handling after unclosing Manufacturing Orders.
 
