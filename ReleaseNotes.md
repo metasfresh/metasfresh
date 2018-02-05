@@ -55,14 +55,21 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#617](https://github.com/metasfresh/metasfresh-webui-api/issues/617) Cache is not invalidated on country change
+    * Fixes a Bug in Cache Invalidation for Country changes and Pricing.
   * [#801](https://github.com/metasfresh/metasfresh-webui-api/issues/801) Transforming aggregated CU with "CU to existing TU" not working correctly
+    * Fixes an error in the "CU to existing TU" action.
   * [#802](https://github.com/metasfresh/metasfresh-webui-api/issues/802) Transforming aggregated CU with "CU to new TU" not working correctly
+    * Fixes an error "CU to existing TU" action, sometime leaving wrong calculates quanities behind.
   * [#810](https://github.com/metasfresh/metasfresh-webui-api/issues/810) Update QtyPicked after picking
+    * Fixes a Refresh Bug, leaving the Picked Quantities not updates after picking the Product.
   * [#811](https://github.com/metasfresh/metasfresh-webui-api/issues/811) Java Nullpointer Exception in special case with multiple attribute and multi column layout
+    * Fixes a NPE in multi (>2) Column Layout Windows.
 
 * metasfresh-webui-frontend
   * [#1538](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1538) Date Fields not patched
+    * Fixes an error with Date Fields, now patching them after changes again.
   * [#1543](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1543) Sales Order window Purchase Order modal overlay broken again
+    * Fixes the Purchase Order modal overlay functionaluity in Sales Order.
 
 # metasfresh 5.42 (2018-05)
 **release for week 2018-05**
