@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.util.Check;
@@ -44,8 +45,10 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 	private final IProductPlanningSchemaDAO productPlanningSchemaDAO = Services.get(IProductPlanningSchemaDAO.class);
 
 	@Override
-	public void createDefaultProductPlanningsForAllProducts()
+	public List<I_PP_Product_Planning> createDefaultProductPlanningsForAllProducts()
 	{
+		final List<I_PP_Product_Planning> createdPlannings = new ArrayList<>();
+		
 		final List<I_M_Product> productsWithNoProductPlanning = productDAO.retrieveProductsWithNoProductPlanning();
 
 		for (final I_M_Product product : productsWithNoProductPlanning)
@@ -61,15 +64,18 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 
 			for (final I_M_Product_PlanningSchema productPlanningSchema : productPlanningSchemas)
 			{
-				createUpdateProductPlanning(product, productPlanningSchema);
+				createdPlannings.add(createUpdateProductPlanning(product, productPlanningSchema));
 			}
 		}
+		
+		return createdPlannings;
 	}
 
 	@Override
-	public void createDefaultProductPlanningsForSchema(final I_M_Product_PlanningSchema productPlanningSchema)
+	public List<I_PP_Product_Planning> createUpdateDefaultProductPlanningsForSchema(final I_M_Product_PlanningSchema productPlanningSchema)
 	{
-
+		final List<I_PP_Product_Planning> createdPlannings = new ArrayList<>();
+		
 		final String schemaSelector = productPlanningSchema.getM_ProductPlanningSchema_Selector();
 
 		final List<I_PP_Product_Planning> productPlanningsForSchema = productPlanningSchemaDAO.retrieveProductPlanningsForSchemaID(productPlanningSchema.getM_Product_PlanningSchema_ID());
@@ -90,8 +96,10 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 		final List<I_M_Product> productsForSelector = productPlanningSchemaDAO.retrieveProductsForSchemaSelector(schemaSelector);
 		for (final I_M_Product product : productsForSelector)
 		{
-			createUpdateProductPlanning(product, productPlanningSchema);
+			createdPlannings.add(createUpdateProductPlanning(product, productPlanningSchema));
 		}
+		
+		return createdPlannings;
 	}
 
 	private I_PP_Product_Planning createUpdateProductPlanning(final I_M_Product product, final I_M_Product_PlanningSchema schema)
