@@ -11,6 +11,7 @@ import org.compiere.util.NamePair;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.datatypes.json.JSONRange;
 import lombok.experimental.UtilityClass;
 
@@ -56,7 +57,7 @@ public final class Values
 	/**
 	 * Convert value to JSON.
 	 *
-	 * @param value may be {@code null}. In that case, <code>null</code> is returned.
+	 * @param value may be {@code null}. In that case, {@link JSONNullValue} is returned.
 	 * @param fallbackMapper mapper called when value could not be converted to JSON; takes as input the <code>value</code>
 	 * @return JSON value
 	 */
@@ -64,7 +65,7 @@ public final class Values
 	{
 		if (value == null)
 		{
-			return null;
+			return JSONNullValue.instance;
 		}
 		else if (value instanceof java.util.Date)
 		{

@@ -26,6 +26,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
@@ -186,7 +187,7 @@ public final class ViewColumnHelper
 				.getColumns()
 				.forEach(column -> {
 					final Object value = extractFieldValueAsJson(row, column);
-					if (value != null)
+					if (!JSONNullValue.isNull(value))
 					{
 						result.put(column.getFieldName(), value);
 					}
