@@ -28,6 +28,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-webui-frontend
+  * [#1528](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1528) Added subrow is not shown in the frontend
+    * Improved response from MSV3 request so that purchase candidate row is shown and user can directly start editing.
 
 
 # metasfresh 5.42 (2018-05)
