@@ -186,23 +186,48 @@ function mergeColumnInfoIntoViewRowField(columnInfo, viewRowField) {
   return viewRowField;
 }
 
-export function mergeRows({ toRows, fromRows, columnInfosByFieldName }) {
+function indexRows(rows, map) {
+  for (const row of rows) {
+    const { id, includedDocuments } = row;
+
+    map[id] = row;
+
+    if (includedDocuments) {
+      indexRows(includedDocuments, map);
+    }
+  }
+
+  return map;
+}
+
+function mapRows(rows, map, columnInfosByFieldName) {
+  return rows.map(row => {
+    const { id, includedDocuments } = row;
+
+    if (includedDocuments) {
+      row.includedDocuments = mapRows(
+        includedDocuments,
+        map,
+        columnInfosByFieldName
+      );
+    }
+
+    const entry = map[id];
+
+    if (entry) {
+      return mergeColumnInfosIntoViewRow(columnInfosByFieldName, entry);
+    } else {
+      return row;
+    }
+  });
+}
+
+export function mergeRows({ toRows, fromRows, columnInfosByFieldName = {} }) {
   if (!fromRows) {
     return toRows;
   }
 
-  const fromRowsById = fromRows.reduce((acc, row) => {
-    acc[row.id] = row;
-    return acc;
-  }, {});
+  const fromRowsById = indexRows(fromRows, {});
 
-  return toRows.map(
-    row =>
-      fromRowsById[row.id]
-        ? mergeColumnInfosIntoViewRow(
-            columnInfosByFieldName,
-            fromRowsById[row.id]
-          )
-        : row
-  );
+  return mapRows(toRows, fromRowsById, columnInfosByFieldName);
 }

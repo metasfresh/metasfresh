@@ -128,7 +128,7 @@ class Table extends Component {
       );
     }
 
-    if (!_.isEqual(prevProps.rowData, rowData)) {
+    if (prevProps.rowData[1] != rowData[1]) {
       this.getIndentData();
     }
 
