@@ -7,7 +7,7 @@ import org.adempiere.util.Loggables;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
-import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.InvoiceMode;
+import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -71,7 +71,7 @@ public class WEBUI_PackingHUsView_AddHUsToShipperTransportationShipAndInvoice ex
 				.hus(hus)
 				.addToShipperTransportationId(shipperTransportationId)
 				.completeShipments(true)
-				.invoiceMode(InvoiceMode.AllWithoutInvoiceSchedule)
+				.invoiceMode(BillAssociatedInvoiceCandidates.IF_INVOICE_SCHEDULE_PERMITS)
 				.createShipperDeliveryOrders(true)
 				.build()
 				.generateShippingDocuments();
