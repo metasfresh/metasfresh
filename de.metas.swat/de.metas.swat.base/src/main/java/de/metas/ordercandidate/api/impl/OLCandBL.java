@@ -49,6 +49,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.RelationTypeZoomProvidersFactory;
 import org.adempiere.pricing.api.IEditablePricingContext;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
@@ -100,7 +101,6 @@ import de.metas.ordercandidate.spi.IOLCandListener;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
-import de.metas.product.IProductPA;
 import de.metas.relation.grid.ModelRelationTarget;
 import de.metas.workflow.api.IWFExecutionFactory;
 
@@ -1128,7 +1128,7 @@ public class OLCandBL implements IOLCandBL
 		else
 		{
 			final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-			final IProductPA productPA = Services.get(IProductPA.class);
+			final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 			final int bill_BPartner_ID = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
 
@@ -1154,7 +1154,7 @@ public class OLCandBL implements IOLCandBL
 
 			pricingCtx.setDisallowDiscount(olCand.isManualDiscount());
 
-			final I_M_PriceList pl = productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, dropShipLocation.getC_BPartner_Location_ID(), true, trxName);
+			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, dropShipLocation, true);
 
 			if (pl == null)
 			{
