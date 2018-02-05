@@ -173,6 +173,38 @@ public interface I_C_BPartner_CreditLimit
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getC_Currency_ID();
+
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	@Deprecated
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, org.compiere.model.I_C_Currency>(I_C_BPartner_CreditLimit.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -203,27 +235,54 @@ public interface I_C_BPartner_CreditLimit
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Datum.
+	 * Set Datum von.
+	 * Startdatum eines Abschnittes
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateGeneral (java.sql.Timestamp DateGeneral);
+	public void setDateFrom (java.sql.Timestamp DateFrom);
 
 	/**
-	 * Get Datum.
+	 * Get Datum von.
+	 * Startdatum eines Abschnittes
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateGeneral();
+	public java.sql.Timestamp getDateFrom();
 
-    /** Column definition for DateGeneral */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object> COLUMN_DateGeneral = new org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object>(I_C_BPartner_CreditLimit.class, "DateGeneral", null);
-    /** Column name DateGeneral */
-    public static final String COLUMNNAME_DateGeneral = "DateGeneral";
+    /** Column definition for DateFrom */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object> COLUMN_DateFrom = new org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object>(I_C_BPartner_CreditLimit.class, "DateFrom", null);
+    /** Column name DateFrom */
+    public static final String COLUMNNAME_DateFrom = "DateFrom";
+
+	/**
+	 * Set Datum bis.
+	 * Enddatum eines Abschnittes
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDateTo (java.sql.Timestamp DateTo);
+
+	/**
+	 * Get Datum bis.
+	 * Enddatum eines Abschnittes
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDateTo();
+
+    /** Column definition for DateTo */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object> COLUMN_DateTo = new org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object>(I_C_BPartner_CreditLimit.class, "DateTo", null);
+    /** Column name DateTo */
+    public static final String COLUMNNAME_DateTo = "DateTo";
 
 	/**
 	 * Set Aktiv.

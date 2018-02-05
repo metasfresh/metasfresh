@@ -15,7 +15,7 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1945448948L;
+	private static final long serialVersionUID = 1068906034L;
 
     /** Standard Constructor */
     public X_C_BPartner_CreditLimit (Properties ctx, int C_BPartner_CreditLimit_ID, String trxName)
@@ -160,20 +160,75 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
 		return ii.intValue();
 	}
 
-	/** Set Datum.
-		@param DateGeneral Datum	  */
 	@Override
-	public void setDateGeneral (java.sql.Timestamp DateGeneral)
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
 	{
-		set_Value (COLUMNNAME_DateGeneral, DateGeneral);
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
 	}
 
-	/** Get Datum.
-		@return Datum	  */
 	@Override
-	public java.sql.Timestamp getDateGeneral () 
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateGeneral);
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		throw new IllegalArgumentException ("C_Currency_ID is virtual column");	}
+
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
+	@Override
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Datum von.
+		@param DateFrom 
+		Startdatum eines Abschnittes
+	  */
+	@Override
+	public void setDateFrom (java.sql.Timestamp DateFrom)
+	{
+		set_Value (COLUMNNAME_DateFrom, DateFrom);
+	}
+
+	/** Get Datum von.
+		@return Startdatum eines Abschnittes
+	  */
+	@Override
+	public java.sql.Timestamp getDateFrom () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateFrom);
+	}
+
+	/** Set Datum bis.
+		@param DateTo 
+		Enddatum eines Abschnittes
+	  */
+	@Override
+	public void setDateTo (java.sql.Timestamp DateTo)
+	{
+		set_Value (COLUMNNAME_DateTo, DateTo);
+	}
+
+	/** Get Datum bis.
+		@return Enddatum eines Abschnittes
+	  */
+	@Override
+	public java.sql.Timestamp getDateTo () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateTo);
 	}
 
 	/** 
