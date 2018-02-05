@@ -202,7 +202,7 @@ public class AvailabilityCheck
 
 		for (final PurchaseCandidate purchaseCandidate : vendorBParterId2PurchaseCandidates.get(vendorId))
 		{
-			result.put(purchaseCandidate.createRequestItem(), purchaseCandidate);
+			result.put(purchaseCandidate.createAvailabilityRequestItem(), purchaseCandidate);
 		}
 		return result.build();
 	}

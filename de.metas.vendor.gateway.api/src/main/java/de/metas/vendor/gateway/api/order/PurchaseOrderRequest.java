@@ -30,9 +30,6 @@ import lombok.Value;
 @Value
 public class PurchaseOrderRequest
 {
-	/** The metasfresh purchaseOrder's {@code C_Order_ID} */
-	int purchaseOrderId;
-
 	int vendorId;
 
 	@Singular

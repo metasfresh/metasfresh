@@ -31,5 +31,6 @@ public class PurchaseOrderResponse
 {
 	String createdTableName;
 	int createdRecordId;
+
 	RuntimeException exception;
 }

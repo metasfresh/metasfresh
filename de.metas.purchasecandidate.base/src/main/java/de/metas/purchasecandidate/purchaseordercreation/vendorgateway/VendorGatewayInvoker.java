@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate.purchaseordercreation.vendorgateway;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.compiere.Adempiere;
@@ -33,7 +33,7 @@ import de.metas.vendor.gateway.api.VendorGatewayService;
 
 public interface VendorGatewayInvoker
 {
-	List<PurchaseCandidate> placeRemotePurchaseOrder(List<PurchaseCandidate> purchaseCandidates);
+	Collection<PurchaseCandidate> placeRemotePurchaseOrder(Collection<PurchaseCandidate> purchaseCandidates);
 
 	void setPurchaseOrderId(int purchaseOrderId);
 

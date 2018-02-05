@@ -11,6 +11,7 @@ import org.compiere.model.I_C_OrderLine;
 
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
+import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -177,7 +178,23 @@ public class PurchaseCandidate
 		datePromisedInitial = datePromised;
 	}
 
-	public AvailabilityRequestItem createRequestItem()
+	public AvailabilityRequestItem createAvailabilityRequestItem()
+	{
+		final ProductAndQuantity productAndQuantity = createProductAndQuantity();
+
+		return AvailabilityRequestItem.builder()
+				.productAndQuantity(productAndQuantity)
+				.purchaseCandidateId(purchaseCandidateId)
+				.salesOrderLineId(getSalesOrderLineId())
+				.build();
+	}
+
+	public PurchaseOrderRequestItem createPurchaseOrderRequestItem()
+	{
+		return new PurchaseOrderRequestItem(createProductAndQuantity());
+	}
+
+	private ProductAndQuantity createProductAndQuantity()
 	{
 		final String productValue = identifier.getVendorProductInfo().getProductNo();
 
@@ -187,11 +204,6 @@ public class PurchaseCandidate
 		final ProductAndQuantity productAndQuantity = new ProductAndQuantity(
 				productValue,
 				qtyToDeliver);
-
-		return AvailabilityRequestItem.builder()
-				.productAndQuantity(productAndQuantity)
-				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderLineId(getSalesOrderLineId())
-				.build();
+		return productAndQuantity;
 	}
 }

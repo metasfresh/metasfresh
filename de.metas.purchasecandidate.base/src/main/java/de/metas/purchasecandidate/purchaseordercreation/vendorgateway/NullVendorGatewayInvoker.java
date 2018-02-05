@@ -1,5 +1,7 @@
 package de.metas.purchasecandidate.purchaseordercreation.vendorgateway;
 
+import java.util.Collection;
+
 import de.metas.purchasecandidate.PurchaseCandidate;
 
 /*
@@ -28,13 +30,15 @@ import de.metas.purchasecandidate.PurchaseCandidate;
 public class NullVendorGatewayInvoker implements VendorGatewayInvoker
 {
 	@Override
-	public void addCandidate(PurchaseCandidate candidate)
+	public Collection<PurchaseCandidate> placeRemotePurchaseOrder(
+			Collection<PurchaseCandidate> purchaseCandidates)
 	{
+		return purchaseCandidates;
 	}
 
 	@Override
-	public VendorGatewayStatus createAndComplete(int purchaseOrderId)
+	public void setPurchaseOrderId(int purchaseOrderId)
 	{
-		return VendorGatewayStatus.NO_GATEWAY_SERVICE;
+		// does nothing
 	}
 }

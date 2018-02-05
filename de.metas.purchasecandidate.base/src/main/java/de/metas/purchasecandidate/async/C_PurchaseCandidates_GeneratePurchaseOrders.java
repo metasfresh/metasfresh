@@ -3,9 +3,14 @@ package de.metas.purchasecandidate.async;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.ILoggable;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 
@@ -25,6 +30,7 @@ import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.PurchaseOrderFromCandidatesAggregator;
+import de.metas.purchasecandidate.purchaseordercreation.vendorgateway.VendorGatewayInvoker;
 
 /*
  * #%L
@@ -86,18 +92,53 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
-		final List<PurchaseCandidate> purchaseCandidates = getPurchaseCandidates();
+		final List<PurchaseCandidate> proposedPurchaseCandidates = getPurchaseCandidates();
 
 		final ImmutableListMultimap<Integer, PurchaseCandidate> vendorId2purchaseCandidate = //
-				Multimaps.index(purchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
+				Multimaps.index(proposedPurchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
 
-		final PurchaseOrderFromCandidatesAggregator purchaseOrdersAggregator = PurchaseOrderFromCandidatesAggregator.newInstance();
-		purchaseOrdersAggregator.addAll(purchaseCandidates.iterator());
-		purchaseOrdersAggregator.closeAllGroups();
+		final ILoggable loggable = Loggables.get();
 
-		purchaseCandidateRepo.saveAllNoLock(purchaseCandidates); // no lock because they are already locked by us
+		final List<CompletableFuture<Void>> futures = vendorId2purchaseCandidate.asMap()
+				.entrySet().stream()
+				.map(entry -> CompletableFuture.runAsync(() -> createPurchaseOrderInDifferentThread(
+						entry.getKey(), // vendorId
+						entry.getValue(), // purchaseCandidates
+						loggable)))
+				.collect(Collectors.toList());
+
+		CompletableFuture
+				.allOf(futures.toArray(new CompletableFuture[futures.size()]))
+				.join();
 
 		return Result.SUCCESS;
+	}
+
+	private void createPurchaseOrderInDifferentThread(
+			final int vendorId,
+			final Collection<PurchaseCandidate> proposedPurchaseCandidatesWithVendorId,
+			final ILoggable loggable)
+	{
+		// note: if the VendorGateWayInvoker or PurchaseOrderFromCandidatesAggregator use Loggable.get() internally,
+		// they shall receive "our" loggable.
+		try (final IAutoCloseable autoClosable = Loggables.temporarySetLoggable(loggable))
+		{
+			loggable.addLog("vendorId={} - now invoking placeRemotePurchaseOrder with purchaseCandidates={}",
+					vendorId, proposedPurchaseCandidatesWithVendorId);
+			final List<PurchaseCandidate> actualPurchaseCandidatesWithVendorId = VendorGatewayInvoker
+					.createForVendorId(vendorId)
+					.placeRemotePurchaseOrder(proposedPurchaseCandidatesWithVendorId);
+			loggable.addLog("vendorId={} - placeRemotePurchaseOrder returned purchaseCandidates={}",
+					vendorId, actualPurchaseCandidatesWithVendorId);
+
+			final PurchaseOrderFromCandidatesAggregator purchaseOrdersAggregator = PurchaseOrderFromCandidatesAggregator.newInstance();
+			purchaseOrdersAggregator.addAll(actualPurchaseCandidatesWithVendorId.iterator());
+			purchaseOrdersAggregator.closeAllGroups();
+			loggable.addLog("vendorId={} - PurchaseOrderFromCandidatesAggregator created the purchase order(s)",
+					vendorId, actualPurchaseCandidatesWithVendorId);
+
+			purchaseCandidateRepo.saveAllNoLock(actualPurchaseCandidatesWithVendorId); // no lock because they are already locked by us
+		}
 	}
 
 	private List<PurchaseCandidate> getPurchaseCandidates()
