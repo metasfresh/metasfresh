@@ -1,8 +1,6 @@
 package de.metas.product;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_M_Product;
-import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.product.model.I_M_Product_PlanningSchema;
 
@@ -31,10 +29,8 @@ import de.metas.product.model.I_M_Product_PlanningSchema;
 public interface IProductPlanningSchemaBL extends ISingletonService
 {
 
-	I_PP_Product_Planning createUpdateProductPlanning(I_M_Product product, I_M_Product_PlanningSchema schema);
-
-	void updateProductPlanningFromSchema(I_PP_Product_Planning productPlanning, I_M_Product_PlanningSchema schema);
-
 	void createDefaultProductPlanningsForAllProducts();
+
+	void createDefaultProductPlanningsForSchema(I_M_Product_PlanningSchema productPlanningSchema);
 
 }

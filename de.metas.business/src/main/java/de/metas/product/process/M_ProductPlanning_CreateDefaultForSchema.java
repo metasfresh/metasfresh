@@ -1,13 +1,7 @@
 package de.metas.product.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
-
-import java.util.List;
-
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Product;
-import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.process.JavaProcess;
 import de.metas.product.IProductPlanningSchemaBL;
@@ -46,29 +40,9 @@ public class M_ProductPlanning_CreateDefaultForSchema extends JavaProcess
 	{
 		final I_M_Product_PlanningSchema productPlanningSchema = getRecord(I_M_Product_PlanningSchema.class);
 		Check.assumeNotNull(productPlanningSchema, "@NoSelection@");
+		
+		productPlanningSchemaBL.createDefaultProductPlanningsForSchema(productPlanningSchema);
 
-		final String schemaSelector = productPlanningSchema.getM_ProductPlanningSchema_Selector();
-
-		final List<I_PP_Product_Planning> productPlanningsForSchema = productPlanningSchemaDAO.retrieveProductPlanningsForSchemaID(productPlanningSchema.getM_Product_PlanningSchema_ID());
-
-		for (final I_PP_Product_Planning planning : productPlanningsForSchema)
-		{
-			final I_M_Product product = planning.getM_Product();
-			if (!schemaSelector.equals(product.getM_ProductPlanningSchema_Selector()))
-			{
-				delete(planning);
-			}
-			else
-			{
-				productPlanningSchemaBL.updateProductPlanningFromSchema(planning, productPlanningSchema);
-			}
-		}
-
-		final List<I_M_Product> productsForSelector = productPlanningSchemaDAO.retrieveProductsForSchemaSelector(schemaSelector);
-		for (final I_M_Product product : productsForSelector)
-		{
-			productPlanningSchemaBL.createUpdateProductPlanning(product, productPlanningSchema);
-		}
 
 		return MSG_OK;
 	}
