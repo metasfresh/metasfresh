@@ -9,10 +9,12 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
@@ -57,6 +59,9 @@ import lombok.ToString;
 @ToString(exclude = "_fieldNameAndJsonValues")
 public class PurchaseRow implements IViewRow
 {
+
+	private static final Logger logger = LogManager.getLogger(PurchaseRow.class);
+
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
@@ -115,10 +120,11 @@ public class PurchaseRow implements IViewRow
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
 	private final ImmutableMap<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName;
 
-	private static final ImmutableMap<String, ViewEditorRenderMode> ViewEditorRenderModeByFieldName_ReadOnly = ImmutableMap.<String, ViewEditorRenderMode> builder()
-			.put(FIELDNAME_QtyToPurchase, ViewEditorRenderMode.NEVER)
-			.put(FIELDNAME_DatePromised, ViewEditorRenderMode.NEVER)
-			.build();
+	private static final ImmutableMap<String, ViewEditorRenderMode> ViewEditorRenderModeByFieldName_ReadOnly = //
+			ImmutableMap.<String, ViewEditorRenderMode> builder()
+					.put(FIELDNAME_QtyToPurchase, ViewEditorRenderMode.NEVER)
+					.put(FIELDNAME_DatePromised, ViewEditorRenderMode.NEVER)
+					.build();
 	private static final ImmutableMap<String, ViewEditorRenderMode> ViewEditorRenderModeByFieldName_Inherit = ImmutableMap.of();
 
 	@Builder(toBuilder = true)
@@ -164,15 +170,16 @@ public class PurchaseRow implements IViewRow
 		this.warehouseId = warehouseId;
 		this.readonly = readonly;
 
-		viewEditorRenderModeByFieldName = readonly ? ViewEditorRenderModeByFieldName_ReadOnly : ViewEditorRenderModeByFieldName_Inherit;
+		viewEditorRenderModeByFieldName = readonly //
+				? ViewEditorRenderModeByFieldName_ReadOnly //
+				: ViewEditorRenderModeByFieldName_Inherit;
 
-		//
 		if (rowType == PurchaseRowType.GROUP)
 		{
 			updateQtyToPurchaseFromIncludedRows();
 		}
 
-		System.out.println("created: " + this.rowId + ", RO=" + this.readonly + " -- " + this);
+		logger.trace("Created: {}, RO={} -- this={}", this.rowId, this.readonly, this);
 	}
 
 	private PurchaseRow(final PurchaseRow from)
