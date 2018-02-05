@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,7 +56,6 @@ import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -118,7 +117,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	private final ISnapshotProducer<I_M_HU> huSnapshotProducer;
 
 	/**
-	 * 
+	 *
 	 * @param ctx
 	 * @param result
 	 * @param selectedHUIds
@@ -135,10 +134,10 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 		// the HU-context shall use the tread-inherited trx because it is executed by ITrxItemProcessorExecutorService and instantiated before the executor-services internal trxName is known.
 		_huContext = handlingUnitsBL.createMutableHUContext(trxManager.createThreadContextAware(ctx));
-		
-		
+
+
 		packingMaterialsCollector = new HUPackingMaterialsCollector(_huContext);
-	
+
 		huSnapshotProducer = Services.get(IHUSnapshotDAO.class)
 				.createSnapshot()
 				.setContext(_huContext);
@@ -263,7 +262,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	/**
 	 * Add the value of M_QualityNote from the receiptLineCandidate to the M_AttributeSetInstance of the receipt line
-	 * 
+	 *
 	 * @param receiptLineWithIssues
 	 * @param receiptLineCandidate
 	 */
@@ -342,7 +341,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	/**
 	 * Creates additional receipt lines for packing materials.
-	 * 
+	 *
 	 * @return additional packing material receipt lines that were created.
 	 */
 	private final List<I_M_InOutLine> createBottomReceiptLines_PackingMaterials()
@@ -377,17 +376,11 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			}
 
 			// task 09502: set the reference from line to packing-line
-			for (final IHUPackingMaterialCollectorSource source : candidate.getSources())
-			{
-				if (source instanceof InOutLineHUPackingMaterialCollectorSource)
-				{
-
-					final InOutLineHUPackingMaterialCollectorSource inOutLineSource = (InOutLineHUPackingMaterialCollectorSource)source;
-					final I_M_InOutLine sourceReceiptLine = inOutLineSource.getM_InOutLine();
-					sourceReceiptLine.setM_PackingMaterial_InOutLine(packagingReceiptLine);
-					InterfaceWrapperHelper.save(sourceReceiptLine);
-				}
-			}
+			final Set<IHUPackingMaterialCollectorSource> sourceIols = candidate.getSources();
+			sourceIols.stream()
+					.filter(source -> source instanceof InOutLineHUPackingMaterialCollectorSource)
+					.map(source -> (InOutLineHUPackingMaterialCollectorSource)source)
+					.forEach(inOutLineSource -> inOutLineSource.linkInOutLineToPackingMaterialLine(packagingReceiptLine));
 
 			receiptLines.add(packagingReceiptLine);
 			// 07734 note: we don't need to explicitly link the new receipt line here. It will be done by MaterialTrackableDocumentByASIInterceptor (its M_InOut subclass).
@@ -701,14 +694,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	private void fetchPackingMaterialsFromGebindeLager(final IHUContext huContext)
 	{
 		huTrxBL.createHUContextProcessorExecutor(huContext)
-				.run(new IHUContextProcessor()
-				{
-					@Override
-					public IMutableAllocationResult process(final IHUContext huContext)
-					{
-						return NULL_RESULT;
-					}
-				});
+				.run((IHUContextProcessor)huContext1 -> IHUContextProcessor.NULL_RESULT);
 	}
 
 	/**
@@ -731,32 +717,27 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		//
 		// Transfer attributes from HU to receipt line's ASI
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor(huContext);
-		executor.run(new IHUContextProcessor()
-		{
-			@Override
-			public IMutableAllocationResult process(final IHUContext huContext)
-			{
-				final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
-				final IAttributeStorageFactory attributeStorageFactory = trxAttributesBuilder.getAttributeStorageFactory();
-				final IAttributeStorage huAttributeStorageFrom = attributeStorageFactory.getAttributeStorage(hu);
-				final IAttributeStorage receiptLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(receiptLine);
+		executor.run((IHUContextProcessor)huContext1 -> {
+			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
+			final IAttributeStorageFactory attributeStorageFactory = trxAttributesBuilder.getAttributeStorageFactory();
+			final IAttributeStorage huAttributeStorageFrom = attributeStorageFactory.getAttributeStorage(hu);
+			final IAttributeStorage receiptLineAttributeStorageTo = attributeStorageFactory.getAttributeStorage(receiptLine);
 
-				final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
-				final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
+			final IHUStorageFactory storageFactory = huContext1.getHUStorageFactory();
+			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
 
-				final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
-						.setProduct(rs.getM_Product())
-						.setQty(receiptScheduleBL.getQtyMoved(rs))
-						.setUOM(rs.getC_UOM())
-						.setAttributeStorageFrom(huAttributeStorageFrom)
-						.setAttributeStorageTo(receiptLineAttributeStorageTo)
-						.setHUStorageFrom(huStorageFrom);
+			final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext1)
+					.setProduct(rs.getM_Product())
+					.setQty(receiptScheduleBL.getQtyMoved(rs))
+					.setUOM(rs.getC_UOM())
+					.setAttributeStorageFrom(huAttributeStorageFrom)
+					.setAttributeStorageTo(receiptLineAttributeStorageTo)
+					.setHUStorageFrom(huStorageFrom);
 
-				final IHUAttributeTransferRequest request = requestBuilder.create();
-				trxAttributesBuilder.transferAttributes(request);
+			final IHUAttributeTransferRequest request = requestBuilder.create();
+			trxAttributesBuilder.transferAttributes(request);
 
-				return NULL_RESULT;
-			}
+			return IHUContextProcessor.NULL_RESULT;
 		});
 
 		//
