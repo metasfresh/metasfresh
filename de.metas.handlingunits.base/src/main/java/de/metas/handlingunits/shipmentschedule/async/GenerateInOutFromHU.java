@@ -39,9 +39,18 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 	private static final String PARAMETERNAME_IsCompleteShipments = ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments;
 	private static final String PARAMETERNAME_InvoiceMode = "InvoiceMode";
 
-	public static enum InvoiceMode
+	public static enum BillAssociatedInvoiceCandidates
 	{
-		None, AllWithoutInvoiceSchedule,
+		/**
+		 * don't invoice any associated ICs (the default)
+		 */
+		NO,
+
+		/**
+		 * Invoice those related invoice candidates whose {@link de.metas.invoicecandidate.model.I_C_Invoice_Candidate#COLUMN_DateToInvoice_Effective}
+		 * value allows this.
+		 */
+		IF_INVOICE_SCHEDULE_PERMITS,
 	};
 
 	//
@@ -60,7 +69,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		return prepareWorkpackage()
 				.hus(hus)
 				.completeShipments(false)
-				.invoiceMode(InvoiceMode.None)
+				.invoiceMode(BillAssociatedInvoiceCandidates.NO)
 				.enqueue();
 	}
 
@@ -69,11 +78,11 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 			@NonNull @Singular("hu") final List<I_M_HU> hus,
 			final int addToShipperTransportationId,
 			final boolean completeShipments,
-			@Nullable final InvoiceMode invoiceMode)
+			@Nullable final BillAssociatedInvoiceCandidates invoiceMode)
 	{
 		Check.assumeNotEmpty(hus, "hus is not empty");
 
-		final InvoiceMode invoiceModeEffective = invoiceMode != null ? invoiceMode : InvoiceMode.None;
+		final BillAssociatedInvoiceCandidates invoiceModeEffective = invoiceMode != null ? invoiceMode : BillAssociatedInvoiceCandidates.NO;
 
 		final Properties ctx = Env.getCtx();
 		return Services.get(IWorkPackageQueueFactory.class)
@@ -114,7 +123,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 
 		final int addToShipperTransportationId = parameters.getParameterAsInt(PARAMETERNAME_AddToShipperTransportationId);
 		final boolean completeShipments = parameters.getParameterAsBool(PARAMETERNAME_IsCompleteShipments);
-		final InvoiceMode invoiceMode = parameters.getParameterAsEnum(PARAMETERNAME_InvoiceMode, InvoiceMode.class, InvoiceMode.None);
+		final BillAssociatedInvoiceCandidates invoiceMode = parameters.getParameterAsEnum(PARAMETERNAME_InvoiceMode, BillAssociatedInvoiceCandidates.class, BillAssociatedInvoiceCandidates.NO);
 		HUShippingFacade.builder()
 				.loggable(Loggables.get())
 				.hus(hus)
