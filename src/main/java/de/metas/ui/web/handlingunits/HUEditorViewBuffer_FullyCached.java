@@ -67,7 +67,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	private final HUIdsFilterData huIdsFilterData;
 	private final ExtendedMemorizingSupplier<CopyOnWriteArraySet<Integer>> huIdsSupplier;
 	private final ExtendedMemorizingSupplier<IndexedHUEditorRows> rowsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveHUEditorRows());
-	
+
 	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
 
 	HUEditorViewBuffer_FullyCached(
@@ -98,7 +98,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 		final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFiltersWithoutHUIdsFilter, filters));
 
 		huIdsSupplier = ExtendedMemorizingSupplier.of(() -> new CopyOnWriteArraySet<>(huEditorRepo.retrieveHUIdsEffective(this.huIdsFilterData, filtersAll)));
-		
+
 		this.defaultOrderBys = orderBys != null ? ImmutableList.copyOf(orderBys) : ImmutableList.of();
 	}
 
@@ -341,7 +341,9 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 		public Stream<HUEditorRow> streamRecursive()
 		{
-			return rows.stream().flatMap(row -> row.streamRecursive());
+			return stream()
+					.flatMap(HUEditorRow::streamRecursive)
+					.map(HUEditorRow::cast);
 		}
 
 		public long size()

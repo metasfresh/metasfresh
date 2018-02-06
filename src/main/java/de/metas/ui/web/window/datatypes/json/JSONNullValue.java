@@ -2,6 +2,8 @@ package de.metas.ui.web.window.datatypes.json;
 
 import java.io.Serializable;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.swagger.annotations.ApiModel;
@@ -19,11 +21,11 @@ import io.swagger.annotations.ApiModel;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -48,12 +50,20 @@ public final class JSONNullValue implements Serializable
 
 	private JSONNullValue()
 	{
-		super();
 	}
 
 	@Override
 	public String toString()
 	{
 		return "null";
+	}
+
+	public static Object toNullIfInstance(@Nullable final Object jsonValueObj)
+	{
+		if (jsonValueObj instanceof JSONNullValue)
+		{
+			return null;
+		}
+		return jsonValueObj;
 	}
 }

@@ -1,12 +1,15 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
@@ -80,10 +83,14 @@ public final class JSONDocumentReference
 	@JsonProperty("filter")
 	private final JSONDocumentFilter filter;
 
+	@JsonProperty("loadDuration")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String loadDurationStr;
+
 	private JSONDocumentReference(final DocumentReference documentReference, final JSONOptions jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAD_Language();
-		
+
 		id = documentReference.getId();
 		caption = documentReference.getCaption(adLanguage);
 		windowId = documentReference.getWindowId();
@@ -91,5 +98,13 @@ public final class JSONDocumentReference
 
 		final DocumentFilter filter = documentReference.getFilter();
 		this.filter = JSONDocumentFilter.of(filter, adLanguage);
+
+		final Duration loadDuration = documentReference.getLoadDuration();
+		this.loadDurationStr = loadDuration != null ? formatDuration(loadDuration) : null;
+	}
+
+	private static final String formatDuration(final Duration loadDuration)
+	{
+		return TimeUtil.formatElapsed(loadDuration);
 	}
 }

@@ -52,5 +52,4 @@ public class WebuiHUTransformParameters
 	private final BigDecimal qtyTU;
 	private final boolean huPlanningReceiptOwnerPM_LU;
 	private final boolean huPlanningReceiptOwnerPM_TU;
-
 }

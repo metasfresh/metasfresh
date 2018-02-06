@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
@@ -45,6 +46,11 @@ public interface SqlEntityBinding
 	default IStringExpression getFieldOrderBy(String fieldName)
 	{
 		return getFieldByFieldName(fieldName).getSqlOrderBy();
+	}
+
+	default DocumentFilterDescriptorsProvider getFilterDescriptors()
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	/** @return registered document filter to SQL converters */

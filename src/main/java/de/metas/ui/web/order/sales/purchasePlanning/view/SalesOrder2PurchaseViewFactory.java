@@ -15,8 +15,10 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.CCache;
+import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
+import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
@@ -25,19 +27,22 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.SalesOrderLines;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.order.sales.purchasePlanning.process.WEBUI_SalesOrder_Apply_Availability_Row;
 import de.metas.ui.web.order.sales.purchasePlanning.process.WEBUI_SalesOrder_PurchaseView_Launcher;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsIndexStorage;
-import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -73,8 +78,10 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 
 	// services
 	private final PurchaseCandidateRepository purchaseCandidatesRepo;
+	private final PurchaseRowFactory purchaseRowsFactory;
 
-	private final CCache<ArrayKey, ViewLayout> viewLayoutCache = CCache.newCache(SalesOrder2PurchaseViewFactory.class + "#ViewLayout", 1, 0);
+	private final CCache<ArrayKey, ViewLayout> viewLayoutCache = //
+			CCache.newCache(SalesOrder2PurchaseViewFactory.class + "#ViewLayout", 1, 0);
 
 	//
 	private final Cache<ViewId, PurchaseView> views = CacheBuilder.newBuilder()
@@ -82,9 +89,12 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 			.removalListener(notification -> onViewRemoved(notification))
 			.build();
 
-	public SalesOrder2PurchaseViewFactory(final PurchaseCandidateRepository purchaseCandidatesRepo)
+	public SalesOrder2PurchaseViewFactory(
+			@NonNull final PurchaseCandidateRepository purchaseCandidatesRepo,
+			@NonNull final PurchaseRowFactory purchaseRowsFactory)
 	{
 		this.purchaseCandidatesRepo = purchaseCandidatesRepo;
+		this.purchaseRowsFactory = purchaseRowsFactory;
 	}
 
 	@Override
@@ -94,7 +104,10 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	}
 
 	@Override
-	public ViewLayout getViewLayout(@NonNull final WindowId windowId, @NonNull final JSONViewDataType viewDataType, @Nullable final ViewProfileId profileId)
+	public ViewLayout getViewLayout(
+			@NonNull final WindowId windowId,
+			@NonNull final JSONViewDataType viewDataType,
+			@Nullable final ViewProfileId profileId)
 	{
 		final ArrayKey key = ArrayKey.of(windowId, viewDataType);
 		return viewLayoutCache.getOrLoad(key, () -> createViewLayout(windowId, viewDataType));
@@ -102,7 +115,8 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 
 	private ViewLayout createViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
 	{
-		final ITranslatableString caption = Services.get(IADProcessDAO.class).retrieveProcessNameByClassIfUnique(WEBUI_SalesOrder_PurchaseView_Launcher.class)
+		final ITranslatableString caption = Services.get(IADProcessDAO.class)
+				.retrieveProcessNameByClassIfUnique(WEBUI_SalesOrder_PurchaseView_Launcher.class)
 				.orElse(null);
 
 		return ViewLayout.builder()
@@ -170,9 +184,29 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		final Set<Integer> salesOrderLineIds = request.getFilterOnlyIds();
 		Check.assumeNotEmpty(salesOrderLineIds, "salesOrderLineIds is not empty");
 
+		final ViewId viewId = ViewId.random(WINDOW_ID);
+
+		final PurchaseRowsLoader rowsLoader = PurchaseRowsLoader.builder()
+				.salesOrderLines(SalesOrderLines.builder()
+						.salesOrderLineIds(salesOrderLineIds)
+						.purchaseCandidateRepository(purchaseCandidatesRepo)
+						.build())
+				.viewSupplier(() -> this.getByIdOrNull(viewId)) // needed for async stuff
+				.purchaseRowsFactory(purchaseRowsFactory)
+				.build();
+
+		final PurchaseRowsSupplier rowsSupplier = () -> {
+
+			final List<PurchaseRow> loadResult = rowsLoader.load();
+			rowsLoader.createAndAddAvailabilityResultRowsAsync();
+
+			return loadResult;
+		};
+
 		final PurchaseView view = PurchaseView.builder()
-				.viewId(ViewId.random(WINDOW_ID))
-				.rowsSupplier(() -> loadRows(salesOrderLineIds))
+				.viewId(viewId)
+				.rowsSupplier(rowsSupplier)
+				.additionalRelatedProcessDescriptor(createProcessDescriptor(WEBUI_SalesOrder_Apply_Availability_Row.class))
 				.build();
 
 		return view;
@@ -190,15 +224,6 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		}
 	}
 
-	private List<PurchaseRow> loadRows(final Set<Integer> salesOrderLineIds)
-	{
-		return PurchaseRowsLoader.builder()
-				.salesOrderLineIds(salesOrderLineIds)
-				.purchaseCandidatesRepo(purchaseCandidatesRepo)
-				.build()
-				.load();
-	}
-
 	private void saveRowsAndEnqueueIfOrderCompleted(final PurchaseView purchaseView)
 	{
 		final List<PurchaseCandidate> purchaseCandidates = saveRows(purchaseView);
@@ -210,7 +235,8 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		{
 			final Set<Integer> purchaseCandidateIds = purchaseCandidates.stream()
 					.filter(purchaseCandidate -> !purchaseCandidate.isProcessedOrLocked())
-					.map(PurchaseCandidate::getRepoId)
+					.filter(purchaseCandidate -> purchaseCandidate.getQtyToPurchase().signum() > 0)
+					.map(PurchaseCandidate::getPurchaseCandidateId)
 					.collect(ImmutableSet.toImmutableSet());
 			if (purchaseCandidateIds.size() > 0)
 			{
@@ -235,8 +261,24 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 		final int salesOrderId = purchaseCandidates.stream()
 				.map(PurchaseCandidate::getSalesOrderId)
 				.distinct()
-				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("more than one salesOrderId found")));
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("more than one salesOrderId found in the given purchaseCandidates")
+						.appendParametersToMessage()
+						.setParameter("purchaseCandidates", purchaseCandidates)));
+
 		final I_C_Order salesOrder = load(salesOrderId, I_C_Order.class);
 		return salesOrder;
+	}
+
+	private static RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	{
+		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+
+		final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), processClass);
+		Preconditions.checkArgument(processId > 0, "No AD_Process_ID found for %s", processClass);
+
+		return RelatedProcessDescriptor.builder()
+				.processId(processId)
+				.webuiQuickAction(true)
+				.build();
 	}
 }

@@ -1,6 +1,9 @@
 package de.metas.ui.web.view.json;
 
 import java.util.List;
+import java.util.Map;
+
+import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -14,8 +17,8 @@ import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.document.filter.json.JSONStickyDocumentFilter;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowOverrides;
-import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.window.datatypes.WindowId;
 
@@ -119,6 +122,10 @@ public final class JSONViewResult
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final List<? extends JSONViewRowBase> result;
 
+	@JsonProperty("columnsByFieldName")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final Map<String, JSONViewResultColumn> columnsByFieldName;
+
 	@JsonProperty("firstRow")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer firstRow;
@@ -175,6 +182,12 @@ public final class JSONViewResult
 			pageLength = null;
 		}
 
+		columnsByFieldName = viewResult.getColumnInfosByFieldName()
+				.values()
+				.stream()
+				.map(JSONViewResultColumn::of)
+				.collect(GuavaCollectors.toImmutableMapByKey(JSONViewResultColumn::getFieldName));
+
 		//
 		// Query limit informations
 		queryLimit = viewResult.getQueryLimit() > 0 ? viewResult.getQueryLimit() : null;
@@ -198,6 +211,7 @@ public final class JSONViewResult
 			@JsonProperty("orderBy") final List<JSONViewOrderBy> orderBy,
 			//
 			@JsonProperty("result") final List<JSONViewRowBase> result,
+			@JsonProperty("columnsByFieldName") final Map<String, JSONViewResultColumn> columnsByFieldName,
 			@JsonProperty("firstRow") final Integer firstRow,
 			@JsonProperty("pageLength") final Integer pageLength,
 			//
@@ -226,6 +240,7 @@ public final class JSONViewResult
 		//
 		// Page informations
 		this.result = result;
+		this.columnsByFieldName = columnsByFieldName;
 		this.firstRow = firstRow;
 		this.pageLength = pageLength;
 

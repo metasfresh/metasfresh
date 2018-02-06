@@ -555,6 +555,7 @@ import lombok.NonNull;
 				// .setMandatoryLogic(gridFieldVO.isMandatory() ? ConstantLogicExpression.TRUE : gridFieldVO.getMandatoryLogic())
 				// .setDisplayLogic(gridFieldVO.getDisplayLogic())
 				//
+				.setDefaultFilterInfo(createLabelsDefaultFilterInfo(labelsUIElement))
 				.setDataBinding(fieldBinding);
 
 		//
@@ -568,6 +569,8 @@ import lombok.NonNull;
 
 	private static final LabelsLookup createLabelsLookup(final I_AD_UI_Element labelsUIElement, final String tableName)
 	{
+		final String linkColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+		
 		final I_AD_Tab labelsTab = labelsUIElement.getLabels_Tab();
 		final String labelsTableName = labelsTab.getAD_Table().getTableName();
 		final String labelsLinkColumnName;
@@ -577,19 +580,24 @@ import lombok.NonNull;
 		}
 		else
 		{
-			labelsLinkColumnName = InterfaceWrapperHelper.getKeyColumnName(labelsTableName);
+			labelsLinkColumnName = linkColumnName;
 		}
 
-		final I_AD_Column labelsListColumn = labelsUIElement.getLabels_Selector_Field().getAD_Column();
-		final String labelsListColumnName = labelsListColumn.getColumnName();
-		final int labelsListReferenceId = labelsListColumn.getAD_Reference_Value_ID();
-
-		final String linkColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+		final I_AD_Column labelsValueColumn = labelsUIElement.getLabels_Selector_Field().getAD_Column();
+		final String labelsValueColumnName = labelsValueColumn.getColumnName();
+		final LookupDescriptor labelsValuesLookupDescriptor = SqlLookupDescriptor.builder()
+				.setCtxTableName(labelsTableName)
+				.setCtxColumnName(labelsValueColumnName)
+				.setDisplayType(labelsValueColumn.getAD_Reference_ID())
+				.setWidgetType(DescriptorsFactoryHelper.extractWidgetType(labelsValueColumnName, labelsValueColumn.getAD_Reference_ID()))
+				.setAD_Reference_Value_ID(labelsValueColumn.getAD_Reference_Value_ID())
+				.setAD_Val_Rule_ID(labelsValueColumn.getAD_Val_Rule_ID())
+				.buildForDefaultScope();
 
 		return LabelsLookup.builder()
 				.labelsTableName(labelsTableName)
-				.labelsListColumnName(labelsListColumnName)
-				.labelsListReferenceId(labelsListReferenceId)
+				.labelsValueColumnName(labelsValueColumnName)
+				.labelsValuesLookupDescriptor(labelsValuesLookupDescriptor)
 				.labelsLinkColumnName(labelsLinkColumnName)
 				.tableName(tableName)
 				.linkColumnName(linkColumnName)
@@ -599,6 +607,18 @@ import lombok.NonNull;
 	public static final String getLabelsFieldName(final I_AD_UI_Element uiElement)
 	{
 		return "Labels_" + uiElement.getAD_UI_Element_ID();
+	}
+
+	private static DocumentFieldDefaultFilterDescriptor createLabelsDefaultFilterInfo(final I_AD_UI_Element labelsUIElement)
+	{
+		if (!labelsUIElement.isAllowFiltering())
+		{
+			return null;
+		}
+
+		return DocumentFieldDefaultFilterDescriptor.builder()
+				.seqNo(Integer.MAX_VALUE)
+				.build();
 	}
 
 	public final DocumentFieldDescriptor.Builder addInternalVirtualField(

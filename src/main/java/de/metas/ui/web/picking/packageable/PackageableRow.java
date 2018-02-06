@@ -5,16 +5,21 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewsIndexStorage;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -51,7 +56,7 @@ import lombok.ToString;
 
 /**
  * Rows shown in {@link PackageableView}. Each row basically represents one {@link I_M_Packageable_V}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -60,44 +65,36 @@ public final class PackageableRow implements IViewRow
 {
 	private final ViewId viewId;
 	private final DocumentId id;
-	private final IViewRowType type;
-	private final boolean processed;
 	private final DocumentPath documentPath;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_Order_ID, layouts =
-		{
-				@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10)
-		})
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_Order_ID, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10)
+	})
 	private final LookupValue order;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_M_Product_ID, layouts =
-		{
-				@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20)
-		})
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_M_Product_ID, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20)
+	})
 	private final LookupValue product;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyToDeliver, layouts =
-		{
-				@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
-		})
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyToDeliver, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
+	})
 	private final BigDecimal qtyToDeliver;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyPickedPlanned, layouts =
-		{
-				@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 35)
-		})
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyPickedPlanned, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 35)
+	})
 	private final BigDecimal qtyPickedPlanned;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_BPartner_ID, layouts =
-		{
-				@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40)
-		})
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_BPartner_ID, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40)
+	})
 	private final LookupValue bpartner;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.DateTime, captionKey = I_M_Packageable_V.COLUMNNAME_PreparationDate, layouts =
-		{
-				@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50)
-		})
+	@ViewColumn(widgetType = DocumentFieldWidgetType.DateTime, captionKey = I_M_Packageable_V.COLUMNNAME_PreparationDate, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50)
+	})
 	private final java.util.Date preparationDate;
 
 	private final int shipmentScheduleId;
@@ -111,27 +108,32 @@ public final class PackageableRow implements IViewRow
 		return (PackageableRow)row;
 	}
 
+	public static DocumentId createRowIdFromShipmentScheduleId(final int shipmentScheduleId)
+	{
+		return DocumentId.of(shipmentScheduleId);
+	}
+
+	public static TableRecordReference createTableRecordReferenceFromShipmentScheduleId(final int shipmentScheduleId)
+	{
+		return TableRecordReference.of(I_M_Packageable_V.Table_Name, shipmentScheduleId);
+	}
+
 	@Builder
 	private PackageableRow(
-			@NonNull final DocumentId id,
+			final int shipmentScheduleId,
 			@NonNull final ViewId viewId,
-			final IViewRowType type,
-			final boolean processed,
-			@NonNull final DocumentPath documentPath,
-
 			final LookupValue order,
 			final LookupValue product,
 			final BigDecimal qtyToDeliver,
 			final BigDecimal qtyPickedPlanned,
 			final LookupValue bpartner,
-			final Date preparationDate,
-			final int shipmentScheduleId)
+			final Date preparationDate)
 	{
-		this.id = id;
+		Check.assume(shipmentScheduleId > 0, "shipmentScheduleId > 0");
+
 		this.viewId = viewId;
-		this.type = type;
-		this.processed = processed;
-		this.documentPath = documentPath;
+		this.id = createRowIdFromShipmentScheduleId(shipmentScheduleId);
+		this.documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingView, id);
 
 		this.order = order;
 		this.product = product;
@@ -156,19 +158,24 @@ public final class PackageableRow implements IViewRow
 	@Override
 	public IViewRowType getType()
 	{
-		return type;
+		return DefaultRowType.Row;
 	}
 
 	@Override
 	public boolean isProcessed()
 	{
-		return processed;
+		return false;
 	}
 
 	@Override
 	public DocumentPath getDocumentPath()
 	{
 		return documentPath;
+	}
+
+	public TableRecordReference getTableRecordReference()
+	{
+		return createTableRecordReferenceFromShipmentScheduleId(getShipmentScheduleId());
 	}
 
 	@Override

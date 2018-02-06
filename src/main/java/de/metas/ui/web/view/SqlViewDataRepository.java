@@ -41,6 +41,7 @@ import de.metas.ui.web.view.descriptor.SqlViewSelectData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
@@ -73,6 +74,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	private final String tableName;
 	private final String tableAlias;
+	private final Map<String, DocumentFieldWidgetType> widgetTypesByFieldName;
 	private final SqlViewSelectData sqlViewSelect;
 	private final ViewRowIdsOrderedSelectionFactory viewRowIdsOrderedSelectionFactory;
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
@@ -84,11 +86,11 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	private final SqlDocumentFilterConverter filterConverters;
 
-
 	SqlViewDataRepository(@NonNull final SqlViewBinding sqlBindings)
 	{
 		tableName = sqlBindings.getTableName();
 		tableAlias = sqlBindings.getTableAlias();
+		widgetTypesByFieldName = sqlBindings.getWidgetTypesByFieldName();
 		sqlViewSelect = sqlBindings.getSqlViewSelect();
 		viewFilterDescriptors = sqlBindings.getViewFilterDescriptors();
 		viewRowIdsOrderedSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlBindings);
@@ -165,6 +167,12 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 
 		return sqlWhereClause.toString();
+	}
+	
+	@Override
+	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
+	{
+		return widgetTypesByFieldName;
 	}
 
 	@Override
