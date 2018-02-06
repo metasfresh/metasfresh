@@ -21,12 +21,12 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
@@ -36,6 +36,7 @@ import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -43,6 +44,7 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.apache.commons.collections4.comparators.ComparatorChain;
+import org.compiere.Adempiere;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -93,20 +95,22 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param setOrder set the order link
 	 * @return Shipment
 	 */
-	public static MInOut copyFrom(MInOut from, Timestamp dateDoc, Timestamp dateAcct,
-			int C_DocType_ID, boolean isSOTrx, boolean counter, String trxName, boolean setOrder)
+	public static MInOut copyFrom(final MInOut from, final Timestamp dateDoc, final Timestamp dateAcct,
+			final int C_DocType_ID, final boolean isSOTrx, final boolean counter, final String trxName, final boolean setOrder)
 	{
 		final MInOut to = copyHeader(from, dateDoc, dateAcct, C_DocType_ID, isSOTrx, counter, trxName, setOrder);
 
 		if (to.copyLinesFrom(from, counter, setOrder) == 0)
+		{
 			throw new IllegalStateException("Could not create Shipment Lines");
+		}
 
 		return to;
 	} // copyFrom
 
-	private static MInOut copyHeader(MInOut from, Timestamp dateDoc, Timestamp dateAcct, int C_DocType_ID, boolean isSOTrx, boolean counter, String trxName, boolean setOrder)
+	private static MInOut copyHeader(final MInOut from, final Timestamp dateDoc, final Timestamp dateAcct, final int C_DocType_ID, final boolean isSOTrx, final boolean counter, final String trxName, final boolean setOrder)
 	{
-		MInOut to = new MInOut(from.getCtx(), 0, null);
+		final MInOut to = new MInOut(from.getCtx(), 0, null);
 		to.set_TrxName(trxName);
 		copyValues(from, to, from.getAD_Client_ID(), from.getAD_Org_ID());
 		to.set_ValueNoCheck("M_InOut_ID", I_ZERO);
@@ -124,7 +128,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 		if (counter)
 		{
-			MDocType docType = MDocType.get(from.getCtx(), C_DocType_ID);
+			final MDocType docType = MDocType.get(from.getCtx(), C_DocType_ID);
 			if (MDocType.DOCBASETYPE_MaterialDelivery.equals(docType.getDocBaseType()))
 			{
 				to.setMovementType(isSOTrx ? MOVEMENTTYPE_CustomerShipment : MOVEMENTTYPE_VendorReturns);
@@ -162,22 +166,28 @@ public class MInOut extends X_M_InOut implements IDocument
 			// Try to find Order/Invoice link
 			if (from.getC_Order_ID() != 0)
 			{
-				MOrder peer = new MOrder(from.getCtx(), from.getC_Order_ID(), from.get_TrxName());
+				final MOrder peer = new MOrder(from.getCtx(), from.getC_Order_ID(), from.get_TrxName());
 				if (peer.getRef_Order_ID() != 0)
+				{
 					to.setC_Order_ID(peer.getRef_Order_ID());
+				}
 			}
 			if (from.getC_Invoice_ID() != 0)
 			{
-				MInvoice peer = new MInvoice(from.getCtx(), from.getC_Invoice_ID(), from.get_TrxName());
+				final MInvoice peer = new MInvoice(from.getCtx(), from.getC_Invoice_ID(), from.get_TrxName());
 				if (peer.getRef_Invoice_ID() != 0)
+				{
 					to.setC_Invoice_ID(peer.getRef_Invoice_ID());
+				}
 			}
 			// find RMA link
 			if (from.getM_RMA_ID() != 0)
 			{
-				MRMA peer = new MRMA(from.getCtx(), from.getM_RMA_ID(), from.get_TrxName());
+				final MRMA peer = new MRMA(from.getCtx(), from.getM_RMA_ID(), from.get_TrxName());
 				if (peer.getRef_RMA_ID() > 0)
+				{
 					to.setM_RMA_ID(peer.getRef_RMA_ID());
+				}
 			}
 		}
 		else
@@ -191,9 +201,13 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 		//
 		if (!to.save(trxName))
+		{
 			throw new IllegalStateException("Could not create Shipment");
+		}
 		if (counter)
+		{
 			from.setRef_InOut_ID(to.getM_InOut_ID());
+		}
 		return to;
 	} // copyHeader
 
@@ -209,10 +223,10 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @return Shipment
 	 */
 	@Deprecated
-	public static MInOut copyFrom(MInOut from, Timestamp dateDoc,
-			int C_DocType_ID, boolean isSOTrx, boolean counter, String trxName, boolean setOrder)
+	public static MInOut copyFrom(final MInOut from, final Timestamp dateDoc,
+			final int C_DocType_ID, final boolean isSOTrx, final boolean counter, final String trxName, final boolean setOrder)
 	{
-		MInOut to = copyFrom(from, dateDoc, dateDoc,
+		final MInOut to = copyFrom(from, dateDoc, dateDoc,
 				C_DocType_ID, isSOTrx, counter,
 				trxName, setOrder);
 		return to;
@@ -226,7 +240,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param M_InOut_ID
 	 * @param trxName rx name
 	 */
-	public MInOut(Properties ctx, int M_InOut_ID, String trxName)
+	public MInOut(final Properties ctx, final int M_InOut_ID, final String trxName)
 	{
 		super(ctx, M_InOut_ID, trxName);
 		if (is_new())
@@ -265,7 +279,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param rs result set record
 	 * @param trxName transaction
 	 */
-	public MInOut(Properties ctx, ResultSet rs, String trxName)
+	public MInOut(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	} // MInOut
@@ -277,7 +291,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param movementDate optional movement date (default today)
 	 * @param C_DocTypeShipment_ID document type or 0
 	 */
-	public MInOut(MOrder order, int C_DocTypeShipment_ID, Timestamp movementDate)
+	public MInOut(final MOrder order, final int C_DocTypeShipment_ID, final Timestamp movementDate)
 	{
 		this(order.getCtx(), 0, order.get_TrxName());
 		setClientOrg(order);
@@ -296,7 +310,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		String movementType = null;
 		if (order.isSOTrx())
 		{
-			MDocType dt = MDocType.get(getCtx(), order.getC_DocType_ID());
+			final MDocType dt = MDocType.get(getCtx(), order.getC_DocType_ID());
 			if (MDocType.DOCSUBTYPE_ReturnMaterial.equals(dt
 					.getDocSubType()))
 			{
@@ -331,7 +345,9 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// Default - Today
 		if (movementDate != null)
+		{
 			setMovementDate(movementDate);
+		}
 		setDateAcct(getMovementDate());
 
 		// Copy from Order
@@ -400,7 +416,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param movementDate optional movement date (default today)
 	 * @param M_Warehouse_ID warehouse
 	 */
-	public MInOut(MInvoice invoice, int C_DocTypeShipment_ID, Timestamp movementDate, int M_Warehouse_ID)
+	public MInOut(final MInvoice invoice, int C_DocTypeShipment_ID, final Timestamp movementDate, final int M_Warehouse_ID)
 	{
 		this(invoice.getCtx(), 0, invoice.get_TrxName());
 		setClientOrg(invoice);
@@ -413,19 +429,29 @@ public class MInOut extends X_M_InOut implements IDocument
 		setMovementType(invoice.isSOTrx() ? MOVEMENTTYPE_CustomerShipment : MOVEMENTTYPE_VendorReceipts);
 		MOrder order = null;
 		if (invoice.getC_Order_ID() != 0)
+		{
 			order = new MOrder(invoice.getCtx(), invoice.getC_Order_ID(), invoice.get_TrxName());
+		}
 		if (C_DocTypeShipment_ID == 0 && order != null)
+		{
 			C_DocTypeShipment_ID = DB.getSQLValue(null,
 					"SELECT C_DocTypeShipment_ID FROM C_DocType WHERE C_DocType_ID=?",
 					order.getC_DocType_ID());
+		}
 		if (C_DocTypeShipment_ID != 0)
+		{
 			setC_DocType_ID(C_DocTypeShipment_ID);
+		}
 		else
+		{
 			setC_DocType_ID();
+		}
 
 		// Default - Today
 		if (movementDate != null)
+		{
 			setMovementDate(movementDate);
+		}
 		setDateAcct(getMovementDate());
 
 		// Copy from Invoice
@@ -472,7 +498,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param movementDate optional movement date (default today)
 	 * @param C_DocTypeShipment_ID document type or 0
 	 */
-	public MInOut(MInOut original, int C_DocTypeShipment_ID, Timestamp movementDate)
+	public MInOut(final MInOut original, final int C_DocTypeShipment_ID, final Timestamp movementDate)
 	{
 		this(original.getCtx(), 0, original.get_TrxName());
 		setClientOrg(original);
@@ -485,13 +511,19 @@ public class MInOut extends X_M_InOut implements IDocument
 		setIsSOTrx(original.isSOTrx());
 		setMovementType(original.getMovementType());
 		if (C_DocTypeShipment_ID == 0)
+		{
 			setC_DocType_ID(original.getC_DocType_ID());
+		}
 		else
+		{
 			setC_DocType_ID(C_DocTypeShipment_ID);
+		}
 
 		// Default - Today
 		if (movementDate != null)
+		{
 			setMovementDate(movementDate);
+		}
 		setDateAcct(getMovementDate());
 
 		// Copy from Order
@@ -550,13 +582,17 @@ public class MInOut extends X_M_InOut implements IDocument
 	 *
 	 * @param description text
 	 */
-	public void addDescription(String description)
+	public void addDescription(final String description)
 	{
-		String desc = getDescription();
+		final String desc = getDescription();
 		if (desc == null)
+		{
 			setDescription(description);
+		}
 		else
+		{
 			setDescription(desc + " | " + description);
+		}
 	} // addDescription
 
 	/**
@@ -567,7 +603,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder("MInOut[")
+		final StringBuilder sb = new StringBuilder("MInOut[")
 				.append(get_ID()).append("-").append(getDocumentNo())
 				.append(",DocStatus=").append(getDocStatus())
 				.append("]");
@@ -582,7 +618,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	@Override
 	public String getDocumentInfo()
 	{
-		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		return dt.getName() + " " + getDocumentNo();
 	} // getDocumentInfo
 
@@ -596,10 +632,10 @@ public class MInOut extends X_M_InOut implements IDocument
 	{
 		try
 		{
-			File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
+			final File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
 			return createPDF(temp);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.error("Could not create PDF", e);
 		}
@@ -612,11 +648,13 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param file output file
 	 * @return file if success
 	 */
-	public File createPDF(File file)
+	public File createPDF(final File file)
 	{
-		ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.SHIPMENT, getM_InOut_ID(), get_TrxName());
+		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.SHIPMENT, getM_InOut_ID(), get_TrxName());
 		if (re == null)
+		{
 			return null;
+		}
 		return re.getPDF(file);
 	} // createPDF
 
@@ -626,7 +664,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param requery refresh from db
 	 * @return lines
 	 */
-	public MInOutLine[] getLines(boolean requery)
+	public MInOutLine[] getLines(final boolean requery)
 	{
 		if (m_lines != null && !requery)
 		{
@@ -657,14 +695,14 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param requery requery
 	 * @return array of Confirmations
 	 */
-	public MInOutConfirm[] getConfirmations(boolean requery)
+	public MInOutConfirm[] getConfirmations(final boolean requery)
 	{
 		if (m_confirms != null && !requery)
 		{
 			set_TrxName(m_confirms, get_TrxName());
 			return m_confirms;
 		}
-		List<MInOutConfirm> list = new Query(getCtx(), MInOutConfirm.Table_Name, "M_InOut_ID=?", get_TrxName())
+		final List<MInOutConfirm> list = new Query(getCtx(), MInOutConfirm.Table_Name, "M_InOut_ID=?", get_TrxName())
 				.setParameters(new Object[] { getM_InOut_ID() })
 				.list();
 		m_confirms = new MInOutConfirm[list.size()];
@@ -680,21 +718,26 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param setOrder set order link
 	 * @return number of lines copied
 	 */
-	public int copyLinesFrom(MInOut otherShipment, boolean counter, boolean setOrder)
+	public int copyLinesFrom(final MInOut otherShipment, final boolean counter, final boolean setOrder)
 	{
 		if (isProcessed() || isPosted() || otherShipment == null)
-			return 0;
-		MInOutLine[] fromLines = otherShipment.getLines();
-		int count = 0;
-		for (int i = 0; i < fromLines.length; i++)
 		{
-			MInOutLine line = new MInOutLine(this);
-			MInOutLine fromLine = fromLines[i];
+			return 0;
+		}
+		final MInOutLine[] fromLines = otherShipment.getLines();
+		int count = 0;
+		for (final MInOutLine fromLine : fromLines)
+		{
+			final MInOutLine line = new MInOutLine(this);
 			line.set_TrxName(get_TrxName());
-			if (counter)  // header
+			if (counter)
+			{
 				PO.copyValues(fromLine, line, getAD_Client_ID(), getAD_Org_ID());
+			}
 			else
+			{
 				PO.copyValues(fromLine, line, fromLine.getAD_Client_ID(), fromLine.getAD_Org_ID());
+			}
 			line.setM_InOut_ID(getM_InOut_ID());
 			line.set_ValueNoCheck("M_InOutLine_ID", I_ZERO); // new
 			// Reset
@@ -727,22 +770,28 @@ public class MInOut extends X_M_InOut implements IDocument
 				line.setRef_InOutLine_ID(fromLine.getM_InOutLine_ID());
 				if (fromLine.getC_OrderLine_ID() != 0)
 				{
-					MOrderLine peer = new MOrderLine(getCtx(), fromLine.getC_OrderLine_ID(), get_TrxName());
+					final MOrderLine peer = new MOrderLine(getCtx(), fromLine.getC_OrderLine_ID(), get_TrxName());
 					if (peer.getRef_OrderLine_ID() != 0)
+					{
 						line.setC_OrderLine_ID(peer.getRef_OrderLine_ID());
+					}
 				}
 				// RMALine link
 				if (fromLine.getM_RMALine_ID() != 0)
 				{
-					MRMALine peer = new MRMALine(getCtx(), fromLine.getM_RMALine_ID(), get_TrxName());
+					final MRMALine peer = new MRMALine(getCtx(), fromLine.getM_RMALine_ID(), get_TrxName());
 					if (peer.getRef_RMALine_ID() > 0)
+					{
 						line.setM_RMALine_ID(peer.getRef_RMALine_ID());
+					}
 				}
 			}
 			//
 			line.setProcessed(false);
 			if (line.save(get_TrxName()))
+			{
 				count++;
+			}
 			// Cross Link
 			if (counter)
 			{
@@ -751,7 +800,9 @@ public class MInOut extends X_M_InOut implements IDocument
 			}
 		}
 		if (fromLines.length != count)
+		{
 			log.error("Line difference - From=" + fromLines.length + " <> Saved=" + count);
+		}
 		return count;
 	} // copyLinesFrom
 
@@ -763,7 +814,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 *
 	 * @param reversal reversal
 	 */
-	private void setReversal(boolean reversal)
+	private void setReversal(final boolean reversal)
 	{
 		m_reversal = reversal;
 	} // setReversal
@@ -784,15 +835,17 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param processed processed
 	 */
 	@Override
-	public void setProcessed(boolean processed)
+	public void setProcessed(final boolean processed)
 	{
 		super.setProcessed(processed);
 		if (get_ID() == 0)
+		{
 			return;
-		String sql = "UPDATE M_InOutLine SET Processed='"
+		}
+		final String sql = "UPDATE M_InOutLine SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE M_InOut_ID=" + getM_InOut_ID();
-		int noLine = DB.executeUpdate(sql, get_TrxName());
+		final int noLine = DB.executeUpdate(sql, get_TrxName());
 		m_lines = null;
 		log.debug("{} - Lines={}", processed, noLine);
 	} // setProcessed
@@ -805,7 +858,9 @@ public class MInOut extends X_M_InOut implements IDocument
 	public MBPartner getBPartner()
 	{
 		if (m_partner == null)
+		{
 			m_partner = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
+		}
 		return m_partner;
 	} // getPartner
 
@@ -814,14 +869,14 @@ public class MInOut extends X_M_InOut implements IDocument
 	 *
 	 * @param DocBaseType doc type MDocType.DOCBASETYPE_
 	 */
-	public void setC_DocType_ID(String DocBaseType)
+	public void setC_DocType_ID(final String DocBaseType)
 	{
-		String sql = "SELECT C_DocType_ID FROM C_DocType "
+		final String sql = "SELECT C_DocType_ID FROM C_DocType "
 				+ "WHERE AD_Client_ID=? AND DocBaseType=?"
 				+ " AND IsActive='Y'"
 				+ " AND IsSOTrx='" + (isSOTrx() ? "Y" : "N") + "' "
 				+ "ORDER BY IsDefault DESC";
-		int C_DocType_ID = DB.getSQLValue(null, sql, getAD_Client_ID(), DocBaseType);
+		final int C_DocType_ID = DB.getSQLValue(null, sql, getAD_Client_ID(), DocBaseType);
 		if (C_DocType_ID <= 0)
 		{
 			log.error("Not found for AC_Client_ID=" + getAD_Client_ID() + " - " + DocBaseType);
@@ -830,7 +885,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		{
 			log.debug("DocBaseType={} - C_DocType_ID={}", DocBaseType, C_DocType_ID);
 			setC_DocType_ID(C_DocType_ID);
-			boolean isSOTrx = MDocType.DOCBASETYPE_MaterialDelivery.equals(DocBaseType);
+			final boolean isSOTrx = MDocType.DOCBASETYPE_MaterialDelivery.equals(DocBaseType);
 			setIsSOTrx(isSOTrx);
 		}
 	} // setC_DocType_ID
@@ -841,9 +896,13 @@ public class MInOut extends X_M_InOut implements IDocument
 	public void setC_DocType_ID()
 	{
 		if (isSOTrx())
+		{
 			setC_DocType_ID(MDocType.DOCBASETYPE_MaterialDelivery);
+		}
 		else
+		{
 			setC_DocType_ID(MDocType.DOCBASETYPE_MaterialReceipt);
+		}
 	} // setC_DocType_ID
 
 	/**
@@ -851,33 +910,43 @@ public class MInOut extends X_M_InOut implements IDocument
 	 *
 	 * @param bp business partner
 	 */
-	public void setBPartner(MBPartner bp)
+	public void setBPartner(final MBPartner bp)
 	{
 		if (bp == null)
+		{
 			return;
+		}
 
 		setC_BPartner_ID(bp.getC_BPartner_ID());
 
 		// Set Locations
-		MBPartnerLocation[] locs = bp.getLocations(false);
+		final MBPartnerLocation[] locs = bp.getLocations(false);
 		if (locs != null)
 		{
-			for (int i = 0; i < locs.length; i++)
+			for (final MBPartnerLocation loc : locs)
 			{
-				if (locs[i].isShipTo())
-					setC_BPartner_Location_ID(locs[i].getC_BPartner_Location_ID());
+				if (loc.isShipTo())
+				{
+					setC_BPartner_Location_ID(loc.getC_BPartner_Location_ID());
+				}
 			}
 			// set to first if not set
 			if (getC_BPartner_Location_ID() == 0 && locs.length > 0)
+			{
 				setC_BPartner_Location_ID(locs[0].getC_BPartner_Location_ID());
+			}
 		}
 		if (getC_BPartner_Location_ID() == 0)
+		{
 			log.error("Has no To Address: {}", bp);
+		}
 
 		// Set Contact
-		List<I_AD_User> contacts = bp.getContacts(false);
-		if (contacts != null && contacts.size() > 0)  // get first User
+		final List<I_AD_User> contacts = bp.getContacts(false);
+		if (contacts != null && contacts.size() > 0)
+		{
 			setAD_User_ID(contacts.get(0).getAD_User_ID());
+		}
 	} // setBPartner
 
 	/**
@@ -885,9 +954,9 @@ public class MInOut extends X_M_InOut implements IDocument
 	 */
 	public void createConfirmation()
 	{
-		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		boolean pick = dt.isPickQAConfirm();
-		boolean ship = dt.isShipConfirm();
+		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+		final boolean pick = dt.isPickQAConfirm();
+		final boolean ship = dt.isShipConfirm();
 		// Nothing to do
 		if (!pick && !ship)
 		{
@@ -900,10 +969,10 @@ public class MInOut extends X_M_InOut implements IDocument
 		{
 			boolean havePick = false;
 			boolean haveShip = false;
-			MInOutConfirm[] confirmations = getConfirmations(false);
-			for (int i = 0; i < confirmations.length; i++)
+			final MInOutConfirm[] confirmations = getConfirmations(false);
+			for (final MInOutConfirm confirmation : confirmations)
 			{
-				MInOutConfirm confirm = confirmations[i];
+				final MInOutConfirm confirm = confirmation;
 				if (MInOutConfirm.CONFIRMTYPE_PickQAConfirm.equals(confirm.getConfirmType()))
 				{
 					if (!confirm.isProcessed())  // wait intil done
@@ -914,7 +983,9 @@ public class MInOut extends X_M_InOut implements IDocument
 					havePick = true;
 				}
 				else if (MInOutConfirm.CONFIRMTYPE_ShipReceiptConfirm.equals(confirm.getConfirmType()))
+				{
 					haveShip = true;
+				}
 			}
 			// Create Pick
 			if (!havePick)
@@ -932,9 +1003,13 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 		// Create just one
 		if (pick)
+		{
 			MInOutConfirm.create(this, MInOutConfirm.CONFIRMTYPE_PickQAConfirm, true);
+		}
 		else if (ship)
+		{
 			MInOutConfirm.create(this, MInOutConfirm.CONFIRMTYPE_ShipReceiptConfirm, true);
+		}
 	} // createConfirmation
 
 	/**
@@ -943,7 +1018,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param M_Warehouse_ID id
 	 */
 	@Override
-	public void setM_Warehouse_ID(int M_Warehouse_ID)
+	public void setM_Warehouse_ID(final int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID == 0)
 		{
@@ -982,7 +1057,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @return true or false
 	 */
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		// Warehouse Org
 		// metas: allow differend org ids
@@ -1013,8 +1088,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		if (isSOTrx() && getM_RMA_ID() != 0)
 		{
 			// Set Document and Movement type for this Receipt
-			MRMA rma = new MRMA(getCtx(), getM_RMA_ID(), get_TrxName());
-			MDocType docType = MDocType.get(getCtx(), rma.getC_DocType_ID());
+			final MRMA rma = new MRMA(getCtx(), getM_RMA_ID(), get_TrxName());
+			final MDocType docType = MDocType.get(getCtx(), rma.getC_DocType_ID());
 			setC_DocType_ID(docType.getC_DocTypeShipment_ID());
 		}
 
@@ -1036,18 +1111,20 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @return success
 	 */
 	@Override
-	protected boolean afterSave(boolean newRecord, boolean success)
+	protected boolean afterSave(final boolean newRecord, final boolean success)
 	{
 		if (!success || newRecord)
+		{
 			return success;
+		}
 
 		if (is_ValueChanged("AD_Org_ID"))
 		{
-			String sql = "UPDATE M_InOutLine ol" + " SET AD_Org_ID ="
+			final String sql = "UPDATE M_InOutLine ol" + " SET AD_Org_ID ="
 					+ "(SELECT AD_Org_ID"
 					+ " FROM M_InOut o WHERE ol.M_InOut_ID=o.M_InOut_ID) "
 					+ "WHERE M_InOut_ID=" + getC_Order_ID();
-			int no = DB.executeUpdate(sql, get_TrxName());
+			final int no = DB.executeUpdate(sql, get_TrxName());
 			log.debug("Lines -> #{}", no);
 		}
 		return true;
@@ -1060,7 +1137,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @return true if performed
 	 */
 	@Override
-	public boolean processIt(String processAction)
+	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
@@ -1105,7 +1182,9 @@ public class MInOut extends X_M_InOut implements IDocument
 	{
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 
 		// Order OR RMA can be processed on a shipment/receipt
 		if (getC_Order_ID() != 0 && getM_RMA_ID() != 0)
@@ -1117,57 +1196,10 @@ public class MInOut extends X_M_InOut implements IDocument
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), getC_DocType_ID(), getAD_Org_ID());
 
 		// Credit Check
-		if (isSOTrx() && !isReversal())
-		{
-			I_C_Order order = getC_Order();
-			if (order != null && order.getC_Order_ID() > 0 && MDocType.DOCSUBTYPE_PrepayOrder.equals(order.getC_DocType().getDocSubType())
-					&& !MSysConfig.getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, getAD_Client_ID(), getAD_Org_ID()))
-			{
-				// ignore -- don't validate Prepay Orders depending on sysconfig parameter
-			}
-			else
-			{
-				final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-				final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-
-				final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-
-				final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
-
-				final String soCreditStatus = stats.getSOCreditStatus();
-
-				final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
-
-				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
-				{
-					m_processMsg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
-							+ totalOpenBalance
-							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
-					return IDocument.STATUS_Invalid;
-				}
-				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
-				{
-					m_processMsg = "@BPartnerCreditHold@ - @TotalOpenBalance@="
-							+ totalOpenBalance
-							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
-					return IDocument.STATUS_Invalid;
-				}
-
-				BigDecimal notInvoicedAmt = MBPartner.getNotInvoicedAmt(getC_BPartner_ID());
-				final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, notInvoicedAmt);
-				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
-				{
-					m_processMsg = "@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
-							+ totalOpenBalance + ", @NotInvoicedAmt@=" + notInvoicedAmt
-							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
-					return IDocument.STATUS_Invalid;
-				}
-
-			}
-		}
+		checkCreditLimit();
 
 		// Lines
-		MInOutLine[] lines = getLines(true);
+		final MInOutLine[] lines = getLines(true);
 		if (lines == null || lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
@@ -1177,10 +1209,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		BigDecimal Weight = BigDecimal.ZERO;
 
 		// Mandatory Attributes
-		for (int i = 0; i < lines.length; i++)
+		for (final MInOutLine line : lines)
 		{
-			MInOutLine line = lines[i];
-			MProduct product = line.getProduct();
+			final MProduct product = line.getProduct();
 			if (product != null)
 			{
 				Volume = Volume.add(product.getVolume().multiply(line.getMovementQty()));
@@ -1188,10 +1219,12 @@ public class MInOut extends X_M_InOut implements IDocument
 			}
 			//
 			if (line.getM_AttributeSetInstance_ID() != 0)
+			{
 				continue;
+			}
 			if (product != null && product.isASIMandatory(isSOTrx()))
 			{
-				throw new ProductASIMandatoryException(this, product, lines[i].getLine());
+				throw new ProductASIMandatoryException(this, product, line.getLine());
 			}
 		}
 		setVolume(Volume);
@@ -1204,13 +1237,78 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 
 		m_justPrepared = true;
 		if (!DOCACTION_Complete.equals(getDocAction()))
+		{
 			setDocAction(DOCACTION_Complete);
+		}
 		return IDocument.STATUS_InProgress;
 	} // prepareIt
+
+
+	private void checkCreditLimit()
+	{
+		if (!isCheckCreditLimitNeeded())
+		{
+			return;
+		}
+
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+
+		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
+		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+		final String soCreditStatus = stats.getSOCreditStatus();
+		final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
+
+		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimit(partner);
+
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
+		{
+			throw new AdempiereException("@BPartnerCreditStop@ - @TotalOpenBalance@="
+					+ totalOpenBalance
+					+ ", @SO_CreditLimit@=" + creditLimit);
+		}
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
+		{
+			throw new AdempiereException("@BPartnerCreditHold@ - @TotalOpenBalance@="
+					+ totalOpenBalance
+					+ ", @SO_CreditLimit@=" + creditLimit);
+		}
+
+		final BigDecimal notInvoicedAmt = MBPartner.getNotInvoicedAmt(getC_BPartner_ID());
+		final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, notInvoicedAmt);
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
+		{
+			throw new AdempiereException("@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
+					+ totalOpenBalance + ", @NotInvoicedAmt@=" + notInvoicedAmt
+					+ ", @SO_CreditLimit@=" + creditLimit);
+		}
+	}
+
+	private boolean isCheckCreditLimitNeeded()
+	{
+
+		if (!(isSOTrx() && !isReversal()))
+		{
+			return false;
+		}
+
+		final I_C_Order order = getC_Order();
+		if (order != null && order.getC_Order_ID() > 0 && MDocType.DOCSUBTYPE_PrepayOrder.equals(order.getC_DocType().getDocSubType())
+				&& !Services.get(ISysConfigBL.class).getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, getAD_Client_ID(), getAD_Org_ID()))
+		{
+			// ignore -- don't validate Prepay Orders depending on sysconfig parameter
+			return false;
+		}
+
+		return true;
+	}
 
 	/**
 	 * Approve Document
@@ -1247,24 +1345,30 @@ public class MInOut extends X_M_InOut implements IDocument
 		// Re-Check
 		if (!m_justPrepared)
 		{
-			String status = prepareIt();
+			final String status = prepareIt();
 			if (!IDocument.STATUS_InProgress.equals(status))
+			{
 				return status;
+			}
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 
 		// Outstanding (not processed) Incoming Confirmations ?
-		MInOutConfirm[] confirmations = getConfirmations(true);
-		for (int i = 0; i < confirmations.length; i++)
+		final MInOutConfirm[] confirmations = getConfirmations(true);
+		for (final MInOutConfirm confirmation : confirmations)
 		{
-			MInOutConfirm confirm = confirmations[i];
+			final MInOutConfirm confirm = confirmation;
 			if (!confirm.isProcessed())
 			{
 				if (MInOutConfirm.CONFIRMTYPE_CustomerConfirmation.equals(confirm.getConfirmType()))
+				{
 					continue;
+				}
 				//
 				m_processMsg = "Open @M_InOutConfirm_ID@: " +
 						confirm.getConfirmTypeName() + " - " + confirm.getDocumentNo();
@@ -1285,16 +1389,18 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		sortByProductAndASI(lines); // task 08999
 
-		for (int lineIndex = 0; lineIndex < lines.length; lineIndex++)
+		for (final MInOutLine line : lines)
 		{
-			final MInOutLine sLine = lines[lineIndex];
+			final MInOutLine sLine = line;
 			final MProduct product = sLine.getProduct();
 
 			// Qty & Type
-			String MovementType = getMovementType();
+			final String MovementType = getMovementType();
 			BigDecimal Qty = sLine.getMovementQty();
-			if (MovementType.charAt(1) == '-')  // C- Customer Shipment - V- Vendor Return
+			if (MovementType.charAt(1) == '-')
+			{
 				Qty = Qty.negate();
+			}
 			BigDecimal QtySO = BigDecimal.ZERO;
 			BigDecimal QtyPO = BigDecimal.ZERO;
 
@@ -1353,20 +1459,25 @@ public class MInOut extends X_M_InOut implements IDocument
 				{
 					final MInOutLineMA mas[] = MInOutLineMA.get(getCtx(),
 							sLine.getM_InOutLine_ID(), get_TrxName());
-					for (int j = 0; j < mas.length; j++)
+					for (final MInOutLineMA ma : mas)
 					{
-						MInOutLineMA ma = mas[j];
 						BigDecimal QtyMA = ma.getMovementQty();
-						if (MovementType.charAt(1) == '-')  // C- Customer Shipment - V- Vendor Return
+						if (MovementType.charAt(1) == '-')
+						{
 							QtyMA = QtyMA.negate();
+						}
 						BigDecimal reservedDiff = BigDecimal.ZERO;
 						BigDecimal orderedDiff = BigDecimal.ZERO;
 						if (sLine.getC_OrderLine_ID() != 0)
 						{
 							if (isSOTrx())
+							{
 								reservedDiff = ma.getMovementQty().negate();
+							}
 							else
+							{
 								orderedDiff = ma.getMovementQty().negate();
+							}
 						}
 
 						// Update Storage - see also VMatch.createMatchRecord
@@ -1384,7 +1495,7 @@ public class MInOut extends X_M_InOut implements IDocument
 						if (!sameWarehouse)
 						{
 							// correct qtyOrdered in warehouse of order
-							MWarehouse wh = MWarehouse.get(getCtx(), Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID());
+							final MWarehouse wh = MWarehouse.get(getCtx(), Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID());
 							// task 08999 : update the storage async
 							storageBL.addAsync(
 									getCtx(),
@@ -1416,8 +1527,8 @@ public class MInOut extends X_M_InOut implements IDocument
 				// sLine.getM_AttributeSetInstance_ID() != 0
 				if (mtrx == null)
 				{
-					BigDecimal reservedDiff = sameWarehouse ? QtySO.negate() : BigDecimal.ZERO;
-					BigDecimal orderedDiff = sameWarehouse ? QtyPO.negate() : BigDecimal.ZERO;
+					final BigDecimal reservedDiff = sameWarehouse ? QtySO.negate() : BigDecimal.ZERO;
+					final BigDecimal orderedDiff = sameWarehouse ? QtyPO.negate() : BigDecimal.ZERO;
 
 					// Fallback: Update Storage - see also VMatch.createMatchRecord
 					// task 08999 : update the storage async
@@ -1431,7 +1542,7 @@ public class MInOut extends X_M_InOut implements IDocument
 					if (!sameWarehouse)
 					{
 						// correct qtyOrdered in warehouse of order
-						MWarehouse wh = MWarehouse.get(getCtx(), Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID());
+						final MWarehouse wh = MWarehouse.get(getCtx(), Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine).getM_Warehouse_ID());
 						// task 08999 : update the storage async
 						storageBL.addAsync(
 								getCtx(),
@@ -1501,15 +1612,21 @@ public class MInOut extends X_M_InOut implements IDocument
 				info.append("@A_Asset_ID@: ");
 				int noAssets = sLine.getMovementQty().intValue();
 				if (!product.isOneAssetPerUOM())
+				{
 					noAssets = 1;
+				}
 				for (int i = 0; i < noAssets; i++)
 				{
 					if (i > 0)
+					{
 						info.append(" - ");
+					}
 					int deliveryCount = i + 1;
 					if (!product.isOneAssetPerUOM())
+					{
 						deliveryCount = 0;
-					MAsset asset = new MAsset(this, sLine, deliveryCount);
+					}
+					final MAsset asset = new MAsset(this, sLine, deliveryCount);
 					if (!asset.save(get_TrxName()))
 					{
 						m_processMsg = "Could not create Asset";
@@ -1560,7 +1677,7 @@ public class MInOut extends X_M_InOut implements IDocument
 							// Invoice is created before Shipment
 							log.debug("PO(Inv) Matching");
 							// Ship - Invoice
-							MMatchPO po = MMatchPO.create(iLine, sLine, getMovementDate(), qtyMoved);
+							final MMatchPO po = MMatchPO.create(iLine, sLine, getMovementDate(), qtyMoved);
 							InterfaceWrapperHelper.save(po, get_TrxName());
 
 							// Update PO with ASI
@@ -1604,7 +1721,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		}  // for all lines
 
 		// Counter Documents
-		MInOut counter = createCounterDoc();
+		final MInOut counter = createCounterDoc();
 		if (counter != null)
 		{
 			info.append(" - @CounterDoc@: @M_InOut_ID@=").append(counter.getDocumentNo());
@@ -1620,7 +1737,7 @@ public class MInOut extends X_M_InOut implements IDocument
 // @formatter:on
 
 		// User Validation
-		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
+		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
 		{
 			m_processMsg = valid;
@@ -1645,22 +1762,8 @@ public class MInOut extends X_M_InOut implements IDocument
 	private static void sortByProductAndASI(final MInOutLine[] lines)
 	{
 		final ComparatorChain<MInOutLine> c = new ComparatorChain<>();
-		c.addComparator(new Comparator<MInOutLine>()
-		{
-			@Override
-			public int compare(MInOutLine o1, MInOutLine o2)
-			{
-				return Integer.compare(o1.getM_Product_ID(), o2.getM_Product_ID());
-			}
-		});
-		c.addComparator(new Comparator<MInOutLine>()
-		{
-			@Override
-			public int compare(MInOutLine o1, MInOutLine o2)
-			{
-				return Integer.compare(o1.getM_AttributeSetInstance_ID(), o2.getM_AttributeSetInstance_ID());
-			}
-		});
+		c.addComparator((o1, o2) -> Integer.compare(o1.getM_Product_ID(), o2.getM_Product_ID()));
+		c.addComparator((o1, o2) -> Integer.compare(o1.getM_AttributeSetInstance_ID(), o2.getM_AttributeSetInstance_ID()));
 		Arrays.sort(lines, c);
 	}
 
@@ -1904,7 +2007,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 */
 	private void setDefiniteDocumentNo()
 	{
-		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		if (dt.isOverwriteDateOnComplete())
 		{
 			setMovementDate(SystemTime.asTimestamp());
@@ -1918,25 +2021,29 @@ public class MInOut extends X_M_InOut implements IDocument
 					.setFailOnError(false)
 					.build();
 			if (value != null && value != IDocumentNoBuilder.NO_DOCUMENTNO)
+			{
 				setDocumentNo(value);
+			}
 		}
 	}
 
 	/**
 	 * Check Material Policy Sets line ASI
 	 */
-	private void checkMaterialPolicy(MInOutLine line)
+	private void checkMaterialPolicy(final MInOutLine line)
 	{
-		int no = MInOutLineMA.deleteInOutLineMA(line.getM_InOutLine_ID(), get_TrxName());
+		final int no = MInOutLineMA.deleteInOutLineMA(line.getM_InOutLine_ID(), get_TrxName());
 		if (no > 0)
+		{
 			log.debug("Deleted old #{}", no);
+		}
 
 		// Incoming Trx
-		String MovementType = getMovementType();
-		boolean inTrx = MovementType.charAt(1) == '+'; // V+ Vendor Receipt
+		final String MovementType = getMovementType();
+		final boolean inTrx = MovementType.charAt(1) == '+'; // V+ Vendor Receipt
 
 		boolean needSave = false;
-		MProduct product = line.getProduct();
+		final MProduct product = line.getProduct();
 
 		// Need to have Location
 		if (product != null
@@ -1985,17 +2092,17 @@ public class MInOut extends X_M_InOut implements IDocument
 			// Create consume the Attribute Set Instance using policy FIFO/LIFO
 			else if (getMovementType().compareTo(MInOut.MOVEMENTTYPE_VendorReturns) == 0 || getMovementType().compareTo(MInOut.MOVEMENTTYPE_CustomerShipment) == 0)
 			{
-				String MMPolicy = Services.get(IProductBL.class).getMMPolicy(product);
-				Timestamp minGuaranteeDate = getMovementDate();
-				MStorage[] storages = MStorage.getWarehouse(getCtx(),
+				final String MMPolicy = Services.get(IProductBL.class).getMMPolicy(product);
+				final Timestamp minGuaranteeDate = getMovementDate();
+				final MStorage[] storages = MStorage.getWarehouse(getCtx(),
 						getM_Warehouse_ID(), line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
 						minGuaranteeDate, MClient.MMPOLICY_FiFo.equals(MMPolicy), true, line.getM_Locator_ID(), get_TrxName());
 				BigDecimal qtyToDeliver = line.getMovementQty();
-				for (MStorage storage : storages)
+				for (final MStorage storage : storages)
 				{
 					if (storage.getQtyOnHand().compareTo(qtyToDeliver) >= 0)
 					{
-						MInOutLineMA ma = new MInOutLineMA(line,
+						final MInOutLineMA ma = new MInOutLineMA(line,
 								0, // storage.getM_AttributeSetInstance_ID(),
 								qtyToDeliver);
 						ma.saveEx();
@@ -2003,7 +2110,7 @@ public class MInOut extends X_M_InOut implements IDocument
 					}
 					else
 					{
-						MInOutLineMA ma = new MInOutLineMA(line,
+						final MInOutLineMA ma = new MInOutLineMA(line,
 								0, // storage.getM_AttributeSetInstance_ID(),
 								storage.getQtyOnHand());
 						ma.saveEx();
@@ -2012,15 +2119,17 @@ public class MInOut extends X_M_InOut implements IDocument
 					}
 
 					if (qtyToDeliver.signum() == 0)
+					{
 						break;
+					}
 				}
 
 				if (qtyToDeliver.signum() != 0)
 				{
 					// deliver using new asi
-					MAttributeSetInstance asi = MAttributeSetInstance.create(getCtx(), product, get_TrxName());
-					int M_AttributeSetInstance_ID = asi.getM_AttributeSetInstance_ID();
-					MInOutLineMA ma = new MInOutLineMA(line, M_AttributeSetInstance_ID, qtyToDeliver);
+					final MAttributeSetInstance asi = MAttributeSetInstance.create(getCtx(), product, get_TrxName());
+					final int M_AttributeSetInstance_ID = asi.getM_AttributeSetInstance_ID();
+					final MInOutLineMA ma = new MInOutLineMA(line, M_AttributeSetInstance_ID, qtyToDeliver);
 					ma.saveEx();
 					log.debug("##: {}", ma);
 				}
@@ -2042,31 +2151,39 @@ public class MInOut extends X_M_InOut implements IDocument
 	{
 		// Is this a counter doc ?
 		if (getRef_InOut_ID() != 0)
+		{
 			return null;
+		}
 
 		// Org Must be linked to BPartner
-		MOrg org = MOrg.get(getCtx(), getAD_Org_ID());
-		int counterC_BPartner_ID = org.getLinkedC_BPartner_ID(get_TrxName());
+		final MOrg org = MOrg.get(getCtx(), getAD_Org_ID());
+		final int counterC_BPartner_ID = org.getLinkedC_BPartner_ID(get_TrxName());
 		if (counterC_BPartner_ID == 0)
+		{
 			return null;
+		}
 		// Business Partner needs to be linked to Org
-		MBPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
-		int counterAD_Org_ID = bp.getAD_OrgBP_ID_Int();
+		final MBPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
+		final int counterAD_Org_ID = bp.getAD_OrgBP_ID_Int();
 		if (counterAD_Org_ID == 0)
+		{
 			return null;
+		}
 
-		MBPartner counterBP = new MBPartner(getCtx(), counterC_BPartner_ID, null);
-		I_AD_OrgInfo counterOrgInfo = MOrgInfo.get(getCtx(), counterAD_Org_ID, null);
+		final MBPartner counterBP = new MBPartner(getCtx(), counterC_BPartner_ID, null);
+		final I_AD_OrgInfo counterOrgInfo = MOrgInfo.get(getCtx(), counterAD_Org_ID, null);
 		log.debug("Counter BP={}", counterBP);
 
 		// Document Type
 		int C_DocTypeTarget_ID = 0;
-		MDocTypeCounter counterDT = MDocTypeCounter.getCounterDocType(getCtx(), getC_DocType_ID());
+		final MDocTypeCounter counterDT = MDocTypeCounter.getCounterDocType(getCtx(), getC_DocType_ID());
 		if (counterDT != null)
 		{
 			log.debug("Counter docType: {}", counterDT);
 			if (!counterDT.isCreateCounter() || !counterDT.isValid())
+			{
 				return null;
+			}
 			C_DocTypeTarget_ID = counterDT.getCounter_C_DocType_ID();
 		}
 		else
@@ -2075,11 +2192,13 @@ public class MInOut extends X_M_InOut implements IDocument
 			C_DocTypeTarget_ID = MDocTypeCounter.getCounterDocType_ID(getCtx(), getC_DocType_ID());
 			log.debug("Indirect C_DocTypeTarget_ID={}", C_DocTypeTarget_ID);
 			if (C_DocTypeTarget_ID <= 0)
+			{
 				return null;
+			}
 		}
 
 		// Deep Copy
-		MInOut counter = copyFrom(this, getMovementDate(), getDateAcct(),
+		final MInOut counter = copyFrom(this, getMovementDate(), getDateAcct(),
 				C_DocTypeTarget_ID, !isSOTrx(), true, get_TrxName(), true);
 
 		//
@@ -2107,14 +2226,13 @@ public class MInOut extends X_M_InOut implements IDocument
 		counter.setSalesRep_ID(getSalesRep_ID());
 		counter.save(get_TrxName());
 
-		String MovementType = counter.getMovementType();
-		boolean inTrx = MovementType.charAt(1) == '+'; // V+ Vendor Receipt
+		final String MovementType = counter.getMovementType();
+		final boolean inTrx = MovementType.charAt(1) == '+'; // V+ Vendor Receipt
 
 		// Update copied lines
-		MInOutLine[] counterLines = counter.getLines();
-		for (int i = 0; i < counterLines.length; i++)
+		final MInOutLine[] counterLines = counter.getLines();
+		for (final MInOutLine counterLine : counterLines)
 		{
-			MInOutLine counterLine = counterLines[i];
 			counterLine.setClientOrg(counter);
 			counterLine.setM_Warehouse_ID(counter.getM_Warehouse_ID());
 			counterLine.setM_Locator_ID(0);
@@ -2149,7 +2267,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		if (DOCSTATUS_Closed.equals(getDocStatus())
 				|| DOCSTATUS_Reversed.equals(getDocStatus())
@@ -2167,11 +2287,10 @@ public class MInOut extends X_M_InOut implements IDocument
 				|| DOCSTATUS_NotApproved.equals(getDocStatus()))
 		{
 			// Set lines to 0
-			MInOutLine[] lines = getLines();
-			for (int i = 0; i < lines.length; i++)
+			final MInOutLine[] lines = getLines();
+			for (final MInOutLine line : lines)
 			{
-				MInOutLine line = lines[i];
-				BigDecimal old = line.getMovementQty();
+				final BigDecimal old = line.getMovementQty();
 				if (old.signum() != 0)
 				{
 					line.setQty(BigDecimal.ZERO);
@@ -2188,7 +2307,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		// After Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_VOID);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		setProcessed(true);
 		setDocAction(DOCACTION_None);
@@ -2206,12 +2327,16 @@ public class MInOut extends X_M_InOut implements IDocument
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		// After Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		setProcessed(true);
 		setDocAction(DOCACTION_None);
@@ -2229,7 +2354,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), getC_DocType_ID(), getAD_Org_ID());
 
@@ -2259,7 +2386,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		reversal.setReversal(true);
 		// FR1948157
 		reversal.setReversal_ID(getM_InOut_ID());
-		this.setReversal_ID(reversal.getM_InOut_ID());
+		setReversal_ID(reversal.getM_InOut_ID());
 
 		// Reverse Line Qty
 		final MInOutLine[] sLines = getLines();
@@ -2287,18 +2414,18 @@ public class MInOut extends X_M_InOut implements IDocument
 			// We need to copy MA
 			if (rLine.getM_AttributeSetInstance_ID() <= 0)
 			{
-				MInOutLineMA mas[] = MInOutLineMA.get(getCtx(),
+				final MInOutLineMA mas[] = MInOutLineMA.get(getCtx(),
 						sLine.getM_InOutLine_ID(), get_TrxName());
-				for (int j = 0; j < mas.length; j++)
+				for (final MInOutLineMA ma2 : mas)
 				{
-					MInOutLineMA ma = new MInOutLineMA(rLine,
-							mas[j].getM_AttributeSetInstance_ID(),
-							mas[j].getMovementQty().negate());
+					final MInOutLineMA ma = new MInOutLineMA(rLine,
+							ma2.getM_AttributeSetInstance_ID(),
+							ma2.getMovementQty().negate());
 					ma.saveEx();
 				}
 			}
 			// De-Activate Asset
-			MAsset asset = MAsset.getFromShipment(getCtx(), sLine.getM_InOutLine_ID(), get_TrxName());
+			final MAsset asset = MAsset.getFromShipment(getCtx(), sLine.getM_InOutLine_ID(), get_TrxName());
 			if (asset != null)
 			{
 				asset.setIsActive(false);
@@ -2328,7 +2455,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		// After reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSECORRECT);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		m_processMsg = reversal.getDocumentNo();
 		setProcessed(true);
@@ -2370,12 +2499,16 @@ public class MInOut extends X_M_InOut implements IDocument
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		// After reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		return false;
 	} // reverseAccrualIt
@@ -2391,7 +2524,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		// Services
 		final IMTransactionDAO transactionDAO = Services.get(IMTransactionDAO.class);
@@ -2411,7 +2546,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		//
 		// Delete confirmations
 		final MInOutConfirm[] confirmations = getConfirmations(true);
-		for (I_M_InOutConfirm confirmation : confirmations)
+		for (final I_M_InOutConfirm confirmation : confirmations)
 		{
 			if (confirmation.isProcessed())
 			{
@@ -2514,7 +2649,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		// After reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		return true;
 	} // reActivateIt
@@ -2527,7 +2664,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	@Override
 	public String getSummary()
 	{
-		StringBuffer sb = new StringBuffer();
+		final StringBuffer sb = new StringBuffer();
 		sb.append(getDocumentNo());
 		// : Total Lines = 123.00 (#1)
 		sb.append(":")
@@ -2535,7 +2672,9 @@ public class MInOut extends X_M_InOut implements IDocument
 				.append(" (#").append(getLines(false).length).append(")");
 		// - Description
 		if (getDescription() != null && getDescription().length() > 0)
+		{
 			sb.append(" - ").append(getDescription());
+		}
 		return sb.toString();
 	} // getSummary
 
@@ -2590,7 +2729,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 */
 	public boolean isComplete()
 	{
-		String ds = getDocStatus();
+		final String ds = getDocStatus();
 		return DOCSTATUS_Completed.equals(ds)
 				|| DOCSTATUS_Closed.equals(ds)
 				|| DOCSTATUS_Reversed.equals(ds);
