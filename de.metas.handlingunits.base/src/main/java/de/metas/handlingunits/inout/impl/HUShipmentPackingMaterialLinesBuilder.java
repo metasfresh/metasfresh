@@ -205,6 +205,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 		for (final HUPackingMaterialDocumentLineCandidate pmCandidate : packingMaterialsCollector.getAndClearCandidates())
 		{
 			final I_M_InOutLine packingMaterialLine = createPackingMaterialLine(pmCandidate);
+			// task 09502: set the reference from line to packing-line
 			final Set<IHUPackingMaterialCollectorSource> sourceIols = pmCandidate.getSources();
 			sourceIols.stream()
 					.filter(source -> source instanceof InOutLineHUPackingMaterialCollectorSource)
@@ -215,12 +216,15 @@ public class HUShipmentPackingMaterialLinesBuilder
 		configurable = false;
 	}
 
-	// task 09502: set the reference from line to packing-line
-	private void linkInOutLineToPackingMaterialLine(@NonNull final InOutLineHUPackingMaterialCollectorSource inOutLineSource, @NonNull final I_M_InOutLine packingMaterialLine)
+	private void linkInOutLineToPackingMaterialLine(@NonNull final InOutLineHUPackingMaterialCollectorSource  source, @NonNull final I_M_InOutLine packingMaterialLine)
 	{
-		final I_M_InOutLine sourceIol = inOutLineSource.getM_InOutLine();
+		final I_M_InOutLine sourceIol = source.getM_InOutLine();
+		if (sourceIol.getM_HU_PI_Item_Product_Override() == null)
+		{
+			return;
+		}
 		final I_M_HU_PI_Version huPiVersion = sourceIol.getM_HU_PI_Item_Product_Override().getM_HU_PI_Item().getM_HU_PI_Version();
-		final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO.retrievePackingMaterial(huPiVersion, sourceIol.getM_InOut().getC_BPartner());
+		final I_M_HU_PackingMaterial packingMaterial = Services.get(IHandlingUnitsDAO.class).retrievePackingMaterial(huPiVersion, sourceIol.getM_InOut().getC_BPartner());
 		if (packingMaterial != null && packingMaterial.getM_Product_ID() == packingMaterialLine.getM_Product_ID())
 		{
 			sourceIol.setM_PackingMaterial_InOutLine(packingMaterialLine);
