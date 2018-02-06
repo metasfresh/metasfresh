@@ -1158,7 +1158,7 @@ public class OLCandBL implements IOLCandBL
 
 			if (pl == null)
 			{
-				throw new AdempiereException("@PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + dropShipLocation.getC_BPartner_Location_ID());
+				throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + dropShipLocation.getC_BPartner_Location_ID());
 			}
 			pricingCtx.setM_PriceList_ID(pl.getM_PriceList_ID());
 			pricingCtx.setM_Product_ID(effectiveValuesBL.getM_Product_Effective_ID(olCand));
