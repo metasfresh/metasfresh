@@ -144,7 +144,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			return null;
 		}
 
-		if (inOutLine.isPackagingMaterial())
+		if (inOutLine.isPackagingMaterial() && inOutLine.getM_InOut().isSOTrx()) // split only in case of sales
 		{
 			final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 			final List<I_M_InOutLine> allReferencingLines = inOutDAO.retrieveAllReferencingLinesBuilder(inOutLine)

@@ -379,8 +379,11 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			final Set<IHUPackingMaterialCollectorSource> sourceIols = candidate.getSources();
 			sourceIols.stream()
 					.filter(source -> source instanceof InOutLineHUPackingMaterialCollectorSource)
-					.map(source -> (InOutLineHUPackingMaterialCollectorSource)source)
-					.forEach(inOutLineSource -> inOutLineSource.linkInOutLineToPackingMaterialLine(packagingReceiptLine));
+					.map(source -> ((InOutLineHUPackingMaterialCollectorSource)source).getM_InOutLine())
+					.forEach(sourceReceiptLine -> {
+						sourceReceiptLine.setM_PackingMaterial_InOutLine(packagingReceiptLine);
+						InterfaceWrapperHelper.save(sourceReceiptLine);
+					});
 
 			receiptLines.add(packagingReceiptLine);
 			// 07734 note: we don't need to explicitly link the new receipt line here. It will be done by MaterialTrackableDocumentByASIInterceptor (its M_InOut subclass).

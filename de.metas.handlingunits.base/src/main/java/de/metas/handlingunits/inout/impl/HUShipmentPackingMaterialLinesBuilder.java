@@ -44,6 +44,8 @@ import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
@@ -51,6 +53,7 @@ import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
+import lombok.NonNull;
 
 /**
  * Builder class to generate packing material shipment lines for a given shipment.
@@ -207,10 +210,26 @@ public class HUShipmentPackingMaterialLinesBuilder
 			sourceIols.stream()
 					.filter(source -> source instanceof InOutLineHUPackingMaterialCollectorSource)
 					.map(source -> (InOutLineHUPackingMaterialCollectorSource)source)
-					.forEach(inOutLineSource -> inOutLineSource.linkInOutLineToPackingMaterialLine(packingMaterialLine));
+					.forEach(inOutLineSource -> linkInOutLineToPackingMaterialLine(inOutLineSource, packingMaterialLine));
 		}
 
 		configurable = false;
+	}
+
+	private void linkInOutLineToPackingMaterialLine(@NonNull final InOutLineHUPackingMaterialCollectorSource  source, @NonNull final I_M_InOutLine packingMaterialLine)
+	{
+		final I_M_InOutLine sourceIol = source.getM_InOutLine();
+		if (sourceIol.getM_HU_PI_Item_Product_Override() == null)
+		{
+			return;
+		}
+		final I_M_HU_PI_Version huPiVersion = sourceIol.getM_HU_PI_Item_Product_Override().getM_HU_PI_Item().getM_HU_PI_Version();
+		final I_M_HU_PackingMaterial packingMaterial = Services.get(IHandlingUnitsDAO.class).retrievePackingMaterial(huPiVersion, sourceIol.getM_InOut().getC_BPartner());
+		if (packingMaterial != null && packingMaterial.getM_Product_ID() == packingMaterialLine.getM_Product_ID())
+		{
+			sourceIol.setM_PackingMaterial_InOutLine(packingMaterialLine);
+			InterfaceWrapperHelper.save(sourceIol);
+		}
 	}
 
 	/**
