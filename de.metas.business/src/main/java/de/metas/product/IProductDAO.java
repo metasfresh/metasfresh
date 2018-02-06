@@ -62,8 +62,4 @@ public interface IProductDAO extends ISingletonService
 
 	I_M_Product retrieveProductByValue(Properties ctx, String value);
 
-	/**
-	 * @return Products that don't have PP_ProductPlanning entries 
-	 */
-	List<I_M_Product> retrieveProductsWithNoProductPlanning();
 }

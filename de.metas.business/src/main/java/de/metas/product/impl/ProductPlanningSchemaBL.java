@@ -5,16 +5,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
+import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
 
-import de.metas.product.IProductDAO;
 import de.metas.product.IProductPlanningSchemaBL;
-import de.metas.product.IProductPlanningSchemaDAO;
 import de.metas.product.model.I_M_Product_PlanningSchema;
 
 /*
@@ -27,12 +26,12 @@ import de.metas.product.model.I_M_Product_PlanningSchema;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,17 +40,15 @@ import de.metas.product.model.I_M_Product_PlanningSchema;
 
 public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 {
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IProductPlanningSchemaDAO productPlanningSchemaDAO = Services.get(IProductPlanningSchemaDAO.class);
 
 	@Override
 	public List<I_PP_Product_Planning> createDefaultProductPlanningsForAllProducts()
 	{
 		final List<I_PP_Product_Planning> createdPlannings = new ArrayList<>();
-		
-		final List<I_M_Product> productsWithNoProductPlanning = productDAO.retrieveProductsWithNoProductPlanning();
 
-		for (final I_M_Product product : productsWithNoProductPlanning)
+		final Iterator<I_M_Product> productsWithNoProductPlanning = ProductPlanningSchemaDAO.retrieveProductsWithNoProductPlanning();
+
+		for (final I_M_Product product : IteratorUtils.asIterable(productsWithNoProductPlanning))
 		{
 			final String productPlanningSchemaSelector = product.getM_ProductPlanningSchema_Selector();
 			if (Check.isEmpty(productPlanningSchemaSelector))
@@ -60,14 +57,14 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 				continue;
 			}
 
-			final List<I_M_Product_PlanningSchema> productPlanningSchemas = productPlanningSchemaDAO.retrieveSchemasForSelector(productPlanningSchemaSelector);
+			final List<I_M_Product_PlanningSchema> productPlanningSchemas = ProductPlanningSchemaDAO.retrieveSchemasForSelector(productPlanningSchemaSelector);
 
 			for (final I_M_Product_PlanningSchema productPlanningSchema : productPlanningSchemas)
 			{
 				createdPlannings.add(createUpdateProductPlanning(product, productPlanningSchema));
 			}
 		}
-		
+
 		return createdPlannings;
 	}
 
@@ -75,10 +72,10 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 	public List<I_PP_Product_Planning> createUpdateDefaultProductPlanningsForSchema(final I_M_Product_PlanningSchema productPlanningSchema)
 	{
 		final List<I_PP_Product_Planning> createdPlannings = new ArrayList<>();
-		
+
 		final String schemaSelector = productPlanningSchema.getM_ProductPlanningSchema_Selector();
 
-		final List<I_PP_Product_Planning> productPlanningsForSchema = productPlanningSchemaDAO.retrieveProductPlanningsForSchemaID(productPlanningSchema.getM_Product_PlanningSchema_ID());
+		final List<I_PP_Product_Planning> productPlanningsForSchema = ProductPlanningSchemaDAO.retrieveProductPlanningsForSchemaID(productPlanningSchema.getM_Product_PlanningSchema_ID());
 
 		for (final I_PP_Product_Planning planning : productPlanningsForSchema)
 		{
@@ -93,12 +90,12 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 			}
 		}
 
-		final List<I_M_Product> productsForSelector = productPlanningSchemaDAO.retrieveProductsForSchemaSelector(schemaSelector);
+		final List<I_M_Product> productsForSelector = ProductPlanningSchemaDAO.retrieveProductsForSchemaSelector(schemaSelector);
 		for (final I_M_Product product : productsForSelector)
 		{
 			createdPlannings.add(createUpdateProductPlanning(product, productPlanningSchema));
 		}
-		
+
 		return createdPlannings;
 	}
 
@@ -114,10 +111,11 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 		return productPlanning;
 	}
 
-	private I_PP_Product_Planning getCreateProductPlanningForProductAndSchema(final I_M_Product product, final I_M_Product_PlanningSchema schema)
+	private I_PP_Product_Planning getCreateProductPlanningForProductAndSchema(
+			final I_M_Product product,
+			final I_M_Product_PlanningSchema schema)
 	{
-		I_PP_Product_Planning productPlanning = productPlanningSchemaDAO.retrievePlanningForProductAndSchema(product, schema);
-
+		I_PP_Product_Planning productPlanning = ProductPlanningSchemaDAO.retrievePlanningForProductAndSchema(product, schema);
 		if (productPlanning == null)
 		{
 			productPlanning = newInstance(I_PP_Product_Planning.class);

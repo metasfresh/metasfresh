@@ -34,11 +34,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
-import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.product.IProductDAO;
@@ -130,24 +128,4 @@ public class ProductDAO implements IProductDAO
 				.create()
 				.list(de.metas.product.model.I_M_Product.class);
 	}
-
-	@Override
-	public List<I_M_Product> retrieveProductsWithNoProductPlanning()
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQuery<I_PP_Product_Planning> existentProductPlanning = queryBL.createQueryBuilder(I_PP_Product_Planning.class, ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.create();
-
-		return queryBL.createQueryBuilder(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.addNotInSubQueryFilter(I_M_Product.COLUMNNAME_M_Product_ID, I_PP_Product_Planning.COLUMNNAME_M_Product_ID, existentProductPlanning)
-				.create()
-				.list();
-
-	}
-
 }
