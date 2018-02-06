@@ -218,6 +218,8 @@ class RawLookup extends Component {
       mainProperty
     } = this.props;
 
+    this.handleBlur();
+
     dispatch(
       openModal(
         newRecordCaption,
