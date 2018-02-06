@@ -110,7 +110,7 @@ class List extends Component {
   };
 
   focus = () => {
-    if (this.rawList) {
+    if (this.rawList && this.rawList.focus) {
       this.rawList.focus();
     }
   };

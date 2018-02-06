@@ -1,11 +1,11 @@
-import React, { Component } from "react";
+import React, { Component, PureComponent } from "react";
 import { connect } from "react-redux";
 import onClickOutside from "react-onclickoutside";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import TetherComponent from "react-tether";
 import PropTypes from "prop-types";
 
-class RawList extends Component {
+class RawList extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -33,7 +33,7 @@ class RawList extends Component {
     }
   }
 
-  componentDidUpdate = (prevProps, prevState) => {
+  componentDidUpdate(prevProps, prevState) {
     const {
       list,
       mandatory,
@@ -116,7 +116,7 @@ class RawList extends Component {
     }
 
     this.checkIfDropDownListOutOfFilter();
-  };
+  }
 
   checkIfDropDownListOutOfFilter = () => {
     if (!this.tetheredList) return;
@@ -134,31 +134,35 @@ class RawList extends Component {
   };
 
   focus = () => {
-    if (this.dropdown) {
-      this.dropdown.focus();
-    }
+    if (this.state.isOpen) {
+      if (this.dropdown && this.dropdown.focus) {
+        this.dropdown.focus();
+      }
 
-    this.setState({
-      isFocused: true
-    });
+      this.setState({
+        isFocused: true
+      });
+    }
   };
 
   blur = () => {
-    if (this.dropdown) {
-      this.dropdown.blur();
-    }
+    if (this.state.isFocused) {
+      if (this.dropdown && this.dropdown.blur) {
+        this.dropdown.blur();
+      }
 
-    this.setState({
-      isFocused: false
-    });
+      this.setState({
+        isFocused: false
+      });
+    }
   };
 
   openDropdownList = focus => {
     this.setState({
       isOpen: true
+    }, () => {
+      focus && this.focus();
     });
-
-    focus && this.focus();
   };
 
   closeDropdownList = () => {
@@ -186,11 +190,11 @@ class RawList extends Component {
   handleFocus = () => {
     const { onFocus, doNotOpenOnFocus, autofocus } = this.props;
 
-    onFocus && onFocus();
-
     if (!doNotOpenOnFocus && !autofocus) {
       this.openDropdownList(true);
     }
+
+    onFocus && onFocus();
   };
 
   handleClickOutside() {
@@ -210,7 +214,7 @@ class RawList extends Component {
     this.openDropdownList();
   };
 
-  handleChange = () => {};
+  handleChange = (e) => {};
 
   handleSelect = option => {
     const { onSelect } = this.props;
