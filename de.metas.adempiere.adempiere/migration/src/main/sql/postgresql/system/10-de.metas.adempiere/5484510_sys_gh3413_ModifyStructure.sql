@@ -153,3 +153,11 @@ UPDATE AD_Table SET IsChangeLog='Y',Updated=TO_TIMESTAMP('2018-02-05 17:00:22','
 
 /* DDL */ SELECT public.db_alter_table('C_BPartner_CreditLimit','ALTER TABLE public.C_BPartner_CreditLimit ADD CONSTRAINT creditlimit_uqtype_datebp UNIQUE (C_BPartner_ID, Type, DateTo, DateFrom)')
 ;
+
+
+CREATE SEQUENCE IF NOT EXISTS public.c_bpartner_creditlimit_seq
+  INCREMENT 1
+  MINVALUE 0
+  MAXVALUE 2147483647
+  START 1000000
+  CACHE 1;
