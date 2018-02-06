@@ -1348,9 +1348,8 @@ public class MOrder extends X_C_Order implements IDocument
 			return IDocument.STATUS_Invalid;
 		}
 
-
-		-- credit final check
 		// Credit Check
+		checkCreditLimit();
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
@@ -1366,64 +1365,75 @@ public class MOrder extends X_C_Order implements IDocument
 
 	private void checkCreditLimit()
 	{
-		if (isSOTrx())
+		if (!isCheckCreditLimitNeeded())
 		{
-			final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(getC_DocTypeTarget_ID());
-
-			if (MDocType.DOCSUBTYPE_POSOrder.equals(dt.getDocSubType())
-					&& PAYMENTRULE_Cash.equals(getPaymentRule())
-					&& !Services.get(ISysConfigBL.class).getBooleanValue("CHECK_CREDIT_ON_CASH_POS_ORDER", true, getAD_Client_ID(), getAD_Org_ID()))
-			{
-				// ignore -- don't validate for Cash POS Orders depending on sysconfig parameter
-			}
-			else if (MDocType.DOCSUBTYPE_PrepayOrder.equals(dt.getDocSubType())
-					&& !Services.get(ISysConfigBL.class).getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, getAD_Client_ID(), getAD_Org_ID()))
-			{
-				// ignore -- don't validate Prepay Orders depending on sysconfig parameter
-			}
-			else
-			{
-
-				final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-				final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-
-				final I_C_BPartner partner = InterfaceWrapperHelper.load(getC_BPartner_ID(), I_C_BPartner.class);
-				final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
-				final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
-				final String soCreditStatus = stats.getSOCreditStatus();
-
-				final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-				final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimit(partner);
-
-				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
-				{
-					final String msg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
-							+ totalOpenBalance
-							+ ", @SO_CreditLimit@=" + creditLimit;
-					throw new AdempiereException(msg);
-				}
-				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
-				{
-					final String msg =  "@BPartnerCreditHold@ - @TotalOpenBalance@="
-							+ totalOpenBalance
-							+ ", @SO_CreditLimit@=" + creditLimit;
-					throw new AdempiereException(msg);
-				}
-				final BigDecimal grandTotal = Services.get(ICurrencyBL.class).convertBase(getCtx(),
-						getGrandTotal(), getC_Currency_ID(), getDateOrdered(),
-						getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
-
-				final String calculatedSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, grandTotal);
-
-				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedSOCreditStatus))
-				{
-					final String msg =  "@BPartnerOverOCreditHold@ - @TotalOpenBalance@="
-							+ totalOpenBalance + ", @GrandTotal@=" + grandTotal
-							+ ", @SO_CreditLimit@=" + creditLimit;
-					throw new AdempiereException(msg);
-				}
-			}
+			return;
 		}
+
+		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+
+		final I_C_BPartner partner = InterfaceWrapperHelper.load(getC_BPartner_ID(), I_C_BPartner.class);
+		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+		final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
+		final String soCreditStatus = stats.getSOCreditStatus();
+
+		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimit(partner);
+
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
+		{
+			final String msg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
+					+ totalOpenBalance
+					+ ", @SO_CreditLimit@=" + creditLimit;
+			throw new AdempiereException(msg);
+		}
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
+		{
+			final String msg = "@BPartnerCreditHold@ - @TotalOpenBalance@="
+					+ totalOpenBalance
+					+ ", @SO_CreditLimit@=" + creditLimit;
+			throw new AdempiereException(msg);
+		}
+		final BigDecimal grandTotal = Services.get(ICurrencyBL.class).convertBase(getCtx(),
+				getGrandTotal(), getC_Currency_ID(), getDateOrdered(),
+				getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
+
+		final String calculatedSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, grandTotal);
+
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedSOCreditStatus))
+		{
+			final String msg = "@BPartnerOverOCreditHold@ - @TotalOpenBalance@="
+					+ totalOpenBalance + ", @GrandTotal@=" + grandTotal
+					+ ", @SO_CreditLimit@=" + creditLimit;
+			throw new AdempiereException(msg);
+		}
+	}
+
+	private boolean isCheckCreditLimitNeeded()
+	{
+		if (!isSOTrx())
+		{
+			return false;
+		}
+
+		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(getC_DocTypeTarget_ID());
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		if (MDocType.DOCSUBTYPE_POSOrder.equals(dt.getDocSubType())
+				&& PAYMENTRULE_Cash.equals(getPaymentRule())
+				&& !sysConfigBL.getBooleanValue("CHECK_CREDIT_ON_CASH_POS_ORDER", true, getAD_Client_ID(), getAD_Org_ID()))
+		{
+			// ignore -- don't validate for Cash POS Orders depending on sysconfig parameter
+			return false;
+		}
+		else if (MDocType.DOCSUBTYPE_PrepayOrder.equals(dt.getDocSubType())
+				&& !sysConfigBL.getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, getAD_Client_ID(), getAD_Org_ID()))
+		{
+			// ignore -- don't validate Prepay Orders depending on sysconfig parameter
+			return false;
+		}
+
+		return true;
 	}
 
 
