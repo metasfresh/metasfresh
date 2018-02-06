@@ -10,6 +10,17 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.44 (2018-07)
+**release for week 2018-07**
+
+## Features
+* metasfresh
+
+## Fixes
+*metasfresh-webui-frontend
+  * [#1559](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1559) Errors in the console when opening HU Editor
+    * Fixes errors in console that popped up when opening the Handling Unit Editor.
+
 # metasfresh 5.43 (2018-06)
 **release for week 2018-06**
 
