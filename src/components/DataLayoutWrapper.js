@@ -39,17 +39,27 @@ class DataLayoutWrapper extends Component {
     const { windowType: windowId, viewId } = this.props;
     const { dataId: rowId } = this.state;
 
-    patchViewAttributes(windowId, viewId, rowId, prop, value).then(response => {
-      const preparedData = parseToDisplay(response.data[0].fieldsByName);
-      preparedData &&
-        Object.keys(preparedData).map(key => {
-          this.setState(prevState => ({
-            data: Object.assign({}, prevState.data, {
-              [key]: Object.assign({}, prevState.data[key], preparedData[key])
-            })
-          }));
-        });
+    /*eslint-disable */
+    patchViewAttributes(windowId, viewId, rowId, prop, value).then(({ data }) => {
+      if (data.length) {
+        const preparedData = parseToDisplay(data[0].fieldsByName);
+        
+        if (preparedData) {
+          Object.keys(preparedData).map(key => {
+            this.setState({
+              data: {
+                ...this.state.data,
+                [key]: {
+                  ...this.state.data[key],
+                  ...preparedData[key]
+                }
+              }
+            });
+          });
+        }
+      }
     });
+    /*eslint-enable */
 
     cb && cb();
   };
