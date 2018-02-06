@@ -433,6 +433,11 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 	private void setC_PaymentTerm(final I_C_Invoice_Candidate ic)
 	{
+		if (!ic.isSOTrx())
+		{
+			return;
+		}
+
 		final int paymentTermId;
 		final I_M_InOutLine inOutLine = ic.isPackagingMaterial() && ic.getRef_PackingMaterial_InOutLine() != null
 				? InterfaceWrapperHelper.create(ic.getRef_PackingMaterial_InOutLine(), I_M_InOutLine.class)
