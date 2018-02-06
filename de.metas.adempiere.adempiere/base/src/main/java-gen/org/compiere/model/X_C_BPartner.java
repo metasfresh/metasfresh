@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1310693204L;
+	private static final long serialVersionUID = 1543321563L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -40,7 +40,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 			setPaymentRule (null); // P
 			setPaymentRulePO (null); // P
 			setSendEMail (false);
-			setSO_CreditLimit (BigDecimal.ZERO);
 			setValue (null);
         } */
     }
@@ -504,6 +503,27 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_CreateSO);
 	}
 
+	/** Set Credit limit indicator %.
+		@param CreditLimitIndicator 
+		Percent of Credit used from the limit
+	  */
+	@Override
+	public void setCreditLimitIndicator (java.math.BigDecimal CreditLimitIndicator)
+	{
+		throw new IllegalArgumentException ("CreditLimitIndicator is virtual column");	}
+
+	/** Get Credit limit indicator %.
+		@return Percent of Credit used from the limit
+	  */
+	@Override
+	public java.math.BigDecimal getCreditLimitIndicator () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CreditLimitIndicator);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** 
 	 * DeliveryRule AD_Reference_ID=151
 	 * Reference name: C_Order DeliveryRule
@@ -521,7 +541,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String DELIVERYRULE_Force = "F";
 	/** Manual = M */
 	public static final String DELIVERYRULE_Manual = "M";
-	/** Mit nächster Abolieferung = S */
+	/** MitNaechsterAbolieferung = S */
 	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart.
 		@param DeliveryRule 
@@ -2153,28 +2173,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getShortDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ShortDescription);
-	}
-
-	/** Set Kreditlimit.
-		@param SO_CreditLimit 
-		Total outstanding invoice amounts allowed
-	  */
-	@Override
-	public void setSO_CreditLimit (java.math.BigDecimal SO_CreditLimit)
-	{
-		set_Value (COLUMNNAME_SO_CreditLimit, SO_CreditLimit);
-	}
-
-	/** Get Kreditlimit.
-		@return Total outstanding invoice amounts allowed
-	  */
-	@Override
-	public java.math.BigDecimal getSO_CreditLimit () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SO_CreditLimit);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	/** Set Beschreibung Auftrag.

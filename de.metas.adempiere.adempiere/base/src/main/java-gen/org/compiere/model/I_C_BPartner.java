@@ -523,6 +523,33 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_CreateSO = "CreateSO";
 
 	/**
+	 * Set Credit limit indicator %.
+	 * Percent of Credit used from the limit
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setCreditLimitIndicator (java.math.BigDecimal CreditLimitIndicator);
+
+	/**
+	 * Get Credit limit indicator %.
+	 * Percent of Credit used from the limit
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.math.BigDecimal getCreditLimitIndicator();
+
+    /** Column definition for CreditLimitIndicator */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_CreditLimitIndicator = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "CreditLimitIndicator", null);
+    /** Column name CreditLimitIndicator */
+    public static final String COLUMNNAME_CreditLimitIndicator = "CreditLimitIndicator";
+
+	/**
 	 * Set Lieferart.
 	 * Defines the timing of Delivery
 	 *
@@ -2189,31 +2216,6 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_ShortDescription = "ShortDescription";
 
 	/**
-	 * Set Kreditlimit.
-	 * Total outstanding invoice amounts allowed
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setSO_CreditLimit (java.math.BigDecimal SO_CreditLimit);
-
-	/**
-	 * Get Kreditlimit.
-	 * Total outstanding invoice amounts allowed
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getSO_CreditLimit();
-
-    /** Column definition for SO_CreditLimit */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_SO_CreditLimit = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "SO_CreditLimit", null);
-    /** Column name SO_CreditLimit */
-    public static final String COLUMNNAME_SO_CreditLimit = "SO_CreditLimit";
-
-	/**
 	 * Set Beschreibung Auftrag.
 	 * Description to be used on orders
 	 *
@@ -2317,7 +2319,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
