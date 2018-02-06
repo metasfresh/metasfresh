@@ -26,6 +26,7 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -63,12 +64,15 @@ public class WEBUIHUCreationWithSerialNumberService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ISerialNoDAO serialNoDAO = Services.get(ISerialNoDAO.class);
 
+	private final Set<Integer> huIDsChanged = new HashSet<>();
+	private final Set<Integer> huIDsAdded = new HashSet<>();
+	private final Set<Integer> huIDsToRemove = new HashSet<>();
+	
 	public final WebuiHUTransformCommandResult action_CreateCUs_With_SerialNumbers(final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy, final List<String> availableSerialNumbers)
 	{
 		final HUEditorRow selectedCuRow = huEditorRowHierarchy.getCuRow();
 
-		final Set<Integer> huIDsChanged = new HashSet<>();
-		final Set<Integer> huIDsAdded = new HashSet<>();
+	
 
 		final int qtyCU = selectedCuRow.getQtyCU().intValueExact();
 		if (qtyCU == 1)
@@ -90,6 +94,7 @@ public class WEBUIHUCreationWithSerialNumberService
 
 		return WebuiHUTransformCommandResult.builder()
 				.huIdsChanged(huIDsChanged)
+				.huIdsToRemoveFromView(huIDsToRemove)
 				.huIdsToAddToView(huIDsAdded)
 				.build();
 	}
@@ -157,7 +162,7 @@ public class WEBUIHUCreationWithSerialNumberService
 
 			final int tuCapacity = calculateTUCapacity(parentHU);
 			numberOfCUsToCreate = Util.getMinimumOfThree(tuCapacity, maxCUsAllowedPerBatch, initialQtyCU);
-			
+
 			for (int i = 0; i < numberOfCUsToCreate; i++)
 			{
 				final List<I_M_HU> createdCUs = newHUTransformation().cuToExistingTU(huToSplit, BigDecimal.ONE, parentHU);
@@ -188,7 +193,23 @@ public class WEBUIHUCreationWithSerialNumberService
 
 		if (luRow != null)
 		{
-			moveTUToLU(newTU.getM_HU_ID(), luRow, tuRow);
+			final I_M_HU oldLU = luRow.getM_HU();
+
+			if (handlingUnitsBL.isDestroyed(oldLU))
+			{
+				final I_M_HU_PI_Item luPIItem = oldLU.getM_HU_LUTU_Configuration().getM_LU_HU_PI_Item();
+
+				final List<I_M_HU> tuToNewLUs = newHUTransformation().tuToNewLUs(newTU, BigDecimal.ONE, luPIItem, false);
+				
+				huIDsToRemove.add(oldLU.getM_HU_ID());
+				huIDsAdded.add(tuToNewLUs.get(0).getM_HU_ID());
+				
+			}
+			else
+			{
+
+				moveTUToLU(newTU.getM_HU_ID(), luRow, tuRow);
+			}
 		}
 
 		return newTU;
