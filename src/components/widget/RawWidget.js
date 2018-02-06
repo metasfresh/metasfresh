@@ -80,7 +80,8 @@ class RawWidget extends Component {
     handleBlur && handleBlur(this.willPatch(value));
 
     this.setState({
-      isEdited: false
+      isEdited: false,
+      cachedValue: undefined
     });
 
     listenOnKeysTrue && listenOnKeysTrue();
@@ -91,6 +92,7 @@ class RawWidget extends Component {
   willPatch = (value, valueTo) => {
     const { widgetData } = this.props;
     const { cachedValue } = this.state;
+
     return (
       JSON.stringify(widgetData[0].value) !== JSON.stringify(value) ||
       JSON.stringify(widgetData[0].valueTo) !== JSON.stringify(valueTo) ||
@@ -122,7 +124,7 @@ class RawWidget extends Component {
     // or cache is set and it is not equal value
     if ((isForce || this.willPatch(value, valueTo)) && handlePatch) {
       this.setState({
-        cachedValue: undefined
+        cachedValue: value
       });
       return handlePatch(property, value, id, valueTo);
     }
