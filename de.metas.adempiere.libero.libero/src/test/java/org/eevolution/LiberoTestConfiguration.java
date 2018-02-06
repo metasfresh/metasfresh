@@ -2,13 +2,12 @@ package org.eevolution;
 
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
-import org.eevolution.mrp.api.impl.MRPExecutor;
-import org.eevolution.mrp.api.impl.MockedMRPExecutor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+
+import de.metas.Profiles;
 
 /*
  * #%L
@@ -32,7 +31,7 @@ import org.springframework.context.annotation.Profile;
  * #L%
  */
 @Configuration
-@Profile("test")
+@Profile(Profiles.PROFILE_Test)
 //@ComponentScan not needed because the basic LiberoConfiguration already does it
 public class LiberoTestConfiguration
 {
@@ -41,17 +40,5 @@ public class LiberoTestConfiguration
 	public Adempiere adempiere(final ApplicationContext applicationContext)
 	{
 		return Env.getSingleAdempiereInstance(applicationContext);
-	}
-
-	/**
-	 * Create a {@link MockedMRPExecutor} if the test profile is active, then prefer this mocked MRP executor.
-	 *
-	 * @return
-	 */
-	@Bean
-	@Primary
-	public MRPExecutor mrpExecutor()
-	{
-		return new MockedMRPExecutor();
 	}
 }
