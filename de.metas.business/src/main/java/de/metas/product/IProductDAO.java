@@ -61,4 +61,9 @@ public interface IProductDAO extends ISingletonService
 	List<de.metas.product.model.I_M_Product> retrieveAllMappedProducts(I_M_Product product);
 
 	I_M_Product retrieveProductByValue(Properties ctx, String value);
+
+	/**
+	 * @return Products that don't have PP_ProductPlanning entries 
+	 */
+	List<I_M_Product> retrieveProductsWithNoProductPlanning();
 }

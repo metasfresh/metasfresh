@@ -39,8 +39,6 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_S_Resource;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.X_PP_Order_BOM;
-import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Product_Planning;
 
 /**
@@ -228,14 +226,6 @@ public class MRPTestDataSimple
 				.setDD_NetworkDistribution(ddNetwork)
 				.setDeliveryTime_Promised(1)
 				.build();
-
-		//
-		// Product Planning: Raw Materials
-		// => ignore NoProductPlanning errors
-		final MockedMRPExecutor mrpExecutor = helper.mrpExecutor;
-		mrpExecutor.createAllowMRPNodeRule()
-				.setM_Warehouse(warehouse_rawMaterials01)
-				.setMRPCode(MRPExecutor.MRP_ERROR_120_NoProductPlanning);
 
 		// mark it as called
 		_createStandardProductPlannings_Called = true;
