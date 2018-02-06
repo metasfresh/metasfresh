@@ -94,7 +94,7 @@ public class PriceListDAO implements IPriceListDAO
 				.iterator();
 	}
 
-	@Cached(cacheName = I_M_PriceList.Table_Name + "#by#M_PricingSystem_ID#C_Country_ID")
+	@Cached(cacheName = I_M_PriceList.Table_Name + "#by#M_PricingSystem_ID#C_Country_ID#IsSOPriceList")
 	public ImmutableList<I_M_PriceList> retrievePriceLists(
 			final @CacheCtx Properties ctx,
 			final int pricingSystemId,
