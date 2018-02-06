@@ -15,6 +15,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -139,7 +140,7 @@ public final class ViewRow implements IViewRow
 	{
 		return processed;
 	}
-
+	
 	@Override
 	public Map<String, Object> getFieldNameAndJsonValues()
 	{
@@ -312,7 +313,7 @@ public final class ViewRow implements IViewRow
 
 		public Builder putFieldValue(final String fieldName, final Object jsonValue)
 		{
-			if (jsonValue == null)
+			if (JSONNullValue.isNull(jsonValue))
 			{
 				values.remove(fieldName);
 			}

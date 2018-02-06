@@ -3,11 +3,13 @@ package de.metas.ui.web.view;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.util.NumberUtils;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -61,6 +63,15 @@ public interface IViewRow
 
 	//
 	// Fields
+	default Set<String> getFieldNames()
+	{
+		return ImmutableSet.<String> builder()
+				.addAll(getFieldNameAndJsonValues().keySet())
+				.addAll(getViewEditorRenderModeByFieldName().keySet())
+				.addAll(getWidgetTypesByFieldName().keySet())
+				.build();
+	}
+
 	/**
 	 * @return a map with an entry for each of this row's fields.<br>
 	 *         Where the row has <code>null</code> values, the respective entry's value is {@link #NULL_JSON_VALUE}.

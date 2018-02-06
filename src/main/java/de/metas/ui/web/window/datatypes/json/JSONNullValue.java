@@ -1,7 +1,5 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
-
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -38,12 +36,16 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel("null-value")
 @JsonSerialize(using = JSONNullValueSerializer.class)
-@SuppressWarnings("serial")
-public final class JSONNullValue implements Serializable
+public final class JSONNullValue
 {
 	public static final Object wrapIfNull(final Object value)
 	{
 		return value == null ? instance : value;
+	}
+
+	public static boolean isNull(final Object value)
+	{
+		return value == null && value instanceof JSONNullValue;
 	}
 
 	public static final transient JSONNullValue instance = new JSONNullValue();

@@ -57,7 +57,7 @@ public final class Values
 	/**
 	 * Convert value to JSON.
 	 *
-	 * @param value may be {@code null}. In that case, {@link JSONNullValue#instance} is returned.
+	 * @param value may be {@code null}. In that case, {@link JSONNullValue} is returned.
 	 * @param fallbackMapper mapper called when value could not be converted to JSON; takes as input the <code>value</code>
 	 * @return JSON value
 	 */
