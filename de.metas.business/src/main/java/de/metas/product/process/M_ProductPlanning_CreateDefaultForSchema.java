@@ -41,7 +41,7 @@ public class M_ProductPlanning_CreateDefaultForSchema extends JavaProcess
 		final I_M_Product_PlanningSchema productPlanningSchema = getRecord(I_M_Product_PlanningSchema.class);
 		Check.assumeNotNull(productPlanningSchema, "@NoSelection@");
 		
-		productPlanningSchemaBL.createDefaultProductPlanningsForSchema(productPlanningSchema);
+		productPlanningSchemaBL.createUpdateDefaultProductPlanningsForSchema(productPlanningSchema);
 
 
 		return MSG_OK;
