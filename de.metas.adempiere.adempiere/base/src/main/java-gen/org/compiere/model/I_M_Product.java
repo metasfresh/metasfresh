@@ -990,6 +990,29 @@ public interface I_M_Product
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set M_ProductPlanningSchema_Selector.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ProductPlanningSchema_Selector (java.lang.String M_ProductPlanningSchema_Selector);
+
+	/**
+	 * Get M_ProductPlanningSchema_Selector.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getM_ProductPlanningSchema_Selector();
+
+    /** Column definition for M_ProductPlanningSchema_Selector */
+    public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_M_ProductPlanningSchema_Selector = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "M_ProductPlanningSchema_Selector", null);
+    /** Column name M_ProductPlanningSchema_Selector */
+    public static final String COLUMNNAME_M_ProductPlanningSchema_Selector = "M_ProductPlanningSchema_Selector";
+
+	/**
 	 * Set Hersteller.
 	 * Hersteller des Produktes
 	 *

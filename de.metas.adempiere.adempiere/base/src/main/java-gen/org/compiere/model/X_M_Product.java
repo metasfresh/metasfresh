@@ -15,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -365151717L;
+	private static final long serialVersionUID = 799612071L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -936,6 +936,30 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * M_ProductPlanningSchema_Selector AD_Reference_ID=540829
+	 * Reference name: M_ProductPlanningSchema_Selector_List
+	 */
+	public static final int M_PRODUCTPLANNINGSCHEMA_SELECTOR_AD_Reference_ID=540829;
+	/** Normal = N */
+	public static final String M_PRODUCTPLANNINGSCHEMA_SELECTOR_Normal = "N";
+	/** Set M_ProductPlanningSchema_Selector.
+		@param M_ProductPlanningSchema_Selector M_ProductPlanningSchema_Selector	  */
+	@Override
+	public void setM_ProductPlanningSchema_Selector (java.lang.String M_ProductPlanningSchema_Selector)
+	{
+
+		set_Value (COLUMNNAME_M_ProductPlanningSchema_Selector, M_ProductPlanningSchema_Selector);
+	}
+
+	/** Get M_ProductPlanningSchema_Selector.
+		@return M_ProductPlanningSchema_Selector	  */
+	@Override
+	public java.lang.String getM_ProductPlanningSchema_Selector () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_M_ProductPlanningSchema_Selector);
 	}
 
 	/** Set Hersteller.

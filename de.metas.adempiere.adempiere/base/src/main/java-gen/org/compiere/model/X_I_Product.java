@@ -15,7 +15,7 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -380971178L;
+	private static final long serialVersionUID = -145461139L;
 
     /** Standard Constructor */
     public X_I_Product (Properties ctx, int I_Product_ID, String trxName)
@@ -699,6 +699,22 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 		return ii.intValue();
 	}
 
+	/** Set M_ProductPlanningSchema_Selector.
+		@param M_ProductPlanningSchema_Selector M_ProductPlanningSchema_Selector	  */
+	@Override
+	public void setM_ProductPlanningSchema_Selector (java.lang.String M_ProductPlanningSchema_Selector)
+	{
+		set_Value (COLUMNNAME_M_ProductPlanningSchema_Selector, M_ProductPlanningSchema_Selector);
+	}
+
+	/** Get M_ProductPlanningSchema_Selector.
+		@return M_ProductPlanningSchema_Selector	  */
+	@Override
+	public java.lang.String getM_ProductPlanningSchema_Selector () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_M_ProductPlanningSchema_Selector);
+	}
+
 	/** Set Hersteller.
 		@param Manufacturer 
 		Manufacturer of the Product
@@ -816,25 +832,6 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Package UOM Name.
-		@param Package_UOM_Name 
-		UOM of the package
-	  */
-	@Override
-	public void setPackage_UOM_Name (java.lang.String Package_UOM_Name)
-	{
-		set_Value (COLUMNNAME_Package_UOM_Name, Package_UOM_Name);
-	}
-
-	/** Get Package UOM Name.
-		@return UOM of the package
-	  */
-	@Override
-	public java.lang.String getPackage_UOM_Name () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Package_UOM_Name);
 	}
 
 	/** Set Package Size.
