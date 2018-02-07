@@ -90,8 +90,9 @@ FROM
 			i.IsSOTrx,
 			i.DateInvoiced,
 			i.DateAcct,
-			EXISTS (SELECT 0 FROM C_PaySelectionLine psl WHERE ps.docstatus IN ('CO','CL') AND psl.C_Invoice_ID = i.C_Invoice_ID AND psl.isActive = 'Y'
-					JOIN C_PaySelection ps ON psl.C_PaySelection_ID = ps.C_PaySelection_ID AND ps.isActive = 'Y') AS IsInPaySelection,
+			EXISTS (SELECT 0 FROM C_PaySelectionLine psl 
+					JOIN C_PaySelection ps ON psl.C_PaySelection_ID = ps.C_PaySelection_ID AND ps.isActive = 'Y'
+					WHERE ps.docstatus IN ('CO','CL') AND psl.C_Invoice_ID = i.C_Invoice_ID AND psl.isActive = 'Y') AS IsInPaySelection,
 			COALESCE ( p.NetDays, DaysBetween( ips.DueDate::timestamp with time zone, i.DateInvoiced::timestamp with time zone ) ) AS NetDays,
 			p.DiscountDays,
 			COALESCE( PaymentTermDueDate( p.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone ), ips.DueDate ) AS DueDate,
