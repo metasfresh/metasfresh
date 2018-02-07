@@ -15,7 +15,7 @@ UPDATE AD_SysConfig SET Value='N',Updated=TO_TIMESTAMP('2018-02-07 15:15:52','YY
 ;
 -- cleanup
 --
-delete from AD_Session WHERE EventChangeLog='I';
+delete from AD_ChangeLog WHERE EventChangeLog='I';
 
 --
 -- don't log AD_EventLog.EventData, because the column is larger than the respective AD_changeLog column
