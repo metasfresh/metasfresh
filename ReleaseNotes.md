@@ -21,7 +21,9 @@ Here come the actual release notes:
   * [#1559](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1559) Errors in the console when opening HU Editor
     * Fixes errors in console that popped up when opening the Handling Unit Editor.
   * [#1558](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1558) Dropdown fields not hidden when creating a new Business Partner
-    * Dixes the reamining dropdown in Purchase Order when calling the "New Businesspartner" action in context menu.
+    * Fixes the reamining dropdown in Purchase Order when calling the "New Businesspartner" action in context menu.
+  * [#1564](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1564) Some fields are not patched after you change them twice
+    * Fixes the multiple adjustment behavior of Text and numeric fields. now content is patched after each change.
 
 # metasfresh 5.43 (2018-06)
 **release for week 2018-06**
