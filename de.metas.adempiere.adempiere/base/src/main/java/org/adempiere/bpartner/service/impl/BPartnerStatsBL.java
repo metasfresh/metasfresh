@@ -54,7 +54,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		final I_C_BPartner partner = bpStatsDAO.retrieveC_BPartner(bpStats);
 
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner);
+		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID());
 
 		// Nothing to do
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
@@ -72,7 +72,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		}
 
 		// Above Watch Limit
-		BigDecimal watchAmt = creditLimit.multiply(getCreditWatchRatio(bpStats));
+		final BigDecimal watchAmt = creditLimit.multiply(getCreditWatchRatio(bpStats));
 		if (watchAmt.compareTo(bpStats.getTotalOpenBalance()) < 0)
 		{
 			return X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;

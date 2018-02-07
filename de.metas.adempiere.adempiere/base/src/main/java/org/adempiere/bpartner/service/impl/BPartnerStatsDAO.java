@@ -126,7 +126,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				totalOpenBalance = rs.getBigDecimal(2);
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql, sqlParams);
 		}
@@ -175,7 +175,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			}
 
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql, sqlParams);
 		}
@@ -200,7 +200,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		// Legacy sql
 
 		// AZ Goodwill -> BF2041226 : only count completed/closed docs.
-		String sql = "SELECT "
+		final String sql = "SELECT "
 				+ "COALESCE ((SELECT SUM(currencyBase(i.GrandTotal,i.C_Currency_ID,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)) FROM C_Invoice_v i "
 				+ "WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.IsSOTrx='Y' AND i.DocStatus IN ('CO','CL')),0) "
 				+ "FROM C_BPartner bp " + "WHERE C_BPartner_ID=?";
@@ -220,7 +220,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				actualLifeTimeValue = rs.getBigDecimal(1);
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql, sqlParams);
 		}
@@ -241,7 +241,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner partner = retrieveC_BPartner(bpStats);
 
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID());
 
 		final String initialCreditStatus = bpStats.getSOCreditStatus();
 
@@ -263,7 +263,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		else
 		{
 			// Above Watch Limit
-			BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
+			final BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
 
 			if (watchAmt.compareTo(bpStats.getTotalOpenBalance()) < 0)
 			{
