@@ -55,7 +55,7 @@ node('agent && linux')
 	{
 		// create our config instance to be used further on
 		final MvnConf mvnConf = new MvnConf(
-			'de.metas.parent/pom.xml', // pomFile
+			'pom.xml', // pomFile
 			MAVEN_SETTINGS, // settingsFile
 			"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
 			'https://repo.metasfresh.com' // mvnRepoBaseURL
@@ -93,16 +93,10 @@ node('agent && linux')
 				// From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is clearly overated
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
 
-				// deploy the de.metas.parent pom.xml to our repo. Other projects that are not build right now on this node will also need it. But don't build the modules that are declared in there
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode --non-recursive ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy";
-
- 				final MvnConf mvnReactorConf = mvnConf.withPomFile('de.metas.reactor/pom.xml');
-				echo "mvnReactorConf=${mvnReactorConf}"
-
 				// build and deploy
-				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-				sh "mvn --settings ${mvnReactorConf.settingsFile} --file ${mvnReactorConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnReactorConf.resolveParams} ${mvnReactorConf.deployParam} clean deploy";
+				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 				} // if(params.MF_SKIP_TO_DIST)
 			}
 			stage('Build metasfresh docker image(s)')
