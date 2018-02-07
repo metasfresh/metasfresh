@@ -17,13 +17,11 @@ Here come the actual release notes:
 * metasfresh
 
 ## Fixes
-*metasfresh-webui-frontend
+* metasfresh-webui-frontend
   * [#1559](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1559) Errors in the console when opening HU Editor
     * Fixes errors in console that popped up when opening the Handling Unit Editor.
   * [#1558](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1558) Dropdown fields not hidden when creating a new Business Partner
     * Fixes the reamining dropdown in Purchase Order when calling the "New Businesspartner" action in context menu.
-  * [#1564](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1564) Some fields are not patched after you change them twice
-    * Fixes the multiple adjustment behavior of Text and numeric fields. now content is patched after each change.
 
 # metasfresh 5.43 (2018-06)
 **release for week 2018-06**
@@ -64,10 +62,6 @@ Here come the actual release notes:
   * [#3402](https://github.com/metasfresh/metasfresh/issues/3402) Can't credit memo a partially paid invoice
     * Improvement of the status Handling after unclosing Manufacturing Orders.
 
-* metasfresh-webui-frontend
-  * [#1528](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1528) Added subrow is not shown in the frontend
-    * Improved response from MSV3 request so that purchase candidate row is shown and user can directly start editing.
-
 * metasfresh-webui-api
   * [#617](https://github.com/metasfresh/metasfresh-webui-api/issues/617) Cache is not invalidated on country change
     * Fixes a Bug in Cache Invalidation for Country changes and Pricing.
@@ -81,11 +75,15 @@ Here come the actual release notes:
     * Fixes a NPE in multi (>2) Column Layout Windows.
 
 * metasfresh-webui-frontend
+  * [#1528](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1528) Added subrow is not shown in the frontend
+    * Improved response from MSV3 request so that purchase candidate row is shown and user can directly start editing.
   * [#1538](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1538) Date Fields not patched
     * Fixes an error with Date Fields, now patching them after changes again.
   * [#1543](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1543) Sales Order window Purchase Order modal overlay broken again
     * Fixes the Purchase Order modal overlay functionaluity in Sales Order.
-
+  * [#1564](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1564) Some fields are not patched after you change them twice
+    * Fixes the multiple adjustment behavior of Text and numeric fields. now content is patched after each change.
+    
 # metasfresh 5.42 (2018-05)
 **release for week 2018-05**
 
