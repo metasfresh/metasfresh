@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
@@ -35,6 +36,7 @@ import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -42,6 +44,7 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.apache.commons.collections4.comparators.ComparatorChain;
+import org.compiere.Adempiere;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -1193,54 +1196,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), getC_DocType_ID(), getAD_Org_ID());
 
 		// Credit Check
-		if (isSOTrx() && !isReversal())
-		{
-			final I_C_Order order = getC_Order();
-			if (order != null && order.getC_Order_ID() > 0 && MDocType.DOCSUBTYPE_PrepayOrder.equals(order.getC_DocType().getDocSubType())
-					&& !MSysConfig.getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, getAD_Client_ID(), getAD_Org_ID()))
-			{
-				// ignore -- don't validate Prepay Orders depending on sysconfig parameter
-			}
-			else
-			{
-				final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
-				final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
-
-				final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-
-				final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
-
-				final String soCreditStatus = stats.getSOCreditStatus();
-
-				final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
-
-				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
-				{
-					m_processMsg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
-							+ totalOpenBalance
-							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
-					return IDocument.STATUS_Invalid;
-				}
-				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
-				{
-					m_processMsg = "@BPartnerCreditHold@ - @TotalOpenBalance@="
-							+ totalOpenBalance
-							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
-					return IDocument.STATUS_Invalid;
-				}
-
-				final BigDecimal notInvoicedAmt = MBPartner.getNotInvoicedAmt(getC_BPartner_ID());
-				final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, notInvoicedAmt);
-				if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
-				{
-					m_processMsg = "@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
-							+ totalOpenBalance + ", @NotInvoicedAmt@=" + notInvoicedAmt
-							+ ", @SO_CreditLimit@=" + partner.getSO_CreditLimit();
-					return IDocument.STATUS_Invalid;
-				}
-
-			}
-		}
+		checkCreditLimit();
 
 		// Lines
 		final MInOutLine[] lines = getLines(true);
@@ -1292,6 +1248,67 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 		return IDocument.STATUS_InProgress;
 	} // prepareIt
+
+
+	private void checkCreditLimit()
+	{
+		if (!isCheckCreditLimitNeeded())
+		{
+			return;
+		}
+
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+
+		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
+		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+		final String soCreditStatus = stats.getSOCreditStatus();
+		final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
+
+		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID());
+
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
+		{
+			throw new AdempiereException("@BPartnerCreditStop@ - @TotalOpenBalance@="
+					+ totalOpenBalance
+					+ ", @SO_CreditLimit@=" + creditLimit);
+		}
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
+		{
+			throw new AdempiereException("@BPartnerCreditHold@ - @TotalOpenBalance@="
+					+ totalOpenBalance
+					+ ", @SO_CreditLimit@=" + creditLimit);
+		}
+
+		final BigDecimal notInvoicedAmt = MBPartner.getNotInvoicedAmt(getC_BPartner_ID());
+		final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, notInvoicedAmt);
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
+		{
+			throw new AdempiereException("@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
+					+ totalOpenBalance + ", @NotInvoicedAmt@=" + notInvoicedAmt
+					+ ", @SO_CreditLimit@=" + creditLimit);
+		}
+	}
+
+	private boolean isCheckCreditLimitNeeded()
+	{
+
+		if (!(isSOTrx() && !isReversal()))
+		{
+			return false;
+		}
+
+		final I_C_Order order = getC_Order();
+		if (order != null && order.getC_Order_ID() > 0 && MDocType.DOCSUBTYPE_PrepayOrder.equals(order.getC_DocType().getDocSubType())
+				&& !Services.get(ISysConfigBL.class).getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, getAD_Client_ID(), getAD_Org_ID()))
+		{
+			// ignore -- don't validate Prepay Orders depending on sysconfig parameter
+			return false;
+		}
+
+		return true;
+	}
 
 	/**
 	 * Approve Document
