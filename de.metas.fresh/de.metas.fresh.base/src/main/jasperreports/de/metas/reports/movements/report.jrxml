@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-11-01T18:20:55 -->
+<!-- 2018-02-06T17:38:43 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/movements/report" uuid="8cf9089d-3592-487c-893a-f68cf1f92659">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
@@ -200,7 +200,7 @@
 	<title>
 		<band height="79" splitType="Stretch">
 			<textField pattern="dd.MM.yyyy">
-				<reportElement x="88" y="26" width="56" height="10" uuid="daf7846a-bccb-41ac-84e9-86cd4bf8c4b5"/>
+				<reportElement x="92" y="26" width="56" height="10" uuid="daf7846a-bccb-41ac-84e9-86cd4bf8c4b5"/>
 				<textElement>
 					<font size="7" isBold="false"/>
 				</textElement>
@@ -225,7 +225,7 @@ $R{activityTo} + " "+ $F{param_activity_to_value} + " " + $F{param_activity_to_n
 : $R{activityTo} +" "+ $R{all}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy">
-				<reportElement x="42" y="26" width="40" height="10" uuid="daf7846a-bccb-41ac-84e9-86cd4bf8c4b5">
+				<reportElement x="42" y="26" width="43" height="10" uuid="daf7846a-bccb-41ac-84e9-86cd4bf8c4b5">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
@@ -234,7 +234,7 @@ $R{activityTo} + " "+ $F{param_activity_to_value} + " " + $F{param_activity_to_n
 				<textFieldExpression><![CDATA[$F{periodstartdate}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="81" y="26" width="8" height="10" uuid="4dadacb5-0717-49f9-a360-b1c2875d37ee"/>
+				<reportElement x="85" y="26" width="8" height="10" uuid="4dadacb5-0717-49f9-a360-b1c2875d37ee"/>
 				<textElement>
 					<font size="7" isBold="false"/>
 				</textElement>

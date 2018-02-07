@@ -55,10 +55,6 @@ public class PPProductPlanningBuilder
 	// DRP
 	private I_DD_NetworkDistribution _ddNetwork;
 	private boolean _requireDRP;
-	// Order Policy
-	private String _orderPolicy = X_PP_Product_Planning.ORDER_POLICY_Lot_For_Lot; // default: LFL
-	private int _orderPeriod = 1; // default: 1=same day, applies only in case of POQ order policy
-	private boolean _poqAggregateOnBPartnerLevel = false;
 
 	public PPProductPlanningBuilder setContext(IContextAware context)
 	{
@@ -101,20 +97,11 @@ public class PPProductPlanningBuilder
 		// Common settings
 		productPlanning.setIsActive(true);
 		productPlanning.setIsCreatePlan(true);
-		productPlanning.setTimeFence(BigDecimal.ZERO);
-		productPlanning.setSafetyStock(BigDecimal.ZERO);
+
 		productPlanning.setYield(100);
-		productPlanning.setOrder_Min(BigDecimal.ZERO);
-		productPlanning.setOrder_Max(BigDecimal.ZERO);
-		productPlanning.setOrder_Pack(BigDecimal.ZERO);
+
 		productPlanning.setDeliveryTime_Promised(_deliveryTime);
 		productPlanning.setPlanner(null);
-
-		//
-		// Order Policy
-		productPlanning.setOrder_Policy(_orderPolicy);
-		productPlanning.setOrder_Period(BigDecimal.valueOf(_orderPeriod));
-		productPlanning.setPP_POQ_AggregateOnBPartnerLevel(_poqAggregateOnBPartnerLevel);
 
 		//
 		// Purchasing
@@ -201,24 +188,6 @@ public class PPProductPlanningBuilder
 	public PPProductPlanningBuilder setDD_NetworkDistribution(final I_DD_NetworkDistribution ddNetwork)
 	{
 		this._ddNetwork = ddNetwork;
-		return this;
-	}
-
-	public PPProductPlanningBuilder setOrderPolicy(final String orderPolicy)
-	{
-		this._orderPolicy = orderPolicy;
-		return this;
-	}
-
-	public PPProductPlanningBuilder setOrderPeriod(final int orderPeriod)
-	{
-		this._orderPeriod = orderPeriod;
-		return this;
-	}
-
-	public PPProductPlanningBuilder setPOQAggregateOnBPartnerLevel(final boolean poqAggregateOnBPartnerLevel)
-	{
-		this._poqAggregateOnBPartnerLevel = poqAggregateOnBPartnerLevel;
 		return this;
 	}
 }

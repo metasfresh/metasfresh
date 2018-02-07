@@ -297,6 +297,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 	private void setC_PaymentTerm(final I_C_Invoice_Candidate ic)
 	{
+		if (!ic.isSOTrx())
+		{
+			return;
+		}
+
 		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
 
 		if (orderLine.getC_PaymentTerm_Override() == null)

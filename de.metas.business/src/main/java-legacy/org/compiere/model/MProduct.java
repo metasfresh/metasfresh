@@ -122,6 +122,7 @@ public class MProduct extends X_M_Product
 		setDescriptionURL(impP.getDescriptionURL());
 		setIsSold(impP.isSold());
 		setIsStocked(impP.isStocked());
+		setM_ProductPlanningSchema_Selector(impP.getM_ProductPlanningSchema_Selector()); // #3406
 	}	// MProduct
 
 
