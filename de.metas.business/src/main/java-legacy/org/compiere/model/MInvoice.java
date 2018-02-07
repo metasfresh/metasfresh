@@ -257,25 +257,26 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	 * @param invoiceDate date or null
 	 */
 	@Deprecated
-	public MInvoice(final MOrder order, int C_DocTypeTarget_ID, final Timestamp invoiceDate)
+	public MInvoice(final MOrder order, final int C_DocTypeTarget_ID, final Timestamp invoiceDate)
 	{
 		this(order.getCtx(), 0, order.get_TrxName());
 		setClientOrg(order);
 		setOrder(order);	// set base settings
 		//
-		if (C_DocTypeTarget_ID <= 0)
+		int docTypeId = C_DocTypeTarget_ID;
+		if (docTypeId <= 0)
 		{
 			final MDocType odt = MDocType.get(order.getCtx(), order.getC_DocType_ID());
 			if (odt != null)
 			{
-				C_DocTypeTarget_ID = odt.getC_DocTypeInvoice_ID();
-				if (C_DocTypeTarget_ID <= 0)
+				docTypeId = odt.getC_DocTypeInvoice_ID();
+				if (docTypeId <= 0)
 				{
 					throw new AdempiereException("@NotFound@ @C_DocTypeInvoice_ID@ - @C_DocType_ID@:" + odt.get_Translation(MDocType.COLUMNNAME_Name));
 				}
 			}
 		}
-		Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(this, C_DocTypeTarget_ID);
+		Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(this, docTypeId);
 		if (invoiceDate != null)
 		{
 			setDateInvoiced(invoiceDate);
@@ -397,6 +398,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		super.setClientOrg(AD_Client_ID, AD_Org_ID);
 	}	// setClientOrg
 
+
 	/**
 	 * Set Business Partner Defaults & Details
 	 *
@@ -411,35 +413,20 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		setC_BPartner_ID(bp.getC_BPartner_ID());
 		// Set Defaults
-		int ii = 0;
-		if (isSOTrx())
+		final int paymentTermID = isSOTrx() ? bp.getC_PaymentTerm_ID() : bp.getPO_PaymentTerm_ID();
+		if (paymentTermID != 0)
 		{
-			ii = bp.getC_PaymentTerm_ID();
-		}
-		else
-		{
-			ii = bp.getPO_PaymentTerm_ID();
-		}
-		if (ii != 0)
-		{
-			setC_PaymentTerm_ID(ii);
+			setC_PaymentTerm_ID(paymentTermID);
 		}
 		//
-		if (isSOTrx())
+		final int priceLisId = isSOTrx() ? bp.getM_PriceList_ID() : bp.getPO_PriceList_ID();
+		if (priceLisId != 0)
 		{
-			ii = bp.getM_PriceList_ID();
-		}
-		else
-		{
-			ii = bp.getPO_PriceList_ID();
-		}
-		if (ii != 0)
-		{
-			setM_PriceList_ID(ii);
+			setM_PriceList_ID(priceLisId);
 		}
 		//
 		final String ss = bp.getPaymentRule();
-		if (ss != null)
+		if (!Check.isEmpty(ss, true))
 		{
 			setPaymentRule(ss);
 		}

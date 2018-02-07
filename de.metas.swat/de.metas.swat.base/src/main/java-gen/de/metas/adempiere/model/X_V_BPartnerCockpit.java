@@ -17,6 +17,8 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.adempiere.model;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -39,7 +41,6 @@ package de.metas.adempiere.model;
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -776,7 +777,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set creditused.
 		@param creditused creditused	  */
 	@Override
-	public void setcreditused (final java.math.BigDecimal creditused)
+	public void setcreditused (final BigDecimal creditused)
 	{
 		set_ValueNoCheck (COLUMNNAME_creditused, creditused);
 	}
@@ -784,7 +785,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get creditused.
 		@return creditused	  */
 	@Override
-	public java.math.BigDecimal getcreditused ()
+	public BigDecimal getcreditused ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_creditused);
 		if (bd == null)
@@ -883,7 +884,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set Ebenenbonus Punkte.
 		@param ebenenbonus Ebenenbonus Punkte	  */
 	@Override
-	public void setebenenbonus (final java.math.BigDecimal ebenenbonus)
+	public void setebenenbonus (final BigDecimal ebenenbonus)
 	{
 		set_ValueNoCheck (COLUMNNAME_ebenenbonus, ebenenbonus);
 	}
@@ -891,7 +892,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get Ebenenbonus Punkte.
 		@return Ebenenbonus Punkte	  */
 	@Override
-	public java.math.BigDecimal getebenenbonus ()
+	public BigDecimal getebenenbonus ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ebenenbonus);
 		if (bd == null)
@@ -1361,7 +1362,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set Leistungsbonus Punkte.
 		@param leistungsbonus Leistungsbonus Punkte	  */
 	@Override
-	public void setleistungsbonus (final java.math.BigDecimal leistungsbonus)
+	public void setleistungsbonus (final BigDecimal leistungsbonus)
 	{
 		set_ValueNoCheck (COLUMNNAME_leistungsbonus, leistungsbonus);
 	}
@@ -1369,7 +1370,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get Leistungsbonus Punkte.
 		@return Leistungsbonus Punkte	  */
 	@Override
-	public java.math.BigDecimal getleistungsbonus ()
+	public BigDecimal getleistungsbonus ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_leistungsbonus);
 		if (bd == null)
@@ -1382,7 +1383,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set lifetimevalue.
 		@param lifetimevalue lifetimevalue	  */
 	@Override
-	public void setlifetimevalue (final java.math.BigDecimal lifetimevalue)
+	public void setlifetimevalue (final BigDecimal lifetimevalue)
 	{
 		set_ValueNoCheck (COLUMNNAME_lifetimevalue, lifetimevalue);
 	}
@@ -1390,7 +1391,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get lifetimevalue.
 		@return lifetimevalue	  */
 	@Override
-	public java.math.BigDecimal getlifetimevalue ()
+	public BigDecimal getlifetimevalue ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_lifetimevalue);
 		if (bd == null)
@@ -1495,7 +1496,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		Open item amount
 	  */
 	@Override
-	public void setOpenAmt (final java.math.BigDecimal OpenAmt)
+	public void setOpenAmt (final BigDecimal OpenAmt)
 	{
 		set_ValueNoCheck (COLUMNNAME_OpenAmt, OpenAmt);
 	}
@@ -1504,7 +1505,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		@return Open item amount
 	  */
 	@Override
-	public java.math.BigDecimal getOpenAmt ()
+	public BigDecimal getOpenAmt ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OpenAmt);
 		if (bd == null)
@@ -1590,7 +1591,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenued30.
 		@param revenued30 revenued30	  */
 	@Override
-	public void setrevenued30 (final java.math.BigDecimal revenued30)
+	public void setrevenued30 (final BigDecimal revenued30)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenued30, revenued30);
 	}
@@ -1598,7 +1599,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenued30.
 		@return revenued30	  */
 	@Override
-	public java.math.BigDecimal getrevenued30 ()
+	public BigDecimal getrevenued30 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenued30);
 		if (bd == null)
@@ -1611,7 +1612,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuem0.
 		@param revenuem0 revenuem0	  */
 	@Override
-	public void setrevenuem0 (final java.math.BigDecimal revenuem0)
+	public void setrevenuem0 (final BigDecimal revenuem0)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuem0, revenuem0);
 	}
@@ -1619,7 +1620,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuem0.
 		@return revenuem0	  */
 	@Override
-	public java.math.BigDecimal getrevenuem0 ()
+	public BigDecimal getrevenuem0 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem0);
 		if (bd == null)
@@ -1632,7 +1633,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuem1.
 		@param revenuem1 revenuem1	  */
 	@Override
-	public void setrevenuem1 (final java.math.BigDecimal revenuem1)
+	public void setrevenuem1 (final BigDecimal revenuem1)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuem1, revenuem1);
 	}
@@ -1640,7 +1641,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuem1.
 		@return revenuem1	  */
 	@Override
-	public java.math.BigDecimal getrevenuem1 ()
+	public BigDecimal getrevenuem1 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem1);
 		if (bd == null)
@@ -1653,7 +1654,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuem10.
 		@param revenuem10 revenuem10	  */
 	@Override
-	public void setrevenuem10 (final java.math.BigDecimal revenuem10)
+	public void setrevenuem10 (final BigDecimal revenuem10)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuem10, revenuem10);
 	}
@@ -1661,7 +1662,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuem10.
 		@return revenuem10	  */
 	@Override
-	public java.math.BigDecimal getrevenuem10 ()
+	public BigDecimal getrevenuem10 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem10);
 		if (bd == null)
@@ -1674,7 +1675,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuem11.
 		@param revenuem11 revenuem11	  */
 	@Override
-	public void setrevenuem11 (final java.math.BigDecimal revenuem11)
+	public void setrevenuem11 (final BigDecimal revenuem11)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuem11, revenuem11);
 	}
@@ -1682,7 +1683,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuem11.
 		@return revenuem11	  */
 	@Override
-	public java.math.BigDecimal getrevenuem11 ()
+	public BigDecimal getrevenuem11 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem11);
 		if (bd == null)
@@ -1695,7 +1696,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuem12.
 		@param revenuem12 revenuem12	  */
 	@Override
-	public void setrevenuem12 (final java.math.BigDecimal revenuem12)
+	public void setrevenuem12 (final BigDecimal revenuem12)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuem12, revenuem12);
 	}
@@ -1703,7 +1704,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuem12.
 		@return revenuem12	  */
 	@Override
-	public java.math.BigDecimal getrevenuem12 ()
+	public BigDecimal getrevenuem12 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem12);
 		if (bd == null)
@@ -1716,7 +1717,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuem2.
 		@param revenuem2 revenuem2	  */
 	@Override
-	public void setrevenuem2 (final java.math.BigDecimal revenuem2)
+	public void setrevenuem2 (final BigDecimal revenuem2)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuem2, revenuem2);
 	}
@@ -1724,7 +1725,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuem2.
 		@return revenuem2	  */
 	@Override
-	public java.math.BigDecimal getrevenuem2 ()
+	public BigDecimal getrevenuem2 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem2);
 		if (bd == null)
@@ -1737,7 +1738,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuem3.
 		@param revenuem3 revenuem3	  */
 	@Override
-	public void setrevenuem3 (final java.math.BigDecimal revenuem3)
+	public void setrevenuem3 (final BigDecimal revenuem3)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuem3, revenuem3);
 	}
@@ -1745,7 +1746,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuem3.
 		@return revenuem3	  */
 	@Override
-	public java.math.BigDecimal getrevenuem3 ()
+	public BigDecimal getrevenuem3 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem3);
 		if (bd == null)
@@ -1758,7 +1759,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuem4.
 		@param revenuem4 revenuem4	  */
 	@Override
-	public void setrevenuem4 (final java.math.BigDecimal revenuem4)
+	public void setrevenuem4 (final BigDecimal revenuem4)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuem4, revenuem4);
 	}
@@ -1766,7 +1767,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuem4.
 		@return revenuem4	  */
 	@Override
-	public java.math.BigDecimal getrevenuem4 ()
+	public BigDecimal getrevenuem4 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem4);
 		if (bd == null)
@@ -1779,7 +1780,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuem5.
 		@param revenuem5 revenuem5	  */
 	@Override
-	public void setrevenuem5 (final java.math.BigDecimal revenuem5)
+	public void setrevenuem5 (final BigDecimal revenuem5)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuem5, revenuem5);
 	}
@@ -1787,7 +1788,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuem5.
 		@return revenuem5	  */
 	@Override
-	public java.math.BigDecimal getrevenuem5 ()
+	public BigDecimal getrevenuem5 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem5);
 		if (bd == null)
@@ -1800,7 +1801,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuem6.
 		@param revenuem6 revenuem6	  */
 	@Override
-	public void setrevenuem6 (final java.math.BigDecimal revenuem6)
+	public void setrevenuem6 (final BigDecimal revenuem6)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuem6, revenuem6);
 	}
@@ -1808,7 +1809,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuem6.
 		@return revenuem6	  */
 	@Override
-	public java.math.BigDecimal getrevenuem6 ()
+	public BigDecimal getrevenuem6 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem6);
 		if (bd == null)
@@ -1821,7 +1822,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuem7.
 		@param revenuem7 revenuem7	  */
 	@Override
-	public void setrevenuem7 (final java.math.BigDecimal revenuem7)
+	public void setrevenuem7 (final BigDecimal revenuem7)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuem7, revenuem7);
 	}
@@ -1829,7 +1830,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuem7.
 		@return revenuem7	  */
 	@Override
-	public java.math.BigDecimal getrevenuem7 ()
+	public BigDecimal getrevenuem7 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem7);
 		if (bd == null)
@@ -1842,7 +1843,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuem8.
 		@param revenuem8 revenuem8	  */
 	@Override
-	public void setrevenuem8 (final java.math.BigDecimal revenuem8)
+	public void setrevenuem8 (final BigDecimal revenuem8)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuem8, revenuem8);
 	}
@@ -1850,7 +1851,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuem8.
 		@return revenuem8	  */
 	@Override
-	public java.math.BigDecimal getrevenuem8 ()
+	public BigDecimal getrevenuem8 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem8);
 		if (bd == null)
@@ -1863,7 +1864,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuem9.
 		@param revenuem9 revenuem9	  */
 	@Override
-	public void setrevenuem9 (final java.math.BigDecimal revenuem9)
+	public void setrevenuem9 (final BigDecimal revenuem9)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuem9, revenuem9);
 	}
@@ -1871,7 +1872,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuem9.
 		@return revenuem9	  */
 	@Override
-	public java.math.BigDecimal getrevenuem9 ()
+	public BigDecimal getrevenuem9 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem9);
 		if (bd == null)
@@ -1884,7 +1885,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set Umsatz 12 Monate.
 		@param RevenueOneYear Umsatz 12 Monate	  */
 	@Override
-	public void setRevenueOneYear (final java.math.BigDecimal RevenueOneYear)
+	public void setRevenueOneYear (final BigDecimal RevenueOneYear)
 	{
 		set_Value (COLUMNNAME_RevenueOneYear, RevenueOneYear);
 	}
@@ -1892,7 +1893,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get Umsatz 12 Monate.
 		@return Umsatz 12 Monate	  */
 	@Override
-	public java.math.BigDecimal getRevenueOneYear ()
+	public BigDecimal getRevenueOneYear ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RevenueOneYear);
 		if (bd == null)
@@ -1905,7 +1906,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenueq0.
 		@param revenueq0 revenueq0	  */
 	@Override
-	public void setrevenueq0 (final java.math.BigDecimal revenueq0)
+	public void setrevenueq0 (final BigDecimal revenueq0)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenueq0, revenueq0);
 	}
@@ -1913,7 +1914,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenueq0.
 		@return revenueq0	  */
 	@Override
-	public java.math.BigDecimal getrevenueq0 ()
+	public BigDecimal getrevenueq0 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenueq0);
 		if (bd == null)
@@ -1926,7 +1927,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenueq1.
 		@param revenueq1 revenueq1	  */
 	@Override
-	public void setrevenueq1 (final java.math.BigDecimal revenueq1)
+	public void setrevenueq1 (final BigDecimal revenueq1)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenueq1, revenueq1);
 	}
@@ -1934,7 +1935,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenueq1.
 		@return revenueq1	  */
 	@Override
-	public java.math.BigDecimal getrevenueq1 ()
+	public BigDecimal getrevenueq1 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenueq1);
 		if (bd == null)
@@ -1947,7 +1948,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenueq2.
 		@param revenueq2 revenueq2	  */
 	@Override
-	public void setrevenueq2 (final java.math.BigDecimal revenueq2)
+	public void setrevenueq2 (final BigDecimal revenueq2)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenueq2, revenueq2);
 	}
@@ -1955,7 +1956,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenueq2.
 		@return revenueq2	  */
 	@Override
-	public java.math.BigDecimal getrevenueq2 ()
+	public BigDecimal getrevenueq2 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenueq2);
 		if (bd == null)
@@ -1968,7 +1969,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenueq3.
 		@param revenueq3 revenueq3	  */
 	@Override
-	public void setrevenueq3 (final java.math.BigDecimal revenueq3)
+	public void setrevenueq3 (final BigDecimal revenueq3)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenueq3, revenueq3);
 	}
@@ -1976,7 +1977,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenueq3.
 		@return revenueq3	  */
 	@Override
-	public java.math.BigDecimal getrevenueq3 ()
+	public BigDecimal getrevenueq3 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenueq3);
 		if (bd == null)
@@ -1989,7 +1990,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenueq4.
 		@param revenueq4 revenueq4	  */
 	@Override
-	public void setrevenueq4 (final java.math.BigDecimal revenueq4)
+	public void setrevenueq4 (final BigDecimal revenueq4)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenueq4, revenueq4);
 	}
@@ -1997,7 +1998,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenueq4.
 		@return revenueq4	  */
 	@Override
-	public java.math.BigDecimal getrevenueq4 ()
+	public BigDecimal getrevenueq4 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenueq4);
 		if (bd == null)
@@ -2010,7 +2011,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuey0.
 		@param revenuey0 revenuey0	  */
 	@Override
-	public void setrevenuey0 (final java.math.BigDecimal revenuey0)
+	public void setrevenuey0 (final BigDecimal revenuey0)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuey0, revenuey0);
 	}
@@ -2018,7 +2019,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuey0.
 		@return revenuey0	  */
 	@Override
-	public java.math.BigDecimal getrevenuey0 ()
+	public BigDecimal getrevenuey0 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuey0);
 		if (bd == null)
@@ -2031,7 +2032,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuey1.
 		@param revenuey1 revenuey1	  */
 	@Override
-	public void setrevenuey1 (final java.math.BigDecimal revenuey1)
+	public void setrevenuey1 (final BigDecimal revenuey1)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuey1, revenuey1);
 	}
@@ -2039,7 +2040,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuey1.
 		@return revenuey1	  */
 	@Override
-	public java.math.BigDecimal getrevenuey1 ()
+	public BigDecimal getrevenuey1 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuey1);
 		if (bd == null)
@@ -2052,7 +2053,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuey2.
 		@param revenuey2 revenuey2	  */
 	@Override
-	public void setrevenuey2 (final java.math.BigDecimal revenuey2)
+	public void setrevenuey2 (final BigDecimal revenuey2)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuey2, revenuey2);
 	}
@@ -2060,7 +2061,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuey2.
 		@return revenuey2	  */
 	@Override
-	public java.math.BigDecimal getrevenuey2 ()
+	public BigDecimal getrevenuey2 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuey2);
 		if (bd == null)
@@ -2073,7 +2074,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuey3.
 		@param revenuey3 revenuey3	  */
 	@Override
-	public void setrevenuey3 (final java.math.BigDecimal revenuey3)
+	public void setrevenuey3 (final BigDecimal revenuey3)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuey3, revenuey3);
 	}
@@ -2081,7 +2082,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuey3.
 		@return revenuey3	  */
 	@Override
-	public java.math.BigDecimal getrevenuey3 ()
+	public BigDecimal getrevenuey3 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuey3);
 		if (bd == null)
@@ -2094,7 +2095,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuey4.
 		@param revenuey4 revenuey4	  */
 	@Override
-	public void setrevenuey4 (final java.math.BigDecimal revenuey4)
+	public void setrevenuey4 (final BigDecimal revenuey4)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuey4, revenuey4);
 	}
@@ -2102,7 +2103,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuey4.
 		@return revenuey4	  */
 	@Override
-	public java.math.BigDecimal getrevenuey4 ()
+	public BigDecimal getrevenuey4 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuey4);
 		if (bd == null)
@@ -2115,7 +2116,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Set revenuey5.
 		@param revenuey5 revenuey5	  */
 	@Override
-	public void setrevenuey5 (final java.math.BigDecimal revenuey5)
+	public void setrevenuey5 (final BigDecimal revenuey5)
 	{
 		set_ValueNoCheck (COLUMNNAME_revenuey5, revenuey5);
 	}
@@ -2123,7 +2124,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 	/** Get revenuey5.
 		@return revenuey5	  */
 	@Override
-	public java.math.BigDecimal getrevenuey5 ()
+	public BigDecimal getrevenuey5 ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuey5);
 		if (bd == null)
@@ -2196,7 +2197,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		Gegenwärtiger Aussenstand
 	  */
 	@Override
-	public void setSO_CreditUsed (final java.math.BigDecimal SO_CreditUsed)
+	public void setSO_CreditUsed (final BigDecimal SO_CreditUsed)
 	{
 		set_ValueNoCheck (COLUMNNAME_SO_CreditUsed, SO_CreditUsed);
 	}
@@ -2205,7 +2206,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		@return Gegenwärtiger Aussenstand
 	  */
 	@Override
-	public java.math.BigDecimal getSO_CreditUsed ()
+	public BigDecimal getSO_CreditUsed ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SO_CreditUsed);
 		if (bd == null)
@@ -2292,7 +2293,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		Gesamt der offenen Beträge in primärer Buchführungswährung
 	  */
 	@Override
-	public void setTotalOpenBalance (final java.math.BigDecimal TotalOpenBalance)
+	public void setTotalOpenBalance (final BigDecimal TotalOpenBalance)
 	{
 		set_Value (COLUMNNAME_TotalOpenBalance, TotalOpenBalance);
 	}
@@ -2301,7 +2302,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		@return Gesamt der offenen Beträge in primärer Buchführungswährung
 	  */
 	@Override
-	public java.math.BigDecimal getTotalOpenBalance ()
+	public BigDecimal getTotalOpenBalance ()
 	{
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalOpenBalance);
 		if (bd == null)

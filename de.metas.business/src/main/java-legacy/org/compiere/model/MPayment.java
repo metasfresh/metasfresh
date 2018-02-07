@@ -1161,13 +1161,10 @@ public final class MPayment extends X_C_Payment
 	 * @param C_Currency_ID currency
 	 * @param payAmt amount
 	 */
-	public void setAmount(int C_Currency_ID, final BigDecimal payAmt)
+	public void setAmount(final int C_Currency_ID, final BigDecimal payAmt)
 	{
-		if (C_Currency_ID == 0)
-		{
-			C_Currency_ID = Services.get(ICurrencyBL.class).getBaseCurrency(getCtx(), getAD_Client_ID(), getAD_Org_ID()).getC_Currency_ID();
-		}
-		setC_Currency_ID(C_Currency_ID);
+		final int currencyId =  C_Currency_ID == 0 ? Services.get(ICurrencyBL.class).getBaseCurrency(getCtx(), getAD_Client_ID(), getAD_Org_ID()).getC_Currency_ID() : C_Currency_ID;
+		setC_Currency_ID(currencyId);
 		setPayAmt(payAmt);
 	}   // setAmount
 

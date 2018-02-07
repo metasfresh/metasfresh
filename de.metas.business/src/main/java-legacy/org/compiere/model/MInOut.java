@@ -416,7 +416,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param movementDate optional movement date (default today)
 	 * @param M_Warehouse_ID warehouse
 	 */
-	public MInOut(final MInvoice invoice, int C_DocTypeShipment_ID, final Timestamp movementDate, final int M_Warehouse_ID)
+	public MInOut(final MInvoice invoice, final int C_DocTypeShipment_ID, final Timestamp movementDate, final int M_Warehouse_ID)
 	{
 		this(invoice.getCtx(), 0, invoice.get_TrxName());
 		setClientOrg(invoice);
@@ -432,15 +432,16 @@ public class MInOut extends X_M_InOut implements IDocument
 		{
 			order = new MOrder(invoice.getCtx(), invoice.getC_Order_ID(), invoice.get_TrxName());
 		}
-		if (C_DocTypeShipment_ID == 0 && order != null)
+		int docTypeId = C_DocTypeShipment_ID;
+		if (docTypeId == 0 && order != null)
 		{
-			C_DocTypeShipment_ID = DB.getSQLValue(null,
+			docTypeId = DB.getSQLValue(null,
 					"SELECT C_DocTypeShipment_ID FROM C_DocType WHERE C_DocType_ID=?",
 					order.getC_DocType_ID());
 		}
-		if (C_DocTypeShipment_ID != 0)
+		if (docTypeId != 0)
 		{
-			setC_DocType_ID(C_DocTypeShipment_ID);
+			setC_DocType_ID(docTypeId);
 		}
 		else
 		{
@@ -1293,21 +1294,17 @@ public class MInOut extends X_M_InOut implements IDocument
 
 	private boolean isCheckCreditLimitNeeded()
 	{
-
 		if (!(isSOTrx() && !isReversal()))
 		{
 			return false;
 		}
 
 		final I_C_Order order = getC_Order();
-		if (order != null && order.getC_Order_ID() > 0 && MDocType.DOCSUBTYPE_PrepayOrder.equals(order.getC_DocType().getDocSubType())
-				&& !Services.get(ISysConfigBL.class).getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, getAD_Client_ID(), getAD_Org_ID()))
-		{
-			// ignore -- don't validate Prepay Orders depending on sysconfig parameter
-			return false;
-		}
-
-		return true;
+		final boolean checkCreditOnPrepayOorder = Services.get(ISysConfigBL.class).getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, getAD_Client_ID(), getAD_Org_ID());
+		// ignore -- don't validate Prepay Orders depending on sysconfig parameter
+		return (!(order != null && order.getC_Order_ID() > 0
+				&& MDocType.DOCSUBTYPE_PrepayOrder.equals(order.getC_DocType().getDocSubType())
+				&& !checkCreditOnPrepayOorder));
 	}
 
 	/**
@@ -2032,11 +2029,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 */
 	private void checkMaterialPolicy(final MInOutLine line)
 	{
-		final int no = MInOutLineMA.deleteInOutLineMA(line.getM_InOutLine_ID(), get_TrxName());
-		if (no > 0)
-		{
-			log.debug("Deleted old #{}", no);
-		}
+		MInOutLineMA.deleteInOutLineMA(line.getM_InOutLine_ID(), get_TrxName());
 
 		// Incoming Trx
 		final String MovementType = getMovementType();
@@ -2064,22 +2057,6 @@ public class MInOut extends X_M_InOut implements IDocument
 					|| getMovementType().compareTo(MInOut.MOVEMENTTYPE_VendorReceipts) == 0)
 			{
 				MAttributeSetInstance asi = null;
-				// auto balance negative on hand
-				// task 09939: don't just pick "any" ASI-id and assign it to the iol!
-				// it will be the wrong one, because we M_Storage.M_AttributeSetInstance_ID is not not synched with the HU-Attributes.
-				// more, we are going to remove M_AttributeSetInstance_ID from M_Storage anyways
-// @formatter:off
-//				MStorage[] storages = MStorage.getWarehouse(getCtx(), getM_Warehouse_ID(), line.getM_Product_ID(), 0,
-//						null, MClient.MMPOLICY_FiFo.equals(product.getMMPolicy()), false, line.getM_Locator_ID(), get_TrxName());
-//				for (MStorage storage : storages)
-//				{
-//					if (storage.getQtyOnHand().signum() < 0)
-//					{
-//						asi = new MAttributeSetInstance(getCtx(), storage.getM_AttributeSetInstance_ID(), get_TrxName());
-//						break;
-//					}
-//				}
-// @formatter:on
 				// always create asi so fifo/lifo work.
 				if (asi == null)
 				{
