@@ -201,7 +201,7 @@ stage('Invoke downstream jobs')
           true, // wait=true
           'metasfresh-procurement-webui');
 				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = procurementWebuiDownStreamJobMap.MF_VERSION;
-			}
+			},
 			metasfresh_esb_camel: {
 				// yup, metasfresh-procurement-webui does share *some* code with this repo
 				final esbCamelDownStreamJobMap = invokeDownStreamJobs(
@@ -249,12 +249,6 @@ stage('Invoke downstream jobs')
 			  parameters: distJobParameters,
 			  wait: true
 		},
-// probaly not neeed anymoree, going to remove it completely
-//		metasfresh_dist_orgs: {
-//			build job: misc.getEffectiveDownStreamJobName('metasfresh-dist-orgs', MF_UPSTREAM_BRANCH),
-//			  parameters: distJobParameters,
-//			  wait: true
-//		},
     zapier: {
       invokeZapier(env.BUILD_NUMBER, // upstreamBuildNo
         MF_UPSTREAM_BRANCH, // upstreamBranch
