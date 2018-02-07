@@ -194,20 +194,6 @@
 		</dependency>
 	</dependencies>
 
-	<dependencyManagement>
-		<dependencies>
-			<!-- get the dependency management of the de.metas.esb "commons" project -->
-			<dependency>
-				<groupId>de.metas.esb</groupId>
-				<artifactId>de.metas.esb</artifactId>
-				<version>${project.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
-
 	<build>
 
 		<!-- use group-id and artifact-id to avoid artifact filename collisions -->
