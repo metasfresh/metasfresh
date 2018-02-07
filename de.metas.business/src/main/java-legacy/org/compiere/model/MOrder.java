@@ -20,6 +20,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -28,8 +29,10 @@ import java.util.regex.Pattern;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
@@ -389,51 +392,36 @@ public class MOrder extends X_C_Order implements IDocument
 
 		setC_BPartner_ID(bp.getC_BPartner_ID());
 		// Defaults Payment Term
-		int ii = 0;
-		if (isSOTrx())
+		final int paymentTermID = isSOTrx() ? bp.getC_PaymentTerm_ID() : bp.getPO_PaymentTerm_ID();
+		if (paymentTermID != 0)
 		{
-			ii = bp.getC_PaymentTerm_ID();
+			setC_PaymentTerm_ID(paymentTermID);
 		}
-		else
+		//
+		final int priceLisId = isSOTrx() ? bp.getM_PriceList_ID() : bp.getPO_PriceList_ID();
+		if (priceLisId != 0)
 		{
-			ii = bp.getPO_PaymentTerm_ID();
-		}
-		if (ii != 0)
-		{
-			setC_PaymentTerm_ID(ii);
-		}
-		// Default Price List
-		if (isSOTrx())
-		{
-			ii = bp.getM_PriceList_ID();
-		}
-		else
-		{
-			ii = bp.getPO_PriceList_ID();
-		}
-		if (ii != 0)
-		{
-			setM_PriceList_ID(ii);
+			setM_PriceList_ID(priceLisId);
 		}
 		// Default Delivery/Via Rule
 		String ss = bp.getDeliveryRule();
-		if (ss != null)
+		if (!Check.isEmpty(ss, true))
 		{
 			setDeliveryRule(ss);
 		}
 		ss = bp.getDeliveryViaRule();
-		if (ss != null)
+		if (!Check.isEmpty(ss, true))
 		{
 			setDeliveryViaRule(ss);
 		}
 		// Default Invoice/Payment Rule
 		ss = bp.getInvoiceRule();
-		if (ss != null)
+		if (!Check.isEmpty(ss, true))
 		{
 			setInvoiceRule(ss);
 		}
 		ss = bp.getPaymentRule();
-		if (ss != null)
+		if (!Check.isEmpty(ss, true))
 		{
 			setPaymentRule(ss);
 		}
@@ -1551,16 +1539,13 @@ public class MOrder extends X_C_Order implements IDocument
 	 */
 	// metas: make reserveStock visible from MOrderLine to allow un-reservation
 	// of stocks before delete.
-	public boolean reserveStock(I_C_DocType docType, final MOrderLine[] lines)
+	public boolean reserveStock(final I_C_DocType docType, final MOrderLine[] lines)
 	{
-		if (docType == null)
-		{
-			docType = Services.get(IDocTypeDAO.class).getById(getC_DocType_ID());
-		}
+		final I_C_DocType dt = docType == null ? Services.get(IDocTypeDAO.class).getById(getC_DocType_ID()) : docType;
 
 		// Binding
-		boolean binding = docType != null && !Services.get(IDocTypeBL.class).isProposal(docType);
-		final String docSubType = docType == null ? null : docType.getDocSubType();
+		boolean binding = dt != null && !Services.get(IDocTypeBL.class).isProposal(dt);
+		final String docSubType = dt == null ? null : dt.getDocSubType();
 
 		// Not binding - i.e. Target=0
 		if (DOCACTION_Void.equals(getDocAction())
@@ -1901,6 +1886,9 @@ public class MOrder extends X_C_Order implements IDocument
 		final StringBuilder info = new StringBuilder();
 
 		final boolean realTimePOS = false;
+
+		Services.get(IBPartnerStatisticsUpdater.class)
+				.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(getC_BPartner_ID()), ITrx.TRXNAME_None);
 
 		// Create SO Shipment - Force Shipment
 		MInOut shipment = null;
