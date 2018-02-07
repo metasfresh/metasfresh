@@ -43,8 +43,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.util.Env;
-
 /** Generated Model for V_BPartnerCockpit
  *  @author Adempiere (generated)
  *  @version Release 3.5.4a#464 - $Id$ */
@@ -791,7 +789,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_creditused);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -898,7 +896,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ebenenbonus);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1376,7 +1374,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_leistungsbonus);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1397,7 +1395,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_lifetimevalue);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1511,7 +1509,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OpenAmt);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1605,7 +1603,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenued30);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1626,7 +1624,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem0);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1647,7 +1645,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem1);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1668,7 +1666,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem10);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1689,7 +1687,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem11);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1710,7 +1708,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem12);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1731,7 +1729,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem2);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1752,7 +1750,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem3);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1773,7 +1771,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem4);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1794,7 +1792,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem5);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1815,7 +1813,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem6);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1836,7 +1834,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem7);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1857,7 +1855,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem8);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1878,7 +1876,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuem9);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1899,7 +1897,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RevenueOneYear);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1920,7 +1918,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenueq0);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1941,7 +1939,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenueq1);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1962,7 +1960,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenueq2);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -1983,7 +1981,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenueq3);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -2004,7 +2002,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenueq4);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -2025,7 +2023,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuey0);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -2046,7 +2044,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuey1);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -2067,7 +2065,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuey2);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -2088,7 +2086,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuey3);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -2109,7 +2107,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuey4);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -2130,7 +2128,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_revenuey5);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -2212,7 +2210,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SO_CreditUsed);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
@@ -2308,7 +2306,7 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		final BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalOpenBalance);
 		if (bd == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return bd;
 	}
