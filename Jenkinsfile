@@ -187,8 +187,8 @@ stage('Invoke downstream jobs')
           MF_UPSTREAM_BRANCH,
           MF_ARTIFACT_VERSIONS['metasfresh-parent'],
           MF_VERSION,
-          true,
-          'metasfresh-webui'); // wait=true
+          true, // wait=true
+          'metasfresh-webui');
 				MF_ARTIFACT_VERSIONS['metasfresh-webui'] = webuiDownStreamJobMap.MF_VERSION;
 			},
 			metasfresh_procurement_webui: {
@@ -198,9 +198,20 @@ stage('Invoke downstream jobs')
           MF_UPSTREAM_BRANCH,
           MF_ARTIFACT_VERSIONS['metasfresh-parent'],
           MF_VERSION,
-          true,
-          'metasfresh-procurement-webui'); // wait=true
+          true, // wait=true
+          'metasfresh-procurement-webui');
 				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = procurementWebuiDownStreamJobMap.MF_VERSION;
+			}
+			metasfresh_esb_camel: {
+				// yup, metasfresh-procurement-webui does share *some* code with this repo
+				final esbCamelDownStreamJobMap = invokeDownStreamJobs(
+          env.BUILD_NUMBER,
+          MF_UPSTREAM_BRANCH,
+          MF_ARTIFACT_VERSIONS['metasfresh-parent'],
+          MF_VERSION,
+          true, // wait=true
+          'metasfresh-esb-camel');
+				MF_ARTIFACT_VERSIONS['metasfresh-esb-camel'] = esbCamelDownStreamJobMap.MF_VERSION;
 			}
 		);
 
