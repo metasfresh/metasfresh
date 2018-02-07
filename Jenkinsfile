@@ -35,6 +35,8 @@ Set to false if this build is called from elsewhere and the orchestrating also t
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
 ])
 
+final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5'
+
 timestamps
 {
 	MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
