@@ -2,7 +2,8 @@
     "env": {
         "browser": true,
         "node": true,
-        "es6": true
+        "es6": true,
+        "jest/globals": true
     },
     "parser": "babel-eslint",
     "extends": [
@@ -16,7 +17,7 @@
         "react/jsx-filename-extension": "off",
         "react/prefer-stateless-function": "off"
     },
-    "plugins": ["prettier", "react"],
+    "plugins": ["prettier", "react", "jest"],
     "globals": {
         "localStorage": true,
         "Promise": true,

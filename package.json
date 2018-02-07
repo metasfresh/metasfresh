@@ -7,29 +7,56 @@
     "start": "node server.js",
     "storybook": "node .storybook/findStories && start-storybook -p 6006",
     "stylelint": "stylelint 'src/assets/**/*.css'",
-    "test": "mocha --require babel-register src/**/*.test.js"
+    "test:jest:watch": "jest --watch",
+    "test:jest": "jest"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)$": "<rootDir>/test_setup/fileMock.js",
+      "\\.(scss)$": "<rootDir>/test_setup/styleMock.js",
+      "\\.(css)$": "identity-obj-proxy"
+    },
+    "moduleFileExtensions": [
+      "js",
+      "jsx"
+    ],
+    "moduleDirectories": [
+      "node_modules"
+    ],
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    },
+    "unmockedModulePathPatterns": [
+      "<rootDir>/node_modules/babel-polyfill/"
+    ]
   },
   "devDependencies": {
     "@storybook/react": "^3.2.13",
     "autoprefixer": "~6.3.6",
     "babel-core": "^6.21.0",
     "babel-eslint": "^8.0.1",
+    "babel-jest": "^22.2.0",
     "babel-loader": "^6.2.10",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
     "babel-preset-es2017": "^6.24.1",
-    "babel-preset-react": "~6.16.0",
-    "chai": "^4.1.2",
+    "babel-preset-react": "^6.16.0",
+    "babel-register": "^6.26.0",
     "common-tags": "^1.4.0",
     "css-loader": "~0.23.1",
     "eslint": "^4.9.0",
     "eslint-config-prettier": "^2.6.0",
     "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-jest": "^21.7.0",
     "eslint-plugin-jsx-a11y": "^6.0.2",
     "eslint-plugin-prettier": "^2.3.1",
     "eslint-plugin-react": "^7.4.0",
     "globby": "^6.1.0",
     "html-loader": "~0.4.4",
     "html-webpack-plugin": "~2.26.0",
-    "mocha": "^4.0.1",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^22.2.1",
+    "nock": "^9.1.6",
     "nyc": "^11.3.0",
     "postcss-color-function": "~2.0.1",
     "postcss-import": "~8.1.2",
@@ -39,13 +66,14 @@
     "precss": "~1.4.0",
     "prettier": "^1.7.4",
     "react-hot-loader": "~3.0.0",
+    "react-test-renderer": "^16.2.0",
     "redux-devtools": "~3.4.0",
-    "sinon": "^4.1.2",
-    "sinon-chai": "^2.14.0",
+    "redux-mock-store": "^1.5.1",
     "style-loader": "~0.13.1",
     "stylelint": "^7.9.0",
     "webpack": "~1.13.0",
-    "webpack-dev-server": "~1.12.1"
+    "webpack-dev-server": "~1.12.1",
+    "webpack-node-externals": "^1.6.0"
   },
   "dependencies": {
     "axios": "^0.16.2",
