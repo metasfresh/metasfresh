@@ -1,13 +1,11 @@
 package de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Issue;
-import org.compiere.model.I_C_Order;
 
 import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3ClientException;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3FaultInfoDataPersister;
@@ -19,6 +17,7 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Bestellung;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwort;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
@@ -47,11 +46,12 @@ import lombok.Setter;
 @Setter
 public class MSV3PurchaseOrderTransaction
 {
-
+	@Getter
 	private final Bestellung bestellung;
 
-	private final int purchaseOrderId;
+	private final int orgId;
 
+	@Getter
 	private BestellungAntwort bestellungAntwort;
 
 	private Msv3FaultInfo faultInfo;
@@ -61,23 +61,19 @@ public class MSV3PurchaseOrderTransaction
 	@Builder
 	private MSV3PurchaseOrderTransaction(
 			@NonNull final Bestellung bestellung,
-			final int purchaseOrderId)
+			final int orgId)
 	{
 		this.bestellung = bestellung;
-		this.purchaseOrderId = purchaseOrderId;
+		this.orgId = orgId;
 	}
 
 	public I_MSV3_Bestellung_Transaction store()
 	{
-		final I_C_Order purchaseOrder = load(purchaseOrderId, I_C_Order.class);
-		final int orgId = purchaseOrder.getAD_Org_ID();
-
 		final MSV3PurchaseOrderDataPersister purchaseOrderDataPersister = MSV3PurchaseOrderDataPersister
 				.createNewForOrgId(orgId);
 
 		final I_MSV3_Bestellung_Transaction transactionRecord = newInstance(I_MSV3_Bestellung_Transaction.class);
 		transactionRecord.setAD_Org_ID(orgId);
-		transactionRecord.setC_OrderPO_ID(purchaseOrderId);
 
 		final I_MSV3_Bestellung bestellungRecord = //
 				purchaseOrderDataPersister.storePurchaseOrderRequest(bestellung);

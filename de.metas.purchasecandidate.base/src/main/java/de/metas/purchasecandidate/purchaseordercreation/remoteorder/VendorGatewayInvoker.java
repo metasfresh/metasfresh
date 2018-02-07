@@ -1,11 +1,15 @@
-package de.metas.purchasecandidate.purchaseordercreation.vendorgateway;
+package de.metas.purchasecandidate.purchaseordercreation.remoteorder;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Supplier;
 
+import org.adempiere.util.Check;
 import org.compiere.Adempiere;
+import org.compiere.util.Env;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.purchaseordercreation.PurchaseOrderItem;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 
@@ -33,12 +37,19 @@ import de.metas.vendor.gateway.api.VendorGatewayService;
 
 public interface VendorGatewayInvoker
 {
-	Collection<PurchaseCandidate> placeRemotePurchaseOrder(Collection<PurchaseCandidate> purchaseCandidates);
+	Collection<PurchaseOrderItem> placeRemotePurchaseOrder(Collection<PurchaseCandidate> purchaseCandidates);
 
-	void setPurchaseOrderId(int purchaseOrderId);
+	void updateRemoteLineReferences(Collection<PurchaseOrderItem> purchaseOrderItem);
 
 	public static VendorGatewayInvoker createForVendorId(final int vendorBPartnerId)
 	{
+		Check.assume(vendorBPartnerId > 0, "Given parameter vendorBPartnerId > 0");
+
+		final int orgId = Env.getAD_Org_ID(Env.getCtx());
+		Check.errorIf(orgId <= 0,
+				"Missing AD_Org_ID in the current ctx; ctx={}",
+				(Supplier<Object[]>)() -> Env.getEntireContext(Env.getCtx()));
+
 		final VendorGatewayRegistry vendorGatewayRegistry = Adempiere.getBean(VendorGatewayRegistry.class);
 		final Optional<VendorGatewayService> vendorGatewayService = vendorGatewayRegistry
 				.getSingleVendorGatewayService(vendorBPartnerId);

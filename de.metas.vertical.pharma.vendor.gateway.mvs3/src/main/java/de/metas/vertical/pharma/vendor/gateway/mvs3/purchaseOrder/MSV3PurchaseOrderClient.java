@@ -1,13 +1,21 @@
 package de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.util.Check;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
-import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
+import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreated;
+import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreated.RemotePurchaseOrderCreatedBuilder;
+import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreatedItem;
+import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreatedItem.RemotePurchaseOrderCreatedItemBuilder;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ClientBase;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3Util;
@@ -18,8 +26,10 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Auftragsart;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Bestellen;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellenResponse;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Bestellung;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAnteil;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwort;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwortAuftrag;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwortPosition;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAuftrag;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungPosition;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Liefervorgabe;
@@ -66,25 +76,111 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 		this.objectFactory = new ObjectFactory();
 	}
 
-	public PurchaseOrderResponse placePurchaseOrder(@NonNull final PurchaseOrderRequest request)
+	public RemotePurchaseOrderCreated placePurchaseOrder(@NonNull final PurchaseOrderRequest request)
 	{
-		final Bestellung bestellung = createBestellung(request);
+		final Bestellung bestellung = createBestellungWithOneAuftrag(request);
+
+		final ImmutableMap<BestellungPosition, PurchaseOrderRequestItem> bestellungPosition2RequestItem = //
+				Maps.uniqueIndex(request.getOrderLines(), item -> createBestellungPosition(item));
 
 		final MSV3PurchaseOrderTransaction purchaseTransaction = //
 				MSV3PurchaseOrderTransaction.builder()
-						.purchaseOrderId(request.getPurchaseOrderId())
+						.orgId(request.getOrgId())
 						.bestellung(bestellung)
 						.build();
+
+		bestellung.getAuftraege().get(0).getPositionen().addAll(bestellungPosition2RequestItem.keySet());
 
 		performOrdering(bestellung, purchaseTransaction);
 
 		final I_MSV3_Bestellung_Transaction purchaseTransactionRecord = purchaseTransaction.store();
 
-		return PurchaseOrderResponse.builder()
-				.createdRecordId(purchaseTransactionRecord.getMSV3_Bestellung_Transaction_ID())
-				.createdTableName(I_MSV3_Bestellung_Transaction.Table_Name)
-				.exception(purchaseTransaction.getExceptionOrNull())
-				.build();
+		final RemotePurchaseOrderCreatedBuilder responseBuilder = RemotePurchaseOrderCreated.builder()
+				.transactionRecordId(purchaseTransactionRecord.getMSV3_Bestellung_Transaction_ID())
+				.transactionTableName(I_MSV3_Bestellung_Transaction.Table_Name)
+				.exception(purchaseTransaction.getExceptionOrNull());
+
+		final List<RemotePurchaseOrderCreatedItem> purchaseOrderResponseItems = //
+				createResponseItems(bestellungPosition2RequestItem, purchaseTransaction);
+
+		responseBuilder.purchaseOrderResponseItems(purchaseOrderResponseItems);
+
+		return responseBuilder.build();
+	}
+
+	private List<RemotePurchaseOrderCreatedItem> createResponseItems(
+			@NonNull final ImmutableMap<BestellungPosition, PurchaseOrderRequestItem> bestellungPosition2RequestItem,
+			@NonNull final MSV3PurchaseOrderTransaction purchaseTransaction)
+	{
+		final Bestellung bestellung = purchaseTransaction.getBestellung();
+
+		final List<RemotePurchaseOrderCreatedItem> purchaseOrderResponseItems = new ArrayList<>();
+		final List<BestellungAntwortAuftrag> auftraege = purchaseTransaction.getBestellungAntwort().getAuftraege();
+		for (int auftragIdx = 0; auftragIdx < auftraege.size(); auftragIdx++)
+		{
+			final BestellungAuftrag auftrag = bestellung.getAuftraege().get(auftragIdx);
+			final BestellungAntwortAuftrag auftragAntwort = auftraege.get(auftragIdx);
+
+			final List<BestellungPosition> positionen = auftrag.getPositionen();
+			final List<BestellungAntwortPosition> antwortPositionen = auftragAntwort.getPositionen();
+
+			for (int positionIdx = 0; positionIdx < antwortPositionen.size(); positionIdx++)
+			{
+				final BestellungPosition bestellungPosition = positionen.get(positionIdx);
+
+				final RemotePurchaseOrderCreatedItemBuilder builder = RemotePurchaseOrderCreatedItem.builder()
+						.remotePurchaseOrderId(auftragAntwort.getId())
+						.correspondingRequestItem(bestellungPosition2RequestItem.get(bestellungPosition));
+
+				final BestellungAntwortPosition bestellungAntwortPosition = antwortPositionen.get(positionIdx);
+				final List<BestellungAnteil> anteile = bestellungAntwortPosition.getAnteile();
+				for (final BestellungAnteil anteil : anteile)
+				{
+					if (anteil.getMenge() <= 0)
+					{
+						continue;
+					}
+
+					builder
+							.confirmedDeliveryDate(MSV3Util.toDateOrNull(anteil.getLieferzeitpunkt()))
+							.confirmedOrderQuantity(new BigDecimal(anteil.getMenge()));
+					purchaseOrderResponseItems.add(builder.build());
+				}
+			}
+		}
+		return purchaseOrderResponseItems;
+	}
+
+	private Bestellung createBestellungWithOneAuftrag(@NonNull final PurchaseOrderRequest request)
+	{
+		final Bestellung bestellung = objectFactory.createBestellung();
+		bestellung.setId(MSV3Util.createUniqueId());
+
+		final int supportId = MSV3Util.retrieveNextSupportId();
+		bestellung.setBestellSupportId(supportId);
+
+		final BestellungAuftrag bestellungAuftrag = objectFactory.createBestellungAuftrag();
+		bestellungAuftrag.setAuftragsart(Auftragsart.NORMAL);
+		bestellungAuftrag.setAuftragskennung(Integer.toString(supportId));
+		bestellungAuftrag.setAuftragsSupportID(supportId);
+
+		bestellungAuftrag.setId(MSV3Util.createUniqueId());
+
+		bestellung.getAuftraege().add(bestellungAuftrag);
+
+		return bestellung;
+	}
+
+	private BestellungPosition createBestellungPosition(final PurchaseOrderRequestItem purchaseOrderRequestItem)
+	{
+		final BestellungPosition bestellungPosition = objectFactory.createBestellungPosition();
+		bestellungPosition.setLiefervorgabe(Liefervorgabe.NORMAL);
+
+		final ProductAndQuantity productAndQuantity = purchaseOrderRequestItem.getProductAndQuantity();
+		bestellungPosition.setMenge(MSV3Util.extractMenge(productAndQuantity));
+		bestellungPosition.setPzn(MSV3Util.extractPZN(productAndQuantity));
+
+		return bestellungPosition;
 	}
 
 	private void performOrdering(
@@ -125,37 +221,6 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 		{
 			purchaseTransaction.setOtherException(e);
 		}
-	}
-
-	private Bestellung createBestellung(@NonNull final PurchaseOrderRequest request)
-	{
-		final Bestellung bestellung = objectFactory.createBestellung();
-		bestellung.setId(MSV3Util.createUniqueId());
-
-		final int supportId = MSV3Util.retrieveNextSupportId();
-		bestellung.setBestellSupportId(supportId);
-
-		final BestellungAuftrag bestellungAuftrag = objectFactory.createBestellungAuftrag();
-		bestellungAuftrag.setAuftragsart(Auftragsart.NORMAL);
-		bestellungAuftrag.setAuftragskennung(Integer.toString(supportId));
-		bestellungAuftrag.setAuftragsSupportID(supportId);
-
-		bestellungAuftrag.setId(MSV3Util.createUniqueId());
-
-		bestellung.getAuftraege().add(bestellungAuftrag);
-
-		for (final PurchaseOrderRequestItem orderLine : request.getOrderLines())
-		{
-			final BestellungPosition bestellungPosition = objectFactory.createBestellungPosition();
-			bestellungPosition.setLiefervorgabe(Liefervorgabe.NORMAL);
-
-			final ProductAndQuantity productAndQuantity = orderLine.getProductAndQuantity();
-			bestellungPosition.setMenge(MSV3Util.extractMenge(productAndQuantity));
-			bestellungPosition.setPzn(MSV3Util.extractPZN(productAndQuantity));
-
-			bestellungAuftrag.getPositionen().add(bestellungPosition);
-		}
-		return bestellung;
 	}
 
 	@Override

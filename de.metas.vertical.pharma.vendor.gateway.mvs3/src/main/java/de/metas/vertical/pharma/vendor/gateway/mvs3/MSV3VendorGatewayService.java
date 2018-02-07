@@ -1,15 +1,23 @@
 package de.metas.vertical.pharma.vendor.gateway.mvs3;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
+import de.metas.vendor.gateway.api.order.LocalPurchaseOrderForRemoteOrderCreated;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
-import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
+import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreated;
+import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreatedItem;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.availability.MSV3AvailiabilityClient;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.config.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.config.MSV3ClientConfigRepository;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_BestellungAnteil;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_BestellungAntwortAuftrag;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder.MSV3PurchaseOrderClient;
 import lombok.NonNull;
 
@@ -65,7 +73,7 @@ public class MSV3VendorGatewayService implements VendorGatewayService
 	}
 
 	@Override
-	public PurchaseOrderResponse placePurchaseOrder(@NonNull final PurchaseOrderRequest request)
+	public RemotePurchaseOrderCreated placePurchaseOrder(@NonNull final PurchaseOrderRequest request)
 	{
 		final MSV3ClientConfig config = configRepo.retrieveByVendorId(request.getVendorId());
 		final MSV3PurchaseOrderClient client = MSV3PurchaseOrderClient.builder()
@@ -73,5 +81,26 @@ public class MSV3VendorGatewayService implements VendorGatewayService
 				.connectionFactory(connectionFactory).build();
 
 		return client.placePurchaseOrder(request);
+	}
+
+	@Override
+	public void associateLocalWithRemotePurchaseOrderId(
+			@NonNull final LocalPurchaseOrderForRemoteOrderCreated localPurchaseOrderForRemoteOrderCreated)
+	{
+		final RemotePurchaseOrderCreatedItem item = localPurchaseOrderForRemoteOrderCreated.getRemotePurchaseOrderCreatedItem();
+
+		final I_MSV3_BestellungAnteil anteilRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MSV3_BestellungAnteil.class)
+				.addEqualsFilter(I_MSV3_BestellungAnteil.COLUMN_MSV3_BestellungAnteil_ID, item.getInternalItemId())
+				.create()
+				.firstOnlyNotNull(I_MSV3_BestellungAnteil.class);
+
+		anteilRecord.setC_OrderLinePO_ID(localPurchaseOrderForRemoteOrderCreated.getPurchaseOrderLineId());
+		save(anteilRecord);
+
+		final I_MSV3_BestellungAntwortAuftrag bestellungAntwortAuftrag = anteilRecord
+				.getMSV3_BestellungAntwortPosition()
+				.getMSV3_BestellungAntwortAuftrag();
+		bestellungAntwortAuftrag.setC_OrderPO_ID(localPurchaseOrderForRemoteOrderCreated.getPurchaseOrderId());
+		save(bestellungAntwortAuftrag);
 	}
 }

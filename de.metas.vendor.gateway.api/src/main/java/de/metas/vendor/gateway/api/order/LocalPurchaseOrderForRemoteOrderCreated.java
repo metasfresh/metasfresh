@@ -1,12 +1,11 @@
-package de.metas.purchasecandidate.purchaseordercreation.vendorgateway;
+package de.metas.vendor.gateway.api.order;
 
-import java.util.Collection;
-
-import de.metas.purchasecandidate.PurchaseCandidate;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.purchasecandidate.base
+ * de.metas.vendor.gateway.api
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -26,19 +25,13 @@ import de.metas.purchasecandidate.PurchaseCandidate;
  * #L%
  */
 
-
-public class NullVendorGatewayInvoker implements VendorGatewayInvoker
+@Value
+@Builder
+public class LocalPurchaseOrderForRemoteOrderCreated
 {
-	@Override
-	public Collection<PurchaseCandidate> placeRemotePurchaseOrder(
-			Collection<PurchaseCandidate> purchaseCandidates)
-	{
-		return purchaseCandidates;
-	}
+	int purchaseOrderId;
 
-	@Override
-	public void setPurchaseOrderId(int purchaseOrderId)
-	{
-		// does nothing
-	}
+	int purchaseOrderLineId;
+
+	RemotePurchaseOrderCreatedItem remotePurchaseOrderCreatedItem;
 }

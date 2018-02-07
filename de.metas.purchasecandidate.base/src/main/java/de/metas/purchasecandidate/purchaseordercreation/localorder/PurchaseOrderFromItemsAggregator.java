@@ -1,10 +1,10 @@
-package de.metas.purchasecandidate.purchaseordercreation;
+package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import org.adempiere.util.collections.MapReduceAggregator;
 import org.compiere.model.I_C_Order;
 
 import de.metas.order.event.OrderUserNotifications;
-import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.purchaseordercreation.PurchaseOrderItem;
 import lombok.NonNull;
 
 /*
@@ -30,49 +30,49 @@ import lombok.NonNull;
  */
 
 /**
- * Aggregates {@link PurchaseCandidate}s and creates completed purchase orders ({@link I_C_Order}).
+ * Aggregates {@link PurchaseOrderItem}s and creates completed purchase orders ({@link I_C_Order}).
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class PurchaseOrderFromCandidatesAggregator
-		extends MapReduceAggregator<PurchaseOrderFromCandidatesFactory, PurchaseCandidate>
+public class PurchaseOrderFromItemsAggregator
+		extends MapReduceAggregator<PurchaseOrderFromItemFactory, PurchaseOrderItem>
 {
-	public static final PurchaseOrderFromCandidatesAggregator newInstance()
+	public static final PurchaseOrderFromItemsAggregator newInstance()
 	{
-		return new PurchaseOrderFromCandidatesAggregator();
+		return new PurchaseOrderFromItemsAggregator();
 	}
 
 	private final OrderUserNotifications userNotifications = OrderUserNotifications.newInstance();
 
-	private PurchaseOrderFromCandidatesAggregator()
+	private PurchaseOrderFromItemsAggregator()
 	{
-		setItemAggregationKeyBuilder(PurchaseOrderAggregationKey::formPurchaseCandidate);
+		setItemAggregationKeyBuilder(PurchaseOrderAggregationKey::formPurchaseOrderItem);
 	}
 
 	@Override
-	protected PurchaseOrderFromCandidatesFactory createGroup(
+	protected PurchaseOrderFromItemFactory createGroup(
 			@NonNull final Object itemHashKey,
-			final PurchaseCandidate item_NOTUSED)
+			final PurchaseOrderItem item_NOTUSED)
 	{
 		final PurchaseOrderAggregationKey orderAggregationKey = PurchaseOrderAggregationKey.cast(itemHashKey);
 
-		return PurchaseOrderFromCandidatesFactory.builder()
+		return PurchaseOrderFromItemFactory.builder()
 				.orderAggregationKey(orderAggregationKey)
 				.userNotifications(userNotifications)
 				.build();
 	}
 
 	@Override
-	protected void closeGroup(final PurchaseOrderFromCandidatesFactory orderFactory)
+	protected void closeGroup(final PurchaseOrderFromItemFactory orderFactory)
 	{
 		orderFactory.createAndComplete();
 	}
 
 	@Override
 	protected void addItemToGroup(
-			@NonNull final PurchaseOrderFromCandidatesFactory orderFactory,
-			@NonNull final PurchaseCandidate candidate)
+			@NonNull final PurchaseOrderFromItemFactory orderFactory,
+			@NonNull final PurchaseOrderItem candidate)
 	{
 		orderFactory.addCandidate(candidate);
 	}

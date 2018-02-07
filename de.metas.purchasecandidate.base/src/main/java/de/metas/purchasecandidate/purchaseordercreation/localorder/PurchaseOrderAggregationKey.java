@@ -1,8 +1,8 @@
-package de.metas.purchasecandidate.purchaseordercreation;
+package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import java.sql.Timestamp;
 
-import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.purchaseordercreation.PurchaseOrderItem;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,8 +33,8 @@ import lombok.Value;
 @Builder
 /* package */ final class PurchaseOrderAggregationKey
 {
-	public static PurchaseOrderAggregationKey formPurchaseCandidate(
-			@NonNull final PurchaseCandidate candidate)
+	public static PurchaseOrderAggregationKey formPurchaseOrderItem(
+			@NonNull final PurchaseOrderItem candidate)
 	{
 		return PurchaseOrderAggregationKey.builder()
 				.orgId(candidate.getOrgId())

@@ -1,6 +1,6 @@
 package de.metas.vendor.gateway.api.order;
 
-import java.util.List;
+import java.util.Collection;
 
 import lombok.Singular;
 import lombok.Value;
@@ -30,8 +30,10 @@ import lombok.Value;
 @Value
 public class PurchaseOrderRequest
 {
+	int orgId;
+
 	int vendorId;
 
 	@Singular
-	List<PurchaseOrderRequestItem> orderLines;
+	Collection<PurchaseOrderRequestItem> orderLines;
 }

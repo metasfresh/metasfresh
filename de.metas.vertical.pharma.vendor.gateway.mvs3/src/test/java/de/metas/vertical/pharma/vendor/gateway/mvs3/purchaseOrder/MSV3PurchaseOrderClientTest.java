@@ -20,7 +20,7 @@ import de.metas.StartupListener;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
-import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
+import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreated;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3TestingTools;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3FaultInfoDataPersister;
@@ -71,11 +71,13 @@ public class MSV3PurchaseOrderClientTest
 				.connectionFactory(new MSV3ConnectionFactory())
 				.build();
 
-		final PurchaseOrderRequestItem purchaseOrderRequestItem = new PurchaseOrderRequestItem(new ProductAndQuantity("10055555", BigDecimal.TEN));
+		final PurchaseOrderRequestItem purchaseOrderRequestItem = new PurchaseOrderRequestItem(
+				1,
+				new ProductAndQuantity("10055555", BigDecimal.TEN));
 		final List<PurchaseOrderRequestItem> purchaseOrderRequestItems = ImmutableList.of(purchaseOrderRequestItem);
 		final PurchaseOrderRequest request = new PurchaseOrderRequest(10, 20, purchaseOrderRequestItems);
 
-		final PurchaseOrderResponse purchaseOrderResponse = msv3PurchaseOrderClient.placePurchaseOrder(request);
+		final RemotePurchaseOrderCreated purchaseOrderResponse = msv3PurchaseOrderClient.placePurchaseOrder(request);
 		assertThat(purchaseOrderResponse).isNotNull();
 		assertThat(purchaseOrderResponse.getException()).isNull();
 	}

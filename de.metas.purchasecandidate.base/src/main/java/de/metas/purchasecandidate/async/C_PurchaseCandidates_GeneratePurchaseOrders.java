@@ -3,21 +3,14 @@ package de.metas.purchasecandidate.async;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.ILoggable;
-import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
 
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -29,8 +22,7 @@ import de.metas.lock.api.LockOwner;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
-import de.metas.purchasecandidate.purchaseordercreation.PurchaseOrderFromCandidatesAggregator;
-import de.metas.purchasecandidate.purchaseordercreation.vendorgateway.VendorGatewayInvoker;
+import de.metas.purchasecandidate.purchaseordercreation.PurchaseCandidateToOrderWorkflow;
 
 /*
  * #%L
@@ -64,6 +56,8 @@ import de.metas.purchasecandidate.purchaseordercreation.vendorgateway.VendorGate
  */
 public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProcessorAdapter
 {
+	private final PurchaseCandidateRepository purchaseCandidateRepo = Adempiere.getBean(PurchaseCandidateRepository.class);
+
 	public static void enqueue(final Collection<Integer> purchaseCandidateIds)
 	{
 		final List<TableRecordReference> purchaseCandidateRecords = //
@@ -87,58 +81,11 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 				.build();
 	}
 
-	private final PurchaseCandidateRepository purchaseCandidateRepo = Adempiere.getBean(PurchaseCandidateRepository.class);
-
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
-		final List<PurchaseCandidate> proposedPurchaseCandidates = getPurchaseCandidates();
-
-		final ImmutableListMultimap<Integer, PurchaseCandidate> vendorId2purchaseCandidate = //
-				Multimaps.index(proposedPurchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
-
-		final ILoggable loggable = Loggables.get();
-
-		final List<CompletableFuture<Void>> futures = vendorId2purchaseCandidate.asMap()
-				.entrySet().stream()
-				.map(entry -> CompletableFuture.runAsync(() -> createPurchaseOrderInDifferentThread(
-						entry.getKey(), // vendorId
-						entry.getValue(), // purchaseCandidates
-						loggable)))
-				.collect(Collectors.toList());
-
-		CompletableFuture
-				.allOf(futures.toArray(new CompletableFuture[futures.size()]))
-				.join();
-
+		PurchaseCandidateToOrderWorkflow.createNew().doIt(getPurchaseCandidates());
 		return Result.SUCCESS;
-	}
-
-	private void createPurchaseOrderInDifferentThread(
-			final int vendorId,
-			final Collection<PurchaseCandidate> proposedPurchaseCandidatesWithVendorId,
-			final ILoggable loggable)
-	{
-		// note: if the VendorGateWayInvoker or PurchaseOrderFromCandidatesAggregator use Loggable.get() internally,
-		// they shall receive "our" loggable.
-		try (final IAutoCloseable autoClosable = Loggables.temporarySetLoggable(loggable))
-		{
-			loggable.addLog("vendorId={} - now invoking placeRemotePurchaseOrder with purchaseCandidates={}",
-					vendorId, proposedPurchaseCandidatesWithVendorId);
-			final List<PurchaseCandidate> actualPurchaseCandidatesWithVendorId = VendorGatewayInvoker
-					.createForVendorId(vendorId)
-					.placeRemotePurchaseOrder(proposedPurchaseCandidatesWithVendorId);
-			loggable.addLog("vendorId={} - placeRemotePurchaseOrder returned purchaseCandidates={}",
-					vendorId, actualPurchaseCandidatesWithVendorId);
-
-			final PurchaseOrderFromCandidatesAggregator purchaseOrdersAggregator = PurchaseOrderFromCandidatesAggregator.newInstance();
-			purchaseOrdersAggregator.addAll(actualPurchaseCandidatesWithVendorId.iterator());
-			purchaseOrdersAggregator.closeAllGroups();
-			loggable.addLog("vendorId={} - PurchaseOrderFromCandidatesAggregator created the purchase order(s)",
-					vendorId, actualPurchaseCandidatesWithVendorId);
-
-			purchaseCandidateRepo.saveAllNoLock(actualPurchaseCandidatesWithVendorId); // no lock because they are already locked by us
-		}
 	}
 
 	private List<PurchaseCandidate> getPurchaseCandidates()

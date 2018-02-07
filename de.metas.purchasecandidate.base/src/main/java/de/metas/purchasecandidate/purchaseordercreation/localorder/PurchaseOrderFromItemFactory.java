@@ -1,9 +1,9 @@
-package de.metas.purchasecandidate.purchaseordercreation;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import java.util.IdentityHashMap;
 import java.util.Set;
+
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -12,6 +12,7 @@ import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.purchaseordercreation.PurchaseOrderItem;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -43,14 +44,14 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-/* package */ final class PurchaseOrderFromCandidatesFactory
+/* package */ final class PurchaseOrderFromItemFactory
 {
 	private final OrderFactory orderFactory;
-	private final IdentityHashMap<PurchaseCandidate, OrderLineBuilder> purchaseCandidate2OrderLineBuilder = new IdentityHashMap<>();
+	private final IdentityHashMap<PurchaseOrderItem, OrderLineBuilder> purchaseItem2OrderLineBuilder = new IdentityHashMap<>();
 	private final OrderUserNotifications userNotifications;
 
 	@Builder
-	private PurchaseOrderFromCandidatesFactory(
+	private PurchaseOrderFromItemFactory(
 			@NonNull final PurchaseOrderAggregationKey orderAggregationKey,
 			@NonNull OrderUserNotifications userNotifications)
 	{
@@ -65,22 +66,26 @@ import lombok.NonNull;
 		this.userNotifications = userNotifications;
 	}
 
-	public void addCandidate(final PurchaseCandidate candidate)
+	public void addCandidate(final PurchaseOrderItem pruchaseOrderItem)
 	{
-		final OrderLineBuilder orderLineBuilder = orderFactory.orderLineByProductAndUom(candidate.getProductId(), candidate.getUomId())
-				.orElseGet(() -> orderFactory.newOrderLine()
-						.productId(candidate.getProductId()));
+		final OrderLineBuilder orderLineBuilder = orderFactory
+				.orderLineByProductAndUom(
+						pruchaseOrderItem.getProductId(),
+						pruchaseOrderItem.getUomId())
+				.orElseGet(() -> orderFactory
+						.newOrderLine()
+						.productId(pruchaseOrderItem.getProductId()));
 
-		orderLineBuilder.addQty(candidate.getQtyToPurchase(), candidate.getUomId());
+		orderLineBuilder.addQty(pruchaseOrderItem.getPurchasedQty(), pruchaseOrderItem.getUomId());
 
-		purchaseCandidate2OrderLineBuilder.put(candidate, orderLineBuilder);
+		purchaseItem2OrderLineBuilder.put(pruchaseOrderItem, orderLineBuilder);
 	}
 
 	public void createAndComplete()
 	{
 		final I_C_Order order = orderFactory.createAndComplete();
 
-		purchaseCandidate2OrderLineBuilder.forEach(this::updatePurchaseCandidateFromOrderLineBuilder);
+		purchaseItem2OrderLineBuilder.forEach(this::updatePurchaseCandidateFromOrderLineBuilder);
 
 		final Set<Integer> userIdsToNotify = getUserIdsToNotify();
 		if (!userIdsToNotify.isEmpty())
@@ -91,21 +96,21 @@ import lombok.NonNull;
 	}
 
 	private void updatePurchaseCandidateFromOrderLineBuilder(
-			@NonNull final PurchaseCandidate candidate,
+			@NonNull final PurchaseOrderItem pruchaseOrderItem,
 			@NonNull final OrderLineBuilder orderLineBuilder)
 	{
-		candidate.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderLineId());
+		pruchaseOrderItem
+				.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderLineId());
 	}
 
 	private Set<Integer> getUserIdsToNotify()
 	{
-		return purchaseCandidate2OrderLineBuilder.keySet()
-				.stream()
+		return purchaseItem2OrderLineBuilder.keySet().stream()
+				.map(PurchaseOrderItem::getPurchaseCandidate)
 				.map(PurchaseCandidate::getSalesOrderId)
 				.distinct()
-				.map(salesOrderId -> load(salesOrderId, I_C_Order.class))
+				.map(salesOrderId -> InterfaceWrapperHelper.load(salesOrderId, I_C_Order.class))
 				.map(I_C_Order::getCreatedBy)
 				.collect(ImmutableSet.toImmutableSet());
 	}
-
 }
