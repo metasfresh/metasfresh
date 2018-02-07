@@ -682,7 +682,7 @@ public class MOrder extends X_C_Order implements IDocument
 	 * @param orderClause order clause
 	 * @return lines
 	 */
-	public MOrderLine[] getLines(final String whereClause, String orderClause)
+	public MOrderLine[] getLines(final String whereClause, final String orderClause)
 	{
 		// red1 - using new Query class from Teo / Victor's MDDOrder.java implementation
 		final StringBuilder whereClauseFinal = new StringBuilder("(" + MOrderLine.COLUMNNAME_C_Order_ID + "=? AND " + MOrderLine.COLUMNNAME_IsActive + "='Y' )");
@@ -690,14 +690,13 @@ public class MOrder extends X_C_Order implements IDocument
 		{
 			whereClauseFinal.append(whereClause);
 		}
-		if (orderClause.length() == 0)
-		{
-			orderClause = MOrderLine.COLUMNNAME_Line;
-		}
+
+		final String orderBy = orderClause.length() == 0 ? MOrderLine.COLUMNNAME_Line : orderClause;
+
 		//
 		final List<MOrderLine> list = new Query(getCtx(), MOrderLine.Table_Name, whereClauseFinal.toString(), get_TrxName())
 				.setParameters(new Object[] { get_ID() })
-				.setOrderBy(orderClause)
+				.setOrderBy(orderBy)
 				.list();
 		for (final MOrderLine ol : list)
 		{

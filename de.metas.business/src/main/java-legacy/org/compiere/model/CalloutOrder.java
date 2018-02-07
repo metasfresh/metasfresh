@@ -753,11 +753,11 @@ public class CalloutOrder extends CalloutEngine
 					s = rs.getString(IsSOTrx ? "PaymentRule" : "PaymentRulePO");
 					if (s != null && s.length() != 0)
 					{
-						if (s.equals("B"))
+						if ("B".equals(s))
 						{
 							s = "P";
 						}
-						if (IsSOTrx && (s.equals("S") || s.equals("U")))
+						if (IsSOTrx && ("S".equals(s) || "U".equals(s)))
 						 {
 							s = "P"; // Payment Term
 						}
