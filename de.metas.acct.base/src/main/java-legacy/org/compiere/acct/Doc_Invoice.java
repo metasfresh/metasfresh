@@ -261,46 +261,13 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				.orElse(null);
 	}
 
-	/**
-	 * Create Facts (the accounting logic) for
-	 * ARI, ARC, ARF, API, APC.
-	 *
-	 * <pre>
-	 *  ARI, ARF
-	 *      Receivables     DR
-	 *      Charge                  CR
-	 *      TaxDue                  CR
-	 *      Revenue                 CR
-	 *
-	 *  ARC
-	 *      Receivables             CR
-	 *      Charge          DR
-	 *      TaxDue          DR
-	 *      Revenue         RR
-	 *
-	 *  API
-	 *      Payables                CR
-	 *      Charge          DR
-	 *      TaxCredit       DR
-	 *      Expense         DR
-	 *
-	 *  APC
-	 *      Payables        DR
-	 *      Charge                  CR
-	 *      TaxCredit               CR
-	 *      Expense                 CR
-	 * </pre>
-	 *
-	 * @param as accounting schema
-	 * @return Fact
-	 */
 	@Override
 	public List<Fact> createFacts(final MAcctSchema as)
 	{
 		// Cash based accounting
 		if (!as.isAccrual())
 		{
-			return new ArrayList<>();
+			throw newPostingException().setC_AcctSchema(as).setDetailMessage("Cash based accounting is not supported");
 		}
 
 		// ** ARI, ARF
