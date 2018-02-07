@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -670,8 +669,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		final MAcctSchema as = fact.getAcctSchema();
 		if (!as.isAccrual())
 		{
-			createCashBasedAcct(fact, line, allocationSource);
-			return;
+			throw newPostingException().setFact(fact).setDetailMessage("Cash based accounting is not supported");
 		}
 
 		//
@@ -813,43 +811,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// Return how much was booked here.
 		return factLine.getAmtSourceAndAcctDrOrCr();
 	}
-
-	/**
-	 * Create Cash Based Acct
-	 *
-	 * @param fact fact
-	 * @param line
-	 * @param allocationSource allocation amount (incl discount, writeoff)
-	 * @return Accounted Amt
-	 */
-	private BigDecimal createCashBasedAcct(final Fact fact, final DocLine_Allocation line, final BigDecimal allocationSource)
-	{
-		final MAcctSchema as = fact.getAcctSchema();
-		final I_C_Invoice invoice = line.getC_Invoice();
-
-		BigDecimal allocationAccounted = BigDecimal.ZERO;
-		// Multiplier
-		double percent = invoice.getGrandTotal().doubleValue() / allocationSource.doubleValue();
-		if (percent > 0.99 && percent < 1.01)
-			percent = 1.0;
-
-		// Get Invoice Postings
-		Doc_Invoice docInvoice = (Doc_Invoice)getDocFactory().getOrNull(
-				getCtx(),
-				new MAcctSchema[] { as },
-				InterfaceWrapperHelper.getTableId(I_C_Invoice.class), invoice.getC_Invoice_ID(),
-				getTrxName());
-		docInvoice.loadDocumentDetails();
-		allocationAccounted = docInvoice.createFactCash(as, fact, new BigDecimal(percent));
-
-		// Cash Based Commitment Release
-		if (as.isCreatePOCommitment() && !invoice.isSOTrx())
-		{
-			throw newPostingException().setC_AcctSchema(as).setDetailMessage("PO commitment release posting not supported");
-		}
-
-		return allocationAccounted;
-	}	// createCashBasedAcct
 
 	/**
 	 * Create the {@link FactLine} which is about booking the currency gain/loss between invoice and payment.
