@@ -68,6 +68,20 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
+	protected CostDetailCreateResult createCostForMaterialReceipt(CostDetailCreateRequest request)
+	{
+		final CurrentCost currentCost = getCurrentCost(request);
+		final Quantity qty = request.getQty();
+		final CostAmount amt = currentCost.getCurrentCostPrice().multiply(qty);
+
+		// NOTE: don't update the current costs. It's done on Match Invoice.
+
+		return createCostDefaultImpl(request.toBuilder()
+				.amt(amt)
+				.build());
+	}
+
+	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
 		final CurrentCost currentCost = getCurrentCost(request);
