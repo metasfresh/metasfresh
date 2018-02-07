@@ -34,6 +34,7 @@ import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IEditablePricingContext;
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
@@ -54,7 +55,6 @@ import org.compiere.model.X_M_InOut;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvDAO;
-import de.metas.product.IProductPA;
 
 public class InOutBL implements IInOutBL
 {
@@ -65,11 +65,7 @@ public class InOutBL implements IInOutBL
 	{
 		Check.assumeNotNull(inOutLine, "Param 'inOutLine' is not null");
 
-		final IProductPA productPA = Services.get(IProductPA.class);
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inOutLine);
-		final String trxName = InterfaceWrapperHelper.getTrxName(inOutLine);
-
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final I_M_InOut inOut = inOutLine.getM_InOut();
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
@@ -108,7 +104,7 @@ public class InOutBL implements IInOutBL
 
 		Check.assume(pricingSystemId > 0, "No pricing system found for M_InOut_ID={}", inOut.getM_InOut_ID());
 
-		final I_M_PriceList priceList = productPA.retrievePriceListByPricingSyst(ctx, pricingSystemId, inOut.getC_BPartner_Location_ID(), isSOTrx, trxName);
+		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, inOut.getC_BPartner_Location(), isSOTrx);
 
 		Check.errorIf(priceList == null,
 				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.IsSOTrx={}",
@@ -318,7 +314,7 @@ public class InOutBL implements IInOutBL
 		// Services
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
-		final HashMap<Integer, Integer> inoutLineId2orderId = new HashMap<Integer, Integer>();
+		final HashMap<Integer, Integer> inoutLineId2orderId = new HashMap<>();
 
 		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inOut);
 		for (int i = 0; i < lines.size(); i++)

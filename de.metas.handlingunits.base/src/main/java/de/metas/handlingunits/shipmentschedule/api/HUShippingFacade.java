@@ -30,7 +30,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.InvoiceMode;
+import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -91,7 +91,7 @@ public class HUShippingFacade
 	private final ImmutableList<I_M_HU> hus;
 	private final int addToShipperTransportationId;
 	private final boolean completeShipments;
-	private final InvoiceMode invoiceMode;
+	private final BillAssociatedInvoiceCandidates invoiceMode;
 	private final boolean createShipperDeliveryOrders;
 	private LocalDate _shipperDeliveryOrderPickupDate = null; // lazy, will be fetched from Shipper Transportation
 
@@ -106,7 +106,7 @@ public class HUShippingFacade
 			@NonNull @Singular("hu") final List<I_M_HU> hus,
 			final int addToShipperTransportationId,
 			final boolean completeShipments,
-			@Nullable final InvoiceMode invoiceMode,
+			@Nullable final BillAssociatedInvoiceCandidates invoiceMode,
 			final boolean createShipperDeliveryOrders,
 			@Nullable final ILoggable loggable)
 	{
@@ -188,7 +188,7 @@ public class HUShippingFacade
 			return;
 		}
 
-		if (invoiceMode == InvoiceMode.None)
+		if (invoiceMode == BillAssociatedInvoiceCandidates.NO)
 		{
 			return;
 		}
@@ -196,7 +196,9 @@ public class HUShippingFacade
 		final List<Integer> invoiceCandidateIds = invoiceCandDAO.retrieveInvoiceCandidatesQueryForInOuts(shipments).listIds();
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(InvoiceMode.AllWithoutInvoiceSchedule == invoiceMode);
+
+		final boolean adhereToInvoiceSchedule = invoiceMode == BillAssociatedInvoiceCandidates.IF_INVOICE_SCHEDULE_PERMITS;
+		invoicingParams.setIgnoreInvoiceSchedule(!adhereToInvoiceSchedule);
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 				.setLoggable(loggable)

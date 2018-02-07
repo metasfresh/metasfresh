@@ -62,13 +62,13 @@ public class PurchaseCandidateTest
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 
-		final BigDecimal newQtyRequired = candidate.getQtyRequired().add(BigDecimal.ONE);
-		candidate.setQtyRequired(newQtyRequired);
+		final BigDecimal newQtyRequired = candidate.getQtyToPurchase().add(BigDecimal.ONE);
+		candidate.setQtyToPurchase(newQtyRequired);
 
 		assertThat(candidate.hasChanges()).isTrue();
 		assertThat(candidate.copy().hasChanges()).isTrue();
-		assertThat(candidate.getQtyRequired()).isEqualByComparingTo(newQtyRequired);
-		assertThat(candidate.copy().getQtyRequired()).isEqualByComparingTo(newQtyRequired);
+		assertThat(candidate.getQtyToPurchase()).isEqualByComparingTo(newQtyRequired);
+		assertThat(candidate.copy().getQtyToPurchase()).isEqualByComparingTo(newQtyRequired);
 
 		candidate.markSaved(1);
 		assertThat(candidate.hasChanges()).isFalse();
@@ -107,7 +107,7 @@ public class PurchaseCandidateTest
 				.uomId(6)
 				.vendorBPartnerId(7)
 				.vendorProductInfo(new VendorProductInfo(10, 7, 20, "productNo", "productName"))
-				.qtyRequired(BigDecimal.ONE)
+				.qtyToPurchase(BigDecimal.ONE)
 				.datePromised(SystemTime.asDayTimestamp())
 				.processed(false)
 				.locked(false)

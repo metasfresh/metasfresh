@@ -144,7 +144,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			return null;
 		}
 
-		if (inOutLine.isPackagingMaterial())
+		if (inOutLine.isPackagingMaterial() && inOutLine.getM_InOut().isSOTrx()) // split only in case of sales
 		{
 			final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 			final List<I_M_InOutLine> allReferencingLines = inOutDAO.retrieveAllReferencingLinesBuilder(inOutLine)
@@ -433,6 +433,11 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 	private void setC_PaymentTerm(final I_C_Invoice_Candidate ic)
 	{
+		if (!ic.isSOTrx())
+		{
+			return;
+		}
+
 		final int paymentTermId;
 		final I_M_InOutLine inOutLine = ic.isPackagingMaterial() && ic.getRef_PackingMaterial_InOutLine() != null
 				? InterfaceWrapperHelper.create(ic.getRef_PackingMaterial_InOutLine(), I_M_InOutLine.class)

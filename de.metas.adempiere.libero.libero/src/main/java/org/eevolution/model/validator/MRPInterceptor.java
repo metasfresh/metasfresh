@@ -1,29 +1,5 @@
 package org.eevolution.model.validator;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
@@ -33,21 +9,18 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
-import org.compiere.util.Env;
-import org.eevolution.mrp.process.PP_MRP_RecreateForDocument;
 import org.eevolution.mrp.spi.IMRPSupplyProducer;
 import org.eevolution.mrp.spi.IMRPSupplyProducerFactory;
 import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
-import de.metas.process.IADProcessDAO;
 
 /**
  * MRP Model Interceptors
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class MRPInterceptor extends AbstractModelInterceptor
 {
@@ -63,16 +36,6 @@ public class MRPInterceptor extends AbstractModelInterceptor
 	{
 		// services
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-
-		//
-		// Get "PP_MRP_RecreateForDocument"'s AD_Process_ID
-		final Properties ctx = Env.getCtx();
-		final int processId_PP_MRP_RecreateForDocument = adProcessDAO.retriveProcessIdByValue(ctx, PP_MRP_RecreateForDocument.PROCESSVALUE);
-		if (processId_PP_MRP_RecreateForDocument <= 0)
-		{
-			logger.warn("No process was found for '{}'. Manually re-creating MRP records won't be available ", PP_MRP_RecreateForDocument.PROCESSVALUE);
-		}
 
 		//
 		// Common interceptors
@@ -94,14 +57,6 @@ public class MRPInterceptor extends AbstractModelInterceptor
 			if (docActionBL.isDocumentTable(sourceTableName))
 			{
 				engine.addDocValidate(sourceTableName, this);
-			}
-
-			//
-			// Register source table related processes:
-			// recreate PP_MRP records for selected document/record
-			if (processId_PP_MRP_RecreateForDocument > 0)
-			{
-				adProcessDAO.registerTableProcess(sourceTableName, processId_PP_MRP_RecreateForDocument);
 			}
 		}
 
