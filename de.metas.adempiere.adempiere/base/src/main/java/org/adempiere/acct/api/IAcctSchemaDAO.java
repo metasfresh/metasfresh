@@ -31,6 +31,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_AcctSchema_GL;
+import org.compiere.util.Env;
 
 public interface IAcctSchemaDAO extends ISingletonService
 {
@@ -69,6 +70,12 @@ public interface IAcctSchemaDAO extends ISingletonService
 	 * @return client accounting schemas
 	 */
 	List<I_C_AcctSchema> retrieveClientAcctSchemas(Properties ctx, int adClientId);
+	
+	default List<I_C_AcctSchema> retrieveClientAcctSchemas(final int adClientId)
+	{
+		return retrieveClientAcctSchemas(Env.getCtx(), adClientId);
+	}
+
 
 	/**
 	 * Retrieve {@link I_C_AcctSchema_Element}s, ordered by SeqNo.

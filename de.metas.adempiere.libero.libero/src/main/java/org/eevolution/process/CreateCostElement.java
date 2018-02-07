@@ -48,6 +48,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
@@ -56,7 +57,7 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
-import de.metas.costing.ICurrenctCostsRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductBL;
@@ -71,7 +72,7 @@ import de.metas.product.IProductBL;
  */
 public class CreateCostElement extends JavaProcess
 {
-	private final ICurrenctCostsRepository currenctCostsRepository = Services.get(ICurrenctCostsRepository.class);
+	private final ICurrentCostsRepository currentCostsRepo = Adempiere.getBean(ICurrentCostsRepository.class);
 	
 	private Integer p_AD_Org_ID = null;
 	private int p_C_AcctSchema_ID = 0;
@@ -154,7 +155,7 @@ public class CreateCostElement extends JavaProcess
 
 				for (final I_M_CostElement element : getElements())
 				{
-					currenctCostsRepository.createIfMissing(costSegment, element.getM_CostElement_ID());
+					currentCostsRepo.createIfMissing(costSegment, element.getM_CostElement_ID());
 					count_all++;
 				}
 			}

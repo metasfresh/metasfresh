@@ -16,7 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -25,16 +24,11 @@ import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.Adempiere;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 
-import de.metas.costing.CostAmount;
-import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailService;
-import de.metas.inout.IInOutBL;
-import de.metas.product.IProductBL;
-import de.metas.quantity.Quantity;
 
 /**
  * Match Invoice (Receipt<>Invoice) Model.
@@ -118,12 +112,6 @@ public class MMatchInv extends X_M_MatchInv
 			return false;
 		}
 
-		if (newRecord)
-		{
-			// Elaine 2008/6/20
-			createMatchInvCostDetail();
-		}
-
 		return success;
 	}	// afterSave
 
@@ -167,9 +155,13 @@ public class MMatchInv extends X_M_MatchInv
 		if (isPosted())
 		{
 			MPeriod.testPeriodOpen(getCtx(), getDateAcct(), X_C_DocType.DOCBASETYPE_MatchInvoice, getAD_Org_ID());
+
 			setPosted(false);
 			Services.get(IFactAcctDAO.class).deleteForDocumentModel(this);
 		}
+
+		deleteMatchInvCostDetail();
+
 		return true;
 	}
 
@@ -181,7 +173,6 @@ public class MMatchInv extends X_M_MatchInv
 			return success;
 		}
 
-		deleteMatchInvCostDetail();
 		clearInvoiceLineFromMatchPOs();
 		return true;
 	}
@@ -219,65 +210,6 @@ public class MMatchInv extends X_M_MatchInv
 		}
 	}
 
-	private void createMatchInvCostDetail()
-	{
-		if (isSOTrx())
-		{
-			return; // we extend the use of matchInv to also keep track of the SoTrx side. However, currently we don't need the accounting of that side to work
-		}
-
-		final IInOutBL inOutBL = Services.get(IInOutBL.class);
-		final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
-
-		final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
-		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
-		final BigDecimal invoiceLineNetAmt = invoiceLine.getLineNetAmt();
-
-		BigDecimal multiplier;
-		if (qtyInvoiced.signum() != 0) // task 08337: guard against division by zero
-		{
-			multiplier = getQty()
-					.divide(qtyInvoiced, 12, BigDecimal.ROUND_HALF_UP)
-					.abs();
-		}
-		else
-		{
-			multiplier = BigDecimal.ZERO;
-		}
-
-		final BigDecimal matchAmt = multiplier.compareTo(BigDecimal.ONE) != 0 ? invoiceLineNetAmt.multiply(multiplier) : invoiceLineNetAmt;
-
-		final I_M_InOut receipt = getM_InOutLine().getM_InOut();
-		final boolean isReturnTrx = inOutBL.isReturnMovementType(receipt.getMovementType());
-		final BigDecimal matchQty = isReturnTrx ? getQty().negate() : getQty();
-		final I_C_UOM matchQtyUOM = Services.get(IProductBL.class).getStockingUOM(getM_Product_ID());
-
-		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID()))
-		{
-			if (as.isSkipOrg(getAD_Org_ID()))
-			{
-				continue;
-			}
-
-			costDetailService
-					.createCostDetail(CostDetailCreateRequest.builder()
-							.acctSchemaId(as.getC_AcctSchema_ID())
-							.clientId(getAD_Client_ID())
-							.orgId(getAD_Org_ID())
-							.productId(getM_Product_ID())
-							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
-							.documentRef(CostingDocumentRef.ofMatchInvoiceId(getM_MatchInv_ID()))
-							.costElementId(0)
-							.qty(Quantity.of(matchQty, matchQtyUOM))
-							.amt(CostAmount.of(matchAmt, invoice.getC_Currency_ID()))
-							.currencyConversionTypeId(invoice.getC_ConversionType_ID())
-							.date(TimeUtil.asLocalDate(invoice.getDateAcct()))
-							.description(getDescription())
-							.build());
-		}
-	}
-
 	private void deleteMatchInvCostDetail()
 	{
 		if (isSOTrx())
@@ -285,7 +217,7 @@ public class MMatchInv extends X_M_MatchInv
 			return; // task 08529: we extend the use of matchInv to also keep track of the SoTrx side. However, currently we don't need the accounting of that side to work
 		}
 
-		final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
+		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
 		costDetailService.reverseAndDeleteForDocument(CostingDocumentRef.ofMatchInvoiceId(getM_MatchInv_ID()));
 	}
 }	// MMatchInv

@@ -16,7 +16,7 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.MProduct;
 import org.compiere.util.AdempiereUserError;
 
@@ -70,7 +70,7 @@ public class CostCreate extends JavaProcess
 		if (product.get_ID() != p_M_Product_ID)
 			throw new AdempiereUserError("@NotFound@: @M_Product_ID@ = " + p_M_Product_ID);
 		//
-		Services.get(ICostDetailService.class).processAllForProduct(p_M_Product_ID);
+		Adempiere.getBean(ICostDetailService.class).processAllForProduct(p_M_Product_ID);
 		return MSG_OK;
 	}	//	doIt
 	

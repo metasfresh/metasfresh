@@ -29,8 +29,6 @@ import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
 
-import de.metas.costing.ICostDetailRepository;
-import de.metas.costing.ICurrenctCostsRepository;
 import de.metas.product.IProductBL;
 
 /**
@@ -218,7 +216,7 @@ public class MProduct extends X_M_Product
 		}	// storage
 
 		// it checks if UOM has been changed , if so disallow the change if the condition is true.
-		if ((!newRecord) && is_ValueChanged(COLUMNNAME_C_UOM_ID) && hasInventoryOrCost())
+		if ((!newRecord) && is_ValueChanged(COLUMNNAME_C_UOM_ID) && hasInventoryTrxs())
 		{
 			throw new AdempiereException("@SaveUomError@");
 		}
@@ -239,32 +237,15 @@ public class MProduct extends X_M_Product
 
 		return true;
 	}	// beforeSave
-
-	/**
-	 * @return true if it has Inventory or Cost
-	 */
-	private boolean hasInventoryOrCost()
+	
+	private boolean hasInventoryTrxs()
 	{
-		// check if it has transactions
-		final boolean hasTrx = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Transaction.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Transaction.COLUMN_M_Product_ID, getM_Product_ID())
 				.create()
 				.match();
-		if (hasTrx)
-		{
-			return true;
-		}
-
-		// check if it has cost
-		final boolean hasCosts = Services.get(ICostDetailRepository.class).hasCostDetailsForProductId(getM_Product_ID());
-		if (hasCosts)
-		{
-			return true;
-		}
-
-		return false;
 	}
 
 	@Override
@@ -296,22 +277,17 @@ public class MProduct extends X_M_Product
 			log.debug("Asset Description updated #" + no);
 		}
 
-		// New - Acct, Tree, Old Costing
+		// New - Acct, Tree
 		if (newRecord)
 		{
 			insert_Accounting(I_M_Product_Acct.Table_Name,
 					I_M_Product_Category_Acct.Table_Name,
 					"p.M_Product_Category_ID=" + getM_Product_Category_ID());
+			
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
 		}
 
-		// New Costing
-		if (newRecord || is_ValueChanged(COLUMNNAME_M_Product_Category_ID))
-		{
-			Services.get(ICurrenctCostsRepository.class).createDefaultProductCosts(this);
-		}
-
-		return success;
+		return true;
 	}	// afterSave
 
 	@Override
@@ -353,8 +329,6 @@ public class MProduct extends X_M_Product
 			}
 
 		}
-		
-		Services.get(ICurrenctCostsRepository.class).deleteForProduct(this);
 
 		//
 		return delete_Accounting(I_M_Product_Acct.Table_Name);

@@ -13,8 +13,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostingMethod;
+import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyBL;
 
 /*
@@ -39,8 +43,20 @@ import de.metas.currency.ICurrencyBL;
  * #L%
  */
 
+@Component
 public class LifoCostingMethodHandler extends FifoOrLifoCostingMethodHandler
 {
+	public LifoCostingMethodHandler(final ICurrentCostsRepository currentCostsRepo, final ICostDetailRepository costDetailsRepo)
+	{
+		super(currentCostsRepo, costDetailsRepo);
+	}
+
+	@Override
+	public CostingMethod getCostingMethod()
+	{
+		return CostingMethod.LIFO;
+	}
+
 	@Override
 	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final int orderLineId)
 	{

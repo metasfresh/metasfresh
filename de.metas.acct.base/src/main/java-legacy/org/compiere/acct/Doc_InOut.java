@@ -26,12 +26,14 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MInOut;
+import org.compiere.model.X_M_InOut;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.ProductAcctType;
@@ -65,7 +67,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
+	private final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_InOut.PostMatchInvs";
@@ -202,7 +204,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		return facts;
 	}
 
-	private void createFacts_SalesShipmentLine(final Fact fact, DocLine_InOut line)
+	private void createFacts_SalesShipmentLine(final Fact fact, final DocLine_InOut line)
 	{
 		// Skip not stockable (e.g. service products) because they have no cost
 		if (!line.isItem())
@@ -228,7 +230,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
 		dr.setAD_Org_ID(line.getOrder_Org_ID());		// Revenue X-Org
 		dr.setQty(line.getQty().negate());
-		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
+		if (X_M_InOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctDr from Original Shipment/Receipt
 			if (!dr.updateReverseLine(MInOut.Table_ID, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
@@ -250,7 +252,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		cr.setM_Locator_ID(line.getM_Locator_ID());
 		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		cr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
-		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
+		if (X_M_InOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctCr from Original Shipment/Receipt
 			if (!cr.updateReverseLine(MInOut.Table_ID, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
@@ -270,7 +272,6 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 							.productId(line.getM_Product_ID())
 							.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 							.documentRef(CostingDocumentRef.ofShipmentLineId(line.get_ID()))
-							.costElementId(0)
 							.qty(line.getQty())
 							.amt(costs)
 							.currencyConversionTypeId(getC_ConversionType_ID())
@@ -338,7 +339,6 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 							.productId(line.getM_Product_ID())
 							.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 							.documentRef(CostingDocumentRef.ofShipmentLineId(line.get_ID()))
-							.costElementId(0)
 							.qty(line.getQty())
 							.amt(costs)
 							.currencyConversionTypeId(getC_ConversionType_ID())
@@ -395,7 +395,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final I_C_AcctSchema as = fact.getAcctSchema();
-		final CostAmount costs = line.getPurchaseCosts(as);
+		final CostAmount costs = line.getCreateReceiptCosts(as).getTotalAmount();
 
 		//
 		// Inventory/Asset DR
@@ -467,7 +467,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final I_C_AcctSchema as = fact.getAcctSchema();
-		final CostAmount costs = line.getPurchaseCosts(as);
+		final CostAmount costs = line.getCreateReceiptCosts(as).getTotalAmount();
 
 		//
 		// NotInvoicedReceipt DR

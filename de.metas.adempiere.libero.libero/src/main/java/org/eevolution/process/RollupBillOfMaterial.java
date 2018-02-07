@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostElement;
@@ -71,7 +72,7 @@ import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostElementRepository;
-import de.metas.costing.ICurrenctCostsRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IProductBL;
@@ -87,8 +88,8 @@ import de.metas.product.IProductBL;
 @SuppressWarnings("deprecation") // hide those to not polute our Warnings
 public class RollupBillOfMaterial extends JavaProcess
 {
-	private final ICostElementRepository costElementsRepo = Services.get(ICostElementRepository.class);
-	private final ICurrenctCostsRepository currenctCostsRepository = Services.get(ICurrenctCostsRepository.class);
+	private final ICostElementRepository costElementsRepo = Adempiere.getBean(ICostElementRepository.class);
+	private final ICurrentCostsRepository currentCostsRepo = Adempiere.getBean(ICurrentCostsRepository.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	/* Organization */
@@ -213,7 +214,7 @@ public class RollupBillOfMaterial extends JavaProcess
 				log.info("{} Cost Low Level: {}", element, price);
 				cost.setCurrentCostPriceLL(price);
 				updateCoProductCosts(bom, cost, element);
-				currenctCostsRepository.save(cost);
+				currentCostsRepo.save(cost);
 			} // for each Costs
 		} // for Elements
 	}
@@ -249,9 +250,9 @@ public class RollupBillOfMaterial extends JavaProcess
 					.toBuilder()
 					.productId(bomline.getM_Product_ID())
 					.build();
-			final CurrentCost cost = currenctCostsRepository.getOrCreate(costSegment, costElement.getId());
+			final CurrentCost cost = currentCostsRepo.getOrCreate(costSegment, costElement.getId());
 			cost.setCurrentCostPriceLL(costPrice);
-			currenctCostsRepository.save(cost);
+			currentCostsRepo.save(cost);
 
 			costPriceTotal = costPriceTotal.add(costPrice);
 		}
@@ -317,7 +318,7 @@ public class RollupBillOfMaterial extends JavaProcess
 	private Collection<CurrentCost> getCosts(final MProduct product, final int costElementId)
 	{
 		final CostSegment costSegment = createCostSegment(product);
-		final CurrentCost cost = currenctCostsRepository.getOrNull(costSegment, costElementId);
+		final CurrentCost cost = currentCostsRepo.getOrNull(costSegment, costElementId);
 		return cost != null ? ImmutableList.of(cost) : ImmutableList.of();
 	}
 

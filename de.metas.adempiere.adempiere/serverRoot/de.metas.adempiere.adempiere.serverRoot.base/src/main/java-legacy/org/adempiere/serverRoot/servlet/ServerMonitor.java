@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -152,6 +153,10 @@ public class ServerMonitor extends HttpServlet
 
 	private boolean isAllowCacheReset()
 	{
+		if(Services.get(IDeveloperModeBL.class).isEnabled())
+		{
+			return true;
+		}
 		return ALLOW_CacheReset;
 	}
 

@@ -1,6 +1,8 @@
 package de.metas.costing;
 
-import java.util.List;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -24,18 +26,14 @@ import java.util.List;
  * #L%
  */
 
-public interface ICostElementRepository
+@Value
+@Builder
+public class CostDetailCreateResult
 {
-	CostElement getById(int costElementId);
-
-	CostElement getOrCreateMaterialCostElement(int adClientId, CostingMethod costingMethod);
-
-	List<CostElement> getCostElementsWithCostingMethods(int adClientId);
-
-	List<CostElement> getMaterialCostingMethods(int adClientId);
-
-	List<CostElement> getNonCostingMethods(int adClientId);
-
-	List<CostElement> getByCostingMethod(CostingMethod costingMethod);
-
+	@NonNull
+	CostSegment costSegment;
+	@NonNull
+	CostElement costElement;
+	@NonNull
+	CostAmount amt;
 }

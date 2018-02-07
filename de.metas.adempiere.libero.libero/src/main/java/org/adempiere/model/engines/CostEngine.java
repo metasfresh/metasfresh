@@ -49,6 +49,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostDetail;
@@ -78,7 +79,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
-import de.metas.costing.ICurrenctCostsRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
@@ -116,7 +117,7 @@ public class CostEngine
 				cc,
 				resourceProduct,
 				MAcctSchema.get(ctx, d.getC_AcctSchema_ID()),
-				Services.get(ICostElementRepository.class).getById(d.getM_CostElement_ID()));
+				Adempiere.getBean(ICostElementRepository.class).getById(d.getM_CostElement_ID()));
 	}
 
 	public CostAmount getResourceActualCostRate(final I_PP_Cost_Collector cc, final int S_Resource_ID, final CostDimension d, final String trxName)
@@ -135,7 +136,7 @@ public class CostEngine
 				cc,
 				resourceProduct,
 				as,
-				Services.get(ICostElementRepository.class).getById(d.getM_CostElement_ID()),
+				Adempiere.getBean(ICostElementRepository.class).getById(d.getM_CostElement_ID()),
 				trxName);
 	}
 
@@ -193,7 +194,7 @@ public class CostEngine
 				.orgId(cc.getAD_Org_ID())
 				.attributeSetInstanceId(cc.getM_AttributeSetInstance_ID())
 				.build();
-		return Services.get(ICurrenctCostsRepository.class).getOrCreate(costSegment, element.getId());
+		return Adempiere.getBean(ICurrentCostsRepository.class).getOrCreate(costSegment, element.getId());
 	}
 
 	public CostAmount getProductStandardCostPrice(final I_PP_Cost_Collector cc, final I_M_Product product, final I_C_AcctSchema as, final CostElement element)
@@ -404,7 +405,7 @@ public class CostEngine
 
 	private void processCostDetail(final I_M_CostDetail cd)
 	{
-		Services.get(ICostDetailService.class).processIfCostImmediate(cd);
+		Adempiere.getBean(ICostDetailService.class).processIfCostImmediate(cd);
 	}
 
 	public static boolean isActivityControlElement(final CostElement element)
@@ -417,7 +418,7 @@ public class CostEngine
 
 	private List<CostElement> getCostElements()
 	{
-		return Services.get(ICostElementRepository.class).getByCostingMethod(getCostingMethod());
+		return Adempiere.getBean(ICostElementRepository.class).getByCostingMethod(getCostingMethod());
 	}
 
 	private Collection<MAcctSchema> getAcctSchema(final PO po)

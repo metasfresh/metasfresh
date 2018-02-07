@@ -3,9 +3,9 @@ package de.metas.costing.interceptors;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.ModelValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostingMethod;
@@ -37,6 +37,9 @@ import de.metas.costing.ICostElementRepository;
 @Interceptor(I_M_Product_Category_Acct.class)
 public class M_Product_Category_Acct
 {
+	@Autowired
+	private ICostElementRepository costElementRepo;
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void checkCosting(final I_M_Product_Category_Acct pca)
 	{
@@ -44,7 +47,7 @@ public class M_Product_Category_Acct
 		final String costingMethod = pca.getCostingMethod();
 		if (!Check.isEmpty(costingMethod, true))
 		{
-			Services.get(ICostElementRepository.class).getOrCreateMaterialCostElement(pca.getAD_Client_ID(), CostingMethod.ofNullableCode(costingMethod));
+			costElementRepo.getOrCreateMaterialCostElement(pca.getAD_Client_ID(), CostingMethod.ofNullableCode(costingMethod));
 		}
 	}
 }

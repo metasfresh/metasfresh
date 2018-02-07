@@ -39,6 +39,7 @@ public final class CurrentCost
 {
 	private final int id;
 	private final CostSegment costSegment;
+	private final CostElement costElement;
 
 	private final int currencyId;
 	private final int precision;
@@ -55,6 +56,7 @@ public final class CurrentCost
 	private CurrentCost(
 			final int id,
 			@NonNull final CostSegment costSegment,
+			@NonNull final CostElement costElement,
 			final int currencyId,
 			final int precision,
 			@NonNull final I_C_UOM uom,
@@ -70,6 +72,7 @@ public final class CurrentCost
 
 		this.id = id;
 		this.costSegment = costSegment;
+		this.costElement = costElement;
 		
 		this.currencyId = currencyId;
 		this.precision = precision;

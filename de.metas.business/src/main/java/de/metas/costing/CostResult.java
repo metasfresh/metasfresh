@@ -1,11 +1,14 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
+import java.util.Map;
 
 import org.adempiere.util.Check;
 
-import de.metas.quantity.Quantity;
+import com.google.common.collect.ImmutableMap;
+
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -32,43 +35,25 @@ import lombok.Value;
  */
 
 @Value
-public class CostDetailEvent
+public final class CostResult
 {
 	CostSegment costSegment;
-	int costElementId;
-	CostingMethod costingMethod;
-	CostingDocumentRef documentRef;
-
-	Quantity qty;
-	CostAmount amt;
-	CostAmount price;
-
-	int currencyId;
-	int precision;
+	CostAmount totalAmount;
+	@Getter(AccessLevel.NONE)
+	Map<CostElement, CostAmount> amounts;
 
 	@Builder
-	private CostDetailEvent(
+	private CostResult(
 			@NonNull final CostSegment costSegment,
-			final int costElementId,
-			final CostingMethod costingMethod,
-			@NonNull final CostingDocumentRef documentRef,
-			@NonNull final BigDecimal amt,
-			@NonNull final BigDecimal price,
-			@NonNull final Quantity qty,
-			final int currencyId,
-			final int precision)
+			@NonNull final Map<CostElement, CostAmount> amounts)
 	{
-		Check.assume(currencyId > 0, "currencyId > 0");
-		Check.assume(precision >= 0, "precision >= 0");
+		Check.assumeNotEmpty(amounts, "amounts is not empty");
 
 		this.costSegment = costSegment;
-		this.costElementId = costElementId;
-		this.costingMethod = costingMethod;
-		this.documentRef = documentRef;
-		this.qty = qty;
-		this.amt = CostAmount.of(amt, currencyId);
-		this.price = CostAmount.of(price, currencyId);
-		this.currencyId = currencyId;
-		this.precision = precision;
+		this.amounts = ImmutableMap.copyOf(amounts);
+		this.totalAmount = amounts.values()
+				.stream()
+				.reduce(CostAmount::add)
+				.get();
 	}
 }

@@ -8,20 +8,30 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_CostDetail;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostDetailEvent;
+import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.quantity.Quantity;
 
 /*
@@ -46,44 +56,108 @@ import de.metas.quantity.Quantity;
  * #L%
  */
 
+@Component
 public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 {
-	@Override
-	protected I_M_CostDetail createCostForMatchPO(final CostDetailCreateRequest request)
+	public AveragePOCostingMethodHandler(final ICurrentCostsRepository currentCostsRepo, final ICostDetailRepository costDetailsRepo)
 	{
-		return createCostDefaultImpl(request);
+		super(currentCostsRepo, costDetailsRepo);
 	}
 
 	@Override
-	protected I_M_CostDetail createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
+	public CostingMethod getCostingMethod()
 	{
+		return CostingMethod.AveragePO;
+	}
+
+	@Override
+	protected CostDetailCreateResult createCostForMatchPO(final CostDetailCreateRequest request)
+	{
+		final CostDetailCreateResult result = createCostDefaultImpl(request);
+
 		final CurrentCost currentCosts = getCurrentCost(request);
-		
-		// TODO Auto-generated method stub
-		return super.createOutboundCostDefaultImpl(request);
+		currentCosts.addWeightedAverage(request.getAmt(), request.getQty());
+
+		saveCurrentCosts(currentCosts);
+
+		return result;
 	}
 
 	@Override
-	protected void processMatchPO(final CostDetailEvent event, final CurrentCost cost)
+	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		cost.addWeightedAverage(event.getAmt(), event.getQty());
-	}
-
-	@Override
-	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CurrentCost cost)
-	{
-		final CostAmount amt = event.getAmt();
-		final Quantity qty = event.getQty();
-		final boolean addition = qty.signum() > 0;
-
-		if (addition)
+		final I_M_MatchInv matchInv = InterfaceWrapperHelper.load(request.getDocumentRef().getRecordId(), I_M_MatchInv.class);
+		final I_C_InvoiceLine purchaseInvoiceLine = matchInv.getC_InvoiceLine();
+		final I_C_OrderLine purchaseOrderLine = purchaseInvoiceLine.getC_OrderLine();
+		if (purchaseOrderLine == null)
 		{
-			cost.addWeightedAverage(amt, qty);
+			throw new AdempiereException("Cannot compute Average PO price because invoice line is not linked to an order line: " + request);
+		}
+
+		final CostAmount costPrice = Services.get(IOrderLineBL.class).getCostPrice(purchaseOrderLine);
+		final CostAmount amt = costPrice.multiply(request.getQty());
+
+		final CostDetailCreateResult result = createCostDefaultImpl(request.toBuilder()
+				.amt(amt)
+				.build());
+
+		// NOTE: we don't have to update the current costs
+
+		return result;
+	}
+
+	@Override
+	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
+	{
+		final CostAmount amt;
+
+		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.load(request.getDocumentRef().getRecordId(), I_M_InOutLine.class);
+		final I_C_OrderLine purchaseOrderLine = receiptLine.getC_OrderLine();
+		if (purchaseOrderLine != null)
+		{
+			final CostAmount costPrice = Services.get(IOrderLineBL.class).getCostPrice(purchaseOrderLine);
+			amt = costPrice.multiply(request.getQty());
 		}
 		else
 		{
-			cost.adjustCurrentQty(qty);
+			final CurrentCost currentCosts = getCurrentCost(request);
+			amt = currentCosts.getCurrentCostPrice().multiply(request.getQty());
 		}
+
+		// NOTE: we don't have to update the current costs
+
+		return createCostDefaultImpl(request.toBuilder()
+				.amt(amt)
+				.build());
+	}
+
+	@Override
+	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
+	{
+		final Quantity qty = request.getQty();
+		final boolean isReturnTrx = qty.signum() > 0;
+
+		final CurrentCost currentCosts = getCurrentCost(request);
+		final CostDetailCreateResult result;
+		if (isReturnTrx)
+		{
+			result = createCostDefaultImpl(request);
+
+			currentCosts.addWeightedAverage(request.getAmt(), qty);
+		}
+		else
+		{
+			final CostAmount price = currentCosts.getCurrentCostPrice();
+			result = createCostDefaultImpl(request.toBuilder()
+					.amt(price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision()))
+					.build());
+
+			currentCosts.adjustCurrentQty(qty);
+		}
+
+		saveCurrentCosts(currentCosts);
+
+		return result;
 	}
 
 	@Override

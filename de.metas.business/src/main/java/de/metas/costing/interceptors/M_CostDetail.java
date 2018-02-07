@@ -3,12 +3,9 @@ package de.metas.costing.interceptors;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Services;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import de.metas.costing.ICostDetailService;
 
 /*
  * #%L
@@ -44,11 +41,4 @@ public class M_CostDetail
 			throw new AdempiereException("Cannot delete processed cost details");
 		}
 	}	// beforeDelete
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
-	public void afterDelete(final I_M_CostDetail costDetail)
-	{
-		Services.get(ICostDetailService.class).onCostDetailDeleted(costDetail);
-	}
-
 }

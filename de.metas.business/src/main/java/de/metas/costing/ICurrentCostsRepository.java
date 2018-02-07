@@ -1,6 +1,5 @@
 package de.metas.costing;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Product;
 
 /*
@@ -25,9 +24,8 @@ import org.compiere.model.I_M_Product;
  * #L%
  */
 
-public interface ICurrenctCostsRepository extends ISingletonService
+public interface ICurrentCostsRepository
 {
-
 	CurrentCost getOrNull(CostSegment costSegment, int costElementId);
 
 	CurrentCost getOrCreate(CostSegment costSegment, int costElementId);
@@ -41,5 +39,4 @@ public interface ICurrenctCostsRepository extends ISingletonService
 	void save(CurrentCost currentCost);
 
 	void deleteForProduct(I_M_Product product);
-
 }

@@ -15,13 +15,15 @@ import org.compiere.model.MAcctSchema;
 import org.compiere.model.MOrg;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostElement;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostElementRepository;
-import de.metas.costing.ICurrenctCostsRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import lombok.NonNull;
@@ -48,9 +50,12 @@ import lombok.NonNull;
  * #L%
  */
 
-public class CurrentCostsRepository implements ICurrenctCostsRepository
+@Component
+public class CurrentCostsRepository implements ICurrentCostsRepository
 {
 	private static final Logger logger = LogManager.getLogger(CurrentCostsRepository.class);
+	@Autowired
+	private ICostElementRepository costElementRepo;
 
 	@Override
 	public CurrentCost getOrNull(@NonNull final CostSegment costSegment, final int costElementId)
@@ -82,11 +87,11 @@ public class CurrentCostsRepository implements ICurrenctCostsRepository
 	public CurrentCost getOrCreate(@NonNull final CostSegment costSegment, final int costElementId)
 	{
 		final I_M_Cost costRecord = getCostRecordOrNull(costSegment, costElementId);
-		if(costRecord != null)
+		if (costRecord != null)
 		{
 			return toCurrentCost(costRecord);
 		}
-		
+
 		return create(costSegment, costElementId);
 	}
 
@@ -101,7 +106,7 @@ public class CurrentCostsRepository implements ICurrenctCostsRepository
 		costRecord.setM_AttributeSetInstance_ID(costSegment.getAttributeSetInstanceId());
 		costRecord.setM_CostElement_ID(costElementId);
 		InterfaceWrapperHelper.save(costRecord);
-		
+
 		return toCurrentCost(costRecord);
 	}
 
@@ -120,7 +125,7 @@ public class CurrentCostsRepository implements ICurrenctCostsRepository
 		InterfaceWrapperHelper.save(costRecord);
 	}
 
-	private static CurrentCost toCurrentCost(final I_M_Cost costRecord)
+	private CurrentCost toCurrentCost(final I_M_Cost costRecord)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final I_C_UOM uom = productBL.getStockingUOM(costRecord.getM_Product_ID());
@@ -138,9 +143,12 @@ public class CurrentCostsRepository implements ICurrenctCostsRepository
 				.attributeSetInstanceId(costRecord.getM_AttributeSetInstance_ID())
 				.build();
 
+		final CostElement costElement = costElementRepo.getById(costRecord.getM_CostElement_ID());
+
 		return CurrentCost.builder()
 				.id(costRecord.getM_Cost_ID())
 				.costSegment(costSegment)
+				.costElement(costElement)
 				.currencyId(as.getC_Currency_ID())
 				.precision(as.getCostingPrecision())
 				.uom(uom)
@@ -179,10 +187,10 @@ public class CurrentCostsRepository implements ICurrenctCostsRepository
 		});
 	}
 
-	private static void forEachCostSegmentAndElement(final I_M_Product product, final BiConsumer<CostSegment, CostElement> consumer)
+	private void forEachCostSegmentAndElement(final I_M_Product product, final BiConsumer<CostSegment, CostElement> consumer)
 	{
 		final Properties ctx = Env.getCtx();
-		final List<CostElement> costElements = Services.get(ICostElementRepository.class).getCostElementsWithCostingMethods(product.getAD_Client_ID());
+		final List<CostElement> costElements = costElementRepo.getCostElementsWithCostingMethods(product.getAD_Client_ID());
 
 		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(ctx, product.getAD_Client_ID()))
 		{

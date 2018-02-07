@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.process;
 
@@ -13,12 +13,12 @@ package de.metas.adempiere.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,58 +27,55 @@ package de.metas.adempiere.process;
 
 import java.util.Iterator;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.ad.trx.processor.api.LoggerTrxItemExceptionHandler;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MProduct;
-import org.compiere.model.PO;
-import org.compiere.model.Query;
 
-import de.metas.costing.ICurrenctCostsRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 
 /**
  * @author tsa
- * 
+ *
  */
 public class CreateProductCosts extends JavaProcess
 {
-	@Override
-	protected void prepare()
-	{
-	}
+	private final ICurrentCostsRepository currentCostsRepository = Adempiere.getBean(ICurrentCostsRepository.class);
+
+	private int count_all = 0;
 
 	@Override
-	protected String doIt() throws Exception
+	@RunOutOfTrx
+	protected String doIt()
 	{
-		int count_all = 0;
-		Iterator<PO> it = getProductsQuery().iterate(null, false); // metas: guaranteed = false because we are not changing the products
-		while (it.hasNext())
-		{
-			MProduct product = (MProduct)it.next();
-			process(product);
-			count_all++;
-		}
+		final Iterator<I_M_Product> products = retrieveProducts();
+		Services.get(ITrxItemProcessorExecutorService.class)
+				.<I_M_Product, Void> createExecutor()
+				.setExceptionHandler(LoggerTrxItemExceptionHandler.instance)
+				.setProcessor(this::process)
+				.process(products);
+
 		return "@Updated@ #" + count_all;
 	}
 
 	private void process(final I_M_Product product)
 	{
-		try
-		{
-			Services.get(ICurrenctCostsRepository.class).createDefaultProductCosts(product);
-			commitEx();
-		}
-		catch (Exception e)
-		{
-			addLog("Error on " + product.getName() + ": " + e.getLocalizedMessage());
-		}
+		currentCostsRepository.createDefaultProductCosts(product);
+		count_all++;
 	}
 
-	private Query getProductsQuery()
+	private Iterator<I_M_Product> retrieveProducts()
 	{
-		final String whereClause = I_M_Product.COLUMNNAME_AD_Client_ID + "=?";
-		return new Query(getCtx(), I_M_Product.Table_Name, whereClause, get_TrxName())
-				.setParameters(getAD_Client_ID())
-				.setOrderBy(I_M_Product.COLUMNNAME_M_Product_ID);
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Product.class)
+				.addEqualsFilter(I_M_Product.COLUMN_AD_Client_ID, getAD_Client_ID())
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_Product.COLUMN_M_Product_ID)
+				.create()
+				.iterate(I_M_Product.class);
 	}
 }

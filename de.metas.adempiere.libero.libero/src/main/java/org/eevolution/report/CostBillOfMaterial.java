@@ -47,7 +47,7 @@ import java.util.List;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.engines.CostEngine;
 import org.adempiere.model.engines.CostEngineFactory;
-import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
@@ -75,6 +75,8 @@ import de.metas.process.ProcessInfoParameter;
  */
 public class CostBillOfMaterial extends JavaProcess
 {
+	private final ICostElementRepository costElementRepo = Adempiere.getBean(ICostElementRepository.class);
+	
 	private static final String LEVELS = "....................";
 	//
 	private int p_AD_Org_ID = 0;
@@ -288,7 +290,7 @@ public class CostBillOfMaterial extends JavaProcess
 	{
 		if (m_costElements == null)
 		{
-			m_costElements = Services.get(ICostElementRepository.class).getByCostingMethod(CostingMethod.ofCode(p_ConstingMethod));
+			m_costElements = costElementRepo.getByCostingMethod(CostingMethod.ofCode(p_ConstingMethod));
 		}
 		return m_costElements;
 	}

@@ -62,6 +62,12 @@ public class CostingDocumentRef
 		return new CostingDocumentRef(TABLE_NAME_M_MatchInv, matchInvId, I_M_CostDetail.COLUMNNAME_M_MatchInv_ID, outboundTrx);
 	}
 
+	public static CostingDocumentRef ofReceiptLineId(final int inOutLineId)
+	{
+		final Boolean outboundTrx = Boolean.FALSE;
+		return new CostingDocumentRef(TABLE_NAME_M_InOutLine, inOutLineId, I_M_CostDetail.COLUMNNAME_M_InOutLine_ID, outboundTrx);
+	}
+
 	public static CostingDocumentRef ofShipmentLineId(final int inOutLineId)
 	{
 		final Boolean outboundTrx = Boolean.TRUE;

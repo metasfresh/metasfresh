@@ -2,7 +2,6 @@ package de.metas.costing;
 
 import java.math.BigDecimal;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_CostDetail;
 
 /*
@@ -27,19 +26,15 @@ import org.compiere.model.I_M_CostDetail;
  * #L%
  */
 
-public interface ICostDetailService extends ISingletonService
+public interface ICostDetailService
 {
-	void createCostDetail(CostDetailCreateRequest request);
+	CostResult createCostDetail(CostDetailCreateRequest request);
 
 	void reverseAndDeleteForDocument(CostingDocumentRef documentRef);
-
-	void reversePartialQty(CostDetailQuery query, BigDecimal qty);
 
 	void processIfCostImmediate(I_M_CostDetail costDetail);
 
 	void processAllForProduct(int productId);
-
-	void onCostDetailDeleted(I_M_CostDetail costDetail);
 
 	/** @return seed cost or null */
 	BigDecimal calculateSeedCosts(CostSegment costSegment, CostingMethod costingMethod, final int orderLineId);

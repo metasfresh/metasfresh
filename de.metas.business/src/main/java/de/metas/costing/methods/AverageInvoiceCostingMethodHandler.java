@@ -9,17 +9,20 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostDetailEvent;
+import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.quantity.Quantity;
 
@@ -45,35 +48,60 @@ import de.metas.quantity.Quantity;
  * #L%
  */
 
+@Component
 public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemplate
 {
-	@Override
-	protected I_M_CostDetail createCostForMatchInvoice(final CostDetailCreateRequest request)
+	public AverageInvoiceCostingMethodHandler(final ICurrentCostsRepository currentCostsRepo, final ICostDetailRepository costDetailsRepo)
 	{
-		return createCostDefaultImpl(request);
+		super(currentCostsRepo, costDetailsRepo);
 	}
 
 	@Override
-	protected void processMatchInvoice(final CostDetailEvent event, final CurrentCost cost)
+	public CostingMethod getCostingMethod()
 	{
-		cost.addWeightedAverage(event.getAmt(), event.getQty());
+		return CostingMethod.AverageInvoice;
 	}
 
 	@Override
-	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CurrentCost cost)
+	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final CostAmount amt = event.getAmt();
-		final Quantity qty = event.getQty();
-		final boolean addition = qty.signum() > 0;
+		final CostDetailCreateResult result = createCostDefaultImpl(request);
 
-		if (addition)
+		final CurrentCost cost = getCurrentCost(request);
+		cost.addWeightedAverage(request.getAmt(), request.getQty());
+
+		saveCurrentCosts(cost);
+
+		return result;
+	}
+
+	@Override
+	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
+	{
+		final Quantity qty = request.getQty();
+		final boolean isReturnTrx = qty.signum() > 0;
+
+		final CurrentCost currentCosts = getCurrentCost(request);
+		final CostDetailCreateResult result;
+		if (isReturnTrx)
 		{
-			cost.addWeightedAverage(amt, qty);
+			result = createCostDefaultImpl(request);
+
+			currentCosts.addWeightedAverage(request.getAmt(), qty);
 		}
 		else
 		{
-			cost.adjustCurrentQty(qty);
+			final CostAmount price = currentCosts.getCurrentCostPrice();
+			result = createCostDefaultImpl(request.toBuilder()
+					.amt(price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision()))
+					.build());
+
+			currentCosts.adjustCurrentQty(qty);
 		}
+
+		saveCurrentCosts(currentCosts);
+
+		return result;
 	}
 
 	@Override

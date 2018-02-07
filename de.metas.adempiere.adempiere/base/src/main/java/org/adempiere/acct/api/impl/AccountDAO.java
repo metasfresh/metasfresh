@@ -8,7 +8,9 @@ import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.ModelColumn;
+import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
@@ -32,11 +34,11 @@ import de.metas.adempiere.util.CacheCtx;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -68,11 +70,13 @@ public class AccountDAO implements IAccountDAO
 	@Cached(cacheName = MAccount.Table_Name)
 	public MAccount retrieveAccountById(@CacheCtx final Properties ctx, final int validCombinationId)
 	{
-		if (validCombinationId <= 0)
+		Check.assume(validCombinationId > 0, "validCombinationId > 0");
+		final MAccount account = new MAccount(ctx, validCombinationId, ITrx.TRXNAME_None);
+		if (account.getC_ValidCombination_ID() <= 0)
 		{
-			return null;
+			throw new AdempiereException("No account found for C_ValidCombination_ID=" + validCombinationId);
 		}
-		return new MAccount(ctx, validCombinationId, ITrx.TRXNAME_None);
+		return account;
 	}
 
 	@Override

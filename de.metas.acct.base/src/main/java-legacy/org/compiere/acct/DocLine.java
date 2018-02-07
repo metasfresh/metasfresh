@@ -24,11 +24,11 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.acct.api.IAccountDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -412,7 +412,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 			}
 			if (acct == null)
 			{
-				throw new AdempiereException("No charge account was found for acctType=" + acctType + ", " + as);
+				throw newPostingException().setC_AcctSchema(as).setDetailMessage("No Charge Account for account type: " + acctType);
 			}
 			return acct;
 		}
@@ -434,11 +434,11 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		}
 
 		final I_M_Product_Acct productAcct = productAcctDAO.retrieveProductAcctOrNull(as, productId);
-		Check.assumeNotNull(productAcct, "Product {} has accounting records", productId);
+		Check.assumeNotNull(productAcct, "Product {} has accounting definition records", productId);
 		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(productAcct, acctType.getColumnName());
 		if (validCombinationId == null || validCombinationId <= 0)
 		{
-			return null;
+			throw newPostingException().setC_AcctSchema(as).setDetailMessage("No Product Account for account type: " + acctType);
 		}
 
 		return accountDAO.retrieveAccountById(getCtx(), validCombinationId);
@@ -457,7 +457,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		final Integer validCombinationId = InterfaceWrapperHelper.getValueOrNull(pcAcct, acctType.getColumnName());
 		if (validCombinationId == null || validCombinationId <= 0)
 		{
-			return null;
+			throw newPostingException().setC_AcctSchema(as).setDetailMessage("No Default Account for account type: " + acctType);
 		}
 
 		return accountDAO.retrieveAccountById(getCtx(), validCombinationId);
@@ -623,7 +623,8 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 					.documentRef(documentRef)
 					.attributeSetInstanceId(getM_AttributeSetInstance_ID())
 					.build();
-			final BigDecimal costDetailAmt = Services.get(ICostDetailRepository.class).getCostDetailAmtOrNull(query);
+			final ICostDetailRepository costDetailsRepo = Adempiere.getBean(ICostDetailRepository.class);
+			final BigDecimal costDetailAmt = costDetailsRepo.getCostDetailAmtOrNull(query);
 			if (costDetailAmt != null)
 			{
 				return costDetailAmt;

@@ -13,11 +13,11 @@ package org.compiere.session;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,6 +29,7 @@ import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.MTask;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
@@ -89,24 +90,23 @@ public class ServerBase implements IServerService
 		log.info("[{}] postImmediate: Table={}, Record_ID={}", m_no, AD_Table_ID, Record_ID);
 		m_postCount.incrementAndGet();
 
-		final String trxName = ITrx.TRXNAME_None;
-
-		//
-		// Ask the document to be posted immediate
-		return Services.get(IPostingService.class)
-				.newPostingRequest()
-				.setContext(ctx, trxName)
-				.setAD_Client_ID(AD_Client_ID)
-				.setDocument(AD_Table_ID, Record_ID)
-				.setForce(force)
-				.setFailOnError(false) // backward compatibile
-				.setPostWithoutServer() // we are on server side now, so don't try to contact the server again
-				.setPostImmediate(PostImmediate.Yes) // make sure we are posting it immediate
-				//
-				// Execute the posting
-				.postIt()
-				// Get and return the error message (if any)
-				.getPostedErrorMessage();
+		try (final IAutoCloseable contextRestorer = Env.switchContext(ctx))
+		{
+			return Services.get(IPostingService.class)
+					.newPostingRequest()
+					.setContext(ctx, ITrx.TRXNAME_None)
+					.setAD_Client_ID(AD_Client_ID)
+					.setDocument(AD_Table_ID, Record_ID)
+					.setForce(force)
+					.setFailOnError(false) // backward compatibile
+					.setPostWithoutServer() // we are on server side now, so don't try to contact the server again
+					.setPostImmediate(PostImmediate.Yes) // make sure we are posting it immediate
+					//
+					// Execute the posting
+					.postIt()
+					// Get and return the error message (if any)
+					.getPostedErrorMessage();
+		}
 	}	// postImmediate
 
 	/*************************************************************************

@@ -131,6 +131,11 @@ public class CostAmount
 		final BigDecimal valueNew = value.divide(divisor, precision, roundingMode);
 		return new CostAmount(valueNew, currencyId);
 	}
+	
+	public CostAmount divide(final Quantity divisor, final int precision, final RoundingMode roundingMode)
+	{
+		return divide(divisor.getQty(), precision, roundingMode);
+	}
 
 	public CostAmount roundToPrecisionIfNeeded(final int precision)
 	{

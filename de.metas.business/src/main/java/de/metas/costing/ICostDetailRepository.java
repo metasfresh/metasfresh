@@ -3,7 +3,6 @@ package de.metas.costing;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_CostDetail;
 
 /*
@@ -28,7 +27,7 @@ import org.compiere.model.I_M_CostDetail;
  * #L%
  */
 
-public interface ICostDetailRepository extends ISingletonService
+public interface ICostDetailRepository
 {
 	void save(I_M_CostDetail costDetail);
 
@@ -44,5 +43,4 @@ public interface ICostDetailRepository extends ISingletonService
 	List<I_M_CostDetail> getAllForDocument(CostingDocumentRef documentRef);
 
 	boolean hasCostDetailsForProductId(int productId);
-
 }

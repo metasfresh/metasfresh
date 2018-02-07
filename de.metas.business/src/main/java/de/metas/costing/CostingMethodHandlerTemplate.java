@@ -9,9 +9,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import lombok.NonNull;
 
@@ -39,7 +37,16 @@ import lombok.NonNull;
 
 public abstract class CostingMethodHandlerTemplate implements CostingMethodHandler
 {
-	private static final Logger logger = LogManager.getLogger(CostingMethodHandlerTemplate.class);
+	protected final ICurrentCostsRepository currentCostsRepo;
+	protected final ICostDetailRepository costDetailsRepo;
+
+	protected CostingMethodHandlerTemplate(
+			@NonNull ICurrentCostsRepository currentCostsRepo,
+			@NonNull final ICostDetailRepository costDetailsRepo)
+	{
+		this.currentCostsRepo = currentCostsRepo;
+		this.costDetailsRepo = costDetailsRepo;
+	}
 
 	@Override
 	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final int orderLineId)
@@ -48,8 +55,18 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	@Override
-	public final I_M_CostDetail createCost(final CostDetailCreateRequest request)
+	public final CostDetailCreateResult createCost(final CostDetailCreateRequest request)
 	{
+		//
+		// Check if existing cost detail
+		final I_M_CostDetail costDetail = getExistingCostDetailOrNull(request);
+		if (costDetail != null)
+		{
+			return createCostDetailCreateResult(costDetail, request);
+		}
+
+		//
+		// Create new cost detail
 		final CostingDocumentRef documentRef = request.getDocumentRef();
 		final String documentTableName = documentRef.getTableName();
 		if (CostingDocumentRef.TABLE_NAME_M_MatchPO.equals(documentTableName))
@@ -62,7 +79,15 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		}
 		else if (CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(documentTableName))
 		{
-			return createCostForMaterialShipment(request);
+			final Boolean outboundTrx = documentRef.getOutboundTrx();
+			if (outboundTrx)
+			{
+				return createCostForMaterialShipment(request);
+			}
+			else
+			{
+				return createCostForMaterialReceipt(request);
+			}
 		}
 		else if (CostingDocumentRef.TABLE_NAME_M_MovementLine.equals(documentTableName))
 		{
@@ -90,85 +115,85 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		}
 	}
 
-	protected I_M_CostDetail createCostForMatchPO(CostDetailCreateRequest request)
+	protected I_M_CostDetail getExistingCostDetailOrNull(final CostDetailCreateRequest request)
+	{
+		final CostDetailQuery costDetailQuery = extractCostDetailQuery(request);
+		return costDetailsRepo.getCostDetailOrNull(costDetailQuery);
+	}
+
+	private static CostDetailQuery extractCostDetailQuery(final CostDetailCreateRequest request)
+	{
+		final CostElement costElement = request.getCostElement();
+
+		return CostDetailQuery.builder()
+				.acctSchemaId(request.getAcctSchemaId())
+				.attributeSetInstanceId(request.getAttributeSetInstanceId())
+				.costElementId(costElement != null ? costElement.getId() : -1)
+				.documentRef(request.getDocumentRef())
+				.build();
+	}
+
+	protected CostDetailCreateResult createCostForMatchPO(final CostDetailCreateRequest request)
 	{
 		// nothing on this level
 		return null;
 	}
 
-	protected I_M_CostDetail createCostForMatchInvoice(CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
 		// nothing on this level
 		return null;
 	}
 
-	protected I_M_CostDetail createCostForMaterialShipment(CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
+	{
+		// nothing on this level
+		return null;
+	}
+
+	protected CostDetailCreateResult createCostForMaterialShipment(final CostDetailCreateRequest request)
 	{
 		return createOutboundCostDefaultImpl(request);
 	}
 
-	protected I_M_CostDetail createCostForMovementLine(CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForMovementLine(final CostDetailCreateRequest request)
 	{
 		return createOutboundCostDefaultImpl(request);
 	}
 
-	protected I_M_CostDetail createCostForInventoryLine(CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForInventoryLine(final CostDetailCreateRequest request)
 	{
 		return createOutboundCostDefaultImpl(request);
 	}
 
-	protected I_M_CostDetail createCostForProductionLine(CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForProductionLine(final CostDetailCreateRequest request)
 	{
 		// nothing on this level
 		return null;
 	}
 
-	protected I_M_CostDetail createCostForProjectIssue(CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForProjectIssue(final CostDetailCreateRequest request)
 	{
 		// nothing on this level
 		return null;
 	}
 
-	protected I_M_CostDetail createCostForCostCollector(CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForCostCollector(final CostDetailCreateRequest request)
 	{
 		// nothing on this level
 		return null;
 	}
 
-	protected I_M_CostDetail createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
 		return createCostDefaultImpl(request);
 	}
 
-	protected I_M_CostDetail createCostDefaultImpl(final CostDetailCreateRequest request)
+	protected final CostDetailCreateResult createCostDefaultImpl(final CostDetailCreateRequest request)
 	{
-		final ICostDetailRepository costDetailsRepo = Services.get(ICostDetailRepository.class);
-
-		final CostDetailQuery costDetailForDocumentQuery = CostDetailQuery.builder()
-				.acctSchemaId(request.getAcctSchemaId())
-				.attributeSetInstanceId(request.getAttributeSetInstanceId())
-				.costElementId(request.getCostElementId())
-				.documentRef(request.getDocumentRef())
-				.build();
-
-		// Delete all unprocessed or zero differences for given document
-		costDetailsRepo.deleteUnprocessedWithNoChanges(costDetailForDocumentQuery);
-
-		//
-		// Create/Update the cost detail
-		I_M_CostDetail costDetail = costDetailsRepo.getCostDetailOrNull(costDetailForDocumentQuery);
-		if (costDetail == null)		// createNew
-		{
-			costDetail = createDraftCostDetail(request);
-		}
-		else
-		{
-			updateCostDetailFromCreateRequest(costDetail, request);
-		}
-		//
-		costDetailsRepo.save(costDetail);
-
-		return costDetail;
+		final I_M_CostDetail costDetail = createDraftCostDetail(request);
+		markProcessedAndSave(costDetail);
+		return createCostDetailCreateResult(costDetail, request);
 	}
 
 	private I_M_CostDetail createDraftCostDetail(@NonNull final CostDetailCreateRequest request)
@@ -181,7 +206,11 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		costDetail.setM_Product_ID(request.getProductId());
 		costDetail.setM_AttributeSetInstance_ID(request.getAttributeSetInstanceId());
 
-		costDetail.setM_CostElement_ID(request.getCostElementId());
+		final CostElement costElement = request.getCostElement();
+		if (costElement != null)
+		{
+			costDetail.setM_CostElement_ID(costElement.getId());
+		}
 
 		costDetail.setAmt(request.getAmt().getValue());
 		costDetail.setQty(request.getQty().getQty());
@@ -199,34 +228,34 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return costDetail;
 	}
 
-	private void updateCostDetailFromCreateRequest(final I_M_CostDetail costDetail, final CostDetailCreateRequest request)
+	protected final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
 	{
-		final BigDecimal amt = request.getAmt().getValue();
-		final BigDecimal qty = request.getQty().getQty();
-		costDetail.setDeltaAmt(amt.subtract(costDetail.getAmt()));
-		costDetail.setDeltaQty(qty.subtract(costDetail.getQty()));
-		if (isDelta(costDetail))
-		{
-			costDetail.setProcessed(false);
-			costDetail.setAmt(amt);
-			costDetail.setQty(qty);
-		}
+		final CostSegment costSegment = extractCostSegment(request);
+
+		final CostElement costElement = request.getCostElement();
+		final int costElementId = costElement != null ? costElement.getId() : -1;
+
+		return currentCostsRepo.getOrCreate(costSegment, costElementId);
 	}
 
-	private static boolean isDelta(final I_M_CostDetail costDetail)
+	private static CostDetailCreateResult createCostDetailCreateResult(final I_M_CostDetail costDetail, final CostDetailCreateRequest request)
 	{
-		return !(costDetail.getDeltaAmt().signum() == 0
-				&& costDetail.getDeltaQty().signum() == 0);
-	}	// isDelta
+		final MAcctSchema as = MAcctSchema.get(Env.getCtx(), request.getAcctSchemaId());
+		return CostDetailCreateResult.builder()
+				.costSegment(extractCostSegment(request))
+				.costElement(request.getCostElement())
+				.amt(CostAmount.of(costDetail.getAmt(), as.getC_Currency_ID()))
+				.build();
+	}
 
-	protected final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
+	private static CostSegment extractCostSegment(final CostDetailCreateRequest request)
 	{
 		final MAcctSchema as = MAcctSchema.get(Env.getCtx(), request.getAcctSchemaId());
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final CostingLevel costingLevel = productBL.getCostingLevel(request.getProductId(), as);
 		final int costTypeId = as.getM_CostType_ID();
 
-		final CostSegment costSegment = CostSegment.builder()
+		return CostSegment.builder()
 				.costingLevel(costingLevel)
 				.acctSchemaId(request.getAcctSchemaId())
 				.costTypeId(costTypeId)
@@ -235,105 +264,31 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 				.orgId(request.getOrgId())
 				.attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.build();
+	}
 
-		return Services.get(ICurrenctCostsRepository.class).getOrCreate(costSegment, request.getCostElementId());
+	protected final void saveCurrentCosts(final CurrentCost currentCost)
+	{
+		currentCostsRepo.save(currentCost);
+	}
+
+	protected final void markProcessedAndSave(final I_M_CostDetail costDetail)
+	{
+		costDetail.setProcessed(true); // TODO: get rid of Processed flag, or always set it!
+		costDetailsRepo.save(costDetail);
 	}
 
 	@Override
-	public final void process(final CostDetailEvent event)
+	public void beforeDelete(final I_M_CostDetail costDetail)
 	{
-		final ICurrenctCostsRepository currenctCostsRepository = Services.get(ICurrenctCostsRepository.class);
-		final CurrentCost cost = currenctCostsRepository.getOrCreate(event.getCostSegment(), event.getCostElementId());
+		// TODO implement beforeDelete for each method...
 
-		final CostingDocumentRef documentRef = event.getDocumentRef();
-		final String documentTableName = documentRef.getTableName();
-		if (CostingDocumentRef.TABLE_NAME_M_MatchPO.equals(documentTableName))
-		{
-			processMatchPO(event, cost);
-		}
-		else if (CostingDocumentRef.TABLE_NAME_M_MatchInv.equals(documentTableName))
-		{
-			processMatchInvoice(event, cost);
-		}
-		else if (CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(documentTableName))
-		{
-			processMaterialShipment(event, cost);
-		}
-		else if (CostingDocumentRef.TABLE_NAME_M_MovementLine.equals(documentTableName))
-		{
-			processMovementLine(event, cost);
-		}
-		else if (CostingDocumentRef.TABLE_NAME_M_InventoryLine.equals(documentTableName))
-		{
-			processInventoryLine(event, cost);
-		}
-		else if (CostingDocumentRef.TABLE_NAME_M_ProductionLine.equals(documentTableName))
-		{
-			processProductionLine(event, cost);
-		}
-		else if (CostingDocumentRef.TABLE_NAME_C_ProjectIssue.equals(documentTableName))
-		{
-			processProjectIssue(event, cost);
-		}
-		else if (CostingDocumentRef.TABLE_NAME_PP_Cost_Collector.equals(documentTableName))
-		{
-			processCostCollector(event, cost);
-		}
-		else
-		{
-			processOther(event, cost);
-		}
-
-		currenctCostsRepository.save(cost);
-	}
-
-	protected void processMatchPO(final CostDetailEvent event, final CurrentCost cost)
-	{
-		// nothing on this level
-	}
-
-	protected void processMatchInvoice(final CostDetailEvent event, final CurrentCost cost)
-	{
-		// nothing on this level
-	}
-
-	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CurrentCost cost)
-	{
-		// nothing on this level
-	}
-
-	protected void processMaterialShipment(final CostDetailEvent event, final CurrentCost cost)
-	{
-		processOutboundTransactionDefaultImpl(event, cost);
-	}
-
-	protected void processMovementLine(final CostDetailEvent event, final CurrentCost cost)
-	{
-		processOutboundTransactionDefaultImpl(event, cost);
-	}
-
-	protected void processInventoryLine(final CostDetailEvent event, final CurrentCost cost)
-	{
-		processOutboundTransactionDefaultImpl(event, cost);
-	}
-
-	protected void processProductionLine(final CostDetailEvent event, final CurrentCost cost)
-	{
-		processOutboundTransactionDefaultImpl(event, cost);
-	}
-
-	protected void processProjectIssue(final CostDetailEvent event, final CurrentCost cost)
-	{
-		processOutboundTransactionDefaultImpl(event, cost);
-	}
-
-	protected void processCostCollector(final CostDetailEvent event, final CurrentCost cost)
-	{
-		processOutboundTransactionDefaultImpl(event, cost);
-	}
-
-	protected void processOther(final CostDetailEvent event, final CurrentCost cost)
-	{
-		logger.warn("Skip event because document is not handled: {}", event);
+		// if (costDetail.isProcessed())
+		// {
+		// costDetail.setProcessed(false);
+		// costDetail.setDeltaAmt(costDetail.getAmt());
+		// costDetail.setDeltaQty(costDetail.getQty());
+		// process(costDetail);
+		// Check.assume(costDetail.isProcessed(), "Cost detail {} shall be processed at this point", costDetail); // shall not happen
+		// }
 	}
 }

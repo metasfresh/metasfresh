@@ -3,19 +3,22 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MAccount;
 import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostResult;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
-import de.metas.order.IOrderLineBL;
+import de.metas.costing.ICostDetailService;
 import de.metas.quantity.Quantity;
 
 /*
@@ -106,32 +109,21 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		}
 	}
 
-	public CostAmount getPurchaseCosts(final I_C_AcctSchema as)
+	public CostResult getCreateReceiptCosts(final I_C_AcctSchema as)
 	{
-		final CostingMethod costingMethod = getProductCostingMethod(as);
-		if (CostingMethod.AveragePO == costingMethod || CostingMethod.LastPOPrice == costingMethod)
-		{
-			final I_C_OrderLine orderLine = getOrderLineOrNull();
-			if (orderLine != null)
-			{
-				final CostAmount costPrice = Services.get(IOrderLineBL.class).getCostPrice(orderLine);
-				final CostAmount costs = costPrice.multiply(getQty());
-				return costs;
-			}
-		}
-
-		final BigDecimal costs = getProductCosts(as, getAD_Org_ID(), false); // current costs
-		if (ProductCost.isNoCosts(costs))
-		{
-			// 08447: we shall allow zero costs in case CostingMethod=Standard costing
-			if (CostingMethod.StandardCosting != costingMethod)
-			{
-				throw newPostingException().setDetailMessage("Resubmit - No Costs for product=" + getProduct()
-						+ ", product is stocked and costing method=" + costingMethod + " is != " + CostingMethod.StandardCosting);
-			}
-		}
-
-		return CostAmount.of(costs != null ? costs : BigDecimal.ZERO, as.getC_Currency_ID());
+		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
+		return costDetailService.createCostDetail(
+				CostDetailCreateRequest.builder()
+						.acctSchemaId(as.getC_AcctSchema_ID())
+						.clientId(getAD_Client_ID())
+						.orgId(getAD_Org_ID())
+						.productId(getM_Product_ID())
+						.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+						.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
+						.qty(getQty())
+						.amt(CostAmount.zero(as.getC_Currency_ID())) // N/A
+						.date(TimeUtil.asLocalDate(getDateDoc()))
+						.build());
 	}
 
 	public CostAmount getShipmentCosts(final I_C_AcctSchema as)

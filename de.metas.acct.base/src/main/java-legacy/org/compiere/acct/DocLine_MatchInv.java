@@ -1,7 +1,11 @@
 package org.compiere.acct;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.MAccount;
+
+import de.metas.acct.api.ProductAcctType;
 
 /*
  * #%L
@@ -33,4 +37,13 @@ final class DocLine_MatchInv extends DocLine<Doc_MatchInv>
 		super(InterfaceWrapperHelper.getPO(matchInv), doc);
 	}
 
+	public MAccount getInventoryClearingAccount(final I_C_AcctSchema as)
+	{
+		return getAccount(isService() ? ProductAcctType.Expense : ProductAcctType.InventoryClearing, as);
+	}
+
+	public MAccount getInvoicePriceVarianceAccount(final I_C_AcctSchema as)
+	{
+		return getAccount(ProductAcctType.IPV, as);
+	}
 }

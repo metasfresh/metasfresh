@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.MAcctSchema;
@@ -51,6 +52,8 @@ import de.metas.costing.ICostDetailService;
  */
 public class Doc_Movement extends Doc<DocLine_Movement>
 {
+	private final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
+	
 	private int m_Reversal_ID = 0;
 	private String m_DocStatus = "";
 
@@ -189,7 +192,6 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 			if (description == null)
 				description = "";
 			// Cost Detail From
-			final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
 			costDetailService.createCostDetail(CostDetailCreateRequest.builder()
 					.acctSchemaId(as.getC_AcctSchema_ID())
 					.clientId(line.getAD_Client_ID())
@@ -197,7 +199,6 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 					.productId(line.getM_Product_ID())
 					.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 					.documentRef(CostingDocumentRef.ofOutboundMovementLineId(line.get_ID()))
-					.costElementId(0)
 					.qty(line.getQty().negate())
 					.amt(costs.negate())
 					.currencyConversionTypeId(getC_ConversionType_ID())
@@ -212,7 +213,6 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 					.productId(line.getM_Product_ID())
 					.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 					.documentRef(CostingDocumentRef.ofInboundMovementLineId(line.get_ID()))
-					.costElementId(0)
 					.qty(line.getQty())
 					.amt(costs)
 					.currencyConversionTypeId(getC_ConversionType_ID())

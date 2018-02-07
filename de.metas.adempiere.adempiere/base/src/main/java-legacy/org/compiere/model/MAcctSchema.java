@@ -83,7 +83,14 @@ public class MAcctSchema extends X_C_AcctSchema
 		final List<I_C_AcctSchema> clientAcctSchemas = Services.get(IAcctSchemaDAO.class).retrieveClientAcctSchemas(ctx, AD_Client_ID);
 		return LegacyAdapters.convertToPOArray(clientAcctSchemas, MAcctSchema.class);
 	}	//	getClientAcctSchema
-	
+
+	@Deprecated
+	public static MAcctSchema[] getClientAcctSchema (final int AD_Client_ID)
+	{
+		final List<I_C_AcctSchema> clientAcctSchemas = Services.get(IAcctSchemaDAO.class).retrieveClientAcctSchemas(AD_Client_ID);
+		return LegacyAdapters.convertToPOArray(clientAcctSchemas, MAcctSchema.class);
+	}
+
 	
 	/**************************************************************************
 	 * 	Standard Constructor
@@ -391,6 +398,11 @@ public class MAcctSchema extends X_C_AcctSchema
 		}
 		return true;
 	}	//	isSkipOrg
+	
+	public boolean isAllowPostingForOrg(final int adOrgId)
+	{
+		return !isSkipOrg(adOrgId);
+	}
 	
 	/**
 	 * 	Get Std Precision of accounting Currency

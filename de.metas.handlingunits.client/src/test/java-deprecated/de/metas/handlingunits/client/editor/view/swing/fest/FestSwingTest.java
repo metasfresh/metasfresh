@@ -153,7 +153,7 @@ public class FestSwingTest
 	@Test
 	public void testHUEditorFrame()
 	{
-		// our currenct Xvfb on dejen901 does not support this, resulting in
+		// our current Xvfb on dejen901 does not support this, resulting in
 		// org.fest.swing.exception.ActionFailedException: Platform does not support maximizing frames
 		// window.maximize();
 

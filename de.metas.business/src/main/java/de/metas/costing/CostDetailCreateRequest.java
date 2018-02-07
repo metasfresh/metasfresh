@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.util.Check;
+
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -35,7 +37,7 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class CostDetailCreateRequest
 {
-	int acctSchemaId;
+	int acctSchemaId; // not set it's OK
 	int clientId;
 	int orgId;
 	int productId;
@@ -44,11 +46,12 @@ public class CostDetailCreateRequest
 	@NonNull
 	CostingDocumentRef documentRef;
 
-	int costElementId;
+	@Nullable
+	CostElement costElement;
 
 	@NonNull
 	CostAmount amt;
-	
+
 	@NonNull
 	Quantity qty;
 
@@ -59,5 +62,16 @@ public class CostDetailCreateRequest
 	@Nullable
 	String description;
 
-	// TODO: validate: acctSchemaId > 0, clientId > 0 etc
+	// TODO: validate: clientId > 0, productId > 0;
+
+	public int getAcctSchemaId()
+	{
+		Check.assume(acctSchemaId > 0, "acctSchemaId shall be set for {}", this);
+		return acctSchemaId;
+	}
+
+	public int getAcctSchemaIdOrZero()
+	{
+		return acctSchemaId > 0 ? acctSchemaId : 0;
+	}
 }

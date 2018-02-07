@@ -43,6 +43,7 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.apache.commons.collections4.comparators.ComparatorChain;
+import org.compiere.Adempiere;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -2431,7 +2432,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		//
 		// For all lines
-		final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
+		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
 		for (final I_M_InOutLine inoutLine : getLines(true))
 		{
 			final I_M_Product product = inoutLine.getM_Product();

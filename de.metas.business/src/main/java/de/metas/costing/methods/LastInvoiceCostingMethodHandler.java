@@ -1,23 +1,27 @@
 package de.metas.costing.methods;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostDetailEvent;
+import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostSegment;
+import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.quantity.Quantity;
 
 /*
@@ -42,43 +46,63 @@ import de.metas.quantity.Quantity;
  * #L%
  */
 
+@Component
 public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplate
 {
-	@Override
-	protected I_M_CostDetail createCostForMatchInvoice(final CostDetailCreateRequest request)
+	public LastInvoiceCostingMethodHandler(final ICurrentCostsRepository currentCostsRepo, final ICostDetailRepository costDetailsRepo)
 	{
-		return createCostDefaultImpl(request);
+		super(currentCostsRepo, costDetailsRepo);
 	}
 
 	@Override
-	protected void processMatchInvoice(final CostDetailEvent event, final CurrentCost cost)
+	public CostingMethod getCostingMethod()
 	{
-		final CostAmount amt = event.getAmt();
-		final Quantity qty = event.getQty();
-		final boolean isReturnTrx = qty.signum() < 0;
-		final CostAmount price = event.getPrice();
+		return CostingMethod.LastInvoice;
+	}
 
+	@Override
+	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+	{
+		final CostDetailCreateResult result = createCostDefaultImpl(request);
+
+		final CostAmount amt = request.getAmt();
+		final Quantity qty = request.getQty();
+		final boolean isReturnTrx = qty.signum() < 0;
+
+		final CurrentCost cost = getCurrentCost(request);
 		if (!isReturnTrx)
 		{
 			if (qty.signum() != 0)
 			{
+				final CostAmount price = amt.divide(qty, cost.getPrecision(), RoundingMode.HALF_UP);
 				cost.setCurrentCostPrice(price);
 			}
 			else
 			{
-				final CostAmount costPrice = cost.getCurrentCostPrice().add(amt);
-				cost.setCurrentCostPrice(costPrice);
+				final CostAmount priceAdjust = amt;
+				final CostAmount price = cost.getCurrentCostPrice().add(priceAdjust);
+				cost.setCurrentCostPrice(price);
 			}
 		}
+		cost.adjustCurrentQty(qty);
+		cost.addCumulatedAmtAndQty(amt, qty);
 
-		cost.add(amt, qty);
+		saveCurrentCosts(cost);
+
+		return result;
 	}
 
 	@Override
-	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CurrentCost cost)
+	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
-		final Quantity qty = event.getQty();
-		cost.adjustCurrentQty(qty);
+		final CostDetailCreateResult result = createCostDefaultImpl(request);
+
+		final CurrentCost cost = getCurrentCost(request);
+		cost.adjustCurrentQty(request.getQty());
+
+		saveCurrentCosts(cost);
+
+		return result;
 	}
 
 	@Override

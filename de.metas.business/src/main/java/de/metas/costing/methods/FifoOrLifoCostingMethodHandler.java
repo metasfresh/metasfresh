@@ -3,18 +3,20 @@ package de.metas.costing.methods;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCostQueue;
 import org.compiere.util.Env;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostDetailEvent;
+import de.metas.costing.CostElement;
+import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.quantity.Quantity;
 import lombok.Data;
 import lombok.NonNull;
@@ -43,21 +45,24 @@ import lombok.NonNull;
 
 public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandlerTemplate
 {
-	@Override
-	protected I_M_CostDetail createCostForMatchInvoice(final CostDetailCreateRequest request)
+	public FifoOrLifoCostingMethodHandler(final ICurrentCostsRepository currentCostsRepo, final ICostDetailRepository costDetailsRepo)
 	{
-		return createCostDefaultImpl(request);
+		super(currentCostsRepo, costDetailsRepo);
 	}
 
 	@Override
-	protected void processMatchInvoice(final CostDetailEvent event, final CurrentCost cost)
+	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final CostSegment costSegment = event.getCostSegment();
-		final int costElementId = event.getCostElementId();
-		final CostingMethod costingMethod = event.getCostingMethod();
-		final CostAmount amt = event.getAmt();
-		final Quantity qty = event.getQty();
-		final int precision = event.getPrecision();
+		final CostDetailCreateResult result = createCostDefaultImpl(request);
+
+		final CurrentCost currentCost = getCurrentCost(request);
+		final CostSegment costSegment = currentCost.getCostSegment();
+		final CostElement costElement = currentCost.getCostElement();
+		final int costElementId = costElement.getId();
+		final CostingMethod costingMethod = costElement.getCostingMethod();
+		final CostAmount amt = request.getAmt();
+		final Quantity qty = request.getQty();
+		final int precision = currentCost.getPrecision();
 
 		final MCostQueue cq = MCostQueue.get(costSegment, costElementId);
 		cq.setCosts(amt.getValue(), qty, precision);
@@ -68,24 +73,33 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 		{
 			final MAcctSchema as = MAcctSchema.get(Env.getCtx(), costSegment.getAcctSchemaId());
 			final int currencyId = as.getC_Currency_ID();
-			cost.setCurrentCostPrice(CostAmount.of(cQueue.get(0).getCurrentCostPrice(), currencyId));
+			currentCost.setCurrentCostPrice(CostAmount.of(cQueue.get(0).getCurrentCostPrice(), currencyId));
 		}
-		cost.add(amt, qty);
+		currentCost.add(amt, qty);
+
+		saveCurrentCosts(currentCost);
+
+		return result;
 	}
 
 	@Override
-	protected void processOutboundTransactionDefaultImpl(final CostDetailEvent event, final CurrentCost cost)
+	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
-		final CostSegment costSegment = event.getCostSegment();
-		final int costElementId = event.getCostElementId();
-		final CostingMethod costingMethod = event.getCostingMethod();
-		final CostAmount amt = event.getAmt();
-		final Quantity qty = event.getQty();
-		final boolean addition = qty.signum() > 0;
-		final int precision = event.getPrecision();
+		final CurrentCost cost = getCurrentCost(request);
 
-		if (addition)
+		final CostSegment costSegment = cost.getCostSegment();
+		final CostElement costElement = cost.getCostElement();
+		final int costElementId = costElement.getId();
+		final CostingMethod costingMethod = costElement.getCostingMethod();
+		final Quantity qty = request.getQty();
+		final boolean isReturnTrx = qty.signum() > 0;
+		final int precision = cost.getPrecision();
+
+		final CostAmount amt;
+		if (isReturnTrx)
 		{
+			amt = request.getAmt();
+
 			// Real ASI - costing level Org
 			final MCostQueue cq = MCostQueue.get(costSegment, costElementId);
 			cq.setCosts(amt.getValue(), qty, precision);
@@ -94,8 +108,12 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 		else
 		{
 			// Adjust Queue - costing level Org/ASI
-			MCostQueue.adjustQty(costSegment, costElementId, costingMethod, qty.negate());
+			final BigDecimal price = MCostQueue.adjustQty(costSegment, costElementId, costingMethod, qty.negate());
+			amt = CostAmount.of(price, cost.getCurrencyId()).multiply(qty);
 		}
+
+		final CostDetailCreateResult result = createCostDefaultImpl(request.toBuilder().amt(amt).build());
+
 		// Get Costs - costing level Org/ASI
 		final List<MCostQueue> cQueue = MCostQueue.getQueue(costSegment, costElementId, costingMethod);
 		if (!cQueue.isEmpty())
@@ -104,8 +122,11 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 			final int currencyId = as.getC_Currency_ID();
 			cost.setCurrentCostPrice(CostAmount.of(cQueue.get(0).getCurrentCostPrice(), currencyId));
 		}
-
 		cost.adjustCurrentQty(qty);
+
+		saveCurrentCosts(cost);
+
+		return result;
 	}
 
 	@Data

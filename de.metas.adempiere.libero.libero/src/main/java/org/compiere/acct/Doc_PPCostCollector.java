@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
@@ -77,7 +78,7 @@ import de.metas.material.planning.RoutingServiceFactory;
 public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 {
 	private static final Logger logger = LogManager.getLogger(Doc_PPCostCollector.class);
-	private final ICostElementRepository costElementsRepo = Services.get(ICostElementRepository.class);
+	private final ICostElementRepository costElementsRepo = Adempiere.getBean(ICostElementRepository.class);
 
 	/** Pseudo Line */
 	protected DocLine_CostCollector m_line = null;
@@ -368,7 +369,8 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	{
 		if (m_costDetails == null)
 		{
-			m_costDetails = Services.get(ICostDetailRepository.class).getAllForDocument(CostingDocumentRef.ofCostCollectorId(m_cc.getPP_Cost_Collector_ID()));
+			final ICostDetailRepository costDetailsRepo = Adempiere.getBean(ICostDetailRepository.class);
+			m_costDetails = costDetailsRepo.getAllForDocument(CostingDocumentRef.ofCostCollectorId(m_cc.getPP_Cost_Collector_ID()));
 		}
 		return m_costDetails;
 	}

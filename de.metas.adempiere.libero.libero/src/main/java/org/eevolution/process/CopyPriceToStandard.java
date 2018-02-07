@@ -43,6 +43,7 @@ import java.util.Collection;
 
 import org.adempiere.model.engines.CostDimension;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
 import org.compiere.model.MPriceListVersion;
@@ -116,7 +117,7 @@ public class CopyPriceToStandard extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		MAcctSchema as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
-		CostElement element = Services.get(ICostElementRepository.class).getById(p_M_CostElement_ID);
+		CostElement element = Adempiere.getBean(ICostElementRepository.class).getById(p_M_CostElement_ID);
 		if (CostElementType.Material != element.getCostElementType())
 		{
 			throw new LiberoException("Only Material Cost Elements are allowed");

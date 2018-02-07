@@ -94,7 +94,7 @@ public class MJournalLine extends X_GL_JournalLine
 	/**
 	 * Set Currency Info
 	 *
-	 * @param C_Currency_ID currenct
+	 * @param C_Currency_ID currency
 	 * @param C_ConversionType_ID type
 	 * @param CurrencyRate rate
 	 */

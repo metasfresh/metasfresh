@@ -9,6 +9,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_CostDetail;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostingDocumentRef;
@@ -38,6 +39,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Component
 public class CostDetailRepository implements ICostDetailRepository
 {
 	private static final Logger logger = LogManager.getLogger(CostDetailRepository.class);

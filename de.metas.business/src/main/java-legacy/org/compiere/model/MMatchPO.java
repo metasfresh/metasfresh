@@ -19,6 +19,7 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,24 +27,20 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.costing.CostAmount;
-import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
-import de.metas.order.IOrderLineBL;
-import de.metas.product.IProductBL;
-import de.metas.quantity.Quantity;
 
 /**
  * Match PO Model.
@@ -340,9 +337,9 @@ public class MMatchPO extends X_M_MatchPO
 				}
 			}
 		}
-		catch (final Exception e)
+		catch (final SQLException ex)
 		{
-			s_log.error(sql, e);
+			throw new DBException(ex, sql);
 		}
 		finally
 		{
@@ -578,14 +575,14 @@ public class MMatchPO extends X_M_MatchPO
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
-		if (newRecord || InterfaceWrapperHelper.isValueChanged(this, COLUMNNAME_M_InOutLine_ID))
+		if (!success)
 		{
-			createMatchPOCostDetail();
+			return success;
 		}
 
 		// Purchase Order Delivered/Invoiced
 		// (Reserved in VMatch and MInOut.completeIt)
-		if (success && getC_OrderLine_ID() > 0)
+		if (getC_OrderLine_ID() > 0)
 		{
 			final I_C_OrderLine orderLine = getC_OrderLine();
 
@@ -630,10 +627,10 @@ public class MMatchPO extends X_M_MatchPO
 				}
 			}
 			InterfaceWrapperHelper.save(orderLine);
-			return true;
 		}
+
 		//
-		return success;
+		return true;
 	}	// afterSave
 
 	/**
@@ -684,10 +681,7 @@ public class MMatchPO extends X_M_MatchPO
 			Services.get(IFactAcctDAO.class).deleteForDocumentModel(this);
 		}
 
-		if (getC_OrderLine_ID() > 0)
-		{
-			deleteMatchPOCostDetail();
-		}
+		deleteMatchPOCostDetail();
 
 		return true;
 	}
@@ -721,10 +715,10 @@ public class MMatchPO extends X_M_MatchPO
 				orderLine.setQtyInvoiced(orderLine.getQtyInvoiced().subtract(getQty()));
 			}
 			InterfaceWrapperHelper.save(orderLine);
-			return true;
 		}
-		return success;
-	}	// afterDelete
+
+		return true;
+	}
 
 	@Override
 	public String toString()
@@ -815,67 +809,10 @@ public class MMatchPO extends X_M_MatchPO
 			s_log.info("Success #" + success + " - Error #" + errors);
 	}	// consolidate
 
-	private void createMatchPOCostDetail()
-	{
-		if (getM_InOutLine_ID() <= 0)
-		{
-			return;
-		}
-
-		final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
-
-		final I_C_OrderLine orderLine = getC_OrderLine();
-		final int currencyConversionTypeId = orderLine.getC_Order().getC_ConversionType_ID();
-		final Timestamp dateAcct = getM_InOutLine().getM_InOut().getDateAcct();
-
-		final BigDecimal qty = isReturnTrx() ? getQty().negate() : getQty();
-		final I_C_UOM qtyUOM = Services.get(IProductBL.class).getStockingUOM(getM_Product_ID());
-		
-		final CostAmount costPrice = getCostPrice();
-		final CostAmount amt = costPrice.multiply(qty);
-
-		// Get Account Schemas to create MCostDetail
-		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID()))
-		{
-			if (as.isSkipOrg(getAD_Org_ID()))
-			{
-				continue;
-			}
-
-			costDetailService.createCostDetail(
-					CostDetailCreateRequest.builder()
-							.acctSchemaId(as.getC_AcctSchema_ID())
-							.clientId(orderLine.getAD_Client_ID())
-							.orgId(orderLine.getAD_Org_ID())
-							.productId(getM_Product_ID())
-							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
-							.documentRef(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()))
-							.qty(Quantity.of(qty, qtyUOM))
-							.amt(amt)
-							.currencyConversionTypeId(currencyConversionTypeId)
-							.date(TimeUtil.asLocalDate(dateAcct))
-							.description(orderLine.getDescription())
-							.build());
-		}
-	}
-
-	private CostAmount getCostPrice()
-	{
-		final I_C_OrderLine orderLine = getC_OrderLine();
-		return Services.get(IOrderLineBL.class).getCostPrice(orderLine);
-	}
-
-	private boolean isReturnTrx()
-	{
-		final I_M_InOutLine receiptLine = getM_InOutLine();
-		final I_M_InOut receipt = receiptLine.getM_InOut();
-		return X_M_InOut.MOVEMENTTYPE_VendorReturns.equals(receipt.getMovementType());
-	}
-
 	// AZ Goodwill
 	private void deleteMatchPOCostDetail()
 	{
-		final ICostDetailService costDetailService = Services.get(ICostDetailService.class);
+		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
 		costDetailService.reverseAndDeleteForDocument(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()));
 	}
 }	// MMatchPO

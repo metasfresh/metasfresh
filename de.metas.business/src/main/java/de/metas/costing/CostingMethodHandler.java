@@ -28,9 +28,11 @@ import org.compiere.model.I_M_CostDetail;
 
 public interface CostingMethodHandler
 {
-	public I_M_CostDetail createCost(CostDetailCreateRequest event);
-
-	public void process(CostDetailEvent event);
+	CostingMethod getCostingMethod();
+	
+	public CostDetailCreateResult createCost(CostDetailCreateRequest event);
 
 	public BigDecimal calculateSeedCosts(CostSegment costSegment, final int orderLineId);
+	
+	public void beforeDelete(I_M_CostDetail costDetail);
 }

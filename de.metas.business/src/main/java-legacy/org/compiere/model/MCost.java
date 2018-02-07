@@ -34,6 +34,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -46,7 +47,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
-import de.metas.costing.ICurrenctCostsRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.methods.LastInvoiceCostingMethodHandler;
 import de.metas.costing.methods.LastPOCostingMethodHandler;
 import de.metas.logging.LogManager;
@@ -130,7 +131,7 @@ public class MCost extends X_M_Cost
 		}
 
 		// Create/Update Costs
-		Services.get(ICostDetailService.class).processAllForProduct(product.getM_Product_ID());
+		Adempiere.getBean(ICostDetailService.class).processAllForProduct(product.getM_Product_ID());
 
 		return getCurrentCost(costSegment, costingMethodEffective, qty, C_OrderLine_ID, zeroCostsOK);
 	}	// getCurrentCost
@@ -254,7 +255,7 @@ public class MCost extends X_M_Cost
 		else if (CostingMethod.FIFO.equals(costingMethod)
 				|| CostingMethod.LIFO.equals(costingMethod))
 		{
-			final CostElement ce = Services.get(ICostElementRepository.class).getOrCreateMaterialCostElement(costSegment.getClientId(), costingMethod);
+			final CostElement ce = Adempiere.getBean(ICostElementRepository.class).getOrCreateMaterialCostElement(costSegment.getClientId(), costingMethod);
 			materialCost = MCostQueue.getCosts(costSegment, ce.getId(), ce.getCostingMethod(), qty);
 		}
 
@@ -302,7 +303,7 @@ public class MCost extends X_M_Cost
 			final CostingMethod costingMethod,
 			final int C_OrderLine_ID)
 	{
-		BigDecimal retValue = Services.get(ICostDetailService.class).calculateSeedCosts(costSegment, costingMethod, C_OrderLine_ID);
+		BigDecimal retValue = Adempiere.getBean(ICostDetailService.class).calculateSeedCosts(costSegment, costingMethod, C_OrderLine_ID);
 		if (retValue != null && retValue.signum() != 0)
 		{
 			return retValue;
@@ -321,8 +322,8 @@ public class MCost extends X_M_Cost
 		// Look for Standard Costs first
 		if (costingMethod != CostingMethod.StandardCosting)
 		{
-			final CostElement ce = Services.get(ICostElementRepository.class).getOrCreateMaterialCostElement(costSegment.getClientId(), CostingMethod.StandardCosting);
-			final CurrentCost cost = Services.get(ICurrenctCostsRepository.class).getOrNull(costSegment, ce.getId());
+			final CostElement ce = Adempiere.getBean(ICostElementRepository.class).getOrCreateMaterialCostElement(costSegment.getClientId(), CostingMethod.StandardCosting);
+			final CurrentCost cost = Adempiere.getBean(ICurrentCostsRepository.class).getOrNull(costSegment, ce.getId());
 			if (cost != null && cost.getCurrentCostPrice().signum() != 0)
 			{
 				return cost.getCurrentCostPrice().getValue();
@@ -540,9 +541,7 @@ public class MCost extends X_M_Cost
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
-		// The method getCostElement() not should be cached because is a transaction
-		// MCostElement ce = getCostElement();
-		final CostElement ce = Services.get(ICostElementRepository.class).getById(getM_CostElement_ID());
+		final CostElement ce = Adempiere.getBean(ICostElementRepository.class).getById(getM_CostElement_ID());
 		// Check if data entry makes sense
 		if (m_manual)
 		{

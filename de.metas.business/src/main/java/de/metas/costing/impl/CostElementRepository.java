@@ -14,6 +14,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -47,6 +48,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Component
 public class CostElementRepository implements ICostElementRepository
 {
 	private final CCache<Integer, IndexedCostElements> cache = CCache.newCache(I_M_CostElement.Table_Name + "#All", 1, 0);

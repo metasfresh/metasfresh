@@ -28,6 +28,7 @@ import org.adempiere.minventory.api.IInventoryDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
@@ -1043,7 +1044,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 			}
 
 			// Set Total Amount and Total Quantity from Inventory
-			Services.get(ICostDetailService.class)
+			Adempiere.getBean(ICostDetailService.class)
 					.createCostDetail(CostDetailCreateRequest.builder()
 							.acctSchemaId(as.getC_AcctSchema_ID())
 							.clientId(line.getAD_Client_ID())
@@ -1051,7 +1052,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 							.productId(line.getM_Product_ID())
 							.attributeSetInstanceId(M_AttributeSetInstance_ID)
 							.documentRef(CostingDocumentRef.ofInventoryLineId(line.getM_InventoryLine_ID()))
-							.costElementId(0)
 							.qty(qty)
 							.amt(CostAmount.of(costs, as.getC_Currency_ID()))
 							// .currencyConversionTypeId(0) // N/A

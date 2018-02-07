@@ -49,6 +49,7 @@ import org.adempiere.model.engines.CostDimension;
 import org.adempiere.model.engines.CostEngine;
 import org.adempiere.model.engines.CostEngineFactory;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
@@ -81,7 +82,7 @@ import de.metas.process.ProcessInfoParameter;
  */
 public class RollupWorkflow extends JavaProcess
 {
-	private final ICostElementRepository costElementsRepo = Services.get(ICostElementRepository.class);
+	private final ICostElementRepository costElementsRepo = Adempiere.getBean(ICostElementRepository.class);
 
 	/* Organization */
 	private int p_AD_Org_ID = 0;

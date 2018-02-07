@@ -3,11 +3,11 @@ package de.metas.costing.interceptors;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostType;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostingLevel;
@@ -40,6 +40,9 @@ import de.metas.costing.ICostElementRepository;
 @Interceptor(I_C_AcctSchema.class)
 public class C_AcctSchema
 {
+	@Autowired
+	private ICostElementRepository costElementRepo;
+
 	/**
 	 * Check Costing Setup.
 	 * Make sure that there is a Cost Type and Cost Element
@@ -58,13 +61,13 @@ public class C_AcctSchema
 		}
 
 		// Create Cost Elements
-		Services.get(ICostElementRepository.class).getOrCreateMaterialCostElement(acctSchema.getAD_Client_ID(), CostingMethod.ofNullableCode(acctSchema.getCostingMethod()));
+		costElementRepo.getOrCreateMaterialCostElement(acctSchema.getAD_Client_ID(), CostingMethod.ofNullableCode(acctSchema.getCostingMethod()));
 
 		// Default Costing Level
 		if (acctSchema.getCostingLevel() == null)
 			acctSchema.setCostingLevel(CostingLevel.Client.getCode());
 		if (acctSchema.getCostingMethod() == null)
 			acctSchema.setCostingMethod(CostingMethod.StandardCosting.getCode());
-	}	// checkCosting
+	}
 
 }
