@@ -1,39 +1,43 @@
 /** Generated Model - DO NOT CHANGE */
-package org.eevolution.model;
+package de.metas.product.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for PP_Product_Planning
+/** Generated Model for M_Product_PlanningSchema
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP_Product_Planning, org.compiere.model.I_Persistent 
+public class X_M_Product_PlanningSchema extends org.compiere.model.PO implements I_M_Product_PlanningSchema, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 99375460L;
+	private static final long serialVersionUID = 828536954L;
 
     /** Standard Constructor */
-    public X_PP_Product_Planning (Properties ctx, int PP_Product_Planning_ID, String trxName)
+    public X_M_Product_PlanningSchema (Properties ctx, int M_Product_PlanningSchema_ID, String trxName)
     {
-      super (ctx, PP_Product_Planning_ID, trxName);
-      /** if (PP_Product_Planning_ID == 0)
+      super (ctx, M_Product_PlanningSchema_ID, trxName);
+      /** if (M_Product_PlanningSchema_ID == 0)
         {
 			setIsAttributeDependant (false); // N
 			setIsCreatePlan (true); // Y
 			setIsDocComplete (false); // N
+			setIsManufactured (null); // N
+			setIsMPS (false); // N
 			setIsPickDirectlyIfFeasible (false); // N
-			setM_Product_ID (0);
-			setPP_Product_Planning_ID (0);
+			setIsPurchased (null); // N
+			setIsTraded (null); // N
+			setM_Product_PlanningSchema_ID (0);
+			setM_ProductPlanningSchema_Selector (null);
         } */
     }
 
     /** Load Constructor */
-    public X_PP_Product_Planning (Properties ctx, ResultSet rs, String trxName)
+    public X_M_Product_PlanningSchema (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -61,7 +65,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 
 	/** Set Workflow.
 		@param AD_Workflow_ID 
-		Workflow or combination of tasks
+		Workflow oder Kombination von Aufgaben
 	  */
 	@Override
 	public void setAD_Workflow_ID (int AD_Workflow_ID)
@@ -73,7 +77,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	/** Get Workflow.
-		@return Workflow or combination of tasks
+		@return Workflow oder Kombination von Aufgaben
 	  */
 	@Override
 	public int getAD_Workflow_ID () 
@@ -157,7 +161,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 
 	/** Set Zugesicherte Lieferzeit.
 		@param DeliveryTime_Promised 
-		Promised days between order and delivery
+		Zugesicherte Anzahl Tage zwischen Bestellung und Lieferung
 	  */
 	@Override
 	public void setDeliveryTime_Promised (java.math.BigDecimal DeliveryTime_Promised)
@@ -166,7 +170,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	/** Get Zugesicherte Lieferzeit.
-		@return Promised days between order and delivery
+		@return Zugesicherte Anzahl Tage zwischen Bestellung und Lieferung
 	  */
 	@Override
 	public java.math.BigDecimal getDeliveryTime_Promised () 
@@ -356,6 +360,35 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return (java.lang.String)get_Value(COLUMNNAME_IsPurchased);
 	}
 
+	/** 
+	 * IsTraded AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISTRADED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISTRADED_Yes = "Y";
+	/** No = N */
+	public static final String ISTRADED_No = "N";
+	/** Set Wird gehandelt (Bestellkontrolle).
+		@param IsTraded 
+		Legt fest, ob mit dem bestreffenden Produkt gehandelt wird. 
+	  */
+	@Override
+	public void setIsTraded (java.lang.String IsTraded)
+	{
+
+		set_Value (COLUMNNAME_IsTraded, IsTraded);
+	}
+
+	/** Get Wird gehandelt (Bestellkontrolle).
+		@return Legt fest, ob mit dem bestreffenden Produkt gehandelt wird. 
+	  */
+	@Override
+	public java.lang.String getIsTraded () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_IsTraded);
+	}
+
 	@Override
 	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
 	{
@@ -393,52 +426,15 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
-
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
-	@Override
-	public void setM_Product_ID (int M_Product_ID)
-	{
-		if (M_Product_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
-	}
-
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
-	@Override
-	public int getM_Product_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Product Planning Schema.
 		@param M_Product_PlanningSchema_ID Product Planning Schema	  */
 	@Override
 	public void setM_Product_PlanningSchema_ID (int M_Product_PlanningSchema_ID)
 	{
 		if (M_Product_PlanningSchema_ID < 1) 
-			set_Value (COLUMNNAME_M_Product_PlanningSchema_ID, null);
+			set_ValueNoCheck (COLUMNNAME_M_Product_PlanningSchema_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_PlanningSchema_ID, Integer.valueOf(M_Product_PlanningSchema_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Product_PlanningSchema_ID, Integer.valueOf(M_Product_PlanningSchema_ID));
 	}
 
 	/** Get Product Planning Schema.
@@ -450,6 +446,30 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * M_ProductPlanningSchema_Selector AD_Reference_ID=540829
+	 * Reference name: M_ProductPlanningSchema_Selector_List
+	 */
+	public static final int M_PRODUCTPLANNINGSCHEMA_SELECTOR_AD_Reference_ID=540829;
+	/** Normal = N */
+	public static final String M_PRODUCTPLANNINGSCHEMA_SELECTOR_Normal = "N";
+	/** Set M_ProductPlanningSchema_Selector.
+		@param M_ProductPlanningSchema_Selector M_ProductPlanningSchema_Selector	  */
+	@Override
+	public void setM_ProductPlanningSchema_Selector (java.lang.String M_ProductPlanningSchema_Selector)
+	{
+
+		set_Value (COLUMNNAME_M_ProductPlanningSchema_Selector, M_ProductPlanningSchema_Selector);
+	}
+
+	/** Get M_ProductPlanningSchema_Selector.
+		@return M_ProductPlanningSchema_Selector	  */
+	@Override
+	public java.lang.String getM_ProductPlanningSchema_Selector () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_M_ProductPlanningSchema_Selector);
 	}
 
 	@Override
@@ -466,7 +486,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 
 	/** Set Lager.
 		@param M_Warehouse_ID 
-		Storage Warehouse and Service Point
+		Lager oder Ort für Dienstleistung
 	  */
 	@Override
 	public void setM_Warehouse_ID (int M_Warehouse_ID)
@@ -478,7 +498,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	/** Get Lager.
-		@return Storage Warehouse and Service Point
+		@return Lager oder Ort für Dienstleistung
 	  */
 	@Override
 	public int getM_Warehouse_ID () 
@@ -524,65 +544,6 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Product_BOM_ID, org.eevolution.model.I_PP_Product_BOM.class);
-	}
-
-	@Override
-	public void setPP_Product_BOM(org.eevolution.model.I_PP_Product_BOM PP_Product_BOM)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Product_BOM_ID, org.eevolution.model.I_PP_Product_BOM.class, PP_Product_BOM);
-	}
-
-	/** Set BOM & Formula.
-		@param PP_Product_BOM_ID 
-		BOM & Formula
-	  */
-	@Override
-	public void setPP_Product_BOM_ID (int PP_Product_BOM_ID)
-	{
-		if (PP_Product_BOM_ID < 1) 
-			set_Value (COLUMNNAME_PP_Product_BOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_PP_Product_BOM_ID, Integer.valueOf(PP_Product_BOM_ID));
-	}
-
-	/** Get BOM & Formula.
-		@return BOM & Formula
-	  */
-	@Override
-	public int getPP_Product_BOM_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Product_BOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Product Planning.
-		@param PP_Product_Planning_ID Product Planning	  */
-	@Override
-	public void setPP_Product_Planning_ID (int PP_Product_Planning_ID)
-	{
-		if (PP_Product_Planning_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_PP_Product_Planning_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Product_Planning_ID, Integer.valueOf(PP_Product_Planning_ID));
-	}
-
-	/** Get Product Planning.
-		@return Product Planning	  */
-	@Override
-	public int getPP_Product_Planning_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Product_Planning_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
 	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
@@ -596,7 +557,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 
 	/** Set Ressource.
 		@param S_Resource_ID 
-		Resource
+		Ressource
 	  */
 	@Override
 	public void setS_Resource_ID (int S_Resource_ID)
@@ -608,7 +569,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	}
 
 	/** Get Ressource.
-		@return Resource
+		@return Ressource
 	  */
 	@Override
 	public int getS_Resource_ID () 
