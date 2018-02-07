@@ -36,8 +36,8 @@
 	</properties>
 
 	<modules>
-		<module>../de.metas.edi.esb.camel</module>
-		<module>../de.metas.printing.esb.camel</module>
+		<module>de.metas.edi.esb.camel</module>
+		<module>de.metas.printing.esb.camel</module>
 	</modules>
 
 	<dependencyManagement>

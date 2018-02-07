@@ -1,0 +1,35 @@
+
+**/bin/
+**/target/
+**/.settings/
+*.cache
+*.diff
+**/.classpath
+**/.project
+
+**/activemq-data/
+**/data/
+
+# we have a java packages with de.metas.event.log.. so this doesn't work
+# **/log/
+
+de.metas.endcustomer.mf15/metasfresh.properties
+/de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.swingui/log/
+/de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.serverRoot/log/
+**/activemq-data/
+
+**/.~lock*
+*.jasper
+*.log
+
+/de.metas.elasticsearch/data/
+
+# https://github.com/metasfresh/metasfresh/pull/1520
+# ignore eclipse data folders. Also see http://stackoverflow.com/a/33783023/1012103
+.metadata/
+.recommenders/
+
+# Ignore JRebel files because those contains file paths from local system
+**/rebel.xml
+
+de.metas.shipper.gateway.go/src/main/resources/application.properties
