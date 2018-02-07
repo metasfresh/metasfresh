@@ -1619,7 +1619,7 @@ public class ImportHelper implements IImportHelper
 	private final Properties createContext(final Element rootElement)
 	{
 		Check.assumeNotNull(_initialCtx, "initialCtx not null");
-		final Properties ctx = Env.deriveCtx(_initialCtx);
+		final Properties ctx = Env.copyCtx(_initialCtx);
 
 		if (rootElement.hasAttribute(RPL_Constants.XML_ATTR_AD_Client_Value))
 		{
