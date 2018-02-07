@@ -241,7 +241,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner partner = retrieveC_BPartner(bpStats);
 
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimit(partner);
+		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner);
 
 		final String initialCreditStatus = bpStats.getSOCreditStatus();
 

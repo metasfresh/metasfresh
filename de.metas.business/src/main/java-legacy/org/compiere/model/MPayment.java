@@ -1897,7 +1897,7 @@ public final class MPayment extends X_C_Payment
 		final String soCreditStatus = stats.getSOCreditStatus();
 		final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimit(partner);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID());
 
 
 		if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getPayAmt(true)))

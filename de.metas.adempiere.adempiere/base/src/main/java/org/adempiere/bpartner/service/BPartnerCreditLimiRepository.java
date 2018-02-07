@@ -7,11 +7,8 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.springframework.stereotype.Repository;
-
-import lombok.NonNull;
 
 /*
  * #%L
@@ -42,11 +39,11 @@ import lombok.NonNull;
 @Repository
 public class BPartnerCreditLimiRepository
 {
-	public BigDecimal retrieveCreditLimit(@NonNull final I_C_BPartner bpartner)
+	public BigDecimal retrieveCreditLimitByBPartnerId(final int bpartnerId)
 	{
 		final I_C_BPartner_CreditLimit bpCreditLimit = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
-				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.orderBy(I_C_BPartner_CreditLimit.COLUMNNAME_Type)
