@@ -120,27 +120,4 @@ https://repo.metasfresh.com/service/local/repositories/mvn-master-releases/conte
 		} // withMaven
 	} // configFileProvider
  } // node
-
-if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
-{
-	stage('Invoke downstream job')
-	{
-		def misc = new de.metas.jenkins.Misc();
-	  final String jobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH);
-
-		build job: jobName,
-	     parameters: [
-	       string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
-	       string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
-	       string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui'),
-	       booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false), // the job shall just run but not trigger further builds because we are doing all the orchestration
-	       booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
-	     ], wait: false
-	}
-}
-else
-{
-	echo "params.MF_TRIGGER_DOWNSTREAM_BUILDS=${params.MF_TRIGGER_DOWNSTREAM_BUILDS}, so we do not trigger any downstream builds"
-}
-
 } // timestamps
