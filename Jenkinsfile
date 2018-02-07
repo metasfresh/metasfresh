@@ -110,7 +110,7 @@ https://repo.metasfresh.com/service/local/repositories/mvn-master-releases/conte
 
 				junit '**/target/surefire-reports/*.xml'
 
-				jacoco
+				jacoco()
 
 				// gh #968:
 				// set env variables which will be available to a possible upstream job that might have called us
