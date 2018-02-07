@@ -129,34 +129,6 @@ node('agent && linux')
 				} // if(params.MF_SKIP_TO_DIST)
       } // stage
 
-      stage('Set versions and build esb')
-      {
-				if(params.MF_SKIP_TO_DIST)
-				{
-					echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
-				}
-				else
-				{
-
-        // create our config instance to be used further on
-        final MvnConf mvnEsbConf = mvnConf.withPomFile('de.metas.esb/pom.xml');
-        echo "mvnEsbConf=${mvnEsbConf}"
-
- 				mvnUpdateParentPomVersion mvnEsbConf
-
-				// set the artifact version of everything below de.metas.esb/pom.xml
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set"
-
-				// update the versions of metas dependencies that are external to the de.metas.esb reactor modules
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} ${VERSIONS_PLUGIN}:use-latest-versions"
-
-				// build and deploy
-				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
-				// maven.test.failure.ignore=true: see metasfresh stage
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnEsbConf.resolveParams} ${mvnEsbConf.deployParam} clean deploy"
-				} // if(params.MF_SKIP_TO_DIST)
-			} // stage
-
 			if(!params.MF_SKIP_TO_DIST)
 			{
         final MvnConf mvnJacocoConf = mvnConf.withPomFile('pom_for_jacoco_aggregate_coverage_report.xml');
