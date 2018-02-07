@@ -20,12 +20,8 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			name: 'MF_UPSTREAM_BRANCH'),
 
 		string(defaultValue: '',
-			description: 'Build number of the upstream job that called us, if any.',
-			name: 'MF_UPSTREAM_BUILDNO'),
-
-		string(defaultValue: '',
 			description: 'Version of the metasfresh "main" code we shall use when resolving dependencies. Leave empty and this build will use the latest.',
-			name: 'MF_METASFRESH_VERSION'),
+			name: 'MF_UPSTREAM_VERSION'),
 
 		booleanParam(defaultValue: true, description: '''Set to true if this build shall trigger "endcustomer" builds.<br>
 Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere''',
@@ -77,13 +73,12 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				mvnUpdateParentPomVersion mvnConf
 
 				final String mavenUpdatePropertyParam;
-				if(params.MF_METASFRESH_VERSION)
+				if(params.MF_UPSTREAM_VERSION)
 				{
 					final inSquaresIfNeeded = { String version -> return version == "LATEST" ? version: "[${version}]"; }
-
-					// update the property, use the metasfresh version that we were given by the upstream job
+					// update the property, use the metasfresh version that we were given by the upstream job.
 					// the square brackets are required if we have a conrete version (i.e. not "LATEST"); see https://github.com/mojohaus/versions-maven-plugin/issues/141 for details
-					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${inSquaresIfNeeded(params.MF_METASFRESH_VERSION)}";
+					mavenUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${inSquaresIfNeeded(params.MF_UPSTREAM_VERSION)}";
 				}
 				else
 				{
@@ -91,22 +86,19 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 					mavenUpdatePropertyParam='-Dproperty=metasfresh.version';
 				}
 
-				// create our config instance to be used further on
-        final MvnConf mvnEsbConf = mvnConf.withPomFile('pom.xml');
-        echo "mvnEsbConf=${mvnEsbConf}"
-
- 				mvnUpdateParentPomVersion mvnEsbConf
+				// update the metasfresh.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
+				sh "mvn --debug --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdatePropertyParam} versions:update-property"
 
 				// set the artifact version of everything below de.metas.esb/pom.xml
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set"
 
 				// update the versions of metas dependencies that are external to the de.metas.esb reactor modules
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} ${VERSIONS_PLUGIN}:use-latest-versions"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:use-latest-versions"
 
 				// build and deploy
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: see metasfresh stage
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnEsbConf.resolveParams} ${mvnEsbConf.deployParam} clean deploy"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
 https://repo.metasfresh.com/service/local/repositories/mvn-master-releases/content/de/metas/printing/de.metas.printing.esb.base/5.43.1-6514+master/de.metas.printing.esb.base-5.43.1-6514+master.jar
 

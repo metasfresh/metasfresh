@@ -16,17 +16,21 @@
 
 	<packaging>bundle</packaging>
 
+	<properties>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.esb.base</artifactId>
-			<version>${project.version}</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 
 		<dependency>
 			<artifactId>de.metas.printing.api</artifactId>
 			<groupId>de.metas.printing</groupId>
-			<version>${project.version}</version>
+			<version>${metasfresh.version}</version>
 			<!-- came comes with its own version -->
 			<exclusions>
 				<exclusion>
