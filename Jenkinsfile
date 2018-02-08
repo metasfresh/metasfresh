@@ -100,8 +100,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// maven.test.failure.ignore=true: see metasfresh stage
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
-https://repo.metasfresh.com/service/local/repositories/mvn-master-releases/content/de/metas/printing/de.metas.printing.esb.base/5.43.1-6514+master/de.metas.printing.esb.base-5.43.1-6514+master.jar
-
 				currentBuild.description="""artifacts (if not yet cleaned up)
 				<ul>
 					<li><a href=\"https://repo.metasfresh.com/content/repositories/${mvnConf.mvnRepoName}/de/metas/edi/esb/de.metas.edi.esb.camel/${MF_VERSION}/de.metas.edi.esb.camel-${MF_VERSION}.jar\">de.metas.edi.esb.camel-${MF_VERSION}.jar</a></li>
