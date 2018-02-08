@@ -521,4 +521,16 @@ public final class Quantity
 			return qtyToCompare;
 		}
 	}
+	
+	public Quantity divide(final BigDecimal divisor, final int precision, final RoundingMode roundingMode)
+	{
+		if(BigDecimal.ONE.compareTo(divisor) == 0)
+		{
+			return this;
+		}
+		
+		final BigDecimal qtyNew = this.qty.divide(divisor, precision, roundingMode);
+		final BigDecimal sourceQtyNew = this.sourceQty.divide(divisor, precision, roundingMode);
+		return new Quantity(qtyNew, uom, sourceQtyNew, sourceUom);
+	}
 }
