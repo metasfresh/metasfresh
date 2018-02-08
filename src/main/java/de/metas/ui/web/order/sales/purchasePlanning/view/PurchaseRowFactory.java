@@ -66,7 +66,7 @@ public class PurchaseRowFactory
 		if (vendorProductInfo != null)
 		{
 			product = createProductLookupValue(
-					vendorProductInfo.getM_Product_ID(),
+					vendorProductInfo.getProductId(),
 					vendorProductInfo.getProductNo(),
 					vendorProductInfo.getProductName());
 		}

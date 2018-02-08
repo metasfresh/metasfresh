@@ -188,7 +188,7 @@ public final class ViewColumnHelper
 					final Object value = extractFieldValueAsJson(row, column);
 					if (value != null)
 					{
-					result.put(column.getFieldName(), value);
+						result.put(column.getFieldName(), value);
 					}
 				});
 
@@ -226,6 +226,7 @@ public final class ViewColumnHelper
 
 		@Getter
 		private final ImmutableList<ClassViewColumnDescriptor> columns;
+
 		@Getter
 		private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
 
