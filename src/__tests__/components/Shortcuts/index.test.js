@@ -1,10 +1,13 @@
-/* eslint-env mocha */
 import { expect } from "chai";
 
-import _Shortcut from "./Shortcut";
-import _ShortcutProvider from "./ShortcutProvider";
-import _generateHotkeys from "./generateHotkeys";
-import { generateHotkeys, Shortcut, ShortcutProvider } from "./index.js";
+import _Shortcut from "../../../components/Shortcuts/Shortcut";
+import _ShortcutProvider from "../../../components/Shortcuts/ShortcutProvider";
+import _generateHotkeys from "../../../components/Shortcuts/generateHotkeys";
+import {
+  generateHotkeys,
+  Shortcut,
+  ShortcutProvider
+} from "../../../components/Shortcuts/index.js";
 
 describe("Shortcuts/index.js", () => {
   it("should export ShortcutProvider", () => {

@@ -1,9 +1,9 @@
 {
-    "presets": ["es2017", "react"],
-    "plugins": [
-        ["transform-class-properties", { "spec": true }],
-        "transform-es2015-modules-commonjs",
-        "transform-object-rest-spread",
-        "react-hot-loader/babel"
-    ]
+  "presets": ["env", "es2017", "react"],
+  "plugins": [
+      ["transform-class-properties", { "spec": true }],
+      "transform-es2015-modules-commonjs",
+      "transform-object-rest-spread",
+      "react-hot-loader/babel"
+  ]
 }
