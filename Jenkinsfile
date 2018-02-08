@@ -70,9 +70,15 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				def nodeHome = tool name: "$NODEJS_TOOL_NAME"
 				env.PATH = "${nodeHome}/bin:${env.PATH}"
 
-				sh "yarn install"
-				sh "yarn lint --quiet"
-				sh "yarn test"
+				sh 'yarn install'
+				sh 'yarn lint --quiet'
+								
+				sh "yarn add jest jest-junit --dev"
+				withEnv(["JEST_JUNIT_OUTPUT=./jest-test-results.xml"]) {
+					sh 'yarn test --ci --testResultsProcessor="jest-junit"'
+				}
+				junit 'jest-test-results.xml'
+				
 				sh "webpack --config webpack.prod.js --bail --display-error-details"
 
 				def misc = new de.metas.jenkins.Misc();
