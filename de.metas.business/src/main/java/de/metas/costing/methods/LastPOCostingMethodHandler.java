@@ -64,31 +64,31 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createCostForMatchPO(final CostDetailCreateRequest request)
 	{
-		final CostDetailCreateResult result = createCostDefaultImpl(request);
+		final CurrentCost currentCosts = getCurrentCost(request);
+		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request, currentCosts);
 
 		final CostAmount amt = request.getAmt();
 		final Quantity qty = request.getQty();
 		final boolean isReturnTrx = qty.signum() < 0;
 
-		final CurrentCost cost = getCurrentCost(request);
 		if (!isReturnTrx)
 		{
 			if (qty.signum() != 0)
 			{
-				final CostAmount price = amt.divide(qty, cost.getPrecision(), RoundingMode.HALF_UP);
-				cost.setCurrentCostPrice(price);
+				final CostAmount price = amt.divide(qty, currentCosts.getPrecision(), RoundingMode.HALF_UP);
+				currentCosts.setCurrentCostPrice(price);
 			}
 			else
 			{
 				final CostAmount priceAdjust = amt;
-				final CostAmount price = cost.getCurrentCostPrice().add(priceAdjust);
-				cost.setCurrentCostPrice(price);
+				final CostAmount price = currentCosts.getCurrentCostPrice().add(priceAdjust);
+				currentCosts.setCurrentCostPrice(price);
 			}
 		}
-		cost.adjustCurrentQty(qty);
-		cost.addCumulatedAmtAndQty(amt, qty);
+		currentCosts.adjustCurrentQty(qty);
+		currentCosts.addCumulatedAmtAndQty(amt, qty);
 
-		saveCurrentCosts(cost);
+		saveCurrentCosts(currentCosts);
 
 		return result;
 	}
@@ -96,12 +96,12 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
-		final CostDetailCreateResult result = createCostDefaultImpl(request);
+		final CurrentCost currentCosts = getCurrentCost(request);
+		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request, currentCosts);
 
-		final CurrentCost cost = getCurrentCost(request);
-		cost.adjustCurrentQty(request.getQty());
+		currentCosts.adjustCurrentQty(request.getQty());
 
-		saveCurrentCosts(cost);
+		saveCurrentCosts(currentCosts);
 
 		return result;
 	}

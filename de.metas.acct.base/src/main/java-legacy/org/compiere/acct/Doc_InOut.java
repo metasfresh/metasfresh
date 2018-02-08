@@ -26,7 +26,6 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -34,13 +33,9 @@ import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MInOut;
 import org.compiere.model.X_M_InOut;
-import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
-import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostDetailService;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 
@@ -67,7 +62,6 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_InOut.PostMatchInvs";
@@ -213,7 +207,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final I_C_AcctSchema as = fact.getAcctSchema();
-		CostAmount costs = line.getShipmentCosts(as);
+		CostAmount costs = line.getCreateShipmentCosts(as).getTotalAmount();
 
 		//
 		// CoGS DR
@@ -232,6 +226,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		dr.setQty(line.getQty().negate());
 		if (X_M_InOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
 		{
+			// TODO: this shall come from costs!
 			// Set AmtAcctDr from Original Shipment/Receipt
 			if (!dr.updateReverseLine(MInOut.Table_ID, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
 			{
@@ -261,24 +256,6 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			}
 			costs = CostAmount.of(cr.getAcctBalance(), as.getC_Currency_ID()); // get original cost
 		}
-		//
-		if (line.getM_Product_ID() > 0)
-		{
-			costDetailService
-					.createCostDetail(CostDetailCreateRequest.builder()
-							.acctSchemaId(as.getC_AcctSchema_ID())
-							.clientId(line.getAD_Client_ID())
-							.orgId(line.getAD_Org_ID())
-							.productId(line.getM_Product_ID())
-							.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
-							.documentRef(CostingDocumentRef.ofShipmentLineId(line.get_ID()))
-							.qty(line.getQty())
-							.amt(costs)
-							.currencyConversionTypeId(getC_ConversionType_ID())
-							.date(TimeUtil.asLocalDate(getDateAcct()))
-							.description(line.getDescription())
-							.build());
-		}
 	}
 
 	private List<Fact> createFacts_SalesReturn(final MAcctSchema as)
@@ -304,7 +281,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final I_C_AcctSchema as = fact.getAcctSchema();
-		CostAmount costs = line.getShipmentCosts(as);
+		CostAmount costs = line.getCreateShipmentCosts(as).getTotalAmount();
 
 		//
 		// Inventory DR
@@ -321,30 +298,13 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
 		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
 		{
+			// TODO: this shall come from costs!
 			// Set AmtAcctDr from Original Shipment/Receipt
 			if (!dr.updateReverseLine(MInOut.Table_ID, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Shipment/Receipt not posted yet");
 			}
 			costs = CostAmount.of(dr.getAcctBalance(), as.getC_Currency_ID()); // get original cost
-		}
-		//
-		if (line.getM_Product_ID() > 0)
-		{
-			costDetailService
-					.createCostDetail(CostDetailCreateRequest.builder()
-							.acctSchemaId(as.getC_AcctSchema_ID())
-							.clientId(line.getAD_Client_ID())
-							.orgId(line.getAD_Org_ID())
-							.productId(line.getM_Product_ID())
-							.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
-							.documentRef(CostingDocumentRef.ofShipmentLineId(line.get_ID()))
-							.qty(line.getQty())
-							.amt(costs)
-							.currencyConversionTypeId(getC_ConversionType_ID())
-							.date(TimeUtil.asLocalDate(getDateAcct()))
-							.description(line.getDescription())
-							.build());
 		}
 
 		//

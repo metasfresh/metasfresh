@@ -3,14 +3,14 @@ package de.metas.costing.methods;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCostQueue;
-import org.compiere.util.Env;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostElement;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostElement;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
@@ -53,16 +53,16 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final CostDetailCreateResult result = createCostDefaultImpl(request);
+		final CurrentCost currentCosts = getCurrentCost(request);
+		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request, currentCosts);
 
-		final CurrentCost currentCost = getCurrentCost(request);
-		final CostSegment costSegment = currentCost.getCostSegment();
-		final CostElement costElement = currentCost.getCostElement();
+		final CostSegment costSegment = currentCosts.getCostSegment();
+		final CostElement costElement = currentCosts.getCostElement();
 		final int costElementId = costElement.getId();
 		final CostingMethod costingMethod = costElement.getCostingMethod();
 		final CostAmount amt = request.getAmt();
 		final Quantity qty = request.getQty();
-		final int precision = currentCost.getPrecision();
+		final int precision = currentCosts.getPrecision();
 
 		final MCostQueue cq = MCostQueue.get(costSegment, costElementId);
 		cq.setCosts(amt.getValue(), qty, precision);
@@ -71,13 +71,15 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 		final List<MCostQueue> cQueue = MCostQueue.getQueue(costSegment, costElementId, costingMethod);
 		if (!cQueue.isEmpty())
 		{
-			final MAcctSchema as = MAcctSchema.get(Env.getCtx(), costSegment.getAcctSchemaId());
+			final I_C_AcctSchema as = MAcctSchema.get(costSegment.getAcctSchemaId());
 			final int currencyId = as.getC_Currency_ID();
-			currentCost.setCurrentCostPrice(CostAmount.of(cQueue.get(0).getCurrentCostPrice(), currencyId));
+			currentCosts.setCurrentCostPrice(CostAmount.of(cQueue.get(0).getCurrentCostPrice(), currencyId));
 		}
-		currentCost.add(amt, qty);
+		currentCosts.adjustCurrentQty(qty);
+		currentCosts.addCumulatedAmtAndQty(amt, qty);
 
-		saveCurrentCosts(currentCost);
+
+		saveCurrentCosts(currentCosts);
 
 		return result;
 	}
@@ -85,15 +87,15 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
-		final CurrentCost cost = getCurrentCost(request);
+		final CurrentCost currentCosts = getCurrentCost(request);
 
-		final CostSegment costSegment = cost.getCostSegment();
-		final CostElement costElement = cost.getCostElement();
+		final CostSegment costSegment = currentCosts.getCostSegment();
+		final CostElement costElement = currentCosts.getCostElement();
 		final int costElementId = costElement.getId();
 		final CostingMethod costingMethod = costElement.getCostingMethod();
 		final Quantity qty = request.getQty();
 		final boolean isReturnTrx = qty.signum() > 0;
-		final int precision = cost.getPrecision();
+		final int precision = currentCosts.getPrecision();
 
 		final CostAmount amt;
 		if (isReturnTrx)
@@ -109,22 +111,22 @@ public abstract class FifoOrLifoCostingMethodHandler extends CostingMethodHandle
 		{
 			// Adjust Queue - costing level Org/ASI
 			final BigDecimal price = MCostQueue.adjustQty(costSegment, costElementId, costingMethod, qty.negate());
-			amt = CostAmount.of(price, cost.getCurrencyId()).multiply(qty);
+			amt = CostAmount.of(price, currentCosts.getCurrencyId()).multiply(qty);
 		}
 
-		final CostDetailCreateResult result = createCostDefaultImpl(request.toBuilder().amt(amt).build());
+		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request.deriveByAmount(amt), currentCosts);
 
 		// Get Costs - costing level Org/ASI
 		final List<MCostQueue> cQueue = MCostQueue.getQueue(costSegment, costElementId, costingMethod);
 		if (!cQueue.isEmpty())
 		{
-			final MAcctSchema as = MAcctSchema.get(Env.getCtx(), costSegment.getAcctSchemaId());
+			final I_C_AcctSchema as = MAcctSchema.get(costSegment.getAcctSchemaId());
 			final int currencyId = as.getC_Currency_ID();
-			cost.setCurrentCostPrice(CostAmount.of(cQueue.get(0).getCurrentCostPrice(), currencyId));
+			currentCosts.setCurrentCostPrice(CostAmount.of(cQueue.get(0).getCurrentCostPrice(), currencyId));
 		}
-		cost.adjustCurrentQty(qty);
+		currentCosts.adjustCurrentQty(qty);
 
-		saveCurrentCosts(cost);
+		saveCurrentCosts(currentCosts);
 
 		return result;
 	}

@@ -1,9 +1,9 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.compiere.model.I_M_CostDetail;
+import de.metas.quantity.Quantity;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -27,22 +27,16 @@ import org.compiere.model.I_M_CostDetail;
  * #L%
  */
 
-public interface ICostDetailRepository
+@Value
+@Builder
+public class CostDetailVoidRequest
 {
-	void save(I_M_CostDetail costDetail);
-
-	void delete(I_M_CostDetail costDetail);
-
-	void deleteUnprocessedWithNoChanges(CostDetailQuery query);
-
-	I_M_CostDetail getCostDetailOrNull(CostDetailQuery query);
-
-	BigDecimal getCostDetailAmtOrNull(CostDetailQuery query);
-
-	List<I_M_CostDetail> getAllForDocument(CostingDocumentRef documentRef);
-
-	List<I_M_CostDetail> getAllForDocumentAndAcctSchemaId(CostingDocumentRef documentRef, int acctSchemaId);
-
-	boolean hasCostDetailsForProductId(int productId);
-
+	@NonNull
+	CostSegment costSegment;
+	@NonNull
+	CostElement costElement;
+	@NonNull
+	CostAmount amt;
+	@NonNull
+	Quantity qty;
 }

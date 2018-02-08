@@ -1,5 +1,7 @@
 package de.metas.costing;
 
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
@@ -128,4 +130,20 @@ public class CostingDocumentRef
 		this.costDetailColumnName = costDetailColumnName;
 		this.outboundTrx = outboundTrx;
 	}
+
+	public boolean isTableName(final String expectedTableName)
+	{
+		return Objects.equals(tableName, expectedTableName);
+	}
+
+	public boolean isInboundTrx()
+	{
+		return outboundTrx != null && !outboundTrx;
+	}
+
+	public boolean isOutboundTrx()
+	{
+		return outboundTrx != null && outboundTrx;
+	}
+
 }

@@ -65,12 +65,12 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final CostDetailCreateResult result = createCostDefaultImpl(request);
+		final CurrentCost currentCosts = getCurrentCost(request);
+		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request, currentCosts);
 
-		final CurrentCost cost = getCurrentCost(request);
-		cost.addWeightedAverage(request.getAmt(), request.getQty());
+		currentCosts.addWeightedAverage(request.getAmt(), request.getQty());
 
-		saveCurrentCosts(cost);
+		saveCurrentCosts(currentCosts);
 
 		return result;
 	}
@@ -85,16 +85,15 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 		final CostDetailCreateResult result;
 		if (isReturnTrx)
 		{
-			result = createCostDefaultImpl(request);
+			result = createCostDetailRecordWithChangedCosts(request, currentCosts);
 
 			currentCosts.addWeightedAverage(request.getAmt(), qty);
 		}
 		else
 		{
 			final CostAmount price = currentCosts.getCurrentCostPrice();
-			result = createCostDefaultImpl(request.toBuilder()
-					.amt(price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision()))
-					.build());
+			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+			result = createCostDetailRecordWithChangedCosts(request.deriveByAmount(amt), currentCosts);
 
 			currentCosts.adjustCurrentQty(qty);
 		}
@@ -112,7 +111,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 		final int productId = costSegment.getProductId();
 		final int orgId = costSegment.getOrgId();
 		final int asiId = costSegment.getAttributeSetInstanceId();
-		final MAcctSchema as = MAcctSchema.get(ctx, costSegment.getAcctSchemaId());
+		final MAcctSchema as = MAcctSchema.get(costSegment.getAcctSchemaId());
 
 		String sql = "SELECT t.MovementQty, mi.Qty, il.QtyInvoiced, il.PriceActual,"
 				+ " i.C_Currency_ID, i.DateAcct, i.C_ConversionType_ID, i.AD_Client_ID, i.AD_Org_ID, t.M_Transaction_ID "

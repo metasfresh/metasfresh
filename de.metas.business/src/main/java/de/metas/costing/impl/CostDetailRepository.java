@@ -6,6 +6,7 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_CostDetail;
 import org.slf4j.Logger;
@@ -121,6 +122,20 @@ public class CostDetailRepository implements ICostDetailRepository
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_CostDetail.class)
 				.addEqualsFilter(documentRef.getCostDetailColumnName(), documentRef.getRecordId())
+				.orderBy(I_M_CostDetail.COLUMN_M_CostDetail_ID)
+				.create()
+				.list(I_M_CostDetail.class);
+	}
+
+	@Override
+	public List<I_M_CostDetail> getAllForDocumentAndAcctSchemaId(@NonNull final CostingDocumentRef documentRef, final int acctSchemaId)
+	{
+		Check.assume(acctSchemaId > 0, "acctSchemaId > 0");
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_CostDetail.class)
+				.addEqualsFilter(documentRef.getCostDetailColumnName(), documentRef.getRecordId())
+				.addEqualsFilter(I_M_CostDetail.COLUMN_C_AcctSchema_ID, acctSchemaId)
 				.orderBy(I_M_CostDetail.COLUMN_M_CostDetail_ID)
 				.create()
 				.list(I_M_CostDetail.class);

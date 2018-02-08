@@ -73,7 +73,7 @@ public final class CurrentCost
 		this.id = id;
 		this.costSegment = costSegment;
 		this.costElement = costElement;
-		
+
 		this.currencyId = currencyId;
 		this.precision = precision;
 		this.uom = uom;
@@ -85,17 +85,26 @@ public final class CurrentCost
 		this.cumulatedQty = Quantity.of(cumulatedQty, uom);
 	}
 
-	/**
-	 * Add Cumulative Amt/Qty and Current Qty
-	 *
-	 * @param amt amt
-	 * @param qty qty
-	 */
-	public void add(@NonNull final CostAmount amt, @NonNull final Quantity qty)
+	private CurrentCost(@NonNull final CurrentCost from)
 	{
-		assertCostCurrency(amt);
-		adjustCurrentQty(qty);
-		addCumulatedAmtAndQty(amt, qty);
+		this.id = from.id;
+		this.costSegment = from.costSegment;
+		this.costElement = from.costElement;
+
+		this.currencyId = from.currencyId;
+		this.precision = from.precision;
+		this.uom = from.uom;
+
+		this.currentCostPrice = from.currentCostPrice;
+		this.currentCostPriceLL = from.currentCostPriceLL;
+		this.currentQty = from.currentQty;
+		this.cumulatedAmt = from.cumulatedAmt;
+		this.cumulatedQty = from.cumulatedQty;
+	}
+
+	public CurrentCost copy()
+	{
+		return new CurrentCost(this);
 	}
 
 	private final void assertCostCurrency(@NonNull final CostAmount amt)
@@ -106,17 +115,11 @@ public final class CurrentCost
 		}
 	}
 
-	private final void assertUOM(@NonNull final Quantity qty)
-	{
-		if (qty.getUOM().getC_UOM_ID() != uom.getC_UOM_ID())
-		{
-			throw new AdempiereException("Invalid UOM for `" + qty + "`. Expected: " + uom);
-		}
-	}
-
 	/**
 	 * Add Amt/Qty and calculate weighted average.
-	 * ((OldAvg*OldQty)+(Price*Qty)) / (OldQty+Qty)
+	 * ((OldAvg*OldQty)+(Price*Qty)) / (OldQty+Qty).
+	 * 
+	 * Also calls {@link #addCumulatedAmtAndQty(CostAmount, Quantity)}.
 	 *
 	 * @param amt total amt (price * qty)
 	 * @param qty qty
@@ -124,6 +127,7 @@ public final class CurrentCost
 	public void addWeightedAverage(@NonNull final CostAmount amt, @NonNull final Quantity qty)
 	{
 		assertCostCurrency(amt);
+		Check.assume(qty.signum() != 0, "qty not zero");
 
 		final CostAmount currentAmt = currentCostPrice.multiply(currentQty);
 		final CostAmount newAmt = currentAmt.add(amt);
@@ -149,7 +153,7 @@ public final class CurrentCost
 	{
 		currentQty = currentQty.add(qtyToAdd);
 	}
-	
+
 	public CostAmount getCurrentCostPriceTotal()
 	{
 		return currentCostPrice.add(currentCostPriceLL);
@@ -165,11 +169,5 @@ public final class CurrentCost
 	{
 		assertCostCurrency(costPrice);
 		currentCostPriceLL = costPrice;
-	}
-
-	public void setCurrentQty(@NonNull final Quantity qty)
-	{
-		assertUOM(qty);
-		currentQty = qty;
 	}
 }

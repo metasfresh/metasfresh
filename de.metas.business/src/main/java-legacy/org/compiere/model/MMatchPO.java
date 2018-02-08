@@ -813,6 +813,6 @@ public class MMatchPO extends X_M_MatchPO
 	private void deleteMatchPOCostDetail()
 	{
 		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
-		costDetailService.reverseAndDeleteForDocument(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()));
+		costDetailService.voidAndDeleteForDocument(CostingDocumentRef.ofMatchPOId(getM_MatchPO_ID()));
 	}
 }	// MMatchPO

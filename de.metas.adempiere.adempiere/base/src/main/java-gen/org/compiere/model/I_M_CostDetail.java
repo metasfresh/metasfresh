@@ -338,6 +338,31 @@ public interface I_M_CostDetail
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Changing costs.
+	 * Set if this record is changing the costs.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsChangingCosts (boolean IsChangingCosts);
+
+	/**
+	 * Get Changing costs.
+	 * Set if this record is changing the costs.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isChangingCosts();
+
+    /** Column definition for IsChangingCosts */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_IsChangingCosts = new org.adempiere.model.ModelColumn<I_M_CostDetail, Object>(I_M_CostDetail.class, "IsChangingCosts", null);
+    /** Column name IsChangingCosts */
+    public static final String COLUMNNAME_IsChangingCosts = "IsChangingCosts";
+
+	/**
 	 * Set Verkaufs-Transaktion.
 	 * This is a Sales Transaction
 	 *
@@ -674,6 +699,75 @@ public interface I_M_CostDetail
     public static final org.adempiere.model.ModelColumn<I_M_CostDetail, org.eevolution.model.I_PP_Cost_Collector> COLUMN_PP_Cost_Collector_ID = new org.adempiere.model.ModelColumn<I_M_CostDetail, org.eevolution.model.I_PP_Cost_Collector>(I_M_CostDetail.class, "PP_Cost_Collector_ID", org.eevolution.model.I_PP_Cost_Collector.class);
     /** Column name PP_Cost_Collector_ID */
     public static final String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
+
+	/**
+	 * Set Previous Current Cost Price.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPrev_CurrentCostPrice (java.math.BigDecimal Prev_CurrentCostPrice);
+
+	/**
+	 * Get Previous Current Cost Price.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPrev_CurrentCostPrice();
+
+    /** Column definition for Prev_CurrentCostPrice */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_Prev_CurrentCostPrice = new org.adempiere.model.ModelColumn<I_M_CostDetail, Object>(I_M_CostDetail.class, "Prev_CurrentCostPrice", null);
+    /** Column name Prev_CurrentCostPrice */
+    public static final String COLUMNNAME_Prev_CurrentCostPrice = "Prev_CurrentCostPrice";
+
+	/**
+	 * Set Previous Current Cost Price LL.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPrev_CurrentCostPriceLL (java.math.BigDecimal Prev_CurrentCostPriceLL);
+
+	/**
+	 * Get Previous Current Cost Price LL.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPrev_CurrentCostPriceLL();
+
+    /** Column definition for Prev_CurrentCostPriceLL */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_Prev_CurrentCostPriceLL = new org.adempiere.model.ModelColumn<I_M_CostDetail, Object>(I_M_CostDetail.class, "Prev_CurrentCostPriceLL", null);
+    /** Column name Prev_CurrentCostPriceLL */
+    public static final String COLUMNNAME_Prev_CurrentCostPriceLL = "Prev_CurrentCostPriceLL";
+
+	/**
+	 * Set Previous Current Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPrev_CurrentQty (java.math.BigDecimal Prev_CurrentQty);
+
+	/**
+	 * Get Previous Current Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPrev_CurrentQty();
+
+    /** Column definition for Prev_CurrentQty */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_Prev_CurrentQty = new org.adempiere.model.ModelColumn<I_M_CostDetail, Object>(I_M_CostDetail.class, "Prev_CurrentQty", null);
+    /** Column name Prev_CurrentQty */
+    public static final String COLUMNNAME_Prev_CurrentQty = "Prev_CurrentQty";
 
 	/**
 	 * Set Preis.

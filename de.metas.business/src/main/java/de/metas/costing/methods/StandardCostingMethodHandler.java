@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
 import de.metas.costing.CurrentCost;
@@ -51,60 +52,64 @@ public class StandardCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCost = getCurrentCost(request);
+		final CurrentCost currentCosts = getCurrentCost(request);
 		final Quantity qty = request.getQty();
-		final CostAmount amt = currentCost.getCurrentCostPrice().multiply(qty);
+		final CostAmount amt = currentCosts.getCurrentCostPrice().multiply(qty);
 
-		final CostDetailCreateResult result = createCostDefaultImpl(request.toBuilder()
-				.amt(amt)
-				.build());
+		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request.deriveByAmount(amt), currentCosts);
 
-		currentCost.adjustCurrentQty(qty);
-		currentCost.addCumulatedAmtAndQty(amt, qty);
+		currentCosts.adjustCurrentQty(qty);
+		currentCosts.addCumulatedAmtAndQty(amt, qty);
 
-		saveCurrentCosts(currentCost);
+		saveCurrentCosts(currentCosts);
 
 		return result;
 	}
 
 	@Override
-	protected CostDetailCreateResult createCostForMaterialReceipt(CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCost = getCurrentCost(request);
+		final CurrentCost currentCosts = getCurrentCost(request);
 		final Quantity qty = request.getQty();
-		final CostAmount amt = currentCost.getCurrentCostPrice().multiply(qty);
-
-		// NOTE: don't update the current costs. It's done on Match Invoice.
-
-		return createCostDefaultImpl(request.toBuilder()
-				.amt(amt)
-				.build());
+		final CostAmount amt = currentCosts.getCurrentCostPrice().multiply(qty);
+		return createCostDetailRecordNoCostsChanged(request.deriveByAmount(amt));
 	}
 
 	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCost = getCurrentCost(request);
+		final CurrentCost currentCosts = getCurrentCost(request);
 		final Quantity qty = request.getQty();
-		final CostAmount amt = currentCost.getCurrentCostPrice().multiply(qty);
+		final CostAmount amt = currentCosts.getCurrentCostPrice().multiply(qty);
 		final boolean isReturnTrx = qty.signum() > 0;
 
-		final CostDetailCreateResult result = createCostDefaultImpl(request.toBuilder()
-				.amt(amt)
-				.build());
+		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request.deriveByAmount(amt), currentCosts);
 
-		currentCost.adjustCurrentQty(qty);
+		currentCosts.adjustCurrentQty(qty);
 		if (isReturnTrx)
 		{
-			currentCost.addCumulatedAmtAndQty(amt, qty);
-		}
-		else
-		{
-			currentCost.adjustCurrentQty(qty);
+			currentCosts.addCumulatedAmtAndQty(amt, qty);
 		}
 
-		saveCurrentCosts(currentCost);
+		saveCurrentCosts(currentCosts);
 
 		return result;
+	}
+
+	@Override
+	public void voidCosts(final CostDetailVoidRequest request)
+	{
+		final CurrentCost currentCosts = getCurrentCost(request.getCostSegment(), request.getCostElement());
+
+		final Quantity qty = request.getQty();
+		final boolean isInboundTrx = qty.signum() > 0;
+
+		currentCosts.adjustCurrentQty(qty.negate());
+		if (isInboundTrx)
+		{
+			currentCosts.addCumulatedAmtAndQty(request.getAmt().negate(), qty.negate());
+		}
+
+		saveCurrentCosts(currentCosts);
 	}
 }

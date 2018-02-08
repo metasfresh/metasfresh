@@ -1,23 +1,20 @@
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MAccount;
-import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostResult;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostDetailService;
 import de.metas.quantity.Quantity;
 
@@ -112,36 +109,58 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	public CostResult getCreateReceiptCosts(final I_C_AcctSchema as)
 	{
 		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
-		return costDetailService.createCostDetail(
-				CostDetailCreateRequest.builder()
-						.acctSchemaId(as.getC_AcctSchema_ID())
-						.clientId(getAD_Client_ID())
-						.orgId(getAD_Org_ID())
-						.productId(getM_Product_ID())
-						.attributeSetInstanceId(getM_AttributeSetInstance_ID())
-						.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
-						.qty(getQty())
-						.amt(CostAmount.zero(as.getC_Currency_ID())) // N/A
-						.date(TimeUtil.asLocalDate(getDateDoc()))
-						.build());
+
+		if (isReversalLine())
+		{
+			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
+					.acctSchemaId(as.getC_AcctSchema_ID())
+					.reversalDocumentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
+					.initialDocumentRef(CostingDocumentRef.ofReceiptLineId(getReversalLine_ID()))
+					.build());
+		}
+		else
+		{
+			return costDetailService.createCostDetail(
+					CostDetailCreateRequest.builder()
+							.acctSchemaId(as.getC_AcctSchema_ID())
+							.clientId(getAD_Client_ID())
+							.orgId(getAD_Org_ID())
+							.productId(getM_Product_ID())
+							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+							.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
+							.qty(getQty())
+							.amt(CostAmount.zero(as.getC_Currency_ID())) // N/A
+							.date(TimeUtil.asLocalDate(getDateDoc()))
+							.build());
+		}
 	}
 
-	public CostAmount getShipmentCosts(final I_C_AcctSchema as)
+	public CostResult getCreateShipmentCosts(final I_C_AcctSchema as)
 	{
-		// metas-ts: US330: call with zeroCostsOK=false, because we want the system to return the result of MCost.getSeedCosts(), if there are no current costs yet
-		final BigDecimal costs = getProductCosts(as, getAD_Org_ID(), false, CostingDocumentRef.ofShipmentLineId(get_ID()));
-		if (ProductCost.isNoCosts(costs) || costs.signum() == 0)
-		{
-			final CostingMethod costingMethod = getProductCostingMethod(as);
-			if (CostingMethod.StandardCosting != costingMethod)
-			{
-				// 08447: we shall allow zero costs in case CostingMethod=Standard costing
-				throw newPostingException()
-						.setDetailMessage("No Costs for product=" + getProduct()
-								+ ", product is stocked and costing method=" + costingMethod + " is != " + CostingMethod.StandardCosting);
-			}
-		}
+		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
 
-		return CostAmount.of(costs != null ? costs : BigDecimal.ZERO, as.getC_Currency_ID());
+		if (isReversalLine())
+		{
+			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
+					.acctSchemaId(as.getC_AcctSchema_ID())
+					.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
+					.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
+					.build());
+		}
+		else
+		{
+			return costDetailService.createCostDetail(
+					CostDetailCreateRequest.builder()
+							.acctSchemaId(as.getC_AcctSchema_ID())
+							.clientId(getAD_Client_ID())
+							.orgId(getAD_Org_ID())
+							.productId(getM_Product_ID())
+							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+							.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
+							.qty(getQty())
+							.amt(CostAmount.zero(as.getC_Currency_ID())) // expect to be calculated
+							.date(TimeUtil.asLocalDate(getDateDoc()))
+							.build());
+		}
 	}
 }

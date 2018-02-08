@@ -2480,10 +2480,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			}
 
 			// Delete M_CostDetails
-			if(isSOTrx())
-			{
-				costDetailService.reverseAndDeleteForDocument(CostingDocumentRef.ofShipmentLineId(inoutLine.getM_InOutLine_ID()));
-			}
+			costDetailService.voidAndDeleteForDocument(CostingDocumentRef.ofShipmentLineId(inoutLine.getM_InOutLine_ID()));
 
 			// Update Order Line
 			final I_C_OrderLine orderLine = inoutLine.getC_OrderLine();

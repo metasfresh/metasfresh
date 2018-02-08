@@ -2,13 +2,13 @@ package de.metas.costing;
 
 import java.math.BigDecimal;
 
+import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostDetail;
-import org.compiere.model.MAcctSchema;
-import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
 import lombok.NonNull;
@@ -37,11 +37,12 @@ import lombok.NonNull;
 
 public abstract class CostingMethodHandlerTemplate implements CostingMethodHandler
 {
-	protected final ICurrentCostsRepository currentCostsRepo;
-	protected final ICostDetailRepository costDetailsRepo;
+	private final IAcctSchemaDAO acctSchemaRepo = Services.get(IAcctSchemaDAO.class);
+	private final ICurrentCostsRepository currentCostsRepo;
+	private final ICostDetailRepository costDetailsRepo;
 
 	protected CostingMethodHandlerTemplate(
-			@NonNull ICurrentCostsRepository currentCostsRepo,
+			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final ICostDetailRepository costDetailsRepo)
 	{
 		this.currentCostsRepo = currentCostsRepo;
@@ -55,7 +56,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	@Override
-	public final CostDetailCreateResult createCost(final CostDetailCreateRequest request)
+	public final CostDetailCreateResult createOrUpdateCost(final CostDetailCreateRequest request)
 	{
 		//
 		// Check if existing cost detail
@@ -65,19 +66,23 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			return createCostDetailCreateResult(costDetail, request);
 		}
 
+		return createCost(request);
+	}
+
+	protected CostDetailCreateResult createCost(final CostDetailCreateRequest request)
+	{
 		//
 		// Create new cost detail
 		final CostingDocumentRef documentRef = request.getDocumentRef();
-		final String documentTableName = documentRef.getTableName();
-		if (CostingDocumentRef.TABLE_NAME_M_MatchPO.equals(documentTableName))
+		if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MatchPO))
 		{
 			return createCostForMatchPO(request);
 		}
-		else if (CostingDocumentRef.TABLE_NAME_M_MatchInv.equals(documentTableName))
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MatchInv))
 		{
 			return createCostForMatchInvoice(request);
 		}
-		else if (CostingDocumentRef.TABLE_NAME_M_InOutLine.equals(documentTableName))
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_InOutLine))
 		{
 			final Boolean outboundTrx = documentRef.getOutboundTrx();
 			if (outboundTrx)
@@ -89,23 +94,23 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 				return createCostForMaterialReceipt(request);
 			}
 		}
-		else if (CostingDocumentRef.TABLE_NAME_M_MovementLine.equals(documentTableName))
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MovementLine))
 		{
 			return createCostForMovementLine(request);
 		}
-		else if (CostingDocumentRef.TABLE_NAME_M_InventoryLine.equals(documentTableName))
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_InventoryLine))
 		{
 			return createCostForInventoryLine(request);
 		}
-		else if (CostingDocumentRef.TABLE_NAME_M_ProductionLine.equals(documentTableName))
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_ProductionLine))
 		{
 			return createCostForProductionLine(request);
 		}
-		else if (CostingDocumentRef.TABLE_NAME_C_ProjectIssue.equals(documentTableName))
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_C_ProjectIssue))
 		{
 			return createCostForProjectIssue(request);
 		}
-		else if (CostingDocumentRef.TABLE_NAME_PP_Cost_Collector.equals(documentTableName))
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector))
 		{
 			return createCostForCostCollector(request);
 		}
@@ -168,14 +173,12 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	protected CostDetailCreateResult createCostForProductionLine(final CostDetailCreateRequest request)
 	{
-		// nothing on this level
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	protected CostDetailCreateResult createCostForProjectIssue(final CostDetailCreateRequest request)
 	{
-		// nothing on this level
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	protected CostDetailCreateResult createCostForCostCollector(final CostDetailCreateRequest request)
@@ -184,19 +187,30 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return null;
 	}
 
-	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
-	{
-		return createCostDefaultImpl(request);
-	}
+	protected abstract CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request);
 
-	protected final CostDetailCreateResult createCostDefaultImpl(final CostDetailCreateRequest request)
+	protected final CostDetailCreateResult createCostDetailRecordNoCostsChanged(@NonNull final CostDetailCreateRequest request)
 	{
-		final I_M_CostDetail costDetail = createDraftCostDetail(request);
-		markProcessedAndSave(costDetail);
+		final I_M_CostDetail costDetail = prepareCostDetail(request);
+		costDetail.setIsChangingCosts(false);
+		costDetailsRepo.save(costDetail);
+
 		return createCostDetailCreateResult(costDetail, request);
 	}
 
-	private I_M_CostDetail createDraftCostDetail(@NonNull final CostDetailCreateRequest request)
+	protected final CostDetailCreateResult createCostDetailRecordWithChangedCosts(@NonNull final CostDetailCreateRequest request, @NonNull final CurrentCost previousCosts)
+	{
+		final I_M_CostDetail costDetail = prepareCostDetail(request);
+		costDetail.setIsChangingCosts(true);
+		costDetail.setPrev_CurrentCostPrice(previousCosts.getCurrentCostPrice().getValue());
+		costDetail.setPrev_CurrentCostPriceLL(previousCosts.getCurrentCostPriceLL().getValue());
+		costDetail.setPrev_CurrentQty(previousCosts.getCurrentQty().getQty());
+		costDetailsRepo.save(costDetail);
+
+		return createCostDetailCreateResult(costDetail, request);
+	}
+
+	private final I_M_CostDetail prepareCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
 		final I_M_CostDetail costDetail = InterfaceWrapperHelper.newInstance(I_M_CostDetail.class);
 		final int costDetailClientId = costDetail.getAD_Client_ID();
@@ -225,22 +239,30 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			costDetail.setIsSOTrx(documentRef.getOutboundTrx());
 		}
 
+		costDetail.setProcessed(true); // TODO: get rid of Processed flag, or always set it!
+
 		return costDetail;
 	}
 
 	protected final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
 	{
 		final CostSegment costSegment = extractCostSegment(request);
-
-		final CostElement costElement = request.getCostElement();
-		final int costElementId = costElement != null ? costElement.getId() : -1;
-
-		return currentCostsRepo.getOrCreate(costSegment, costElementId);
+		return getCurrentCost(costSegment, request.getCostElement());
 	}
 
-	private static CostDetailCreateResult createCostDetailCreateResult(final I_M_CostDetail costDetail, final CostDetailCreateRequest request)
+	protected final CurrentCost getCurrentCost(final CostSegment costSegment, final CostElement costElement)
 	{
-		final MAcctSchema as = MAcctSchema.get(Env.getCtx(), request.getAcctSchemaId());
+		return currentCostsRepo.getOrCreate(costSegment, costElement.getId());
+	}
+
+	protected final CostAmount getCurrentCostPrice(final CostDetailCreateRequest request)
+	{
+		return getCurrentCost(request).getCurrentCostPrice();
+	}
+
+	private CostDetailCreateResult createCostDetailCreateResult(final I_M_CostDetail costDetail, final CostDetailCreateRequest request)
+	{
+		final I_C_AcctSchema as = acctSchemaRepo.retrieveAcctSchemaById(request.getAcctSchemaId());
 		return CostDetailCreateResult.builder()
 				.costSegment(extractCostSegment(request))
 				.costElement(request.getCostElement())
@@ -248,9 +270,9 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 				.build();
 	}
 
-	private static CostSegment extractCostSegment(final CostDetailCreateRequest request)
+	private CostSegment extractCostSegment(final CostDetailCreateRequest request)
 	{
-		final MAcctSchema as = MAcctSchema.get(Env.getCtx(), request.getAcctSchemaId());
+		final I_C_AcctSchema as = acctSchemaRepo.retrieveAcctSchemaById(request.getAcctSchemaId());
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final CostingLevel costingLevel = productBL.getCostingLevel(request.getProductId(), as);
 		final int costTypeId = as.getM_CostType_ID();
@@ -271,24 +293,9 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		currentCostsRepo.save(currentCost);
 	}
 
-	protected final void markProcessedAndSave(final I_M_CostDetail costDetail)
-	{
-		costDetail.setProcessed(true); // TODO: get rid of Processed flag, or always set it!
-		costDetailsRepo.save(costDetail);
-	}
-
 	@Override
-	public void beforeDelete(final I_M_CostDetail costDetail)
+	public void voidCosts(final CostDetailVoidRequest request)
 	{
-		// TODO implement beforeDelete for each method...
-
-		// if (costDetail.isProcessed())
-		// {
-		// costDetail.setProcessed(false);
-		// costDetail.setDeltaAmt(costDetail.getAmt());
-		// costDetail.setDeltaQty(costDetail.getQty());
-		// process(costDetail);
-		// Check.assume(costDetail.isProcessed(), "Cost detail {} shall be processed at this point", costDetail); // shall not happen
-		// }
+		throw new UnsupportedOperationException();
 	}
 }

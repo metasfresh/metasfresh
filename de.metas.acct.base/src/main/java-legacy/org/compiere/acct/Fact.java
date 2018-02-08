@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 
 /**
  * Accounting Fact
@@ -131,7 +132,6 @@ public final class Fact
 				.setDocLine(docLine)
 				.setAccount(account)
 				.setAmtSource(C_Currency_ID, debitAmt, creditAmt)
-				.setQty(null) // N/A
 				.buildAndAdd();
 	}
 
@@ -873,6 +873,7 @@ public final class Fact
 		private BigDecimal amtSourceCr;
 
 		private BigDecimal qty = null;
+		private int uomId;
 		
 		// Other dimensions
 		private Integer AD_Org_ID;
@@ -942,6 +943,11 @@ public final class Fact
 			if (qty != null)
 			{
 				line.setQty(qty);
+			}
+			final int uomId = getUomId();
+			if(uomId > 0)
+			{
+				line.setC_UOM_ID(uomId);
 			}
 
 			//
@@ -1084,10 +1090,23 @@ public final class Fact
 			this.qty = qty;
 			return this;
 		}
+		
+		public FactLineBuilder setQty(final Quantity qty)
+		{
+			assertNotBuild();
+			this.qty = qty.getQty();
+			this.uomId = qty.getUOM().getC_UOM_ID();
+			return this;
+		}
 
 		private final BigDecimal getQty()
 		{
 			return qty;
+		}
+		
+		private int getUomId()
+		{
+			return uomId;
 		}
 
 		public FactLineBuilder setAmtSource(final int currencyId, final BigDecimal amtSourceDr, final BigDecimal amtSourceCr)

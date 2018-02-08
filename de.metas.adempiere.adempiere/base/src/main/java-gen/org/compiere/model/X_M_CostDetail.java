@@ -15,7 +15,7 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 829523310L;
+	private static final long serialVersionUID = 203076198L;
 
     /** Standard Constructor */
     public X_M_CostDetail (Properties ctx, int M_CostDetail_ID, String trxName)
@@ -25,10 +25,14 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
         {
 			setAmt (BigDecimal.ZERO);
 			setC_AcctSchema_ID (0);
+			setIsChangingCosts (false); // N
 			setIsSOTrx (false);
 			setM_AttributeSetInstance_ID (0);
 			setM_CostDetail_ID (0);
 			setM_Product_ID (0);
+			setPrev_CurrentCostPrice (BigDecimal.ZERO); // 0
+			setPrev_CurrentCostPriceLL (BigDecimal.ZERO); // 0
+			setPrev_CurrentQty (BigDecimal.ZERO); // 0
 			setProcessed (false);
 			setQty (BigDecimal.ZERO);
         } */
@@ -277,6 +281,32 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Changing costs.
+		@param IsChangingCosts 
+		Set if this record is changing the costs.
+	  */
+	@Override
+	public void setIsChangingCosts (boolean IsChangingCosts)
+	{
+		set_Value (COLUMNNAME_IsChangingCosts, Boolean.valueOf(IsChangingCosts));
+	}
+
+	/** Get Changing costs.
+		@return Set if this record is changing the costs.
+	  */
+	@Override
+	public boolean isChangingCosts () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsChangingCosts);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Verkaufs-Transaktion.
@@ -695,6 +725,63 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Previous Current Cost Price.
+		@param Prev_CurrentCostPrice Previous Current Cost Price	  */
+	@Override
+	public void setPrev_CurrentCostPrice (java.math.BigDecimal Prev_CurrentCostPrice)
+	{
+		set_Value (COLUMNNAME_Prev_CurrentCostPrice, Prev_CurrentCostPrice);
+	}
+
+	/** Get Previous Current Cost Price.
+		@return Previous Current Cost Price	  */
+	@Override
+	public java.math.BigDecimal getPrev_CurrentCostPrice () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Prev_CurrentCostPrice);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Previous Current Cost Price LL.
+		@param Prev_CurrentCostPriceLL Previous Current Cost Price LL	  */
+	@Override
+	public void setPrev_CurrentCostPriceLL (java.math.BigDecimal Prev_CurrentCostPriceLL)
+	{
+		set_Value (COLUMNNAME_Prev_CurrentCostPriceLL, Prev_CurrentCostPriceLL);
+	}
+
+	/** Get Previous Current Cost Price LL.
+		@return Previous Current Cost Price LL	  */
+	@Override
+	public java.math.BigDecimal getPrev_CurrentCostPriceLL () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Prev_CurrentCostPriceLL);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Previous Current Qty.
+		@param Prev_CurrentQty Previous Current Qty	  */
+	@Override
+	public void setPrev_CurrentQty (java.math.BigDecimal Prev_CurrentQty)
+	{
+		set_Value (COLUMNNAME_Prev_CurrentQty, Prev_CurrentQty);
+	}
+
+	/** Get Previous Current Qty.
+		@return Previous Current Qty	  */
+	@Override
+	public java.math.BigDecimal getPrev_CurrentQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Prev_CurrentQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Preis.

@@ -4,13 +4,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MAcctSchema;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import de.metas.costing.CostAmount;
@@ -63,31 +61,31 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final CostDetailCreateResult result = createCostDefaultImpl(request);
+		final CurrentCost currentCosts = getCurrentCost(request);
+		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request, currentCosts);
 
 		final CostAmount amt = request.getAmt();
 		final Quantity qty = request.getQty();
 		final boolean isReturnTrx = qty.signum() < 0;
 
-		final CurrentCost cost = getCurrentCost(request);
 		if (!isReturnTrx)
 		{
 			if (qty.signum() != 0)
 			{
-				final CostAmount price = amt.divide(qty, cost.getPrecision(), RoundingMode.HALF_UP);
-				cost.setCurrentCostPrice(price);
+				final CostAmount price = amt.divide(qty, currentCosts.getPrecision(), RoundingMode.HALF_UP);
+				currentCosts.setCurrentCostPrice(price);
 			}
 			else
 			{
 				final CostAmount priceAdjust = amt;
-				final CostAmount price = cost.getCurrentCostPrice().add(priceAdjust);
-				cost.setCurrentCostPrice(price);
+				final CostAmount price = currentCosts.getCurrentCostPrice().add(priceAdjust);
+				currentCosts.setCurrentCostPrice(price);
 			}
 		}
-		cost.adjustCurrentQty(qty);
-		cost.addCumulatedAmtAndQty(amt, qty);
+		currentCosts.adjustCurrentQty(qty);
+		currentCosts.addCumulatedAmtAndQty(amt, qty);
 
-		saveCurrentCosts(cost);
+		saveCurrentCosts(currentCosts);
 
 		return result;
 	}
@@ -95,12 +93,12 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
-		final CostDetailCreateResult result = createCostDefaultImpl(request);
+		final CurrentCost currentCosts = getCurrentCost(request);
+		final CostDetailCreateResult result = createCostDetailRecordWithChangedCosts(request, currentCosts);
 
-		final CurrentCost cost = getCurrentCost(request);
-		cost.adjustCurrentQty(request.getQty());
+		currentCosts.adjustCurrentQty(request.getQty());
 
-		saveCurrentCosts(cost);
+		saveCurrentCosts(currentCosts);
 
 		return result;
 	}
@@ -113,11 +111,10 @@ public class LastInvoiceCostingMethodHandler extends CostingMethodHandlerTemplat
 
 	public static BigDecimal getLastInvoicePrice(final CostSegment costSegment)
 	{
-		final Properties ctx = Env.getCtx();
 		final int productId = costSegment.getProductId();
 		final int AD_Org_ID = costSegment.getOrgId();
 		final int M_ASI_ID = costSegment.getAttributeSetInstanceId();
-		final MAcctSchema as = MAcctSchema.get(ctx, costSegment.getAcctSchemaId());
+		final MAcctSchema as = MAcctSchema.get(costSegment.getAcctSchemaId());
 		final int C_Currency_ID = as.getC_Currency_ID();
 
 		String sql = "SELECT currencyConvert(il.PriceActual, i.C_Currency_ID, ?, i.DateAcct, i.C_ConversionType_ID, il.AD_Client_ID, il.AD_Org_ID) "

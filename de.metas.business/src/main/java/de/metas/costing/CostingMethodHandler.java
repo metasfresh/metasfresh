@@ -2,8 +2,6 @@ package de.metas.costing;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.I_M_CostDetail;
-
 /*
  * #%L
  * de.metas.business
@@ -29,10 +27,11 @@ import org.compiere.model.I_M_CostDetail;
 public interface CostingMethodHandler
 {
 	CostingMethod getCostingMethod();
-	
-	public CostDetailCreateResult createCost(CostDetailCreateRequest event);
 
-	public BigDecimal calculateSeedCosts(CostSegment costSegment, final int orderLineId);
-	
-	public void beforeDelete(I_M_CostDetail costDetail);
+	CostDetailCreateResult createOrUpdateCost(CostDetailCreateRequest request);
+
+	void voidCosts(CostDetailVoidRequest request);
+
+	BigDecimal calculateSeedCosts(CostSegment costSegment, final int orderLineId);
+
 }

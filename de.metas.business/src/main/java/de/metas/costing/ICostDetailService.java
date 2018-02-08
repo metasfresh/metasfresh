@@ -29,8 +29,10 @@ import org.compiere.model.I_M_CostDetail;
 public interface ICostDetailService
 {
 	CostResult createCostDetail(CostDetailCreateRequest request);
+	
+	CostResult createReversalCostDetails(CostDetailReverseRequest request);
 
-	void reverseAndDeleteForDocument(CostingDocumentRef documentRef);
+	void voidAndDeleteForDocument(CostingDocumentRef documentRef);
 
 	void processIfCostImmediate(I_M_CostDetail costDetail);
 

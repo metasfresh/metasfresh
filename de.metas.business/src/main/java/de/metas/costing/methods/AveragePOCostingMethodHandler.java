@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Component;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CostingMethodHandlerTemplate;
@@ -73,84 +75,53 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createCostForMatchPO(final CostDetailCreateRequest request)
 	{
-		final CostDetailCreateResult result = createCostDefaultImpl(request);
-
-		final CurrentCost currentCosts = getCurrentCost(request);
-		currentCosts.addWeightedAverage(request.getAmt(), request.getQty());
-
-		saveCurrentCosts(currentCosts);
-
-		return result;
+		return createCostDetailAndAdjustCurrentCosts(request);
 	}
 
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
 	{
-		final I_M_MatchInv matchInv = InterfaceWrapperHelper.load(request.getDocumentRef().getRecordId(), I_M_MatchInv.class);
-		final I_C_InvoiceLine purchaseInvoiceLine = matchInv.getC_InvoiceLine();
-		final I_C_OrderLine purchaseOrderLine = purchaseInvoiceLine.getC_OrderLine();
-		if (purchaseOrderLine == null)
-		{
-			throw new AdempiereException("Cannot compute Average PO price because invoice line is not linked to an order line: " + request);
-		}
-
-		final CostAmount costPrice = Services.get(IOrderLineBL.class).getCostPrice(purchaseOrderLine);
+		final int matchInvId = request.getDocumentRef().getRecordId();
+		final CostAmount costPrice = getPOCostPriceForMatchInv(matchInvId)
+				.orElseThrow(() -> new AdempiereException("Cannot fetch PO cost price for " + request));
 		final CostAmount amt = costPrice.multiply(request.getQty());
-
-		final CostDetailCreateResult result = createCostDefaultImpl(request.toBuilder()
-				.amt(amt)
-				.build());
-
-		// NOTE: we don't have to update the current costs
-
-		return result;
+		return createCostDetailRecordNoCostsChanged(request.deriveByAmount(amt));
 	}
 
 	@Override
 	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
 	{
-		final CostAmount amt;
-
-		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.load(request.getDocumentRef().getRecordId(), I_M_InOutLine.class);
-		final I_C_OrderLine purchaseOrderLine = receiptLine.getC_OrderLine();
-		if (purchaseOrderLine != null)
-		{
-			final CostAmount costPrice = Services.get(IOrderLineBL.class).getCostPrice(purchaseOrderLine);
-			amt = costPrice.multiply(request.getQty());
-		}
-		else
-		{
-			final CurrentCost currentCosts = getCurrentCost(request);
-			amt = currentCosts.getCurrentCostPrice().multiply(request.getQty());
-		}
-
-		// NOTE: we don't have to update the current costs
-
-		return createCostDefaultImpl(request.toBuilder()
-				.amt(amt)
-				.build());
+		final int receiptInOutLineId = request.getDocumentRef().getRecordId();
+		final CostAmount costPrice = getPOCostPriceForReceiptInOutLine(receiptInOutLineId)
+				.orElseGet(() -> getCurrentCostPrice(request));
+		final CostAmount amt = costPrice.multiply(request.getQty());
+		return createCostDetailRecordNoCostsChanged(request.deriveByAmount(amt));
 	}
 
 	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
+		return createCostDetailAndAdjustCurrentCosts(request);
+	}
+
+	private CostDetailCreateResult createCostDetailAndAdjustCurrentCosts(final CostDetailCreateRequest request)
+	{
 		final Quantity qty = request.getQty();
-		final boolean isReturnTrx = qty.signum() > 0;
+		final boolean isInboundTrx = qty.signum() > 0;
 
 		final CurrentCost currentCosts = getCurrentCost(request);
 		final CostDetailCreateResult result;
-		if (isReturnTrx)
+		if (isInboundTrx)
 		{
-			result = createCostDefaultImpl(request);
+			result = createCostDetailRecordWithChangedCosts(request, currentCosts);
 
 			currentCosts.addWeightedAverage(request.getAmt(), qty);
 		}
 		else
 		{
 			final CostAmount price = currentCosts.getCurrentCostPrice();
-			result = createCostDefaultImpl(request.toBuilder()
-					.amt(price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision()))
-					.build());
+			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
+			result = createCostDetailRecordWithChangedCosts(request.deriveByAmount(amt), currentCosts);
 
 			currentCosts.adjustCurrentQty(qty);
 		}
@@ -161,6 +132,46 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
+	public void voidCosts(final CostDetailVoidRequest request)
+	{
+		final Quantity qty = request.getQty();
+		final boolean isInboundTrx = qty.signum() > 0;
+		final CurrentCost currentCosts = getCurrentCost(request.getCostSegment(), request.getCostElement());
+		if (isInboundTrx)
+		{
+			currentCosts.addWeightedAverage(request.getAmt().negate(), qty.negate());
+		}
+		else
+		{
+			currentCosts.adjustCurrentQty(qty.negate());
+		}
+
+		saveCurrentCosts(currentCosts);
+	}
+
+	private Optional<CostAmount> getPOCostPriceForMatchInv(final int matchInvId)
+	{
+		final I_M_MatchInv matchInv = InterfaceWrapperHelper.load(matchInvId, I_M_MatchInv.class);
+		return Optional.of(matchInv)
+				.map(I_M_MatchInv::getC_InvoiceLine)
+				.map(I_C_InvoiceLine::getC_OrderLine)
+				.map(Services.get(IOrderLineBL.class)::getCostPrice);
+	}
+
+	private Optional<CostAmount> getPOCostPriceForReceiptInOutLine(final int receiptInOutLineId)
+	{
+		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.load(receiptInOutLineId, I_M_InOutLine.class);
+		final I_C_OrderLine purchaseOrderLine = receiptLine.getC_OrderLine();
+		if (purchaseOrderLine != null)
+		{
+			return Optional.empty();
+		}
+
+		final CostAmount costPrice = Services.get(IOrderLineBL.class).getCostPrice(purchaseOrderLine);
+		return Optional.of(costPrice);
+	}
+
+	@Override
 	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final int orderLineId)
 	{
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
@@ -168,7 +179,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final int productId = costSegment.getProductId();
 		final int AD_Org_ID = costSegment.getOrgId();
 		final int M_AttributeSetInstance_ID = costSegment.getAttributeSetInstanceId();
-		final MAcctSchema as = MAcctSchema.get(ctx, costSegment.getAcctSchemaId());
+		final MAcctSchema as = MAcctSchema.get(costSegment.getAcctSchemaId());
 
 		String sql = "SELECT t.MovementQty, mp.Qty, ol.QtyOrdered, ol.PriceCost, ol.PriceActual,"	// 1..5
 				+ " o.C_Currency_ID, o.DateAcct, o.C_ConversionType_ID,"	// 6..8

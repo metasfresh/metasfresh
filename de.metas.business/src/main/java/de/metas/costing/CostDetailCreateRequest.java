@@ -1,6 +1,7 @@
 package de.metas.costing;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -34,35 +35,62 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
 public class CostDetailCreateRequest
 {
-	int acctSchemaId; // not set it's OK
+	int acctSchemaId;
 	int clientId;
 	int orgId;
 	int productId;
 	int attributeSetInstanceId;
-
-	@NonNull
 	CostingDocumentRef documentRef;
-
-	@Nullable
+	/** Initial document reference (in case of reversal) */
+	CostingDocumentRef initialDocumentRef;
 	CostElement costElement;
-
-	@NonNull
 	CostAmount amt;
-
-	@NonNull
 	Quantity qty;
-
 	int currencyConversionTypeId;
-	@NonNull
 	LocalDate date;
-
-	@Nullable
 	String description;
 
-	// TODO: validate: clientId > 0, productId > 0;
+	@Builder(toBuilder = true)
+	private CostDetailCreateRequest(
+			final int acctSchemaId,
+			final int clientId,
+			final int orgId,
+			final int productId,
+			final int attributeSetInstanceId,
+			@NonNull final CostingDocumentRef documentRef,
+			@Nullable final CostingDocumentRef initialDocumentRef,
+			@Nullable final CostElement costElement,
+			@NonNull final CostAmount amt,
+			@NonNull final Quantity qty,
+			final int currencyConversionTypeId,
+			@NonNull final LocalDate date,
+			@Nullable final String description)
+	{
+		// acctSchema: not set is OK
+		Check.assume(clientId > 0, "clientId > 0");
+		Check.assume(productId > 0, "productId > 0");
+
+		this.acctSchemaId = normalizeAcctSchemaId(acctSchemaId);
+		this.clientId = clientId;
+		this.orgId = orgId > 0 ? orgId : 0;
+		this.productId = productId;
+		this.attributeSetInstanceId = attributeSetInstanceId;
+		this.documentRef = documentRef;
+		this.costElement = costElement;
+		this.initialDocumentRef = initialDocumentRef;
+		this.amt = amt;
+		this.qty = qty;
+		this.currencyConversionTypeId = currencyConversionTypeId > 0 ? currencyConversionTypeId : 0;
+		this.date = date;
+		this.description = description;
+	}
+
+	private static final int normalizeAcctSchemaId(final int acctSchemaId)
+	{
+		return acctSchemaId > 0 ? acctSchemaId : 0;
+	}
 
 	public int getAcctSchemaId()
 	{
@@ -70,8 +98,55 @@ public class CostDetailCreateRequest
 		return acctSchemaId;
 	}
 
-	public int getAcctSchemaIdOrZero()
+	public boolean isAllAcctSchemas()
 	{
-		return acctSchemaId > 0 ? acctSchemaId : 0;
+		return acctSchemaId <= 0;
+	}
+
+	public CostElement getCostElement()
+	{
+		Check.assumeNotNull(costElement, "costElement shall be set for {}", this);
+		return costElement;
+	}
+
+	public boolean isAllCostElements()
+	{
+		return costElement != null;
+	}
+
+	public boolean isReversal()
+	{
+		return initialDocumentRef != null;
+	}
+
+	public CostDetailCreateRequest deriveByAcctSchemaId(final int acctSchemaId)
+	{
+		final int acctSchemaIdNorm = normalizeAcctSchemaId(acctSchemaId);
+		if (this.acctSchemaId == acctSchemaIdNorm)
+		{
+			return this;
+		}
+
+		return toBuilder().acctSchemaId(acctSchemaIdNorm).build();
+	}
+
+	public CostDetailCreateRequest deriveByCostElement(final CostElement costElement)
+	{
+		if (Objects.equals(this.costElement, costElement))
+		{
+			return this;
+		}
+
+		return toBuilder().costElement(costElement).build();
+	}
+
+	public CostDetailCreateRequest deriveByAmount(final CostAmount amt)
+	{
+		if (Objects.equals(this.amt, amt))
+		{
+			return this;
+		}
+
+		return toBuilder().amt(amt).build();
 	}
 }

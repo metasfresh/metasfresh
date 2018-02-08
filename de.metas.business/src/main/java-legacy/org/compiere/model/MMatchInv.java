@@ -218,6 +218,6 @@ public class MMatchInv extends X_M_MatchInv
 		}
 
 		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
-		costDetailService.reverseAndDeleteForDocument(CostingDocumentRef.ofMatchInvoiceId(getM_MatchInv_ID()));
+		costDetailService.voidAndDeleteForDocument(CostingDocumentRef.ofMatchInvoiceId(getM_MatchInv_ID()));
 	}
 }	// MMatchInv
