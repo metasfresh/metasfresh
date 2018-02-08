@@ -526,23 +526,21 @@ public interface I_C_BPartner
 	 * Set Credit limit indicator %.
 	 * Percent of Credit used from the limit
 	 *
-	 * <br>Type: Number
+	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	public void setCreditLimitIndicator (java.math.BigDecimal CreditLimitIndicator);
+	public void setCreditLimitIndicator (java.lang.String CreditLimitIndicator);
 
 	/**
 	 * Get Credit limit indicator %.
 	 * Percent of Credit used from the limit
 	 *
-	 * <br>Type: Number
+	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getCreditLimitIndicator();
+	public java.lang.String getCreditLimitIndicator();
 
     /** Column definition for CreditLimitIndicator */
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_CreditLimitIndicator = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "CreditLimitIndicator", null);

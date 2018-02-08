@@ -10,12 +10,12 @@ package org.adempiere.bpartner.service.async.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,10 +26,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 
 import com.google.common.base.MoreObjects;
@@ -41,7 +43,7 @@ import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 
 /**
  * Update BPartner's TotalOpenBalance and SO_CreditUsed fields.
- * 
+ *
  * @author tsa
  *
  */
@@ -67,7 +69,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 
 	private static final class BPartnerToUpdate
 	{
-		public static BPartnerToUpdate of(Properties ctx, int bpartnerId, String trxName)
+		public static BPartnerToUpdate of(final Properties ctx, final int bpartnerId, final String trxName)
 		{
 			return new BPartnerToUpdate(ctx, bpartnerId, trxName);
 		}
@@ -76,7 +78,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		private final String trxName;
 		private final int bpartnerId;
 
-		private BPartnerToUpdate(Properties ctx, int bpartnerId, String trxName)
+		private BPartnerToUpdate(final Properties ctx, final int bpartnerId, final String trxName)
 		{
 			super();
 			this.ctx = ctx;
@@ -148,13 +150,17 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		{
 			final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
 
-			bpartnerStatsDAO.updateTotalOpenBalance(stats);
+			bpartnerStatsDAO.updateOpenItems(stats);
 			bpartnerStatsDAO.updateActualLifeTimeValue(stats);
 			bpartnerStatsDAO.updateSOCreditUsed(stats);
 			bpartnerStatsDAO.updateSOCreditStatus(stats);
 
+			final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+			creditLimitRepo.updateCreditLimitIndicator(bpartner, stats);
 		}
 
 		return Result.SUCCESS;
 	}
+
+
 }
