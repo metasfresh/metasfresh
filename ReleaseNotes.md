@@ -10,16 +10,34 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.44 (2018-07)
+**release for week 2018-07**
+
+## Features
+* metasfresh
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1553](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1553) Drop down lists remain displayed when using tab several times (again)
+    * Fixes a Bug with dropdown lists staying open after tabbing away.
+  * [#1559](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1559) Errors in the console when opening HU Editor
+    * Fixes errors in console that popped up when opening the Handling Unit Editor.
+  * [#1558](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1558) Dropdown fields not hidden when creating a new Business Partner
+    * Fixes the reamining dropdown in Purchase Order when calling the "New Businesspartner" action in context menu.
+
 # metasfresh 5.43 (2018-06)
 **release for week 2018-06**
 
 ## Features
 * metasfresh
-  * [#3022](https://github.com/metasfresh/metasfresh/issues/3022) Contracts: ContractDocumentNo is 0 all the time
   * [#3410](https://github.com/metasfresh/metasfresh/issues/3410) Enlarge AD_Table.TableName
+    * Resizing the Fields for Tablename in Applicaiton Dictionary, now allowing 80 chars.
   * [#3411](https://github.com/metasfresh/metasfresh/issues/3411) Implement MSV3 purchase order
+    * New Feature in Pharma Vertical, allowing to create MSV3 Purchase Orders.
   * [#3417](https://github.com/metasfresh/metasfresh/issues/3417) Support new VAT rate of 7.7% in Switzerland from 01.01.2018
+    * New Tax Masterdate for VAT in Switzerland valid from 01-01-2018.
   * [#3419](https://github.com/metasfresh/metasfresh/issues/3419) Throw meaningful exception if MOrderLine.beforeSave has problems
+    * Improving error messages in Orderline, now returning meaningful information to the user.
   * [#3428](https://github.com/metasfresh/metasfresh/issues/3428) Switch off Daterange in Preparation date Filer temporarily
     * Changes the Filter of Preparation Date to simple Date instead of Daterange.
   * [#3439](https://github.com/metasfresh/metasfresh/issues/3439) Improvement of GO Delivery Order Window
@@ -29,31 +47,48 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#812](https://github.com/metasfresh/metasfresh-webui-api/issues/812) Picking Tray Clearing: Action take out and add to LU/ TU
+    * New Action for Picking Tray Handlung Unit removals and automatic adding to an exiting Logistics Unit.
   * [#815](https://github.com/metasfresh/metasfresh-webui-api/issues/815) Transform TU to exiting LU takes too long for Handling Unit Dropdown List
+    * Performance Improvement of Transformation List Dropdown in HU Editor.
   * [#817](https://github.com/metasfresh/metasfresh-webui-api/issues/817) Include stacktrace when providing the error to frontend
+    * Now providing the stacktrace from Backend to Frontend. Can be switched on in Frontend config for testing purpose.
 
 * metasfresh-webui-frontend
 
 ## Fixes
-* metasfresh-webui-frontend
-  * [#1528](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1528) Added subrow is not shown in the frontend
-    * Improved response from MSV3 request so that purchase candidate row is shown and user can directly start editing.
 * metasfresh
+  * [#3022](https://github.com/metasfresh/metasfresh/issues/3022) Contracts: ContractDocumentNo is 0 all the time
+    * Fixes the automatic Document No generation in Contracts, now not leaving Document No 0 there anymore.
   * [#3394](https://github.com/metasfresh/metasfresh/issues/3394) Sales inout Jasper: HU name taken from line
+    * Fix for the Packing Instruction shown in Sales Inout Document when using manual Packing Material.
   * [#3402](https://github.com/metasfresh/metasfresh/issues/3402) Can't credit memo a partially paid invoice
     * Improvement of the status Handling after unclosing Manufacturing Orders.
 
 * metasfresh-webui-api
   * [#617](https://github.com/metasfresh/metasfresh-webui-api/issues/617) Cache is not invalidated on country change
+    * Fixes a Bug in Cache Invalidation for Country changes and Pricing.
   * [#801](https://github.com/metasfresh/metasfresh-webui-api/issues/801) Transforming aggregated CU with "CU to existing TU" not working correctly
+    * Fixes an error in the "CU to existing TU" action.
   * [#802](https://github.com/metasfresh/metasfresh-webui-api/issues/802) Transforming aggregated CU with "CU to new TU" not working correctly
+    * Fixes an error "CU to existing TU" action, sometime leaving wrong calculates quanities behind.
   * [#810](https://github.com/metasfresh/metasfresh-webui-api/issues/810) Update QtyPicked after picking
+    * Fixes a Refresh Bug, leaving the Picked Quantities not updates after picking the Product.
   * [#811](https://github.com/metasfresh/metasfresh-webui-api/issues/811) Java Nullpointer Exception in special case with multiple attribute and multi column layout
+    * Fixes a NPE in multi (>2) Column Layout Windows.
 
 * metasfresh-webui-frontend
+  * [#1528](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1528) Added subrow is not shown in the frontend
+    * Improved response from MSV3 request so that purchase candidate row is shown and user can directly start editing.
   * [#1538](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1538) Date Fields not patched
+    * Fixes an error with Date Fields, now patching them after changes again.
   * [#1543](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1543) Sales Order window Purchase Order modal overlay broken again
-
+    * Fixes the Purchase Order modal overlay functionaluity in Sales Order.
+  * [#1564](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1564) Some fields are not patched after you change them twice
+    * Fixes the multiple adjustment behavior of Text and numeric fields. now content is patched after each change.
+  * [#1566](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1566) Subtab Data not shown when clicked first time
+    * Fixes a Refresh Bug in Subtab data. Now showing the actual data already when opening the subtab first time.
+  * [#1570](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1570) views: fails when applying a filter without parameters
+    
 # metasfresh 5.42 (2018-05)
 **release for week 2018-05**
 

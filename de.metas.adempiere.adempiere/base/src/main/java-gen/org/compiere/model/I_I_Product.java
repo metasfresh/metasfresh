@@ -798,6 +798,29 @@ public interface I_I_Product
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set M_ProductPlanningSchema_Selector.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ProductPlanningSchema_Selector (java.lang.String M_ProductPlanningSchema_Selector);
+
+	/**
+	 * Get M_ProductPlanningSchema_Selector.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getM_ProductPlanningSchema_Selector();
+
+    /** Column definition for M_ProductPlanningSchema_Selector */
+    public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_M_ProductPlanningSchema_Selector = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "M_ProductPlanningSchema_Selector", null);
+    /** Column name M_ProductPlanningSchema_Selector */
+    public static final String COLUMNNAME_M_ProductPlanningSchema_Selector = "M_ProductPlanningSchema_Selector";
+
+	/**
 	 * Set Hersteller.
 	 * Manufacturer of the Product
 	 *
@@ -925,31 +948,6 @@ public interface I_I_Product
     public static final org.adempiere.model.ModelColumn<I_I_Product, org.compiere.model.I_C_UOM> COLUMN_Package_UOM_ID = new org.adempiere.model.ModelColumn<I_I_Product, org.compiere.model.I_C_UOM>(I_I_Product.class, "Package_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name Package_UOM_ID */
     public static final String COLUMNNAME_Package_UOM_ID = "Package_UOM_ID";
-
-	/**
-	 * Set Package UOM Name.
-	 * UOM of the package
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPackage_UOM_Name (java.lang.String Package_UOM_Name);
-
-	/**
-	 * Get Package UOM Name.
-	 * UOM of the package
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getPackage_UOM_Name();
-
-    /** Column definition for Package_UOM_Name */
-    public static final org.adempiere.model.ModelColumn<I_I_Product, Object> COLUMN_Package_UOM_Name = new org.adempiere.model.ModelColumn<I_I_Product, Object>(I_I_Product.class, "Package_UOM_Name", null);
-    /** Column name Package_UOM_Name */
-    public static final String COLUMNNAME_Package_UOM_Name = "Package_UOM_Name";
 
 	/**
 	 * Set Package Size.
