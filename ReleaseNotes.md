@@ -15,6 +15,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#3407](https://github.com/metasfresh/metasfresh/issues/3407) New Businesspartner Window for Pharma vertical
+    * New Business Partner Window in WebUI for Pharma Verticals.
 
 ## Fixes
 * metasfresh-webui-frontend
