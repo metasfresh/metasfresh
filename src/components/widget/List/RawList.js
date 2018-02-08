@@ -158,11 +158,14 @@ class RawList extends PureComponent {
   };
 
   openDropdownList = focus => {
-    this.setState({
-      isOpen: true
-    }, () => {
-      focus && this.focus();
-    });
+    this.setState(
+      {
+        isOpen: true
+      },
+      () => {
+        focus && this.focus();
+      }
+    );
   };
 
   closeDropdownList = () => {
@@ -214,7 +217,7 @@ class RawList extends PureComponent {
     this.openDropdownList();
   };
 
-  handleChange = (e) => {};
+  handleChange = e => {};
 
   handleSelect = option => {
     const { onSelect } = this.props;
