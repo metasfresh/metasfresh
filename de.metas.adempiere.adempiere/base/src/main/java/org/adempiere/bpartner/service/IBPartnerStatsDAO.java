@@ -48,7 +48,7 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * @param stats
 	 * @return
 	 */
-	BigDecimal retrieveTotalOpenBalance(IBPartnerStats stats);
+	BigDecimal retrieveOpenItems(IBPartnerStats stats);
 
 	/**
 	 * Retrieve the SOCreditUsed value for the given stats using the old legacy sql
@@ -95,5 +95,5 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * 
 	 * @param bpStats
 	 */
-	void updateTotalOpenBalance(IBPartnerStats bpStats);
+	void updateOpenItems(IBPartnerStats bpStats);
 }

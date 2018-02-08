@@ -22,6 +22,8 @@ import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.currency.ICurrencyBL;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -89,7 +91,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	}
 
 	@Override
-	public BigDecimal retrieveTotalOpenBalance(final IBPartnerStats bpStats)
+	public BigDecimal retrieveOpenItems(final IBPartnerStats bpStats)
 	{
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
 
@@ -144,23 +146,23 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
 
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
+		final Properties ctx = InterfaceWrapperHelper.getCtx(stats);
 
 		BigDecimal SO_CreditUsed = null;
 
-		// Legacy sql
-
-		final Object[] sqlParams = new Object[] { stats.getC_BPartner_ID() };
-		// AZ Goodwill -> BF2041226 : only count completed/closed docs.
+		final int targetCurrencyId = Services.get(ICurrencyBL.class).getBaseCurrency(ctx).getC_Currency_ID();
+		final Object[] sqlParams = new Object[] {targetCurrencyId, targetCurrencyId, targetCurrencyId, stats.getC_BPartner_ID() };
 		final String sql = "SELECT "
-				// SO Credit Used
-				+ "COALESCE((SELECT SUM(currencyBase(invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID),i.C_Currency_ID,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)) FROM C_Invoice_v i "
+				// open invoices
+				+ "COALESCE((SELECT SUM(currencyBase(invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID),?,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)) FROM C_Invoice_v i "
 				+ "WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.IsSOTrx='Y' AND i.IsPaid='N' AND i.DocStatus IN ('CO','CL')),0), "
-				// Balance (incl. unallocated payments)
-				+ "COALESCE((SELECT SUM(currencyBase(invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID),i.C_Currency_ID,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)*i.MultiplierAP) FROM C_Invoice_v i "
-				+ "WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.IsPaid='N' AND i.DocStatus IN ('CO','CL')),0) - "
-				+ "COALESCE((SELECT SUM(currencyBase(Paymentavailable(p.C_Payment_ID),p.C_Currency_ID,p.DateTrx,p.AD_Client_ID,p.AD_Org_ID)) FROM C_Payment_v p "
+				// unallocated payments
+				+ "COALESCE((SELECT SUM(currencyBase(Paymentavailable(p.C_Payment_ID),?,p.DateTrx,p.AD_Client_ID,p.AD_Org_ID)) FROM C_Payment_v p "
 				+ "WHERE p.C_BPartner_ID=bp.C_BPartner_ID AND p.IsAllocated='N'"
-				+ " AND p.C_Charge_ID IS NULL AND p.DocStatus IN ('CO','CL')),0) "
+				+ " AND p.C_Charge_ID IS NULL AND p.DocStatus IN ('CO','CL')),0)*(-1), "
+				// open invoice candidates
+				+ "COALESCE((SELECT SUM(currencyBase(ic.NetAmtToInvoice,?,ic.DateOrdered, ic.AD_Client_ID,ic.AD_Org_ID)) FROM C_Invoice_Candidate ic "
+				+ "WHERE ic.Bill_BPartner_ID=bp.C_BPartner_ID AND ic.Processed='N'),0) "
 				+ "FROM C_BPartner bp " + "WHERE C_BPartner_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -171,7 +173,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				SO_CreditUsed = rs.getBigDecimal(1);
+				SO_CreditUsed = rs.getBigDecimal(1).add(rs.getBigDecimal(2)).add(rs.getBigDecimal(3));
 			}
 
 		}
@@ -256,7 +258,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		}
 
 		// Above Credit Limit
-		if (creditLimit.compareTo(retrieveTotalOpenBalance(bpStats)) < 0)
+		if (creditLimit.compareTo(retrieveOpenItems(bpStats)) < 0)
 		{
 			creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold;
 		}
@@ -280,16 +282,16 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	}
 
 	@Override
-	public void updateTotalOpenBalance(final IBPartnerStats bpStats)
+	public void updateOpenItems(final IBPartnerStats bpStats)
 	{
 
 		// load the statistics
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
 
-		final BigDecimal totalOpenBalance = retrieveTotalOpenBalance(bpStats);
+		final BigDecimal openItems = retrieveOpenItems(bpStats);
 
 		// update the statistics with the up tp date totalOpenBalance
-		stats.setTotalOpenBalance(totalOpenBalance);
+		stats.setTotalOpenBalance(openItems);
 
 		// save in db
 		InterfaceWrapperHelper.save(stats);
@@ -337,4 +339,5 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		return bpStatsInstance.getC_BPartner_Stats();
 	}
+
 }
