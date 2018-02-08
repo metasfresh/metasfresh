@@ -30,7 +30,6 @@ import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
 import org.adempiere.ad.element.model.interceptor.AD_Element;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.bpartner.model.interceptor.C_BPartner_CreditLimit;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.pricing.model.I_C_PricingRule;
@@ -177,9 +176,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// BPartner
 		engine.addModelValidator(new org.adempiere.bpartner.model.interceptor.C_BPartner(), client);
 		//
-		// Bpartner CreditLimit
-		engine.addModelValidator(C_BPartner_CreditLimit.INSTANCE, client);
-
 		// Prevent users from creating duplicate main prices https://github.com/metasfresh/metasfresh/issues/2510
 		engine.addModelValidator(de.metas.pricing.interceptor.M_ProductPrice.INSTANCE, client);
 

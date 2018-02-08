@@ -10,6 +10,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
 
 import lombok.NonNull;
 
@@ -36,14 +37,9 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_C_BPartner_CreditLimit.class)
+@Component
 public class C_BPartner_CreditLimit
 {
-	public static final C_BPartner_CreditLimit INSTANCE = new C_BPartner_CreditLimit();
-
-	private C_BPartner_CreditLimit()
-	{
-	}
-
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void updateBPartnerStatsRecord(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
 	{
