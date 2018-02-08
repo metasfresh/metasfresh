@@ -115,16 +115,15 @@ public class DLMExceptionWrapperTests
 		InterfaceWrapperHelper.save(column);
 
 		// set up the infos the exception shall provide to the wrapper
+		// @formatter:off
 		new Expectations()
-		{
-			{
+		{{
 				mockedPSQLException.getServerErrorMessage().getDetail();
 				result = "DLM_Referenced_Table_Name = ad_window;  DLM_Referenced_Record_ID=1243 ; DLM_Referencing_Table_Name = ad_tab; DLM_Referencig_Column_Name = ad_window_id;"; // automatically wrapped in a list of one item
 
 				mockedPSQLException.getSQLState();
 				result = DLMReferenceExceptionWrapper.PG_SQLSTATE_Referencing_Record_Has_Wrong_DLM_Level;
-			}
-		};
+		}}; // @formatter:on
 
 		final DBException dbException = DLMReferenceExceptionWrapper.INSTANCE.wrapIfNeededOrReturnNull(mockedPSQLException);
 		assertThat(dbException, instanceOf(DLMReferenceException.class));

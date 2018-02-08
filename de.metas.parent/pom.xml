@@ -131,7 +131,8 @@
 			<dependency>
 				<groupId>org.jmockit</groupId>
 				<artifactId>jmockit</artifactId>
-				<version>1.38</version>
+				<!-- note that aparently 1.38 suffers from https://github.com/jmockit/jmockit1/issues/457 -->
+				<version>1.33</version>
 			</dependency>
 
 			<dependency>
