@@ -7,8 +7,8 @@
     "start": "node server.js",
     "storybook": "node .storybook/findStories && start-storybook -p 6006",
     "stylelint": "stylelint 'src/assets/**/*.css'",
-    "test:jest:watch": "jest --watch",
-    "test:jest": "jest"
+    "test:watch": "jest --watch",
+    "test": "jest"
   },
   "jest": {
     "moduleNameMapper": {
