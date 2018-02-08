@@ -1,5 +1,8 @@
 package de.metas.invoicecandidate.modelvalidator;
 
+import java.math.BigDecimal;
+import java.util.Properties;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -10,25 +13,43 @@ package de.metas.invoicecandidate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
+import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.IBPartnerStatsBL;
+import org.adempiere.bpartner.service.IBPartnerStatsDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.MDocType;
 import org.compiere.model.ModelValidator;
+import org.compiere.model.X_C_BPartner_Stats;
+import org.compiere.model.X_C_Order;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.currency.ICurrencyBL;
+import de.metas.document.IDocTypeDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import lombok.NonNull;
 
 @Interceptor(I_C_Order.class)
 public class C_Order
@@ -38,5 +59,81 @@ public class C_Order
 	{
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 		invoiceCandidateHandlerBL.invalidateCandidatesFor(order);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE})
+	public void checkCreditLimit(@NonNull final I_C_Order order)
+	{
+		if (!isCheckCreditLimitNeeded(order))
+		{
+			return;
+		}
+
+		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
+		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+
+		final I_C_BPartner partner = InterfaceWrapperHelper.load(order.getC_BPartner_ID(), I_C_BPartner.class);
+		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
+		final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
+		final String soCreditStatus = stats.getSOCreditStatus();
+
+		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(order.getC_BPartner_ID());
+
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
+		{
+			final String msg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
+					+ totalOpenBalance
+					+ ", @SO_CreditLimit@=" + creditLimit;
+			throw new AdempiereException(msg);
+		}
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
+		{
+			final String msg = "@BPartnerCreditHold@ - @TotalOpenBalance@="
+					+ totalOpenBalance
+					+ ", @SO_CreditLimit@=" + creditLimit;
+			throw new AdempiereException(msg);
+		}
+		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
+		final BigDecimal grandTotal = Services.get(ICurrencyBL.class).convertBase(ctx,
+				order.getGrandTotal(), order.getC_Currency_ID(), order.getDateOrdered(),
+				order.getC_ConversionType_ID(), order.getAD_Client_ID(), order.getAD_Org_ID());
+
+		final BigDecimal openOrdersAmt = Services.get(IInvoiceCandDAO.class).retrieveInvoicableAmount(partner, SystemTime.asDayTimestamp());
+		final String calculatedSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, grandTotal.add(openOrdersAmt));
+
+		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedSOCreditStatus))
+		{
+			final String msg = "@BPartnerOverOCreditHold@ - @TotalOpenBalance@="
+					+ totalOpenBalance.add(openOrdersAmt) + ", @GrandTotal@=" + grandTotal
+					+ ", @SO_CreditLimit@=" + creditLimit;
+			throw new AdempiereException(msg);
+		}
+	}
+
+	private boolean isCheckCreditLimitNeeded(@NonNull final I_C_Order order)
+	{
+		if (!order.isSOTrx())
+		{
+			return false;
+		}
+
+		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(order.getC_DocTypeTarget_ID());
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		if (MDocType.DOCSUBTYPE_POSOrder.equals(dt.getDocSubType())
+				&& X_C_Order.PAYMENTRULE_Cash.equals(order.getPaymentRule())
+				&& !sysConfigBL.getBooleanValue("CHECK_CREDIT_ON_CASH_POS_ORDER", true, order.getAD_Client_ID(), order.getAD_Org_ID()))
+		{
+			// ignore -- don't validate for Cash POS Orders depending on sysconfig parameter
+			return false;
+		}
+		else if (MDocType.DOCSUBTYPE_PrepayOrder.equals(dt.getDocSubType())
+				&& !sysConfigBL.getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, order.getAD_Client_ID(), order.getAD_Org_ID()))
+		{
+			// ignore -- don't validate Prepay Orders depending on sysconfig parameter
+			return false;
+		}
+
+		return true;
 	}
 }
