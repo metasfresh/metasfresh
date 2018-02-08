@@ -88,13 +88,14 @@ export function createViewRequest({
 
 export function filterViewRequest(windowId, viewId, filters) {
   filters.map(filter => {
-    filter.parameters.map((param, index) => {
-      if (param.widgetType === "Date" && param.value) {
-        filter.parameters[index].value = Moment(param.value).format(
-          DATE_FORMAT
-        );
-      }
-    });
+    filter.parameters &&
+      filter.parameters.map((param, index) => {
+        if (param.widgetType === "Date" && param.value) {
+          filter.parameters[index].value = Moment(param.value).format(
+            DATE_FORMAT
+          );
+        }
+      });
   });
   return axios.post(
     config.API_URL + "/documentView/" + windowId + "/" + viewId + "/filter",
