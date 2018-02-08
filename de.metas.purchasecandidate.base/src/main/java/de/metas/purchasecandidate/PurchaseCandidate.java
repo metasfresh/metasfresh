@@ -1,14 +1,27 @@
 package de.metas.purchasecandidate;
 
+import static java.util.stream.Collectors.toCollection;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_OrderLine;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
+
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem.PurchaseErrorItemBuilder;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem.PurchaseOrderItemBuilder;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.availability.AvailabilityRequestItem;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
@@ -17,6 +30,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.Singular;
 import lombok.experimental.Delegate;
 
 /*
@@ -47,26 +61,24 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private int purchaseCandidateId;
 
-	@Setter(AccessLevel.NONE)
-	private int purchaseOrderLineId;
-
-	@Setter(AccessLevel.NONE)
-	private int purchaseOrderLineIdInitial;
-
 	private BigDecimal qtyToPurchase;
 
 	@Setter(AccessLevel.NONE)
 	private BigDecimal qtyToPurchaseInitial;
 
-	private Date datePromised;
+	private Date dateRequired;
 
 	@Setter(AccessLevel.NONE)
-	private Date datePromisedInitial;
+	private Date dateRequiredInitial;
 
 	@Delegate
 	private final PurchaseCandidateImmutableFields identifier;
 
 	private final PurchaseCandidateState state;
+
+	private final List<PurchaseOrderItem> purchaseOrderItems;
+
+	private final List<PurchaseErrorItem> purchaseErrorItems;
 
 	@Builder
 	private PurchaseCandidate(
@@ -81,9 +93,10 @@ public class PurchaseCandidate
 			final int vendorBPartnerId,
 			@NonNull final VendorProductInfo vendorProductInfo,
 			@NonNull final BigDecimal qtyToPurchase,
-			@NonNull final Date datePromised,
+			@NonNull final Date dateRequired,
 			final boolean processed,
-			final boolean locked)
+			final boolean locked,
+			@Singular final List<PurchaseItem> purchaseItems)
 	{
 		Check.assume(salesOrderId > 0, "salesOrderId > 0"); // for now this shall be always set; might be that in future this won't be mandatory
 		Check.assume(salesOrderLineId > 0, "salesOrderLineId > 0"); // for now this shall be always set; might be that in future this won't be mandatory
@@ -109,29 +122,34 @@ public class PurchaseCandidate
 				.locked(locked)
 				.processed(processed).build();
 
-		this.purchaseOrderLineId = purchaseOrderLineId > 0 ? purchaseOrderLineId : 0;
-		this.purchaseOrderLineIdInitial = this.purchaseOrderLineId;
-
 		this.qtyToPurchase = qtyToPurchase;
 		this.qtyToPurchaseInitial = qtyToPurchase;
-		this.datePromised = datePromised;
-		this.datePromisedInitial = datePromised;
+		this.dateRequired = dateRequired;
+		this.dateRequiredInitial = dateRequired;
+
+		final ImmutableListMultimap<Boolean, PurchaseItem> purchaseItemsByType;
+		purchaseItemsByType = Multimaps.index(purchaseItems, purchaseItem -> purchaseItem instanceof PurchaseOrderItem);
+
+		this.purchaseOrderItems = purchaseItemsByType.get(true).stream()
+				.map(PurchaseOrderItem::cast).collect(toCollection(ArrayList::new));
+		this.purchaseErrorItems = purchaseItemsByType.get(false).stream()
+				.map(PurchaseErrorItem::cast).collect(toCollection(ArrayList::new));
 	}
 
 	private PurchaseCandidate(@NonNull final PurchaseCandidate from)
 	{
-		purchaseCandidateId = from.purchaseCandidateId;
+		this.purchaseCandidateId = from.purchaseCandidateId;
 
-		purchaseOrderLineId = from.purchaseOrderLineId;
-		purchaseOrderLineIdInitial = from.purchaseOrderLineIdInitial;
+		this.qtyToPurchase = from.qtyToPurchase;
+		this.qtyToPurchaseInitial = from.qtyToPurchaseInitial;
+		this.dateRequired = from.dateRequired;
+		this.dateRequiredInitial = from.dateRequiredInitial;
 
-		qtyToPurchase = from.qtyToPurchase;
-		qtyToPurchaseInitial = from.qtyToPurchaseInitial;
-		datePromised = from.datePromised;
-		datePromisedInitial = from.datePromisedInitial;
+		this.identifier = from.identifier;
+		this.state = from.state.createCopy();
 
-		identifier = from.identifier;
-		state = from.state.createCopy();
+		this.purchaseErrorItems = from.purchaseErrorItems;
+		this.purchaseOrderItems = from.purchaseOrderItems;
 	}
 
 	public PurchaseCandidate copy()
@@ -139,13 +157,11 @@ public class PurchaseCandidate
 		return new PurchaseCandidate(this);
 	}
 
-	public void setPurchaseOrderLineIdAndMarkProcessed(final int purchaseOrderLineId)
+	public void markProcessed()
 	{
 		Check.assume(!state.isProcessed(), "already processed: {}", this);
-		Check.assume(purchaseOrderLineId > 0, "purchaseOrderLineId > 0");
 
 		state.setProcessed();
-		this.purchaseOrderLineId = purchaseOrderLineId;
 	}
 
 	public boolean isProcessedOrLocked()
@@ -162,9 +178,8 @@ public class PurchaseCandidate
 	{
 		return purchaseCandidateId <= 0 // never saved
 				|| state.hasChanges()
-				|| purchaseOrderLineId != purchaseOrderLineIdInitial
 				|| qtyToPurchase.compareTo(qtyToPurchaseInitial) != 0
-				|| !Objects.equals(datePromised, datePromisedInitial);
+				|| !Objects.equals(dateRequired, dateRequiredInitial);
 	}
 
 	public void markSaved(final int C_PurchaseCandidate_ID)
@@ -173,9 +188,8 @@ public class PurchaseCandidate
 
 		state.markSaved();
 
-		purchaseOrderLineIdInitial = purchaseOrderLineId;
 		qtyToPurchaseInitial = qtyToPurchase;
-		datePromisedInitial = datePromised;
+		dateRequiredInitial = dateRequired;
 	}
 
 	public AvailabilityRequestItem createAvailabilityRequestItem()
@@ -205,5 +219,97 @@ public class PurchaseCandidate
 				productValue,
 				qtyToDeliver);
 		return productAndQuantity;
+	}
+
+	public NewErrorItemBuilder newErrorItem()
+	{
+		return new NewErrorItemBuilder(this);
+	}
+
+	public static final class NewErrorItemBuilder
+	{
+		private final PurchaseCandidate parent;
+		private final PurchaseErrorItemBuilder innerBuilder;
+
+		private NewErrorItemBuilder(@NonNull final PurchaseCandidate parent)
+		{
+			this.parent = parent;
+			this.innerBuilder = PurchaseErrorItem.builder()
+					.purchaseCandidateId(parent.getPurchaseCandidateId())
+					.orgId(parent.getOrgId());
+		}
+
+		public NewErrorItemBuilder transactionReference(ITableRecordReference transactionReference)
+		{
+			this.innerBuilder.transactionReference(transactionReference);
+			return this;
+		}
+
+		public NewErrorItemBuilder throwable(Throwable throwable)
+		{
+			this.innerBuilder.throwable(throwable);
+			return this;
+		}
+
+		public NewErrorItemBuilder issue(I_AD_Issue issue)
+		{
+			this.innerBuilder.issue(issue);
+			return this;
+		}
+
+		public PurchaseErrorItem buildAndAdd()
+		{
+			final PurchaseErrorItem newItem = innerBuilder.build();
+			parent.purchaseErrorItems.add(newItem);
+			return newItem;
+		}
+	}
+
+	public NewOrderItemBuilder newOrderItem()
+	{
+		return new NewOrderItemBuilder(this);
+	}
+
+	public static final class NewOrderItemBuilder
+	{
+		private final PurchaseCandidate parent;
+		private final PurchaseOrderItemBuilder innerBuilder;
+
+		private NewOrderItemBuilder(@NonNull final PurchaseCandidate parent)
+		{
+			this.parent = parent;
+			innerBuilder = PurchaseOrderItem.builder().purchaseCandidate(parent);
+		}
+
+		public NewOrderItemBuilder datePromised(@NonNull final Date datePromised)
+		{
+			innerBuilder.datePromised(datePromised);
+			return this;
+		}
+
+		public NewOrderItemBuilder purchasedQty(@NonNull final BigDecimal purchasedQty)
+		{
+			innerBuilder.purchasedQty(purchasedQty);
+			return this;
+		}
+
+		public NewOrderItemBuilder remotePurchaseOrderId(final String remotePurchaseOrderId)
+		{
+			innerBuilder.remotePurchaseOrderId(remotePurchaseOrderId);
+			return this;
+		}
+
+		public NewOrderItemBuilder transactionReference(final ITableRecordReference transactionReference)
+		{
+			innerBuilder.transactionReference(transactionReference);
+			return this;
+		}
+
+		public PurchaseOrderItem buildAndAddToParent()
+		{
+			final PurchaseOrderItem newItem = innerBuilder.build();
+			parent.purchaseOrderItems.add(newItem);
+			return newItem;
+		}
 	}
 }

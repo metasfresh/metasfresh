@@ -14,7 +14,7 @@ public class X_C_PurchaseCandidate_Alloc extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1211195746L;
+	private static final long serialVersionUID = 602569445L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate_Alloc (Properties ctx, int C_PurchaseCandidate_Alloc_ID, String trxName)
@@ -150,6 +150,43 @@ public class X_C_PurchaseCandidate_Alloc extends org.compiere.model.PO implement
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_C_Order getC_OrderPO() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderPO_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_OrderPO(org.compiere.model.I_C_Order C_OrderPO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderPO_ID, org.compiere.model.I_C_Order.class, C_OrderPO);
+	}
+
+	/** Set Bestellung.
+		@param C_OrderPO_ID 
+		Bestellung
+	  */
+	@Override
+	public void setC_OrderPO_ID (int C_OrderPO_ID)
+	{
+		if (C_OrderPO_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderPO_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderPO_ID, Integer.valueOf(C_OrderPO_ID));
+	}
+
+	/** Get Bestellung.
+		@return Bestellung
+	  */
+	@Override
+	public int getC_OrderPO_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderPO_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set C_PurchaseCandidate_Alloc.
 		@param C_PurchaseCandidate_Alloc_ID C_PurchaseCandidate_Alloc	  */
 	@Override
@@ -206,6 +243,25 @@ public class X_C_PurchaseCandidate_Alloc extends org.compiere.model.PO implement
 		return ii.intValue();
 	}
 
+	/** Set Zugesagter Termin.
+		@param DatePromised 
+		Zugesagter Termin für diesen Auftrag
+	  */
+	@Override
+	public void setDatePromised (java.sql.Timestamp DatePromised)
+	{
+		set_Value (COLUMNNAME_DatePromised, DatePromised);
+	}
+
+	/** Get Zugesagter Termin.
+		@return Zugesagter Termin für diesen Auftrag
+	  */
+	@Override
+	public java.sql.Timestamp getDatePromised () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DatePromised);
+	}
+
 	/** Set Datensatz-ID.
 		@param Record_ID 
 		Direct internal record ID
@@ -229,5 +285,24 @@ public class X_C_PurchaseCandidate_Alloc extends org.compiere.model.PO implement
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Bestell-Kennung.
+		@param RemotePurchaseOrderId 
+		Kennung zur Eindeutigen Identifikation der Bestellung beim Lieferanten
+	  */
+	@Override
+	public void setRemotePurchaseOrderId (java.lang.String RemotePurchaseOrderId)
+	{
+		set_Value (COLUMNNAME_RemotePurchaseOrderId, RemotePurchaseOrderId);
+	}
+
+	/** Get Bestell-Kennung.
+		@return Kennung zur Eindeutigen Identifikation der Bestellung beim Lieferanten
+	  */
+	@Override
+	public java.lang.String getRemotePurchaseOrderId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_RemotePurchaseOrderId);
 	}
 }

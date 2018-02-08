@@ -25,7 +25,6 @@ import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.PurchaseCandidateToOrderWorkflow;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvokerFactory;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.RemotePurchaseItemRepository;
 
 /*
  * #%L
@@ -88,14 +87,12 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
 		final PurchaseCandidateRepository purchaseCandidateRepo = Adempiere.getBean(PurchaseCandidateRepository.class);
-		final RemotePurchaseItemRepository purchaseOrderItemRepo = Adempiere.getBean(RemotePurchaseItemRepository.class);
 		final VendorGatewayInvokerFactory vendorGatewayInvokerFactory = Adempiere.getBean(VendorGatewayInvokerFactory.class);
 
 		final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator = PurchaseOrderFromItemsAggregator.newInstance();
 
 		PurchaseCandidateToOrderWorkflow.builder()
 				.purchaseCandidateRepo(purchaseCandidateRepo)
-				.purchaseOrderItemRepo(purchaseOrderItemRepo)
 				.vendorGatewayInvokerFactory(vendorGatewayInvokerFactory)
 				.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator).build()
 				.executeForPurchaseCandidates(getPurchaseCandidates());

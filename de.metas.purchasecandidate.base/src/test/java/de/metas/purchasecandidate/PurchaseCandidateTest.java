@@ -4,9 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_AD_Table;
 import org.compiere.util.TimeUtil;
 import org.junit.Test;
+
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 
 /*
  * #%L
@@ -36,18 +43,18 @@ public class PurchaseCandidateTest
 	public void markProcessedAndCheckChanges()
 	{
 		final PurchaseCandidate candidate = PurchaseCandidateTestTool.createPurchaseCandidate(1);
+		assertThat(candidate.getSalesOrderLineId()).isEqualTo(PurchaseCandidateTestTool.SALES_ORDER_LINE_ID); // guard
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 		assertThat(candidate.isProcessed()).isFalse();
 		assertThat(candidate.copy().isProcessed()).isFalse();
 
-		candidate.setPurchaseOrderLineIdAndMarkProcessed(123);
+		candidate.markProcessed();
 		assertThat(candidate.hasChanges()).isTrue();
 		assertThat(candidate.copy().hasChanges()).isTrue();
 		assertThat(candidate.isProcessed()).isTrue();
 		assertThat(candidate.copy().isProcessed()).isTrue();
-		assertThat(candidate.getPurchaseOrderLineId()).isEqualTo(123);
-		assertThat(candidate.copy().getPurchaseOrderLineId()).isEqualTo(123);
+		assertThat(candidate.copy().getSalesOrderLineId()).isEqualTo(PurchaseCandidateTestTool.SALES_ORDER_LINE_ID);
 
 		candidate.markSaved(1);
 		assertThat(candidate.hasChanges()).isFalse();
@@ -81,16 +88,60 @@ public class PurchaseCandidateTest
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 
-		final Date newDatePromised = TimeUtil.addDays(candidate.getDatePromised(), +1);
-		candidate.setDatePromised(newDatePromised);
+		final Date newDatePromised = TimeUtil.addDays(candidate.getDateRequired(), +1);
+		candidate.setDateRequired(newDatePromised);
 
 		assertThat(candidate.hasChanges()).isTrue();
 		assertThat(candidate.copy().hasChanges()).isTrue();
-		assertThat(candidate.getDatePromised()).isEqualTo(newDatePromised);
-		assertThat(candidate.copy().getDatePromised()).isEqualTo(newDatePromised);
+		assertThat(candidate.getDateRequired()).isEqualTo(newDatePromised);
+		assertThat(candidate.copy().getDateRequired()).isEqualTo(newDatePromised);
 
 		candidate.markSaved(1);
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
+	}
+
+	@Test
+	public void newErrorItem()
+	{
+		final PurchaseCandidate candidate1 = PurchaseCandidateTestTool
+				.createPurchaseCandidate(20);
+
+		final RuntimeException throwable = new RuntimeException();
+		candidate1.newErrorItem()
+				.throwable(throwable)
+				.buildAndAdd();
+
+		assertThat(candidate1.getPurchaseOrderItems()).isEmpty();
+		final List<PurchaseErrorItem> purchaseErrorItems = candidate1.getPurchaseErrorItems();
+		assertThat(purchaseErrorItems).hasSize(1);
+
+		final PurchaseErrorItem purchaseErrorItem = purchaseErrorItems.get(0);
+		assertThat(purchaseErrorItem.getOrgId()).isEqualTo(candidate1.getOrgId());
+		assertThat(purchaseErrorItem.getPurchaseCandidateId()).isEqualTo(candidate1.getPurchaseCandidateId());
+		assertThat(purchaseErrorItem.getThrowable()).isSameAs(throwable);
+	}
+
+	@Test
+	public void newOrderItem()
+	{
+		final PurchaseCandidate candidate1 = PurchaseCandidateTestTool
+				.createPurchaseCandidate(20);
+
+		candidate1.newOrderItem()
+				.purchasedQty(BigDecimal.TEN)
+				.datePromised(SystemTime.asTimestamp())
+				.remotePurchaseOrderId("remotePurchaseOrderId")
+				.transactionReference(TableRecordReference.of(I_AD_Table.Table_Name, 30))
+				.buildAndAddToParent();
+
+		assertThat(candidate1.getPurchaseErrorItems()).isEmpty();
+		final List<PurchaseOrderItem> purchaseOrderItems = candidate1.getPurchaseOrderItems();
+		assertThat(purchaseOrderItems).hasSize(1);
+
+		final PurchaseOrderItem purchaseOrderItem = purchaseOrderItems.get(0);
+		assertThat(purchaseOrderItem.getOrgId()).isEqualTo(candidate1.getOrgId());
+		assertThat(purchaseOrderItem.getPurchaseCandidateId()).isEqualTo(candidate1.getPurchaseCandidateId());
+		assertThat(purchaseOrderItem.getProductId()).isEqualTo(candidate1.getProductId());
 	}
 }

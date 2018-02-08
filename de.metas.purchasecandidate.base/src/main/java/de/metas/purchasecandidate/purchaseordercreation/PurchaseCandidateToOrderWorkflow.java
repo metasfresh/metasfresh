@@ -1,6 +1,5 @@
 package de.metas.purchasecandidate.purchaseordercreation;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
@@ -28,10 +27,8 @@ import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvokerFactory;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.RemotePurchaseItem;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.RemotePurchaseItemRepository;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -63,19 +60,16 @@ public class PurchaseCandidateToOrderWorkflow
 	private static final Logger logger = LogManager.getLogger(PurchaseCandidateToOrderWorkflow.class);
 
 	private final PurchaseCandidateRepository purchaseCandidateRepo;
-	private final RemotePurchaseItemRepository purchaseOrderItemRepo;
 	private final VendorGatewayInvokerFactory vendorGatewayInvokerFactory;
 	private final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator;
 
 	@Builder
 	private PurchaseCandidateToOrderWorkflow(
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
-			@NonNull final RemotePurchaseItemRepository purchaseOrderItemRepo,
 			@NonNull final VendorGatewayInvokerFactory vendorGatewayInvokerFactory,
 			@NonNull final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator)
 	{
 		this.purchaseCandidateRepo = purchaseCandidateRepo;
-		this.purchaseOrderItemRepo = purchaseOrderItemRepo;
 		this.vendorGatewayInvokerFactory = vendorGatewayInvokerFactory;
 		this.purchaseOrderFromItemsAggregator = purchaseOrderFromItemsAggregator;
 	};
@@ -161,7 +155,7 @@ public class PurchaseCandidateToOrderWorkflow
 		final VendorGatewayInvoker vendorGatewayInvoker = vendorGatewayInvokerFactory
 				.createForVendorId(vendorId);
 
-		final List<RemotePurchaseItem> remotePurchaseItems = vendorGatewayInvoker
+		final List<PurchaseItem> remotePurchaseItems = vendorGatewayInvoker
 				.placeRemotePurchaseOrder(purchaseCandidatesWithVendorId);
 		loggable.addLog("vendorId={} - placeRemotePurchaseOrder returned remotePurchaseItem={}",
 				vendorId, remotePurchaseItems);
@@ -180,7 +174,6 @@ public class PurchaseCandidateToOrderWorkflow
 		vendorGatewayInvoker.updateRemoteLineReferences(purchaseOrderItems);
 
 		purchaseCandidateRepo.saveAllNoLock(purchaseCandidatesWithVendorId); // no lock because they are already locked by us
-		purchaseOrderItemRepo.storeNewRecords(remotePurchaseItems);
 	}
 
 	private Function<Throwable, Void> createExceptionHandler(
@@ -199,17 +192,13 @@ public class PurchaseCandidateToOrderWorkflow
 			logger.error(message, throwable);
 			loggable.addLog(message);
 
-			final ArrayList<PurchaseErrorItem> errorItems = new ArrayList<>();
 			for (final PurchaseCandidate purchaseCandidate : purchaseCandidates)
 			{
-				final PurchaseErrorItem purchaseErrorItem = PurchaseErrorItem.builder()
-						.purchaseCandidate(purchaseCandidate)
+				purchaseCandidate.newErrorItem()
 						.throwable(throwable)
-						.build();
-				errorItems.add(purchaseErrorItem);
+						.buildAndAdd();
 			}
-
-			purchaseOrderItemRepo.storeNewRecords(errorItems);
+			purchaseCandidateRepo.saveAll(purchaseCandidates);
 
 			return null;
 		};

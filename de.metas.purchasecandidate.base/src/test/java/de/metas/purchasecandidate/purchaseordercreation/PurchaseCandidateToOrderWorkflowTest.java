@@ -23,10 +23,7 @@ import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrder
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvokerFactory;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.RemotePurchaseItem;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.RemotePurchaseItemRepository;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mocked;
@@ -66,8 +63,6 @@ public class PurchaseCandidateToOrderWorkflowTest
 
 	@Mocked
 	PurchaseCandidateRepository purchaseCandidateRepo;
-	@Mocked
-	RemotePurchaseItemRepository purchaseOrderItemRepo;
 
 	@Mocked
 	PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator;
@@ -82,7 +77,6 @@ public class PurchaseCandidateToOrderWorkflowTest
 
 		workflowUnderTest = PurchaseCandidateToOrderWorkflow.builder()
 				.purchaseCandidateRepo(purchaseCandidateRepo)
-				.purchaseOrderItemRepo(purchaseOrderItemRepo)
 				.vendorGatewayInvokerFactory(vendorGatewayInvokerFactory)
 				.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator).build();
 	}
@@ -118,7 +112,12 @@ public class PurchaseCandidateToOrderWorkflowTest
 		workflowUnderTest.executeForPurchaseCandidates(purchaseCandidates);
 
 		assertThatBothCandidatesWereAddedToOrderAggregator();
-		assertThatOrderItemsWereBothStored(candidate1, candidate2);
+
+		assertThat(candidate1.getPurchaseOrderItems()).hasSize(1);
+		assertThat(candidate1.getPurchaseErrorItems()).isEmpty();
+
+		assertThat(candidate2.getPurchaseOrderItems()).hasSize(1);
+		assertThat(candidate2.getPurchaseErrorItems()).isEmpty();
 	}
 
 	private void assertThatBothCandidatesWereAddedToOrderAggregator()
@@ -134,30 +133,6 @@ public class PurchaseCandidateToOrderWorkflowTest
 					assertThat(iterator).isNotNull();
 		    		assertThat(iterator.hasNext()).as("iterator is not consumed").isTrue();
 			});
-		}};	// @formatter:on
-	}
-
-	private void assertThatOrderItemsWereBothStored(
-			final PurchaseCandidate candidate1,
-			final PurchaseCandidate candidate2)
-	{
-		// @formatter:off
-		new Verifications()
-		{{
-			List<List<RemotePurchaseItem>> purchaseItemsList = new ArrayList<>();
-			purchaseOrderItemRepo.storeNewRecords(withCapture(purchaseItemsList));
-			times = 2;
-			assertThat(purchaseItemsList).hasSize(2);
-			assertThat(purchaseItemsList).allSatisfy(purchaseItems -> assertThat(purchaseItems).hasSize(1));
-
-			assertThat(purchaseItemsList)
-					.filteredOn(purchaseItems -> purchaseItems.get(0).getPurchaseCandidate() == candidate1)
-					.hasSize(1);
-
-			assertThat(purchaseItemsList)
-					.filteredOn(purchaseItems -> purchaseItems.get(0).getPurchaseCandidate() == candidate2)
-					.hasSize(1);
-
 		}};	// @formatter:on
 	}
 
@@ -185,8 +160,15 @@ public class PurchaseCandidateToOrderWorkflowTest
 		workflowUnderTest.executeForPurchaseCandidates(purchaseCandidates);
 
 		assertThatOneCandidateWereAddedToOrderAggregator();
-		assertThatOrderItemAndErrorItemWereBothStored(candidate1, candidate2);
 
+		assertThat(candidate1.getPurchaseOrderItems()).hasSize(1);
+		assertThat(candidate1.getPurchaseErrorItems()).isEmpty();
+
+		assertThat(candidate2.getPurchaseOrderItems()).isEmpty();
+		assertThat(candidate2.getPurchaseErrorItems()).hasSize(1);
+
+		final Throwable candidate2Throwable = candidate2.getPurchaseErrorItems().get(0).getThrowable();
+		assertThat(candidate2Throwable).hasMessageContaining(SOMETHING_WENT_WRONG);
 	}
 
 	private void assertThatOneCandidateWereAddedToOrderAggregator()
@@ -199,36 +181,6 @@ public class PurchaseCandidateToOrderWorkflowTest
 
 			assertThat(iterator).isNotNull();
 			assertThat(iterator.hasNext()).as("iterator is not consumed").isTrue();
-		}};	// @formatter:on
-	}
-
-	private void assertThatOrderItemAndErrorItemWereBothStored(
-			final PurchaseCandidate candidate1,
-			final PurchaseCandidate candidate2)
-	{
-		// @formatter:off
-		new Verifications()
-		{{
-			List<List<RemotePurchaseItem>> purchaseItemsList = new ArrayList<>();
-			purchaseOrderItemRepo.storeNewRecords(withCapture(purchaseItemsList));
-
-			assertThat(purchaseItemsList).hasSize(2);
-			assertThat(purchaseItemsList).allSatisfy(purchaseItems -> assertThat(purchaseItems).hasSize(1));
-
-			assertThat(purchaseItemsList)
-					.filteredOn(purchaseItems -> purchaseItems.get(0) instanceof PurchaseOrderItem)
-					.allSatisfy(purchaseItems -> {
-						final PurchaseOrderItem purchaseOrderItem = (PurchaseOrderItem)purchaseItems.get(0);
-						assertThat(purchaseOrderItem.getPurchaseCandidate()).isSameAs(candidate1);
-					});
-
-			assertThat(purchaseItemsList)
-					.filteredOn(purchaseItems -> purchaseItems.get(0) instanceof PurchaseErrorItem)
-					.allSatisfy(purchaseItems -> {
-						final PurchaseErrorItem purchaseErrorItem = (PurchaseErrorItem)purchaseItems.get(0);
-						assertThat(purchaseErrorItem.getPurchaseCandidate()).isSameAs(candidate2);
-						assertThat(purchaseErrorItem.getThrowable()).hasMessageContaining(SOMETHING_WENT_WRONG);
-					});
 		}};	// @formatter:on
 	}
 
@@ -251,7 +203,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 						.productNo("productNo")
 						.productName("productName").build())
 				.qtyToPurchase(BigDecimal.ONE)
-				.datePromised(SystemTime.asDayTimestamp())
+				.dateRequired(SystemTime.asDayTimestamp())
 				.processed(false)
 				.locked(false)
 				.build();

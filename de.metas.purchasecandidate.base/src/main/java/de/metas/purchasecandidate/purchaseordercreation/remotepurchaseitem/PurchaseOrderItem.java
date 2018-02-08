@@ -51,8 +51,13 @@ import lombok.ToString;
  *
  */
 @ToString
-public class PurchaseOrderItem implements RemotePurchaseItem
+public class PurchaseOrderItem implements PurchaseItem
 {
+	public static PurchaseOrderItem cast(final PurchaseItem purchaseItem)
+	{
+		return (PurchaseOrderItem)purchaseItem;
+	}
+
 	@Getter
 	private final ITableRecordReference transactionReference;
 
@@ -94,6 +99,12 @@ public class PurchaseOrderItem implements RemotePurchaseItem
 		this.transactionReference = transactionReference;
 	}
 
+	@Override
+	public int getPurchaseCandidateId()
+	{
+		return purchaseCandidate.getPurchaseCandidateId();
+	}
+
 	public int getProductId()
 	{
 		return purchaseCandidate.getProductId();
@@ -124,6 +135,6 @@ public class PurchaseOrderItem implements RemotePurchaseItem
 		this.purchaseOrderId = load(purchaseOrderLineId, I_C_OrderLine.class).getC_Order_ID();
 		this.purchaseOrderLineId = purchaseOrderLineId;
 
-		purchaseCandidate.setPurchaseOrderLineIdAndMarkProcessed(purchaseOrderLineId);
+		purchaseCandidate.markProcessed();
 	}
 }

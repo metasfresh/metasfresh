@@ -4779,5 +4779,4 @@ CREATE INDEX IF NOT EXISTS msv3_tour_msv3_verfuegbarkeitanteil_id
 
 CREATE INDEX IF NOT EXISTS msv3_bestellungantwortauftrag_msv3_bestellungantwort_id
    ON public.msv3_bestellungantwortauftrag (msv3_bestellungantwort_id ASC NULLS LAST);
-CREATE INDEX IF NOT EXISTS msv3_bestellungantwortauftrag_c_orderpo_id
-   ON public.msv3_bestellungantwortauftrag (c_orderpo_id ASC NULLS LAST);
+

@@ -6,8 +6,8 @@ import java.util.List;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.RemotePurchaseItem;
 import lombok.NonNull;
 
 /*
@@ -46,7 +46,7 @@ public final class NullVendorGatewayInvoker implements VendorGatewayInvoker
 	 * Does not actually place a remote purchase order, but just returns a "plain" purchase order item for each candidate.
 	 */
 	@Override
-	public List<RemotePurchaseItem> placeRemotePurchaseOrder(
+	public List<PurchaseItem> placeRemotePurchaseOrder(
 			@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
 	{
 		return purchaseCandidates.stream()
@@ -58,12 +58,11 @@ public final class NullVendorGatewayInvoker implements VendorGatewayInvoker
 	private static PurchaseOrderItem createPlainPurchaseOrderItem(
 			@NonNull final PurchaseCandidate purchaseCandidate)
 	{
-		return PurchaseOrderItem.builder()
+		return purchaseCandidate.newOrderItem()
 				.remotePurchaseOrderId(NO_REMOTE_PURCHASE_ID)
-				.datePromised(purchaseCandidate.getDatePromised())
+				.datePromised(purchaseCandidate.getDateRequired())
 				.purchasedQty(purchaseCandidate.getQtyToPurchase())
-				.purchaseCandidate(purchaseCandidate)
-				.build();
+				.buildAndAddToParent();
 	}
 
 	/**

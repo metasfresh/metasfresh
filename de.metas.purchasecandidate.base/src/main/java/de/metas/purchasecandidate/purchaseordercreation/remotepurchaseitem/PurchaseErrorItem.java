@@ -2,12 +2,11 @@ package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.model.I_AD_Issue;
 
-import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.VendorProductInfo;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -33,49 +32,41 @@ import lombok.Value;
  */
 
 @Value
-public class PurchaseErrorItem implements RemotePurchaseItem
+public class PurchaseErrorItem implements PurchaseItem
 {
+	public static PurchaseErrorItem cast(final PurchaseItem purchaseItem)
+	{
+		return (PurchaseErrorItem)purchaseItem;
+	}
+
 	ITableRecordReference transactionReference;
 
-	PurchaseCandidate purchaseCandidate;
+	int purchaseCandidateId;
+
+	int orgId;
 
 	Throwable throwable;
 
+	I_AD_Issue issue;
+
 	@Builder
 	private PurchaseErrorItem(
-			@NonNull final Throwable throwable,
-			@NonNull final PurchaseCandidate purchaseCandidate,
+			@Nullable final Throwable throwable,
+			@Nullable final I_AD_Issue issue,
+			final int purchaseCandidateId,
+			final int orgId,
 			@Nullable final ITableRecordReference transactionReference)
 	{
+		Check.assume(purchaseCandidateId > 0, "Given parameter purchaseCandidateId > 0");
+		Check.assume(orgId > 0, "Given parameter orgId > 0");
+		Check.assume(issue != null || throwable != null, "At least one of the given issue or thorwable need to be non-null");
+
 		this.throwable = throwable;
-		this.purchaseCandidate = purchaseCandidate;
+		this.issue = issue;
+
+		this.purchaseCandidateId = purchaseCandidateId;
+		this.orgId = orgId;
 
 		this.transactionReference = transactionReference;
 	}
-
-	public int getProductId()
-	{
-		return purchaseCandidate.getProductId();
-	}
-
-	public int getUomId()
-	{
-		return purchaseCandidate.getUomId();
-	}
-
-	public int getOrgId()
-	{
-		return purchaseCandidate.getOrgId();
-	}
-
-	public int getWarehouseId()
-	{
-		return purchaseCandidate.getWarehouseId();
-	}
-
-	public VendorProductInfo getVendorProductInfo()
-	{
-		return purchaseCandidate.getVendorProductInfo();
-	}
-
 }

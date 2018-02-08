@@ -14,8 +14,8 @@ import com.google.common.collect.Maps;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.RemotePurchaseItem;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.order.LocalPurchaseOrderForRemoteOrderCreated;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
@@ -74,7 +74,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 	}
 
 	@Override
-	public List<RemotePurchaseItem> placeRemotePurchaseOrder(
+	public List<PurchaseItem> placeRemotePurchaseOrder(
 			@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
 	{
 		final ImmutableMap<PurchaseOrderRequestItem, PurchaseCandidate> requestItem2Candidate = //
@@ -89,16 +89,16 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 				purchaseOrderResponse.getTransactionTableName(),
 				purchaseOrderResponse.getTransactionRecordId());
 
-		final ImmutableList.Builder<RemotePurchaseItem> result = ImmutableList.builder();
+		final ImmutableList.Builder<PurchaseItem> result = ImmutableList.builder();
 		if (purchaseOrderResponse.getException() != null)
 		{
 			for (final PurchaseCandidate purchaseCandidate : purchaseCandidates)
 			{
-				final PurchaseErrorItem purchaseErrorItem = PurchaseErrorItem.builder()
-						.purchaseCandidate(purchaseCandidate)
-						.throwable(purchaseOrderResponse.getException())
+				final PurchaseErrorItem purchaseErrorItem = purchaseCandidate.newErrorItem()
 						.transactionReference(transactionReference)
-						.build();
+						.throwable(purchaseOrderResponse.getException())
+						.buildAndAdd();
+
 				result.add(purchaseErrorItem);
 			}
 		}
@@ -112,13 +112,12 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 
 			final PurchaseCandidate correspondingRequestCandidate = requestItem2Candidate.get(correspondingRequestItem);
 
-			final PurchaseOrderItem purchaseOrderItem = PurchaseOrderItem.builder()
-					.purchaseCandidate(correspondingRequestCandidate)
+			final PurchaseOrderItem purchaseOrderItem = correspondingRequestCandidate.newOrderItem()
 					.datePromised(remotePurchaseOrderCreatedItem.getConfirmedDeliveryDate())
 					.purchasedQty(remotePurchaseOrderCreatedItem.getConfirmedOrderQuantity())
 					.remotePurchaseOrderId(remotePurchaseOrderCreatedItem.getRemotePurchaseOrderId())
 					.transactionReference(transactionReference)
-					.build();
+					.buildAndAddToParent();
 			result.add(purchaseOrderItem);
 
 			mapBuilder.put(purchaseOrderItem, remotePurchaseOrderCreatedItem);

@@ -28,6 +28,8 @@ import org.adempiere.util.time.SystemTime;
 
 public final class PurchaseCandidateTestTool
 {
+	public static final int SALES_ORDER_LINE_ID = 2;
+
 	private PurchaseCandidateTestTool()
 	{
 	}
@@ -37,7 +39,7 @@ public final class PurchaseCandidateTestTool
 		return PurchaseCandidate.builder()
 				.purchaseCandidateId(purchaseCandidateId)
 				.salesOrderId(1)
-				.salesOrderLineId(2)
+				.salesOrderLineId(SALES_ORDER_LINE_ID)
 				.orgId(3)
 				.warehouseId(4)
 				.productId(5)
@@ -45,7 +47,7 @@ public final class PurchaseCandidateTestTool
 				.vendorBPartnerId(7)
 				.vendorProductInfo(new VendorProductInfo(10, 7, 20, "productNo", "productName"))
 				.qtyToPurchase(BigDecimal.ONE)
-				.datePromised(SystemTime.asDayTimestamp())
+				.dateRequired(SystemTime.asDayTimestamp())
 				.processed(false)
 				.locked(false)
 				.build();

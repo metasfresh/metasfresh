@@ -1,16 +1,22 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Issue;
+import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Repository;
 
+import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 import lombok.NonNull;
 
@@ -37,14 +43,14 @@ import lombok.NonNull;
  */
 
 @Repository
-public class RemotePurchaseItemRepository
+public class PurchaseItemRepository
 {
-	public void storeNewRecords(@NonNull final List<? extends RemotePurchaseItem> purchaseItems)
+	public void storeNewRecords(@NonNull final List<? extends PurchaseItem> purchaseItems)
 	{
-		purchaseItems.forEach(RemotePurchaseItemRepository::validateAndStore);
+		purchaseItems.forEach(PurchaseItemRepository::validateAndStore);
 	}
 
-	private static void validateAndStore(@NonNull final RemotePurchaseItem purchaseItem)
+	private static void validateAndStore(@NonNull final PurchaseItem purchaseItem)
 	{
 		if (purchaseItem instanceof PurchaseOrderItem)
 		{
@@ -79,6 +85,7 @@ public class RemotePurchaseItemRepository
 		record.setAD_Org_ID(purchaseOrderItem.getOrgId());
 
 		record.setC_PurchaseCandidate_ID(purchaseOrderItem.getPurchaseCandidate().getPurchaseCandidateId());
+		record.setC_OrderPO_ID(purchaseOrderItem.getPurchaseOrderId());
 		record.setC_OrderLinePO_ID(purchaseOrderItem.getPurchaseOrderLineId());
 
 		record.setAD_Table_ID(purchaseOrderItem.getTransactionReference().getAD_Table_ID());
@@ -91,7 +98,7 @@ public class RemotePurchaseItemRepository
 		final I_C_PurchaseCandidate_Alloc record = newInstance(I_C_PurchaseCandidate_Alloc.class);
 		record.setAD_Org_ID(purchaseErrorItem.getOrgId());
 
-		record.setC_PurchaseCandidate_ID(purchaseErrorItem.getPurchaseCandidate().getPurchaseCandidateId());
+		record.setC_PurchaseCandidate_ID(purchaseErrorItem.getPurchaseCandidateId());
 
 		if (purchaseErrorItem.getThrowable() != null)
 		{
@@ -102,5 +109,45 @@ public class RemotePurchaseItemRepository
 		record.setAD_Table_ID(purchaseErrorItem.getTransactionReference().getAD_Table_ID());
 		record.setRecord_ID(purchaseErrorItem.getTransactionReference().getRecord_ID());
 		save(record);
+	}
+
+	public void retrieveForPurchaseCandidate(
+			@NonNull final PurchaseCandidate purchaseCandidate)
+	{
+		final List<I_C_PurchaseCandidate_Alloc> purchaseItemRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PurchaseCandidate_Alloc.COLUMN_C_PurchaseCandidate_ID, purchaseCandidate.getPurchaseCandidateId())
+				.create()
+				.list();
+
+		for (final I_C_PurchaseCandidate_Alloc purchaseItemRecord : purchaseItemRecords)
+		{
+			createForRecord(purchaseCandidate, purchaseItemRecord);
+		}
+	}
+
+	private static PurchaseItem createForRecord(
+			@NonNull final PurchaseCandidate purchaseCandidate,
+			@NonNull final I_C_PurchaseCandidate_Alloc record)
+	{
+		final ITableRecordReference transactionReference = TableRecordReference.ofReferencedOrNull(record);
+
+		if (record.getAD_Issue_ID() <= 0)
+		{
+			final I_C_OrderLine purchaseOrderLine = load(record.getC_OrderLinePO_ID(), I_C_OrderLine.class);
+
+			return purchaseCandidate.newOrderItem()
+					.datePromised(record.getDatePromised())
+					.purchasedQty(purchaseOrderLine.getQtyOrdered())
+					.remotePurchaseOrderId(record.getRemotePurchaseOrderId())
+					.transactionReference(transactionReference)
+					.buildAndAddToParent();
+
+		}
+		return purchaseCandidate.newErrorItem()
+				.issue(record.getAD_Issue())
+				.transactionReference(transactionReference)
+				.buildAndAdd();
 	}
 }

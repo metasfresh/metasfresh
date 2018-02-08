@@ -27,6 +27,8 @@ import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -54,6 +56,13 @@ import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 public class PurchaseCandidateRepository
 {
 	private final LockOwner lockOwner = LockOwner.newOwner(PurchaseCandidateRepository.class.getSimpleName());
+
+	private final PurchaseItemRepository purchaseItemRepository;
+
+	public PurchaseCandidateRepository(@NonNull final PurchaseItemRepository purchaseItemRepository)
+	{
+		this.purchaseItemRepository = purchaseItemRepository;
+	}
 
 	public Stream<PurchaseCandidate> streamAllBySalesOrderLineIds(final Collection<Integer> salesOrderLineIds)
 	{
@@ -187,15 +196,15 @@ public class PurchaseCandidateRepository
 
 		record.setC_OrderSO_ID(purchaseCandidate.getSalesOrderId());
 		record.setC_OrderLineSO_ID(purchaseCandidate.getSalesOrderLineId());
-		record.setC_OrderLinePO_ID(purchaseCandidate.getPurchaseOrderLineId());
+
 		record.setAD_Org_ID(purchaseCandidate.getOrgId());
-		record.setM_Warehouse_ID(purchaseCandidate.getWarehouseId());
+		record.setM_WarehousePO_ID(purchaseCandidate.getWarehouseId());
 		record.setM_Product_ID(purchaseCandidate.getProductId());
 		record.setC_UOM_ID(purchaseCandidate.getUomId());
 		record.setVendor_ID(purchaseCandidate.getVendorBPartnerId());
 		record.setC_BPartner_Product_ID(purchaseCandidate.getVendorProductInfo().getBPartnerProductId());
 		record.setQtyToPurchase(purchaseCandidate.getQtyToPurchase());
-		record.setDatePromised(TimeUtil.asTimestamp(purchaseCandidate.getDatePromised()));
+		record.setDateRequired(TimeUtil.asTimestamp(purchaseCandidate.getDateRequired()));
 
 		record.setProcessed(purchaseCandidate.isProcessed());
 
@@ -210,21 +219,25 @@ public class PurchaseCandidateRepository
 	{
 		final boolean locked = Services.get(ILockManager.class).isLocked(purchaseCandidatePO);
 
-		return PurchaseCandidate.builder()
+		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.purchaseCandidateId(purchaseCandidatePO.getC_PurchaseCandidate_ID())
 				.salesOrderId(purchaseCandidatePO.getC_OrderSO_ID())
 				.salesOrderLineId(purchaseCandidatePO.getC_OrderLineSO_ID())
 				.orgId(purchaseCandidatePO.getAD_Org_ID())
-				.warehouseId(purchaseCandidatePO.getM_Warehouse_ID())
+				.warehouseId(purchaseCandidatePO.getM_WarehousePO_ID())
 				.productId(purchaseCandidatePO.getM_Product_ID())
 				.uomId(purchaseCandidatePO.getC_UOM_ID())
 				.vendorBPartnerId(purchaseCandidatePO.getVendor_ID())
 				.vendorProductInfo(VendorProductInfo.fromDataRecord(purchaseCandidatePO.getC_BPartner_Product()))
 				.qtyToPurchase(purchaseCandidatePO.getQtyToPurchase())
-				.datePromised(purchaseCandidatePO.getDatePromised())
+				.dateRequired(purchaseCandidatePO.getDateRequired())
 				.processed(purchaseCandidatePO.isProcessed())
 				.locked(locked)
 				.build();
+
+		purchaseItemRepository.retrieveForPurchaseCandidate(purchaseCandidate);
+
+		return purchaseCandidate;
 	}
 
 	public void deleteByIds(Collection<Integer> purchaseCandidateIds)

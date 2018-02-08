@@ -154,6 +154,35 @@ public interface I_C_PurchaseCandidate_Alloc
     public static final String COLUMNNAME_C_OrderLinePO_ID = "C_OrderLinePO_ID";
 
 	/**
+	 * Set Bestellung.
+	 * Bestellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_OrderPO_ID (int C_OrderPO_ID);
+
+	/**
+	 * Get Bestellung.
+	 * Bestellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_OrderPO_ID();
+
+	public org.compiere.model.I_C_Order getC_OrderPO();
+
+	public void setC_OrderPO(org.compiere.model.I_C_Order C_OrderPO);
+
+    /** Column definition for C_OrderPO_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate_Alloc, org.compiere.model.I_C_Order> COLUMN_C_OrderPO_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate_Alloc, org.compiere.model.I_C_Order>(I_C_PurchaseCandidate_Alloc.class, "C_OrderPO_ID", org.compiere.model.I_C_Order.class);
+    /** Column name C_OrderPO_ID */
+    public static final String COLUMNNAME_C_OrderPO_ID = "C_OrderPO_ID";
+
+	/**
 	 * Set C_PurchaseCandidate_Alloc.
 	 *
 	 * <br>Type: ID
@@ -234,6 +263,31 @@ public interface I_C_PurchaseCandidate_Alloc
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Zugesagter Termin.
+	 * Zugesagter Termin für diesen Auftrag
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDatePromised (java.sql.Timestamp DatePromised);
+
+	/**
+	 * Get Zugesagter Termin.
+	 * Zugesagter Termin für diesen Auftrag
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDatePromised();
+
+    /** Column definition for DatePromised */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate_Alloc, Object> COLUMN_DatePromised = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate_Alloc, Object>(I_C_PurchaseCandidate_Alloc.class, "DatePromised", null);
+    /** Column name DatePromised */
+    public static final String COLUMNNAME_DatePromised = "DatePromised";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -282,6 +336,31 @@ public interface I_C_PurchaseCandidate_Alloc
     public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate_Alloc, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate_Alloc, Object>(I_C_PurchaseCandidate_Alloc.class, "Record_ID", null);
     /** Column name Record_ID */
     public static final String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Set Bestell-Kennung.
+	 * Kennung zur Eindeutigen Identifikation der Bestellung beim Lieferanten
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRemotePurchaseOrderId (java.lang.String RemotePurchaseOrderId);
+
+	/**
+	 * Get Bestell-Kennung.
+	 * Kennung zur Eindeutigen Identifikation der Bestellung beim Lieferanten
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getRemotePurchaseOrderId();
+
+    /** Column definition for RemotePurchaseOrderId */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate_Alloc, Object> COLUMN_RemotePurchaseOrderId = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate_Alloc, Object>(I_C_PurchaseCandidate_Alloc.class, "RemotePurchaseOrderId", null);
+    /** Column name RemotePurchaseOrderId */
+    public static final String COLUMNNAME_RemotePurchaseOrderId = "RemotePurchaseOrderId";
 
 	/**
 	 * Get Aktualisiert.

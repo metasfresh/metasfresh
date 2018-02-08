@@ -5,7 +5,7 @@ import java.util.List;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.RemotePurchaseItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 
 /*
  * #%L
@@ -31,7 +31,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Remot
 
 public interface VendorGatewayInvoker
 {
-	List<RemotePurchaseItem> placeRemotePurchaseOrder(Collection<PurchaseCandidate> purchaseCandidates);
+	List<PurchaseItem> placeRemotePurchaseOrder(Collection<PurchaseCandidate> purchaseCandidates);
 
 	void updateRemoteLineReferences(Collection<PurchaseOrderItem> purchaseOrderItem);
 }

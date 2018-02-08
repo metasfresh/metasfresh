@@ -30,10 +30,11 @@ import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewa
 
 /**
  * Instances of this interface are returned by {@link VendorGatewayInvoker} and are processed by {@link PurchaseOrderFromItemsAggregator}.
+ * They are created via {@link PurchaseCandidate#newErrorItem()} and {@link PurchaseCandidate#newOrderItem()}.
  */
-public interface RemotePurchaseItem
+public interface PurchaseItem
 {
 	ITableRecordReference getTransactionReference();
 
-	PurchaseCandidate getPurchaseCandidate();
+	int getPurchaseCandidateId();
 }
