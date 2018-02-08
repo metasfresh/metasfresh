@@ -273,6 +273,10 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 				instPara.setP_String_To(valueStrTo);
 			}
 		}
+		else if (value == null)
+		{
+			// nothing to set
+		}
 		else
 		{
 			logger.warn("Skip setting parameter value for {} because value type is unknown: {}", instPara, piPara);
@@ -590,7 +594,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		{
 			saveParameterToDB(pi.getAD_PInstance_ID(), parameters);
 		}
-		
+
 		saveSelectedIncludedRecords(pi.getAD_PInstance_ID(), pi.getSelectedIncludedRecords());
 	}
 
