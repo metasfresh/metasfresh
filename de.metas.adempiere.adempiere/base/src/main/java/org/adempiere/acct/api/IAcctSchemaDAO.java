@@ -49,6 +49,8 @@ public interface IAcctSchemaDAO extends ISingletonService
 	 * @throws AccountingException if no accounting schema is found.
 	 */
 	I_C_AcctSchema retrieveAcctSchema(Properties ctx);
+	
+	I_C_AcctSchema retrieveAcctSchemaById(final int acctSchemaId);
 
 	/**
 	 * Similar to {@link #retrieveAcctSchema(Properties)}, but uses the given client and org ID rather than the ones of the given <code>ctx</code>.

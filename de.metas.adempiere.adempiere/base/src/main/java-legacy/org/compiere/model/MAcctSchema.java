@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -52,23 +51,29 @@ public class MAcctSchema extends X_C_AcctSchema
 	/**
 	 *  Get AccountSchema of Client
 	 * 	@param ctx context
-	 *  @param C_AcctSchema_ID schema id
+	 *  @param acctSchemaId schema id
 	 *  @return Accounting schema
 	 *  @deprecated please just load it directly because it's cached
 	 *  @see org.adempiere.acct.model.validator.AcctModuleInterceptor
 	 */
 	@Deprecated
-	public static MAcctSchema get (final Properties ctx, final int C_AcctSchema_ID)
+	public static MAcctSchema get (final Properties ctx_NOTUSED, final int acctSchemaId)
 	{
-		if (C_AcctSchema_ID <= 0)
+		return get(acctSchemaId);
+	}	//	get
+	
+	@Deprecated
+	public static MAcctSchema get (final int acctSchemaId)
+	{
+		if (acctSchemaId <= 0)
 		{
 			return null;
 		}
 		
-		// NOTE: we assume the C_AcctSchema is cached (see org.adempiere.acct.model.validator.AcctModuleInterceptor.setupCaching(IModelCacheService) )
-		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.loadOutOfTrx(C_AcctSchema_ID, I_C_AcctSchema.class);
+		final I_C_AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).retrieveAcctSchemaById(acctSchemaId);
 		return LegacyAdapters.convertToPO(acctSchema);
 	}	//	get
+
 
 	/**
 	 *  Get AccountSchema of Client

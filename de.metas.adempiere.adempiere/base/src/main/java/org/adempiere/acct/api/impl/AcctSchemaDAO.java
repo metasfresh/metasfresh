@@ -13,15 +13,14 @@ package org.adempiere.acct.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -71,8 +70,19 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_C_AcctSchema.Table_Name + "#By#" + "getC_AcctSchema_ID(?,?)"
-			, expireMinutes = Cached.EXPIREMINUTES_Never)
+	public I_C_AcctSchema retrieveAcctSchemaById(final int acctSchemaId)
+	{
+		Check.assume(acctSchemaId > 0, "acctSchemaId > 0");
+
+		// NOTE: we assume the C_AcctSchema is cached (see org.adempiere.acct.model.validator.AcctModuleInterceptor.setupCaching(IModelCacheService) )
+		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.loadOutOfTrx(acctSchemaId, I_C_AcctSchema.class);
+		Check.assumeNotNull(acctSchema, "Accounting schema shall exists for {}", acctSchemaId);
+
+		return acctSchema;
+	}
+
+	@Override
+	@Cached(cacheName = I_C_AcctSchema.Table_Name + "#By#" + "getC_AcctSchema_ID(?,?)", expireMinutes = Cached.EXPIREMINUTES_Never)
 	public I_C_AcctSchema retrieveAcctSchema(final @CacheCtx Properties ctx, final int ad_Client_ID, final int ad_Org_ID)
 	{
 		final int acctSchemaId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", ad_Client_ID, ad_Org_ID);
@@ -141,8 +151,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		return retrieveSchemaElements(ctx, acctSchemaId, trxName);
 	}
 
-	@Cached(cacheName = I_C_AcctSchema_Element.Table_Name + "#By#" + I_C_AcctSchema_Element.COLUMNNAME_C_AcctSchema_ID
-			, expireMinutes = Cached.EXPIREMINUTES_Never)
+	@Cached(cacheName = I_C_AcctSchema_Element.Table_Name + "#By#" + I_C_AcctSchema_Element.COLUMNNAME_C_AcctSchema_ID, expireMinutes = Cached.EXPIREMINUTES_Never)
 	List<I_C_AcctSchema_Element> retrieveSchemaElements(
 			@CacheCtx final Properties ctx,
 			final int acctSchemaId,
