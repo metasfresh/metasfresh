@@ -48,7 +48,7 @@ public class BPOpenBalanceValidator implements ModelValidator
 	private static class BPAmounts
 	{
 		public int bpartnerId;
-		public BigDecimal totalOpenBalance;
+		public BigDecimal soCreditUsed;
 		public BigDecimal actualLifeTimeValue;
 	}
 
@@ -154,11 +154,11 @@ public class BPOpenBalanceValidator implements ModelValidator
 			invoiceAmtAbs = invoiceAmtAbs.negate();
 		}
 
-		final BigDecimal totalOpenBalanceExpected = bpAmt.totalOpenBalance.add(invoiceAmtAbs);
+		final BigDecimal totalOpenBalanceExpected = bpAmt.soCreditUsed.add(invoiceAmtAbs);
 		final BigDecimal actualLifeTimeValueExpected = bpAmt.actualLifeTimeValue.add(invoice.isSOTrx() ? invoiceAmtAbs : BigDecimal.ZERO);
 
 		InterfaceWrapperHelper.refresh(bp);
-		assertThat("BP open amount is not correct after invoice " + invoice, stats.getTotalOpenBalance(), comparesEqualTo(totalOpenBalanceExpected));
+		assertThat("BP open amount is not correct after invoice " + invoice, stats.getOpenItems(), comparesEqualTo(totalOpenBalanceExpected));
 		assertThat("BP lifetime value is not correct after invoice " + invoice, stats.getActualLifeTimeValue(), comparesEqualTo(actualLifeTimeValueExpected));
 
 		updateFrom(bpAmt, stats);
@@ -180,9 +180,9 @@ public class BPOpenBalanceValidator implements ModelValidator
 		if (!payment.isReceipt())
 			payAmtAbs = payAmtAbs.negate();
 
-		final BigDecimal totalOpenBalanceExpected = bpAmt.totalOpenBalance.subtract(payAmtAbs);
+		final BigDecimal creditUsedExpected = bpAmt.soCreditUsed.subtract(payAmtAbs);
 		InterfaceWrapperHelper.refresh(bp);
-		assertThat("BP open amount is not correct after payment " + payment, stats.getTotalOpenBalance(), comparesEqualTo(totalOpenBalanceExpected));
+		assertThat("BP open amount is not correct after payment " + payment, stats.getOpenItems(), comparesEqualTo(creditUsedExpected));
 
 		updateFrom(bpAmt, stats);
 	}
@@ -205,7 +205,7 @@ public class BPOpenBalanceValidator implements ModelValidator
 
 	private void updateFrom(final BPAmounts bpAmt, final IBPartnerStats stats)
 	{
-		bpAmt.totalOpenBalance = stats.getTotalOpenBalance();
+		bpAmt.soCreditUsed = stats.getOpenItems();
 		bpAmt.actualLifeTimeValue = stats.getActualLifeTimeValue();
 	}
 

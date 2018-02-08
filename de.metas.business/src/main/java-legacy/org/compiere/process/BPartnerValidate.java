@@ -135,7 +135,7 @@ public class BPartnerValidate extends JavaProcess
 		//
 		// if (bp.getSO_CreditUsed().signum() != 0)
 		addLog(0, null, stats.getSOCreditUsed(), Msg.getElement(getCtx(), "SO_CreditUsed"));
-		addLog(0, null, stats.getTotalOpenBalance(), Msg.getElement(getCtx(), "TotalOpenBalance"));
+		addLog(0, null, stats.getOpenItems(), Msg.getElement(getCtx(), "TotalOpenBalance"));
 		addLog(0, null, stats.getActualLifeTimeValue(), Msg.getElement(getCtx(), "ActualLifeTimeValue"));
 		//
 		commitEx();

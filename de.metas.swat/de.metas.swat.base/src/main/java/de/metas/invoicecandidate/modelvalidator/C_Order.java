@@ -74,7 +74,7 @@ public class C_Order
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.load(order.getC_BPartner_ID(), I_C_BPartner.class);
 		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
-		final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
+		final BigDecimal totalOpenBalance = stats.getOpenItems();
 		final String soCreditStatus = stats.getSOCreditStatus();
 
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);

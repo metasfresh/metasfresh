@@ -1892,7 +1892,7 @@ public final class MPayment extends X_C_Payment
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
 		final String soCreditStatus = stats.getSOCreditStatus();
-		final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
+		final BigDecimal totalOpenBalance = stats.getOpenItems();
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID());
 
@@ -1900,7 +1900,7 @@ public final class MPayment extends X_C_Payment
 		if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getPayAmt(true)))
 		{
 			throw new AdempiereException("@BPartnerCreditStop@ - @TotalOpenBalance@="
-					+ stats.getTotalOpenBalance()
+					+ stats.getOpenItems()
 					+ ", @SO_CreditLimit@=" + creditLimit);
 		}
 
@@ -2001,7 +2001,7 @@ public final class MPayment extends X_C_Payment
 				return IDocument.STATUS_Invalid;
 			}
 			// Total Balance
-			BigDecimal newBalance = stats.getTotalOpenBalance();
+			BigDecimal newBalance = stats.getOpenItems();
 
 			if (newBalance == null)
 			{

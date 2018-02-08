@@ -1381,7 +1381,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getGrandTotal(true)))
 			{
 				throw new AdempiereException("@BPartnerCreditStop@ - @TotalOpenBalance@="
-						+ stats.getTotalOpenBalance()
+						+ stats.getOpenItems()
 						+ ", @SO_CreditLimit@=" + creditLimit);
 			}
 		}

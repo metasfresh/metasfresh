@@ -83,7 +83,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		stat.setSOCreditStatus(X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK);
 		stat.setActualLifeTimeValue(BigDecimal.ZERO);
 		stat.setSO_CreditUsed(BigDecimal.ZERO);
-		stat.setTotalOpenBalance(BigDecimal.ZERO);
+		stat.setOpenItems(BigDecimal.ZERO);
 
 		InterfaceWrapperHelper.save(stat);
 
@@ -267,7 +267,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			// Above Watch Limit
 			final BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
 
-			if (watchAmt.compareTo(bpStats.getTotalOpenBalance()) < 0)
+			if (watchAmt.compareTo(bpStats.getOpenItems()) < 0)
 			{
 				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
 			}
@@ -290,8 +290,8 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		final BigDecimal openItems = retrieveOpenItems(bpStats);
 
-		// update the statistics with the up tp date totalOpenBalance
-		stats.setTotalOpenBalance(openItems);
+		// update the statistics with the up tp date openItems
+		stats.setOpenItems(openItems);
 
 		// save in db
 		InterfaceWrapperHelper.save(stats);

@@ -1264,7 +1264,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
 		final String soCreditStatus = stats.getSOCreditStatus();
-		final BigDecimal totalOpenBalance = stats.getTotalOpenBalance();
+		final BigDecimal totalOpenBalance = stats.getOpenItems();
 
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID());

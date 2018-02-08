@@ -73,7 +73,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 		// Above Watch Limit
 		final BigDecimal watchAmt = creditLimit.multiply(getCreditWatchRatio(bpStats));
-		if (watchAmt.compareTo(bpStats.getTotalOpenBalance()) < 0)
+		if (watchAmt.compareTo(bpStats.getOpenItems()) < 0)
 		{
 			return X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
 		}

@@ -4,7 +4,6 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_BPartner_Stats
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPa
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 435996068L;
+	private static final long serialVersionUID = -1807082249L;
 
     /** Standard Constructor */
     public X_C_BPartner_Stats (Properties ctx, int C_BPartner_Stats_ID, String trxName)
@@ -62,7 +61,7 @@ public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPa
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualLifeTimeValue);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -125,6 +124,47 @@ public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPa
 		return ii.intValue();
 	}
 
+	/** Set Offene Posten.
+		@param OpenItems Offene Posten	  */
+	@Override
+	public void setOpenItems (java.math.BigDecimal OpenItems)
+	{
+		set_Value (COLUMNNAME_OpenItems, OpenItems);
+	}
+
+	/** Get Offene Posten.
+		@return Offene Posten	  */
+	@Override
+	public java.math.BigDecimal getOpenItems () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OpenItems);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Kredit gewährt.
+		@param SO_CreditUsed 
+		Gegenwärtiger Aussenstand
+	  */
+	@Override
+	public void setSO_CreditUsed (java.math.BigDecimal SO_CreditUsed)
+	{
+		set_Value (COLUMNNAME_SO_CreditUsed, SO_CreditUsed);
+	}
+
+	/** Get Kredit gewährt.
+		@return Gegenwärtiger Aussenstand
+	  */
+	@Override
+	public java.math.BigDecimal getSO_CreditUsed () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SO_CreditUsed);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** 
 	 * SOCreditStatus AD_Reference_ID=289
 	 * Reference name: C_BPartner SOCreditStatus
@@ -160,49 +200,5 @@ public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPa
 	public java.lang.String getSOCreditStatus () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SOCreditStatus);
-	}
-
-	/** Set Kredit gewährt.
-		@param SO_CreditUsed 
-		Gegenwärtiger Aussenstand
-	  */
-	@Override
-	public void setSO_CreditUsed (java.math.BigDecimal SO_CreditUsed)
-	{
-		set_Value (COLUMNNAME_SO_CreditUsed, SO_CreditUsed);
-	}
-
-	/** Get Kredit gewährt.
-		@return Gegenwärtiger Aussenstand
-	  */
-	@Override
-	public java.math.BigDecimal getSO_CreditUsed () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SO_CreditUsed);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Offener Saldo.
-		@param TotalOpenBalance 
-		Gesamt der offenen Beträge in primärer Buchführungswährung
-	  */
-	@Override
-	public void setTotalOpenBalance (java.math.BigDecimal TotalOpenBalance)
-	{
-		set_Value (COLUMNNAME_TotalOpenBalance, TotalOpenBalance);
-	}
-
-	/** Get Offener Saldo.
-		@return Gesamt der offenen Beträge in primärer Buchführungswährung
-	  */
-	@Override
-	public java.math.BigDecimal getTotalOpenBalance () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalOpenBalance);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
 	}
 }
