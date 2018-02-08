@@ -1,4 +1,4 @@
-import React, { Component, PureComponent } from "react";
+import React, { PureComponent } from "react";
 import { connect } from "react-redux";
 import onClickOutside from "react-onclickoutside";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
@@ -216,8 +216,6 @@ class RawList extends PureComponent {
   handleClick = () => {
     this.openDropdownList();
   };
-
-  handleChange = e => {};
 
   handleSelect = option => {
     const { onSelect } = this.props;
@@ -514,7 +512,6 @@ class RawList extends PureComponent {
                 placeholder={placeholder}
                 value={value}
                 disabled={readonly || disabled}
-                onChange={this.handleChange}
               />
             </div>
 
