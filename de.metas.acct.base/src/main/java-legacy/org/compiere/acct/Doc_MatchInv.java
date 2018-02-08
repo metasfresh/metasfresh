@@ -17,6 +17,7 @@
 package org.compiere.acct;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +31,6 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
@@ -106,7 +106,6 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final I_M_MatchInv matchInv = getM_MatchInv();
 		setC_Currency_ID(Doc.NO_CURRENCY);
 		setDateDoc(matchInv.getDateTrx());
-		setQty(matchInv.getQty());
 
 		docLine = new DocLine_MatchInv(matchInv, this);
 
@@ -147,6 +146,11 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	public I_M_MatchInv getM_MatchInv()
 	{
 		return getModel(I_M_MatchInv.class);
+	}
+	
+	private Quantity getQty()
+	{
+		return docLine.getQty();
 	}
 
 	/** @return zero (always balanced) */
@@ -400,7 +404,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final BigDecimal qtyInvoiced = getQtyInvoiced();
 		if (qtyInvoiced.signum() != 0) // task 08337: guard against division by zero
 		{
-			return getQty().divide(qtyInvoiced, 12, BigDecimal.ROUND_HALF_UP);
+			return getQty().divide(qtyInvoiced, 12, RoundingMode.HALF_UP).getQty();
 		}
 		else
 		{
@@ -506,8 +510,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final I_M_InOutLine receiptLine = getReceiptLine();
 		final I_M_InOut receipt = receiptLine.getM_InOut();
 		final boolean isReturnTrx = inOutBL.isReturnMovementType(receipt.getMovementType());
-		final BigDecimal matchQty = isReturnTrx ? getQty().negate() : getQty();
-		final I_C_UOM matchQtyUOM = Services.get(IProductBL.class).getStockingUOM(getM_Product_ID());
+		final Quantity matchQty = isReturnTrx ? getQty().negate() : getQty();
 
 		final I_M_MatchInv matchInv = getM_MatchInv();
 
@@ -519,7 +522,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 						.productId(getM_Product_ID())
 						.attributeSetInstanceId(matchInv.getM_AttributeSetInstance_ID())
 						.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getM_MatchInv_ID()))
-						.qty(Quantity.of(matchQty, matchQtyUOM))
+						.qty(matchQty)
 						.amt(CostAmount.of(matchAmt, currentId))
 						.currencyConversionTypeId(currencyConvCtx.getC_ConversionType_ID())
 						.date(TimeUtil.asLocalDate(currencyConvCtx.getConversionDate()))

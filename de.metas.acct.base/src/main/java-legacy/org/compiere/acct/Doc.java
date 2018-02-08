@@ -1110,9 +1110,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	/** Source Amounts (may not all be used) */
 	private final BigDecimal[] m_Amounts = new BigDecimal[] { BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO };
 
-	/** Quantity */
-	private BigDecimal m_qty = null;
-
 	/**
 	 * Get the Amount (loaded in loadDocumentDetails)
 	 *
@@ -1159,22 +1156,6 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	{
 		return m_Amounts[0];
 	}   // getAmount
-
-	protected final void setQty(final BigDecimal qty)
-	{
-		m_qty = qty;
-	}
-
-	protected final BigDecimal getQty()
-	{
-		if (m_qty == null)
-		{
-			m_qty = getValueAsBD("Qty", BigDecimal.ZERO);
-		}
-		return m_qty;
-	}
-
-	/*************************************************************************/
 
 	/** Account Type - Invoice - Charge */
 	public static final int ACCTTYPE_Charge = 0;

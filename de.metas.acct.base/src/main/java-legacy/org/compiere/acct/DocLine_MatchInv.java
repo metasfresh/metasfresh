@@ -6,6 +6,7 @@ import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MAccount;
 
 import de.metas.acct.api.ProductAcctType;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -35,6 +36,9 @@ final class DocLine_MatchInv extends DocLine<Doc_MatchInv>
 	public DocLine_MatchInv(final I_M_MatchInv matchInv, final Doc_MatchInv doc)
 	{
 		super(InterfaceWrapperHelper.getPO(matchInv), doc);
+		
+		final Quantity qty = Quantity.of(matchInv.getQty(), getProductStockingUOM());
+		setQty(qty, false);
 	}
 
 	public MAccount getInventoryClearingAccount(final I_C_AcctSchema as)

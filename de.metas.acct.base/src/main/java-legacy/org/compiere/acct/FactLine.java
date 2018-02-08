@@ -464,9 +464,10 @@ final class FactLine extends X_Fact_Acct
 		// Qty
 		if (get_Value("Qty") == null)	// not previously set
 		{
-			setQty(m_doc.getQty());	// neg = outgoing
 			if (m_docLine != null)
+			{
 				setQty(m_docLine.getQty());
+			}
 		}
 
 		// Loc From (maybe set earlier)
