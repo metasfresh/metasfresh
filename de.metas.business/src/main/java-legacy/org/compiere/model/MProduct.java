@@ -18,7 +18,6 @@ package org.compiere.model;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -180,42 +179,6 @@ public class MProduct extends X_M_Product
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
-		// Check Storage
-		if (!newRecord && 	//
-				((is_ValueChanged(COLUMNNAME_IsActive) && !isActive())		// now not active
-						|| (is_ValueChanged(COLUMNNAME_IsStocked) && !Services.get(IProductBL.class).isStocked(this))	// now not stocked
-				|| (is_ValueChanged(COLUMNNAME_ProductType) // from Item
-				&& PRODUCTTYPE_Item.equals(get_ValueOld(COLUMNNAME_ProductType)))))
-		{
-			MStorage[] storages = MStorage.getOfProduct(getCtx(), get_ID(), get_TrxName());
-			BigDecimal OnHand = BigDecimal.ZERO;
-			BigDecimal Ordered = BigDecimal.ZERO;
-			BigDecimal Reserved = BigDecimal.ZERO;
-			for (int i = 0; i < storages.length; i++)
-			{
-				OnHand = OnHand.add(storages[i].getQtyOnHand());
-				Ordered = Ordered.add(storages[i].getQtyOrdered());
-				Reserved = Reserved.add(storages[i].getQtyReserved());
-			}
-			String errMsg = "";
-			if (OnHand.signum() != 0)
-			{
-				errMsg = "@QtyOnHand@ = " + OnHand;
-			}
-			if (Ordered.signum() != 0)
-			{
-				errMsg += " - @QtyOrdered@ = " + Ordered;
-			}
-			if (Reserved.signum() != 0)
-			{
-				errMsg += " - @QtyReserved@" + Reserved;
-			}
-			if (errMsg.length() > 0)
-			{
-				throw new AdempiereException(errMsg);
-			}
-		}	// storage
-
 		// it checks if UOM has been changed , if so disallow the change if the condition is true.
 		if ((!newRecord) && is_ValueChanged(COLUMNNAME_C_UOM_ID) && hasInventoryTrxs())
 		{
@@ -297,38 +260,6 @@ public class MProduct extends X_M_Product
 		if (PRODUCTTYPE_Resource.equals(getProductType()) && getS_Resource_ID() > 0)
 		{
 			throw new AdempiereException("@S_Resource_ID@<>0");
-		}
-		// Check Storage
-		if (Services.get(IProductBL.class).isStocked(this) || PRODUCTTYPE_Item.equals(getProductType()))
-		{
-			MStorage[] storages = MStorage.getOfProduct(getCtx(), get_ID(), get_TrxName());
-			BigDecimal OnHand = BigDecimal.ZERO;
-			BigDecimal Ordered = BigDecimal.ZERO;
-			BigDecimal Reserved = BigDecimal.ZERO;
-			for (int i = 0; i < storages.length; i++)
-			{
-				OnHand = OnHand.add(storages[i].getQtyOnHand());
-				Ordered = OnHand.add(storages[i].getQtyOrdered());
-				Reserved = OnHand.add(storages[i].getQtyReserved());
-			}
-			String errMsg = "";
-			if (OnHand.signum() != 0)
-			{
-				errMsg = "@QtyOnHand@ = " + OnHand;
-			}
-			if (Ordered.signum() != 0)
-			{
-				errMsg += " - @QtyOrdered@ = " + Ordered;
-			}
-			if (Reserved.signum() != 0)
-			{
-				errMsg += " - @QtyReserved@" + Reserved;
-			}
-			if (errMsg.length() > 0)
-			{
-				throw new AdempiereException(errMsg);
-			}
-
 		}
 
 		//
