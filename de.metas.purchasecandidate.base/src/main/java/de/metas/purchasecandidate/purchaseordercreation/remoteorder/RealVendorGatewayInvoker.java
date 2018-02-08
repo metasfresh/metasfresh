@@ -8,11 +8,14 @@ import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.purchaseordercreation.PurchaseOrderItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.RemotePurchaseItem;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 import de.metas.vendor.gateway.api.order.LocalPurchaseOrderForRemoteOrderCreated;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
@@ -71,11 +74,14 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 	}
 
 	@Override
-	public Collection<PurchaseOrderItem> placeRemotePurchaseOrder(@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
+	public List<RemotePurchaseItem> placeRemotePurchaseOrder(
+			@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
 	{
-		final ImmutableMap<PurchaseOrderRequestItem, PurchaseCandidate> requestItem2Candidate = Maps.uniqueIndex(purchaseCandidates, PurchaseCandidate::createPurchaseOrderRequestItem);
+		final ImmutableMap<PurchaseOrderRequestItem, PurchaseCandidate> requestItem2Candidate = //
+				Maps.uniqueIndex(purchaseCandidates, PurchaseCandidate::createPurchaseOrderRequestItem);
 
-		final PurchaseOrderRequest purchaseOrderRequest = new PurchaseOrderRequest(orgId, vendorBPartnerId, requestItem2Candidate.keySet());
+		final PurchaseOrderRequest purchaseOrderRequest = //
+				new PurchaseOrderRequest(orgId, vendorBPartnerId, requestItem2Candidate.keySet());
 
 		final RemotePurchaseOrderCreated purchaseOrderResponse = vendorGatewayService.placePurchaseOrder(purchaseOrderRequest);
 
@@ -83,12 +89,18 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 				purchaseOrderResponse.getTransactionTableName(),
 				purchaseOrderResponse.getTransactionRecordId());
 
+		final ImmutableList.Builder<RemotePurchaseItem> result = ImmutableList.builder();
 		if (purchaseOrderResponse.getException() != null)
 		{
-			purchaseCandidates
-					.forEach(purchaseCandidate -> purchaseCandidate.addActualPurchaseException(
-							transactionReference,
-							purchaseOrderResponse.getException()));
+			for (final PurchaseCandidate purchaseCandidate : purchaseCandidates)
+			{
+				final PurchaseErrorItem purchaseErrorItem = PurchaseErrorItem.builder()
+						.purchaseCandidate(purchaseCandidate)
+						.throwable(purchaseOrderResponse.getException())
+						.transactionReference(transactionReference)
+						.build();
+				result.add(purchaseErrorItem);
+			}
 		}
 
 		final ImmutableMap.Builder<PurchaseOrderItem, RemotePurchaseOrderCreatedItem> mapBuilder = ImmutableMap.builder();
@@ -101,18 +113,19 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 			final PurchaseCandidate correspondingRequestCandidate = requestItem2Candidate.get(correspondingRequestItem);
 
 			final PurchaseOrderItem purchaseOrderItem = PurchaseOrderItem.builder()
+					.purchaseCandidate(correspondingRequestCandidate)
 					.datePromised(remotePurchaseOrderCreatedItem.getConfirmedDeliveryDate())
 					.purchasedQty(remotePurchaseOrderCreatedItem.getConfirmedOrderQuantity())
 					.remotePurchaseOrderId(remotePurchaseOrderCreatedItem.getRemotePurchaseOrderId())
 					.transactionReference(transactionReference)
-					.purchaseCandidate(correspondingRequestCandidate)
 					.build();
+			result.add(purchaseOrderItem);
 
 			mapBuilder.put(purchaseOrderItem, remotePurchaseOrderCreatedItem);
 		}
 
 		map = mapBuilder.build();
-		return map.keySet();
+		return result.build();
 	}
 
 	@Override

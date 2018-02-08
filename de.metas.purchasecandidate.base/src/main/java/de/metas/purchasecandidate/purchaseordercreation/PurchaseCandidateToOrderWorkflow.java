@@ -1,22 +1,38 @@
 package de.metas.purchasecandidate.purchaseordercreation;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
+import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.Adempiere;
+import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
+import de.metas.logging.LogManager;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
+import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvokerFactory;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.RemotePurchaseItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.RemotePurchaseItemRepository;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -43,36 +59,79 @@ import lombok.NonNull;
 
 public class PurchaseCandidateToOrderWorkflow
 {
-	public static PurchaseCandidateToOrderWorkflow createNew()
-	{
-		return new PurchaseCandidateToOrderWorkflow();
-	}
 
-	private PurchaseCandidateToOrderWorkflow()
+	private static final Logger logger = LogManager.getLogger(PurchaseCandidateToOrderWorkflow.class);
+
+	private final PurchaseCandidateRepository purchaseCandidateRepo;
+	private final RemotePurchaseItemRepository purchaseOrderItemRepo;
+	private final VendorGatewayInvokerFactory vendorGatewayInvokerFactory;
+	private final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator;
+
+	@Builder
+	private PurchaseCandidateToOrderWorkflow(
+			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
+			@NonNull final RemotePurchaseItemRepository purchaseOrderItemRepo,
+			@NonNull final VendorGatewayInvokerFactory vendorGatewayInvokerFactory,
+			@NonNull final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator)
 	{
+		this.purchaseCandidateRepo = purchaseCandidateRepo;
+		this.purchaseOrderItemRepo = purchaseOrderItemRepo;
+		this.vendorGatewayInvokerFactory = vendorGatewayInvokerFactory;
+		this.purchaseOrderFromItemsAggregator = purchaseOrderFromItemsAggregator;
 	};
 
-	private final PurchaseCandidateRepository purchaseCandidateRepo = Adempiere.getBean(PurchaseCandidateRepository.class);
-	private final PurchaseOrderItemRepository purchaseOrderItemRepo = Adempiere.getBean(PurchaseOrderItemRepository.class);
+	public void executeForPurchaseCandidates(@NonNull final List<PurchaseCandidate> purchaseCandidates)
+	{
+		assertCandidatesValid(purchaseCandidates);
 
-	public void doIt(final List<PurchaseCandidate> proposedPurchaseCandidates)
+		final ImmutableListMultimap<Integer, PurchaseCandidate> vendorId2purchaseCandidate = //
+				Multimaps.index(purchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
+
+		final CompletableFuture<Void>[] futures = createOneFuturePerVendorId(vendorId2purchaseCandidate);
+
+		CompletableFuture
+				.allOf(futures)
+				.join();
+	}
+
+	private void assertCandidatesValid(@NonNull final List<PurchaseCandidate> purchaseCandidates)
+	{
+		final ImmutableSet<Integer> distinctIds = purchaseCandidates.stream()
+				.map(PurchaseCandidate::getPurchaseCandidateId).collect(ImmutableSet.toImmutableSet());
+
+		if (distinctIds.size() != purchaseCandidates.size() || distinctIds.contains(0))
+		{
+			throw new AdempiereException("The given purchaseCandidates need to have unique IDs that are all > 0")
+					.appendParametersToMessage()
+					.setParameter("purchaseCandidates", purchaseCandidates)
+					.setParameter("distinctIds", distinctIds);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private CompletableFuture<Void>[] createOneFuturePerVendorId(
+			@NonNull final ImmutableListMultimap<Integer, PurchaseCandidate> vendorId2purchaseCandidate)
 	{
 		final ILoggable loggable = Loggables.get();
 
-		final ImmutableListMultimap<Integer, PurchaseCandidate> vendorId2purchaseCandidate = //
-				Multimaps.index(proposedPurchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
-
 		final List<CompletableFuture<Void>> futures = vendorId2purchaseCandidate.asMap()
 				.entrySet().stream()
-				.map(entry -> CompletableFuture.runAsync(() -> createPurchaseOrderInDifferentThread(
-						entry.getKey(), // vendorId
-						entry.getValue(), // purchaseCandidates
-						loggable)))
+				.map(entry -> CompletableFuture
+						.runAsync(createRunnable(entry, loggable))
+						.exceptionally(createExceptionHandler(entry, loggable)))
 				.collect(Collectors.toList());
 
-		CompletableFuture
-				.allOf(futures.toArray(new CompletableFuture[futures.size()]))
-				.join();
+		return futures.toArray(new CompletableFuture[futures.size()]);
+	}
+
+	private Runnable createRunnable(
+			@NonNull final Entry<Integer, Collection<PurchaseCandidate>> vendorId2purchaseCandidates,
+			@NonNull final ILoggable loggable)
+	{
+		return () -> createPurchaseOrderInDifferentThread(
+				vendorId2purchaseCandidates.getKey(), // vendorId
+				vendorId2purchaseCandidates.getValue(), // purchaseCandidates
+				loggable);
 	}
 
 	private void createPurchaseOrderInDifferentThread(
@@ -82,30 +141,77 @@ public class PurchaseCandidateToOrderWorkflow
 	{
 		// note: if the VendorGateWayInvoker or PurchaseOrderFromCandidatesAggregator use Loggable.get() internally,
 		// they shall receive "our" loggable.
-		try (final IAutoCloseable autoClosable = Loggables.temporarySetLoggable(loggable))
-		{
-			loggable.addLog("vendorId={} - now invoking placeRemotePurchaseOrder with purchaseCandidates={}",
-					vendorId, purchaseCandidatesWithVendorId);
+		Services.get(ITrxManager.class).run(() -> {
+			try (final IAutoCloseable autoClosable = Loggables.temporarySetLoggable(loggable))
+			{
+				createPurchaseOrder0(vendorId, purchaseCandidatesWithVendorId);
+			}
+		});
+	}
 
-			final VendorGatewayInvoker vendorGatewayInvoker = VendorGatewayInvoker
-					.createForVendorId(vendorId);
+	private void createPurchaseOrder0(
+			final int vendorId,
+			@NonNull final Collection<PurchaseCandidate> purchaseCandidatesWithVendorId)
+	{
+		final ILoggable loggable = Loggables.get();
 
-			final Collection<PurchaseOrderItem> purchaseOrderItems = vendorGatewayInvoker
-					.placeRemotePurchaseOrder(purchaseCandidatesWithVendorId);
-			loggable.addLog("vendorId={} - placeRemotePurchaseOrder returned purchaseOrderItems={}",
-					vendorId, purchaseOrderItems);
+		loggable.addLog("vendorId={} - now invoking placeRemotePurchaseOrder with purchaseCandidates={}",
+				vendorId, purchaseCandidatesWithVendorId);
 
-			final PurchaseOrderFromItemsAggregator purchaseOrdersAggregator = PurchaseOrderFromItemsAggregator.newInstance();
-			purchaseOrdersAggregator
-					.addAll(purchaseOrderItems.iterator())
-					.closeAllGroups();
-			loggable.addLog("vendorId={} - PurchaseOrderFromCandidatesAggregator created the purchase order(s)",
-					vendorId, purchaseCandidatesWithVendorId);
+		final VendorGatewayInvoker vendorGatewayInvoker = vendorGatewayInvokerFactory
+				.createForVendorId(vendorId);
 
-			vendorGatewayInvoker.updateRemoteLineReferences(purchaseOrderItems);
+		final List<RemotePurchaseItem> remotePurchaseItems = vendorGatewayInvoker
+				.placeRemotePurchaseOrder(purchaseCandidatesWithVendorId);
+		loggable.addLog("vendorId={} - placeRemotePurchaseOrder returned remotePurchaseItem={}",
+				vendorId, remotePurchaseItems);
 
-			purchaseCandidateRepo.saveAllNoLock(purchaseCandidatesWithVendorId); // no lock because they are already locked by us
-			purchaseOrderItemRepo.storeNewRecords(purchaseOrderItems);
-		}
+		final List<PurchaseOrderItem> purchaseOrderItems = remotePurchaseItems.stream()
+				.filter(item -> item instanceof PurchaseOrderItem)
+				.map(item -> (PurchaseOrderItem)item)
+				.collect(ImmutableList.toImmutableList());
+
+		purchaseOrderFromItemsAggregator
+				.addAll(purchaseOrderItems.iterator())
+				.closeAllGroups();
+		loggable.addLog("vendorId={} - PurchaseOrderFromCandidatesAggregator created the purchase order(s)",
+				vendorId, purchaseCandidatesWithVendorId);
+
+		vendorGatewayInvoker.updateRemoteLineReferences(purchaseOrderItems);
+
+		purchaseCandidateRepo.saveAllNoLock(purchaseCandidatesWithVendorId); // no lock because they are already locked by us
+		purchaseOrderItemRepo.storeNewRecords(remotePurchaseItems);
+	}
+
+	private Function<Throwable, Void> createExceptionHandler(
+			@NonNull final Entry<Integer, Collection<PurchaseCandidate>> vendorId2purchaseCandidates,
+			@NonNull final ILoggable loggable)
+	{
+		return throwable -> {
+
+			final Integer vendorId = vendorId2purchaseCandidates.getKey();
+			final Collection<PurchaseCandidate> purchaseCandidates = vendorId2purchaseCandidates.getValue();
+
+			final String message = StringUtils.formatMessage(
+					"Caught {} while working with vendorId={}; message={}, purchaseCandidates={}",
+					throwable.getClass(), vendorId, throwable.getMessage(), purchaseCandidates);
+
+			logger.error(message, throwable);
+			loggable.addLog(message);
+
+			final ArrayList<PurchaseErrorItem> errorItems = new ArrayList<>();
+			for (final PurchaseCandidate purchaseCandidate : purchaseCandidates)
+			{
+				final PurchaseErrorItem purchaseErrorItem = PurchaseErrorItem.builder()
+						.purchaseCandidate(purchaseCandidate)
+						.throwable(throwable)
+						.build();
+				errorItems.add(purchaseErrorItem);
+			}
+
+			purchaseOrderItemRepo.storeNewRecords(errorItems);
+
+			return null;
+		};
 	}
 }

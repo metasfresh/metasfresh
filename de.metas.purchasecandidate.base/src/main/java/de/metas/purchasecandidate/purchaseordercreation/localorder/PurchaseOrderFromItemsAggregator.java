@@ -4,7 +4,7 @@ import org.adempiere.util.collections.MapReduceAggregator;
 import org.compiere.model.I_C_Order;
 
 import de.metas.order.event.OrderUserNotifications;
-import de.metas.purchasecandidate.purchaseordercreation.PurchaseOrderItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import lombok.NonNull;
 
 /*

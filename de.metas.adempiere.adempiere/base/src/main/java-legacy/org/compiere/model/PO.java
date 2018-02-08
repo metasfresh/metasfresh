@@ -2291,7 +2291,7 @@ public abstract class PO
 	{
 		final PO po = InterfaceWrapperHelper.getStrictPO(model);
 		Check.assumeNotNull(po, "po not null for {}", model);
-		setClientOrg(po);
+		setClientOrg(po.getAD_Client_ID(), po.getAD_Org_ID());
 	}
 
 	/**

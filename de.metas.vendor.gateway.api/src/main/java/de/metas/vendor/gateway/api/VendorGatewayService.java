@@ -38,6 +38,9 @@ public interface VendorGatewayService
 
 	AvailabilityResponse retrieveAvailability(AvailabilityRequest request);
 
+	/**
+	 * <b>IMPORTANT: </b> shall not throw an exception. If an exception occurs, it shall be included in the return value.
+	 */
 	RemotePurchaseOrderCreated placePurchaseOrder(PurchaseOrderRequest request);
 
 	void associateLocalWithRemotePurchaseOrderId(LocalPurchaseOrderForRemoteOrderCreated localPurchaseOrderForRemoteOrderCreated);

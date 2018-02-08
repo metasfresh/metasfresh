@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.Objects;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_OrderLine;
 
 import de.metas.vendor.gateway.api.ProductAndQuantity;
@@ -207,11 +206,4 @@ public class PurchaseCandidate
 				qtyToDeliver);
 		return productAndQuantity;
 	}
-
-	public void addActualPurchaseException(ITableRecordReference transactionReference, RuntimeException exception)
-	{
-		// TODO Auto-generated method stub
-
-	}
-
 }

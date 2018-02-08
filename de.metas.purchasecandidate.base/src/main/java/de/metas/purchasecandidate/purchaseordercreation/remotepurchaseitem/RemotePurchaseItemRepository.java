@@ -1,11 +1,14 @@
-package de.metas.purchasecandidate.purchaseordercreation;
+package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.util.Collection;
+import java.util.List;
 
+import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Issue;
 import org.springframework.stereotype.Repository;
 
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
@@ -34,17 +37,26 @@ import lombok.NonNull;
  */
 
 @Repository
-public class PurchaseOrderItemRepository
+public class RemotePurchaseItemRepository
 {
-	public void storeNewRecords(@NonNull final Collection<PurchaseOrderItem> purchaseOrderItems)
+	public void storeNewRecords(@NonNull final List<? extends RemotePurchaseItem> purchaseItems)
 	{
-		purchaseOrderItems.forEach(PurchaseOrderItemRepository::validateAndStore);
+		purchaseItems.forEach(RemotePurchaseItemRepository::validateAndStore);
 	}
 
-	private static void validateAndStore(@NonNull final PurchaseOrderItem purchaseOrderItem)
+	private static void validateAndStore(@NonNull final RemotePurchaseItem purchaseItem)
 	{
-		validate(purchaseOrderItem);
-		store(purchaseOrderItem);
+		if (purchaseItem instanceof PurchaseOrderItem)
+		{
+			final PurchaseOrderItem purchaseOrderItem = (PurchaseOrderItem)purchaseItem;
+			validate(purchaseOrderItem);
+			store(purchaseOrderItem);
+		}
+		if (purchaseItem instanceof PurchaseErrorItem)
+		{
+			final PurchaseErrorItem purchaseErrorItem = (PurchaseErrorItem)purchaseItem;
+			store(purchaseErrorItem);
+		}
 	}
 
 	private static void validate(@NonNull final PurchaseOrderItem purchaseOrderItem)
@@ -71,6 +83,24 @@ public class PurchaseOrderItemRepository
 
 		record.setAD_Table_ID(purchaseOrderItem.getTransactionReference().getAD_Table_ID());
 		record.setRecord_ID(purchaseOrderItem.getTransactionReference().getRecord_ID());
+		save(record);
+	}
+
+	private static void store(@NonNull final PurchaseErrorItem purchaseErrorItem)
+	{
+		final I_C_PurchaseCandidate_Alloc record = newInstance(I_C_PurchaseCandidate_Alloc.class);
+		record.setAD_Org_ID(purchaseErrorItem.getOrgId());
+
+		record.setC_PurchaseCandidate_ID(purchaseErrorItem.getPurchaseCandidate().getPurchaseCandidateId());
+
+		if (purchaseErrorItem.getThrowable() != null)
+		{
+			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(purchaseErrorItem.getThrowable());
+			record.setAD_Issue(issue);
+		}
+
+		record.setAD_Table_ID(purchaseErrorItem.getTransactionReference().getAD_Table_ID());
+		record.setRecord_ID(purchaseErrorItem.getTransactionReference().getRecord_ID());
 		save(record);
 	}
 }

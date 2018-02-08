@@ -40,6 +40,35 @@ public interface I_C_PurchaseCandidate_Alloc
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set System-Problem.
+	 * Automatically created or manually entered System Issue
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Issue_ID (int AD_Issue_ID);
+
+	/**
+	 * Get System-Problem.
+	 * Automatically created or manually entered System Issue
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Issue_ID();
+
+	public org.compiere.model.I_AD_Issue getAD_Issue();
+
+	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue);
+
+    /** Column definition for AD_Issue_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate_Alloc, org.compiere.model.I_AD_Issue> COLUMN_AD_Issue_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate_Alloc, org.compiere.model.I_AD_Issue>(I_C_PurchaseCandidate_Alloc.class, "AD_Issue_ID", org.compiere.model.I_AD_Issue.class);
+    /** Column name AD_Issue_ID */
+    public static final String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
+
+	/**
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *

@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.junit.Test;
 
@@ -36,7 +35,7 @@ public class PurchaseCandidateTest
 	@Test
 	public void markProcessedAndCheckChanges()
 	{
-		final PurchaseCandidate candidate = createDummyPurchaseCandidate(1);
+		final PurchaseCandidate candidate = PurchaseCandidateTestTool.createPurchaseCandidate(1);
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 		assertThat(candidate.isProcessed()).isFalse();
@@ -58,7 +57,7 @@ public class PurchaseCandidateTest
 	@Test
 	public void changeQtyRequiredAndCheckChanges()
 	{
-		final PurchaseCandidate candidate = createDummyPurchaseCandidate(1);
+		final PurchaseCandidate candidate = PurchaseCandidateTestTool.createPurchaseCandidate(1);
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 
@@ -78,7 +77,7 @@ public class PurchaseCandidateTest
 	@Test
 	public void changeDatePromisedAndCheckChanges()
 	{
-		final PurchaseCandidate candidate = createDummyPurchaseCandidate(1);
+		final PurchaseCandidate candidate = PurchaseCandidateTestTool.createPurchaseCandidate(1);
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 
@@ -93,25 +92,5 @@ public class PurchaseCandidateTest
 		candidate.markSaved(1);
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
-	}
-
-	private PurchaseCandidate createDummyPurchaseCandidate(final int purchaseCandidateId)
-	{
-		return PurchaseCandidate.builder()
-				.purchaseCandidateId(purchaseCandidateId)
-				.salesOrderId(1)
-				.salesOrderLineId(2)
-				.orgId(3)
-				.warehouseId(4)
-				.productId(5)
-				.uomId(6)
-				.vendorBPartnerId(7)
-				.vendorProductInfo(new VendorProductInfo(10, 7, 20, "productNo", "productName"))
-				.qtyToPurchase(BigDecimal.ONE)
-				.datePromised(SystemTime.asDayTimestamp())
-				.processed(false)
-				.locked(false)
-				.build();
-
 	}
 }

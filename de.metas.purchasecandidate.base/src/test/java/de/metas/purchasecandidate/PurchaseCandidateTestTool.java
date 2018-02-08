@@ -1,7 +1,8 @@
 package de.metas.purchasecandidate;
 
-import lombok.Builder;
-import lombok.Value;
+import java.math.BigDecimal;
+
+import org.adempiere.util.time.SystemTime;
 
 /*
  * #%L
@@ -25,17 +26,29 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder(toBuilder = true)
-public class PurchaseCandidateImmutableFields
+public final class PurchaseCandidateTestTool
 {
-	int salesOrderId;
-	int salesOrderLineId;
+	private PurchaseCandidateTestTool()
+	{
+	}
 
-	int orgId;
-	int warehouseId;
-	int productId;
-	int uomId;
-	int vendorBPartnerId;
-	VendorProductInfo vendorProductInfo;
+	public static PurchaseCandidate createPurchaseCandidate(final int purchaseCandidateId)
+	{
+		return PurchaseCandidate.builder()
+				.purchaseCandidateId(purchaseCandidateId)
+				.salesOrderId(1)
+				.salesOrderLineId(2)
+				.orgId(3)
+				.warehouseId(4)
+				.productId(5)
+				.uomId(6)
+				.vendorBPartnerId(7)
+				.vendorProductInfo(new VendorProductInfo(10, 7, 20, "productNo", "productName"))
+				.qtyToPurchase(BigDecimal.ONE)
+				.datePromised(SystemTime.asDayTimestamp())
+				.processed(false)
+				.locked(false)
+				.build();
+	}
+
 }

@@ -12,7 +12,7 @@ import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.purchaseordercreation.PurchaseOrderItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import lombok.Builder;
 import lombok.NonNull;
 

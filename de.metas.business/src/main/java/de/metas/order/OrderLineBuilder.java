@@ -8,8 +8,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 
 import de.metas.interfaces.I_C_OrderLine;
@@ -39,7 +37,7 @@ import lombok.NonNull;
 
 /**
  * Order line builder. Used exclusively by {@link OrderFactory}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -68,8 +66,8 @@ public class OrderLineBuilder
 		assertNotBuilt();
 		built = true;
 
-		final MOrder orderPO = LegacyAdapters.convertToPO(parent.getC_Order()); // assume returned order is already saved
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(new MOrderLine(orderPO), I_C_OrderLine.class);
+		// assume returned order is already saved
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(new MOrderLine(parent.getC_Order()), I_C_OrderLine.class);
 
 		orderLine.setM_Product_ID(productId);
 		orderLine.setM_AttributeSetInstance_ID(asiId);

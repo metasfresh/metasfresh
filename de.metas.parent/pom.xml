@@ -131,7 +131,7 @@
 			<dependency>
 				<groupId>org.jmockit</groupId>
 				<artifactId>jmockit</artifactId>
-				<version>1.30</version>
+				<version>1.38</version>
 			</dependency>
 
 			<dependency>

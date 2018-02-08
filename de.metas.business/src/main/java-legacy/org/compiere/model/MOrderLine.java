@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,6 +41,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
+import lombok.NonNull;
 
 /**
  * Order Line Model. <code>
@@ -196,11 +199,13 @@ public class MOrderLine extends X_C_OrderLine
 	 *
 	 * @param order parent order
 	 */
-	public MOrderLine(MOrder order)
+	public MOrderLine(@NonNull final I_C_Order order)
 	{
-		this(order.getCtx(), 0, order.get_TrxName());
-		if (order.get_ID() == 0)
+		this(InterfaceWrapperHelper.getCtx(order), 0, getTrxName(order));
+		if (order.getC_Order_ID() == 0)
+		{
 			throw new IllegalArgumentException("Header not saved");
+		}
 		setC_Order_ID(order.getC_Order_ID());	// parent
 		setOrder(order);
 	}	// MOrderLine
@@ -236,9 +241,9 @@ public class MOrderLine extends X_C_OrderLine
 	 *
 	 * @param order order
 	 */
-	public void setOrder(MOrder order)
+	public void setOrder(@NonNull final I_C_Order order)
 	{
-		setClientOrg(order);
+		setClientOrg(order.getAD_Client_ID(), order.getAD_Org_ID());
 		final boolean isDropShip = order.isDropShip();
 		final int C_BPartner_ID = isDropShip && order.getDropShip_BPartner_ID() > 0 ? order.getDropShip_BPartner_ID() : order.getC_BPartner_ID();
 		setC_BPartner_ID(C_BPartner_ID);
@@ -268,7 +273,7 @@ public class MOrderLine extends X_C_OrderLine
 	 *
 	 * @param order order
 	 */
-	public void setHeaderInfo(final MOrder order)
+	public void setHeaderInfo(@NonNull final I_C_Order order)
 	{
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
 

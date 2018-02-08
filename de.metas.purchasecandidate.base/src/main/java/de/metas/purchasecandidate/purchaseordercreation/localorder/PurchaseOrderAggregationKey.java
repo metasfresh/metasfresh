@@ -2,7 +2,7 @@ package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import java.sql.Timestamp;
 
-import de.metas.purchasecandidate.purchaseordercreation.PurchaseOrderItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

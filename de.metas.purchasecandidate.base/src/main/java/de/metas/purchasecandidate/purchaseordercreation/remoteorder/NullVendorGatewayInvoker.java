@@ -1,11 +1,13 @@
 package de.metas.purchasecandidate.purchaseordercreation.remoteorder;
 
 import java.util.Collection;
+import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.purchaseordercreation.PurchaseOrderItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.RemotePurchaseItem;
 import lombok.NonNull;
 
 /*
@@ -30,15 +32,21 @@ import lombok.NonNull;
  * #L%
  */
 
-public class NullVendorGatewayInvoker implements VendorGatewayInvoker
+public final class NullVendorGatewayInvoker implements VendorGatewayInvoker
 {
 	public static final String NO_REMOTE_PURCHASE_ID = "NO_REMOTE_PURCHASE_ID";
+
+	public static final NullVendorGatewayInvoker INSTANCE = new NullVendorGatewayInvoker();
+
+	private NullVendorGatewayInvoker()
+	{
+	}
 
 	/**
 	 * Does not actually place a remote purchase order, but just returns a "plain" purchase order item for each candidate.
 	 */
 	@Override
-	public Collection<PurchaseOrderItem> placeRemotePurchaseOrder(
+	public List<RemotePurchaseItem> placeRemotePurchaseOrder(
 			@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
 	{
 		return purchaseCandidates.stream()

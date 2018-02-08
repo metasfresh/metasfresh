@@ -1,17 +1,16 @@
-package de.metas.purchasecandidate.purchaseordercreation.remoteorder;
+package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import java.util.Collection;
-import java.util.List;
+import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.RemotePurchaseItem;
+import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
+import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
 
 /*
  * #%L
  * de.metas.purchasecandidate.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,9 +28,12 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Remot
  * #L%
  */
 
-public interface VendorGatewayInvoker
+/**
+ * Instances of this interface are returned by {@link VendorGatewayInvoker} and are processed by {@link PurchaseOrderFromItemsAggregator}.
+ */
+public interface RemotePurchaseItem
 {
-	List<RemotePurchaseItem> placeRemotePurchaseOrder(Collection<PurchaseCandidate> purchaseCandidates);
+	ITableRecordReference getTransactionReference();
 
-	void updateRemoteLineReferences(Collection<PurchaseOrderItem> purchaseOrderItem);
+	PurchaseCandidate getPurchaseCandidate();
 }

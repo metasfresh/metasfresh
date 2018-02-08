@@ -1,19 +1,14 @@
-package de.metas.purchasecandidate.purchaseordercreation;
+package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.math.BigDecimal;
-import java.util.Date;
+import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.model.I_C_OrderLine;
 
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.VendorProductInfo;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
+import lombok.Value;
 
 /*
  * #%L
@@ -37,49 +32,24 @@ import lombok.ToString;
  * #L%
  */
 
-/**
- * Instances of this class represent a piece of a <b>factual</b> purchase order,
- *  for which the system now needs to create a {@code C_Order} etc.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-@ToString
-public class PurchaseOrderItem
+@Value
+public class PurchaseErrorItem implements RemotePurchaseItem
 {
-	@Getter
-	private final ITableRecordReference transactionReference;
+	ITableRecordReference transactionReference;
 
-	@Getter
-	private final String remotePurchaseOrderId;
+	PurchaseCandidate purchaseCandidate;
 
-	@Getter
-	private final PurchaseCandidate purchaseCandidate;
-
-	@Getter
-	private final BigDecimal purchasedQty;
-
-	@Getter
-	private final Date datePromised;
-
-	@Getter
-	private int purchaseOrderId;
-
-	@Getter
-	private int purchaseOrderLineId;
+	Throwable throwable;
 
 	@Builder
-	private PurchaseOrderItem(
+	private PurchaseErrorItem(
+			@NonNull final Throwable throwable,
 			@NonNull final PurchaseCandidate purchaseCandidate,
-			@NonNull final BigDecimal purchasedQty,
-			@NonNull final Date datePromised,
-			final String remotePurchaseOrderId,
-			@NonNull ITableRecordReference transactionReference)
+			@Nullable final ITableRecordReference transactionReference)
 	{
+		this.throwable = throwable;
 		this.purchaseCandidate = purchaseCandidate;
-		this.purchasedQty = purchasedQty;
-		this.datePromised = datePromised;
-		this.remotePurchaseOrderId = remotePurchaseOrderId;
+
 		this.transactionReference = transactionReference;
 	}
 
@@ -108,11 +78,4 @@ public class PurchaseOrderItem
 		return purchaseCandidate.getVendorProductInfo();
 	}
 
-	public void setPurchaseOrderLineIdAndMarkProcessed(final int purchaseOrderLineId)
-	{
-		this.purchaseOrderId = load(purchaseOrderLineId, I_C_OrderLine.class).getC_Order_ID();
-		this.purchaseOrderLineId = purchaseOrderLineId;
-
-		purchaseCandidate.setPurchaseOrderLineIdAndMarkProcessed(purchaseOrderLineId);
-	}
 }
