@@ -936,16 +936,18 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		m_ReversalLine_ID = ReversalLine_ID;
 	}   // setReversalLine_ID
 
-	/**
-	 * Get ReversalLine_ID
-	 * get original (voided/reversed) document line
-	 *
-	 * @return ReversalLine_ID
-	 */
+	/** @return get original (voided/reversed) document line */
 	public final int getReversalLine_ID()
 	{
 		return m_ReversalLine_ID;
-	}   // getReversalLine_ID
+	}
+
+	/** @return is the reversal document line (not the original) */
+	public final boolean isReversalLine()
+	{
+		return m_ReversalLine_ID > 0 // has a reversal counterpart
+				&& get_ID() > m_ReversalLine_ID; // this document line was created after it's reversal counterpart
+	}
 
 	@Override
 	public String toString()
