@@ -15,6 +15,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#3407](https://github.com/metasfresh/metasfresh/issues/3407) New Businesspartner Window for Pharma vertical
+    * New Business Partner Window in WebUI for Pharma Verticals.
 
 ## Fixes
 * metasfresh-webui-frontend
@@ -85,6 +87,9 @@ Here come the actual release notes:
     * Fixes the Purchase Order modal overlay functionaluity in Sales Order.
   * [#1564](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1564) Some fields are not patched after you change them twice
     * Fixes the multiple adjustment behavior of Text and numeric fields. now content is patched after each change.
+  * [#1566](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1566) Subtab Data not shown when clicked first time
+    * Fixes a Refresh Bug in Subtab data. Now showing the actual data already when opening the subtab first time.
+  * [#1570](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1570) views: fails when applying a filter without parameters
     
 # metasfresh 5.42 (2018-05)
 **release for week 2018-05**
