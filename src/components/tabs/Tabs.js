@@ -9,7 +9,7 @@ class Tabs extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      selected: this.props.children[0].key
+      selected: props.children[0].key
     };
   }
 
