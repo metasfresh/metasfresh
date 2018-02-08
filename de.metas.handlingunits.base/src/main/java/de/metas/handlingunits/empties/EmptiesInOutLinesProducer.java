@@ -17,10 +17,11 @@ import de.metas.handlingunits.impl.PlainPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutBL;
+import lombok.NonNull;
 
 /**
  * Helper class used to create {@link I_M_InOutLine}s for a given inout header.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -31,9 +32,8 @@ public class EmptiesInOutLinesProducer extends AbstractPackingMaterialDocumentLi
 		return new EmptiesInOutLinesProducer(inoutRef);
 	}
 
-	public static EmptiesInOutLinesProducer newInstance(final I_M_InOut inout)
+	public static EmptiesInOutLinesProducer newInstance(@NonNull final I_M_InOut inout)
 	{
-		Check.assumeNotNull(inout, "Parameter inout is not null");
 		final IReference<I_M_InOut> inoutRef = ImmutableReference.valueOf(inout);
 		return new EmptiesInOutLinesProducer(inoutRef);
 	}
@@ -47,11 +47,8 @@ public class EmptiesInOutLinesProducer extends AbstractPackingMaterialDocumentLi
 	/** set of M_InOutLine_IDs which were created/updated by this processor */
 	private final Set<Integer> affectedInOutLinesId = new HashSet<>();
 
-	private EmptiesInOutLinesProducer(final IReference<I_M_InOut> inoutRef)
+	private EmptiesInOutLinesProducer(@NonNull final IReference<I_M_InOut> inoutRef)
 	{
-		super();
-
-		Check.assumeNotNull(inoutRef, "inoutRef not null");
 		_inoutRef = inoutRef;
 	}
 
@@ -86,7 +83,7 @@ public class EmptiesInOutLinesProducer extends AbstractPackingMaterialDocumentLi
 	}
 
 	@Override
-	protected IPackingMaterialDocumentLine createPackingMaterialDocumentLine(final I_M_HU_PackingMaterial packingMaterial)
+	protected IPackingMaterialDocumentLine createPackingMaterialDocumentLine(@NonNull final I_M_HU_PackingMaterial packingMaterial)
 	{
 		final I_M_InOut inout = getM_InOut();
 		final I_M_InOutLine inoutLine = inOutBL.newInOutLine(inout, I_M_InOutLine.class);
@@ -102,7 +99,7 @@ public class EmptiesInOutLinesProducer extends AbstractPackingMaterialDocumentLi
 	}
 
 	@Override
-	protected void removeDocumentLine(final IPackingMaterialDocumentLine pmLine)
+	protected void removeDocumentLine(@NonNull final IPackingMaterialDocumentLine pmLine)
 	{
 		final EmptiesInOutLinePackingMaterialDocumentLine inoutLinePMLine = toImpl(pmLine);
 		final I_M_InOutLine inoutLine = inoutLinePMLine.getM_InOutLine();
@@ -113,7 +110,7 @@ public class EmptiesInOutLinesProducer extends AbstractPackingMaterialDocumentLi
 	}
 
 	@Override
-	protected void createDocumentLine(final IPackingMaterialDocumentLine pmLine)
+	protected void createDocumentLine(@NonNull final IPackingMaterialDocumentLine pmLine)
 	{
 		final EmptiesInOutLinePackingMaterialDocumentLine inoutLinePMLine = toImpl(pmLine);
 
