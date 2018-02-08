@@ -87,3 +87,8 @@ frontend
 instanceof
 pallet
 transactional
+enum
+stateless
+toplevel
+packageables
+packageable
