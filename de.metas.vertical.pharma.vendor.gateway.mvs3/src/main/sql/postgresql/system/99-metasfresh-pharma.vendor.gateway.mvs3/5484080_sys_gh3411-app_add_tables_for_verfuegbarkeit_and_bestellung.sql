@@ -4767,8 +4767,6 @@ CREATE INDEX IF NOT EXISTS msv3_verfuegbarkeitsantwortartikel_msv3_verfuegbarkei
    
 CREATE INDEX IF NOT EXISTS msv3_bestellunganteil_msv3_bestellungantwortposition_id
    ON public.msv3_bestellunganteil (msv3_bestellungantwortposition_id ASC NULLS LAST);  
-CREATE INDEX IF NOT EXISTS msv3_bestellunganteil_c_orderlinepo_id
-   ON public.msv3_bestellunganteil (c_orderlinepo_id ASC NULLS LAST);   
  
 CREATE INDEX IF NOT EXISTS msv3_bestellungauftrag_msv3_bestellung_id
    ON public.msv3_bestellungauftrag (msv3_bestellung_id ASC NULLS LAST);  
