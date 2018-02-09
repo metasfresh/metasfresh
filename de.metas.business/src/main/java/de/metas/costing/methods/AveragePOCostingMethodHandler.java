@@ -14,7 +14,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MAcctSchema;
@@ -161,14 +160,9 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	private Optional<CostAmount> getPOCostPriceForReceiptInOutLine(final int receiptInOutLineId)
 	{
 		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.load(receiptInOutLineId, I_M_InOutLine.class);
-		final I_C_OrderLine purchaseOrderLine = receiptLine.getC_OrderLine();
-		if (purchaseOrderLine != null)
-		{
-			return Optional.empty();
-		}
-
-		final CostAmount costPrice = Services.get(IOrderLineBL.class).getCostPrice(purchaseOrderLine);
-		return Optional.of(costPrice);
+		return Optional.of(receiptLine)
+				.map(I_M_InOutLine::getC_OrderLine)
+				.map(Services.get(IOrderLineBL.class)::getCostPrice);
 	}
 
 	@Override
