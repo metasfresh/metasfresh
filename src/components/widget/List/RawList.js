@@ -1,9 +1,9 @@
-import React, { Component, PureComponent } from "react";
-import { connect } from "react-redux";
-import onClickOutside from "react-onclickoutside";
-import ReactCSSTransitionGroup from "react-addons-css-transition-group";
-import TetherComponent from "react-tether";
-import PropTypes from "prop-types";
+import React, { Component, PureComponent } from 'react';
+import { connect } from 'react-redux';
+import onClickOutside from 'react-onclickoutside';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import TetherComponent from 'react-tether';
+import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 export class ListDropdown extends Component {
@@ -56,16 +56,16 @@ class RawList extends PureComponent {
       selected: props.selected || 0,
       dropdownList: props.list || [],
       isOpen: false,
-      isFocused: props.autoFocus
+      isFocused: props.autoFocus,
     };
   }
 
   componentWillMount() {
-    window.addEventListener("keydown", this.handleTab);
+    window.addEventListener('keydown', this.handleTab);
   }
 
   componentWillUnmount() {
-    window.removeEventListener("keydown", this.handleTab);
+    window.removeEventListener('keydown', this.handleTab);
   }
 
   componentDidMount() {
@@ -92,7 +92,7 @@ class RawList extends PureComponent {
       doNotOpenOnFocus,
       lastProperty,
       loading,
-      disableAutofocus
+      disableAutofocus,
     } = this.props;
 
     if (
@@ -151,14 +151,14 @@ class RawList extends PureComponent {
         this.setState({
           ...openDropdownState,
           dropdownList: dropdownList,
-          selected: defaultValue ? defaultValue : list[0]
+          selected: defaultValue ? defaultValue : list[0],
         });
       }
     }
 
     if (prevProps.selected !== selected) {
       this.setState({
-        selected: selected
+        selected: selected,
       });
     }
 
@@ -191,7 +191,7 @@ class RawList extends PureComponent {
       }
 
       this.setState({
-        isFocused: true
+        isFocused: true,
       });
     }
   };
@@ -203,7 +203,7 @@ class RawList extends PureComponent {
       }
 
       this.setState({
-        isFocused: false
+        isFocused: false,
       });
     }
   };
@@ -211,7 +211,7 @@ class RawList extends PureComponent {
   openDropdownList = focus => {
     this.setState(
       {
-        isOpen: true
+        isOpen: true,
       },
       () => {
         focus && this.focus();
@@ -225,7 +225,7 @@ class RawList extends PureComponent {
     if (isOpen) {
       this.setState(
         {
-          isOpen: false
+          isOpen: false,
         },
         this.blur
       );
@@ -279,7 +279,7 @@ class RawList extends PureComponent {
 
     this.setState(
       {
-        selected: option || 0
+        selected: option || 0,
       },
       () => {
         this.handleBlur();
@@ -290,7 +290,7 @@ class RawList extends PureComponent {
 
   handleSwitch = option => {
     this.setState({
-      selected: option || 0
+      selected: option || 0,
     });
   };
 
@@ -302,16 +302,15 @@ class RawList extends PureComponent {
       this.navigateToAlphanumeric(e.key);
     } else {
       switch (e.key) {
-        case "ArrowDown":
+        case 'ArrowDown':
           e.preventDefault();
           this.navigate(true);
           break;
-
-        case "ArrowUp":
+        case 'ArrowUp':
           e.preventDefault();
           this.navigate(false);
           break;
-        case "Enter":
+        case 'Enter':
           e.preventDefault();
 
           if (isOpen) {
@@ -325,14 +324,12 @@ class RawList extends PureComponent {
           }
 
           break;
-
-        case "Escape":
+        case 'Escape':
           e.preventDefault();
           this.handleBlur();
           this.closeDropdownList();
           break;
-
-        case "Tab":
+        case 'Tab':
           list.length === 0 && !readonly && onSelect(null);
           break;
       }
@@ -342,7 +339,7 @@ class RawList extends PureComponent {
   handleTab = ({ key }) => {
     const { isOpen } = this.state;
 
-    if (key === "Tab" && isOpen) {
+    if (key === 'Tab' && isOpen) {
       this.closeDropdownList();
     }
   };
@@ -387,7 +384,7 @@ class RawList extends PureComponent {
     }
 
     this.setState({
-      selected: item
+      selected: item,
     });
   };
 
@@ -412,31 +409,29 @@ class RawList extends PureComponent {
       selected:
         next >= 0 && next <= dropdownList.length - 1
           ? dropdownList[next]
-          : selected
+          : selected,
     });
   };
 
   getRow = (option, index) => {
     const { defaultValue } = this.props;
     const { selected } = this.state;
-
     const value = defaultValue ? defaultValue.caption : null;
-
-    const classes = ["input-dropdown-list-option ignore-react-onclickoutside"];
+    const classes = ['input-dropdown-list-option ignore-react-onclickoutside'];
 
     if (selected != null && selected !== 0) {
       if (
         selected.key === option.key ||
         (!selected && (value === option.caption || (!value && index === 0)))
       ) {
-        classes.push("input-dropdown-list-option-key-on");
+        classes.push('input-dropdown-list-option-key-on');
       }
     }
 
     return (
       <div
         key={option.key}
-        className={classes.join(" ")}
+        className={classes.join(' ')}
         onMouseEnter={() => this.handleSwitch(option)}
         onClick={() => this.handleSelect(option)}
       >
@@ -482,11 +477,11 @@ class RawList extends PureComponent {
       lookupList
     } = this.props;
 
-    let placeholder = "";
+    let placeholder = '';
     const isListEmpty = list.length === 0;
     const { isOpen, isFocused } = this.state;
 
-    if (typeof defaultValue === "string") {
+    if (typeof defaultValue === 'string') {
       placeholder = defaultValue;
     } else {
       placeholder = defaultValue && defaultValue.caption;
@@ -501,7 +496,7 @@ class RawList extends PureComponent {
     }
 
     if (!value) {
-      value = "";
+      value = '';
     }
 
     return (
@@ -510,7 +505,7 @@ class RawList extends PureComponent {
         className={classnames('input-dropdown-container', {
           'input-disabled': readonly,
           'input-dropdown-container-static': rowId,
-          'input-table': (rowId && !isModal)
+          'input-table': rowId && !isModal,
         })}
         tabIndex={tabIndex ? tabIndex : 0}
         onFocus={readonly ? null : this.handleFocus}
@@ -522,38 +517,37 @@ class RawList extends PureComponent {
           targetAttachment="bottom left"
           constraints={[
             {
-              to: "scrollParent"
+              to: 'scrollParent',
             },
             {
-              to: "window",
-              pin: ["bottom"]
-            }
+              to: 'window',
+              pin: ['bottom'],
+            },
           ]}
         >
           <div
-            className={classnames('input-dropdown input-block input-readonly',{
+            className={classnames('input-dropdown input-block input-readonly', {
               'input-secondary': rank,
-              'pulse': updated,
-              'input-mandatory': (mandatory && !selected),
-              'input-error': (validStatus
-                && (!validStatus.valid && !validStatus.initialValue) &&
-              !isOpen)
-              })
-            }
+              pulse: updated,
+              'input-mandatory': mandatory && !selected,
+              'input-error':
+                validStatus &&
+                (!validStatus.valid && !validStatus.initialValue) &&
+                !isOpen,
+            })}
             ref={c => (this.inputContainer = c)}
           >
             <div
-              className={
-                "input-editable input-dropdown-focused " +
-                (align ? "text-xs-" + align + " " : "")
-              }
+              className={classnames('input-editable input-dropdown-focused', {
+                [`text-xs-${align}`]: align,
+              })}
             >
               <input
                 type="text"
                 className={
-                  "input-field js-input-field " +
-                  "font-weight-semibold " +
-                  (disabled ? "input-disabled " : "")
+                  'input-field js-input-field ' +
+                  'font-weight-semibold ' +
+                  (disabled ? 'input-disabled ' : '')
                 }
                 readOnly
                 tabIndex={-1}
