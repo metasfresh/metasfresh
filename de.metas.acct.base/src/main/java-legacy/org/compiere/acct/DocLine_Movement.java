@@ -90,7 +90,7 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 			final CostResult outboundCostResult = getCreateOutboundCosts(as);
 			final CostResult inboundCostResult = outboundCostResult.getCostElements()
 					.stream()
-					.map(costElement -> createInboundCostDetailCreateRequest(as, costElement, outboundCostResult.getCostAmountForCostElement(costElement)))
+					.map(costElement -> createInboundCostDetailCreateRequest(as, costElement, outboundCostResult.getCostAmountForCostElement(costElement).negate()))
 					.map(costDetailService::createCostDetail)
 					.reduce(CostResult::merge)
 					.orElse(null);

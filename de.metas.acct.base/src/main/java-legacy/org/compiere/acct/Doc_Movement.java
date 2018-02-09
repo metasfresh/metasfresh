@@ -131,7 +131,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 				.setDocLine(line)
 				.setAccount(line.getAccount(ProductAcctType.Asset, as))
 				.setC_Currency_ID(outboundCosts.getCurrencyId())
-				.setAmtSourceDrOrCr(outboundCosts.getValue().negate()) // from (-) CR
+				.setAmtSourceDrOrCr(outboundCosts.getValue()) // from (-) CR
 				.setQty(line.getQty().negate()) // outgoing
 				.locatorId(line.getM_Locator_ID())
 				.activityId(line.getC_ActivityFrom_ID())
