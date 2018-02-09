@@ -113,7 +113,7 @@ public class CostDetailCreateRequest
 
 	public boolean isAllCostElements()
 	{
-		return costElement != null;
+		return costElement == null;
 	}
 
 	public boolean isReversal()
