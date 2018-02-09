@@ -90,7 +90,7 @@ public class PurchaseRow implements IViewRow
 	private BigDecimal qtyToPurchase;
 
 	public static final String FIELDNAME_PurchasedQty = "purchasedQty";
-	@ViewColumn(fieldName = FIELDNAME_PurchasedQty, captionKey = "PurchasedQty", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS, layouts = {
+	@ViewColumn(fieldName = FIELDNAME_PurchasedQty, captionKey = "PurchasedQty", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.NEVER, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 45),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 45)
 	})
