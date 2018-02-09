@@ -137,4 +137,9 @@ public class PurchaseOrderItem implements PurchaseItem
 
 		purchaseCandidate.markProcessed();
 	}
+
+	public boolean pruchaseMatchesRequiredQty()
+	{
+		return getPurchasedQty().compareTo(purchaseCandidate.getQtyToPurchase()) == 0;
+	}
 }

@@ -94,7 +94,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 		{
 			for (final PurchaseCandidate purchaseCandidate : purchaseCandidates)
 			{
-				final PurchaseErrorItem purchaseErrorItem = purchaseCandidate.newErrorItem()
+				final PurchaseErrorItem purchaseErrorItem = purchaseCandidate.createErrorItem()
 						.transactionReference(transactionReference)
 						.throwable(purchaseOrderResponse.getException())
 						.buildAndAdd();
@@ -112,7 +112,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 
 			final PurchaseCandidate correspondingRequestCandidate = requestItem2Candidate.get(correspondingRequestItem);
 
-			final PurchaseOrderItem purchaseOrderItem = correspondingRequestCandidate.newOrderItem()
+			final PurchaseOrderItem purchaseOrderItem = correspondingRequestCandidate.createOrderItem()
 					.datePromised(remotePurchaseOrderCreatedItem.getConfirmedDeliveryDate())
 					.purchasedQty(remotePurchaseOrderCreatedItem.getConfirmedOrderQuantity())
 					.remotePurchaseOrderId(remotePurchaseOrderCreatedItem.getRemotePurchaseOrderId())

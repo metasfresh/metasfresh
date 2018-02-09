@@ -58,7 +58,7 @@ public final class NullVendorGatewayInvoker implements VendorGatewayInvoker
 	private static PurchaseOrderItem createPlainPurchaseOrderItem(
 			@NonNull final PurchaseCandidate purchaseCandidate)
 	{
-		return purchaseCandidate.newOrderItem()
+		return purchaseCandidate.createOrderItem()
 				.remotePurchaseOrderId(NO_REMOTE_PURCHASE_ID)
 				.datePromised(purchaseCandidate.getDateRequired())
 				.purchasedQty(purchaseCandidate.getQtyToPurchase())

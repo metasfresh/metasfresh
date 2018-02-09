@@ -5,13 +5,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Marshaller;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMSource;
+
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.ws.test.client.MockWebServiceServer;
+import org.springframework.ws.test.client.RequestMatchers;
+import org.springframework.ws.test.client.ResponseCreators;
+import org.w3c.dom.Document;
 
 import com.google.common.collect.ImmutableList;
 
@@ -25,6 +36,13 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3TestingTools;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3FaultInfoDataPersister;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3SubstitutionDataPersister;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Auftragsart;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Bestellen;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellenResponse;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwort;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwortAuftrag;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.ObjectFactory;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -53,33 +71,82 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3SubstitutionDataP
 		MSV3PurchaseOrderDataPersister.class, Msv3FaultInfoDataPersister.class, Msv3SubstitutionDataPersister.class })
 public class MSV3PurchaseOrderClientTest
 {
+	private MockWebServiceServer mockServer;
+	private MSV3PurchaseOrderClient msv3PurchaseOrderClient;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-	}
-
-	@Test
-	@Ignore
-	public void manualTest()
-	{
-		MSV3TestingTools.setDBVersion(MSV3PurchaseOrderClientTest.class.getSimpleName());
-
-		final MSV3PurchaseOrderClient msv3PurchaseOrderClient = MSV3PurchaseOrderClient.builder()
+		msv3PurchaseOrderClient = MSV3PurchaseOrderClient.builder()
 				.config(MSV3TestingTools.createMSV3ClientConfig())
 				.connectionFactory(new MSV3ConnectionFactory())
 				.build();
 
+		mockServer = MockWebServiceServer.createServer(msv3PurchaseOrderClient.getWebServiceTemplate());
+		MSV3TestingTools.setDBVersion(MSV3PurchaseOrderClientTest.class.getSimpleName());
+	}
+
+	@Test
+	public void placeOrder() throws Exception
+	{
 		final PurchaseOrderRequestItem purchaseOrderRequestItem = new PurchaseOrderRequestItem(
-				1,
+				1, // id
 				new ProductAndQuantity("10055555", BigDecimal.TEN));
 		final List<PurchaseOrderRequestItem> purchaseOrderRequestItems = ImmutableList.of(purchaseOrderRequestItem);
+
 		final PurchaseOrderRequest request = new PurchaseOrderRequest(10, 20, purchaseOrderRequestItems);
 
-		final RemotePurchaseOrderCreated purchaseOrderResponse = msv3PurchaseOrderClient.placePurchaseOrder(request);
+		msv3PurchaseOrderClient.prepare(request);
+
+		// set up the mock server
+		final Source requestPayload = createRequest(msv3PurchaseOrderClient.getPurchaseOrderRequestPayload());
+		final Source responsePayload = createResponse();
+		mockServer
+				.expect(RequestMatchers.payload(requestPayload))
+				.andRespond(ResponseCreators.withPayload(responsePayload));
+
+		// invoke the method under test
+		final RemotePurchaseOrderCreated purchaseOrderResponse = msv3PurchaseOrderClient.placeOrder(request);
+
 		assertThat(purchaseOrderResponse).isNotNull();
 		assertThat(purchaseOrderResponse.getException()).isNull();
 	}
 
+	private Source createResponse() throws Exception
+	{
+		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		final DocumentBuilder db = dbf.newDocumentBuilder();
+
+		final ObjectFactory objectFactory = new ObjectFactory();
+
+		final BestellungAntwortAuftrag bestellungAntwortAuftrag = objectFactory.createBestellungAntwortAuftrag();
+		bestellungAntwortAuftrag.setAuftragsart(Auftragsart.NORMAL);
+		final BestellungAntwort bestellungAntwort = objectFactory.createBestellungAntwort();
+		bestellungAntwort.getAuftraege().add(bestellungAntwortAuftrag);
+		final BestellenResponse bestellenResponse = objectFactory.createBestellenResponse();
+		bestellenResponse.setReturn(bestellungAntwort);
+		final JAXBElement<BestellenResponse> responsePayload = objectFactory.createBestellenResponse(bestellenResponse);
+
+		final JAXBContext responseJc = JAXBContext.newInstance(BestellenResponse.class);
+		final Marshaller responseMarshaller = responseJc.createMarshaller();
+		final Document responseDocument = db.newDocument();
+		responseMarshaller.marshal(responsePayload, responseDocument);
+
+		return new DOMSource(responseDocument);
+	}
+
+	private Source createRequest(@NonNull final JAXBElement<Bestellen> requestPayload) throws Exception
+	{
+		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		final DocumentBuilder db = dbf.newDocumentBuilder();
+		final Document requestDocument = db.newDocument();
+
+		final JAXBContext requestJc = JAXBContext.newInstance(Bestellen.class);
+		final Marshaller requestMarshaller = requestJc.createMarshaller();
+		requestMarshaller.marshal(requestPayload, requestDocument);
+		final DOMSource payload = new DOMSource(requestDocument);
+
+		return payload;
+	}
 }

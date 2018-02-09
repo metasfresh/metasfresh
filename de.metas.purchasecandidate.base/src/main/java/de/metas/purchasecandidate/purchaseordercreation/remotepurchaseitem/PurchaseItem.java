@@ -30,7 +30,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewa
 
 /**
  * Instances of this interface are returned by {@link VendorGatewayInvoker} and are processed by {@link PurchaseOrderFromItemsAggregator}.
- * They are created via {@link PurchaseCandidate#newErrorItem()} and {@link PurchaseCandidate#newOrderItem()}.
+ * They are created via {@link PurchaseCandidate#createErrorItem()} and {@link PurchaseCandidate#createOrderItem()}.
  */
 public interface PurchaseItem
 {

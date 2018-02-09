@@ -6,9 +6,8 @@ import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.compiere.model.MOrderLine;
+import org.adempiere.util.Services;
 
 import de.metas.interfaces.I_C_OrderLine;
 import lombok.NonNull;
@@ -67,7 +66,7 @@ public class OrderLineBuilder
 		built = true;
 
 		// assume returned order is already saved
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(new MOrderLine(parent.getC_Order()), I_C_OrderLine.class);
+		final I_C_OrderLine orderLine = Services.get(IOrderLineBL.class).createOrderLine(parent.getC_Order());
 
 		orderLine.setM_Product_ID(productId);
 		orderLine.setM_AttributeSetInstance_ID(asiId);

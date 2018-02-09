@@ -108,7 +108,7 @@ public class PurchaseCandidateTest
 				.createPurchaseCandidate(20);
 
 		final RuntimeException throwable = new RuntimeException();
-		candidate1.newErrorItem()
+		candidate1.createErrorItem()
 				.throwable(throwable)
 				.buildAndAdd();
 
@@ -128,7 +128,7 @@ public class PurchaseCandidateTest
 		final PurchaseCandidate candidate1 = PurchaseCandidateTestTool
 				.createPurchaseCandidate(20);
 
-		candidate1.newOrderItem()
+		candidate1.createOrderItem()
 				.purchasedQty(BigDecimal.TEN)
 				.datePromised(SystemTime.asTimestamp())
 				.remotePurchaseOrderId("remotePurchaseOrderId")

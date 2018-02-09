@@ -194,7 +194,7 @@ public class PurchaseCandidateToOrderWorkflow
 
 			for (final PurchaseCandidate purchaseCandidate : purchaseCandidates)
 			{
-				purchaseCandidate.newErrorItem()
+				purchaseCandidate.createErrorItem()
 						.throwable(throwable)
 						.buildAndAdd();
 			}

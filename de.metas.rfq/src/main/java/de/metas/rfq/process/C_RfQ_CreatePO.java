@@ -1,17 +1,22 @@
 package de.metas.rfq.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
 
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.quantity.Quantity;
 import de.metas.rfq.IRfqBL;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.exceptions.NoCompletedRfQResponsesFoundException;
@@ -20,6 +25,10 @@ import de.metas.rfq.model.I_C_RfQLineQty;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
+import lombok.NonNull;
+
+
+
 
 /*
  * #%L
@@ -34,11 +43,11 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -112,6 +121,7 @@ public class C_RfQ_CreatePO extends JavaProcess
 
 			order.saveEx();
 			//
+
 			for (final I_C_RfQResponseLine rfqResponseLine : rfqDAO.retrieveResponseLines(rfqResponse))
 			{
 				if (!rfqResponseLine.isActive())
@@ -123,21 +133,7 @@ public class C_RfQ_CreatePO extends JavaProcess
 				for (final I_C_RfQResponseLineQty rfqResponseLineQty : rfqDAO.retrieveResponseQtys(rfqResponseLine))
 				{
 					// Create PO Lline for all Purchase Line Qtys
-					final I_C_RfQLineQty rfqLineQty = rfqResponseLineQty.getC_RfQLineQty();
-					if (rfqLineQty.isActive() && rfqLineQty.isPurchaseQty())
-					{
-						final MOrderLine ol = new MOrderLine(order);
-						ol.setM_Product_ID(rfqResponseLine.getM_Product_ID(), rfqLineQty.getC_UOM_ID());
-						ol.setDescription(rfqResponseLine.getDescription());
-
-						ol.setQty(rfqLineQty.getQty());
-
-						final BigDecimal price = rfqBL.calculatePriceWithoutDiscount(rfqResponseLineQty);
-						ol.setPrice();
-						ol.setPrice(price);
-
-						ol.saveEx();
-					}
+					createAndSaveOrderLine(order, rfqResponseLineQty);
 				}
 			}
 
@@ -190,17 +186,17 @@ public class C_RfQ_CreatePO extends JavaProcess
 					final I_C_RfQLineQty rfqLineQty = qty.getC_RfQLineQty();
 					if (rfqLineQty.isActive() && rfqLineQty.isPurchaseQty())
 					{
-						final MOrderLine ol = new MOrderLine(order);
-						ol.setM_Product_ID(line.getC_RfQLine().getM_Product_ID(), rfqLineQty.getC_UOM_ID());
+						final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+						final I_C_OrderLine ol = orderLineBL.createOrderLine(order);
+
+						ol.setM_Product_ID(line.getC_RfQLine().getM_Product_ID());
+						ol.setC_UOM_ID(rfqLineQty.getC_UOM_ID());
 						ol.setDescription(line.getDescription());
 
-						ol.setQty(rfqLineQty.getQty());
-
-						final BigDecimal price = rfqBL.calculatePriceWithoutDiscount(qty);
-						ol.setPrice();
-						ol.setPrice(price);
-
-						ol.saveEx();
+						setQtyOfOrderLine(rfqLineQty, ol);
+						setPriceOfOrderLine(qty, ol);
+						save(ol);
 					}
 				}       	// for all Qtys
 			}       	// for all Response Lines
@@ -214,5 +210,55 @@ public class C_RfQ_CreatePO extends JavaProcess
 		}   // for all Responses
 
 		return "#" + noOrders;
+	}
+
+	private void createAndSaveOrderLine(
+			@NonNull final MOrder order,
+			@NonNull final I_C_RfQResponseLineQty rfqResponseLineQty)
+	{
+
+		final I_C_RfQLineQty rfqLineQty = rfqResponseLineQty.getC_RfQLineQty();
+		final boolean createLine = rfqLineQty.isActive() && rfqLineQty.isPurchaseQty();
+		if (!createLine)
+		{
+			return;
+		}
+
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+		final I_C_OrderLine ol = orderLineBL.createOrderLine(order);
+
+		final I_C_RfQResponseLine rfqResponseLine = rfqResponseLineQty.getC_RfQResponseLine();
+		ol.setM_Product_ID(rfqResponseLine.getM_Product_ID());
+		ol.setC_UOM_ID(rfqLineQty.getC_UOM_ID());
+		ol.setDescription(rfqResponseLine.getDescription());
+
+		setQtyOfOrderLine(rfqLineQty, ol);
+		setPriceOfOrderLine(rfqResponseLineQty, ol);
+		save(ol);
+	}
+
+	private void setPriceOfOrderLine(
+			@NonNull final I_C_RfQResponseLineQty rfqResponseLineQty,
+			@NonNull final I_C_OrderLine ol)
+	{
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+
+		orderLineBL.updatePrices(ol);
+		final BigDecimal price = rfqBL.calculatePriceWithoutDiscount(rfqResponseLineQty);
+		ol.setPriceEntered(price);
+		ol.setPriceActual(price);
+	}
+
+	private void setQtyOfOrderLine(
+			@NonNull final I_C_RfQLineQty rfqLineQty,
+			@NonNull final I_C_OrderLine ol)
+	{
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		ol.setQtyEntered(rfqLineQty.getQty());
+		final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(
+				Quantity.of(rfqLineQty.getQty(), rfqLineQty.getC_UOM()),
+				ol.getM_Product());
+		ol.setQtyOrdered(qtyOrdered);
 	}
 }

@@ -221,17 +221,17 @@ public class PurchaseCandidate
 		return productAndQuantity;
 	}
 
-	public NewErrorItemBuilder newErrorItem()
+	public ErrorItemBuilder createErrorItem()
 	{
-		return new NewErrorItemBuilder(this);
+		return new ErrorItemBuilder(this);
 	}
 
-	public static final class NewErrorItemBuilder
+	public static final class ErrorItemBuilder
 	{
 		private final PurchaseCandidate parent;
 		private final PurchaseErrorItemBuilder innerBuilder;
 
-		private NewErrorItemBuilder(@NonNull final PurchaseCandidate parent)
+		private ErrorItemBuilder(@NonNull final PurchaseCandidate parent)
 		{
 			this.parent = parent;
 			this.innerBuilder = PurchaseErrorItem.builder()
@@ -239,19 +239,19 @@ public class PurchaseCandidate
 					.orgId(parent.getOrgId());
 		}
 
-		public NewErrorItemBuilder transactionReference(ITableRecordReference transactionReference)
+		public ErrorItemBuilder transactionReference(ITableRecordReference transactionReference)
 		{
 			this.innerBuilder.transactionReference(transactionReference);
 			return this;
 		}
 
-		public NewErrorItemBuilder throwable(Throwable throwable)
+		public ErrorItemBuilder throwable(Throwable throwable)
 		{
 			this.innerBuilder.throwable(throwable);
 			return this;
 		}
 
-		public NewErrorItemBuilder issue(I_AD_Issue issue)
+		public ErrorItemBuilder issue(I_AD_Issue issue)
 		{
 			this.innerBuilder.issue(issue);
 			return this;
@@ -265,41 +265,41 @@ public class PurchaseCandidate
 		}
 	}
 
-	public NewOrderItemBuilder newOrderItem()
+	public OrderItemBuilder createOrderItem()
 	{
-		return new NewOrderItemBuilder(this);
+		return new OrderItemBuilder(this);
 	}
 
-	public static final class NewOrderItemBuilder
+	public static final class OrderItemBuilder
 	{
 		private final PurchaseCandidate parent;
 		private final PurchaseOrderItemBuilder innerBuilder;
 
-		private NewOrderItemBuilder(@NonNull final PurchaseCandidate parent)
+		private OrderItemBuilder(@NonNull final PurchaseCandidate parent)
 		{
 			this.parent = parent;
 			innerBuilder = PurchaseOrderItem.builder().purchaseCandidate(parent);
 		}
 
-		public NewOrderItemBuilder datePromised(@NonNull final Date datePromised)
+		public OrderItemBuilder datePromised(@NonNull final Date datePromised)
 		{
 			innerBuilder.datePromised(datePromised);
 			return this;
 		}
 
-		public NewOrderItemBuilder purchasedQty(@NonNull final BigDecimal purchasedQty)
+		public OrderItemBuilder purchasedQty(@NonNull final BigDecimal purchasedQty)
 		{
 			innerBuilder.purchasedQty(purchasedQty);
 			return this;
 		}
 
-		public NewOrderItemBuilder remotePurchaseOrderId(final String remotePurchaseOrderId)
+		public OrderItemBuilder remotePurchaseOrderId(final String remotePurchaseOrderId)
 		{
 			innerBuilder.remotePurchaseOrderId(remotePurchaseOrderId);
 			return this;
 		}
 
-		public NewOrderItemBuilder transactionReference(final ITableRecordReference transactionReference)
+		public OrderItemBuilder transactionReference(final ITableRecordReference transactionReference)
 		{
 			innerBuilder.transactionReference(transactionReference);
 			return this;

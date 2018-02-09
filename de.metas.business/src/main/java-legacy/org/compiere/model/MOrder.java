@@ -499,7 +499,7 @@ public class MOrder extends X_C_Order implements IDocument
 		if (counter)
 		{
 			final boolean copyCounter = Services.get(IOrderLineBL.class).isAllowedCounterLineCopy(fromLine);
-			
+
 			if (!copyCounter)
 			{
 				return 0;
@@ -509,8 +509,9 @@ public class MOrder extends X_C_Order implements IDocument
 		final MOrderLine line = new MOrderLine(this);
 		PO.copyValues(fromLine, line, getAD_Client_ID(), getAD_Org_ID()); // note: this copies *all* columns, also those with IsCalculated='Y'
 		line.setC_Order_ID(getC_Order_ID());
-		line.setOrder(this);
+		Services.get(IOrderLineBL.class).setOrder(line, this);
 		line.set_ValueNoCheck("C_OrderLine_ID", I_ZERO);	// new
+
 		// References
 		if (!copyASI)
 		{
@@ -585,7 +586,7 @@ public class MOrder extends X_C_Order implements IDocument
 	public String getDocumentInfo()
 	{
 		final StringBuilder documentInfo = new StringBuilder();
-		
+
 		//
 		// DocType
 		I_C_DocType docType = getC_DocType();
@@ -597,7 +598,7 @@ public class MOrder extends X_C_Order implements IDocument
 		{
 			documentInfo.append(docType.getName());
 		}
-		
+
 		//
 		// DocumentNo
 		if(documentInfo.length() > 0)
@@ -605,7 +606,7 @@ public class MOrder extends X_C_Order implements IDocument
 			documentInfo.append(" ");
 		}
 		documentInfo.append(getDocumentNo());
-		
+
 		return documentInfo.toString();
 	}	// getDocumentInfo
 
@@ -663,10 +664,7 @@ public class MOrder extends X_C_Order implements IDocument
 				.setParameters(new Object[] { get_ID() })
 				.setOrderBy(orderClause)
 				.list();
-		for (MOrderLine ol : list)
-		{
-			ol.setHeaderInfo(this);
-		}
+
 		//
 		return list.toArray(new MOrderLine[list.size()]);
 	}	// getLines
@@ -1088,13 +1086,13 @@ public class MOrder extends X_C_Order implements IDocument
 		{
 			line.deleteEx(true);
 		}
-		
+
 		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order_CompensationGroup.class)
 				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMN_C_Order_ID, getC_Order_ID())
 				.create()
 				.delete();
-		
+
 		return true;
 	}	// beforeDelete
 

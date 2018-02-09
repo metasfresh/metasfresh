@@ -198,7 +198,9 @@ public class MOrderLine extends X_C_OrderLine
 	 * <li>ol.save();
 	 *
 	 * @param order parent order
+	 * @deprecated please use {@link IOrderLineBL#createOrderLine(I_C_Order)} instead.
 	 */
+	@Deprecated
 	public MOrderLine(@NonNull final I_C_Order order)
 	{
 		this(InterfaceWrapperHelper.getCtx(order), 0, getTrxName(order));
@@ -207,7 +209,7 @@ public class MOrderLine extends X_C_OrderLine
 			throw new IllegalArgumentException("Header not saved");
 		}
 		setC_Order_ID(order.getC_Order_ID());	// parent
-		setOrder(order);
+		Services.get(IOrderLineBL.class).setOrder(this, order);
 	}	// MOrderLine
 
 	/**
@@ -222,65 +224,14 @@ public class MOrderLine extends X_C_OrderLine
 		super(ctx, rs, trxName);
 	}	// MOrderLine
 
-	private int m_M_PriceList_ID = 0;
-	//
-	private boolean m_IsSOTrx = true;
 
 	/** Tax */
 	private MTax m_tax = null;
 
-	/** Cached Currency Precision */
-	private Integer m_precision = null;
 	/** Product */
 	private MProduct m_product = null;
 	/** Charge */
 	private MCharge m_charge = null;
-
-	/**
-	 * Set Defaults from Order. Does not set Parent !!
-	 *
-	 * @param order order
-	 */
-	public void setOrder(@NonNull final I_C_Order order)
-	{
-		setClientOrg(order.getAD_Client_ID(), order.getAD_Org_ID());
-		final boolean isDropShip = order.isDropShip();
-		final int C_BPartner_ID = isDropShip && order.getDropShip_BPartner_ID() > 0 ? order.getDropShip_BPartner_ID() : order.getC_BPartner_ID();
-		setC_BPartner_ID(C_BPartner_ID);
-
-		final int C_BPartner_Location_ID = isDropShip && order.getDropShip_Location_ID() > 0 ? order.getDropShip_Location_ID() : order.getC_BPartner_Location_ID();
-		setC_BPartner_Location_ID(C_BPartner_Location_ID);
-
-		// metas: begin: copy AD_User_ID
-		final de.metas.interfaces.I_C_OrderLine oline = InterfaceWrapperHelper.create(this, de.metas.interfaces.I_C_OrderLine.class);
-		final int AD_User_ID = isDropShip && order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
-		oline.setAD_User_ID(AD_User_ID);
-		// metas: end
-
-		oline.setM_PriceList_Version_ID(0); // the current PLV might be add or'd with the new order's PL.
-
-		setM_Warehouse_ID(order.getM_Warehouse_ID());
-		setDateOrdered(order.getDateOrdered());
-		setDatePromised(order.getDatePromised());
-		setC_Currency_ID(order.getC_Currency_ID());
-		//
-		setHeaderInfo(order);	// sets m_order
-		// Don't set Activity, etc as they are overwrites
-	}	// setOrder
-
-	/**
-	 * Set Header Info
-	 *
-	 * @param order order
-	 */
-	public void setHeaderInfo(@NonNull final I_C_Order order)
-	{
-		final IOrderBL orderBL = Services.get(IOrderBL.class);
-
-		m_precision = orderBL.getPrecision(order);
-		m_M_PriceList_ID = orderBL.retrievePriceListId(order);
-		m_IsSOTrx = order.isSOTrx();
-	}	// setHeaderInfo
 
 	/**
 	 * Get Parent
@@ -327,11 +278,7 @@ public class MOrderLine extends X_C_OrderLine
 		{
 			return;
 		}
-		if (m_M_PriceList_ID <= 0)
-		{
-			throw new AdempiereException("@NotFound@ @M_Pricelist_ID@ @C_BPartner_ID@ " + getC_BPartner().getName());
-		}
-		//
+
 		final de.metas.interfaces.I_C_OrderLine ol = InterfaceWrapperHelper.create(this, de.metas.interfaces.I_C_OrderLine.class);
 		Services.get(IOrderLineBL.class).updatePrices(ol);
 	}	// setPrice
@@ -360,7 +307,7 @@ public class MOrderLine extends X_C_OrderLine
 				getC_BPartner_Location(),		// should be bill to
 				getDateOrdered(),
 				taxCategoryId,
-				m_IsSOTrx,
+				getParent().isSOTrx(),
 				get_TrxName(),
 				true); // throwEx
 
@@ -477,25 +424,21 @@ public class MOrderLine extends X_C_OrderLine
 	 */
 	public int getPrecision()
 	{
-		if (m_precision != null)
-		{
-			return m_precision;
-		}
+		final Integer precision= Services.get(IOrderBL.class).getPrecision(getC_Order());
 
 		//
 		if (getC_Currency_ID() == 0)
 		{
-			setOrder(getParent());
-			if (m_precision != null)
-				return m_precision;
+			Services.get(IOrderLineBL.class).setOrder(this, getC_Order());
+			if (precision != null)
+				return precision;
 		}
 		if (getC_Currency_ID() > 0)
 		{
 			final I_C_Currency cur = Services.get(ICurrencyDAO.class).retrieveCurrency(getCtx(), getC_Currency_ID());
 			if (cur.getC_Currency_ID() != 0)
 			{
-				m_precision = cur.getStdPrecision();
-				return m_precision;
+				return cur.getStdPrecision();
 			}
 		}
 
@@ -505,8 +448,7 @@ public class MOrderLine extends X_C_OrderLine
 		final String sql = "SELECT c.StdPrecision "
 				+ "FROM C_Currency c INNER JOIN C_Order x ON (x.C_Currency_ID=c.C_Currency_ID) "
 				+ "WHERE x.C_Order_ID=?";
-		m_precision = DB.getSQLValue(get_TrxName(), sql, getC_Order_ID());
-		return m_precision;
+		return DB.getSQLValue(get_TrxName(), sql, getC_Order_ID());
 	}	// getPrecision
 
 	/**
@@ -859,23 +801,9 @@ public class MOrderLine extends X_C_OrderLine
 				|| warehouse == null || warehouse.getM_Warehouse_ID() <= 0
 				|| getC_Currency_ID() <= 0)
 		{
-			setOrder(getParent());
+			Services.get(IOrderLineBL.class).setOrder(this, getC_Order());
 		}
 
-		// metas: try to get the pl-id from our plv
-		if (m_M_PriceList_ID <= 0)
-		{
-			final int plvId = get_ValueAsInt(de.metas.interfaces.I_C_OrderLine.COLUMNNAME_M_PriceList_Version_ID);
-			if (plvId > 0)
-			{
-				m_M_PriceList_ID = DB.getSQLValueEx(get_TrxName(), "SELECT M_PriceList_ID FROM M_PriceList_Version WHERE M_PriceList_Version_ID=" + plvId);
-			}
-		}
-		// metas: end
-		if (m_M_PriceList_ID <= 0)
-		{
-			setHeaderInfo(getParent());
-		}
 		// R/O Check - Product/Warehouse Change
 		if (!newRecord
 				&& (is_ValueChanged("M_Product_ID") || is_ValueChanged("M_Warehouse_ID")))

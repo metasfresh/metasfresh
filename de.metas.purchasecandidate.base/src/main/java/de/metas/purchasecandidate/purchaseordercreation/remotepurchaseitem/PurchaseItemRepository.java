@@ -137,7 +137,7 @@ public class PurchaseItemRepository
 		{
 			final I_C_OrderLine purchaseOrderLine = load(record.getC_OrderLinePO_ID(), I_C_OrderLine.class);
 
-			return purchaseCandidate.newOrderItem()
+			return purchaseCandidate.createOrderItem()
 					.datePromised(record.getDatePromised())
 					.purchasedQty(purchaseOrderLine.getQtyOrdered())
 					.remotePurchaseOrderId(record.getRemotePurchaseOrderId())
@@ -145,7 +145,7 @@ public class PurchaseItemRepository
 					.buildAndAddToParent();
 
 		}
-		return purchaseCandidate.newErrorItem()
+		return purchaseCandidate.createErrorItem()
 				.issue(record.getAD_Issue())
 				.transactionReference(transactionReference)
 				.buildAndAdd();

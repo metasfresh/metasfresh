@@ -34,13 +34,13 @@ import lombok.Value;
 /* package */ final class PurchaseOrderAggregationKey
 {
 	public static PurchaseOrderAggregationKey formPurchaseOrderItem(
-			@NonNull final PurchaseOrderItem candidate)
+			@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
 		return PurchaseOrderAggregationKey.builder()
-				.orgId(candidate.getOrgId())
-				.warehouseId(candidate.getWarehouseId())
-				.vendorBPartnerId(candidate.getVendorProductInfo().getVendorBPartnerId())
-				.datePromisedMillis(candidate.getDatePromised().getTime())
+				.orgId(purchaseOrderItem.getOrgId())
+				.warehouseId(purchaseOrderItem.getWarehouseId())
+				.vendorBPartnerId(purchaseOrderItem.getVendorProductInfo().getVendorBPartnerId())
+				.datePromisedMillis(purchaseOrderItem.getDatePromised().getTime())
 				.build();
 	}
 
