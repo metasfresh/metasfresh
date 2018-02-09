@@ -1,19 +1,19 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { dropdownRequest } from "../../../actions/GenericActions";
-import { getViewAttributeDropdown } from "../../../actions/ViewAttributesActions";
-import RawList from "./RawList";
+import { dropdownRequest } from '../../../actions/GenericActions';
+import { getViewAttributeDropdown } from '../../../actions/ViewAttributesActions';
+import RawList from './RawList';
 
 class List extends Component {
   state = {
     list: null,
     loading: false,
-    selectedItem: ""
+    selectedItem: '',
   };
 
-  previousValue = "";
+  previousValue = '';
 
   componentDidMount() {
     const { defaultValue } = this.props;
@@ -27,7 +27,7 @@ class List extends Component {
     const { isInputEmpty } = this.props;
 
     if (isInputEmpty && prevProps.isInputEmpty !== isInputEmpty) {
-      this.previousValue = "";
+      this.previousValue = '';
     }
   }
 
@@ -43,12 +43,12 @@ class List extends Component {
       subentity,
       subentityId,
       viewId,
-      attribute
+      attribute,
     } = this.props;
 
     this.setState({
       list: [],
-      loading: true
+      loading: true,
     });
 
     const propertyName = filterWidget
@@ -67,7 +67,7 @@ class List extends Component {
           tabId,
           viewId,
           propertyName,
-          rowId
+          rowId,
         });
 
     request.then(res => {
@@ -75,11 +75,11 @@ class List extends Component {
       let singleOption = values && values.length === 1;
 
       if (forceSelection && singleOption) {
-        this.previousValue = "";
+        this.previousValue = '';
 
         this.setState({
           list: values,
-          loading: false
+          loading: false,
         });
 
         let firstListValue = values[0];
@@ -89,7 +89,7 @@ class List extends Component {
       } else {
         this.setState({
           list: values,
-          loading: false
+          loading: false,
         });
       }
 
@@ -139,7 +139,7 @@ class List extends Component {
       properties,
       setNextProperty,
       mainProperty,
-      enableAutofocus
+      enableAutofocus,
     } = this.props;
 
     if (enableAutofocus) {
@@ -153,7 +153,7 @@ class List extends Component {
 
         if (option) {
           this.setState({
-            selectedItem: option
+            selectedItem: option,
           });
 
           this.previousValue = option.caption;
@@ -172,7 +172,7 @@ class List extends Component {
               let patchFields = patchResult[0].fieldsByName;
               if (patchFields.lookupValuesStale === true) {
                 this.setState({
-                  list: null
+                  list: null,
                 });
               }
             }
@@ -187,52 +187,16 @@ class List extends Component {
   };
 
   render() {
-    const {
-      rank,
-      readonly,
-      defaultValue,
-      selected,
-      align,
-      updated,
-      rowId,
-      emptyText,
-      tabIndex,
-      mandatory,
-      validStatus,
-      lookupList,
-      autoFocus,
-      blur,
-      onHandleBlur,
-      initialFocus,
-      lastProperty,
-      disableAutofocus
-    } = this.props;
-
+    const { selected, lookupList } = this.props;
     const { list, loading, selectedItem } = this.state;
 
     return (
       <RawList
+        {...this.props}
         ref={c => (this.rawList = c && c.getWrappedInstance())}
         loading={loading}
         list={list || []}
-        lookupList={lookupList}
-        rank={rank}
-        readonly={readonly}
-        defaultValue={defaultValue}
         selected={lookupList ? selectedItem : selected}
-        align={align}
-        updated={updated}
-        rowId={rowId}
-        emptyText={emptyText}
-        mandatory={mandatory}
-        validStatus={validStatus}
-        tabIndex={tabIndex}
-        autoFocus={autoFocus}
-        initialFocus={initialFocus}
-        lastProperty={lastProperty}
-        disableAutofocus={disableAutofocus}
-        blur={blur}
-        onHandleBlur={onHandleBlur}
         onRequestListData={this.requestListData}
         onFocus={this.handleFocus}
         onSelect={option => this.handleSelect(option)}
@@ -243,7 +207,7 @@ class List extends Component {
 
 List.propTypes = {
   dispatch: PropTypes.func.isRequired,
-  autoFocus: PropTypes.bool
+  autoFocus: PropTypes.bool.isRequired,
 };
 
 export default connect(false, false, false, { withRef: true })(List);
