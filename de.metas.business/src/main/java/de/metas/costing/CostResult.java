@@ -1,7 +1,10 @@
 package de.metas.costing;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 
 import com.google.common.collect.ImmutableMap;
@@ -40,7 +43,7 @@ public final class CostResult
 	CostSegment costSegment;
 	CostAmount totalAmount;
 	@Getter(AccessLevel.NONE)
-	Map<CostElement, CostAmount> amounts;
+	ImmutableMap<CostElement, CostAmount> amounts;
 
 	@Builder
 	private CostResult(
@@ -55,5 +58,36 @@ public final class CostResult
 				.stream()
 				.reduce(CostAmount::add)
 				.get();
+	}
+
+	public Set<CostElement> getCostElements()
+	{
+		return amounts.keySet();
+	}
+
+	public CostAmount getCostAmountForCostElement(final CostElement costElement)
+	{
+		final CostAmount amt = amounts.get(costElement);
+		if (amt == null)
+		{
+			throw new AdempiereException("No cost amount for " + costElement + " in " + this);
+		}
+		return amt;
+	}
+
+	public CostResult merge(@NonNull final CostResult other)
+	{
+		if (!Objects.equals(this.costSegment, other.costSegment))
+		{
+			throw new AdempiereException("Cannot merge cost results when the cost segment is not matching: " + this + ", " + other);
+		}
+
+		// merge amounts maps; will fail in case of duplicate cost elements
+		final ImmutableMap<CostElement, CostAmount> amountsNew = ImmutableMap.<CostElement, CostAmount> builder()
+				.putAll(amounts)
+				.putAll(other.amounts)
+				.build();
+
+		return new CostResult(costSegment, amountsNew);
 	}
 }
