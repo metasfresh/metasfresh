@@ -32,7 +32,8 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MInOut;
-import org.compiere.model.X_M_InOut;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
@@ -179,14 +180,8 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 	private List<Fact> createFacts_SalesShipment(final MAcctSchema as)
 	{
-		final List<Fact> facts = new ArrayList<>();
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
-		facts.add(fact);
-
-		for (final DocLine_InOut line : getDocLines())
-		{
-			createFacts_SalesShipmentLine(fact, line);
-		}
+		getDocLines().forEach(line -> createFacts_SalesShipmentLine(fact, line));
 
 		//
 		// Commitment release
@@ -195,7 +190,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			throw newPostingException().setC_AcctSchema(as).setDetailMessage("SO commitment release not supported");
 		}
 
-		return facts;
+		return ImmutableList.of(fact);
 	}
 
 	private void createFacts_SalesShipmentLine(final Fact fact, final DocLine_InOut line)
@@ -207,7 +202,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final I_C_AcctSchema as = fact.getAcctSchema();
-		CostAmount costs = line.getCreateShipmentCosts(as).getTotalAmount();
+		final CostAmount costs = line.getCreateShipmentCosts(as).getTotalAmount();
 
 		//
 		// CoGS DR
@@ -224,15 +219,6 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
 		dr.setAD_Org_ID(line.getOrder_Org_ID());		// Revenue X-Org
 		dr.setQty(line.getQty().negate());
-		if (X_M_InOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
-		{
-			// TODO: this shall come from costs!
-			// Set AmtAcctDr from Original Shipment/Receipt
-			if (!dr.updateReverseLine(MInOut.Table_ID, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
-			{
-				throw newPostingException().setDetailMessage("Original Shipment/Receipt not posted yet");
-			}
-		}
 
 		//
 		// Inventory CR
@@ -247,29 +233,14 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		cr.setM_Locator_ID(line.getM_Locator_ID());
 		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		cr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
-		if (X_M_InOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
-		{
-			// Set AmtAcctCr from Original Shipment/Receipt
-			if (!cr.updateReverseLine(MInOut.Table_ID, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
-			{
-				throw newPostingException().setDetailMessage("Original Shipment/Receipt not posted yet");
-			}
-			costs = CostAmount.of(cr.getAcctBalance(), as.getC_Currency_ID()); // get original cost
-		}
 	}
 
 	private List<Fact> createFacts_SalesReturn(final MAcctSchema as)
 	{
-		final List<Fact> facts = new ArrayList<>();
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
-		facts.add(fact);
+		getDocLines().forEach(line -> createFacts_SalesReturnLine(fact, line));
 
-		for (final DocLine_InOut line : getDocLines())
-		{
-			createFacts_SalesReturnLine(fact, line);
-		}
-
-		return facts;
+		return ImmutableList.of(fact);
 	}
 
 	private void createFacts_SalesReturnLine(final Fact fact, final DocLine_InOut line)
@@ -281,7 +252,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final I_C_AcctSchema as = fact.getAcctSchema();
-		CostAmount costs = line.getCreateShipmentCosts(as).getTotalAmount();
+		final CostAmount costs = line.getCreateShipmentCosts(as).getTotalAmount();
 
 		//
 		// Inventory DR
@@ -296,16 +267,6 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		dr.setM_Locator_ID(line.getM_Locator_ID());
 		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
 		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
-		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
-		{
-			// TODO: this shall come from costs!
-			// Set AmtAcctDr from Original Shipment/Receipt
-			if (!dr.updateReverseLine(MInOut.Table_ID, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
-			{
-				throw newPostingException().setDetailMessage("Original Shipment/Receipt not posted yet");
-			}
-			costs = CostAmount.of(dr.getAcctBalance(), as.getC_Currency_ID()); // get original cost
-		}
 
 		//
 		// CoGS CR
@@ -322,28 +283,14 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		cr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
 		cr.setAD_Org_ID(line.getOrder_Org_ID());		// Revenue X-Org
 		cr.setQty(line.getQty().negate());
-		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
-		{
-			// Set AmtAcctCr from Original Shipment/Receipt
-			if (!cr.updateReverseLine(MInOut.Table_ID, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
-			{
-				throw newPostingException().setDetailMessage("Original Shipment/Receipt not posted yet");
-			}
-		}
 	}
 
 	private List<Fact> createFacts_PurchasingReceipt(final MAcctSchema as)
 	{
-		final List<Fact> facts = new ArrayList<>();
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
-		facts.add(fact);
-
-		for (final DocLine_InOut line : getDocLines())
-		{
-			createFacts_PurchasingReceiptLine(fact, line);
-		}
-
-		return facts;
+		getDocLines().forEach(line -> createFacts_PurchasingReceiptLine(fact, line));
+		
+		return ImmutableList.of(fact);
 	}
 
 	private void createFacts_PurchasingReceiptLine(final Fact fact, final DocLine_InOut line)
@@ -370,14 +317,6 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		dr.setM_Locator_ID(line.getM_Locator_ID());
 		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), true);   // from Loc
 		dr.setLocationFromLocator(line.getM_Locator_ID(), false);   // to Loc
-		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
-		{
-			// Set AmtAcctDr from Original Shipment/Receipt
-			if (!dr.updateReverseLine(MInOut.Table_ID, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
-			{
-				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
-			}
-		}
 
 		//
 		// NotInvoicedReceipt CR
@@ -394,28 +333,14 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		cr.setLocationFromBPartner(getC_BPartner_Location_ID(), true);   // from Loc
 		cr.setLocationFromLocator(line.getM_Locator_ID(), false);   // to Loc
 		cr.setQty(line.getQty().negate());
-		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
-		{
-			// Set AmtAcctCr from Original Shipment/Receipt
-			if (!cr.updateReverseLine(MInOut.Table_ID, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
-			{
-				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
-			}
-		}
 	}
 
 	private List<Fact> createFacts_PurchasingReturn(final MAcctSchema as)
 	{
-		final List<Fact> facts = new ArrayList<>();
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
-		facts.add(fact);
+		getDocLines().forEach(line -> createFacts_PurchasingReturnLine(fact, line));
 
-		for (final DocLine_InOut line : getDocLines())
-		{
-			createFacts_PurchasingReturnLine(fact, line);
-		}
-
-		return facts;
+		return ImmutableList.of(fact);
 	}
 
 	private void createFacts_PurchasingReturnLine(final Fact fact, final DocLine_InOut line)
