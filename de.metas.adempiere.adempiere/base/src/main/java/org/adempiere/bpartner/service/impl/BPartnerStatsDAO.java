@@ -22,7 +22,7 @@ import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.currency.ICurrencyBL;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -91,29 +91,17 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	}
 
 	@Override
-	public BigDecimal retrieveOpenItems(final IBPartnerStats bpStats)
+	public BigDecimal retrieveOpenItems(@NonNull final IBPartnerStats bpStats)
 	{
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
 
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		BigDecimal totalOpenBalance = null;
+		BigDecimal openItems = null;
 
-		// Legacy sql
-
-		// AZ Goodwill -> BF2041226 : only count completed/closed docs.
 		final Object[] sqlParams = new Object[] { stats.getC_BPartner_ID() };
 		final String sql = "SELECT "
-				// SO Credit Used
-				+ "COALESCE((SELECT SUM(currencyBase(invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID),i.C_Currency_ID,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)) FROM C_Invoice_v i "
-				+ "WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.IsSOTrx='Y' AND i.IsPaid='N' AND i.DocStatus IN ('CO','CL')),0), "
-				// Balance (incl. unallocated payments)
-				+ "COALESCE((SELECT SUM(currencyBase(invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID),i.C_Currency_ID,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)*i.MultiplierAP) FROM C_Invoice_v i "
-				+ "WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.IsPaid='N' AND i.DocStatus IN ('CO','CL')),0) - "
-				+ "COALESCE((SELECT SUM(currencyBase(Paymentavailable(p.C_Payment_ID),p.C_Currency_ID,p.DateTrx,p.AD_Client_ID,p.AD_Org_ID)) FROM C_Payment_v p "
-				+ "WHERE p.C_BPartner_ID=bp.C_BPartner_ID AND p.IsAllocated='N'"
-				+ " AND p.C_Charge_ID IS NULL AND p.DocStatus IN ('CO','CL')),0) "
-				+ "FROM C_BPartner bp " + "WHERE C_BPartner_ID=?";
+				+ "currencyBase(openamt,C_Currency_ID,DateInvoiced,AD_Client_ID,AD_Org_ID) from de_metas_endcustomer_fresh_reports.OpenItems_Report(now()::date) where  C_BPartner_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 
@@ -125,7 +113,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			if (rs.next())
 			{
 
-				totalOpenBalance = rs.getBigDecimal(2);
+				openItems = rs.getBigDecimal(1);
 			}
 		}
 		catch (final SQLException e)
@@ -137,31 +125,29 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			DB.close(rs, pstmt);
 		}
 
-		return totalOpenBalance;
+		return openItems;
 	}
 
 	@Override
-	public void updateSOCreditUsed(final IBPartnerStats bpStats)
+	public BigDecimal retrieveSOCreditUsed(@NonNull final IBPartnerStats bpStats)
 	{
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
-
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		final Properties ctx = InterfaceWrapperHelper.getCtx(stats);
 
 		BigDecimal SO_CreditUsed = null;
 
-		final int targetCurrencyId = Services.get(ICurrencyBL.class).getBaseCurrency(ctx).getC_Currency_ID();
-		final Object[] sqlParams = new Object[] {targetCurrencyId, targetCurrencyId, targetCurrencyId, stats.getC_BPartner_ID() };
+		final Object[] sqlParams = new Object[] {stats.getC_BPartner_ID() };
 		final String sql = "SELECT "
 				// open invoices
-				+ "COALESCE((SELECT SUM(currencyBase(invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID),?,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)) FROM C_Invoice_v i "
+				+ "COALESCE((SELECT SUM(currencyBase(invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID),i.C_Currency_ID,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)) FROM C_Invoice_v i "
 				+ "WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.IsSOTrx='Y' AND i.IsPaid='N' AND i.DocStatus IN ('CO','CL')),0), "
 				// unallocated payments
-				+ "COALESCE((SELECT SUM(currencyBase(Paymentavailable(p.C_Payment_ID),?,p.DateTrx,p.AD_Client_ID,p.AD_Org_ID)) FROM C_Payment_v p "
+				+ "COALESCE((SELECT SUM(currencyBase(Paymentavailable(p.C_Payment_ID),p.C_Currency_ID,p.DateTrx,p.AD_Client_ID,p.AD_Org_ID)) FROM C_Payment_v p "
 				+ "WHERE p.C_BPartner_ID=bp.C_BPartner_ID AND p.IsAllocated='N'"
 				+ " AND p.C_Charge_ID IS NULL AND p.DocStatus IN ('CO','CL')),0)*(-1), "
 				// open invoice candidates
-				+ "COALESCE((SELECT SUM(currencyBase(ic.NetAmtToInvoice,?,ic.DateOrdered, ic.AD_Client_ID,ic.AD_Org_ID)) FROM C_Invoice_Candidate ic "
+				+ "COALESCE((SELECT SUM(currencyBase(ic.NetAmtToInvoice,ic.C_Currency_ID,ic.DateOrdered, ic.AD_Client_ID,ic.AD_Org_ID)) FROM C_Invoice_Candidate ic "
 				+ "WHERE ic.Bill_BPartner_ID=bp.C_BPartner_ID AND ic.Processed='N'),0) "
 				+ "FROM C_BPartner bp " + "WHERE C_BPartner_ID=?";
 		PreparedStatement pstmt = null;
@@ -186,8 +172,16 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			DB.close(rs, pstmt);
 		}
 
-		stats.setSO_CreditUsed(SO_CreditUsed);
+		return SO_CreditUsed;
+	}
 
+
+	@Override
+	public void updateSOCreditUsed(final IBPartnerStats bpStats)
+	{
+		final BigDecimal SO_CreditUsed = retrieveSOCreditUsed(bpStats);
+		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
+		stats.setSO_CreditUsed(SO_CreditUsed);
 		InterfaceWrapperHelper.save(stats);
 	}
 
@@ -258,7 +252,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		}
 
 		// Above Credit Limit
-		if (creditLimit.compareTo(retrieveOpenItems(bpStats)) < 0)
+		if (creditLimit.compareTo(retrieveSOCreditUsed(bpStats)) < 0)
 		{
 			creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold;
 		}

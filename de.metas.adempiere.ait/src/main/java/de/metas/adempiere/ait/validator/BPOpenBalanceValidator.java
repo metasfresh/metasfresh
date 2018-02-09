@@ -10,12 +10,12 @@ package de.metas.adempiere.ait.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -59,7 +59,7 @@ public class BPOpenBalanceValidator implements ModelValidator
 		return instance;
 	}
 
-	private final Map<Integer, BPAmounts> map = new HashMap<Integer, BPOpenBalanceValidator.BPAmounts>();
+	private final Map<Integer, BPAmounts> map = new HashMap<>();
 	private int clientId = -1;
 	private boolean isRegistered = false;
 
@@ -70,15 +70,19 @@ public class BPOpenBalanceValidator implements ModelValidator
 	public void register()
 	{
 		if (isRegistered)
+		{
 			return;
+		}
 		ModelValidationEngine.get().addModelValidator(this, null);
 	}
 
 	@Override
-	public void initialize(ModelValidationEngine engine, MClient client)
+	public void initialize(final ModelValidationEngine engine, final MClient client)
 	{
 		if (client != null)
+		{
 			this.clientId = client.getAD_Client_ID();
+		}
 
 		engine.addDocValidate(I_C_Invoice.Table_Name, this);
 		engine.addDocValidate(I_C_Payment.Table_Name, this);
@@ -92,23 +96,23 @@ public class BPOpenBalanceValidator implements ModelValidator
 	}
 
 	@Override
-	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
+	public String login(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		return null;
 	}
 
 	@Override
-	public String modelChange(PO po, int type) throws Exception
+	public String modelChange(final PO po, final int type) throws Exception
 	{
 		return null;
 	}
 
 	@Override
-	public String docValidate(PO po, int timing)
+	public String docValidate(final PO po, final int timing)
 	{
 		if (I_C_Invoice.Table_Name.equals(po.get_TableName()))
 		{
-			MInvoice invoice = (MInvoice)po;
+			final MInvoice invoice = (MInvoice)po;
 			if (timing == TIMING_BEFORE_COMPLETE)
 			{
 				recordState(invoice.getC_BPartner());
@@ -133,18 +137,18 @@ public class BPOpenBalanceValidator implements ModelValidator
 		return null;
 	}
 
-	private void recordState(I_C_BPartner bpartner)
+	private void recordState(final I_C_BPartner bpartner)
 	{
 		updateFrom(bpartner);
 	}
 
-	private void afterInvoiceComplete(MInvoice invoice)
+	private void afterInvoiceComplete(final MInvoice invoice)
 	{
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 		final I_C_BPartner bp = invoice.getC_BPartner();
 		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(bp);
-		BPAmounts bpAmt = getBPAmounts(bp);
+		final BPAmounts bpAmt = getBPAmounts(bp);
 
 		//
 		// Check: BP amounts
@@ -154,22 +158,22 @@ public class BPOpenBalanceValidator implements ModelValidator
 			invoiceAmtAbs = invoiceAmtAbs.negate();
 		}
 
-		final BigDecimal totalOpenBalanceExpected = bpAmt.soCreditUsed.add(invoiceAmtAbs);
+		final BigDecimal creditUsedExpected = bpAmt.soCreditUsed.add(invoiceAmtAbs);
 		final BigDecimal actualLifeTimeValueExpected = bpAmt.actualLifeTimeValue.add(invoice.isSOTrx() ? invoiceAmtAbs : BigDecimal.ZERO);
 
 		InterfaceWrapperHelper.refresh(bp);
-		assertThat("BP open amount is not correct after invoice " + invoice, stats.getOpenItems(), comparesEqualTo(totalOpenBalanceExpected));
+		assertThat("BP open amount is not correct after invoice " + invoice, stats.getSOCreditUsed(), comparesEqualTo(creditUsedExpected));
 		assertThat("BP lifetime value is not correct after invoice " + invoice, stats.getActualLifeTimeValue(), comparesEqualTo(actualLifeTimeValueExpected));
 
 		updateFrom(bpAmt, stats);
 	}
 
-	private void afterPaymentComplete(I_C_Payment payment)
+	private void afterPaymentComplete(final I_C_Payment payment)
 	{
 		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(payment.getC_BPartner());
 
 		final I_C_BPartner bp = payment.getC_BPartner();
-		BPAmounts bpAmt = getBPAmounts(bp);
+		final BPAmounts bpAmt = getBPAmounts(bp);
 
 		if (!payment.isPrepayment())
 		{
@@ -178,16 +182,18 @@ public class BPOpenBalanceValidator implements ModelValidator
 
 		BigDecimal payAmtAbs = payment.getPayAmt();
 		if (!payment.isReceipt())
+		{
 			payAmtAbs = payAmtAbs.negate();
+		}
 
 		final BigDecimal creditUsedExpected = bpAmt.soCreditUsed.subtract(payAmtAbs);
 		InterfaceWrapperHelper.refresh(bp);
-		assertThat("BP open amount is not correct after payment " + payment, stats.getOpenItems(), comparesEqualTo(creditUsedExpected));
+		assertThat("BP open amount is not correct after payment " + payment, stats.getSOCreditUsed(), comparesEqualTo(creditUsedExpected));
 
 		updateFrom(bpAmt, stats);
 	}
 
-	private void updateFrom(I_C_BPartner bp)
+	private void updateFrom(final I_C_BPartner bp)
 	{
 		Assert.assertNotNull(bp);
 		Assert.assertTrue(bp.getC_BPartner_ID() > 0);
@@ -205,16 +211,16 @@ public class BPOpenBalanceValidator implements ModelValidator
 
 	private void updateFrom(final BPAmounts bpAmt, final IBPartnerStats stats)
 	{
-		bpAmt.soCreditUsed = stats.getOpenItems();
+		bpAmt.soCreditUsed = stats.getSOCreditUsed();
 		bpAmt.actualLifeTimeValue = stats.getActualLifeTimeValue();
 	}
 
-	private BPAmounts getBPAmounts(I_C_BPartner bp)
+	private BPAmounts getBPAmounts(final I_C_BPartner bp)
 	{
 		Assert.assertNotNull(bp);
 		Assert.assertTrue(bp.getC_BPartner_ID() > 0);
 
-		BPAmounts bpAmt = map.get(bp.getC_BPartner_ID());
+		final BPAmounts bpAmt = map.get(bp.getC_BPartner_ID());
 		Assert.assertNotNull("No BPAmounts found for " + bp, bpAmt);
 		return bpAmt;
 

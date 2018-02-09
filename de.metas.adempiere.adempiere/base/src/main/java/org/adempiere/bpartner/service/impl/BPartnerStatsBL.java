@@ -66,7 +66,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 		// Above (reduced) Credit Limit
 		creditLimit = creditLimit.subtract(additionalAmt);
-		if (creditLimit.compareTo(bpStatsDAO.retrieveOpenItems(bpStats)) < 0)
+		if (creditLimit.compareTo(bpStatsDAO.retrieveSOCreditUsed(bpStats)) < 0)
 		{
 			return X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold;
 		}

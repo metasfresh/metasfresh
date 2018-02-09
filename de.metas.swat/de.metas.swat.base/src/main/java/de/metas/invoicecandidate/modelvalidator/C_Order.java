@@ -35,7 +35,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -47,7 +46,6 @@ import org.compiere.model.X_C_Order;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import lombok.NonNull;
 
@@ -74,7 +72,7 @@ public class C_Order
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.load(order.getC_BPartner_ID(), I_C_BPartner.class);
 		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
-		final BigDecimal totalOpenBalance = stats.getOpenItems();
+		final BigDecimal crediUsed = stats.getSOCreditUsed();
 		final String soCreditStatus = stats.getSOCreditStatus();
 
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
@@ -82,15 +80,15 @@ public class C_Order
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 		{
-			final String msg = "@BPartnerCreditStop@ - @TotalOpenBalance@="
-					+ totalOpenBalance
+			final String msg = "@BPartnerCreditStop@ - @SOCreditUsed@="
+					+ crediUsed
 					+ ", @SO_CreditLimit@=" + creditLimit;
 			throw new AdempiereException(msg);
 		}
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
 		{
-			final String msg = "@BPartnerCreditHold@ - @TotalOpenBalance@="
-					+ totalOpenBalance
+			final String msg = "@BPartnerCreditHold@ - @SOCreditUsed@="
+					+ crediUsed
 					+ ", @SO_CreditLimit@=" + creditLimit;
 			throw new AdempiereException(msg);
 		}
@@ -99,13 +97,12 @@ public class C_Order
 				order.getGrandTotal(), order.getC_Currency_ID(), order.getDateOrdered(),
 				order.getC_ConversionType_ID(), order.getAD_Client_ID(), order.getAD_Org_ID());
 
-		final BigDecimal openOrdersAmt = Services.get(IInvoiceCandDAO.class).retrieveInvoicableAmount(partner, SystemTime.asDayTimestamp());
-		final String calculatedSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, grandTotal.add(openOrdersAmt));
+		final String calculatedSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, grandTotal);
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedSOCreditStatus))
 		{
-			final String msg = "@BPartnerOverOCreditHold@ - @TotalOpenBalance@="
-					+ totalOpenBalance.add(openOrdersAmt) + ", @GrandTotal@=" + grandTotal
+			final String msg = "@BPartnerOverOCreditHold@-@SO_CreditUsed@="
+					+ crediUsed + ", @GrandTotal@=" + grandTotal
 					+ ", @SO_CreditLimit@=" + creditLimit;
 			throw new AdempiereException(msg);
 		}
