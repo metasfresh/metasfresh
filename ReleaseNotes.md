@@ -90,6 +90,7 @@ Here come the actual release notes:
   * [#1566](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1566) Subtab Data not shown when clicked first time
     * Fixes a Refresh Bug in Subtab data. Now showing the actual data already when opening the subtab first time.
   * [#1570](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1570) views: fails when applying a filter without parameters
+    * Fixes the Filter. Now does not fail when applied without filter criteria.
     
 # metasfresh 5.42 (2018-05)
 **release for week 2018-05**
