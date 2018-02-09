@@ -114,4 +114,6 @@ public interface IWarehouseDAO extends ISingletonService
 	WarehousePickingGroup getWarehousePickingGroupContainingWarehouseId(int warehouseId);
 
 	int retrieveLocatorIdByBarcode(String barcode);
+
+	int retrieveOrgIdByLocatorId(int locatorId);
 }

@@ -47,6 +47,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
+import org.compiere.util.DB;
 import org.eevolution.model.I_M_Warehouse_Routing;
 
 import com.google.common.collect.ImmutableList;
@@ -304,5 +305,12 @@ public class WarehouseDAO implements IWarehouseDAO
 		{
 			throw new AdempiereException("Invalid locator barcode: " + barcode, ex);
 		}
+	}
+
+	@Override
+	public int retrieveOrgIdByLocatorId(final int locatorId)
+	{
+		final String sql = "SELECT AD_Org_ID FROM M_Locator WHERE M_Locator_ID=?";
+		return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, locatorId);
 	}
 }
