@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -24,10 +24,9 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
@@ -39,6 +38,7 @@ import org.slf4j.Logger;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
+import lombok.ToString;
 
 /**
  * Accounting Fact
@@ -567,7 +567,7 @@ public final class Fact
 			{
 				continue;
 			}
-			
+
 			final BigDecimal amt = l.getAcctBalance().abs();
 			if (l.isBalanceSheet() && amt.compareTo(BSamount) > 0)
 			{
@@ -604,7 +604,7 @@ public final class Fact
 			// Switch sides
 			boolean switchIt = BSline != null
 					&& ((BSline.isDrSourceBalance() && isDR)
-					|| (!BSline.isDrSourceBalance() && !isDR));
+							|| (!BSline.isDrSourceBalance() && !isDR));
 			if (switchIt)
 			{
 				drAmt = BigDecimal.ZERO;
@@ -655,14 +655,14 @@ public final class Fact
 		for (int i = 0; i < m_lines.size(); i++)
 		{
 			final FactLine line = m_lines.get(i);
-			
+
 			final MAccount account = line.getAccount();
 			if (account == null)
 			{
 				log.warn("No Account for " + line);
 				return false;
 			}
-			
+
 			final I_C_ElementValue ev = account.getAccount();
 			if (ev == null)
 			{
@@ -694,7 +694,7 @@ public final class Fact
 	{
 		final List<FactLine> linesAfterDistribution = FactGLDistributor.newInstance()
 				.distribute(m_lines);
-		
+
 		m_lines = linesAfterDistribution;
 		// TODO
 	}
@@ -752,7 +752,7 @@ public final class Fact
 	{
 		return m_trxName;
 	}	// getTrxName
-	
+
 	public void forEach(final Consumer<FactLine> consumer)
 	{
 		m_lines.forEach(consumer);
@@ -856,11 +856,11 @@ public final class Fact
 		} // toString
 	}	// Balance
 
+	@ToString(exclude = "fact")
 	public static final class FactLineBuilder
 	{
 		private boolean built = false;
 
-		@ToStringBuilder(skip = true)
 		private final Fact fact;
 		private DocLine<?> docLine = null;
 		private Integer subLineId = null;
@@ -874,12 +874,13 @@ public final class Fact
 
 		private BigDecimal qty = null;
 		private int uomId;
-		
+
 		// Other dimensions
 		private Integer AD_Org_ID;
 		private Integer C_BPartner_ID;
 		private Integer C_Tax_ID;
-		
+		private Integer locatorId;
+		private Integer activityId;
 
 		private FactLineBuilder(final Fact fact)
 		{
@@ -912,8 +913,7 @@ public final class Fact
 			final MAccount account = getAccount();
 			if (account == null)
 			{
-				log.info("No account for {}", this);
-				return null;
+				throw new AdempiereException("No account for " + this);
 			}
 
 			//
@@ -932,7 +932,7 @@ public final class Fact
 			{
 				line.setSubLine_ID(subLine_ID);
 			}
-			
+
 			// Account
 			line.setPostingType(getPostingType());
 			line.setAccount(getC_AcctSchema(), account);
@@ -945,7 +945,7 @@ public final class Fact
 				line.setQty(qty);
 			}
 			final int uomId = getUomId();
-			if(uomId > 0)
+			if (uomId > 0)
 			{
 				line.setC_UOM_ID(uomId);
 			}
@@ -984,9 +984,16 @@ public final class Fact
 			{
 				line.setAmtAcct(docLine.getAmtAcctDr(), docLine.getAmtAcctCr());
 			}
-			
+
 			//
 			// Set the other dimensions
+			final Integer locatorId = getLocatorId();
+			if (locatorId != null)
+			{
+				// NOTE: set locator before org because when locator is set, the org is reset.
+				line.setM_Locator_ID(locatorId);
+			}
+			//
 			final Integer adOrgId = getAD_Org_ID();
 			if (adOrgId != null)
 			{
@@ -1004,6 +1011,12 @@ public final class Fact
 			{
 				line.setC_Tax_ID(taxId);
 			}
+			//
+			final Integer activityId = getActivityId();
+			if (activityId != null)
+			{
+				line.setC_Activity_ID(activityId);
+			}
 
 			//
 			log.debug("Built: {}", line);
@@ -1019,12 +1032,6 @@ public final class Fact
 		{
 			assertNotBuild();
 			built = true;
-		}
-
-		@Override
-		public String toString()
-		{
-			return ObjectUtils.toString(this);
 		}
 
 		public FactLineBuilder setAccount(MAccount account)
@@ -1057,13 +1064,13 @@ public final class Fact
 		{
 			return docLine;
 		}
-		
+
 		public final FactLineBuilder setSubLine_ID(final int subLineId)
 		{
 			this.subLineId = subLineId;
 			return this;
 		}
-		
+
 		private final Integer getSubLine_ID()
 		{
 			return subLineId;
@@ -1090,7 +1097,7 @@ public final class Fact
 			this.qty = qty;
 			return this;
 		}
-		
+
 		public FactLineBuilder setQty(final Quantity qty)
 		{
 			assertNotBuild();
@@ -1103,7 +1110,7 @@ public final class Fact
 		{
 			return qty;
 		}
-		
+
 		private int getUomId()
 		{
 			return uomId;
@@ -1130,19 +1137,19 @@ public final class Fact
 			this.currencyId = currencyId;
 			return this;
 		}
-		
+
 		private final int getC_Currency_ID()
 		{
 			return currencyId;
 		}
-		
+
 		public FactLineBuilder setCurrencyConversionCtx(ICurrencyConversionContext currencyConversionCtx)
 		{
 			assertNotBuild();
 			this.currencyConversionCtx = currencyConversionCtx;
 			return this;
 		}
-		
+
 		private final ICurrencyConversionContext getCurrencyConversionCtx()
 		{
 			return currencyConversionCtx;
@@ -1190,7 +1197,7 @@ public final class Fact
 			}
 			return this;
 		}
-		
+
 		public FactLineBuilder setAD_Org_ID(Integer adOrgId)
 		{
 			assertNotBuild();
@@ -1201,7 +1208,7 @@ public final class Fact
 		public FactLineBuilder setAD_Org_ID_IfValid(final int adOrgId)
 		{
 			assertNotBuild();
-			if(adOrgId > 0 && adOrgId != Env.CTXVALUE_AD_Org_ID_System)
+			if (adOrgId > 0 && adOrgId != Env.CTXVALUE_AD_Org_ID_System)
 			{
 				setAD_Org_ID(adOrgId);
 			}
@@ -1212,7 +1219,7 @@ public final class Fact
 		{
 			return AD_Org_ID;
 		}
-		
+
 		public FactLineBuilder setC_BPartner_ID(Integer bpartnerId)
 		{
 			assertNotBuild();
@@ -1228,24 +1235,48 @@ public final class Fact
 				setC_BPartner_ID(bpartnerId);
 			}
 			return this;
-			
+
 		}
 
 		private Integer getC_BPartner_ID()
 		{
 			return C_BPartner_ID;
 		}
-		
+
 		public FactLineBuilder setC_Tax_ID(Integer taxId)
 		{
 			assertNotBuild();
 			this.C_Tax_ID = taxId;
 			return this;
 		}
-		
+
 		private Integer getC_Tax_ID()
 		{
 			return C_Tax_ID;
+		}
+
+		public FactLineBuilder locatorId(final int locatorId)
+		{
+			assertNotBuild();
+			this.locatorId = locatorId;
+			return this;
+		}
+
+		private Integer getLocatorId()
+		{
+			return locatorId;
+		}
+
+		public FactLineBuilder activityId(final int activityId)
+		{
+			assertNotBuild();
+			this.activityId = activityId;
+			return this;
+		}
+
+		private Integer getActivityId()
+		{
+			return activityId;
 		}
 	}
 }   // Fact
