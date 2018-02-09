@@ -39,6 +39,7 @@ import org.adempiere.ad.persistence.IModelClassInfo;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -58,6 +59,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
@@ -102,7 +104,7 @@ public class InterfaceWrapperHelper
 		return org.compiere.Adempiere.isUnitTestMode();
 	}
 
-	public static final void registerHelper(IInterfaceWrapperHelper helper)
+	public static final void registerHelper(final IInterfaceWrapperHelper helper)
 	{
 		helpers.addFactory(helper);
 	}
@@ -517,15 +519,7 @@ public class InterfaceWrapperHelper
 
 	public static void save(final Object model)
 	{
-		final Object modelToSave;
-		if (model instanceof IModelWrapper)
-		{
-			modelToSave = ((IModelWrapper)model).getModel();
-		}
-		else
-		{
-			modelToSave = model;
-		}
+		final Object modelToSave = extractModelToSave(model);
 
 		if (modelToSave == null)
 		{
@@ -546,9 +540,24 @@ public class InterfaceWrapperHelper
 		}
 		else
 		{
-			final AdempiereException ex = new AdempiereException("PO not handled: " + modelToSave + "(class=" + modelToSave.getClass() + "). Ignored.");
-			logger.error(ex.getLocalizedMessage(), ex);
+			final AdempiereException ex = new AdempiereException("Model not handled: " + modelToSave + "(class=" + modelToSave.getClass() + "). Ignored.");
+			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(ex);
+			logger.warn("Could not save the given model; message={}; AD_Issue_ID={}", ex.getLocalizedMessage(), issue.getAD_Issue_ID());
 		}
+	}
+
+	private static Object extractModelToSave(final Object model)
+	{
+		final Object modelToSave;
+		if (model instanceof IModelWrapper)
+		{
+			modelToSave = ((IModelWrapper)model).getModel();
+		}
+		else
+		{
+			modelToSave = model;
+		}
+		return modelToSave;
 	}
 
 	public static void save(final Object model, final String trxName)

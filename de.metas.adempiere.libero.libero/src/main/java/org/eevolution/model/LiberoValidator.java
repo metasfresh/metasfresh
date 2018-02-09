@@ -31,6 +31,7 @@ import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
+import org.compiere.util.CacheMgt;
 import org.compiere.util.Env;
 import org.eevolution.mrp.jmx.JMXMRPStatus;
 
@@ -102,6 +103,8 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	{
 		cachingService.addTableCacheConfigIfAbsent(I_S_Resource.class);
 		cachingService.addTableCacheConfigIfAbsent(I_S_ResourceType.class);
+		
+		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_PP_Order.Table_Name);
 	}
 
 	private void setupJMX()
