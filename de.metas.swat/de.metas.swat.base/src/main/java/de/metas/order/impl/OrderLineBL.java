@@ -467,6 +467,7 @@ public class OrderLineBL implements IOrderLineBL
 	public I_C_OrderLine createOrderLine(final org.compiere.model.I_C_Order order)
 	{
 		final I_C_OrderLine ol = newInstance(I_C_OrderLine.class, order);
+		ol.setC_Order(order);
 		setOrder(ol, order);
 
 		if (order.isSOTrx() && order.isDropShip())

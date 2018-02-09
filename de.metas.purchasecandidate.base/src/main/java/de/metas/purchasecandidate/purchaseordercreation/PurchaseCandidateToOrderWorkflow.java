@@ -1,6 +1,8 @@
 package de.metas.purchasecandidate.purchaseordercreation;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
@@ -56,12 +58,13 @@ import lombok.NonNull;
 
 public class PurchaseCandidateToOrderWorkflow
 {
-
 	private static final Logger logger = LogManager.getLogger(PurchaseCandidateToOrderWorkflow.class);
 
 	private final PurchaseCandidateRepository purchaseCandidateRepo;
 	private final VendorGatewayInvokerFactory vendorGatewayInvokerFactory;
 	private final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator;
+
+	private final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
 
 	@Builder
 	private PurchaseCandidateToOrderWorkflow(
@@ -86,6 +89,16 @@ public class PurchaseCandidateToOrderWorkflow
 		CompletableFuture
 				.allOf(futures)
 				.join();
+
+		if (exceptions.isEmpty())
+		{
+			return;
+		}
+
+		final AdempiereException runtimeException = //
+				new AdempiereException("Creating remove purchase orders failed for at least one vendorId");
+		exceptions.forEach(runtimeException::addSuppressed);
+		throw runtimeException;
 	}
 
 	private void assertCandidatesValid(@NonNull final List<PurchaseCandidate> purchaseCandidates)
@@ -195,10 +208,11 @@ public class PurchaseCandidateToOrderWorkflow
 			for (final PurchaseCandidate purchaseCandidate : purchaseCandidates)
 			{
 				purchaseCandidate.createErrorItem()
-						.throwable(throwable)
-						.buildAndAdd();
+						.throwable(throwable).buildAndAdd();
 			}
+
 			purchaseCandidateRepo.saveAll(purchaseCandidates);
+			exceptions.add(throwable);
 
 			return null;
 		};

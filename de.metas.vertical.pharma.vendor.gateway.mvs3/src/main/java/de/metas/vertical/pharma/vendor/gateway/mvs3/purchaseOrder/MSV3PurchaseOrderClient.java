@@ -73,6 +73,8 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 
 	private JAXBElement<Bestellen> purchaseOrderRequestPayload;
 
+	private int orgId;
+
 	@Builder
 	private MSV3PurchaseOrderClient(
 			@NonNull final MSV3ConnectionFactory connectionFactory,
@@ -105,10 +107,12 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 
 		purchaseOrderRequestPayload = objectFactory.createBestellen(bestellen);
 
+		orgId = request.getOrgId();
+
 		return this;
 	}
 
-	public RemotePurchaseOrderCreated placeOrder(@NonNull final PurchaseOrderRequest request)
+	public RemotePurchaseOrderCreated placeOrder()
 	{
 		try
 		{
@@ -116,7 +120,7 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 
 			final MSV3PurchaseOrderTransaction purchaseTransaction = //
 					MSV3PurchaseOrderTransaction.builder()
-							.orgId(request.getOrgId())
+							.orgId(orgId)
 							.bestellung(purchaseOrderRequestPayload.getValue().getBestellung())
 							.build();
 
@@ -147,6 +151,8 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 	{
 		bestellungPosition2RequestItem = null;
 		purchaseOrderRequestPayload = null;
+		orgId = -1;
+
 		return this;
 	}
 

@@ -55,13 +55,16 @@ import lombok.NonNull;
 /* package */ final class PurchaseOrderFromItemFactory
 {
 	@VisibleForTesting
-	final static String MSG_Different_DatePromised = "Event_PurchaseOrderCreated_Different_DatePromised";
+	final static String MSG_Different_DatePromised = //
+			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_DatePromised";
 
 	@VisibleForTesting
-	final static String MSG_Different_Quantity = "Event_PurchaseOrderCreated_Different_Quantity";
+	final static String MSG_Different_Quantity = //
+			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity";
 
 	@VisibleForTesting
-	final static String MSG_Different_Quantity_AND_DatePromised = "Event_PurchaseOrderCreated_Different_Quantity_And_DatePromised";
+	final static String MSG_Different_Quantity_AND_DatePromised = //
+			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity_And_DatePromised";
 
 	private final OrderFactory orderFactory;
 	private final IdentityHashMap<PurchaseOrderItem, OrderLineBuilder> purchaseItem2OrderLineBuilder = new IdentityHashMap<>();

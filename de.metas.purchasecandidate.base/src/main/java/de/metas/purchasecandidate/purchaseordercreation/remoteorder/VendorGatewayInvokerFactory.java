@@ -52,6 +52,7 @@ public class VendorGatewayInvokerFactory
 		if (vendorGatewayService.isPresent())
 		{
 			return RealVendorGatewayInvoker.builder()
+					.orgId(orgId)
 					.vendorBPartnerId(vendorBPartnerId)
 					.vendorGatewayService(vendorGatewayService.get())
 					.build();

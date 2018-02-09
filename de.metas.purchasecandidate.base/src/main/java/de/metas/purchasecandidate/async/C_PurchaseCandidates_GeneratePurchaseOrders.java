@@ -8,6 +8,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -80,21 +81,26 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 				.setElementsLocker(elementsLocker)
 				.bindToThreadInheritedTrx()
 				.addElements(purchaseCandidateRecords)
+				.setUserInChargeId(Env.getAD_User_ID())
 				.build();
 	}
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
-		final PurchaseCandidateRepository purchaseCandidateRepo = Adempiere.getBean(PurchaseCandidateRepository.class);
-		final VendorGatewayInvokerFactory vendorGatewayInvokerFactory = Adempiere.getBean(VendorGatewayInvokerFactory.class);
+		final PurchaseCandidateRepository purchaseCandidateRepo = //
+				Adempiere.getBean(PurchaseCandidateRepository.class);
+		final VendorGatewayInvokerFactory vendorGatewayInvokerFactory = //
+				Adempiere.getBean(VendorGatewayInvokerFactory.class);
 
-		final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator = PurchaseOrderFromItemsAggregator.newInstance();
+		final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator = //
+				PurchaseOrderFromItemsAggregator.newInstance();
 
 		PurchaseCandidateToOrderWorkflow.builder()
 				.purchaseCandidateRepo(purchaseCandidateRepo)
 				.vendorGatewayInvokerFactory(vendorGatewayInvokerFactory)
-				.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator).build()
+				.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator)
+				.build()
 				.executeForPurchaseCandidates(getPurchaseCandidates());
 
 		return Result.SUCCESS;

@@ -107,7 +107,7 @@ public class MSV3PurchaseOrderClientTest
 				.andRespond(ResponseCreators.withPayload(responsePayload));
 
 		// invoke the method under test
-		final RemotePurchaseOrderCreated purchaseOrderResponse = msv3PurchaseOrderClient.placeOrder(request);
+		final RemotePurchaseOrderCreated purchaseOrderResponse = msv3PurchaseOrderClient.placeOrder();
 
 		assertThat(purchaseOrderResponse).isNotNull();
 		assertThat(purchaseOrderResponse.getException()).isNull();

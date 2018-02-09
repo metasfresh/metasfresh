@@ -80,7 +80,7 @@ public class MSV3VendorGatewayService implements VendorGatewayService
 				.config(config)
 				.connectionFactory(connectionFactory).build();
 
-		return client.placeOrder(request);
+		return client.prepare(request).placeOrder();
 	}
 
 	@Override
