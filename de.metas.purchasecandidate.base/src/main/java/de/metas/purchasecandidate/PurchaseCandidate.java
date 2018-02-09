@@ -157,10 +157,13 @@ public class PurchaseCandidate
 		return new PurchaseCandidate(this);
 	}
 
+	/**
+	 * Flags this instance as processed, so no more changes can be made.<br>
+	 * Does not persist this instance!
+	 */
 	public void markProcessed()
 	{
 		Check.assume(!state.isProcessed(), "already processed: {}", this);
-
 		state.setProcessed();
 	}
 
@@ -311,5 +314,12 @@ public class PurchaseCandidate
 			parent.purchaseOrderItems.add(newItem);
 			return newItem;
 		}
+	}
+
+	public BigDecimal getPurchasedQty()
+	{
+		return purchaseOrderItems.stream()
+				.map(PurchaseOrderItem::getPurchasedQty)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 }

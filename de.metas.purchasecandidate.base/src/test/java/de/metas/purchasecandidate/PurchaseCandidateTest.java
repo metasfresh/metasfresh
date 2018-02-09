@@ -1,5 +1,7 @@
 package de.metas.purchasecandidate;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -68,7 +70,7 @@ public class PurchaseCandidateTest
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 
-		final BigDecimal newQtyRequired = candidate.getQtyToPurchase().add(BigDecimal.ONE);
+		final BigDecimal newQtyRequired = candidate.getQtyToPurchase().add(ONE);
 		candidate.setQtyToPurchase(newQtyRequired);
 
 		assertThat(candidate.hasChanges()).isTrue();
@@ -129,19 +131,34 @@ public class PurchaseCandidateTest
 				.createPurchaseCandidate(20);
 
 		candidate1.createOrderItem()
-				.purchasedQty(BigDecimal.TEN)
+				.purchasedQty(TEN)
 				.datePromised(SystemTime.asTimestamp())
 				.remotePurchaseOrderId("remotePurchaseOrderId")
 				.transactionReference(TableRecordReference.of(I_AD_Table.Table_Name, 30))
 				.buildAndAddToParent();
 
+		candidate1.createOrderItem()
+				.purchasedQty(ONE)
+				.datePromised(SystemTime.asTimestamp())
+				.remotePurchaseOrderId("remotePurchaseOrderId-2")
+				.transactionReference(TableRecordReference.of(I_AD_Table.Table_Name, 40))
+				.buildAndAddToParent();
+
 		assertThat(candidate1.getPurchaseErrorItems()).isEmpty();
 		final List<PurchaseOrderItem> purchaseOrderItems = candidate1.getPurchaseOrderItems();
-		assertThat(purchaseOrderItems).hasSize(1);
+		assertThat(purchaseOrderItems).hasSize(2);
+		assertThat(candidate1.getPurchasedQty()).isEqualByComparingTo(TEN.add(ONE));
 
-		final PurchaseOrderItem purchaseOrderItem = purchaseOrderItems.get(0);
-		assertThat(purchaseOrderItem.getOrgId()).isEqualTo(candidate1.getOrgId());
-		assertThat(purchaseOrderItem.getPurchaseCandidateId()).isEqualTo(candidate1.getPurchaseCandidateId());
-		assertThat(purchaseOrderItem.getProductId()).isEqualTo(candidate1.getProductId());
+		final PurchaseOrderItem purchaseOrderItem1 = purchaseOrderItems.get(0);
+		assertThat(purchaseOrderItem1.getOrgId()).isEqualTo(candidate1.getOrgId());
+		assertThat(purchaseOrderItem1.getRemotePurchaseOrderId()).isEqualTo("remotePurchaseOrderId");
+		assertThat(purchaseOrderItem1.getPurchaseCandidateId()).isEqualTo(candidate1.getPurchaseCandidateId());
+		assertThat(purchaseOrderItem1.getProductId()).isEqualTo(candidate1.getProductId());
+
+		final PurchaseOrderItem purchaseOrderItem2 = purchaseOrderItems.get(1);
+		assertThat(purchaseOrderItem2.getOrgId()).isEqualTo(candidate1.getOrgId());
+		assertThat(purchaseOrderItem2.getRemotePurchaseOrderId()).isEqualTo("remotePurchaseOrderId-2");
+		assertThat(purchaseOrderItem2.getPurchaseCandidateId()).isEqualTo(candidate1.getPurchaseCandidateId());
+		assertThat(purchaseOrderItem2.getProductId()).isEqualTo(candidate1.getProductId());
 	}
 }

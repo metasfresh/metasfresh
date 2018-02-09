@@ -313,6 +313,7 @@ DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=560595
 -- remove C_PurchaseCandidate.C_OrderLinePO_ID
 --
 delete from ad_ui_element where (ad_field_id)=(560595)
+;
 
 -- 2018-02-08T15:21:40.295
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

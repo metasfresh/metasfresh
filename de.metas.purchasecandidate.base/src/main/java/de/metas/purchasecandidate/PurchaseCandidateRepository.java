@@ -1,5 +1,6 @@
 package de.metas.purchasecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
@@ -13,6 +14,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_OrderLine;
@@ -212,10 +214,21 @@ public class PurchaseCandidateRepository
 		purchaseCandidate.markSaved(record.getC_PurchaseCandidate_ID());
 	}
 
+	public PurchaseCandidate retrieveById(final int purchaseCandidateId)
+	{
+		Check.assume(purchaseCandidateId > 0, "The given parameter purchaseCandidateId > 0");
+
+		final I_C_PurchaseCandidate record = load(purchaseCandidateId, I_C_PurchaseCandidate.class);
+		Check.errorIf(record == null, "Unable to load I_C_PurchaseCandidate record for C_PurchaseCandidate_ID={}",
+				purchaseCandidateId);
+
+		return toPurchaseCandidate(record);
+	}
+
 	/**
 	 * Note to dev: keep in sync with {@link #save(PurchaseCandidate, I_C_PurchaseCandidate)}
 	 */
-	private PurchaseCandidate toPurchaseCandidate(final I_C_PurchaseCandidate purchaseCandidatePO)
+	private PurchaseCandidate toPurchaseCandidate(@NonNull final I_C_PurchaseCandidate purchaseCandidatePO)
 	{
 		final boolean locked = Services.get(ILockManager.class).isLocked(purchaseCandidatePO);
 

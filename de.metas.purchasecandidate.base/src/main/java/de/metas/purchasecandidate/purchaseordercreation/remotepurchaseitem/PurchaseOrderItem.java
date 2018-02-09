@@ -135,7 +135,11 @@ public class PurchaseOrderItem implements PurchaseItem
 		this.purchaseOrderId = load(purchaseOrderLineId, I_C_OrderLine.class).getC_Order_ID();
 		this.purchaseOrderLineId = purchaseOrderLineId;
 
-		purchaseCandidate.markProcessed();
+		final boolean purchaseMatchesOrExceedsRequiredQty = getPurchasedQty().compareTo(purchaseCandidate.getQtyToPurchase()) >= 0;
+		if (purchaseMatchesOrExceedsRequiredQty)
+		{
+			purchaseCandidate.markProcessed();
+		}
 	}
 
 	public boolean pruchaseMatchesRequiredQty()

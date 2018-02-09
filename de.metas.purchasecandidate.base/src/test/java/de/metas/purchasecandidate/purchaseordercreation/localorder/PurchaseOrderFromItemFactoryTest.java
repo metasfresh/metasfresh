@@ -81,9 +81,7 @@ public class PurchaseOrderFromItemFactoryTest
 			final IPair<String, Object[]> adMessageAndParams = request.getAdMessageAndParams();
 			assertThat(adMessageAndParams).isNotNull();
 			assertThat(adMessageAndParams.getLeft()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_DatePromised);
-			assertThat(adMessageAndParams.getRight()).hasSize(4);
-			assertThat(adMessageAndParams.getRight()[3]).isEqualTo(deviatingDatePromised);
-
+			assertThat(adMessageAndParams.getRight()).hasSize(3);
 		}};	// @formatter:on
 	}
 
@@ -124,8 +122,7 @@ public class PurchaseOrderFromItemFactoryTest
 			final IPair<String, Object[]> adMessageAndParams = request.getAdMessageAndParams();
 			assertThat(adMessageAndParams).isNotNull();
 			assertThat(adMessageAndParams.getLeft()).isEqualTo(PurchaseOrderFromItemFactory.MSG_Different_Quantity_AND_DatePromised);
-			assertThat(adMessageAndParams.getRight()).hasSize(4);
-			assertThat(adMessageAndParams.getRight()[3]).isEqualTo(deviatingDatePromised);
+			assertThat(adMessageAndParams.getRight()).hasSize(3);
 		}};	// @formatter:on
 	}
 

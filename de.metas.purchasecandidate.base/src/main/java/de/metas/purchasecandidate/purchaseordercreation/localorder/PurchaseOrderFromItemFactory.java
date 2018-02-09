@@ -123,6 +123,14 @@ import lombok.NonNull;
 		userNotifications.notifyOrderCompleted(request);
 	}
 
+	private void updatePurchaseCandidateFromOrderLineBuilder(
+			@NonNull final PurchaseOrderItem pruchaseOrderItem,
+			@NonNull final OrderLineBuilder orderLineBuilder)
+	{
+		pruchaseOrderItem
+				.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderLineId());
+	}
+
 	private IPair<String, Object[]> createMessageAndParamsOrNull(@NonNull final I_C_Order order)
 	{
 		boolean deviatingDatePromised = false;
@@ -175,14 +183,6 @@ import lombok.NonNull;
 		final Object[] params = new Object[] { TableRecordReference.of(order), bpValue, bpName };
 
 		return params;
-	}
-
-	private void updatePurchaseCandidateFromOrderLineBuilder(
-			@NonNull final PurchaseOrderItem pruchaseOrderItem,
-			@NonNull final OrderLineBuilder orderLineBuilder)
-	{
-		pruchaseOrderItem
-				.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderLineId());
 	}
 
 	private Set<Integer> getUserIdsToNotify()
