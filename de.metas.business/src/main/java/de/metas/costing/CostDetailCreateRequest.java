@@ -10,6 +10,7 @@ import org.adempiere.util.Check;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -35,6 +36,7 @@ import lombok.Value;
  */
 
 @Value
+@ToString(doNotUseGetters = true) // because we are throwing exception on some getters, see below...
 public class CostDetailCreateRequest
 {
 	int acctSchemaId;
