@@ -9,6 +9,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -46,18 +47,17 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class BPartnerCreditLimiRepository
 {
-	public BigDecimal retrieveCreditLimitByBPartnerId(final int bpartnerId)
+	public BigDecimal retrieveCreditLimitByBPartnerId(final int bpartnerId, final Timestamp date)
 	{
-		final Timestamp today = SystemTime.asDayTimestamp();
 
 		final I_C_BPartner_CreditLimit bpCreditLimit = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addValidFromToMatchesFilter(I_C_BPartner_CreditLimit.COLUMN_DateFrom, I_C_BPartner_CreditLimit.COLUMN_DateTo, today)
+				.addCompareFilter(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, Operator.LESS_OR_EQUAL, date)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.orderBy(I_C_BPartner_CreditLimit.COLUMNNAME_Type)
-				.orderBy(I_C_BPartner_CreditLimit.COLUMNNAME_DateTo)
+				.orderByDescending(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom)
 				.create()
 				.first();
 
@@ -74,7 +74,7 @@ public class BPartnerCreditLimiRepository
 	{
 		final  BigDecimal creditUsed = stats.getSOCreditUsed();
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartner.getC_BPartner_ID());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartner.getC_BPartner_ID(), SystemTime.asDayTimestamp());
 		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
 
 		final Locale locale = Locale.getDefault();

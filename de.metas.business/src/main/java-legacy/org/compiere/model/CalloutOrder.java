@@ -46,7 +46,9 @@ import de.metas.logging.MetasfreshLastError;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductBL;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Order Callouts. metas 24.09.2008: Aenderungen durchgefuehrt um das Verhalten bei der Auswahl von Liefer- und Rechnungsadressen (sowie Geschaeftspartnern) zu beeinflussen. So werden jetzt im Feld
@@ -454,10 +456,16 @@ public class CalloutOrder extends CalloutEngine
 				if (IsSOTrx)
 				{
 					final String creditStatus = rs.getString("SOCreditStatus");
-					if (isChkCreditLimit(C_BPartner_ID, creditStatus, true))
+					final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
+							.bpartnerId(C_BPartner_ID)
+							.creditStatus(creditStatus)
+							.evalCreditstatus(true)
+							.evaluationDate(order.getDateOrdered())
+							.build();
+					if (isChkCreditLimit(creditLimitRequest))
 					{
 						final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(C_BPartner_ID);
+						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(C_BPartner_ID, order.getDateOrdered());
 						final double creditUsed = rs.getDouble("SO_CreditUsed");
 						final BigDecimal CreditAvailable = creditLimit.subtract(BigDecimal.valueOf(creditUsed));
 						if (!rs.wasNull() && CreditAvailable.signum() < 0)
@@ -703,10 +711,16 @@ public class CalloutOrder extends CalloutEngine
 				if (IsSOTrx)
 				{
 					final String creditStatus = rs.getString("SOCreditStatus");
-					if (isChkCreditLimit(bill_BPartner_ID, creditStatus, false))
+					final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
+							.bpartnerId(bill_BPartner_ID)
+							.creditStatus(creditStatus)
+							.evalCreditstatus(false)
+							.evaluationDate(order.getDateOrdered())
+							.build();
+					if (isChkCreditLimit(creditLimitRequest))
 					{
 						final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bill_BPartner_ID);
+						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bill_BPartner_ID, order.getDateOrdered());
 						final double creditUsed = rs.getDouble("SO_CreditUsed");
 						final BigDecimal CreditAvailable = creditLimit.subtract(BigDecimal.valueOf(creditUsed));
 						if (!rs.wasNull() && CreditAvailable.signum() < 0)
@@ -1484,6 +1498,19 @@ public class CalloutOrder extends CalloutEngine
 		return;
 	}
 
+	@Builder
+	@Value
+	private static class CreditLimitRequest
+	{
+		final int bpartnerId;
+		@NonNull
+		final String creditStatus;
+		final boolean evalCreditstatus;
+		@NonNull
+		final Timestamp evaluationDate;
+	}
+
+
 	/**
 	 * Decides whether the business partner's credit limit should be checked.
 	 *
@@ -1493,10 +1520,15 @@ public class CalloutOrder extends CalloutEngine
 	 * @return
 	 * @throws SQLException if one is thrown while accessing the result set (in particular if evalCreditstatus is <code>true</code>, but the result set doesn't contain<code>"SOCreditStatus"</code>).
 	 */
-	private boolean isChkCreditLimit(final int bpartnerId, @NonNull final String creditStatus, final boolean evalCreditstatus) throws SQLException
+	private boolean isChkCreditLimit(@NonNull final CreditLimitRequest creditlimitrequest) throws SQLException
 	{
+		final int bpartnerId = creditlimitrequest.getBpartnerId();
+		final String creditStatus = creditlimitrequest.getCreditStatus();
+		final boolean evalCreditstatus = creditlimitrequest.isEvalCreditstatus();
+		final Timestamp evaluationDate = creditlimitrequest.getEvaluationDate();
+
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartnerId);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartnerId, evaluationDate);
 		boolean dontCheck = true;
 		if (evalCreditstatus)
 		{

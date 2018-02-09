@@ -15,6 +15,7 @@ import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
@@ -133,7 +134,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	{
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
-		final Properties ctx = InterfaceWrapperHelper.getCtx(stats);
 
 		BigDecimal SO_CreditUsed = null;
 
@@ -237,7 +237,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final I_C_BPartner partner = retrieveC_BPartner(bpStats);
 
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), SystemTime.asDayTimestamp());
 
 		final String initialCreditStatus = bpStats.getSOCreditStatus();
 
@@ -261,7 +261,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			// Above Watch Limit
 			final BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
 
-			if (watchAmt.compareTo(bpStats.getOpenItems()) < 0)
+			if (watchAmt.compareTo(bpStats.getSOCreditUsed())) < 0)
 			{
 				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
 			}

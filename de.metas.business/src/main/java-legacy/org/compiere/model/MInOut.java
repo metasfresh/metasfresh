@@ -1264,30 +1264,30 @@ public class MInOut extends X_M_InOut implements IDocument
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
 		final String soCreditStatus = stats.getSOCreditStatus();
-		final BigDecimal totalOpenBalance = stats.getOpenItems();
+		final BigDecimal creditUsed = stats.getSOCreditUsed();
 
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateReceived());
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 		{
-			throw new AdempiereException("@BPartnerCreditStop@ - @TotalOpenBalance@="
-					+ totalOpenBalance
+			throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
+					+ creditUsed
 					+ ", @SO_CreditLimit@=" + creditLimit);
 		}
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
 		{
-			throw new AdempiereException("@BPartnerCreditHold@ - @TotalOpenBalance@="
-					+ totalOpenBalance
+			throw new AdempiereException("@BPartnerCreditHold@ - @SO_CreditUsed@="
+					+ creditUsed
 					+ ", @SO_CreditLimit@=" + creditLimit);
 		}
 
 		final BigDecimal notInvoicedAmt = MBPartner.getNotInvoicedAmt(getC_BPartner_ID());
-		final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, notInvoicedAmt);
+		final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, notInvoicedAmt, getDateReceived());
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
-					+ totalOpenBalance + ", @NotInvoicedAmt@=" + notInvoicedAmt
+					+ creditUsed + ", @NotInvoicedAmt@=" + notInvoicedAmt
 					+ ", @SO_CreditLimit@=" + creditLimit);
 		}
 	}

@@ -1892,22 +1892,22 @@ public final class MPayment extends X_C_Payment
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
 		final String soCreditStatus = stats.getSOCreditStatus();
-		final BigDecimal totalOpenBalance = stats.getOpenItems();
+		final BigDecimal crediUsed = stats.getSOCreditUsed();
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateTrx());
 
 
-		if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getPayAmt(true)))
+		if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getPayAmt(true), getDateTrx()))
 		{
-			throw new AdempiereException("@BPartnerCreditStop@ - @TotalOpenBalance@="
-					+ stats.getOpenItems()
+			throw new AdempiereException("@BPartnerCreditStop@ - @SO_CreditUsed@="
+					+ stats.getSOCreditUsed()
 					+ ", @SO_CreditLimit@=" + creditLimit);
 		}
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
 		{
-			throw new AdempiereException("@BPartnerCreditHold@ - @TotalOpenBalance@="
-					+ totalOpenBalance
+			throw new AdempiereException("@BPartnerCreditHold@ - @SO_CreditUsed@="
+					+ crediUsed
 					+ ", @SO_CreditLimit@=" + creditLimit);
 		}
 	}
@@ -1988,36 +1988,8 @@ public final class MPayment extends X_C_Payment
 		// Update BP for Prepayments
 		if (getC_BPartner_ID() != 0 && getC_Invoice_ID() == 0 && getC_Charge_ID() == 0)
 		{
-			// task FRESH-152
-			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
-			final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
-
-			// Update total balance to include this payment
-			final BigDecimal payAmt = Services.get(ICurrencyBL.class).convertBase(getCtx(), getPayAmt(), getC_Currency_ID(), getDateAcct(), getC_ConversionType_ID(), getAD_Client_ID(), getAD_Org_ID());
-			if (payAmt == null)
-			{
-				m_processMsg = "Could not convert C_Currency_ID=" + getC_Currency_ID() + " to base C_Currency = "
-						+ Services.get(ICurrencyBL.class).getBaseCurrency(getCtx(), getAD_Client_ID(), getAD_Org_ID()).getISO_Code();
-				return IDocument.STATUS_Invalid;
-			}
-			// Total Balance
-			BigDecimal newBalance = stats.getOpenItems();
-
-			if (newBalance == null)
-			{
-				newBalance = BigDecimal.ZERO;
-			}
-			if (isReceipt())
-			{
-				newBalance = newBalance.subtract(payAmt);
-			}
-			else
-			{
-				newBalance = newBalance.add(payAmt);
-			}
-
-			//
 			// task FRESH-152. Update bpartner stats
+			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 			Services.get(IBPartnerStatisticsUpdater.class)
 					.updateBPartnerStatistics(getCtx(), Collections.singleton(partner.getC_BPartner_ID()), get_TrxName());
 		}

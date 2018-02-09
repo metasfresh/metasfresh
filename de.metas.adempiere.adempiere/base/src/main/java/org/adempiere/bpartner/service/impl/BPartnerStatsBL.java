@@ -1,6 +1,7 @@
 package org.adempiere.bpartner.service.impl;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
 import org.adempiere.bpartner.service.IBPartnerStats;
@@ -12,6 +13,8 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.Env;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,7 +41,7 @@ import org.compiere.util.Env;
 public class BPartnerStatsBL implements IBPartnerStatsBL
 {
 	@Override
-	public String calculateSOCreditStatus(final IBPartnerStats bpStats, final BigDecimal additionalAmt)
+	public String calculateSOCreditStatus(@NonNull final IBPartnerStats bpStats, @NonNull final BigDecimal additionalAmt, @NonNull final Timestamp date)
 	{
 
 		final IBPartnerStatsDAO bpStatsDAO = Services.get(IBPartnerStatsDAO.class);
@@ -54,7 +57,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		final I_C_BPartner partner = bpStatsDAO.retrieveC_BPartner(bpStats);
 
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID());
+		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), date);
 
 		// Nothing to do
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
@@ -73,7 +76,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 		// Above Watch Limit
 		final BigDecimal watchAmt = creditLimit.multiply(getCreditWatchRatio(bpStats));
-		if (watchAmt.compareTo(bpStats.getOpenItems()) < 0)
+		if (watchAmt.compareTo(bpStats.getSOCreditUsed()) < 0)
 		{
 			return X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
 		}
@@ -84,9 +87,9 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 
 
 	@Override
-	public boolean isCreditStopSales(final IBPartnerStats stat, final BigDecimal grandTotal)
+	public boolean isCreditStopSales(@NonNull final IBPartnerStats stat,@NonNull final BigDecimal grandTotal, @NonNull final Timestamp date)
 	{
-		final String futureCreditStatus = calculateSOCreditStatus(stat, grandTotal);
+		final String futureCreditStatus = calculateSOCreditStatus(stat, grandTotal, date);
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(futureCreditStatus))
 		{

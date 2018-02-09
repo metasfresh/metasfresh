@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.modelvalidator;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Properties;
 
 /*
@@ -74,9 +75,10 @@ public class C_Order
 		final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
 		final BigDecimal crediUsed = stats.getSOCreditUsed();
 		final String soCreditStatus = stats.getSOCreditStatus();
+		final Timestamp dateOrdered = order.getDateOrdered();
 
 		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(order.getC_BPartner_ID());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(order.getC_BPartner_ID(), dateOrdered);
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 		{
@@ -97,7 +99,7 @@ public class C_Order
 				order.getGrandTotal(), order.getC_Currency_ID(), order.getDateOrdered(),
 				order.getC_ConversionType_ID(), order.getAD_Client_ID(), order.getAD_Org_ID());
 
-		final String calculatedSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, grandTotal);
+		final String calculatedSOCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, grandTotal, dateOrdered);
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedSOCreditStatus))
 		{
