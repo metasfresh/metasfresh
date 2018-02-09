@@ -200,7 +200,7 @@ class List extends Component {
       mandatory,
       validStatus,
       lookupList,
-      autofocus,
+      autoFocus,
       blur,
       onHandleBlur,
       initialFocus,
@@ -227,7 +227,7 @@ class List extends Component {
         mandatory={mandatory}
         validStatus={validStatus}
         tabIndex={tabIndex}
-        autofocus={autofocus}
+        autoFocus={autoFocus}
         initialFocus={initialFocus}
         lastProperty={lastProperty}
         disableAutofocus={disableAutofocus}
@@ -242,7 +242,8 @@ class List extends Component {
 }
 
 List.propTypes = {
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
+  autoFocus: PropTypes.bool
 };
 
 export default connect(false, false, false, { withRef: true })(List);

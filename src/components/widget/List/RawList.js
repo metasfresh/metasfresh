@@ -1,9 +1,52 @@
-import React, { PureComponent } from "react";
+import React, { Component, PureComponent } from "react";
 import { connect } from "react-redux";
 import onClickOutside from "react-onclickoutside";
 import ReactCSSTransitionGroup from "react-addons-css-transition-group";
 import TetherComponent from "react-tether";
 import PropTypes from "prop-types";
+import classnames from 'classnames';
+
+export class ListDropdown extends Component {
+  static propTypes = {
+    isListEmpty: PropTypes.bool,
+    offsetWidth: PropTypes.number,
+    loading: PropTypes.bool,
+    children: PropTypes.any,
+  };
+
+  render() {
+    const { isListEmpty, offsetWidth, loading, children } = this.props;
+
+    return (
+      <div
+        className="input-dropdown-list"
+        style={{ width: `${offsetWidth}px` }}
+      >
+        {isListEmpty &&
+          loading === false && (
+            <div className="input-dropdown-list-header">
+              There is no choice available
+            </div>
+          )}
+        {loading &&
+          isListEmpty && (
+            <div className="input-dropdown-list-header">
+              <ReactCSSTransitionGroup
+                transitionName="rotate"
+                transitionEnterTimeout={1000}
+                transitionLeaveTimeout={1000}
+              >
+                <div className="rotate icon-rotate">
+                  <i className="meta-icon-settings" />
+                </div>
+              </ReactCSSTransitionGroup>
+            </div>
+          )}
+        {children}
+      </div>
+    );
+  }
+}
 
 class RawList extends PureComponent {
   constructor(props) {
@@ -13,7 +56,7 @@ class RawList extends PureComponent {
       selected: props.selected || 0,
       dropdownList: props.list || [],
       isOpen: false,
-      isFocused: false
+      isFocused: props.autoFocus
     };
   }
 
@@ -26,10 +69,14 @@ class RawList extends PureComponent {
   }
 
   componentDidMount() {
-    const { autofocus, onRequestListData } = this.props;
+    const { autoFocus, onRequestListData } = this.props;
 
-    if (this.dropdown && autofocus && onRequestListData) {
+    if (this.dropdown && autoFocus && onRequestListData) {
       onRequestListData();
+    }
+
+    if (this.state.isFocused) {
+      this.openDropdownList();
     }
   }
 
@@ -38,7 +85,7 @@ class RawList extends PureComponent {
       list,
       mandatory,
       defaultValue,
-      autofocus,
+      autoFocus,
       property,
       initialFocus,
       selected,
@@ -57,7 +104,7 @@ class RawList extends PureComponent {
       disableAutofocus();
     }
 
-    if (this.dropdown && autofocus) {
+    if (this.dropdown && autoFocus) {
       if (prevState.selected !== this.state.selected) {
         if (list.length === 1) {
           this.handleSelect(list[0]);
@@ -70,7 +117,7 @@ class RawList extends PureComponent {
     }
 
     if (this.dropdown) {
-      if (autofocus) {
+      if (autoFocus) {
         if (list && list.length > 0) {
           this.focus();
         }
@@ -119,7 +166,11 @@ class RawList extends PureComponent {
   }
 
   checkIfDropDownListOutOfFilter = () => {
-    if (!this.tetheredList) return;
+    if (!this.tetheredList ||
+      (this.tetheredList && !this.tetheredList.getBoundingClientRect)) {
+      return;
+    }
+
     const { top } = this.tetheredList.getBoundingClientRect();
     const { filter } = this.props;
     const { isOpen } = this.state;
@@ -191,9 +242,9 @@ class RawList extends PureComponent {
   };
 
   handleFocus = () => {
-    const { onFocus, doNotOpenOnFocus, autofocus } = this.props;
+    const { onFocus, doNotOpenOnFocus, autoFocus } = this.props;
 
-    if (!doNotOpenOnFocus && !autofocus) {
+    if (!doNotOpenOnFocus && !autoFocus) {
       this.openDropdownList(true);
     }
 
@@ -456,12 +507,11 @@ class RawList extends PureComponent {
     return (
       <div
         ref={c => (this.dropdown = c)}
-        className={
-          "input-dropdown-container " +
-          (readonly ? "input-disabled " : "") +
-          (rowId ? "input-dropdown-container-static " : "") +
-          (rowId && !isModal ? "input-table " : "")
-        }
+        className={classnames('input-dropdown-container', {
+          'input-disabled': readonly,
+          'input-dropdown-container-static': rowId,
+          'input-table': (rowId && !isModal)
+        })}
         tabIndex={tabIndex ? tabIndex : 0}
         onFocus={readonly ? null : this.handleFocus}
         onClick={readonly ? null : this.handleClick}
@@ -481,16 +531,14 @@ class RawList extends PureComponent {
           ]}
         >
           <div
-            className={
-              "input-dropdown input-block input-readonly input-" +
-              (rank ? rank : "secondary") +
-              (updated ? " pulse " : " ") +
-              (mandatory && !selected ? "input-mandatory " : "") +
-              (validStatus &&
-              (!validStatus.valid && !validStatus.initialValue) &&
-              !isOpen
-                ? "input-error "
-                : "")
+            className={classnames('input-dropdown input-block input-readonly',{
+              'input-secondary': rank,
+              'pulse': updated,
+              'input-mandatory': (mandatory && !selected),
+              'input-error': (validStatus
+                && (!validStatus.valid && !validStatus.initialValue) &&
+              !isOpen)
+              })
             }
             ref={c => (this.inputContainer = c)}
           >
@@ -521,33 +569,14 @@ class RawList extends PureComponent {
           </div>
           {isFocused &&
             isOpen && (
-              <div
-                className="input-dropdown-list"
-                style={{ width: `${this.dropdown.offsetWidth}px` }}
+              <ListDropdown
                 ref={c => (this.tetheredList = c)}
+                isListEmpty={isListEmpty}
+                offsetWidth={this.dropdown.offsetWidth}
+                loading={loading}
               >
-                {isListEmpty &&
-                  loading === false && (
-                    <div className="input-dropdown-list-header">
-                      There is no choice available
-                    </div>
-                  )}
-                {loading &&
-                  isListEmpty && (
-                    <div className="input-dropdown-list-header">
-                      <ReactCSSTransitionGroup
-                        transitionName="rotate"
-                        transitionEnterTimeout={1000}
-                        transitionLeaveTimeout={1000}
-                      >
-                        <div className="rotate icon-rotate">
-                          <i className="meta-icon-settings" />
-                        </div>
-                      </ReactCSSTransitionGroup>
-                    </div>
-                  )}
                 {this.renderOptions()}
-              </div>
+              </ListDropdown>
             )}
         </TetherComponent>
       </div>
@@ -556,12 +585,15 @@ class RawList extends PureComponent {
 }
 
 const mapStateToProps = state => ({
-  filter: state.windowHandler.filter
+  filter: state.windowHandler.filter,
 });
 
 RawList.propTypes = {
   filter: PropTypes.object.isRequired,
-  dispatch: PropTypes.func.isRequired
+  dispatch: PropTypes.func.isRequired,
+  autoFocus: PropTypes.bool,
+  readonly: PropTypes.bool,
+  list: PropTypes.array,
 };
 
 export default connect(mapStateToProps, false, false, { withRef: true })(

@@ -333,7 +333,7 @@ class Lookup extends Component {
                     }}
                     readonly={disabled || readonly}
                     lookupList={true}
-                    autofocus={isCurrentProperty}
+                    autoFocus={isCurrentProperty}
                     properties={[item]}
                     mainProperty={[item]}
                     defaultValue={
