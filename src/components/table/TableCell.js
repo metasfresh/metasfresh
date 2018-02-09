@@ -1,16 +1,17 @@
-import Moment from "moment";
-import numeral from "numeral";
-import React, { Component } from "react";
-import onClickOutside from "react-onclickoutside";
+import Moment from 'moment';
+import numeral from 'numeral';
+import React, { Component } from 'react';
+import onClickOutside from 'react-onclickoutside';
+import classnames from 'classnames';
 
-import MasterWidget from "../widget/MasterWidget";
+import MasterWidget from '../widget/MasterWidget';
 
 class TableCell extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      backdropLock: false
+      backdropLock: false,
     };
   }
 
@@ -32,7 +33,7 @@ class TableCell extends Component {
 
   handleBackdropLock = state => {
     this.setState({
-      backdropLock: !!state
+      backdropLock: !!state,
     });
   };
 
@@ -51,14 +52,14 @@ class TableCell extends Component {
     }
   };
 
-  static AMOUNT_FIELD_TYPES = ["Amount", "CostPrice"];
+  static AMOUNT_FIELD_TYPES = ['Amount', 'CostPrice'];
   static AMOUNT_FIELD_FORMATS_BY_PRECISION = [
-    "0,0.[00000]",
-    "0,0.0[0000]",
-    "0,0.00[000]",
-    "0,0.000[00]",
-    "0,0.0000[0]",
-    "0,0.00000"
+    '0,0.[00000]',
+    '0,0.0[0000]',
+    '0,0.00[000]',
+    '0,0.000[00]',
+    '0,0.0000[0]',
+    '0,0.00000',
   ];
 
   static getAmountFormatByPrecision = precision =>
@@ -68,13 +69,13 @@ class TableCell extends Component {
       ? TableCell.AMOUNT_FIELD_FORMATS_BY_PRECISION[precision]
       : null;
 
-  static DATE_FIELD_TYPES = ["Date", "DateTime", "Time"];
+  static DATE_FIELD_TYPES = ['Date', 'DateTime', 'Time'];
   static DATE_FIELD_FORMATS = {
-    Date: "DD.MM.YYYY",
-    DateTime: "DD.MM.YYYY HH:mm:ss",
-    Time: "HH:mm:ss"
+    Date: 'DD.MM.YYYY',
+    DateTime: 'DD.MM.YYYY HH:mm:ss',
+    Time: 'HH:mm:ss',
   };
-  static TIME_FIELD_TYPES = ["Time"];
+  static TIME_FIELD_TYPES = ['Time'];
 
   static getDateFormat = fieldType =>
     TableCell.DATE_FIELD_FORMATS[fieldType] ||
@@ -83,7 +84,7 @@ class TableCell extends Component {
   static createDate = (fieldValue, fieldType) =>
     fieldValue
       ? Moment(new Date(fieldValue)).format(TableCell.getDateFormat(fieldType))
-      : "";
+      : '';
 
   static createAmount = (fieldValue, precision) => {
     if (fieldValue) {
@@ -93,25 +94,25 @@ class TableCell extends Component {
         ? fieldValueAsNum.format(numberFormat)
         : fieldValueAsNum.format();
     } else {
-      return "";
+      return '';
     }
   };
 
   static fieldValueToString = (
     fieldValue,
-    fieldType = "Text",
+    fieldType = 'Text',
     precision = null
   ) => {
     if (fieldValue === null) {
-      return "";
+      return '';
     }
 
     switch (typeof fieldValue) {
-      case "object": {
+      case 'object': {
         if (Array.isArray(fieldValue)) {
           return fieldValue
             .map(value => TableCell.fieldValueToString(value, fieldType))
-            .join(" - ");
+            .join(' - ');
         }
 
         return TableCell.DATE_FIELD_TYPES.includes(fieldType)
@@ -119,7 +120,7 @@ class TableCell extends Component {
           : fieldValue.caption;
       }
 
-      case "boolean": {
+      case 'boolean': {
         return fieldValue ? (
           <i className="meta-icon-checkbox-1" />
         ) : (
@@ -127,7 +128,7 @@ class TableCell extends Component {
         );
       }
 
-      case "string": {
+      case 'string': {
         if (TableCell.DATE_FIELD_TYPES.includes(fieldType)) {
           return TableCell.createDate(fieldValue, fieldType);
         } else if (TableCell.AMOUNT_FIELD_TYPES.includes(fieldType)) {
@@ -164,9 +165,9 @@ class TableCell extends Component {
       handleRightClick,
       mainTable,
       onCellChange,
-      viewId
+      viewId,
     } = this.props;
-    const docId = this.props.docId + "";
+    const docId = this.props.docId + '';
     const tdValue = !isEdited
       ? TableCell.fieldValueToString(
           widgetData[0].value,
@@ -174,7 +175,7 @@ class TableCell extends Component {
           widgetData[0].precision
         )
       : null;
-    const isOpenDatePicker = isEdited && item.widgetType === "Date";
+    const isOpenDatePicker = isEdited && item.widgetType === 'Date';
 
     return (
       <td
@@ -183,19 +184,23 @@ class TableCell extends Component {
         onDoubleClick={readonly ? null : onDoubleClick}
         onKeyDown={onKeyDown}
         onContextMenu={handleRightClick}
-        className={
-          (item.gridAlign ? "text-xs-" + item.gridAlign + " " : "") +
-          (widgetData[0].readonly ? "cell-disabled " : "") +
-          (widgetData[0].mandatory ? "cell-mandatory " : "") +
-          (getSizeClass(item) + " ") +
-          item.widgetType +
-          (updatedRow ? " pulse-on" : " pulse-off")
-        }
-      >
+        className={classnames(
+          {
+            [`text-xs-${item.gridAlign}`]: item.gridAlign,
+            'cell-disabled': widgetData[0].readonly,
+            'cell-mandatory': widgetData[0].mandatory,
+          },
+          getSizeClass(item),
+          item.widgetType,
+          {
+            'pulse-on': updatedRow,
+            'pulse-off': !updatedRow,
+          }
+        )}>
         {isEdited ? (
           <MasterWidget
             {...item}
-            entity={mainTable ? "window" : entity}
+            entity={mainTable ? 'window' : entity}
             dataId={mainTable ? null : docId}
             widgetData={widgetData}
             windowType={type}
@@ -220,11 +225,10 @@ class TableCell extends Component {
           <div
             className="cell-text-wrapper"
             title={
-              item.widgetType === "YesNo" || item.widgetType === "Switch"
-                ? ""
+              item.widgetType === 'YesNo' || item.widgetType === 'Switch'
+                ? ''
                 : tdValue
-            }
-          >
+            }>
             {tdValue}
           </div>
         )}
