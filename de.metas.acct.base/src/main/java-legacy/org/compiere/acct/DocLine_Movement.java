@@ -1,13 +1,20 @@
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_MovementLine;
+import org.compiere.util.TimeUtil;
 
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailReverseRequest;
+import de.metas.costing.CostElement;
+import de.metas.costing.CostResult;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostDetailService;
 import de.metas.quantity.Quantity;
 
 /*
@@ -43,18 +50,103 @@ class DocLine_Movement extends DocLine<Doc_Movement>
 		setReversalLine_ID(movementLine.getReversalLine_ID());
 	}
 
-	/**
-	 * @return Get Warehouse Locator To
-	 */
+	public final int getM_AttributeSetInstanceTo_ID()
+	{
+		final I_M_MovementLine movementLine = getModel(I_M_MovementLine.class);
+		return movementLine.getM_AttributeSetInstanceTo_ID();
+	}
+
+	private final int getFromOrgId()
+	{
+		return Services.get(IWarehouseDAO.class).retrieveOrgIdByLocatorId(getM_Locator_ID());
+	}
+
+	private final int getToOrgId()
+	{
+		return Services.get(IWarehouseDAO.class).retrieveOrgIdByLocatorId(getM_LocatorTo_ID());
+	}
+
 	public final int getM_LocatorTo_ID()
 	{
 		final I_M_MovementLine movementLine = getModel(I_M_MovementLine.class);
 		return movementLine.getM_LocatorTo_ID();
 	}
 
-	public final CostAmount getCosts(final I_C_AcctSchema as)
+	public final CostResult getCreateInboundCosts(final I_C_AcctSchema as)
 	{
-		final BigDecimal costs = getProductCosts(as, getAD_Org_ID(), true, CostingDocumentRef.ofInboundMovementLineId(get_ID()));
-		return CostAmount.of(costs != null ? costs : BigDecimal.ZERO, as.getC_Currency_ID());
+		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
+
+		if (isReversalLine())
+		{
+			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
+					.acctSchemaId(as.getC_AcctSchema_ID())
+					.reversalDocumentRef(CostingDocumentRef.ofInboundMovementLineId(get_ID()))
+					.initialDocumentRef(CostingDocumentRef.ofInboundMovementLineId(getReversalLine_ID()))
+					.date(TimeUtil.asLocalDate(getDateDoc()))
+					.build());
+		}
+		else
+		{
+			final CostResult outboundCostResult = getCreateOutboundCosts(as);
+			final CostResult inboundCostResult = outboundCostResult.getCostElements()
+					.stream()
+					.map(costElement -> createInboundCostDetailCreateRequest(as, costElement, outboundCostResult.getCostAmountForCostElement(costElement)))
+					.map(costDetailService::createCostDetail)
+					.reduce(CostResult::merge)
+					.orElse(null);
+
+			return inboundCostResult;
+		}
 	}
+
+	public final CostResult getCreateOutboundCosts(final I_C_AcctSchema as)
+	{
+		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
+
+		if (isReversalLine())
+		{
+			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
+					.acctSchemaId(as.getC_AcctSchema_ID())
+					.reversalDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
+					.initialDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(getReversalLine_ID()))
+					.date(TimeUtil.asLocalDate(getDateDoc()))
+					.build());
+		}
+		else
+		{
+			return costDetailService.createCostDetail(createOutboundCostDetailCreateRequest(as));
+		}
+	}
+
+	private CostDetailCreateRequest createOutboundCostDetailCreateRequest(final I_C_AcctSchema as)
+	{
+		return CostDetailCreateRequest.builder()
+				.acctSchemaId(as.getC_AcctSchema_ID())
+				.clientId(getAD_Client_ID())
+				.orgId(getFromOrgId())
+				.productId(getM_Product_ID())
+				.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+				.documentRef(CostingDocumentRef.ofOutboundMovementLineId(get_ID()))
+				.qty(getQty().negate())
+				.amt(CostAmount.zero(as.getC_Currency_ID())) // expect to be calculated
+				.date(TimeUtil.asLocalDate(getDateAcct()))
+				.build();
+	}
+
+	private CostDetailCreateRequest createInboundCostDetailCreateRequest(final I_C_AcctSchema as, final CostElement costElement, final CostAmount amt)
+	{
+		return CostDetailCreateRequest.builder()
+				.acctSchemaId(as.getC_AcctSchema_ID())
+				.clientId(getAD_Client_ID())
+				.orgId(getToOrgId())
+				.productId(getM_Product_ID())
+				.attributeSetInstanceId(getM_AttributeSetInstanceTo_ID())
+				.documentRef(CostingDocumentRef.ofInboundMovementLineId(get_ID()))
+				.qty(getQty())
+				.amt(amt)
+				.costElement(costElement)
+				.date(TimeUtil.asLocalDate(getDateAcct()))
+				.build();
+	}
+
 }

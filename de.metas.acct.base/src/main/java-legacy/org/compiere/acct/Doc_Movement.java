@@ -25,16 +25,11 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MMovement;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
-import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.CostingLevel;
 import de.metas.costing.ICostDetailService;
 
 /**
@@ -53,7 +48,7 @@ import de.metas.costing.ICostDetailService;
 public class Doc_Movement extends Doc<DocLine_Movement>
 {
 	private final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
-	
+
 	private int m_Reversal_ID = 0;
 	private String m_DocStatus = "";
 
@@ -120,10 +115,7 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		setC_Currency_ID(as.getC_Currency_ID());
 
-		for (final DocLine_Movement line : getDocLines())
-		{
-			createFactsForMovementLine(fact, line);
-		}
+		getDocLines().forEach(line -> createFactsForMovementLine(fact, line));
 
 		return ImmutableList.of(fact);
 	}
@@ -131,95 +123,32 @@ public class Doc_Movement extends Doc<DocLine_Movement>
 	private void createFactsForMovementLine(final Fact fact, final DocLine_Movement line)
 	{
 		final I_C_AcctSchema as = fact.getAcctSchema();
-		CostAmount costs = line.getCosts(as);
 
 		//
-		// Inventory CR/DR
-		final FactLine dr = fact.createLine(line,
-				line.getAccount(ProductAcctType.Asset, as),
-				costs.getCurrencyId(),
-				costs.getValue().negate());		// from (-) CR
-		if (dr == null)
-		{
-			return;
-		}
-		dr.setM_Locator_ID(line.getM_Locator_ID());
-		dr.setQty(line.getQty().negate());	// outgoing
-		dr.setC_Activity_ID(line.getC_ActivityFrom_ID());
-		if (m_DocStatus.equals(MMovement.DOCSTATUS_Reversed) && m_Reversal_ID != 0 && line.getReversalLine_ID() != 0)
-		{
-			// Set AmtAcctDr from Original Movement
-			if (!dr.updateReverseLine(MMovement.Table_ID, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
-			{
-				throw newPostingException().setDetailMessage("Original Inventory Move not posted yet");
-			}
-		}
+		// Inventory CR/DR (from locator)
+		final CostAmount outboundCosts = line.getCreateOutboundCosts(as).getTotalAmount();
+		fact.createLine()
+				.setDocLine(line)
+				.setAccount(line.getAccount(ProductAcctType.Asset, as))
+				.setC_Currency_ID(outboundCosts.getCurrencyId())
+				.setAmtSourceDrOrCr(outboundCosts.getValue().negate()) // from (-) CR
+				.setQty(line.getQty().negate()) // outgoing
+				.locatorId(line.getM_Locator_ID())
+				.activityId(line.getC_ActivityFrom_ID())
+				.buildAndAdd();
 
 		//
-		// InventoryTo DR/CR
-		final FactLine cr = fact.createLine(line,
-				line.getAccount(ProductAcctType.Asset, as),
-				costs.getCurrencyId(),
-				costs.getValue());			// to (+) DR
-		if (cr == null)
-		{
-			return;
-		}
-		cr.setM_Locator_ID(line.getM_LocatorTo_ID());
-		cr.setQty(line.getQty());
-		cr.setC_Activity_ID(line.getC_Activity_ID());
-		if (m_DocStatus.equals(MMovement.DOCSTATUS_Reversed) && m_Reversal_ID != 0 && line.getReversalLine_ID() != 0)
-		{
-			// Set AmtAcctCr from Original Movement
-			if (!cr.updateReverseLine(MMovement.Table_ID, m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
-			{
-				throw newPostingException().setDetailMessage("Original Inventory Move not posted yet");
-			}
-			costs = CostAmount.of(cr.getAcctBalance(), as.getC_Currency_ID()); // get original cost
-		}
-
-		// Only for between-org movements
-		if (dr.getAD_Org_ID() != cr.getAD_Org_ID())
-		{
-			final CostingLevel costingLevel = line.getProductCostingLevel(as);
-			if (CostingLevel.Organization != costingLevel)
-			{
-				return;
-			}
-
-			//
-			String description = line.getDescription();
-			if (description == null)
-				description = "";
-			// Cost Detail From
-			costDetailService.createCostDetail(CostDetailCreateRequest.builder()
-					.acctSchemaId(as.getC_AcctSchema_ID())
-					.clientId(line.getAD_Client_ID())
-					.orgId(dr.getAD_Org_ID())
-					.productId(line.getM_Product_ID())
-					.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
-					.documentRef(CostingDocumentRef.ofOutboundMovementLineId(line.get_ID()))
-					.qty(line.getQty().negate())
-					.amt(costs.negate())
-					.currencyConversionTypeId(getC_ConversionType_ID())
-					.date(TimeUtil.asLocalDate(getDateAcct()))
-					.description(description + "(|->)")
-					.build());
-			// Cost Detail To
-			costDetailService.createCostDetail(CostDetailCreateRequest.builder()
-					.acctSchemaId(as.getC_AcctSchema_ID())
-					.clientId(line.getAD_Client_ID())
-					.orgId(cr.getAD_Org_ID())
-					.productId(line.getM_Product_ID())
-					.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
-					.documentRef(CostingDocumentRef.ofInboundMovementLineId(line.get_ID()))
-					.qty(line.getQty())
-					.amt(costs)
-					.currencyConversionTypeId(getC_ConversionType_ID())
-					.date(TimeUtil.asLocalDate(getDateAcct()))
-					.description(description + "(|<-)")
-					.build());
-		}
+		// InventoryTo DR/CR (to locator)
+		final CostAmount inboundCosts = line.getCreateInboundCosts(as).getTotalAmount();
+		fact.createLine()
+				.setDocLine(line)
+				.setAccount(line.getAccount(ProductAcctType.Asset, as))
+				.setC_Currency_ID(inboundCosts.getCurrencyId())
+				.setAmtSourceDrOrCr(inboundCosts.getValue()) // to (+) DR
+				.setQty(line.getQty()) // incoming
+				.locatorId(line.getM_LocatorTo_ID())
+				.activityId(line.getC_Activity_ID())
+				.buildAndAdd();
 	}
 
 }   // Doc_Movement
