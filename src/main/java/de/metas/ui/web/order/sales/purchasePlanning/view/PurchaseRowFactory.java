@@ -83,6 +83,7 @@ public class PurchaseRowFactory
 				.product(product)
 				.uomOrAvailablility(uom)
 				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
+				.purchasedQty(purchaseCandidate.getPurchasedQty())
 				.datePromised(datePromised)
 				.vendorBPartner(vendorBPartner)
 				.purchaseCandidateId(purchaseCandidate.getPurchaseCandidateId())
