@@ -26,6 +26,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MAccount;
@@ -982,45 +983,25 @@ final class FactLine extends X_Fact_Acct
 	@Override
 	public int getAD_Org_ID()
 	{
-		if (super.getAD_Org_ID() != 0)      // set earlier
-			return super.getAD_Org_ID();
-		// Prio 1 - get from locator - if exist
-		if (getM_Locator_ID() != 0)
+		if (super.getAD_Org_ID() > 0)      // set earlier
 		{
-			String sql = "SELECT AD_Org_ID FROM M_Locator WHERE M_Locator_ID=? AND AD_Client_ID=?";
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			try
+			return super.getAD_Org_ID();
+		}
+		
+		// Prio 1 - get from locator - if exist
+		final int locatorId = getM_Locator_ID();
+		if (locatorId > 0)
+		{
+			final int locatorOrgId = Services.get(IWarehouseDAO.class).retrieveOrgIdByLocatorId(locatorId);
+			if(locatorOrgId > 0)
 			{
-				pstmt = DB.prepareStatement(sql, get_TrxName());
-				pstmt.setInt(1, getM_Locator_ID());
-				pstmt.setInt(2, getAD_Client_ID());
-				rs = pstmt.executeQuery();
-				if (rs.next())
-				{
-					setAD_Org_ID(rs.getInt(1));
-					log.trace("AD_Org_ID=" + super.getAD_Org_ID() + " (1 from M_Locator_ID=" + getM_Locator_ID() + ")");
-				}
-				else
-					log.error("AD_Org_ID - Did not find M_Locator_ID=" + getM_Locator_ID());
+				setAD_Org_ID(locatorOrgId);
 			}
-			catch (SQLException e)
-			{
-				log.error(sql, e);
-			}
-			finally
-			{
-				DB.close(rs, pstmt);
-				rs = null;
-				pstmt = null;
-			}
-		}   // M_Locator_ID != 0
-
+		}
 		// Prio 2 - get from doc line - if exists (document context overwrites)
-		if (m_docLine != null && super.getAD_Org_ID() == 0)
+		if (m_docLine != null && super.getAD_Org_ID() <= 0)
 		{
 			setAD_Org_ID(m_docLine.getAD_Org_ID());
-			log.trace("AD_Org_ID=" + super.getAD_Org_ID() + " (2 from DocumentLine)");
 		}
 		// Prio 3 - get from doc - if not GL
 		if (m_doc != null && super.getAD_Org_ID() == 0)
@@ -1028,12 +1009,10 @@ final class FactLine extends X_Fact_Acct
 			if (Doc.DOCTYPE_GLJournal.equals(m_doc.getDocumentType()))
 			{
 				setAD_Org_ID(m_acct.getAD_Org_ID()); // inter-company GL
-				log.trace("AD_Org_ID=" + super.getAD_Org_ID() + " (3 from Acct)");
 			}
 			else
 			{
 				setAD_Org_ID(m_doc.getAD_Org_ID());
-				log.trace("AD_Org_ID=" + super.getAD_Org_ID() + " (3 from Document)");
 			}
 		}
 		// Prio 4 - get from account - if not GL
@@ -1042,12 +1021,10 @@ final class FactLine extends X_Fact_Acct
 			if (Doc.DOCTYPE_GLJournal.equals(m_doc.getDocumentType()))
 			{
 				setAD_Org_ID(m_doc.getAD_Org_ID());
-				log.trace("AD_Org_ID=" + super.getAD_Org_ID() + " (4 from Document)");
 			}
 			else
 			{
 				setAD_Org_ID(m_acct.getAD_Org_ID());
-				log.trace("AD_Org_ID=" + super.getAD_Org_ID() + " (4 from Acct)");
 			}
 		}
 		return super.getAD_Org_ID();
