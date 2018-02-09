@@ -15,7 +15,7 @@ public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPa
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1807082249L;
+	private static final long serialVersionUID = -2136749943L;
 
     /** Standard Constructor */
     public X_C_BPartner_Stats (Properties ctx, int C_BPartner_Stats_ID, String trxName)
@@ -122,6 +122,25 @@ public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPa
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Credit limit indicator %.
+		@param CreditLimitIndicator 
+		Percent of Credit used from the limit
+	  */
+	@Override
+	public void setCreditLimitIndicator (java.lang.String CreditLimitIndicator)
+	{
+		set_Value (COLUMNNAME_CreditLimitIndicator, CreditLimitIndicator);
+	}
+
+	/** Get Credit limit indicator %.
+		@return Percent of Credit used from the limit
+	  */
+	@Override
+	public java.lang.String getCreditLimitIndicator () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CreditLimitIndicator);
 	}
 
 	/** Set Offene Posten.

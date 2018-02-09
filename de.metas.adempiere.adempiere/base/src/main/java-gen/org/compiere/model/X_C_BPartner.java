@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1901126221L;
+	private static final long serialVersionUID = 2054191448L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -510,8 +510,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setCreditLimitIndicator (java.lang.String CreditLimitIndicator)
 	{
-		set_ValueNoCheck (COLUMNNAME_CreditLimitIndicator, CreditLimitIndicator);
-	}
+		throw new IllegalArgumentException ("CreditLimitIndicator is virtual column");	}
 
 	/** Get Credit limit indicator %.
 		@return Percent of Credit used from the limit

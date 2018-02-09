@@ -98,4 +98,6 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	void updateOpenItems(IBPartnerStats bpStats);
 
 	BigDecimal retrieveSOCreditUsed(IBPartnerStats bpStats);
+
+	void updateCreditLimitIndicator(IBPartnerStats bstats);
 }

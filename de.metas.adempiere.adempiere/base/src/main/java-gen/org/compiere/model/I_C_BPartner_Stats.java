@@ -176,6 +176,31 @@ public interface I_C_BPartner_Stats
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Credit limit indicator %.
+	 * Percent of Credit used from the limit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCreditLimitIndicator (java.lang.String CreditLimitIndicator);
+
+	/**
+	 * Get Credit limit indicator %.
+	 * Percent of Credit used from the limit
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCreditLimitIndicator();
+
+    /** Column definition for CreditLimitIndicator */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object> COLUMN_CreditLimitIndicator = new org.adempiere.model.ModelColumn<I_C_BPartner_Stats, Object>(I_C_BPartner_Stats.class, "CreditLimitIndicator", null);
+    /** Column name CreditLimitIndicator */
+    public static final String COLUMNNAME_CreditLimitIndicator = "CreditLimitIndicator";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *

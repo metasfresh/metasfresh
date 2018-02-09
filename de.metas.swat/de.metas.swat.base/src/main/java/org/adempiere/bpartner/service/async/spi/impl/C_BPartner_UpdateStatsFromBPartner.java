@@ -26,12 +26,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 
 import com.google.common.base.MoreObjects;
@@ -154,9 +152,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 			bpartnerStatsDAO.updateActualLifeTimeValue(stats);
 			bpartnerStatsDAO.updateSOCreditUsed(stats);
 			bpartnerStatsDAO.updateSOCreditStatus(stats);
-
-			final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-			creditLimitRepo.updateCreditLimitIndicator(bpartner, stats);
+			bpartnerStatsDAO.updateCreditLimitIndicator(stats);
 		}
 
 		return Result.SUCCESS;

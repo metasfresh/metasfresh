@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -261,7 +263,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			// Above Watch Limit
 			final BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
 
-			if (watchAmt.compareTo(bpStats.getSOCreditUsed())) < 0)
+			if (watchAmt.compareTo(bpStats.getSOCreditUsed()) < 0)
 			{
 				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
 			}
@@ -278,7 +280,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	@Override
 	public void updateOpenItems(final IBPartnerStats bpStats)
 	{
-
 		// load the statistics
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
 
@@ -290,6 +291,28 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		// save in db
 		InterfaceWrapperHelper.save(stats);
 	}
+
+
+	@Override
+	public void updateCreditLimitIndicator(final IBPartnerStats bstats)
+	{
+		// load the statistics
+		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bstats);
+		final  BigDecimal creditUsed = bstats.getSOCreditUsed();
+		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
+
+		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
+		final Locale locale = Locale.getDefault();
+		final NumberFormat fmt = NumberFormat.getPercentInstance(locale);
+		fmt.setMinimumFractionDigits(1);
+		fmt.setMaximumFractionDigits(1);
+		final String percentSring = fmt.format(percent);
+
+		stats.setCreditLimitIndicator(percentSring);
+		InterfaceWrapperHelper.save(stats);
+	}
+
 
 	@Override
 	public void setSOCreditStatus(final IBPartnerStats bpStats, final String soCreditStatus)

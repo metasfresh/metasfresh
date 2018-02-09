@@ -528,8 +528,10 @@ public interface I_C_BPartner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setCreditLimitIndicator (java.lang.String CreditLimitIndicator);
 
 	/**
@@ -538,7 +540,7 @@ public interface I_C_BPartner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
 	 */
 	public java.lang.String getCreditLimitIndicator();
 

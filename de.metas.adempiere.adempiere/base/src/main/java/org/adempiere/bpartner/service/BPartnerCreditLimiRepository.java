@@ -5,16 +5,10 @@ package org.adempiere.bpartner.service;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.text.NumberFormat;
-import java.util.Locale;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.time.SystemTime;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.springframework.stereotype.Repository;
 
@@ -68,22 +62,5 @@ public class BPartnerCreditLimiRepository
 
 		return bpCreditLimit.getAmount();
 
-	}
-
-	public void updateCreditLimitIndicator(final I_C_BPartner bpartner, final IBPartnerStats stats)
-	{
-		final  BigDecimal creditUsed = stats.getSOCreditUsed();
-		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartner.getC_BPartner_ID(), SystemTime.asDayTimestamp());
-		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
-
-		final Locale locale = Locale.getDefault();
-		final NumberFormat fmt = NumberFormat.getPercentInstance(locale);
-		fmt.setMinimumFractionDigits(1);
-		fmt.setMaximumFractionDigits(1);
-
-		final String percentSring = fmt.format(percent);
-		bpartner.setCreditLimitIndicator(percentSring);
-		InterfaceWrapperHelper.save(bpartner);
 	}
 }
