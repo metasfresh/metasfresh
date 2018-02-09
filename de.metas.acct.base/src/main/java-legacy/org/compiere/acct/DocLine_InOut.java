@@ -146,7 +146,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 					.acctSchemaId(as.getC_AcctSchema_ID())
 					.reversalDocumentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofShipmentLineId(getReversalLine_ID()))
-					.date(TimeUtil.asLocalDate(getDateDoc()))
+					.date(TimeUtil.asLocalDate(getDateAcct()))
 					.build());
 		}
 		else
@@ -161,7 +161,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
 							.qty(getQty())
 							.amt(CostAmount.zero(as.getC_Currency_ID())) // expect to be calculated
-							.date(TimeUtil.asLocalDate(getDateDoc()))
+							.date(TimeUtil.asLocalDate(getDateAcct()))
 							.build());
 		}
 	}
