@@ -17,9 +17,17 @@ Here come the actual release notes:
 * metasfresh
   * [#3407](https://github.com/metasfresh/metasfresh/issues/3407) New Businesspartner Window for Pharma vertical
     * New Business Partner Window in WebUI for Pharma Verticals.
+  * [#3467](https://github.com/metasfresh/metasfresh/issues/3467) Preparation Date Filer as Daterange
+    * Adjustment for the Preparation Date Filter in Manufacturing Order. Now is a Daterange filter instead of date.
+  * [#3468](https://github.com/metasfresh/metasfresh/issues/3468) Add Translation for "All Dates available"
+    * Adds the translation for en_EN, de_DE of the "Show all dates" hint in daterange filter.
+  * [#3471](https://github.com/metasfresh/metasfresh/issues/3471) Disable Sales Opportunities Window until its permission is configurable
+    * Hiding the Sales Opportunity Window from default WebUI Menu, as long as in beta.
 
 ## Fixes
 * metasfresh-webui-frontend
+  * [#1546](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1546) Date Range Filter as Range Filter has initial daterange
+    * Leaves the Daterange filter now initially empty to that it does not interrupt other filtering.
   * [#1553](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1553) Drop down lists remain displayed when using tab several times (again)
     * Fixes a Bug with dropdown lists staying open after tabbing away.
   * [#1559](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1559) Errors in the console when opening HU Editor
