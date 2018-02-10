@@ -17,6 +17,8 @@ Here come the actual release notes:
 * metasfresh
   * [#3407](https://github.com/metasfresh/metasfresh/issues/3407) New Businesspartner Window for Pharma vertical
     * New Business Partner Window in WebUI for Pharma Verticals.
+  * [#3467](https://github.com/metasfresh/metasfresh/issues/3467) Preparation Date Filer as Daterange
+    * Adjustment for the Preparation Date Filter in Manufacturing Order. Now is a Daterange filter instead of date.
 
 ## Fixes
 * metasfresh-webui-frontend
