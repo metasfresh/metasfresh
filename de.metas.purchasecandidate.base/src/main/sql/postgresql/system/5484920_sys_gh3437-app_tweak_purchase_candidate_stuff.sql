@@ -329,7 +329,8 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=557867
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Column WHERE AD_Column_ID=557867
 ;
-ALTER TABLE C_PurchaseCandidate DROP COLUMN C_OrderLinePO_ID;
+
+SELECT db_alter_table('C_PurchaseCandidate','ALTER TABLE C_PurchaseCandidate DROP COLUMN C_OrderLinePO_ID;');
 
 -- 2018-02-08T15:24:41.778
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
