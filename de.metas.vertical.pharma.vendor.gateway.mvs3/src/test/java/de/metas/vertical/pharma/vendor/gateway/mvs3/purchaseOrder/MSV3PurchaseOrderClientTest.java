@@ -3,17 +3,21 @@ package de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.time.SystemTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +36,7 @@ import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
 import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreated;
+import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreatedItem;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3ConnectionFactory;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3TestingTools;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3FaultInfoDataPersister;
@@ -39,8 +44,12 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3SubstitutionDataP
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Auftragsart;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Bestellen;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellenResponse;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAnteil;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwort;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwortAuftrag;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwortPosition;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungDefektgrund;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Liefervorgabe;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.ObjectFactory;
 import lombok.NonNull;
 
@@ -71,6 +80,8 @@ import lombok.NonNull;
 		MSV3PurchaseOrderDataPersister.class, Msv3FaultInfoDataPersister.class, Msv3SubstitutionDataPersister.class })
 public class MSV3PurchaseOrderClientTest
 {
+	private static final BigDecimal CONFIRMED_ORDER_QTY = BigDecimal.TEN;
+	private static final BigDecimal QTY_TO_PURCHASE = new BigDecimal("23");
 	private MockWebServiceServer mockServer;
 	private MSV3PurchaseOrderClient msv3PurchaseOrderClient;
 
@@ -92,7 +103,7 @@ public class MSV3PurchaseOrderClientTest
 	{
 		final PurchaseOrderRequestItem purchaseOrderRequestItem = new PurchaseOrderRequestItem(
 				1, // id
-				new ProductAndQuantity("10055555", BigDecimal.TEN));
+				new ProductAndQuantity("10055555", QTY_TO_PURCHASE));
 		final List<PurchaseOrderRequestItem> purchaseOrderRequestItems = ImmutableList.of(purchaseOrderRequestItem);
 
 		final PurchaseOrderRequest request = new PurchaseOrderRequest(10, 20, purchaseOrderRequestItems);
@@ -111,29 +122,11 @@ public class MSV3PurchaseOrderClientTest
 
 		assertThat(purchaseOrderResponse).isNotNull();
 		assertThat(purchaseOrderResponse.getException()).isNull();
-	}
 
-	private Source createResponse() throws Exception
-	{
-		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		final DocumentBuilder db = dbf.newDocumentBuilder();
-
-		final ObjectFactory objectFactory = new ObjectFactory();
-
-		final BestellungAntwortAuftrag bestellungAntwortAuftrag = objectFactory.createBestellungAntwortAuftrag();
-		bestellungAntwortAuftrag.setAuftragsart(Auftragsart.NORMAL);
-		final BestellungAntwort bestellungAntwort = objectFactory.createBestellungAntwort();
-		bestellungAntwort.getAuftraege().add(bestellungAntwortAuftrag);
-		final BestellenResponse bestellenResponse = objectFactory.createBestellenResponse();
-		bestellenResponse.setReturn(bestellungAntwort);
-		final JAXBElement<BestellenResponse> responsePayload = objectFactory.createBestellenResponse(bestellenResponse);
-
-		final JAXBContext responseJc = JAXBContext.newInstance(BestellenResponse.class);
-		final Marshaller responseMarshaller = responseJc.createMarshaller();
-		final Document responseDocument = db.newDocument();
-		responseMarshaller.marshal(responsePayload, responseDocument);
-
-		return new DOMSource(responseDocument);
+		final List<RemotePurchaseOrderCreatedItem> purchaseOrderResponseItems = purchaseOrderResponse.getPurchaseOrderResponseItems();
+		assertThat(purchaseOrderResponseItems).hasSize(1);
+		assertThat(purchaseOrderResponseItems.get(0).getInternalItemId()).isGreaterThan(0);
+		assertThat(purchaseOrderResponseItems.get(0).getConfirmedOrderQuantity()).isEqualByComparingTo(CONFIRMED_ORDER_QTY);
 	}
 
 	private Source createRequest(@NonNull final JAXBElement<Bestellen> requestPayload) throws Exception
@@ -148,5 +141,53 @@ public class MSV3PurchaseOrderClientTest
 		final DOMSource payload = new DOMSource(requestDocument);
 
 		return payload;
+	}
+
+	private Source createResponse() throws Exception
+	{
+		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		final DocumentBuilder db = dbf.newDocumentBuilder();
+
+		final ObjectFactory objectFactory = new ObjectFactory();
+
+		final GregorianCalendar c = new GregorianCalendar();
+		c.setTime(SystemTime.asDate());
+		final XMLGregorianCalendar lieferzeitpunkt = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
+
+		final BestellungAnteil bestellungAnteil1 = objectFactory.createBestellungAnteil();
+		bestellungAnteil1.setLieferzeitpunkt(lieferzeitpunkt);
+		bestellungAnteil1.setGrund(BestellungDefektgrund.KEINE_ANGABE);
+		bestellungAnteil1.setMenge(CONFIRMED_ORDER_QTY.intValueExact());
+
+		final BestellungAnteil bestellungAnteil2 = objectFactory.createBestellungAnteil();
+		bestellungAnteil2.setLieferzeitpunkt(null);
+		bestellungAnteil2.setGrund(BestellungDefektgrund.NICHT_GEFUEHRT);
+		bestellungAnteil2.setMenge(QTY_TO_PURCHASE.subtract(CONFIRMED_ORDER_QTY).intValueExact());
+
+		final BestellungAntwortPosition bestellungAntwortPosition = objectFactory.createBestellungAntwortPosition();
+		bestellungAntwortPosition.getAnteile().add(bestellungAnteil1);
+		bestellungAntwortPosition.getAnteile().add(bestellungAnteil2);
+		bestellungAntwortPosition.setBestellLiefervorgabe(Liefervorgabe.NORMAL);
+		bestellungAntwortPosition.setBestellMenge(QTY_TO_PURCHASE.intValueExact());
+
+		final BestellungAntwortAuftrag bestellungAntwortAuftrag = objectFactory.createBestellungAntwortAuftrag();
+		bestellungAntwortAuftrag.setAuftragsart(Auftragsart.NORMAL);
+		bestellungAntwortAuftrag.setId("bestellungAntwortAuftrag.id");
+		bestellungAntwortAuftrag.getPositionen().add(bestellungAntwortPosition);
+
+		final BestellungAntwort bestellungAntwort = objectFactory.createBestellungAntwort();
+		bestellungAntwort.getAuftraege().add(bestellungAntwortAuftrag);
+
+		final BestellenResponse bestellenResponse = objectFactory.createBestellenResponse();
+		bestellenResponse.setReturn(bestellungAntwort);
+
+		final JAXBElement<BestellenResponse> responsePayload = objectFactory.createBestellenResponse(bestellenResponse);
+
+		final JAXBContext responseJc = JAXBContext.newInstance(BestellenResponse.class);
+		final Marshaller responseMarshaller = responseJc.createMarshaller();
+		final Document responseDocument = db.newDocument();
+		responseMarshaller.marshal(responsePayload, responseDocument);
+
+		return new DOMSource(responseDocument);
 	}
 }

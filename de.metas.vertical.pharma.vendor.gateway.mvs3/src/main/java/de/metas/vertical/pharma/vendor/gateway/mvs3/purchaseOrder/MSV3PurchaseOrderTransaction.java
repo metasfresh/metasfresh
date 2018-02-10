@@ -3,6 +3,8 @@ package de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.util.Map;
+
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Issue;
@@ -14,6 +16,7 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_BestellungAntwo
 import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_Bestellung_Transaction;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Bestellung;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAnteil;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwort;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
 import lombok.Builder;
@@ -54,6 +57,8 @@ public class MSV3PurchaseOrderTransaction
 	@Getter
 	private BestellungAntwort bestellungAntwort;
 
+	private Map<BestellungAnteil, Integer> bestellungAnteil2Id;
+
 	private Msv3FaultInfo faultInfo;
 
 	private Exception otherException;
@@ -84,6 +89,8 @@ public class MSV3PurchaseOrderTransaction
 			final I_MSV3_BestellungAntwort bestellungAntwortRecord = //
 					purchaseOrderDataPersister.storePurchaseOrderResponse(bestellungAntwort);
 			transactionRecord.setMSV3_BestellungAntwort(bestellungAntwortRecord);
+
+			bestellungAnteil2Id = purchaseOrderDataPersister.getBestellungAnteil2Id();
 		}
 		if (faultInfo != null)
 		{
@@ -110,5 +117,10 @@ public class MSV3PurchaseOrderTransaction
 		}
 		return Msv3ClientException.builder().msv3FaultInfo(faultInfo)
 				.cause(otherException).build();
+	}
+
+	public int getIdOfBestellungAnteil(BestellungAnteil anteil)
+	{
+		return bestellungAnteil2Id.get(anteil);
 	}
 }

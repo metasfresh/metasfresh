@@ -3,7 +3,12 @@ package de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3Util;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3FaultInfoDataPersister;
@@ -23,7 +28,9 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwort;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwortAuftrag;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwortPosition;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAuftrag;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungDefektgrund;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungPosition;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungRueckmeldungTyp;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -55,10 +62,12 @@ public class MSV3PurchaseOrderDataPersister
 {
 	public static MSV3PurchaseOrderDataPersister createNewForOrgId(final int orgId)
 	{
-		return new MSV3PurchaseOrderDataPersister(orgId);
+		return new MSV3PurchaseOrderDataPersister(orgId, new HashMap<>());
 	}
 
 	private final int orgId;
+
+	private Map<BestellungAnteil, Integer> bestellungAnteil2Id;
 
 	public I_MSV3_Bestellung storePurchaseOrderRequest(@NonNull final Bestellung bestellung)
 	{
@@ -145,6 +154,7 @@ public class MSV3PurchaseOrderDataPersister
 
 					bestellungAnteilRecord.setMSV3_BestellungAntwortPosition(bestellungAntwortPositionRecord);
 					save(bestellungAnteilRecord);
+					bestellungAnteil2Id.put(anteil, bestellungAnteilRecord.getMSV3_BestellungAnteil_ID());
 				}
 			}
 		}
@@ -200,13 +210,25 @@ public class MSV3PurchaseOrderDataPersister
 	{
 		final I_MSV3_BestellungAnteil bestellungAnteilRecord = newInstance(I_MSV3_BestellungAnteil.class);
 		bestellungAnteilRecord.setAD_Org_ID(orgId);
-		bestellungAnteilRecord.setMSV3_Grund(anteil.getGrund().value());
+
+		Optional.ofNullable(anteil.getGrund())
+				.map(BestellungDefektgrund::value)
+				.ifPresent(bestellungAnteilRecord::setMSV3_Grund);
+
 		bestellungAnteilRecord.setMSV3_Lieferzeitpunkt(MSV3Util.toTimestampOrNull(anteil.getLieferzeitpunkt()));
 		bestellungAnteilRecord.setMSV3_Menge(anteil.getMenge());
 		bestellungAnteilRecord.setMSV3_Tourabweichung(anteil.isTourabweichung());
-		bestellungAnteilRecord.setMSV3_Typ(anteil.getTyp().value());
+
+		Optional.ofNullable(anteil.getTyp())
+				.map(BestellungRueckmeldungTyp::value)
+				.ifPresent(bestellungAnteilRecord::setMSV3_Typ);
 
 		return bestellungAnteilRecord;
+	}
+
+	public ImmutableMap<BestellungAnteil, Integer> getBestellungAnteil2Id()
+	{
+		return ImmutableMap.copyOf(bestellungAnteil2Id);
 	}
 
 }

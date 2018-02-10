@@ -128,7 +128,9 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 	private List<PurchaseCandidate> getPurchaseCandidates()
 	{
 		final boolean skipAlreadyScheduledItems = true;
-		final Set<Integer> purchaseCandidateIds = retrieveQueueElements(skipAlreadyScheduledItems)
+		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(skipAlreadyScheduledItems);
+
+		final Set<Integer> purchaseCandidateIds = queueElements
 				.stream()
 				.map(I_C_Queue_Element::getRecord_ID)
 				.filter(id -> id > 0)

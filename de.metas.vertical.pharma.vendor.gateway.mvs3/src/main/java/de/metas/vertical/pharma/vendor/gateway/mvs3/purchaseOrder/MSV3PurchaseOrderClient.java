@@ -254,14 +254,17 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 				final List<BestellungAnteil> anteile = bestellungAntwortPosition.getAnteile();
 				for (final BestellungAnteil anteil : anteile)
 				{
-					if (anteil.getMenge() <= 0)
+					if (anteil.getLieferzeitpunkt() == null)
 					{
 						continue;
 					}
 
+					final int internalItemId = purchaseTransaction.getIdOfBestellungAnteil(anteil);
+
 					builder
 							.confirmedDeliveryDate(MSV3Util.toDateOrNull(anteil.getLieferzeitpunkt()))
-							.confirmedOrderQuantity(new BigDecimal(anteil.getMenge()));
+							.confirmedOrderQuantity(new BigDecimal(anteil.getMenge()))
+							.internalItemId(internalItemId);
 					purchaseOrderResponseItems.add(builder.build());
 				}
 			}
