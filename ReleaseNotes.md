@@ -21,6 +21,8 @@ Here come the actual release notes:
     * Adjustment for the Preparation Date Filter in Manufacturing Order. Now is a Daterange filter instead of date.
   * [#3468](https://github.com/metasfresh/metasfresh/issues/3468) Add Translation for "All Dates available"
     * Adds the translation for en_EN, de_DE of the "Show all dates" hint in daterange filter.
+  * [#3471](https://github.com/metasfresh/metasfresh/issues/3471) Disable Sales Opportunities Window until its permission is configurable
+    * Hiding the Sales Opportunity Window from default WebUI Menu, as long as in beta.
 
 ## Fixes
 * metasfresh-webui-frontend
