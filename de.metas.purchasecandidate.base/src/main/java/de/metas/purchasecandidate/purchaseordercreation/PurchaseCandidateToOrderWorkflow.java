@@ -4,18 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -79,29 +73,18 @@ public class PurchaseCandidateToOrderWorkflow
 
 	public void executeForPurchaseCandidates(@NonNull final List<PurchaseCandidate> purchaseCandidates)
 	{
-		assertCandidatesValid(purchaseCandidates);
-
-		final ImmutableListMultimap<Integer, PurchaseCandidate> vendorId2purchaseCandidate = //
-				Multimaps.index(purchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
-
-		final CompletableFuture<Void>[] futures = createOneFuturePerVendorId(vendorId2purchaseCandidate);
-
-		CompletableFuture
-				.allOf(futures)
-				.join();
-
-		if (exceptions.isEmpty())
+		final int vendorId = assertValidAndExtractVendorId(purchaseCandidates);
+		try
 		{
-			return;
+			createPurchaseOrder0(vendorId, purchaseCandidates);
 		}
-
-		final AdempiereException runtimeException = //
-				new AdempiereException("Creating remove purchase orders failed for at least one vendorId");
-		exceptions.forEach(runtimeException::addSuppressed);
-		throw runtimeException;
+		catch (Throwable t)
+		{
+			logAndRethrow(t, vendorId, purchaseCandidates);
+		}
 	}
 
-	private void assertCandidatesValid(@NonNull final List<PurchaseCandidate> purchaseCandidates)
+	private int assertValidAndExtractVendorId(@NonNull final List<PurchaseCandidate> purchaseCandidates)
 	{
 		final ImmutableSet<Integer> distinctIds = purchaseCandidates.stream()
 				.map(PurchaseCandidate::getPurchaseCandidateId).collect(ImmutableSet.toImmutableSet());
@@ -113,47 +96,16 @@ public class PurchaseCandidateToOrderWorkflow
 					.setParameter("purchaseCandidates", purchaseCandidates)
 					.setParameter("distinctIds", distinctIds);
 		}
-	}
 
-	@SuppressWarnings("unchecked")
-	private CompletableFuture<Void>[] createOneFuturePerVendorId(
-			@NonNull final ImmutableListMultimap<Integer, PurchaseCandidate> vendorId2purchaseCandidate)
-	{
-		final ILoggable loggable = Loggables.get();
+		final ImmutableListMultimap<Integer, PurchaseCandidate> vendorId2purchaseCandidate = //
+				Multimaps.index(purchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
 
-		final List<CompletableFuture<Void>> futures = vendorId2purchaseCandidate.asMap()
-				.entrySet().stream()
-				.map(entry -> CompletableFuture
-						.runAsync(createRunnable(entry, loggable))
-						.exceptionally(createExceptionHandler(entry, loggable)))
-				.collect(Collectors.toList());
+		Check.errorIf(vendorId2purchaseCandidate.size() != 1,
+				"The given purchaseCandidates need to all have the same vendorId; different vendorIds={}; purchaseCandidates={}",
+				vendorId2purchaseCandidate.keySet(), purchaseCandidates);
 
-		return futures.toArray(new CompletableFuture[futures.size()]);
-	}
+		return vendorId2purchaseCandidate.keySet().iterator().next();
 
-	private Runnable createRunnable(
-			@NonNull final Entry<Integer, Collection<PurchaseCandidate>> vendorId2purchaseCandidates,
-			@NonNull final ILoggable loggable)
-	{
-		return () -> createPurchaseOrderInDifferentThread(
-				vendorId2purchaseCandidates.getKey(), // vendorId
-				vendorId2purchaseCandidates.getValue(), // purchaseCandidates
-				loggable);
-	}
-
-	private void createPurchaseOrderInDifferentThread(
-			final int vendorId,
-			@NonNull final Collection<PurchaseCandidate> purchaseCandidatesWithVendorId,
-			@NonNull final ILoggable loggable)
-	{
-		// note: if the VendorGateWayInvoker or PurchaseOrderFromCandidatesAggregator use Loggable.get() internally,
-		// they shall receive "our" loggable.
-		Services.get(ITrxManager.class).run(() -> {
-			try (final IAutoCloseable autoClosable = Loggables.temporarySetLoggable(loggable))
-			{
-				createPurchaseOrder0(vendorId, purchaseCandidatesWithVendorId);
-			}
-		});
 	}
 
 	private void createPurchaseOrder0(
@@ -189,32 +141,27 @@ public class PurchaseCandidateToOrderWorkflow
 		purchaseCandidateRepo.saveAllNoLock(purchaseCandidatesWithVendorId); // no lock because they are already locked by us
 	}
 
-	private Function<Throwable, Void> createExceptionHandler(
-			@NonNull final Entry<Integer, Collection<PurchaseCandidate>> vendorId2purchaseCandidates,
-			@NonNull final ILoggable loggable)
+	private void logAndRethrow(
+			final Throwable throwable,
+			final Integer vendorId,
+			final Collection<PurchaseCandidate> purchaseCandidates)
 	{
-		return throwable -> {
+		final ILoggable loggable = Loggables.get();
+		final String message = StringUtils.formatMessage(
+				"Caught {} while working with vendorId={}; message={}, purchaseCandidates={}",
+				throwable.getClass(), vendorId, throwable.getMessage(), purchaseCandidates);
 
-			final Integer vendorId = vendorId2purchaseCandidates.getKey();
-			final Collection<PurchaseCandidate> purchaseCandidates = vendorId2purchaseCandidates.getValue();
+		logger.error(message, throwable);
+		loggable.addLog(message);
 
-			final String message = StringUtils.formatMessage(
-					"Caught {} while working with vendorId={}; message={}, purchaseCandidates={}",
-					throwable.getClass(), vendorId, throwable.getMessage(), purchaseCandidates);
+		for (final PurchaseCandidate purchaseCandidate : purchaseCandidates)
+		{
+			purchaseCandidate.createErrorItem()
+					.throwable(throwable).buildAndAdd();
+		}
 
-			logger.error(message, throwable);
-			loggable.addLog(message);
-
-			for (final PurchaseCandidate purchaseCandidate : purchaseCandidates)
-			{
-				purchaseCandidate.createErrorItem()
-						.throwable(throwable).buildAndAdd();
-			}
-
-			purchaseCandidateRepo.saveAll(purchaseCandidates);
-			exceptions.add(throwable);
-
-			return null;
-		};
+		purchaseCandidateRepo.saveAll(purchaseCandidates);
+		exceptions.add(throwable);
+		throw new AdempiereException(message, throwable);
 	}
 }

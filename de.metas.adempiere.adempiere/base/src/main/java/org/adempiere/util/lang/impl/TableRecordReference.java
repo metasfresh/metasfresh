@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.IContextAware;
@@ -99,7 +101,7 @@ public final class TableRecordReference implements ITableRecordReference
 	/**
 	 * @return immutable list of {@link TableRecordReference}s
 	 */
-	public static final List<TableRecordReference> ofList(final List<?> models)
+	public static final List<TableRecordReference> ofCollection(@Nullable final Collection<?> models)
 	{
 		if (models == null || models.isEmpty())
 		{
@@ -142,7 +144,7 @@ public final class TableRecordReference implements ITableRecordReference
 
 	/**
 	 * Creates an {@link TableRecordReference} from the given {@code model}'s {@code AD_Table_ID} and {@code Record_ID}.
-	 * 
+	 *
 	 * @param model
 	 * @return
 	 */
@@ -231,20 +233,20 @@ public final class TableRecordReference implements ITableRecordReference
 				return null;
 			}
 		}
-		
+
 		return new TableRecordReference(tableName, recordId);
 	}
 
 	private final transient int adTableId;
-	
+
 	private static final String PROP_TableName = "tableName";
 	@JsonProperty(PROP_TableName)
 	private final String tableName;
-	
+
 	private static final String PROP_RecordId = "recordId";
 	@JsonProperty(PROP_RecordId)
 	private final int recordId;
-	
+
 	private transient Integer _hashcode;
 
 	/**

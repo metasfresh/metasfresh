@@ -1,5 +1,7 @@
 package de.metas.purchasecandidate.async;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -10,8 +12,12 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 
+import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.Multimaps;
 
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -63,26 +69,39 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 
 	public static void enqueue(final Collection<Integer> purchaseCandidateIds)
 	{
-		final List<TableRecordReference> purchaseCandidateRecords = //
-				TableRecordReference.ofRecordIds(I_C_PurchaseCandidate.Table_Name, purchaseCandidateIds);
-		if (purchaseCandidateRecords.isEmpty())
+		final Multimap<Integer, I_C_PurchaseCandidate> vendorId2purchaseCandidate = //
+				purchaseCandidateIds.stream()
+						.map(purchaseCandidateId -> load(purchaseCandidateId, I_C_PurchaseCandidate.class))
+						.collect(Multimaps.toMultimap(
+								I_C_PurchaseCandidate::getVendor_ID, // key fucntion
+								Functions.identity(), // value function
+								MultimapBuilder.treeKeys().arrayListValues()::build));
+
+		if (vendorId2purchaseCandidate.isEmpty())
 		{
 			throw new AdempiereException("No purchase candidates to enqueue");
 		}
 
-		final LockOwner lockOwner = LockOwner.newOwner(C_PurchaseCandidates_GeneratePurchaseOrders.class.getSimpleName());
-		final ILockCommand elementsLocker = Services.get(ILockManager.class).lock()
-				.setOwner(lockOwner)
-				.setAutoCleanup(false);
+		final Collection<Collection<I_C_PurchaseCandidate>> values = vendorId2purchaseCandidate.asMap().values();
+		for (final Collection<I_C_PurchaseCandidate> candidateRecords : values)
+		{
+			final LockOwner lockOwner = LockOwner.newOwner(C_PurchaseCandidates_GeneratePurchaseOrders.class.getSimpleName());
+			final ILockCommand elementsLocker = Services.get(ILockManager.class).lock()
+					.setOwner(lockOwner)
+					.setAutoCleanup(false);
 
-		Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(C_PurchaseCandidates_GeneratePurchaseOrders.class)
-				.newBlock()
-				.newWorkpackage()
-				.setElementsLocker(elementsLocker)
-				.bindToThreadInheritedTrx()
-				.addElements(purchaseCandidateRecords)
-				.setUserInChargeId(Env.getAD_User_ID())
-				.build();
+			final List<TableRecordReference> candidateRecordReferences = //
+					TableRecordReference.ofCollection(candidateRecords);
+
+			Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(C_PurchaseCandidates_GeneratePurchaseOrders.class)
+					.newBlock()
+					.newWorkpackage()
+					.setElementsLocker(elementsLocker)
+					.bindToThreadInheritedTrx()
+					.addElements(candidateRecordReferences)
+					.setUserInChargeId(Env.getAD_User_ID())
+					.build();
+		}
 	}
 
 	@Override
