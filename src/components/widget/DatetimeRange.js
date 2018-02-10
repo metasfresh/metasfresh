@@ -66,7 +66,7 @@ class DatetimeRange extends Component {
     const availableDates =
       !!startDate && !!endDate
         ? ` ${Moment(startDate).format(fmt)} - ${Moment(endDate).format(fmt)}`
-        : ' All dates available';
+        : counterpart.translate('window.daterange.filter.hint');
 
     return (
       <DateRangePicker
