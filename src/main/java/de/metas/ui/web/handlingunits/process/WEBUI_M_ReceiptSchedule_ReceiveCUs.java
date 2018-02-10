@@ -155,7 +155,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends JavaProcess implements I
 				.filter(hu -> hu != null)
 				.collect(GuavaCollectors.toImmutableList());
 
-		getResult().setRecordsToOpen(TableRecordReference.ofList(hus));
+		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus));
 
 		return MSG_OK;
 	}

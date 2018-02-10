@@ -146,7 +146,7 @@ import de.metas.quantity.Quantity;
 		//
 		// Generate the HUs
 		final List<I_M_HU> hus = huGenerator.generate();
-		getResult().setRecordsToOpen(TableRecordReference.ofList(hus));
+		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus));
 
 		return MSG_OK;
 	}
