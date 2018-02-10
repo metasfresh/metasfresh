@@ -4,9 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
@@ -96,7 +94,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 	public void executeForPurchaseCandidates()
 	{
 		final PurchaseCandidate candidate1 = createPurchaseCandidate(10, 20);
-		final PurchaseCandidate candidate2 = createPurchaseCandidate(11, 30);
+		final PurchaseCandidate candidate2 = createPurchaseCandidate(11, 20);
 
 		final ImmutableList<PurchaseCandidate> purchaseCandidates = ImmutableList.of(candidate1, candidate2);
 
@@ -104,8 +102,6 @@ public class PurchaseCandidateToOrderWorkflowTest
 		new Expectations()
 		{{
 			vendorGatewayInvokerFactory.createForVendorId(20); result = NullVendorGatewayInvoker.INSTANCE;
-			vendorGatewayInvokerFactory.createForVendorId(30); result = NullVendorGatewayInvoker.INSTANCE;
-
 		}};	// @formatter:on
 
 		// invoke the method under test
@@ -125,62 +121,71 @@ public class PurchaseCandidateToOrderWorkflowTest
 		// @formatter:off
 		new Verifications()
 		{{
-			List<Iterator<PurchaseOrderItem>> iterators = new ArrayList<>();
-			purchaseOrderFromItemsAggregator.addAll(withCapture(iterators)); times = 2;
+			Iterator<PurchaseOrderItem> iterator;
+			purchaseOrderFromItemsAggregator.addAll(iterator=withCapture());
 
-			assertThat(iterators).hasSize(2);
-			assertThat(iterators).allSatisfy(iterator -> {
-					assertThat(iterator).isNotNull();
-		    		assertThat(iterator.hasNext()).as("iterator is not consumed").isTrue();
-			});
+			assertThat(iterator).isNotNull();
+			assertThat(iterator.hasNext()).as("iterator is not consumed").isTrue();
+			assertThat(iterator).hasSize(2);
 		}};	// @formatter:on
 	}
 
 	@Test
-	public void executeForPurchaseCandidates_one_exception()
+	public void executeForPurchaseCandidates_prevent_multiple_vendorIds()
 	{
 		final PurchaseCandidate candidate1 = createPurchaseCandidate(10, 20);
 		final PurchaseCandidate candidate2 = createPurchaseCandidate(11, 30);
 
 		final ImmutableList<PurchaseCandidate> purchaseCandidates = ImmutableList.of(candidate1, candidate2);
 
+		// invoke the method under test
+		assertThatThrownBy(() -> workflowUnderTest.executeForPurchaseCandidates(purchaseCandidates))
+				.hasMessageStartingWith("Error: The given purchaseCandidates have different vendorIds");
+	}
+
+	@Test
+	public void executeForPurchaseCandidates_exception()
+	{
+		final PurchaseCandidate candidate1 = createPurchaseCandidate(10, 20);
+		final PurchaseCandidate candidate2 = createPurchaseCandidate(11, 20);
+
+		final ImmutableList<PurchaseCandidate> purchaseCandidates = ImmutableList.of(candidate1, candidate2);
+
 		// @formatter:off
 		new Expectations()
 		{{
-			vendorGatewayInvokerFactory.createForVendorId(20); result = NullVendorGatewayInvoker.INSTANCE;
+			vendorGatewayInvokerFactory.createForVendorId(20); result = vendorGatewayInvoker;
 
-			// candidate2 is for the mocked vendorGatewayInvoker (vendorId=30)
-			vendorGatewayInvokerFactory.createForVendorId(30); result = vendorGatewayInvoker;
-			vendorGatewayInvoker.placeRemotePurchaseOrder(ImmutableList.of(candidate2));
+			vendorGatewayInvoker.placeRemotePurchaseOrder(purchaseCandidates);
 			result = new RuntimeException(SOMETHING_WENT_WRONG);
 
 		}};	// @formatter:on
 
 		// invoke the method under test
-		workflowUnderTest.executeForPurchaseCandidates(purchaseCandidates);
+		assertThatThrownBy(() -> workflowUnderTest.executeForPurchaseCandidates(purchaseCandidates))
+				.hasMessageContaining(SOMETHING_WENT_WRONG);
 
-		assertThatOneCandidateWereAddedToOrderAggregator();
+		assertThatNoCandidateWasAddedToOrderAggregator();
 
-		assertThat(candidate1.getPurchaseOrderItems()).hasSize(1);
-		assertThat(candidate1.getPurchaseErrorItems()).isEmpty();
+		assertThat(candidate1.getPurchaseOrderItems()).isEmpty();
+		assertThat(candidate1.getPurchaseErrorItems()).hasSize(1);
 
 		assertThat(candidate2.getPurchaseOrderItems()).isEmpty();
 		assertThat(candidate2.getPurchaseErrorItems()).hasSize(1);
 
-		final Throwable candidate2Throwable = candidate2.getPurchaseErrorItems().get(0).getThrowable();
-		assertThat(candidate2Throwable).hasMessageContaining(SOMETHING_WENT_WRONG);
+		assertThat(purchaseCandidates).allSatisfy(candidate -> {
+			final Throwable candidate2Throwable = candidate.getPurchaseErrorItems().get(0).getThrowable();
+			assertThat(candidate2Throwable).hasMessageContaining(SOMETHING_WENT_WRONG);
+		});
 	}
 
-	private void assertThatOneCandidateWereAddedToOrderAggregator()
+	@SuppressWarnings("unchecked")
+	private void assertThatNoCandidateWasAddedToOrderAggregator()
 	{
 		// @formatter:off
 		new Verifications()
 		{{
-			Iterator<PurchaseOrderItem> iterator;
-			purchaseOrderFromItemsAggregator.addAll(iterator = withCapture()); times = 1;
-
-			assertThat(iterator).isNotNull();
-			assertThat(iterator.hasNext()).as("iterator is not consumed").isTrue();
+			purchaseOrderFromItemsAggregator.addAll((Iterator<PurchaseOrderItem>)any); times = 0;
 		}};	// @formatter:on
 	}
 

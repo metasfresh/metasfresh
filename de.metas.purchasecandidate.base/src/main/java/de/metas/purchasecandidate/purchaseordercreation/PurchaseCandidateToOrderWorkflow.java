@@ -100,8 +100,8 @@ public class PurchaseCandidateToOrderWorkflow
 		final ImmutableListMultimap<Integer, PurchaseCandidate> vendorId2purchaseCandidate = //
 				Multimaps.index(purchaseCandidates, PurchaseCandidate::getVendorBPartnerId);
 
-		Check.errorIf(vendorId2purchaseCandidate.size() != 1,
-				"The given purchaseCandidates need to all have the same vendorId; different vendorIds={}; purchaseCandidates={}",
+		Check.errorIf(vendorId2purchaseCandidate.keySet().size() != 1,
+				"The given purchaseCandidates have different vendorIds={}; purchaseCandidates={}",
 				vendorId2purchaseCandidate.keySet(), purchaseCandidates);
 
 		return vendorId2purchaseCandidate.keySet().iterator().next();
