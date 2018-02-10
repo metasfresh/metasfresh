@@ -20,6 +20,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-webui-frontend
+  * [#1546](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1546) Date Range Filter as Range Filter has initial daterange
+    * Leaves the Daterange filter now initially empty to that it does not interrupt other filtering.
   * [#1553](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1553) Drop down lists remain displayed when using tab several times (again)
     * Fixes a Bug with dropdown lists staying open after tabbing away.
   * [#1559](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1559) Errors in the console when opening HU Editor
