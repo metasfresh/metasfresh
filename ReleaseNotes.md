@@ -10,6 +10,14 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.45 (2018-08)
+**release for week 2018-08**
+
+## Features
+
+## Fixes
+
+
 # metasfresh 5.44 (2018-07)
 **release for week 2018-07**
 
