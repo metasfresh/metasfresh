@@ -2,7 +2,8 @@
     "env": {
         "browser": true,
         "node": true,
-        "es6": true
+        "es6": true,
+        "jest/globals": true
     },
     "parser": "babel-eslint",
     "extends": [
@@ -11,12 +12,18 @@
         "prettier"
     ],
     "rules": {
-        "prettier/prettier": "error",
+        "prettier/prettier": ["warn", {
+          "singleQuote": true,
+          "trailingComma": "es5",
+          "bracketSpacing": true,
+          "jsxBracketSameLine": true,
+          "parser": "flow"
+        }],
         "react/prop-types": "warn",
         "react/jsx-filename-extension": "off",
         "react/prefer-stateless-function": "off"
     },
-    "plugins": ["prettier", "react"],
+    "plugins": ["prettier", "react", "jest"],
     "globals": {
         "localStorage": true,
         "Promise": true,

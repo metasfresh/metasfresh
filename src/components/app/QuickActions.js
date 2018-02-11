@@ -47,10 +47,6 @@ class QuickActions extends Component {
     }
   }
 
-  componentDidMount = () => {
-    this.setState(initialState);
-  };
-
   componentWillUnmount = () => {
     this.unmounted = true;
   };
@@ -148,12 +144,6 @@ class QuickActions extends Component {
     if (this.unmounted) {
       return;
     }
-
-    /*
-        this.setState({
-            loading: true
-        });
-*/
 
     if (windowType && viewId && selected && childView && parentView) {
       quickActionsRequest(windowType, viewId, selected, childView, parentView)

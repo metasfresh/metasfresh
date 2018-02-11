@@ -1,14 +1,10 @@
 import PropTypes from "prop-types";
 import React, { Component } from "react";
+import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 import Moment from "moment";
 
-import {
-  getZoomIntoWindow,
-  openModal,
-  patch,
-  updatePropertyValue
-} from "../../actions/WindowActions";
+import * as windowActions from "../../actions/WindowActions";
 import RawWidget from "./RawWidget";
 import { DATE_FIELDS, DATE_FORMAT } from "../../constants/Constants";
 
@@ -79,7 +75,8 @@ class MasterWidget extends Component {
       widgetType,
       dataId,
       windowType,
-      dispatch,
+      updatePropertyValue,
+      patch,
       rowId,
       tabId,
       onChange,
@@ -101,7 +98,7 @@ class MasterWidget extends Component {
     }
 
     if (widgetType !== "Button") {
-      dispatch(updatePropertyValue(property, value, tabId, currRowId, isModal));
+      updatePropertyValue(property, value, tabId, currRowId, isModal);
     }
 
     if (viewId) {
@@ -109,20 +106,18 @@ class MasterWidget extends Component {
       isEdit = true;
     }
 
-    ret = dispatch(
-      patch(
-        entity,
-        windowType,
-        dataId,
-        tabId,
-        currRowId,
-        property,
-        parseValue,
-        isModal,
-        isAdvanced,
-        viewId,
-        isEdit
-      )
+    ret = patch(
+      entity,
+      windowType,
+      dataId,
+      tabId,
+      currRowId,
+      property,
+      parseValue,
+      isModal,
+      isAdvanced,
+      viewId,
+      isEdit
     );
 
     //callback
@@ -140,7 +135,7 @@ class MasterWidget extends Component {
   //
   handleChange = (property, val) => {
     const {
-      dispatch,
+      updatePropertyValue,
       tabId,
       rowId,
       isModal,
@@ -167,7 +162,7 @@ class MasterWidget extends Component {
         if (rowId === "NEW") {
           currRowId = relativeDocId;
         }
-        dispatch(updatePropertyValue(property, val, tabId, currRowId, isModal));
+        updatePropertyValue(property, val, tabId, currRowId, isModal);
       }
     );
   };
@@ -194,99 +189,39 @@ class MasterWidget extends Component {
   };
 
   handleProcess = (caption, buttonProcessId, tabId, rowId) => {
-    const { dispatch } = this.props;
+    const { openModal } = this.props;
 
-    dispatch(
-      openModal(caption, buttonProcessId, "process", tabId, rowId, false, false)
-    );
+    openModal(caption, buttonProcessId, "process", tabId, rowId, false, false);
   };
 
   handleZoomInto = field => {
-    const { dataId, windowType, tabId, rowId } = this.props;
+    const { dataId, windowType, tabId, rowId, getZoomIntoWindow } = this.props;
+
     getZoomIntoWindow("window", windowType, dataId, tabId, rowId, field).then(
       res => {
         res &&
           res.data &&
-          window.open(
-            "/window/" +
-              res.data.documentPath.windowId +
-              "/" +
-              res.data.documentPath.documentId,
+          /*eslint-disable */
+          window.open(`
+            /window/${res.data.documentPath.windowId}/${res.data.documentPath.documentId},
             "_blank"
-          );
+          `);
+          /*eslint-enable */
       }
     );
   };
 
   render() {
-    const {
-      caption,
-      widgetType,
-      fields,
-      windowType,
-      type,
-      noLabel,
-      widgetData,
-      dataId,
-      rowId,
-      tabId,
-      icon,
-      gridAlign,
-      isModal,
-      entity,
-      handleBackdropLock,
-      tabIndex,
-      dropdownOpenCallback,
-      autoFocus,
-      fullScreen,
-      disabled,
-      buttonProcessId,
-      listenOnKeys,
-      listenOnKeysFalse,
-      listenOnKeysTrue,
-      closeTableField,
-      allowShowPassword,
-      onBlurWidget,
-      isOpenDatePicker
-    } = this.props;
+    const { handleBackdropLock } = this.props;
 
     const { updated, data } = this.state;
     const handleFocusFn = handleBackdropLock ? handleBackdropLock : () => {};
 
     return (
       <RawWidget
-        {...{
-          allowShowPassword,
-          entity,
-          widgetType,
-          fields,
-          windowType,
-          dataId,
-          widgetData,
-          rowId,
-          tabId,
-          icon,
-          gridAlign,
-          updated,
-          isModal,
-          noLabel,
-          type,
-          caption,
-          handleBackdropLock,
-          tabIndex,
-          dropdownOpenCallback,
-          autoFocus,
-          fullScreen,
-          disabled,
-          buttonProcessId,
-          listenOnKeys,
-          listenOnKeysFalse,
-          listenOnKeysTrue,
-          closeTableField,
-          data,
-          onBlurWidget,
-          isOpenDatePicker
-        }}
+        {...this.props}
+        updated={updated}
+        data={data}
         handleFocus={() => handleFocusFn(true)}
         handleBlur={() => handleFocusFn(false)}
         handlePatch={this.handlePatch}
@@ -300,8 +235,21 @@ class MasterWidget extends Component {
 }
 
 MasterWidget.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   isOpenDatePicker: PropTypes.bool
 };
 
-export default connect(false, false, false, { withRef: true })(MasterWidget);
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators(
+    {
+      getZoomIntoWindow: windowActions.getZoomIntoWindow,
+      openModal: windowActions.openModal,
+      patch: windowActions.patch,
+      updatePropertyValue: windowActions.updatePropertyValue
+    },
+    dispatch
+  );
+}
+
+export default connect(null, mapDispatchToProps, null, { withRef: true })(
+  MasterWidget
+);
