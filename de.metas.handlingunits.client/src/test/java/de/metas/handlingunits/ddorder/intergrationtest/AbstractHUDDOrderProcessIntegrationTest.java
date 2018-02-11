@@ -1,5 +1,7 @@
 package de.metas.handlingunits.ddorder.intergrationtest;
 
+import static de.metas.business.BusinessTestHelper.createBPartner;
+
 /*
  * #%L
  * de.metas.handlingunits.client
@@ -10,12 +12,12 @@ package de.metas.handlingunits.ddorder.intergrationtest;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,7 +26,6 @@ package de.metas.handlingunits.ddorder.intergrationtest;
 
 
 import java.math.BigDecimal;
-import static de.metas.business.BusinessTestHelper.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -48,9 +49,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
-import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
-import org.eevolution.model.I_PP_Order;
 import org.eevolution.mrp.api.impl.MRPTestDataSimple;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.Test;
@@ -237,7 +236,7 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 	public final void test()
 	{
 		step010_PrepareData_CreateSalesOrderDemand();
-		step020_runMRP();
+
 		step029_CreateRawMaterialHUs_On_RawMaterialsWarehouse();
 		step030_DDOrderPOS_SelectLine_SelectHUs_Process();
 
@@ -248,24 +247,6 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 	}
 
 	protected abstract void step010_PrepareData_CreateSalesOrderDemand();
-
-	protected void step020_runMRP()
-	{
-		mrpHelper.mrpExecutor.setDisallowMRPNotes(true); // fail on any MRP note
-		mrpHelper.runMRP();
-		mrpHelper.dumpMRPRecords("AFTER MRP RUN");
-
-		//
-		// Complete manufacturing orders
-		mrpHelper.completeMRPDocuments(I_PP_Order.class);
-
-		//
-		// Complete DD orders
-		mrpHelper.completeMRPDocuments(I_DD_Order.class);
-
-		// Dump
-		mrpHelper.dumpMRPRecords("AFTER MRP RUN and Manufacturing Order(s) completed");
-	}
 
 	protected abstract void step029_CreateRawMaterialHUs_On_RawMaterialsWarehouse();
 

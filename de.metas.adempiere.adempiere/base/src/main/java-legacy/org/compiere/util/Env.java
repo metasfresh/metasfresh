@@ -368,7 +368,7 @@ public final class Env
 	/**
 	 * Creates and returns a new empty context which fallbacks to given <code>ctx</code>.
 	 * <p>
-	 * <b>IMPORTANT:</b> do not use this method if you want to do use the derived context as parameter for {@link #switchContext(Properties)}, to avoid a {@link StackOverflowError}. Use {@link #copyCtx(Properties)} instead.
+	 * <b>IMPORTANT:</b> do not use this method if you want to do use the resulting context as parameter for {@link #switchContext(Properties)}, to avoid a {@link StackOverflowError}. Use {@link #copyCtx(Properties)} instead.
 	 *
 	 * @param ctx
 	 * @return new context
@@ -449,8 +449,10 @@ public final class Env
 	 * Temporary replace current context with the given one.
 	 *
 	 * This method will return an {@link IAutoCloseable} to be used in try-with-resources and which will restore the context back.
+	 * <p>
+	 * <b>IMPORTANT:</b> do not use this method with a ctx that was created via {@link #deriveCtx(Properties)}, to avoid a {@link StackOverflowError}.<br>
+	 * Use {@link #copyCtx(Properties)} instead.
 	 *
-	 * @param ctx
 	 * @return auto-closeable used to put back the original context
 	 */
 	public static IAutoCloseable switchContext(final Properties ctx)
@@ -1188,7 +1190,7 @@ public final class Env
 	{
 		return Env.getContextAsInt(ctx, CTXNAME_AD_User_ID);
 	}	// getAD_User_ID
-	
+
 	public static int getAD_User_ID()
 	{
 		return Env.getAD_User_ID(getCtx());
