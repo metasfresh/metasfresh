@@ -3,11 +3,15 @@ package de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Issue;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3ClientException;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3FaultInfoDataPersister;
@@ -18,6 +22,9 @@ import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_FaultInfo;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Bestellung;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAnteil;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwort;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwortAuftrag;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAntwortPosition;
+import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungPosition;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
 import lombok.Builder;
 import lombok.Getter;
@@ -52,6 +59,12 @@ public class MSV3PurchaseOrderTransaction
 	@Getter
 	private final Bestellung bestellung;
 
+	/**
+	 * The ordering of the {@link BestellungPosition} is important.<br>
+	 * Also see {@link #extractBestellungAntwortPosition2PurchaseCandidateId()}
+	 */
+	private ImmutableMap<BestellungPosition, Integer> bestellungPosition2PurchaseCandidateId;
+
 	private final int orgId;
 
 	@Getter
@@ -66,16 +79,18 @@ public class MSV3PurchaseOrderTransaction
 	@Builder
 	private MSV3PurchaseOrderTransaction(
 			@NonNull final Bestellung bestellung,
+			@NonNull final ImmutableMap<BestellungPosition, Integer> bestellungPosition2PurchaseCandidateId,
 			final int orgId)
 	{
+		this.bestellungPosition2PurchaseCandidateId = bestellungPosition2PurchaseCandidateId;
 		this.bestellung = bestellung;
 		this.orgId = orgId;
 	}
 
 	public I_MSV3_Bestellung_Transaction store()
 	{
-		final MSV3PurchaseOrderDataPersister purchaseOrderDataPersister = MSV3PurchaseOrderDataPersister
-				.createNewForOrgId(orgId);
+		final MSV3PurchaseOrderRequestPersister purchaseOrderDataPersister = MSV3PurchaseOrderRequestPersister
+				.createNewForOrgId(orgId, bestellungPosition2PurchaseCandidateId);
 
 		final I_MSV3_Bestellung_Transaction transactionRecord = newInstance(I_MSV3_Bestellung_Transaction.class);
 		transactionRecord.setAD_Org_ID(orgId);
@@ -86,8 +101,17 @@ public class MSV3PurchaseOrderTransaction
 
 		if (bestellungAntwort != null)
 		{
+			final ImmutableMap<BestellungAntwortPosition, Integer> bestellungAntwortPosition2PurchaseCandidateId = //
+					extractBestellungAntwortPosition2PurchaseCandidateId();
+
+			final MSV3PurchaseOrderResponsePersister purchaseOrderResponsePersister = //
+					MSV3PurchaseOrderResponsePersister
+							.createNewForOrgId(
+									orgId,
+									bestellungAntwortPosition2PurchaseCandidateId);
+
 			final I_MSV3_BestellungAntwort bestellungAntwortRecord = //
-					purchaseOrderDataPersister.storePurchaseOrderResponse(bestellungAntwort);
+					purchaseOrderResponsePersister.storePurchaseOrderResponse(bestellungAntwort);
 			transactionRecord.setMSV3_BestellungAntwort(bestellungAntwortRecord);
 
 			bestellungAnteil2Id = purchaseOrderDataPersister.getBestellungAnteil2Id();
@@ -107,6 +131,34 @@ public class MSV3PurchaseOrderTransaction
 
 		save(transactionRecord);
 		return transactionRecord;
+	}
+
+	/**
+	 * Takes advantage of the positions of the WSDL request having the same ordering as the response positions.
+	 * @return
+	 */
+	private ImmutableMap<BestellungAntwortPosition, Integer> extractBestellungAntwortPosition2PurchaseCandidateId()
+	{
+		final ImmutableMap.Builder<BestellungAntwortPosition, Integer> bestellungAntwortPosition2PurchaseCandidateId = //
+				ImmutableMap.builder();
+
+		final Iterator<BestellungPosition> iterator = bestellungPosition2PurchaseCandidateId.keySet().iterator();
+		final List<BestellungAntwortAuftrag> auftraege = bestellungAntwort.getAuftraege();
+		for (int auftragIdx = 0; auftragIdx < auftraege.size(); auftragIdx++)
+		{
+			final BestellungAntwortAuftrag bestellungAntwortAuftrag = auftraege.get(auftragIdx);
+			final List<BestellungAntwortPosition> positionen = bestellungAntwortAuftrag.getPositionen();
+			for (int positionIdx = 0; positionIdx < positionen.size(); positionIdx++)
+			{
+				final BestellungAntwortPosition bestellungAntwortPosition = positionen.get(positionIdx);
+				final BestellungPosition bestellungPosition = iterator.next();
+
+				bestellungAntwortPosition2PurchaseCandidateId.put(
+						bestellungAntwortPosition,
+						bestellungPosition2PurchaseCandidateId.get(bestellungPosition));
+			}
+		}
+		return bestellungAntwortPosition2PurchaseCandidateId.build();
 	}
 
 	public RuntimeException getExceptionOrNull()

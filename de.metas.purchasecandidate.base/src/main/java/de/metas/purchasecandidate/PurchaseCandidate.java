@@ -208,7 +208,9 @@ public class PurchaseCandidate
 
 	public PurchaseOrderRequestItem createPurchaseOrderRequestItem()
 	{
-		return new PurchaseOrderRequestItem(1, createProductAndQuantity());
+		return new PurchaseOrderRequestItem(
+				getPurchaseCandidateId(),
+				createProductAndQuantity());
 	}
 
 	private ProductAndQuantity createProductAndQuantity()

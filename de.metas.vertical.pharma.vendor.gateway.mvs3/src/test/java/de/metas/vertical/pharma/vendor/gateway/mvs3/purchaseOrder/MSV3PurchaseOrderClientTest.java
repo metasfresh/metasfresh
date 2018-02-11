@@ -77,7 +77,7 @@ import lombok.NonNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		MSV3PurchaseOrderDataPersister.class, Msv3FaultInfoDataPersister.class, Msv3SubstitutionDataPersister.class })
+		MSV3PurchaseOrderRequestPersister.class, Msv3FaultInfoDataPersister.class, Msv3SubstitutionDataPersister.class })
 public class MSV3PurchaseOrderClientTest
 {
 	private static final BigDecimal CONFIRMED_ORDER_QTY = BigDecimal.TEN;

@@ -3,6 +3,7 @@ package de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.xml.bind.JAXBElement;
 
@@ -10,6 +11,7 @@ import org.adempiere.util.Check;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.vendor.gateway.api.ProductAndQuantity;
@@ -98,8 +100,12 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 
 		final Bestellung bestellung = createBestellungWithOneAuftrag(request);
 
-		bestellungPosition2RequestItem = Maps.uniqueIndex(request.getOrderLines(), item -> createBestellungPosition(item));
-		bestellung.getAuftraege().get(0).getPositionen().addAll(bestellungPosition2RequestItem.keySet());
+		bestellungPosition2RequestItem = Maps.uniqueIndex(
+				request.getPurchaseOrderRequestItems(),
+				item -> createBestellungPosition(item));
+
+		bestellung.getAuftraege().get(0)
+				.getPositionen().addAll(bestellungPosition2RequestItem.keySet());
 
 		final Bestellen bestellen = objectFactory.createBestellen();
 		bestellen.setClientSoftwareKennung(MSV3Util.CLIENT_SOFTWARE_IDENTIFIER.get());
@@ -118,10 +124,23 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 		{
 			assertPrepared();
 
+			final ImmutableMap.Builder<BestellungPosition, Integer> bestellungPosition2PurchaseCandidateId = //
+					ImmutableMap.builder();
+
+			final ImmutableSet<Entry<BestellungPosition, PurchaseOrderRequestItem>> entrySet = //
+					bestellungPosition2RequestItem.entrySet();
+			for (final Entry<BestellungPosition, PurchaseOrderRequestItem> entry : entrySet)
+			{
+				bestellungPosition2PurchaseCandidateId.put(
+						entry.getKey(),
+						entry.getValue().getPurchaseCandidateId());
+			}
+
 			final MSV3PurchaseOrderTransaction purchaseTransaction = //
 					MSV3PurchaseOrderTransaction.builder()
 							.orgId(orgId)
 							.bestellung(purchaseOrderRequestPayload.getValue().getBestellung())
+							.bestellungPosition2PurchaseCandidateId(bestellungPosition2PurchaseCandidateId.build())
 							.build();
 
 			// invoke the deeper layer
@@ -176,7 +195,8 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 		return bestellung;
 	}
 
-	private BestellungPosition createBestellungPosition(final PurchaseOrderRequestItem purchaseOrderRequestItem)
+	private BestellungPosition createBestellungPosition(
+			@NonNull final PurchaseOrderRequestItem purchaseOrderRequestItem)
 	{
 		final BestellungPosition bestellungPosition = objectFactory.createBestellungPosition();
 		bestellungPosition.setLiefervorgabe(Liefervorgabe.NORMAL);
@@ -189,7 +209,6 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 	}
 
 	private void performOrdering(
-
 			@NonNull final MSV3PurchaseOrderTransaction purchaseTransaction)
 	{
 		try

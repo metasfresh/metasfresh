@@ -35,5 +35,5 @@ public class PurchaseOrderRequest
 	int vendorId;
 
 	@Singular
-	Collection<PurchaseOrderRequestItem> orderLines;
+	Collection<PurchaseOrderRequestItem> purchaseOrderRequestItems;
 }
