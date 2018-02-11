@@ -3,9 +3,12 @@ package de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.vertical.pharma.vendor.gateway.mvs3.MSV3Util;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3FaultInfoDataPersister;
@@ -57,12 +60,15 @@ public class MSV3PurchaseOrderResponsePersister
 	{
 		return new MSV3PurchaseOrderResponsePersister(
 				orgId,
-				bestellungAntwortPosition2PurchaseCandidateId);
+				bestellungAntwortPosition2PurchaseCandidateId,
+				new HashMap<>());
 	}
 
 	private final int orgId;
 
 	private final Map<BestellungAntwortPosition, Integer> bestellungAntwortPosition2PurchaseCandidateId;
+
+	private final Map<BestellungAnteil, Integer> bestellungAnteil2Id;
 
 	public I_MSV3_BestellungAntwort storePurchaseOrderResponse(@NonNull final BestellungAntwort bestellungAntwort)
 	{
@@ -94,6 +100,8 @@ public class MSV3PurchaseOrderResponsePersister
 
 					bestellungAnteilRecord.setMSV3_BestellungAntwortPosition(bestellungAntwortPositionRecord);
 					save(bestellungAnteilRecord);
+
+					bestellungAnteil2Id.put(anteil, bestellungAnteilRecord.getMSV3_BestellungAnteil_ID());
 				}
 			}
 		}
@@ -168,5 +176,10 @@ public class MSV3PurchaseOrderResponsePersister
 				.ifPresent(bestellungAnteilRecord::setMSV3_Typ);
 
 		return bestellungAnteilRecord;
+	}
+
+	public ImmutableMap<BestellungAnteil, Integer> getBestellungAnteil2Id()
+	{
+		return ImmutableMap.copyOf(bestellungAnteil2Id);
 	}
 }

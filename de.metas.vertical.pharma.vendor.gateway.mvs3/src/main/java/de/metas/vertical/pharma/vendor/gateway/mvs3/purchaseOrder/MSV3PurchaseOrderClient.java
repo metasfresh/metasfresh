@@ -146,9 +146,11 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 			// invoke the deeper layer
 			performOrdering(purchaseTransaction);
 
-			final I_MSV3_Bestellung_Transaction purchaseTransactionRecord = purchaseTransaction.store();
+			final I_MSV3_Bestellung_Transaction purchaseTransactionRecord = //
+					purchaseTransaction.store();
 
-			final RemotePurchaseOrderCreatedBuilder responseBuilder = RemotePurchaseOrderCreated.builder()
+			final RemotePurchaseOrderCreatedBuilder responseBuilder = RemotePurchaseOrderCreated
+					.builder()
 					.transactionRecordId(purchaseTransactionRecord.getMSV3_Bestellung_Transaction_ID())
 					.transactionTableName(I_MSV3_Bestellung_Transaction.Table_Name)
 					.exception(purchaseTransaction.getExceptionOrNull());

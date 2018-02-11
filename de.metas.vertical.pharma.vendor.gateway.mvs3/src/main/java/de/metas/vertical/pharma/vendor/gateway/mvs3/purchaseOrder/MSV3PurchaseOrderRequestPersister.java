@@ -3,17 +3,13 @@ package de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_Bestellung;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_BestellungAuftrag;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.model.I_MSV3_BestellungPosition;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Bestellung;
-import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAnteil;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungAuftrag;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.BestellungPosition;
 import lombok.AccessLevel;
@@ -51,15 +47,13 @@ public class MSV3PurchaseOrderRequestPersister
 	{
 		return new MSV3PurchaseOrderRequestPersister(
 				orgId,
-				bestellungPosition2PurchaseCandidateId,
-				new HashMap<>());
+				bestellungPosition2PurchaseCandidateId);
 	}
 
 	private final int orgId;
 
 	private final Map<BestellungPosition, Integer> bestellungPosition2PurchaseCandidateId;
 
-	private final Map<BestellungAnteil, Integer> bestellungAnteil2Id;
 
 	public I_MSV3_Bestellung storePurchaseOrderRequest(@NonNull final Bestellung bestellung)
 	{
@@ -118,10 +112,4 @@ public class MSV3PurchaseOrderRequestPersister
 
 		return bestellungPositionRecord;
 	}
-
-	public ImmutableMap<BestellungAnteil, Integer> getBestellungAnteil2Id()
-	{
-		return ImmutableMap.copyOf(bestellungAnteil2Id);
-	}
-
 }

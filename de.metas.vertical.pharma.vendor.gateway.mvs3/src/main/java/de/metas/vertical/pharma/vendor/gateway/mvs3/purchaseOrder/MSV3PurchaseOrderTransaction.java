@@ -89,14 +89,14 @@ public class MSV3PurchaseOrderTransaction
 
 	public I_MSV3_Bestellung_Transaction store()
 	{
-		final MSV3PurchaseOrderRequestPersister purchaseOrderDataPersister = MSV3PurchaseOrderRequestPersister
+		final MSV3PurchaseOrderRequestPersister purchaseOrderRequestPersister = MSV3PurchaseOrderRequestPersister
 				.createNewForOrgId(orgId, bestellungPosition2PurchaseCandidateId);
 
 		final I_MSV3_Bestellung_Transaction transactionRecord = newInstance(I_MSV3_Bestellung_Transaction.class);
 		transactionRecord.setAD_Org_ID(orgId);
 
 		final I_MSV3_Bestellung bestellungRecord = //
-				purchaseOrderDataPersister.storePurchaseOrderRequest(bestellung);
+				purchaseOrderRequestPersister.storePurchaseOrderRequest(bestellung);
 		transactionRecord.setMSV3_Bestellung(bestellungRecord);
 
 		if (bestellungAntwort != null)
@@ -114,7 +114,7 @@ public class MSV3PurchaseOrderTransaction
 					purchaseOrderResponsePersister.storePurchaseOrderResponse(bestellungAntwort);
 			transactionRecord.setMSV3_BestellungAntwort(bestellungAntwortRecord);
 
-			bestellungAnteil2Id = purchaseOrderDataPersister.getBestellungAnteil2Id();
+			bestellungAnteil2Id = purchaseOrderResponsePersister.getBestellungAnteil2Id();
 		}
 		if (faultInfo != null)
 		{
