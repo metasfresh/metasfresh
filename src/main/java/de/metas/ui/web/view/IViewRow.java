@@ -3,17 +3,20 @@ package de.metas.ui.web.view;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.util.NumberUtils;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.NonNull;
@@ -60,12 +63,25 @@ public interface IViewRow
 
 	//
 	// Fields
+	default Set<String> getFieldNames()
+	{
+		return ImmutableSet.<String> builder()
+				.addAll(getFieldNameAndJsonValues().keySet())
+				.addAll(getViewEditorRenderModeByFieldName().keySet())
+				.addAll(getWidgetTypesByFieldName().keySet())
+				.build();
+	}
+
+	/**
+	 * @return a map with an entry for each of this row's fields.<br>
+	 *         Where the row has <code>null</code> values, the respective entry's value is {@link #NULL_JSON_VALUE}.
+	 */
 	Map<String, Object> getFieldNameAndJsonValues();
 
 	default int getFieldJsonValueAsInt(@NonNull final String fieldName, final int defaultValueIfNotFound)
 	{
 		final Object jsonValueObj = getFieldNameAndJsonValues().get(fieldName);
-		if (jsonValueObj == null)
+		if (JSONNullValue.toNullIfInstance(jsonValueObj) == null)
 		{
 			return defaultValueIfNotFound;
 		}
@@ -83,10 +99,15 @@ public interface IViewRow
 		}
 	}
 
-	default BigDecimal getFieldJsonValueAsBigDecimal(@NonNull final String fieldName, final BigDecimal defaultValueIfNotFoundOrError)
+	default BigDecimal getFieldJsonValueAsBigDecimal(
+			@NonNull final String fieldName,
+			final BigDecimal defaultValueIfNotFoundOrError)
 	{
 		final Object jsonValueObj = getFieldNameAndJsonValues().get(fieldName);
-		return NumberUtils.asBigDecimal(jsonValueObj, defaultValueIfNotFoundOrError);
+
+		return NumberUtils.asBigDecimal(
+				JSONNullValue.toNullIfInstance(jsonValueObj),
+				defaultValueIfNotFoundOrError);
 	}
 
 	default Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
@@ -124,7 +145,6 @@ public interface IViewRow
 	/** @return text to be displayed if {@link #isSingleColumn()} */
 	default ITranslatableString getSingleColumnCaption() { return ITranslatableString.empty(); }
 	// @formatter:on
-
 
 	/** @return a stream of given row and all it's included rows recursively */
 	public default Stream<IViewRow> streamRecursive()

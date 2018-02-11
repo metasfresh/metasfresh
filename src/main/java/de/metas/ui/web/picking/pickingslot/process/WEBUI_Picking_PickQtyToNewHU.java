@@ -32,6 +32,7 @@ import de.metas.ui.web.handlingunits.util.WEBUI_ProcessHelper;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.NonNull;
 
@@ -72,7 +73,8 @@ public class WEBUI_Picking_PickQtyToNewHU
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
 
-	@Param(parameterName = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, mandatory = true)
+	private static final String PARAM_M_HU_PI_Item_Product_ID = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
+	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
 	private I_M_HU_PI_Item_Product huPIItemProduct;
 
 	private static final String PARAM_QTY_CU = "QtyCU";
@@ -151,7 +153,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 	 * 
 	 * @return a list of PI item products that match the selected shipment schedule's product and partner, sorted by name.
 	 */
-	@ProcessParamLookupValuesProvider(parameterName = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, dependsOn = {}, numericKey = true, lookupTableName = I_M_HU_PI_Item_Product.Table_Name)
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_Product_ID, dependsOn = {}, numericKey = true, lookupTableName = I_M_HU_PI_Item_Product.Table_Name)
 	private LookupValuesList getM_HU_PI_Item_Products()
 	{
 		final Properties ctx = getCtx();
@@ -174,20 +176,16 @@ public class WEBUI_Picking_PickQtyToNewHU
 			final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
 			return shipmentSchedule.getQtyToDeliver(); // TODO: get the "better" value from teo, when it's available
 		}
-		else if (Objects.equals(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, parameter.getColumnName()))
+		else if (Objects.equals(PARAM_M_HU_PI_Item_Product_ID, parameter.getColumnName()))
 		{
-			// if i return and in or IntegerLookupValue, i get
-			// org.adempiere.exceptions.AdempiereException: No active process found in this thread
-			// final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
-			// return shipmentSchedule.getM_HU_PI_Item_Product_ID();
+			final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule();
+			final I_M_HU_PI_Item_Product huPIItemProduct = shipmentSchedule.getM_HU_PI_Item_Product();
+			if (huPIItemProduct == null)
+			{
+				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+			}
 
-			// final I_M_HU_PI_Item_Product huPIItemProduct = shipmentSchedule.getM_HU_PI_Item_Product();
-			// final IntegerLookupValue lookupValue = IntegerLookupValue.of(huPIItemProduct.getM_HU_PI_Item_Product_ID(), huPIItemProduct.getName());
-
-			// if i return LookupValuesList, i get
-			// Cannot convert M_HU_PI_Item_Product_ID's value 'LookupValuesList{values=[IntegerLookupValue{id=2004054, displayName=constant{value=IFCO 6416 x 12.50 kg}}]}' (class de.metas.ui.web.window.datatypes.LookupValuesList) to class de.metas.ui.web.window.datatypes.LookupValue$IntegerLookupValue
-			// return LookupValuesList.fromNullable(lookupValue);
-			// return lookupValue;
+			return IntegerLookupValue.of(huPIItemProduct.getM_HU_PI_Item_Product_ID(), huPIItemProduct.getName());
 		}
 
 		return DEFAULT_VALUE_NOTAVAILABLE;

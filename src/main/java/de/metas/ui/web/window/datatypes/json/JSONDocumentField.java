@@ -46,13 +46,13 @@ import io.swagger.annotations.ApiModel;
 
 @ApiModel("document-field")
 @JsonPropertyOrder({
-		"field" //
-		, "value", "value-reason" //
-		, "readonly", "readonly-reason" //
-		, "mandatory", "mandatory-reason" //
-		, "displayed", "displayed-reason" //
-		, "lookupValuesStale", "lookupValuesStale-reason" //
-		, "valid", "validReason" //
+		"field",
+		"value", "value-reason",
+		"readonly", "readonly-reason",
+		"mandatory", "mandatory-reason",
+		"displayed", "displayed-reason",
+		"lookupValuesStale", "lookupValuesStale-reason",
+		"valid", "validReason"
 })
 @SuppressWarnings("serial")
 public final class JSONDocumentField implements Serializable

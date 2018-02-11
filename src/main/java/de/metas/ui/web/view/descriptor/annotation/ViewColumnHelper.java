@@ -26,6 +26,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
@@ -93,7 +94,9 @@ public final class ViewColumnHelper
 		}
 	}
 
-	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClass(final Class<?> dataType, @NonNull final JSONViewDataType viewType)
+	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClass(
+			@NonNull final Class<?> dataType,
+			@NonNull final JSONViewDataType viewType)
 	{
 		return getDescriptor(dataType)
 				.getColumns().stream()
@@ -103,7 +106,9 @@ public final class ViewColumnHelper
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClassAndFieldNames(@NonNull final Class<?> dataType, @NonNull final String... fieldNames)
+	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClassAndFieldNames(
+			@NonNull final Class<?> dataType,
+			@NonNull final String... fieldNames)
 	{
 		Check.assumeNotEmpty(fieldNames, "fieldNames is not empty");
 
@@ -128,7 +133,7 @@ public final class ViewColumnHelper
 		}
 
 		return ClassViewDescriptor.builder()
-				// .className(dataType.getName())
+
 				.columns(columns)
 				.build();
 
@@ -170,15 +175,19 @@ public final class ViewColumnHelper
 				.addField(DocumentLayoutElementFieldDescriptor.builder(column.getFieldName()));
 	}
 
-	public static <T extends IViewRow> ImmutableMap<String, Object> extractJsonMap(final T row)
+	/**
+	 * This helper method is intended to support individual implementations of {@link IViewRow#getFieldNameAndJsonValues()}.
+	 */
+	public static <T extends IViewRow> ImmutableMap<String, Object> extractJsonMap(@NonNull final T row)
 	{
 		final Class<? extends IViewRow> rowClass = row.getClass();
+
 		final LinkedHashMap<String, Object> result = new LinkedHashMap<>();
 		getDescriptor(rowClass)
 				.getColumns()
 				.forEach(column -> {
 					final Object value = extractFieldValueAsJson(row, column);
-					if (value != null)
+					if (!JSONNullValue.isNull(value))
 					{
 						result.put(column.getFieldName(), value);
 					}
