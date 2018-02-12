@@ -81,9 +81,9 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	private I_C_BPartner_Stats createBPartnerStats(final I_C_BPartner partner)
 	{
 		final I_C_BPartner_Stats stat = InterfaceWrapperHelper.newInstance(I_C_BPartner_Stats.class);
-
+		final String status = partner.getC_BP_Group().getSOCreditStatus();
 		stat.setC_BPartner(partner);
-		stat.setSOCreditStatus(X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK);
+		stat.setSOCreditStatus(status);
 		stat.setActualLifeTimeValue(BigDecimal.ZERO);
 		stat.setSO_CreditUsed(BigDecimal.ZERO);
 		stat.setOpenItems(BigDecimal.ZERO);
