@@ -69,3 +69,9 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,562708,0,322,550964,540483,'F',TO_TIMESTAMP('2018-02-12 17:04:04','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','Kreditstatus',30,0,0,TO_TIMESTAMP('2018-02-12 17:04:04','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+-- 2018-02-12T18:07:26.973
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsLazyLoading='Y',Updated=TO_TIMESTAMP('2018-02-12 18:07:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558986
+;
+
