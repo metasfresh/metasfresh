@@ -120,8 +120,6 @@ public class MRPTestHelper
 	public PlainMRPDAO mrpDAO;
 	public IQueryBL queryBL;
 	public PlainDocumentBL docActionBL;
-	//
-	public MRPExecutorService mrpExecutorService = new MRPExecutorService();
 
 
 	//
