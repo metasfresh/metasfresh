@@ -41,4 +41,5 @@ public interface ICostDetailService
 	/** @return seed cost or null */
 	BigDecimal calculateSeedCosts(CostSegment costSegment, CostingMethod costingMethod, final int orderLineId);
 
+	CostResult getCurrentCosts(CostSegment costSegment, CostingMethod costingMethod);
 }

@@ -39,4 +39,6 @@ public interface ICurrentCostsRepository
 	void save(CurrentCost currentCost);
 
 	void deleteForProduct(I_M_Product product);
+
+	CostResult getByCostSegmentAndCostingMethod(CostSegment costSegment, CostingMethod costingMethod);
 }

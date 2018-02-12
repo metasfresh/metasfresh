@@ -40,6 +40,7 @@ import de.metas.costing.CostingMethodHandler;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.ICostDetailService;
 import de.metas.costing.ICostElementRepository;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyRate;
@@ -77,15 +78,18 @@ public class CostDetailService implements ICostDetailService
 
 	private final ICostDetailRepository costDetailsRepo;
 	private final ICostElementRepository costElementRepo;
+	private final ICurrentCostsRepository currentCostsRepo;
 	private final ImmutableMap<CostingMethod, CostingMethodHandler> costingMethodHandlers;
 
 	public CostDetailService(
 			@NonNull final ICostDetailRepository costDetailsRepo,
 			@NonNull final ICostElementRepository costElementRepo,
+			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final List<CostingMethodHandler> costingMethodHandlers)
 	{
 		this.costDetailsRepo = costDetailsRepo;
 		this.costElementRepo = costElementRepo;
+		this.currentCostsRepo = currentCostsRepo;
 		this.costingMethodHandlers = Maps.uniqueIndex(costingMethodHandlers, CostingMethodHandler::getCostingMethod);
 		logger.info("Costing method handlers: {}", this.costingMethodHandlers);
 	}
@@ -336,4 +340,9 @@ public class CostDetailService implements ICostDetailService
 				.build();
 	}
 
+	@Override
+	public CostResult getCurrentCosts(final CostSegment costSegment, final CostingMethod costingMethod)
+	{
+		return currentCostsRepo.getByCostSegmentAndCostingMethod(costSegment, costingMethod);
+	}
 }
