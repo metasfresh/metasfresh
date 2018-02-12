@@ -13,13 +13,13 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.ProductCost;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.TimeUtil;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostResult;
+import de.metas.costing.CostSegment;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostDetailService;
@@ -96,9 +96,18 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 	public CostAmount getStandardCosts(final I_C_AcctSchema as)
 	{
-		final ProductCost pc = getProductCost();
-		final BigDecimal costs = pc.getProductCosts(as, getAD_Org_ID(), CostingMethod.StandardCosting, getC_OrderLine_ID(), false);	// non-zero costs
-		return CostAmount.of(costs, as.getC_Currency_ID());
+		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
+
+		final CostSegment costSegment = CostSegment.builder()
+				.costingLevel(getProductCostingLevel(as))
+				.acctSchemaId(as.getC_AcctSchema_ID())
+				.costTypeId(as.getM_CostType_ID())
+				.clientId(getAD_Client_ID())
+				.orgId(getAD_Org_ID())
+				.productId(getM_Product_ID())
+				.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+				.build();
+		return costDetailService.getCurrentCosts(costSegment, CostingMethod.StandardCosting).getTotalAmount();
 	}
 
 	public CostResult createCostDetails(final I_C_AcctSchema as)
