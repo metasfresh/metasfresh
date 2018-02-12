@@ -296,6 +296,7 @@ public class MCost extends X_M_Cost
 
 	/**
 	 * Get Seed Costs
+	 * 
 	 * @return price or null
 	 */
 	public static BigDecimal getSeedCosts(
@@ -549,15 +550,14 @@ public class MCost extends X_M_Cost
 			final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(getM_Product_ID(), as);
 			if (CostingLevel.Client.equals(costingLevel))
 			{
-				if (getAD_Org_ID() != 0 || getM_AttributeSetInstance_ID() != 0)
+				if (getAD_Org_ID() > 0 || getM_AttributeSetInstance_ID() > 0)
 				{
 					throw new AdempiereException("@CostingLevelClient@");
 				}
 			}
 			else if (CostingLevel.BatchLot.equals(costingLevel))
 			{
-				if (getM_AttributeSetInstance_ID() == 0
-						&& ce.isMaterialCostingMethod())
+				if (getM_AttributeSetInstance_ID() <= 0 && ce.isMaterialCostingMethod())
 				{
 					throw new FillMandatoryException(I_M_Cost.COLUMNNAME_M_AttributeSetInstance_ID);
 				}
