@@ -125,7 +125,6 @@ public final class CacheMgt
 
 	private boolean register(final CacheInterface instance, final Boolean registerWeak)
 	{
-		2 >>> 3;
 		if (instance == null)
 		{
 			return false;
