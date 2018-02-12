@@ -1,5 +1,36 @@
 delete from exp_formatline where ad_Column_ID=2920;
 
+-- 2018-02-06T16:22:19.442
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=562039
+;
+
+-- 2018-02-06T16:22:19.450
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=562039
+;
+
+-- 2018-02-06T16:22:19.442
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=562238
+;
+
+-- 2018-02-06T16:22:19.450
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=562238
+;
+
+
+-- 2018-02-06T16:22:19.442
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=562220
+;
+
+-- 2018-02-06T16:22:19.450
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=562220
+;
+
 
 -- 2018-02-06T16:22:19.442
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
