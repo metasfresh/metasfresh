@@ -54,7 +54,6 @@ public class ReceiptScheduleValidator extends AbstractModuleInterceptor
 		registerRSAggregationKeyDependencies();
 
 		engine.addModelValidator(new C_Order_ReceiptSchedule(), client);
-		engine.addModelValidator(new M_InOut_Receipt(), client);
 		engine.addModelValidator(new M_ReceiptSchedule(), client);
 		engine.addModelValidator(new M_ReceiptSchedule_Alloc(), client);
 		engine.addModelValidator(new C_OrderLine_ReceiptSchedule(), client);
