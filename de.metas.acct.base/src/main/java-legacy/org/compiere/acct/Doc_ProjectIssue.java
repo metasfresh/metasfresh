@@ -19,19 +19,24 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectIssue;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.acct.api.ProductAcctType;
+import de.metas.costing.CostAmount;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 
@@ -111,7 +116,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 	 * @return Fact
 	 */
 	@Override
-	public ArrayList<Fact> createFacts(MAcctSchema as)
+	public List<Fact> createFacts(final MAcctSchema as)
 	{
 		// create Fact Header
 		Fact fact = new Fact(this, as, Fact.POST_Actual);
@@ -119,31 +124,35 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 
 		MProject project = new MProject(getCtx(), m_issue.getC_Project_ID(), getTrxName());
 		String ProjectCategory = project.getProjectCategory();
-		MProduct product = MProduct.get(getCtx(), m_issue.getM_Product_ID());
+		I_M_Product product = MProduct.get(getCtx(), m_issue.getM_Product_ID());
 
 		// Line pointers
 		FactLine dr = null;
 		FactLine cr = null;
 
 		// Issue Cost
-		BigDecimal cost = null;
-		if (m_issue.getM_InOutLine_ID() != 0)
+		CostAmount cost = null;
+		if (m_issue.getM_InOutLine_ID() > 0)
 			cost = getPOCost(as);
-		else if (m_issue.getS_TimeExpenseLine_ID() != 0)
+		else if (m_issue.getS_TimeExpenseLine_ID() > 0)
 			cost = getLaborCost(as);
 		if (cost == null)	// standard Product Costs
-			cost = m_line.getProductCosts(as, getAD_Org_ID(), false);
+			cost = m_line.getCreateCosts(as).getTotalAmount();
 
+		//
 		// Project DR
 		{
 			int acctType = ACCTTYPE_ProjectWIP;
 			if (MProject.PROJECTCATEGORY_AssetProject.equals(ProjectCategory))
 				acctType = ACCTTYPE_ProjectAsset;
 			dr = fact.createLine(m_line,
-					getAccount(acctType, as), as.getC_Currency_ID(), cost, null);
+					getAccount(acctType, as),
+					cost.getCurrencyId(),
+					cost.getValue(), null);
 			dr.setQty(m_line.getQty().negate());
 		}
 
+		//
 		// Inventory CR
 		{
 			ProductAcctType acctType = ProductAcctType.Asset;
@@ -153,16 +162,15 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 			}
 			cr = fact.createLine(m_line,
 					m_line.getAccount(acctType, as),
-					as.getC_Currency_ID(), null, cost);
+					cost.getCurrencyId(),
+					null, cost.getValue());
 			cr.setM_Locator_ID(m_line.getM_Locator_ID());
 			cr.setLocationFromLocator(m_line.getM_Locator_ID(), true);	// from Loc
 		}
 
 		//
-		ArrayList<Fact> facts = new ArrayList<>();
-		facts.add(fact);
-		return facts;
-	}   // createFact
+		return ImmutableList.of(fact);
+	}
 
 	/**
 	 * Get PO Costs in Currency of AcctSchema
@@ -170,7 +178,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 	 * @param as Account Schema
 	 * @return Unit PO Cost
 	 */
-	private BigDecimal getPOCost(MAcctSchema as)
+	private CostAmount getPOCost(final I_C_AcctSchema as)
 	{
 		// Uses PO Date
 		String sql = "SELECT currencyConvert(ol.PriceActual, o.C_Currency_ID, ?, o.DateOrdered, o.C_ConversionType_ID, ?, ?) "
@@ -189,19 +197,19 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 			pstmt.setInt(4, m_issue.getM_InOutLine_ID());
 			rs = pstmt.executeQuery();
 
-			final BigDecimal retValue;
+			final BigDecimal costs;
 			if (rs.next())
 			{
-				retValue = rs.getBigDecimal(1);
-				logger.debug("POCost = {}", retValue);
+				costs = rs.getBigDecimal(1);
+				logger.debug("POCost = {}", costs);
 			}
 			else
 			{
 				logger.warn("Not found for M_InOutLine_ID={}", m_issue.getM_InOutLine_ID());
-				retValue = BigDecimal.ZERO;
+				costs = BigDecimal.ZERO;
 			}
-			
-			return retValue;
+
+			return CostAmount.of(costs, as.getC_Currency_ID());
 		}
 		catch (Exception e)
 		{
@@ -222,9 +230,10 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 	 * @return Unit Labor Cost
 	 */
 
-	private BigDecimal getLaborCost(MAcctSchema as)
+	private CostAmount getLaborCost(final I_C_AcctSchema as)
 	{
-		String sql = "SELECT ConvertedAmt, Qty FROM S_TimeExpenseLine " +
+		String sql = "SELECT ConvertedAmt, Qty" +
+				" FROM S_TimeExpenseLine " +
 				" WHERE S_TimeExpenseLine.S_TimeExpenseLine_ID = ?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -233,20 +242,20 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 			pstmt = DB.prepareStatement(sql.toString(), getTrxName());
 			pstmt.setInt(1, m_issue.getS_TimeExpenseLine_ID());
 			rs = pstmt.executeQuery();
-			BigDecimal retValue;
+			BigDecimal costs;
 			if (rs.next())
 			{
-				retValue = rs.getBigDecimal(1);
+				costs = rs.getBigDecimal(1);
 				final BigDecimal qty = rs.getBigDecimal(2);
-				retValue = retValue.multiply(qty);
-				logger.debug("ExpLineCost = {}", retValue);
+				costs = costs.multiply(qty);
+				logger.debug("ExpLineCost = {}", costs);
 			}
 			else
 			{
 				logger.warn("Not found for S_TimeExpenseLine_ID={}", m_issue.getS_TimeExpenseLine_ID());
-				retValue = BigDecimal.ZERO;
+				costs = BigDecimal.ZERO;
 			}
-			return retValue;
+			return CostAmount.of(costs, as.getC_Currency_ID());
 		}
 		catch (Exception e)
 		{
