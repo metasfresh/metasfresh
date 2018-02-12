@@ -330,6 +330,9 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=557867
 DELETE FROM AD_Column WHERE AD_Column_ID=557867
 ;
 
+-- will re-add this view further down this script
+DROP VIEW IF EXISTS de_metas_purchasecandidate.C_PurchaseCandidate_Enqueued;
+
 SELECT db_alter_table('C_PurchaseCandidate','ALTER TABLE C_PurchaseCandidate DROP COLUMN C_OrderLinePO_ID;');
 
 -- 2018-02-08T15:24:41.778
@@ -697,4 +700,27 @@ UPDATE AD_Field SET IsSameLine='N',Updated=TO_TIMESTAMP('2018-02-08 16:57:14','Y
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Field SET IsSameLine='N',Updated=TO_TIMESTAMP('2018-02-08 16:57:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=562470
 ;
+
+
+CREATE OR REPLACE VIEW "de_metas_purchasecandidate".C_PurchaseCandidate_Enqueued AS 
+SELECT wp.c_queue_workpackage_id,
+    wp.processed AS wp_processed,
+    wp.iserror AS wp_error,
+    pc.processed,
+    pc.c_orderso_id,
+    pc.c_orderlineso_id,
+    pc.QtyToPurchase,
+    pca.c_orderlinepo_id,
+    pca.c_orderpo_id,
+    pca.ad_issue_id,
+    pca.ad_table_id,
+    pca.record_id,
+    pca.RemotePurchaseOrderId
+FROM c_queue_block qb
+     JOIN c_queue_workpackage wp ON wp.c_queue_block_id = qb.c_queue_block_id
+     JOIN c_queue_element qe ON qe.c_queue_workpackage_id = wp.c_queue_workpackage_id
+     LEFT JOIN c_purchasecandidate pc ON pc.c_purchasecandidate_id = qe.record_id
+		LEFT JOIN c_purchasecandidate_alloc pca ON pca.c_purchasecandidate_id = pc.c_purchasecandidate_id
+WHERE qb.c_queue_packageprocessor_id = 540053::numeric
+ORDER BY wp.c_queue_workpackage_id;
 
