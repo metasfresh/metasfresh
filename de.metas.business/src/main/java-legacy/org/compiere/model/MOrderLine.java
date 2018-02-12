@@ -332,22 +332,16 @@ public class MOrderLine extends X_C_OrderLine
 	}	// setPrice
 
 	/**
-	 * Set Tax
-	 *
-	 * @return true if tax is set
+	 * Set Tax or throw an exception if that was not possible
 	 */
-	public boolean setTax()
+	public void setTax()
 	{
 		final int taxCategoryId = Services.get(IOrderLineBL.class).getC_TaxCategory_ID(this);
-		if (taxCategoryId <= 0)
-		{
-			log.error("No Tax Category found");
-			return false;
-		}
 
 		final I_M_Warehouse warehouse = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this);
 		final I_C_Location locationFrom = Services.get(IWarehouseBL.class).getC_Location(warehouse);
 		final int countryFromId = locationFrom.getC_Country_ID();
+
 		final int taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(
 				getCtx(),
 				countryFromId,
@@ -359,19 +353,12 @@ public class MOrderLine extends X_C_OrderLine
 				get_TrxName(),
 				true); // throwEx
 
-		if (taxId <= 0)
-		{
-			log.error("No Tax found");
-			return false;
-		}
 		setC_Tax_ID(taxId);
 
 		final I_C_Tax tax = InterfaceWrapperHelper.create(getCtx(), taxId, I_C_Tax.class, ITrx.TRXNAME_None);
 
 		final I_C_TaxCategory taxCategory = tax.getC_TaxCategory();
 		setC_TaxCategory(taxCategory);
-
-		return true;
 	}	// setTax
 
 	/**
@@ -875,8 +862,7 @@ public class MOrderLine extends X_C_OrderLine
 		if (!newRecord
 				&& (is_ValueChanged("M_Product_ID") || is_ValueChanged("M_Warehouse_ID")))
 		{
-			if (!canChangeWarehouse(true))
-				return false;
+			canChangeWarehouse(true);
 		}	// Product Changed
 
 		// Charge
@@ -899,8 +885,9 @@ public class MOrderLine extends X_C_OrderLine
 
 		// metas: Not allowed to save without (Product or Charge) and qty > 0
 		if (getM_Product_ID() == 0 && getC_Charge_ID() == 0 && getQtyEntered().intValue() > 0)
+		{
 			throw new AdempiereException("@NotFound@ @M_Product_ID@/@C_Charge_ID@ (@QtyEntered@>0)");
-
+		}
 		// UOM
 		if (getC_UOM_ID() == 0
 				&& (getM_Product_ID() != 0
@@ -925,13 +912,9 @@ public class MOrderLine extends X_C_OrderLine
 		if (BigDecimal.ZERO.compareTo(getFreightAmt()) != 0)
 			setFreightAmt(BigDecimal.ZERO);
 
-		// Set Tax
 		// metas: Steuer muss immer ermittelt werden, da durch eine Anschriftenaenderung im Kopf auch Steueraenderungen in Positionen auftreten.
-		// if (getC_Tax_ID() == 0)
-		if (!setTax())
-		{
-			return false;
-		}
+		setTax();
+
 		// metas ende
 
 		// Get Line No
