@@ -15,7 +15,7 @@ public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPa
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2136749943L;
+	private static final long serialVersionUID = 1696771828L;
 
     /** Standard Constructor */
     public X_C_BPartner_Stats (Properties ctx, int C_BPartner_Stats_ID, String trxName)
@@ -119,6 +119,39 @@ public class X_C_BPartner_Stats extends org.compiere.model.PO implements I_C_BPa
 	public int getC_BPartner_Stats_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Stats_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		throw new IllegalArgumentException ("C_Currency_ID is virtual column");	}
+
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
+	@Override
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
