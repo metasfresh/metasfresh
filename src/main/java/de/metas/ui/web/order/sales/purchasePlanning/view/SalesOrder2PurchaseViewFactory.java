@@ -227,7 +227,10 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 	private void saveRowsAndEnqueueIfOrderCompleted(final PurchaseView purchaseView)
 	{
 		final List<PurchaseCandidate> purchaseCandidates = saveRows(purchaseView);
-
+		if (purchaseCandidates.isEmpty())
+		{
+			return;
+		}
 		//
 		// If the sales order was already completed, enqueue the purchase candidates
 		final I_C_Order salesOrder = getSingleSalesOrder(purchaseCandidates);
@@ -256,12 +259,14 @@ public class SalesOrder2PurchaseViewFactory implements IViewFactory, IViewsIndex
 				.save();
 	}
 
-	private final I_C_Order getSingleSalesOrder(final List<PurchaseCandidate> purchaseCandidates)
+	private final I_C_Order getSingleSalesOrder(@NonNull final List<PurchaseCandidate> purchaseCandidates)
 	{
+		Check.assumeNotEmpty(purchaseCandidates, "purchaseCandidates not empty");
+
 		final int salesOrderId = purchaseCandidates.stream()
 				.map(PurchaseCandidate::getSalesOrderId)
 				.distinct()
-				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("more than one salesOrderId found in the given purchaseCandidates")
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More or less than one salesOrderId found in the given purchaseCandidates")
 						.appendParametersToMessage()
 						.setParameter("purchaseCandidates", purchaseCandidates)));
 
