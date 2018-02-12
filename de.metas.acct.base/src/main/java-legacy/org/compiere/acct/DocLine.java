@@ -28,7 +28,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -37,7 +36,6 @@ import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.MAccount;
 import org.compiere.model.MCharge;
 import org.compiere.model.PO;
-import org.compiere.model.ProductCost;
 import org.compiere.util.DB;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -45,11 +43,8 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 
 import de.metas.acct.api.ProductAcctType;
-import de.metas.costing.CostDetailQuery;
-import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
-import de.metas.costing.ICostDetailRepository;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.acct.api.IProductAcctDAO;
@@ -98,8 +93,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	private I_M_Product _product; // lazy
 	private Boolean _productIsItem = null; // lazy
-	/** Product Costs */
-	private ProductCost m_productCost = null;
 
 	/** Accounting Date */
 	private Timestamp m_DateAcct = null;
@@ -595,67 +588,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		m_C_LocTo_ID = C_LocTo_ID;
 	}	// setC_LocTo_ID
 
-	protected final ProductCost getProductCost()
-	{
-		if (m_productCost == null)
-		{
-			m_productCost = new ProductCost(getCtx(), getM_Product_ID(), getM_AttributeSetInstance_ID(), ITrx.TRXNAME_ThreadInherited);
-		}
-		return m_productCost;
-	}
-
-	// MZ Goodwill
-	/**
-	 * Get Total Product Costs from Cost Detail or from Current Cost
-	 *
-	 * @param as accounting schema
-	 * @param AD_Org_ID trx org
-	 * @param zeroCostsOK zero/no costs are OK
-	 * @param whereClause null are OK
-	 * @return costs
-	 */
-	public final BigDecimal getProductCosts(final I_C_AcctSchema as, final int AD_Org_ID, final boolean zeroCostsOK, final CostingDocumentRef documentRef)
-	{
-		if (documentRef != null)
-		{
-			final CostDetailQuery query = CostDetailQuery.builder()
-					.acctSchemaId(as.getC_AcctSchema_ID())
-					.documentRef(documentRef)
-					.attributeSetInstanceId(getM_AttributeSetInstance_ID())
-					.build();
-			final ICostDetailRepository costDetailsRepo = Adempiere.getBean(ICostDetailRepository.class);
-			final BigDecimal costDetailAmt = costDetailsRepo.getCostDetailAmtOrNull(query);
-			if (costDetailAmt != null)
-			{
-				return costDetailAmt;
-			}
-		}
-		return getProductCosts(as, AD_Org_ID, zeroCostsOK);
-	}   // getProductCosts
-
-	// end MZ
-
-	/**
-	 * Get Total Product Costs
-	 *
-	 * @param as accounting schema
-	 * @param AD_Org_ID trx org
-	 * @param zeroCostsOK zero/no costs are OK
-	 * @return costs
-	 */
-	public final BigDecimal getProductCosts(final I_C_AcctSchema as, final int AD_Org_ID, final boolean zeroCostsOK)
-	{
-		final ProductCost pc = getProductCost();
-		final int C_OrderLine_ID = getC_OrderLine_ID();
-		final CostingMethod costingMethod = null;
-		final BigDecimal costs = pc.getProductCosts(as, AD_Org_ID, costingMethod, C_OrderLine_ID, zeroCostsOK);
-		if (costs != null)
-		{
-			return costs;
-		}
-		return BigDecimal.ZERO;
-	}   // getProductCosts
-
 	/**
 	 * @return product or null if no product
 	 */
@@ -733,7 +665,6 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		{
 			m_qty = quantity;
 		}
-		getProductCost().setQty(quantity.getQty());
 	}
 
 	/**
