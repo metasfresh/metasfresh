@@ -17,22 +17,19 @@
 package org.compiere.acct;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.minventory.api.IInventoryDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MInventory;
-import org.compiere.model.ProductCost;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.ProductAcctType;
-import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.CostAmount;
 
 /**
  * Post Inventory Documents.
@@ -53,20 +50,10 @@ import de.metas.costing.CostingDocumentRef;
  */
 public class Doc_Inventory extends Doc<DocLine_Inventory>
 {
-	private int m_Reversal_ID = 0;
-	private String m_DocStatus = "";
-
-	/**
-	 * Constructor
-	 * 
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
 	public Doc_Inventory(final IDocBuilder docBuilder)
 	{
 		super(docBuilder, DOCTYPE_MatInventory);
-	}   // Doc_Inventory
+	}
 
 	@Override
 	protected void loadDocumentDetails()
@@ -75,8 +62,6 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 		final I_M_Inventory inventory = getModel(I_M_Inventory.class);
 		setDateDoc(inventory.getMovementDate());
 		setDateAcct(inventory.getMovementDate());
-		m_Reversal_ID = inventory.getReversal_ID();// store original (voided/reversed) document
-		m_DocStatus = inventory.getDocStatus();
 		setDocLines(loadLines(inventory));
 	}
 
@@ -90,11 +75,6 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	/**
-	 * Get Balance
-	 * 
-	 * @return Zero (always balanced)
-	 */
 	@Override
 	public BigDecimal getBalance()
 	{
@@ -115,94 +95,66 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 	 * @return Fact
 	 */
 	@Override
-	public ArrayList<Fact> createFacts(MAcctSchema as)
+	public List<Fact> createFacts(final MAcctSchema as)
 	{
-		// create Fact Header
-		Fact fact = new Fact(this, as, Fact.POST_Actual);
 		setC_Currency_ID(as.getC_Currency_ID());
 
-		// Line pointers
-		FactLine dr = null;
-		FactLine cr = null;
+		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		getDocLines().forEach(line -> createFactsForInventoryLine(fact, line));
 
-		for (final DocLine_Inventory line : getDocLines())
-		{
-			// MZ Goodwill
-			// if Physical Inventory CostDetail is exist then get Cost from Cost Detail
-			// metas-ts: US330: call with zeroCostsOK=false, because we want the system to return the result of MCost.getSeedCosts(), if there are no current costs yet
-			BigDecimal costs = line.getProductCosts(as, line.getAD_Org_ID(), false, CostingDocumentRef.ofInventoryLineId(line.get_ID()));
-			// end MZ
-			if (ProductCost.isNoCosts(costs))
-			{
-				throw newPostingException()
-						.setDetailMessage("No Costs for " + line.getProduct().getName())
-						.setC_AcctSchema(as)
-						.setDocLine(line);
-			}
-			// Inventory DR CR
-			dr = fact.createLine(line,
-					line.getAccount(ProductAcctType.Asset, as),
-					as.getC_Currency_ID(), costs);
-			// may be zero difference - no line created.
-			if (dr == null)
-				continue;
-			dr.setM_Locator_ID(line.getM_Locator_ID());
-			if (m_DocStatus.equals(MInventory.DOCSTATUS_Reversed) && m_Reversal_ID != 0 && line.getReversalLine_ID() != 0)
-			{
-				// Set AmtAcctDr from Original Phys.Inventory
-				if (!dr.updateReverseLine(InterfaceWrapperHelper.getTableId(I_M_Inventory.class),
-						m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
-				{
-					throw newPostingException()
-							.setDetailMessage("Original Physical Inventory not posted yet")
-							.setC_AcctSchema(as)
-							.setDocLine(line)
-							.setPreserveDocumentPostedStatus();
-				}
-			}
+		return ImmutableList.of(fact);
+	}
 
-			// InventoryDiff DR CR
-			// or Charge
-			MAccount invDiff = line.getChargeAccount(as, costs.negate());
-			if (invDiff == null)
-				invDiff = getAccount(Doc.ACCTTYPE_InvDifferences, as);
-			cr = fact.createLine(line, invDiff,
-					as.getC_Currency_ID(), costs.negate());
-			if (cr == null)
-				continue;
-			cr.setM_Locator_ID(line.getM_Locator_ID());
-			cr.setQty(line.getQty().negate());
-			if (line.getC_Charge_ID() != 0)	// explicit overwrite for charge
-				cr.setAD_Org_ID(line.getAD_Org_ID());
-			if (m_DocStatus.equals(MInventory.DOCSTATUS_Reversed) && m_Reversal_ID != 0 && line.getReversalLine_ID() != 0)
-			{
-				// Set AmtAcctCr from Original Phys.Inventory
-				if (!cr.updateReverseLine(InterfaceWrapperHelper.getTableId(I_M_Inventory.class),
-						m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
-				{
-					throw newPostingException()
-							.setDetailMessage("Original Physical Inventory not posted yet")
-							.setC_AcctSchema(as)
-							.setDocLine(line)
-							.setPreserveDocumentPostedStatus();
-				}
-				costs = cr.getAcctBalance(); // get original cost
-			}
+	/**
+	 * <pre>
+	 *  Inventory
+	 *      Inventory       DR      CR
+	 *      InventoryDiff   DR      CR   (or Charge)
+	 * </pre>
+	 */
+	private void createFactsForInventoryLine(final Fact fact, final DocLine_Inventory line)
+	{
+		final I_C_AcctSchema as = fact.getAcctSchema();
 
-			// Cost Detail
-			/*
-			 * Source move to MInventory.createCostDetail()
-			 * MCostDetail.createInventory(as, line.getAD_Org_ID(),
-			 * line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-			 * line.get_ID(), 0,
-			 * costs, line.getQty(),
-			 * line.getDescription(), getTrxName());
-			 */
-		}
+		final CostAmount costs = line.getCreateCosts(as).getTotalAmount();
+
 		//
-		ArrayList<Fact> facts = new ArrayList<>();
-		facts.add(fact);
-		return facts;
-	}   // createFact
+		// Inventory DR/CR
+		fact.createLine()
+				.setDocLine(line)
+				.setAccount(line.getAccount(ProductAcctType.Asset, as))
+				.setC_Currency_ID(costs.getCurrencyId())
+				.setAmtSourceDrOrCr(costs.getValue())
+				.setQty(line.getQty())
+				.locatorId(line.getM_Locator_ID())
+				.buildAndAdd();
+
+		//
+		// Charge/InventoryDiff CR/DR
+		final MAccount invDiff = getInvDifferencesAccount(as, line, costs.getValue().negate());
+		final FactLine cr = fact.createLine()
+				.setDocLine(line)
+				.setAccount(invDiff)
+				.setC_Currency_ID(costs.getCurrencyId())
+				.setAmtSourceDrOrCr(costs.getValue().negate())
+				.setQty(line.getQty().negate())
+				.locatorId(line.getM_Locator_ID())
+				.buildAndAdd();
+		if (line.getC_Charge_ID() > 0)	// explicit overwrite for charge
+		{
+			cr.setAD_Org_ID(line.getAD_Org_ID());
+		}
+	}
+
+	private MAccount getInvDifferencesAccount(final I_C_AcctSchema as, final DocLine_Inventory line, final BigDecimal amount)
+	{
+		final MAccount chargeAcct = line.getChargeAccount(as, amount.negate());
+		if (chargeAcct != null)
+		{
+			return chargeAcct;
+		}
+
+		return getAccount(Doc.ACCTTYPE_InvDifferences, as);
+	}
 
 }   // Doc_Inventory

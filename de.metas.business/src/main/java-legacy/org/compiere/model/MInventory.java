@@ -28,17 +28,8 @@ import org.adempiere.minventory.api.IInventoryDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
-import org.compiere.util.CCache;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 
-import de.metas.costing.CostAmount;
-import de.metas.costing.CostDetailCreateRequest;
-import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.CostingLevel;
-import de.metas.costing.CostingMethod;
-import de.metas.costing.ICostDetailService;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocument;
@@ -46,7 +37,6 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
-import de.metas.quantity.Quantity;
 
 /**
  * Physical Inventory Model
@@ -68,35 +58,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 	 */
 	private static final long serialVersionUID = 910998472569265447L;
 
-	/**
-	 * Get Inventory from Cache
-	 *
-	 * @param ctx context
-	 * @param M_Inventory_ID id
-	 * @return MInventory
-	 */
-	public static MInventory get(Properties ctx, int M_Inventory_ID)
-	{
-		Integer key = new Integer(M_Inventory_ID);
-		MInventory retValue = s_cache.get(key);
-		if (retValue != null)
-			return retValue;
-		retValue = new MInventory(ctx, M_Inventory_ID, null);
-		if (retValue.get_ID() != 0)
-			s_cache.put(key, retValue);
-		return retValue;
-	} // get
-
-	/** Cache */
-	private static CCache<Integer, MInventory> s_cache = new CCache<>("M_Inventory", 5, 5);
-
-	/**
-	 * Standard Constructor
-	 *
-	 * @param ctx context
-	 * @param M_Inventory_ID id
-	 * @param trxName transaction
-	 */
 	public MInventory(Properties ctx, int M_Inventory_ID, String trxName)
 	{
 		super(ctx, M_Inventory_ID, trxName);
@@ -114,13 +75,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 		}
 	}	// MInventory
 
-	/**
-	 * Load Constructor
-	 *
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
 	public MInventory(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
@@ -208,7 +162,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MInventory[");
+		StringBuilder sb = new StringBuilder("MInventory[");
 		sb.append(get_ID())
 				.append("-").append(getDocumentNo())
 				.append(",M_Warehouse_ID=").append(getM_Warehouse_ID())
@@ -271,7 +225,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
-		if (getC_DocType_ID() == 0)
+		if (getC_DocType_ID() <= 0)
 		{
 			MDocType types[] = MDocType.getOfDocBaseType(getCtx(), MDocType.DOCBASETYPE_MaterialPhysicalInventory);
 			if (types.length > 0)	// get first
@@ -329,7 +283,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 	@Override
 	public boolean unlockIt()
 	{
-		log.info(toString());
 		setProcessing(false);
 		return true;
 	}	// unlockIt
@@ -342,7 +295,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 	@Override
 	public boolean invalidateIt()
 	{
-		log.info(toString());
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	}	// invalidateIt
@@ -355,7 +307,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 	@Override
 	public String prepareIt()
 	{
-		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 			return IDocument.STATUS_Invalid;
@@ -390,7 +341,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 	@Override
 	public boolean approveIt()
 	{
-		log.info(toString());
 		setIsApproved(true);
 		return true;
 	}	// approveIt
@@ -403,7 +353,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 	@Override
 	public boolean rejectIt()
 	{
-		log.info(toString());
 		setIsApproved(false);
 		return true;
 	}	// rejectIt
@@ -522,17 +471,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 								get_TrxName());
 
 						mtrx.setM_InventoryLine_ID(line.getM_InventoryLine_ID());
-						if (!mtrx.save())
-						{
-							m_processMsg = "Transaction not inserted(2)";
-							return IDocument.STATUS_Invalid;
-						}
-						if (QtyMA.signum() != 0)
-						{
-							createCostDetail(line,
-									ma.getM_AttributeSetInstance_ID(),
-									Quantity.of(QtyMA.negate(), productBL.getStockingUOM(product)));
-						}
+						InterfaceWrapperHelper.save(mtrx);
 
 						qtyDiff = QtyNew;
 
@@ -583,13 +522,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 							get_TrxName());
 					mtrx.setM_InventoryLine_ID(line.getM_InventoryLine_ID());
 					InterfaceWrapperHelper.save(mtrx);
-
-					if (qtyDiff.signum() != 0)
-					{
-						createCostDetail(line,
-								line.getM_AttributeSetInstance_ID(),
-								Quantity.of(qtyDiff.negate(), productBL.getStockingUOM(product)));
-					}
 				}	// Fallback
 			}	// stock movement
 
@@ -716,7 +648,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 	@Override
 	public boolean voidIt()
 	{
-		log.info(toString());
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
@@ -776,7 +707,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 	@Override
 	public boolean closeIt()
 	{
-		log.info(toString());
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
@@ -798,7 +728,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		log.info(toString());
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
@@ -889,7 +818,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		log.info(toString());
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
@@ -911,7 +839,6 @@ public class MInventory extends X_M_Inventory implements IDocument
 	@Override
 	public boolean reActivateIt()
 	{
-		log.info(toString());
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
@@ -933,7 +860,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 	@Override
 	public String getSummary()
 	{
-		StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 		sb.append(getDocumentNo());
 		// : Total Lines = 123.00 (#1)
 		sb.append(": ")
@@ -1003,75 +930,11 @@ public class MInventory extends X_M_Inventory implements IDocument
 		return m_reversal;
 	}	// isReversal
 
-	/**
-	 * Create Cost Detail
-	 */
-	private void createCostDetail(final MInventoryLine line, final int M_AttributeSetInstance_ID, final Quantity qty)
-	{
-		// Get Account Schemas to create MCostDetail
-		for (final MAcctSchema as : MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID()))
-		{
-			if (as.isSkipOrg(getAD_Org_ID()) || as.isSkipOrg(line.getAD_Org_ID()))
-			{
-				continue;
-			}
-
-			final BigDecimal costs;
-			if (isReversal())
-			{
-				final CostingLevel costingLevel = Services.get(IProductBL.class).getCostingLevel(line.getM_Product_ID(), as);
-				
-				String sql = "SELECT amt * -1 FROM M_CostDetail WHERE M_InventoryLine_ID=?"; // negate costs
-				if (CostingLevel.Organization.equals(costingLevel))
-					sql = sql + " AND AD_Org_ID=" + getAD_Org_ID();
-				else if (CostingLevel.BatchLot.equals(costingLevel) && M_AttributeSetInstance_ID != 0)
-					sql = sql + " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
-				costs = DB.getSQLValueBD(line.get_TrxName(), sql, line.getReversalLine_ID());
-			}
-			else
-			{
-				ProductCost pc = new ProductCost(getCtx(),
-						line.getM_Product_ID(), M_AttributeSetInstance_ID, line.get_TrxName());
-				pc.setQty(qty);
-				costs = pc.getProductCosts(as, line.getAD_Org_ID(), CostingMethod.ofNullableCode(as.getCostingMethod()), 0, false);
-			}
-
-			//
-			// Validate the cost price
-			if (ProductCost.isNoCosts(costs))
-			{
-				throw new AdempiereException("No Costs for " + line.getProduct().getName());
-			}
-
-			// Set Total Amount and Total Quantity from Inventory
-			Adempiere.getBean(ICostDetailService.class)
-					.createCostDetail(CostDetailCreateRequest.builder()
-							.acctSchemaId(as.getC_AcctSchema_ID())
-							.clientId(line.getAD_Client_ID())
-							.orgId(line.getAD_Org_ID())
-							.productId(line.getM_Product_ID())
-							.attributeSetInstanceId(M_AttributeSetInstance_ID)
-							.documentRef(CostingDocumentRef.ofInventoryLineId(line.getM_InventoryLine_ID()))
-							.qty(qty)
-							.amt(CostAmount.of(costs, as.getC_Currency_ID()))
-							// .currencyConversionTypeId(0) // N/A
-							.date(TimeUtil.asLocalDate(getMovementDate()))
-							.description(line.getDescription())
-							.build());
-		}
-	}
-
-	/**
-	 * Document Status is Complete or Closed
-	 *
-	 * @return true if CO, CL or RE
-	 */
 	public boolean isComplete()
 	{
 		String ds = getDocStatus();
 		return DOCSTATUS_Completed.equals(ds)
 				|| DOCSTATUS_Closed.equals(ds)
 				|| DOCSTATUS_Reversed.equals(ds);
-	}	// isComplete
-
-}	// MInventory
+	}
+}

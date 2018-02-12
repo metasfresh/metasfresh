@@ -3,8 +3,17 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_InventoryLine;
+import org.compiere.util.TimeUtil;
 
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailReverseRequest;
+import de.metas.costing.CostResult;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostDetailService;
 import de.metas.quantity.Quantity;
 
 /*
@@ -35,21 +44,51 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 	{
 		super(InterfaceWrapperHelper.getPO(inventoryLine), doc);
 
-		BigDecimal qty = inventoryLine.getQtyInternalUse();
-		if (qty.signum() != 0)
+		final BigDecimal qty;
+		BigDecimal qtyInternalUse = inventoryLine.getQtyInternalUse();
+		if (qtyInternalUse.signum() != 0)
 		{
-			qty = qty.negate();		// Internal Use entered positive
+			qty = qtyInternalUse.negate();		// Internal Use entered positive
 		}
 		else
 		{
-			BigDecimal QtyBook = inventoryLine.getQtyBook();
-			BigDecimal QtyCount = inventoryLine.getQtyCount();
-			qty = QtyCount.subtract(QtyBook);
+			BigDecimal qtyBook = inventoryLine.getQtyBook();
+			BigDecimal qtyCount = inventoryLine.getQtyCount();
+			qty = qtyCount.subtract(qtyBook);
 		}
 
-		setQty(Quantity.of(qty, getProductStockingUOM()), false);		// -5 => -5
+		setQty(Quantity.of(qty, getProductStockingUOM()), false);
 
 		setReversalLine_ID(inventoryLine.getReversalLine_ID());
 	}
 
+	public CostResult getCreateCosts(final I_C_AcctSchema as)
+	{
+		final ICostDetailService costDetailService = Adempiere.getBean(ICostDetailService.class);
+
+		if (isReversalLine())
+		{
+			return costDetailService.createReversalCostDetails(CostDetailReverseRequest.builder()
+					.acctSchemaId(as.getC_AcctSchema_ID())
+					.reversalDocumentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
+					.initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
+					.date(TimeUtil.asLocalDate(getDateDoc()))
+					.build());
+		}
+		else
+		{
+			return costDetailService.createCostDetail(
+					CostDetailCreateRequest.builder()
+							.acctSchemaId(as.getC_AcctSchema_ID())
+							.clientId(getAD_Client_ID())
+							.orgId(getAD_Org_ID())
+							.productId(getM_Product_ID())
+							.attributeSetInstanceId(getM_AttributeSetInstance_ID())
+							.documentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
+							.qty(getQty())
+							.amt(CostAmount.zero(as.getC_Currency_ID())) // N/A
+							.date(TimeUtil.asLocalDate(getDateDoc()))
+							.build());
+		}
+	}
 }

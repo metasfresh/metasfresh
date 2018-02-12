@@ -483,7 +483,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	protected final MAccount getChargeAccount(final I_C_AcctSchema as, final BigDecimal amount)
 	{
 		final int C_Charge_ID = getC_Charge_ID();
-		if (C_Charge_ID == 0)
+		if (C_Charge_ID <= 0)
 		{
 			return null;
 		}
