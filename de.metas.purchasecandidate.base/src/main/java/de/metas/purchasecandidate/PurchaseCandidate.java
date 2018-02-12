@@ -163,7 +163,10 @@ public class PurchaseCandidate
 	 */
 	public void markProcessed()
 	{
-		Check.assume(!state.isProcessed(), "already processed: {}", this);
+		if(state.isProcessed())
+		{
+			return;
+		}
 		state.setProcessed();
 	}
 

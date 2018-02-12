@@ -161,4 +161,14 @@ public class PurchaseCandidateTest
 		assertThat(purchaseOrderItem2.getPurchaseCandidateId()).isEqualTo(candidate1.getPurchaseCandidateId());
 		assertThat(purchaseOrderItem2.getProductId()).isEqualTo(candidate1.getProductId());
 	}
+
+	@Test
+	public void testToString()
+	{
+		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool
+				.createPurchaseCandidate(20);
+		final String toString = purchaseCandidate.toString();
+		assertThat(toString).isNotNull();
+		assertThat(toString).startsWith("PurchaseCandidate(purchaseCandidateId=20");
+	}
 }

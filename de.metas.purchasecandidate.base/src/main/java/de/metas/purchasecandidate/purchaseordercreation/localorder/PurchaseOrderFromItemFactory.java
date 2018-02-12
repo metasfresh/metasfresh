@@ -67,7 +67,7 @@ import lombok.NonNull;
 			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity_And_DatePromised";
 
 	private final OrderFactory orderFactory;
-	private final IdentityHashMap<PurchaseOrderItem, OrderLineBuilder> purchaseItem2OrderLineBuilder = new IdentityHashMap<>();
+	private final IdentityHashMap<PurchaseOrderItem, OrderLineBuilder> purchaseItem2OrderLine = new IdentityHashMap<>();
 	private final OrderUserNotifications userNotifications;
 
 	@Builder
@@ -98,14 +98,14 @@ import lombok.NonNull;
 
 		orderLineBuilder.addQty(pruchaseOrderItem.getPurchasedQty(), pruchaseOrderItem.getUomId());
 
-		purchaseItem2OrderLineBuilder.put(pruchaseOrderItem, orderLineBuilder);
+		purchaseItem2OrderLine.put(pruchaseOrderItem, orderLineBuilder);
 	}
 
 	public void createAndComplete()
 	{
 		final I_C_Order order = orderFactory.createAndComplete();
 
-		purchaseItem2OrderLineBuilder
+		purchaseItem2OrderLine
 				.forEach(this::updatePurchaseCandidateFromOrderLineBuilder);
 
 		final Set<Integer> userIdsToNotify = getUserIdsToNotify();
@@ -138,7 +138,7 @@ import lombok.NonNull;
 	{
 		boolean deviatingDatePromised = false;
 		boolean deviatingQuantity = false;
-		for (final PurchaseOrderItem purchaseOrderItem : purchaseItem2OrderLineBuilder.keySet())
+		for (final PurchaseOrderItem purchaseOrderItem : purchaseItem2OrderLine.keySet())
 		{
 			final Date dateRequired = purchaseOrderItem.getPurchaseCandidate().getDateRequired();
 
@@ -190,7 +190,7 @@ import lombok.NonNull;
 
 	private Set<Integer> getUserIdsToNotify()
 	{
-		return purchaseItem2OrderLineBuilder.keySet().stream()
+		return purchaseItem2OrderLine.keySet().stream()
 				.map(PurchaseOrderItem::getPurchaseCandidate)
 				.map(PurchaseCandidate::getSalesOrderId)
 				.distinct()

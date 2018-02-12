@@ -254,7 +254,15 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 		final Bestellung bestellung = purchaseTransaction.getBestellung();
 
 		final List<RemotePurchaseOrderCreatedItem> purchaseOrderResponseItems = new ArrayList<>();
-		final List<BestellungAntwortAuftrag> auftraege = purchaseTransaction.getBestellungAntwort().getAuftraege();
+
+		if (purchaseTransaction.getBestellungAntwort() == null)
+		{
+			return purchaseOrderResponseItems;
+		}
+
+		final List<BestellungAntwortAuftrag> auftraege = purchaseTransaction
+				.getBestellungAntwort()
+				.getAuftraege();
 		for (int auftragIdx = 0; auftragIdx < auftraege.size(); auftragIdx++)
 		{
 			final BestellungAuftrag auftrag = bestellung.getAuftraege().get(auftragIdx);
