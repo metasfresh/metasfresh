@@ -142,7 +142,7 @@ public class C_BPartner_UpdateStatsFromBPartner extends WorkpackageProcessorAdap
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
-		final List<I_C_BPartner> bpartners = queueDAO.retrieveItems(workpackage, I_C_BPartner.class, localTrxName);
+		final List<I_C_BPartner> bpartners = queueDAO.retrieveItemsSkipMissing(workpackage, I_C_BPartner.class, localTrxName);
 
 		for (final I_C_BPartner bpartner : bpartners)
 		{
