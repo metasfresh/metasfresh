@@ -10,13 +10,26 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.45 (2018-08)
+**release for week 2018-08**
+
+## Features
+
+## Fixes
+
+
 # metasfresh 5.44 (2018-07)
 **release for week 2018-07**
 
 ## Features
 * metasfresh
+  * [#3405](https://github.com/metasfresh/metasfresh/issues/3405) Schema for Product Planning Data
+  * [#3406](https://github.com/metasfresh/metasfresh/issues/3406) Set Selector in M_Product after Product Data Import
   * [#3407](https://github.com/metasfresh/metasfresh/issues/3407) New Businesspartner Window for Pharma vertical
     * New Business Partner Window in WebUI for Pharma Verticals.
+  * [#3408](https://github.com/metasfresh/metasfresh/issues/3408) New Product Window for Pharma vertical
+  * [#3413](https://github.com/metasfresh/metasfresh/issues/3413) Credit Limit data structure as subtab in Businesspartner
+  * [#3458](https://github.com/metasfresh/metasfresh/issues/3458) Remove M_Storage-based legacy check from MProduct
   * [#3467](https://github.com/metasfresh/metasfresh/issues/3467) Preparation Date Filer as Daterange
     * Adjustment for the Preparation Date Filter in Manufacturing Order. Now is a Daterange filter instead of date.
   * [#3468](https://github.com/metasfresh/metasfresh/issues/3468) Add Translation for "All Dates available"
@@ -24,7 +37,21 @@ Here come the actual release notes:
   * [#3471](https://github.com/metasfresh/metasfresh/issues/3471) Disable Sales Opportunities Window until its permission is configurable
     * Hiding the Sales Opportunity Window from default WebUI Menu, as long as in beta.
 
+* metasfresh-webui-api
+  * [#818](https://github.com/metasfresh/metasfresh-webui-api/issues/818) Values.valueToJsonObject() shall return JSONNullValue instead of null
+
+* metasfresh-webui-frontend
+  * [#1501](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1501) Automated Javascript and React Testing with Jest
+
 ## Fixes
+* metasfresh
+  * [#3445](https://github.com/metasfresh/metasfresh/issues/3445) Qty TU not correct in purchase invoice jasper
+
+* metasfresh-webui-api
+  * [#806](https://github.com/metasfresh/metasfresh-webui-api/issues/806) Add to Transportation Order, Ship and Invoice action in Picking Clearing Tray not respecting the invoice schedule
+  * [#807](https://github.com/metasfresh/metasfresh-webui-api/issues/807) Quantity to invoice override callout
+  * [#829](https://github.com/metasfresh/metasfresh-webui-api/issues/829) Planning status in manufacturing order not updated
+
 * metasfresh-webui-frontend
   * [#1546](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1546) Date Range Filter as Range Filter has initial daterange
     * Leaves the Daterange filter now initially empty to that it does not interrupt other filtering.
@@ -50,10 +77,13 @@ Here come the actual release notes:
     * Improving error messages in Orderline, now returning meaningful information to the user.
   * [#3428](https://github.com/metasfresh/metasfresh/issues/3428) Switch off Daterange in Preparation date Filer temporarily
     * Changes the Filter of Preparation Date to simple Date instead of Daterange.
+  * [#3438](https://github.com/metasfresh/metasfresh/issues/3438) Qty LU wrong in purchase invoice candidates / invoice
   * [#3439](https://github.com/metasfresh/metasfresh/issues/3439) Improvement of GO Delivery Order Window
     * Improved the visibility of important information in the GO! Delivery Window in WebUI.
   * [#3440](https://github.com/metasfresh/metasfresh/issues/3440) Improvement of Shipper Window in WebUI
     * Extends the Shipper Window in WebUI, now also allowing the recording of the GO! Shipper Configuration.
+  * [#3454](https://github.com/metasfresh/metasfresh/issues/3454) Resolve log warning "Skip setting parameter value for X_AD_PInstance_Para[0]"
+  * [#3455](https://github.com/metasfresh/metasfresh/issues/3455) Migitate "PO not handled: Document{tableName=M_InOut.." and similar warnings flooding the log
 
 * metasfresh-webui-api
   * [#812](https://github.com/metasfresh/metasfresh-webui-api/issues/812) Picking Tray Clearing: Action take out and add to LU/ TU
@@ -73,6 +103,7 @@ Here come the actual release notes:
     * Fix for the Packing Instruction shown in Sales Inout Document when using manual Packing Material.
   * [#3402](https://github.com/metasfresh/metasfresh/issues/3402) Can't credit memo a partially paid invoice
     * Improvement of the status Handling after reopening Manufacturing Orders.
+  * [#3449](https://github.com/metasfresh/metasfresh/issues/3449) ImportHelper doesn't switch ctx
 
 * metasfresh-webui-api
   * [#617](https://github.com/metasfresh/metasfresh-webui-api/issues/617) Cache is not invalidated on country change
