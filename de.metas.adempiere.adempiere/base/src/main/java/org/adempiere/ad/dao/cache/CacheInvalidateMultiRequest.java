@@ -1,8 +1,8 @@
 package org.adempiere.ad.dao.cache;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.adempiere.util.Check;
 
@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -49,12 +49,12 @@ public class CacheInvalidateMultiRequest
 		{
 			return ALL;
 		}
-		return new CacheInvalidateMultiRequest(ImmutableList.of(request));
+		return new CacheInvalidateMultiRequest(ImmutableSet.of(request));
 	}
 
 	public static final CacheInvalidateMultiRequest of(@NonNull final Collection<CacheInvalidateRequest> requests)
 	{
-		return new CacheInvalidateMultiRequest(ImmutableList.copyOf(requests));
+		return new CacheInvalidateMultiRequest(ImmutableSet.copyOf(requests));
 	}
 
 	public static CacheInvalidateMultiRequest all()
@@ -93,17 +93,17 @@ public class CacheInvalidateMultiRequest
 		}
 	}
 
-	private static final CacheInvalidateMultiRequest ALL = new CacheInvalidateMultiRequest(ImmutableList.of(CacheInvalidateRequest.all()));
+	private static final CacheInvalidateMultiRequest ALL = new CacheInvalidateMultiRequest(ImmutableSet.of(CacheInvalidateRequest.all()));
 
 	@JsonProperty("requests")
-	private final List<CacheInvalidateRequest> requests;
+	private final Set<CacheInvalidateRequest> requests;
 
 	@Builder
 	@JsonCreator
-	private CacheInvalidateMultiRequest(@JsonProperty("requests") @Singular @NonNull final List<CacheInvalidateRequest> requests)
+	private CacheInvalidateMultiRequest(@JsonProperty("requests") @Singular @NonNull final Set<CacheInvalidateRequest> requests)
 	{
 		Check.assumeNotEmpty(requests, "requests is not empty");
-		this.requests = ImmutableList.copyOf(requests);
+		this.requests = ImmutableSet.copyOf(requests);
 	}
 
 	public boolean isResetAll()
