@@ -53,9 +53,9 @@ class RawList extends PureComponent {
     super(props);
 
     this.state = {
-      selected: props.selected || 0,
+      selected: props.selected || null,
       dropdownList: props.list || [],
-      isOpen: false,
+      isOpened: false,
       isFocused: props.autoFocus,
     };
   }
@@ -86,7 +86,6 @@ class RawList extends PureComponent {
       mandatory,
       defaultValue,
       autoFocus,
-      property,
       initialFocus,
       selected,
       doNotOpenOnFocus,
@@ -94,6 +93,7 @@ class RawList extends PureComponent {
       loading,
       disableAutofocus,
     } = this.props;
+    const { isFocused, isOpened } = this.state;
 
     if (
       list.length === 0 &&
@@ -104,88 +104,83 @@ class RawList extends PureComponent {
       disableAutofocus();
     }
 
-    if (this.dropdown && autoFocus) {
-      if (prevState.selected !== this.state.selected) {
-        if (list.length === 1) {
-          this.handleSelect(list[0]);
-        }
-
-        if (!doNotOpenOnFocus && list.length > 1) {
-          this.openDropdownList();
-        }
-      }
-    }
-
+    // focus
     if (this.dropdown) {
       if (autoFocus) {
-        if (list && list.length > 0) {
-          this.focus();
-        }
+        this.focus();
       } else {
-        if (property && prevProps.defaultValue !== defaultValue) {
+        if (initialFocus && !defaultValue) {
           this.focus();
-        } else {
-          if (initialFocus && !defaultValue) {
-            this.focus();
-          }
         }
       }
     }
 
-    if (prevProps.list !== list) {
-      let dropdown = [];
+    //select
+    if (prevProps.list.length !== list.length) {
+      let dropdownList = [...list];
 
-      if (!mandatory) {
-        dropdown.push(0);
+      if (!mandatory && defaultValue) {
+        dropdownList.unshift({
+          caption: defaultValue.caption,
+          key: null,
+        });
       }
 
-      if (list.length > 0) {
-        let openDropdownState = {};
+      if (dropdownList.length > 0) {
+        let selectedValue = false;
 
-        if (list.length > 1) {
-          openDropdownState.isOpen = true;
+        if (!selected && dropdownList.length) {
+          selectedValue = {
+            selected: dropdownList[0],
+          };
         }
 
-        let dropdownList = dropdown.concat(list);
-
         this.setState({
-          ...openDropdownState,
-          dropdownList: dropdownList,
-          selected: defaultValue ? defaultValue : list[0],
+          ...selectedValue,
+          dropdownList,
         });
       }
     }
 
     if (prevProps.selected !== selected) {
-      this.setState({
-        selected: selected,
-      });
+      this.handleSwitch(selected);
+    }
+
+    //open
+    if (this.dropdown && autoFocus) {
+      if (prevState.selected !== this.state.selected) {
+        if (!doNotOpenOnFocus && this.state.dropdownList.length > 1) {
+          this.openDropdownList();
+        }
+      }
     }
 
     this.checkIfDropDownListOutOfFilter();
   }
 
   checkIfDropDownListOutOfFilter = () => {
-    if (!this.tetheredList ||
-      (this.tetheredList && !this.tetheredList.getBoundingClientRect)) {
+    if (
+      !this.tetheredList ||
+      (this.tetheredList && !this.tetheredList.getBoundingClientRect)
+    ) {
       return;
     }
 
     const { top } = this.tetheredList.getBoundingClientRect();
     const { filter } = this.props;
-    const { isOpen } = this.state;
+    const { isOpened } = this.state;
     if (
-      isOpen &&
+      isOpened &&
       filter.visible &&
       (top + 20 > filter.boundingRect.bottom ||
         top - 20 < filter.boundingRect.top)
     ) {
-      this.setState({ isOpen: false });
+      this.closeDropdownList();
     }
   };
 
   focus = () => {
-    if (this.state.isOpen) {
+    if (this.state.isOpened) {
       if (this.dropdown && this.dropdown.focus) {
         this.dropdown.focus();
       }
@@ -211,7 +206,7 @@ class RawList extends PureComponent {
   openDropdownList = focus => {
     this.setState(
       {
-        isOpen: true,
+        isOpened: true,
       },
       () => {
         focus && this.focus();
@@ -220,12 +215,12 @@ class RawList extends PureComponent {
   };
 
   closeDropdownList = () => {
-    const { isOpen } = this.state;
+    const { isOpened } = this.state;
 
-    if (isOpen) {
+    if (isOpened) {
       this.setState(
         {
-          isOpen: false,
+          isOpened: false,
         },
         this.blur
       );
@@ -252,9 +247,9 @@ class RawList extends PureComponent {
   };
 
   handleClickOutside() {
-    const { isOpen } = this.state;
+    const { isOpened } = this.state;
 
-    if (isOpen) {
+    if (isOpened) {
       this.closeDropdownList();
       this.handleBlur();
     }
@@ -268,18 +263,18 @@ class RawList extends PureComponent {
     this.openDropdownList();
   };
 
-  handleSelect = option => {
+  handleSelect = selected => {
     const { onSelect } = this.props;
 
-    if (option.key === null) {
+    if (selected.key === null) {
       onSelect(null);
     } else {
-      onSelect(option);
+      onSelect(selected);
     }
 
     this.setState(
       {
-        selected: option || 0,
+        selected,
       },
       () => {
         this.handleBlur();
@@ -288,15 +283,15 @@ class RawList extends PureComponent {
     );
   };
 
-  handleSwitch = option => {
+  handleSwitch = selected => {
     this.setState({
-      selected: option || 0,
+      selected,
     });
   };
 
   handleKeyDown = e => {
     const { onSelect, list, readonly } = this.props;
-    const { selected, isOpen } = this.state;
+    const { selected, isOpened } = this.state;
 
     if (e.keyCode > 47 && e.keyCode < 123) {
       this.navigateToAlphanumeric(e.key);
@@ -313,7 +308,7 @@ class RawList extends PureComponent {
         case 'Enter':
           e.preventDefault();
 
-          if (isOpen) {
+          if (isOpened) {
             e.stopPropagation();
           }
 
@@ -322,7 +317,6 @@ class RawList extends PureComponent {
           } else {
             onSelect(null);
           }
-
           break;
         case 'Escape':
           e.preventDefault();
@@ -337,42 +331,21 @@ class RawList extends PureComponent {
   };
 
   handleTab = ({ key }) => {
-    const { isOpen } = this.state;
+    const { isOpened } = this.state;
 
-    if (key === 'Tab' && isOpen) {
+    if (key === 'Tab' && isOpened) {
       this.closeDropdownList();
     }
   };
 
-  getSelectedIndex() {
-    const { list, mandatory } = this.props;
-    const { selected } = this.state;
-
-    if (selected === 0) {
-      return 0;
-    }
-
-    let baseIndex = list.indexOf(selected);
-    if (selected && baseIndex < 0) {
-      baseIndex = list.findIndex(item => item.key === selected.key);
-    }
-
-    if (!mandatory) {
-      return baseIndex + 1;
-    }
-
-    return baseIndex;
-  }
-
   navigateToAlphanumeric = char => {
-    const { list } = this.props;
-    const { isOpen, selected } = this.state;
+    const { isOpened, selected, dropdownList } = this.state;
 
-    if (!isOpen) {
+    if (!isOpened) {
       this.openDropdownList(true);
     }
 
-    const items = list.filter(
+    const items = dropdownList.filter(
       item => item.caption.toUpperCase() === char.toUpperCase()
     );
 
@@ -383,15 +356,13 @@ class RawList extends PureComponent {
       return;
     }
 
-    this.setState({
-      selected: item,
-    });
+    this.handleSwitch(item);
   };
 
   navigate = up => {
-    const { selected, dropdownList, isOpen } = this.state;
+    const { selected, dropdownList, isOpened } = this.state;
 
-    if (!isOpen) {
+    if (!isOpened) {
       this.openDropdownList(true);
     }
 
@@ -413,25 +384,27 @@ class RawList extends PureComponent {
     });
   };
 
-  getRow = (option, index) => {
-    const { defaultValue } = this.props;
+  getRow = option => {
     const { selected } = this.state;
-    const value = defaultValue ? defaultValue.caption : null;
-    const classes = ['input-dropdown-list-option ignore-react-onclickoutside'];
+    let selectedRow = false;
 
-    if (selected != null && selected !== 0) {
-      if (
-        selected.key === option.key ||
-        (!selected && (value === option.caption || (!value && index === 0)))
-      ) {
-        classes.push('input-dropdown-list-option-key-on');
-      }
+    if (
+      selected != null &&
+      (selected.key === option.key ||
+        (selected.key === null && selected.caption === option.caption))
+    ) {
+      selectedRow = true;
     }
 
     return (
       <div
         key={option.key}
-        className={classes.join(' ')}
+        className={classnames(
+          'input-dropdown-list-option ignore-react-onclickoutside',
+          {
+            'input-dropdown-list-option-key-on': selectedRow,
+          }
+        )}
         onMouseEnter={() => this.handleSwitch(option)}
         onClick={() => this.handleSelect(option)}
       >
@@ -442,16 +415,15 @@ class RawList extends PureComponent {
 
   renderOptions = () => {
     const { list, mandatory, emptyText } = this.props;
+    let emptyRow = null;
 
-    let emptyRow;
-
+    /* if field is not mandatory add extra empty row */
     if (!mandatory && emptyText) {
       emptyRow = this.getRow({ key: null, caption: emptyText });
     }
 
     return (
       <div>
-        {/* if field is not mandatory add extra empty row */}
         {emptyRow}
         {list.map(this.getRow)}
       </div>
@@ -474,12 +446,12 @@ class RawList extends PureComponent {
       disabled,
       mandatory,
       validStatus,
-      lookupList
+      lookupList,
     } = this.props;
-
+    const { isOpened, isFocused } = this.state;
+    let value = '';
     let placeholder = '';
     const isListEmpty = list.length === 0;
-    const { isOpen, isFocused } = this.state;
 
     if (typeof defaultValue === 'string') {
       placeholder = defaultValue;
@@ -487,16 +459,10 @@ class RawList extends PureComponent {
       placeholder = defaultValue && defaultValue.caption;
     }
 
-    let value;
-
     if (lookupList) {
       value = placeholder;
     } else if (selected) {
       value = selected.caption;
-    }
-
-    if (!value) {
-      value = '';
     }
 
     return (
@@ -533,7 +499,7 @@ class RawList extends PureComponent {
               'input-error':
                 validStatus &&
                 (!validStatus.valid && !validStatus.initialValue) &&
-                !isOpen,
+                !isOpened,
             })}
             ref={c => (this.inputContainer = c)}
           >
@@ -544,11 +510,13 @@ class RawList extends PureComponent {
             >
               <input
                 type="text"
-                className={
-                  'input-field js-input-field ' +
-                  'font-weight-semibold ' +
-                  (disabled ? 'input-disabled ' : '')
-                }
+                className={classnames(
+                  'input-field js-input-field',
+                  'font-weight-semibold',
+                  {
+                    'input-disabled': disabled,
+                  }
+                )}
                 readOnly
                 tabIndex={-1}
                 placeholder={placeholder}
@@ -562,7 +530,7 @@ class RawList extends PureComponent {
             </div>
           </div>
           {isFocused &&
-            isOpen && (
+            isOpened && (
               <ListDropdown
                 ref={c => (this.tetheredList = c)}
                 isListEmpty={isListEmpty}
@@ -588,6 +556,28 @@ RawList.propTypes = {
   autoFocus: PropTypes.bool,
   readonly: PropTypes.bool,
   list: PropTypes.array,
+  initialFocus: PropTypes.any,
+  doNotOpenOnFocus: PropTypes.bool,
+  rank: PropTypes.any,
+  defaultValue: PropTypes.any,
+  selected: PropTypes.any,
+  align: PropTypes.any,
+  emptyText: PropTypes.string,
+  lastProperty: PropTypes.any,
+  updated: PropTypes.bool,
+  loading: PropTypes.bool,
+  rowId: PropTypes.any,
+  isModal: PropTypes.bool,
+  tabIndex: PropTypes.number,
+  disabled: PropTypes.bool,
+  mandatory: PropTypes.bool,
+  validStatus: PropTypes.any,
+  lookupList: PropTypes.any,
+  disableAutofocus: PropTypes.func,
+  onFocus: PropTypes.func,
+  onHandleBlur: PropTypes.func,
+  onSelect: PropTypes.func,
+  onRequestListData: PropTypes.func,
 };
 
 export default connect(mapStateToProps, false, false, { withRef: true })(
