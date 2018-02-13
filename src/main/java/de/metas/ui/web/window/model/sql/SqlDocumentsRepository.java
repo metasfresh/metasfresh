@@ -44,6 +44,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -356,7 +357,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			}
 
 			final Object idObj = getValue(idField);
-			if (idObj == null)
+			if (JSONNullValue.isNull(idObj))
 			{
 				throw new NullPointerException("Null id");
 			}
@@ -761,7 +762,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 	public static Object convertValueToPO(final Object value, final String columnName, final DocumentFieldWidgetType widgetType, final Class<?> targetClass)
 	{
-		final Class<?> valueClass = value == null ? null : value.getClass();
+		final Class<?> valueClass = JSONNullValue.isNull(value) ? null : value.getClass();
 
 		if (valueClass != null && targetClass.isAssignableFrom(valueClass))
 		{
@@ -769,7 +770,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 		else if (int.class.equals(targetClass) || Integer.class.equals(targetClass))
 		{
-			if (value == null)
+			if (JSONNullValue.isNull(value))
 			{
 				return null;
 			}
@@ -795,7 +796,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 		else if (String.class.equals(targetClass))
 		{
-			if (value == null)
+			if (JSONNullValue.isNull(value))
 			{
 				return null;
 			}
@@ -813,7 +814,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 		else if (Timestamp.class.equals(targetClass))
 		{
-			if (value == null)
+			if (JSONNullValue.isNull(value))
 			{
 				return null;
 			}
@@ -829,7 +830,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 		else if (Boolean.class.equals(targetClass) || boolean.class.equals(targetClass))
 		{
-			if (value == null)
+			if (JSONNullValue.isNull(value))
 			{
 				return false;
 			}
