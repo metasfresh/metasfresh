@@ -96,6 +96,9 @@ public final class ProductPlanningSchemaDAO
 				.addOnlyContextClient()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_PlanningSchema_ID, schema.getM_Product_PlanningSchema_ID())
+				.orderBy()
+				.addColumn(I_PP_Product_Planning.COLUMN_SeqNo)
+				.endOrderBy()
 				.create()
 				.first();
 	}
