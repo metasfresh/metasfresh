@@ -338,7 +338,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final IQuery<I_C_Invoice_Candidate> retrieveInvoiceCandidatesQueryForInOuts(final Collection<? extends I_M_InOut> inouts)
 	{
 		Check.assumeNotEmpty(inouts, "inouts is not empty");
-		
+
 		final List<I_M_InOutLine> inoutLines = Services.get(IInOutDAO.class).retrieveLinesForInOuts(inouts);
 		return inoutLines.stream()
 				.map(this::retrieveInvoiceCandidatesForInOutLineQuery)
@@ -1070,7 +1070,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final void updateDateAcct(Timestamp dateAcct, int ADPinstance_ID, String trxName)
+	public final void updateDateAcct(final Timestamp dateAcct, final int ADPinstance_ID, final String trxName)
 	{
 		updateColumnForSelection(
 				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,    // invoiceCandidateColumnName
@@ -1381,9 +1381,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInventoryLineQuery(final I_M_InventoryLine inventoryLine)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inventoryLine);
-		int adTableId = InterfaceWrapperHelper.getTableId(I_M_InventoryLine.class);
-		int recordId = inventoryLine.getM_InventoryLine_ID();
-		String trxName = InterfaceWrapperHelper.getTrxName(inventoryLine);
+		final int adTableId = InterfaceWrapperHelper.getTableId(I_M_InventoryLine.class);
+		final int recordId = inventoryLine.getM_InventoryLine_ID();
+		final String trxName = InterfaceWrapperHelper.getTrxName(inventoryLine);
 
 		return retrieveInvoiceCandidatesForRecordQuery(ctx, adTableId, recordId, trxName);
 	}
@@ -1409,7 +1409,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			}
 			return orderDocumentNos.build();
 		}
-		catch (SQLException ex)
+		catch (final SQLException ex)
 		{
 			throw new DBException(ex, sql, sqlParams);
 		}
@@ -1418,5 +1418,4 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			DB.close(rs, pstmt);
 		}
 	}
-
 }

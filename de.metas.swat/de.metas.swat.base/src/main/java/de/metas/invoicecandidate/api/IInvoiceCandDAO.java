@@ -423,7 +423,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Retrieve all the invoice candidates for the given inventoryLine
-	 * 
+	 *
 	 * @param inventoryLine
 	 * @return
 	 */

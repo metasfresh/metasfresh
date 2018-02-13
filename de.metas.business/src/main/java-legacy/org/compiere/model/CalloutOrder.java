@@ -26,10 +26,12 @@ import java.util.Properties;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -44,6 +46,9 @@ import de.metas.logging.MetasfreshLastError;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductBL;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Order Callouts. metas 24.09.2008: Aenderungen durchgefuehrt um das Verhalten bei der Auswahl von Liefer- und Rechnungsadressen (sowie Geschaeftspartnern) zu beeinflussen. So werden jetzt im Feld
@@ -311,6 +316,7 @@ public class CalloutOrder extends CalloutEngine
 		{
 			return NO_ERROR;
 		}
+
 		final boolean IsSOTrx = order.isSOTrx();
 		// #928: Make sure the user is of the right SOTrx value and it is set as default for that SOTrx value.
 		final String userFlag = IsSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact : I_AD_User.COLUMNNAME_IsPurchaseContact;
@@ -324,13 +330,12 @@ public class CalloutOrder extends CalloutEngine
 				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
 				+ " p.SO_Description,p.IsDiscountPrinted,"
 				+ " p.InvoiceRule,p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
-				+ " p.SO_CreditLimit, p.SO_CreditLimit-stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed
-				+ " AS CreditAvailable,"
 				+ " lship.C_BPartner_Location_ID,c.AD_User_ID,"
 				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID,"
 				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, stats."
 				+ I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus
+				+ ", stats."
+				+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed
 				+ ", "
 				+ " p.SalesRep_ID, p.SO_DocTypeTarget_ID "
 				+ "FROM C_BPartner p"
@@ -371,14 +376,14 @@ public class CalloutOrder extends CalloutEngine
 			if (rs.next())
 			{
 				// metas: Auftragsart aus Kunde
-				Integer docTypeTargetId = rs.getInt("SO_DocTypeTarget_ID");
+				final Integer docTypeTargetId = rs.getInt("SO_DocTypeTarget_ID");
 				if (IsSOTrx && docTypeTargetId > 0)
 				{
 					Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, docTypeTargetId);
 				}
 
 				// Sales Rep - If BP has a default SalesRep then default it
-				Integer salesRepId = rs.getInt("SalesRep_ID");
+				final Integer salesRepId = rs.getInt("SalesRep_ID");
 				if (IsSOTrx && salesRepId != 0)
 				{
 					order.setSalesRep_ID(salesRepId);
@@ -433,10 +438,14 @@ public class CalloutOrder extends CalloutEngine
 				{
 					final int tabInfoContactId = calloutField.getTabInfoContextAsInt("AD_User_ID");
 					if (tabInfoContactId > 0)
+					{
 						contID = tabInfoContactId;
+					}
 				}
 				if (contID <= 0)
+				{
 					order.setAD_User_ID(-1);
+				}
 				else
 				{
 					order.setAD_User_ID(contID);
@@ -446,10 +455,20 @@ public class CalloutOrder extends CalloutEngine
 				// CreditAvailable
 				if (IsSOTrx)
 				{
-					if (isChkCreditLimit(rs, true))
+					final String creditStatus = rs.getString("SOCreditStatus");
+					final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
+							.bpartnerId(C_BPartner_ID)
+							.creditStatus(creditStatus)
+							.evalCreditstatus(true)
+							.evaluationDate(order.getDateOrdered())
+							.build();
+					if (isChkCreditLimit(creditLimitRequest))
 					{
-						double CreditAvailable = rs.getDouble("CreditAvailable");
-						if (!rs.wasNull() && CreditAvailable < 0)
+						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(C_BPartner_ID, order.getDateOrdered());
+						final double creditUsed = rs.getDouble("SO_CreditUsed");
+						final BigDecimal CreditAvailable = creditLimit.subtract(BigDecimal.valueOf(creditUsed));
+						if (!rs.wasNull() && CreditAvailable.signum() < 0)
 						{
 							calloutField.fireDataStatusEEvent(MSG_CreditLimitOver, DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable), false);
 						}
@@ -459,6 +478,7 @@ public class CalloutOrder extends CalloutEngine
 				// PO Reference
 				String s = rs.getString("POReference");
 				if (s != null && s.length() != 0)
+				 {
 					order.setPOReference(s);
 				// should not be reset to null if we entered already value!
 				// VHARCQ, accepted YS makes sense that way
@@ -466,11 +486,14 @@ public class CalloutOrder extends CalloutEngine
 				/*
 				 * else mTab.setValue("POReference", null);
 				 */
+				}
 
 				// SO Description
 				s = rs.getString("SO_Description");
 				if (s != null && s.trim().length() != 0)
+				{
 					order.setDescription(s);
+				}
 				// IsDiscountPrinted
 				s = rs.getString("IsDiscountPrinted");
 				order.setIsDiscountPrinted(DisplayType.toBoolean(s));
@@ -495,28 +518,40 @@ public class CalloutOrder extends CalloutEngine
 					s = rs.getString(IsSOTrx ? "PaymentRule" : "PaymentRulePO");
 					if (s != null && s.length() != 0)
 					{
-						if (s.equals("B"))  // No Cache in Non POS
+						if ("B".equals(s))
+						{
 							s = "P";
-						if (IsSOTrx && (s.equals("S") || s.equals("U")))  // No Check/Transfer for SO_Trx
+						}
+						if (IsSOTrx && ("S".equals(s) || "U".equals(s)))
+						 {
 							s = "P"; // Payment Term
+						}
 						order.setPaymentRule(s);
 					}
 					// Payment Term
-					Integer ii = rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID");
+					final Integer ii = rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID");
 					if (!rs.wasNull())
+					{
 						order.setC_PaymentTerm_ID(ii);
+					}
 					// InvoiceRule
 					s = rs.getString("InvoiceRule");
 					if (s != null && s.length() != 0)
+					{
 						order.setInvoiceRule(s);
+					}
 					// DeliveryRule
 					s = rs.getString("DeliveryRule");
 					if (s != null && s.length() != 0)
+					{
 						order.setDeliveryRule(s);
+					}
 					// FreightCostRule
 					s = rs.getString("FreightCostRule");
 					if (s != null && s.length() != 0)
+					{
 						order.setFreightCostRule(s);
+					}
 					// DeliveryViaRule
 					s = rs.getString("DeliveryViaRule");
 					if (s != null && s.length() != 0)
@@ -530,7 +565,7 @@ public class CalloutOrder extends CalloutEngine
 				}
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.error(sql, e);
 			return e.getLocalizedMessage();
@@ -557,11 +592,15 @@ public class CalloutOrder extends CalloutEngine
 	public String bPartnerBill(final ICalloutField calloutField)
 	{
 		if (isCalloutActive())
+		{
 			return NO_ERROR;
+		}
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
 		final int bill_BPartner_ID = order.getBill_BPartner_ID();
 		if (bill_BPartner_ID <= 0)
+		{
 			return NO_ERROR;
+		}
 
 		// #928: Make sure the user is of the right SOTrx value and it is set as default for that SOTrx value.
 
@@ -570,14 +609,13 @@ public class CalloutOrder extends CalloutEngine
 
 		final String defaultUserFlag = isSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact_Default : I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
 
-		String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
+		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ "p.M_PriceList_ID,p.PaymentRule,p.POReference,"
 				+ "p.SO_Description,p.IsDiscountPrinted,"
 				+ "p.InvoiceRule,p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
-				+ "p.SO_CreditLimit, p.SO_CreditLimit-stats."
-
+				+ ", stats."
 				+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed
-				+ " AS CreditAvailable,"
+				+ ", "
 				+ "c.AD_User_ID,"
 				+ "p.PO_PriceList_ID, p.PaymentRulePO, p.PO_PaymentTerm_ID,"
 				+ "lbill.C_BPartner_Location_ID AS Bill_Location_ID "
@@ -600,10 +638,11 @@ public class CalloutOrder extends CalloutEngine
 				// metas: (2009 0027 G1): making sure that the default billTo
 				// location is used
 				+ " ORDER BY " + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault + " DESC"
+
 		// metas end
 		; // #1
 
-		boolean IsSOTrx = order.isSOTrx();
+		final boolean IsSOTrx = order.isSOTrx();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -621,9 +660,11 @@ public class CalloutOrder extends CalloutEngine
 				}
 				else
 				{ // get default PriceList
-					int i = calloutField.getGlobalContextAsInt("#M_PriceList_ID");
+					final int i = calloutField.getGlobalContextAsInt("#M_PriceList_ID");
 					if (i > 0)
+					{
 						order.setM_PriceList_ID(i);
+					}
 				}
 
 				int bill_Location_ID = rs.getInt("Bill_Location_ID");
@@ -634,12 +675,18 @@ public class CalloutOrder extends CalloutEngine
 				{
 					final int tabInfoBPartnerLocationId = calloutField.getTabInfoContextAsInt("C_BPartner_Location_ID");
 					if (tabInfoBPartnerLocationId > 0)
+					{
 						bill_Location_ID = tabInfoBPartnerLocationId;
+					}
 				}
 				if (bill_Location_ID <= 0)
+				{
 					order.setBill_Location_ID(-1);
+				}
 				else
+				{
 					order.setBill_Location_ID(bill_Location_ID);
+				}
 
 				// Contact - overwritten by InfoBP selection
 				int contID = rs.getInt("AD_User_ID");
@@ -647,69 +694,105 @@ public class CalloutOrder extends CalloutEngine
 				{
 					final int tabInfoContactId = calloutField.getTabInfoContextAsInt("AD_User_ID");
 					if (tabInfoContactId > 0)
+					{
 						contID = tabInfoContactId;
+					}
 				}
 				if (contID <= 0)
+				{
 					order.setBill_User(null);
+				}
 				else
+				{
 					order.setBill_User_ID(contID);
+				}
 
 				// CreditAvailable
 				if (IsSOTrx)
 				{
-					if (isChkCreditLimit(rs, false))
+					final String creditStatus = rs.getString("SOCreditStatus");
+					final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
+							.bpartnerId(bill_BPartner_ID)
+							.creditStatus(creditStatus)
+							.evalCreditstatus(false)
+							.evaluationDate(order.getDateOrdered())
+							.build();
+					if (isChkCreditLimit(creditLimitRequest))
 					{
-						double CreditAvailable = rs.getDouble("CreditAvailable");
-						if (!rs.wasNull() && CreditAvailable < 0)
+						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bill_BPartner_ID, order.getDateOrdered());
+						final double creditUsed = rs.getDouble("SO_CreditUsed");
+						final BigDecimal CreditAvailable = creditLimit.subtract(BigDecimal.valueOf(creditUsed));
+						if (!rs.wasNull() && CreditAvailable.signum() < 0)
+						{
 							calloutField.fireDataStatusEEvent(MSG_CreditLimitOver, DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable), false);
+						}
 					}
 				}
 
 				// PO Reference
 				String s = rs.getString("POReference");
 				if (s != null && s.length() != 0)
+				{
 					order.setPOReference(s);
+				}
 				else
+				{
 					order.setPOReference(null);
+				}
 				// SO Description
 				s = rs.getString("SO_Description");
 				if (s != null && s.trim().length() != 0)
+				{
 					order.setDescription(s);
+				}
 				// IsDiscountPrinted
 				order.setIsDiscountPrinted(DisplayType.toBoolean(rs.getString("IsDiscountPrinted")));
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
-				String OrderType = order.getOrderType();
+				final String OrderType = order.getOrderType();
 				order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
 				order.setPaymentRule(X_C_Order.PAYMENTRULE_OnCredit);
 				if (MOrder.DocSubType_Prepay.equals(OrderType))
+				{
 					order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
-				else if (MOrder.DocSubType_POS.equals(OrderType))  // for POS
+				}
+				else if (MOrder.DocSubType_POS.equals(OrderType))
+				{
 					order.setPaymentRule(X_C_Order.PAYMENTRULE_Cash);
+				}
 				else
 				{
 					// PaymentRule
 					s = rs.getString(IsSOTrx ? "PaymentRule" : "PaymentRulePO");
 					if (s != null && s.length() != 0)
 					{
-						if (s.equals("B"))  // No Cache in Non POS
+						if ("B".equals(s))
+						{
 							s = "P";
-						if (IsSOTrx && (s.equals("S") || s.equals("U"))) // No
+						}
+						if (IsSOTrx && ("S".equals(s) || "U".equals(s)))
+						 {
 							s = "P"; // Payment Term
+						}
 						order.setPaymentRule(s);
 					}
 					// Payment Term
 					final int paymentTermId = rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID");
 					if (!rs.wasNull())
+					{
 						order.setC_PaymentTerm_ID(paymentTermId);
+					}
 					// InvoiceRule
 					s = rs.getString("InvoiceRule");
 					if (s != null && s.length() != 0)
+					{
 						order.setInvoiceRule(s);
+					}
 				}
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.error("bPartnerBill", e);
 			return e.getLocalizedMessage();
@@ -753,9 +836,13 @@ public class CalloutOrder extends CalloutEngine
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
 		final int M_Product_ID = orderLine.getM_Product_ID();
 		if (M_Product_ID <= 0)
+		{
 			return NO_ERROR;
+		}
 		if (steps)
+		{
 			log.warn("init");
+		}
 
 		//
 		// Charge: reset
@@ -770,9 +857,13 @@ public class CalloutOrder extends CalloutEngine
 		// Set Attribute
 		if (calloutField.getTabInfoContextAsInt("M_Product_ID") == M_Product_ID
 				&& calloutField.getTabInfoContextAsInt("M_AttributeSetInstance_ID") > 0)
+		{
 			orderLine.setM_AttributeSetInstance_ID(calloutField.getTabInfoContextAsInt("M_AttributeSetInstance_ID"));
+		}
 		else
+		{
 			orderLine.setM_AttributeSetInstance(null);
+		}
 
 		/***** Price Calculation see also qty ****/
 		updatePrices(orderLine); // metas
@@ -783,13 +874,13 @@ public class CalloutOrder extends CalloutEngine
 		{
 			if (Services.get(IProductBL.class).isStocked(product))
 			{
-				BigDecimal QtyOrdered = orderLine.getQtyOrdered();
+				final BigDecimal QtyOrdered = orderLine.getQtyOrdered();
 				int M_Warehouse_ID = orderLine.getM_Warehouse_ID();
 				if (M_Warehouse_ID <= 0)
 				{
 					M_Warehouse_ID = orderLine.getC_Order().getM_Warehouse_ID();
 				}
-				int M_AttributeSetInstance_ID = orderLine.getM_AttributeSetInstance_ID();
+				final int M_AttributeSetInstance_ID = orderLine.getM_AttributeSetInstance_ID();
 				BigDecimal available = MStorage.getQtyAvailable(M_Warehouse_ID, M_Product_ID, M_AttributeSetInstance_ID, null);
 
 				// FIXME: QtyAvailable field does not exist. Pls check and drop following code.
@@ -801,7 +892,9 @@ public class CalloutOrder extends CalloutEngine
 				// }
 
 				if (available == null)
+				{
 					available = BigDecimal.ZERO;
+				}
 				if (available.signum() == 0)
 				{
 					// metas: disable user message
@@ -817,13 +910,17 @@ public class CalloutOrder extends CalloutEngine
 				{
 					int C_OrderLine_ID = orderLine.getC_OrderLine_ID();
 					if (C_OrderLine_ID <= 0)
+					{
 						C_OrderLine_ID = 0;
+					}
 					BigDecimal notReserved = MOrderLine.getNotReserved(calloutField.getCtx(),
 							M_Warehouse_ID, M_Product_ID,
 							M_AttributeSetInstance_ID, C_OrderLine_ID);
 					if (notReserved == null)
+					{
 						notReserved = BigDecimal.ZERO;
-					BigDecimal total = available.subtract(notReserved);
+					}
+					final BigDecimal total = available.subtract(notReserved);
 					if (total.compareTo(QtyOrdered) < 0)
 					{
 						// metas: don't show warning
@@ -841,7 +938,9 @@ public class CalloutOrder extends CalloutEngine
 		handleIndividualDescription(orderLine);
 		//
 		if (steps)
+		{
 			log.warn("fini");
+		}
 		return tax(calloutField);
 	} // product
 
@@ -853,7 +952,9 @@ public class CalloutOrder extends CalloutEngine
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
 		final int C_Charge_ID = orderLine.getC_Charge_ID();
 		if (C_Charge_ID <= 0)
+		{
 			return NO_ERROR;
+		}
 		// No Product defined
 		if (orderLine.getM_Product_ID() > 0)
 		{
@@ -864,7 +965,7 @@ public class CalloutOrder extends CalloutEngine
 		orderLine.setS_ResourceAssignment_ID(-1);
 		orderLine.setC_UOM_ID(IUOMDAO.C_UOM_ID_Each); // EA
 
-		String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
+		final String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -886,7 +987,7 @@ public class CalloutOrder extends CalloutEngine
 				// metas: end
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.error(sql, e);
 			return e.getLocalizedMessage();
@@ -917,63 +1018,87 @@ public class CalloutOrder extends CalloutEngine
 
 		final Object value = calloutField.getValue();
 		if (value == null)
+		{
 			return NO_ERROR;
+		}
 		if (steps)
+		{
 			log.warn("init");
+		}
 
 		// Check Product
 		final int M_Product_ID = ol.getM_Product_ID();
 		final int C_Charge_ID = ol.getC_Charge_ID();
 		log.debug("Product={}, C_Charge_ID={}", M_Product_ID, C_Charge_ID);
 		if (M_Product_ID <= 0 && C_Charge_ID <= 0)
+		 {
 			return amt(calloutField); //
+		}
 
 		// Check Partner Location
 		final I_C_Order order = ol.getC_Order();
 		int shipC_BPartner_Location_ID = ol.getC_BPartner_Location_ID();
 		if (shipC_BPartner_Location_ID <= 0)
+		{
 			shipC_BPartner_Location_ID = order.getC_BPartner_Location_ID();
+		}
 		if (shipC_BPartner_Location_ID <= 0)
+		 {
 			return amt(calloutField); //
+		}
 		log.debug("Ship BP_Location={}", shipC_BPartner_Location_ID);
 
 		//
 		Timestamp billDate = ol.getDateOrdered();
 		if (billDate == null)
+		{
 			billDate = order.getDateOrdered();
+		}
 		log.debug("Bill Date={}", billDate);
 
 		Timestamp shipDate = ol.getDatePromised();
 		if (shipDate == null)
+		{
 			shipDate = order.getDatePromised();
+		}
 		log.debug("Ship Date={}", shipDate);
 
-		int AD_Org_ID = ol.getAD_Org_ID();
+		final int AD_Org_ID = ol.getAD_Org_ID();
 		log.debug("Org={}", AD_Org_ID);
 
 		int M_Warehouse_ID = ol.getM_Warehouse_ID();
 		if (M_Warehouse_ID <= 0)
+		{
 			M_Warehouse_ID = order.getM_Warehouse_ID();
+		}
 		log.debug("Warehouse={}", M_Warehouse_ID);
 
 		int billC_BPartner_Location_ID = order.getBill_Location_ID();
 		if (billC_BPartner_Location_ID <= 0)
+		{
 			billC_BPartner_Location_ID = shipC_BPartner_Location_ID;
+		}
 		log.debug("Bill BP_Location={}", billC_BPartner_Location_ID);
 
 		//
-		int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
+		final int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
 				shipDate, AD_Org_ID, M_Warehouse_ID,
 				billC_BPartner_Location_ID, shipC_BPartner_Location_ID, order.isSOTrx());
 		log.trace("Tax ID={}", C_Tax_ID);
 		//
 		if (C_Tax_ID <= 0)
+		{
 			calloutField.fireDataStatusEEvent(MetasfreshLastError.retrieveError());
+		}
 		else
+		{
 			ol.setC_Tax_ID(C_Tax_ID);
+		}
 		//
 		if (steps)
+		{
 			log.warn("fini");
+		}
 
 		return amt(calloutField);
 	} // tax
@@ -990,7 +1115,9 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		if (steps)
+		{
 			log.warn("init");
+		}
 
 		final Properties ctx = calloutField.getCtx();
 		final String changedColumnName = calloutField.getColumnName();
@@ -1033,7 +1160,9 @@ public class CalloutOrder extends CalloutEngine
 			PriceActual = (BigDecimal)value;
 			PriceEntered = MUOMConversion.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, PriceActual);
 			if (PriceEntered == null)
+			{
 				PriceEntered = PriceActual;
+			}
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName))
 		{
@@ -1053,14 +1182,18 @@ public class CalloutOrder extends CalloutEngine
 			// / 100.0 * PriceList.doubleValue());
 			// metas ende
 			if (PriceEntered.doubleValue() != 0)
+			{
 				PriceActual = new BigDecimal((100.0 - Discount.doubleValue()) / 100.0 * PriceEntered.doubleValue());
+			}
 
 			if (PriceActual.scale() > StdPrecision)
+			 {
 				PriceActual = PriceActual.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
 			// metas
 			// PriceEntered = MUOMConversion.convertProductFrom(ctx, M_Product_ID,
 			// C_UOM_To_ID, PriceActual);
 			// metas ende
+			}
 
 			// metas us1064
 			// if (PriceEntered == null)
@@ -1073,18 +1206,22 @@ public class CalloutOrder extends CalloutEngine
 		else
 		{
 			if (PriceList.intValue() == 0)
+			{
 				Discount = BigDecimal.ZERO;
+			}
 			// metas
 			// else
 			// Discount = new BigDecimal(
 			// (PriceList.doubleValue() - PriceActual.doubleValue())
 			// / PriceList.doubleValue() * 100.0);
 			if (Discount.scale() > 2)
+			 {
 				Discount = Discount.setScale(2, BigDecimal.ROUND_HALF_UP);
 			// metas
 			// mTab.setValue("Discount", Discount);
 			// Discount = new BigDecimal(0);
 			// mTab.setValue("Discount", Discount);
+			}
 		}
 		log.debug("PriceEntered=" + PriceEntered + ", Actual=" + PriceActual + ", Discount=" + Discount);
 
@@ -1095,7 +1232,9 @@ public class CalloutOrder extends CalloutEngine
 			PriceActual = PriceLimit;
 			PriceEntered = MUOMConversion.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, PriceLimit);
 			if (PriceEntered == null)
+			{
 				PriceEntered = PriceLimit;
+			}
 			log.debug("(under) PriceEntered=" + PriceEntered + ", Actual" + PriceLimit);
 			orderLine.setPriceActual(PriceActual);
 			// 07090: this (complicated, legacy) is just about updating price amounts, not priceUOM -> not touching the price UOM here
@@ -1109,7 +1248,9 @@ public class CalloutOrder extends CalloutEngine
 						(PriceList.doubleValue() - PriceActual.doubleValue())
 								/ PriceList.doubleValue() * 100.0);
 				if (Discount.scale() > 2)
+				{
 					Discount = Discount.setScale(2, BigDecimal.ROUND_HALF_UP);
+				}
 				orderLine.setDiscount(Discount);
 			}
 		}
@@ -1123,7 +1264,9 @@ public class CalloutOrder extends CalloutEngine
 
 		BigDecimal LineNetAmt = qtyEnteredInPriceUOM.multiply(PriceActual);
 		if (LineNetAmt.scale() > StdPrecision)
+		{
 			LineNetAmt = LineNetAmt.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
+		}
 		orderLine.setLineNetAmt(LineNetAmt);
 
 		Services.get(IOrderLineBL.class).setTaxAmtInfoIfNotIgnored(ctx, orderLine, ITrx.TRXNAME_None);
@@ -1138,19 +1281,23 @@ public class CalloutOrder extends CalloutEngine
 	public String qty(final ICalloutField calloutField)
 	{
 		if (isCalloutActive() || calloutField.getValue() == null)
+		{
 			return NO_ERROR;
+		}
 
 		final String columnName = calloutField.getColumnName();
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
 		final int M_Product_ID = orderLine.getM_Product_ID();
 		if (steps)
+		{
 			log.warn("init - M_Product_ID=" + M_Product_ID + " - ");
+		}
 
 		// No Product
 		if (M_Product_ID <= 0)
 		{
 			final BigDecimal QtyEntered = orderLine.getQtyEntered();
-			BigDecimal QtyOrdered = QtyEntered;
+			final BigDecimal QtyOrdered = QtyEntered;
 			orderLine.setQtyOrdered(QtyOrdered);
 			setUOMConversion(calloutField, false);
 		}
@@ -1162,7 +1309,7 @@ public class CalloutOrder extends CalloutEngine
 			BigDecimal QtyEntered = orderLine.getQtyEntered();
 			final IUOMConversionContext uomConverter = IUOMConversionContext.of(orderLine.getM_Product());
 
-			BigDecimal QtyEntered1 = uomConverter.roundToUOMPrecisionIfPossible(QtyEntered, uomTo);
+			final BigDecimal QtyEntered1 = uomConverter.roundToUOMPrecisionIfPossible(QtyEntered, uomTo);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
 				log.debug("Corrected QtyEntered Scale UOM={} {}; QtyEntered={}->{}", uomTo, QtyEntered, QtyEntered1);
@@ -1175,7 +1322,7 @@ public class CalloutOrder extends CalloutEngine
 			{
 				QtyOrdered = QtyEntered;
 			}
-			boolean conversion = QtyEntered.compareTo(QtyOrdered) != 0;
+			final boolean conversion = QtyEntered.compareTo(QtyOrdered) != 0;
 			// PriceActual = (BigDecimal)mTab.getValue("PriceActual");
 			// metas us1064
 			// PriceEntered = MUOMConversion.convertProductFrom(ctx, M_Product_ID, C_UOM_To_ID, PriceActual);
@@ -1197,7 +1344,7 @@ public class CalloutOrder extends CalloutEngine
 		{
 			final int C_UOM_To_ID = orderLine.getC_UOM_ID();
 			BigDecimal QtyEntered = orderLine.getQtyEntered();
-			BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(calloutField.getCtx(), C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
+			final BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(calloutField.getCtx(), C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
 				log.debug("Corrected QtyEntered Scale UOM=" + C_UOM_To_ID + "; QtyEntered=" + QtyEntered + "->" + QtyEntered1);
@@ -1206,8 +1353,10 @@ public class CalloutOrder extends CalloutEngine
 			}
 			BigDecimal QtyOrdered = MUOMConversion.convertToProductUOM(calloutField.getCtx(), M_Product_ID, C_UOM_To_ID, QtyEntered);
 			if (QtyOrdered == null)
+			{
 				QtyOrdered = QtyEntered;
-			boolean conversion = QtyEntered.compareTo(QtyOrdered) != 0;
+			}
+			final boolean conversion = QtyEntered.compareTo(QtyOrdered) != 0;
 			log.debug("UOM=" + C_UOM_To_ID + ", QtyEntered=" + QtyEntered + " -> " + conversion + " QtyOrdered=" + QtyOrdered);
 			setUOMConversion(calloutField, conversion);
 			orderLine.setQtyOrdered(QtyOrdered);
@@ -1215,10 +1364,10 @@ public class CalloutOrder extends CalloutEngine
 		// QtyOrdered changed - calculate QtyEntered (should not happen)
 		else if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(columnName))
 		{
-			int C_UOM_To_ID = orderLine.getC_UOM_ID();
+			final int C_UOM_To_ID = orderLine.getC_UOM_ID();
 			BigDecimal QtyOrdered = orderLine.getQtyOrdered();
-			int precision = MProduct.get(calloutField.getCtx(), M_Product_ID).getUOMPrecision();
-			BigDecimal QtyOrdered1 = QtyOrdered.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			final int precision = MProduct.get(calloutField.getCtx(), M_Product_ID).getUOMPrecision();
+			final BigDecimal QtyOrdered1 = QtyOrdered.setScale(precision, BigDecimal.ROUND_HALF_UP);
 			if (QtyOrdered.compareTo(QtyOrdered1) != 0)
 			{
 				log.debug("Corrected QtyOrdered Scale " + QtyOrdered + "->" + QtyOrdered1);
@@ -1227,8 +1376,10 @@ public class CalloutOrder extends CalloutEngine
 			}
 			BigDecimal QtyEntered = MUOMConversion.convertFromProductUOM(calloutField.getCtx(), M_Product_ID, C_UOM_To_ID, QtyOrdered);
 			if (QtyEntered == null)
+			{
 				QtyEntered = QtyOrdered;
-			boolean conversion = QtyOrdered.compareTo(QtyEntered) != 0;
+			}
+			final boolean conversion = QtyOrdered.compareTo(QtyEntered) != 0;
 			log.debug("UOM=" + C_UOM_To_ID + ", QtyOrdered=" + QtyOrdered + " -> " + conversion + " QtyEntered=" + QtyEntered);
 			setUOMConversion(calloutField, conversion);
 			orderLine.setQtyEntered(QtyEntered);
@@ -1241,11 +1392,13 @@ public class CalloutOrder extends CalloutEngine
 		{
 			if (Services.get(IProductBL.class).isStocked(M_Product_ID))
 			{
-				int M_Warehouse_ID = orderLine.getM_Warehouse_ID();
-				int M_AttributeSetInstance_ID = orderLine.getM_AttributeSetInstance_ID();
+				final int M_Warehouse_ID = orderLine.getM_Warehouse_ID();
+				final int M_AttributeSetInstance_ID = orderLine.getM_AttributeSetInstance_ID();
 				BigDecimal available = MStorage.getQtyAvailable(M_Warehouse_ID, M_Product_ID, M_AttributeSetInstance_ID, null);
 				if (available == null)
+				{
 					available = BigDecimal.ZERO;
+				}
 
 				// FIXME: QtyAvailable field does not exist. Pls check and drop following code.
 				// // metas: if we have the respective field, display the available qty
@@ -1270,13 +1423,17 @@ public class CalloutOrder extends CalloutEngine
 				{
 					int C_OrderLine_ID = orderLine.getC_OrderLine_ID();
 					if (C_OrderLine_ID <= 0)
+					{
 						C_OrderLine_ID = 0;
+					}
 					BigDecimal notReserved = MOrderLine.getNotReserved(calloutField.getCtx(),
 							M_Warehouse_ID, M_Product_ID,
 							M_AttributeSetInstance_ID, C_OrderLine_ID);
 					if (notReserved == null)
+					{
 						notReserved = BigDecimal.ZERO;
-					BigDecimal total = available.subtract(notReserved);
+					}
+					final BigDecimal total = available.subtract(notReserved);
 					if (total.compareTo(QtyOrdered) < 0)
 					{
 						// metas: disabling the warnings about insuffizient qty
@@ -1318,7 +1475,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Evaluates the fields {@link I_C_OrderLine#COLUMNNAME_M_Product_ID} and {@link I_C_OrderLine#COLUMNNAME_IsIndividualDescription}.
-	 * 
+	 *
 	 * If Both are set and isIndividualDescription is true the product's description is copied into the order line's {@link I_C_OrderLine#COLUMNNAME_ProductDescription} field.
 	 */
 	private void handleIndividualDescription(final I_C_OrderLine ol)
@@ -1340,26 +1497,45 @@ public class CalloutOrder extends CalloutEngine
 		return;
 	}
 
+	@Builder
+	@Value
+	private static class CreditLimitRequest
+	{
+		final int bpartnerId;
+		@NonNull
+		final String creditStatus;
+		final boolean evalCreditstatus;
+		@NonNull
+		final Timestamp evaluationDate;
+	}
+
+
 	/**
-	 * Decides (using the given <code>rs</code> whether the business partner's credit limit should be checked.
+	 * Decides whether the business partner's credit limit should be checked.
 	 *
-	 * @param rs the result set contains the data sued fpr the decision
+	 * @param bpartnerId
+	 * @param creditStatus
 	 * @param evalCreditstatus if <code>true</code>, the result set's column <code>"SOCreditStatus"</code> is also used for the decision
 	 * @return
 	 * @throws SQLException if one is thrown while accessing the result set (in particular if evalCreditstatus is <code>true</code>, but the result set doesn't contain<code>"SOCreditStatus"</code>).
 	 */
-	private boolean isChkCreditLimit(final ResultSet rs, final boolean evalCreditstatus) throws SQLException
+	private boolean isChkCreditLimit(@NonNull final CreditLimitRequest creditlimitrequest) throws SQLException
 	{
-		final double creditLimit = rs.getDouble("SO_CreditLimit");
+		final int bpartnerId = creditlimitrequest.getBpartnerId();
+		final String creditStatus = creditlimitrequest.getCreditStatus();
+		final boolean evalCreditstatus = creditlimitrequest.isEvalCreditstatus();
+		final Timestamp evaluationDate = creditlimitrequest.getEvaluationDate();
+
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartnerId, evaluationDate);
 		boolean dontCheck = true;
 		if (evalCreditstatus)
 		{
-			String creditStatus = rs.getString("SOCreditStatus");
-			dontCheck = creditLimit == 0 || X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(creditStatus);
+			dontCheck = creditLimit.signum() == 0 || X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(creditStatus);
 		}
 		else
 		{
-			dontCheck = creditLimit == 0;
+			dontCheck = creditLimit.signum() == 0;
 		}
 		return !dontCheck;
 	}
@@ -1388,8 +1564,10 @@ public class CalloutOrder extends CalloutEngine
 		final DropShipPartnerAware dropShipAware = calloutField.getModel(DropShipPartnerAware.class);
 		final int dropShipBPartnerId = dropShipAware.getDropShip_BPartner_ID();
 		if (dropShipBPartnerId <= 0)
+		{
 			return NO_ERROR;
-		String sql = "SELECT lship.C_BPartner_Location_ID,c.AD_User_ID "
+		}
+		final String sql = "SELECT lship.C_BPartner_Location_ID,c.AD_User_ID "
 				+ " FROM C_BPartner p"
 				+ " LEFT OUTER JOIN C_BPartner_Location lship ON (p.C_BPartner_ID=lship.C_BPartner_ID AND lship.IsShipTo='Y' AND lship.IsActive='Y')"
 				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) "
@@ -1423,19 +1601,27 @@ public class CalloutOrder extends CalloutEngine
 					}
 				}
 				if (shipTo_ID <= 0)
+				{
 					dropShipAware.setDropShip_Location(null);
+				}
 				else
+				{
 					dropShipAware.setDropShip_Location_ID(shipTo_ID);
+				}
 
 				int contID = rs.getInt("AD_User_ID");
 				if (dropShipBPartnerId == calloutField.getTabInfoContextAsInt("DropShip_BPartner_ID"))
 				{
 					final int tabInfoContactId = calloutField.getTabInfoContextAsInt("DropShip_User_ID");
 					if (tabInfoContactId > 0)
+					{
 						contID = tabInfoContactId;
+					}
 				}
 				if (contID <= 0)
+				{
 					dropShipAware.setDropShip_User(null);
+				}
 				else
 				{
 					dropShipAware.setDropShip_User_ID(contID);
@@ -1443,7 +1629,7 @@ public class CalloutOrder extends CalloutEngine
 
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			log.error(sql, e);
 			return e.getLocalizedMessage();
