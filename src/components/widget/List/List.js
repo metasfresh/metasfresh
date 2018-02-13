@@ -126,8 +126,8 @@ class List extends Component {
 
     if (list && list.length > 1) {
       if (this.rawList) {
-        this.rawList.openDropdownList();
         this.rawList.focus();
+        this.rawList.openDropdownList();
       }
     }
   };
@@ -207,7 +207,27 @@ class List extends Component {
 
 List.propTypes = {
   dispatch: PropTypes.func.isRequired,
-  autoFocus: PropTypes.bool.isRequired,
+  autoFocus: PropTypes.bool,
+  selected: PropTypes.object,
+  properties: PropTypes.array,
+  isInputEmpty: PropTypes.bool,
+  defaultValue: PropTypes.any,
+  dataId: PropTypes.any,
+  rowId: PropTypes.any,
+  tabId: PropTypes.any,
+  windowType: PropTypes.string,
+  filterWidget: PropTypes.any,
+  entity: PropTypes.string,
+  subentity: PropTypes.object,
+  subentityId: PropTypes.string,
+  viewId: PropTypes.any,
+  attribute: PropTypes.any,
+  onChange: PropTypes.func,
+  onFocus: PropTypes.func,
+  lookupList: PropTypes.bool,
+  setNextProperty: PropTypes.func,
+  mainProperty: PropTypes.any,
+  enableAutofocus: PropTypes.func,
 };
 
 export default connect(false, false, false, { withRef: true })(List);

@@ -486,7 +486,7 @@ class RawWidget extends Component {
             subentity={subentity}
             subentityId={subentityId}
             defaultValue={fields[0].emptyText}
-            selected={widgetData[0].value}
+            selected={widgetData[0].value || null}
             properties={fields}
             readonly={widgetData[0].readonly || disabled}
             mandatory={widgetData[0].mandatory}
