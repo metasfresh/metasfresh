@@ -40,6 +40,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -49,6 +50,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -103,7 +105,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	 * @param minGuaranteeDate Guarantee Date
 	 * @return true when the qty available is enough
 	 */
-	public static boolean isQtyAvailable(MPPOrder order, final Map<Integer, PPOrderBOMLineModel> issue, Timestamp minGuaranteeDate)
+	private static boolean isQtyAvailable(MPPOrder order, final Map<Integer, PPOrderBOMLineModel> issue, Timestamp minGuaranteeDate)
 	{
 		boolean isCompleteQtyDeliver = false;
 		for (int i = 0; i < issue.size(); i++)
@@ -369,7 +371,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean unlockIt()
 	{
-		log.info(toString());
 		setProcessing(false);
 		return true;
 	} // unlockIt
@@ -377,7 +378,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean invalidateIt()
 	{
-		log.info(toString());
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	} // invalidateIt
@@ -385,7 +385,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public String prepareIt()
 	{
-		log.info(toString());
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
 		//
@@ -465,7 +464,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean approveIt()
 	{
-		log.info("approveIt - " + toString());
 		MDocType doc = MDocType.get(getCtx(), getC_DocType_ID());
 		if (doc.getDocBaseType().equals(X_C_DocType.DOCBASETYPE_QualityOrder))
 		{
@@ -486,7 +484,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean rejectIt()
 	{
-		log.info("rejectIt - " + toString());
 		setIsApproved(false);
 		return true;
 	} // rejectIt
@@ -541,7 +538,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Auto receipt and issue for kit
-		final I_PP_Order_BOM ppOrderBOM = getPP_Order_BOM();
+		final I_PP_Order_BOM ppOrderBOM = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOM(this);
 		if (X_PP_Order_BOM.BOMTYPE_Make_To_Kit.equals(ppOrderBOM.getBOMType())
 				&& X_PP_Order_BOM.BOMUSE_Manufacturing.equals(ppOrderBOM.getBOMUse()))
 		{
@@ -708,8 +705,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean voidIt()
 	{
-		log.info(toString());
-
 		//
 		// Call Model ValidatorȘ Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
@@ -780,8 +775,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean closeIt()
 	{
-		log.info(toString());
-
 		//
 		// Call Model Validator: Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
@@ -873,14 +866,12 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		log.info("reverseCorrectIt - " + toString());
 		return voidIt();
 	} // reverseCorrectionIt
 
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		log.info("reverseAccrualIt - " + toString());
 		throw new LiberoException("@NotSupported@");
 	} // reverseAccrualIt
 
@@ -956,14 +947,13 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	{
 		try
 		{
-			File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
+			final File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
 			return createPDF(temp);
 		}
-		catch (Exception e)
+		catch (IOException e)
 		{
-			log.error("Could not create PDF - " + e.getMessage());
+			throw new AdempiereException("Could not create PDF", e);
 		}
-		return null;
 	} // getPDF
 
 	/**
@@ -991,11 +981,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		return dt.getName() + " " + getDocumentNo();
 	} // getDocumentInfo
-
-	public I_PP_Order_BOM getPP_Order_BOM()
-	{
-		return Services.get(IPPOrderBOMDAO.class).retrieveOrderBOM(this);
-	}
 
 	public MPPOrderWorkflow getMPPOrderWorkflow()
 	{
@@ -1056,7 +1041,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 			}
 
 			final BigDecimal qtyIssue = toIssue.min(qtyOnHand);
-			// log.debug("ToIssue: " + issue);
 			// create record for negative and positive transaction
 			if (qtyIssue.signum() != 0 || qtyScrap.signum() != 0 || qtyReject.signum() != 0)
 			{

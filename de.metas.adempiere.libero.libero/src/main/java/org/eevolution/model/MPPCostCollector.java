@@ -47,9 +47,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.exceptions.NoVendorForProductException;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostEngineFactory;
 import org.adempiere.model.engines.IDocumentLine;
@@ -113,18 +113,18 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	 * Create & Complete Cost Collector
 	 * 
 	 * @param order
-	 * @param M_Product_ID
-	 * @param M_Locator_ID
-	 * @param M_AttributeSetInstance_ID
-	 * @param S_Resource_ID
-	 * @param PP_Order_BOMLine_ID
-	 * @param PP_Order_Node_ID
+	 * @param productId
+	 * @param locatorId
+	 * @param attributeSetInstanceId
+	 * @param resourceId
+	 * @param ppOrderBOMLineId
+	 * @param ppOrderNodeId
 	 * @param docTypeId
-	 * @param CostCollectorType
+	 * @param costCollectorType
 	 * @param movementdate
 	 * @param qty
-	 * @param scrap
-	 * @param reject
+	 * @param qtyScrap
+	 * @param qtyReject
 	 * @param durationSetup
 	 * @param duration
 	 * @param trxName
@@ -132,68 +132,23 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	 */
 	public static I_PP_Cost_Collector createCollector(
 			final I_PP_Order order,
-			final int M_Product_ID,
-			final int M_Locator_ID,
-			final int M_AttributeSetInstance_ID,
-			final int S_Resource_ID,
-			final int PP_Order_BOMLine_ID,
-			final int PP_Order_Node_ID,
+			final int productId,
+			final int locatorId,
+			final int attributeSetInstanceId,
+			final int resourceId,
+			final int ppOrderBOMLineId,
+			final int ppOrderNodeId,
 			final int docTypeId,
-			final String CostCollectorType,
+			final String costCollectorType,
 			final Timestamp movementdate,
 			final BigDecimal qty,
-			final BigDecimal scrap,
-			final BigDecimal reject,
+			final BigDecimal qtyScrap,
+			final BigDecimal qtyReject,
 			final int durationSetup,
 			final BigDecimal duration
 			)
 	{
-		final IContextAware context = InterfaceWrapperHelper.getContextAware(order);
-		return createCollector(context, order, M_Product_ID, M_Locator_ID, M_AttributeSetInstance_ID, S_Resource_ID, PP_Order_BOMLine_ID, PP_Order_Node_ID, docTypeId, CostCollectorType, movementdate,
-				qty, scrap, reject, durationSetup, duration);
-	}
-
-	/**
-	 * Create & Complete Cost Collector
-	 * 
-	 * @param context
-	 * @param order
-	 * @param M_Product_ID
-	 * @param M_Locator_ID
-	 * @param M_AttributeSetInstance_ID
-	 * @param S_Resource_ID
-	 * @param PP_Order_BOMLine_ID
-	 * @param PP_Order_Node_ID
-	 * @param docTypeId
-	 * @param CostCollectorType
-	 * @param movementdate
-	 * @param qty
-	 * @param scrap
-	 * @param reject
-	 * @param durationSetup
-	 * @param duration
-	 * @return
-	 */
-	public static I_PP_Cost_Collector createCollector(
-			final IContextAware context,
-			final I_PP_Order order,
-			final int M_Product_ID,
-			final int M_Locator_ID,
-			final int M_AttributeSetInstance_ID,
-			final int S_Resource_ID,
-			final int PP_Order_BOMLine_ID,
-			final int PP_Order_Node_ID,
-			final int docTypeId,
-			final String CostCollectorType,
-			final Timestamp movementdate,
-			final BigDecimal qty,
-			final BigDecimal scrap,
-			final BigDecimal reject,
-			final int durationSetup,
-			final BigDecimal duration
-			)
-	{
-		// FIXME: make sure we are running in trasaction
+		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 		
 		final int docTypeId_ToUse;
 		if (docTypeId > 0)
@@ -205,24 +160,24 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 			docTypeId_ToUse = MDocType.getDocType(MDocType.DOCBASETYPE_ManufacturingCostCollector);
 		}
 
-		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class, context);
+		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class);
 		setPP_Order(cc, order);
-		cc.setPP_Order_BOMLine_ID(PP_Order_BOMLine_ID);
-		cc.setPP_Order_Node_ID(PP_Order_Node_ID);
+		cc.setPP_Order_BOMLine_ID(ppOrderBOMLineId);
+		cc.setPP_Order_Node_ID(ppOrderNodeId);
 		cc.setC_DocType_ID(docTypeId_ToUse);
 		cc.setC_DocTypeTarget_ID(docTypeId_ToUse);
-		cc.setCostCollectorType(CostCollectorType);
+		cc.setCostCollectorType(costCollectorType);
 		cc.setDocAction(MPPCostCollector.DOCACTION_Complete);
 		cc.setDocStatus(MPPCostCollector.DOCSTATUS_Drafted);
 		cc.setIsActive(true);
-		cc.setM_Locator_ID(M_Locator_ID);
-		cc.setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
-		cc.setS_Resource_ID(S_Resource_ID);
+		cc.setM_Locator_ID(locatorId);
+		cc.setM_AttributeSetInstance_ID(attributeSetInstanceId);
+		cc.setS_Resource_ID(resourceId);
 		cc.setMovementDate(movementdate);
 		cc.setDateAcct(movementdate);
 		cc.setMovementQty(qty);
-		cc.setScrappedQty(scrap);
-		cc.setQtyReject(reject);
+		cc.setScrappedQty(qtyScrap);
+		cc.setQtyReject(qtyReject);
 		cc.setSetupTimeReal(new BigDecimal(durationSetup));
 		cc.setDurationReal(duration);
 		cc.setPosted(false);
@@ -230,13 +185,14 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		cc.setProcessing(false);
 		cc.setUser1_ID(order.getUser1_ID());
 		cc.setUser2_ID(order.getUser2_ID());
-		cc.setM_Product_ID(M_Product_ID);
-		if (PP_Order_Node_ID > 0)
+		cc.setM_Product_ID(productId);
+		if (ppOrderNodeId > 0)
 		{
-			setIsSubcontracting(cc, PP_Order_Node_ID);
+			final I_PP_Order_Node ppOrderNode = InterfaceWrapperHelper.load(ppOrderNodeId, I_PP_Order_Node.class);
+			cc.setIsSubcontracting(ppOrderNode.isSubcontracting());
 		}
 		// If this is an material issue, we should use BOM Line's UOM
-		if (PP_Order_BOMLine_ID > 0)
+		if (ppOrderBOMLineId > 0)
 		{
 			cc.setC_UOM(null); // we set the BOM Line UOM on beforeSave
 		}
@@ -1106,18 +1062,4 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		}
 		return false;
 	}
-
-	/**
-	 * set Is SubContracting
-	 * 
-	 * @param PP_Order_Node_ID
-	 **/
-	private static void setIsSubcontracting(final I_PP_Cost_Collector cc, int PP_Order_Node_ID)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(cc);
-		final String trxName = InterfaceWrapperHelper.getTrxName(cc);
-		final MPPOrderNode ppOrderNode = MPPOrderNode.get(ctx, PP_Order_Node_ID, trxName);
-		final boolean subcontracting = ppOrderNode.isSubcontracting();
-		cc.setIsSubcontracting(subcontracting);
-	}
-}	// MPPCostCollector
+}
