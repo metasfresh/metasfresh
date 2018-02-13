@@ -105,7 +105,7 @@ public class CostEngine
 		return CostingMethod.StandardCosting;
 	}
 
-	public CostAmount getResourceStandardCostRate(final I_PP_Cost_Collector cc, final int S_Resource_ID, final CostDimension d, final String trxName)
+	private CostAmount getResourceStandardCostRate(final I_PP_Cost_Collector cc, final int S_Resource_ID, final CostDimension d, final String trxName)
 	{
 		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(cc);
@@ -165,7 +165,7 @@ public class CostEngine
 	 * @param trxName
 	 * @return cost price or null if no cost was found and <code>failIfNoCostFound</code> is <code>true</code>.
 	 */
-	public CostAmount getProductActualCostPrice(
+	private CostAmount getProductActualCostPrice(
 			final I_PP_Cost_Collector cc,
 			final I_M_Product product,
 			final I_C_AcctSchema as,
@@ -197,7 +197,7 @@ public class CostEngine
 		return Adempiere.getBean(ICurrentCostsRepository.class).getOrCreate(costSegment, element.getId());
 	}
 
-	public CostAmount getProductStandardCostPrice(final I_PP_Cost_Collector cc, final I_M_Product product, final I_C_AcctSchema as, final CostElement element)
+	private CostAmount getProductStandardCostPrice(final I_PP_Cost_Collector cc, final I_M_Product product, final I_C_AcctSchema as, final CostElement element)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(cc);
 

@@ -90,7 +90,7 @@ public class MCost extends X_M_Cost
 	 * @param trxName trx
 	 * @return current cost price or null
 	 */
-	public static BigDecimal getCurrentCost(
+	private static BigDecimal getCurrentCost(
 			final I_M_Product product,
 			final int M_AttributeSetInstance_ID,
 			final I_C_AcctSchema as,
@@ -299,7 +299,7 @@ public class MCost extends X_M_Cost
 	 * 
 	 * @return price or null
 	 */
-	public static BigDecimal getSeedCosts(
+	static BigDecimal getSeedCosts(
 			final CostSegment costSegment,
 			final CostingMethod costingMethod,
 			final int C_OrderLine_ID)
