@@ -26,7 +26,7 @@ import java.util.Properties;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
+import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
@@ -464,7 +464,7 @@ public class CalloutOrder extends CalloutEngine
 							.build();
 					if (isChkCreditLimit(creditLimitRequest))
 					{
-						final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(C_BPartner_ID, order.getDateOrdered());
 						final double creditUsed = rs.getDouble("SO_CreditUsed");
 						final BigDecimal CreditAvailable = creditLimit.subtract(BigDecimal.valueOf(creditUsed));
@@ -719,7 +719,7 @@ public class CalloutOrder extends CalloutEngine
 							.build();
 					if (isChkCreditLimit(creditLimitRequest))
 					{
-						final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bill_BPartner_ID, order.getDateOrdered());
 						final double creditUsed = rs.getDouble("SO_CreditUsed");
 						final BigDecimal CreditAvailable = creditLimit.subtract(BigDecimal.valueOf(creditUsed));
@@ -1527,7 +1527,7 @@ public class CalloutOrder extends CalloutEngine
 		final boolean evalCreditstatus = creditlimitrequest.isEvalCreditstatus();
 		final Timestamp evaluationDate = creditlimitrequest.getEvaluationDate();
 
-		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartnerId, evaluationDate);
 		boolean dontCheck = true;
 		if (evalCreditstatus)

@@ -26,7 +26,7 @@ import java.util.Properties;
 
 import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
+import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
@@ -1266,7 +1266,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final String soCreditStatus = stats.getSOCreditStatus();
 		final BigDecimal creditUsed = stats.getSOCreditUsed();
 
-		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateReceived());
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))

@@ -34,7 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
+import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
@@ -1375,7 +1375,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 			final I_C_BPartner partner = InterfaceWrapperHelper.create(getCtx(), getC_BPartner_ID(), I_C_BPartner.class, get_TrxName());
 			final IBPartnerStats stats = bpartnerStatsDAO.retrieveBPartnerStats(partner);
-			final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+			final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 			final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateInvoiced());
 
 			if (Services.get(IBPartnerStatsBL.class).isCreditStopSales(stats, getGrandTotal(true),  getDateInvoiced()))

@@ -39,7 +39,7 @@ import org.springframework.stereotype.Repository;
  *
  */
 @Repository
-public class BPartnerCreditLimiRepository
+public class BPartnerCreditLimitRepository
 {
 	public BigDecimal retrieveCreditLimitByBPartnerId(final int bpartnerId, final Timestamp date)
 	{

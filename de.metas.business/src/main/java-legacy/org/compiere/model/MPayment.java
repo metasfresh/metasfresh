@@ -29,7 +29,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
+import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
@@ -1893,7 +1893,7 @@ public final class MPayment extends X_C_Payment
 		final IBPartnerStats stats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(partner);
 		final String soCreditStatus = stats.getSOCreditStatus();
 		final BigDecimal crediUsed = stats.getSOCreditUsed();
-		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateTrx());
 
 

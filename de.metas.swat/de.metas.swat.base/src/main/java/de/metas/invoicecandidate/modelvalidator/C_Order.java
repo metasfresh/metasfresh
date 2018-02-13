@@ -28,7 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
+import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
@@ -77,7 +77,7 @@ public class C_Order
 		final String soCreditStatus = stats.getSOCreditStatus();
 		final Timestamp dateOrdered = order.getDateOrdered();
 
-		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(order.getC_BPartner_ID(), dateOrdered);
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))

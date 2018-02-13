@@ -10,7 +10,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
+import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
@@ -238,7 +238,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 		final I_C_BPartner partner = retrieveC_BPartner(bpStats);
 
-		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), SystemTime.asDayTimestamp());
 
 		final String initialCreditStatus = bpStats.getSOCreditStatus();
@@ -299,7 +299,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		// load the statistics
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bstats);
 		final  BigDecimal creditUsed = retrieveSOCreditUsed(bstats);
-		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
 
 		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);

@@ -3,7 +3,7 @@ package org.adempiere.bpartner.service.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.adempiere.bpartner.service.BPartnerCreditLimiRepository;
+import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
@@ -56,7 +56,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		// get credit limit from BPartner
 		final I_C_BPartner partner = bpStatsDAO.retrieveC_BPartner(bpStats);
 
-		final BPartnerCreditLimiRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimiRepository.class);
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), date);
 
 		// Nothing to do
