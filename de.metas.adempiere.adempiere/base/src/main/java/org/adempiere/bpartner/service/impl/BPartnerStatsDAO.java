@@ -4,21 +4,28 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsBL;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -30,12 +37,12 @@ import org.compiere.util.Env;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -67,19 +74,19 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 	/**
 	 * Create the C_BPartner_Stats entry for the given bpartner.
-	 * 
+	 *
 	 * @param partner
 	 * @return
 	 */
 	private I_C_BPartner_Stats createBPartnerStats(final I_C_BPartner partner)
 	{
 		final I_C_BPartner_Stats stat = InterfaceWrapperHelper.newInstance(I_C_BPartner_Stats.class);
-
+		final String status = partner.getC_BP_Group().getSOCreditStatus();
 		stat.setC_BPartner(partner);
-		stat.setSOCreditStatus(X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
+		stat.setSOCreditStatus(status);
 		stat.setActualLifeTimeValue(BigDecimal.ZERO);
 		stat.setSO_CreditUsed(BigDecimal.ZERO);
-		stat.setTotalOpenBalance(BigDecimal.ZERO);
+		stat.setOpenItems(BigDecimal.ZERO);
 
 		InterfaceWrapperHelper.save(stat);
 
@@ -87,29 +94,17 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	}
 
 	@Override
-	public BigDecimal retrieveTotalOpenBalance(final IBPartnerStats bpStats)
+	public BigDecimal retrieveOpenItems(@NonNull final IBPartnerStats bpStats)
 	{
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
 
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		BigDecimal totalOpenBalance = null;
+		BigDecimal openItems = null;
 
-		// Legacy sql
-
-		// AZ Goodwill -> BF2041226 : only count completed/closed docs.
 		final Object[] sqlParams = new Object[] { stats.getC_BPartner_ID() };
 		final String sql = "SELECT "
-				// SO Credit Used
-				+ "COALESCE((SELECT SUM(currencyBase(invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID),i.C_Currency_ID,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)) FROM C_Invoice_v i "
-				+ "WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.IsSOTrx='Y' AND i.IsPaid='N' AND i.DocStatus IN ('CO','CL')),0), "
-				// Balance (incl. unallocated payments)
-				+ "COALESCE((SELECT SUM(currencyBase(invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID),i.C_Currency_ID,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)*i.MultiplierAP) FROM C_Invoice_v i "
-				+ "WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.IsPaid='N' AND i.DocStatus IN ('CO','CL')),0) - "
-				+ "COALESCE((SELECT SUM(currencyBase(Paymentavailable(p.C_Payment_ID),p.C_Currency_ID,p.DateTrx,p.AD_Client_ID,p.AD_Org_ID)) FROM C_Payment_v p "
-				+ "WHERE p.C_BPartner_ID=bp.C_BPartner_ID AND p.IsAllocated='N'"
-				+ " AND p.C_Charge_ID IS NULL AND p.DocStatus IN ('CO','CL')),0) "
-				+ "FROM C_BPartner bp " + "WHERE C_BPartner_ID=?";
+				+ "currencyBase(openamt,C_Currency_ID,DateInvoiced,AD_Client_ID,AD_Org_ID) from de_metas_endcustomer_fresh_reports.OpenItems_Report(now()::date) where  C_BPartner_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 
@@ -121,10 +116,10 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			if (rs.next())
 			{
 
-				totalOpenBalance = rs.getBigDecimal(2);
+				openItems = rs.getBigDecimal(1);
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql, sqlParams);
 		}
@@ -133,32 +128,29 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			DB.close(rs, pstmt);
 		}
 
-		return totalOpenBalance;
+		return openItems;
 	}
 
 	@Override
-	public void updateSOCreditUsed(final IBPartnerStats bpStats)
+	public BigDecimal retrieveSOCreditUsed(@NonNull final IBPartnerStats bpStats)
 	{
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
-
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		BigDecimal SO_CreditUsed = null;
 
-		// Legacy sql
-
-		final Object[] sqlParams = new Object[] { stats.getC_BPartner_ID() };
-		// AZ Goodwill -> BF2041226 : only count completed/closed docs.
+		final Object[] sqlParams = new Object[] {stats.getC_BPartner_ID() };
 		final String sql = "SELECT "
-				// SO Credit Used
+				// open invoices
 				+ "COALESCE((SELECT SUM(currencyBase(invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID),i.C_Currency_ID,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)) FROM C_Invoice_v i "
 				+ "WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.IsSOTrx='Y' AND i.IsPaid='N' AND i.DocStatus IN ('CO','CL')),0), "
-				// Balance (incl. unallocated payments)
-				+ "COALESCE((SELECT SUM(currencyBase(invoiceOpen(i.C_Invoice_ID,i.C_InvoicePaySchedule_ID),i.C_Currency_ID,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)*i.MultiplierAP) FROM C_Invoice_v i "
-				+ "WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.IsPaid='N' AND i.DocStatus IN ('CO','CL')),0) - "
+				// unallocated payments
 				+ "COALESCE((SELECT SUM(currencyBase(Paymentavailable(p.C_Payment_ID),p.C_Currency_ID,p.DateTrx,p.AD_Client_ID,p.AD_Org_ID)) FROM C_Payment_v p "
 				+ "WHERE p.C_BPartner_ID=bp.C_BPartner_ID AND p.IsAllocated='N'"
-				+ " AND p.C_Charge_ID IS NULL AND p.DocStatus IN ('CO','CL')),0) "
+				+ " AND p.C_Charge_ID IS NULL AND p.DocStatus IN ('CO','CL')),0)*(-1), "
+				// open invoice candidates
+				+ "COALESCE((SELECT SUM(currencyBase(ic.NetAmtToInvoice,ic.C_Currency_ID,ic.DateOrdered, ic.AD_Client_ID,ic.AD_Org_ID)) FROM C_Invoice_Candidate ic "
+				+ "WHERE ic.Bill_BPartner_ID=bp.C_BPartner_ID AND ic.Processed='N'),0) "
 				+ "FROM C_BPartner bp " + "WHERE C_BPartner_ID=?";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -169,11 +161,11 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				SO_CreditUsed = rs.getBigDecimal(1);
+				SO_CreditUsed = rs.getBigDecimal(1).add(rs.getBigDecimal(2)).add(rs.getBigDecimal(3));
 			}
 
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql, sqlParams);
 		}
@@ -182,8 +174,16 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			DB.close(rs, pstmt);
 		}
 
-		stats.setSO_CreditUsed(SO_CreditUsed);
+		return SO_CreditUsed;
+	}
 
+
+	@Override
+	public void updateSOCreditUsed(final IBPartnerStats bpStats)
+	{
+		final BigDecimal SO_CreditUsed = retrieveSOCreditUsed(bpStats);
+		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
+		stats.setSO_CreditUsed(SO_CreditUsed);
 		InterfaceWrapperHelper.save(stats);
 	}
 
@@ -198,7 +198,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		// Legacy sql
 
 		// AZ Goodwill -> BF2041226 : only count completed/closed docs.
-		String sql = "SELECT "
+		final String sql = "SELECT "
 				+ "COALESCE ((SELECT SUM(currencyBase(i.GrandTotal,i.C_Currency_ID,i.DateInvoiced, i.AD_Client_ID,i.AD_Org_ID)) FROM C_Invoice_v i "
 				+ "WHERE i.C_BPartner_ID=bp.C_BPartner_ID AND i.IsSOTrx='Y' AND i.DocStatus IN ('CO','CL')),0) "
 				+ "FROM C_BPartner bp " + "WHERE C_BPartner_ID=?";
@@ -218,7 +218,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 				actualLifeTimeValue = rs.getBigDecimal(1);
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, sql, sqlParams);
 		}
@@ -238,7 +238,8 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		final IBPartnerStatsBL bpartnerStatsBL = Services.get(IBPartnerStatsBL.class);
 		final I_C_BPartner partner = retrieveC_BPartner(bpStats);
 
-		final BigDecimal creditLimit = partner.getSO_CreditLimit();
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), SystemTime.asDayTimestamp());
 
 		final String initialCreditStatus = bpStats.getSOCreditStatus();
 
@@ -248,19 +249,21 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
 				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus)
 				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
+		{
 			return;
+		}
 
 		// Above Credit Limit
-		if (creditLimit.compareTo(retrieveTotalOpenBalance(bpStats)) < 0)
+		if (creditLimit.compareTo(retrieveSOCreditUsed(bpStats)) < 0)
 		{
 			creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold;
 		}
 		else
 		{
 			// Above Watch Limit
-			BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
+			final BigDecimal watchAmt = creditLimit.multiply(bpartnerStatsBL.getCreditWatchRatio(bpStats));
 
-			if (watchAmt.compareTo(bpStats.getTotalOpenBalance()) < 0)
+			if (watchAmt.compareTo(bpStats.getSOCreditUsed()) < 0)
 			{
 				creditStatusToSet = X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch;
 			}
@@ -275,20 +278,41 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	}
 
 	@Override
-	public void updateTotalOpenBalance(final IBPartnerStats bpStats)
+	public void updateOpenItems(final IBPartnerStats bpStats)
 	{
-
 		// load the statistics
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
 
-		final BigDecimal totalOpenBalance = retrieveTotalOpenBalance(bpStats);
+		final BigDecimal openItems = retrieveOpenItems(bpStats);
 
-		// update the statistics with the up tp date totalOpenBalance
-		stats.setTotalOpenBalance(totalOpenBalance);
+		// update the statistics with the up tp date openItems
+		stats.setOpenItems(openItems);
 
 		// save in db
 		InterfaceWrapperHelper.save(stats);
 	}
+
+
+	@Override
+	public void updateCreditLimitIndicator(final IBPartnerStats bstats)
+	{
+		// load the statistics
+		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bstats);
+		final  BigDecimal creditUsed = retrieveSOCreditUsed(bstats);
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(stats.getC_BPartner_ID(), SystemTime.asDayTimestamp());
+
+		final BigDecimal percent = creditLimit.signum() == 0 ? BigDecimal.ZERO : creditUsed.divide(creditLimit, 2, BigDecimal.ROUND_HALF_UP);
+		final Locale locale = Locale.getDefault();
+		final NumberFormat fmt = NumberFormat.getPercentInstance(locale);
+		fmt.setMinimumFractionDigits(1);
+		fmt.setMaximumFractionDigits(1);
+		final String percentSring = fmt.format(percent);
+
+		stats.setCreditLimitIndicator(percentSring);
+		InterfaceWrapperHelper.save(stats);
+	}
+
 
 	@Override
 	public void setSOCreditStatus(final IBPartnerStats bpStats, final String soCreditStatus)
@@ -312,7 +336,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	private I_C_BPartner_Stats getC_BPartner_Stats(final IBPartnerStats bpStats)
 	{
 		final BPartnerStats bpStatsInstance;
-		
+
 		if (InterfaceWrapperHelper.isInstanceOf(bpStats, BPartnerStats.class))
 		{
 			bpStatsInstance = (BPartnerStats)bpStats;
@@ -332,4 +356,5 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		return bpStatsInstance.getC_BPartner_Stats();
 	}
+
 }

@@ -322,7 +322,7 @@ public final class CacheMgt
 
 	private void fireGlobalCacheResetListeners(final CacheInvalidateMultiRequest multiRequest)
 	{
-		for (ICacheResetListener globalCacheResetListener : globalCacheResetListeners)
+		for (final ICacheResetListener globalCacheResetListener : globalCacheResetListeners)
 		{
 			try
 			{
@@ -593,7 +593,7 @@ public final class CacheMgt
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder("CacheMgt[");
+		final StringBuilder sb = new StringBuilder("CacheMgt[");
 		sb.append("Instances=")
 				.append(cacheInstances.size())
 				.append("]");
@@ -607,7 +607,7 @@ public final class CacheMgt
 	 */
 	public String toStringX()
 	{
-		StringBuilder sb = new StringBuilder("CacheMgt[");
+		final StringBuilder sb = new StringBuilder("CacheMgt[");
 		sb.append("Instances=")
 				.append(cacheInstances.size())
 				.append(", Elements=").append(getElementCount())
@@ -651,7 +651,7 @@ public final class CacheMgt
 		{
 			return cacheInstance.reset();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			// log but don't fail
 			log.warn("Error while reseting {}. Ignored.", cacheInstance, e);
@@ -758,7 +758,7 @@ public final class CacheMgt
 		private final Map<CacheInvalidateRequest, ResetMode> request2resetMode = Maps.newConcurrentMap();
 
 		/** Enqueues a record */
-		public final void addRecord(@NonNull final CacheInvalidateRequest request, @NonNull ResetMode resetMode)
+		public final void addRecord(@NonNull final CacheInvalidateRequest request, @NonNull final ResetMode resetMode)
 		{
 			request2resetMode.put(request, resetMode);
 			log.debug("Scheduled cache invalidation on transaction commit: {} ({})", request, resetMode);
