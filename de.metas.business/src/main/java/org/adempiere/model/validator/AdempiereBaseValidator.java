@@ -27,6 +27,7 @@ import org.adempiere.ad.column.callout.AD_Column;
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.dao.cache.ITableCacheConfig;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
+import org.adempiere.ad.dao.cache.WindowBasedCacheInvalidateRequestInitializer;
 import org.adempiere.ad.element.model.interceptor.AD_Element;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -327,5 +328,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Attribute.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_AttributeValue.Table_Name);
+		
+		WindowBasedCacheInvalidateRequestInitializer.instance.initialize();
 	}
 }
