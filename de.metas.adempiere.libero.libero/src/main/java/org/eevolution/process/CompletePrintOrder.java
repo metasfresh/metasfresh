@@ -22,6 +22,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.PrintInfo;
+import org.compiere.model.Query;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportCtl;
 import org.compiere.print.ReportEngine;
@@ -92,7 +93,7 @@ public class CompletePrintOrder extends JavaProcess
 		if (p_IsComplete)
 		{
 			MPPOrder order = new MPPOrder(getCtx(), p_PP_Order_ID, get_TrxName());
-			if (!order.isAvailable())
+			if (!isQtyAvailable())
 			{
 				throw new LiberoException("@NoQtyAvailable@");
 			}
@@ -149,6 +150,21 @@ public class CompletePrintOrder extends JavaProcess
 		return "@OK@";
 
 	} // doIt
+	
+	/**
+	 * Check if the Quantity from all BOM Lines is available (QtyOnHand >= QtyRequired)
+	 *
+	 * @return true if entire Qty is available for this Order
+	 */
+	public boolean isQtyAvailable()
+	{
+		String whereClause = "QtyOnHand >= QtyRequiered AND PP_Order_ID=?";
+		boolean available = new Query(getCtx(), "RV_PP_Order_Storage", whereClause, get_TrxName())
+				.setParameters(new Object[] { p_PP_Order_ID })
+				.match();
+		return available;
+	}
+
 	
 	/*
 	 * get the a Report Engine Instance using the view table 

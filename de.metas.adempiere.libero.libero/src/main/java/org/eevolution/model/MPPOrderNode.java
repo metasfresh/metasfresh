@@ -127,7 +127,7 @@ public class MPPOrderNode extends X_PP_Order_Node
 	}
 
 	/**	Cache						*/
-	private static CCache<Integer,MPPOrderNode>	s_cache	= new CCache<Integer,MPPOrderNode> (Table_Name, 50);
+	private static CCache<Integer,MPPOrderNode>	s_cache	= new CCache<> (Table_Name, 50);
 	/** MPPOrderWorkflow			*/
 	MPPOrderWorkflow m_order_wf = null;
 	
@@ -275,18 +275,6 @@ public class MPPOrderNode extends X_PP_Order_Node
 		return m_next;
 	}	//	loadNext
 	
-//	/**
-//	 * Set Qty Required and DurationRequired (Duration * qtyOrdered) 
-//	 * @param qtyOrdered
-//	 */
-//	public void setQtyOrdered(BigDecimal qtyOrdered)
-//	{
-//		setQtyRequiered(qtyOrdered);
-//		RoutingService routingService = RoutingServiceFactory.get().getRoutingService(getAD_Client_ID());
-//		BigDecimal workingTime = routingService.estimateWorkingTime(this, qtyOrdered);
-//		setDurationRequiered(workingTime.intValueExact());
-//	}
-	
 	/**
 	 * Get Qty To Deliver (Open Qty)
 	 * @return open qty
@@ -295,8 +283,7 @@ public class MPPOrderNode extends X_PP_Order_Node
 	@Deprecated
 	public BigDecimal getQtyToDeliver()
 	{
-		Services.get(IPPOrderWorkflowBL.class).getQtyToDeliver(this);
-		return getQtyRequiered().subtract(getQtyDelivered());
+		return Services.get(IPPOrderWorkflowBL.class).getQtyToDeliver(this);
 	}
 	
 	/**
@@ -315,7 +302,7 @@ public class MPPOrderNode extends X_PP_Order_Node
 	 */
 	public MPPOrderNodeNext[] getTransitions(int AD_Client_ID)
 	{
-		ArrayList<MPPOrderNodeNext> list = new ArrayList<MPPOrderNodeNext>();
+		ArrayList<MPPOrderNodeNext> list = new ArrayList<>();
 		for (MPPOrderNodeNext next : getNodeNexts())
 		{
 			if (next.getAD_Client_ID() == 0 || next.getAD_Client_ID() == AD_Client_ID)

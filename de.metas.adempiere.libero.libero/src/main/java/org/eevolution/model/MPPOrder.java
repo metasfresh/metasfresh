@@ -1,22 +1,20 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved.               *
- * Contributor(s): Victor Perez www.e-evolution.com                           *
- *                 Teo Sarca, www.arhipac.ro                                  *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
+ * Contributor(s): Victor Perez www.e-evolution.com *
+ * Teo Sarca, www.arhipac.ro *
  *****************************************************************************/
 package org.eevolution.model;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -30,11 +28,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * License, or (at your option) any later version.
  *
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -44,39 +42,25 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Storage;
-import org.compiere.model.MClient;
 import org.compiere.model.MDocType;
-import org.compiere.model.MProject;
-import org.compiere.model.MResource;
-import org.compiere.model.MStorage;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Order;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
-import org.compiere.util.KeyNamePair;
-import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
-import org.eevolution.api.IReceiptCostCollectorCandidate;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -85,7 +69,6 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderUtil;
-import de.metas.product.IProductBL;
 
 /**
  * PP Order Model.
@@ -97,250 +80,23 @@ public class MPPOrder extends X_PP_Order implements IDocument
 {
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * get if Component is Available
-	 *
-	 * @param MPPOrdrt Manufacturing order
-	 * @param issues
-	 * @param minGuaranteeDate Guarantee Date
-	 * @return true when the qty available is enough
-	 */
-	private static boolean isQtyAvailable(MPPOrder order, final Map<Integer, PPOrderBOMLineModel> issue, Timestamp minGuaranteeDate)
-	{
-		boolean isCompleteQtyDeliver = false;
-		for (int i = 0; i < issue.size(); i++)
-		{
-			final PPOrderBOMLineModel bomLineModel = issue.get(i);
-			final KeyNamePair key = bomLineModel.getKnp();
-			boolean isSelected = key.getName().equals("Y");
-			if (key == null || !isSelected)
-			{
-				continue;
-			}
-
-			final String value = bomLineModel.getValue();
-			final int M_Product_ID = bomLineModel.getM_Product_ID();
-			final BigDecimal qtyToDeliver = bomLineModel.getQtyToDeliver();
-			final BigDecimal qtyScrapComponent = bomLineModel.getQtyScrapComponent();
-
-			if (M_Product_ID > 0 && Services.get(IProductBL.class).isStocked(M_Product_ID))
-			{
-				int M_AttributeSetInstance_ID = 0;
-				if (value == null && isSelected)
-				{
-					M_AttributeSetInstance_ID = key.getKey();
-				}
-				else if (value != null && isSelected)
-				{
-					int PP_Order_BOMLine_ID = key.getKey();
-					if (PP_Order_BOMLine_ID > 0)
-					{
-						final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.create(order.getCtx(), PP_Order_BOMLine_ID, I_PP_Order_BOMLine.class, order.get_TrxName());
-						// Validate if AttributeSet generate instance
-						M_AttributeSetInstance_ID = orderBOMLine.getM_AttributeSetInstance_ID();
-					}
-				}
-
-				MStorage[] storages = MPPOrder.getStorages(order.getCtx(),
-						M_Product_ID,
-						order.getM_Warehouse_ID(),
-						M_AttributeSetInstance_ID,
-						minGuaranteeDate, order.get_TrxName());
-
-				if (M_AttributeSetInstance_ID == 0)
-				{
-					BigDecimal toIssue = qtyToDeliver.add(qtyScrapComponent);
-					for (MStorage storage : storages)
-					{
-						// TODO Selection of ASI
-						if (storage.getQtyOnHand().signum() == 0)
-							continue;
-						BigDecimal issueActual = toIssue.min(storage.getQtyOnHand());
-						toIssue = toIssue.subtract(issueActual);
-						if (toIssue.signum() <= 0)
-							break;
-					}
-				}
-				else
-				{
-					BigDecimal qtydelivered = qtyToDeliver;
-					qtydelivered.setScale(4, BigDecimal.ROUND_HALF_UP);
-					qtydelivered = BigDecimal.ZERO;
-				}
-
-				BigDecimal onHand = BigDecimal.ZERO;
-				for (MStorage storage : storages)
-				{
-					onHand = onHand.add(storage.getQtyOnHand());
-				}
-
-				isCompleteQtyDeliver = onHand.compareTo(qtyToDeliver.add(qtyScrapComponent)) >= 0;
-				if (!isCompleteQtyDeliver)
-					break;
-
-			}
-		} // for each line
-
-		return isCompleteQtyDeliver;
-	}
-
-	private static MStorage[] getStorages(
-			Properties ctx,
-			int M_Product_ID,
-			int M_Warehouse_ID,
-			int M_ASI_ID,
-			Timestamp minGuaranteeDate, String trxName)
-	{
-		final I_M_Product product = loadOutOfTrx(M_Product_ID, I_M_Product.class);
-		if (product != null && Services.get(IProductBL.class).isStocked(product))
-		{
-			String MMPolicy = Services.get(IProductBL.class).getMMPolicy(product);
-
-			// Validate if AttributeSet of product generated instance
-			if (product.getM_AttributeSetInstance_ID() == 0)
-			{
-				return MStorage.getWarehouse(ctx,
-						M_Warehouse_ID,
-						M_Product_ID,
-						M_ASI_ID,
-						minGuaranteeDate,
-						MClient.MMPOLICY_FiFo.equals(MMPolicy), // FiFo
-						true, // positiveOnly
-						0, // M_Locator_ID
-						trxName
-						);
-			}
-			else
-			{
-				// TODO: vpj-cd Create logic to get storage that matched with attribure set that not create instances
-				return MStorage.getWarehouse(ctx,
-						M_Warehouse_ID,
-						M_Product_ID,
-						0,
-						minGuaranteeDate,
-						MClient.MMPOLICY_FiFo.equals(MMPolicy), // FiFo
-						true, // positiveOnly
-						0, // M_Locator_ID
-						trxName
-						);
-			}
-
-		}
-		else
-		{
-			return new MStorage[0];
-		}
-	}
-
-	/**************************************************************************
-	 * Default Constructor
-	 *
-	 * @param ctx context
-	 * @param PP_Order_ID order to load, (0 create new order)
-	 */
 	public MPPOrder(Properties ctx, int PP_Order_ID, String trxName)
 	{
 		super(ctx, PP_Order_ID, trxName);
-		// New
-		if (PP_Order_ID == 0)
+		if (is_new())
 		{
 			Services.get(IPPOrderBL.class).setDefaults(this);
 		}
-	} // PP_Order
+	}
 
-	/**************************************************************************
-	 * Project Constructor
-	 *
-	 * @param project Project to create Order from
-	 * @param DocSubType if SO DocType Target (default DocSubType_OnCredit)
-	 */
-	public MPPOrder(MProject project, int PP_Product_BOM_ID, int AD_Workflow_ID)
-	{
-		this(project.getCtx(), 0, project.get_TrxName());
-		setAD_Client_ID(project.getAD_Client_ID());
-		setAD_Org_ID(project.getAD_Org_ID());
-		setC_Campaign_ID(project.getC_Campaign_ID());
-		setC_Project_ID(project.getC_Project_ID());
-		setDescription(project.getName());
-		setLine(10);
-		setPriorityRule(MPPOrder.PRIORITYRULE_Medium);
-		if (project.getDateContract() == null)
-			throw new IllegalStateException("Date Contract is mandatory for Manufacturing Order.");
-		if (project.getDateFinish() == null)
-			throw new IllegalStateException("Date Finish is mandatory for Manufacturing Order.");
-
-		Timestamp ts = project.getDateContract();
-		Timestamp df = project.getDateContract();
-
-		if (ts != null)
-			setDateOrdered(ts);
-		if (ts != null)
-			this.setDateStartSchedule(ts);
-		ts = project.getDateFinish();
-		if (df != null)
-			setDatePromised(df);
-		setM_Warehouse_ID(project.getM_Warehouse_ID());
-		setPP_Product_BOM_ID(PP_Product_BOM_ID);
-		setAD_Workflow_ID(AD_Workflow_ID);
-		setQtyEntered(BigDecimal.ONE);
-		setQtyOrdered(BigDecimal.ONE);
-		MPPProductBOM bom = new MPPProductBOM(project.getCtx(), PP_Product_BOM_ID, project.get_TrxName());
-		final I_M_Product product = bom.getM_Product();
-		setC_UOM_ID(product.getC_UOM_ID());
-
-		setM_Product_ID(bom.getM_Product_ID());
-
-		String where = MResource.COLUMNNAME_IsManufacturingResource + " = 'Y' AND " +
-				MResource.COLUMNNAME_ManufacturingResourceType + " = '" + MResource.MANUFACTURINGRESOURCETYPE_Plant + "' AND " +
-				MResource.COLUMNNAME_M_Warehouse_ID + " = " + project.getM_Warehouse_ID();
-		MResource resource = (MResource)TableModelLoader.instance.getPO(project.getCtx(), MResource.Table_Name, where, project.get_TrxName());
-		if (resource == null)
-			throw new IllegalStateException("Resource is mandatory.");
-		setS_Resource_ID(resource.getS_Resource_ID());
-	} // MOrder
-
-	/**
-	 * Load Constructor
-	 *
-	 * @param ctx context
-	 * @param rs result set record
-	 */
 	public MPPOrder(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	} // MOrder
-
-	/**
-	 * Get BOM Lines of PP Order
-	 *
-	 * @param requery
-	 * @return Order BOM Lines
-	 */
-	private List<I_PP_Order_BOMLine> getLines(boolean requery)
-	{
-		if (m_lines != null && !requery)
-		{
-			for (final I_PP_Order_BOMLine line : m_lines)
-			{
-				InterfaceWrapperHelper.setTrxName(line, get_TrxName());
-			}
-			return m_lines;
-		}
-
-		m_lines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(this);
-		return m_lines;
 	}
 
-	private List<I_PP_Order_BOMLine> m_lines = null;
-
-	/**
-	 * Get Order BOM Lines
-	 *
-	 * @return Order BOM Lines
-	 */
 	private List<I_PP_Order_BOMLine> getLines()
 	{
-		return getLines(true);
+		return Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(this);
 	}
 
 	@Override
@@ -348,10 +104,13 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	{
 		super.setProcessed(processed);
 
+		if (is_new())
+		{
+			return;
+		}
+
 		// FIXME: do we still need this?
 		// Update DB:
-		if (get_ID() <= 0)
-			return;
 		final String sql = "UPDATE PP_Order SET Processed=? WHERE PP_Order_ID=?";
 		DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
 	} // setProcessed
@@ -359,12 +118,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean processIt(final String processAction)
 	{
-		m_processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, processAction);
 	}
 
-	/** Process Message */
-	private String m_processMsg = null;
 	/** Just Prepared Flag */
 	private boolean m_justPrepared = false;
 
@@ -385,19 +141,13 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public String prepareIt()
 	{
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
+
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
 		//
-		// Call Model Validator: BEFORE_PREPARE
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
-		if (m_processMsg != null)
-		{
-			return IDocument.STATUS_Invalid;
-		}
-
-		//
 		// Validate BOM Lines
-		final List<I_PP_Order_BOMLine> lines = getLines(true);
+		final List<I_PP_Order_BOMLine> lines = getLines();
 		if (lines.isEmpty())
 		{
 			throw new LiberoException("@NoLines@");
@@ -447,13 +197,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// From this point on, don't allow MRP to remove this document
 		setMRP_AllowCleanup(false);
 
-		//
-		// Call Model Validator: AFTER_PREPARE
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
-		if (m_processMsg != null)
-		{
-			return IDocument.STATUS_Invalid;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 
 		//
 		// Update Document Status and return new status "InProgress"
@@ -508,17 +252,11 @@ public class MPPOrder extends X_PP_Order implements IDocument
 			}
 		}
 
-		//
-		// Call Model Validator: BEFORE_COMPLETE
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
-		if (m_processMsg != null)
-		{
-			return IDocument.STATUS_Invalid;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 
 		//
 		// Mark BOM Lines as processed
-		final List<I_PP_Order_BOMLine> orderBOMLines = getLines(true);
+		final List<I_PP_Order_BOMLine> orderBOMLines = getLines();
 		for (final I_PP_Order_BOMLine orderBOMLine : orderBOMLines)
 		{
 			orderBOMLine.setProcessed(true);
@@ -542,7 +280,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		if (X_PP_Order_BOM.BOMTYPE_Make_To_Kit.equals(ppOrderBOM.getBOMType())
 				&& X_PP_Order_BOM.BOMUSE_Manufacturing.equals(ppOrderBOM.getBOMUse()))
 		{
-			completeMakeToKit();
+			PPOrderMakeToKitHelper.complete(this);
 			return DOCSTATUS_Closed;
 		}
 
@@ -556,166 +294,22 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
 
-		//
-		// Call Model Validator: AFTER_COMPLETE
-		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
-		if (valid != null)
-		{
-			m_processMsg = valid;
-			return IDocument.STATUS_Invalid;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 
 		//
 		// Return new document status: Completed
 		return IDocument.STATUS_Completed;
 	} // completeIt
 
-	/**
-	 * Complete/Process the manufacturing order which is dealing with a Make-To-Kit BOM.
-	 *
-	 * NOTE: in this case we need a special was of completing it. After this method, the document can be automatically marked as closed.
-	 */
-	private void completeMakeToKit()
-	{
-		final Timestamp today = SystemTime.asTimestamp();
-
-		// metas : cg task: 06004 - refactored a bit : start
-		final Map<Integer, PPOrderBOMLineModel> issue = new HashMap<>();
-
-		for (final I_PP_Order_BOMLine line : getLines())
-		{
-			KeyNamePair id = null;
-
-			if (X_PP_Order_BOMLine.ISSUEMETHOD_Backflush.equals(line.getIssueMethod()))
-			{
-				id = new KeyNamePair(line.getPP_Order_BOMLine_ID(), "Y"); // 0 - MPPOrderBOMLine ID
-			}
-			else
-			{
-				id = new KeyNamePair(line.getPP_Order_BOMLine_ID(), "N"); // 0 - MPPOrderBOMLine ID
-			}
-
-			// final boolean isCritical = line.isCritical(); //1 - Critical not used
-			final I_M_Product product = line.getM_Product();
-			final String value = product.getValue(); // 2 - Value
-			final int M_Product_ID = product.getM_Product_ID(); // 3 - Product id
-			final BigDecimal qtyToDeliver = line.getQtyRequiered(); // 4 - QtyToDeliver
-			final BigDecimal qtyScrapComponent = BigDecimal.ZERO; // 5 - QtyScrapComponent
-
-			final PPOrderBOMLineModel bomLineModel = new PPOrderBOMLineModel(id, line.isCritical(), value, M_Product_ID, qtyToDeliver, qtyScrapComponent);
-			//
-			final int i = issue.size();
-			issue.put(i, bomLineModel);
-		}
-
-		// metas : cg task: 06004 - refactor a bit : end
-
-		boolean forceIssue = false;
-		final I_C_OrderLine oline = getC_OrderLine();
-		final String orderDeliveryRule = oline.getC_Order().getDeliveryRule();
-		if (X_C_Order.DELIVERYRULE_CompleteLine.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_CompleteOrder.equals(orderDeliveryRule))
-		{
-			final boolean isCompleteQtyDeliver = isQtyAvailable(this, issue, today);
-			if (!isCompleteQtyDeliver)
-			{
-				throw new LiberoException("@NoQtyAvailable@");
-			}
-		}
-		else if (X_C_Order.DELIVERYRULE_Availability.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_AfterReceipt.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_Manual.equals(orderDeliveryRule))
-		{
-			throw new LiberoException("@ActionNotSupported@");
-		}
-		else if (X_C_Order.DELIVERYRULE_Force.equals(orderDeliveryRule))
-		{
-			forceIssue = true;
-		}
-
-		for (int i = 0; i < issue.size(); i++)
-		{
-			final PPOrderBOMLineModel model = issue.get(i);
-
-			int M_AttributeSetInstance_ID = 0;
-			final KeyNamePair key = model.getKnp();
-			// final String value = model.getValue(); not used
-			final int M_Product_ID = model.getM_Product_ID();
-			// final I_M_Product product = InterfaceWrapperHelper.create(getCtx(), I_M_Product.Table_Name, M_Product_ID, I_M_Product.class, get_TrxName()); // not used
-			final BigDecimal qtyToDeliver = model.getQtyToDeliver();
-			BigDecimal qtyScrapComponent = model.getQtyScrapComponent();
-
-			int PP_Order_BOMLine_ID = key.getKey();
-			if (PP_Order_BOMLine_ID > 0)
-			{
-				final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.create(getCtx(), PP_Order_BOMLine_ID, I_PP_Order_BOMLine.class, get_TrxName());
-				// Validate if AttributeSet generate instance
-				M_AttributeSetInstance_ID = orderBOMLine.getM_AttributeSetInstance_ID();
-			}
-
-			MStorage[] storages = MPPOrder.getStorages(getCtx(),
-					M_Product_ID,
-					getM_Warehouse_ID(),
-					M_AttributeSetInstance_ID
-					, today, get_TrxName());
-
-			MPPOrder.createIssue(
-					this,
-					key.getKey(),
-					today, qtyToDeliver,
-					qtyScrapComponent,
-					BigDecimal.ZERO,
-					storages, forceIssue);
-		}
-
-		final BigDecimal qtyToReceive = Services.get(IPPOrderBL.class).getQtyOpen(this);
-
-		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-		final IReceiptCostCollectorCandidate candidate = ppCostCollectorBL.createReceiptCostCollectorCandidate()
-				.PP_Order(this)
-				.movementDate(today)
-				.qtyToReceive(qtyToReceive)
-				.qtyScrap(getQtyScrap())
-				.qtyReject(getQtyReject())
-				.M_Locator_ID(getM_Locator_ID())
-				.M_Product(getM_Product())
-				.C_UOM(getC_UOM())
-				.M_AttributeSetInstance_ID(getM_AttributeSetInstance_ID())
-				.build();
-
-		ppCostCollectorBL.createReceipt(candidate);
-
-		setQtyDelivered(qtyToReceive);
-	}
-
-	/**
-	 * Check if the Quantity from all BOM Lines is available (QtyOnHand >= QtyRequired)
-	 *
-	 * @return true if entire Qty is available for this Order
-	 */
-	public boolean isAvailable()
-	{
-		String whereClause = "QtyOnHand >= QtyRequiered AND PP_Order_ID=?";
-		boolean available = new Query(getCtx(), "RV_PP_Order_Storage", whereClause, get_TrxName())
-				.setParameters(new Object[] { get_ID() })
-				.match();
-		return available;
-	}
-
 	@Override
 	public boolean voidIt()
 	{
-		//
-		// Call Model ValidatorȘ Before Void
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 
 		//
 		// Make sure there was nothing reported on this manufacturing order
-		if (isDelivered())
+		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+		if (ppOrderBL.isDelivered(this))
 		{
 			throw new LiberoException("Cannot void this document because exist transactions"); // TODO: Create Message for Translation
 		}
@@ -743,15 +337,15 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final BigDecimal qtyOrderedOld = getQtyOrdered();
 		if (qtyOrderedOld.signum() != 0)
 		{
-			addDescription(Services.get(IMsgBL.class).parseTranslation(getCtx(), "@Voided@ @QtyOrdered@ : (" + qtyOrderedOld + ")"));
-			Services.get(IPPOrderBL.class).setQtyOrdered(this, BigDecimal.ZERO);
-			Services.get(IPPOrderBL.class).setQtyEntered(this, BigDecimal.ZERO);
+			ppOrderBL.addDescription(this, Services.get(IMsgBL.class).parseTranslation(getCtx(), "@Voided@ @QtyOrdered@ : (" + qtyOrderedOld + ")"));
+			ppOrderBL.setQtyOrdered(this, BigDecimal.ZERO);
+			ppOrderBL.setQtyEntered(this, BigDecimal.ZERO);
 			InterfaceWrapperHelper.save(this);
 		}
 
 		//
 		// Clear Ordered Quantities
-		Services.get(IPPOrderBL.class).orderStock(this);
+		ppOrderBL.orderStock(this);
 
 		//
 		// Clear BOM Lines Reservations
@@ -759,11 +353,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Call Model Validator: AFTER_VOID
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_VOID);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_VOID);
 
 		//
 		// Update document status and return true
@@ -775,13 +365,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean closeIt()
 	{
-		//
-		// Call Model Validator: Before Close
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 
 		//
 		// Check already closed
@@ -826,7 +410,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 				ppOrderWorkflow.getLastNode(getAD_Client_ID()), // Current Activity to start from => last activity
 				getUpdated(), // MovementDate
 				false // stop on first milestone => no
-				);
+		);
 
 		//
 		// Set QtyOrdered=QtyDelivered
@@ -854,11 +438,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Call Model Validator: AFTER_CLOSE
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 
 		return true;
 	} // closeIt
@@ -883,13 +463,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 			throw new LiberoException("Cannot re activate this document because exist transactions"); // TODO: Create Message for Translation
 		}
 
-		//
-		// Before reActivate
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 
 		//
 		// Iterate Order BOM Lines and un-process them
@@ -899,13 +473,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 			InterfaceWrapperHelper.save(orderBOMLine);
 		}
 
-		//
-		// After reActivate
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
 
 		setDocAction(DOCACTION_Complete);
 		setProcessed(false);
@@ -933,7 +501,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public String getProcessMsg()
 	{
-		return m_processMsg;
+		return null;
 	}
 
 	@Override
@@ -993,165 +561,10 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		return LegacyAdapters.convertToPO(ppOrderWorkflow);
 	}
 
-	/**
-	 * Create Issue
-	 *
-	 * @param PP_OrderBOMLine_ID
-	 * @param movementdate
-	 * @param qty
-	 * @param qtyScrap
-	 * @param qtyReject
-	 * @param storages
-	 * @param force Issue
-	 *
-	 * @deprecated Please use {@link IPPCostCollectorBL#createIssue(I_PP_Order_BOMLine, int, int, java.util.Date, BigDecimal, BigDecimal, BigDecimal, org.compiere.model.I_C_UOM)}.
-	 */
-	@Deprecated
-	public static String createIssue(
-			final I_PP_Order order,
-			final int PP_Order_BOMLine_ID,
-			final Timestamp movementdate,
-			final BigDecimal qty,
-			final BigDecimal qtyScrap,
-			final BigDecimal qtyReject,
-			final MStorage[] storages,
-			final boolean forceIssue)
-	{
-		final StringBuilder sb = new StringBuilder();
-		sb.append("\n");
-
-		if (qty.signum() == 0)
-		{
-			return sb.toString();
-		}
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-		final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.create(ctx, PP_Order_BOMLine_ID, I_PP_Order_BOMLine.class, trxName);
-
-		BigDecimal toIssue = qty.add(qtyScrap);
-		for (final I_M_Storage storage : storages)
-		{
-			// TODO Selection of ASI
-
-			final BigDecimal qtyOnHand = storage.getQtyOnHand();
-			if (qtyOnHand.signum() <= 0)
-			{
-				continue;
-			}
-
-			final BigDecimal qtyIssue = toIssue.min(qtyOnHand);
-			// create record for negative and positive transaction
-			if (qtyIssue.signum() != 0 || qtyScrap.signum() != 0 || qtyReject.signum() != 0)
-			{
-				String CostCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue;
-				// Method Variance
-				if (orderBOMLine.getQtyBatch().signum() == 0
-						&& orderBOMLine.getQtyBOM().signum() == 0)
-				{
-					CostCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance;
-				}
-				else if (PPOrderUtil.isComponentTypeOneOf(orderBOMLine, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product))
-				{
-					CostCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance;
-				}
-				//
-				final I_PP_Cost_Collector cc = MPPCostCollector.createCollector(
-						order, 															// MPPOrder
-						orderBOMLine.getM_Product_ID(),									// M_Product_ID
-						storage.getM_Locator_ID(),										// M_Locator_ID
-						0, // storage.getM_AttributeSetInstance_ID(),					// M_AttributeSetInstance_ID
-						order.getS_Resource_ID(),										// S_Resource_ID
-						orderBOMLine.getPP_Order_BOMLine_ID(),							// PP_Order_BOMLine_ID
-						0,																// PP_Order_Node_ID
-						MDocType.getDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector), 	// C_DocType_ID,
-						CostCollectorType, 												// Production "-"
-						movementdate,													// MovementDate
-						qtyIssue, qtyScrap, qtyReject,									// qty,scrap,reject
-						0,																// durationSetup
-						BigDecimal.ZERO														// duration
-						);
-
-				sb.append(cc.getDocumentNo());
-				sb.append("\n");
-
-			}
-
-			toIssue = toIssue.subtract(qtyIssue);
-			if (toIssue.signum() == 0)
-			{
-				break;
-			}
-		}
-		if (forceIssue && toIssue.signum() != 0)
-		{
-			final I_PP_Cost_Collector cc = MPPCostCollector.createCollector(
-					order, 																	// MPPOrder
-					orderBOMLine.getM_Product_ID(),											// M_Product_ID
-					orderBOMLine.getM_Locator_ID(),											// M_Locator_ID
-					orderBOMLine.getM_AttributeSetInstance_ID(),							// M_AttributeSetInstance_ID
-					order.getS_Resource_ID(),												// S_Resource_ID
-					orderBOMLine.getPP_Order_BOMLine_ID(),									// PP_Order_BOMLine_ID
-					0,																		// PP_Order_Node_ID
-					MDocType.getDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector), 	// C_DocType_ID,
-					X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, 						// Production "-"
-					movementdate,															// MovementDate
-					toIssue, BigDecimal.ZERO, BigDecimal.ZERO,											// qty,scrap,reject
-					0, BigDecimal.ZERO																// durationSetup,duration
-					);
-
-			sb.append(cc.getDocumentNo());
-			sb.append("\n");
-
-			toIssue = BigDecimal.ZERO;
-		}
-
-		//
-		if (toIssue.signum() != 0)
-		{
-			// should not happen because we validate Qty On Hand on start of this process
-			throw new LiberoException("Should not happen toIssue=" + toIssue);
-		}
-
-		return sb.toString();
-	}
-
-	public static boolean isQtyAvailable(MPPOrder order, I_PP_Order_BOMLine line)
-	{
-		final int productId = line.getM_Product_ID();
-		if (productId <=0 || !Services.get(IProductBL.class).isStocked(productId))
-		{
-			return true;
-		}
-
-		BigDecimal qtyToDeliver = line.getQtyRequiered();
-		BigDecimal qtyScrap = line.getQtyScrap();
-		BigDecimal qtyRequired = qtyToDeliver.add(qtyScrap);
-		BigDecimal qtyAvailable = MStorage.getQtyAvailable(order.getM_Warehouse_ID(), 0,
-				line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-				order.get_TrxName());
-		return qtyAvailable.compareTo(qtyRequired) >= 0;
-	}
-
-	/**
-	 * @return true if work was delivered for this MO (i.e. Stock Issue, Stock Receipt, Activity Control Report)
-	 */
-	@Deprecated
-	public boolean isDelivered()
-	{
-		return Services.get(IPPOrderBL.class).isDelivered(this);
-	}
-
-	@Deprecated
-	public void addDescription(String description)
-	{
-		Services.get(IPPOrderBL.class).addDescription(this, description);
-	}	// addDescription
-
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MPPOrder[ID=").append(get_ID())
+		StringBuilder sb = new StringBuilder("MPPOrder[ID=").append(get_ID())
 				.append("-DocumentNo=").append(getDocumentNo())
 				.append(",IsSOTrx=").append(isSOTrx())
 				.append(",C_DocType_ID=").append(getC_DocType_ID())
@@ -1176,7 +589,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 							getM_Locator_ID(),
 							getM_AttributeSetInstance_ID(),
 							getS_Resource_ID(),
-							0,
+							0, // ppOrderBOMLineId
 							activity.getPP_Order_Node_ID(),
 							MDocType.getDocType(MDocType.DOCBASETYPE_ManufacturingCostCollector),
 							MPPCostCollector.COSTCOLLECTORTYPE_ActivityControl,
@@ -1193,13 +606,13 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 	private void createVariances()
 	{
-		for (final I_PP_Order_BOMLine line : getLines(true))
+		for (final I_PP_Order_BOMLine line : getLines())
 		{
 			createUsageVariance(line);
 		}
-		m_lines = null; // needs to be requeried
+
 		//
-		MPPOrderWorkflow orderWorkflow = getMPPOrderWorkflow();
+		final MPPOrderWorkflow orderWorkflow = getMPPOrderWorkflow();
 		if (orderWorkflow != null)
 		{
 			for (MPPOrderNode node : orderWorkflow.getNodes(true))
@@ -1263,7 +676,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 				BigDecimal.ZERO, // reject,
 				0, // durationSetup,
 				BigDecimal.ZERO // duration
-				);
+		);
 	}
 
 	private void createUsageVariance(I_PP_Order_Node orderNode)
@@ -1310,6 +723,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 				BigDecimal.ZERO, // reject,
 				setupTimeVariance.intValueExact(), // durationSetup,
 				durationVariance // duration
-				);
+		);
 	}
 } // MPPOrder
