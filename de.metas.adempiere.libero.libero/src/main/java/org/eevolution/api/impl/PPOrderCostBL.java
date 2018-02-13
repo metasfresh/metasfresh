@@ -1,40 +1,15 @@
 package org.eevolution.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.engines.CostDimension;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderCostDAO;
@@ -43,16 +18,19 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Cost;
 import org.eevolution.model.I_PP_Order_Node;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostElement;
+import de.metas.costing.CostResult;
+import de.metas.costing.CostSegment;
+import de.metas.costing.CostingMethod;
+import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.product.IProductBL;
 
 public class PPOrderCostBL implements IPPOrderCostBL
 {
-	private final transient Logger log = LogManager.getLogger(getClass());
-
 	@Override
 	public void createStandardCosts(final I_PP_Order ppOrder)
 	{
@@ -60,45 +38,50 @@ public class PPOrderCostBL implements IPPOrderCostBL
 		// Before creating the new PP_Order_Cost we need to delete the existing records
 		// (i.e. handling the case when a re-activated PP_Order is completed again)
 		Services.get(IPPOrderCostDAO.class).deleteOrderCosts(ppOrder);
-		
+
+		//
+		extractCostSegments(ppOrder)
+				.forEach(costSegment -> createPPOrderCosts(ppOrder, costSegment));
+	}
+
+	private Set<CostSegment> extractCostSegments(final I_PP_Order ppOrder)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ppOrder);
-
 		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(ctx);
-		log.info("Cost_Group_ID" + as.getM_CostType_ID());
 
-		final Set<Integer> productIdsAdded = new TreeSet<Integer>();
+		final Set<CostSegment> costSegments = new LinkedHashSet<>();
 
 		//
 		// Create Standard Costs for Order Header (resulting product)
 		{
-			final I_M_Product product = ppOrder.getM_Product();
-			productIdsAdded.add(product.getM_Product_ID());
-			//
-			final CostDimension d = new CostDimension(product, as, as.getM_CostType_ID(),
-					ppOrder.getAD_Org_ID(),
-					ppOrder.getM_AttributeSetInstance_ID(),
-					CostDimension.ANY);
-			createPPOrderCosts(ppOrder, d);
+			final int productId = ppOrder.getM_Product_ID();
+			costSegments.add(CostSegment.builder()
+					.costingLevel(productBL.getCostingLevel(productId, as))
+					.acctSchemaId(as.getC_AcctSchema_ID())
+					.costTypeId(as.getM_CostType_ID())
+					.productId(productId)
+					.clientId(ppOrder.getAD_Client_ID())
+					.orgId(ppOrder.getAD_Org_ID())
+					.attributeSetInstanceId(ppOrder.getM_AttributeSetInstance_ID())
+					.build());
 		}
 
 		//
 		// Create Standard Costs for Order BOM Line
 		final List<I_PP_Order_BOMLine> ppOrderBOMLines = Services.get(IPPOrderBOMDAO.class).retrieveOrderBOMLines(ppOrder);
-		for (I_PP_Order_BOMLine line : ppOrderBOMLines)
+		for (final I_PP_Order_BOMLine line : ppOrderBOMLines)
 		{
-			final I_M_Product product = line.getM_Product();
-			//
-			// Check if we already added this product
-			if (productIdsAdded.contains(product.getM_Product_ID()))
-			{
-				continue;
-			}
-			productIdsAdded.add(product.getM_Product_ID());
-			//
-			final CostDimension d = new CostDimension(line.getM_Product(), as, as.getM_CostType_ID(),
-					line.getAD_Org_ID(), line.getM_AttributeSetInstance_ID(),
-					CostDimension.ANY);
-			createPPOrderCosts(ppOrder, d);
+			final int productId = line.getM_Product_ID();
+			costSegments.add(CostSegment.builder()
+					.costingLevel(productBL.getCostingLevel(productId, as))
+					.acctSchemaId(as.getC_AcctSchema_ID())
+					.costTypeId(as.getM_CostType_ID())
+					.productId(productId)
+					.clientId(line.getAD_Client_ID())
+					.orgId(line.getAD_Org_ID())
+					.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
+					.build());
 		}
 
 		//
@@ -111,56 +94,55 @@ public class PPOrderCostBL implements IPPOrderCostBL
 			{
 				continue;
 			}
-
-			//
 			final I_M_Product resourceProduct = Services.get(IResourceProductService.class).retrieveProductForResource(node.getS_Resource());
 			if (resourceProduct == null)
 			{
 				// shall not happen, but we can skip it for now
 				continue;
 			}
-
-			//
-			// Check if we already added this product
 			final int resourceProductId = resourceProduct.getM_Product_ID();
-			if (productIdsAdded.contains(resourceProductId))
-			{
-				continue;
-			}
-			productIdsAdded.add(resourceProductId);
-			//
-			final CostDimension d = new CostDimension(resourceProduct, as, as.getM_CostType_ID(),
-					node.getAD_Org_ID(),
-					0, // ASI
-					CostDimension.ANY);
-			createPPOrderCosts(ppOrder, d);
+
+			costSegments.add(CostSegment.builder()
+					.costingLevel(productBL.getCostingLevel(resourceProduct, as))
+					.acctSchemaId(as.getC_AcctSchema_ID())
+					.costTypeId(as.getM_CostType_ID())
+					.productId(resourceProductId)
+					.clientId(node.getAD_Client_ID())
+					.orgId(node.getAD_Org_ID())
+					.attributeSetInstanceId(0)
+					.build());
 		}
+
+		return costSegments;
 	}
 
-	private void createPPOrderCosts(final I_PP_Order ppOrder, final CostDimension costDimension)
+	private void createPPOrderCosts(final I_PP_Order ppOrder, final CostSegment costSegment)
 	{
-		final String trxName = InterfaceWrapperHelper.getTrxName(ppOrder);
-		final Collection<I_M_Cost> costs = costDimension.toQuery(I_M_Cost.class, trxName).list();
-		for (final I_M_Cost cost : costs)
+		final CurrentCostsRepository currentCostsRepository = Adempiere.getBean(CurrentCostsRepository.class);
+		final CostResult costs = currentCostsRepository.getByCostSegmentAndCostingMethod(costSegment, CostingMethod.StandardCosting);
+		for (final CostElement costElement : costs.getCostElements())
 		{
-			createPPOrderCost(ppOrder, cost);
+			createPPOrderCost(ppOrder, costs.getCostSegment(), costElement, costs.getCostAmountForCostElement(costElement));
 		}
 	}
 
-	private void createPPOrderCost(final I_PP_Order ppOrder, I_M_Cost cost)
+	private void createPPOrderCost(final I_PP_Order ppOrder, final CostSegment costSegment, final CostElement costElement, final CostAmount amount)
 	{
 		final I_PP_Order_Cost ppOrderCost = InterfaceWrapperHelper.newInstance(I_PP_Order_Cost.class, ppOrder);
-		ppOrderCost.setAD_Org_ID(ppOrder.getAD_Org_ID());
 		ppOrderCost.setPP_Order_ID(ppOrder.getPP_Order_ID());
-		ppOrderCost.setC_AcctSchema_ID(cost.getC_AcctSchema_ID());
-		ppOrderCost.setM_CostType_ID(cost.getM_CostType_ID());
-		ppOrderCost.setCumulatedAmt(cost.getCumulatedAmt());
-		ppOrderCost.setCumulatedQty(cost.getCumulatedQty());
-		ppOrderCost.setCurrentCostPrice(cost.getCurrentCostPrice());
-		ppOrderCost.setCurrentCostPriceLL(cost.getCurrentCostPriceLL());
-		ppOrderCost.setM_Product_ID(cost.getM_Product_ID());
-		ppOrderCost.setM_AttributeSetInstance_ID(cost.getM_AttributeSetInstance_ID());
-		ppOrderCost.setM_CostElement_ID(cost.getM_CostElement_ID());
+
+		ppOrderCost.setAD_Org_ID(costSegment.getOrgId());
+		ppOrderCost.setC_AcctSchema_ID(costSegment.getAcctSchemaId());
+		ppOrderCost.setM_CostType_ID(costSegment.getCostTypeId());
+		ppOrderCost.setM_Product_ID(costSegment.getProductId());
+		ppOrderCost.setM_AttributeSetInstance_ID(costSegment.getAttributeSetInstanceId());
+
+		ppOrderCost.setM_CostElement_ID(costElement.getId());
+
+		ppOrderCost.setCurrentCostPrice(amount.getValue());
+		// ppOrderCost.setCurrentCostPriceLL(cost.getCurrentCostPriceLL());
+		// ppOrderCost.setCumulatedAmt(cost.getCumulatedAmt()); // TODO: delete it
+		// ppOrderCost.setCumulatedQty(cost.getCumulatedQty()); // TODO: delete it
 
 		InterfaceWrapperHelper.save(ppOrderCost);
 	}
