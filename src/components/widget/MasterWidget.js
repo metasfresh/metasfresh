@@ -1,24 +1,24 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { bindActionCreators } from "redux";
-import { connect } from "react-redux";
-import Moment from "moment";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import Moment from 'moment';
 
-import * as windowActions from "../../actions/WindowActions";
-import RawWidget from "./RawWidget";
-import { DATE_FIELDS, DATE_FORMAT } from "../../constants/Constants";
+import * as windowActions from '../../actions/WindowActions';
+import RawWidget from './RawWidget';
+import { DATE_FIELDS, DATE_FORMAT } from '../../constants/Constants';
 
 class MasterWidget extends Component {
   state = {
     updated: false,
     edited: false,
-    data: ""
+    data: '',
   };
 
   componentDidMount() {
     const { widgetData } = this.props;
     this.setState({
-      data: widgetData[0].value
+      data: widgetData[0].value,
     });
   }
 
@@ -31,25 +31,25 @@ class MasterWidget extends Component {
       JSON.stringify(nextProps.widgetData[0].value)
     ) {
       this.setState({
-        data: nextProps.widgetData[0].value
+        data: nextProps.widgetData[0].value,
       });
 
       if (!edited) {
         this.setState(
           {
-            updated: true
+            updated: true,
           },
           () => {
             this.timeout = setTimeout(() => {
               this.setState({
-                updated: false
+                updated: false,
               });
             }, 1000);
           }
         );
       } else {
         this.setState({
-          edited: false
+          edited: false,
         });
       }
     }
@@ -82,7 +82,7 @@ class MasterWidget extends Component {
       onChange,
       relativeDocId,
       isAdvanced = false,
-      viewId
+      viewId,
     } = this.props;
 
     let { entity } = this.props;
@@ -93,16 +93,16 @@ class MasterWidget extends Component {
 
     let parseValue = this.parseDateBeforePatch(widgetType, value);
 
-    if (rowId === "NEW") {
+    if (rowId === 'NEW') {
       currRowId = relativeDocId;
     }
 
-    if (widgetType !== "Button") {
+    if (widgetType !== 'Button') {
       updatePropertyValue(property, value, tabId, currRowId, isModal);
     }
 
     if (viewId) {
-      entity = "documentView";
+      entity = 'documentView';
       isEdit = true;
     }
 
@@ -140,17 +140,17 @@ class MasterWidget extends Component {
       rowId,
       isModal,
       relativeDocId,
-      widgetType
+      widgetType,
     } = this.props;
 
     let currRowId = rowId;
 
-    const dateParse = ["Date", "DateTime", "Time"];
+    const dateParse = ['Date', 'DateTime', 'Time'];
 
     this.setState(
       {
         edited: true,
-        data: val
+        data: val,
       },
       () => {
         if (
@@ -159,7 +159,7 @@ class MasterWidget extends Component {
         ) {
           return;
         }
-        if (rowId === "NEW") {
+        if (rowId === 'NEW') {
           currRowId = relativeDocId;
         }
         updatePropertyValue(property, val, tabId, currRowId, isModal);
@@ -169,7 +169,7 @@ class MasterWidget extends Component {
 
   setEditedFlag = edited => {
     this.setState({
-      edited: edited
+      edited: edited,
     });
   };
 
@@ -177,11 +177,11 @@ class MasterWidget extends Component {
     const { widgetType, precision } = this.props;
     let precisionProcessed = precision;
 
-    if (widgetType === "Integer" || widgetType === "Quantity") {
+    if (widgetType === 'Integer' || widgetType === 'Quantity') {
       precisionProcessed = 0;
     }
 
-    if (precisionProcessed < (value.split(".")[1] || []).length) {
+    if (precisionProcessed < (value.split('.')[1] || []).length) {
       return false;
     } else {
       return true;
@@ -191,24 +191,25 @@ class MasterWidget extends Component {
   handleProcess = (caption, buttonProcessId, tabId, rowId) => {
     const { openModal } = this.props;
 
-    openModal(caption, buttonProcessId, "process", tabId, rowId, false, false);
+    openModal(caption, buttonProcessId, 'process', tabId, rowId, false, false);
   };
 
   handleZoomInto = field => {
-    const { dataId, windowType, tabId, rowId, getZoomIntoWindow } = this.props;
+    const { dataId, windowType, tabId, rowId } = this.props;
 
-    getZoomIntoWindow("window", windowType, dataId, tabId, rowId, field).then(
-      res => {
+    windowActions
+      .getZoomIntoWindow('window', windowType, dataId, tabId, rowId, field)
+      .then(res => {
+        const url = `/window/${res.data.documentPath.windowId}/${
+          res.data.documentPath.documentId
+        }`;
+
         res &&
           res.data &&
           /*eslint-disable */
-          window.open(`
-            /window/${res.data.documentPath.windowId}/${res.data.documentPath.documentId},
-            "_blank"
-          `);
+          window.open(url, '_blank');
           /*eslint-enable */
-      }
-    );
+      });
   };
 
   render() {
@@ -235,16 +236,15 @@ class MasterWidget extends Component {
 }
 
 MasterWidget.propTypes = {
-  isOpenDatePicker: PropTypes.bool
+  isOpenDatePicker: PropTypes.bool,
 };
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators(
     {
-      getZoomIntoWindow: windowActions.getZoomIntoWindow,
       openModal: windowActions.openModal,
       patch: windowActions.patch,
-      updatePropertyValue: windowActions.updatePropertyValue
+      updatePropertyValue: windowActions.updatePropertyValue,
     },
     dispatch
   );
