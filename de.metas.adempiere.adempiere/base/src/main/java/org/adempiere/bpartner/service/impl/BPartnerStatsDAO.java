@@ -135,7 +135,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	public BigDecimal retrieveSOCreditUsed(@NonNull final IBPartnerStats bpStats)
 	{
 		final I_C_BPartner_Stats stats = getC_BPartner_Stats(bpStats);
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
+		final String trxName = ITrx.TRXNAME_None;
 
 		BigDecimal SO_CreditUsed = null;
 
