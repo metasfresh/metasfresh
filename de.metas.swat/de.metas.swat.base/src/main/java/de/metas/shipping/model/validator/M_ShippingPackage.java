@@ -1,17 +1,10 @@
 package de.metas.shipping.model.validator;
 
-import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
-import org.adempiere.ad.dao.cache.IModelCacheInvalidationService;
-import org.adempiere.ad.dao.cache.ModelCacheInvalidateRequestFactory;
-import org.adempiere.ad.dao.cache.ModelCacheInvalidationTiming;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Services;
 import org.compiere.util.CacheMgt;
 import org.springframework.stereotype.Component;
 
-import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 
 /*
@@ -45,31 +38,5 @@ public class M_ShippingPackage
 	{
 		final CacheMgt cacheMgt = CacheMgt.get();
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_ShippingPackage.Table_Name);
-
-		final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-		cacheInvalidationService.register(I_M_ShippingPackage.Table_Name, new ShippingPackageModelCacheInvalidateRequestFactory());
 	}
-
-	private static final class ShippingPackageModelCacheInvalidateRequestFactory implements ModelCacheInvalidateRequestFactory
-	{
-		@Override
-		public CacheInvalidateRequest createRequestFromModel(Object model, ModelCacheInvalidationTiming timing)
-		{
-			final I_M_ShippingPackage shippingPackage = InterfaceWrapperHelper.create(model, I_M_ShippingPackage.class);
-
-			final int shipperTransportationId = shippingPackage.getM_ShipperTransportation_ID();
-			if (shipperTransportationId > 0)
-			{
-				return CacheInvalidateRequest.builder()
-						.rootRecord(I_M_ShipperTransportation.Table_Name, shipperTransportationId)
-						.childRecord(I_M_ShippingPackage.Table_Name, shippingPackage.getM_ShippingPackage_ID())
-						.build();
-			}
-			else
-			{
-				return CacheInvalidateRequest.rootRecord(I_M_ShipperTransportation.Table_Name, shipperTransportationId);
-			}
-		}
-	}
-
 }
