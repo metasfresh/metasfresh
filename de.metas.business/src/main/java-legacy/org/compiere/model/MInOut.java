@@ -1267,7 +1267,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final BigDecimal creditUsed = stats.getSOCreditUsed();
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateReceived());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getMovementDate());
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 		{
@@ -1283,7 +1283,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 
 		final BigDecimal notInvoicedAmt = MBPartner.getNotInvoicedAmt(getC_BPartner_ID());
-		final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, notInvoicedAmt, getDateReceived());
+		final String calculatedCreditStatus = bpartnerStatsBL.calculateSOCreditStatus(stats, notInvoicedAmt, getMovementDate());
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedCreditStatus))
 		{
 			throw new AdempiereException("@BPartnerOverSCreditHold@ - @TotalOpenBalance@="
