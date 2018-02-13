@@ -374,11 +374,6 @@ public final class CacheMgt
 		return reset(request, ResetMode.LOCAL_AND_BROADCAST);
 	}
 
-	public int reset(final CacheInvalidateRequest request)
-	{
-		return reset(CacheInvalidateMultiRequest.of(request), ResetMode.LOCAL_AND_BROADCAST);
-	}
-
 	/**
 	 * Reset cache for TableName/Record_ID when given transaction is committed.
 	 *
@@ -388,18 +383,17 @@ public final class CacheMgt
 	 * @param tableName
 	 * @param recordId
 	 */
-	public void resetLocalNowAndBroadcastOnTrxCommit(final String trxName, final CacheInvalidateRequest request)
+	public void resetLocalNowAndBroadcastOnTrxCommit(final String trxName, final CacheInvalidateMultiRequest request)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
 		if (trxManager.isNull(trx))
 		{
-			reset(request);
-			return;
+			reset(request, ResetMode.LOCAL_AND_BROADCAST);
 		}
 		else
 		{
-			reset(CacheInvalidateMultiRequest.of(request), ResetMode.LOCAL);
+			reset(request, ResetMode.LOCAL);
 			RecordsToResetOnTrxCommitCollector.getCreate(trx).addRecord(request, ResetMode.JUST_BROADCAST);
 		}
 	}
@@ -758,10 +752,11 @@ public final class CacheMgt
 		private final Map<CacheInvalidateRequest, ResetMode> request2resetMode = Maps.newConcurrentMap();
 
 		/** Enqueues a record */
-		public final void addRecord(@NonNull final CacheInvalidateRequest request, @NonNull final ResetMode resetMode)
+		public final void addRecord(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode resetMode)
 		{
-			request2resetMode.put(request, resetMode);
-			log.debug("Scheduled cache invalidation on transaction commit: {} ({})", request, resetMode);
+			multiRequest.getRequests()
+					.forEach(request -> request2resetMode.put(request, resetMode));
+			log.debug("Scheduled cache invalidation on transaction commit: {} ({})", multiRequest, resetMode);
 		}
 
 		/** Reset the cache for all enqueued records */

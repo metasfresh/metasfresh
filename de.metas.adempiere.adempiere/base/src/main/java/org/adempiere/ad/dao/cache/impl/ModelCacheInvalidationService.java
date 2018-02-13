@@ -1,7 +1,9 @@
 package org.adempiere.ad.dao.cache.impl;
 
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
 import org.adempiere.ad.dao.cache.IModelCacheInvalidationService;
 import org.adempiere.ad.dao.cache.IModelCacheService;
@@ -10,11 +12,13 @@ import org.adempiere.ad.dao.cache.ModelCacheInvalidationTiming;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.CacheMgt;
 import org.slf4j.Logger;
+
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -45,8 +49,8 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 {
 	private static final Logger logger = LogManager.getLogger(ModelCacheInvalidationService.class);
 
-	private final ConcurrentHashMap<String, ModelCacheInvalidateRequestFactory> requestFactoriesByTableName = new ConcurrentHashMap<>();
-	private final ModelCacheInvalidateRequestFactory defaultRequestFactory = new DefaultModelCacheInvalidateRequestFactory();
+	private final SetMultimap<String, ModelCacheInvalidateRequestFactory> requestFactoriesByTableName = Multimaps.newSetMultimap(new ConcurrentHashMap<>(), ConcurrentHashMap::newKeySet);
+	private final Set<ModelCacheInvalidateRequestFactory> defaultRequestFactories = ImmutableSet.of(new DefaultModelCacheInvalidateRequestFactory());
 
 	public ModelCacheInvalidationService()
 	{
@@ -64,15 +68,15 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 	}
 
 	@Override
-	public void invalidate(@NonNull final CacheInvalidateRequest request, @NonNull final ModelCacheInvalidationTiming timing)
+	public void invalidate(@NonNull final CacheInvalidateMultiRequest request, @NonNull final ModelCacheInvalidationTiming timing)
 	{
 		//
 		// Reset model cache
 		if (timing != ModelCacheInvalidationTiming.NEW)
 		{
-			final TableRecordReference record = request.getRecordEffective();
 			final IModelCacheService modelCacheService = Services.get(IModelCacheService.class);
-			modelCacheService.invalidate(record.getTableName(), record.getRecord_ID(), ITrx.TRXNAME_ThreadInherited);
+			request.getRecordsEffective()
+					.forEach(record -> modelCacheService.invalidate(record.getTableName(), record.getRecord_ID(), ITrx.TRXNAME_ThreadInherited));
 		}
 
 		//
@@ -83,17 +87,26 @@ public class ModelCacheInvalidationService implements IModelCacheInvalidationSer
 	}
 
 	@Override
-	public CacheInvalidateRequest createRequest(final Object model, final ModelCacheInvalidationTiming timing)
+	public CacheInvalidateMultiRequest createRequest(final Object model, final ModelCacheInvalidationTiming timing)
 	{
-		final ModelCacheInvalidateRequestFactory requestFactory = getRequestFactoryForModel(model);
-		final CacheInvalidateRequest request = requestFactory.createRequestFromModel(model, timing);
-		return request;
+		final Set<CacheInvalidateRequest> requests = getRequestFactoriesForModel(model)
+				.stream()
+				.map(requestFactory -> requestFactory.createRequestFromModel(model, timing))
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+		if (requests.isEmpty())
+		{
+			return null;
+		}
+
+		return CacheInvalidateMultiRequest.of(requests);
 	}
 
-	private ModelCacheInvalidateRequestFactory getRequestFactoryForModel(final Object model)
+	private Set<ModelCacheInvalidateRequestFactory> getRequestFactoriesForModel(final Object model)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
-		return requestFactoriesByTableName.getOrDefault(tableName, defaultRequestFactory);
+		final Set<ModelCacheInvalidateRequestFactory> factories = requestFactoriesByTableName.get(tableName);
+		return factories != null && !factories.isEmpty() ? factories : defaultRequestFactories;
 	}
 
 	private static final class DefaultModelCacheInvalidateRequestFactory implements ModelCacheInvalidateRequestFactory

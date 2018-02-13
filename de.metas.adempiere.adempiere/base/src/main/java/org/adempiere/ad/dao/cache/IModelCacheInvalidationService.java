@@ -39,13 +39,13 @@ public interface IModelCacheInvalidationService extends ISingletonService
 	void register(String tableName, ModelCacheInvalidateRequestFactory requestFactory);
 
 	@Nullable
-	CacheInvalidateRequest createRequest(Object model, ModelCacheInvalidationTiming timing);
+	CacheInvalidateMultiRequest createRequest(Object model, ModelCacheInvalidationTiming timing);
 
-	void invalidate(CacheInvalidateRequest request, ModelCacheInvalidationTiming timing);
+	void invalidate(CacheInvalidateMultiRequest request, ModelCacheInvalidationTiming timing);
 
 	default void invalidateForModel(@NonNull final Object model, @NonNull final ModelCacheInvalidationTiming timing)
 	{
-		final CacheInvalidateRequest request = createRequest(model, timing);
+		final CacheInvalidateMultiRequest request = createRequest(model, timing);
 		if (request == null)
 		{
 			return;

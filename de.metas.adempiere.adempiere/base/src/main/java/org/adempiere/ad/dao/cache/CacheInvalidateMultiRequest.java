@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -120,5 +121,12 @@ public class CacheInvalidateMultiRequest
 	{
 		final String tableNameEffective = request.getTableNameEffective();
 		return Objects.equals(tableName, tableNameEffective);
+	}
+
+	public Set<TableRecordReference> getRecordsEffective()
+	{
+		return requests.stream()
+				.map(CacheInvalidateRequest::getRecordEffective)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }
