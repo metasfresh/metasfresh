@@ -25,7 +25,6 @@ package org.eevolution.api.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.IContextAware;
@@ -47,6 +46,7 @@ import org.eevolution.model.MPPCostCollector;
 import org.eevolution.model.X_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Order_BOMLine;
 
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.LiberoException;
@@ -207,13 +207,11 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 		final String costCollectorType = getCostCollectorTypeToUse(orderBOMLine);
 
-		final Properties ctx = context.getCtx();
-		final String trxName = context.getTrxName();
-		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(ctx,
-				X_C_DocType.DOCBASETYPE_ManufacturingCostCollector,
-				order.getAD_Client_ID(),
-				order.getAD_Org_ID(),
-				trxName);
+		final int docTypeId = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector)
+				.adClientId(order.getAD_Client_ID())
+				.adOrgId(order.getAD_Org_ID())
+				.build());
 
 		//
 		// Convert our Qtys from their qtyUOM to BOM's UOM

@@ -51,6 +51,7 @@ import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.MDocType;
 import org.compiere.model.ModelValidationEngine;
@@ -62,6 +63,7 @@ import org.compiere.util.DB;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
 
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -80,7 +82,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 {
 	private static final long serialVersionUID = 1L;
 
-	public MPPOrder(Properties ctx, int PP_Order_ID, String trxName)
+	public MPPOrder(final Properties ctx, final int PP_Order_ID, final String trxName)
 	{
 		super(ctx, PP_Order_ID, trxName);
 		if (is_new())
@@ -89,7 +91,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		}
 	}
 
-	public MPPOrder(Properties ctx, ResultSet rs, String trxName)
+	public MPPOrder(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
@@ -100,7 +102,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	}
 
 	@Override
-	public void setProcessed(boolean processed)
+	public void setProcessed(final boolean processed)
 	{
 		super.setProcessed(processed);
 
@@ -113,7 +115,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// Update DB:
 		final String sql = "UPDATE PP_Order SET Processed=? WHERE PP_Order_ID=?";
 		DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
-	} // setProcessed
+	}
 
 	@Override
 	public boolean processIt(final String processAction)
@@ -129,14 +131,14 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	{
 		setProcessing(false);
 		return true;
-	} // unlockIt
+	}
 
 	@Override
 	public boolean invalidateIt()
 	{
 		setDocAction(DOCACTION_Prepare);
 		return true;
-	} // invalidateIt
+	}
 
 	@Override
 	public String prepareIt()
@@ -203,16 +205,16 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// Update Document Status and return new status "InProgress"
 		m_justPrepared = true;
 		return IDocument.STATUS_InProgress;
-	} // prepareIt
+	}
 
 	@Override
 	public boolean approveIt()
 	{
-		MDocType doc = MDocType.get(getCtx(), getC_DocType_ID());
-		if (doc.getDocBaseType().equals(X_C_DocType.DOCBASETYPE_QualityOrder))
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(getC_DocType_ID());
+		if (X_C_DocType.DOCBASETYPE_QualityOrder.equals(docType.getDocBaseType()))
 		{
-			String whereClause = COLUMNNAME_PP_Product_BOM_ID + "=? AND " + COLUMNNAME_AD_Workflow_ID + "=?";
-			MQMSpecification qms = new Query(getCtx(), MQMSpecification.Table_Name, whereClause, get_TrxName())
+			final String whereClause = COLUMNNAME_PP_Product_BOM_ID + "=? AND " + COLUMNNAME_AD_Workflow_ID + "=?";
+			final MQMSpecification qms = new Query(getCtx(), I_QM_Specification.Table_Name, whereClause, get_TrxName())
 					.setParameters(new Object[] { getPP_Product_BOM_ID(), getAD_Workflow_ID() })
 					.firstOnly();
 			return qms != null ? qms.isValid(getM_AttributeSetInstance_ID()) : true;
@@ -223,14 +225,14 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		}
 
 		return true;
-	} // approveIt
+	}
 
 	@Override
 	public boolean rejectIt()
 	{
 		setIsApproved(false);
 		return true;
-	} // rejectIt
+	}
 
 	@Override
 	public String completeIt()
@@ -360,7 +362,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		setProcessed(true);
 		setDocAction(DOCACTION_None);
 		return true;
-	} // voidIt
+	}
 
 	@Override
 	public boolean closeIt()
@@ -369,7 +371,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Check already closed
-		final String docStatus = getDocStatus();
+		String docStatus = getDocStatus();
 		if (X_PP_Order.DOCSTATUS_Closed.equals(docStatus))
 		{
 			return true;
@@ -380,9 +382,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// TODO: don't know if this approach is ok, i think we shall throw an exception instead
 		if (!X_PP_Order.DOCSTATUS_Completed.equals(docStatus))
 		{
-			String DocStatus = completeIt();
-			setDocStatus(DocStatus);
-			setDocAction(MPPOrder.ACTION_None);
+			docStatus = completeIt();
+			setDocStatus(docStatus);
+			setDocAction(ACTION_None);
 		}
 
 		// 06946: Commented out for now as a working increment.
@@ -398,7 +400,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// Update BOM Lines and set QtyRequired=QtyDelivered
 		final IPPOrderBOMBL ppOrderBOMLineBL = Services.get(IPPOrderBOMBL.class);
-		for (I_PP_Order_BOMLine line : getLines())
+		for (final I_PP_Order_BOMLine line : getLines())
 		{
 			ppOrderBOMLineBL.close(line);
 		}
@@ -423,10 +425,10 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// NOTE: at this point we assume QtyRequired==QtyDelivered => QtyReserved(new)=0
 		Services.get(IPPOrderBOMBL.class).reserveStock(getLines());
 
-		if (this.getDateDelivered() == null)
+		if (getDateDelivered() == null)
 		{
 			// making sure the column is set, even if there were no receipts
-			this.setDateDelivered(SystemTime.asTimestamp());
+			setDateDelivered(SystemTime.asTimestamp());
 		}
 
 		//
@@ -441,19 +443,19 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 
 		return true;
-	} // closeIt
+	}
 
 	@Override
 	public boolean reverseCorrectIt()
 	{
 		return voidIt();
-	} // reverseCorrectionIt
+	}
 
 	@Override
 	public boolean reverseAccrualIt()
 	{
 		throw new LiberoException("@NotSupported@");
-	} // reverseAccrualIt
+	}
 
 	@Override
 	public boolean reActivateIt()
@@ -484,13 +486,13 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	public int getDoc_User_ID()
 	{
 		return getPlanner_ID();
-	} // getDoc_User_ID
+	}
 
 	@Override
 	public BigDecimal getApprovalAmt()
 	{
 		return BigDecimal.ZERO;
-	} // getApprovalAmt
+	}
 
 	@Override
 	public int getC_Currency_ID()
@@ -518,37 +520,28 @@ public class MPPOrder extends X_PP_Order implements IDocument
 			final File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
 			return createPDF(temp);
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new AdempiereException("Could not create PDF", e);
 		}
-	} // getPDF
+	}
 
-	/**
-	 * Create PDF file
-	 *
-	 * @param file output file
-	 * @return file if success
-	 */
-	private File createPDF(File file)
+	private File createPDF(final File file)
 	{
-		ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.MANUFACTURING_ORDER, getPP_Order_ID());
+		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.MANUFACTURING_ORDER, getPP_Order_ID());
 		if (re == null)
+		{
 			return null;
+		}
 		return re.getPDF(file);
 	} // createPDF
 
-	/**
-	 * Get Document Info
-	 *
-	 * @return document info (untranslated)
-	 */
 	@Override
 	public String getDocumentInfo()
 	{
-		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		return dt.getName() + " " + getDocumentNo();
-	} // getDocumentInfo
+	}
 
 	public MPPOrderWorkflow getMPPOrderWorkflow()
 	{
@@ -564,7 +557,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder("MPPOrder[ID=").append(get_ID())
+		final StringBuilder sb = new StringBuilder("MPPOrder[ID=").append(get_ID())
 				.append("-DocumentNo=").append(getDocumentNo())
 				.append(",IsSOTrx=").append(isSOTrx())
 				.append(",C_DocType_ID=").append(getC_DocType_ID())
@@ -572,12 +565,12 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		return sb.toString();
 	}
 
-	/*
+	/**
 	 * Auto report the first Activity and Sub contracting if are Milestone Activity
 	 */
 	private final void autoReportActivities()
 	{
-		for (MPPOrderNode activity : getMPPOrderWorkflow().getNodes())
+		for (final MPPOrderNode activity : getMPPOrderWorkflow().getNodes())
 		{
 			if (activity.isMilestone())
 			{
@@ -591,8 +584,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 							getS_Resource_ID(),
 							0, // ppOrderBOMLineId
 							activity.getPP_Order_Node_ID(),
-							MDocType.getDocType(MDocType.DOCBASETYPE_ManufacturingCostCollector),
-							MPPCostCollector.COSTCOLLECTORTYPE_ActivityControl,
+							MDocType.getDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector),
+							X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl,
 							getUpdated(),
 							activity.getQtyToDeliver(),
 							BigDecimal.ZERO,
@@ -615,7 +608,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final MPPOrderWorkflow orderWorkflow = getMPPOrderWorkflow();
 		if (orderWorkflow != null)
 		{
-			for (MPPOrderNode node : orderWorkflow.getNodes(true))
+			for (final MPPOrderNode node : orderWorkflow.getNodes(true))
 			{
 				createUsageVariance(node);
 			}
@@ -625,8 +618,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 	private void createUsageVariance(final I_PP_Order_BOMLine line)
 	{
-		MPPOrder order = this;
-		Timestamp movementDate = order.getUpdated();
+		final MPPOrder order = this;
+		final Timestamp movementDate = order.getUpdated();
 
 		// If QtyBatch and QtyBOM is zero, than this is a method variance
 		// (a product that "was not" in BOM was used)
@@ -668,8 +661,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 				order.getS_Resource_ID(),
 				line.getPP_Order_BOMLine_ID(),
 				0, // PP_Order_Node_ID,
-				MDocType.getDocType(MDocType.DOCBASETYPE_ManufacturingCostCollector), // C_DocType_ID,
-				MPPCostCollector.COSTCOLLECTORTYPE_UsegeVariance,
+				MDocType.getDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector), // C_DocType_ID,
+				X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance,
 				movementDate,
 				qtyUsageVariance, // Qty
 				BigDecimal.ZERO, // scrap,
@@ -679,9 +672,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		);
 	}
 
-	private void createUsageVariance(I_PP_Order_Node orderNode)
+	private void createUsageVariance(final I_PP_Order_Node orderNode)
 	{
-		MPPOrder order = this;
+		final MPPOrder order = this;
 		final Timestamp movementDate = order.getUpdated();
 		final MPPOrderNode node = (MPPOrderNode)orderNode;
 		//
@@ -715,8 +708,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 				node.getS_Resource_ID(),
 				0, // PP_Order_BOMLine_ID
 				node.getPP_Order_Node_ID(),
-				MDocType.getDocType(MDocType.DOCBASETYPE_ManufacturingCostCollector), // C_DocType_ID
-				MPPCostCollector.COSTCOLLECTORTYPE_UsegeVariance,
+				MDocType.getDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector), // C_DocType_ID
+				X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance,
 				movementDate,
 				qtyOpen, // Qty
 				BigDecimal.ZERO, // scrap,

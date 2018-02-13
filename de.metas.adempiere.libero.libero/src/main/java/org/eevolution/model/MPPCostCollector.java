@@ -45,6 +45,7 @@ import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -393,7 +394,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		// Issue
 		else if (isIssue())
 		{
-			MProduct product = getM_Product();
+			final I_M_Product product = getM_Product();
 			if (getM_AttributeSetInstance_ID() <= 0 && Services.get(IProductBL.class).isASIMandatory(product, false))
 			{
 				throw new LiberoException("@M_AttributeSet_ID@ @IsMandatory@ @M_Product_ID@=" + product.getValue());
@@ -402,7 +403,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		// Receipt
 		else if (isReceipt())
 		{
-			MProduct product = getM_Product();
+			final I_M_Product product = getM_Product();
 			if (getM_AttributeSetInstance_ID() <= 0 && Services.get(IProductBL.class).isASIMandatory(product, true))
 			{
 				throw new LiberoException("@M_AttributeSet_ID@ @IsMandatory@ @M_Product_ID@=" + product.getValue());
@@ -889,7 +890,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	private String createPO(MPPOrderNode activity)
 	{
 		String msg = "";
-		HashMap<Integer, MOrder> orders = new HashMap<>();
+		final Map<Integer, MOrder> orders = new HashMap<>();
 		//
 		String whereClause = I_PP_Order_Node_Product.COLUMNNAME_PP_Order_Node_ID + "=?"
 				+ " AND " + I_PP_Order_Node_Product.COLUMNNAME_IsSubcontracting + "=?";
@@ -1000,7 +1001,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	}
 
 	@Override
-	public MProduct getM_Product()
+	public I_M_Product getM_Product()
 	{
 		return MProduct.get(getCtx(), getM_Product_ID());
 	}
