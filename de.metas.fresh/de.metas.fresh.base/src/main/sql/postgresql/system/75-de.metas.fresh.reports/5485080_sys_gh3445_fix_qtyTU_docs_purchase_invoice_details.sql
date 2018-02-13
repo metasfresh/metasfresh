@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Details ( IN C_Invoice_ID numeric, IN AD_Language Character Varying (6) );
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Details ( IN C_Invoice_ID numeric, IN AD_Language Character Varying (6) );
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Details ( IN C_Invoice_ID numeric, IN AD_Language Character Varying (6) )
 RETURNS TABLE 
 (
@@ -52,7 +52,7 @@ SELECT
 		END,
 		''
 	) AS Attributes,
-	SUM(piip.QtyenteredTU)			AS HUQty,
+	piip.QtyenteredTU			AS HUQty,
 	piip.name				AS HUName,
 	SUM(il.QtyInvoicedInPriceUOM) AS qtyinvoicedinpriceuom,
 	SUM(CASE
@@ -233,6 +233,7 @@ GROUP BY
 		END,
 		''
 	),
+	piip.qtyenteredTU,
 	piip.name,
 	il.PriceActual,
 	il.PriceEntered,
