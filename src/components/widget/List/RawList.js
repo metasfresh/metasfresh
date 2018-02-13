@@ -93,7 +93,6 @@ class RawList extends PureComponent {
       loading,
       disableAutofocus,
     } = this.props;
-    const { isFocused, isOpened } = this.state;
 
     if (
       list.length === 0 &&
@@ -103,6 +102,10 @@ class RawList extends PureComponent {
     ) {
       disableAutofocus();
     }
+
+    // if (!this.props.lookupList && this.dropdown.className.indexOf('select-dropdown') > 0) {
+    //   console.log('here1: ', autoFocus, initialFocus, defaultValue)
+    // }
 
     // focus
     if (this.dropdown) {
@@ -148,6 +151,7 @@ class RawList extends PureComponent {
 
     //open
     if (this.dropdown && autoFocus) {
+      // console.log('this.dropdown && autoFocus')
       if (prevState.selected !== this.state.selected) {
         if (!doNotOpenOnFocus && this.state.dropdownList.length > 1) {
           this.openDropdownList();
@@ -180,7 +184,8 @@ class RawList extends PureComponent {
   };
 
   focus = () => {
-    if (this.state.isOpened) {
+    // if (this.state.isOpened) {
+    // console.log('RawList focus')
       if (this.dropdown && this.dropdown.focus) {
         this.dropdown.focus();
       }
@@ -188,7 +193,7 @@ class RawList extends PureComponent {
       this.setState({
         isFocused: true,
       });
-    }
+    // }
   };
 
   blur = () => {
@@ -204,6 +209,7 @@ class RawList extends PureComponent {
   };
 
   openDropdownList = focus => {
+    // console.log('open dropdown')
     this.setState(
       {
         isOpened: true,
@@ -239,8 +245,12 @@ class RawList extends PureComponent {
   handleFocus = () => {
     const { onFocus, doNotOpenOnFocus, autoFocus } = this.props;
 
+    // console.log('RawList handle focus')
+
     if (!doNotOpenOnFocus && !autoFocus) {
       this.openDropdownList(true);
+    } else {
+      this.focus();
     }
 
     onFocus && onFocus();
@@ -260,7 +270,7 @@ class RawList extends PureComponent {
      * on focus.
      */
   handleClick = () => {
-    this.openDropdownList();
+    this.openDropdownList(true);
   };
 
   handleSelect = selected => {
@@ -297,13 +307,26 @@ class RawList extends PureComponent {
       this.navigateToAlphanumeric(e.key);
     } else {
       switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          this.navigate(true);
-          break;
         case 'ArrowUp':
           e.preventDefault();
           this.navigate(false);
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+
+          if (!isOpened) {
+            this.openDropdownList();
+          } else {
+            this.navigate(true);
+          }
+          break;
+        case 'Space':
+        console.log('space')
+          e.preventDefault();
+
+          if (!isOpened) {
+            this.openDropdownList();
+          }
           break;
         case 'Enter':
           e.preventDefault();
@@ -472,6 +495,10 @@ class RawList extends PureComponent {
           'input-disabled': readonly,
           'input-dropdown-container-static': rowId,
           'input-table': rowId && !isModal,
+          'lookup-dropdown': lookupList,
+          'select-dropdown': !lookupList,
+          focused: isFocused,
+          opened: isOpened,
         })}
         tabIndex={tabIndex ? tabIndex : 0}
         onFocus={readonly ? null : this.handleFocus}
@@ -549,6 +576,14 @@ class RawList extends PureComponent {
 const mapStateToProps = state => ({
   filter: state.windowHandler.filter,
 });
+
+/**
+ * doNotOpenOnFocus - by default we expect user to press space/arrow down when the dropdown field is focused ho
+ *                    show the dropdown with options
+ */
+RawList.defaultProps = {
+  doNotOpenOnFocus: true,
+};
 
 RawList.propTypes = {
   filter: PropTypes.object.isRequired,

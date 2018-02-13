@@ -1,10 +1,11 @@
-import React, { Component } from "react";
-import onClickOutside from "react-onclickoutside";
-import { connect } from "react-redux";
+import React, { Component } from 'react';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
+import classnames from 'classnames';
 
-import { getItemsByProperty } from "../../../actions/WindowActions";
-import List from "../List/List";
-import RawLookup from "./RawLookup";
+import { getItemsByProperty } from '../../../actions/WindowActions';
+import List from '../List/List';
+import RawLookup from './RawLookup';
 
 class Lookup extends Component {
   constructor(props) {
@@ -12,18 +13,14 @@ class Lookup extends Component {
 
     this.state = {
       isInputEmpty: true,
-      propertiesCopy: getItemsByProperty(
-        this.props.properties,
-        "source",
-        "list"
-      ),
-      property: "",
+      propertiesCopy: getItemsByProperty(props.properties, 'source', 'list'),
+      property: '',
       fireClickOutside: false,
       initialFocus: false,
       localClearing: false,
       fireDropdownList: false,
       autofocusDisabled: false,
-      isDropdownListOpen: false
+      isDropdownListOpen: false,
     };
   }
 
@@ -38,7 +35,7 @@ class Lookup extends Component {
       defaultValue.map(item => {
         if (item.value) {
           this.setState({
-            isInputEmpty: false
+            isInputEmpty: false,
           });
         }
       });
@@ -59,7 +56,7 @@ class Lookup extends Component {
           let nextProp = properties[nextIndex];
 
           // TODO: Looks like this code was never used
-          if (nextProp.source === "list") {
+          if (nextProp.source === 'list') {
             this.linkedList.map(listComponent => {
               if (listComponent && listComponent.props) {
                 let listProp = listComponent.props.mainProperty;
@@ -83,17 +80,17 @@ class Lookup extends Component {
             });
 
             this.setState({
-              property: nextProp.field
+              property: nextProp.field,
             });
           } else {
             this.setState({
-              property: nextProp.field
+              property: nextProp.field,
             });
           }
         } else if (defaultValue[defaultValue.length - 1].field === prop) {
           this.setState(
             {
-              property: ""
+              property: '',
             },
             () => {
               onBlurWidget && onBlurWidget();
@@ -107,11 +104,11 @@ class Lookup extends Component {
   openDropdownList = () => {
     this.setState(
       {
-        fireDropdownList: true
+        fireDropdownList: true,
       },
       () => {
         this.setState({
-          fireDropdownList: false
+          fireDropdownList: false,
         });
       }
     );
@@ -121,7 +118,7 @@ class Lookup extends Component {
     const { onFocus, onHandleBlur } = this.props;
 
     this.setState({
-      isDropdownListOpen: value
+      isDropdownListOpen: value,
     });
 
     if (value && onFocus) {
@@ -133,7 +130,7 @@ class Lookup extends Component {
 
   resetLocalClearing = () => {
     this.setState({
-      localClearing: false
+      localClearing: false,
     });
   };
 
@@ -142,11 +139,11 @@ class Lookup extends Component {
       this.setState(
         {
           fireClickOutside: true,
-          property: ""
+          property: '',
         },
         () => {
           this.setState({
-            fireClickOutside: false
+            fireClickOutside: false,
           });
         }
       );
@@ -155,7 +152,7 @@ class Lookup extends Component {
 
   handleInputEmptyStatus = isEmpty => {
     this.setState({
-      isInputEmpty: isEmpty
+      isInputEmpty: isEmpty,
     });
   };
 
@@ -168,22 +165,22 @@ class Lookup extends Component {
 
     this.setState({
       isInputEmpty: true,
-      property: "",
+      property: '',
       initialFocus: true,
       localClearing: true,
-      autofocusDisabled: false
+      autofocusDisabled: false,
     });
   };
 
   disableAutofocus = () => {
     this.setState({
-      autofocusDisabled: true
+      autofocusDisabled: true,
     });
   };
 
   enableAutofocus = () => {
     this.setState({
-      autofocusDisabled: false
+      autofocusDisabled: false,
     });
   };
 
@@ -214,7 +211,7 @@ class Lookup extends Component {
       subentityId,
       viewId,
       autoFocus,
-      newRecordWindowId
+      newRecordWindowId,
     } = this.props;
 
     const {
@@ -224,42 +221,44 @@ class Lookup extends Component {
       initialFocus,
       localClearing,
       fireDropdownList,
-      autofocusDisabled
+      autofocusDisabled,
     } = this.state;
 
     this.linkedList = [];
 
+    const mandatoryInputCondition =
+      mandatory &&
+      (isInputEmpty ||
+        (validStatus && validStatus.initialValue && !validStatus.valid));
+    const errorInputCondition =
+      validStatus && (!validStatus.valid && !validStatus.initialValue);
+
     return (
       <div
         ref={c => (this.dropdown = c)}
-        className={
-          "input-dropdown-container lookup-wrapper input-" +
-          (rank ? rank : "primary") +
-          (updated ? " pulse-on" : " pulse-off") +
-          (filterWidget ? " input-full" : "") +
-          (mandatory &&
-          (isInputEmpty ||
-            (validStatus && validStatus.initialValue && !validStatus.valid))
-            ? " input-mandatory"
-            : "") +
-          (validStatus && (!validStatus.valid && !validStatus.initialValue)
-            ? " input-error"
-            : "") +
-          (readonly ? " lookup-wrapper-disabled" : "")
-        }
+        className={classnames('input-dropdown-container lookup-wrapper', {
+          [`input-${rank}`]: rank,
+          'input-primary': !rank,
+          'pulse-on': updated,
+          'pulse-off': !updated,
+          'input-full': filterWidget,
+          'input-mandatory': mandatoryInputCondition,
+          'input-error': errorInputCondition,
+          'lookup-wrapper-disabled': readonly,
+        })}
       >
         {properties &&
           properties.map((item, index) => {
             const disabled = isInputEmpty && index !== 0;
             const itemByProperty = getItemsByProperty(
               defaultValue,
-              "field",
+              'field',
               item.field
             )[0];
             if (
-              item.source === "lookup" ||
-              item.widgetType === "Lookup" ||
-              (itemByProperty && itemByProperty.widgetType === "Lookup")
+              item.source === 'lookup' ||
+              item.widgetType === 'Lookup' ||
+              (itemByProperty && itemByProperty.widgetType === 'Lookup')
             ) {
               return (
                 <RawLookup
@@ -304,14 +303,14 @@ class Lookup extends Component {
                     rowId,
                     newRecordCaption,
                     newRecordWindowId,
-                    localClearing
+                    localClearing,
                   }}
                 />
               );
             } else if (
-              item.source === "list" ||
-              item.widgetType === "List" ||
-              (itemByProperty && itemByProperty.source === "List")
+              item.source === 'list' ||
+              item.widgetType === 'List' ||
+              (itemByProperty && itemByProperty.source === 'List')
             ) {
               const isFirstProperty = index === 0;
               const isCurrentProperty =
@@ -320,10 +319,12 @@ class Lookup extends Component {
               return (
                 <div
                   key={index}
-                  className={
-                    "raw-lookup-wrapper raw-lookup-wrapper-bcg " +
-                    (disabled || readonly ? "raw-lookup-disabled" : "")
-                  }
+                  className={classnames(
+                    'raw-lookup-wrapper raw-lookup-wrapper-bcg ',
+                    {
+                      'raw-lookup-disabled': disabled || readonly,
+                    }
+                  )}
                 >
                   <List
                     ref={c => {
@@ -334,10 +335,11 @@ class Lookup extends Component {
                     readonly={disabled || readonly}
                     lookupList={true}
                     autoFocus={isCurrentProperty}
+                    doNotOpenOnFocus={false}
                     properties={[item]}
                     mainProperty={[item]}
                     defaultValue={
-                      itemByProperty.value ? itemByProperty.value : ""
+                      itemByProperty.value ? itemByProperty.value : ''
                     }
                     initialFocus={isFirstProperty ? initialFocus : false}
                     blur={!property ? true : false}
@@ -358,7 +360,7 @@ class Lookup extends Component {
                       viewId,
                       onChange,
                       isInputEmpty,
-                      property
+                      property,
                     }}
                   />
                 </div>

@@ -641,6 +641,7 @@ input:checked + .input-slider:before {
     position: relative;
     cursor: pointer;
     min-width: 200px;
+    padding: .125rem .5rem;
 }
 .input-dropdown-container-static {
     position: static;
@@ -655,6 +656,17 @@ input:checked + .input-slider:before {
 }
 .input-dropdown-container:focus {
     outline-width: 0;
+}
+.input-dropdown-container.select-dropdown {
+    margin-top: .3125rem;
+    margin-bottom: .125rem;
+    border-bottom: none;   
+}
+.input-dropdown-container.select-dropdown.focused {
+    border-bottom: 1px solid #C9D5DC;
+}
+.input-dropdown-container.select-dropdown.opened {
+    border-bottom: none;
 }
 .input-dropdown-focused .input-toggled {
     border-bottom-left-radius: 0;
