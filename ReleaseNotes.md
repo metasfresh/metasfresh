@@ -28,6 +28,7 @@ Here come the actual release notes:
   * [#3407](https://github.com/metasfresh/metasfresh/issues/3407) New Businesspartner Window for Pharma vertical
     * New Business Partner Window in WebUI for Pharma Verticals.
   * [#3408](https://github.com/metasfresh/metasfresh/issues/3408) New Product Window for Pharma vertical
+    * New Product Window in WebUI for Pharma Verticals.
   * [#3413](https://github.com/metasfresh/metasfresh/issues/3413) Credit Limit data structure as subtab in Businesspartner
   * [#3458](https://github.com/metasfresh/metasfresh/issues/3458) Remove M_Storage-based legacy check from MProduct
   * [#3467](https://github.com/metasfresh/metasfresh/issues/3467) Preparation Date Filer as Daterange
@@ -46,6 +47,7 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3445](https://github.com/metasfresh/metasfresh/issues/3445) Qty TU not correct in purchase invoice jasper
+  * [#3477](https://github.com/metasfresh/metasfresh/issues/3477) Cannot save manufacturing order
 
 * metasfresh-webui-api
   * [#806](https://github.com/metasfresh/metasfresh-webui-api/issues/806) Add to Transportation Order, Ship and Invoice action in Picking Clearing Tray not respecting the invoice schedule
@@ -61,6 +63,8 @@ Here come the actual release notes:
     * Fixes errors in console that popped up when opening the Handling Unit Editor.
   * [#1558](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1558) Dropdown fields not hidden when creating a new Business Partner
     * Fixes the reamining dropdown in Purchase Order when calling the "New Businesspartner" action in context menu.
+  * [#1588](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1588) Zoom Into is not working
+    * Fixes the Zoom-To functionality that allows the user to click on field labels and jump to detail data when available.
 
 # metasfresh 5.43 (2018-06)
 **release for week 2018-06**

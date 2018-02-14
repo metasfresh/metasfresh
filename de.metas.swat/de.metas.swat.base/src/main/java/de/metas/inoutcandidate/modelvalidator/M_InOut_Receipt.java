@@ -25,21 +25,25 @@ package de.metas.inoutcandidate.modelvalidator;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
+import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 
-@Validator(I_M_InOut.class)
+@Interceptor(I_M_InOut.class)
+@Component
 public class M_InOut_Receipt
 {
 	/**
@@ -102,4 +106,35 @@ public class M_InOut_Receipt
 				.retrieveRsaForInOut(receipt)
 				.forEach(rsa -> InterfaceWrapperHelper.delete(rsa));
 	}
+
+	/**
+	 * Generate movements from receipt (if needed).
+	 *
+	 * This is the counter-part of {@link #reverseMovements(I_M_InOut)}.
+	 *
+	 * @param inout
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void generateMovement(final I_M_InOut inout)
+	{
+		// We are generating movements only for receipts
+		if (inout.isSOTrx())
+		{
+			return;
+		}
+
+		// Don't generate movements for a reversal document
+		if (Services.get(IInOutBL.class).isReversal(inout))
+		{
+			return;
+		}
+
+		{
+			// Actually generate the movements
+			final IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
+			inoutMovementBL.generateMovementFromReceipt(inout);
+		}
+	}
+
+	
 }
