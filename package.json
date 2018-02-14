@@ -11,6 +11,9 @@
     "test": "jest"
   },
   "jest": {
+    "setupFiles": [
+      "<rootDir>/test_setup/jestSetup.js"
+    ],
     "moduleNameMapper": {
       "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)$": "<rootDir>/test_setup/fileMock.js",
       "\\.(scss)$": "<rootDir>/test_setup/styleMock.js",
@@ -44,6 +47,8 @@
     "babel-register": "^6.26.0",
     "common-tags": "^1.4.0",
     "css-loader": "~0.23.1",
+    "enzyme": "^3.3.0",
+    "enzyme-adapter-react-16": "^1.1.1",
     "eslint": "^4.9.0",
     "eslint-config-prettier": "^2.6.0",
     "eslint-plugin-import": "^2.7.0",
@@ -56,6 +61,8 @@
     "html-webpack-plugin": "~2.26.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^22.2.1",
+    "jest-enzyme": "^4.2.0",
+    "jest-localstorage-mock": "^2.2.0",
     "nock": "^9.1.6",
     "nyc": "^11.3.0",
     "postcss-color-function": "~2.0.1",
