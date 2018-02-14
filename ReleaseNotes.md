@@ -64,7 +64,7 @@ Here come the actual release notes:
   * [#1558](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1558) Dropdown fields not hidden when creating a new Business Partner
     * Fixes the reamining dropdown in Purchase Order when calling the "New Businesspartner" action in context menu.
   * [#1588](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1588) Zoom Into is not working
-    * Fixes the Zoom-To functionality that allows the user to click on field labels and jump to detail data.
+    * Fixes the Zoom-To functionality that allows the user to click on field labels and jump to detail data when available.
 
 # metasfresh 5.43 (2018-06)
 **release for week 2018-06**
