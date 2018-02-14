@@ -753,8 +753,9 @@ class Table extends Component {
     e.preventDefault();
 
     const cell = e.target;
+    const textValue = cell.value || cell.textContent;
 
-    e.clipboardData.setData("text/plain", cell.textContent);
+    e.clipboardData.setData("text/plain", textValue);
   };
 
   handleZoomInto = fieldName => {
@@ -1014,6 +1015,7 @@ class Table extends Component {
               )
             }
             onItemChange={this.handleItemChange}
+            onCopy={this.handleCopy}
           />
         </tbody>
       ));
