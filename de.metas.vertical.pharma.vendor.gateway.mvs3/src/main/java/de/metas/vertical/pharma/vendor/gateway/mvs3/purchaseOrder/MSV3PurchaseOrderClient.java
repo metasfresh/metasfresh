@@ -1,7 +1,6 @@
 package de.metas.vertical.pharma.vendor.gateway.mvs3.purchaseOrder;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -10,6 +9,7 @@ import javax.xml.bind.JAXBElement;
 import org.adempiere.util.Check;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -124,23 +124,11 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 		{
 			assertPrepared();
 
-			final ImmutableMap.Builder<BestellungPosition, Integer> bestellungPosition2PurchaseCandidateId = //
-					ImmutableMap.builder();
-
-			final ImmutableSet<Entry<BestellungPosition, PurchaseOrderRequestItem>> entrySet = //
-					bestellungPosition2RequestItem.entrySet();
-			for (final Entry<BestellungPosition, PurchaseOrderRequestItem> entry : entrySet)
-			{
-				bestellungPosition2PurchaseCandidateId.put(
-						entry.getKey(),
-						entry.getValue().getPurchaseCandidateId());
-			}
-
 			final MSV3PurchaseOrderTransaction purchaseTransaction = //
 					MSV3PurchaseOrderTransaction.builder()
 							.orgId(orgId)
 							.bestellung(purchaseOrderRequestPayload.getValue().getBestellung())
-							.bestellungPosition2PurchaseCandidateId(bestellungPosition2PurchaseCandidateId.build())
+							.bestellungPosition2PurchaseCandidateId(extractBestellungPosition2PurchaseCandidateId())
 							.build();
 
 			// invoke the deeper layer
@@ -166,6 +154,29 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 		{
 			resetForReuse();
 		}
+	}
+
+	/**
+	 * Iterate our {@link #bestellungPosition2RequestItem}<br>
+	 * (i.e. {@code BestellungPosition => PurchaseOrderRequestItem}) map<br>
+	 * and extract a {@code BestellungPosition => PurchaseCandidateId} map.
+	 */
+	private ImmutableMap<BestellungPosition, Integer> extractBestellungPosition2PurchaseCandidateId()
+	{
+		final ImmutableMap.Builder<BestellungPosition, Integer> bestellungPosition2PurchaseCandidateId = //
+				ImmutableMap.builder();
+
+		final ImmutableSet<Entry<BestellungPosition, PurchaseOrderRequestItem>> entrySet = //
+				bestellungPosition2RequestItem.entrySet();
+		for (final Entry<BestellungPosition, PurchaseOrderRequestItem> entry : entrySet)
+		{
+			bestellungPosition2PurchaseCandidateId.put(
+					entry.getKey(),
+					entry.getValue().getPurchaseCandidateId());
+		}
+
+		final ImmutableMap<BestellungPosition, Integer> build = bestellungPosition2PurchaseCandidateId.build();
+		return build;
 	}
 
 	public MSV3PurchaseOrderClient resetForReuse()
@@ -251,14 +262,14 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 			@NonNull final ImmutableMap<BestellungPosition, PurchaseOrderRequestItem> bestellungPosition2RequestItem,
 			@NonNull final MSV3PurchaseOrderTransaction purchaseTransaction)
 	{
-		final Bestellung bestellung = purchaseTransaction.getBestellung();
-
-		final List<RemotePurchaseOrderCreatedItem> purchaseOrderResponseItems = new ArrayList<>();
-
 		if (purchaseTransaction.getBestellungAntwort() == null)
 		{
-			return purchaseOrderResponseItems;
+			return ImmutableList.of();
 		}
+
+		final Bestellung bestellung = purchaseTransaction.getBestellung();
+
+		final ImmutableList.Builder<RemotePurchaseOrderCreatedItem> purchaseOrderResponseItems = ImmutableList.builder();
 
 		final List<BestellungAntwortAuftrag> auftraege = purchaseTransaction
 				.getBestellungAntwort()
@@ -294,11 +305,12 @@ public class MSV3PurchaseOrderClient extends MSV3ClientBase
 							.confirmedDeliveryDate(MSV3Util.toDateOrNull(anteil.getLieferzeitpunkt()))
 							.confirmedOrderQuantity(new BigDecimal(anteil.getMenge()))
 							.internalItemId(internalItemId);
+
 					purchaseOrderResponseItems.add(builder.build());
 				}
 			}
 		}
-		return purchaseOrderResponseItems;
+		return purchaseOrderResponseItems.build();
 	}
 
 	@VisibleForTesting
