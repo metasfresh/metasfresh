@@ -37,6 +37,10 @@ Here come the actual release notes:
     * Adds the translation for en_EN, de_DE of the "Show all dates" hint in daterange filter.
   * [#3471](https://github.com/metasfresh/metasfresh/issues/3471) Disable Sales Opportunities Window until its permission is configurable
     * Hiding the Sales Opportunity Window from default WebUI Menu, as long as in beta.
+  * [#3487](https://github.com/metasfresh/metasfresh/issues/3487) Extend Identifier Transportation Order
+    * Improving the Transportation Order identifier, now additionally showing Date and Tour.
+  * [#3495](https://github.com/metasfresh/metasfresh/issues/3495) Improvements to Product Price Window
+    * Improving Product Price Window in WebUI, adding Active indicator and removing Price Matching Order from grid View.
 
 * metasfresh-webui-api
   * [#818](https://github.com/metasfresh/metasfresh-webui-api/issues/818) Values.valueToJsonObject() shall return JSONNullValue instead of null

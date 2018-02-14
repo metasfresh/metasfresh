@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<pmd>
-    <useProjectRuleSet>true</useProjectRuleSet>
-    <ruleSetFile>pmd-ruleset.xml</ruleSetFile>
-    <includeDerivedFiles>false</includeDerivedFiles>
-    <violationsAsErrors>false</violationsAsErrors>
-</pmd>
