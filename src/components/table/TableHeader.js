@@ -30,15 +30,25 @@ class TableHeader extends Component {
     if (!sortable) {
       return;
     }
-
     const { sort, deselect, page, tabid } = this.props;
-    const fieldsCopy = { ...this.state.fields };
-    const sortingValue = fieldsCopy[field];
+    const stateFields = this.state.fields;
+    let fields = {};
+    let sortingValue = null;
 
-    fieldsCopy[field] = !sortingValue;
+    if (field in stateFields) {
+      fields = { ...stateFields };
+      sortingValue = !fields[field];
+      fields[field] = sortingValue;
+    } else {
+      sortingValue = !Object.values(stateFields).reduce(
+        (acc, curr) => acc && curr,
+        true
+      );
+      fields[field] = sortingValue;
+    }
 
     this.setState({
-      fields: { ...fieldsCopy },
+      fields: { ...fields },
     });
 
     sort(sortingValue, field, true, page, tabid);
