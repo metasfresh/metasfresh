@@ -232,20 +232,23 @@ class Lookup extends Component {
         (validStatus && validStatus.initialValue && !validStatus.valid));
     const errorInputCondition =
       validStatus && (!validStatus.valid && !validStatus.initialValue);
+    const classRank = rank || 'primary';
 
     return (
       <div
         ref={c => (this.dropdown = c)}
-        className={classnames('input-dropdown-container lookup-wrapper', {
-          [`input-${rank}`]: rank,
-          'input-primary': !rank,
-          'pulse-on': updated,
-          'pulse-off': !updated,
-          'input-full': filterWidget,
-          'input-mandatory': mandatoryInputCondition,
-          'input-error': errorInputCondition,
-          'lookup-wrapper-disabled': readonly,
-        })}
+        className={classnames(
+          'input-dropdown-container lookup-wrapper',
+          `input-${classRank}`,
+          {
+            'pulse-on': updated,
+            'pulse-off': !updated,
+            'input-full': filterWidget,
+            'input-mandatory': mandatoryInputCondition,
+            'input-error': errorInputCondition,
+            'lookup-wrapper-disabled': readonly,
+          }
+        )}
       >
         {properties &&
           properties.map((item, index) => {
