@@ -42,10 +42,10 @@ import de.metas.logging.LogManager;
 
 /**
  * Business Partner Model
- * 
+ *
  * @author Jorg Janke
  * @version $Id: MBPartner.java,v 1.5 2006/09/23 19:38:07 comdivision Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  *         <li>BF [ 1568774 ] Walk-In BP:
  *         invalid created/updated values
@@ -61,13 +61,13 @@ import de.metas.logging.LogManager;
 public class MBPartner extends X_C_BPartner
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -3669895599574182217L;
 
 	/**
 	 * Get Empty Template Business Partner
-	 * 
+	 *
 	 * @param ctx
 	 *            context
 	 * @param AD_Client_ID
@@ -78,7 +78,9 @@ public class MBPartner extends X_C_BPartner
 	{
 		MBPartner template = getBPartnerCashTrx(ctx, AD_Client_ID);
 		if (template == null)
+		{
 			template = new MBPartner(ctx, 0, null);
+		}
 		// Reset
 		if (template != null)
 		{
@@ -89,17 +91,13 @@ public class MBPartner extends X_C_BPartner
 			template.setDUNS("");
 			template.setFirstSale(null);
 			//
-			template.setSO_CreditLimit(Env.ZERO);
 
-			// s_template.setRating(null);
-			//
-
-			template.setPotentialLifeTimeValue(Env.ZERO);
-			template.setAcqusitionCost(Env.ZERO);
+			template.setPotentialLifeTimeValue(BigDecimal.ZERO);
+			template.setAcqusitionCost(BigDecimal.ZERO);
 			template.setShareOfCustomer(0);
 			template.setSalesVolume(0);
 			// Reset Created, Updated to current system time ( teo_sarca )
-			Timestamp ts = new Timestamp(System.currentTimeMillis());
+			final Timestamp ts = new Timestamp(System.currentTimeMillis());
 			template.set_ValueNoCheck("Created", ts);
 			template.set_ValueNoCheck("Updated", ts);
 		}
@@ -108,7 +106,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * Get Cash Trx Business Partner
-	 * 
+	 *
 	 * @param ctx
 	 *            context
 	 * @param AD_Client_ID
@@ -118,24 +116,28 @@ public class MBPartner extends X_C_BPartner
 	public static MBPartner getBPartnerCashTrx(final Properties ctx, final int AD_Client_ID)
 	{
 		MBPartner retValue = null;
-		String sql = "SELECT * FROM C_BPartner "
+		final String sql = "SELECT * FROM C_BPartner "
 				+ "WHERE C_BPartner_ID IN (SELECT C_BPartnerCashTrx_ID FROM AD_ClientInfo WHERE AD_Client_ID=?)";
 		PreparedStatement pstmt = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
 			pstmt.setInt(1, AD_Client_ID);
-			ResultSet rs = pstmt.executeQuery();
+			final ResultSet rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				retValue = new MBPartner(ctx, rs, null);
+			}
 			else
+			{
 				s_log.error("Not found for AD_Client_ID="
 						+ AD_Client_ID);
+			}
 			rs.close();
 			pstmt.close();
 			pstmt = null;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			s_log.error(sql, e);
 		}
@@ -144,9 +146,11 @@ public class MBPartner extends X_C_BPartner
 			try
 			{
 				if (pstmt != null)
+				{
 					pstmt.close();
+				}
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 			}
 			pstmt = null;
@@ -156,7 +160,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * Get BPartner with Value
-	 * 
+	 *
 	 * @param ctx
 	 *            context
 	 * @param Value
@@ -166,17 +170,18 @@ public class MBPartner extends X_C_BPartner
 	public static MBPartner get(final Properties ctx, final String Value)
 	{
 		if (Value == null || Value.length() == 0)
+		{
 			return null;
-		String whereClause = "Value=? AND AD_Client_ID=?";
-		MBPartner retValue = new Query(ctx, MBPartner.Table_Name, whereClause
-				.toString(), null).setParameters(
-						new Object[] { Value, Env.getAD_Client_ID(ctx) }).firstOnly();
+		}
+		final String whereClause = "Value=? AND AD_Client_ID=?";
+		final MBPartner retValue = new Query(ctx, MBPartner.Table_Name, whereClause, null).setParameters(
+				new Object[] { Value, Env.getAD_Client_ID(ctx) }).firstOnly();
 		return retValue;
 	} // get
 
 	/**
 	 * Get BPartner with Value
-	 * 
+	 *
 	 * @param ctx
 	 *            context
 	 * @param Value
@@ -185,17 +190,16 @@ public class MBPartner extends X_C_BPartner
 	 */
 	public static MBPartner get(final Properties ctx, final int C_BPartner_ID)
 	{
-		String whereClause = "C_BPartner_ID=? AND AD_Client_ID=?";
-		MBPartner retValue = new Query(ctx, MBPartner.Table_Name, whereClause
-				.toString(), null).setParameters(
-						new Object[] { C_BPartner_ID, Env.getAD_Client_ID(ctx) })
-						.firstOnly();
+		final String whereClause = "C_BPartner_ID=? AND AD_Client_ID=?";
+		final MBPartner retValue = new Query(ctx, MBPartner.Table_Name, whereClause, null).setParameters(
+				new Object[] { C_BPartner_ID, Env.getAD_Client_ID(ctx) })
+				.firstOnly();
 		return retValue;
 	} // get
 
 	/**
 	 * Get Not Invoiced Shipment Value
-	 * 
+	 *
 	 * @param C_BPartner_ID
 	 *            partner
 	 * @return value in accounting currency
@@ -203,7 +207,7 @@ public class MBPartner extends X_C_BPartner
 	public static BigDecimal getNotInvoicedAmt(final int C_BPartner_ID)
 	{
 		BigDecimal retValue = null;
-		String sql = "SELECT COALESCE(SUM(COALESCE("
+		final String sql = "SELECT COALESCE(SUM(COALESCE("
 				+ "currencyBase((ol.QtyDelivered-ol.QtyInvoiced)*ol.PriceActual,o.C_Currency_ID,o.DateOrdered, o.AD_Client_ID,o.AD_Org_ID) ,0)),0) "
 				+ "FROM C_OrderLine ol"
 				+ " INNER JOIN C_Order o ON (ol.C_Order_ID=o.C_Order_ID) "
@@ -213,24 +217,28 @@ public class MBPartner extends X_C_BPartner
 		{
 			pstmt = DB.prepareStatement(sql, null);
 			pstmt.setInt(1, C_BPartner_ID);
-			ResultSet rs = pstmt.executeQuery();
+			final ResultSet rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				retValue = rs.getBigDecimal(1);
+			}
 			rs.close();
 			pstmt.close();
 			pstmt = null;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			s_log.error(sql, e);
 		}
 		try
 		{
 			if (pstmt != null)
+			{
 				pstmt.close();
+			}
 			pstmt = null;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			pstmt = null;
 		}
@@ -242,7 +250,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**************************************************************************
 	 * Constructor for new BPartner from Template
-	 * 
+	 *
 	 * @param ctx
 	 *            context
 	 */
@@ -253,7 +261,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * Default Constructor
-	 * 
+	 *
 	 * @param ctx
 	 *            context
 	 * @param rs
@@ -268,7 +276,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * Default Constructor
-	 * 
+	 *
 	 * @param ctx
 	 *            context
 	 * @param C_BPartner_ID
@@ -305,13 +313,10 @@ public class MBPartner extends X_C_BPartner
 			setIsPOTaxExempt(false);
 			setIsDiscountPrinted(false);
 			//
-			setSO_CreditLimit(Env.ZERO);
-
-			//
 			setFirstSale(null);
 
-			setPotentialLifeTimeValue(Env.ZERO);
-			setAcqusitionCost(Env.ZERO);
+			setPotentialLifeTimeValue(BigDecimal.ZERO);
+			setAcqusitionCost(BigDecimal.ZERO);
 			setShareOfCustomer(0);
 			setSalesVolume(0);
 		}
@@ -335,7 +340,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * Load Default BPartner
-	 * 
+	 *
 	 * @param AD_Client_ID
 	 *            client
 	 * @return true if loaded
@@ -343,19 +348,23 @@ public class MBPartner extends X_C_BPartner
 	private boolean initTemplate(final int AD_Client_ID)
 	{
 		if (AD_Client_ID == 0)
+		{
 			throw new IllegalArgumentException("Client_ID=0");
+		}
 
 		boolean success = true;
-		String sql = "SELECT * FROM C_BPartner "
+		final String sql = "SELECT * FROM C_BPartner "
 				+ "WHERE C_BPartner_ID IN (SELECT C_BPartnerCashTrx_ID FROM AD_ClientInfo WHERE AD_Client_ID=?)";
 		PreparedStatement pstmt = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
 			pstmt.setInt(1, AD_Client_ID);
-			ResultSet rs = pstmt.executeQuery();
+			final ResultSet rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				success = load(rs);
+			}
 			else
 			{
 				load(0, null);
@@ -366,7 +375,7 @@ public class MBPartner extends X_C_BPartner
 			pstmt.close();
 			pstmt = null;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.error(sql, e);
 		}
@@ -375,9 +384,11 @@ public class MBPartner extends X_C_BPartner
 			try
 			{
 				if (pstmt != null)
+				{
 					pstmt.close();
+				}
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 			}
 			pstmt = null;
@@ -396,7 +407,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * Get All Contacts
-	 * 
+	 *
 	 * @param reload
 	 *            if true users will be requeried
 	 * @return contacts
@@ -408,41 +419,48 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * Get specified or first Contact
-	 * 
+	 *
 	 * @param AD_User_ID
 	 *            optional user
 	 * @return contact or null
 	 */
 	public I_AD_User getContact(final int AD_User_ID)
 	{
-		List<I_AD_User> users = getContacts(false);
+		final List<I_AD_User> users = getContacts(false);
 		if (users.isEmpty())
+		{
 			return null;
+		}
 		for (final I_AD_User user : users)
 		{
 			if (user.getAD_User_ID() == AD_User_ID)
+			{
 				return user;
+			}
 		}
 		return users.get(0);
 	} // getContact
 
 	/**
 	 * Get All Locations (only active)
-	 * 
+	 *
 	 * @param reload
 	 *            if true locations will be requeried
 	 * @return locations
-	 * 
+	 *
 	 * @deprecated Please use {@link IBPartnerDAO#retrieveBPartnerLocations(I_C_BPartner)}
 	 */
 	@Deprecated
 	public MBPartnerLocation[] getLocations(final boolean reload)
 	{
 		if (reload || m_locations == null || m_locations.length == 0)
+		{
 			;
-		else
+		}
+		else {
 			return m_locations;
 		//
+		}
 
 		final List<I_C_BPartner_Location> locations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(this);
 		m_locations = LegacyAdapters.convertToPOArray(locations, MBPartnerLocation.class);
@@ -452,56 +470,68 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * Get explicit or first bill Location
-	 * 
+	 *
 	 * @param C_BPartner_Location_ID
 	 *            optional explicit location
 	 * @return location or null
 	 */
 	public MBPartnerLocation getLocation(final int C_BPartner_Location_ID)
 	{
-		MBPartnerLocation[] locations = getLocations(false);
+		final MBPartnerLocation[] locations = getLocations(false);
 		if (locations.length == 0)
-			return null;
-		MBPartnerLocation retValue = null;
-		for (int i = 0; i < locations.length; i++)
 		{
-			if (locations[i].getC_BPartner_Location_ID() == C_BPartner_Location_ID)
-				return locations[i];
-			if (retValue == null && locations[i].isBillTo())
-				retValue = locations[i];
+			return null;
+		}
+		MBPartnerLocation retValue = null;
+		for (final MBPartnerLocation location : locations)
+		{
+			if (location.getC_BPartner_Location_ID() == C_BPartner_Location_ID)
+			{
+				return location;
+			}
+			if (retValue == null && location.isBillTo())
+			{
+				retValue = location;
+			}
 		}
 		if (retValue == null)
+		{
 			return locations[0];
+		}
 		return retValue;
 	} // getLocation
 
 	/**
 	 * Get Bank Accounts
-	 * 
+	 *
 	 * @param requery
 	 *            requery
 	 * @return Bank Accounts
 	 */
 	public MBPBankAccount[] getBankAccounts(final boolean requery)
 	{
-		if (m_accounts != null && m_accounts.length >= 0 && !requery)   // re-load
+		if (m_accounts != null && m_accounts.length >= 0 && !requery)
+		{
 			return m_accounts;
+		}
 		//
-		ArrayList<MBPBankAccount> list = new ArrayList<>();
-		String sql = "SELECT * FROM C_BP_BankAccount WHERE C_BPartner_ID=? AND IsActive='Y'";
+		final ArrayList<MBPBankAccount> list = new ArrayList<>();
+		final String sql = "SELECT * FROM C_BP_BankAccount WHERE C_BPartner_ID=? AND IsActive='Y'";
 		PreparedStatement pstmt = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			pstmt.setInt(1, getC_BPartner_ID());
-			ResultSet rs = pstmt.executeQuery();
+			final ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
+			{
 				list.add(new MBPBankAccount(getCtx(), rs, get_TrxName()));
+			}
 			rs.close();
 			pstmt.close();
 			pstmt = null;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.error(sql, e);
 		}
@@ -510,9 +540,11 @@ public class MBPartner extends X_C_BPartner
 			try
 			{
 				if (pstmt != null)
+				{
 					pstmt.close();
+				}
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 			}
 			pstmt = null;
@@ -525,7 +557,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**************************************************************************
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -544,7 +576,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * Set Client/Org
-	 * 
+	 *
 	 * @param AD_Client_ID
 	 *            client
 	 * @param AD_Org_ID
@@ -594,7 +626,7 @@ public class MBPartner extends X_C_BPartner
 	/**
 	 * Get Linked Organization. (is Button) The Business Partner is another
 	 * Organization for explicit Inter-Org transactions
-	 * 
+	 *
 	 * @return AD_Org_ID if BP
 	 */
 	public int getAD_OrgBP_ID_Int()
@@ -614,14 +646,14 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * Get Primary C_BPartner_Location_ID
-	 * 
+	 *
 	 * @return C_BPartner_Location_ID
 	 */
 	public int getPrimaryC_BPartner_Location_ID()
 	{
 		if (m_primaryC_BPartner_Location_ID == null)
 		{
-			MBPartnerLocation[] locs = getLocations(false);
+			final MBPartnerLocation[] locs = getLocations(false);
 			for (int i = 0; m_primaryC_BPartner_Location_ID == null
 					&& i < locs.length; i++)
 			{
@@ -634,17 +666,21 @@ public class MBPartner extends X_C_BPartner
 			}
 			// get first
 			if (m_primaryC_BPartner_Location_ID == null && locs.length > 0)
+			{
 				setPrimaryC_BPartner_Location_ID(locs[0]
 						.getC_BPartner_Location_ID());
+			}
 		}
 		if (m_primaryC_BPartner_Location_ID == null)
+		{
 			return 0;
+		}
 		return m_primaryC_BPartner_Location_ID.intValue();
 	} // getPrimaryC_BPartner_Location_ID
 
 	/**
 	 * Get Primary C_BPartner_Location
-	 * 
+	 *
 	 * @return C_BPartner_Location
 	 */
 	public MBPartnerLocation getPrimaryC_BPartner_Location()
@@ -654,14 +690,16 @@ public class MBPartner extends X_C_BPartner
 			m_primaryC_BPartner_Location_ID = getPrimaryC_BPartner_Location_ID();
 		}
 		if (m_primaryC_BPartner_Location_ID == null)
+		{
 			return null;
+		}
 		return new MBPartnerLocation(getCtx(), m_primaryC_BPartner_Location_ID,
 				null);
 	} // getPrimaryC_BPartner_Location
 
 	/**
 	 * Get Primary AD_User_ID
-	 * 
+	 *
 	 * @return AD_User_ID
 	 */
 	public int getPrimaryAD_User_ID()
@@ -670,16 +708,20 @@ public class MBPartner extends X_C_BPartner
 		{
 			final List<I_AD_User> users = getContacts(false);
 			if (m_primaryAD_User_ID == null && users.size() > 0)
+			{
 				setPrimaryAD_User_ID(users.get(0).getAD_User_ID());
+			}
 		}
 		if (m_primaryAD_User_ID == null)
+		{
 			return 0;
+		}
 		return m_primaryAD_User_ID.intValue();
 	} // getPrimaryAD_User_ID
 
 	/**
 	 * Set Primary C_BPartner_Location_ID
-	 * 
+	 *
 	 * @param C_BPartner_Location_ID
 	 *            id
 	 */
@@ -690,7 +732,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * Set Primary AD_User_ID
-	 * 
+	 *
 	 * @param AD_User_ID
 	 *            id
 	 */
@@ -701,7 +743,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * Credit Status is Stop or Hold.
-	 * 
+	 *
 	 * @return true if Stop/Hold
 	 */
 	public boolean isCreditStopHold()
@@ -717,7 +759,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * Get BP Group
-	 * 
+	 *
 	 * @return group
 	 */
 	public MBPGroup getBPGroup()
@@ -725,16 +767,20 @@ public class MBPartner extends X_C_BPartner
 		if (m_group == null)
 		{
 			if (getC_BP_Group_ID() == 0)
+			{
 				m_group = MBPGroup.getDefault(getCtx());
+			}
 			else
+			{
 				m_group = MBPGroup.get(getCtx(), getC_BP_Group_ID());
+			}
 		}
 		return m_group;
 	} // getBPGroup
 
 	/**
 	 * Get BP Group
-	 * 
+	 *
 	 * @param group
 	 *            group
 	 */
@@ -742,23 +788,35 @@ public class MBPartner extends X_C_BPartner
 	{
 		m_group = group;
 		if (m_group == null)
+		{
 			return;
+		}
 		setC_BP_Group_ID(m_group.getC_BP_Group_ID());
 		if (m_group.getC_Dunning_ID() != 0)
+		{
 			setC_Dunning_ID(m_group.getC_Dunning_ID());
+		}
 		if (m_group.getM_PriceList_ID() != 0)
+		{
 			setM_PriceList_ID(m_group.getM_PriceList_ID());
+		}
 		if (m_group.getPO_PriceList_ID() != 0)
+		{
 			setPO_PriceList_ID(m_group.getPO_PriceList_ID());
+		}
 		if (m_group.getM_DiscountSchema_ID() != 0)
+		{
 			setM_DiscountSchema_ID(m_group.getM_DiscountSchema_ID());
+		}
 		if (m_group.getPO_DiscountSchema_ID() != 0)
+		{
 			setPO_DiscountSchema_ID(m_group.getPO_DiscountSchema_ID());
+		}
 	} // setBPGroup
 
 	/**
 	 * Get PriceList
-	 * 
+	 *
 	 * @return price List
 	 */
 	@Override
@@ -766,13 +824,15 @@ public class MBPartner extends X_C_BPartner
 	{
 		int ii = super.getM_PriceList_ID();
 		if (ii == 0)
+		{
 			ii = getBPGroup().getM_PriceList_ID();
+		}
 		return ii;
 	} // getM_PriceList_ID
 
 	/**
 	 * Get PO PriceList
-	 * 
+	 *
 	 * @return price list
 	 */
 	@Override
@@ -780,13 +840,15 @@ public class MBPartner extends X_C_BPartner
 	{
 		int ii = super.getPO_PriceList_ID();
 		if (ii == 0)
+		{
 			ii = getBPGroup().getPO_PriceList_ID();
+		}
 		return ii;
 	} //
 
 	/**
 	 * Get DiscountSchema
-	 * 
+	 *
 	 * @return Discount Schema
 	 */
 	@Override
@@ -794,13 +856,15 @@ public class MBPartner extends X_C_BPartner
 	{
 		int ii = super.getM_DiscountSchema_ID();
 		if (ii == 0)
+		{
 			ii = getBPGroup().getM_DiscountSchema_ID();
+		}
 		return ii;
 	} // getM_DiscountSchema_ID
 
 	/**
 	 * Get PO DiscountSchema
-	 * 
+	 *
 	 * @return po discount
 	 */
 	@Override
@@ -808,7 +872,9 @@ public class MBPartner extends X_C_BPartner
 	{
 		int ii = super.getPO_DiscountSchema_ID();
 		if (ii == 0)
+		{
 			ii = getBPGroup().getPO_DiscountSchema_ID();
+		}
 		return ii;
 	} // getPO_DiscountSchema_ID
 
@@ -831,7 +897,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * Before Save
-	 * 
+	 *
 	 * @param newRecord
 	 *            new
 	 * @return true
@@ -841,7 +907,7 @@ public class MBPartner extends X_C_BPartner
 	{
 		if (newRecord || is_ValueChanged("C_BP_Group_ID"))
 		{
-			MBPGroup grp = getBPGroup();
+			final MBPGroup grp = getBPGroup();
 			if (grp == null)
 			{
 				throw new AdempiereException("@NotFound@:  @C_BP_Group_ID@");
@@ -853,7 +919,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**************************************************************************
 	 * After Save
-	 * 
+	 *
 	 * @param newRecord
 	 *            new
 	 * @param success
@@ -879,15 +945,17 @@ public class MBPartner extends X_C_BPartner
 		// Value/Name change
 		if (success && !newRecord
 				&& (is_ValueChanged("Value") || is_ValueChanged("Name")))
+		{
 			MAccount.updateValueDescription(getCtx(), "C_BPartner_ID="
 					+ getC_BPartner_ID(), get_TrxName());
+		}
 
 		return success;
 	} // afterSave
 
 	/**
 	 * Before Delete
-	 * 
+	 *
 	 * @return true
 	 */
 	@Override
@@ -900,7 +968,7 @@ public class MBPartner extends X_C_BPartner
 
 	/**
 	 * After Delete
-	 * 
+	 *
 	 * @param success
 	 * @return deleted
 	 */
@@ -908,7 +976,9 @@ public class MBPartner extends X_C_BPartner
 	protected boolean afterDelete(final boolean success)
 	{
 		if (success)
+		{
 			delete_Tree(MTree_Base.TREETYPE_BPartner);
+		}
 		return success;
 	} // afterDelete
 

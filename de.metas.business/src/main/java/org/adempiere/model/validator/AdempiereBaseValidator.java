@@ -27,6 +27,7 @@ import org.adempiere.ad.column.callout.AD_Column;
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.dao.cache.ITableCacheConfig;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
+import org.adempiere.ad.dao.cache.WindowBasedCacheInvalidateRequestInitializer;
 import org.adempiere.ad.element.model.interceptor.AD_Element;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -49,6 +50,7 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocTypeCounter;
 import org.compiere.model.I_C_DocType_Sequence;
@@ -175,6 +177,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		//
 		// BPartner
 		engine.addModelValidator(new org.adempiere.bpartner.model.interceptor.C_BPartner(), client);
+		//
 		// Prevent users from creating duplicate main prices https://github.com/metasfresh/metasfresh/issues/2510
 		engine.addModelValidator(de.metas.pricing.interceptor.M_ProductPrice.INSTANCE, client);
 
@@ -185,8 +188,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// #2913
 		engine.addModelValidator(org.adempiere.ad.column.model.interceptor.AD_Column.instance, client);
 
-		// #1752
-		engine.addModelValidator(new org.adempiere.ad.field.model.interceptor.AD_Field(), client);
 		engine.addModelValidator(new AD_Element(), client);
 	}
 
@@ -321,8 +322,11 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_BPartner.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_BP_Relation.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_BPartner_Stats.Table_Name);
 
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Attribute.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_AttributeValue.Table_Name);
+		
+		WindowBasedCacheInvalidateRequestInitializer.instance.initialize();
 	}
 }

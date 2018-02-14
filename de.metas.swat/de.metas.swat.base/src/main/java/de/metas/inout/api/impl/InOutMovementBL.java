@@ -48,6 +48,8 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.interfaces.I_M_MovementLine;
 
@@ -98,6 +100,23 @@ public class InOutMovementBL implements IInOutMovementBL
 		final List<I_M_InOutLine> linesAll = inoutDAO.retrieveLines(receipt, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : linesAll)
 		{
+			// #3409 make sure the line is not for ddOrder
+			boolean isForDDOrder = false;
+			final List<I_M_ReceiptSchedule> rsForInOutLine = Services.get(IReceiptScheduleDAO.class).retrieveRsForInOutLine(inOutLine);
+			for(final I_M_ReceiptSchedule rs : rsForInOutLine)
+			{
+				if(rs.isCreateDistributionOrder())
+				{
+					isForDDOrder = true;
+					break;
+				}
+			}
+			
+			if(isForDDOrder)
+			{
+				continue;
+			}
+			
 			//
 			// Fetch the target warehouse
 			final I_M_Warehouse warehouseTarget;
@@ -140,7 +159,7 @@ public class InOutMovementBL implements IInOutMovementBL
 
 		//
 		// Generate movements for each "warehouseDestId -> inout lines" pair
-		final List<I_M_Movement> movements = new ArrayList<I_M_Movement>();
+		final List<I_M_Movement> movements = new ArrayList<>();
 		for (final Map.Entry<Integer, List<I_M_InOutLine>> movementCandidate : warehouseId2inoutLines.entrySet())
 		{
 			final int warehouseTargetId = movementCandidate.getKey();

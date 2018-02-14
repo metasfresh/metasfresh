@@ -9,6 +9,7 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.translation.api.IElementTranslationBL;
 
@@ -34,6 +35,7 @@ import de.metas.translation.api.IElementTranslationBL;
  * #L%
  */
 @Interceptor(I_AD_Field.class)
+@Component
 public class AD_Field
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Field.COLUMNNAME_AD_Name_ID)
@@ -65,7 +67,7 @@ public class AD_Field
 
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Field.COLUMNNAME_AD_Name_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_Field.COLUMNNAME_AD_Name_ID)
 	public void updateTranslationsForElement(final I_AD_Field field)
 	{
 		final I_AD_Element fieldElement;
@@ -89,6 +91,6 @@ public class AD_Field
 		}
 
 		// in the end, make sure the translation fields are also updated
-		Services.get(IElementTranslationBL.class).updateTranslations(fieldElement.getAD_Element_ID(), null);
+		Services.get(IElementTranslationBL.class).updateFieldTranslationsFromAD_Name(fieldElement.getAD_Element_ID());
 	}
 }

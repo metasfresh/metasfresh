@@ -98,8 +98,6 @@
 
 		<module>de.metas.banking</module>
 
-		<module>de.metas.commission</module>
-
 		<module>de.metas.contracts</module>
 
 		<module>de.metas.device.adempiere</module>

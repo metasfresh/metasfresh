@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -21,19 +5,17 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
-
 /** Generated Model for C_BP_Group
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -1042098922L;
 
     /** Standard Constructor */
     public X_C_BP_Group (Properties ctx, int C_BP_Group_ID, String trxName)
@@ -42,10 +24,11 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
       /** if (C_BP_Group_ID == 0)
         {
 			setC_BP_Group_ID (0);
-			setIsConfidentialInfo (false);
-// N
+			setIsConfidentialInfo (false); // N
+			setIsCustomer (false); // N
 			setIsDefault (false);
 			setName (null);
+			setSOCreditStatus (null); // X
 			setValue (null);
         } */
     }
@@ -56,37 +39,32 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_BP_Group[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_AD_PrintColor getAD_PrintColor() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PrintColor_ID, org.compiere.model.I_AD_PrintColor.class);
+	}
 
-	public I_AD_PrintColor getAD_PrintColor() throws RuntimeException
-    {
-		return (I_AD_PrintColor)MTable.get(getCtx(), I_AD_PrintColor.Table_Name)
-			.getPO(getAD_PrintColor_ID(), get_TrxName());	}
+	@Override
+	public void setAD_PrintColor(org.compiere.model.I_AD_PrintColor AD_PrintColor)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PrintColor_ID, org.compiere.model.I_AD_PrintColor.class, AD_PrintColor);
+	}
 
-	/** Set Print Color.
+	/** Set Druck - Farbe.
 		@param AD_PrintColor_ID 
 		Color used for printing and display
 	  */
+	@Override
 	public void setAD_PrintColor_ID (int AD_PrintColor_ID)
 	{
 		if (AD_PrintColor_ID < 1) 
@@ -95,9 +73,10 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 			set_Value (COLUMNNAME_AD_PrintColor_ID, Integer.valueOf(AD_PrintColor_ID));
 	}
 
-	/** Get Print Color.
+	/** Get Druck - Farbe.
 		@return Color used for printing and display
 	  */
+	@Override
 	public int getAD_PrintColor_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintColor_ID);
@@ -106,10 +85,11 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Business Partner Group.
+	/** Set Geschäftspartnergruppe.
 		@param C_BP_Group_ID 
 		Business Partner Group
 	  */
+	@Override
 	public void setC_BP_Group_ID (int C_BP_Group_ID)
 	{
 		if (C_BP_Group_ID < 1) 
@@ -118,9 +98,10 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_C_BP_Group_ID, Integer.valueOf(C_BP_Group_ID));
 	}
 
-	/** Get Business Partner Group.
+	/** Get Geschäftspartnergruppe.
 		@return Business Partner Group
 	  */
+	@Override
 	public int getC_BP_Group_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Group_ID);
@@ -129,15 +110,23 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_C_Dunning getC_Dunning() throws RuntimeException
-    {
-		return (I_C_Dunning)MTable.get(getCtx(), I_C_Dunning.Table_Name)
-			.getPO(getC_Dunning_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Dunning getC_Dunning() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Dunning_ID, org.compiere.model.I_C_Dunning.class);
+	}
 
-	/** Set Dunning.
+	@Override
+	public void setC_Dunning(org.compiere.model.I_C_Dunning C_Dunning)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Dunning_ID, org.compiere.model.I_C_Dunning.class, C_Dunning);
+	}
+
+	/** Set Mahnung.
 		@param C_Dunning_ID 
 		Dunning Rules for overdue invoices
 	  */
+	@Override
 	public void setC_Dunning_ID (int C_Dunning_ID)
 	{
 		if (C_Dunning_ID < 1) 
@@ -146,9 +135,10 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 			set_Value (COLUMNNAME_C_Dunning_ID, Integer.valueOf(C_Dunning_ID));
 	}
 
-	/** Get Dunning.
+	/** Get Mahnung.
 		@return Dunning Rules for overdue invoices
 	  */
+	@Override
 	public int getC_Dunning_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Dunning_ID);
@@ -157,47 +147,49 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Credit Watch %.
+	/** Set Kredit Limit %.
 		@param CreditWatchPercent 
 		Credit Watch - Percent of Credit Limit when OK switches to Watch
 	  */
-	public void setCreditWatchPercent (BigDecimal CreditWatchPercent)
+	@Override
+	public void setCreditWatchPercent (java.math.BigDecimal CreditWatchPercent)
 	{
 		set_Value (COLUMNNAME_CreditWatchPercent, CreditWatchPercent);
 	}
 
-	/** Get Credit Watch %.
+	/** Get Kredit Limit %.
 		@return Credit Watch - Percent of Credit Limit when OK switches to Watch
 	  */
-	public BigDecimal getCreditWatchPercent () 
+	@Override
+	public java.math.BigDecimal getCreditWatchPercent () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CreditWatchPercent);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
 	/** Set Confidential Info.
 		@param IsConfidentialInfo 
 		Can enter confidential information
 	  */
+	@Override
 	public void setIsConfidentialInfo (boolean IsConfidentialInfo)
 	{
 		set_Value (COLUMNNAME_IsConfidentialInfo, Boolean.valueOf(IsConfidentialInfo));
@@ -206,6 +198,7 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 	/** Get Confidential Info.
 		@return Can enter confidential information
 	  */
+	@Override
 	public boolean isConfidentialInfo () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsConfidentialInfo);
@@ -218,18 +211,46 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 		return false;
 	}
 
-	/** Set Default.
+	/** Set Kunde.
+		@param IsCustomer 
+		Zeigt an, ob dieser Geschäftspartner ein Kunde ist
+	  */
+	@Override
+	public void setIsCustomer (boolean IsCustomer)
+	{
+		set_Value (COLUMNNAME_IsCustomer, Boolean.valueOf(IsCustomer));
+	}
+
+	/** Get Kunde.
+		@return Zeigt an, ob dieser Geschäftspartner ein Kunde ist
+	  */
+	@Override
+	public boolean isCustomer () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsCustomer);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Standard.
 		@param IsDefault 
 		Default value
 	  */
+	@Override
 	public void setIsDefault (boolean IsDefault)
 	{
 		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
 	}
 
-	/** Get Default.
+	/** Get Standard.
 		@return Default value
 	  */
+	@Override
 	public boolean isDefault () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDefault);
@@ -242,15 +263,23 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 		return false;
 	}
 
-	public I_M_DiscountSchema getM_DiscountSchema() throws RuntimeException
-    {
-		return (I_M_DiscountSchema)MTable.get(getCtx(), I_M_DiscountSchema.Table_Name)
-			.getPO(getM_DiscountSchema_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class);
+	}
 
-	/** Set Discount Schema.
+	@Override
+	public void setM_DiscountSchema(org.compiere.model.I_M_DiscountSchema M_DiscountSchema)
+	{
+		set_ValueFromPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class, M_DiscountSchema);
+	}
+
+	/** Set Rabatt Schema.
 		@param M_DiscountSchema_ID 
-		Schema to calculate the trade discount percentage
+		Schema um den prozentualen Rabatt zu berechnen
 	  */
+	@Override
 	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID)
 	{
 		if (M_DiscountSchema_ID < 1) 
@@ -259,9 +288,10 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 			set_Value (COLUMNNAME_M_DiscountSchema_ID, Integer.valueOf(M_DiscountSchema_ID));
 	}
 
-	/** Get Discount Schema.
-		@return Schema to calculate the trade discount percentage
+	/** Get Rabatt Schema.
+		@return Schema um den prozentualen Rabatt zu berechnen
 	  */
+	@Override
 	public int getM_DiscountSchema_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchema_ID);
@@ -270,15 +300,45 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_PriceList getM_PriceList() throws RuntimeException
-    {
-		return (I_M_PriceList)MTable.get(getCtx(), I_M_PriceList.Table_Name)
-			.getPO(getM_PriceList_ID(), get_TrxName());	}
+	/** Set Frachtkostenpauschale.
+		@param M_FreightCost_ID Frachtkostenpauschale	  */
+	@Override
+	public void setM_FreightCost_ID (int M_FreightCost_ID)
+	{
+		if (M_FreightCost_ID < 1) 
+			set_Value (COLUMNNAME_M_FreightCost_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_FreightCost_ID, Integer.valueOf(M_FreightCost_ID));
+	}
 
-	/** Set Price List.
+	/** Get Frachtkostenpauschale.
+		@return Frachtkostenpauschale	  */
+	@Override
+	public int getM_FreightCost_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_FreightCost_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_PriceList getM_PriceList() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_PriceList_ID, org.compiere.model.I_M_PriceList.class);
+	}
+
+	@Override
+	public void setM_PriceList(org.compiere.model.I_M_PriceList M_PriceList)
+	{
+		set_ValueFromPO(COLUMNNAME_M_PriceList_ID, org.compiere.model.I_M_PriceList.class, M_PriceList);
+	}
+
+	/** Set Preisliste.
 		@param M_PriceList_ID 
 		Unique identifier of a Price List
 	  */
+	@Override
 	public void setM_PriceList_ID (int M_PriceList_ID)
 	{
 		if (M_PriceList_ID < 1) 
@@ -287,9 +347,10 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 			set_Value (COLUMNNAME_M_PriceList_ID, Integer.valueOf(M_PriceList_ID));
 	}
 
-	/** Get Price List.
+	/** Get Preisliste.
 		@return Unique identifier of a Price List
 	  */
+	@Override
 	public int getM_PriceList_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_ID);
@@ -298,148 +359,41 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 		return ii.intValue();
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name)
+	@Override
+	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException
 	{
-		set_Value (COLUMNNAME_Name, Name);
+		return get_ValueAsPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
-	public String getName () 
+	@Override
+	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem)
 	{
-		return (String)get_Value(COLUMNNAME_Name);
+		set_ValueFromPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, M_PricingSystem);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getName());
-    }
-
-	public I_M_DiscountSchema getPO_DiscountSchema() throws RuntimeException
-    {
-		return (I_M_DiscountSchema)MTable.get(getCtx(), I_M_DiscountSchema.Table_Name)
-			.getPO(getPO_DiscountSchema_ID(), get_TrxName());	}
-
-	/** Set PO Discount Schema.
-		@param PO_DiscountSchema_ID 
-		Schema to calculate the purchase trade discount percentage
+	/** Set Preissystem.
+		@param M_PricingSystem_ID 
+		Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	  */
-	public void setPO_DiscountSchema_ID (int PO_DiscountSchema_ID)
+	@Override
+	public void setM_PricingSystem_ID (int M_PricingSystem_ID)
 	{
-		if (PO_DiscountSchema_ID < 1) 
-			set_Value (COLUMNNAME_PO_DiscountSchema_ID, null);
+		if (M_PricingSystem_ID < 1) 
+			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
 		else 
-			set_Value (COLUMNNAME_PO_DiscountSchema_ID, Integer.valueOf(PO_DiscountSchema_ID));
+			set_Value (COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
 	}
 
-	/** Get PO Discount Schema.
-		@return Schema to calculate the purchase trade discount percentage
+	/** Get Preissystem.
+		@return Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	  */
-	public int getPO_DiscountSchema_ID () 
+	@Override
+	public int getM_PricingSystem_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PO_DiscountSchema_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PricingSystem_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	public I_M_PriceList getPO_PriceList() throws RuntimeException
-    {
-		return (I_M_PriceList)MTable.get(getCtx(), I_M_PriceList.Table_Name)
-			.getPO(getPO_PriceList_ID(), get_TrxName());	}
-
-	/** Set Purchase Pricelist.
-		@param PO_PriceList_ID 
-		Price List used by this Business Partner
-	  */
-	public void setPO_PriceList_ID (int PO_PriceList_ID)
-	{
-		if (PO_PriceList_ID < 1) 
-			set_Value (COLUMNNAME_PO_PriceList_ID, null);
-		else 
-			set_Value (COLUMNNAME_PO_PriceList_ID, Integer.valueOf(PO_PriceList_ID));
-	}
-
-	/** Get Purchase Pricelist.
-		@return Price List used by this Business Partner
-	  */
-	public int getPO_PriceList_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PO_PriceList_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Price Match Tolerance.
-		@param PriceMatchTolerance 
-		PO-Invoice Match Price Tolerance in percent of the purchase price
-	  */
-	public void setPriceMatchTolerance (BigDecimal PriceMatchTolerance)
-	{
-		set_Value (COLUMNNAME_PriceMatchTolerance, PriceMatchTolerance);
-	}
-
-	/** Get Price Match Tolerance.
-		@return PO-Invoice Match Price Tolerance in percent of the purchase price
-	  */
-	public BigDecimal getPriceMatchTolerance () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceMatchTolerance);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** PriorityBase AD_Reference_ID=350 */
-	public static final int PRIORITYBASE_AD_Reference_ID=350;
-	/** Same = S */
-	public static final String PRIORITYBASE_Same = "S";
-	/** Lower = L */
-	public static final String PRIORITYBASE_Lower = "L";
-	/** Higher = H */
-	public static final String PRIORITYBASE_Higher = "H";
-	/** Set Priority Base.
-		@param PriorityBase 
-		Base of Priority
-	  */
-	public void setPriorityBase (String PriorityBase)
-	{
-
-		set_Value (COLUMNNAME_PriorityBase, PriorityBase);
-	}
-
-	/** Get Priority Base.
-		@return Base of Priority
-	  */
-	public String getPriorityBase () 
-	{
-		return (String)get_Value(COLUMNNAME_PriorityBase);
-	}
-
-	/** Set Search Key.
-		@param Value 
-		Search key for the record in the format required - must be unique
-	  */
-	public void setValue (String Value)
-	{
-		set_Value (COLUMNNAME_Value, Value);
-	}
-
-	/** Get Search Key.
-		@return Search key for the record in the format required - must be unique
-	  */
-	public String getValue () 
-	{
-		return (String)get_Value(COLUMNNAME_Value);
 	}
 
 	/** 
@@ -451,10 +405,8 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 	public static final String MRP_EXCLUDE_Yes = "Y";
 	/** No = N */
 	public static final String MRP_EXCLUDE_No = "N";
-	/** Set Exclude from MRP.
-		@param MRP_Exclude 
-		Exclude from MRP calculation
-	  */
+	/** Set MRP ausschliessen.
+		@param MRP_Exclude MRP ausschliessen	  */
 	@Override
 	public void setMRP_Exclude (java.lang.String MRP_Exclude)
 	{
@@ -462,12 +414,247 @@ public class X_C_BP_Group extends PO implements I_C_BP_Group, I_Persistent
 		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
 	}
 
-	/** Get Exclude from MRP.
-		@return Exclude from MRP calculation
-	  */
+	/** Get MRP ausschliessen.
+		@return MRP ausschliessen	  */
 	@Override
 	public java.lang.String getMRP_Exclude () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_MRP_Exclude);
+	}
+
+	/** Set Name.
+		@param Name 
+		Alphanumeric identifier of the entity
+	  */
+	@Override
+	public void setName (java.lang.String Name)
+	{
+		set_Value (COLUMNNAME_Name, Name);
+	}
+
+	/** Get Name.
+		@return Alphanumeric identifier of the entity
+	  */
+	@Override
+	public java.lang.String getName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_M_DiscountSchema getPO_DiscountSchema() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PO_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class);
+	}
+
+	@Override
+	public void setPO_DiscountSchema(org.compiere.model.I_M_DiscountSchema PO_DiscountSchema)
+	{
+		set_ValueFromPO(COLUMNNAME_PO_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class, PO_DiscountSchema);
+	}
+
+	/** Set Einkauf Rabatt Schema.
+		@param PO_DiscountSchema_ID 
+		Schema to calculate the purchase trade discount percentage
+	  */
+	@Override
+	public void setPO_DiscountSchema_ID (int PO_DiscountSchema_ID)
+	{
+		if (PO_DiscountSchema_ID < 1) 
+			set_Value (COLUMNNAME_PO_DiscountSchema_ID, null);
+		else 
+			set_Value (COLUMNNAME_PO_DiscountSchema_ID, Integer.valueOf(PO_DiscountSchema_ID));
+	}
+
+	/** Get Einkauf Rabatt Schema.
+		@return Schema to calculate the purchase trade discount percentage
+	  */
+	@Override
+	public int getPO_DiscountSchema_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PO_DiscountSchema_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_PriceList getPO_PriceList() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PO_PriceList_ID, org.compiere.model.I_M_PriceList.class);
+	}
+
+	@Override
+	public void setPO_PriceList(org.compiere.model.I_M_PriceList PO_PriceList)
+	{
+		set_ValueFromPO(COLUMNNAME_PO_PriceList_ID, org.compiere.model.I_M_PriceList.class, PO_PriceList);
+	}
+
+	/** Set Einkaufspreisliste.
+		@param PO_PriceList_ID 
+		Price List used by this Business Partner
+	  */
+	@Override
+	public void setPO_PriceList_ID (int PO_PriceList_ID)
+	{
+		if (PO_PriceList_ID < 1) 
+			set_Value (COLUMNNAME_PO_PriceList_ID, null);
+		else 
+			set_Value (COLUMNNAME_PO_PriceList_ID, Integer.valueOf(PO_PriceList_ID));
+	}
+
+	/** Get Einkaufspreisliste.
+		@return Price List used by this Business Partner
+	  */
+	@Override
+	public int getPO_PriceList_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PO_PriceList_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_PricingSystem getPO_PricingSystem() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PO_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
+	}
+
+	@Override
+	public void setPO_PricingSystem(org.compiere.model.I_M_PricingSystem PO_PricingSystem)
+	{
+		set_ValueFromPO(COLUMNNAME_PO_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, PO_PricingSystem);
+	}
+
+	/** Set Einkaufspreissystem.
+		@param PO_PricingSystem_ID Einkaufspreissystem	  */
+	@Override
+	public void setPO_PricingSystem_ID (int PO_PricingSystem_ID)
+	{
+		if (PO_PricingSystem_ID < 1) 
+			set_Value (COLUMNNAME_PO_PricingSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_PO_PricingSystem_ID, Integer.valueOf(PO_PricingSystem_ID));
+	}
+
+	/** Get Einkaufspreissystem.
+		@return Einkaufspreissystem	  */
+	@Override
+	public int getPO_PricingSystem_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PO_PricingSystem_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Preis Abweichung Toleranz.
+		@param PriceMatchTolerance 
+		Preis Abweichung Toleranz
+	  */
+	@Override
+	public void setPriceMatchTolerance (java.math.BigDecimal PriceMatchTolerance)
+	{
+		set_Value (COLUMNNAME_PriceMatchTolerance, PriceMatchTolerance);
+	}
+
+	/** Get Preis Abweichung Toleranz.
+		@return Preis Abweichung Toleranz
+	  */
+	@Override
+	public java.math.BigDecimal getPriceMatchTolerance () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceMatchTolerance);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** 
+	 * PriorityBase AD_Reference_ID=350
+	 * Reference name: C_BP_Group PriorityBase
+	 */
+	public static final int PRIORITYBASE_AD_Reference_ID=350;
+	/** Same = S */
+	public static final String PRIORITYBASE_Same = "S";
+	/** Lower = L */
+	public static final String PRIORITYBASE_Lower = "L";
+	/** Higher = H */
+	public static final String PRIORITYBASE_Higher = "H";
+	/** Set Priority Base.
+		@param PriorityBase 
+		Base of Priority
+	  */
+	@Override
+	public void setPriorityBase (java.lang.String PriorityBase)
+	{
+
+		set_Value (COLUMNNAME_PriorityBase, PriorityBase);
+	}
+
+	/** Get Priority Base.
+		@return Base of Priority
+	  */
+	@Override
+	public java.lang.String getPriorityBase () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PriorityBase);
+	}
+
+	/** 
+	 * SOCreditStatus AD_Reference_ID=289
+	 * Reference name: C_BPartner SOCreditStatus
+	 */
+	public static final int SOCREDITSTATUS_AD_Reference_ID=289;
+	/** CreditStop = S */
+	public static final String SOCREDITSTATUS_CreditStop = "S";
+	/** CreditHold = H */
+	public static final String SOCREDITSTATUS_CreditHold = "H";
+	/** CreditWatch = W */
+	public static final String SOCREDITSTATUS_CreditWatch = "W";
+	/** NoCreditCheck = X */
+	public static final String SOCREDITSTATUS_NoCreditCheck = "X";
+	/** CreditOK = O */
+	public static final String SOCREDITSTATUS_CreditOK = "O";
+	/** NurEineRechnung = I */
+	public static final String SOCREDITSTATUS_NurEineRechnung = "I";
+	/** Set Kreditstatus.
+		@param SOCreditStatus 
+		Kreditstatus des Geschäftspartners
+	  */
+	@Override
+	public void setSOCreditStatus (java.lang.String SOCreditStatus)
+	{
+
+		set_Value (COLUMNNAME_SOCreditStatus, SOCreditStatus);
+	}
+
+	/** Get Kreditstatus.
+		@return Kreditstatus des Geschäftspartners
+	  */
+	@Override
+	public java.lang.String getSOCreditStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SOCreditStatus);
+	}
+
+	/** Set Suchschlüssel.
+		@param Value 
+		Search key for the record in the format required - must be unique
+	  */
+	@Override
+	public void setValue (java.lang.String Value)
+	{
+		set_Value (COLUMNNAME_Value, Value);
+	}
+
+	/** Get Suchschlüssel.
+		@return Search key for the record in the format required - must be unique
+	  */
+	@Override
+	public java.lang.String getValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 }

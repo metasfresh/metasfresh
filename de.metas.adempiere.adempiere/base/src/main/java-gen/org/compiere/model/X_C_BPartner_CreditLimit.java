@@ -15,7 +15,7 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1068906034L;
+	private static final long serialVersionUID = -2139821953L;
 
     /** Standard Constructor */
     public X_C_BPartner_CreditLimit (Properties ctx, int C_BPartner_CreditLimit_ID, String trxName)
@@ -210,25 +210,6 @@ public class X_C_BPartner_CreditLimit extends org.compiere.model.PO implements I
 	public java.sql.Timestamp getDateFrom () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateFrom);
-	}
-
-	/** Set Datum bis.
-		@param DateTo 
-		Enddatum eines Abschnittes
-	  */
-	@Override
-	public void setDateTo (java.sql.Timestamp DateTo)
-	{
-		set_Value (COLUMNNAME_DateTo, DateTo);
-	}
-
-	/** Get Datum bis.
-		@return Enddatum eines Abschnittes
-	  */
-	@Override
-	public java.sql.Timestamp getDateTo () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateTo);
 	}
 
 	/** 

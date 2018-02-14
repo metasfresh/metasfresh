@@ -22,7 +22,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.X_AD_PrintFormatItem;
 import org.compiere.util.CCache;
@@ -605,7 +605,7 @@ public class MPrintFormatItem extends X_AD_PrintFormatItem
 		}
 		
 		// metas-tsa: we need to reset the cache if an item value is changed
-		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(get_TrxName(), CacheInvalidateRequest.rootRecord(I_AD_PrintFormat.Table_Name, getAD_PrintFormat_ID()));
+		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(get_TrxName(), CacheInvalidateMultiRequest.rootRecord(I_AD_PrintFormat.Table_Name, getAD_PrintFormat_ID()));
 
 		return success;
 	}	//	afterSave
