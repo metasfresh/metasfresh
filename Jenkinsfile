@@ -55,7 +55,7 @@ node('agent && linux')
 	{
 		// create our config instance to be used further on
 		final MvnConf mvnConf = new MvnConf(
-			'de.metas.parent/pom.xml', // pomFile
+			'pom.xml', // pomFile
 			MAVEN_SETTINGS, // settingsFile
 			"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
 			'https://repo.metasfresh.com' // mvnRepoBaseURL
@@ -93,16 +93,10 @@ node('agent && linux')
 				// From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is clearly overated
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
 
-				// deploy the de.metas.parent pom.xml to our repo. Other projects that are not build right now on this node will also need it. But don't build the modules that are declared in there
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode --non-recursive ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy";
-
- 				final MvnConf mvnReactorConf = mvnConf.withPomFile('de.metas.reactor/pom.xml');
-				echo "mvnReactorConf=${mvnReactorConf}"
-
 				// build and deploy
-				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-				sh "mvn --settings ${mvnReactorConf.settingsFile} --file ${mvnReactorConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnReactorConf.resolveParams} ${mvnReactorConf.deployParam} clean deploy";
+				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 				} // if(params.MF_SKIP_TO_DIST)
 			}
 			stage('Build metasfresh docker image(s)')
@@ -128,34 +122,6 @@ node('agent && linux')
 					)
 				} // if(params.MF_SKIP_TO_DIST)
       } // stage
-
-      stage('Set versions and build esb')
-      {
-				if(params.MF_SKIP_TO_DIST)
-				{
-					echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
-				}
-				else
-				{
-
-        // create our config instance to be used further on
-        final MvnConf mvnEsbConf = mvnConf.withPomFile('de.metas.esb/pom.xml');
-        echo "mvnEsbConf=${mvnEsbConf}"
-
- 				mvnUpdateParentPomVersion mvnEsbConf
-
-				// set the artifact version of everything below de.metas.esb/pom.xml
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} -DnewVersion=${MF_VERSION} ${VERSIONS_PLUGIN}:set"
-
-				// update the versions of metas dependencies that are external to the de.metas.esb reactor modules
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} ${VERSIONS_PLUGIN}:use-latest-versions"
-
-				// build and deploy
-				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
-				// maven.test.failure.ignore=true: see metasfresh stage
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnEsbConf.resolveParams} ${mvnEsbConf.deployParam} clean deploy"
-				} // if(params.MF_SKIP_TO_DIST)
-			} // stage
 
 			if(!params.MF_SKIP_TO_DIST)
 			{
@@ -221,8 +187,8 @@ stage('Invoke downstream jobs')
           MF_UPSTREAM_BRANCH,
           MF_ARTIFACT_VERSIONS['metasfresh-parent'],
           MF_VERSION,
-          true,
-          'metasfresh-webui'); // wait=true
+          true, // wait=true
+          'metasfresh-webui');
 				MF_ARTIFACT_VERSIONS['metasfresh-webui'] = webuiDownStreamJobMap.MF_VERSION;
 			},
 			metasfresh_procurement_webui: {
@@ -232,9 +198,20 @@ stage('Invoke downstream jobs')
           MF_UPSTREAM_BRANCH,
           MF_ARTIFACT_VERSIONS['metasfresh-parent'],
           MF_VERSION,
-          true,
-          'metasfresh-procurement-webui'); // wait=true
+          true, // wait=true
+          'metasfresh-procurement-webui');
 				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = procurementWebuiDownStreamJobMap.MF_VERSION;
+			},
+			metasfresh_esb_camel: {
+				// yup, metasfresh-procurement-webui does share *some* code with this repo
+				final esbCamelDownStreamJobMap = invokeDownStreamJobs(
+          env.BUILD_NUMBER,
+          MF_UPSTREAM_BRANCH,
+          MF_ARTIFACT_VERSIONS['metasfresh-parent'],
+          MF_VERSION,
+          true, // wait=true
+          'metasfresh-esb-camel');
+				MF_ARTIFACT_VERSIONS['metasfresh-esb-camel'] = esbCamelDownStreamJobMap.MF_VERSION;
 			}
 		);
 
@@ -272,12 +249,6 @@ stage('Invoke downstream jobs')
 			  parameters: distJobParameters,
 			  wait: true
 		},
-// probaly not neeed anymoree, going to remove it completely
-//		metasfresh_dist_orgs: {
-//			build job: misc.getEffectiveDownStreamJobName('metasfresh-dist-orgs', MF_UPSTREAM_BRANCH),
-//			  parameters: distJobParameters,
-//			  wait: true
-//		},
     zapier: {
       invokeZapier(env.BUILD_NUMBER, // upstreamBuildNo
         MF_UPSTREAM_BRANCH, // upstreamBranch
