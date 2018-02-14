@@ -92,7 +92,7 @@ public class WEBUI_M_InOut_Shipment_SelectHUs extends JavaProcess implements IPr
 		final I_M_InOut shipment = getRecord(I_M_InOut.class);
 		final List<I_M_HU> shipmentHandlingUnits = Services.get(IHUInOutDAO.class).retrieveShippedHandlingUnits(shipment);
 		
-		getResult().setRecordsToOpen(TableRecordReference.ofList(shipmentHandlingUnits));
+		getResult().setRecordsToOpen(TableRecordReference.ofCollection(shipmentHandlingUnits));
 
 		return MSG_OK;
 	}

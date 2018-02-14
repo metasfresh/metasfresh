@@ -227,6 +227,7 @@ public final class ViewColumnHelper
 
 		@Getter
 		private final ImmutableList<ClassViewColumnDescriptor> columns;
+
 		@Getter
 		private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
 

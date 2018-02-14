@@ -267,7 +267,6 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 		public IndexedHUEditorRows(final List<HUEditorRow> rows)
 		{
-			super();
 			this.rows = ImmutableList.copyOf(rows);
 
 			allRowsById = buildRowsByIdMap(this.rows);

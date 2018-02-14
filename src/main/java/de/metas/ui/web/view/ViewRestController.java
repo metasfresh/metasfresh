@@ -395,7 +395,7 @@ public class ViewRestController
 
 		ViewId.ofViewIdString(viewIdStr, WindowId.fromJson(windowIdStr)); // just validate the windowId and viewId
 
-		// TODO: atm we are forwarding all calls to windowRestController hopping the document existing and has the same ID as view's row ID.
+		// TODO: atm we are forwarding all calls to windowRestController hoping the document existing and has the same ID as view's row ID.
 
 		return windowRestController.getDocumentFieldZoomInto(windowIdStr, rowId, fieldName);
 	}

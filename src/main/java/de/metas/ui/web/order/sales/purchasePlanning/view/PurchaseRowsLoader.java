@@ -112,8 +112,9 @@ class PurchaseRowsLoader
 
 		try
 		{
-			final Multimap<PurchaseCandidate, AvailabilityResult> availabilityCheckResult = //
-					salesOrderLines.checkAvailability();
+			final Multimap<PurchaseCandidate, AvailabilityResult> availabilityCheckResult;
+			availabilityCheckResult = salesOrderLines.checkAvailability();
+
 			handleResultForAsyncAvailabilityCheck(availabilityCheckResult);
 		}
 		catch (final Throwable throwable)

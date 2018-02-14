@@ -82,7 +82,7 @@ public class WEBUI_M_ReceiptSchedule_SelectHUsToReverse extends JavaProcess impl
 			throw new AdempiereException("@NotFound@ @M_HU_ID@");
 		}
 
-		getResult().setRecordsToOpen(TableRecordReference.ofList(hus));
+		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus));
 
 		return MSG_OK;
 	}

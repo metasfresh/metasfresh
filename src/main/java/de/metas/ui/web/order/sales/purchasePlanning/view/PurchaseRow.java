@@ -9,6 +9,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -85,7 +86,16 @@ public class PurchaseRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
 	})
+	@Getter
 	private BigDecimal qtyToPurchase;
+
+	public static final String FIELDNAME_PurchasedQty = "purchasedQty";
+	@ViewColumn(fieldName = FIELDNAME_PurchasedQty, captionKey = "PurchasedQty", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.NEVER, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 45),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 45)
+	})
+	@Getter
+	private BigDecimal purchasedQty;
 
 	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Text, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
@@ -137,6 +147,7 @@ public class PurchaseRow implements IViewRow
 			@NonNull final String uomOrAvailablility,
 			@Nullable final BigDecimal qtyToDeliver,
 			@Nullable final BigDecimal qtyToPurchase,
+			@Nullable final BigDecimal purchasedQty,
 			@Nullable final Date datePromised,
 			@Singular final ImmutableList<PurchaseRow> includedRows,
 			final int purchaseCandidateId,
@@ -153,7 +164,8 @@ public class PurchaseRow implements IViewRow
 		this.vendorBPartner = vendorBPartner;
 		this.uomOrAvailablility = uomOrAvailablility;
 		this.qtyToDeliver = qtyToDeliver;
-		this.qtyToPurchase = qtyToPurchase != null ? qtyToPurchase : BigDecimal.ZERO;
+		this.qtyToPurchase = Util.coalesce(qtyToPurchase, BigDecimal.ZERO);
+		this.purchasedQty = Util.coalesce(purchasedQty, BigDecimal.ZERO);
 
 		Check.assume(rowType == PurchaseRowType.AVAILABILITY_DETAIL || datePromised != null, "datePromised shall not be null");
 		this.datePromised = datePromised;
@@ -176,7 +188,7 @@ public class PurchaseRow implements IViewRow
 
 		if (rowType == PurchaseRowType.GROUP)
 		{
-			updateQtyToPurchaseFromIncludedRows();
+			updateQtysFromIncludedRows();
 		}
 
 		logger.trace("Created: {}, RO={} -- this={}", this.rowId, this.readonly, this);
@@ -192,9 +204,11 @@ public class PurchaseRow implements IViewRow
 		this.uomOrAvailablility = from.uomOrAvailablility;
 		this.qtyToDeliver = from.qtyToDeliver;
 		this.qtyToPurchase = from.qtyToPurchase;
+		this.purchasedQty = from.purchasedQty;
 		this.datePromised = from.datePromised;
 
-		setIncludedRows(from.includedRows.stream().map(PurchaseRow::copy).collect(ImmutableList.toImmutableList()));
+		setIncludedRows(from.includedRows.stream()
+				.map(PurchaseRow::copy).collect(ImmutableList.toImmutableList()));
 
 		this.purchaseCandidateId = from.purchaseCandidateId;
 		this.orgId = from.orgId;
@@ -303,18 +317,26 @@ public class PurchaseRow implements IViewRow
 		resetFieldNameAndJsonValues();
 	}
 
-	public BigDecimal getQtyToPurchase()
+	private void setPurchasedQty(@NonNull final BigDecimal purchasedQty)
 	{
-		return qtyToPurchase;
+		Check.assume(qtyToPurchase.signum() >= 0, "purchasedQty shall be positive");
+
+		this.purchasedQty = purchasedQty;
+		resetFieldNameAndJsonValues();
 	}
 
-	private void updateQtyToPurchaseFromIncludedRows()
+	private void updateQtysFromIncludedRows()
 	{
-		final BigDecimal qtyToPurchaseSum = getIncludedRows()
-				.stream()
-				.map(PurchaseRow::getQtyToPurchase)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
-		setQtyToPurchase(qtyToPurchaseSum);
+		BigDecimal qtyToPurchaseSum = BigDecimal.ZERO;
+		BigDecimal purchasedQtySum = BigDecimal.ZERO;
+		for(final PurchaseRow includedRow: getIncludedRows())
+		{
+			qtyToPurchaseSum = qtyToPurchaseSum.add(includedRow.getQtyToPurchase());
+			purchasedQtySum = purchasedQtySum.add(includedRow.getPurchasedQty());
+		}
+
+		this.setQtyToPurchase(qtyToPurchaseSum);
+		this.setPurchasedQty(purchasedQtySum);
 	}
 
 	private void setDatePromised(@NonNull final Date datePromised)
@@ -341,7 +363,7 @@ public class PurchaseRow implements IViewRow
 		row.assertRowEditable();
 		row.setQtyToPurchase(qtyToPurchase);
 
-		updateQtyToPurchaseFromIncludedRows();
+		updateQtysFromIncludedRows();
 	}
 
 	public void changeDatePromised(

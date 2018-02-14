@@ -157,7 +157,7 @@ public class PurchaseRowsLoaderTest
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.orgId(20)
-				.datePromised(orderLine.getDatePromised())
+				.dateRequired(orderLine.getDatePromised())
 				.productId(orderLine.getM_Product_ID())
 				.qtyToPurchase(orderLine.getQtyOrdered())
 				.salesOrderId(orderLine.getC_Order_ID())

@@ -100,7 +100,7 @@ class PurchaseRowsSaver
 				purchaseRow.getPurchaseCandidateId(), purchaseRow, existingPurchaseCandidatesById);
 
 		purchaseCandidate.setQtyToPurchase(purchaseRow.getQtyToPurchase());
-		purchaseCandidate.setDatePromised(purchaseRow.getDatePromised());
+		purchaseCandidate.setDateRequired(purchaseRow.getDatePromised());
 
 		Check.errorIf(
 				purchaseCandidate.isProcessedOrLocked() && purchaseCandidate.hasChanges(),

@@ -66,7 +66,7 @@ public class PurchaseRowFactory
 		if (vendorProductInfo != null)
 		{
 			product = createProductLookupValue(
-					vendorProductInfo.getM_Product_ID(),
+					vendorProductInfo.getProductId(),
 					vendorProductInfo.getProductNo(),
 					vendorProductInfo.getProductName());
 		}
@@ -83,6 +83,7 @@ public class PurchaseRowFactory
 				.product(product)
 				.uomOrAvailablility(uom)
 				.qtyToPurchase(purchaseCandidate.getQtyToPurchase())
+				.purchasedQty(purchaseCandidate.getPurchasedQty())
 				.datePromised(datePromised)
 				.vendorBPartner(vendorBPartner)
 				.purchaseCandidateId(purchaseCandidate.getPurchaseCandidateId())
