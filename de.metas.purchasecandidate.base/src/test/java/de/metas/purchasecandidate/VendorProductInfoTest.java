@@ -63,7 +63,7 @@ public class VendorProductInfoTest
 		save(bPartnerProduct);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(bPartnerProduct);
-		assertThat(vendorProductInfo.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
+		assertThat(vendorProductInfo.getProductId()).isEqualTo(product.getM_Product_ID());
 		assertThat(vendorProductInfo.getProductNo()).isEqualTo("testProductValue");
 		assertThat(vendorProductInfo.getProductName()).isEqualTo("testProductName");
 	}
@@ -79,7 +79,7 @@ public class VendorProductInfoTest
 		save(bPartnerProduct);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.fromDataRecord(bPartnerProduct);
-		assertThat(vendorProductInfo.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
+		assertThat(vendorProductInfo.getProductId()).isEqualTo(product.getM_Product_ID());
 		assertThat(vendorProductInfo.getProductNo()).isEqualTo("bPartnerProduct.VendorProductNo");
 		assertThat(vendorProductInfo.getProductName()).isEqualTo("bPartnerProduct.roductName");
 	}

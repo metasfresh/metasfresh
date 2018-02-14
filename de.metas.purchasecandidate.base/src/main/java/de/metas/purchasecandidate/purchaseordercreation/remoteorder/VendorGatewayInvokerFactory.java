@@ -1,10 +1,13 @@
-package de.metas.purchasecandidate.purchaseordercreation.vendorgateway;
+package de.metas.purchasecandidate.purchaseordercreation.remoteorder;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
+import org.adempiere.util.Check;
 import org.compiere.Adempiere;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
 
-import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.VendorGatewayService;
 
@@ -30,26 +33,18 @@ import de.metas.vendor.gateway.api.VendorGatewayService;
  * #L%
  */
 
-public interface VendorGatewayInvoker
+@Service
+public class VendorGatewayInvokerFactory
 {
-	void addCandidate(PurchaseCandidate candidate);
-
-	/**
-	 * The {@code C_Order_ID} of the purchase order we just created.
-	 */
-	VendorGatewayStatus createAndComplete(int purchaseOrderId);
-
-	public enum VendorGatewayStatus
+	public VendorGatewayInvoker createForVendorId(final int vendorBPartnerId)
 	{
-		NO_GATEWAY_SERVICE,
+		Check.assume(vendorBPartnerId > 0, "Given parameter vendorBPartnerId > 0");
 
-		SERVICE_ORDER_CREATED,
+		final int orgId = Env.getAD_Org_ID(Env.getCtx());
+		Check.errorIf(orgId <= 0,
+				"Missing AD_Org_ID in the current ctx; ctx={}",
+				(Supplier<Object[]>)() -> Env.getEntireContext(Env.getCtx()));
 
-		SERVICE_ORDER_NEEDS_ATENTION,
-	}
-
-	public static VendorGatewayInvoker createForVendorId(final int vendorBPartnerId)
-	{
 		final VendorGatewayRegistry vendorGatewayRegistry = Adempiere.getBean(VendorGatewayRegistry.class);
 		final Optional<VendorGatewayService> vendorGatewayService = vendorGatewayRegistry
 				.getSingleVendorGatewayService(vendorBPartnerId);
@@ -57,10 +52,11 @@ public interface VendorGatewayInvoker
 		if (vendorGatewayService.isPresent())
 		{
 			return RealVendorGatewayInvoker.builder()
+					.orgId(orgId)
 					.vendorBPartnerId(vendorBPartnerId)
 					.vendorGatewayService(vendorGatewayService.get())
 					.build();
 		}
-		return new NullVendorGatewayInvoker();
+		return NullVendorGatewayInvoker.INSTANCE;
 	}
 }

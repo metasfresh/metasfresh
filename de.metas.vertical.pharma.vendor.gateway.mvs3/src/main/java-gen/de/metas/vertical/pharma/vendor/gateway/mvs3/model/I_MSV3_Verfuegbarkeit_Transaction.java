@@ -98,29 +98,6 @@ public interface I_MSV3_Verfuegbarkeit_Transaction
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Purchase candidate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_PurchaseCandidate_ID (int C_PurchaseCandidate_ID);
-
-	/**
-	 * Get Purchase candidate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_PurchaseCandidate_ID();
-
-    /** Column definition for C_PurchaseCandidate_ID */
-    public static final org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, Object> COLUMN_C_PurchaseCandidate_ID = new org.adempiere.model.ModelColumn<I_MSV3_Verfuegbarkeit_Transaction, Object>(I_MSV3_Verfuegbarkeit_Transaction.class, "C_PurchaseCandidate_ID", null);
-    /** Column name C_PurchaseCandidate_ID */
-    public static final String COLUMNNAME_C_PurchaseCandidate_ID = "C_PurchaseCandidate_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *

@@ -499,6 +499,7 @@ import de.metas.notification.INotificationBL;
 				final ITrxManager trxManager = Services.get(ITrxManager.class);
 				final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
 				final IEventBus eventBus = eventBusFactory.getEventBus(Async_Constants.EVENTBUS_WORKPACKAGE_PROCESSING_ERRORS);
+
 				trxManager.getCurrentTrxListenerManagerOrAutoCommit()
 						.newEventListener(TrxEventTiming.AFTER_COMMIT)
 						.registerHandlingMethod(innerTrx -> eventBus.postEvent(createWorkpackageProcessingErrorEvent(workPackage, ex)));
@@ -527,7 +528,9 @@ import de.metas.notification.INotificationBL;
 					notificationBL.notifyUser(
 							wpReloaded.getAD_User_InCharge(),
 							MSG_PROCESSING_ERROR_NOTIFICATION_TITLE,
-							msgBL.getMsg(Env.getCtx(), MSG_PROCESSING_ERROR_NOTIFICATION_TEXT, new Object[] { workPackageId, wpReloaded.getErrorMsg() }),
+							msgBL.getMsg(Env.getCtx(),
+									MSG_PROCESSING_ERROR_NOTIFICATION_TEXT,
+									new Object[] { workPackageId, wpReloaded.getErrorMsg() }),
 							TableRecordReference.of(wpReloaded));
 				});
 	}
@@ -535,7 +538,10 @@ import de.metas.notification.INotificationBL;
 	private Event createWorkpackageProcessingErrorEvent(final I_C_Queue_WorkPackage workpackage, final Exception ex)
 	{
 		return Event.builder()
-				.setDetailADMessage(MSG_PROCESSING_ERROR_NOTIFICATION_TEXT, workpackage.getC_Queue_WorkPackage_ID(), ex.getLocalizedMessage())
+				.setDetailADMessage(
+						MSG_PROCESSING_ERROR_NOTIFICATION_TEXT,
+						workpackage.getC_Queue_WorkPackage_ID(),
+						ex.getLocalizedMessage())
 				.addRecipient_User_ID(workpackage.getAD_User_InCharge_ID())
 				.setRecord(TableRecordReference.of(workpackage))
 				.build();

@@ -75,7 +75,8 @@ public class AvailabilityCheck
 
 		for (final int vendorId : vendorBParterId2PurchaseCandidates.keySet())
 		{
-			result.putAll(checkAvailabilityAndConvertThrowable(vendorId));
+			final Multimap<PurchaseCandidate, AvailabilityResult> singleResult = checkAvailabilityAndConvertThrowable(vendorId);
+			result.putAll(singleResult);
 		}
 
 		return result;
@@ -202,7 +203,10 @@ public class AvailabilityCheck
 
 		for (final PurchaseCandidate purchaseCandidate : vendorBParterId2PurchaseCandidates.get(vendorId))
 		{
-			result.put(purchaseCandidate.createRequestItem(), purchaseCandidate);
+			if (!purchaseCandidate.isProcessed())
+			{
+				result.put(purchaseCandidate.createAvailabilityRequestItem(), purchaseCandidate);
+			}
 		}
 		return result.build();
 	}

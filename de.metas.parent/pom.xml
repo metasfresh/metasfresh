@@ -131,6 +131,11 @@
 			<dependency>
 				<groupId>org.jmockit</groupId>
 				<artifactId>jmockit</artifactId>
+				<!-- note that aparently 1.38 suffers from https://github.com/jmockit/jmockit1/issues/457 -->
+				<!-- also not that with 1.33 i got weird errors on some tests which i didn't get with 1.30 or 1.38:
+				* java.lang.NoClassDefFoundError: javax/persistence/Entity
+				* java.lang.StackOverflowError
+				-->
 				<version>1.30</version>
 			</dependency>
 

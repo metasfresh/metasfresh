@@ -8,6 +8,7 @@ import org.compiere.util.Util;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import lombok.Builder;
 // import de.metas.interfaces.I_C_BPartner_Product;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,7 +40,7 @@ public class VendorProductInfo
 {
 	int bPartnerProductId;
 	int vendorBPartnerId;
-	int M_Product_ID;
+	int productId;
 
 	String productNo;
 
@@ -73,20 +74,21 @@ public class VendorProductInfo
 	}
 
 	@VisibleForTesting
+	@Builder(toBuilder = true)
 	VendorProductInfo(
 			int bPartnerProductId,
 			int vendorBPartnerId,
-			int m_Product_ID,
+			int productId,
 			@NonNull String productNo,
 			@NonNull String productName)
 	{
 		Check.assume(bPartnerProductId > 0, "bPartnerProductId > 0");
 		Check.assume(vendorBPartnerId > 0, "vendorBPartnerId > 0");
-		Check.assume(m_Product_ID > 0, "m_Product_ID > 0");
+		Check.assume(productId > 0, "productId > 0");
 
 		this.bPartnerProductId = bPartnerProductId;
 		this.vendorBPartnerId = vendorBPartnerId;
-		this.M_Product_ID = m_Product_ID;
+		this.productId = productId;
 		this.productNo = productNo;
 		this.productName = productName;
 	}
