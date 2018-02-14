@@ -6,11 +6,15 @@ import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_CostDetail;
+import org.compiere.model.MAcctSchema;
 
 import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -38,6 +42,7 @@ import lombok.NonNull;
 public abstract class CostingMethodHandlerTemplate implements CostingMethodHandler
 {
 	private final IAcctSchemaDAO acctSchemaRepo = Services.get(IAcctSchemaDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final ICurrentCostsRepository currentCostsRepo;
 	private final ICostDetailRepository costDetailsRepo;
 
@@ -262,11 +267,15 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 
 	private CostDetailCreateResult createCostDetailCreateResult(final I_M_CostDetail costDetail, final CostDetailCreateRequest request)
 	{
-		final I_C_AcctSchema as = acctSchemaRepo.retrieveAcctSchemaById(request.getAcctSchemaId());
+		final MAcctSchema as = LegacyAdapters.convertToPO(acctSchemaRepo.retrieveAcctSchemaById(request.getAcctSchemaId()));
+		final I_C_UOM uom = productBL.getStockingUOM(costDetail.getM_Product_ID());
+		
 		return CostDetailCreateResult.builder()
 				.costSegment(extractCostSegment(request))
 				.costElement(request.getCostElement())
 				.amt(CostAmount.of(costDetail.getAmt(), as.getC_Currency_ID()))
+				.qty(Quantity.of(costDetail.getQty(), uom))
+				.costingPrecision(as.getCostingPrecision())
 				.build();
 	}
 

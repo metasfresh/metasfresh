@@ -233,6 +233,13 @@ public class PPOrderUtil
 	{
 		return isReceipt(bomLine.getComponentType());
 	}
+	
+	public boolean isMethodChangeVariance(@NonNull final I_PP_Order_BOMLine bomLine)
+	{
+		// If QtyBatch and QtyBOM is zero, than this is a method variance
+		// (a product that "was not" in BOM was used)
+		return bomLine.getQtyBatch().signum() == 0 && bomLine.getQtyBOM().signum() == 0;
+	}
 
 	/**
 	 * Asserts given <code>bomLine</code> is receipt.

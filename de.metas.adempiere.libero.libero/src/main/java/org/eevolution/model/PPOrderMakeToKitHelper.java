@@ -12,14 +12,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.MClient;
-import org.compiere.model.MDocType;
 import org.compiere.model.MStorage;
-import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.KeyNamePair;
+import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
@@ -42,15 +42,16 @@ import de.metas.product.IProductBL;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@Deprecated
 public class PPOrderMakeToKitHelper
 {
 	/**
@@ -140,7 +141,7 @@ public class PPOrderMakeToKitHelper
 					M_Product_ID,
 					ppOrder.getM_Warehouse_ID(),
 					M_AttributeSetInstance_ID,
-					today,ppOrder.get_TrxName());
+					today, ppOrder.get_TrxName());
 
 			createIssue(
 					ppOrder,
@@ -257,7 +258,7 @@ public class PPOrderMakeToKitHelper
 
 		return isCompleteQtyDeliver;
 	}
-	
+
 	private static MStorage[] getStorages(
 			Properties ctx,
 			int M_Product_ID,
@@ -281,8 +282,7 @@ public class PPOrderMakeToKitHelper
 						MClient.MMPOLICY_FiFo.equals(MMPolicy), // FiFo
 						true, // positiveOnly
 						0, // M_Locator_ID
-						trxName
-						);
+						trxName);
 			}
 			else
 			{
@@ -295,8 +295,7 @@ public class PPOrderMakeToKitHelper
 						MClient.MMPOLICY_FiFo.equals(MMPolicy), // FiFo
 						true, // positiveOnly
 						0, // M_Locator_ID
-						trxName
-						);
+						trxName);
 			}
 
 		}
@@ -330,6 +329,8 @@ public class PPOrderMakeToKitHelper
 			final MStorage[] storages,
 			final boolean forceIssue)
 	{
+		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+
 		final StringBuilder sb = new StringBuilder();
 		sb.append("\n");
 
@@ -341,6 +342,9 @@ public class PPOrderMakeToKitHelper
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final String trxName = InterfaceWrapperHelper.getTrxName(order);
 		final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.create(ctx, PP_Order_BOMLine_ID, I_PP_Order_BOMLine.class, trxName);
+
+		final int productId = orderBOMLine.getM_Product_ID();
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(productId);
 
 		BigDecimal toIssue = qty.add(qtyScrap);
 		for (final I_M_Storage storage : storages)
@@ -357,33 +361,28 @@ public class PPOrderMakeToKitHelper
 			// create record for negative and positive transaction
 			if (qtyIssue.signum() != 0 || qtyScrap.signum() != 0 || qtyReject.signum() != 0)
 			{
-				String CostCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue;
+				String costCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue;
 				// Method Variance
 				if (orderBOMLine.getQtyBatch().signum() == 0
 						&& orderBOMLine.getQtyBOM().signum() == 0)
 				{
-					CostCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance;
+					costCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance;
 				}
 				else if (PPOrderUtil.isComponentTypeOneOf(orderBOMLine, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product))
 				{
-					CostCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance;
+					costCollectorType = X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance;
 				}
 				//
-				final I_PP_Cost_Collector cc = MPPCostCollector.createCollector(
-						order, 															// MPPOrder
-						orderBOMLine.getM_Product_ID(),									// M_Product_ID
-						storage.getM_Locator_ID(),										// M_Locator_ID
-						0, // storage.getM_AttributeSetInstance_ID(),					// M_AttributeSetInstance_ID
-						order.getS_Resource_ID(),										// S_Resource_ID
-						orderBOMLine.getPP_Order_BOMLine_ID(),							// PP_Order_BOMLine_ID
-						0,																// PP_Order_Node_ID
-						MDocType.getDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector), 	// C_DocType_ID,
-						CostCollectorType, 												// Production "-"
-						movementdate,													// MovementDate
-						qtyIssue, qtyScrap, qtyReject,									// qty,scrap,reject
-						0,																// durationSetup
-						BigDecimal.ZERO														// duration
-						);
+				final I_PP_Cost_Collector cc = ppCostCollectorBL.createIssue(ComponentIssueCreateRequest.builder()
+						.orderBOMLine(orderBOMLine)
+						.locatorId(storage.getM_Locator_ID())
+						.attributeSetInstanceId(0)
+						.movementDate(movementdate)
+						.qtyUOM(uom)
+						.qtyIssue(qtyIssue)
+						.qtyScrap(qtyScrap)
+						.qtyReject(qtyReject)
+						.build());
 
 				sb.append(cc.getDocumentNo());
 				sb.append("\n");
@@ -398,20 +397,14 @@ public class PPOrderMakeToKitHelper
 		}
 		if (forceIssue && toIssue.signum() != 0)
 		{
-			final I_PP_Cost_Collector cc = MPPCostCollector.createCollector(
-					order, 																	// MPPOrder
-					orderBOMLine.getM_Product_ID(),											// M_Product_ID
-					orderBOMLine.getM_Locator_ID(),											// M_Locator_ID
-					orderBOMLine.getM_AttributeSetInstance_ID(),							// M_AttributeSetInstance_ID
-					order.getS_Resource_ID(),												// S_Resource_ID
-					orderBOMLine.getPP_Order_BOMLine_ID(),									// PP_Order_BOMLine_ID
-					0,																		// PP_Order_Node_ID
-					MDocType.getDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector), 	// C_DocType_ID,
-					X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, 						// Production "-"
-					movementdate,															// MovementDate
-					toIssue, BigDecimal.ZERO, BigDecimal.ZERO,											// qty,scrap,reject
-					0, BigDecimal.ZERO																// durationSetup,duration
-					);
+			final I_PP_Cost_Collector cc = ppCostCollectorBL.createIssue(ComponentIssueCreateRequest.builder()
+					.orderBOMLine(orderBOMLine)
+					.locatorId(orderBOMLine.getM_Locator_ID())
+					.attributeSetInstanceId(orderBOMLine.getM_AttributeSetInstance_ID())
+					.movementDate(movementdate)
+					.qtyUOM(uom)
+					.qtyIssue(toIssue)
+					.build());
 
 			sb.append(cc.getDocumentNo());
 			sb.append("\n");

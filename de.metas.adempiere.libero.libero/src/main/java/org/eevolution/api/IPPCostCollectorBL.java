@@ -1,36 +1,9 @@
 package org.eevolution.api;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.math.BigDecimal;
-import java.util.Date;
-
-import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.I_C_UOM;
 import org.eevolution.api.impl.ReceiptCostCollectorCandidate.ReceiptCostCollectorCandidateBuilder;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.X_PP_Cost_Collector;
@@ -50,29 +23,10 @@ public interface IPPCostCollectorBL extends ISingletonService
 	 * <code>orderBOMLine</code> alone.
 	 * <p>
 	 * Note that this method is also used internally to handle the case of a "co-product receipt".
-	 *
-	 * @param context context provider
-	 * @param orderBOMLine
-	 * @param locatorId
-	 * @param attributeSetInstanceId
-	 * @param movementDate
-	 * @param qtyIssue qty to issue
-	 * @param qtyScrap qty scrap
-	 * @param qtyReject qty to reject
-	 * @param qtyUOM the common UOM of the three given qtys
 	 * 
 	 * @return processed cost collector
 	 */
-	I_PP_Cost_Collector createIssue(IContextAware context,
-			I_PP_Order_BOMLine orderBOMLine,
-			int locatorId,
-			int attributeSetInstanceId,
-			Date movementDate,
-			BigDecimal qtyIssue,
-			BigDecimal qtyScrap,
-			BigDecimal qtyReject,
-			I_C_UOM qtyUOM
-			);
+	I_PP_Cost_Collector createIssue(ComponentIssueCreateRequest request);
 
 	/**
 	 * Checks if the <code>CostCollectorType</code> of the given <code>cc</code> is about receiving any kind of materials (finished goods or co/by-products) from underlying manufacturing order.
@@ -90,7 +44,7 @@ public interface IPPCostCollectorBL extends ISingletonService
 	 * 
 	 * More specifically, this method returns <code>true</code> if the type is
 	 * <ul>
-	 * <li> <code>MaterialReceipt</code> (=> regular receipts)
+	 * <li><code>MaterialReceipt</code> (=> regular receipts)
 	 * <li>or <code>MixVariance</code> (=> by/co-product receipts) and <code>considerCoProductsAsReceipt</code> is <code>true</code>
 	 * </ul>
 	 * 
@@ -145,6 +99,12 @@ public interface IPPCostCollectorBL extends ISingletonService
 	 */
 	I_PP_Cost_Collector createReceipt(IReceiptCostCollectorCandidate candidate);
 
+	I_PP_Cost_Collector createActivityControl(ActivityControlCreateRequest request);
+
+	void createUsageVariance(I_PP_Order_BOMLine line);
+
+	void createUsageVariance(I_PP_Order_Node activity);
+
 	/**
 	 * Checks if given cost collector is a reversal.
 	 * 
@@ -156,4 +116,7 @@ public interface IPPCostCollectorBL extends ISingletonService
 	boolean isReversal(I_PP_Cost_Collector cc);
 
 	boolean isFloorStock(I_PP_Cost_Collector cc);
+
+	void setPP_Order(I_PP_Cost_Collector cc, I_PP_Order order);
+
 }

@@ -6,6 +6,8 @@ import org.compiere.model.I_M_Product_Acct;
 
 import com.google.common.collect.ImmutableMap;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -98,7 +100,7 @@ public enum ProductAcctType
 	private final int type;
 	private final String columnName;
 
-	ProductAcctType(final int type, final String columnName)
+	ProductAcctType(final int type, @NonNull final String columnName)
 	{
 		this.type = type;
 		this.columnName = columnName;

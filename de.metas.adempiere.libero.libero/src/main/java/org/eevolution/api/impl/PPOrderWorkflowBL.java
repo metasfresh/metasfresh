@@ -35,7 +35,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_WF_NodeNext;
 import org.compiere.model.I_AD_Workflow;
-import org.compiere.util.Env;
 import org.compiere.wf.api.IADWorkflowBL;
 import org.compiere.wf.api.IADWorkflowDAO;
 import org.eevolution.api.IPPOrderWorkflowBL;
@@ -85,8 +84,8 @@ public class PPOrderWorkflowBL implements IPPOrderWorkflowBL
 
 		//
 		// Create Order Workflow Nodes
-		final List<I_PP_Order_Node> orderNodes = new ArrayList<I_PP_Order_Node>();
-		final Map<Integer, I_PP_Order_Node> adWFNodeId2orderNode = new HashMap<Integer, I_PP_Order_Node>();
+		final List<I_PP_Order_Node> orderNodes = new ArrayList<>();
+		final Map<Integer, I_PP_Order_Node> adWFNodeId2orderNode = new HashMap<>();
 		for (final I_AD_WF_Node adWFNode : workflowDAO.retrieveNodes(adWorkflow, ppOrder.getAD_Client_ID()))
 		{
 			//
@@ -158,7 +157,7 @@ public class PPOrderWorkflowBL implements IPPOrderWorkflowBL
 		orderWorkflow.setIsDefault(false);
 		orderWorkflow.setPublishStatus(X_PP_Order_Workflow.PUBLISHSTATUS_UnderRevision);	// U
 		orderWorkflow.setVersion(0);
-		orderWorkflow.setCost(Env.ZERO);
+		orderWorkflow.setCost(BigDecimal.ZERO);
 		orderWorkflow.setWaitingTime(0);
 		orderWorkflow.setWorkingTime(0);
 
@@ -263,12 +262,6 @@ public class PPOrderWorkflowBL implements IPPOrderWorkflowBL
 		RoutingService routingService = RoutingServiceFactory.get().getRoutingService(orderNode.getAD_Client_ID());
 		BigDecimal workingTime = routingService.estimateWorkingTime(orderNode, qtyOrdered);
 		orderNode.setDurationRequiered(workingTime.intValueExact());
-	}
-
-	@Override
-	public BigDecimal getQtyToDeliver(final I_PP_Order_Node node)
-	{
-		return node.getQtyRequiered().subtract(node.getQtyDelivered());
 	}
 
 	/**

@@ -6,11 +6,11 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
-import org.eevolution.api.IPPOrderWorkflowBL;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.IPPOrderNodeBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Node;
-import org.eevolution.model.MPPCostCollector;
 
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
@@ -55,7 +55,7 @@ public class PP_Cost_Collector
 			return;
 		}
 
-		MPPCostCollector.setPP_Order(cc, ppOrder);
+		Services.get(IPPCostCollectorBL.class).setPP_Order(cc, ppOrder);
 	}
 
 	@CalloutMethod(columnNames = I_PP_Cost_Collector.COLUMNNAME_PP_Order_Node_ID)
@@ -70,7 +70,7 @@ public class PP_Cost_Collector
 		cc.setS_Resource_ID(node.getS_Resource_ID());
 		cc.setIsSubcontracting(node.isSubcontracting());
 
-		final BigDecimal qtyToDeliver = Services.get(IPPOrderWorkflowBL.class).getQtyToDeliver(node);
+		final BigDecimal qtyToDeliver = Services.get(IPPOrderNodeBL.class).getQtyToDeliver(node);
 		cc.setMovementQty(qtyToDeliver);
 		// updateDurationReal(cc); // shall be automatically triggered
 	}

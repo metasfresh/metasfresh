@@ -40,88 +40,97 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.compiere.model.I_M_CostDetail;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.X_PP_Cost_Collector;
-import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.acct.api.ProductAcctType;
+import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
-import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.CostingMethod;
-import de.metas.costing.ICostDetailRepository;
+import de.metas.costing.CostResult;
 import de.metas.costing.ICostElementRepository;
-import de.metas.logging.LogManager;
-import de.metas.material.planning.RoutingService;
-import de.metas.material.planning.RoutingServiceFactory;
 
 /**
  * Post Cost Collector
- * 
+ *
  * <pre>
  *  Table:              PP_Cost_Collector
  *  Document Types:     MOP
  * </pre>
- * 
+ *
  * @author victor.perez@e-evolution.com http://www.e-evolution.com
  */
 public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 {
-	private static final Logger logger = LogManager.getLogger(Doc_PPCostCollector.class);
+	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	private final ICostElementRepository costElementsRepo = Adempiere.getBean(ICostElementRepository.class);
 
 	/** Pseudo Line */
-	protected DocLine_CostCollector m_line = null;
-	/** Collector Cost */
-	protected I_PP_Cost_Collector m_cc = null;
-	/** Routing Service */
-	protected RoutingService m_routingService = null;
+	protected DocLine_CostCollector _line = null;
 
-	/**
-	 * Constructor
-	 * 
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
 	public Doc_PPCostCollector(final IDocBuilder docBuilder)
 	{
 		super(docBuilder, X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
-	}   // Doc Cost Collector
+	}
 
 	@Override
 	protected void loadDocumentDetails()
 	{
 		setC_Currency_ID(NO_CURRENCY);
-		m_cc = getModel(I_PP_Cost_Collector.class);
-		setDateDoc(m_cc.getMovementDate());
-		setDateAcct(m_cc.getMovementDate());
+		final I_PP_Cost_Collector cc = getModel(I_PP_Cost_Collector.class);
+		setDateDoc(cc.getMovementDate());
+		setDateAcct(cc.getMovementDate());
 
 		// Pseudo Line
-		m_line = new DocLine_CostCollector(m_cc, this);
-
-		// Load the RoutingService
-		m_routingService = RoutingServiceFactory.get().getRoutingService(m_cc.getAD_Client_ID());
+		_line = new DocLine_CostCollector(cc, this);
 	}
 
-	/**
-	 * @return Zero (always balanced)
-	 */
+	private DocLine_CostCollector getLine()
+	{
+		return _line;
+	}
+
+	private I_PP_Cost_Collector getPP_Cost_Collector()
+	{
+		return getModel(I_PP_Cost_Collector.class);
+	}
+
+	private String getCostCollectorType()
+	{
+		return getPP_Cost_Collector().getCostCollectorType();
+	}
+
+	private boolean isFloorStock()
+	{
+		final I_PP_Cost_Collector cc = getPP_Cost_Collector();
+		return ppCostCollectorBL.isFloorStock(cc);
+	}
+
+	private BigDecimal getMovementQty()
+	{
+		return getPP_Cost_Collector().getMovementQty();
+	}
+
+	private BigDecimal getScrappedQty()
+	{
+		return getPP_Cost_Collector().getScrappedQty();
+	}
+
+	/** @return zero (always balanced) */
 	@Override
 	public BigDecimal getBalance()
 	{
 		return BigDecimal.ZERO;
-	}   // getBalance
+	}
 
 	@Override
 	public ArrayList<Fact> createFacts(final MAcctSchema as)
@@ -129,35 +138,36 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		setC_Currency_ID(as.getC_Currency_ID());
 		final ArrayList<Fact> facts = new ArrayList<>();
 
-		if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt.equals(m_cc.getCostCollectorType()))
+		final String costCollectorType = getCostCollectorType();
+		if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt.equals(costCollectorType))
 		{
 			facts.add(createMaterialReceipt(as));
 		}
-		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue.equals(m_cc.getCostCollectorType()))
+		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue.equals(costCollectorType))
 		{
 			facts.add(createComponentIssue(as));
 		}
-		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance.equals(m_cc.getCostCollectorType()))
+		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance.equals(costCollectorType))
 		{
 			facts.add(createVariance(as, ProductAcctType.MethodChangeVariance));
 		}
-		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance.equals(m_cc.getCostCollectorType()))
+		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance.equals(costCollectorType))
 		{
 			facts.add(createVariance(as, ProductAcctType.UsageVariance));
 		}
-		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance.equals(m_cc.getCostCollectorType()))
+		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance.equals(costCollectorType))
 		{
 			facts.add(createVariance(as, ProductAcctType.UsageVariance));
 		}
-		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_RateVariance.equals(m_cc.getCostCollectorType()))
+		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_RateVariance.equals(costCollectorType))
 		{
 			facts.add(createVariance(as, ProductAcctType.RateVariance));
 		}
-		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance.equals(m_cc.getCostCollectorType()))
+		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance.equals(costCollectorType))
 		{
 			facts.add(createVariance(as, ProductAcctType.MixVariance));
 		}
-		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl.equals(m_cc.getCostCollectorType()))
+		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl.equals(costCollectorType))
 		{
 			facts.addAll(createActivityControl(as));
 		}
@@ -165,215 +175,166 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		return facts;
 	}   // createFact
 
-	protected void createLines(CostElement element, MAcctSchema as, Fact fact, I_M_Product product,
-			MAccount debit, MAccount credit, BigDecimal cost, BigDecimal qty)
+	private void createLines(
+			final CostElement costElement,
+			final Fact fact,
+			final MAccount debit,
+			final MAccount credit,
+			final CostAmount cost,
+			final BigDecimal qty)
 	{
-		if (cost == null || debit == null || credit == null)
+		if (debit == null || credit == null || cost == null || cost.signum() == 0)
+		{
 			return;
-
-		if (logger.isInfoEnabled())
-		{
-			logger.info("CostElement: " + element + "Product: " + product.getName()
-					+ " Debit: " + debit.getDescription() + " Credit: " + credit.getDescription()
-					+ " Cost: " + cost + " Qty: " + qty);
 		}
 
-		// Line pointers
-		FactLine dr = null;
-		FactLine cr = null;
-		if (cost.signum() != 0)
-		{
-			dr = fact.createLine(m_line, debit, as.getC_Currency_ID(), cost, null);
-			dr.setQty(qty);
-			String desc = element.getName();
-			dr.addDescription(desc);
-			dr.setC_Project_ID(m_cc.getC_Project_ID());
-			dr.setC_Activity_ID(m_cc.getC_Activity_ID());
-			dr.setC_Campaign_ID(m_cc.getC_Campaign_ID());
-			dr.setM_Locator_ID(m_cc.getM_Locator_ID());
+		final DocLine_CostCollector docLine = getLine();
 
-			cr = fact.createLine(m_line, credit, as.getC_Currency_ID(), null, cost);
-			cr.setQty(qty);
-			cr.addDescription(desc);
-			cr.setC_Project_ID(m_cc.getC_Project_ID());
-			cr.setC_Activity_ID(m_cc.getC_Activity_ID());
-			cr.setC_Campaign_ID(m_cc.getC_Campaign_ID());
-			cr.setM_Locator_ID(m_cc.getM_Locator_ID());
-		}
+		final String desc = costElement.getName();
+
+		final FactLine dr = fact.createLine(docLine, debit, cost.getCurrencyId(), cost.getValue(), null);
+		dr.setQty(qty);
+		dr.addDescription(desc);
+		dr.setC_Project_ID(docLine.getC_Project_ID());
+		dr.setC_Activity_ID(docLine.getC_Activity_ID());
+		dr.setC_Campaign_ID(docLine.getC_Campaign_ID());
+		dr.setM_Locator_ID(docLine.getM_Locator_ID());
+
+		final FactLine cr = fact.createLine(docLine, credit, cost.getCurrencyId(), null, cost.getValue());
+		cr.setQty(qty);
+		cr.addDescription(desc);
+		cr.setC_Project_ID(docLine.getC_Project_ID());
+		cr.setC_Activity_ID(docLine.getC_Activity_ID());
+		cr.setC_Campaign_ID(docLine.getC_Campaign_ID());
+		cr.setM_Locator_ID(docLine.getM_Locator_ID());
 	}
 
 	/**
-	 * The Receipt Finish good product created the next account fact
-	 * Debit Product Asset Account for each Cost Element using Current Cost
-	 * Create a fact line for each cost element type
-	 * Material
-	 * Labor(Resources)
-	 * Burden
-	 * Overhead
-	 * Outsite Processing
-	 * Debit Scrap Account for each Cost Element using Current Cost
-	 * Create a fact line for each cost element type
-	 * Material
-	 * Labor(Resources)
-	 * Burden
-	 * Overhead
-	 * Outsite Processing
-	 * Credit Work in Process Account for each Cost Element using Current Cost
-	 * Create a fact line for each cost element type
-	 * Material
-	 * Labor(Resources)
-	 * Burden
-	 * Overhead
-	 * Outsite Processing
+	 * <pre>
+	 * (for each cost element)
+	 * WIP                       CR
+	 * Product Asset      DR
+	 * Scrap(expense)     DR
+	 * </pre>
 	 */
-	protected Fact createMaterialReceipt(MAcctSchema as)
+	protected Fact createMaterialReceipt(final MAcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 
-		final I_M_Product product = m_cc.getM_Product();
-		final MAccount credit = m_line.getAccount(ProductAcctType.WorkInProcess, as);
-
-		for (I_M_CostDetail cd : getCostDetails())
+		final DocLine_CostCollector docLine = getLine();
+		final BigDecimal qtyReceived = getMovementQty();
+		final BigDecimal qtyScrapped = getScrappedQty();
+		final BigDecimal qtyTotal = qtyReceived.add(qtyScrapped);
+		if (qtyTotal.signum() == 0)
 		{
-			final CostElement element = costElementsRepo.getById(cd.getM_CostElement_ID());
-			if (m_cc.getMovementQty().signum() != 0)
+			return fact;
+		}
+
+		final MAccount credit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
+
+		final CostResult costResult = docLine.getCreateCosts(as);
+		for (final CostElement element : costResult.getCostElements())
+		{
+			final CostAmount costs = costResult.getCostAmountForCostElement(element);
+			final CostAmount costsReceived = costs.divide(qtyTotal, 12, RoundingMode.HALF_UP)
+					.multiply(qtyReceived)
+					.roundToPrecisionIfNeeded(as.getStdPrecision());
+			final CostAmount costsScrapped = costs.subtract(costsReceived);
+
+			if (costsReceived.signum() != 0)
 			{
-				MAccount debit = m_line.getAccount(ProductAcctType.Asset, as);
-				BigDecimal cost = cd.getAmt();
-				if (cost.scale() > as.getStdPrecision())
-					cost = cost.setScale(as.getStdPrecision(), RoundingMode.HALF_UP);
-				createLines(element, as, fact, product, debit, credit, cost, m_cc.getMovementQty());
+				final MAccount debit = docLine.getAccount(ProductAcctType.Asset, as);
+				createLines(element, fact, debit, credit, costsReceived, qtyReceived);
 			}
-			if (m_cc.getScrappedQty().signum() != 0)
+
+			if (costsScrapped.signum() != 0)
 			{
-				MAccount debit = m_line.getAccount(ProductAcctType.Scrap, as);
-				BigDecimal cost = cd.getPrice().multiply(m_cc.getScrappedQty());
-				if (cost.scale() > as.getStdPrecision())
-					cost = cost.setScale(as.getStdPrecision(), RoundingMode.HALF_UP);
-				createLines(element, as, fact, product, debit, credit, cost, m_cc.getScrappedQty());
+				final MAccount debit = docLine.getAccount(ProductAcctType.Scrap, as);
+				createLines(element, fact, debit, credit, costsScrapped, qtyScrapped);
 			}
 		}
 		return fact;
 	}
 
 	/**
-	 * The Issue Component product created next account fact
-	 * Debit Work in Process Account for each Cost Element using current cost
-	 * Create a fact line for each cost element type
-	 * Material
-	 * Labor(Resources)
-	 * Burden
-	 * Overhead
-	 * Outsite Processing
-	 * Credit Product Asset Account for each Cost Element using current cost
-	 * Create a fact line for each cost element type
-	 * Material
-	 * Labor(Resources)
-	 * Burden
-	 * Overhead
-	 * Outsite Processing
-	 * Credit Floor Stock Account for each Cost Element using current cost
-	 * Create a fact line for each cost element type
-	 * Material
-	 * Labor(Resources)
-	 * Burden
-	 * Overhead
-	 * Outsite Processing
+	 * <pre>
+	 * (for each cost element)
+	 * WIP                                 DR
+	 * Product Asset / Floor Stock               CR
+	 * </pre>
 	 */
-	protected Fact createComponentIssue(MAcctSchema as)
+	private Fact createComponentIssue(final MAcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
-		final I_M_Product product = m_cc.getM_Product();
+		final boolean isFloorStock = isFloorStock();
 
-		MAccount debit = m_line.getAccount(ProductAcctType.WorkInProcess, as);
-		MAccount credit = m_line.getAccount(ProductAcctType.Asset, as);
-		if (Services.get(IPPCostCollectorBL.class).isFloorStock(m_cc))
-		{
-			credit = m_line.getAccount(ProductAcctType.FloorStock, as);
-		}
+		final DocLine_CostCollector docLine = getLine();
+		final BigDecimal qtyIssued = getMovementQty();
 
-		for (I_M_CostDetail cd : getCostDetails())
+		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
+		final MAccount credit = docLine.getAccount(isFloorStock ? ProductAcctType.FloorStock : ProductAcctType.Asset, as);
+
+		final CostResult costResult = docLine.getCreateCosts(as);
+		for (final CostElement element : costResult.getCostElements())
 		{
-			final CostElement element = costElementsRepo.getById(cd.getM_CostElement_ID());
-			BigDecimal cost = cd.getAmt().negate();
-			if (cost.scale() > as.getStdPrecision())
-				cost = cost.setScale(as.getStdPrecision(), RoundingMode.HALF_UP);
-			createLines(element, as, fact, product, debit, credit, cost, m_cc.getMovementQty());
+			final CostAmount costs = costResult.getCostAmountForCostElement(element);
+			createLines(element, fact, debit, credit, costs, qtyIssued);
 		}
 
 		return fact;
 	}
 
 	/**
-	 * Feedback Labor and Burden absorbed
-	 * Debit Work in Process Account for each Labor or Burden using the current cost rate
-	 * Create a fact line for labor or burden
-	 * Labor(Resources)
-	 * Burden
-	 * Credit Labor Absorbed or Burden Absorbed Account
-	 * Create a fact line for labor or burden
-	 * Labor Absorbed
-	 * Burden Absorbed
+	 * <pre>
+	 * (for each cost element)
+	 * WIP                        DR
+	 * Product Asset/Labor/                        CR
+	 * Burden/Overhead
+	 * </pre>
 	 */
-	protected List<Fact> createActivityControl(MAcctSchema as)
+	private List<Fact> createActivityControl(final MAcctSchema as)
 	{
-		final ArrayList<Fact> facts = new ArrayList<>();
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
-		facts.add(fact);
 
-		final I_M_Product product = m_cc.getM_Product();
+		final DocLine_CostCollector docLine = getLine();
+		final BigDecimal qtyMoved = getMovementQty();
 
-		MAccount debit = m_line.getAccount(ProductAcctType.WorkInProcess, as);
+		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 
-		for (I_M_CostDetail cd : getCostDetails())
+		final CostResult costResult = docLine.getCreateCosts(as);
+		for (final CostElement element : costResult.getCostElements())
 		{
-			BigDecimal costs = cd.getAmt();
-			if (costs.signum() == 0)
-				continue;
-			final CostElement element = costElementsRepo.getById(cd.getM_CostElement_ID());
-			MAccount credit = m_line.getAccount(as, element);
-			createLines(element, as, fact, product, debit, credit, costs, m_cc.getMovementQty());
+			final CostAmount costs = costResult.getCostAmountForCostElement(element);
+			final MAccount credit = docLine.getAccountForCostElement(as, element);
+			createLines(element, fact, debit, credit, costs, qtyMoved);
 		}
-		//
-		return facts;
+
+		return ImmutableList.of(fact);
 	}
 
-	protected Fact createVariance(MAcctSchema as, ProductAcctType VarianceAcctType)
+	/**
+	 * <pre>
+	 * (for each cost element)
+	 * WIP                                       CR
+	 * Method/Usage/Rate/Mix Variance    DR
+	 * </pre>
+	 */
+	private Fact createVariance(final MAcctSchema as, final ProductAcctType varianceAcctType)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
-		final I_M_Product product = m_cc.getM_Product();
 
-		MAccount debit = m_line.getAccount(VarianceAcctType, as);
-		MAccount credit = m_line.getAccount(ProductAcctType.WorkInProcess, as);
+		final DocLine_CostCollector docLine = getLine();
+		final MAccount debit = docLine.getAccount(varianceAcctType, as);
+		final MAccount credit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 
-		for (I_M_CostDetail cd : getCostDetails())
+		final BigDecimal qty = getMovementQty();
+
+		final CostResult costResult = docLine.getCreateCosts(as);
+		for (final CostElement element : costResult.getCostElements())
 		{
-			final CostElement element = costElementsRepo.getById(cd.getM_CostElement_ID());
-			BigDecimal costs = cd.getAmt().negate();
-			if (costs.scale() > as.getStdPrecision())
-				costs = costs.setScale(as.getStdPrecision(), RoundingMode.HALF_UP);
-			BigDecimal qty = cd.getQty().negate();
-			createLines(element, as, fact, product, debit, credit, costs, qty);
+			final CostAmount costs = costResult.getCostAmountForCostElement(element);
+			createLines(element, fact, debit, credit, costs.negate(), qty.negate());
 		}
 		return fact;
 	}
-
-	public Collection<CostElement> getCostElements()
-	{
-		final CostingMethod costingMethod = CostingMethod.StandardCosting;
-		final Collection<CostElement> elements = costElementsRepo.getByCostingMethod(costingMethod);
-		return elements;
-	}
-
-	private List<I_M_CostDetail> getCostDetails()
-	{
-		if (m_costDetails == null)
-		{
-			final ICostDetailRepository costDetailsRepo = Adempiere.getBean(ICostDetailRepository.class);
-			m_costDetails = costDetailsRepo.getAllForDocument(CostingDocumentRef.ofCostCollectorId(m_cc.getPP_Cost_Collector_ID()));
-		}
-		return m_costDetails;
-	}
-
-	private List<I_M_CostDetail> m_costDetails = null;
-}   // Doc Cost Collector
+}

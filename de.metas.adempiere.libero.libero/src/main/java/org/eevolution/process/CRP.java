@@ -170,7 +170,7 @@ public class CRP extends JavaProcess
 
 			while(nodeId != 0)
 			{
-				node = owf.getNode(nodeId);
+				node = owf.getNodeById(nodeId);
 				if (visitedNodes.contains(nodeId))
 				{
 					throw new CRPException("Cyclic transition found").setPP_Order_Node(node);
@@ -217,7 +217,7 @@ public class CRP extends JavaProcess
 
 			while(nodeId != 0)
 			{
-				node = owf.getNode(nodeId);
+				node = owf.getNodeById(nodeId);
 				if (visitedNodes.contains(nodeId))
 				{
 					throw new CRPException("Cyclic transition found - ").setPP_Order_Node(node);

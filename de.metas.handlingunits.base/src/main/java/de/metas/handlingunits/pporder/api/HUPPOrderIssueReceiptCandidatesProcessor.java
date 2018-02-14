@@ -24,6 +24,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.api.impl.ReceiptCostCollectorCandidate;
@@ -560,17 +561,17 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			//
 			// Create the cost collector & process it.
-			final I_PP_Cost_Collector cc = InterfaceWrapperHelper.create(ppCostCollectorBL.createIssue(
-					PlainContextAware.newWithThreadInheritedTrx(), // context
-					ppOrderBOMLine,
-					locatorId, // locator
-					0, // attributeSetInstanceId: N/A
-					movementDate,
-					qtyToIssue,
-					BigDecimal.ZERO, // qtyScrap,
-					BigDecimal.ZERO, // qtyReject
-					qtyToIssueUOM // UOM
-			), I_PP_Cost_Collector.class);
+
+			final I_PP_Cost_Collector cc = InterfaceWrapperHelper.create(
+					ppCostCollectorBL.createIssue(ComponentIssueCreateRequest.builder()
+							.orderBOMLine(ppOrderBOMLine)
+							.locatorId(locatorId)
+							.attributeSetInstanceId(0) // N/A
+							.movementDate(movementDate)
+							.qtyUOM(qtyToIssueUOM)
+							.qtyIssue(qtyToIssue)
+							.build()),
+					I_PP_Cost_Collector.class);
 
 			//
 			// Assign the HUs to cost collector.

@@ -41,7 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
@@ -50,9 +49,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.MDocType;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -60,8 +57,11 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_DocType;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
+import org.eevolution.api.ActivityControlCreateRequest;
+import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
+import org.eevolution.api.IPPOrderNodeBL;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -70,7 +70,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderUtil;
 
 /**
  * PP Order Model.
@@ -570,28 +569,23 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	 */
 	private final void autoReportActivities()
 	{
-		for (final MPPOrderNode activity : getMPPOrderWorkflow().getNodes())
+		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+		final IPPOrderNodeBL ppOrderNodeBL = Services.get(IPPOrderNodeBL.class);
+
+		final MPPOrderWorkflow ppOrderWorkflow = getMPPOrderWorkflow();
+
+		for (final MPPOrderNode activity : ppOrderWorkflow.getNodes())
 		{
 			if (activity.isMilestone())
 			{
-				if (activity.isSubcontracting() || activity.getPP_Order_Node_ID() == getMPPOrderWorkflow().getPP_Order_Node_ID())
+				if (activity.isSubcontracting() || activity.getPP_Order_Node_ID() == ppOrderWorkflow.getPP_Order_Node_ID())
 				{
-					MPPCostCollector.createCollector(
-							this,
-							getM_Product_ID(),
-							getM_Locator_ID(),
-							getM_AttributeSetInstance_ID(),
-							getS_Resource_ID(),
-							0, // ppOrderBOMLineId
-							activity.getPP_Order_Node_ID(),
-							MDocType.getDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector),
-							X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl,
-							getUpdated(),
-							activity.getQtyToDeliver(),
-							BigDecimal.ZERO,
-							BigDecimal.ZERO,
-							0,
-							BigDecimal.ZERO);
+					ppCostCollectorBL.createActivityControl(ActivityControlCreateRequest.builder()
+							.node(activity)
+							.qtyMoved(ppOrderNodeBL.getQtyToDeliver(activity))
+							.durationSetup(0)
+							.duration(BigDecimal.ZERO)
+							.build());
 				}
 			}
 		}
@@ -599,9 +593,10 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 	private void createVariances()
 	{
+		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 		for (final I_PP_Order_BOMLine line : getLines())
 		{
-			createUsageVariance(line);
+			ppCostCollectorBL.createUsageVariance(line);
 		}
 
 		//
@@ -610,112 +605,10 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		{
 			for (final MPPOrderNode node : orderWorkflow.getNodes(true))
 			{
-				createUsageVariance(node);
+				ppCostCollectorBL.createUsageVariance(node);
 			}
 		}
 		// orderWorkflow.m_nodes = null; // TODO: reset nodes cache
 	}
 
-	private void createUsageVariance(final I_PP_Order_BOMLine line)
-	{
-		final MPPOrder order = this;
-		final Timestamp movementDate = order.getUpdated();
-
-		// If QtyBatch and QtyBOM is zero, than this is a method variance
-		// (a product that "was not" in BOM was used)
-		if (line.getQtyBatch().signum() == 0 && line.getQtyBOM().signum() == 0)
-		{
-			return;
-		}
-		// 06005
-		if (PPOrderUtil.isComponentTypeOneOf(line, X_PP_Order_BOMLine.COMPONENTTYPE_Variant))
-		{
-			return;
-		}
-
-		final BigDecimal qtyUsageVariancePrev = Services.get(IPPOrderBOMDAO.class).retrieveQtyUsageVariance(line); // Previous booked usage variance
-		final BigDecimal qtyOpen = Services.get(IPPOrderBOMBL.class).getQtyToIssue(line);
-		// Current usage variance = QtyOpen - Previous Usage Variance
-		final BigDecimal qtyUsageVariance = qtyOpen.subtract(qtyUsageVariancePrev);
-		//
-		if (qtyUsageVariance.signum() == 0)
-		{
-			return;
-		}
-		// Get Locator
-		int M_Locator_ID = line.getM_Locator_ID();
-		if (M_Locator_ID <= 0)
-		{
-			final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(order.getM_Warehouse());
-			if (locator != null)
-			{
-				M_Locator_ID = locator.getM_Locator_ID();
-			}
-		}
-		//
-		MPPCostCollector.createCollector(
-				order,
-				line.getM_Product_ID(),
-				M_Locator_ID,
-				line.getM_AttributeSetInstance_ID(),
-				order.getS_Resource_ID(),
-				line.getPP_Order_BOMLine_ID(),
-				0, // PP_Order_Node_ID,
-				MDocType.getDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector), // C_DocType_ID,
-				X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance,
-				movementDate,
-				qtyUsageVariance, // Qty
-				BigDecimal.ZERO, // scrap,
-				BigDecimal.ZERO, // reject,
-				0, // durationSetup,
-				BigDecimal.ZERO // duration
-		);
-	}
-
-	private void createUsageVariance(final I_PP_Order_Node orderNode)
-	{
-		final MPPOrder order = this;
-		final Timestamp movementDate = order.getUpdated();
-		final MPPOrderNode node = (MPPOrderNode)orderNode;
-		//
-		final BigDecimal setupTimeReal = BigDecimal.valueOf(node.getSetupTimeReal());
-		final BigDecimal durationReal = BigDecimal.valueOf(node.getDurationReal());
-		if (setupTimeReal.signum() == 0 && durationReal.signum() == 0)
-		{
-			// nothing reported on this activity => it's not a variance, this will be auto-reported on close
-			return;
-		}
-		//
-		final BigDecimal setupTimeVariancePrev = node.getSetupTimeUsageVariance();
-		final BigDecimal durationVariancePrev = node.getDurationUsageVariance();
-		final BigDecimal setupTimeRequired = BigDecimal.valueOf(node.getSetupTimeRequiered());
-		final BigDecimal durationRequired = BigDecimal.valueOf(node.getDurationRequiered());
-		final BigDecimal qtyOpen = node.getQtyToDeliver();
-		//
-		final BigDecimal setupTimeVariance = setupTimeRequired.subtract(setupTimeReal).subtract(setupTimeVariancePrev);
-		final BigDecimal durationVariance = durationRequired.subtract(durationReal).subtract(durationVariancePrev);
-		//
-		if (qtyOpen.signum() == 0 && setupTimeVariance.signum() == 0 && durationVariance.signum() == 0)
-		{
-			return;
-		}
-		//
-		MPPCostCollector.createCollector(
-				order,
-				order.getM_Product_ID(),
-				order.getM_Locator_ID(),
-				order.getM_AttributeSetInstance_ID(),
-				node.getS_Resource_ID(),
-				0, // PP_Order_BOMLine_ID
-				node.getPP_Order_Node_ID(),
-				MDocType.getDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector), // C_DocType_ID
-				X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance,
-				movementDate,
-				qtyOpen, // Qty
-				BigDecimal.ZERO, // scrap,
-				BigDecimal.ZERO, // reject,
-				setupTimeVariance.intValueExact(), // durationSetup,
-				durationVariance // duration
-		);
-	}
 } // MPPOrder
