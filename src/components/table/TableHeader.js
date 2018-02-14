@@ -1,47 +1,68 @@
-import cx from "classnames";
-import React, { Component } from "react";
+import React, { Component } from 'react';
+import classnames from 'classnames';
 
 class TableHeader extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {};
   }
 
-  handleClick = (field, sorting, sortable) => {
+  componentWillMount() {
+    this.setInitialState();
+  }
+
+  setInitialState() {
+    const { orderBy } = this.props;
+
+    let fields = {};
+    orderBy &&
+      orderBy.map(item => {
+        fields[item.fieldName] = item.ascending;
+      });
+
+    this.setState({
+      fields,
+    });
+  }
+
+  handleClick = (field, sortable) => {
     if (!sortable) {
       return;
     }
 
     const { sort, deselect, page, tabid } = this.props;
+    const fieldsCopy = { ...this.state.fields };
+    const sortingValue = fieldsCopy[field];
 
-    sort(!sorting.asc, field, true, page, tabid);
+    fieldsCopy[field] = !sortingValue;
+
+    this.setState({
+      fields: { ...fieldsCopy },
+    });
+
+    sort(sortingValue, field, true, page, tabid);
     deselect();
   };
 
   renderSorting = (field, caption, sortable) => {
-    const { orderBy } = this.props;
-    let sorting = {};
-    orderBy &&
-      orderBy.map(item => {
-        if (field == item.fieldName) {
-          sorting.name = item.fieldName;
-          sorting.asc = item.ascending;
-        }
-      });
+    const { fields } = this.state;
+    const fieldSorting = fields[field];
+
     return (
       <div
-        className={cx("sort-menu", { ["sort-menu--sortable"]: sortable })}
-        onClick={() => this.handleClick(field, sorting, sortable)}
-      >
-        <span title={caption} className={cx({ ["th-caption"]: sortable })}>
+        className={classnames('sort-menu', { 'sort-menu--sortable': sortable })}
+        onClick={() => this.handleClick(field, sortable)}>
+        <span
+          title={caption}
+          className={classnames({ 'th-caption': sortable })}>
           {caption}
         </span>
         <span
-          className={
-            sorting.name && sorting.asc
-              ? "sort rotate-90 sort-ico"
-              : sorting.name && !sorting.asc ? "sort sort-ico" : "sort-ico"
-          }
-        >
+          className={classnames('sort-ico', {
+            'sort rotate-90': field in fields && fieldSorting,
+            sort: field in fields && !fieldSorting,
+          })}>
           <i className="meta-icon-chevron-1" />
         </span>
       </div>
