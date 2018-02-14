@@ -31,8 +31,6 @@
 		<metasfresh-procurement-webui.version>[1,10.0.0]</metasfresh-procurement-webui.version>
 		<metasfresh-admin.version>[1,10.0.0]</metasfresh-admin.version>
 		<metasfresh-esb-camel.version>[1,10.0.0]</metasfresh-esb-camel.version>
-		
-		<!-- need to pick LATEST because there is no 1.0.0 version in our local repo. Because currently it's only build on jenkins. -->
 		<metasfresh-webui-frontend.version>[1,10.0.0]</metasfresh-webui-frontend.version>
 	</properties>
 
