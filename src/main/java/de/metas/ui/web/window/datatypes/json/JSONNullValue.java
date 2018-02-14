@@ -45,7 +45,7 @@ public final class JSONNullValue
 
 	public static boolean isNull(final Object value)
 	{
-		return value == null && value instanceof JSONNullValue;
+		return value == null || value instanceof JSONNullValue;
 	}
 
 	public static final transient JSONNullValue instance = new JSONNullValue();

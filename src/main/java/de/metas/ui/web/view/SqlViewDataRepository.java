@@ -41,6 +41,7 @@ import de.metas.ui.web.view.descriptor.SqlViewSelectData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -318,7 +319,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 			if (Objects.equals(fieldName, keyFieldName))
 			{
-				if (value == null)
+				if(JSONNullValue.isNull(value))
 				{
 					logger.warn("No ID found for current row. Skipping the row.");
 					return null;
@@ -417,7 +418,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			while (rs.next())
 			{
 				final Object rowIdObj = rowIdFieldLoader.retrieveValueAsJson(rs, adLanguage);
-				if (rowIdObj == null)
+				if(JSONNullValue.isNull(rowIdObj))
 				{
 					continue;
 				}
