@@ -1,11 +1,14 @@
 package de.metas.ui.web.window.descriptor.sql;
 
+import java.util.regex.Pattern;
+
 import org.adempiere.ad.expression.api.IStringExpression;
 
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -62,5 +65,24 @@ public interface SqlEntityBinding
 	default SqlDocumentFilterConverterDecorator getFilterConverterDecoratorOrNull()
 	{
 		return null;
+	}
+
+	default String replaceTableNameWithTableAlias(final String sql)
+	{
+		final String tableAlias = getTableAlias();
+		return replaceTableNameWithTableAlias(sql, tableAlias);
+	}
+
+	default String replaceTableNameWithTableAlias(final String sql, @NonNull final String tableAlias)
+	{
+		if (sql == null || sql.isEmpty())
+		{
+			return sql;
+		}
+
+		final String tableName = getTableName();
+		final String matchTableNameIgnoringCase = "(?i)" + Pattern.quote(tableName + ".");
+		final String sqlFixed = sql.replaceAll(matchTableNameIgnoringCase, tableAlias + ".");
+		return sqlFixed;
 	}
 }
