@@ -1,16 +1,17 @@
-package de.metas.vendor.gateway.api.order;
+package de.metas.purchasecandidate.purchaseordercreation.remoteorder;
 
-import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 
-import de.metas.vendor.gateway.api.ProductAndQuantity;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 
 /*
  * #%L
- * de.metas.vendor.gateway.api
+ * de.metas.purchasecandidate.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,12 +29,9 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class PurchaseOrderResponseItem
+public interface VendorGatewayInvoker
 {
-	@NonNull
-	ProductAndQuantity correspondingRequestItem;
+	List<PurchaseItem> placeRemotePurchaseOrder(Collection<PurchaseCandidate> purchaseCandidates);
 
-	@NonNull
-	BigDecimal confirmedOrderQuantity;
+	void updateRemoteLineReferences(Collection<PurchaseOrderItem> purchaseOrderItem);
 }

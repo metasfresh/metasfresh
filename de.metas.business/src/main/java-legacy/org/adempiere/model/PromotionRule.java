@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_Promotion;
 import org.compiere.model.I_M_PromotionDistribution;
 import org.compiere.model.I_M_PromotionLine;
@@ -39,6 +40,8 @@ import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.order.IOrderLineBL;
 
 /**
  *
@@ -185,8 +188,8 @@ public class PromotionRule {
 						BigDecimal totalPrice = BigDecimal.ZERO;
 						for(DistributionSet distributionSet : all) {
 							for(Map.Entry<Integer, BigDecimal> olMap : distributionSet.orderLines.entrySet()) {
-								BigDecimal qty = (BigDecimal) olMap.getValue();
-								int C_OrderLine_ID = (Integer) olMap.getKey();
+								BigDecimal qty = olMap.getValue();
+								int C_OrderLine_ID = olMap.getKey();
 								for (MOrderLine ol : lines) {
 									if (ol.getC_OrderLine_ID() == C_OrderLine_ID) {
 										totalPrice = totalPrice.add(ol.getPriceActual().multiply(qty));
@@ -307,11 +310,19 @@ public class PromotionRule {
 		}
 	}
 
-	private static void addDiscountLine(MOrder order, MOrderLine ol, BigDecimal discount,
-			BigDecimal qty, int C_Charge_ID, I_M_Promotion promotion) throws Exception {
+	private static void addDiscountLine(
+			MOrder order,
+			MOrderLine ol,
+			BigDecimal discount,
+			BigDecimal qty,
+			int C_Charge_ID,
+			I_M_Promotion promotion) throws Exception
+	{
 		MOrderLine nol = new MOrderLine(order.getCtx(), 0, order.get_TrxName());
 		nol.setC_Order_ID(order.getC_Order_ID());
-		nol.setOrder(order);
+
+		Services.get(IOrderLineBL.class).setOrder(nol, order);
+
 		nol.setC_Charge_ID(C_Charge_ID);
 		nol.setQty(qty);
 		if (discount.scale() > 2)
@@ -369,7 +380,7 @@ public class PromotionRule {
 		} else {
 			sql.append(" AND (M_PromotionPreCondition.PromotionCode IS NULL)");
 		}
-		
+
 		//optional activity filter
 		int C_Activity_ID = order.getC_Activity_ID();
 		if (C_Activity_ID > 0) {
@@ -377,7 +388,7 @@ public class PromotionRule {
 		} else {
 			sql.append(" AND (M_PromotionPreCondition.C_Activity_ID IS NULL)");
 		}
-		
+
 		sql.append(" AND (M_Promotion.AD_Client_ID in (0, ?))")
 			.append(" AND (M_Promotion.AD_Org_ID in (0, ?))")
 			.append(" AND (M_Promotion.IsActive = 'Y')")
@@ -628,18 +639,19 @@ public class PromotionRule {
 			index = olIndex;
 		}
 
+		@Override
 		public int compare(Integer ol1, Integer ol2) {
 			return index.get(ol1).getPriceActual().compareTo(index.get(ol2).getPriceActual());
 		}
 	}
-	
+
 	// metas: begin
 	static class OrderLinePromotionCandidate {
 		BigDecimal qty;
 		MOrderLine orderLine;
 		I_M_PromotionReward promotionReward;
 	}
-	
+
 	private static void addDiscountLine(MOrder order, List<OrderLinePromotionCandidate> candidates) throws Exception
 	{
 		for (OrderLinePromotionCandidate candidate : candidates)
@@ -701,7 +713,7 @@ public class PromotionRule {
 				}
 			}
 		}
-		
+
 		ol.setLine(0);
 	}
 	// metas: end

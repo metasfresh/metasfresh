@@ -38,6 +38,7 @@ import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import lombok.NonNull;
 
 /**
  * Iterates an order's lines and creates additional lines for the HU packing material.
@@ -57,11 +58,8 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 	 *
 	 * @param order
 	 */
-	public OrderPackingMaterialDocumentLinesBuilder(final I_C_Order order)
+	public OrderPackingMaterialDocumentLinesBuilder(@NonNull final I_C_Order order)
 	{
-		super();
-
-		Check.assumeNotNull(order, "order not null");
 		this.order = order;
 	}
 

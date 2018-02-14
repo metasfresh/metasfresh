@@ -1,8 +1,8 @@
-package de.metas.purchasecandidate.purchaseordercreation;
+package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import java.sql.Timestamp;
 
-import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,14 +33,14 @@ import lombok.Value;
 @Builder
 /* package */ final class PurchaseOrderAggregationKey
 {
-	public static PurchaseOrderAggregationKey formPurchaseCandidate(
-			@NonNull final PurchaseCandidate candidate)
+	public static PurchaseOrderAggregationKey formPurchaseOrderItem(
+			@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
 		return PurchaseOrderAggregationKey.builder()
-				.orgId(candidate.getOrgId())
-				.warehouseId(candidate.getWarehouseId())
-				.vendorBPartnerId(candidate.getVendorProductInfo().getVendorBPartnerId())
-				.datePromisedMillis(candidate.getDatePromised().getTime())
+				.orgId(purchaseOrderItem.getOrgId())
+				.warehouseId(purchaseOrderItem.getWarehouseId())
+				.vendorBPartnerId(purchaseOrderItem.getVendorProductInfo().getVendorBPartnerId())
+				.datePromisedMillis(purchaseOrderItem.getDatePromised().getTime())
 				.build();
 	}
 

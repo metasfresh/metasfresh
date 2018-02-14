@@ -2,8 +2,9 @@ package de.metas.vendor.gateway.api;
 
 import de.metas.vendor.gateway.api.availability.AvailabilityRequest;
 import de.metas.vendor.gateway.api.availability.AvailabilityResponse;
+import de.metas.vendor.gateway.api.order.LocalPurchaseOrderForRemoteOrderCreated;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
-import de.metas.vendor.gateway.api.order.PurchaseOrderResponse;
+import de.metas.vendor.gateway.api.order.RemotePurchaseOrderCreated;
 
 /*
  * #%L
@@ -37,5 +38,10 @@ public interface VendorGatewayService
 
 	AvailabilityResponse retrieveAvailability(AvailabilityRequest request);
 
-	PurchaseOrderResponse placePurchaseOrder(PurchaseOrderRequest request);
+	/**
+	 * <b>IMPORTANT: </b> shall not throw an exception. If an exception occurs, it shall be included in the return value.
+	 */
+	RemotePurchaseOrderCreated placePurchaseOrder(PurchaseOrderRequest request);
+
+	void associateLocalWithRemotePurchaseOrderId(LocalPurchaseOrderForRemoteOrderCreated localPurchaseOrderForRemoteOrderCreated);
 }

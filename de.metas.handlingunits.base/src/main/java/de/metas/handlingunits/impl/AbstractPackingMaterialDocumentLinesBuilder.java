@@ -41,6 +41,7 @@ import org.compiere.util.Util.ArrayKey;
 import de.metas.handlingunits.IPackingMaterialDocumentLine;
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import lombok.NonNull;
 
 /**
  * Base implementation for {@link IPackingMaterialDocumentLinesBuilder}.
@@ -104,9 +105,8 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	}
 
 	@Override
-	public final void addSource(final IPackingMaterialDocumentLineSource source)
+	public final void addSource(@NonNull final IPackingMaterialDocumentLineSource source)
 	{
-		Check.assumeNotNull(source, "source not null");
 		assertValid(source);
 
 		final List<I_M_HU_PackingMaterial> packingMaterials = source.getM_HU_PackingMaterials();
@@ -126,14 +126,14 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 			}
 		}
 	}
-	
+
 	public final void addSources(final Collection<IPackingMaterialDocumentLineSource> sources)
 	{
 		if(sources == null || sources.isEmpty())
 		{
 			return;
 		}
-		
+
 		sources.forEach(this::addSource);
 	}
 
@@ -191,7 +191,7 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 			final IPackingMaterialDocumentLine pmLine = null; // no packing material line
 			linkSourceToDocumentLine(source, pmLine);
 		}
-		
+
 		return this;
 	}
 

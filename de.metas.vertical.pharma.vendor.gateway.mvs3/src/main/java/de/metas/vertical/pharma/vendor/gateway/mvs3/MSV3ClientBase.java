@@ -5,6 +5,8 @@ import javax.xml.bind.JAXBElement;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.vertical.pharma.vendor.gateway.mvs3.common.Msv3ClientException;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.config.MSV3ClientConfig;
 import de.metas.vertical.pharma.vendor.gateway.mvs3.schema.Msv3FaultInfo;
@@ -36,7 +38,10 @@ import lombok.NonNull;
 
 public abstract class MSV3ClientBase
 {
+	@VisibleForTesting
+	@Getter
 	private final WebServiceTemplate webServiceTemplate;
+
 	@Getter
 	private final MSV3ClientConfig config;
 
@@ -63,6 +68,7 @@ public abstract class MSV3ClientBase
 			@NonNull final Class<? extends T> expectedResponseClass)
 	{
 		final String uri = config.getBaseUrl() + getUrlSuffix();
+
 		final JAXBElement<?> responseElement = (JAXBElement<?>)webServiceTemplate.marshalSendAndReceive(uri, messagePayload);
 
 		final Object responseValue = responseElement.getValue();
