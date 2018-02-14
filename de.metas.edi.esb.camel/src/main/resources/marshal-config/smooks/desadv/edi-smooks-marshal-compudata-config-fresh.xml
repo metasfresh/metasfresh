@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<smooks-resource-list xmlns="http://www.milyn.org/xsd/smooks-1.1.xsd" xmlns:jb="http://www.milyn.org/xsd/smooks/javabean-1.2.xsd"
-	xmlns:ftl="http://www.milyn.org/xsd/smooks/freemarker-1.1.xsd" xmlns:fl="http://www.milyn.org/xsd/smooks/fixed-length-1.3.xsd">
-
-	<ftl:freemarker applyOnElement="de.metas.edi.esb.pojo.desadv.compudata.H000">
-		<ftl:template>/marshal-config/smooks/desadv/templates/edi-marshal-compudata-fresh.ftl</ftl:template>
-	</ftl:freemarker>
-</smooks-resource-list>

@@ -19,5 +19,5 @@
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="${project_loc:de.metas.adempiere.adempiere.base}/src/main/java-gen&#13;&#10;&quot;-&quot;&#13;&#10;&quot;'%'&quot;&#13;&#10;&quot; '${string_prompt:TableName}' &quot;"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="de.metas.adempiere.adempiere.base"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
--<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=&quot;${project_loc:metasfresh-dist}/metasfresh.properties&quot;&#13;&#10;-Dorg.adempiere.util.GenerateModel.OnlySystemColumns=true&#13;&#10;-Dgenerate.legacy=false"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-DPropertyFile=&quot;${project_loc:metasfresh-dist}/metasfresh.properties&quot;&#13;&#10;-Dorg.adempiere.util.GenerateModel.OnlySystemColumns=true&#13;&#10;-Dgenerate.legacy=false"/>
 </launchConfiguration>
