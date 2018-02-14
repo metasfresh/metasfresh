@@ -14,7 +14,7 @@ public class X_MSV3_BestellungAntwortPosition extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 282231666L;
+	private static final long serialVersionUID = 2142401190L;
 
     /** Standard Constructor */
     public X_MSV3_BestellungAntwortPosition (Properties ctx, int MSV3_BestellungAntwortPosition_ID, String trxName)
@@ -40,6 +40,28 @@ public class X_MSV3_BestellungAntwortPosition extends org.compiere.model.PO impl
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Purchase candidate.
+		@param C_PurchaseCandidate_ID Purchase candidate	  */
+	@Override
+	public void setC_PurchaseCandidate_ID (int C_PurchaseCandidate_ID)
+	{
+		if (C_PurchaseCandidate_ID < 1) 
+			set_Value (COLUMNNAME_C_PurchaseCandidate_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PurchaseCandidate_ID, Integer.valueOf(C_PurchaseCandidate_ID));
+	}
+
+	/** Get Purchase candidate.
+		@return Purchase candidate	  */
+	@Override
+	public int getC_PurchaseCandidate_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_PurchaseCandidate_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** 
 	 * MSV3_BestellLiefervorgabe AD_Reference_ID=540821

@@ -69,6 +69,33 @@ public interface I_MSV3_BestellungAnteil
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Bestellposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_OrderLinePO_ID (int C_OrderLinePO_ID);
+
+	/**
+	 * Get Bestellposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_OrderLinePO_ID();
+
+	public org.compiere.model.I_C_OrderLine getC_OrderLinePO();
+
+	public void setC_OrderLinePO(org.compiere.model.I_C_OrderLine C_OrderLinePO);
+
+    /** Column definition for C_OrderLinePO_ID */
+    public static final org.adempiere.model.ModelColumn<I_MSV3_BestellungAnteil, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLinePO_ID = new org.adempiere.model.ModelColumn<I_MSV3_BestellungAnteil, org.compiere.model.I_C_OrderLine>(I_MSV3_BestellungAnteil.class, "C_OrderLinePO_ID", org.compiere.model.I_C_OrderLine.class);
+    /** Column name C_OrderLinePO_ID */
+    public static final String COLUMNNAME_C_OrderLinePO_ID = "C_OrderLinePO_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *

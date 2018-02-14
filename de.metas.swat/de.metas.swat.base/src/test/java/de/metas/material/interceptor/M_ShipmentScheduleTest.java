@@ -30,7 +30,7 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import lombok.NonNull;
 import mockit.Expectations;
 import mockit.Mocked;
-import mockit.integration.springframework.BeanFactoryMockUp;
+
 
 /*
  * #%L
@@ -83,8 +83,6 @@ public class M_ShipmentScheduleTest
 	@Before
 	public void init()
 	{
-		new BeanFactoryMockUp();
-
 		AdempiereTestHelper.get().init();
 
 		oldShipmentSchedule = newInstance(I_M_ShipmentSchedule.class);

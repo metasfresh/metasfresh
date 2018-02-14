@@ -15,28 +15,29 @@
 	<properties>
 		<!-- empty property because the sql migration dir already contains a list of base directories -->
 		<migration-sql-basedir>75-dlm</migration-sql-basedir>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>10.0.0</version>
+			<version>${metasfresh.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
