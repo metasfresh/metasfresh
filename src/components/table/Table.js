@@ -749,49 +749,12 @@ class Table extends Component {
     );
   };
 
-  getSelectedRows = () => {
-    const { rows, selected } = this.state;
-    const { keyProperty } = this.props;
-    const keyProp = keyProperty ? keyProperty : "rowId";
-
-    let selectedRows = [];
-    Object.keys(rows).map(id => {
-      if (selected.indexOf(rows[id][keyProp]) > -1) {
-        selectedRows.push(rows[id].fieldsByName);
-      }
-    });
-
-    return selectedRows;
-  };
-
   handleCopy = e => {
-    const { cols } = this.props;
     e.preventDefault();
 
-    // Prepare table headers
-    const header = cols.map(col => col.caption).join();
+    const cell = e.target;
 
-    // Prepare selected rows
-    const selectedRows = this.getSelectedRows();
-
-    // Prepare values of selectedRows to display
-    const content = selectedRows.map(row =>
-      cols.map(col => {
-        const field = row[col.fields[0].field];
-        //getItemsByProperty(row, 'field', col.fields[0].field)[0];
-        const value = field ? field.value : "";
-
-        if (typeof value === "object" && value !== null) {
-          return value[Object.keys(value)[0]];
-        } else {
-          return value;
-        }
-      })
-    );
-
-    // Push together to clipboard
-    const toCopy = header + "\n" + content.join("\n");
-    e.clipboardData.setData("text/plain", toCopy);
+    e.clipboardData.setData("text/plain", cell.textContent);
   };
 
   handleZoomInto = fieldName => {
