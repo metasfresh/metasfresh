@@ -44,19 +44,23 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 		string(defaultValue: '',
 			description: 'Version of the metasfresh-webui-frontend webui to include in the distribution. Leave empty and this build will use the latest.',
 			name: 'MF_METASFRESH_WEBUI_FRONTEND_VERSION')
+
+		string(defaultValue: '',
+			description: 'Version of the metasfresh-webui-frontend webui to include in the distribution. Leave empty and this build will use the latest.',
+			name: 'MF_METASFRESH_ESB_CAMEL_VERSION')
 	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
 ])
 
-// gh #968 make create a map equal to the one we create in metasfresh/Jenkinsfile. The way we used it further down is also similar
+// gh #968 create a map equal to the one we create in metasfresh/Jenkinsfile. The way we use it further down is also similar
 final MF_ARTIFACT_VERSIONS = [:];
 MF_ARTIFACT_VERSIONS['metasfresh'] = params.MF_METASFRESH_VERSION ?: "LATEST";
 MF_ARTIFACT_VERSIONS['metasfresh-admin'] = params.MF_METASFRESH_ADMIN_VERSION ?: "LATEST";
 MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = params.MF_METASFRESH_PROCUREMENT_WEBUI_VERSION ?: "LATEST";
 MF_ARTIFACT_VERSIONS['metasfresh-webui'] = params.MF_METASFRESH_WEBUI_API_VERSION ?: "LATEST";
 MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = params.MF_METASFRESH_WEBUI_FRONTEND_VERSION ?: "LATEST";
-
+MF_ARTIFACT_VERSIONS['metasfresh-esb-camel'] = params.MF_METASFRESH_ESB_CAMEL_VERSION ?: "LATEST";
 
 timestamps
 {
@@ -113,11 +117,13 @@ node('agent && linux && libc6-i386')
 				final inSquaresIfNeeded = { String version -> return version == "LATEST" ? version: "[${version}]"; }
 
 				// the square brackets in "-DnewVersion" are required if we have a concrete version (i.e. not "LATEST"); see https://github.com/mojohaus/versions-maven-plugin/issues/141 for details
-				final String metasfreshAdminPropertyParam="-Dproperty=metasfresh-admin.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-admin'])}";
+				final String metasfreshAdminPropertyParam="-Dproperty=metasfresh-admin.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-admin'])}"
 				final String metasfreshWebFrontEndUpdatePropertyParam = "-Dproperty=metasfresh-webui-frontend.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'])}";
-				final String metasfreshWebApiUpdatePropertyParam = "-Dproperty=metasfresh-webui-api.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-webui'])}";
-				final String metasfreshProcurementWebuiUpdatePropertyParam = "-Dproperty=metasfresh-procurement-webui.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'])}";
-				final String metasfreshUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh'])}";
+				final String metasfreshWebApiUpdatePropertyParam = "-Dproperty=metasfresh-webui-api.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-webui'])}"
+				final String metasfreshProcurementWebuiUpdatePropertyParam = "-Dproperty=metasfresh-procurement-webui.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'])}"
+				final String metasfreshEsbCamelUpdatePropertyParam = "-Dproperty=metasfresh-esb-camel.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-esb-camel'])}"
+				final String metasfreshUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh'])}"
+
 
 				// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshUpdatePropertyParam} versions:update-property"
@@ -126,6 +132,7 @@ node('agent && linux && libc6-i386')
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshAdminPropertyParam} versions:update-property"
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebFrontEndUpdatePropertyParam} versions:update-property"
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebApiUpdatePropertyParam} versions:update-property"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshEsbCamelUpdatePropertyParam} versions:update-property"
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshProcurementWebuiUpdatePropertyParam} versions:update-property"
 
 				// set the artifact version of everything below the parent ${mvnConf.pomFile}

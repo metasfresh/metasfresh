@@ -30,9 +30,10 @@
 		<metasfresh-webui-api.version>[1,10.0.0]</metasfresh-webui-api.version>
 		<metasfresh-procurement-webui.version>[1,10.0.0]</metasfresh-procurement-webui.version>
 		<metasfresh-admin.version>[1,10.0.0]</metasfresh-admin.version>
-
-		<!-- need to pick LATEST because there is now 1.0.0 version in our local repo. Because currently it's only build on jenkins. -->
-		<metasfresh-webui-frontend.version>LATEST</metasfresh-webui-frontend.version>
+		<metasfresh-esb-camel.version>[1,10.0.0]</metasfresh-esb-camel.version>
+		
+		<!-- need to pick LATEST because there is no 1.0.0 version in our local repo. Because currently it's only build on jenkins. -->
+		<metasfresh-webui-frontend.version>[1,10.0.0]</metasfresh-webui-frontend.version>
 	</properties>
 
 	<dependencies>
@@ -84,7 +85,7 @@ Since we now work with a range, we now declare the dependencies here where range
 		<dependency>
 			<groupId>de.metas.printing.esb</groupId>
 			<artifactId>de.metas.printing.esb.camel</artifactId>
-			<version>${metasfresh.version}</version>
+			<version>${metasfresh-esb-camel.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.printing</groupId>
@@ -95,7 +96,7 @@ Since we now work with a range, we now declare the dependencies here where range
 		<dependency>
 			<groupId>de.metas.edi.esb</groupId>
 			<artifactId>de.metas.edi.esb.camel</artifactId>
-			<version>${metasfresh.version}</version>
+			<version>${metasfresh-esb-camel.version}</version>
 		</dependency>
 		<!--
 			gh #968 https://github.com/metasfresh/metasfresh/issues/968
@@ -200,14 +201,6 @@ note: when adding new records, please roughly order them by alphabet.
 		<dependency>
 			<groupId>de.metas.banking</groupId>
 			<artifactId>de.metas.banking.base</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>migration-postgres-sql</classifier>
-			<type>zip</type>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.commission</groupId>
-			<artifactId>de.metas.commission.base</artifactId>
 			<version>${metasfresh.version}</version>
 			<classifier>migration-postgres-sql</classifier>
 			<type>zip</type>
@@ -669,7 +662,7 @@ note: when adding new records, please roughly order them by alphabet.
 					</execution>
 
 					<!--
-						Build deploy/download folder with procurement-webui and some camel ESB modules. Those binary are only needed in some scenarior
+						Build deploy/download folder with procurement-webui and some camel ESB modules. Those binaries are only needed in some scenarios
 						We specified these artifacts as dependencies further up. Therefore they were already resolved and now we only need to grab 'em by the artifactid without having to specify a particular version.
 					-->
 					<execution>
