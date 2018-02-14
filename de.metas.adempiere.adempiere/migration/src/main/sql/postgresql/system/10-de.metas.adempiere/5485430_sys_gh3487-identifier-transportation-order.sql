@@ -1,0 +1,25 @@
+-- 2018-02-14T08:17:37.324
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsIdentifier='Y',Updated=TO_TIMESTAMP('2018-02-14 08:17:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551431
+;
+
+-- 2018-02-14T08:18:22.427
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsIdentifier='Y', SeqNo=2,Updated=TO_TIMESTAMP('2018-02-14 08:18:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551157
+;
+
+-- 2018-02-14T08:18:56.435
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET SeqNo=3,Updated=TO_TIMESTAMP('2018-02-14 08:18:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551431
+;
+
+-- 2018-02-14T08:19:34.334
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET SeqNo=0,Updated=TO_TIMESTAMP('2018-02-14 08:19:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=540439
+;
+
+-- 2018-02-14T08:19:37.521
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET SeqNo=1,Updated=TO_TIMESTAMP('2018-02-14 08:19:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551431
+;
+
