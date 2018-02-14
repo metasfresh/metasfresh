@@ -51,7 +51,7 @@ import mockit.Mocked;
  * #L%
  */
 
-public class DistributionAdvisedEventCreatorTest
+public class DDOrderAdvisedOrCreatedEventCreatorTest
 {
 
 	@Mocked
@@ -101,10 +101,12 @@ public class DistributionAdvisedEventCreatorTest
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
 
 		final DDOrderAdvisedOrCreatedEventCreator productionAdvisedEventCreator = new DDOrderAdvisedOrCreatedEventCreator(ddOrderDemandMatcher, ddOrderPojoSupplier);
-		final List<DDOrderAdvisedOrCreatedEvent> events = productionAdvisedEventCreator.createDistributionAdvisedEvents(supplyRequiredDescriptor, mrpContext);
+		final List<DDOrderAdvisedOrCreatedEvent> events = productionAdvisedEventCreator.createDDOrderAdvisedEvents(supplyRequiredDescriptor, mrpContext);
 
 		assertThat(events).hasSize(1);
 		assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
 	}
+
+
 
 }

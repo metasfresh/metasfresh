@@ -57,7 +57,7 @@ public class DDOrderAdvisedOrCreatedEventCreator
 		this.ddOrderPojoSupplier = ddOrderPojoSupplier;
 	}
 
-	public List<DDOrderAdvisedOrCreatedEvent> createDistributionAdvisedEvents(
+	public List<DDOrderAdvisedOrCreatedEvent> createDDOrderAdvisedEvents(
 			final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			final IMutableMRPContext mrpContext)
 	{
