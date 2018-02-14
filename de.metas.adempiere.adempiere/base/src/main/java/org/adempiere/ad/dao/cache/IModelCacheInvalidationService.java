@@ -1,5 +1,7 @@
 package org.adempiere.ad.dao.cache;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.ISingletonService;
 
 import lombok.NonNull;
@@ -36,13 +38,19 @@ public interface IModelCacheInvalidationService extends ISingletonService
 {
 	void register(String tableName, ModelCacheInvalidateRequestFactory requestFactory);
 
-	CacheInvalidateRequest createRequest(Object model, ModelCacheInvalidationTiming timing);
+	@Nullable
+	CacheInvalidateMultiRequest createRequest(Object model, ModelCacheInvalidationTiming timing);
 
-	void invalidate(CacheInvalidateRequest request, ModelCacheInvalidationTiming timing);
+	void invalidate(CacheInvalidateMultiRequest request, ModelCacheInvalidationTiming timing);
 
 	default void invalidateForModel(@NonNull final Object model, @NonNull final ModelCacheInvalidationTiming timing)
 	{
-		final CacheInvalidateRequest request = createRequest(model, timing);
+		final CacheInvalidateMultiRequest request = createRequest(model, timing);
+		if (request == null)
+		{
+			return;
+		}
+
 		invalidate(request, timing);
 	}
 

@@ -40,7 +40,7 @@ public interface IBPartnerStats
 	/**
 	 * @return
 	 */
-	BigDecimal getTotalOpenBalance();
+	BigDecimal getOpenItems();
 
 	/**
 	 * @return

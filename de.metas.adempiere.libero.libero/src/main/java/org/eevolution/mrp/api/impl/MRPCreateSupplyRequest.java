@@ -12,7 +12,6 @@ import java.util.Set;
 import org.adempiere.util.lang.ObjectUtils;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
-import org.eevolution.mrp.api.IMRPExecutor;
 
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.quantity.Quantity;
@@ -22,7 +21,6 @@ import lombok.NonNull;
 public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupplyRequest
 {
 	private final IMaterialPlanningContext mrpContext;
-	private final IMRPExecutor mrpExecutor;
 	private final Quantity qtyToSupply;
 	private final Date demandDate;
 	/**
@@ -37,13 +35,11 @@ public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupp
 
 	public MRPCreateSupplyRequest(
 			@NonNull final IMaterialPlanningContext mrpContext,
-			@NonNull final IMRPExecutor mrpExecutor,
 			@NonNull final Quantity qtyToSupply,
 			@NonNull final Date demandDate,
 			@NonNull final List<IMRPRecordAndQty> mrpDemandsToAllocate)
 	{
 		this.mrpContext = mrpContext;
-		this.mrpExecutor = mrpExecutor;
 		this.qtyToSupply = qtyToSupply;
 		this.demandDate = demandDate;
 
@@ -114,12 +110,6 @@ public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupp
 	public IMaterialPlanningContext getMrpContext()
 	{
 		return mrpContext;
-	}
-
-	@Override
-	public IMRPExecutor getMRPExecutor()
-	{
-		return mrpExecutor;
 	}
 
 	@Override

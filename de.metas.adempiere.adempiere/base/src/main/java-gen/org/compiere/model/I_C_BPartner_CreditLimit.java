@@ -260,31 +260,6 @@ public interface I_C_BPartner_CreditLimit
     public static final String COLUMNNAME_DateFrom = "DateFrom";
 
 	/**
-	 * Set Datum bis.
-	 * Enddatum eines Abschnittes
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDateTo (java.sql.Timestamp DateTo);
-
-	/**
-	 * Get Datum bis.
-	 * Enddatum eines Abschnittes
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getDateTo();
-
-    /** Column definition for DateTo */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object> COLUMN_DateTo = new org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object>(I_C_BPartner_CreditLimit.class, "DateTo", null);
-    /** Column name DateTo */
-    public static final String COLUMNNAME_DateTo = "DateTo";
-
-	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
