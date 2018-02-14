@@ -46,6 +46,7 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3445](https://github.com/metasfresh/metasfresh/issues/3445) Qty TU not correct in purchase invoice jasper
+  * [#3477](https://github.com/metasfresh/metasfresh/issues/3477) Cannot save manufacturing order
 
 * metasfresh-webui-api
   * [#806](https://github.com/metasfresh/metasfresh-webui-api/issues/806) Add to Transportation Order, Ship and Invoice action in Picking Clearing Tray not respecting the invoice schedule
