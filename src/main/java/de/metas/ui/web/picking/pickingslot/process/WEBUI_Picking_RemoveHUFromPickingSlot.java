@@ -78,9 +78,14 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot
 		final PickingSlotRow huRow = getSingleSelectedRow();
 		pickingCandidateService.removeHUFromPickingSlot(huRow.getHuId());
 
-		invalidateView();
-
 		return MSG_OK;
+	}
+	
+	@Override
+	protected void postProcess(final boolean success)
+	{
+		invalidateView(); // picking slots view (right side)
+		invalidateParentView(); // packageables view (left side)
 	}
 
 	@Override
