@@ -54,8 +54,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -373,12 +371,12 @@ public class OrderBL implements IOrderBL
 		{
 			return;
 		}
-		
+
 		if(!docType.isCopyDescriptionToDocument())
 		{
 			return;
 		}
-		
+
 		order.setDescription(docType.getDescription());
 		order.setDescriptionBottom(docType.getDocumentNote());
 	}
@@ -390,11 +388,6 @@ public class OrderBL implements IOrderBL
 
 		for (final I_C_OrderLine line : Services.get(IOrderDAO.class).retrieveOrderLines(orderEx))
 		{
-			if (line instanceof MOrderLine && order instanceof MOrder)
-			{
-				((MOrderLine)line).setHeaderInfo((MOrder)order);
-			}
-
 			if (orderEx.isDropShip() && orderEx.getDropShip_BPartner_ID() > 0)
 			{
 				line.setC_BPartner_ID(orderEx.getDropShip_BPartner_ID());
@@ -922,7 +915,7 @@ public class OrderBL implements IOrderBL
 		aggregateOnOrder.sum(DYNATTR_QtyOrderedSum, org.compiere.model.I_C_OrderLine.COLUMN_QtyOrdered);
 
 		final de.metas.order.model.I_C_Order fOrder = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
-		
+
 		final List<org.compiere.model.I_C_Order> queryiedOrders = aggregateOnOrder.aggregate();
 		if (queryiedOrders.isEmpty())
 		{

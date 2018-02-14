@@ -1,7 +1,10 @@
 package de.metas.order.event;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -23,7 +26,9 @@ import de.metas.event.QueueableForwardingEventBus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -86,23 +91,53 @@ public class OrderUserNotifications extends QueueableForwardingEventBus
 		return this;
 	}
 
-	public OrderUserNotifications notifyOrderCompleted(@NonNull final I_C_Order order)
+	@Value
+	@Builder
+	public static class NotificationRequest
 	{
-		final int recipientUserId = extractRecipientUserIdFromOrder(order);
-		return notifyOrderCompleted(order, ImmutableSet.of(recipientUserId));
+		@NonNull
+		I_C_Order order;
+
+		@Nullable
+		Set<Integer> recipientUserIds;
+
+		@Nullable
+		IPair<String, Object[]> adMessageAndParams;
 	}
 
 	/**
-	 * Post events about given document.
+	 * Convenience method that calls {@link #notifyOrderCompleted(NotificationRequest)} with the order's creator as recipient.
 	 *
 	 * @param order
-	 * @param recipientUserId
+	 * @return
 	 */
-	public OrderUserNotifications notifyOrderCompleted(@NonNull final I_C_Order order, final Set<Integer> recipientUserIds)
+	public OrderUserNotifications notifyOrderCompleted(@NonNull final I_C_Order order)
 	{
+		final NotificationRequest request = NotificationRequest.builder()
+				.order(order).build();
+
+		return notifyOrderCompleted(request);
+	}
+
+	public OrderUserNotifications notifyOrderCompleted(@NonNull final NotificationRequest request)
+	{
+		final I_C_Order order = request.getOrder();
+
+		final Set<Integer> recipientUserIds = Optional
+				.ofNullable(request.getRecipientUserIds())
+				.orElse(ImmutableSet.of(extractRecipientUserIdFromOrder(order)));
+
+		final IPair<String, Object[]> adMessageAndParams = Optional
+				.ofNullable(request.getAdMessageAndParams())
+				.orElse(extractOrderCompletedADMessageAndParams(order));
+
 		try
 		{
-			final List<Event> events = createOrderCompletedEvents(order, recipientUserIds);
+			final List<Event> events = createOrderCompletedEvents(
+					order,
+					recipientUserIds,
+					adMessageAndParams);
+
 			events.forEach(this::postEvent);
 		}
 		catch (final Exception ex)
@@ -113,17 +148,17 @@ public class OrderUserNotifications extends QueueableForwardingEventBus
 		return this;
 	}
 
-	private final List<Event> createOrderCompletedEvents(final I_C_Order order, final Set<Integer> recipientUserIds)
+	private final List<Event> createOrderCompletedEvents(
+			@NonNull final I_C_Order order,
+			@NonNull final Set<Integer> recipientUserIds,
+			@NonNull final IPair<String, Object[]> adMessageAndParams)
 	{
 		Check.assumeNotEmpty(recipientUserIds, "recipientUserIds is not empty");
 
-		//
 		// Extract event message parameters
-		final IPair<String, Object[]> adMessageAndParams = extractOrderCompletedADMessageAndParams(order);
 		final String adMessage = adMessageAndParams.getLeft();
 		final Object[] adMessageParams = adMessageAndParams.getRight();
 
-		//
 		// Create an return the event
 		return recipientUserIds.stream()
 				.map(recipientUserId -> Event.builder()

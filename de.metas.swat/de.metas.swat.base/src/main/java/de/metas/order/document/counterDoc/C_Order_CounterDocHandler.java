@@ -23,6 +23,7 @@ import de.metas.document.spi.CounterDocumentHandlerAdapter;
 import de.metas.document.spi.ICounterDocHandler;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
 
 /*
  * #%L
@@ -124,7 +125,7 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 		for (int i = 0; i < counterLines.length; i++)
 		{
 			final MOrderLine counterLine = counterLines[i];
-			counterLine.setOrder(counterOrderPO);	// copies header values (BP, etc.)
+			Services.get(IOrderLineBL.class).setOrder(counterLine, counterOrderPO); // copies header values (BP, etc.)
 			counterLine.setPrice();
 			counterLine.setTax();
 			InterfaceWrapperHelper.save(counterLine);

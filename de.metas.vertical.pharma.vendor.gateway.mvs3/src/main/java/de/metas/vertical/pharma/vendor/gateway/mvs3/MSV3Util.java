@@ -17,6 +17,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_AD_System;
 import org.compiere.model.MSequence;
@@ -114,8 +115,15 @@ public class MSV3Util
 		return datePromised;
 	}
 
+	private static int staticIdForUnitTests = 0;
+
 	public static int retrieveNextSupportId()
 	{
+		if(Adempiere.isUnitTestMode())
+		{
+			return ++staticIdForUnitTests;
+		}
+
 		final int supportId = MSequence.getNextID(Env.CTXVALUE_AD_Client_ID_System, MSV3_SUPPORT_ID_SEQUENCE);
 		if (supportId <= MSV3_MAX_SUPPORT_ID_999999)
 		{

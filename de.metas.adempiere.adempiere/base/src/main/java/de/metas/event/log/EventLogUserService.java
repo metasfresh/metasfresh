@@ -62,7 +62,7 @@ public class EventLogUserService
 		String message;
 		Class<?> eventHandlerClass;
 
-		@Builder(buildMethodName = "storeEntry")
+		@Builder(buildMethodName = "createAndStore")
 		public EventLogEntryRequest(
 				final boolean processed,
 				final boolean error,
@@ -151,12 +151,12 @@ public class EventLogUserService
 
 			newLogEntry(request.getHandlerClass())
 					.processed(true)
-					.storeEntry();
+					.createAndStore();
 		}
 		catch (final RuntimeException e)
 		{
 			newErrorLogEntry(request.getHandlerClass(), e)
-					.storeEntry();
+					.createAndStore();
 		}
 	}
 

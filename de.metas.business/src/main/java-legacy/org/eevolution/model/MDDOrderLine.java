@@ -25,10 +25,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MAttributeSet;
-import org.compiere.model.MLocator;
 import org.compiere.model.MProduct;
-import org.compiere.model.MStorage;
 import org.compiere.model.MUOM;
 import org.compiere.util.DB;
 
@@ -45,7 +42,7 @@ import de.metas.product.IProductBL;
 			ol.save();
 
  *	</code>
- * 
+ *
  * @author Jorg Janke
  * @version $Id: MOrderLine.java,v 1.6 2006/10/02 05:18:39 jjanke Exp $
  */
@@ -58,7 +55,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Get Order Unreserved Qty
-	 * 
+	 *
 	 * @param ctx context
 	 * @param M_Locator_ID wh
 	 * @param M_Product_ID product
@@ -94,7 +91,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**************************************************************************
 	 * Default Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param DD_OrderLine_ID order line to load
 	 * @param trxName trx name
@@ -149,7 +146,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set record
 	 * @param trxName transaction
@@ -162,7 +159,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 	/**
 	 * Set Defaults from Order.
 	 * Does not set Parent !!
-	 * 
+	 *
 	 * @param order order
 	 */
 	private void setOrder(MDDOrder order)
@@ -176,7 +173,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Get Parent
-	 * 
+	 *
 	 * @return parent
 	 */
 	@Deprecated
@@ -187,7 +184,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Set Product
-	 * 
+	 *
 	 * @param product product
 	 */
 	public void setProduct(MProduct product)
@@ -208,7 +205,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Set M_AttributeSetInstance_ID
-	 * 
+	 *
 	 * @param M_AttributeSetInstance_ID id
 	 */
 	@Override
@@ -222,7 +219,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Can Change Warehouse
-	 * 
+	 *
 	 * @return true if warehouse can be changed
 	 */
 	boolean canChangeWarehouse()
@@ -242,7 +239,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Get C_Project_ID
-	 * 
+	 *
 	 * @return project
 	 */
 	@Override
@@ -256,7 +253,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Get C_Activity_ID
-	 * 
+	 *
 	 * @return Activity
 	 */
 	@Override
@@ -270,7 +267,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Get C_Campaign_ID
-	 * 
+	 *
 	 * @return Campaign
 	 */
 	@Override
@@ -284,7 +281,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Get User2_ID
-	 * 
+	 *
 	 * @return User2
 	 */
 	@Override
@@ -298,7 +295,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Get User2_ID
-	 * 
+	 *
 	 * @return User2
 	 */
 	@Override
@@ -312,7 +309,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Get AD_OrgTrx_ID
-	 * 
+	 *
 	 * @return trx org
 	 */
 	@Override
@@ -326,7 +323,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**************************************************************************
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -347,7 +344,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Add to Description
-	 * 
+	 *
 	 * @param description text
 	 */
 	void addDescription(String description)
@@ -361,7 +358,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Set C_Charge_ID
-	 * 
+	 *
 	 * @param C_Charge_ID charge
 	 */
 	@Override
@@ -375,7 +372,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 	/**
 	 * Set Qty Entered/Ordered.
 	 * Use this Method if the Line UOM is the Product UOM
-	 * 
+	 *
 	 * @param Qty QtyOrdered/Entered
 	 */
 	public void setQty(BigDecimal Qty)
@@ -386,7 +383,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Set Qty Entered - enforce entered UOM
-	 * 
+	 *
 	 * @param QtyEntered
 	 */
 	@Override
@@ -402,7 +399,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Set Qty Ordered - enforce Product UOM
-	 * 
+	 *
 	 * @param QtyOrdered
 	 */
 	@Override
@@ -419,7 +416,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**************************************************************************
 	 * Before Save
-	 * 
+	 *
 	 * @param newRecord
 	 * @return true if it can be sabed
 	 */
@@ -472,51 +469,6 @@ public class MDDOrderLine extends X_DD_OrderLine
 		if (newRecord || is_ValueChanged(COLUMNNAME_QtyOrdered))
 			setQtyOrdered(getQtyOrdered());
 
-		// Qty on instance ASI for SO
-		if (getM_AttributeSetInstance_ID() > 0
-				&& (newRecord || is_ValueChanged(COLUMNNAME_M_Product_ID)
-						|| is_ValueChanged(COLUMNNAME_M_AttributeSetInstance_ID)
-						|| is_ValueChanged(COLUMNNAME_M_Locator_ID))
-				&& getDD_Order().isSOTrx())
-		{
-			final I_M_Product product = getM_Product();
-			if (Services.get(IProductBL.class).isStocked(product))
-			{
-				int M_AttributeSet_ID = Services.get(IProductBL.class).getM_AttributeSet_ID(product);
-				boolean isInstance = M_AttributeSet_ID != 0;
-				if (isInstance)
-				{
-					MAttributeSet mas = MAttributeSet.get(getCtx(), M_AttributeSet_ID);
-					isInstance = mas.isInstanceAttribute();
-				}
-				// Max
-				if (isInstance)
-				{
-					MLocator locator_from = MLocator.get(getCtx(), getM_Locator_ID());
-					MStorage[] storages = MStorage.getWarehouse(getCtx(),
-							locator_from.getM_Warehouse_ID(),
-							getM_Product_ID(),
-							getM_AttributeSetInstance_ID(),
-							M_AttributeSet_ID,
-							false,
-							null,
-							true,
-							get_TrxName());
-					BigDecimal qty = BigDecimal.ZERO;
-					for (int i = 0; i < storages.length; i++)
-					{
-						if (storages[i].getM_AttributeSetInstance_ID() == getM_AttributeSetInstance_ID())
-							qty = qty.add(storages[i].getQtyOnHand());
-					}
-					if (getQtyOrdered().compareTo(qty) > 0)
-					{
-						throw new AdempiereException("@QtyInsufficient@: Qty - Stock=" + qty + ", Ordered=" + getQtyOrdered());
-					}
-				}
-			}	// stocked
-
-		}	// SO instance
-
 		// FreightAmt Not used
 		if (BigDecimal.ZERO.compareTo(getFreightAmt()) != 0)
 			setFreightAmt(BigDecimal.ZERO);
@@ -535,7 +487,7 @@ public class MDDOrderLine extends X_DD_OrderLine
 
 	/**
 	 * Before Delete
-	 * 
+	 *
 	 * @return true if it can be deleted
 	 */
 	@Override

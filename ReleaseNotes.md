@@ -28,6 +28,7 @@ Here come the actual release notes:
   * [#3407](https://github.com/metasfresh/metasfresh/issues/3407) New Businesspartner Window for Pharma vertical
     * New Business Partner Window in WebUI for Pharma Verticals.
   * [#3408](https://github.com/metasfresh/metasfresh/issues/3408) New Product Window for Pharma vertical
+    * New Product Window in WebUI for Pharma Verticals.
   * [#3413](https://github.com/metasfresh/metasfresh/issues/3413) Credit Limit data structure as subtab in Businesspartner
   * [#3458](https://github.com/metasfresh/metasfresh/issues/3458) Remove M_Storage-based legacy check from MProduct
   * [#3467](https://github.com/metasfresh/metasfresh/issues/3467) Preparation Date Filer as Daterange
@@ -36,16 +37,23 @@ Here come the actual release notes:
     * Adds the translation for en_EN, de_DE of the "Show all dates" hint in daterange filter.
   * [#3471](https://github.com/metasfresh/metasfresh/issues/3471) Disable Sales Opportunities Window until its permission is configurable
     * Hiding the Sales Opportunity Window from default WebUI Menu, as long as in beta.
+  * [#3487](https://github.com/metasfresh/metasfresh/issues/3487) Extend Identifier Transportation Order
+    * Improving the Transportation Order identifier, now additionally showing Date and Tour.
+  * [#3495](https://github.com/metasfresh/metasfresh/issues/3495) Improvements to Product Price Window
+    * Improving Product Price Window in WebUI, adding Active indicator and removing Price Matching Order from grid View.
 
 * metasfresh-webui-api
   * [#818](https://github.com/metasfresh/metasfresh-webui-api/issues/818) Values.valueToJsonObject() shall return JSONNullValue instead of null
 
 * metasfresh-webui-frontend
   * [#1501](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1501) Automated Javascript and React Testing with Jest
+  * [#1593](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1593) Copy/ Paste for selected Field in Subtab GridView not giving correct result
+    * New Feature that allows to mark a Field in Grid View and copy the field content to clipboard.
 
 ## Fixes
 * metasfresh
   * [#3445](https://github.com/metasfresh/metasfresh/issues/3445) Qty TU not correct in purchase invoice jasper
+  * [#3477](https://github.com/metasfresh/metasfresh/issues/3477) Cannot save manufacturing order
 
 * metasfresh-webui-api
   * [#806](https://github.com/metasfresh/metasfresh-webui-api/issues/806) Add to Transportation Order, Ship and Invoice action in Picking Clearing Tray not respecting the invoice schedule
@@ -61,6 +69,8 @@ Here come the actual release notes:
     * Fixes errors in console that popped up when opening the Handling Unit Editor.
   * [#1558](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1558) Dropdown fields not hidden when creating a new Business Partner
     * Fixes the reamining dropdown in Purchase Order when calling the "New Businesspartner" action in context menu.
+  * [#1588](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1588) Zoom Into is not working
+    * Fixes the Zoom-To functionality that allows the user to click on field labels and jump to detail data when available.
 
 # metasfresh 5.43 (2018-06)
 **release for week 2018-06**

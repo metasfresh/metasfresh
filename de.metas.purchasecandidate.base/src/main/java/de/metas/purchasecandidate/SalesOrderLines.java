@@ -177,7 +177,7 @@ public class SalesOrderLines
 	private PurchaseCandidate createPurchaseCandidate(final I_C_OrderLine salesOrderLine, I_C_BPartner_Product vendorProductInfo)
 	{
 		return PurchaseCandidate.builder()
-				.datePromised(salesOrderLine.getDatePromised())
+				.dateRequired(salesOrderLine.getDatePromised())
 				.orgId(salesOrderLine.getAD_Org_ID())
 				.productId(vendorProductInfo.getM_Product_ID())
 				.qtyToPurchase(BigDecimal.ZERO)

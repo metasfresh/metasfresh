@@ -1,5 +1,8 @@
 package de.metas.order.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -42,7 +45,6 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.pricing.exceptions.ProductNotOnPriceListException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner_Location;
@@ -51,8 +53,6 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Shipper;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MTax;
 import org.compiere.model.X_C_OrderLine;
@@ -467,9 +467,9 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public I_C_OrderLine createOrderLine(final org.compiere.model.I_C_Order order)
 	{
-		final MOrderLine olPO = new MOrderLine((MOrder)LegacyAdapters.convertToPO(order));
-
-		final I_C_OrderLine ol = InterfaceWrapperHelper.create(olPO, I_C_OrderLine.class);
+		final I_C_OrderLine ol = newInstance(I_C_OrderLine.class, order);
+		ol.setC_Order(order);
+		setOrder(ol, order);
 
 		if (order.isSOTrx() && order.isDropShip())
 		{
@@ -485,6 +485,33 @@ public class OrderLineBL implements IOrderLineBL
 			ol.setAD_User_ID(AD_User_ID);
 		}
 		return ol;
+	}
+
+	@Override
+	public void setOrder(final org.compiere.model.I_C_OrderLine ol, final org.compiere.model.I_C_Order order)
+	{
+		ol.setAD_Org_ID(order.getAD_Org_ID());
+		final boolean isDropShip = order.isDropShip();
+		final int C_BPartner_ID = isDropShip && order.getDropShip_BPartner_ID() > 0 ? order.getDropShip_BPartner_ID() : order.getC_BPartner_ID();
+		ol.setC_BPartner_ID(C_BPartner_ID);
+
+		final int C_BPartner_Location_ID = isDropShip && order.getDropShip_Location_ID() > 0 ? order.getDropShip_Location_ID() : order.getC_BPartner_Location_ID();
+		ol.setC_BPartner_Location_ID(C_BPartner_Location_ID);
+
+		// metas: begin: copy AD_User_ID
+		final de.metas.interfaces.I_C_OrderLine oline = InterfaceWrapperHelper.create(ol, de.metas.interfaces.I_C_OrderLine.class);
+		final int AD_User_ID = isDropShip && order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
+		oline.setAD_User_ID(AD_User_ID);
+		// metas: end
+
+		oline.setM_PriceList_Version_ID(0); // the current PLV might be add or'd with the new order's PL.
+
+		ol.setM_Warehouse_ID(order.getM_Warehouse_ID());
+		ol.setDateOrdered(order.getDateOrdered());
+		ol.setDatePromised(order.getDatePromised());
+		ol.setC_Currency_ID(order.getC_Currency_ID());
+
+		// Don't set Activity, etc as they are overwrites
 	}
 
 	@Override
@@ -525,7 +552,13 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void updatePrices(final I_C_OrderLine orderLine)
+	public void updatePrices(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final I_C_OrderLine orderLineToUse = create(orderLine, I_C_OrderLine.class);
+		updatePrices0(orderLineToUse);
+	}
+
+	private void updatePrices0(final I_C_OrderLine orderLine)
 	{
 		// FIXME refactor and/or keep in sync with #setPricesIfNotIgnored
 

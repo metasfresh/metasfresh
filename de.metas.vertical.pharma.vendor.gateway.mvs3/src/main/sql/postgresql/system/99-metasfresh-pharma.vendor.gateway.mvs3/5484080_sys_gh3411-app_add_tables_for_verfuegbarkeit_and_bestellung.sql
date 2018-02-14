@@ -4752,22 +4752,31 @@ CREATE UNIQUE INDEX MSV3_Vendor_Config_C_BPartner_ID ON MSV3_Vendor_Config (C_BP
 ;
 
 
-CREATE INDEX msv3_verfuegbarkeit_transaction_c_orderso_id
-   ON public.msv3_verfuegbarkeit_transaction (c_orderso_id ASC NULLS LAST);
-CREATE INDEX msv3_verfuegbarkeitanteil_msv3_verfuegbarkeitsantwortartikel_id
+   
+CREATE INDEX IF NOT EXISTS msv3_verfuegbarkeitanteil_msv3_verfuegbarkeitsantwortartikel_id
    ON public.msv3_verfuegbarkeitanteil (msv3_verfuegbarkeitsantwortartikel_id ASC NULLS LAST);  
-CREATE INDEX msv3_verfuegbarkeitsanfrageeinzelne_artikel_msv3_verfuegbarkeitsanfrageeinzelne_id
+   
+CREATE INDEX IF NOT EXISTS msv3_verfuegbarkeitsanfrageeinzelne_artikel_msv3_verfuegbarkeitsanfrageeinzelne_id
    ON public.msv3_verfuegbarkeitsanfrageeinzelne_artikel (msv3_verfuegbarkeitsanfrageeinzelne_id ASC NULLS LAST);  
-CREATE INDEX msv3_verfuegbarkeitsanfrageeinzelne_artikel_c_orderlineso_id
+   
+CREATE INDEX IF NOT EXISTS msv3_verfuegbarkeitsanfrageeinzelne_artikel_c_orderlineso_id
    ON public.msv3_verfuegbarkeitsanfrageeinzelne_artikel (c_orderlineso_id ASC NULLS LAST);  
-CREATE INDEX msv3_verfuegbarkeitsantwortartikel_msv3_verfuegbarkeitsanfrageeinzelneantwort_id
+   
+CREATE INDEX IF NOT EXISTS msv3_verfuegbarkeitsantwortartikel_msv3_verfuegbarkeitsanfrageeinzelneantwort_id
    ON public.msv3_verfuegbarkeitsantwortartikel (msv3_verfuegbarkeitsanfrageeinzelneantwort_id ASC NULLS LAST);  
-CREATE INDEX msv3_bestellunganteil_msv3_bestellungantwortposition_id
+   
+CREATE INDEX IF NOT EXISTS msv3_bestellunganteil_msv3_bestellungantwortposition_id
    ON public.msv3_bestellunganteil (msv3_bestellungantwortposition_id ASC NULLS LAST);  
-CREATE INDEX msv3_bestellungauftrag_msv3_bestellung_id
+ 
+CREATE INDEX IF NOT EXISTS msv3_bestellungauftrag_msv3_bestellung_id
    ON public.msv3_bestellungauftrag (msv3_bestellung_id ASC NULLS LAST);  
-CREATE INDEX msv3_bestellungposition_msv3_bestellungauftrag_id
+   
+CREATE INDEX IF NOT EXISTS msv3_bestellungposition_msv3_bestellungauftrag_id
    ON public.msv3_bestellungposition (msv3_bestellungauftrag_id ASC NULLS LAST);  
-CREATE INDEX msv3_tour_msv3_verfuegbarkeitanteil_id
-   ON public.msv3_tour (msv3_verfuegbarkeitanteil_id ASC NULLS LAST);  
-  
+   
+CREATE INDEX IF NOT EXISTS msv3_tour_msv3_verfuegbarkeitanteil_id
+   ON public.msv3_tour (msv3_verfuegbarkeitanteil_id ASC NULLS LAST);
+
+CREATE INDEX IF NOT EXISTS msv3_bestellungantwortauftrag_msv3_bestellungantwort_id
+   ON public.msv3_bestellungantwortauftrag (msv3_bestellungantwort_id ASC NULLS LAST);
+
