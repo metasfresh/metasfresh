@@ -43,7 +43,7 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 
 		string(defaultValue: '',
 			description: 'Version of the metasfresh-webui-frontend webui to include in the distribution. Leave empty and this build will use the latest.',
-			name: 'MF_METASFRESH_WEBUI_FRONTEND_VERSION')
+			name: 'MF_METASFRESH_WEBUI_FRONTEND_VERSION'),
 
 		string(defaultValue: '',
 			description: 'Version of the metasfresh-webui-frontend webui to include in the distribution. Leave empty and this build will use the latest.',
