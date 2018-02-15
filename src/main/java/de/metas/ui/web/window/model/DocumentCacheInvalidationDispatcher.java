@@ -155,13 +155,14 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 		}
 		else
 		{
+			logger.debug("Invalidating the included document: {}", request);
+			final int childRecordId = request.getChildRecordId();
+			documents.invalidateIncludedDocumentsByRecordId(rootTableName, rootRecordId, childTableName, childRecordId);
+			
 			// NOTE: as a workaround to solve the problem of https://github.com/metasfresh/metasfresh-webui-api/issues/851,
 			// we are invalidating the whole root document to make sure that in case there were any virtual columns on header,
 			// those get refreshed too.
-			logger.debug("Invalidating the included document: {}", request);
 			documents.invalidateDocumentByRecordId(rootTableName, rootRecordId);
-			// final int childRecordId = request.getChildRecordId();
-			// documents.invalidateIncludedDocumentsByRecordId(rootTableName, rootRecordId, childTableName, childRecordId);
 		}
 
 		viewsRepository.notifyRecordChanged(rootTableName, rootRecordId);
