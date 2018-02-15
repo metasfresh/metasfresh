@@ -1,5 +1,6 @@
 package org.adempiere.bpartner.process;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 
 import de.metas.process.IProcessPrecondition;
@@ -17,7 +18,9 @@ public class BPartnerCreditLimit_Approve extends JavaProcess implements IProcess
 	@Override
 	protected String doIt()
 	{
-
+		final I_C_BPartner_CreditLimit bpCreditLimit = getRecord(I_C_BPartner_CreditLimit.class);
+		bpCreditLimit.setApprovedBy_ID(getAD_User_ID());
+		InterfaceWrapperHelper.save(bpCreditLimit);
 		return "@Success@";
 	}
 
