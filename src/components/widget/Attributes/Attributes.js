@@ -1,62 +1,26 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import classnames from 'classnames';
 
-import { getAttributesInstance } from "../../../actions/AppActions";
+import { getAttributesInstance } from '../../../actions/AppActions';
 import {
   completeRequest,
   initLayout,
-  patchRequest
-} from "../../../actions/GenericActions";
-import { parseToDisplay } from "../../../actions/WindowActions";
-import AttributesDropdown from "./AttributesDropdown";
+  patchRequest,
+} from '../../../actions/GenericActions';
+import { parseToDisplay } from '../../../actions/WindowActions';
+import AttributesDropdown from './AttributesDropdown';
 
-class Attributes extends Component {
+export default class Attributes extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       dropdown: false,
       layout: null,
-      data: null
+      data: null,
     };
   }
-
-  handleChange = (field, value) => {
-    this.setState(prevState => ({
-      data: Object.assign({}, prevState.data, {
-        [field]: Object.assign({}, prevState.data[field], { value })
-      })
-    }));
-  };
-
-  handlePatch = (prop, value, id, cb) => {
-    const { attributeType } = this.props;
-
-    patchRequest({
-      entity: attributeType,
-      docType: null,
-      docId: id,
-      property: prop,
-      value
-    }).then(response => {
-      if (response.data && response.data.length) {
-        const fields = response.data[0].fieldsByName;
-        Object.keys(fields).map(fieldName => {
-          this.setState(
-            prevState => ({
-              data: Object.assign({}, prevState.data, {
-                [fieldName]: Object.assign({}, prevState.data[fieldName], {
-                  value
-                })
-              })
-            }),
-            () => cb && cb()
-          );
-        });
-      }
-    });
-  };
 
   handleInit = () => {
     const {
@@ -67,7 +31,7 @@ class Attributes extends Component {
       fieldName,
       attributeType,
       widgetData,
-      entity
+      entity,
     } = this.props;
 
     const tmpId = widgetData.value.key;
@@ -86,7 +50,7 @@ class Attributes extends Component {
         const { id, fieldsByName } = response.data;
 
         this.setState({
-          data: parseToDisplay(fieldsByName)
+          data: parseToDisplay(fieldsByName),
         });
 
         return initLayout(attributeType, id);
@@ -95,12 +59,12 @@ class Attributes extends Component {
         const { elements } = response.data;
 
         this.setState({
-          layout: elements
+          layout: elements,
         });
       })
       .then(() => {
         this.setState({
-          dropdown: true
+          dropdown: true,
         });
       });
   };
@@ -112,7 +76,7 @@ class Attributes extends Component {
       {
         data: null,
         layout: null,
-        dropdown: null
+        dropdown: null,
       },
       () => {
         //Method is disabling outside click in parents
@@ -126,6 +90,51 @@ class Attributes extends Component {
     );
   };
 
+  handleKeyDown = e => {
+    switch (e.key) {
+      case 'Escape':
+        e.preventDefault();
+        this.handleCompletion();
+        break;
+    }
+  };
+
+  handleChange = (field, value) => {
+    this.setState(prevState => ({
+      data: Object.assign({}, prevState.data, {
+        [field]: Object.assign({}, prevState.data[field], { value }),
+      }),
+    }));
+  };
+
+  handlePatch = (prop, value, id, cb) => {
+    const { attributeType } = this.props;
+
+    return patchRequest({
+      entity: attributeType,
+      docType: null,
+      docId: id,
+      property: prop,
+      value,
+    }).then(response => {
+      if (response.data && response.data.length) {
+        const fields = response.data[0].fieldsByName;
+        Object.keys(fields).map(fieldName => {
+          this.setState(
+            prevState => ({
+              data: Object.assign({}, prevState.data, {
+                [fieldName]: Object.assign({}, prevState.data[fieldName], {
+                  value,
+                }),
+              }),
+            }),
+            () => cb && cb()
+          );
+        });
+      }
+    });
+  };
+
   handleCompletion = () => {
     const { data } = this.state;
     const mandatory = Object.keys(data).filter(
@@ -135,7 +144,7 @@ class Attributes extends Component {
 
     //there are required values that are not set. just close
     if (mandatory.length && !valid) {
-      if (window.confirm("Do you really want to leave?")) {
+      if (window.confirm('Do you really want to leave?')) {
         this.handleToggle(false);
       }
       return;
@@ -153,15 +162,6 @@ class Attributes extends Component {
     completeRequest(attributeType, attrId).then(response => {
       patch(response.data);
     });
-  };
-
-  handleKeyDown = e => {
-    switch (e.key) {
-      case "Escape":
-        e.preventDefault();
-        this.handleCompletion();
-        break;
-    }
   };
 
   render() {
@@ -183,19 +183,20 @@ class Attributes extends Component {
     return (
       <div
         onKeyDown={this.handleKeyDown}
-        className={"attributes " + (rowId ? "attributes-in-table " : "")}
-      >
+        className={classnames('attributes', {
+          'attributes-in-table': rowId,
+        })}>
         <button
           tabIndex={tabIndex}
           onClick={() => this.handleToggle(true)}
-          className={
-            "btn btn-block tag tag-lg tag-block tag-secondary " +
-            "pointer " +
-            (dropdown ? "tag-disabled " : "") +
-            (readonly ? "tag-disabled disabled " : "")
-          }
-        >
-          {label ? label : "Edit"}
+          className={classnames(
+            'btn btn-block tag tag-lg tag-block tag-secondary pointer',
+            {
+              'tag-disabled': dropdown,
+              'tag-disabled disabled': readonly,
+            }
+          )}>
+          {label ? label : 'Edit'}
         </button>
         {dropdown && (
           <AttributesDropdown
@@ -216,8 +217,5 @@ class Attributes extends Component {
 }
 
 Attributes.propTypes = {
-  dispatch: PropTypes.func.isRequired,
-  patch: PropTypes.func
+  patch: PropTypes.func,
 };
-
-export default connect()(Attributes);

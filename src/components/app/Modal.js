@@ -254,18 +254,18 @@ class Modal extends Component {
     dispatch(closeModal());
 
     if (!rawModalVisible) {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = 'auto';
     }
   };
 
   handleClose = () => {
     const { modalSaveStatus, modalType } = this.props;
 
-    if (modalType === "process") {
+    if (modalType === 'process') {
       return this.closeModal();
     }
 
-    if (modalSaveStatus || window.confirm("Do you really want to leave?")) {
+    if (modalSaveStatus || window.confirm('Do you really want to leave?')) {
       this.closeModal();
     }
   };
