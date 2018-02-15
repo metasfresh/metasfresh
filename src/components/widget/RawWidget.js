@@ -967,7 +967,7 @@ RawWidget.propTypes = {
   tabId: PropTypes.string,
   viewId: PropTypes.string,
   rowId: PropTypes.string,
-  dataId: PropTypes.string,
+  dataId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   windowType: PropTypes.string,
   caption: PropTypes.string,
   disabled: PropTypes.bool,

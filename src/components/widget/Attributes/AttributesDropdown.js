@@ -38,8 +38,8 @@ class AttributesDropdown extends Component {
       {
         clickedOutside: true,
       }, () => {
-    //we need to wait for fetching all of PATCH fields on blur
-    //to complete on updated instance
+      //we need to wait for fetching all of PATCH fields on blur
+      //to complete on updated instance
         Promise.all(this.state.patchCallbacks).then(() => onClickOutside());
       }
     );
@@ -85,7 +85,9 @@ class AttributesDropdown extends Component {
             key={idx}
             type={item.type}
             caption={item.caption}
-            handlePatch={(prop, value) => patchCallbacks[idx](prop, value, attrId)}
+            handlePatch={(prop, value) =>
+              patchCallbacks[idx](prop, value, attrId)
+            }
             handleFocus={this.handleFocus}
             handleChange={handleChange}
             disableOnClickOutside={disableOnClickOutside}
@@ -112,7 +114,7 @@ AttributesDropdown.propTypes = {
   data: PropTypes.object.isRequired,
   attributeType: PropTypes.string.isRequired,
   handleChange: PropTypes.func.isRequired,
-  attrId: PropTypes.number,
+  attrId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   layout: PropTypes.array,
   onClickOutside: PropTypes.func,
   handlePatch: PropTypes.func.isRequired,
@@ -120,4 +122,4 @@ AttributesDropdown.propTypes = {
   enableOnClickOutside: PropTypes.func.isRequired,
 };
 
-export default onClickOutside(AttributesDropdown)
+export default onClickOutside(AttributesDropdown);
