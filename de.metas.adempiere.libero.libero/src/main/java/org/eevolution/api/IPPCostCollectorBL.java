@@ -37,7 +37,11 @@ public interface IPPCostCollectorBL extends ISingletonService
 	 * @return true if given cost collector is about receiving materials (i.e. regular receipts or co-product receipts)
 	 * @see #isMaterialReceipt(I_PP_Cost_Collector, boolean)
 	 */
-	boolean isMaterialReceipt(I_PP_Cost_Collector cc);
+	default boolean isMaterialReceipt(final I_PP_Cost_Collector cc)
+	{
+		final boolean considerCoProductsAsReceipt = true;
+		return isMaterialReceipt(cc, considerCoProductsAsReceipt);
+	}
 
 	/**
 	 * Checks if the <code>CostCollectorType</code> of the given <code>cc</code> is about receiving any kind of materials (finished goods or co/by-products) from underlying manufacturing order.
@@ -70,6 +74,12 @@ public interface IPPCostCollectorBL extends ISingletonService
 	 * @return true if given cost collector is about issuing materials to manufacturing order
 	 */
 	boolean isMaterialIssue(I_PP_Cost_Collector cc, boolean considerCoProductsAsIssue);
+
+	default boolean isMaterialIssue(final I_PP_Cost_Collector cc)
+	{
+		final boolean considerCoProductsAsIssue = false;
+		return isMaterialIssue(cc, considerCoProductsAsIssue);
+	}
 
 	/**
 	 * Checks if given cost collector is about receiving (i.e. negative issue) co/by-products.

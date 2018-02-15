@@ -97,13 +97,6 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 	}
 
 	@Override
-	public boolean isMaterialReceipt(final I_PP_Cost_Collector cc)
-	{
-		final boolean considerCoProductsAsReceipt = true;
-		return isMaterialReceipt(cc, considerCoProductsAsReceipt);
-	}
-
-	@Override
 	public boolean isMaterialReceipt(
 			@NonNull final I_PP_Cost_Collector cc,
 			final boolean considerCoProductsAsReceipt)

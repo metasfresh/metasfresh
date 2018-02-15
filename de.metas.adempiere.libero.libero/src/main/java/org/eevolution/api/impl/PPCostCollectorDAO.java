@@ -13,15 +13,14 @@ package org.eevolution.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -43,14 +42,20 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	@Override
 	public List<I_PP_Cost_Collector> retrieveForOrder(final I_PP_Order order)
 	{
-		Check.assumeNotNull(order, "order not null");
-		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class, order)
-				.addEqualsFilter(I_PP_Cost_Collector.COLUMN_PP_Order_ID, order.getPP_Order_ID());
+		Check.assumeNotNull(order, "order is not null");
+		return retrieveForOrderId(order.getPP_Order_ID());
+	}
 
-		queryBuilder.orderBy()
-				.addColumn(I_PP_Cost_Collector.COLUMN_PP_Cost_Collector_ID);
-
-		return queryBuilder.create().list();
+	@Override
+	public List<I_PP_Cost_Collector> retrieveForOrderId(final int ppOrderId)
+	{
+		Check.assume(ppOrderId > 0, "ppOrderId > 0");
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Cost_Collector.class)
+				.addEqualsFilter(I_PP_Cost_Collector.COLUMN_PP_Order_ID, ppOrderId)
+				.orderBy(I_PP_Cost_Collector.COLUMN_PP_Cost_Collector_ID)
+				.create()
+				.list(I_PP_Cost_Collector.class);
 	}
 
 	@Override

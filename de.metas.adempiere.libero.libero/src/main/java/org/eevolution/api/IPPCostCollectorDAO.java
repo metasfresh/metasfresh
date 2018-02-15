@@ -39,7 +39,13 @@ public interface IPPCostCollectorDAO extends ISingletonService
 
 	List<I_M_CostDetail> retrieveCostDetails(I_PP_Cost_Collector cc);
 
+	/**
+	 * @deprecated please use {@link #retrieveForOrderId(int)}
+	 */
+	@Deprecated
 	List<I_PP_Cost_Collector> retrieveForOrder(I_PP_Order order);
+
+	List<I_PP_Cost_Collector> retrieveForOrderId(int ppOrderId);
 
 	/**
 	 * Retrieve the cost collectors of the given <code>order</code> that are active and are either completed or closed.
