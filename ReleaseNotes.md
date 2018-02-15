@@ -16,6 +16,9 @@ Here come the actual release notes:
 ## Features
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#1592](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1592) Added subrow is still/again not shown in the frontend
+    * Fixes the feature for included subrows and asynchronous reponse.
 
 
 # metasfresh 5.44 (2018-07)
