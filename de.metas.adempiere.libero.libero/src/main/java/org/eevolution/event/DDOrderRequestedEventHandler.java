@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.event.log.EventLogUserService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
@@ -54,9 +55,14 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 
 	private final DDOrderProducer ddOrderProducer;
 
-	public DDOrderRequestedEventHandler(@NonNull final DDOrderProducer ddOrderProducer)
+	private final EventLogUserService eventLogUserService;
+
+	public DDOrderRequestedEventHandler(
+			@NonNull final DDOrderProducer ddOrderProducer,
+			@NonNull final EventLogUserService eventLogUserService)
 	{
 		this.ddOrderProducer = ddOrderProducer;
+		this.eventLogUserService = eventLogUserService;
 	}
 
 	@Override
@@ -79,6 +85,10 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 
 		final I_DD_Order ddOrderRecord = ddOrderProducer.createDDOrder(ddOrder, dateOrdered);
 		ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.setValue(ddOrderRecord, ddOrderRequestedEvent.getGroupId());
+
+		eventLogUserService.newLogEntry(getClass())
+				.formattedMessage("Created ddOrder; DDOrder_ID={}; DocumentNo={}", ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo())
+				.createAndStore();
 
 		if (ddOrderRecord.getPP_Product_Planning().isDocComplete())
 		{

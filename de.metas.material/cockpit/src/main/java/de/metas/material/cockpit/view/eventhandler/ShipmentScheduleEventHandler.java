@@ -105,7 +105,7 @@ public class ShipmentScheduleEventHandler
 		{
 			eventLogUserService.newLogEntry(this.getClass())
 					.message("Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero")
-					.storeEntry();
+					.createAndStore();
 			return;
 		}
 
@@ -148,7 +148,7 @@ public class ShipmentScheduleEventHandler
 			eventLogUserService
 					.newLogEntry(ShipmentScheduleEventHandler.class)
 					.formattedMessage("Deleted {} detail records", deletedCount)
-					.storeEntry();
+					.createAndStore();
 		}
 	}
 

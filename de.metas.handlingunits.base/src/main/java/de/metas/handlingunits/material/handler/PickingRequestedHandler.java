@@ -128,7 +128,7 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 
 		eventLogUserService.newLogEntry(PickingRequestedHandler.class)
 				.formattedMessage("Retrieved an available picking slot, because none was set in the event; pickingSlot={}", firstPickingSlot)
-				.storeEntry();
+				.createAndStore();
 		return firstPickingSlot.getM_PickingSlot_ID();
 	}
 

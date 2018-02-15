@@ -16,6 +16,9 @@ Here come the actual release notes:
 ## Features
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#1592](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1592) Added subrow is still/again not shown in the frontend
+    * Fixes the feature for included subrows and asynchronous reponse.
 
 
 # metasfresh 5.44 (2018-07)
@@ -47,6 +50,10 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1501](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1501) Automated Javascript and React Testing with Jest
+  * [#1590](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1590) Included tabs sorting
+    * Improvement of the sorting functionality in main and included subtab Grid Views.
+  * [#1593](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1593) Copy/ Paste for selected Field in Subtab GridView not giving correct result
+    * New Feature that allows to mark a Field in Grid View and copy the field content to clipboard.
 
 ## Fixes
 * metasfresh
