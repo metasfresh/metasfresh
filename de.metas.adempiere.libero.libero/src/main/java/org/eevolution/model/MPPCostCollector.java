@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.exceptions.NoVendorForProductException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.engines.CostEngineFactory;
@@ -112,6 +111,9 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	private final transient IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
+	/** Just Prepared Flag */
+	private boolean m_justPrepared = false;
+
 	public MPPCostCollector(final Properties ctx, final int PP_Cost_Collector_ID, final String trxName)
 	{
 		super(ctx, PP_Cost_Collector_ID, trxName);
@@ -144,7 +146,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	 *
 	 * @param description text
 	 */
-	public void addDescription(final String description)
+	private void addDescription(final String description)
 	{
 		final String desc = getDescription();
 		if (desc == null)
@@ -157,31 +159,17 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		}
 	}	// addDescription
 
-	public void setC_DocTypeTarget_ID(final String docBaseType)
-	{
-		final MDocType[] doc = MDocType.getOfDocBaseType(getCtx(), docBaseType);
-		if (doc == null)
-		{
-			throw new DocTypeNotFoundException(docBaseType, "");
-		}
-		else
-		{
-			setC_DocTypeTarget_ID(doc[0].get_ID());
-		}
-	}
-
 	@Override
 	public void setProcessed(final boolean processed)
 	{
 		super.setProcessed(processed);
-		if (get_ID() == 0)
+		if (is_new())
 		{
 			return;
 		}
 		final String sql = "UPDATE PP_Cost_Collector SET Processed=? WHERE PP_Cost_Collector_ID=?";
-		final int noLine = DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
-		log.debug("setProcessed - " + processed + " - Lines=" + noLine);
-	}	// setProcessed
+		DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
+	}
 
 	@Override
 	public boolean processIt(final String processAction)
@@ -189,24 +177,19 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		return Services.get(IDocumentBL.class).processIt(this, processAction);
 	}
 
-	/** Just Prepared Flag */
-	private boolean m_justPrepared = false;
-
 	@Override
 	public boolean unlockIt()
 	{
-		log.info("unlockIt - " + toString());
 		setProcessing(false);
 		return true;
-	}	// unlockIt
+	}
 
 	@Override
 	public boolean invalidateIt()
 	{
-		log.info("invalidateIt - " + toString());
 		setDocAction(DOCACTION_Prepare);
 		return true;
-	}	// invalidateIt
+	}
 
 	@Override
 	public String prepareIt()
@@ -291,23 +274,21 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 
 		return IDocument.STATUS_InProgress;
-	}	// prepareIt
+	}
 
 	@Override
 	public boolean approveIt()
 	{
-		log.info("approveIt - " + toString());
 		// setIsApproved(true);
 		return true;
-	}	// approveIt
+	}
 
 	@Override
 	public boolean rejectIt()
 	{
-		log.info("rejectIt - " + toString());
 		// setIsApproved(false);
 		return true;
-	}	// rejectIt
+	}
 
 	@Override
 	public String completeIt()
@@ -351,17 +332,15 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 			if (isIssue())
 			{
 				// Update PP Order Line
-				final I_PP_Order_BOMLine obomline = getPP_Order_BOMLine();
-				ppOrderBOMBL.addQtyDelivered(obomline,
+				final I_PP_Order_BOMLine orderBOMLine = getPP_Order_BOMLine();
+				ppOrderBOMBL.addQtyDelivered(orderBOMLine,
 						false, // isVariance
 						getMovementQty());
-				obomline.setQtyScrap(obomline.getQtyScrap().add(getScrappedQty()));
-				obomline.setQtyReject(obomline.getQtyReject().add(getQtyReject()));
-				obomline.setDateDelivered(getMovementDate());	// overwrite=last
-				obomline.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
-				log.debug("OrderLine - Reserved=" + obomline.getQtyReserved() + ", Delivered=" + obomline.getQtyDelivered());
-				InterfaceWrapperHelper.save(obomline);
-				log.debug("OrderLine -> Reserved=" + obomline.getQtyReserved() + ", Delivered=" + obomline.getQtyDelivered());
+				orderBOMLine.setQtyScrap(orderBOMLine.getQtyScrap().add(getScrappedQty()));
+				orderBOMLine.setQtyReject(orderBOMLine.getQtyReject().add(getQtyReject()));
+				orderBOMLine.setDateDelivered(getMovementDate());	// overwrite=last
+				orderBOMLine.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
+				InterfaceWrapperHelper.save(orderBOMLine);
 			}
 			if (isReceipt())
 			{
@@ -452,17 +431,15 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		// Usage Variance (material)
 		else if (isCostCollectorType(COSTCOLLECTORTYPE_UsegeVariance) && getPP_Order_BOMLine_ID() > 0)
 		{
-			final I_PP_Order_BOMLine obomline = getPP_Order_BOMLine();
-			ppOrderBOMBL.addQtyDelivered(obomline,
+			final I_PP_Order_BOMLine orderBOMLine = getPP_Order_BOMLine();
+			ppOrderBOMBL.addQtyDelivered(orderBOMLine,
 					true, // isVariance
 					getMovementQty());
-			obomline.setQtyScrap(obomline.getQtyScrap().add(getScrappedQty()));
-			obomline.setQtyReject(obomline.getQtyReject().add(getQtyReject()));
+			orderBOMLine.setQtyScrap(orderBOMLine.getQtyScrap().add(getScrappedQty()));
+			orderBOMLine.setQtyReject(orderBOMLine.getQtyReject().add(getQtyReject()));
 			// obomline.setDateDelivered(getMovementDate()); // overwrite=last
-			obomline.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
-			log.debug("OrderLine - Reserved=" + obomline.getQtyReserved() + ", Delivered=" + obomline.getQtyDelivered());
-			InterfaceWrapperHelper.save(obomline);
-			log.debug("OrderLine -> Reserved=" + obomline.getQtyReserved() + ", Delivered=" + obomline.getQtyDelivered());
+			orderBOMLine.setM_AttributeSetInstance_ID(getM_AttributeSetInstance_ID());
+			InterfaceWrapperHelper.save(orderBOMLine);
 			CostEngineFactory.getCostEngine(getAD_Client_ID()).createUsageVariances(this);
 		}
 		//
@@ -535,7 +512,6 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	@Override
 	public boolean closeIt()
 	{
-		log.info("closeIt - " + toString());
 		setDocAction(DOCACTION_None);
 		return true;
 	}	// closeIt
@@ -653,12 +629,12 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 			final File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
 			return createPDF(temp);
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
-			log.error("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF", ex);
 		}
 		return null;
-	}	// getPDF
+	}
 
 	/**
 	 * Create PDF file
@@ -673,14 +649,14 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		// if (re == null)
 		// return null;
 		// return re.getPDF(file);
-	}	// createPDF
+	}
 
 	@Override
 	public String getDocumentInfo()
 	{
 		final I_C_DocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		return dt.getName() + " " + getDocumentNo();
-	}	// getDocumentInfo
+	}
 
 	@Override
 	public MPPOrderNode getPP_Order_Node()
@@ -702,7 +678,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	 * @return duration unit in seconds
 	 * @see MPPOrderWorkflow#getDurationBaseSec()
 	 */
-	public long getDurationBaseSec()
+	private long getDurationBaseSec()
 	{
 		return getPP_Order().getMPPOrderWorkflow().getDurationBaseSec();
 	}
@@ -710,7 +686,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	/**
 	 * @return Activity Control Report Start Date
 	 */
-	public Timestamp getDateStart()
+	Timestamp getDateStart()
 	{
 		final double duration = getDurationReal().doubleValue();
 		if (duration != 0)
@@ -727,7 +703,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 	/**
 	 * @return Activity Control Report End Date
 	 */
-	public Timestamp getDateFinish()
+	private Timestamp getDateFinish()
 	{
 		return getMovementDate();
 	}
@@ -834,16 +810,16 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 			{
 				QtyOrdered = partnerProduct.getOrder_Pack().multiply(QtyOrdered.divide(partnerProduct.getOrder_Pack(), 0, BigDecimal.ROUND_UP));
 			}
-			final MOrderLine oline = new MOrderLine(order);
-			oline.setM_Product_ID(product.getM_Product_ID());
-			oline.setDescription(activity.getDescription());
-			oline.setM_Warehouse_ID(getM_Warehouse_ID());
-			oline.setQty(QtyOrdered);
+			final MOrderLine orderLine = new MOrderLine(order);
+			orderLine.setM_Product_ID(product.getM_Product_ID());
+			orderLine.setDescription(activity.getDescription());
+			orderLine.setM_Warehouse_ID(getM_Warehouse_ID());
+			orderLine.setQty(QtyOrdered);
 			// line.setPrice(m_product_po.getPricePO());
 			// oline.setPriceList(m_product_po.getPriceList());
 			// oline.setPP_Cost_Collector_ID(get_ID());
-			oline.setDatePromised(datePromised);
-			oline.saveEx();
+			orderLine.setDatePromised(datePromised);
+			orderLine.saveEx();
 			//
 			// TODO: Mark this as processed?
 			setProcessed(true);
@@ -864,29 +840,29 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument, 
 		return MUOM.get(getCtx(), getC_UOM_ID());
 	}
 
-	public boolean isIssue()
+	private boolean isIssue()
 	{
 		final boolean considerCoProductsAsIssue = true;  // backward compatibility: we consider by/co-products as issues (and not receipts)
 		return ppCostCollectorBL.isMaterialIssue(this, considerCoProductsAsIssue);
 	}
 
-	public boolean isReceipt()
+	private boolean isReceipt()
 	{
 		final boolean considerCoProductsAsReceipt = false; // backward compatibility: we consider only finished goods receipts (no by/co products)
 		return ppCostCollectorBL.isMaterialReceipt(this, considerCoProductsAsReceipt);
 	}
 
-	public boolean isActivityControl()
+	private boolean isActivityControl()
 	{
 		return ppCostCollectorBL.isActivityControl(this);
 	}
 
-	public boolean isVariance()
+	private boolean isVariance()
 	{
 		return isCostCollectorType(COSTCOLLECTORTYPE_MethodChangeVariance, COSTCOLLECTORTYPE_UsegeVariance, COSTCOLLECTORTYPE_RateVariance, COSTCOLLECTORTYPE_MixVariance);
 	}
 
-	public String getMovementType()
+	private String getMovementType()
 	{
 		if (isReceipt())
 		{
