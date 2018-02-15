@@ -39,11 +39,9 @@ package org.compiere.acct;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.X_C_DocType;
@@ -57,7 +55,6 @@ import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostResult;
-import de.metas.costing.ICostElementRepository;
 
 /**
  * Post Cost Collector
@@ -72,7 +69,6 @@ import de.metas.costing.ICostElementRepository;
 public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 {
 	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-	private final ICostElementRepository costElementsRepo = Adempiere.getBean(ICostElementRepository.class);
 
 	/** Pseudo Line */
 	protected DocLine_CostCollector _line = null;
@@ -133,49 +129,54 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	}
 
 	@Override
-	public ArrayList<Fact> createFacts(final MAcctSchema as)
+	public List<Fact> createFacts(final MAcctSchema as)
 	{
 		setC_Currency_ID(as.getC_Currency_ID());
-		final ArrayList<Fact> facts = new ArrayList<>();
 
+		final Fact fact;
 		final String costCollectorType = getCostCollectorType();
 		if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt.equals(costCollectorType))
 		{
-			facts.add(createMaterialReceipt(as));
+			fact = createFacts_MaterialReceipt(as);
 		}
 		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue.equals(costCollectorType))
 		{
-			facts.add(createComponentIssue(as));
+			fact = createFacts_ComponentIssue(as);
 		}
 		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MethodChangeVariance.equals(costCollectorType))
 		{
-			facts.add(createVariance(as, ProductAcctType.MethodChangeVariance));
+			fact = createFacts_Variance(as, ProductAcctType.MethodChangeVariance);
 		}
 		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance.equals(costCollectorType))
 		{
-			facts.add(createVariance(as, ProductAcctType.UsageVariance));
+			fact = createFacts_Variance(as, ProductAcctType.UsageVariance);
 		}
 		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_UsegeVariance.equals(costCollectorType))
 		{
-			facts.add(createVariance(as, ProductAcctType.UsageVariance));
+			fact = createFacts_Variance(as, ProductAcctType.UsageVariance);
 		}
 		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_RateVariance.equals(costCollectorType))
 		{
-			facts.add(createVariance(as, ProductAcctType.RateVariance));
+			fact = createFacts_Variance(as, ProductAcctType.RateVariance);
 		}
 		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance.equals(costCollectorType))
 		{
-			facts.add(createVariance(as, ProductAcctType.MixVariance));
+			fact = createFacts_Variance(as, ProductAcctType.MixVariance);
 		}
 		else if (X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl.equals(costCollectorType))
 		{
-			facts.addAll(createActivityControl(as));
+			fact = createFacts_ActivityControl(as);
 		}
-		//
-		return facts;
-	}   // createFact
+		else
+		{
+			throw newPostingException().setDetailMessage("Unknown costCollectorType: " + costCollectorType);
+		}
 
-	private void createLines(
+		//
+		return ImmutableList.of(fact);
+	}
+
+	private void createFactLines(
 			final CostElement costElement,
 			final Fact fact,
 			final MAccount debit,
@@ -217,7 +218,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 * Scrap(expense)     DR
 	 * </pre>
 	 */
-	protected Fact createMaterialReceipt(final MAcctSchema as)
+	protected Fact createFacts_MaterialReceipt(final MAcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 
@@ -244,13 +245,13 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			if (costsReceived.signum() != 0)
 			{
 				final MAccount debit = docLine.getAccount(ProductAcctType.Asset, as);
-				createLines(element, fact, debit, credit, costsReceived, qtyReceived);
+				createFactLines(element, fact, debit, credit, costsReceived, qtyReceived);
 			}
 
 			if (costsScrapped.signum() != 0)
 			{
 				final MAccount debit = docLine.getAccount(ProductAcctType.Scrap, as);
-				createLines(element, fact, debit, credit, costsScrapped, qtyScrapped);
+				createFactLines(element, fact, debit, credit, costsScrapped, qtyScrapped);
 			}
 		}
 		return fact;
@@ -263,7 +264,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 * Product Asset / Floor Stock               CR
 	 * </pre>
 	 */
-	private Fact createComponentIssue(final MAcctSchema as)
+	private Fact createFacts_ComponentIssue(final MAcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 		final boolean isFloorStock = isFloorStock();
@@ -278,7 +279,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		for (final CostElement element : costResult.getCostElements())
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
-			createLines(element, fact, debit, credit, costs, qtyIssued);
+			createFactLines(element, fact, debit, credit, costs, qtyIssued);
 		}
 
 		return fact;
@@ -292,7 +293,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 * Burden/Overhead
 	 * </pre>
 	 */
-	private List<Fact> createActivityControl(final MAcctSchema as)
+	private Fact createFacts_ActivityControl(final MAcctSchema as)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 
@@ -306,10 +307,10 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
 			final MAccount credit = docLine.getAccountForCostElement(as, element);
-			createLines(element, fact, debit, credit, costs, qtyMoved);
+			createFactLines(element, fact, debit, credit, costs, qtyMoved);
 		}
 
-		return ImmutableList.of(fact);
+		return fact;
 	}
 
 	/**
@@ -319,7 +320,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	 * Method/Usage/Rate/Mix Variance    DR
 	 * </pre>
 	 */
-	private Fact createVariance(final MAcctSchema as, final ProductAcctType varianceAcctType)
+	private Fact createFacts_Variance(final MAcctSchema as, final ProductAcctType varianceAcctType)
 	{
 		final Fact fact = new Fact(this, as, Fact.POST_Actual);
 
@@ -333,7 +334,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		for (final CostElement element : costResult.getCostElements())
 		{
 			final CostAmount costs = costResult.getCostAmountForCostElement(element);
-			createLines(element, fact, debit, credit, costs.negate(), qty.negate());
+			createFactLines(element, fact, debit, credit, costs.negate(), qty.negate());
 		}
 		return fact;
 	}
