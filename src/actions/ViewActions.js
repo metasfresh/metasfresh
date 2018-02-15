@@ -1,30 +1,19 @@
-import axios from "axios";
-import Moment from "moment";
-import { getQueryString } from "./GenericActions";
-import { DATE_FORMAT } from "../constants/Constants";
+import axios from 'axios';
+import Moment from 'moment';
+import { getQueryString } from './GenericActions';
+import { DATE_FORMAT } from '../constants/Constants';
 
 export function getViewLayout(windowId, viewType, viewProfileId = null) {
   return axios.get(
-    config.API_URL +
-      "/documentView/" +
-      windowId +
-      "/layout" +
-      "?viewType=" +
-      viewType +
-      (viewProfileId ? "&profileId=" + viewProfileId : "")
+    `${config.API_URL}/documentView/${windowId}/layout?viewType=${viewType}${
+      viewProfileId ? `&profileId= + ${viewProfileId}` : ''
+    }`
   );
 }
 
 export function getViewRowsByIds(windowId, viewId, docIds) {
   return axios.get(
-    config.API_URL +
-      "/documentView/" +
-      windowId +
-      "/" +
-      viewId +
-      "/byIds" +
-      "?ids=" +
-      docIds
+    `${config.API_URL}/documentView/${windowId}/${viewId}/byIds?ids=${docIds}`
   );
 }
 

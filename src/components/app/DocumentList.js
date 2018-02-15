@@ -1,16 +1,16 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import { push } from "react-router-redux";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 
 import {
   closeListIncludedView,
   setListId,
   setListIncludedView,
   setPagination,
-  setSorting
-} from "../../actions/ListActions";
+  setSorting,
+} from '../../actions/ListActions';
 import {
   browseViewRequest,
   createViewRequest,
@@ -19,8 +19,8 @@ import {
   getViewLayout,
   getViewRowsByIds,
   mergeColumnInfosIntoViewRows,
-  mergeRows
-} from "../../actions/ViewActions";
+  mergeRows,
+} from '../../actions/ViewActions';
 import {
   connectWS,
   disconnectWS,
@@ -29,41 +29,19 @@ import {
   indicatorState,
   mapIncluded,
   parseToDisplay,
-  selectTableItems
-} from "../../actions/WindowActions";
-import { getSelection } from "../../reducers/windowHandler";
-import BlankPage from "../BlankPage";
-import DataLayoutWrapper from "../DataLayoutWrapper";
-import Filters from "../filters/Filters";
-import FiltersStatic from "../filters/FiltersStatic";
-import Table from "../table/Table";
-import QuickActions from "./QuickActions";
-import SelectionAttributes from "./SelectionAttributes";
+  selectTableItems,
+} from '../../actions/WindowActions';
+import { getSelection } from '../../reducers/windowHandler';
+import BlankPage from '../BlankPage';
+import DataLayoutWrapper from '../DataLayoutWrapper';
+import Filters from '../filters/Filters';
+import FiltersStatic from '../filters/FiltersStatic';
+import Table from '../table/Table';
+import QuickActions from './QuickActions';
+import SelectionAttributes from './SelectionAttributes';
 
 const NO_SELECTION = [];
 const NO_VIEW = {};
-const mapStateToProps = (state, props) => ({
-  selected: getSelection({
-    state,
-    windowType: props.windowType,
-    viewId: props.defaultViewId
-  }),
-  childSelected:
-    props.includedView && props.includedView.windowType
-      ? getSelection({
-          state,
-          windowType: props.includedView.windowType,
-          viewId: props.includedView.viewId
-        })
-      : NO_SELECTION,
-  parentSelected: props.parentWindowType
-    ? getSelection({
-        state,
-        windowType: props.parentWindowType,
-        viewId: props.parentDefaultViewId
-      })
-    : NO_SELECTION
-});
 
 class DocumentList extends Component {
   static propTypes = {
@@ -77,7 +55,7 @@ class DocumentList extends Component {
     childSelected: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     parentSelected: PropTypes.array.isRequired,
-    selected: PropTypes.array.isRequired
+    selected: PropTypes.array.isRequired,
   };
 
   static contextTypes = {
@@ -105,7 +83,7 @@ class DocumentList extends Component {
       clickOutsideLock: false,
 
       isShowIncluded: false,
-      hasShowIncluded: false
+      hasShowIncluded: false,
     };
 
     this.fetchLayoutAndData();
@@ -114,15 +92,6 @@ class DocumentList extends Component {
   componentDidMount = () => {
     this.mounted = true;
   };
-
-  componentDidUpdate(prevProps, prevState) {
-    const { setModalDescription } = this.props;
-    const { data } = this.state;
-
-    if (prevState.data !== data && setModalDescription) {
-      setModalDescription(data.description);
-    }
-  }
 
   componentWillUnmount() {
     this.mounted = false;
@@ -137,7 +106,7 @@ class DocumentList extends Component {
       includedView: nextIncludedView,
       isIncluded: nextIsIncluded,
       refId: nextRefId,
-      windowType: nextWindowType
+      windowType: nextWindowType,
     } = nextProps;
 
     const {
@@ -148,7 +117,7 @@ class DocumentList extends Component {
       isIncluded,
       refId,
       windowType,
-      dispatch
+      dispatch,
     } = this.props;
 
     const { page, sort, viewId } = this.state;
@@ -186,7 +155,7 @@ class DocumentList extends Component {
           data: null,
           layout: null,
           filters: null,
-          viewId: null
+          viewId: null,
         },
         () => {
           if (included) {
@@ -219,22 +188,24 @@ class DocumentList extends Component {
     return !!nextState.layout && !!nextState.data;
   }
 
-  connectWS = viewId => {
+  connectWebSocket = viewId => {
     const { windowType } = this.props;
-    connectWS.call(this, "/view/" + viewId, msg => {
+    connectWS.call(this, `/view/${viewId}`, msg => {
       const { fullyChanged, changedIds } = msg;
       if (changedIds) {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
             const rows = mergeRows({
-              toRows: this.state.data.result,
-              fromRows: response.data,
-              columnInfosByFieldName: this.state.pageColumnInfosByFieldName
+              toRows: [ ...this.state.data.result ],
+              fromRows: [ ...response.data ],
+              columnInfosByFieldName: this.state.pageColumnInfosByFieldName,
             });
+
             this.setState({
-              data: Object.assign({}, this.state.data, {
-                result: rows
-              })
+              data: {
+                ...this.state.data,
+                result: [ ...rows ],
+              },
             });
           }
         );
@@ -247,7 +218,7 @@ class DocumentList extends Component {
         const selection = getSelection({
           state: store.getState(),
           windowType,
-          viewId
+          viewId,
         });
 
         // Reload Attributes after QuickAction is done
@@ -256,7 +227,7 @@ class DocumentList extends Component {
             selectTableItems({
               windowType,
               viewId,
-              ids: [selection[0]]
+              ids: [selection[0]],
             })
           );
 
@@ -265,6 +236,15 @@ class DocumentList extends Component {
       }
     });
   };
+
+  componentDidUpdate(prevProps, prevState) {
+    const { setModalDescription } = this.props;
+    const { data } = this.state;
+
+    if (prevState.data !== data && setModalDescription) {
+      setModalDescription(data.description);
+    }
+  }
 
   updateQuickActions = childSelection => {
     if (this.quickActionsComponent) {
@@ -323,12 +303,12 @@ class DocumentList extends Component {
   redirectToNewDocument = () => {
     const { dispatch, windowType } = this.props;
 
-    dispatch(push("/window/" + windowType + "/new"));
+    dispatch(push(`/window/${windowType}/new`));
   };
 
   setClickOutsideLock = value => {
     this.setState({
-      clickOutsideLock: !!value
+      clickOutsideLock: !!value,
     });
   };
 
@@ -338,7 +318,7 @@ class DocumentList extends Component {
 
     deleteStaticFilter(windowType, viewId, filterId).then(response => {
       dispatch(
-        push("/window/" + windowType + "?viewId=" + response.data.viewId)
+        push(`/window/${windowType}?viewId=${response.data.viewId}`)
       );
     });
   };
@@ -537,7 +517,7 @@ class DocumentList extends Component {
               );
             }
 
-            this.connectWS(response.data.viewId);
+            this.connectWebSocket(response.data.viewId);
           }
         );
       }
@@ -772,7 +752,7 @@ class DocumentList extends Component {
                     hasIncluded
                       ? {
                           viewId: includedView.viewId,
-                          viewSelectedIds: childSelected
+                          viewSelectedIds: childSelected,
                         }
                       : NO_VIEW
                   }
@@ -780,7 +760,7 @@ class DocumentList extends Component {
                     isIncluded
                       ? {
                           viewId: parentDefaultViewId,
-                          viewSelectedIds: parentSelected
+                          viewSelectedIds: parentSelected,
                         }
                       : NO_VIEW
                   }
@@ -867,6 +847,29 @@ class DocumentList extends Component {
     }
   }
 }
+
+const mapStateToProps = (state, props) => ({
+  selected: getSelection({
+    state,
+    windowType: props.windowType,
+    viewId: props.defaultViewId,
+  }),
+  childSelected:
+    props.includedView && props.includedView.windowType
+      ? getSelection({
+          state,
+          windowType: props.includedView.windowType,
+          viewId: props.includedView.viewId,
+        })
+      : NO_SELECTION,
+  parentSelected: props.parentWindowType
+    ? getSelection({
+        state,
+        windowType: props.parentWindowType,
+        viewId: props.parentDefaultViewId,
+      })
+    : NO_SELECTION
+});
 
 export default connect(mapStateToProps, null, null, { withRef: true })(
   DocumentList

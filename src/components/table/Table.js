@@ -1,11 +1,12 @@
-import update from "immutability-helper";
-import * as _ from "lodash";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import onClickOutside from "react-onclickoutside";
-import { connect } from "react-redux";
+import update from 'immutability-helper';
+import * as _ from 'lodash';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import onClickOutside from 'react-onclickoutside';
+import { connect } from 'react-redux';
+import classnames from 'classnames';
 
-import { deleteRequest } from "../../actions/GenericActions";
+import { deleteRequest } from '../../actions/GenericActions';
 import {
   collapsedMap,
   deleteLocal,
@@ -14,15 +15,15 @@ import {
   mapIncluded,
   openModal,
   selectTableItems
-} from "../../actions/WindowActions";
-import Prompt from "../app/Prompt";
-import DocumentListContextShortcuts from "../shortcuts/DocumentListContextShortcuts";
-import TableContextShortcuts from "../shortcuts/TableContextShortcuts";
-import TableContextMenu from "./TableContextMenu";
-import TableFilter from "./TableFilter";
-import TableHeader from "./TableHeader";
-import TableItem from "./TableItem";
-import TablePagination from "./TablePagination";
+} from '../../actions/WindowActions';
+import Prompt from '../app/Prompt';
+import DocumentListContextShortcuts from '../shortcuts/DocumentListContextShortcuts';
+import TableContextShortcuts from '../shortcuts/TableContextShortcuts';
+import TableContextMenu from './TableContextMenu';
+import TableFilter from './TableFilter';
+import TableHeader from './TableHeader';
+import TableItem from './TableItem';
+import TablePagination from './TablePagination';
 
 class Table extends Component {
   static propTypes = {
@@ -30,7 +31,7 @@ class Table extends Component {
     dispatch: PropTypes.func.isRequired,
 
     // from <DocumentList>
-    onSelectionChanged: PropTypes.func
+    onSelectionChanged: PropTypes.func,
   };
 
   constructor(props) {
@@ -47,7 +48,7 @@ class Table extends Component {
         y: 0,
         fieldName: null,
         supportZoomInto: false,
-        supportFieldEdit: false
+        supportFieldEdit: false,
       },
       promptOpen: false,
       isBatchEntry: false,
@@ -55,7 +56,7 @@ class Table extends Component {
       collapsedRows: [],
       collapsedParentsRows: [],
       pendingInit: true,
-      collapsedArrayMap: []
+      collapsedArrayMap: [],
     };
   }
 
@@ -113,7 +114,7 @@ class Table extends Component {
       (prevProps.refreshSelection !== refreshSelection && refreshSelection)
     ) {
       this.setState({
-        selected: defaultSelected
+        selected: defaultSelected,
       });
     } else if (
       !disconnectFromState &&
@@ -123,12 +124,12 @@ class Table extends Component {
         selectTableItems({
           windowType: type,
           viewId,
-          ids: selected
+          ids: selected,
         })
       );
     }
 
-    if (!_.isEqual(prevProps.rowData, rowData)) {
+    if (!_.isEqual(prevProps.rowData, rowData) || (prevProps.rowData !== rowData)) {
       this.getIndentData();
     }
 
@@ -183,7 +184,7 @@ class Table extends Component {
       indentSupported,
       collapsible,
       expandedDepth,
-      keyProperty
+      keyProperty,
     } = this.props;
 
     if (indentSupported && rowData[tabid]) {
@@ -194,7 +195,7 @@ class Table extends Component {
           rows: rowsData,
           pendingInit: !rowsData,
           collapsedParentsRows: [],
-          collapsedRows: []
+          collapsedRows: [],
         },
         () => {
           const { rows } = this.state;
@@ -203,7 +204,7 @@ class Table extends Component {
 
           if (selectFirst && firstRow) {
             this.selectOneProduct(firstRow.id);
-            document.getElementsByClassName("js-table")[0].focus();
+            document.getElementsByClassName('js-table')[0].focus();
           }
 
           let mapCollapsed = [];
@@ -218,27 +219,28 @@ class Table extends Component {
                   mapCollapsed = mapCollapsed.concat(collapsedMap(row));
                   this.setState(prev => ({
                     collapsedParentsRows: prev.collapsedParentsRows.concat(
-                      row[keyProperty]
+                      row[keyProperty],
                     )
                   }));
                 }
                 if (row.indent.length > expandedDepth) {
                   this.setState(prev => ({
-                    collapsedRows: prev.collapsedRows.concat(row[keyProperty])
+                    collapsedRows: prev.collapsedRows.concat(row[keyProperty]),
                   }));
                 }
               });
           }
 
           this.setState({
-            collapsedArrayMap: mapCollapsed
+            collapsedArrayMap: mapCollapsed,
           });
         }
       );
     } else {
+      const rowsData = rowData[tabid] || [];
       this.setState({
-        rows: rowData[tabid],
-        pendingInit: !rowData[tabid]
+        rows: rowsData,
+        pendingInit: !rowData[tabid],
       });
     }
   };
@@ -1087,9 +1089,9 @@ class Table extends Component {
     return (
       <div className="table-flex-wrapper">
         <div
-          className={
-            "table-flex-wrapper " + (mainTable ? "table-flex-wrapper-row " : "")
-          }
+          className={classnames('table-flex-wrapper', {
+            'table-flex-wrapper-row': mainTable,
+          })}
         >
           {contextMenu.open && (
             <TableContextMenu
@@ -1144,30 +1146,31 @@ class Table extends Component {
           )}
 
           <div
-            className={
-              "panel panel-primary panel-bordered " +
-              "panel-bordered-force table-flex-wrapper " +
-              "document-list-table js-not-unselect " +
-              ((rowData &&
-                rowData[tabid] &&
-                Object.keys(rowData[tabid]).length === 0) ||
-              !rowData[tabid]
-                ? "table-content-empty "
-                : "")
-            }
-          >
-            <table
-              className={
-                "table table-bordered-vertically " +
-                "table-striped js-table " +
-                (readonly ? "table-read-only " : "") +
-                (hasIncluded && blurOnIncludedView ? "table-fade-out" : "")
+            className={classnames(
+              'panel panel-primary panel-bordered',
+              'panel-bordered-force table-flex-wrapper',
+              'document-list-table js-not-unselect',
+              {
+                'table-content-empty':
+                  (rowData &&
+                    rowData[tabid] &&
+                    Object.keys(rowData[tabid]).length === 0) ||
+                  !rowData[tabid],
               }
+            )}>
+            <table
+              className={classnames(
+                'table table-bordered-vertically',
+                'table-striped js-table',
+                {
+                  'table-read-only': readonly,
+                  'table-fade-out': hasIncluded && blurOnIncludedView,
+                }
+              )}
               onKeyDown={this.handleKeyDown}
               tabIndex={tabIndex}
               ref={c => (this.table = c)}
-              onCopy={this.handleCopy}
-            >
+              onCopy={this.handleCopy}>
               <thead>
                 <TableHeader
                   {...{
