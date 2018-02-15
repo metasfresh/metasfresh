@@ -6,14 +6,10 @@ import org.compiere.model.I_C_BPartner_CreditLimit;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 
 public class BPartnerCreditLimit_Approve extends JavaProcess implements IProcessPrecondition
 {
-
-	@Param(parameterName = I_C_BPartner_CreditLimit.COLUMNNAME_ApprovedBy_ID, mandatory = true)
-	private int approvedBy_ID;
 
 	@Override
 	protected String doIt()
@@ -23,7 +19,6 @@ public class BPartnerCreditLimit_Approve extends JavaProcess implements IProcess
 		InterfaceWrapperHelper.save(bpCreditLimit);
 		return "@Success@";
 	}
-
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
