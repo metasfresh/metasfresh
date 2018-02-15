@@ -1,26 +1,26 @@
-import Moment from "moment";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import ReactCSSTransitionGroup from "react-addons-css-transition-group";
-import { connect } from "react-redux";
+import Moment from 'moment';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { connect } from 'react-redux';
 
-import { allowShortcut, disableShortcut } from "../../actions/WindowActions";
-import { DATE_FORMAT } from "../../constants/Constants";
-import ActionButton from "./ActionButton";
-import Attributes from "./Attributes/Attributes";
-import Checkbox from "./Checkbox";
-import DatePicker from "./DatePicker";
-import DatetimeRange from "./DatetimeRange";
-import DevicesWidget from "./Devices/DevicesWidget";
-import Image from "./Image";
-import Labels from "./Labels";
-import Link from "./Link";
-import List from "./List/List";
-import Lookup from "./Lookup/Lookup";
+import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
+import { DATE_FORMAT } from '../../constants/Constants';
+import ActionButton from './ActionButton';
+import Attributes from './Attributes/Attributes';
+import Checkbox from './Checkbox';
+import DatePicker from './DatePicker';
+import DatetimeRange from './DatetimeRange';
+import DevicesWidget from './Devices/DevicesWidget';
+import Image from './Image';
+import Labels from './Labels';
+import Link from './Link';
+import List from './List/List';
+import Lookup from './Lookup/Lookup';
 
 class RawWidget extends Component {
   static propTypes = {
-    handleZoomInto: PropTypes.func
+    handleZoomInto: PropTypes.func,
   };
 
   static defaultProps = {
@@ -33,7 +33,7 @@ class RawWidget extends Component {
     this.state = {
       isEdited: false,
       cachedValue: undefined,
-      errorPopup: false
+      errorPopup: false,
     };
   }
 
@@ -49,13 +49,19 @@ class RawWidget extends Component {
     }
   }
 
+  /**
+   * Function used specifically for list widgets. It blocks outside clicks, which are
+   * then enabled again in handleBlur. This is to avoid closing the list as it's a separate
+   * DOM element outside of it's parent's tree.
+   */
   focus = () => {
-    const { handleFocus } = this.props;
+    const { handleFocus, disableOnClickOutside } = this.props;
 
     if (this.rawWidget && this.rawWidget.focus) {
       this.rawWidget.focus();
     }
 
+    disableOnClickOutside && disableOnClickOutside();
     handleFocus && handleFocus();
   };
 
@@ -68,12 +74,15 @@ class RawWidget extends Component {
       isEdited: true,
       cachedValue: e.target.value
     });
+
     listenOnKeysFalse && listenOnKeysFalse();
     handleFocus && handleFocus();
   };
 
   handleBlur = (widgetField, value, id) => {
-    const { dispatch, handleBlur, listenOnKeysTrue } = this.props;
+    const { dispatch, handleBlur, listenOnKeysTrue, enableOnClickOutside } = this.props;
+
+    enableOnClickOutside && enableOnClickOutside();
 
     dispatch(allowShortcut());
 
@@ -267,7 +276,7 @@ class RawWidget extends Component {
     };
 
     switch (widgetType) {
-      case "Date":
+      case 'Date':
         if (range) {
           // Watch out! The datetimerange widget as exception,
           // is non-controlled input! For further usage, needs
@@ -323,7 +332,7 @@ class RawWidget extends Component {
             </div>
           );
         }
-      case "DateTime":
+      case 'DateTime':
         if (range) {
           // Watch out! The datetimerange widget as exception,
           // is non-controlled input! For further usage, needs
@@ -377,7 +386,7 @@ class RawWidget extends Component {
             </div>
           );
         }
-      case "DateRange": {
+      case 'DateRange': {
         return (
           <DatetimeRange
             onChange={(value, valueTo) =>
@@ -396,7 +405,7 @@ class RawWidget extends Component {
           />
         );
       }
-      case "Time":
+      case 'Time':
         return (
           <div className={this.getClassNames({ icon: true })}>
             <DatePicker
@@ -424,7 +433,7 @@ class RawWidget extends Component {
             />
           </div>
         );
-      case "Lookup":
+      case 'Lookup':
         return (
           <Lookup
             {...{
@@ -466,7 +475,7 @@ class RawWidget extends Component {
             onBlurWidget={onBlurWidget}
           />
         );
-      case "List":
+      case 'List':
         return (
           <List
             {...{
@@ -500,7 +509,7 @@ class RawWidget extends Component {
           />
         );
 
-      case "Link":
+      case 'Link':
         return (
           <Link
             getClassNames={() => this.getClassNames({ icon: true })}
@@ -514,38 +523,38 @@ class RawWidget extends Component {
             }}
           />
         );
-      case "Text":
+      case 'Text':
         return (
           <div
             className={
               this.getClassNames({ icon: true }) +
-              (isEdited ? "input-focused " : "")
+              (isEdited ? 'input-focused ' : '')
             }
           >
             <input {...widgetProperties} type="text" />
             {icon && <i className="meta-icon-edit input-icon-right" />}
           </div>
         );
-      case "LongText":
+      case 'LongText':
         return (
           <div
             className={
               this.getClassNames({
                 icon: false,
                 forcedPrimary: true
-              }) + (isEdited ? "input-focused " : "")
+              }) + (isEdited ? 'input-focused ' : '')
             }
           >
             <textarea {...widgetProperties} />
           </div>
         );
-      case "Password":
+      case 'Password':
         return (
           <div className="input-inner-container">
             <div
               className={
                 this.getClassNames({ icon: true }) +
-                (isEdited ? "input-focused " : "")
+                (isEdited ? 'input-focused ' : '')
               }
             >
               <input
@@ -558,10 +567,10 @@ class RawWidget extends Component {
             {allowShowPassword && (
               <div
                 onMouseDown={() => {
-                  this.rawWidget.type = "text";
+                  this.rawWidget.type = 'text';
                 }}
                 onMouseUp={() => {
-                  this.rawWidget.type = "password";
+                  this.rawWidget.type = 'password';
                 }}
                 className="btn btn-icon btn-meta-outline-secondary btn-inline pointer btn-distance-rev btn-sm"
               >
@@ -570,57 +579,57 @@ class RawWidget extends Component {
             )}
           </div>
         );
-      case "Integer":
+      case 'Integer':
         return (
           <div
             className={
-              this.getClassNames() + (isEdited ? "input-focused " : "")
+              this.getClassNames() + (isEdited ? 'input-focused ' : '')
             }
           >
             <input {...widgetProperties} type="number" min="0" step="1" />
           </div>
         );
-      case "Number":
+      case 'Number':
         return (
           <div
             className={
-              this.getClassNames() + (isEdited ? "input-focused " : "")
+              this.getClassNames() + (isEdited ? 'input-focused ' : '')
             }
           >
             <input {...widgetProperties} type="number" />
           </div>
         );
-      case "Amount":
+      case 'Amount':
         return (
           <div
             className={
-              this.getClassNames() + (isEdited ? "input-focused " : "")
+              this.getClassNames() + (isEdited ? 'input-focused ' : '')
             }
           >
             <input {...widgetProperties} type="number" min="0" step="1" />
           </div>
         );
-      case "Quantity":
+      case 'Quantity':
         return (
           <div
             className={
-              this.getClassNames() + (isEdited ? "input-focused " : "")
+              this.getClassNames() + (isEdited ? 'input-focused ' : '')
             }
           >
             <input {...widgetProperties} type="number" min="0" step="1" />
           </div>
         );
-      case "CostPrice":
+      case 'CostPrice':
         return (
           <div
             className={
-              this.getClassNames() + (isEdited ? "input-focused " : "")
+              this.getClassNames() + (isEdited ? 'input-focused ' : '')
             }
           >
             <input {...widgetProperties} type="number" />
           </div>
         );
-      case "YesNo":
+      case 'YesNo':
         return (
           <Checkbox
             {...{
@@ -635,19 +644,19 @@ class RawWidget extends Component {
             handlePatch={this.handlePatch}
           />
         );
-      case "Switch":
+      case 'Switch':
         return (
           <label
             className={
-              "input-switch " +
-              (widgetData[0].readonly || disabled ? "input-disabled " : "") +
+              'input-switch ' +
+              (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
               (widgetData[0].mandatory && widgetData[0].value.length === 0
-                ? "input-mandatory "
-                : "") +
+                ? 'input-mandatory '
+                : '') +
               (widgetData[0].validStatus && !widgetData[0].validStatus.valid
-                ? "input-error "
-                : "") +
-              (rowId && !isModal ? "input-table " : "")
+                ? 'input-error '
+                : '') +
+              (rowId && !isModal ? 'input-table ' : '')
             }
             tabIndex={fullScreen ? -1 : tabIndex}
             ref={c => (this.rawWidget = c)}
@@ -668,12 +677,12 @@ class RawWidget extends Component {
             <div className="input-slider" />
           </label>
         );
-      case "Label":
+      case 'Label':
         return (
           <div
             className={
-              "tag tag-warning " +
-              (gridAlign ? "text-xs-" + gridAlign + " " : "")
+              'tag tag-warning ' +
+              (gridAlign ? 'text-xs-' + gridAlign + ' ' : '')
             }
             tabIndex={fullScreen ? -1 : tabIndex}
             ref={c => (this.rawWidget = c)}
@@ -681,15 +690,15 @@ class RawWidget extends Component {
             {widgetData[0].value}
           </div>
         );
-      case "Button":
+      case 'Button':
         return (
           <button
             className={
-              "btn btn-sm btn-meta-primary " +
-              (gridAlign ? "text-xs-" + gridAlign + " " : "") +
+              'btn btn-sm btn-meta-primary ' +
+              (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
               (widgetData[0].readonly || disabled
-                ? "tag-disabled disabled "
-                : "")
+                ? 'tag-disabled disabled '
+                : '')
             }
             onClick={() => this.handlePatch(widgetField)}
             tabIndex={fullScreen ? -1 : tabIndex}
@@ -699,15 +708,15 @@ class RawWidget extends Component {
               widgetData[0].value[Object.keys(widgetData[0].value)[0]]}
           </button>
         );
-      case "ProcessButton":
+      case 'ProcessButton':
         return (
           <button
             className={
-              "btn btn-sm btn-meta-primary " +
-              (gridAlign ? "text-xs-" + gridAlign + " " : "") +
+              'btn btn-sm btn-meta-primary ' +
+              (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
               (widgetData[0].readonly || disabled
-                ? "tag-disabled disabled "
-                : "")
+                ? 'tag-disabled disabled '
+                : '')
             }
             onClick={this.handleProcess}
             tabIndex={fullScreen ? -1 : tabIndex}
@@ -716,7 +725,7 @@ class RawWidget extends Component {
             {caption}
           </button>
         );
-      case "ActionButton":
+      case 'ActionButton':
         return (
           <ActionButton
             data={widgetData[0]}
@@ -729,7 +738,7 @@ class RawWidget extends Component {
             ref={c => (this.rawWidget = c)}
           />
         );
-      case "ProductAttributes":
+      case 'ProductAttributes':
         return (
           <Attributes
             entity={entity}
@@ -748,7 +757,7 @@ class RawWidget extends Component {
             readonly={widgetData[0].readonly || disabled}
           />
         );
-      case "Address":
+      case 'Address':
         return (
           <Attributes
             attributeType="address"
@@ -766,7 +775,7 @@ class RawWidget extends Component {
             readonly={widgetData[0].readonly || disabled}
           />
         );
-      case "Image":
+      case 'Image':
         return (
           <Image
             fields={fields}
@@ -775,15 +784,15 @@ class RawWidget extends Component {
             readonly={widgetData[0].readonly || disabled}
           />
         );
-      case "ZoomIntoButton":
+      case 'ZoomIntoButton':
         return (
           <button
             className={
-              "btn btn-sm btn-meta-primary " +
-              (gridAlign ? "text-xs-" + gridAlign + " " : "") +
+              'btn btn-sm btn-meta-primary ' +
+              (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
               (widgetData[0].readonly || disabled
-                ? "tag-disabled disabled "
-                : "")
+                ? 'tag-disabled disabled '
+                : '')
             }
             onClick={() => handleZoomInto(fields[0].field)}
             tabIndex={fullScreen ? -1 : tabIndex}
@@ -792,7 +801,7 @@ class RawWidget extends Component {
             {caption}
           </button>
         );
-      case "Labels": {
+      case 'Labels': {
         let values = [];
 
         const entry = widgetData[0];
@@ -846,15 +855,15 @@ class RawWidget extends Component {
     // We have to hardcode that exception in case of having
     // wrong two line rendered one line widgets
     const oneLineException =
-      ["Switch", "YesNo", "Label", "Button"].indexOf(widgetType) > -1;
+      ['Switch', 'YesNo', 'Label', 'Button'].indexOf(widgetType) > -1;
 
     // Unsupported widget type
     if (!widgetBody) {
       // eslint-disable-next-line no-console
       console.warn(
-        "The %c" + widgetType,
-        "font-weight:bold;",
-        "is unsupported type of widget."
+        'The %c' + widgetType,
+        'font-weight:bold;',
+        'is unsupported type of widget.'
       );
 
       return false;
@@ -866,14 +875,14 @@ class RawWidget extends Component {
     }
 
     const widgetFieldsName = fields
-      .map(field => "form-field-" + field.field)
-      .join(" ");
+      .map(field => 'form-field-' + field.field)
+      .join(' ');
 
     return (
       <div
         className={
-          "form-group row " +
-          (rowId && !isModal ? "form-group-table " : " ") +
+          'form-group row ' +
+          (rowId && !isModal ? 'form-group-table ' : ' ') +
           widgetFieldsName
         }
       >
@@ -882,10 +891,10 @@ class RawWidget extends Component {
             <div
               key="title"
               className={
-                "form-control-label " +
-                (type === "primary" && !oneLineException
-                  ? "col-sm-12 panel-title"
-                  : type === "primaryLongLabels" ? "col-sm-6" : "col-sm-3 ")
+                'form-control-label ' +
+                (type === 'primary' && !oneLineException
+                  ? 'col-sm-12 panel-title'
+                  : type === 'primaryLongLabels' ? 'col-sm-6' : 'col-sm-3 ')
               }
               title={caption}
             >
@@ -903,10 +912,10 @@ class RawWidget extends Component {
           )}
         <div
           className={
-            ((type === "primary" || noLabel) && !oneLineException
-              ? "col-sm-12 "
-              : type === "primaryLongLabels" ? "col-sm-6" : "col-sm-9 ") +
-            (fields[0].devices ? "form-group-flex " : "")
+            ((type === 'primary' || noLabel) && !oneLineException
+              ? 'col-sm-12 '
+              : type === 'primaryLongLabels' ? 'col-sm-6' : 'col-sm-9 ') +
+            (fields[0].devices ? 'form-group-flex ' : '')
           }
           onMouseEnter={() => this.handleErrorPopup(true)}
           onMouseLeave={() => this.handleErrorPopup(false)}
@@ -989,7 +998,7 @@ RawWidget.propTypes = {
   onBlurWidget: PropTypes.func,
   defaultValue: PropTypes.array,
   noLabel: PropTypes.bool,
-  isOpenDatePicker: PropTypes.bool
+  isOpenDatePicker: PropTypes.bool,
 };
 
 export default connect()(RawWidget);
