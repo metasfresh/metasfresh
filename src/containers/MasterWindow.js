@@ -1,10 +1,10 @@
-import { Hints, Steps } from "intro.js-react";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import { push } from "react-router-redux";
+import { Hints, Steps } from 'intro.js-react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 
-import { addNotification } from "../actions/AppActions";
+import { addNotification } from '../actions/AppActions';
 import {
   addRowData,
   attachFileAction,
@@ -15,24 +15,12 @@ import {
   disconnectWS,
   fireUpdateData,
   getTab,
-  sortTab
-} from "../actions/WindowActions";
-import BlankPage from "../components/BlankPage";
-import Container from "../components/Container";
-import Window from "../components/Window";
-import { introHints, introSteps } from "../components/intro/intro";
-
-const mapStateToProps = state => ({
-  master: state.windowHandler.master,
-  modal: state.windowHandler.modal,
-  rawModal: state.windowHandler.rawModal,
-  indicator: state.windowHandler.indicator,
-  includedView: state.listHandler.includedView,
-  enableTutorial: state.appHandler.enableTutorial,
-  processStatus: state.appHandler.processStatus,
-  me: state.appHandler.me,
-  breadcrumb: state.menuHandler.breadcrumb
-});
+  sortTab,
+} from '../actions/WindowActions';
+import BlankPage from '../components/BlankPage';
+import Container from '../components/Container';
+import Window from '../components/Window';
+import { introHints, introSteps } from '../components/intro/intro';
 
 class MasterWindow extends Component {
   state = {
@@ -43,11 +31,11 @@ class MasterWindow extends Component {
     introEnabled: null,
     hintsEnabled: null,
     introSteps: null,
-    introHints: null
+    introHints: null,
   };
 
   static contextTypes = {
-    router: PropTypes.object.isRequired
+    router: PropTypes.object.isRequired,
   };
 
   static propTypes = {
@@ -57,7 +45,7 @@ class MasterWindow extends Component {
     dispatch: PropTypes.func.isRequired,
     rawModal: PropTypes.object.isRequired,
     indicator: PropTypes.string.isRequired,
-    me: PropTypes.object.isRequired
+    me: PropTypes.object.isRequired,
   };
 
   componentDidMount() {
@@ -88,8 +76,8 @@ class MasterWindow extends Component {
       if (windowIntroSteps) {
         docIntroSteps = [];
 
-        if (windowIntroSteps["all"]) {
-          docIntroSteps = docIntroSteps.concat(windowIntroSteps["all"]);
+        if (windowIntroSteps['all']) {
+          docIntroSteps = docIntroSteps.concat(windowIntroSteps['all']);
         }
 
         if (master.docId && windowIntroSteps[master.docId]) {
@@ -97,16 +85,16 @@ class MasterWindow extends Component {
         }
       }
 
-      if (Array.isArray(introHints["default"])) {
-        docIntroHints = introHints["default"];
+      if (Array.isArray(introHints['default'])) {
+        docIntroHints = introHints['default'];
       }
 
       const windowIntroHints = introHints[master.layout.windowId];
       if (windowIntroHints) {
         docIntroHints = [];
 
-        if (windowIntroHints["all"]) {
-          docIntroHints = docIntroHints.concat(windowIntroHints["all"]);
+        if (windowIntroHints['all']) {
+          docIntroHints = docIntroHints.concat(windowIntroHints['all']);
         }
 
         if (master.docId && windowIntroHints[master.docId]) {
@@ -118,7 +106,7 @@ class MasterWindow extends Component {
         introEnabled: docIntroSteps && docIntroSteps.length > 0,
         hintsEnabled: docIntroHints && docIntroHints.length > 0,
         introSteps: docIntroSteps,
-        introHints: docIntroHints
+        introHints: docIntroHints,
       });
     }
 
@@ -130,7 +118,7 @@ class MasterWindow extends Component {
         if (stale) {
           dispatch(
             fireUpdateData(
-              "window",
+              'window',
               params.windowType,
               params.docId,
               null,
@@ -156,7 +144,7 @@ class MasterWindow extends Component {
 
             if (includedTabsInfo[tabId]) {
               getTab(tabId, params.windowType, master.docId).then(tab => {
-                dispatch(addRowData({ [tabId]: tab }, "master"));
+                dispatch(addRowData({ [tabId]: tab }, 'master'));
               });
             }
           });
@@ -179,7 +167,7 @@ class MasterWindow extends Component {
     ) {
       Object.keys(master.includedTabsInfo).map(tabId => {
         getTab(tabId, params.windowType, master.docId).then(tab => {
-          dispatch(addRowData({ [tabId]: tab }, "master"));
+          dispatch(addRowData({ [tabId]: tab }, 'master'));
         });
       });
     }
@@ -190,7 +178,7 @@ class MasterWindow extends Component {
       master,
       dispatch,
       location: { pathname },
-      params: { windowType, docId: documentId }
+      params: { windowType, docId: documentId },
     } = this.props;
     const { isDeleted } = this.state;
     const isDocumentNotSaved =
@@ -199,7 +187,7 @@ class MasterWindow extends Component {
     this.removeEventListeners();
 
     if (isDocumentNotSaved && !isDeleted) {
-      const result = window.confirm("Do you really want to leave?");
+      const result = window.confirm('Do you really want to leave?');
 
       if (result) {
         discardNewDocument({ windowType, documentId });
@@ -213,15 +201,15 @@ class MasterWindow extends Component {
   }
 
   confirm = e => {
-    e.returnValue = "";
+    e.returnValue = '';
   };
 
   initEventListeners = () => {
-    window.addEventListener("beforeunload", this.confirm);
+    window.addEventListener('beforeunload', this.confirm);
   };
 
   removeEventListeners = () => {
-    window.removeEventListener("beforeunload", this.confirm);
+    window.removeEventListener('beforeunload', this.confirm);
   };
 
   closeModalCallback = (
@@ -243,7 +231,7 @@ class MasterWindow extends Component {
     const dataId = data ? data.ID.value : -1;
 
     let fd = new FormData();
-    fd.append("file", file);
+    fd.append('file', file);
 
     return dispatch(attachFileAction(type, dataId, fd));
   };
@@ -251,11 +239,11 @@ class MasterWindow extends Component {
   handleDragStart = () => {
     this.setState(
       {
-        dropzoneFocused: true
+        dropzoneFocused: true,
       },
       () => {
         this.setState({
-          dropzoneFocused: false
+          dropzoneFocused: false,
         });
       }
     );
@@ -269,10 +257,10 @@ class MasterWindow extends Component {
 
     dispatch(
       addNotification(
-        "Attachment",
-        "Dropped item [" + dropped.type + "] could not be attached",
+        'Attachment',
+        `Dropped item ['${dropped.type}'] could not be attached`,
         5000,
-        "error"
+        'error'
       )
     );
   };
@@ -287,12 +275,12 @@ class MasterWindow extends Component {
 
   sort = (asc, field, startPage, page, tabId) => {
     const { dispatch, master, params: { windowType } } = this.props;
-    const orderBy = (asc ? "+" : "-") + field;
+    const orderBy = (asc ? '+' : '-') + field;
     const dataId = master.docId;
 
-    dispatch(sortTab("master", tabId, field, asc));
+    dispatch(sortTab('master', tabId, field, asc));
     getTab(tabId, windowType, dataId, orderBy).then(res => {
-      dispatch(addRowData({ [tabId]: res }, "master"));
+      dispatch(addRowData({ [tabId]: res }, 'master'));
     });
   };
 
@@ -309,7 +297,7 @@ class MasterWindow extends Component {
       rawModal,
       includedView,
       processStatus,
-      enableTutorial
+      enableTutorial,
     } = this.props;
     const {
       dropzoneFocused,
@@ -318,7 +306,7 @@ class MasterWindow extends Component {
       introEnabled,
       hintsEnabled,
       introSteps,
-      introHints
+      introHints,
     } = this.state;
     const { docActionElement, documentSummaryElement } = master.layout;
 
@@ -332,7 +320,7 @@ class MasterWindow extends Component {
     const docStatusData = {
       status: master.data.DocStatus || -1,
       action: master.data.DocAction || -1,
-      displayed: true
+      displayed: true,
     };
 
     const docSummaryData =
@@ -340,7 +328,7 @@ class MasterWindow extends Component {
       master.data[documentSummaryElement.fields[0].field];
 
     const isDocumentNotSaved =
-      dataId !== "notfound" &&
+      dataId !== 'notfound' &&
       master.saveStatus.saved !== undefined &&
       !master.saveStatus.saved &&
       master.validStatus.initialValue !== undefined &&
@@ -369,9 +357,8 @@ class MasterWindow extends Component {
         docId={params.docId}
         showSidelist
         showIndicator={!modal.visible}
-        handleDeletedStatus={this.handleDeletedStatus}
-      >
-        {dataId === "notfound" ? (
+        handleDeletedStatus={this.handleDeletedStatus}>
+        {dataId === 'notfound' ? (
           <BlankPage what="Document" />
         ) : (
           <Window
@@ -410,5 +397,17 @@ class MasterWindow extends Component {
     );
   }
 }
+
+const mapStateToProps = state => ({
+  master: state.windowHandler.master,
+  modal: state.windowHandler.modal,
+  rawModal: state.windowHandler.rawModal,
+  indicator: state.windowHandler.indicator,
+  includedView: state.listHandler.includedView,
+  enableTutorial: state.appHandler.enableTutorial,
+  processStatus: state.appHandler.processStatus,
+  me: state.appHandler.me,
+  breadcrumb: state.menuHandler.breadcrumb,
+});
 
 export default connect(mapStateToProps)(MasterWindow);
