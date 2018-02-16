@@ -211,7 +211,7 @@ public class Capacity implements CapacityInterface
 	 * @param capacityDef
 	 * @return how many capacities are required or NULL if capacity is not available
 	 */
-	public Integer calculateQtyPacks(@NonNull final BigDecimal qty, @NonNull final I_C_UOM targetUom)
+	public Integer calculateQtyTU(@NonNull final BigDecimal qty, @NonNull final I_C_UOM targetUom)
 	{
 		// Infinite capacity => one pack would be sufficient
 		if (infiniteCapacity)

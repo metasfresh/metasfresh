@@ -1,35 +1,7 @@
 package de.metas.picking.legacy.form;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -38,13 +10,12 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.swing.JOptionPane;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialogDialog;
 import org.compiere.apps.ConfirmPanel;
@@ -58,9 +29,11 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.picking.terminal.Utils;
+import de.metas.quantity.Quantity;
 
 /**
- * 
+ *
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Transportverpackung_%282009_0022_G61%29'>(2009_0022_G61)</a>"
  */
@@ -79,7 +52,7 @@ public class PackingDetailsCtrl
 
 	public void removePack(final DefaultMutableTreeNode packNode)
 	{
-		final List<DefaultMutableTreeNode> nodes = new ArrayList<DefaultMutableTreeNode>();
+		final List<DefaultMutableTreeNode> nodes = new ArrayList<>();
 
 		for (int i = 0; i < packNode.getChildCount(); i++)
 		{
@@ -151,16 +124,18 @@ public class PackingDetailsCtrl
 		model.setPiLocation("???");
 
 		model.setPiProd(product.getValue() + " (" + product.getName() + ")");
-		model.setPiQty(pi.getQtySum());
 
-		model.setPiVolume(pi.getQtySum().multiply(product.getVolume()));
+		final BigDecimal qtySum = Utils.convertToItemUOM(pi, pi.getQtySum());
+
+		model.setPiQty(qtySum);
+		model.setPiVolume(qtySum.multiply(product.getVolume()));
 
 		// if the product has no weight info, make the field editable
 		final BigDecimal productWeight = product.getWeight();
 		final boolean productHasNoWeightInfo = productWeight == null || productWeight.signum() == 0;
 
 		model.setPiWeightEditable(productHasNoWeightInfo);
-		model.setPiWeight(pi.computeWeight());
+		model.setPiWeight(pi.computeWeightInProductUOM());
 
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(pi.getShipmentSchedules().iterator().next().getC_OrderLine(), I_C_OrderLine.class);
 		if (ol.isIndividualDescription())
@@ -192,7 +167,7 @@ public class PackingDetailsCtrl
 
 	/**
 	 * Makes the give view this controler's view. Also adds this controler's listers to the view.
-	 * 
+	 *
 	 * @param view
 	 */
 	public void setView(final Properties ctx, final PackingDetailsV view)
@@ -211,52 +186,47 @@ public class PackingDetailsCtrl
 			}
 		});
 
-		view.addTreeSelectionListener(new TreeSelectionListener()
-		{
-			@Override
-			public void valueChanged(final TreeSelectionEvent e)
+		view.addTreeSelectionListener(e -> {
+			final DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)e.getPath().getLastPathComponent();
+			final PackingTreeModel packingTreeModel = model.getPackingTreeModel();
+			packingTreeModel.setSelectedNode(selectedNode);
+
+			// if (e.getOldLeadSelectionPath() != null)
+			// {
+			// // make sure that the current weight is stored (required if the given product has no weight info)
+			// final DefaultMutableTreeNode unselectedNode =
+			// (DefaultMutableTreeNode)e.getOldLeadSelectionPath().getLastPathComponent();
+			// if (unselectedUserObj instanceof PackingItem)
+			// {
+			// final PackingItem unselectedPi = (PackingItem)unselectedUserObj;
+			// if (model.getPiQty().signum() != 0)
+			// {
+			// unselectedPi.setWeightSingle(model.getPiWeight().divide(model.getPiQty(), RoundingMode.HALF_UP));
+			// }
+			// else
+			// {
+			// unselectedPi.setWeightSingle(BigDecimal.ZERO);
+			// }
+			// }
+			// }
+
+			final Object selectedUserObj = selectedNode.getUserObject();
+
+			if (selectedNode == packingTreeModel.getUsedBins())
 			{
-				final DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)e.getPath().getLastPathComponent();
-				final PackingTreeModel packingTreeModel = model.getPackingTreeModel();
-				packingTreeModel.setSelectedNode(selectedNode);
-
-				// if (e.getOldLeadSelectionPath() != null)
-				// {
-				// // make sure that the current weight is stored (required if the given product has no weight info)
-				// final DefaultMutableTreeNode unselectedNode =
-				// (DefaultMutableTreeNode)e.getOldLeadSelectionPath().getLastPathComponent();
-				// if (unselectedUserObj instanceof PackingItem)
-				// {
-				// final PackingItem unselectedPi = (PackingItem)unselectedUserObj;
-				// if (model.getPiQty().signum() != 0)
-				// {
-				// unselectedPi.setWeightSingle(model.getPiWeight().divide(model.getPiQty(), RoundingMode.HALF_UP));
-				// }
-				// else
-				// {
-				// unselectedPi.setWeightSingle(BigDecimal.ZERO);
-				// }
-				// }
-				// }
-
-				final Object selectedUserObj = selectedNode.getUserObject();
-
-				if (selectedNode == packingTreeModel.getUsedBins())
-				{
-					updateUsedBinsSumPanel(ctx, selectedNode);
-				}
-				else if (selectedUserObj instanceof UsedBin)
-				{
-					updateUsedBinPanel(ctx, selectedNode);
-				}
-				else if (selectedUserObj instanceof LegacyPackingItem)
-				{
-					updatePackingItemPanel(selectedNode);
-				}
-				else
-				{
-					view.showDetailsTab(PackingDetailsV.BLANK);
-				}
+				updateUsedBinsSumPanel(ctx, selectedNode);
+			}
+			else if (selectedUserObj instanceof UsedBin)
+			{
+				updateUsedBinPanel(ctx, selectedNode);
+			}
+			else if (selectedUserObj instanceof LegacyPackingItem)
+			{
+				updatePackingItemPanel(selectedNode);
+			}
+			else
+			{
+				view.showDetailsTab(PackingDetailsV.BLANK);
 			}
 		});
 
@@ -280,7 +250,8 @@ public class PackingDetailsCtrl
 					DefaultMutableTreeNode oldUsedBin,
 					BigDecimal qty)
 			{
-				model.getPackingTreeModel().removePackedItem(ctx, packedItemNode, oldUsedBin, qty, true);
+				final LegacyPackingItem pi = extractItem(packedItemNode);
+				model.getPackingTreeModel().removePackedItem(ctx, packedItemNode, oldUsedBin, Quantity.of(qty, pi.getC_UOM()), true);
 			}
 
 			@Override
@@ -289,8 +260,8 @@ public class PackingDetailsCtrl
 					DefaultMutableTreeNode newUsedBin,
 					BigDecimal qty)
 			{
-
-				model.getPackingTreeModel().movePackItem(packedItemNode, newUsedBin, qty);
+				final LegacyPackingItem pi = extractItem(packedItemNode);
+				model.getPackingTreeModel().movePackItem(packedItemNode, newUsedBin, Quantity.of(qty, pi.getC_UOM()));
 			}
 
 			@Override
@@ -300,77 +271,66 @@ public class PackingDetailsCtrl
 					DefaultMutableTreeNode newUsedBin,
 					BigDecimal qty)
 			{
-				model.getPackingTreeModel().movePackItem(itemNode, newUsedBin, qty);
+				final LegacyPackingItem pi = extractItem(itemNode);
+				model.getPackingTreeModel().movePackItem(itemNode, newUsedBin, Quantity.of(qty, pi.getC_UOM()));
 			}
-		});
 
-		view.setConfirmPanelListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(final ActionEvent e)
+			private LegacyPackingItem extractItem(final DefaultMutableTreeNode treeNode)
 			{
-				if (ConfirmPanel.A_OK.equals(e.getActionCommand()))
-				{
-					if (model.selectedShipperId <= 0)
-					{
-						model.setValidState(PackingDetailsMd.STATE_INVALID);
-					}
-					view.dispose();
-				}
-				else if (ConfirmPanel.A_CANCEL.equals(e.getActionCommand()))
-				{
-					cancel();
-				}
-			}
-		});
-
-		view.addShipperListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				final VComboBox fShipper = (VComboBox)e.getSource();
-				final Integer shipperId = (Integer)fShipper.getValue();
-				model.selectedShipperId = (shipperId == null ? 0 : shipperId);
-
-				validateModel();
-			}
-		});
-
-		view.addPLWeightChangedListener(new VetoableChangeListener()
-		{
-			@Override
-			public void vetoableChange(final PropertyChangeEvent evt) throws PropertyVetoException
-			{
-				final VNumber weightField = (VNumber)evt.getSource();
-				final BigDecimal weight = (BigDecimal)weightField.getValue();
-				final Object selectedUserObj = model.getPackingTreeModel().getSelectedNode().getUserObject();
-				assert selectedUserObj instanceof LegacyPackingItem;
-
+				final Object selectedUserObj = treeNode.getUserObject();
+				Check.errorUnless(selectedUserObj instanceof LegacyPackingItem,
+						"packedItemNode.getUserObject() needs to be instanceof LegacyPackingItem, but is {}; packedItemNode={}", selectedUserObj.getClass(), treeNode);
 				final LegacyPackingItem pi = (LegacyPackingItem)selectedUserObj;
-				if (model.getPiQty().signum() != 0)
-				{
-					pi.setWeightSingle(weight.divide(model.getPiQty(), RoundingMode.HALF_UP));
-				}
-				else
-				{
-					pi.setWeightSingle(BigDecimal.ZERO);
-				}
-				model.setPiWeight(weight);
-				validateModel();
+				return pi;
 			}
 		});
 
-		view.addRecomputeListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent e)
+		view.setConfirmPanelListener(e -> {
+			if (ConfirmPanel.A_OK.equals(e.getActionCommand()))
 			{
-				recompute(ctx);
+				if (model.selectedShipperId <= 0)
+				{
+					model.setValidState(PackingDetailsMd.STATE_INVALID);
+				}
+				view.dispose();
+			}
+			else if (ConfirmPanel.A_CANCEL.equals(e.getActionCommand()))
+			{
+				cancel();
 			}
 		});
+
+		view.addShipperListener(e -> {
+			final VComboBox fShipper = (VComboBox)e.getSource();
+			final Integer shipperId = (Integer)fShipper.getValue();
+			model.selectedShipperId = (shipperId == null ? 0 : shipperId);
+
+			validateModel();
+		});
+
+		view.addPLWeightChangedListener(evt -> {
+
+			final VNumber weightField = (VNumber)evt.getSource();
+			final BigDecimal weight = (BigDecimal)weightField.getValue();
+			final Object selectedUserObj = model.getPackingTreeModel().getSelectedNode().getUserObject();
+			assert selectedUserObj instanceof LegacyPackingItem;
+
+			final LegacyPackingItem pi = (LegacyPackingItem)selectedUserObj;
+			if (model.getPiQty().signum() != 0)
+			{
+				pi.setWeightSingle(weight.divide(model.getPiQty(), RoundingMode.HALF_UP));
+			}
+			else
+			{
+				pi.setWeightSingle(BigDecimal.ZERO);
+			}
+			model.setPiWeight(weight);
+			validateModel();
+		});
+
+		view.addRecomputeListener(e -> recompute(ctx));
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public void validateModel()
 	{
@@ -384,7 +344,7 @@ public class PackingDetailsCtrl
 			if (userObj instanceof LegacyPackingItem)
 			{
 				final LegacyPackingItem pi = (LegacyPackingItem)userObj;
-				if (pi.computeWeight().signum() <= 0)
+				if (pi.computeWeightInProductUOM().signum() <= 0)
 				{
 					weightsOk = false;
 					break;
@@ -398,13 +358,13 @@ public class PackingDetailsCtrl
 	public void recompute(final Properties ctx)
 	{
 		final PackingTreeModel packingTreeModel = model.getPackingTreeModel();
-		
+
 		packingTreeModel.reset(ctx);
 		try
 		{
 			model.packer.pack(ctx, packingTreeModel, null);
 		}
-		catch (NoContainerException e)
+		catch (final NoContainerException e)
 		{
 			logger.error(e.toString());
 			new ADialogDialog(view, e.getMessage(), e.toString(), JOptionPane.ERROR_MESSAGE).getReturnCode();
@@ -421,7 +381,7 @@ public class PackingDetailsCtrl
 	{
 		model.setValidState(PackingDetailsMd.STATE_INVALID);
 		view.dispose();
-		
+
 		Services.get(IShipmentSchedulePA.class).deleteUnprocessedLocksForShipmentRun(0, Env.getAD_User_ID(Env.getCtx()), null);
 	}
 }

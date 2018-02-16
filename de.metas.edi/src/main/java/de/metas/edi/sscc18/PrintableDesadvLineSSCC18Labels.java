@@ -325,7 +325,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 				return Optional.absent();
 			}
 
-			final I_M_HU_LUTU_Configuration lutuConfiguration = huShipmentScheduleBL.getM_HU_LUTU_Configuration(shipmentSchedule);
+			final I_M_HU_LUTU_Configuration lutuConfiguration = huShipmentScheduleBL.deriveM_HU_LUTU_Configuration(shipmentSchedule);
 			if (lutuConfiguration == null) // shall not happen
 			{
 				logger.warn("No LU/TU configuration found for {}", shipmentSchedule);

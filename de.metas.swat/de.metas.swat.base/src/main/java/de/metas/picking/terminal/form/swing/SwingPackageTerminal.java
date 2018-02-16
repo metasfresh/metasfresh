@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.picking.terminal.form.swing;
 
@@ -13,18 +13,17 @@ package de.metas.picking.terminal.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -47,7 +46,7 @@ import de.metas.picking.terminal.Utils;
 
 /**
  * @author cg
- * 
+ *
  */
 public class SwingPackageTerminal extends AbstractPackageTerminal
 {
@@ -56,13 +55,13 @@ public class SwingPackageTerminal extends AbstractPackageTerminal
 		super(pickingOKPanel, model);
 		createBoxes(model);
 	}
-	
+
 	@Override
 	@SuppressWarnings("unchecked")
 	public void createBoxes(final Object model)
 	{
 		final PackingDetailsMd packingDetailsModel = (PackingDetailsMd)model;
-		
+
 		final PackingItemsMap packItems = new PackingItemsMap();
 		final Map<Integer, DefaultMutableTreeNode> boxes = new HashMap<>();
 		final List<DefaultMutableTreeNode> availBoxes = new ArrayList<>();
@@ -71,24 +70,24 @@ public class SwingPackageTerminal extends AbstractPackageTerminal
 		int boxNo = 1;
 		while (enu.hasMoreElements())
 		{
-			DefaultMutableTreeNode currentChild = enu.nextElement();
+			final DefaultMutableTreeNode currentChild = enu.nextElement();
 
 			// get boxes
-			Object userObj = currentChild.getUserObject();
+			final Object userObj = currentChild.getUserObject();
 			if (userObj instanceof UsedBin)
 			{
 				boxes.put(boxNo, currentChild);
 			}
 
 			// get packing items
-			List<IPackingItem> itemList = new ArrayList<>();
-			Enumeration<DefaultMutableTreeNode> enumProd = currentChild.children();
+			final List<IPackingItem> itemList = new ArrayList<>();
+			final Enumeration<DefaultMutableTreeNode> enumProd = currentChild.children();
 			while (enumProd.hasMoreElements())
 			{
-				DefaultMutableTreeNode child = enumProd.nextElement();
+				final DefaultMutableTreeNode child = enumProd.nextElement();
 
 				// create products per box
-				Object obj = child.getUserObject();
+				final Object obj = child.getUserObject();
 				if (obj instanceof LegacyPackingItem)
 				{
 					final LegacyPackingItem item = (LegacyPackingItem)obj;
@@ -100,11 +99,11 @@ public class SwingPackageTerminal extends AbstractPackageTerminal
 		}
 		// put unpacked products
 		final Enumeration<DefaultMutableTreeNode> unpacked = packingDetailsModel.getPackingTreeModel().getUnPackedItems().children();
-		List<IPackingItem> itemList = new ArrayList<>();
+		final List<IPackingItem> itemList = new ArrayList<>();
 		while (unpacked.hasMoreElements())
 		{
-			DefaultMutableTreeNode currentChild = unpacked.nextElement();
-			Object obj = currentChild.getUserObject();
+			final DefaultMutableTreeNode currentChild = unpacked.nextElement();
+			final Object obj = currentChild.getUserObject();
 			if (obj instanceof LegacyPackingItem)
 			{
 				final LegacyPackingItem item = (LegacyPackingItem)obj;
@@ -120,61 +119,61 @@ public class SwingPackageTerminal extends AbstractPackageTerminal
 		final Enumeration<DefaultMutableTreeNode> available = packingDetailsModel.getPackingTreeModel().getAvailableBins().children();
 		while (available.hasMoreElements())
 		{
-			DefaultMutableTreeNode currentChild = available.nextElement();
+			final DefaultMutableTreeNode currentChild = available.nextElement();
 
-			Object userObj = currentChild.getUserObject();
+			final Object userObj = currentChild.getUserObject();
 			if (userObj instanceof AvailableBins)
 			{
 				availBoxes.add(currentChild);
 			}
 		}
-		
+
 		setPackingItems(packItems);
 		setBoxes(boxes);
 		setAvailableBoxes(availBoxes);
 	}
-	
+
 	@Override
 	public PackingDetailsMd getPackingDetailsModel()
 	{
 		return (PackingDetailsMd)super.getPackingDetailsModel();
 	}
-	
+
 	@Override
 	@SuppressWarnings("unchecked")
 	public BigDecimal getQtyUnpacked(IPackingItem pck)
 	{
 		final PackingDetailsMd packingDetailsModel = getPackingDetailsModel();
-		Enumeration<DefaultMutableTreeNode> unpacked = packingDetailsModel.getPackingTreeModel().getUnPackedItems().children();
+		final Enumeration<DefaultMutableTreeNode> unpacked = packingDetailsModel.getPackingTreeModel().getUnPackedItems().children();
 		BigDecimal qty = Env.ZERO;
 		while (unpacked.hasMoreElements())
 		{
-			DefaultMutableTreeNode currentChild = unpacked.nextElement();
-			Object obj = currentChild.getUserObject();
+			final DefaultMutableTreeNode currentChild = unpacked.nextElement();
+			final Object obj = currentChild.getUserObject();
 			if (obj instanceof LegacyPackingItem)
 			{
 				final LegacyPackingItem item = (LegacyPackingItem)obj;
 				if (pck.getProductId() == item.getProductId())
 				{
-					qty =  qty.add(item.getQtySum());
+					final BigDecimal qtySum = Utils.convertToItemUOM(item, item.getQtySum());
+					qty = qty.add(qtySum);
 				}
 			}
 		}
-		
 		return qty;
 	}
-	
+
 	@Override
 	public AbstractPackageTerminalPanel createPackageTerminalPanel()
 	{
 		final SwingPackageTerminalPanel packageTerminalPanel = new SwingPackageTerminalPanel(getTerminalContext(), this);
-		
+
 		// we saving the tree and in this way we assure that only one user can see this specific tree
 		// save only if is not groupped by product
 		Utils.savePackingTree(packageTerminalPanel);
-		
+
 		packageTerminalPanel.getPickingData().validateModel();
-		
+
 		return packageTerminalPanel;
 	}
 }

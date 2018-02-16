@@ -9,6 +9,7 @@ import org.compiere.model.I_C_UOM;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -20,12 +21,12 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,7 +36,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 public interface IPackingItem
 {
 
-	boolean isSameAs(final IPackingItem item);
+	boolean isSameAs(IPackingItem item);
 
 	IPackingItem copy();
 
@@ -43,62 +44,60 @@ public interface IPackingItem
 
 	int getGroupingKey();
 
-	void setWeightSingle(final BigDecimal piWeightSingle);
+	void setWeightSingle(BigDecimal piWeightSingle);
 
-	boolean canAddSchedule(final I_M_ShipmentSchedule schedToAdd);
+	boolean canAddSchedule(I_M_ShipmentSchedule schedToAdd);
 
 	/**
 	 * Clears current schedules and set them from given <code>packingItem</code>.
-	 * 
-	 * @param packingItem
 	 */
-	void setSchedules(final IPackingItem packingItem);
+	void setSchedules(IPackingItem packingItem);
 
-	void addSchedules(final IPackingItem packingItem);
+	void addSchedules(IPackingItem packingItem);
 
-	void addSchedules(final Map<I_M_ShipmentSchedule, BigDecimal> toAdd);
+	void addSchedules(Map<I_M_ShipmentSchedule, Quantity> toAdd);
 
 	/**
-	 * 
+	 *
 	 * @param subtrahent
 	 * @param acceptShipmentSchedulePredicate evaluates which shipment schedules shall be considered
 	 * @return subtracted schedule/qty pairs
 	 * @throws PackingItemSubtractException if required qty could not be fully subtracted (and there were no shipment schedules excluded by the accept predicate)
 	 */
-	Map<I_M_ShipmentSchedule, BigDecimal> subtract(final BigDecimal subtrahent, final Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);
+	Map<I_M_ShipmentSchedule, Quantity> subtract(Quantity subtrahent, Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);
 
 	/**
-	 * 
+	 *
 	 * @param subtrahent
 	 * @return subtracted schedule/qty pairs
 	 * @throws PackingItemSubtractException if required qty could not be fully subtracted
 	 */
-	Map<I_M_ShipmentSchedule, BigDecimal> subtract(final BigDecimal subtrahent);
+	Map<I_M_ShipmentSchedule, Quantity> subtract(Quantity subtrahent);
 
-	Map<I_M_ShipmentSchedule, BigDecimal> getQtys();
+	Map<I_M_ShipmentSchedule, Quantity> getQtys();
 
 	/**
 	 * For this item, return the open quantity to be packed for the given {@code sched}.
 	 * @param sched
 	 * @return
 	 */
-	BigDecimal getQtyForSched(final I_M_ShipmentSchedule sched);
+	Quantity getQtyForSched(I_M_ShipmentSchedule sched);
 
-	void addSingleSched(final I_M_ShipmentSchedule sched);
+	void addSingleSched(I_M_ShipmentSchedule sched);
 
 	int getProductId();
 
 	I_M_Product getM_Product();
 
-	BigDecimal retrieveVolumeSingle(final String trxName);
+	Quantity retrieveVolumeSingle(String trxName);
 
-	BigDecimal computeWeight();
+	BigDecimal computeWeightInProductUOM();
 
-	BigDecimal retrieveWeightSingle(final String trxName);
+	BigDecimal retrieveWeightSingle(String trxName);
 
-	void setQtyForSched(final I_M_ShipmentSchedule sched, final BigDecimal qty);
+	void setQtyForSched(I_M_ShipmentSchedule sched, Quantity qty);
 
-	BigDecimal getQtySum();
+	Quantity getQtySum();
 
 	List<I_M_ShipmentSchedule> getShipmentSchedules();
 

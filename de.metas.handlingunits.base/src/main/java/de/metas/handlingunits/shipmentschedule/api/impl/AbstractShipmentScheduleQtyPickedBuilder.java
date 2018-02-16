@@ -10,12 +10,12 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,6 +54,8 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 /**
  * Class responsible for creating {@link I_M_ShipmentSchedule_QtyPicked} records based on {@link I_M_HU}s.
@@ -80,7 +82,7 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 	// Status
 	private IHUContext _huContext = null;
 	private boolean _qtyToPackEnforced = false;
-	private BigDecimal _qtyToPackRemaining = null;
+	private Quantity _qtyToPackRemaining = null;
 
 	public AbstractShipmentScheduleQtyPickedBuilder()
 	{
@@ -111,8 +113,8 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 	protected abstract IHUContext createHUContextInitial();
 
 	/**
-	 * 
-	 * @param fromHUs the HUs to assign to the shipment schedule. The all need be !out of transaction", i.e. have {@link InterfaceWrapperHelper#getTrxName(Object)} {@code ==} {@link ITrx#TRXNAME_None} 
+	 *
+	 * @param fromHUs the HUs to assign to the shipment schedule. The all need be !out of transaction", i.e. have {@link InterfaceWrapperHelper#getTrxName(Object)} {@code ==} {@link ITrx#TRXNAME_None}
 	 * @return
 	 */
 	public final AbstractShipmentScheduleQtyPickedBuilder setFromHUs(final Collection<I_M_HU> fromHUs)
@@ -147,11 +149,9 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 		return _targetHU;
 	}
 
-	public void setQtyToPack(final BigDecimal qtyToPack)
+	public void setQtyToPack(@NonNull final Quantity qtyToPack)
 	{
 		assertConfigurable();
-
-		Check.assumeNotNull(qtyToPack, "qtyToPack not null");
 		Check.assume(qtyToPack.signum() > 0, "qtyToPack > 0 but it was {}", qtyToPack);
 
 		_qtyToPackRemaining = qtyToPack;
@@ -161,13 +161,13 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 	/**
 	 * @return Qty that remains to be package (in itemToPack's UOM)
 	 */
-	protected final BigDecimal getQtyToPackRemaining()
+	protected final Quantity getQtyToPackRemaining()
 	{
 		Check.assumeNotNull(_qtyToPackRemaining, "_qtyToPackRemaining not null");
 		return _qtyToPackRemaining;
 	}
 
-	private final void subtractFromQtyToPackRemaining(final BigDecimal qtyPicked)
+	private final void subtractFromQtyToPackRemaining(final Quantity qtyPicked)
 	{
 		// Do nothing if we are not tracking remaining qty to pack
 		if (!isQtyToPackEnforced())
@@ -204,7 +204,7 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 	 * @param uom
 	 * @return qtyToPack (adjusted)
 	 */
-	protected final BigDecimal adjustQtyToPackConsideringRemaining(final BigDecimal qtyToPack, final I_C_UOM uom)
+	protected final Quantity adjustQtyToPackConsideringRemaining(final Quantity qtyToPack)
 	{
 		// If we are not tracking the remaining qty to pack,
 		// then directly accept the given quantity
@@ -216,17 +216,17 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 		// Make sure there is something remaining to be packed
 		if (_qtyToPackRemaining.signum() <= 0)
 		{
-			return BigDecimal.ZERO;
+			return qtyToPack.toZero();
 		}
 
 		// Make sure QtyToPick is greather then zero
 		// shall not happen, but just to be sure
 		if (qtyToPack == null || qtyToPack.signum() <= 0)
 		{
-			return BigDecimal.ZERO;
+			return  qtyToPack.toZero();
 		}
 
-		final BigDecimal qtyToPackActual = _qtyToPackRemaining.min(qtyToPack);
+		final Quantity qtyToPackActual = _qtyToPackRemaining.min(qtyToPack);
 		return qtyToPackActual;
 	}
 
@@ -425,14 +425,15 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 	 * @param vhu
 	 * @return created record
 	 */
-	protected final void onQtyAllocated(final I_M_ShipmentSchedule sched, final BigDecimal qtyPicked, final I_C_UOM uom, final I_M_HU vhu)
+	protected final void onQtyAllocated(
+			@NonNull final I_M_ShipmentSchedule sched,
+			@NonNull final Quantity qtyPicked,
+			@NonNull final I_M_HU vhu)
 	{
-		//
 		// "Back" allocate the qtyPicked from VHU to given shipment schedule
-		huShipmentScheduleBL.addQtyPicked(sched, qtyPicked, uom, vhu);
+		huShipmentScheduleBL.addQtyPicked(sched, qtyPicked, vhu);
 
-		//
-		// Transfer the qtyPicked from shipment schedule to our target HU (if any)
+		// Transfer the qtyPicked from vhu to our target HU (if any)
 		final I_M_HU targetHU = getTargetHU();
 		if (targetHU != null)
 		{
@@ -443,17 +444,18 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 					.setAllowPartialUnloads(false)
 					.setAllowPartialLoads(true);
 
-			final IAllocationRequest request = createShipmentScheduleAllocationRequest(sched, qtyPicked, uom);
+			final IAllocationRequest request = createShipmentScheduleAllocationRequest(sched, qtyPicked);
 
 			loader.load(request);
 		}
 
-		//
 		// Adjust remaining Qty to be packed
 		subtractFromQtyToPackRemaining(qtyPicked);
 	}
 
-	protected final IAllocationRequest createShipmentScheduleAllocationRequest(final I_M_ShipmentSchedule sched, final BigDecimal qty, final I_C_UOM uom)
+	protected final IAllocationRequest createShipmentScheduleAllocationRequest(
+			final I_M_ShipmentSchedule sched,
+			final Quantity qty)
 	{
 		// Force Qty Allocation: we need to allocate even if the HU is full
 		// see http://dewiki908/mediawiki/index.php/05706_Meldung_im_Aktuellen_UAT%3F_Sollte_schon_weg_sein%2C_oder%3F_%28105871951705%29
@@ -464,7 +466,6 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext,
 				product,
 				qty,
-				uom,
 				huContext.getDate(), // date
 				sched, // referenceModel,
 				forceQtyAllocation);

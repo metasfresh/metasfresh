@@ -43,8 +43,8 @@ import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
-import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
+import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.IContextAware;
@@ -80,12 +80,10 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.IShipmentScheduleQtyUpdateListener;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
-import de.metas.inoutcandidate.spi.impl.CompositeShipmentScheduleQtyUpdateListener;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
@@ -112,11 +110,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final static Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
 
 	private final CompositeCandidateProcessor candidateProcessors = new CompositeCandidateProcessor();
-
-	/**
-	 * Listeners for delivery Qty updates (task 08959)
-	 */
-	private final CompositeShipmentScheduleQtyUpdateListener listeners = new CompositeShipmentScheduleQtyUpdateListener();
 
 	@Override
 	public void updateSchedules(
@@ -201,10 +194,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final BigDecimal qtyDelivered = Services.get(IShipmentScheduleAllocDAO.class).retrieveQtyDelivered(sched);
 			sched.setQtyDelivered(qtyDelivered);
 			sched.setQtyReserved(BigDecimal.ZERO.max(deliverRequest.getQtyOrdered().subtract(sched.getQtyDelivered())));
-
-			// task 08959
-			// Additional qty updates from other projects
-			listeners.updateQtys(sched);
 
 			if (olAndSched.getOl().isPresent())
 			{
@@ -818,7 +807,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	/**
 	 * 07400 also update the M_Warehouse_ID; an order might have been reactivated and the warehouse might have been changed.
-	 * 
+	 *
 	 * @param sched
 	 */
 	private static void updateWarehouseId(final I_M_ShipmentSchedule sched)
@@ -976,12 +965,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final boolean noQtyReserved = sched.getQtyReserved().signum() <= 0;
 
 		sched.setProcessed(noQtyOverride && noQtyReserved);
-	}
-
-	@Override
-	public void addShipmentScheduleQtyUpdateListener(final IShipmentScheduleQtyUpdateListener listener)
-	{
-		listeners.addShipmentScheduleQtyUpdateListener(listener);
 	}
 
 	@Override

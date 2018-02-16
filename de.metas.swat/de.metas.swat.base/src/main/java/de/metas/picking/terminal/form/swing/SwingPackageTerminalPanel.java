@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.picking.terminal.form.swing;
 
@@ -13,12 +13,12 @@ package de.metas.picking.terminal.form.swing;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -62,13 +62,14 @@ import de.metas.picking.terminal.BoxKey;
 import de.metas.picking.terminal.NewKartonKey;
 import de.metas.picking.terminal.NewKartonLayout;
 import de.metas.picking.terminal.ProductKey;
+import de.metas.picking.terminal.Utils;
 import de.metas.picking.terminal.Utils.PackingStates;
 
 /**
  * Packing window panel (second window)
- * 
+ *
  * @author cg
- * 
+ *
  */
 public class SwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 {
@@ -136,9 +137,9 @@ public class SwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		if (getModel().selectedShipperId > 0)
 		{
 			final List<ITerminalKey> keys = deliveryKey.getKeys();
-			for (ITerminalKey tk : keys)
+			for (final ITerminalKey tk : keys)
 			{
-				int id = Integer.parseInt(tk.getValue().getID());
+				final int id = Integer.parseInt(tk.getValue().getID());
 				if (getModel().selectedShipperId == id)
 				{
 					((TerminalKeyPanel)deliveryPanel).onKeySelected(tk);
@@ -148,7 +149,7 @@ public class SwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		else
 		{
 			final List<ITerminalKey> keys = deliveryKey.getKeys();
-			for (ITerminalKey tk : keys)
+			for (final ITerminalKey tk : keys)
 			{
 				getModel().selectedShipperId = Integer.parseInt(tk.getValue().getID());
 				((TerminalKeyPanel)deliveryPanel).onKeySelected(tk);
@@ -161,7 +162,7 @@ public class SwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		SwingTerminalFactory.addChild(panelCenter, getPickingData(), "dock north, wrap, wmin 120");
 		SwingTerminalFactory.addChild(panelCenter, getPackingMaterialsKeyLayoutPanel(), "dock north,wrap, wmin 120, gapleft 5, gapright 5");
 		// add tree in a scroll panel
-		ITerminalScrollPane scroll = getTerminalFactory().createScrollPane(tree);
+		final ITerminalScrollPane scroll = getTerminalFactory().createScrollPane(tree);
 		// add split panel
 		split = getTerminalFactory().createSplitPane(TerminalSplitPane.HORIZONTAL_SPLIT,
 				scroll.getComponent(), panelCenter.getComponent());
@@ -205,7 +206,7 @@ public class SwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 			{
 				pickingData.setQtyFieldReadOnly(true, false, false);// plus, minus, field
 			}
-			
+
 			final ITerminalKeyPanel keypanel = productsKeyPanel.getProductsKeyLayoutPanel();
 			keypanel.onKeySelected(productKey);
 		}
@@ -216,7 +217,7 @@ public class SwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 				throw new AdempiereException("@" + ERR_SWING_PACKAGE_TERMINAL_PANEL_NO_CONTAINER + "@");
 			}
 			//
-			NewKartonKey kk = (NewKartonKey)key;
+			final NewKartonKey kk = (NewKartonKey)key;
 			final PackingTreeModel packingTreeModel = getModel().getPackingTreeModel();
 			packingTreeModel.addUsedBins(Env.getCtx(), kk.getNode(), 1);
 			packingTreeModel.reload();
@@ -228,16 +229,16 @@ public class SwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		else if (key instanceof BoxKey)
 		{
 			final BoxKey bk = (BoxKey)key;
-			
+
 			productsKeyPanel.getProductsKeyLayoutPanel().onKeySelected(null);
 			//setSelectedProduct(null);
-			
+
 			productsKeyPanel.getProductsKeyLayout().setSelectedBox(bk);
 			//
 			pickingData.getbLock().setEnabled(bk.getNode().children().hasMoreElements());// empty boxes should not be possible to lock
 
 			// empty boxes should not be possible to pack and also already packed packag
-			boolean enableClose = bk.getNode().children().hasMoreElements() && !PackingStates.closed.name().equals(bk.getStatus().getName());
+			final boolean enableClose = bk.getNode().children().hasMoreElements() && !PackingStates.closed.name().equals(bk.getStatus().getName());
 			pickingData.getbClose().setEnabled(enableClose);
 			//
 			((SwingPackageDataPanel)pickingData).setDataValues(bk.getName().toString(),
@@ -311,12 +312,13 @@ public class SwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		model.setPiLocation("???");
 
 		model.setPiProd(product.getValue() + " (" + product.getName() + ")");
-		model.setPiQty(pi.getQtySum());
+		final BigDecimal qtySum = Utils.convertToItemUOM(pi, pi.getQtySum());
+		model.setPiQty(qtySum);
 
-		model.setPiVolume(pi.getQtySum().multiply(product.getVolume()));
+		model.setPiVolume(qtySum.multiply(product.getVolume()));
 
 		model.setPiWeightEditable(productHasNoWeightInfo);
-		model.setPiWeight(pi.computeWeight());
+		model.setPiWeight(pi.computeWeightInProductUOM());
 
 		if (ol.isIndividualDescription())
 		{
@@ -331,18 +333,18 @@ public class SwingPackageTerminalPanel extends AbstractPackageTerminalPanel
 		if (refresh)
 		{
 			((SwingPackageDataPanel)pickingData).setDataValues(product.getValue() + " (" + product.getName() + ")",
-					pi.getQtySum().toString(),
-					pi.getQtySum().multiply(product.getVolume()).toString(),
-					pi.computeWeight().toString(),
+					qtySum.toString(),
+					qtySum.multiply(product.getVolume()).toString(),
+					pi.computeWeightInProductUOM().toString(),
 					productHasNoWeightInfo,
 					desc);
 		}
 		else
 		{
 			((SwingPackageDataPanel)pickingData).setDataValues(pi, usedBin, product.getValue() + " (" + product.getName() + ")",
-					pi.getQtySum().toString(),
-					pi.getQtySum().multiply(product.getVolume()).toString(),
-					pi.computeWeight().toString(),
+					qtySum.toString(),
+					qtySum.multiply(product.getVolume()).toString(),
+					pi.computeWeightInProductUOM().toString(),
 					productHasNoWeightInfo,
 					desc);
 		}

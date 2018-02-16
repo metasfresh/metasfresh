@@ -37,7 +37,7 @@ public class M_ShipmentSchedule
 	@Init
 	public void init()
 	{
-		Services.get(IDeliveryDayBL.class).registerDeliveryDayHandler(ShipmentScheduleDeliveryDayHandler.instance);
+		Services.get(IDeliveryDayBL.class).registerDeliveryDayHandler(ShipmentScheduleDeliveryDayHandler.INSTANCE);
 	}
 
 }
