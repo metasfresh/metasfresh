@@ -20,7 +20,7 @@ public class BPartnerCreditLimit_RequestApproval extends JavaProcess implements 
 	@Param(parameterName = I_C_BPartner_CreditLimit.COLUMNNAME_ApprovedBy_ID, mandatory = true)
 	private int approvedBy_ID;
 
-	private static final Topic TOPIC_CreditLimitRequestApproval = Topic.builder()
+	public static final Topic TOPIC_CreditLimitRequestApproval = Topic.builder()
 			.name("org.adempiere.bpartner.process.CreditLimit")
 			.type(Type.REMOTE)
 			.build();
@@ -36,7 +36,7 @@ public class BPartnerCreditLimit_RequestApproval extends JavaProcess implements 
 		final Event event = Event.builder()
 				.setDetailADMessage(MSG_Event_RequestApproval)
 				.addRecipient_User_ID(approvedBy_ID)
-				.setRecord(TableRecordReference.of(bpCreditLimit))
+				.setRecord(TableRecordReference.of(bpCreditLimit.getC_BPartner()))
 				.setSuggestedWindowId(bpartnerWindowId)
 				.build();
 
