@@ -484,6 +484,12 @@ public interface IQuery<T>
 	 * @param distinct
 	 */
 	void addUnion(IQuery<T> query, boolean distinct);
+	
+	default IQuery<T> addUnions(final Collection<IQuery<T>> queries, final boolean distinct)
+	{
+		queries.forEach(query -> addUnion(query, distinct));
+		return this;
+	}
 
 	/** @return UNION DISTINCT {@link IQuery} reducer */
 	static <T> BinaryOperator<IQuery<T>> unionDistict()
