@@ -59,6 +59,8 @@ Here come the actual release notes:
     * Improvement of the sorting functionality in main and included subtab Grid Views.
   * [#1593](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1593) Copy/ Paste for selected Field in Subtab GridView not giving correct result
     * New Feature that allows to mark a Field in Grid View and copy the field content to clipboard.
+  * [#1598](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1598) Changes in location not always saved
+    * Fixes the handling of the location recording.
 
 ## Fixes
 * metasfresh
