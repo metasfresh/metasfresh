@@ -43,10 +43,10 @@ Here come the actual release notes:
     * New Credit Limit functionality. Now allowing to define Credit Limit per Customer on different levels.
   * [#3458](https://github.com/metasfresh/metasfresh/issues/3458) Remove M_Storage-based legacy check from MProduct
     * Internal housekeeping improvement, getting rid of old storage based checks.
-  * [#3467](https://github.com/metasfresh/metasfresh/issues/3467) Preparation Date Filer as Daterange
-    * Adjustment for the Preparation Date Filter in Manufacturing Order. Now is a Daterange filter instead of date.
+  * [#3467](https://github.com/metasfresh/metasfresh/issues/3467) Preparation Date Filer as Date Range
+    * Adjustment for the Preparation Date Filter in Manufacturing Order. Now is a Date Range filter instead of date.
   * [#3468](https://github.com/metasfresh/metasfresh/issues/3468) Add Translation for "All Dates available"
-    * Adds the translation for en_EN, de_DE of the "Show all dates" hint in daterange filter.
+    * Adds the translation for en_EN, de_DE of the "Show all dates" hint in Date Range filter.
   * [#3471](https://github.com/metasfresh/metasfresh/issues/3471) Disable Sales Opportunities Window until its permission is configurable
     * Hiding the Sales Opportunity Window from default WebUI Menu, as long as in beta.
   * [#3487](https://github.com/metasfresh/metasfresh/issues/3487) Extend Identifier Transportation Order
@@ -56,7 +56,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#818](https://github.com/metasfresh/metasfresh-webui-api/issues/818) Values.valueToJsonObject() shall return JSONNullValue instead of null
-    * internal improvement of the Handling of null values in JSON Objects.
+    * Internal improvement of the Handling of null values in JSON Objects.
 
 * metasfresh-webui-frontend
   * [#1501](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1501) Automated Javascript and React Testing with Jest
@@ -88,10 +88,10 @@ Here come the actual release notes:
     * Leaves the Daterange filter now initially empty to that it does not interrupt other filtering.
   * [#1553](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1553) Drop down lists remain displayed when using tab several times (again)
     * Fixes a Bug with dropdown lists staying open after tabbing away.
-  * [#1559](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1559) Errors in the console when opening HU Editor
-    * Fixes errors in console that popped up when opening the Handling Unit Editor.
   * [#1558](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1558) Dropdown fields not hidden when creating a new Business Partner
     * Fixes the reamining dropdown in Purchase Order when calling the "New Businesspartner" action in context menu.
+  * [#1559](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1559) Errors in the console when opening HU Editor
+    * Fixes errors in console that popped up when opening the Handling Unit Editor.
   * [#1588](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1588) Zoom Into is not working
     * Fixes the Zoom-To functionality that allows the user to click on field labels and jump to detail data when available.
 
