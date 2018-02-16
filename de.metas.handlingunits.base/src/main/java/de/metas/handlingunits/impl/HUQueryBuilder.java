@@ -351,8 +351,8 @@ import lombok.NonNull;
 
 		//
 		// Create and add Query Filters
-		final IQueryFilter<I_M_HU> filters = createQueryFilter();
-		queryBuilder.filter(filters);
+		final ICompositeQueryFilter<I_M_HU> filters = createQueryFilter();
+		queryBuilder.addFiltersUnboxed(filters);
 
 		//
 		// ORDER BY
@@ -363,7 +363,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public final IQueryFilter<I_M_HU> createQueryFilter()
+	public final ICompositeQueryFilter<I_M_HU> createQueryFilter()
 	{
 		final ICompositeQueryFilter<I_M_HU> filters = queryBL.createCompositeQueryFilter(I_M_HU.class);
 
