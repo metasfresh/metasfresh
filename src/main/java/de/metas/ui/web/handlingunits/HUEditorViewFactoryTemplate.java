@@ -9,8 +9,10 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
@@ -409,14 +411,22 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 				throw new IllegalArgumentException("Barcode parameter is empty: " + filter);
 			}
 
-			final IQueryFilter<I_M_HU> queryFilter = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
+			final List<Integer> huIds = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
 					.setContext(PlainContextAware.newOutOfTrx())
 					.setOnlyWithBarcode(barcode)
-					.createQueryFilter();
-
-			final ISqlQueryFilter sqlQueryFilter = ISqlQueryFilter.cast(queryFilter);
+					.createQueryBuilder()
+					.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
+					.create()
+					.listIds();
+			
+			if(huIds.isEmpty())
+			{
+				return ConstantQueryFilter.of(false).getSql();
+			}
+			
+			final ISqlQueryFilter sqlQueryFilter = new InArrayQueryFilter<>(I_M_HU.COLUMNNAME_M_HU_ID, huIds);
+			
 			final String sql = sqlQueryFilter.getSql();
-
 			sqlParamsOut.collectAll(sqlQueryFilter);
 			return sql;
 		}
