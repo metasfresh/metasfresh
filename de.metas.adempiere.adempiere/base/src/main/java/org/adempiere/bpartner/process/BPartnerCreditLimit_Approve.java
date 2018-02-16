@@ -16,6 +16,7 @@ public class BPartnerCreditLimit_Approve extends JavaProcess implements IProcess
 	{
 		final I_C_BPartner_CreditLimit bpCreditLimit = getRecord(I_C_BPartner_CreditLimit.class);
 		bpCreditLimit.setApprovedBy_ID(getAD_User_ID());
+		bpCreditLimit.setIsApproved(true);
 		InterfaceWrapperHelper.save(bpCreditLimit);
 		return "@Success@";
 	}
