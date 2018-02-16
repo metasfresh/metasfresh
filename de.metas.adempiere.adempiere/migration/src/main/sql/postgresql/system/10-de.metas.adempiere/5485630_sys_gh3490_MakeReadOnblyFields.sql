@@ -23,3 +23,13 @@ UPDATE AD_Tab SET ReadOnlyLogic='@IsApproved@=''Y''',Updated=TO_TIMESTAMP('2018-
 UPDATE AD_Tab SET ReadOnlyLogic='@IsApproved@=''Y''',Updated=TO_TIMESTAMP('2018-02-16 17:46:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=541032
 ;
 
+-- 2018-02-16T17:58:11.919
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='#Date',Updated=TO_TIMESTAMP('2018-02-16 17:58:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558979
+;
+
+-- 2018-02-16T18:00:37.123
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='@#Date@',Updated=TO_TIMESTAMP('2018-02-16 18:00:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=558979
+;
+
