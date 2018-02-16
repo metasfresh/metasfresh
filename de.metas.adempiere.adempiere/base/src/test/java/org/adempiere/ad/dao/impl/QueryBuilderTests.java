@@ -13,11 +13,11 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -63,7 +64,7 @@ public class QueryBuilderTests
 
 		ctx = new Properties();
 
-		products = new ArrayList<I_M_Product>();
+		products = new ArrayList<>();
 
 		ctx.setProperty("#AD_Client_ID", "99");
 		product0 = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
@@ -105,7 +106,7 @@ public class QueryBuilderTests
 		POJOWrapper.getWrapper(product1_NotActive).setValue("AD_Client_ID", 12345);
 		InterfaceWrapperHelper.save(product1_NotActive);
 
-		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class, null) // tableName=null
+		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<>(I_M_Product.class, null) // tableName=null
 				.setContext(ctx, ITrx.TRXNAME_None)
 				.filterByClientId();
 
@@ -131,7 +132,7 @@ public class QueryBuilderTests
 		POJOWrapper.getWrapper(product1_NotActive).setValue("AD_Client_ID", 12345);
 		InterfaceWrapperHelper.save(product1_NotActive);
 
-		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class, null) // tableName=null
+		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<>(I_M_Product.class, null) // tableName=null
 				.setContext(ctx, ITrx.TRXNAME_None)
 				.filterByClientId();
 
@@ -160,7 +161,7 @@ public class QueryBuilderTests
 		POJOWrapper.getWrapper(product1_NotActive).setValue("AD_Client_ID", 12345);
 		InterfaceWrapperHelper.save(product1_NotActive);
 
-		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class, null) // tableName=null
+		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<>(I_M_Product.class, null) // tableName=null
 				.setContext(ctx, ITrx.TRXNAME_None)
 				.filter(new ContextClientQueryFilter<I_M_Product>());
 
@@ -176,7 +177,7 @@ public class QueryBuilderTests
 		assertThat(product1_NotActive, notNullValue()); // simple guard;
 		assertThat(product2, notNullValue()); // simple guard;
 
-		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class, null); // tableName=null
+		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<>(I_M_Product.class, null); // tableName=null
 
 		//
 		// Retrieve active records and test
@@ -223,7 +224,7 @@ public class QueryBuilderTests
 		final I_AD_PInstance adPInstance = POJOLookupMap.get().createSelectionFromModels(product1_NotActive, product2);
 		final int selectionId = adPInstance.getAD_PInstance_ID();
 
-		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<I_M_Product>(I_M_Product.class, null); // tableName=null)
+		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<>(I_M_Product.class, null); // tableName=null)
 		final IQuery<I_M_Product> query = builder.create();
 
 		//
@@ -262,7 +263,7 @@ public class QueryBuilderTests
 		final int selectionId = adPInstance.getAD_PInstance_ID();
 
 		// Query selection and test
-		final List<I_M_Product> list = new QueryBuilder<I_M_Product>(I_M_Product.class, null) // tableName=null
+		final List<I_M_Product> list = new QueryBuilder<>(I_M_Product.class, null) // tableName=null
 				.setOnlySelection(selectionId)
 				.create()
 				.list();
@@ -275,7 +276,7 @@ public class QueryBuilderTests
 	 * NOTE: this test won't make sure that the {@link IQueryBuilder#OPTION_Explode_OR_Joins_To_SQL_Unions} will work on actual database, but it will just check if it works with in-memory database
 	 */
 	@Test
-	public void test_Explode_OR_Joins_To_SQL_Unions()
+	public void test_Explode_OR_Joins_To_SQL_Unions_FirstLevel()
 	{
 		final IQueryBuilder<I_M_Product> queryBuilder = new QueryBuilder<>(I_M_Product.class, null) // tableName=null
 				.setJoinOr()
@@ -286,6 +287,35 @@ public class QueryBuilderTests
 		for (int i = 1; i <= filtersCount; i++)
 		{
 			queryBuilder.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product0.getM_Product_ID());
+		}
+
+		//
+		// Create the query and check it
+		final POJOQuery<I_M_Product> query = (POJOQuery<I_M_Product>)queryBuilder.create();
+		Assert.assertEquals("Query unions count for " + query, filtersCount - 1, query.getUnions().size());
+
+		//
+		// Execute the query and check the result
+		final List<I_M_Product> result = query.list();
+		final I_M_Product productActual = ListUtils.singleElement(result); // NOTE: we expect ONLY ONE result, even if we had 1000 filters about same thing because the unions shall be DISTINCT
+		Assert.assertEquals("Retrieved product", product0.getM_Product_ID(), productActual.getM_Product_ID());
+	}
+
+	@Test
+	public void test_Explode_OR_Joins_To_SQL_Unions_SecondLevel()
+	{
+		final IQueryBuilder<I_M_Product> queryBuilder = new QueryBuilder<>(I_M_Product.class, null) // tableName=null
+				.setJoinAnd()
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions);
+
+		final ICompositeQueryFilter<I_M_Product> compositeFilter = queryBuilder.addCompositeQueryFilter()
+				.setJoinOr();
+
+		// Add the same filter, several times
+		final int filtersCount = 10;
+		for (int i = 1; i <= filtersCount; i++)
+		{
+			compositeFilter.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product0.getM_Product_ID());
 		}
 
 		//
