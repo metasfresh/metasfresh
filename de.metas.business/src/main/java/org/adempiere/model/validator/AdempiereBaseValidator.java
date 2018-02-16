@@ -31,6 +31,7 @@ import org.adempiere.ad.dao.cache.WindowBasedCacheInvalidateRequestInitializer;
 import org.adempiere.ad.element.model.interceptor.AD_Element;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.bpartner.process.BPartnerCreditLimit_RequestApproval;
 import org.adempiere.mm.attributes.copyRecordSupport.CloneASIListener;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.pricing.model.I_C_PricingRule;
@@ -77,6 +78,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.event.EventBusAdempiereInterceptor;
+import de.metas.event.IEventBusFactory;
 import de.metas.reference.model.interceptor.AD_Ref_Table;
 
 /**
@@ -87,6 +89,15 @@ import de.metas.reference.model.interceptor.AD_Ref_Table;
  */
 public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 {
+
+	@Override
+	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	{
+		//
+		// Setup event bus topics on which client notification listener shall subscribe
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(BPartnerCreditLimit_RequestApproval.TOPIC_CreditLimitRequestApproval);
+	}
+
 
 	@Override
 	protected void onAfterInit()
@@ -326,7 +337,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Attribute.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_AttributeValue.Table_Name);
-		
+
 		WindowBasedCacheInvalidateRequestInitializer.instance.initialize();
 	}
 }
