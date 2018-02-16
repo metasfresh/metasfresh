@@ -17,6 +17,8 @@ Here come the actual release notes:
 * metasfresh
   * [#3502](https://github.com/metasfresh/metasfresh/issues/3502) Default Filter Improvements
     * Adds various Filter criteria to default window filter lists.
+  * [#3505](https://github.com/metasfresh/metasfresh/issues/3505) Improvement of Procurement Candidates
+    * Usability Improvement of the procurement Planning window. Rearranged fields for better visibility.
 
 ## Fixes
 * metasfresh-webui-frontend
