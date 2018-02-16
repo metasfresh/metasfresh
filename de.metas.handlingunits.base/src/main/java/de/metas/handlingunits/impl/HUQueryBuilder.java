@@ -1071,11 +1071,11 @@ import lombok.NonNull;
 	public IHUQueryBuilder setOnlyWithBarcode(final String barcode)
 	{
 		this.barcode = barcode;
-		loadBarcodeAttrributes(barcode);
+		loadBarcodeAttributes(barcode);
 		return this;
 	}
 
-	private void loadBarcodeAttrributes(final String barcode)
+	private void loadBarcodeAttributes(final String barcode)
 	{
 		final String dimBarcodeAttributesInternalName = HUConstants.DIM_Barcode_Attributes;
 
