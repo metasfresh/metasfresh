@@ -1,6 +1,9 @@
 package de.metas.costing;
 
 import java.math.BigDecimal;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 /*
  * #%L
@@ -26,7 +29,15 @@ import java.math.BigDecimal;
 
 public interface CostingMethodHandler
 {
+	String ANY = "*";
+	Set<String> ANY_TABLE = ImmutableSet.of(ANY);
+
 	CostingMethod getCostingMethod();
+
+	default Set<String> getHandledTableNames()
+	{
+		return ANY_TABLE;
+	}
 
 	CostDetailCreateResult createOrUpdateCost(CostDetailCreateRequest request);
 

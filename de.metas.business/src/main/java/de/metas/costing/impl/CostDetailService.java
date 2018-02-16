@@ -2,7 +2,10 @@ package de.metas.costing.impl;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.adempiere.acct.api.IAcctSchemaDAO;
@@ -21,9 +24,8 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -79,7 +81,7 @@ public class CostDetailService implements ICostDetailService
 	private final ICostDetailRepository costDetailsRepo;
 	private final ICostElementRepository costElementRepo;
 	private final ICurrentCostsRepository currentCostsRepo;
-	private final ImmutableMap<CostingMethod, CostingMethodHandler> costingMethodHandlers;
+	private final ImmutableSetMultimap<CostingMethod, CostingMethodHandler> costingMethodHandlers;
 
 	public CostDetailService(
 			@NonNull final ICostDetailRepository costDetailsRepo,
@@ -90,7 +92,8 @@ public class CostDetailService implements ICostDetailService
 		this.costDetailsRepo = costDetailsRepo;
 		this.costElementRepo = costElementRepo;
 		this.currentCostsRepo = currentCostsRepo;
-		this.costingMethodHandlers = Maps.uniqueIndex(costingMethodHandlers, CostingMethodHandler::getCostingMethod);
+		this.costingMethodHandlers = costingMethodHandlers.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(CostingMethodHandler::getCostingMethod, Function.identity()));
 		logger.info("Costing method handlers: {}", this.costingMethodHandlers);
 	}
 
@@ -101,8 +104,7 @@ public class CostDetailService implements ICostDetailService
 				.flatMap(this::explodeAcctSchemas)
 				.map(this::convertToAcctSchemaCurrency)
 				.flatMap(this::explodeCostElements)
-				.map(this::createCostDetailUsingHandler)
-				.filter(Predicates.notNull())
+				.flatMap(this::createCostDetailUsingHandlersAndStream)
 				.collect(ImmutableList.toImmutableList());
 
 		if (costElementResults.isEmpty())
@@ -121,9 +123,12 @@ public class CostDetailService implements ICostDetailService
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More than one CostSegment found in " + costElementResults)));
 
-		final ImmutableMap<CostElement, CostAmount> amountsByCostElement = costElementResults
+		final Map<CostElement, CostAmount> amountsByCostElement = costElementResults
 				.stream()
-				.collect(ImmutableMap.toImmutableMap(CostDetailCreateResult::getCostElement, CostDetailCreateResult::getAmt));
+				.collect(Collectors.toMap(
+						CostDetailCreateResult::getCostElement, // keyMapper
+						CostDetailCreateResult::getAmt, // valueMapper
+						(amt1, amt2) -> amt1.add(amt2))); // mergeFunction
 
 		return CostResult.builder()
 				.costSegment(costSegment)
@@ -131,11 +136,13 @@ public class CostDetailService implements ICostDetailService
 				.build();
 	}
 
-	private CostDetailCreateResult createCostDetailUsingHandler(final CostDetailCreateRequest request)
+	private Stream<CostDetailCreateResult> createCostDetailUsingHandlersAndStream(final CostDetailCreateRequest request)
 	{
 		final CostElement costElement = request.getCostElement();
-		final CostingMethodHandler costingMethodHandler = getCostingMethodHandler(costElement.getCostingMethod());
-		return costingMethodHandler.createOrUpdateCost(request);
+		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
+				.stream()
+				.map(handler -> handler.createOrUpdateCost(request))
+				.filter(Predicates.notNull());
 	}
 
 	private CostDetailCreateRequest convertToAcctSchemaCurrency(final CostDetailCreateRequest request)
@@ -180,18 +187,18 @@ public class CostDetailService implements ICostDetailService
 	public void voidAndDeleteForDocument(final CostingDocumentRef documentRef)
 	{
 		costDetailsRepo.getAllForDocument(documentRef)
-				.forEach(this::voidAndDelete);
+				.forEach(costDetail -> voidAndDelete(costDetail, documentRef));
 	}
 
-	private void voidAndDelete(final I_M_CostDetail costDetail)
+	private void voidAndDelete(final I_M_CostDetail costDetail, final CostingDocumentRef documentRef)
 	{
 		if (costDetail.isChangingCosts())
 		{
 			final int costElementId = costDetail.getM_CostElement_ID();
 			final CostElement costElement = costElementRepo.getById(costElementId);
 			final CostDetailVoidRequest request = createCostDetailVoidRequest(costDetail);
-			getCostingMethodHandler(costElement.getCostingMethod())
-					.voidCosts(request);
+			getCostingMethodHandlers(costElement.getCostingMethod(), documentRef)
+					.forEach(handler -> handler.voidCosts(request));
 		}
 
 		costDetailsRepo.delete(costDetail);
@@ -272,21 +279,43 @@ public class CostDetailService implements ICostDetailService
 		}
 	}
 
-	private CostingMethodHandler getCostingMethodHandler(final CostingMethod costingMethod)
+	private Set<CostingMethodHandler> getCostingMethodHandlers(final CostingMethod costingMethod)
 	{
-		final CostingMethodHandler costingMethodHandler = costingMethodHandlers.get(costingMethod);
-		if (costingMethodHandler == null)
+		final Set<CostingMethodHandler> costingMethodHandlers = this.costingMethodHandlers.get(costingMethod);
+		if (costingMethodHandlers.isEmpty())
 		{
-			throw new AdempiereException("No " + CostingMethodHandler.class + " foudn for " + costingMethod);
+			throw new AdempiereException("No " + CostingMethodHandler.class + " found for " + costingMethod);
 		}
-		return costingMethodHandler;
+		return costingMethodHandlers;
+	}
+
+	private Set<CostingMethodHandler> getCostingMethodHandlers(final CostingMethod costingMethod, final CostingDocumentRef documentRef)
+	{
+		final Set<CostingMethodHandler> costingMethodHandlers = getCostingMethodHandlers(costingMethod)
+				.stream()
+				.filter(handler -> isHandledBy(handler, documentRef))
+				.collect(ImmutableSet.toImmutableSet());
+		if (costingMethodHandlers.isEmpty())
+		{
+			throw new AdempiereException("No " + CostingMethodHandler.class + " found for " + costingMethod);
+		}
+		return costingMethodHandlers;
+	}
+
+	private boolean isHandledBy(final CostingMethodHandler handler, final CostingDocumentRef documentRef)
+	{
+		final Set<String> handledTableNames = handler.getHandledTableNames();
+		return handledTableNames.contains(CostingMethodHandler.ANY)
+				|| handledTableNames.contains(documentRef.getTableName());
 	}
 
 	@Override
 	public BigDecimal calculateSeedCosts(final CostSegment costSegment, final CostingMethod costingMethod, final int orderLineId)
 	{
-		return getCostingMethodHandler(costingMethod)
-				.calculateSeedCosts(costSegment, orderLineId);
+		return getCostingMethodHandlers(costingMethod)
+				.stream()
+				.map(handler -> handler.calculateSeedCosts(costSegment, orderLineId))
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	@Override
@@ -302,18 +331,20 @@ public class CostDetailService implements ICostDetailService
 				.getAllForDocumentAndAcctSchemaId(request.getInitialDocumentRef(), request.getAcctSchemaId())
 				.stream()
 				.filter(costDetail -> !costElementIdsWithExistingCostDetails.contains(costDetail.getM_CostElement_ID())) // not already created
-				.map(costDetail -> createReversalCostDetail(costDetail, request))
+				.flatMap(costDetail -> createReversalCostDetailsAndStream(costDetail, request))
 				.collect(ImmutableList.toImmutableList());
 
 		return createCostResult(costElementResults);
 	}
 
-	private CostDetailCreateResult createReversalCostDetail(final I_M_CostDetail costDetail, final CostDetailReverseRequest reversalRequest)
+	private Stream<CostDetailCreateResult> createReversalCostDetailsAndStream(final I_M_CostDetail costDetail, final CostDetailReverseRequest reversalRequest)
 	{
 		final CostElement costElement = costElementRepo.getById(costDetail.getM_CostElement_ID());
 		final CostDetailCreateRequest request = createCostDetailCreateRequestFromReversalRequest(reversalRequest, costDetail);
-		return getCostingMethodHandler(costElement.getCostingMethod())
-				.createOrUpdateCost(request);
+		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
+				.stream()
+				.map(handler -> handler.createOrUpdateCost(request))
+				.filter(Predicates.notNull());
 	}
 
 	private final CostDetailCreateRequest createCostDetailCreateRequestFromReversalRequest(final CostDetailReverseRequest reversalRequest, final I_M_CostDetail costDetail)
