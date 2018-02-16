@@ -6,7 +6,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
@@ -49,7 +48,7 @@ public class C_BPartner_CreditLimit
 				.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(bpCreditLimit.getC_BPartner_ID()), ITrx.TRXNAME_None);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE })
 	public void setApproved(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
 	{
 		final I_C_CreditLimit_Type type = bpCreditLimit.getC_CreditLimit_Type();
@@ -59,7 +58,6 @@ public class C_BPartner_CreditLimit
 			if (isAutoApproval)
 			{
 				bpCreditLimit.setIsApproved(true);
-				InterfaceWrapperHelper.save(bpCreditLimit);
 			}
 		}
 	}
