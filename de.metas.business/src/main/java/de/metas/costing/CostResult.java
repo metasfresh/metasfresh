@@ -1,5 +1,8 @@
 package de.metas.costing;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -54,7 +57,7 @@ public final class CostResult
 
 		this.costSegment = costSegment;
 		this.amounts = ImmutableMap.copyOf(amounts);
-		this.totalAmount = amounts.values()
+		totalAmount = amounts.values()
 				.stream()
 				.reduce(CostAmount::add)
 				.get();
@@ -77,7 +80,7 @@ public final class CostResult
 
 	public CostResult merge(@NonNull final CostResult other)
 	{
-		if (!Objects.equals(this.costSegment, other.costSegment))
+		if (!Objects.equals(costSegment, other.costSegment))
 		{
 			throw new AdempiereException("Cannot merge cost results when the cost segment is not matching: " + this + ", " + other);
 		}
@@ -87,6 +90,36 @@ public final class CostResult
 				.putAll(amounts)
 				.putAll(other.amounts)
 				.build();
+
+		return new CostResult(costSegment, amountsNew);
+	}
+
+	public CostResult add(@NonNull final CostResult other)
+	{
+		if (!Objects.equals(costSegment, other.costSegment))
+		{
+			throw new AdempiereException("Cannot add cost results when the cost segment is not matching: " + this + ", " + other);
+		}
+
+		final Map<CostElement, CostAmount> amountsNew = new HashMap<>(amounts);
+		other.amounts.forEach((costElement, amtToAdd) -> {
+			amountsNew.compute(costElement, (ce, amtOld) -> amtOld != null ? amtOld.add(amtToAdd) : amtToAdd);
+		});
+
+		return new CostResult(costSegment, amountsNew);
+	}
+
+	public CostResult divide(@NonNull final BigDecimal divisor, final int precision, @NonNull final RoundingMode roundingMode)
+	{
+		Check.assume(divisor.signum() != 0, "divisor != 0");
+
+		if (BigDecimal.ONE.equals(divisor))
+		{
+			return this;
+		}
+
+		final Map<CostElement, CostAmount> amountsNew = new HashMap<>(amounts.size());
+		amounts.forEach((costElement, amt) -> amountsNew.put(costElement, amt.divide(divisor, precision, roundingMode)));
 
 		return new CostResult(costSegment, amountsNew);
 	}
