@@ -589,35 +589,7 @@ class RawWidget extends Component {
           </div>
         );
       case 'Integer':
-        return (
-          <div
-            className={
-              this.getClassNames() + (isEdited ? 'input-focused ' : '')
-            }
-          >
-            <input {...widgetProperties} type="number" min="0" step="1" />
-          </div>
-        );
-      case 'Number':
-        return (
-          <div
-            className={
-              this.getClassNames() + (isEdited ? 'input-focused ' : '')
-            }
-          >
-            <input {...widgetProperties} type="number" />
-          </div>
-        );
       case 'Amount':
-        return (
-          <div
-            className={
-              this.getClassNames() + (isEdited ? 'input-focused ' : '')
-            }
-          >
-            <input {...widgetProperties} type="number" min="0" step="1" />
-          </div>
-        );
       case 'Quantity':
         return (
           <div
@@ -628,6 +600,7 @@ class RawWidget extends Component {
             <input {...widgetProperties} type="number" min="0" step="1" />
           </div>
         );
+      case 'Number':
       case 'CostPrice':
         return (
           <div

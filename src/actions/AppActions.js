@@ -6,7 +6,7 @@ import { replace } from 'react-router-redux';
 import * as types from '../constants/ActionTypes';
 import { LOCAL_LANG } from '../constants/Constants';
 
-// REQUESTS
+// TODO: All requests should be moved to API
 
 export function getAvatar(id) {
   return config.API_URL + '/image/' + id + '?maxWidth=200&maxHeight=200';
@@ -65,30 +65,6 @@ export function markAsRead(id) {
 
 export function deleteUserNotification(id) {
   return axios.delete(config.API_URL + `/notifications?ids=${id}`);
-}
-
-export function getAttributesInstance(
-  attrType,
-  tmpId,
-  docType,
-  docId,
-  tabId,
-  rowId,
-  fieldName,
-  entity
-) {
-  const type = entity === 'process' ? 'processId' : 'windowId';
-
-  return axios.post(config.API_URL + '/' + attrType, {
-    templateId: tmpId,
-    source: {
-      [type]: docType,
-      documentId: docId,
-      tabid: tabId,
-      rowId: rowId,
-      fieldName: fieldName,
-    },
-  });
 }
 
 export function getImageAction(id) {
@@ -150,7 +126,7 @@ export function getTargetIndicatorsData(id) {
 }
 
 export function setUserDashboardWidgets(payload) {
-  return axios.patch(config.API_URL + '/dashboard/kpis', payload);
+  return axios.patch(`${config.API_URL}/dashboard/kpis`, payload);
 }
 
 export function getMessages(lang) {
@@ -171,7 +147,43 @@ export function createUrlAttachment({ windowId, documentId, name, url }) {
   );
 }
 
-// END OF REQUESTS
+function initNumeralLocales(lang, locale) {
+  const language = lang.toLowerCase();
+  const LOCAL_NUMERAL_FORMAT = {
+    defaultFormat: "0,0.00[000]",
+    delimiters: {
+      thousands: locale.numberGroupingSeparator || ",",
+      decimal: locale.numberDecimalSeparator || "."
+    }
+  };
+
+  if (typeof numeral.locales[language] === "undefined") {
+    numeral.register("locale", language, LOCAL_NUMERAL_FORMAT);
+  }
+
+  if (typeof numeral.locales[language] !== "undefined") {
+    numeral.locale(language);
+
+    if (LOCAL_NUMERAL_FORMAT.defaultFormat) {
+      numeral.defaultFormat(LOCAL_NUMERAL_FORMAT.defaultFormat);
+    }
+  }
+}
+
+export function languageSuccess(lang) {
+  localStorage.setItem(LOCAL_LANG, lang);
+  Moment.locale(lang);
+
+  axios.defaults.headers.common["Accept-Language"] = lang;
+}
+
+export function logoutSuccess(auth) {
+  auth.close();
+  localStorage.removeItem("isLogged");
+}
+
+
+// REDUX ACTIONS
 
 export function loginSuccess(auth) {
   return dispatch => {
@@ -259,41 +271,6 @@ export function loginSuccess(auth) {
       );
     });
   };
-}
-
-function initNumeralLocales(lang, locale) {
-  const language = lang.toLowerCase();
-  const LOCAL_NUMERAL_FORMAT = {
-    defaultFormat: '0,0.00[000]',
-    delimiters: {
-      thousands: locale.numberGroupingSeparator || ',',
-      decimal: locale.numberDecimalSeparator || '.',
-    },
-  };
-
-  if (typeof numeral.locales[language] === 'undefined') {
-    numeral.register('locale', language, LOCAL_NUMERAL_FORMAT);
-  }
-
-  if (typeof numeral.locales[language] !== 'undefined') {
-    numeral.locale(language);
-
-    if (LOCAL_NUMERAL_FORMAT.defaultFormat) {
-      numeral.defaultFormat(LOCAL_NUMERAL_FORMAT.defaultFormat);
-    }
-  }
-}
-
-export function languageSuccess(lang) {
-  localStorage.setItem(LOCAL_LANG, lang);
-  Moment.locale(lang);
-
-  axios.defaults.headers.common['Accept-Language'] = lang;
-}
-
-export function logoutSuccess(auth) {
-  auth.close();
-  localStorage.removeItem('isLogged');
 }
 
 export function enableTutorial(flag = true) {

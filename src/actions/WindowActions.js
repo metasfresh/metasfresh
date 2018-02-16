@@ -52,9 +52,11 @@ import {
   setProcessPending,
   setProcessSaved,
 } from './AppActions';
-import { getData, initLayout, openFile, patchRequest } from './GenericActions';
-import { setListIncludedView } from './ListActions';
-import { getWindowBreadcrumb } from './MenuActions';
+import { getData, openFile, patchRequest } from "./GenericActions";
+import { initLayout } from '../api';
+import { setListIncludedView } from "./ListActions";
+import { getWindowBreadcrumb } from "./MenuActions";
+
 
 export function setLatestNewDocument(id) {
   return {

@@ -2,12 +2,8 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import classnames from 'classnames';
 
-import { getAttributesInstance } from '../../../actions/AppActions';
-import {
-  completeRequest,
-  initLayout,
-  patchRequest,
-} from '../../../actions/GenericActions';
+import { getAttributesInstance, initLayout } from '../../../api';
+import { completeRequest, patchRequest } from '../../../actions/GenericActions';
 import { parseToDisplay } from '../../../actions/WindowActions';
 import AttributesDropdown from './AttributesDropdown';
 
@@ -120,16 +116,16 @@ export default class Attributes extends Component {
       if (response.data && response.data.length) {
         const fields = response.data[0].fieldsByName;
         Object.keys(fields).map(fieldName => {
-          this.setState(
-            prevState => ({
-              data: Object.assign({}, prevState.data, {
-                [fieldName]: Object.assign({}, prevState.data[fieldName], {
-                  value,
-                }),
-              }),
-            }),
-            () => cb && cb()
-          );
+          this.setState(prevState => ({
+            data: {
+              ...prevState.data,
+              [fieldName]: {
+                ...prevState.data[fieldName],
+                value,
+              },
+            },
+          })),
+            () => cb && cb();
         });
       }
     });
@@ -173,9 +169,7 @@ export default class Attributes extends Component {
       tabIndex,
       readonly,
     } = this.props;
-
     const { dropdown, data, layout } = this.state;
-
     const { value } = widgetData;
     const label = value.caption;
     const attrId = data && data.ID ? data.ID.value : -1;
