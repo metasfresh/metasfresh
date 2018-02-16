@@ -1,0 +1,15 @@
+-- 2018-02-16T17:24:55.490
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2018-02-16 17:24:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=562716
+;
+
+-- 2018-02-16T17:26:43.939
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2018-02-16 17:26:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=562693
+;
+
+-- 2018-02-16T17:26:59.474
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2018-02-16 17:26:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=562717
+;
+
