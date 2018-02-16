@@ -14,6 +14,9 @@ Here come the actual release notes:
 **release for week 2018-08**
 
 ## Features
+* metasfresh
+  * [#3502](https://github.com/metasfresh/metasfresh/issues/3502) Default Filter Improvements
+    * Adds various Filter criteria to default window filter lists.
 
 ## Fixes
 * metasfresh-webui-frontend
