@@ -32,7 +32,9 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#3405](https://github.com/metasfresh/metasfresh/issues/3405) Schema for Product Planning Data
+    * New Feature that allows to define default Product Planning Data. These Schemas are used to ensure the automatic creation of proper distribution orders for newly imported products.
   * [#3406](https://github.com/metasfresh/metasfresh/issues/3406) Set Selector in M_Product after Product Data Import
+    * New Selector Feature for Product Import allowing to join new Product Data to Product Planning Schema.
   * [#3407](https://github.com/metasfresh/metasfresh/issues/3407) New Businesspartner Window for Pharma vertical
     * New Business Partner Window in WebUI for Pharma Verticals.
   * [#3408](https://github.com/metasfresh/metasfresh/issues/3408) New Product Window for Pharma vertical
