@@ -77,8 +77,11 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#806](https://github.com/metasfresh/metasfresh-webui-api/issues/806) Add to Transportation Order, Ship and Invoice action in Picking Clearing Tray not respecting the invoice schedule
+    * Fixes the Action for automatic creation of invoices after picking & packing. Now the action is respecting special invoice schedules for the given customer.
   * [#807](https://github.com/metasfresh/metasfresh-webui-api/issues/807) Quantity to invoice override callout
+    * Fixes a Bug when updating the Quantity to Invoice override. Now the effective quantity is updated again.
   * [#829](https://github.com/metasfresh/metasfresh-webui-api/issues/829) Planning status in manufacturing order not updated
+    * Fixes an issue in Manufacturing Order, leaving the Planning Status unchanged after processing the order.
 
 * metasfresh-webui-frontend
   * [#1546](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1546) Date Range Filter as Range Filter has initial daterange
