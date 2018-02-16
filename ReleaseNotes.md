@@ -40,7 +40,9 @@ Here come the actual release notes:
   * [#3408](https://github.com/metasfresh/metasfresh/issues/3408) New Product Window for Pharma vertical
     * New Product Window in WebUI for Pharma Verticals.
   * [#3413](https://github.com/metasfresh/metasfresh/issues/3413) Credit Limit data structure as subtab in Businesspartner
+    * New Credit Limit functionality. Now allowing to define Credit Limit per Customer on different levels.
   * [#3458](https://github.com/metasfresh/metasfresh/issues/3458) Remove M_Storage-based legacy check from MProduct
+    * Internal housekeeping improvement, getting rid of old storage based checks.
   * [#3467](https://github.com/metasfresh/metasfresh/issues/3467) Preparation Date Filer as Daterange
     * Adjustment for the Preparation Date Filter in Manufacturing Order. Now is a Daterange filter instead of date.
   * [#3468](https://github.com/metasfresh/metasfresh/issues/3468) Add Translation for "All Dates available"
@@ -54,9 +56,11 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#818](https://github.com/metasfresh/metasfresh-webui-api/issues/818) Values.valueToJsonObject() shall return JSONNullValue instead of null
+    * internal improvement of the Handling of null values in JSON Objects.
 
 * metasfresh-webui-frontend
   * [#1501](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1501) Automated Javascript and React Testing with Jest
+    * Kickoff of the autmated Testing Framework for metasfresh setup on Jest and Enzyme.
   * [#1590](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1590) Included tabs sorting
     * Improvement of the sorting functionality in main and included subtab Grid Views.
   * [#1593](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1593) Copy/ Paste for selected Field in Subtab GridView not giving correct result
@@ -67,7 +71,9 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3445](https://github.com/metasfresh/metasfresh/issues/3445) Qty TU not correct in purchase invoice jasper
+    * Fixes the Purchase Invoice document. Now the correct quantity of Handling units is shown again.
   * [#3477](https://github.com/metasfresh/metasfresh/issues/3477) Cannot save manufacturing order
+    * Fixes an error in manufacturing order window, now allowing to save the order again.
 
 * metasfresh-webui-api
   * [#806](https://github.com/metasfresh/metasfresh-webui-api/issues/806) Add to Transportation Order, Ship and Invoice action in Picking Clearing Tray not respecting the invoice schedule
