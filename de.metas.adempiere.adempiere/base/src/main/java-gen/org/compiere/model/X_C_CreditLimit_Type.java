@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_C_CreditLimit_Type extends org.compiere.model.PO implements I_C_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1713393576L;
+	private static final long serialVersionUID = -545376154L;
 
     /** Standard Constructor */
     public X_C_CreditLimit_Type (Properties ctx, int C_CreditLimit_Type_ID, String trxName)
@@ -25,6 +26,7 @@ public class X_C_CreditLimit_Type extends org.compiere.model.PO implements I_C_C
 			setC_CreditLimit_Type_ID (0);
 			setIsAutoApproval (false); // N
 			setName (null);
+			setSeqNo (BigDecimal.ZERO); // 1
         } */
     }
 
@@ -121,5 +123,27 @@ public class X_C_CreditLimit_Type extends org.compiere.model.PO implements I_C_C
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** Set Reihenfolge.
+		@param SeqNo 
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public void setSeqNo (java.math.BigDecimal SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public java.math.BigDecimal getSeqNo () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SeqNo);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 }
