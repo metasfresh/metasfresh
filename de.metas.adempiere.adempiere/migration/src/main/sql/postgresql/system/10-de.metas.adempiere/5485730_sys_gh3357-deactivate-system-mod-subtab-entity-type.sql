@@ -1,0 +1,20 @@
+-- 2018-02-17T09:50:32.108
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Parent_Column_ID=15595,Updated=TO_TIMESTAMP('2018-02-17 09:50:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=832
+;
+
+-- 2018-02-17T09:52:51.955
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET AD_Column_ID=NULL,Updated=TO_TIMESTAMP('2018-02-17 09:52:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=832
+;
+
+-- 2018-02-17T09:54:56.179
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Parent_Column_ID=NULL,Updated=TO_TIMESTAMP('2018-02-17 09:54:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=832
+;
+
+-- 2018-02-17T10:00:01.945
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET IsActive='N',Updated=TO_TIMESTAMP('2018-02-17 10:00:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=832
+;
+
