@@ -15,12 +15,20 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#2777](https://github.com/metasfresh/metasfresh/issues/2777) Vendor Invoice Layout and Translations in WebUI Improvements
+    * Adds Translations and Layout Impovement to Purchase Invoice window.
+  * [#3246](https://github.com/metasfresh/metasfresh/issues/3246) Barcode Search in Handling Unit Editor takes too long
+    * Improved Performance in handling Unit Editor when searching via Barcode Filter and Default Filter Handling Unit Value.
   * [#3502](https://github.com/metasfresh/metasfresh/issues/3502) Default Filter Improvements
     * Adds various Filter criteria to default window filter lists.
   * [#3505](https://github.com/metasfresh/metasfresh/issues/3505) Improvement of Procurement Candidates
     * Usability Improvement of the procurement Planning window. Rearranged fields for better visibility.
 
 ## Fixes
+* metasfresh
+  * [#3357](https://github.com/metasfresh/metasfresh/issues/3357) SQL Exception in Window Entity Type
+    * Fixes a SQL Exception that occurred in Entity Type window.
+
 * metasfresh-webui-frontend
   * [#1592](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1592) Added subrow is still/again not shown in the frontend
     * Fixes the feature for included subrows and asynchronous reponse.
