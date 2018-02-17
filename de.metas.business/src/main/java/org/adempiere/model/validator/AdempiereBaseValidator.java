@@ -1,5 +1,7 @@
 package org.adempiere.model.validator;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -73,12 +75,14 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.util.CCache.CacheMapType;
 import org.compiere.util.CacheMgt;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.model.I_M_DiscountSchemaBreak;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.event.EventBusAdempiereInterceptor;
-import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
 import de.metas.reference.model.interceptor.AD_Ref_Table;
 
 /**
@@ -91,13 +95,10 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 {
 
 	@Override
-	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
-		//
-		// Setup event bus topics on which client notification listener shall subscribe
-		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(BPartnerCreditLimit_RequestApproval.TOPIC_CreditLimitRequestApproval);
+		return ImmutableList.of(BPartnerCreditLimit_RequestApproval.TOPIC_CreditLimitRequestApproval);
 	}
-
 
 	@Override
 	protected void onAfterInit()
