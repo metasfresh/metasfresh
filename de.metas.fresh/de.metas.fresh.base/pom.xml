@@ -252,6 +252,12 @@
 			<artifactId>de.metas.shipper.gateway.go</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>de.metas.datev</groupId>
+			<artifactId>metasfresh-datev</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 		
 		<!--
 			Lombok
