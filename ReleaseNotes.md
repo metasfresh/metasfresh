@@ -15,6 +15,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#2777](https://github.com/metasfresh/metasfresh/issues/2777) Vendor Invoice Layout and Translations in WebUI Improvements
+    * Adds Translations and Layout Impovement to Purchase Invoice window.
   * [#3246](https://github.com/metasfresh/metasfresh/issues/3246) Barcode Search in Handling Unit Editor takes too long
     * Improved Performance in handling Unit Editor when searching via Barcode Filter and Default Filter Handling Unit Value.
   * [#3502](https://github.com/metasfresh/metasfresh/issues/3502) Default Filter Improvements
