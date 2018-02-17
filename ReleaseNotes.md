@@ -25,6 +25,10 @@ Here come the actual release notes:
     * Usability Improvement of the procurement Planning window. Rearranged fields for better visibility.
 
 ## Fixes
+* metasfresh
+  * [#3357](https://github.com/metasfresh/metasfresh/issues/3357) SQL Exception in Window Entity Type
+    * Fixes a SQL Exception that occurred in Entity Type window.
+
 * metasfresh-webui-frontend
   * [#1592](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1592) Added subrow is still/again not shown in the frontend
     * Fixes the feature for included subrows and asynchronous reponse.
