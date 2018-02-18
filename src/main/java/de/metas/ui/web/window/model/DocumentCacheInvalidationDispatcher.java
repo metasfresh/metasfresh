@@ -1,5 +1,8 @@
 package de.metas.ui.web.window.model;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -7,6 +10,11 @@ import javax.annotation.PostConstruct;
 
 import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequest;
 import org.adempiere.ad.dao.cache.CacheInvalidateRequest;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.ICacheResetListener;
@@ -14,6 +22,8 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Component;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.IViewsRepository;
@@ -53,6 +63,8 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 {
 	private static final Logger logger = LogManager.getLogger(DocumentCacheInvalidationDispatcher.class);
 
+	private static final String TRXPROP_Requests = DocumentCacheInvalidationDispatcher.class + ".CacheInvalidateMultiRequests";
+
 	@Autowired
 	private DocumentCollection documents;
 
@@ -78,7 +90,33 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 	@Override
 	public int reset(@NonNull final CacheInvalidateMultiRequest request)
 	{
-		async.execute(() -> resetNow(request));
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+		final ITrx currentTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		if (trxManager.isNull(currentTrx))
+		{
+			async.execute(() -> resetNow(request));
+		}
+		else
+		{
+			final CacheInvalidateMultiRequestsCollector collector = currentTrx.getProperty(TRXPROP_Requests, trx -> {
+				final CacheInvalidateMultiRequestsCollector c = new CacheInvalidateMultiRequestsCollector();
+				trx.getTrxListenerManager()
+						.newEventListener(TrxEventTiming.AFTER_COMMIT)
+						.registerHandlingMethod(innerTrx -> {
+							final CacheInvalidateMultiRequest aggregatedRequest = c.aggregateOrNull();
+							if (aggregatedRequest == null)
+							{
+								return;
+							}
+							async.execute(() -> resetNow(aggregatedRequest));
+						});
+				return c;
+			});
+
+			collector.add(request);
+		}
+
 		return 1; // not relevant
 	}
 
@@ -110,8 +148,6 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 		}
 
 		final String childTableName = request.getChildTableName();
-		final int childRecordId = request.getChildRecordId();
-
 		if (childTableName == null)
 		{
 			logger.debug("Invalidating the root document: {}", request);
@@ -120,10 +156,38 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 		else
 		{
 			logger.debug("Invalidating the included document: {}", request);
+			final int childRecordId = request.getChildRecordId();
 			documents.invalidateIncludedDocumentsByRecordId(rootTableName, rootRecordId, childTableName, childRecordId);
+			
+			// NOTE: as a workaround to solve the problem of https://github.com/metasfresh/metasfresh-webui-api/issues/851,
+			// we are invalidating the whole root document to make sure that in case there were any virtual columns on header,
+			// those get refreshed too.
+			documents.invalidateDocumentByRecordId(rootTableName, rootRecordId);
 		}
 
 		viewsRepository.notifyRecordChanged(rootTableName, rootRecordId);
 	}
 
+	private static final class CacheInvalidateMultiRequestsCollector
+	{
+		private final List<CacheInvalidateMultiRequest> multiRequests = new ArrayList<>();
+
+		public void add(@NonNull CacheInvalidateMultiRequest multiRequest)
+		{
+			multiRequests.add(multiRequest);
+		}
+
+		public CacheInvalidateMultiRequest aggregateOrNull()
+		{
+			if (multiRequests.isEmpty())
+			{
+				return null;
+			}
+
+			final Set<CacheInvalidateRequest> requests = multiRequests.stream()
+					.flatMap(multiRequest -> multiRequest.getRequests().stream())
+					.collect(ImmutableSet.toImmutableSet());
+			return CacheInvalidateMultiRequest.of(requests);
+		}
+	}
 }

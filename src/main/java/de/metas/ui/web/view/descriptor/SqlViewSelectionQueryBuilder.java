@@ -164,6 +164,11 @@ public final class SqlViewSelectionQueryBuilder
 		return _viewBinding.isAggregated(fieldName);
 	}
 
+	private String replaceTableNameWithTableAlias(final String sql)
+	{
+		return _viewBinding.replaceTableNameWithTableAlias(sql);
+	}
+
 	@Value
 	@Builder
 	public static final class SqlCreateSelection
@@ -473,11 +478,12 @@ public final class SqlViewSelectionQueryBuilder
 		final String keyColumnName = getKeyColumnName();
 		final String keyColumnNameFQ = sqlTableAlias + "." + keyColumnName;
 
-		final String sqlOrderBys = SqlDocumentOrderByBuilder.newInstance(this::getFieldOrderBy)
-				.buildSqlOrderBy(orderBys.stream()
-						.flatMap(this::flatMapEffectiveFieldNames)
-						.collect(ImmutableList.toImmutableList()))
-				.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
+		final String sqlOrderBys = replaceTableNameWithTableAlias(
+				SqlDocumentOrderByBuilder.newInstance(this::getFieldOrderBy)
+						.buildSqlOrderBy(orderBys.stream()
+								.flatMap(this::flatMapEffectiveFieldNames)
+								.collect(ImmutableList.toImmutableList()))
+						.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail));
 
 		//
 		// INSERT INTO T_WEBUI_ViewSelection (UUID, Line, Record_ID)

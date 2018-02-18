@@ -16,13 +16,16 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 import de.metas.ui.web.menu.datatypes.json.JSONMenuNode;
 import de.metas.ui.web.menu.datatypes.json.JSONMenuNodeType;
 import de.metas.ui.web.menu.datatypes.json.JSONPatchMenuNodeRequest;
 import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
@@ -67,6 +70,8 @@ public class MenuRestController
 
 	@Autowired
 	private MenuTreeRepository menuTreeRepository;
+	@Autowired
+	private DocumentDescriptorFactory documentDescriptorFactory;
 
 	private MenuTree getMenuTree()
 	{
@@ -128,7 +133,7 @@ public class MenuRestController
 	}
 
 	@PatchMapping("/node/{nodeId}")
-	public List<JSONMenuNode> patchNode(@PathVariable(PARAM_NodeId) final String nodeId, @RequestBody List<JSONDocumentChangedEvent> events)
+	public List<JSONMenuNode> patchNode(@PathVariable(PARAM_NodeId) final String nodeId, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
 		userSession.assertLoggedIn();
 
@@ -188,12 +193,34 @@ public class MenuRestController
 	{
 		userSession.assertLoggedIn();
 
+		final MenuNodeType menuNodeType = jsonType.toMenuNodeType();
 		final DocumentId elementId = DocumentId.of(elementIdStr);
 		final List<MenuNode> path = getMenuTree()
-				.getPath(jsonType.toMenuNodeType(), elementId);
+				.getPath(menuNodeType, elementId)
+				.orElseGet(() -> getPathOfMissingElement(menuNodeType, elementId, userSession.getAD_Language()));
 
 		final boolean skipRootNode = true;
 		return JSONMenuNode.ofPath(path, skipRootNode, includeLastNode, menuTreeRepository);
+	}
+
+	private List<MenuNode> getPathOfMissingElement(final MenuNodeType type, final DocumentId elementId, final String adLanguage)
+	{
+		if (type == MenuNodeType.Window)
+		{
+			final String caption = documentDescriptorFactory.getDocumentDescriptor(WindowId.of(elementId))
+					.getLayout()
+					.getCaption(adLanguage);
+
+			return ImmutableList.of(MenuNode.builder()
+					.setType(type, elementId)
+					.setCaption(caption)
+					.setAD_Menu_ID_None()
+					.build());
+		}
+		else
+		{
+			throw new NoMenuNodesFoundException("No menu node found for type=" + type + " and elementId=" + elementId);
+		}
 	}
 
 	@GetMapping("/queryPaths")

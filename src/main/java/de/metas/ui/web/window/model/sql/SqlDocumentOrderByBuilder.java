@@ -42,6 +42,7 @@ public class SqlDocumentOrderByBuilder
 		return new SqlDocumentOrderByBuilder(bindings);
 	}
 
+	@FunctionalInterface
 	public static interface SqlOrderByBindings
 	{
 		IStringExpression getFieldOrderBy(String fieldName);

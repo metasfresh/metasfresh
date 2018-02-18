@@ -2,7 +2,6 @@ package de.metas.ui.web.document.filter.sql;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
@@ -414,14 +413,7 @@ import lombok.NonNull;
 
 	private String replaceTableNameWithTableAlias(final String sql, @NonNull final String tableAlias)
 	{
-		if (sql == null || sql.isEmpty())
-		{
-			return sql;
-		}
-
-		final String matchTableNameIgnoringCase = "(?i)" + Pattern.quote(entityBinding.getTableName() + ".");
-		final String sqlFixed = sql.replaceAll(matchTableNameIgnoringCase, tableAlias + ".");
-		return sqlFixed;
+		return entityBinding.replaceTableNameWithTableAlias(sql, tableAlias);
 	}
 
 	private final String buildSqlWhereClause_LabelsWidget(
