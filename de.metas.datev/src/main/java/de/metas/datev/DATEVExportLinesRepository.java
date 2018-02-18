@@ -90,7 +90,12 @@ public class DATEVExportLinesRepository
 		}
 		if (datevExport.isExcludeAlreadyExported())
 		{
-			// TODO: exclude already exported invoices
+			final IQuery<I_DATEV_ExportLine> exportLinesQuery = queryBL.createQueryBuilder(I_DATEV_ExportLine.class)
+					.create();
+			queryBuilder.addNotInSubQueryFilter(
+					I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMN_C_Invoice_ID,
+					I_DATEV_ExportLine.COLUMN_C_Invoice_ID,
+					exportLinesQuery);
 		}
 
 		return queryBuilder.create();
