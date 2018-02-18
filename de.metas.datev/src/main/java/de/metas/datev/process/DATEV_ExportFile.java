@@ -19,8 +19,11 @@ import de.metas.datev.DATEVExportFormatRepository;
 import de.metas.datev.model.I_DATEV_Export;
 import de.metas.datev.model.I_DATEV_ExportFormat;
 import de.metas.datev.model.I_DATEV_ExportLine;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 
 /*
@@ -45,7 +48,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public class DATEV_ExportFile extends JavaProcess
+public class DATEV_ExportFile extends JavaProcess implements IProcessPrecondition
 {
 	@Autowired
 	private DATEVExportFormatRepository exportFormatRepo;
@@ -56,6 +59,21 @@ public class DATEV_ExportFile extends JavaProcess
 	public DATEV_ExportFile()
 	{
 		Adempiere.autowire(this);
+	}
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	{
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+		else if (!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
