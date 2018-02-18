@@ -25,7 +25,7 @@ Here come the actual release notes:
     * Usability Improvement of the procurement Planning window. Rearranged fields for better visibility.
   
 * metasfresh-webui-frontend
-  * [ #854](https://github.com/metasfresh/metasfresh-webui-api/issues/854) If the window is missing from menu render it's name in breadcrumb
+  * [#854](https://github.com/metasfresh/metasfresh-webui-api/issues/854) If the window is missing from menu render it's name in breadcrumb
     * Window Breadcrumb improvement, now showing the windoowname of windows that were reached via zoom and are not in manu yet.
 
 ## Fixes
