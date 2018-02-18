@@ -11,14 +11,18 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.ISerialNoDAO;
 import org.adempiere.model.IContextAware;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.springframework.context.annotation.Profile;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.Profiles;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -30,6 +34,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorView;
+import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
  * #%L
@@ -52,9 +58,12 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@Profile(Profiles.PROFILE_Webui)
 public class WEBUIHUCreationWithSerialNumberService
 {
+	// Services
+
+	private DocumentCollection documentCollections;
 
 	public static WEBUIHUCreationWithSerialNumberService newInstance()
 	{
@@ -67,12 +76,14 @@ public class WEBUIHUCreationWithSerialNumberService
 	private final Set<Integer> huIDsChanged = new HashSet<>();
 	private final Set<Integer> huIDsAdded = new HashSet<>();
 	private final Set<Integer> huIDsToRemove = new HashSet<>();
-	
+
+	private HUEditorView view;
+
 	public final WebuiHUTransformCommandResult action_CreateCUs_With_SerialNumbers(final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy, final List<String> availableSerialNumbers)
 	{
+		view = huEditorRowHierarchy.getView();
+		documentCollections = huEditorRowHierarchy.getDocumentCollection();
 		final HUEditorRow selectedCuRow = huEditorRowHierarchy.getCuRow();
-
-	
 
 		final int qtyCU = selectedCuRow.getQtyCU().intValueExact();
 		if (qtyCU == 1)
@@ -200,10 +211,10 @@ public class WEBUIHUCreationWithSerialNumberService
 				final I_M_HU_PI_Item luPIItem = oldLU.getM_HU_LUTU_Configuration().getM_LU_HU_PI_Item();
 
 				final List<I_M_HU> tuToNewLUs = newHUTransformation().tuToNewLUs(newTU, BigDecimal.ONE, luPIItem, false);
-				
+
 				huIDsToRemove.add(oldLU.getM_HU_ID());
 				huIDsAdded.add(tuToNewLUs.get(0).getM_HU_ID());
-				
+
 			}
 			else
 			{
@@ -274,6 +285,23 @@ public class WEBUIHUCreationWithSerialNumberService
 	private final HUTransformService newHUTransformation()
 	{
 		return HUTransformService.builder()
+				.referencedObjects(getContextDocumentLines())
 				.build();
+	}
+
+	/**
+	 * @return context document/lines (e.g. the receipt schedules)
+	 */
+	private List<TableRecordReference> getContextDocumentLines()
+	{
+		if (view == null)
+		{
+			return ImmutableList.of();
+		}
+
+		return view.getReferencingDocumentPaths()
+				.stream()
+				.map(referencingDocumentPath -> documentCollections.getTableRecordReference(referencingDocumentPath))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 }

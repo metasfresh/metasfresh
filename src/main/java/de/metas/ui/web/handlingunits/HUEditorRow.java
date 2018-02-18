@@ -40,6 +40,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.model.DocumentCollection;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -727,7 +728,10 @@ public final class HUEditorRow implements IViewRow
 	@lombok.Value
 	public static class HUEditorRowHierarchy
 	{
+		
 		@NonNull private final HUEditorRow cuRow;
+		@Nullable private final HUEditorView view;
+		@Nullable private final DocumentCollection documentCollection;
 		@Nullable private final HUEditorRow parentRow;
 		@Nullable private final HUEditorRow topLevelRow;
 	}

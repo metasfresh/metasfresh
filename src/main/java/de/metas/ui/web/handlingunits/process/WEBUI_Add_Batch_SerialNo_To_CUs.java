@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.Services;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -29,6 +30,7 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
  * #%L
@@ -54,6 +56,10 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate implements IProcessPrecondition
 {
+	// Services
+	@Autowired
+	private DocumentCollection documentsCollection;
+
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private static final String SERIALNO_SEPARATOR = ",";
@@ -128,10 +134,10 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		{
 			return;
 		}
-		
+
 		removeSelectedRowsIfHUDestoyed();
 		invalidateView();
-				
+
 	}
 
 	private boolean isEligibleHuRow(final HUEditorRow huRow)
@@ -184,6 +190,8 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		final HUEditorRow topLevelRow = parentRow == null ? null : getParentHURowOrNull(parentRow);
 
 		final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy = HUEditorRow.HUEditorRowHierarchy.builder()
+				.view(getView())
+				.documentCollection(documentsCollection)
 				.cuRow(selectedCuRow)
 				.parentRow(parentRow)
 				.topLevelRow(topLevelRow)
