@@ -71,6 +71,8 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		result.setPriceLimit(productPrice.getPriceLimit());
 		result.setC_Currency_ID(priceList.getC_Currency_ID());
 		result.setM_Product_Category_ID(product.getM_Product_Category_ID());
+		result.setPriceEditable(productPrice.isPriceEditable());
+		result.setDiscountEditable(productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(priceList.isEnforcePriceLimit());
 		result.setTaxIncluded(priceList.isTaxIncluded());
 		result.setC_TaxCategory_ID(productPrice.getC_TaxCategory_ID());

@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1564750929L;
+	private static final long serialVersionUID = -1036363337L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -36,8 +36,10 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 			setFreightAmt (BigDecimal.ZERO);
 			setFrequencyType (null); // M
 			setIsDescription (false); // N
+			setIsDiscountEditable (true); // Y
 			setIsGroupCompensationLine (false); // N
 			setIsManualPrice (false); // N
+			setIsPriceEditable (true); // Y
 			setIsSubscription (false); // N
 			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 AS DefaultValue FROM C_OrderLine WHERE C_Order_ID=@C_Order_ID@
 			setLineNetAmt (BigDecimal.ZERO);
@@ -974,6 +976,32 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return false;
 	}
 
+	/** Set Discount Editable.
+		@param IsDiscountEditable 
+		Allow user to change the discount
+	  */
+	@Override
+	public void setIsDiscountEditable (boolean IsDiscountEditable)
+	{
+		set_Value (COLUMNNAME_IsDiscountEditable, Boolean.valueOf(IsDiscountEditable));
+	}
+
+	/** Get Discount Editable.
+		@return Allow user to change the discount
+	  */
+	@Override
+	public boolean isDiscountEditable () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDiscountEditable);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Group Compensation Line.
 		@param IsGroupCompensationLine Group Compensation Line	  */
 	@Override
@@ -1034,6 +1062,32 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isManualPrice () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsManualPrice);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Price Editable.
+		@param IsPriceEditable 
+		Allow user to change the price
+	  */
+	@Override
+	public void setIsPriceEditable (boolean IsPriceEditable)
+	{
+		set_Value (COLUMNNAME_IsPriceEditable, Boolean.valueOf(IsPriceEditable));
+	}
+
+	/** Get Price Editable.
+		@return Allow user to change the price
+	  */
+	@Override
+	public boolean isPriceEditable () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPriceEditable);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -1663,9 +1717,9 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return bd;
 	}
 
-	/** Set Bestellte Menge.
+	/** Set Bestellt/ Beauftragt.
 		@param QtyOrdered 
-		Ordered Quantity
+		Bestellt/ Beauftragt
 	  */
 	@Override
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
@@ -1673,8 +1727,8 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Bestellte Menge.
-		@return Ordered Quantity
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
 	  */
 	@Override
 	public java.math.BigDecimal getQtyOrdered () 
@@ -1704,9 +1758,9 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return bd;
 	}
 
-	/** Set Reservierte Menge.
+	/** Set Offen.
 		@param QtyReserved 
-		Reserved Quantity
+		Offene Menge
 	  */
 	@Override
 	public void setQtyReserved (java.math.BigDecimal QtyReserved)
@@ -1714,8 +1768,8 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		set_ValueNoCheck (COLUMNNAME_QtyReserved, QtyReserved);
 	}
 
-	/** Get Reservierte Menge.
-		@return Reserved Quantity
+	/** Get Offen.
+		@return Offene Menge
 	  */
 	@Override
 	public java.math.BigDecimal getQtyReserved () 

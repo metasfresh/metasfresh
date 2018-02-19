@@ -170,6 +170,9 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setC_Currency_ID(pricingResult.getC_Currency_ID());
 		orderLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // task 06942
 		orderLine.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
+		
+		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
+		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 
 		updateLineNetAmt(orderLine, qtyEntered, factor);
 	}
@@ -636,6 +639,9 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setC_Currency_ID(pricingResult.getC_Currency_ID());
 		orderLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // task 06942
 		orderLine.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
+		
+		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
+		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 
 		//
 		// UI

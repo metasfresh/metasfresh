@@ -928,6 +928,31 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_IsDescription = "IsDescription";
 
 	/**
+	 * Set Discount Editable.
+	 * Allow user to change the discount
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsDiscountEditable (boolean IsDiscountEditable);
+
+	/**
+	 * Get Discount Editable.
+	 * Allow user to change the discount
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isDiscountEditable();
+
+    /** Column definition for IsDiscountEditable */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsDiscountEditable = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "IsDiscountEditable", null);
+    /** Column name IsDiscountEditable */
+    public static final String COLUMNNAME_IsDiscountEditable = "IsDiscountEditable";
+
+	/**
 	 * Set Group Compensation Line.
 	 *
 	 * <br>Type: YesNo
@@ -995,6 +1020,31 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsManualPrice = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "IsManualPrice", null);
     /** Column name IsManualPrice */
     public static final String COLUMNNAME_IsManualPrice = "IsManualPrice";
+
+	/**
+	 * Set Price Editable.
+	 * Allow user to change the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPriceEditable (boolean IsPriceEditable);
+
+	/**
+	 * Get Price Editable.
+	 * Allow user to change the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPriceEditable();
+
+    /** Column definition for IsPriceEditable */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsPriceEditable = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "IsPriceEditable", null);
+    /** Column name IsPriceEditable */
+    public static final String COLUMNNAME_IsPriceEditable = "IsPriceEditable";
 
 	/**
 	 * Set Abo.
@@ -1615,8 +1665,8 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_QtyLostSales = "QtyLostSales";
 
 	/**
-	 * Set Bestellte Menge.
-	 * Ordered Quantity
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1625,8 +1675,8 @@ public interface I_C_OrderLine
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellte Menge.
-	 * Ordered Quantity
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1663,8 +1713,8 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_QtyOrderedOverUnder = "QtyOrderedOverUnder";
 
 	/**
-	 * Set Reservierte Menge.
-	 * Reserved Quantity
+	 * Set Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1673,8 +1723,8 @@ public interface I_C_OrderLine
 	public void setQtyReserved (java.math.BigDecimal QtyReserved);
 
 	/**
-	 * Get Reservierte Menge.
-	 * Reserved Quantity
+	 * Get Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
