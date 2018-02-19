@@ -27,6 +27,8 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.BPartnerCreditLimitRepository;
+import org.adempiere.bpartner.service.IBPartnerStats;
+import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.BPartnerNoBillToAddressException;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.uom.api.IUOMDAO;
@@ -332,21 +334,9 @@ public class CalloutOrder extends CalloutEngine
 				+ " p.InvoiceRule,p.DeliveryRule,p.FreightCostRule,DeliveryViaRule,"
 				+ " lship.C_BPartner_Location_ID,c.AD_User_ID,"
 				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID,"
-				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_SOCreditStatus
-				+ ", stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed
-				+ ", "
+				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, "
 				+ " p.SalesRep_ID, p.SO_DocTypeTarget_ID "
-				+ "FROM C_BPartner p"
-
-				+ " INNER JOIN "
-				+ I_C_BPartner_Stats.Table_Name
-				+ " stats ON (p."
-				+ I_C_BPartner.COLUMNNAME_C_BPartner_ID
-				+ " = stats."
-				+ I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID
-				+ ")"
+				+ " FROM C_BPartner p"
 				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
 				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
 				+ " LEFT OUTER JOIN C_BPartner_Location lship ON (p.C_BPartner_ID=lship.C_BPartner_ID AND lship.IsShipTo='Y' AND lship.IsActive='Y')"
@@ -455,37 +445,20 @@ public class CalloutOrder extends CalloutEngine
 				// CreditAvailable
 				if (IsSOTrx)
 				{
-					final String creditStatus = rs.getString("SOCreditStatus");
-					final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
-							.bpartnerId(C_BPartner_ID)
-							.creditStatus(creditStatus)
-							.evalCreditstatus(true)
-							.evaluationDate(order.getDateOrdered())
-							.build();
-					if (isChkCreditLimit(creditLimitRequest))
-					{
-						final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-						final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(C_BPartner_ID, order.getDateOrdered());
-						final double creditUsed = rs.getDouble("SO_CreditUsed");
-						final BigDecimal CreditAvailable = creditLimit.subtract(BigDecimal.valueOf(creditUsed));
-						if (!rs.wasNull() && CreditAvailable.signum() < 0)
-						{
-							calloutField.fireDataStatusEEvent(MSG_CreditLimitOver, DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable), false);
-						}
-					}
+					checkCreditLimit(calloutField, order);
 				}
 
 				// PO Reference
 				String s = rs.getString("POReference");
 				if (s != null && s.length() != 0)
-				 {
+				{
 					order.setPOReference(s);
-				// should not be reset to null if we entered already value!
-				// VHARCQ, accepted YS makes sense that way
-				// TODO: should get checked and removed if no longer needed!
-				/*
-				 * else mTab.setValue("POReference", null);
-				 */
+					// should not be reset to null if we entered already value!
+					// VHARCQ, accepted YS makes sense that way
+					// TODO: should get checked and removed if no longer needed!
+					/*
+					 * else mTab.setValue("POReference", null);
+					 */
 				}
 
 				// SO Description
@@ -523,7 +496,7 @@ public class CalloutOrder extends CalloutEngine
 							s = "P";
 						}
 						if (IsSOTrx && ("S".equals(s) || "U".equals(s)))
-						 {
+						{
 							s = "P"; // Payment Term
 						}
 						order.setPaymentRule(s);
@@ -578,6 +551,40 @@ public class CalloutOrder extends CalloutEngine
 		}
 		return NO_ERROR;
 	} // bPartner
+
+	private void checkCreditLimit(
+			@NonNull final ICalloutField calloutField,
+			@NonNull final I_C_Order order)
+	{
+		final I_C_BPartner bPartner = order.getC_BPartner();
+		final IBPartnerStats bPartnerStats = Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bPartner);
+
+		final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
+				.bpartnerId(bPartner.getC_BPartner_ID())
+				.creditStatus(bPartnerStats.getSOCreditStatus())
+				.evalCreditstatus(true)
+				.evaluationDate(order.getDateOrdered())
+				.build();
+
+		if (!isChkCreditLimit(creditLimitRequest))
+		{
+			return;
+		}
+
+		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(
+				bPartner.getC_BPartner_ID(),
+				order.getDateOrdered());
+
+		final BigDecimal CreditAvailable = creditLimit.subtract(bPartnerStats.getSOCreditUsed());
+		if (CreditAvailable.signum() < 0)
+		{
+			calloutField.fireDataStatusEEvent(
+					MSG_CreditLimitOver,
+					DisplayType.getNumberFormat(DisplayType.Amount).format(CreditAvailable),
+					false);
+		}
+	}
 
 	/**
 	 * Order Header - Invoice BPartner. - M_PriceList_ID (+ Context) - Bill_Location_ID - Bill_User_ID - POReference - SO_Description - IsDiscountPrinted - InvoiceRule/PaymentRule - C_PaymentTerm_ID
@@ -772,7 +779,7 @@ public class CalloutOrder extends CalloutEngine
 							s = "P";
 						}
 						if (IsSOTrx && ("S".equals(s) || "U".equals(s)))
-						 {
+						{
 							s = "P"; // Payment Term
 						}
 						order.setPaymentRule(s);
@@ -1031,7 +1038,7 @@ public class CalloutOrder extends CalloutEngine
 		final int C_Charge_ID = ol.getC_Charge_ID();
 		log.debug("Product={}, C_Charge_ID={}", M_Product_ID, C_Charge_ID);
 		if (M_Product_ID <= 0 && C_Charge_ID <= 0)
-		 {
+		{
 			return amt(calloutField); //
 		}
 
@@ -1043,7 +1050,7 @@ public class CalloutOrder extends CalloutEngine
 			shipC_BPartner_Location_ID = order.getC_BPartner_Location_ID();
 		}
 		if (shipC_BPartner_Location_ID <= 0)
-		 {
+		{
 			return amt(calloutField); //
 		}
 		log.debug("Ship BP_Location={}", shipC_BPartner_Location_ID);
@@ -1187,12 +1194,12 @@ public class CalloutOrder extends CalloutEngine
 			}
 
 			if (PriceActual.scale() > StdPrecision)
-			 {
+			{
 				PriceActual = PriceActual.setScale(StdPrecision, BigDecimal.ROUND_HALF_UP);
-			// metas
-			// PriceEntered = MUOMConversion.convertProductFrom(ctx, M_Product_ID,
-			// C_UOM_To_ID, PriceActual);
-			// metas ende
+				// metas
+				// PriceEntered = MUOMConversion.convertProductFrom(ctx, M_Product_ID,
+				// C_UOM_To_ID, PriceActual);
+				// metas ende
 			}
 
 			// metas us1064
@@ -1215,12 +1222,12 @@ public class CalloutOrder extends CalloutEngine
 			// (PriceList.doubleValue() - PriceActual.doubleValue())
 			// / PriceList.doubleValue() * 100.0);
 			if (Discount.scale() > 2)
-			 {
+			{
 				Discount = Discount.setScale(2, BigDecimal.ROUND_HALF_UP);
-			// metas
-			// mTab.setValue("Discount", Discount);
-			// Discount = new BigDecimal(0);
-			// mTab.setValue("Discount", Discount);
+				// metas
+				// mTab.setValue("Discount", Discount);
+				// Discount = new BigDecimal(0);
+				// mTab.setValue("Discount", Discount);
 			}
 		}
 		log.debug("PriceEntered=" + PriceEntered + ", Actual=" + PriceActual + ", Discount=" + Discount);
@@ -1510,7 +1517,6 @@ public class CalloutOrder extends CalloutEngine
 		final Timestamp evaluationDate;
 	}
 
-
 	/**
 	 * Decides whether the business partner's credit limit should be checked.
 	 *
@@ -1518,9 +1524,8 @@ public class CalloutOrder extends CalloutEngine
 	 * @param creditStatus
 	 * @param evalCreditstatus if <code>true</code>, the result set's column <code>"SOCreditStatus"</code> is also used for the decision
 	 * @return
-	 * @throws SQLException if one is thrown while accessing the result set (in particular if evalCreditstatus is <code>true</code>, but the result set doesn't contain<code>"SOCreditStatus"</code>).
 	 */
-	private boolean isChkCreditLimit(@NonNull final CreditLimitRequest creditlimitrequest) throws SQLException
+	private boolean isChkCreditLimit(@NonNull final CreditLimitRequest creditlimitrequest)
 	{
 		final int bpartnerId = creditlimitrequest.getBpartnerId();
 		final String creditStatus = creditlimitrequest.getCreditStatus();
