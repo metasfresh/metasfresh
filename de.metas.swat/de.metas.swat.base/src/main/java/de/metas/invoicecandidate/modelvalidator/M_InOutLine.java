@@ -54,7 +54,6 @@ public class M_InOutLine
 			final I_C_Invoice_Candidate ic = iciol.getC_Invoice_Candidate();
 
 			InterfaceWrapperHelper.delete(iciol);
-
 			invoiceCandDAO.invalidateCand(ic);
 		}
 	}

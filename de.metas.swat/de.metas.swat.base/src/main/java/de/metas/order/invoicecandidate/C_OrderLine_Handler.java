@@ -235,25 +235,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
 
-		final List<I_C_Invoice_Candidate> ics = invoiceCandDB.fetchInvoiceCandidates(ctx, org.compiere.model.I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID(), trxName);
+		final List<I_C_Invoice_Candidate> ics = invoiceCandDB
+				.fetchInvoiceCandidates(ctx, org.compiere.model.I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID(), trxName);
 		for (final I_C_Invoice_Candidate ic : ics)
 		{
-			// task 08216: ts I don't see the case of invalidating all invoice candidates with the same HeaderAggregationKey, and it costs *a lot* of performance
-			// So, commenting it out, but letting it here, for the time beeing
-// @formatter:off
-//			final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-//			final boolean calledFromBackgroundProcess = invoiceCandBL.isUpdateProcessInProgress();
-//			if (calledFromBackgroundProcess)
-//			{
-				// just invalidate this single invoice candidate. The background process itself makes sure that its siblings are also dealt with.
-				invoiceCandDB.invalidateCand(ic);
-//			}
-//			else
-//			{
-//				// invalidate all candidates with the same header aggregation key and, depending on invoice schedule, even more candidates.
-//				invoiceCandBL.invalidateForCandidateHeaderKeyAndPartner(ic);
-//			}
-// @formatter:on
+			invoiceCandDB.invalidateCand(ic);
 		}
 	}
 
