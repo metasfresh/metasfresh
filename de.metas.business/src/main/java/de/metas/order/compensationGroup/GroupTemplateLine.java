@@ -1,16 +1,15 @@
 package de.metas.order.compensationGroup;
 
-import java.util.Collection;
+import org.adempiere.util.Check;
 
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,24 +27,20 @@ import lombok.Value;
  * #L%
  */
 
-public interface GroupRepository
+@Value
+public class GroupTemplateLine
 {
-	Group retrieveGroup(GroupId groupId);
+	int id;
+	int productId;
 
-	void saveGroup(Group group);
-
-	default GroupCreator prepareNewGroup()
-	{
-		return new GroupCreator(this);
-	}
-
-	Group retrieveOrCreateGroup(RetrieveOrCreateGroupRequest request);
-	
-	@Value
 	@Builder
-	class RetrieveOrCreateGroupRequest
+	private GroupTemplateLine(final int id, final int productId)
 	{
-		@NonNull Collection<Integer> orderLineIds;
-		@NonNull GroupTemplate newGroupTemplate;
+		// id is OK to be <= 0
+		Check.assume(productId > 0, "productId > 0");
+		
+		this.id = id > 0 ? id : 0;
+		this.productId = productId;
 	}
+
 }

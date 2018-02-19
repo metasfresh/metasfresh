@@ -12,7 +12,6 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
@@ -23,13 +22,14 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationLine;
-import de.metas.order.compensationGroup.GroupIdTemplate;
 import de.metas.order.compensationGroup.GroupRegularLine;
+import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.order.model.I_M_Product_Category;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 
 /*
@@ -64,9 +64,8 @@ public class C_Order_CreateCompensationMultiGroups extends JavaProcess implement
 {
 	@Autowired
 	private OrderGroupRepository groupsRepo;
-
-	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_ID, mandatory = true)
-	private int compensationProductId;
+	@Autowired
+	private GroupTemplateRepository groupTemplateRepo;
 
 	public C_Order_CreateCompensationMultiGroups()
 	{
@@ -106,7 +105,7 @@ public class C_Order_CreateCompensationMultiGroups extends JavaProcess implement
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		final ListMultimap<GroupIdTemplate, Integer> orderLineIdsByGroupTemplate = extractOrderLineIdsByGroupTemplate(selectedOrderLines);
+		final ListMultimap<GroupTemplate, Integer> orderLineIdsByGroupTemplate = extractOrderLineIdsByGroupTemplate(selectedOrderLines);
 		if (orderLineIdsByGroupTemplate.isEmpty())
 		{
 			throw new AdempiereException("Nothing to group"); // TODO trl
@@ -123,16 +122,16 @@ public class C_Order_CreateCompensationMultiGroups extends JavaProcess implement
 		return MSG_OK;
 	}
 
-	private ListMultimap<GroupIdTemplate, Integer> extractOrderLineIdsByGroupTemplate(final List<I_C_OrderLine> orderLines)
+	private ListMultimap<GroupTemplate, Integer> extractOrderLineIdsByGroupTemplate(final List<I_C_OrderLine> orderLines)
 	{
 		final List<I_C_OrderLine> orderLinesSorted = orderLines.stream()
 				.sorted(Comparator.comparing(I_C_OrderLine::getLine))
 				.collect(ImmutableList.toImmutableList());
-		
-		final ListMultimap<GroupIdTemplate, Integer> orderLineIdsByGroupTemplate = LinkedListMultimap.create();
+
+		final ListMultimap<GroupTemplate, Integer> orderLineIdsByGroupTemplate = LinkedListMultimap.create();
 		for (final I_C_OrderLine orderLine : orderLinesSorted)
 		{
-			final GroupIdTemplate groupTemplate = extractGroupTemplate(orderLine);
+			final GroupTemplate groupTemplate = extractGroupTemplate(orderLine);
 			if (groupTemplate == null)
 			{
 				continue;
@@ -143,29 +142,28 @@ public class C_Order_CreateCompensationMultiGroups extends JavaProcess implement
 		return orderLineIdsByGroupTemplate;
 	}
 
-	private GroupIdTemplate extractGroupTemplate(final I_C_OrderLine orderLine)
+	private GroupTemplate extractGroupTemplate(final I_C_OrderLine orderLine)
 	{
 		final I_M_Product product = orderLine.getM_Product();
 		if (product == null)
 		{
 			return null;
 		}
-		final I_M_Product_Category productCategory = product.getM_Product_Category();
-		final I_M_Product_Category parentProductCategory = productCategory.getM_Product_Category_Parent();
-		final I_M_Product_Category groupingProductCategory = parentProductCategory != null ? parentProductCategory : productCategory;
+		final I_M_Product_Category productCategory = InterfaceWrapperHelper.loadOutOfTrx(product.getM_Product_Category_ID(), I_M_Product_Category.class);
+		final int groupTemplateId = productCategory.getC_CompensationGroup_Schema_ID();
+		if (groupTemplateId <= 0)
+		{
+			return null;
+		}
 
-		return GroupIdTemplate.builder()
-				.name(groupingProductCategory.getName())
-				.productCategoryId(groupingProductCategory.getM_Product_Category_ID())
-				.build();
+		return groupTemplateRepo.getById(groupTemplateId);
 	}
 
-	private Group createGroup(final GroupIdTemplate groupTemplate, final Collection<Integer> orderLineIds)
+	private Group createGroup(final GroupTemplate groupTemplate, final Collection<Integer> orderLineIds)
 	{
 		return groupsRepo.prepareNewGroup()
 				.linesToGroup(orderLineIds)
-				.newGroupIdTemplate(groupTemplate)
-				.compensationProductId(compensationProductId)
+				.newGroupTemplate(groupTemplate)
 				.createGroup();
 	}
 
