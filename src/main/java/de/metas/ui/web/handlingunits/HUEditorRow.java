@@ -40,7 +40,6 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.model.DocumentCollection;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 

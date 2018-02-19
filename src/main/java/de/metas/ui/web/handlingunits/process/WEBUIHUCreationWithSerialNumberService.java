@@ -17,12 +17,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
-import org.springframework.context.annotation.Profile;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.Profiles;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -36,6 +34,8 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.window.model.DocumentCollection;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -58,31 +58,31 @@ import de.metas.ui.web.window.model.DocumentCollection;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Profile(Profiles.PROFILE_Webui)
+
 public class WEBUIHUCreationWithSerialNumberService
 {
 	// Services
-
-	private DocumentCollection documentCollections;
-
-	public static WEBUIHUCreationWithSerialNumberService newInstance()
-	{
-		return new WEBUIHUCreationWithSerialNumberService();
-	}
-
+	private final DocumentCollection documentCollections;
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ISerialNoDAO serialNoDAO = Services.get(ISerialNoDAO.class);
+
+	private final HUEditorView view;
 
 	private final Set<Integer> huIDsChanged = new HashSet<>();
 	private final Set<Integer> huIDsAdded = new HashSet<>();
 	private final Set<Integer> huIDsToRemove = new HashSet<>();
 
-	private HUEditorView view;
+	@Builder
+	private WEBUIHUCreationWithSerialNumberService(
+			@NonNull final DocumentCollection documentCollections,
+			@NonNull HUEditorView view)
+	{
+		this.documentCollections = documentCollections;
+		this.view = view;
+	}
 
 	public final WebuiHUTransformCommandResult action_CreateCUs_With_SerialNumbers(final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy, final List<String> availableSerialNumbers)
 	{
-		view = huEditorRowHierarchy.getView();
-		documentCollections = huEditorRowHierarchy.getDocumentCollection();
 		final HUEditorRow selectedCuRow = huEditorRowHierarchy.getCuRow();
 
 		final int qtyCU = selectedCuRow.getQtyCU().intValueExact();

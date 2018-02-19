@@ -190,14 +190,16 @@ public class WEBUI_Add_Batch_SerialNo_To_CUs extends HUEditorProcessTemplate imp
 		final HUEditorRow topLevelRow = parentRow == null ? null : getParentHURowOrNull(parentRow);
 
 		final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy = HUEditorRow.HUEditorRowHierarchy.builder()
-				.view(getView())
-				.documentCollection(documentsCollection)
 				.cuRow(selectedCuRow)
 				.parentRow(parentRow)
 				.topLevelRow(topLevelRow)
 				.build();
 
-		final WebuiHUTransformCommandResult result = WEBUIHUCreationWithSerialNumberService.newInstance().action_CreateCUs_With_SerialNumbers(huEditorRowHierarchy, availableSerialNumbers);
+		final WebuiHUTransformCommandResult result = WEBUIHUCreationWithSerialNumberService.builder()
+				.documentCollections(documentsCollection)
+				.view(getView())
+				.build()
+				.action_CreateCUs_With_SerialNumbers(huEditorRowHierarchy, availableSerialNumbers);
 
 		updateViewFromResult(result);
 
