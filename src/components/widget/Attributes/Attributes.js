@@ -29,7 +29,6 @@ export default class Attributes extends Component {
       widgetData,
       entity,
     } = this.props;
-
     const tmpId = widgetData.value.key;
 
     getAttributesInstance(
@@ -43,6 +42,7 @@ export default class Attributes extends Component {
       entity
     )
       .then(response => {
+        console.log('RESP1')
         const { id, fieldsByName } = response.data;
 
         this.setState({
@@ -62,7 +62,8 @@ export default class Attributes extends Component {
         this.setState({
           dropdown: true,
         });
-      });
+      })
+     .catch(error => { console.log('Attributes handleInit error: ', error.message); });
   };
 
   handleToggle = option => {
@@ -213,5 +214,6 @@ export default class Attributes extends Component {
 }
 
 Attributes.propTypes = {
-  patch: PropTypes.func,
+  patch: PropTypes.func.isRequired,
+  handleBackdropLock: PropTypes.func,
 };
