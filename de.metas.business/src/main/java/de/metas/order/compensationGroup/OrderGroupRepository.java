@@ -315,7 +315,7 @@ public class OrderGroupRepository implements GroupRepository
 		}
 		else if (groupIds.isEmpty() || groupIds.get(0) == null)
 		{
-			return createNewGroupFromOrderLines(orderLines, request.getNewGroupIdTemplate());
+			return createNewGroupFromOrderLines(orderLines, request.getNewGroupTemplate());
 		}
 		else
 		{
@@ -325,7 +325,7 @@ public class OrderGroupRepository implements GroupRepository
 		}
 	}
 
-	private Group createNewGroupFromOrderLines(@NonNull final List<I_C_OrderLine> orderLines, @NonNull final GroupIdTemplate newGroupIdTemplate)
+	private Group createNewGroupFromOrderLines(@NonNull final List<I_C_OrderLine> orderLines, @NonNull final GroupTemplate newGroupTemplate)
 	{
 		Check.assumeNotEmpty(orderLines, "orderLines is not empty");
 		orderLines.forEach(OrderGroupCompensationUtils::assertNotInGroup);
@@ -334,7 +334,7 @@ public class OrderGroupRepository implements GroupRepository
 		final I_C_Order order = load(orderId, I_C_Order.class);
 		assertOrderNotProcessed(order);
 
-		final GroupId groupId = createNewGroupId(orderId, newGroupIdTemplate);
+		final GroupId groupId = createNewGroupId(orderId, newGroupTemplate);
 		setGroupIdToLines(orderLines, groupId);
 
 		return createGroupFromOrderLines(orderLines);
@@ -370,7 +370,7 @@ public class OrderGroupRepository implements GroupRepository
 		return regularOrderLines;
 	}
 
-	private static final GroupId createNewGroupId(final int orderId, final GroupIdTemplate template)
+	private static final GroupId createNewGroupId(final int orderId, final GroupTemplate template)
 	{
 		final I_C_Order_CompensationGroup groupPO = newInstance(I_C_Order_CompensationGroup.class);
 		groupPO.setC_Order_ID(orderId);
