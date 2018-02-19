@@ -14,6 +14,9 @@ Here come the actual release notes:
 **release for week 2018-09**
 
 ## Features
+* metasfresh
+  * [#3515](https://github.com/metasfresh/metasfresh/issues/3515) Webui: Pimp Compensation Group Schema window
+    * New Window for Compensation group maintenance.
 
 ## Fixes
 

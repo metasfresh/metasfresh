@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -1554,7 +1556,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		if (inoutLine.getC_OrderLine_ID() > 0)
 		{
 			final I_M_ShipmentSchedule schedForOrderLine = retrieveForOrderLine(inoutLine.getC_OrderLine());
-			if(schedForOrderLine != null)
+			if (schedForOrderLine != null)
 			{
 				schedules.put(schedForOrderLine.getM_ShipmentSchedule_ID(), schedForOrderLine);
 			}
@@ -1563,4 +1565,21 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		return ImmutableSet.copyOf(schedules.values());
 	}
 
+	@Override
+	public void deleteAllForReference(
+			@Nullable final TableRecordReference referencedRecord)
+	{
+		if (referencedRecord == null)
+		{
+			logger.debug("given parameter referencedRecord is null; nothing to delete");
+			return;
+		}
+		final int deletedCount = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_AD_Table_ID, referencedRecord.getAD_Table_ID())
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, referencedRecord.getRecord_ID())
+				.create()
+				.delete();
+		logger.debug("Deleted {} M_ShipmentSchedule records for referencedRecord={}", deletedCount, referencedRecord);
+	}
 }
