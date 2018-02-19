@@ -13,15 +13,14 @@ package de.metas.data.export.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,14 +29,16 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
+
+import com.google.common.base.Joiner;
 
 import de.metas.data.export.api.IExportDataSource;
+import de.metas.logging.LogManager;
 
 /**
  * Helper class for building {@link JdbcExportDataSource}s.
@@ -54,13 +55,15 @@ public class JdbcExporterBuilder
 	/**
 	 * Map: CSV Field Name to {@link Column}
 	 */
-	private final Map<String, Column> name2columns = new LinkedHashMap<String, Column>();
+	private final Map<String, Column> name2columns = new LinkedHashMap<>();
 
 	private int nextInternalFieldIndex = 1;
 
 	// private final List<String> sqlInternalDbColumnNames = new ArrayList<String>();
 	private final StringBuilder sqlWhereClause = new StringBuilder();
-	private final List<Object> sqlWhereClauseParams = new ArrayList<Object>();
+	private final List<Object> sqlWhereClauseParams = new ArrayList<>();
+
+	private final List<String> sqlOrderBys = new ArrayList<>();
 
 	public JdbcExporterBuilder(final String tableName)
 	{
@@ -70,8 +73,8 @@ public class JdbcExporterBuilder
 
 	public IExportDataSource createDataSource()
 	{
-		final List<String> csvFields = new ArrayList<String>();
-		final List<String> sqlFields = new ArrayList<String>();
+		final List<String> csvFields = new ArrayList<>();
+		final List<String> sqlFields = new ArrayList<>();
 		for (final JdbcExporterBuilder.Column field : getFields())
 		{
 			if (!field.isExported())
@@ -83,11 +86,11 @@ public class JdbcExporterBuilder
 			csvFields.add(field.getName());
 			sqlFields.add(field.getDbColumnName());
 		}
-		
+
 		final String sqlWhereClause = getSqlWhereClause();
 
 		// SQL Select
-		final List<Object> sqlParams = new ArrayList<Object>();
+		final List<Object> sqlParams = new ArrayList<>();
 		final String sqlSelect = getSqlSelect(sqlParams);
 
 		// SQL Select Count
@@ -103,7 +106,7 @@ public class JdbcExporterBuilder
 	{
 		return tableName;
 	}
-	
+
 	public Column getColumnByDbColumnName(String dbColumnName)
 	{
 		for (final Column column : name2columns.values())
@@ -113,17 +116,16 @@ public class JdbcExporterBuilder
 				return column;
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	public Column addField(final String dbColumnName)
 	{
 		final String name = dbColumnName;
 		return addField(name, dbColumnName);
 	}
 
-	
 	public Column addField(final String name, final String dbColumnName)
 	{
 		Check.assumeNotNull(name, "name not null");
@@ -149,8 +151,8 @@ public class JdbcExporterBuilder
 	public Column addFieldConstant(final String name, final String constantValue)
 	{
 		final String dbColumnSQL = DB.TO_STRING(constantValue)
-				+"::text" // TODO: HARDCODED: for Postgresql
-				;
+				+ "::text" // TODO: HARDCODED: for Postgresql
+		;
 		return addFieldFromSQL(name, dbColumnSQL);
 	}
 
@@ -179,7 +181,7 @@ public class JdbcExporterBuilder
 
 	public JdbcExporterBuilder addLikeWhereClause(String dbColumnName, Object value)
 	{
-		final List<Object> sqlParams = new ArrayList<Object>();
+		final List<Object> sqlParams = new ArrayList<>();
 		final StringBuilder whereClause = new StringBuilder();
 		if (value != null)
 		{
@@ -194,7 +196,7 @@ public class JdbcExporterBuilder
 
 		return addWhereClause(whereClause.toString(), sqlParams);
 	}
-	
+
 	public JdbcExporterBuilder addEqualsWhereClause(String dbColumnName, Object value)
 	{
 		Check.assumeNotNull(dbColumnName, "dbColumnName not null");
@@ -221,7 +223,7 @@ public class JdbcExporterBuilder
 
 	public JdbcExporterBuilder addBetweenWhereClause(String dbColumnName, Object valueFrom, Object valueTo)
 	{
-		final List<Object> sqlParams = new ArrayList<Object>();
+		final List<Object> sqlParams = new ArrayList<>();
 		final StringBuilder whereClause = new StringBuilder();
 		if (valueFrom != null)
 		{
@@ -281,7 +283,7 @@ public class JdbcExporterBuilder
 		return sqlWhereClauseParams;
 	}
 
-	public String getSqlSelectFields(boolean addFieldAliases)
+	private String getSqlSelectFields(boolean addFieldAliases)
 	{
 		final StringBuilder sqlSelectColumns = new StringBuilder();
 
@@ -317,10 +319,21 @@ public class JdbcExporterBuilder
 			throw new AdempiereException("No export fields where specified");
 		}
 
+		// Add the ORDER BYs to select columns because it's needed when we SELECT DISTINCT
+		final List<String> sqlOrderBys = getSqlOrderBys();
+		if (!sqlOrderBys.isEmpty())
+		{
+			if (sqlSelectColumns.length() > 0)
+			{
+				sqlSelectColumns.append("\r\n,");
+			}
+			sqlSelectColumns.append(Joiner.on("\r\n, ").join(sqlOrderBys));
+		}
+
 		return sqlSelectColumns.toString();
 	}
 
-	public String getSqlSelect(final List<Object> outSqlParams)
+	private String getSqlSelect(final List<Object> outSqlParams)
 	{
 		//
 		// SQL Select Columns
@@ -337,7 +350,25 @@ public class JdbcExporterBuilder
 			outSqlParams.addAll(getSqlParams());
 		}
 
+		final List<String> sqlOrderBys = getSqlOrderBys();
+		if (!sqlOrderBys.isEmpty())
+		{
+			sql.append("\r\n ORDER BY \r\n").append(Joiner.on(", ").join(sqlOrderBys));
+		}
+
 		return sql.toString();
+	}
+
+	public JdbcExporterBuilder addOrderBy(final String sqlOrderBy)
+	{
+		Check.assumeNotEmpty(sqlOrderBy, "sqlOrderBy is not empty");
+		this.sqlOrderBys.add(sqlOrderBy);
+		return this;
+	}
+
+	private List<String> getSqlOrderBys()
+	{
+		return sqlOrderBys;
 	}
 
 	public static class Column

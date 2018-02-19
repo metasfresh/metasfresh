@@ -316,7 +316,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	private List<Fact> createFacts_SalesInvoice(final MAcctSchema as)
 	{
 		final List<Fact> facts = new ArrayList<>();
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, Fact.POST_Actual)
+				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
 		facts.add(fact);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);

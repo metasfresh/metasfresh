@@ -340,13 +340,22 @@ public class OrderGroupRepository implements GroupRepository
 		return createGroupFromOrderLines(orderLines);
 	}
 
-	private static int extractOrderId(final List<I_C_OrderLine> orderLines)
+	private static int extractOrderId(final List<? extends I_C_OrderLine> orderLines)
 	{
 		return orderLines.stream()
 				.map(I_C_OrderLine::getC_Order_ID)
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("All order lines shall be from same order")));
 	}
+	
+	public static int extractOrderIdFromGroups(final List<Group> groups)
+	{
+		return groups.stream()
+				.map(group -> group.getGroupId().getDocumentIdAssumingTableName(I_C_Order.Table_Name))
+				.distinct()
+				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("All groups shall be from same order")));
+	}
+
 
 	private List<I_C_OrderLine> retrieveC_OrderLines(final Collection<Integer> orderLineIds)
 	{

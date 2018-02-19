@@ -27,6 +27,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.compiere.acct.FactTrxLines.FactTrxLinesType;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
@@ -38,6 +39,7 @@ import org.slf4j.Logger;
 import de.metas.currency.ICurrencyConversionContext;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 import lombok.ToString;
 
 /**
@@ -59,8 +61,6 @@ public final class Fact
 	 */
 	public Fact(final Doc<?> document, final MAcctSchema acctSchema, final String defaultPostingType)
 	{
-		super();
-
 		Check.assumeNotNull(document, "document not null");
 		m_doc = document;
 
@@ -103,6 +103,14 @@ public final class Fact
 
 	/** Lines */
 	private List<FactLine> m_lines = new ArrayList<>();
+
+	private FactTrxStrategy factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
+
+	public Fact setFactTrxLinesStrategy(@NonNull final FactTrxStrategy factTrxLinesStrategy)
+	{
+		this.factTrxLinesStrategy = factTrxLinesStrategy;
+		return this;
+	}
 
 	/**
 	 * Dispose
@@ -736,12 +744,56 @@ public final class Fact
 	public final void save(final String trxName)
 	{
 		m_trxName = trxName;
-		// save Lines
-		for (FactLine fl : m_lines)
+
+		factTrxLinesStrategy
+				.createFactTrxLines(m_lines)
+				.forEach(this::save);
+	}
+
+	private void save(final FactTrxLines factTrxLines)
+	{
+		final String trxName = m_trxName;
+
+		//
+		// Case: 1 debit line, one or more credit lines
+		if (factTrxLines.getType() == FactTrxLinesType.Debit)
 		{
-			InterfaceWrapperHelper.save(fl, trxName);
+			final FactLine drLine = factTrxLines.getDebitLine();
+			InterfaceWrapperHelper.save(drLine, trxName);
+
+			factTrxLines.forEachCreditLine(crLine -> {
+				crLine.setCounterpart_Fact_Acct_ID(drLine.getFact_Acct_ID());
+				InterfaceWrapperHelper.save(crLine, trxName);
+			});
+
 		}
-	}   // commit
+		//
+		// Case: 1 credit line, one or more debit lines
+		else if (factTrxLines.getType() == FactTrxLinesType.Credit)
+		{
+			final FactLine crLine = factTrxLines.getCreditLine();
+			InterfaceWrapperHelper.save(crLine, trxName);
+
+			factTrxLines.forEachDebitLine(drLine -> {
+				drLine.setCounterpart_Fact_Acct_ID(crLine.getFact_Acct_ID());
+				InterfaceWrapperHelper.save(drLine, trxName);
+			});
+		}
+		//
+		// Case: no debit lines, no credit lines
+		else if (factTrxLines.getType() == FactTrxLinesType.EmptyOrZero)
+		{
+			// nothing to do
+		}
+		else
+		{
+			throw new AdempiereException("Unknown type: " + factTrxLines.getType());
+		}
+
+		//
+		// also save the zero lines, if they are here
+		factTrxLines.forEachZeroLine(zeroLine -> InterfaceWrapperHelper.save(zeroLine, trxName));
+	}
 
 	/**
 	 * Get Transaction

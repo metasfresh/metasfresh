@@ -50,7 +50,7 @@ public class BPartnerCreditLimitRepository
 				.addCompareFilter(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, Operator.LESS_OR_EQUAL, date)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.orderBy(I_C_BPartner_CreditLimit.COLUMNNAME_Type)
+				.orderBy(I_C_BPartner_CreditLimit.COLUMNNAME_C_CreditLimit_Type_ID)
 				.orderByDescending(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom)
 				.create()
 				.first();

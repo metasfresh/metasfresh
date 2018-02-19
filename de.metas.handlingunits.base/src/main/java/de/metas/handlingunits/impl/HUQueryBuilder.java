@@ -351,8 +351,8 @@ import lombok.NonNull;
 
 		//
 		// Create and add Query Filters
-		final IQueryFilter<I_M_HU> filters = createQueryFilter();
-		queryBuilder.filter(filters);
+		final ICompositeQueryFilter<I_M_HU> filters = createQueryFilter();
+		queryBuilder.addFiltersUnboxed(filters);
 
 		//
 		// ORDER BY
@@ -363,7 +363,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public final IQueryFilter<I_M_HU> createQueryFilter()
+	public final ICompositeQueryFilter<I_M_HU> createQueryFilter()
 	{
 		final ICompositeQueryFilter<I_M_HU> filters = queryBL.createCompositeQueryFilter(I_M_HU.class);
 
@@ -1071,11 +1071,11 @@ import lombok.NonNull;
 	public IHUQueryBuilder setOnlyWithBarcode(final String barcode)
 	{
 		this.barcode = barcode;
-		loadBarcodeAttrributes(barcode);
+		loadBarcodeAttributes(barcode);
 		return this;
 	}
 
-	private void loadBarcodeAttrributes(final String barcode)
+	private void loadBarcodeAttributes(final String barcode)
 	{
 		final String dimBarcodeAttributesInternalName = HUConstants.DIM_Barcode_Attributes;
 
