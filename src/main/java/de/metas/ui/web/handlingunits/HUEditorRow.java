@@ -727,10 +727,7 @@ public final class HUEditorRow implements IViewRow
 	@lombok.Value
 	public static class HUEditorRowHierarchy
 	{
-		
 		@NonNull private final HUEditorRow cuRow;
-		@Nullable private final HUEditorView view;
-		@Nullable private final DocumentCollection documentCollection;
 		@Nullable private final HUEditorRow parentRow;
 		@Nullable private final HUEditorRow topLevelRow;
 	}
