@@ -360,7 +360,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	private void updateDefaultsAndSaveSingleCandidate(
-			@NonNull final IInvoiceCandidateHandler handler, 
+			@NonNull final IInvoiceCandidateHandler handler,
 			@NonNull final I_C_Invoice_Candidate ic)
 	{
 		Check.assumeNotNull(handler, "handler not null");
@@ -413,7 +413,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final OnInvalidateForModelAction onInvalidateForModelAction = handler.getOnInvalidateForModelAction();
 			if (onInvalidateForModelAction == OnInvalidateForModelAction.RECREATE_ASYNC)
 			{
-				// just plainly invalidate the actual IC as hand.
+				// just plainly invalidate the actual IC at hand.
 				invoiceCandDAO.invalidateCand(ic);
 				continue;
 			}
@@ -506,7 +506,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			}
 		}
 	}
-	
+
 	@Override
 	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{
