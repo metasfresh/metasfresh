@@ -13,6 +13,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -74,6 +75,7 @@ public class MaterialCockpitViewFactory
 	{
 		assertWindowIdOfRequestIsCorrect(request);
 
+		final DocumentFilterDescriptorsProvider filterDescriptors = materialCockpitFilters.getFilterDescriptors();
 		final ImmutableList<DocumentFilter> requestFilters = materialCockpitFilters.extractDocumentFilters(request);
 		final ImmutableList<DocumentFilter> filtersToUse = request.isUseAutoFilters() ? materialCockpitFilters.createAutoFilters() : requestFilters;
 
@@ -81,6 +83,7 @@ public class MaterialCockpitViewFactory
 				.viewId(request.getViewId())
 				.description(ITranslatableString.empty())
 				.filters(filtersToUse)
+				.filterDescriptors(filterDescriptors)
 				.rowsData(materialCockpitRowRepository.createRowsData(filtersToUse))
 				.relatedProcessDescriptor(createProcessDescriptor())
 				.build();
@@ -114,7 +117,7 @@ public class MaterialCockpitViewFactory
 				.setTreeCollapsible(true)
 				.setTreeExpandedDepth(ViewLayout.TreeExpandedDepth_AllCollapsed)
 				.addElementsFromViewRowClass(MaterialCockpitRow.class, viewDataType)
-				.setFilters(materialCockpitFilters.getFilterDescriptors());
+				.setFilters(materialCockpitFilters.getFilterDescriptors().getAll());
 
 		return viewlayOutBuilder.build();
 	}

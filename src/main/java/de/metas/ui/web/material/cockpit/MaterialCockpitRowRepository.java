@@ -1,7 +1,7 @@
 package de.metas.ui.web.material.cockpit;
 
-import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +13,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -24,6 +25,7 @@ import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
+import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters.DateFilterVO;
 import de.metas.ui.web.material.cockpit.filters.StockFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
@@ -102,11 +104,13 @@ public class MaterialCockpitRowRepository
 
 	private List<MaterialCockpitRow> retrieveRows(@NonNull final List<DocumentFilter> filters)
 	{
-		final Timestamp date = materialCockpitFilters.extractDateOrNull(filters);
+		final DateFilterVO dateFilterVO = materialCockpitFilters.extractDateFilterVO(filters);
+		final Date date = dateFilterVO.getDate();
 		if (date == null)
 		{
 			return ImmutableList.of();
 		}
+
 		final List<I_MD_Cockpit> cockpitRecords = materialCockpitFilters
 				.createQuery(filters)
 				.list();
@@ -116,7 +120,7 @@ public class MaterialCockpitRowRepository
 				.list();
 
 		final CreateRowsRequest request = CreateRowsRequest.builder()
-				.date(date)
+				.date(TimeUtil.asTimestamp(date))
 				.productsToListEvenIfEmpty(retrieveRelevantProducts(filters))
 				.cockpitRecords(cockpitRecords)
 				.stockRecords(stockRecords)

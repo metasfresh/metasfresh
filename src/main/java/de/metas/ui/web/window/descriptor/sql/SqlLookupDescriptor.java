@@ -18,6 +18,7 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.db.DBConstants;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
@@ -80,6 +81,17 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	public static final SqlLookupDescriptor cast(final LookupDescriptor descriptor)
 	{
 		return (SqlLookupDescriptor)descriptor;
+	}
+
+	public static final LookupDescriptorProvider searchInTable(final String lookupTableName)
+	{
+		return builder()
+				.setCtxTableName(null) // tableName
+				.setCtxColumnName(InterfaceWrapperHelper.getKeyColumnName(lookupTableName))
+				.setDisplayType(DisplayType.Search)
+				.setReadOnlyAccess()
+				.buildProvider();
+
 	}
 
 	public static final CtxName SQL_PARAM_KeyId = CtxNames.parse("SqlKeyId");
@@ -300,7 +312,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		{
 			Check.assumeNotNull(displayType, "Parameter displayType is not null");
 
-			return buildProvider( ctxTableName, ctxColumnName, widgetType, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID, validationRules);
+			return buildProvider(ctxTableName, ctxColumnName, widgetType, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID, validationRules);
 		}
 
 		public LookupDescriptor buildForScope(final LookupScope scope)
