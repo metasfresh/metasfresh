@@ -75,11 +75,12 @@ public final class GroupCreator
 		return this;
 	}
 
-	public void createGroup()
+	public Group createGroup()
 	{
 		final Group group = groupsRepo.retrieveOrCreateGroup(createRetrieveOrCreateGroupRequest());
 		group.addNewCompensationLine(createGroupCompensationLineCreateRequest(group));
 		groupsRepo.saveGroup(group);
+		return group;
 	}
 
 	private RetrieveOrCreateGroupRequest createRetrieveOrCreateGroupRequest()

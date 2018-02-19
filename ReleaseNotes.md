@@ -15,12 +15,26 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#2777](https://github.com/metasfresh/metasfresh/issues/2777) Vendor Invoice Layout and Translations in WebUI Improvements
+    * Adds Translations and Layout Impovement to Purchase Invoice window.
+  * [#3246](https://github.com/metasfresh/metasfresh/issues/3246) Barcode Search in Handling Unit Editor takes too long
+    * Improved Performance in handling Unit Editor when searching via Barcode Filter and Default Filter Handling Unit Value.
   * [#3502](https://github.com/metasfresh/metasfresh/issues/3502) Default Filter Improvements
     * Adds various Filter criteria to default window filter lists.
   * [#3505](https://github.com/metasfresh/metasfresh/issues/3505) Improvement of Procurement Candidates
     * Usability Improvement of the procurement Planning window. Rearranged fields for better visibility.
+  
+* metasfresh-webui-frontend
+  * [#853](https://github.com/metasfresh/metasfresh-webui-api/issues/853) Automatic group creation in sales order lines
+    * New automatic grouping functionality in sales orderlines.
+  * [#854](https://github.com/metasfresh/metasfresh-webui-api/issues/854) If the window is missing from menu render it's name in breadcrumb
+    * Window Breadcrumb improvement, now showing the windoowname of windows that were reached via zoom and are not in manu yet.
 
 ## Fixes
+* metasfresh
+  * [#3357](https://github.com/metasfresh/metasfresh/issues/3357) SQL Exception in Window Entity Type
+    * Fixes a SQL Exception that occurred in Entity Type window.
+
 * metasfresh-webui-frontend
   * [#1592](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1592) Added subrow is still/again not shown in the frontend
     * Fixes the feature for included subrows and asynchronous reponse.
@@ -32,17 +46,21 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#3405](https://github.com/metasfresh/metasfresh/issues/3405) Schema for Product Planning Data
+    * New Feature that allows to define default Product Planning Data. These Schemas are used to ensure the automatic creation of proper distribution orders for newly imported products.
   * [#3406](https://github.com/metasfresh/metasfresh/issues/3406) Set Selector in M_Product after Product Data Import
+    * New Selector Feature for Product Import allowing to join new Product Data to Product Planning Schema.
   * [#3407](https://github.com/metasfresh/metasfresh/issues/3407) New Businesspartner Window for Pharma vertical
     * New Business Partner Window in WebUI for Pharma Verticals.
   * [#3408](https://github.com/metasfresh/metasfresh/issues/3408) New Product Window for Pharma vertical
     * New Product Window in WebUI for Pharma Verticals.
   * [#3413](https://github.com/metasfresh/metasfresh/issues/3413) Credit Limit data structure as subtab in Businesspartner
+    * New Credit Limit functionality. Now allowing to define Credit Limit per Customer on different levels.
   * [#3458](https://github.com/metasfresh/metasfresh/issues/3458) Remove M_Storage-based legacy check from MProduct
-  * [#3467](https://github.com/metasfresh/metasfresh/issues/3467) Preparation Date Filer as Daterange
-    * Adjustment for the Preparation Date Filter in Manufacturing Order. Now is a Daterange filter instead of date.
+    * Internal housekeeping improvement, getting rid of old storage based checks.
+  * [#3467](https://github.com/metasfresh/metasfresh/issues/3467) Preparation Date Filer as Date Range
+    * Adjustment for the Preparation Date Filter in Manufacturing Order. Now is a Date Range filter instead of date.
   * [#3468](https://github.com/metasfresh/metasfresh/issues/3468) Add Translation for "All Dates available"
-    * Adds the translation for en_EN, de_DE of the "Show all dates" hint in daterange filter.
+    * Adds the translation for en_EN, de_DE of the "Show all dates" hint in Date Range filter.
   * [#3471](https://github.com/metasfresh/metasfresh/issues/3471) Disable Sales Opportunities Window until its permission is configurable
     * Hiding the Sales Opportunity Window from default WebUI Menu, as long as in beta.
   * [#3487](https://github.com/metasfresh/metasfresh/issues/3487) Extend Identifier Transportation Order
@@ -52,9 +70,11 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#818](https://github.com/metasfresh/metasfresh-webui-api/issues/818) Values.valueToJsonObject() shall return JSONNullValue instead of null
+    * Internal improvement of the Handling of null values in JSON Objects.
 
 * metasfresh-webui-frontend
   * [#1501](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1501) Automated Javascript and React Testing with Jest
+    * Kickoff of the autmated Testing Framework for metasfresh setup on Jest and Enzyme.
   * [#1590](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1590) Included tabs sorting
     * Improvement of the sorting functionality in main and included subtab Grid Views.
   * [#1593](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1593) Copy/ Paste for selected Field in Subtab GridView not giving correct result
@@ -65,22 +85,27 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh
   * [#3445](https://github.com/metasfresh/metasfresh/issues/3445) Qty TU not correct in purchase invoice jasper
+    * Fixes the Purchase Invoice document. Now the correct quantity of Handling units is shown again.
   * [#3477](https://github.com/metasfresh/metasfresh/issues/3477) Cannot save manufacturing order
+    * Fixes an error in manufacturing order window, now allowing to save the order again.
 
 * metasfresh-webui-api
   * [#806](https://github.com/metasfresh/metasfresh-webui-api/issues/806) Add to Transportation Order, Ship and Invoice action in Picking Clearing Tray not respecting the invoice schedule
+    * Fixes the Action for automatic creation of invoices after picking & packing. Now the action is respecting special invoice schedules for the given customer.
   * [#807](https://github.com/metasfresh/metasfresh-webui-api/issues/807) Quantity to invoice override callout
+    * Fixes a Bug when updating the Quantity to Invoice override. Now the effective quantity is updated again.
   * [#829](https://github.com/metasfresh/metasfresh-webui-api/issues/829) Planning status in manufacturing order not updated
+    * Fixes an issue in Manufacturing Order, leaving the Planning Status unchanged after processing the order.
 
 * metasfresh-webui-frontend
   * [#1546](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1546) Date Range Filter as Range Filter has initial daterange
     * Leaves the Daterange filter now initially empty to that it does not interrupt other filtering.
   * [#1553](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1553) Drop down lists remain displayed when using tab several times (again)
     * Fixes a Bug with dropdown lists staying open after tabbing away.
-  * [#1559](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1559) Errors in the console when opening HU Editor
-    * Fixes errors in console that popped up when opening the Handling Unit Editor.
   * [#1558](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1558) Dropdown fields not hidden when creating a new Business Partner
     * Fixes the reamining dropdown in Purchase Order when calling the "New Businesspartner" action in context menu.
+  * [#1559](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1559) Errors in the console when opening HU Editor
+    * Fixes errors in console that popped up when opening the Handling Unit Editor.
   * [#1588](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1588) Zoom Into is not working
     * Fixes the Zoom-To functionality that allows the user to click on field labels and jump to detail data when available.
 

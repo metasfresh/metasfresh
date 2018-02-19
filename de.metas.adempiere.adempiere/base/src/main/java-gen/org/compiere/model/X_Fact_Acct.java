@@ -1,27 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-
-import org.compiere.util.Env;
 
 /** Generated Model for Fact_Acct
  *  @author Adempiere (generated) 
@@ -33,7 +15,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1191479272L;
+	private static final long serialVersionUID = 1854972367L;
 
     /** Standard Constructor */
     public X_Fact_Acct (Properties ctx, int Fact_Acct_ID, String trxName)
@@ -43,10 +25,10 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
         {
 			setAccount_ID (0);
 			setAD_Table_ID (0);
-			setAmtAcctCr (Env.ZERO);
-			setAmtAcctDr (Env.ZERO);
-			setAmtSourceCr (Env.ZERO);
-			setAmtSourceDr (Env.ZERO);
+			setAmtAcctCr (BigDecimal.ZERO);
+			setAmtAcctDr (BigDecimal.ZERO);
+			setAmtSourceCr (BigDecimal.ZERO);
+			setAmtSourceDr (BigDecimal.ZERO);
 			setC_AcctSchema_ID (0);
 			setC_Currency_ID (0);
 			setC_Period_ID (0);
@@ -104,7 +86,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 //	{
 //		return get_ValueAsPO(COLUMNNAME_Account_ID, org.compiere.model.I_C_ElementValue.class);
 //	}
-//
+
 //	@Override
 //	public void setAccount(org.compiere.model.I_C_ElementValue Account)
 //	{
@@ -228,7 +210,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctCr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -250,7 +232,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctDr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -272,7 +254,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtSourceCr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -294,7 +276,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtSourceDr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -890,6 +872,40 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_Fact_Acct getCounterpart_Fact_Acct() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Counterpart_Fact_Acct_ID, org.compiere.model.I_Fact_Acct.class);
+	}
+
+	@Override
+	public void setCounterpart_Fact_Acct(org.compiere.model.I_Fact_Acct Counterpart_Fact_Acct)
+	{
+		set_ValueFromPO(COLUMNNAME_Counterpart_Fact_Acct_ID, org.compiere.model.I_Fact_Acct.class, Counterpart_Fact_Acct);
+	}
+
+	/** Set Counterpart Accounting Fact.
+		@param Counterpart_Fact_Acct_ID Counterpart Accounting Fact	  */
+	@Override
+	public void setCounterpart_Fact_Acct_ID (int Counterpart_Fact_Acct_ID)
+	{
+		if (Counterpart_Fact_Acct_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_Counterpart_Fact_Acct_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Counterpart_Fact_Acct_ID, Integer.valueOf(Counterpart_Fact_Acct_ID));
+	}
+
+	/** Get Counterpart Accounting Fact.
+		@return Counterpart Accounting Fact	  */
+	@Override
+	public int getCounterpart_Fact_Acct_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Counterpart_Fact_Acct_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Wechselkurs.
 		@param CurrencyRate 
 		Wechselkurs für Währung
@@ -908,7 +924,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrencyRate);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1037,10 +1053,8 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
 	/** CustomerContract = CON */
 	public static final String DOCBASETYPE_CustomerContract = "CON";
-	/** Set Document BaseType.
-		@param DocBaseType 
-		Logical type of document
-	  */
+	/** Set Dokument Basis Typ.
+		@param DocBaseType Dokument Basis Typ	  */
 	@Override
 	public void setDocBaseType (java.lang.String DocBaseType)
 	{
@@ -1048,9 +1062,8 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		set_Value (COLUMNNAME_DocBaseType, DocBaseType);
 	}
 
-	/** Get Document BaseType.
-		@return Logical type of document
-	  */
+	/** Get Dokument Basis Typ.
+		@return Dokument Basis Typ	  */
 	@Override
 	public java.lang.String getDocBaseType () 
 	{
@@ -1106,7 +1119,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -1116,7 +1129,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -1335,6 +1348,8 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public static final String POSTINGTYPE_Statistical = "S";
 	/** Reservation = R */
 	public static final String POSTINGTYPE_Reservation = "R";
+	/** Actual Year End = Y */
+	public static final String POSTINGTYPE_ActualYearEnd = "Y";
 	/** Set Buchungsart.
 		@param PostingType 
 		The type of posted amount for the transaction
@@ -1373,7 +1388,7 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

@@ -13,15 +13,14 @@ package de.metas.data.export.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,8 +44,13 @@ import de.metas.data.export.api.IExportDataDestination;
  * @author tsa
  * 
  */
-/* package */class CSVWriter implements IExportDataDestination
+public class CSVWriter implements IExportDataDestination
 {
+	public static CSVWriter cast(final IExportDataDestination dataDestination)
+	{
+		return (CSVWriter)dataDestination;
+	}
+
 	private Writer writer;
 
 	public static final String CONFIG_Encoding = "Encoding";

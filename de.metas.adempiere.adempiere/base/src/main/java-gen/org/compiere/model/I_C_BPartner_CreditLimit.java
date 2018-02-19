@@ -97,7 +97,7 @@ public interface I_C_BPartner_CreditLimit
 	 * Set Approved By.
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setApprovedBy_ID (int ApprovedBy_ID);
@@ -106,7 +106,7 @@ public interface I_C_BPartner_CreditLimit
 	 * Get Approved By.
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getApprovedBy_ID();
@@ -171,6 +171,33 @@ public interface I_C_BPartner_CreditLimit
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, org.compiere.model.I_C_BPartner>(I_C_BPartner_CreditLimit.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Credit Limit Type.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_CreditLimit_Type_ID (int C_CreditLimit_Type_ID);
+
+	/**
+	 * Get Credit Limit Type.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_CreditLimit_Type_ID();
+
+	public org.compiere.model.I_C_CreditLimit_Type getC_CreditLimit_Type();
+
+	public void setC_CreditLimit_Type(org.compiere.model.I_C_CreditLimit_Type C_CreditLimit_Type);
+
+    /** Column definition for C_CreditLimit_Type_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, org.compiere.model.I_C_CreditLimit_Type> COLUMN_C_CreditLimit_Type_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, org.compiere.model.I_C_CreditLimit_Type>(I_C_BPartner_CreditLimit.class, "C_CreditLimit_Type_ID", org.compiere.model.I_C_CreditLimit_Type.class);
+    /** Column name C_CreditLimit_Type_ID */
+    public static final String COLUMNNAME_C_CreditLimit_Type_ID = "C_CreditLimit_Type_ID";
 
 	/**
 	 * Set Währung.
@@ -285,29 +312,29 @@ public interface I_C_BPartner_CreditLimit
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Art.
-	 * Type of Validation (SQL, Java Script, Java Language)
+	 * Set Freigegeben.
+	 * Zeigt an, ob dieser Beleg eine Freigabe braucht
 	 *
-	 * <br>Type: List
+	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setType (java.lang.String Type);
+	public void setIsApproved (boolean IsApproved);
 
 	/**
-	 * Get Art.
-	 * Type of Validation (SQL, Java Script, Java Language)
+	 * Get Freigegeben.
+	 * Zeigt an, ob dieser Beleg eine Freigabe braucht
 	 *
-	 * <br>Type: List
+	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getType();
+	public boolean isApproved();
 
-    /** Column definition for Type */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object> COLUMN_Type = new org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object>(I_C_BPartner_CreditLimit.class, "Type", null);
-    /** Column name Type */
-    public static final String COLUMNNAME_Type = "Type";
+    /** Column definition for IsApproved */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object> COLUMN_IsApproved = new org.adempiere.model.ModelColumn<I_C_BPartner_CreditLimit, Object>(I_C_BPartner_CreditLimit.class, "IsApproved", null);
+    /** Column name IsApproved */
+    public static final String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
 	 * Get Aktualisiert.
