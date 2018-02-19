@@ -351,10 +351,17 @@ public final class MenuNode
 			return this;
 		}
 
+		public Builder setAD_Menu_ID_None()
+		{
+			this.adMenuId = 0;
+			return this;
+		}
+
 		private int getAD_Menu_ID()
 		{
 			// NOTE: tolerate adMenuId=0 because there are some case in old API where we have a MTreeNode with Node_ID=0 (usually the root)
 			// see https://github.com/metasfresh/metasfresh-webui-api/issues/446
+			// see #setAD_Menu_ID_None()
 			if (adMenuId < 0)
 			{
 				throw new AdempiereException("AD_Menu_ID not set");

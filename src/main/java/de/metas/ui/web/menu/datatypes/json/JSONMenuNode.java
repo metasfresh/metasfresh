@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.MutableInt;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -45,7 +46,14 @@ public final class JSONMenuNode implements Serializable
 	{
 		if (path == null || path.isEmpty())
 		{
-			throw new IllegalArgumentException("Invalid path");
+			throw new AdempiereException("Empty path is not valid");
+		}
+		else if (path.size() == 1)
+		{
+			final MenuNode node = path.get(0);
+			final boolean favorite = menuNodeFavoriteProvider.isFavorite(node);
+			final JSONMenuNode jsonChildNode = null;
+			return new JSONMenuNode(node, favorite, jsonChildNode);
 		}
 
 		int lastIndex = path.size() - 1;
@@ -69,7 +77,7 @@ public final class JSONMenuNode implements Serializable
 
 		if (jsonChildNode == null)
 		{
-			throw new IllegalArgumentException("Invalid path");
+			throw new AdempiereException("Invalid path: " + path);
 		}
 
 		return jsonChildNode;

@@ -181,10 +181,16 @@ public final class MenuTree
 		return getPath(node);
 	}
 
-	public List<MenuNode> getPath(final MenuNodeType type, final DocumentId elementId)
+	public Optional<List<MenuNode>> getPath(final MenuNodeType type, final DocumentId elementId)
 	{
-		final MenuNode node = getFirstNodeByElementId(type, elementId);
-		return getPath(node);
+		final MenuNode node = getFirstNodeByElementIdOrNull(type, elementId);
+		if(node == null)
+		{
+			return Optional.empty();
+		}
+		
+		final List<MenuNode> path = getPath(node);
+		return Optional.of(path);
 	}
 
 	public MenuNode getTopLevelMenuGroupOrNull(final WindowId windowId)
