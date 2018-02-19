@@ -477,7 +477,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				return false;
 			}
 
-			final String keyColumnName = zoomSource.getKeyColumnName();
+			final String keyColumnName = zoomSource.getKeyColumnNameOrNull();
 			Check.assumeNotEmpty(keyColumnName, "keyColumn is not empty for {}", zoomSource);
 
 			final StringBuilder whereClauseEffective = new StringBuilder();
