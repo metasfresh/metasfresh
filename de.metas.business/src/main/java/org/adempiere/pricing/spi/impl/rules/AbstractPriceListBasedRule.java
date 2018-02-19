@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 
-public abstract class AbstractPriceListBasedRule implements IPricingRule
+abstract class AbstractPriceListBasedRule implements IPricingRule
 {
 	protected final transient Logger log = LogManager.getLogger(getClass());
 

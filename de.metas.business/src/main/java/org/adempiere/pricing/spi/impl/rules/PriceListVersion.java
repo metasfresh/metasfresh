@@ -1,11 +1,14 @@
 package org.adempiere.pricing.spi.impl.rules;
 
+import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.IPricingContext;
 import org.adempiere.pricing.api.IPricingResult;
+import org.adempiere.util.Services;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.Env;
 
 import de.metas.pricing.ProductPrices;
 
@@ -18,22 +21,6 @@ import de.metas.pricing.ProductPrices;
 public class PriceListVersion extends AbstractPriceListBasedRule
 {
 	@Override
-	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
-	{
-		if (!super.applies(pricingCtx, result))
-		{
-			return false;
-		}
-
-		if (pricingCtx.getM_PriceList_Version_ID() <= 0)
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	@Override
 	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
 	{
 		if (!applies(pricingCtx, result))
@@ -43,8 +30,8 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 
 		final int productId = pricingCtx.getM_Product_ID();
 
-		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
-		if(plv == null || !plv.isActive())
+		final I_M_PriceList_Version plv = getPriceListVersionEffective(pricingCtx);
+		if (plv == null || !plv.isActive())
 		{
 			return;
 		}
@@ -88,5 +75,21 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		{
 			result.setPrice_UOM_ID(productPrice.getC_UOM_ID());
 		}
+	}
+
+	private I_M_PriceList_Version getPriceListVersionEffective(final IPricingContext pricingCtx)
+	{
+		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
+		if(plv != null)
+		{
+			return plv;
+		}
+		
+		return Services.get(IPriceListDAO.class).retrievePriceListVersionOrNull(Env.getCtx(),
+				pricingCtx.getM_PriceList_ID(),
+				pricingCtx.getPriceDate(),
+				(Boolean)null // processed
+		);
+
 	}
 }
