@@ -21,6 +21,7 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IView;
@@ -80,7 +81,7 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 			@NonNull final IRowsData<PackageableRow> rowsData,
 			@NonNull final PickingCandidateService pickingCandidateService)
 	{
-		super(viewId, description, rowsData);
+		super(viewId, description, rowsData, NullDocumentFilterDescriptorsProvider.instance);
 
 		this.pickingCandidateService = pickingCandidateService;
 	}

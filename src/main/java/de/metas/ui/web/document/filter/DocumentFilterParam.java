@@ -3,15 +3,19 @@ package de.metas.ui.web.document.filter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
 
 import org.adempiere.util.Check;
+import org.compiere.util.DisplayType;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -184,6 +188,21 @@ public class DocumentFilterParam
 	{
 		final Integer valueInt = convertToInt(value);
 		return valueInt != null ? valueInt : defaultValue;
+	}
+
+	public Boolean getValueAsBoolean(final Boolean defaultValue)
+	{
+		return DisplayType.toBoolean(value, defaultValue);
+	}
+
+	public Date getValueAsDate(final Date defaultValue)
+	{
+		if (value == null)
+		{
+			return defaultValue;
+		}
+
+		return JSONDate.fromObject(value, DocumentFieldWidgetType.Date);
 	}
 
 	public Collection<?> getValueAsCollection()

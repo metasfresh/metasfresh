@@ -16,6 +16,7 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -65,6 +66,8 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	@Getter
 	private final IRowsData<T> rowsData;
 
+	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
+
 	/**
 	 *
 	 * @param viewId
@@ -74,12 +77,15 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	protected AbstractCustomView(
 			@NonNull final ViewId viewId,
 			@NonNull final ITranslatableString description,
-			@NonNull final IRowsData<T> rowsData)
+			@NonNull final IRowsData<T> rowsData,
+			@NonNull final DocumentFilterDescriptorsProvider viewFilterDescriptors)
 	{
 		this.viewId = viewId;
 		this.description = description;
 
 		this.rowsData = rowsData;
+		
+		this.viewFilterDescriptors = viewFilterDescriptors;
 	}
 
 	@Override
@@ -158,7 +164,10 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
-		throw new UnsupportedOperationException();
+		return viewFilterDescriptors.getByFilterId(filterId)
+				.getParameterByName(filterParameterName)
+				.getLookupDataSource()
+				.findEntities(ctx);
 	}
 
 	/**
@@ -167,7 +176,10 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	@Override
 	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
-		throw new UnsupportedOperationException();
+		return viewFilterDescriptors.getByFilterId(filterId)
+				.getParameterByName(filterParameterName)
+				.getLookupDataSource()
+				.findEntities(ctx, query);
 	}
 
 	/**

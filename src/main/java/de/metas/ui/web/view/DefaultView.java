@@ -107,7 +107,7 @@ public final class DefaultView implements IEditableView
 
 	//
 	// Filters
-	private final transient DocumentFilterDescriptorsProvider viewFilterDescriptors;
+	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	/** Sticky filters (i.e. active filters which cannot be changed) */
 	private final ImmutableList<DocumentFilter> stickyFilters;
 	/** Regular filters */

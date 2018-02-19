@@ -1,17 +1,20 @@
 package de.metas.ui.web.material.cockpit.filters;
 
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.StringLikeFilter;
-import org.adempiere.model.ModelColumn;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -19,18 +22,18 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor.Builder;
 import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.CreateViewRequest;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import lombok.NonNull;
 
 /*
@@ -59,14 +62,11 @@ import lombok.NonNull;
 public class MaterialCockpitFilters
 {
 	private static final String MSG_PRODUCT = "Product";
-	private static final String MATERIAL_COCKPIT_ALL_PARAMS_FILTER = "materialCockpitAllParamsFilter";
-
 	private static final String MSG_DATE = "Date";
-	private static final String MATERIAL_COCKPIT_DATE_ONLY_FILTER = "materialCockpitDateOnlyFilter";
 
-	private ImmutableList<DocumentFilterDescriptor> filterDescriptors;
+	private DocumentFilterDescriptorsProvider filterDescriptors;
 
-	public List<DocumentFilterDescriptor> getFilterDescriptors()
+	public DocumentFilterDescriptorsProvider getFilterDescriptors()
 	{
 		if (filterDescriptors == null)
 		{
@@ -75,68 +75,82 @@ public class MaterialCockpitFilters
 		return filterDescriptors;
 	}
 
-	private ImmutableList<DocumentFilterDescriptor> createFilterDescriptors()
+	private DocumentFilterDescriptorsProvider createFilterDescriptors()
 	{
 		final DocumentFilterDescriptor dateOnlyfilter = createDateOnlyFilter();
 		final DocumentFilterDescriptor nonParamsFilter = createAllParamsFilter();
-
-		final ImmutableList<DocumentFilterDescriptor> filterDescriptors = ImmutableList.of(
-				dateOnlyfilter,
-				nonParamsFilter);
-		return filterDescriptors;
+		return ImmutableDocumentFilterDescriptorsProvider.of(dateOnlyfilter, nonParamsFilter);
 	}
 
 	private DocumentFilterDescriptor createDateOnlyFilter()
 	{
-		final Builder standaloneParamDescriptor = DocumentFilterParamDescriptor.builder()
-				.setFieldName(I_MD_Cockpit.COLUMNNAME_DateGeneral)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_DateGeneral))
+		final DocumentFilterParamDescriptor.Builder standaloneParamDescriptor = DocumentFilterParamDescriptor.builder()
+				.setFieldName(DateFilterVO.PARAM_Date)
+				.setDisplayName(Services.get(IMsgBL.class).translatable(DateFilterVO.PARAM_Date))
 				.setWidgetType(DocumentFieldWidgetType.Date)
 				.setOperator(Operator.EQUAL)
 				.setMandatory(true)
 				.setShowIncrementDecrementButtons(true);
 
-		final de.metas.ui.web.document.filter.DocumentFilterDescriptor dateOnlyfilterDescriptor = DocumentFilterDescriptor.builder()
+		return DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)
-				.setFilterId(MATERIAL_COCKPIT_DATE_ONLY_FILTER)
+				.setFilterId(DateFilterVO.FILTER_ID)
 				.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_DATE))
 				.addParameter(standaloneParamDescriptor)
 				.build();
-		return dateOnlyfilterDescriptor;
 	}
 
 	private DocumentFilterDescriptor createAllParamsFilter()
 	{
-		final Builder productNameParameter = DocumentFilterParamDescriptor.builder()
-				.setFieldName(I_MD_Cockpit.COLUMNNAME_ProductName)
+		final DocumentFilterParamDescriptor.Builder productNameParameter = DocumentFilterParamDescriptor.builder()
+				.setFieldName(ProductFilterVO.PARAM_ProductName)
 				.setDisplayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_ProductName))
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setOperator(Operator.LIKE_I);
 
-		final Builder productValueParameter = DocumentFilterParamDescriptor.builder()
+		final DocumentFilterParamDescriptor.Builder productValueParameter = DocumentFilterParamDescriptor.builder()
 				.setFieldName(I_MD_Cockpit.COLUMNNAME_ProductValue)
 				.setDisplayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_ProductValue))
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setOperator(Operator.LIKE_I);
 
-		final DocumentFilterDescriptor filterDescriptor = DocumentFilterDescriptor.builder()
+		final DocumentFilterParamDescriptor.Builder productCategoryParameter = DocumentFilterParamDescriptor.builder()
+				.setFieldName(I_MD_Cockpit.COLUMNNAME_M_Product_Category_ID)
+				.setDisplayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_M_Product_Category_ID))
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Product_Category.Table_Name).provideForScope(LookupScope.DocumentFilter))
+				.setOperator(Operator.EQUAL);
+
+		final DocumentFilterParamDescriptor.Builder isPurchasedParameter = DocumentFilterParamDescriptor.builder()
+				.setFieldName(I_M_Product.COLUMNNAME_IsPurchased)
+				.setDisplayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_IsPurchased))
+				.setWidgetType(DocumentFieldWidgetType.YesNo)
+				.setOperator(Operator.EQUAL);
+
+		final DocumentFilterParamDescriptor.Builder isSoldParameter = DocumentFilterParamDescriptor.builder()
+				.setFieldName(I_M_Product.COLUMNNAME_IsSold)
+				.setDisplayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_IsSold))
+				.setWidgetType(DocumentFieldWidgetType.YesNo)
+				.setOperator(Operator.EQUAL);
+
+		return DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)
-				.setFilterId(MATERIAL_COCKPIT_ALL_PARAMS_FILTER)
+				.setFilterId(ProductFilterVO.FILTER_ID)
 				.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_PRODUCT))
 				.addParameter(productNameParameter)
 				.addParameter(productValueParameter)
+				.addParameter(productCategoryParameter)
+				.addParameter(isPurchasedParameter)
+				.addParameter(isSoldParameter)
 				.build();
-		return filterDescriptor;
 	}
 
 	public ImmutableList<DocumentFilter> createAutoFilters()
 	{
-		final String columnName = I_MD_Cockpit.COLUMNNAME_DateGeneral;
-		final ITranslatableString filterCaption = Services.get(IMsgBL.class).translatable(columnName);
 		final DocumentFilter dateFilter = DocumentFilter.builder()
-				.setFilterId(MATERIAL_COCKPIT_DATE_ONLY_FILTER)
-				.setCaption(filterCaption)
-				.addParameter(DocumentFilterParam.ofNameOperatorValue(columnName, Operator.EQUAL, Env.getDate(Env.getCtx())))
+				.setFilterId(DateFilterVO.FILTER_ID)
+				.setCaption(Services.get(IMsgBL.class).translatable(DateFilterVO.PARAM_Date))
+				.addParameter(DocumentFilterParam.ofNameOperatorValue(DateFilterVO.PARAM_Date, Operator.EQUAL, Env.getDate(Env.getCtx())))
 				.build();
 
 		return ImmutableList.of(dateFilter);
@@ -144,8 +158,7 @@ public class MaterialCockpitFilters
 
 	public ImmutableList<DocumentFilter> extractDocumentFilters(@NonNull final CreateViewRequest request)
 	{
-		final ImmutableDocumentFilterDescriptorsProvider provider = ImmutableDocumentFilterDescriptorsProvider
-				.of(getFilterDescriptors());
+		final DocumentFilterDescriptorsProvider provider = getFilterDescriptors();
 		final List<DocumentFilter> filters = request.getOrUnwrapFilters(provider);
 		return ImmutableList.copyOf(filters);
 	}
@@ -155,23 +168,25 @@ public class MaterialCockpitFilters
 		final IQueryBuilder<I_MD_Cockpit> queryBuilder = createInitialQueryBuilder();
 
 		boolean anyRestrictionAdded = false;
-		for (final DocumentFilter filter : filters)
+		if (augmentQueryBuilder(queryBuilder, extractDateFilterVO(filters)))
 		{
-			final List<DocumentFilterParam> filterParameters = filter.getParameters();
-			for (final DocumentFilterParam filterParameter : filterParameters)
-			{
-				augmentQueryBuilderWithFilterParam(queryBuilder, filterParameter);
-				anyRestrictionAdded = true;
-			}
+			anyRestrictionAdded = true;
 		}
-		if (anyRestrictionAdded)
+		if (augmentQueryBuilder(queryBuilder, extractProductFilterVO(filters)))
 		{
-			final IQuery<I_MD_Cockpit> query = augmentqueryBuildWithOrderBy(queryBuilder).create();
-			return query;
+			anyRestrictionAdded = true;
 		}
 
-		// avoid memory problems in case the filters are accidentally empty
-		return queryBuilder.filter(ConstantQueryFilter.of(false)).create();
+		if (anyRestrictionAdded)
+		{
+			final IQuery<I_MD_Cockpit> query = augmentQueryBuilderWithOrderBy(queryBuilder).create();
+			return query;
+		}
+		else
+		{
+			// avoid memory problems in case the filters are accidentally empty
+			return queryBuilder.filter(ConstantQueryFilter.of(false)).create();
+		}
 	}
 
 	private IQueryBuilder<I_MD_Cockpit> createInitialQueryBuilder()
@@ -184,56 +199,85 @@ public class MaterialCockpitFilters
 		return queryBuilder;
 	}
 
-	private void augmentQueryBuilderWithFilterParam(
-			@NonNull final IQueryBuilder<I_MD_Cockpit> queryBuilder,
-			@NonNull final DocumentFilterParam filterParameter)
+	private boolean augmentQueryBuilder(final IQueryBuilder<I_MD_Cockpit> queryBuilder, final DateFilterVO dateFilterVO)
 	{
-		final String fieldName = filterParameter.getFieldName();
-		final Object value = filterParameter.getValue();
-		if (I_MD_Cockpit.COLUMNNAME_DateGeneral.equals(fieldName))
+		if (dateFilterVO == null)
 		{
-			addDateToQueryBuilder(value, queryBuilder);
+			return false;
 		}
-		else if (I_MD_Cockpit.COLUMNNAME_ProductName.equals(fieldName))
-		{
-			final String productName = (String)value;
-			addLikeFilterToQueryBuilder(I_M_Product.COLUMN_Name, productName, queryBuilder);
-		}
-		else if (I_MD_Cockpit.COLUMNNAME_ProductValue.equals(fieldName))
-		{
-			final String productValue = (String)value;
-			addLikeFilterToQueryBuilder(I_M_Product.COLUMN_Value, productValue, queryBuilder);
-		}
-	}
 
-	private void addDateToQueryBuilder(
-			@NonNull final Object value,
-			@NonNull final IQueryBuilder<I_MD_Cockpit> queryBuilder)
-	{
-		final Date date = JSONDate.fromObject(value, DocumentFieldWidgetType.Date);
+		final Date date = dateFilterVO.getDate();
+		if (date == null)
+		{
+			return false;
+		}
 
 		final Timestamp dayTimestamp = TimeUtil.getDay(date);
-		queryBuilder.addCompareFilter(I_MD_Cockpit.COLUMN_DateGeneral, org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.GREATER_OR_EQUAL, dayTimestamp);
-		queryBuilder.addCompareFilter(I_MD_Cockpit.COLUMN_DateGeneral, org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS, TimeUtil.addDays(dayTimestamp, 1));
+		queryBuilder.addCompareFilter(I_MD_Cockpit.COLUMN_DateGeneral, CompareQueryFilter.Operator.GREATER_OR_EQUAL, dayTimestamp);
+		queryBuilder.addCompareFilter(I_MD_Cockpit.COLUMN_DateGeneral, CompareQueryFilter.Operator.LESS, TimeUtil.addDays(dayTimestamp, 1));
+
+		return true;
 	}
 
-	private void addLikeFilterToQueryBuilder(
-			@NonNull final ModelColumn<I_M_Product, Object> column,
-			@NonNull final String value,
-			@NonNull final IQueryBuilder<I_MD_Cockpit> queryBuilder)
+	private boolean augmentQueryBuilder(final IQueryBuilder<I_MD_Cockpit> queryBuilder, final ProductFilterVO productFilterVO)
 	{
+		if (productFilterVO == null)
+		{
+			return false;
+		}
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<I_M_Product> productQuery = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter();
+		boolean anyRestrictionAdded = false;
 
-		final IQuery<I_M_Product> productByValueQuery = queryBL.createQueryBuilder(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addStringLikeFilter(column, value, true)
-				.create();
+		final String productName = productFilterVO.getProductName();
+		if (!Check.isEmpty(productName, true))
+		{
+			final boolean ignoreCase = true;
+			productQuery.addStringLikeFilter(I_M_Product.COLUMN_Name, productName, ignoreCase);
+			anyRestrictionAdded = true;
+		}
 
-		queryBuilder.addInSubQueryFilter(I_MD_Cockpit.COLUMN_M_Product_ID, I_M_Product.COLUMN_M_Product_ID, productByValueQuery);
+		final String productValue = productFilterVO.getProductValue();
+		if (!Check.isEmpty(productValue, true))
+		{
+			final boolean ignoreCase = true;
+			productQuery.addStringLikeFilter(I_M_Product.COLUMN_Value, productValue, ignoreCase);
+			anyRestrictionAdded = true;
+		}
+
+		final int productCategoryId = productFilterVO.getProductCategoryId();
+		if (productCategoryId > 0)
+		{
+			productQuery.addEqualsFilter(I_M_Product.COLUMN_M_Product_Category_ID, productCategoryId);
+			anyRestrictionAdded = true;
+		}
+
+		final Boolean isPurchased = productFilterVO.getIsPurchased();
+		if (isPurchased != null)
+		{
+			productQuery.addEqualsFilter(I_M_Product.COLUMN_IsPurchased, isPurchased);
+			anyRestrictionAdded = true;
+		}
+
+		final Boolean isSold = productFilterVO.getIsSold();
+		if (isSold != null)
+		{
+			productQuery.addEqualsFilter(I_M_Product.COLUMN_IsSold, isSold);
+			anyRestrictionAdded = true;
+		}
+
+		//
+		if (!anyRestrictionAdded)
+		{
+			return false;
+		}
+		queryBuilder.addInSubQueryFilter(I_MD_Cockpit.COLUMN_M_Product_ID, I_M_Product.COLUMN_M_Product_ID, productQuery.create());
+		return true;
 	}
 
-	private IQueryBuilder<I_MD_Cockpit> augmentqueryBuildWithOrderBy(
-			@NonNull final IQueryBuilder<I_MD_Cockpit> queryBuilder)
+	private IQueryBuilder<I_MD_Cockpit> augmentQueryBuilderWithOrderBy(@NonNull final IQueryBuilder<I_MD_Cockpit> queryBuilder)
 	{
 		return queryBuilder
 				.orderBy()
@@ -247,111 +291,131 @@ public class MaterialCockpitFilters
 			@NonNull final I_M_Product product,
 			@NonNull final List<DocumentFilter> filters)
 	{
-		for (final DocumentFilter filter : filters)
-		{
-			if (!doesProductMatchFilter(product, filter))
-			{
-				return false;
-			}
-		}
-		return true;
+		final ProductFilterVO productFilterVO = extractProductFilterVO(filters);
+		return doesProductMatchFilter(product, productFilterVO);
 	}
 
 	private boolean doesProductMatchFilter(
 			@NonNull final I_M_Product product,
-			@NonNull final DocumentFilter filter)
+			@NonNull final ProductFilterVO filterVO)
 	{
-		if (MATERIAL_COCKPIT_DATE_ONLY_FILTER.equals(filter.getFilterId()))
-		{
-			return true;
-		}
+		final boolean ignoreCase = true;
 
-		final List<DocumentFilterParam> filterParameters = filter.getParameters();
-		for (final DocumentFilterParam filterParameter : filterParameters)
+		// ProductName
+		final String productName = filterVO.getProductName();
+		if (!Check.isEmpty(productName, true))
 		{
-			if (!doesProductMatchFilterParam(product, filterParameter))
+			final StringLikeFilter<I_M_Product> likeFilter = new StringLikeFilter<>(I_M_Product.COLUMNNAME_Name, productName, ignoreCase);
+			if (!likeFilter.accept(product))
 			{
 				return false;
 			}
 		}
+
+		// ProductValue
+		final String productValue = filterVO.getProductValue();
+		if (!Check.isEmpty(productValue, true))
+		{
+			final StringLikeFilter<I_M_Product> likeFilter = new StringLikeFilter<>(I_M_Product.COLUMNNAME_Value, productValue, ignoreCase);
+			if (!likeFilter.accept(product))
+			{
+				return false;
+			}
+		}
+
+		// Product Category
+		if (filterVO.getProductCategoryId() > 0 && product.getM_Product_Category_ID() != filterVO.getProductCategoryId())
+		{
+			return false;
+		}
+
+		// IsPurchase
+		if (filterVO.getIsPurchased() != null && filterVO.getIsPurchased() != product.isPurchased())
+		{
+			return false;
+		}
+
+		// IsSold
+		if (filterVO.getIsSold() != null && filterVO.getIsSold() != product.isSold())
+		{
+			return false;
+		}
+
 		return true;
 	}
 
-	private boolean doesProductMatchFilterParam(
-			@NonNull final I_M_Product product,
-			@NonNull final DocumentFilterParam filterParameter)
+	private ProductFilterVO extractProductFilterVO(final Collection<DocumentFilter> filters)
 	{
-		if (I_MD_Cockpit.COLUMNNAME_ProductName.equals(filterParameter.getFieldName()))
-		{
-			return doesProductNameMatchFilterParam(product, filterParameter);
-		}
-		else if (I_MD_Cockpit.COLUMNNAME_ProductValue.equals(filterParameter.getFieldName()))
-		{
-			return doesProductValueMatchFilterParam(product, filterParameter);
-		}
-		return true;
+		return filters.stream()
+				.filter(filter -> ProductFilterVO.FILTER_ID.equals(filter.getFilterId()))
+				.map(this::extractProductFilterVO)
+				.findFirst()
+				.orElse(ProductFilterVO.EMPTY);
 	}
 
-	private boolean doesProductNameMatchFilterParam(
-			@NonNull final I_M_Product product,
-			@NonNull final DocumentFilterParam filterParameter)
+	private ProductFilterVO extractProductFilterVO(final DocumentFilter filter)
 	{
-		final boolean ignoreCase = true;
-		final StringLikeFilter<I_M_Product> likeFilter = new StringLikeFilter<>(I_M_Product.COLUMNNAME_Name, filterParameter.getValueAsString(), ignoreCase);
+		Check.assume(ProductFilterVO.FILTER_ID.equals(filter.getFilterId()), "Filter ID is {} but it was {}", ProductFilterVO.FILTER_ID, filter);
 
-		return likeFilter.accept(product);
+		return ProductFilterVO.builder()
+				.productName(filter.getParameterValueAsString(ProductFilterVO.PARAM_ProductName, null))
+				.productValue(filter.getParameterValueAsString(ProductFilterVO.PARAM_ProductValue, null))
+				.productCategoryId(filter.getParameterValueAsInt(ProductFilterVO.PARAM_M_Product_Category_ID, -1))
+				.isPurchased(filter.getParameterValueAsBoolean(ProductFilterVO.PARAM_IsPurchased, null))
+				.isSold(filter.getParameterValueAsBoolean(ProductFilterVO.PARAM_IsSold, null))
+				.build();
 	}
 
-	private boolean doesProductValueMatchFilterParam(
-			@NonNull final I_M_Product product,
-			@NonNull final DocumentFilterParam filterParameter)
+	public DateFilterVO extractDateFilterVO(final Collection<DocumentFilter> filters)
 	{
-		final boolean ignoreCase = true;
-		final StringLikeFilter<I_M_Product> likeFilter = new StringLikeFilter<>(I_M_Product.COLUMNNAME_Value, filterParameter.getValueAsString(), ignoreCase);
-
-		return likeFilter.accept(product);
+		return filters.stream()
+				.filter(filter -> DateFilterVO.FILTER_ID.equals(filter.getFilterId()))
+				.map(this::extractDateFilterVO)
+				.findFirst()
+				.orElse(DateFilterVO.EMPTY);
 	}
 
-	public Timestamp extractDateOrNull(@NonNull final List<DocumentFilter> filters)
+	private DateFilterVO extractDateFilterVO(final DocumentFilter filter)
 	{
-		for (final DocumentFilter filter : filters)
-		{
-			final Timestamp dateOrNull = extractDateOrNullFromFilter(filter);
-			if (dateOrNull != null)
-			{
-				return dateOrNull;
-			}
-		}
-		return null;
+		Check.assume(DateFilterVO.FILTER_ID.equals(filter.getFilterId()), "Filter ID is {} but it was {}", DateFilterVO.FILTER_ID, filter);
+		return DateFilterVO.builder()
+				.date(filter.getParameterValueAsDate(DateFilterVO.PARAM_Date, null))
+				.build();
 	}
 
-	public Timestamp extractDateOrNullFromFilter(@NonNull final DocumentFilter filter)
+	@lombok.Value
+	@lombok.Builder
+	public static class DateFilterVO
 	{
-		if (!MATERIAL_COCKPIT_DATE_ONLY_FILTER.equals(filter.getFilterId()))
-		{
-			return null;
-		}
+		public static final DateFilterVO EMPTY = DateFilterVO.builder().build();
 
-		final List<DocumentFilterParam> dateFilterParameters = filter.getParameters();
-		for (final DocumentFilterParam dateFilterParameter : dateFilterParameters)
-		{
-			final Timestamp dateOrNull = extractDateOrNullFromParam(dateFilterParameter);
-			if (dateOrNull != null)
-			{
-				return dateOrNull;
-			}
-		}
-		return null;
+		private static final String FILTER_ID = "materialCockpitDateOnlyFilter";
+
+		public static final String PARAM_Date = I_MD_Cockpit.COLUMNNAME_DateGeneral;
+		Date date;
 	}
 
-	public Timestamp extractDateOrNullFromParam(@NonNull final DocumentFilterParam dateFilterParameter)
+	@lombok.Value
+	@lombok.Builder
+	private static class ProductFilterVO
 	{
-		if (!I_MD_Cockpit.COLUMNNAME_DateGeneral.equals(dateFilterParameter.getFieldName()))
-		{
-			return null;
-		}
-		final Object value = dateFilterParameter.getValue();
-		final Date date = JSONDate.fromObject(value, DocumentFieldWidgetType.Date);
-		return new Timestamp(date.getTime());
+		public static final ProductFilterVO EMPTY = builder().build();
+
+		public static final String FILTER_ID = "materialCockpitAllParamsFilter";
+
+		public static final String PARAM_ProductValue = I_MD_Cockpit.COLUMNNAME_ProductValue;
+		String productValue;
+
+		public static final String PARAM_ProductName = I_MD_Cockpit.COLUMNNAME_ProductName;
+		String productName;
+
+		public static final String PARAM_M_Product_Category_ID = I_M_Product.COLUMNNAME_M_Product_Category_ID;
+		int productCategoryId;
+
+		public static final String PARAM_IsPurchased = I_M_Product.COLUMNNAME_IsPurchased;
+		Boolean isPurchased;
+
+		public static final String PARAM_IsSold = I_M_Product.COLUMNNAME_IsSold;
+		Boolean isSold;
 	}
 }

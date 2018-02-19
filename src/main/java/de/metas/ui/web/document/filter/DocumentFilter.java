@@ -2,6 +2,7 @@ package de.metas.ui.web.document.filter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -129,26 +130,63 @@ public final class DocumentFilter
 				.orElseThrow(() -> new IllegalArgumentException("Parameter " + parameterName + " not found in " + this));
 	}
 
+	public DocumentFilterParam getParameterOrNull(@NonNull final String parameterName)
+	{
+		return parameters
+				.stream()
+				.filter(param -> parameterName.equals(param.getFieldName()))
+				.findFirst()
+				.orElse(null);
+	}
+
 	public String getParameterValueAsString(@NonNull final String parameterName)
 	{
-		final DocumentFilterParam barcodeParam = getParameter(parameterName);
-		if (barcodeParam == null)
+		final DocumentFilterParam param = getParameter(parameterName);
+		return param.getValueAsString();
+	}
+
+	public String getParameterValueAsString(@NonNull final String parameterName, final String defaultValue)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
 		{
 			return null;
 		}
 
-		return barcodeParam.getValueAsString();
+		return param.getValueAsString();
 	}
 
 	public int getParameterValueAsInt(@NonNull final String parameterName, final int defaultValue)
 	{
-		final DocumentFilterParam barcodeParam = getParameter(parameterName);
-		if (barcodeParam == null)
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
 		{
 			return defaultValue;
 		}
 
-		return barcodeParam.getValueAsInt(defaultValue);
+		return param.getValueAsInt(defaultValue);
+	}
+
+	public Boolean getParameterValueAsBoolean(@NonNull final String parameterName, final Boolean defaultValue)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return defaultValue;
+		}
+
+		return param.getValueAsBoolean(defaultValue);
+	}
+
+	public Date getParameterValueAsDate(@NonNull final String parameterName, final Date defaultValue)
+	{
+		final DocumentFilterParam param = getParameterOrNull(parameterName);
+		if (param == null)
+		{
+			return defaultValue;
+		}
+
+		return param.getValueAsDate(defaultValue);
 	}
 
 	public static final class Builder
