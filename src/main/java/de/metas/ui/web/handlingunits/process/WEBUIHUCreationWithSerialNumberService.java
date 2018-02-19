@@ -11,7 +11,9 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.ISerialNoDAO;
 import org.adempiere.model.IContextAware;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -30,6 +32,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorView;
+import de.metas.ui.web.window.model.DocumentCollection;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -55,24 +61,29 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 
 public class WEBUIHUCreationWithSerialNumberService
 {
-
-	public static WEBUIHUCreationWithSerialNumberService newInstance()
-	{
-		return new WEBUIHUCreationWithSerialNumberService();
-	}
-
+	// Services
+	private final DocumentCollection documentCollections;
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ISerialNoDAO serialNoDAO = Services.get(ISerialNoDAO.class);
+
+	private final HUEditorView view;
 
 	private final Set<Integer> huIDsChanged = new HashSet<>();
 	private final Set<Integer> huIDsAdded = new HashSet<>();
 	private final Set<Integer> huIDsToRemove = new HashSet<>();
-	
+
+	@Builder
+	private WEBUIHUCreationWithSerialNumberService(
+			@NonNull final DocumentCollection documentCollections,
+			@NonNull HUEditorView view)
+	{
+		this.documentCollections = documentCollections;
+		this.view = view;
+	}
+
 	public final WebuiHUTransformCommandResult action_CreateCUs_With_SerialNumbers(final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy, final List<String> availableSerialNumbers)
 	{
 		final HUEditorRow selectedCuRow = huEditorRowHierarchy.getCuRow();
-
-	
 
 		final int qtyCU = selectedCuRow.getQtyCU().intValueExact();
 		if (qtyCU == 1)
@@ -200,10 +211,10 @@ public class WEBUIHUCreationWithSerialNumberService
 				final I_M_HU_PI_Item luPIItem = oldLU.getM_HU_LUTU_Configuration().getM_LU_HU_PI_Item();
 
 				final List<I_M_HU> tuToNewLUs = newHUTransformation().tuToNewLUs(newTU, BigDecimal.ONE, luPIItem, false);
-				
+
 				huIDsToRemove.add(oldLU.getM_HU_ID());
 				huIDsAdded.add(tuToNewLUs.get(0).getM_HU_ID());
-				
+
 			}
 			else
 			{
@@ -274,6 +285,23 @@ public class WEBUIHUCreationWithSerialNumberService
 	private final HUTransformService newHUTransformation()
 	{
 		return HUTransformService.builder()
+				.referencedObjects(getContextDocumentLines())
 				.build();
+	}
+
+	/**
+	 * @return context document/lines (e.g. the receipt schedules)
+	 */
+	private List<TableRecordReference> getContextDocumentLines()
+	{
+		if (view == null)
+		{
+			return ImmutableList.of();
+		}
+
+		return view.getReferencingDocumentPaths()
+				.stream()
+				.map(referencingDocumentPath -> documentCollections.getTableRecordReference(referencingDocumentPath))
+				.collect(GuavaCollectors.toImmutableList());
 	}
 }
