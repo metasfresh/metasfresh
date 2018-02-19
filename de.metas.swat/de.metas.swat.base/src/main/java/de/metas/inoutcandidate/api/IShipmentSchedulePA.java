@@ -34,6 +34,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
@@ -303,7 +304,7 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	/**
 	 * Retrieve all the Shipment Schedules that the given invoice candidate is based on.
-	 * 
+	 *
 	 * @param candidate
 	 * @return
 	 */
@@ -311,9 +312,11 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	/**
 	 * Retrieve all the SHipment Schedules that the given inout line is based on
-	 * 
+	 *
 	 * @param inoutLine
 	 * @return
 	 */
 	Set<I_M_ShipmentSchedule> retrieveForInOutLine(de.metas.inout.model.I_M_InOutLine inoutLine);
+
+	void deleteAllForReference(TableRecordReference referencedRecord);
 }

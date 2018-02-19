@@ -23,7 +23,7 @@ public class ShipmentScheduleReferencedLineFactory
 	@Autowired
 	public void registerProviders(@NonNull final Collection<ShipmentScheduleReferencedLineProvider> providers)
 	{
-		for (ShipmentScheduleReferencedLineProvider provider : providers)
+		for (final ShipmentScheduleReferencedLineProvider provider : providers)
 		{
 			this.providers.put(provider.getTableName(), provider);
 		}
@@ -31,7 +31,7 @@ public class ShipmentScheduleReferencedLineFactory
 
 	/**
 	 * May not be {@code null}
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 * @return
 	 * @throws UnsupportedShipmentScheduleTableId if no {@link ShipmentScheduleReferencedLineProvider} is available for the given {@code shipmentSchedule}'s {@code AD_Table_ID}.
@@ -50,7 +50,7 @@ public class ShipmentScheduleReferencedLineFactory
 
 	/**
 	 * See {@link ShipmentScheduleReferencedLineFactory#createFor(I_M_ShipmentSchedule)}.
-	 * 
+	 *
 	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
