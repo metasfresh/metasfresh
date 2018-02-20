@@ -203,15 +203,15 @@ class DocumentList extends Component {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
             const rows = mergeRows({
-              toRows: [ ...this.state.data.result ],
-              fromRows: [ ...response.data ],
+              toRows: [...this.state.data.result],
+              fromRows: [...response.data],
               columnInfosByFieldName: this.state.pageColumnInfosByFieldName,
             });
 
             this.setState({
               data: {
                 ...this.state.data,
-                result: [ ...rows ],
+                result: [...rows],
               },
             });
           }
@@ -221,11 +221,7 @@ class DocumentList extends Component {
       if (fullyChanged == true) {
         const { dispatch, windowType, selections } = this.props;
         const { viewId } = this.state;
-        const selection = getSelectionDirect(
-          selections,
-          windowType,
-          viewId,
-        );
+        const selection = getSelectionDirect(selections, windowType, viewId);
 
         // Reload Attributes after QuickAction is done
         selection.length &&
@@ -261,7 +257,7 @@ class DocumentList extends Component {
   /**
    * load supportAttribute of the selected row from the table
    */
-  loadSupportAttributeFlag = props => {
+  loadSupportAttributeFlag = () => {
     const { selected } = this.getSelected();
     const { data } = this.state;
     if (!data) {
@@ -276,13 +272,9 @@ class DocumentList extends Component {
     }
   };
 
-  doesSelectionExist({ data, selected, hasIncluded = false, type } = {}) {
+  doesSelectionExist({ data, selected, hasIncluded = false } = {}) {
     // When the rows are changing we should ensure
     // that selection still exist
-    // if (type === 'includedView') {
-    //   console.log('doesSelectionExist1: ', data.size, selected, hasIncluded)
-    // }
-
     if (hasIncluded) {
       return true;
     }
@@ -338,12 +330,9 @@ class DocumentList extends Component {
       type,
       viewProfileId,
       setModalTitle,
-      setNotFound,
-      dispatch
+      setNotFound
     } = this.props;
-
     const { viewId } = this.state;
-
 
     getViewLayout(windowType, type, viewProfileId)
       .then(response => {
@@ -402,7 +391,6 @@ class DocumentList extends Component {
       refId,
       refTabId,
       refRowIds,
-      dispatch,
     } = this.props;
     const { page, sort, filters } = this.state;
 
@@ -449,7 +437,6 @@ class DocumentList extends Component {
    * Loads view/included tab data from REST endpoint
    */
   getData = (id, page, sortingQuery) => {
-    const { store } = this.context;
     const {
       dispatch,
       windowType,
@@ -479,11 +466,7 @@ class DocumentList extends Component {
       pageLength: this.pageLength,
       orderBy: sortingQuery,
     }).then(response => {
-      const selection = getSelectionDirect(
-        selections,
-        windowType,
-        viewId,
-      );
+      const selection = getSelectionDirect(selections, windowType, viewId);
       const forceSelection =
         (type === 'includedView' || isIncluded) &&
         response.data &&
@@ -644,31 +627,24 @@ class DocumentList extends Component {
     const { viewId } = this.state;
 
     return {
-      selected: getSelectionDirect(
-        selections,
-        windowType: windowType,
-        viewId: viewId,
-      ),
+      selected: getSelectionDirect(selections, windowType, viewId),
       childSelected:
         includedView && includedView.windowType
           ? getSelectionDirect(
               selections,
-              windowType: includedView.windowType,
-              viewId: includedView.viewId,
+              includedView.windowType,
+              includedView.viewId
             )
           : NO_SELECTION,
       parentSelected: parentWindowType
-        ? getSelectionDirect(
-            selections,
-            windowType: parentWindowType,
-            viewId: parentDefaultViewId,
-          )
+        ? getSelectionDirect(selections, parentWindowType, parentDefaultViewId)
         : NO_SELECTION,
-    }
-  }
+    };
+  };
 
   render() {
-    const { windowType,
+    const {
+      windowType,
       open,
       closeOverlays,
       parentDefaultViewId,
@@ -684,7 +660,6 @@ class DocumentList extends Component {
       disconnectFromState,
       autofocus,
       inModal,
-      type,
       updateParentSelectedIds,
     } = this.props;
 
@@ -713,9 +688,6 @@ class DocumentList extends Component {
       data,
       selected,
       hasIncluded,
-      type,
-      childSelected,
-      parentSelected,
     });
     const blurWhenOpen =
       layout && layout.includedView && layout.includedView.blurWhenOpen;
@@ -854,17 +826,15 @@ class DocumentList extends Component {
                 isModal,
                 hasIncluded,
                 viewId,
-                windowType
-              }}
-            >
+                windowType,
+              }}>
               {layout.supportAttributes &&
                 !isIncluded &&
                 !hasIncluded && (
                   <DataLayoutWrapper
                     className="table-flex-wrapper attributes-selector js-not-unselect"
                     entity="documentView"
-                    {...{ windowType, viewId }}
-                  >
+                    {...{ windowType, viewId }}>
                     <SelectionAttributes
                       supportAttribute={this.supportAttribute}
                       setClickOutsideLock={this.setClickOutsideLock}
@@ -883,8 +853,8 @@ class DocumentList extends Component {
   }
 }
 
-const mapStateToProps = ({ windowHandler }, props) => ({
-  selections: windowHandler.selections
+const mapStateToProps = ({ windowHandler }) => ({
+  selections: windowHandler.selections,
 });
 
 export default connect(mapStateToProps, null, null, { withRef: true })(
