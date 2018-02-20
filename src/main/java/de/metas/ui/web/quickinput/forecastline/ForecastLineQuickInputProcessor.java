@@ -123,7 +123,7 @@ public class ForecastLineQuickInputProcessor implements IQuickInputProcessor
 		{
 			throw new AdempiereException("Qty shall be greather than zero");
 		}
-		if (huPackingAware.getQtyPacks() == null || huPackingAware.getQtyPacks().signum() <= 0)
+		if (huPackingAware.getQtyTU() == null || huPackingAware.getQtyTU().signum() <= 0)
 		{
 			throw new AdempiereException("QtyTU shall be greather than zero");
 		}
