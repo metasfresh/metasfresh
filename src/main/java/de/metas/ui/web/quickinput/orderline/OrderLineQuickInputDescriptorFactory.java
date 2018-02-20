@@ -113,7 +113,7 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptorProvider(ProductLookupDescriptor.builderWithStockInfo()
 						.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
-						.availableStockDateParamName(I_C_Order.COLUMNNAME_DatePromised)
+						.availableStockDateParamName(I_C_Order.COLUMNNAME_PreparationDate)
 						.pricingDateParamName(I_C_Order.COLUMNNAME_PreparationDate)
 						.availableStockService(availableStockService)
 						.build())
