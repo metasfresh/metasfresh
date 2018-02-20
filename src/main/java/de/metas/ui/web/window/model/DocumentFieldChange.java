@@ -15,6 +15,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -29,11 +30,11 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -82,8 +83,9 @@ public final class DocumentFieldChange
 	//
 	private DocumentValidStatus validStatus;
 
-	private Map<String, Object> debugProperties;
+	private DocumentFieldWarning fieldWarning;
 
+	private Map<String, Object> debugProperties;
 
 	private DocumentFieldChange(final String fieldName, final boolean key, final boolean publicField, final boolean advancedField, final DocumentFieldWidgetType widgetType)
 	{
@@ -162,7 +164,7 @@ public final class DocumentFieldChange
 	{
 		return advancedField;
 	}
-	
+
 	public DocumentFieldWidgetType getWidgetType()
 	{
 		return widgetType;
@@ -276,13 +278,13 @@ public final class DocumentFieldChange
 		lookupValuesStaleReason = reason;
 		logger.trace("collect {} lookupValuesStale: {} -- {}", fieldName, lookupValuesStale, lookupValuesStaleReason);
 	}
-	
+
 	public DocumentValidStatus getValidStatus()
 	{
 		return validStatus;
 	}
-	
-	/*package*/void setValidStatus(final DocumentValidStatus validStatus)
+
+	/* package */void setValidStatus(final DocumentValidStatus validStatus)
 	{
 		this.validStatus = validStatus;
 		logger.trace("collect {} validStatus: {}", fieldName, validStatus);
@@ -320,15 +322,20 @@ public final class DocumentFieldChange
 			lookupValuesStale = fromEvent.lookupValuesStale;
 			lookupValuesStaleReason = fromEvent.lookupValuesStaleReason;
 		}
-		
-		if(fromEvent.validStatus != null)
+
+		if (fromEvent.validStatus != null)
 		{
 			validStatus = fromEvent.validStatus;
+		}
+		
+		if(fromEvent.fieldWarning != null)
+		{
+			fieldWarning = fromEvent.fieldWarning;
 		}
 
 		putDebugProperties(fromEvent.debugProperties);
 	}
-	
+
 	/* package */ void mergeFrom(final IDocumentFieldChangedEvent fromEvent)
 	{
 		if (fromEvent.isValueSet())
@@ -337,7 +344,7 @@ public final class DocumentFieldChange
 			value = fromEvent.getValue();
 			valueReason = null; // N/A
 		}
-		
+
 	}
 
 	public void putDebugProperty(final String name, final Object value)
@@ -366,5 +373,15 @@ public final class DocumentFieldChange
 	public Map<String, Object> getDebugProperties()
 	{
 		return debugProperties == null ? ImmutableMap.of() : debugProperties;
+	}
+
+	public void setFieldWarning(@NonNull final DocumentFieldWarning fieldWarning)
+	{
+		this.fieldWarning = fieldWarning;
+	}
+
+	public DocumentFieldWarning getFieldWarning()
+	{
+		return fieldWarning;
 	}
 }

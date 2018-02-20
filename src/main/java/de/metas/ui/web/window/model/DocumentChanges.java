@@ -54,7 +54,7 @@ public final class DocumentChanges
 	private DocumentSaveStatus documentSaveStatus = null;
 	private Boolean deleted = null;
 
-	private Map<DetailId, IncludedDetailInfo> includedDetailInfos = new HashMap<>();
+	private final Map<DetailId, IncludedDetailInfo> includedDetailInfos = new HashMap<>();
 
 	/* package */ DocumentChanges(final DocumentPath documentPath)
 	{
@@ -79,17 +79,17 @@ public final class DocumentChanges
 				.add("includedDetailInfos", includedDetailInfos.isEmpty() ? null : includedDetailInfos)
 				.toString();
 	}
-	
+
 	/**
 	 * Mark this documents changes as primary changes.
-	 * 
+	 *
 	 * Primary changes are those changes which are on a document which was directly references by REST endpoint.
 	 */
 	/* package */void setPrimaryChange()
 	{
-		this.primaryChange = true;
+		primaryChange = true;
 	}
-	
+
 	public boolean isPrimaryChange()
 	{
 		return primaryChange;
@@ -164,11 +164,11 @@ public final class DocumentChanges
 
 	/* package */void collectFrom(final DocumentChanges fromDocumentChanges)
 	{
-		if(fromDocumentChanges.isPrimaryChange())
+		if (fromDocumentChanges.isPrimaryChange())
 		{
 			setPrimaryChange();
 		}
-		
+
 		for (final DocumentFieldChange fromFieldChange : fromDocumentChanges.getFieldChangesList())
 		{
 			final DocumentFieldChange toFieldChange = fieldChangesOf(fromFieldChange.getFieldName(), fromFieldChange.isKey(), fromFieldChange.isPublicField(), fromFieldChange.isAdvancedField(),
@@ -185,8 +185,8 @@ public final class DocumentChanges
 		{
 			collectDocumentSaveStatusChanged(fromDocumentChanges.documentSaveStatus);
 		}
-		
-		if(fromDocumentChanges.isDeleted())
+
+		if (fromDocumentChanges.isDeleted())
 		{
 			collectDeleted();
 		}
@@ -207,7 +207,7 @@ public final class DocumentChanges
 				collectedFieldNames.add(documentField.getFieldName());
 			}
 		}
-		
+
 		collectDocumentValidStatusChanged(document.getValidStatus());
 		collectDocumentSaveStatusChanged(document.getSaveStatus());
 
@@ -297,12 +297,12 @@ public final class DocumentChanges
 	{
 		return documentSaveStatus;
 	}
-	
+
 	/* package */ void collectDeleted()
 	{
-		this.deleted = Boolean.TRUE;
+		deleted = Boolean.TRUE;
 	}
-	
+
 	public boolean isDeleted()
 	{
 		return deleted != null && deleted;
@@ -335,6 +335,11 @@ public final class DocumentChanges
 				.mergeFrom(event);
 	}
 
+	/* package */ void collectFieldWarning(final IDocumentFieldView documentField, final DocumentFieldWarning fieldWarning)
+	{
+		fieldChangesOf(documentField).setFieldWarning(fieldWarning);
+	}
+
 	public static final class IncludedDetailInfo
 	{
 		private final DetailId detailId;
@@ -354,7 +359,7 @@ public final class DocumentChanges
 
 		IncludedDetailInfo setStale()
 		{
-			this.stale = true;
+			stale = true;
 			return this;
 		}
 
@@ -389,15 +394,15 @@ public final class DocumentChanges
 		{
 			if (from.stale)
 			{
-				this.stale = from.stale;
+				stale = from.stale;
 			}
 			if (from.allowNew != null)
 			{
-				this.allowNew = from.allowNew;
+				allowNew = from.allowNew;
 			}
 			if (from.allowDelete != null)
 			{
-				this.allowDelete = from.allowDelete;
+				allowDelete = from.allowDelete;
 			}
 		}
 	}
