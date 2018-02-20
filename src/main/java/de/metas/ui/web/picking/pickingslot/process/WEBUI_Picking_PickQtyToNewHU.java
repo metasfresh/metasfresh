@@ -23,6 +23,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -72,6 +73,9 @@ public class WEBUI_Picking_PickQtyToNewHU
 {
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
+	
+	@Autowired
+	private PickingConfigRepository pickingConfigRepo;
 
 	private static final String PARAM_M_HU_PI_Item_Product_ID = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
@@ -123,11 +127,14 @@ public class WEBUI_Picking_PickQtyToNewHU
 	{
 		if (qtyCU.signum() > 0)
 		{
+			final boolean isAllowOverdelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
+			
 			pickingCandidateService.addQtyToHU()
 					.qtyCU(qtyCU)
 					.targetHUId(hu.getM_HU_ID())
 					.pickingSlotId(pickingSlotRow.getPickingSlotId())
 					.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
+					.isAllowOverdelivery(isAllowOverdelivery)
 					.build()
 					.performAndGetQtyPicked();
 		}
@@ -174,7 +181,10 @@ public class WEBUI_Picking_PickQtyToNewHU
 		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
-			return shipmentSchedule.getQtyToDeliver(); // TODO: get the "better" value from teo, when it's available
+			// return shipmentSchedule.getQtyToDeliver(); // TODO: get the "better" value from teo, when it's available
+
+			// qty to deliver - picked qty)
+
 		}
 		else if (Objects.equals(PARAM_M_HU_PI_Item_Product_ID, parameter.getColumnName()))
 		{
