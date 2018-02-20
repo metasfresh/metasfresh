@@ -1,5 +1,6 @@
 package de.metas.ui.web.quickinput.inout;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -24,6 +25,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -63,18 +65,26 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 	}
 
 	@Override
-	public QuickInputDescriptor createQuickInputEntityDescriptor(final DocumentType documentType, final DocumentId documentTypeId, final DetailId detailId)
+	public QuickInputDescriptor createQuickInputEntityDescriptor(
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final DetailId detailId,
+			@NonNull final Optional<Boolean> soTrx)
 	{
-		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(documentTypeId, detailId);
+		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(documentTypeId, detailId, soTrx);
 		final QuickInputLayoutDescriptor layout = createLayout(entityDescriptor);
 		return QuickInputDescriptor.of(entityDescriptor, layout, EmptiesQuickInputProcessor.class);
 	}
 
-	private DocumentEntityDescriptor createEntityDescriptor(final DocumentId documentTypeId, final DetailId detailId)
+	private DocumentEntityDescriptor createEntityDescriptor(
+			final DocumentId documentTypeId,
+			final DetailId detailId,
+			@NonNull final Optional<Boolean> soTrx)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final DocumentEntityDescriptor.Builder entityDescriptor = DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.QuickInput, documentTypeId)
+				.setIsSOTrx(soTrx)
 				.disableDefaultTableCallouts()
 				.setDataBinding(DocumentEntityDataBindingDescriptorBuilder.NULL)
 				// Defaults:

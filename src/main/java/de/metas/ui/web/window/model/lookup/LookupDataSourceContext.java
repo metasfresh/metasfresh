@@ -83,8 +83,8 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 	public static final CtxName PARAM_Filter = CtxNames.parse("Filter");
 	public static final CtxName PARAM_FilterSql = CtxNames.parse("FilterSql");
-	public static final CtxName PARAM_Offset = CtxNames.parse("Offset/0");
-	public static final CtxName PARAM_Limit = CtxNames.parse("Limit/1000");
+	public static final CtxName PARAM_Offset = CtxNames.ofNameAndDefaultValue("Offset", "0");
+	public static final CtxName PARAM_Limit = CtxNames.ofNameAndDefaultValue("Limit", "1000");
 
 	private final String lookupTableName;
 	private final ImmutableMap<String, Object> parameterValues;
@@ -92,15 +92,13 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	private final INamePairPredicate postQueryPredicate;
 
 	private LookupDataSourceContext(
-			final String lookupTableName //
-			, final Map<String, Object> values //
-			, final Object idToFilter //
-			, final INamePairPredicate postQueryPredicate //
-	)
+			final String lookupTableName,
+			final Map<String, Object> values,
+			final Object idToFilter,
+			final INamePairPredicate postQueryPredicate)
 	{
-		super();
 		this.lookupTableName = lookupTableName;
-		parameterValues = ImmutableMap.copyOf(values);
+		this.parameterValues = ImmutableMap.copyOf(values);
 		this.idToFilter = idToFilter;
 		this.postQueryPredicate = postQueryPredicate;
 	}
@@ -257,7 +255,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return Integer.parseInt(idToFilterStr);
 		}
 	}
-	
+
 	public String getIdToFilterAsString()
 	{
 		return idToFilter != null ? idToFilter.toString() : null;
@@ -322,9 +320,9 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 		/**
 		 * Advises the builder that provided parameters shall be present the context that will be build.
-		 * 
+		 *
 		 * NOTE: previous required parameters, if any, will be lost.
-		 * 
+		 *
 		 * @param requiredParameters the required parameters which might also contain default values to fall back to.
 		 */
 		public Builder setRequiredParameters(@NonNull final Collection<CtxName> requiredParameters)
@@ -462,7 +460,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		}
 
 		private Builder collectContextValues(
-				@Nullable final Collection<CtxName> parameters, 
+				@Nullable final Collection<CtxName> parameters,
 				final boolean failIfNotFound)
 		{
 			if (parameters == null || parameters.isEmpty())
