@@ -62,7 +62,6 @@ import lombok.Value;
 // metas: synched with rev 9749
 public class CalloutOrder extends CalloutEngine
 {
-	private static final String CTX_EnforcePriceLimit = "EnforcePriceLimit";
 	private static final String CTX_UOMConversion = "UOMConversion";
 
 	private static final String MSG_CreditLimitOver = "CreditLimitOver";
@@ -818,11 +817,7 @@ public class CalloutOrder extends CalloutEngine
 			return NO_ERROR;
 		}
 
-		// Tax Included
 		order.setIsTaxIncluded(priceList.isTaxIncluded());
-		// Price Limit Enforce
-		calloutField.putContext(CTX_EnforcePriceLimit, priceList.isEnforcePriceLimit());
-		// Currency
 		order.setC_Currency_ID(priceList.getC_Currency_ID());
 
 		return NO_ERROR;
@@ -1223,10 +1218,9 @@ public class CalloutOrder extends CalloutEngine
 			// mTab.setValue("Discount", Discount);
 			}
 		}
-		log.debug("PriceEntered=" + PriceEntered + ", Actual=" + PriceActual + ", Discount=" + Discount);
 
 		// Check Price Limit?
-		if (isEnforcePriceLimit(calloutField, order.isSOTrx())
+		if (isEnforcePriceLimit(orderLine, order.isSOTrx())
 				&& PriceLimit.signum() != 0 && PriceActual.compareTo(PriceLimit) < 0)
 		{
 			PriceActual = PriceLimit;
@@ -1235,7 +1229,6 @@ public class CalloutOrder extends CalloutEngine
 			{
 				PriceEntered = PriceLimit;
 			}
-			log.debug("(under) PriceEntered=" + PriceEntered + ", Actual" + PriceLimit);
 			orderLine.setPriceActual(PriceActual);
 			// 07090: this (complicated, legacy) is just about updating price amounts, not priceUOM -> not touching the price UOM here
 			orderLine.setPriceEntered(PriceEntered);
@@ -1691,7 +1684,7 @@ public class CalloutOrder extends CalloutEngine
 		return NO_ERROR;
 	}
 
-	private static boolean isEnforcePriceLimit(final ICalloutField calloutField, final boolean isSOTrx)
+	private static boolean isEnforcePriceLimit(final I_C_OrderLine orderLine, final boolean isSOTrx)
 	{
 		// We enforce PriceLimit only for sales orders
 		if (!isSOTrx)
@@ -1699,8 +1692,7 @@ public class CalloutOrder extends CalloutEngine
 			return false;
 		}
 
-		final boolean epl = calloutField.getContextAsBoolean(CTX_EnforcePriceLimit);
-		if (!epl)
+		if(!orderLine.isEnforcePriceLimit())
 		{
 			return false;
 		}

@@ -80,7 +80,6 @@ public class OrderLineBL implements IOrderLineBL
 
 	private final Set<Integer> ignoredOlIds = new HashSet<>();
 
-	public static final String CTX_EnforcePriceLimit = "EnforcePriceLimit";
 	public static final String CTX_DiscountSchema = "DiscountSchema";
 
 	private static final String MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = "de.metas.order.CounterDocMissingMappedProduct";
@@ -642,12 +641,12 @@ public class OrderLineBL implements IOrderLineBL
 		
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
+		orderLine.setEnforcePriceLimit(pricingResult.isEnforcePriceLimit());
 
 		//
 		// UI
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final int WindowNo = GridTabWrapper.getWindowNo(orderLine);
-		Env.setContext(ctx, WindowNo, CTX_EnforcePriceLimit, pricingResult.isEnforcePriceLimit());
 		Env.setContext(ctx, WindowNo, CTX_DiscountSchema, pricingResult.isUsesDiscountSchema());
 	}
 

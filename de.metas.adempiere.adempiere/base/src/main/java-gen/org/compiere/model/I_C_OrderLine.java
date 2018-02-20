@@ -734,6 +734,31 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_Discount = "Discount";
 
 	/**
+	 * Set Preislimit erzwingen.
+	 * Do not allow prices below the limit price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setEnforcePriceLimit (boolean EnforcePriceLimit);
+
+	/**
+	 * Get Preislimit erzwingen.
+	 * Do not allow prices below the limit price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isEnforcePriceLimit();
+
+    /** Column definition for EnforcePriceLimit */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_EnforcePriceLimit = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "EnforcePriceLimit", null);
+    /** Column name EnforcePriceLimit */
+    public static final String COLUMNNAME_EnforcePriceLimit = "EnforcePriceLimit";
+
+	/**
 	 * Set Frachtbetrag.
 	 * Freight Amount
 	 *

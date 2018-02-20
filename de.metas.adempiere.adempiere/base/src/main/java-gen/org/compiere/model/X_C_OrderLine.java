@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1036363337L;
+	private static final long serialVersionUID = -413006417L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -33,6 +33,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 			setC_Tax_ID (0);
 			setC_UOM_ID (0); // @#C_UOM_ID@
 			setDateOrdered (new Timestamp( System.currentTimeMillis() )); // @DateOrdered@
+			setEnforcePriceLimit (false); // N
 			setFreightAmt (BigDecimal.ZERO);
 			setFrequencyType (null); // M
 			setIsDescription (false); // N
@@ -800,6 +801,32 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Preislimit erzwingen.
+		@param EnforcePriceLimit 
+		Do not allow prices below the limit price
+	  */
+	@Override
+	public void setEnforcePriceLimit (boolean EnforcePriceLimit)
+	{
+		set_Value (COLUMNNAME_EnforcePriceLimit, Boolean.valueOf(EnforcePriceLimit));
+	}
+
+	/** Get Preislimit erzwingen.
+		@return Do not allow prices below the limit price
+	  */
+	@Override
+	public boolean isEnforcePriceLimit () 
+	{
+		Object oo = get_Value(COLUMNNAME_EnforcePriceLimit);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Frachtbetrag.
