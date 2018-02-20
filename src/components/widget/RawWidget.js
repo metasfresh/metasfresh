@@ -996,7 +996,7 @@ RawWidget.propTypes = {
   allowShowPassword: PropTypes.bool, // NOTE: looks like this wasn't used
   buttonProcessId: PropTypes.string, // NOTE: looks like this wasn't used
   onBlurWidget: PropTypes.func,
-  defaultValue: PropTypes.array,
+  defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   noLabel: PropTypes.bool,
   isOpenDatePicker: PropTypes.bool,
 };
