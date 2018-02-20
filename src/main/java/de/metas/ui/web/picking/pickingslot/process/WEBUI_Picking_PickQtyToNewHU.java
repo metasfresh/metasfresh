@@ -184,6 +184,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 			// return shipmentSchedule.getQtyToDeliver(); // TODO: get the "better" value from teo, when it's available
 
 			// qty to deliver - picked qty)
+			return shipmentSchedule.getQtyToDeliver().subtract(shipmentSchedule.getQtyPickList()); 
 
 		}
 		else if (Objects.equals(PARAM_M_HU_PI_Item_Product_ID, parameter.getColumnName()))
