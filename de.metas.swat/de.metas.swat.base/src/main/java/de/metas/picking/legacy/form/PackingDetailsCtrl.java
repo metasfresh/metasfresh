@@ -21,12 +21,10 @@ import org.compiere.apps.ADialogDialog;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VComboBox;
 import org.compiere.grid.ed.VNumber;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.exception.NoContainerException;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.picking.terminal.Utils;
@@ -381,7 +379,5 @@ public class PackingDetailsCtrl
 	{
 		model.setValidState(PackingDetailsMd.STATE_INVALID);
 		view.dispose();
-
-		Services.get(IShipmentSchedulePA.class).deleteUnprocessedLocksForShipmentRun(0, Env.getAD_User_ID(Env.getCtx()), null);
 	}
 }
