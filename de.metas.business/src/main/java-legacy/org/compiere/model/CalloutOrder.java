@@ -1175,7 +1175,9 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		//
-		// Check Price Limit?
+		// Check PriceActual and enforce PriceLimit.
+		// Also, update Discount or PriceEntered if needed.
+		BigDecimal discount;
 		boolean underLimitPrice = false;
 		final BigDecimal priceLimit = orderLine.getPriceLimit();
 		if (priceLimit.signum() != 0
@@ -1185,19 +1187,30 @@ public class CalloutOrder extends CalloutEngine
 			underLimitPrice = true;
 			priceActual = priceLimit;
 
-			// Adjust discount if user changed the discount
-			if (I_C_OrderLine.COLUMNNAME_Discount.equals(changedColumnName)
-					&& priceEntered.signum() != 0)
+			if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName) && priceEntered.signum() != 0)
 			{
-				final BigDecimal discount = Services.get(IOrderLineBL.class).calculateDiscountFromPrices(priceEntered, priceActual, stdPrecision);
-				orderLine.setDiscount(discount);
+				discount = orderLine.getDiscount();
+				priceEntered = Services.get(IOrderLineBL.class).calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, stdPrecision);
 			}
+			else if (priceEntered.signum() != 0)
+			{
+				discount = Services.get(IOrderLineBL.class).calculateDiscountFromPrices(priceEntered, priceActual, stdPrecision);
+			}
+			else
+			{
+				discount = orderLine.getDiscount();
+			}
+		}
+		else
+		{
+			discount = orderLine.getDiscount();
 		}
 
 		//
 		// Update order line
 		orderLine.setPriceEntered(priceEntered);
 		orderLine.setPriceActual(priceActual);
+		orderLine.setDiscount(discount);
 		updateLineNetAmtAndTax(orderLine, stdPrecision);
 		if (underLimitPrice)
 		{

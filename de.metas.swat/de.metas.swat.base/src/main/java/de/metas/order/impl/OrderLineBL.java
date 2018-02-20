@@ -297,9 +297,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public BigDecimal subtractDiscount(final BigDecimal baseAmount, final BigDecimal discount, final int precision)
 	{
-		BigDecimal multiplier = Env.ONEHUNDRED.subtract(discount);
-		multiplier = multiplier.divide(Env.ONEHUNDRED, precision * 3, RoundingMode.HALF_UP);
-
+		final BigDecimal multiplier = Env.ONEHUNDRED.subtract(discount).divide(Env.ONEHUNDRED, precision * 3, RoundingMode.HALF_UP);
 		final BigDecimal result = baseAmount.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
 		return result;
 	}
@@ -319,8 +317,15 @@ public class OrderLineBL implements IOrderLineBL
 		{
 			discount = discount.setScale(2, BigDecimal.ROUND_HALF_UP);
 		}
-		
+
 		return discount;
+	}
+
+	@Override
+	public BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(final BigDecimal priceActual, final BigDecimal discount, final int precision)
+	{
+		final BigDecimal multiplier = Env.ONEHUNDRED.add(discount).divide(Env.ONEHUNDRED, 12, RoundingMode.HALF_UP);
+		return priceActual.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
 	}
 
 	@Override
