@@ -24,10 +24,7 @@ UPDATE AD_Ref_Table SET WhereClause='exists (     select 1 from C_Order so      
 ;
 
 
-CREATE INDEX IF NOT EXISTS c_purchasecandidate_alloc_pc.C_OrderPO_ID
-  ON public.c_purchasecandidate_alloc
-  USING btree
-  (pc.C_OrderPO_ID);
+CREATE INDEX IF NOT EXISTS c_purchasecandidate_alloc_pc_C_OrderPO_ID ON c_purchasecandidate_alloc (C_OrderPO_ID);
 COMMENT ON INDEX public.c_purchasecandidate_alloc_pc_c_orderpo_id
   IS 'This index was created to support a relation time that looks up sales orders from purchase orders';
   

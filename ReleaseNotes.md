@@ -19,6 +19,8 @@ Here come the actual release notes:
     * New Window for Compensation group maintenance.
 
 ## Fixes
+  * [#1585](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1585) Date recording with keys leads to error
+    * Fixes a Bug that occurred when trying to record a date via keyboard instead of calendar widget.
 
 # metasfresh 5.45 (2018-08)
 **release for week 2018-08**
