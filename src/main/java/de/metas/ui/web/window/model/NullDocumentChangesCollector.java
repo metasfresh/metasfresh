@@ -95,6 +95,12 @@ public final class NullDocumentChangesCollector implements IDocumentChangesColle
 	}
 
 	@Override
+	public void collectFieldWarning(final IDocumentFieldView documentField, final DocumentFieldWarning fieldWarning)
+	{
+		// do nothing
+	}
+
+	@Override
 	public void collectFrom(final IDocumentChangesCollector fromCollector)
 	{
 		// do nothing

@@ -220,7 +220,7 @@ public final class JSONDocument extends JSONDocumentBase
 						}
 
 						// Append the other fields
-						final JSONDocumentField jsonField = JSONDocumentField.ofDocumentFieldChangedEvent(field);
+						final JSONDocumentField jsonField = JSONDocumentField.ofDocumentFieldChangedEvent(field, jsonOpts);
 						jsonOpts.getDocumentPermissions().apply(documentPath, jsonField); // apply permissions
 						jsonFields.add(jsonField);
 					});
