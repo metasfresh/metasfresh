@@ -123,6 +123,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
+import lombok.NonNull;
 
 /**
  * @author tsa
@@ -1425,7 +1426,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// here we will get ZERO candidates
 			{
 				final List<I_C_Invoice_Candidate> invoiceCands = invoiceCandDAO.retrieveIcForIl(il);
-				invoiceCandDAO.invalidateCands(invoiceCands, trxName);
+				invoiceCandDAO.invalidateCands(invoiceCands);
 			}
 
 			final Set<I_C_Invoice_Candidate> toLinkAgainstIl = new HashSet<>();
@@ -2052,35 +2053,36 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void closeInvoiceCandidates(final Iterator<I_C_Invoice_Candidate> candidatesToClose)
+	public void closeInvoiceCandidates(
+			@NonNull final Iterator<I_C_Invoice_Candidate> candidatesToClose)
 	{
 		while (candidatesToClose.hasNext())
 		{
-
-			final I_C_Invoice_Candidate candidate = candidatesToClose.next();
-
-			// close the candidate
-			closeInvoiceCandidate(candidate);
+			closeInvoiceCandidate(candidatesToClose.next());
 		}
 	}
 
 	@Override
 	public void closeInvoiceCandidate(final I_C_Invoice_Candidate candidate)
 	{
-
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.onBeforeClosed(candidate);
 		candidate.setProcessed_Override("Y");
 
-		Services.get(IInvoiceCandDAO.class).invalidateCand(candidate);
+		if (!InterfaceWrapperHelper.hasChanges(candidate))
+		{
+			return; // https://github.com/metasfresh/metasfresh/issues/3216
+		}
 
+		Services.get(IInvoiceCandDAO.class).invalidateCand(candidate);
 		InterfaceWrapperHelper.save(candidate);
 	}
 
 	@Override
 	public boolean isCloseIfIsToClear()
 	{
-		final boolean isCloseIfIsToClear = Services.get(ISysConfigBL.class).getBooleanValue(SYS_Config_C_Invoice_Candidate_Close_IsToClear, false);
+		final boolean isCloseIfIsToClear = Services.get(ISysConfigBL.class)
+				.getBooleanValue(SYS_Config_C_Invoice_Candidate_Close_IsToClear, false);
 
 		return isCloseIfIsToClear;
 	}
@@ -2088,7 +2090,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public boolean isCloseIfPartiallyInvoiced()
 	{
-		final boolean isCloseIfPartiallyInvoiced = Services.get(ISysConfigBL.class).getBooleanValue(SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced, false);
+		final boolean isCloseIfPartiallyInvoiced = Services.get(ISysConfigBL.class)
+				.getBooleanValue(SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced, false);
 
 		return isCloseIfPartiallyInvoiced;
 	}

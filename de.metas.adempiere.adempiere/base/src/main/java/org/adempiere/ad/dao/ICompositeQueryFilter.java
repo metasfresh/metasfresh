@@ -13,15 +13,14 @@ package org.adempiere.ad.dao;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Date;
@@ -268,7 +267,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 */
 	ICompositeQueryFilter<T> addStringLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
 
-	ICompositeQueryFilter<T>  addStringNotLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
+	ICompositeQueryFilter<T> addStringNotLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
 
 	ICompositeQueryFilter<T> addCoalesceEqualsFilter(Object value, String... columnNames);
 
@@ -308,6 +307,14 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 * @return this
 	 */
 	ICompositeQueryFilter<T> addFilters(List<IQueryFilter<T>> filters);
+
+	/**
+	 * Unboxes and add the filters contained in the <code>compositeFilter</code>.
+	 * If it could not be unboxed (e.g. because JOIN method does not match) the composite filter is added as is.
+	 * 
+	 * @param compositeFilter
+	 */
+	ICompositeQueryFilter<T> addFiltersUnboxed(ICompositeQueryFilter<T> compositeFilter);
 
 	/**
 	 * Add a single filter

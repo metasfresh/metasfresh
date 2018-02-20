@@ -46,6 +46,6 @@ public interface GroupRepository
 	class RetrieveOrCreateGroupRequest
 	{
 		@NonNull Collection<Integer> orderLineIds;
-		@NonNull GroupIdTemplate newGroupIdTemplate;
+		@NonNull GroupTemplate newGroupTemplate;
 	}
 }

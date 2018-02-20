@@ -10,12 +10,12 @@ package de.metas.contracts.interceptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,10 +28,13 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import lombok.NonNull;
 
@@ -55,6 +58,13 @@ public class C_SubscriptionProgress
 		final Properties ctx = InterfaceWrapperHelper.getCtx(subscriptionProgress);
 		final String trxName = InterfaceWrapperHelper.getTrxName(subscriptionProgress);
 		CreateMissingShipmentSchedulesWorkpackageProcessor.schedule(ctx, trxName);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteShipmentSchedules(@NonNull final I_C_SubscriptionProgress subscriptionProgress)
+	{
+		Services.get(IShipmentSchedulePA.class)
+				.deleteAllForReference(TableRecordReference.of(subscriptionProgress));
 	}
 
 	@ModelChange(//

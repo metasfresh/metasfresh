@@ -30,15 +30,15 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -72,6 +72,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.util.CacheCtx;
@@ -98,6 +100,7 @@ import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.process.IADPInstanceDAO;
+import lombok.NonNull;
 
 public class InvoiceCandDAO implements IInvoiceCandDAO
 {
@@ -137,10 +140,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public <T extends I_C_Invoice_Candidate> Iterator<T> retrieveInvoiceCandidates(final IQueryBuilder<T> queryBuilder)
+	public <T extends I_C_Invoice_Candidate> Iterator<T> retrieveInvoiceCandidates(
+			@NonNull final IQueryBuilder<T> queryBuilder)
 	{
-		Check.assumeNotNull(queryBuilder, "queryBuilder not null");
-
 		//
 		// Make sure we are retrieving in a order which is friendly for processing
 		final IQueryOrderByBuilder<T> orderBy = queryBuilder.orderBy();
@@ -196,8 +198,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public <T extends org.compiere.model.I_C_Invoice> Map<Integer, T> retrieveInvoices(final Properties ctx, final String tableName, final int recordId, final Class<T> clazz,
-			final boolean onlyUnpaid, final String trxName)
+	public <T extends org.compiere.model.I_C_Invoice> Map<Integer, T> retrieveInvoices(
+			final Properties ctx,
+			final String tableName,
+			final int recordId,
+			final Class<T> clazz,
+			final boolean onlyUnpaid,
+			final String trxName)
 	{
 		final Map<Integer, T> openInvoices = new HashMap<>();
 
@@ -239,11 +246,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public <T extends org.compiere.model.I_M_InOutLine> List<T> retrieveInOutLinesForCandidate(final I_C_Invoice_Candidate ic, final Class<T> clazz)
+	public <T extends org.compiere.model.I_M_InOutLine> List<T> retrieveInOutLinesForCandidate(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final Class<T> clazz)
 	{
-		Check.assumeNotNull(ic, "ic not null");
-		Check.assumeNotNull(clazz, "clazz not null");
-
 		// FIXME debug to see why c_invoicecandidate_inoutline have duplicates and take the inoutlines from there
 		// for now take it via orderline
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -547,13 +553,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public final void invalidateCand(final I_C_Invoice_Candidate ic)
 	{
-		if (ic.getC_Invoice_Candidate_ID() <= 0)
-		{
-			return; // nothing to do; we can only invalidate candidates that were saved as least once
-		}
-
-		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
-		invalidateCands(Collections.singleton(ic), trxName);
+		invalidateCands(ImmutableList.of(ic));
 	}
 
 	@Override
@@ -576,25 +576,21 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final void invalidateCandsFor(final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder)
+	public final void invalidateCandsFor(@NonNull final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder)
 	{
-		Check.assumeNotNull(icQueryBuilder, "icQueryBuilder not null");
 		final IQuery<I_C_Invoice_Candidate> icQuery = icQueryBuilder.create();
 		invalidateCandsFor(icQuery);
 	}
 
 	@Override
-	public final void invalidateCandsFor(final IQuery<I_C_Invoice_Candidate> icQuery)
+	public final void invalidateCandsFor(@NonNull final IQuery<I_C_Invoice_Candidate> icQuery)
 	{
-		Check.assumeNotNull(icQuery, "icQuery not null");
-
 		final int count = icQuery.insertDirectlyInto(I_C_Invoice_Candidate_Recompute.class)
 				.mapColumn(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 				// NOTE: not setting the AD_PInstance_ID to null, because:
 				// 1. that's the default
 				// 2. there is an issue with the SQL INSERT that is rendered for NULL parameters, i.e. it cannot detect the database type for NULL
 				// .mapColumnToConstant(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, null)
-				//
 				.execute()
 				.getRowsInserted();
 
@@ -779,10 +775,11 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final Iterator<I_C_Invoice_Candidate> fetchInvalidInvoiceCandidates(final Properties ctx, final InvoiceCandRecomputeTag recomputeTag, final String trxName)
+	public final Iterator<I_C_Invoice_Candidate> fetchInvalidInvoiceCandidates(
+			final Properties ctx,
+			@NonNull final InvoiceCandRecomputeTag recomputeTag,
+			final String trxName)
 	{
-		Check.assumeNotNull(recomputeTag, "recomputeTag not null");
-
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
 				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_AD_PInstance_ID, recomputeTag.getAD_PInstance_ID())
@@ -821,10 +818,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return new InvoiceCandRecomputeTagger(this);
 	}
 
-	private final IQueryBuilder<I_C_Invoice_Candidate_Recompute> retrieveInvoiceCandidatesRecomputeFor(final InvoiceCandRecomputeTagger tagRequest)
+	private final IQueryBuilder<I_C_Invoice_Candidate_Recompute> retrieveInvoiceCandidatesRecomputeFor(
+			@NonNull final InvoiceCandRecomputeTagger tagRequest)
 	{
-		Check.assumeNotNull(tagRequest, "tagRequest not null");
-
 		final Properties ctx = tagRequest.getCtx();
 		final String trxName = tagRequest.getTrxName();
 
@@ -870,10 +866,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return queryBuilder;
 	}
 
-	protected final int tagToRecompute(final InvoiceCandRecomputeTagger tagRequest)
+	protected final int tagToRecompute(@NonNull final InvoiceCandRecomputeTagger tagRequest)
 	{
-		Check.assumeNotNull(tagRequest, "tagRequest not null");
-
 		final InvoiceCandRecomputeTag recomputeTag = tagRequest.getRecomputeTag();
 
 		final IQueryBuilder<I_C_Invoice_Candidate_Recompute> queryBuilder = retrieveInvoiceCandidatesRecomputeFor(tagRequest);
@@ -907,9 +901,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	 * @param onlyInvoiceCandidateIds
 	 * @param trxName
 	 */
-	protected final void deleteRecomputeMarkers(final InvoiceCandRecomputeTagger tagger, final Collection<Integer> onlyInvoiceCandidateIds)
+	protected final void deleteRecomputeMarkers(
+			@NonNull final InvoiceCandRecomputeTagger tagger,
+			final Collection<Integer> onlyInvoiceCandidateIds)
 	{
-		Check.assumeNotNull(tagger, "tagger not null");
 		final Properties ctx = tagger.getCtx();
 		final InvoiceCandRecomputeTag recomputeTag = tagger.getRecomputeTag();
 		final String trxName = tagger.getTrxName();
@@ -931,9 +926,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		logger.debug("Query: {}", query);
 	}
 
-	protected final int untag(final InvoiceCandRecomputeTagger tagger)
+	protected final int untag(@NonNull final InvoiceCandRecomputeTagger tagger)
 	{
-		Check.assumeNotNull(tagger, "tagger not null");
 		final Properties ctx = tagger.getCtx();
 		final InvoiceCandRecomputeTag recomputeTag = tagger.getRecomputeTag();
 		final String trxName = tagger.getTrxName();
@@ -1259,49 +1253,30 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final void invalidateCands(final Collection<I_C_Invoice_Candidate> ics, final String trxName)
+	public final void invalidateCands(@Nullable final List<I_C_Invoice_Candidate> ics)
 	{
-		Properties ctx = null; // it will be fetched from first IC, see below
-
-		//
 		// Extract C_Invoice_Candidate_IDs
 		if (ics == null || ics.isEmpty())
 		{
 			return; // nothing to do for us
 		}
-		final Set<Integer> icIds = new HashSet<>();
-		for (final I_C_Invoice_Candidate ic : ics)
-		{
-			if (ic == null)
-			{
-				continue;
-			}
 
-			final int invoiceCandidateId = ic.getC_Invoice_Candidate_ID();
-			if (invoiceCandidateId <= 0)
-			{
-				continue;
-			}
+		final ImmutableList<Integer> icIds = ics.stream()
+				.filter(Predicates.notNull())
+				.filter(ic -> ic.getC_Invoice_Candidate_ID() > 0)
+				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
 
-			icIds.add(invoiceCandidateId);
-
-			// Piggybacking: get the context from first invoice candidate
-			if (ctx == null)
-			{
-				ctx = InterfaceWrapperHelper.getCtx(ic);
-			}
-		}
 		if (icIds.isEmpty())
 		{
 			return;
 		}
 
+		// note: invalidate, no matter if Processed or not
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
-				.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds)
-		// Invalidate no matter if Processed or not
-		// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
-		;
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds);
 
 		invalidateCandsFor(icQueryBuilder);
 		// logger.info("Invalidated {} invoice candidates for C_Invoice_Candidate_IDs={}", new Object[] { count, icIds });
@@ -1335,10 +1310,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public IQueryBuilder<I_C_Invoice_Candidate> applyDefaultFilter(final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder)
+	public IQueryBuilder<I_C_Invoice_Candidate> applyDefaultFilter(
+			@NonNull final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder)
 	{
-		Check.assumeNotNull(queryBuilder, "Query builder is null");
-
 		final Properties ctx = queryBuilder.getCtx();
 
 		// shall never happen

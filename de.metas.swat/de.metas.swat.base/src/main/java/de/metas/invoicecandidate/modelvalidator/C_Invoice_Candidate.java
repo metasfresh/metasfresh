@@ -217,8 +217,9 @@ public class C_Invoice_Candidate
 	}
 
 	/**
-	 * For the given <code>ic</code>, this method invalidates the invoice candidate and all other candidates that reference the same record via <code>(AD_Table_ID, Record_ID)</code>, <b>unless</b>
-	 * {@link IInvoiceCandBL#isUpdateProcessInProgress()} returns <code>true</code>. In that case, the method does nothing.
+	 * For the given <code>ic</code>, this method invalidates the invoice candidate<br>
+	 * and all other candidates that reference the same record via <code>(AD_Table_ID, Record_ID)</code>, <b>unless</b>
+	 * {@link InterfaceWrapperHelper#hasChanges(Object)} returns <code>false</code>. In that case, the method does nothing.
 	 * <p>
 	 * Note: we invalidate more than just the given candidate, because at least for the case of "split"-candidates we need to do so, in order to update the new and the old candidate. See
 	 * {@link InvoiceCandBL#splitCandidate(I_C_Invoice_Candidate, String)}.
@@ -375,7 +376,9 @@ public class C_Invoice_Candidate
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final boolean isBackgroundProcessInProcess = invoiceCandBL.isUpdateProcessInProgress();
-		if (ic.isProcessed() || X_C_Invoice_Candidate.PROCESSED_OVERRIDE_Yes.equals(ic.getProcessed_Override()) || isBackgroundProcessInProcess)
+		if (ic.isProcessed()
+				|| X_C_Invoice_Candidate.PROCESSED_OVERRIDE_Yes.equals(ic.getProcessed_Override())
+				|| isBackgroundProcessInProcess)
 		{
 			return; // nothing to do
 		}

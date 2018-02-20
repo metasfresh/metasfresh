@@ -8,6 +8,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerStatisticsUpdater;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner_CreditLimit;
+import org.compiere.model.I_C_CreditLimit_Type;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
@@ -44,7 +45,20 @@ public class C_BPartner_CreditLimit
 	public void updateBPartnerStatsRecord(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
 	{
 		Services.get(IBPartnerStatisticsUpdater.class)
-		.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(bpCreditLimit.getC_BPartner_ID()), ITrx.TRXNAME_None);
+				.updateBPartnerStatistics(Env.getCtx(), Collections.singleton(bpCreditLimit.getC_BPartner_ID()), ITrx.TRXNAME_None);
+	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE })
+	public void setApproved(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
+	{
+		final I_C_CreditLimit_Type type = bpCreditLimit.getC_CreditLimit_Type();
+		if (type != null)
+		{
+			final boolean isAutoApproval = type.isAutoApproval();
+			if (isAutoApproval)
+			{
+				bpCreditLimit.setIsApproved(true);
+			}
+		}
 	}
 }
