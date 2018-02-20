@@ -153,4 +153,12 @@ public interface IPricingResult
 	int getC_PaymentTerm_ID();
 
 	void setC_PaymentTerm_ID(int C_PaymentTerm_ID);
+
+	boolean isPriceEditable();
+
+	void setPriceEditable(boolean isPriceEditable);
+
+	boolean isDiscountEditable();
+
+	void setDiscountEditable(boolean isDiscountEditable);
 }

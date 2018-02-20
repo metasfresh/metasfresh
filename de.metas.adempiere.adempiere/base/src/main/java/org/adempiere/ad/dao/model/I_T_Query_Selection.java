@@ -1,4 +1,4 @@
-package org.compiere.model;
+package org.adempiere.ad.dao.model;
 
 /*
  * #%L

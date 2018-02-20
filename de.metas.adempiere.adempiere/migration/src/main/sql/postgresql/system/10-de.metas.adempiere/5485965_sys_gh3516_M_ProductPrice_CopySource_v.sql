@@ -1,4 +1,4 @@
-﻿drop view if exists M_ProductPrice_CopySource_v;
+drop view if exists M_ProductPrice_CopySource_v;
 create or replace view M_ProductPrice_CopySource_v as
 select
 	pp.Target_PriceList_Version_ID
