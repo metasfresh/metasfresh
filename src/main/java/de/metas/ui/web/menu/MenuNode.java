@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 
@@ -325,7 +325,7 @@ public final class MenuNode
 
 	public static final class Builder
 	{
-		private int adMenuId = -1;
+		private Integer adMenuId;
 
 		private String caption;
 		private String captionBreadcrumb;
@@ -353,19 +353,14 @@ public final class MenuNode
 
 		public Builder setAD_Menu_ID_None()
 		{
-			this.adMenuId = 0;
+			// NOTE: don't set it to ZERO because ZERO is usually root node's ID.
+			this.adMenuId = -100;
 			return this;
 		}
 
 		private int getAD_Menu_ID()
 		{
-			// NOTE: tolerate adMenuId=0 because there are some case in old API where we have a MTreeNode with Node_ID=0 (usually the root)
-			// see https://github.com/metasfresh/metasfresh-webui-api/issues/446
-			// see #setAD_Menu_ID_None()
-			if (adMenuId < 0)
-			{
-				throw new AdempiereException("AD_Menu_ID not set");
-			}
+			Check.assumeNotNull(adMenuId, "adMenuId shall be set");
 			return adMenuId;
 		}
 
