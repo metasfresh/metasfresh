@@ -5,15 +5,12 @@ import java.util.List;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.ModelColumn;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 
-import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilterParam;
 import lombok.NonNull;
 
 /*
@@ -49,58 +46,31 @@ public class StockFilters
 				.addOnlyActiveRecordsFilter();
 
 		boolean anyRestrictionAdded = false;
-		for (final DocumentFilter filter : filters)
+		if (augmentQueryBuilder(queryBuilder, ProductFilterUtil.extractProductFilterVO(filters)))
 		{
-			final List<DocumentFilterParam> filterParameters = filter.getParameters();
-			for (final DocumentFilterParam filterParameter : filterParameters)
-			{
-				augmentStockQueryBuilderWithFilterParam(queryBuilder, filterParameter);
-				anyRestrictionAdded = true;
-			}
+			anyRestrictionAdded = true;
 		}
+
 		if (anyRestrictionAdded)
 		{
-			final IQuery<I_MD_Stock> query = queryBuilder.create();
-			return query;
+			return queryBuilder.create();
 		}
-
-		// avoid memory problems in case the filters are accidentally empty
-		return queryBuilder.filter(ConstantQueryFilter.of(false)).create();
-	}
-
-	private static void augmentStockQueryBuilderWithFilterParam(
-			@NonNull final IQueryBuilder<I_MD_Stock> queryBuilder,
-			@NonNull final DocumentFilterParam filterParameter)
-	{
-		final String fieldName = filterParameter.getFieldName();
-		final Object value = filterParameter.getValue();
-
-		if (I_MD_Cockpit.COLUMNNAME_ProductName.equals(fieldName))
+		else
 		{
-			final String productName = (String)value;
-			addLikeFilterToQueryBuilder(I_M_Product.COLUMN_Name, productName, queryBuilder);
-		}
-		else if (I_MD_Cockpit.COLUMNNAME_ProductValue.equals(fieldName))
-		{
-			final String productValue = (String)value;
-			addLikeFilterToQueryBuilder(I_M_Product.COLUMN_Value, productValue, queryBuilder);
+			// avoid memory problems in case the filters are accidentally empty
+			return queryBuilder.filter(ConstantQueryFilter.of(false)).create();
 		}
 	}
 
-	private static void addLikeFilterToQueryBuilder(
-			@NonNull final ModelColumn<I_M_Product, Object> column,
-			@NonNull final String value,
-			@NonNull final IQueryBuilder<I_MD_Stock> queryBuilder)
+	private static boolean augmentQueryBuilder(final IQueryBuilder<I_MD_Stock> queryBuilder, final ProductFilterVO productFilterVO)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQuery<I_M_Product> productQuery = ProductFilterUtil.createProductQueryOrNull(productFilterVO);
+		if (productQuery == null)
+		{
+			return false;
+		}
 
-		final IQuery<I_M_Product> productByValueQuery = queryBL.createQueryBuilder(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addStringLikeFilter(column, value, true)
-				.create();
-
-		queryBuilder.addInSubQueryFilter(
-				I_MD_Stock.COLUMN_M_Product_ID,
-				I_M_Product.COLUMN_M_Product_ID, productByValueQuery);
+		queryBuilder.addInSubQueryFilter(I_MD_Stock.COLUMN_M_Product_ID, I_M_Product.COLUMN_M_Product_ID, productQuery);
+		return true;
 	}
 }

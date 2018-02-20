@@ -25,7 +25,6 @@ import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
-import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters.DateFilterVO;
 import de.metas.ui.web.material.cockpit.filters.StockFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest;
@@ -104,8 +103,7 @@ public class MaterialCockpitRowRepository
 
 	private List<MaterialCockpitRow> retrieveRows(@NonNull final List<DocumentFilter> filters)
 	{
-		final DateFilterVO dateFilterVO = materialCockpitFilters.extractDateFilterVO(filters);
-		final Date date = dateFilterVO.getDate();
+		final Date date = materialCockpitFilters.getFilterByDate(filters);
 		if (date == null)
 		{
 			return ImmutableList.of();
@@ -135,7 +133,7 @@ public class MaterialCockpitRowRepository
 				.getOrLoad(orgId, () -> retrieveAllProducts(orgId));
 
 		return allProducts.stream()
-				.filter(product -> materialCockpitFilters.doesProductMatchFilters(product, filters))
+				.filter(materialCockpitFilters.toProductFilterPredicate(filters))
 				.collect(ImmutableList.toImmutableList());
 	}
 
