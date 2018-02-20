@@ -14,7 +14,7 @@ public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Pic
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1469592117L;
+	private static final long serialVersionUID = 431910809L;
 
     /** Standard Constructor */
     public X_M_Picking_Config (Properties ctx, int M_Picking_Config_ID, String trxName)
@@ -22,6 +22,7 @@ public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Pic
       super (ctx, M_Picking_Config_ID, trxName);
       /** if (M_Picking_Config_ID == 0)
         {
+			setIsAllowOverdelivery (false); // N
 			setM_Picking_Config_ID (0);
 			setWEBUI_PickingTerminal_ViewProfile (null);
         } */
@@ -41,6 +42,29 @@ public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Pic
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set IsAllowOverdelivery.
+		@param IsAllowOverdelivery IsAllowOverdelivery	  */
+	@Override
+	public void setIsAllowOverdelivery (boolean IsAllowOverdelivery)
+	{
+		set_Value (COLUMNNAME_IsAllowOverdelivery, Boolean.valueOf(IsAllowOverdelivery));
+	}
+
+	/** Get IsAllowOverdelivery.
+		@return IsAllowOverdelivery	  */
+	@Override
+	public boolean isAllowOverdelivery () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAllowOverdelivery);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
 
 	/** Set Picking configuration.
 		@param M_Picking_Config_ID Picking configuration	  */
