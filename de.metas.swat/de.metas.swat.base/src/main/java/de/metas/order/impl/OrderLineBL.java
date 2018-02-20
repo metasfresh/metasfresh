@@ -169,7 +169,7 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setC_Currency_ID(pricingResult.getC_Currency_ID());
 		orderLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // task 06942
 		orderLine.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
-		
+
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 
@@ -302,6 +302,25 @@ public class OrderLineBL implements IOrderLineBL
 
 		final BigDecimal result = baseAmount.multiply(multiplier).setScale(precision, RoundingMode.HALF_UP);
 		return result;
+	}
+
+	@Override
+	public BigDecimal calculateDiscountFromPrices(final BigDecimal priceEntered, final BigDecimal priceActual, final int precision)
+	{
+		if (priceEntered.signum() == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+
+		BigDecimal discount = priceEntered.subtract(priceActual)
+				.divide(priceEntered, 12, RoundingMode.HALF_UP)
+				.multiply(Env.ONEHUNDRED);
+		if (discount.scale() > 2)
+		{
+			discount = discount.setScale(2, BigDecimal.ROUND_HALF_UP);
+		}
+		
+		return discount;
 	}
 
 	@Override
@@ -638,7 +657,7 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setC_Currency_ID(pricingResult.getC_Currency_ID());
 		orderLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // task 06942
 		orderLine.setM_PriceList_Version_ID(pricingResult.getM_PriceList_Version_ID());
-		
+
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 		orderLine.setEnforcePriceLimit(pricingResult.isEnforcePriceLimit());
