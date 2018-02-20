@@ -61,6 +61,7 @@ Here come the actual release notes:
   * [#3465](https://github.com/metasfresh/metasfresh/issues/3465) Window Role Tab User Access shows non systemusers
   * [#3486](https://github.com/metasfresh/metasfresh/issues/3486) Material Disposition automatic entries missing for DD/ PP Orders
   * [#3499](https://github.com/metasfresh/metasfresh/issues/3499) Cannot create manual invoice
+  * [#3521](https://github.com/metasfresh/metasfresh/issues/3521) Exception with CreditStatus in some data constellations
 
 * metasfresh-webui-api
   * [#846](https://github.com/metasfresh/metasfresh-webui-api/issues/846) Cache issue in shipment schedules subtab
