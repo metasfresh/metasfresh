@@ -312,10 +312,13 @@ class RawWidget extends Component {
                 inputProps={{
                   placeholder: fields[0].emptyText,
                   disabled: widgetData[0].readonly || disabled,
-                  tabIndex: fullScreen ? -1 : tabIndex
+                  tabIndex: fullScreen ? -1 : tabIndex,
                 }}
                 value={widgetValue || widgetData[0].value}
-                onChange={date => handleChange(widgetField, date.utc(true))}
+                onChange={date => {
+                  const finalDate = date.utc ? date.utc(true) : date;
+                  return handleChange(widgetField, finalDate);
+                }}
                 patch={date =>
                   this.handlePatch(
                     widgetField,
