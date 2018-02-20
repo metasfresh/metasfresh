@@ -106,9 +106,10 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private final CtxName param_PricingDate;
 	private final CtxName param_AvailableStockDate;
 
-	private static final CtxName param_M_PriceList_ID = CtxNames.parse("M_PriceList_ID/-1");
-	private static final CtxName param_AD_Org_ID = CtxNames.parse(WindowConstants.FIELDNAME_AD_Org_ID + "/-1");
-	private final Set<CtxName> parameters;
+	private static final CtxName param_M_PriceList_ID = CtxNames.ofNameAndDefaultValue("M_PriceList_ID", "-1");
+	private static final CtxName param_AD_Org_ID = CtxNames.ofNameAndDefaultValue(WindowConstants.FIELDNAME_AD_Org_ID, "-1");
+
+	private final Set<CtxName> ctxNamesNeededForQuery;
 
 	private final AvailableStockAdapter availableStockService;
 
@@ -121,26 +122,27 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final String availableStockDateParamName,
 			@NonNull final AvailableStockAdapter availableStockService)
 	{
-		param_C_BPartner_ID = CtxNames.parse(bpartnerParamName + "/-1");
-		param_PricingDate = CtxNames.parse(pricingDateParamName + "/NULL");
-		param_AvailableStockDate = CtxNames.parse(availableStockDateParamName + "/NULL");
-		parameters = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
+		this.param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
+		this.param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
 
+		this.param_AvailableStockDate = CtxNames.ofNameAndDefaultValue(availableStockDateParamName, "NULL");
 		this.availableStockService = availableStockService;
+
+		this.ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_AD_Org_ID);
 	}
 
 	@Builder(builderClassName = "BuilderWithoutStockInfo", builderMethodName = "builderWithoutStockInfo")
 	private ProductLookupDescriptor(
 			@NonNull final String bpartnerParamName,
-			@NonNull final String pricingDateParamName,
-			@NonNull final AvailableStockAdapter availableStockService)
+			@NonNull final String pricingDateParamName)
 	{
-		param_C_BPartner_ID = CtxNames.parse(bpartnerParamName + "/-1");
-		param_PricingDate = CtxNames.parse(pricingDateParamName + "/NULL");
-		param_AvailableStockDate = null;
-		parameters = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
+		this.param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
+		this.param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
 
-		this.availableStockService = availableStockService;
+		this.param_AvailableStockDate = null;
+		this.availableStockService = null;
+
+		this.ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
 	}
 
 	@Override
@@ -165,7 +167,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	public LookupDataSourceContext.Builder newContextForFetchingList()
 	{
 		return LookupDataSourceContext.builder(CONTEXT_LookupTableName)
-				.setRequiredParameters(parameters)
+				.setRequiredParameters(ctxNamesNeededForQuery)
 				.requiresAD_Language();
 	}
 
@@ -197,7 +199,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			final LookupValuesList unexplodedLookupValues = LookupValuesList.fromCollection(valuesById.values());
 
 			final Date stockdateOrNull = getEffectiveStockDateOrNull(evalCtx);
-			if (stockdateOrNull == null)
+			if (stockdateOrNull == null || availableStockService == null)
 			{
 				return unexplodedLookupValues;
 			}
@@ -473,7 +475,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	@Override
 	public Set<String> getDependsOnFieldNames()
 	{
-		return CtxNames.toNames(parameters);
+		return CtxNames.toNames(ctxNamesNeededForQuery);
 	}
 
 	@Override
