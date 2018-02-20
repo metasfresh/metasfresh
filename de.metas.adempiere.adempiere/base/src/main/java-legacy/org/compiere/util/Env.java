@@ -45,12 +45,14 @@ import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.context.ContextProvider;
 import org.adempiere.context.ThreadLocalContextProvider;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IWindowNoAware;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.Adempiere;
@@ -191,7 +193,7 @@ public final class Env
 			{
 				if (!finalCall)
 				{
-					Container c = s_windows.get(0);
+					final Container c = s_windows.get(0);
 					s_windows.clear();
 					createWindowNo(c);
 				}
@@ -332,17 +334,12 @@ public final class Env
 	/**
 	 * Matches any key which is about window context (i.e. starts with "WindowNo|").
 	 */
-	private static final Predicate<Object> CTXNAME_MATCHER_AnyWindow = new Predicate<Object>()
-	{
-		@Override
-		public boolean test(final Object key)
-		{
-			final String tag = key.toString();
+	private static final Predicate<Object> CTXNAME_MATCHER_AnyWindow = key -> {
+		final String tag = key.toString();
 
-			// NOTE: we kept the old logic which considered enough to check if the key starts with a digit
-			final boolean matched = Character.isDigit(tag.charAt(0));
-			return matched;
-		}
+		// NOTE: we kept the old logic which considered enough to check if the key starts with a digit
+		final boolean matched = Character.isDigit(tag.charAt(0));
+		return matched;
 	};
 
 	/**
@@ -496,15 +493,10 @@ public final class Env
 
 	private static final void removeContextForPrefix(final Properties ctx, final String keyPrefix)
 	{
-		removeContextMatching(ctx, new Predicate<Object>()
-		{
-			@Override
-			public boolean test(Object key)
-			{
-				final String tag = key.toString();
-				final boolean matched = tag.startsWith(keyPrefix);
-				return matched;
-			}
+		removeContextMatching(ctx, key -> {
+			final String tag = key.toString();
+			final boolean matched = tag.startsWith(keyPrefix);
+			return matched;
 		});
 	}
 
@@ -905,7 +897,7 @@ public final class Env
 		{
 			return Integer.parseInt(s);
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
 			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
@@ -922,7 +914,7 @@ public final class Env
 	 */
 	public static int getContextAsInt(Properties ctx, int WindowNo, String context)
 	{
-		String s = getContext(ctx, WindowNo, context, false);
+		final String s = getContext(ctx, WindowNo, context, false);
 		if (isPropertyValueNull(s) || s.length() == 0)
 			return 0;
 		//
@@ -930,7 +922,7 @@ public final class Env
 		{
 			return Integer.parseInt(s);
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
 			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
@@ -948,7 +940,7 @@ public final class Env
 	 */
 	public static int getContextAsInt(Properties ctx, int WindowNo, String context, boolean onlyWindow)
 	{
-		String s = getContext(ctx, WindowNo, context, onlyWindow);
+		final String s = getContext(ctx, WindowNo, context, onlyWindow);
 		if (isPropertyValueNull(s) || s.length() == 0)
 			return 0;
 		//
@@ -956,7 +948,7 @@ public final class Env
 		{
 			return Integer.parseInt(s);
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
 			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
@@ -974,7 +966,7 @@ public final class Env
 	 */
 	public static int getContextAsInt(Properties ctx, int WindowNo, int TabNo, String context)
 	{
-		String s = getContext(ctx, WindowNo, TabNo, context);
+		final String s = getContext(ctx, WindowNo, TabNo, context);
 		if (isPropertyValueNull(s) || s.length() == 0)
 			return 0;
 		//
@@ -982,7 +974,7 @@ public final class Env
 		{
 			return Integer.parseInt(s);
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
 			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
@@ -1041,7 +1033,7 @@ public final class Env
 	{
 		if (ctx == null)
 			throw new IllegalArgumentException("Require Context");
-		String s = getContext(ctx, CTXNAME_AutoNew);
+		final String s = getContext(ctx, CTXNAME_AutoNew);
 		if (s != null && s.equals("Y"))
 			return true;
 		return false;
@@ -1058,7 +1050,7 @@ public final class Env
 	{
 		if (ctx == null)
 			throw new IllegalArgumentException("Require Context");
-		String s = getContext(ctx, WindowNo, CTXNAME_AutoNew, false);
+		final String s = getContext(ctx, WindowNo, CTXNAME_AutoNew, false);
 		if (s != null)
 		{
 			if (s.equals("Y"))
@@ -1077,7 +1069,7 @@ public final class Env
 	 */
 	public static boolean isSOTrx(Properties ctx)
 	{
-		String s = getContext(ctx, CTXNAME_IsSOTrx);
+		final String s = getContext(ctx, CTXNAME_IsSOTrx);
 		if (s != null && s.equals("N"))
 			return false;
 		return true;
@@ -1386,7 +1378,7 @@ public final class Env
 	{
 		if (ctx != null)
 		{
-			String lang = getContext(ctx, CTXNAME_AD_Language);
+			final String lang = getContext(ctx, CTXNAME_AD_Language);
 			if (!Check.isEmpty(lang))
 			{
 				return lang;
@@ -1421,7 +1413,7 @@ public final class Env
 	{
 		if (ctx != null)
 		{
-			String lang = getAD_Language(ctx);
+			final String lang = getAD_Language(ctx);
 			if (!isPropertyValueNull(lang) && !Check.isEmpty(lang))
 			{
 				return Language.getLanguage(lang);
@@ -1502,7 +1494,7 @@ public final class Env
 			throw new IllegalArgumentException("Require Context");
 
 		final Set<String> keys = ctx.stringPropertyNames();
-		String[] sList = new String[keys.size()];
+		final String[] sList = new String[keys.size()];
 		int i = 0;
 		for (final String key : keys)
 		{
@@ -1524,7 +1516,7 @@ public final class Env
 	 */
 	public static String getHeader(final Properties ctx, final int WindowNo)
 	{
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 		if (isRegularWindowNo(WindowNo))
 		{
 			sb.append(getContext(ctx, WindowNo, CTXNAME_WindowName, false)).append("  ");
@@ -1655,7 +1647,7 @@ public final class Env
 	 */
 	public static int createWindowNo(final Container win)
 	{
-		int retValue = s_windows.size();
+		final int retValue = s_windows.size();
 		s_windows.add(win);
 		return retValue;
 	}	// createWindowNo
@@ -1730,7 +1722,7 @@ public final class Env
 		{
 			return getFrame(s_windows.get(WindowNo));
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			s_log.error("Failed getting frame for windowNo={}", WindowNo, e);
 		}
@@ -1807,7 +1799,7 @@ public final class Env
 		Container element = container;
 		while (element != null)
 		{
-			Graphics g = element.getGraphics();
+			final Graphics g = element.getGraphics();
 			if (g != null)
 				return g;
 			element = element.getParent();
@@ -1888,7 +1880,7 @@ public final class Env
 			return false;
 		for (int i = 0; i < s_hiddenWindows.size(); i++)
 		{
-			CFrame hidden = s_hiddenWindows.get(i);
+			final CFrame hidden = s_hiddenWindows.get(i);
 			s_log.info("Checking hidden window {}: {}", i, hidden);
 			if (hidden.getAD_Window_ID() == window.getAD_Window_ID())
 				return false;	// already there
@@ -1903,7 +1895,7 @@ public final class Env
 				// window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_ICONIFIED));
 				if (s_hiddenWindows.size() > 10)
 				{
-					CFrame toClose = s_hiddenWindows.remove(0);		// sort of lru
+					final CFrame toClose = s_hiddenWindows.remove(0);		// sort of lru
 					try
 					{
 						s_closingWindows = true;
@@ -1930,14 +1922,14 @@ public final class Env
 	{
 		for (int i = 0; i < s_hiddenWindows.size(); i++)
 		{
-			CFrame hidden = s_hiddenWindows.get(i);
+			final CFrame hidden = s_hiddenWindows.get(i);
 			if (hidden.getAD_Window_ID() == AD_Window_ID)
 			{
 				s_hiddenWindows.remove(i); // NOTE: we can safely remove here because we are also returning (no future iterations)
 				s_log.info("Showing window: {}", hidden);
 				hidden.setVisible(true);
 				// De-iconify window - teo_sarca [ 1707221 ]
-				int state = hidden.getExtendedState();
+				final int state = hidden.getExtendedState();
 				if ((state & CFrame.ICONIFIED) > 0)
 					hidden.setExtendedState(state & ~CFrame.ICONIFIED);
 				//
@@ -1975,7 +1967,7 @@ public final class Env
 		{
 			Thread.sleep(sec * 1000);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			s_log.warn("Failed sleeping for {} seconds", sec, e);
 		}
@@ -1989,19 +1981,19 @@ public final class Env
 	 */
 	public static Set<Window> updateUI()
 	{
-		Set<Window> updated = new HashSet<>();
-		for (Container c : s_windows)
+		final Set<Window> updated = new HashSet<>();
+		for (final Container c : s_windows)
 		{
-			Window w = getFrame(c);
+			final Window w = getFrame(c);
 			if (w == null)
 				continue;
 			if (updated.contains(w))
 				continue;
 			SwingUtilities.updateComponentTreeUI(w);
 			w.validate();
-			RepaintManager mgr = RepaintManager.currentManager(w);
-			Component childs[] = w.getComponents();
-			for (Component child : childs)
+			final RepaintManager mgr = RepaintManager.currentManager(w);
+			final Component childs[] = w.getComponents();
+			for (final Component child : childs)
 			{
 				if (child instanceof JComponent)
 					mgr.markCompletelyDirty((JComponent)child);
@@ -2009,15 +2001,15 @@ public final class Env
 			w.repaint();
 			updated.add(w);
 		}
-		for (Window w : s_hiddenWindows)
+		for (final Window w : s_hiddenWindows)
 		{
 			if (updated.contains(w))
 				continue;
 			SwingUtilities.updateComponentTreeUI(w);
 			w.validate();
-			RepaintManager mgr = RepaintManager.currentManager(w);
-			Component childs[] = w.getComponents();
-			for (Component child : childs)
+			final RepaintManager mgr = RepaintManager.currentManager(w);
+			final Component childs[] = w.getComponents();
+			for (final Component child : childs)
 			{
 				if (child instanceof JComponent)
 					mgr.markCompletelyDirty((JComponent)child);
@@ -2284,7 +2276,7 @@ public final class Env
 
 	public static Timestamp getContextAsDate(Properties ctx, int WindowNo, String context, boolean onlyWindow)
 	{
-		String s = getContext(ctx, WindowNo, context, onlyWindow);
+		final String s = getContext(ctx, WindowNo, context, onlyWindow);
 		// JDBC Format YYYY-MM-DD example 2000-09-11 00:00:00.0
 		if (isPropertyValueNull(s) || "".equals(s))
 		{
@@ -2301,7 +2293,7 @@ public final class Env
 
 	public static Timestamp getContextAsDate(Properties ctx, int WindowNo, int TabNo, String context, boolean onlyTab)
 	{
-		String s = getContext(ctx, WindowNo, TabNo, context, onlyTab);
+		final String s = getContext(ctx, WindowNo, TabNo, context, onlyTab);
 		// JDBC Format YYYY-MM-DD example 2000-09-11 00:00:00.0
 		if (isPropertyValueNull(s) || "".equals(s))
 		{
@@ -2335,7 +2327,7 @@ public final class Env
 		{
 			return Integer.parseInt(s);
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
 			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
 		}
@@ -2379,22 +2371,40 @@ public final class Env
 	 * @return Timestamp or <code>null</code> if value is empty
 	 * @see #toString(Timestamp)
 	 */
-	public static Timestamp parseTimestamp(String timestampStr)
+	public static Timestamp parseTimestamp(final String timestampStr)
 	{
 		// JDBC Format YYYY-MM-DD example 2000-09-11 00:00:00.0
-		if (timestampStr == null || timestampStr.isEmpty() || isPropertyValueNull(timestampStr))
+		if (timestampStr == null || Check.isEmpty(timestampStr, true) || isPropertyValueNull(timestampStr))
 		{
 			return null;
 		}
 
 		// timestamp requires time
-		timestampStr = timestampStr.trim();
-		if (timestampStr.length() == 10)
-			timestampStr = timestampStr + " 00:00:00.0";
+		final String timestampStrToUse;
+		if (timestampStr.trim().length() == 10)
+		{
+			timestampStrToUse = timestampStr.trim() + " 00:00:00.0";
+		}
 		else if (timestampStr.indexOf('.') == -1)
-			timestampStr = timestampStr + ".0";
+		{
+			timestampStrToUse = timestampStr.trim() + ".0";
+		}
+		else
+		{
+			timestampStrToUse = timestampStr.trim();
+		}
 
-		return Timestamp.valueOf(timestampStr);
+		try
+		{
+			return Timestamp.valueOf(timestampStrToUse);
+		}
+		catch (final RuntimeException e)
+		{
+			final String message = StringUtils.formatMessage(
+					"Unable to parse timestampStrToUse={}; given param timestampStr={}",
+					timestampStrToUse, timestampStr);
+			throw new AdempiereException(message, e);
+		}
 	}
 
 	public static final String toString(final boolean value)
