@@ -16,7 +16,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.apps.ADialogDialog;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VComboBox;
