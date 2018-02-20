@@ -229,7 +229,7 @@ public class LayoutFactory
 		// Usually this happens when generating the single row layout for included tabs.
 		if (!layoutSectionsList.stream().anyMatch(DocumentLayoutSectionDescriptor.Builder::isNotEmpty))
 		{
-			DocumentLayoutSectionDescriptor.Builder oneLayoutSection = DocumentLayoutSectionDescriptor.builder()
+			final DocumentLayoutSectionDescriptor.Builder oneLayoutSection = DocumentLayoutSectionDescriptor.builder()
 					.addColumn(layoutGridView().getElements());
 			layoutSectionsList = ImmutableList.of(oneLayoutSection);
 		}
@@ -616,12 +616,12 @@ public class LayoutFactory
 		//
 		// Quick input
 		{
-			final boolean supportQuickInput = quickInputDescriptors.hasQuickInputEntityDescriptor( //
-					entityDescriptor.getDocumentType() //
-					, entityDescriptor.getDocumentTypeId() //
-					, entityDescriptor.getTableNameOrNull() //
-					, entityDescriptor.getDetailId() //
-			);
+			final boolean supportQuickInput = quickInputDescriptors.hasQuickInputEntityDescriptor(
+					entityDescriptor.getDocumentType(),
+					entityDescriptor.getDocumentTypeId(),
+					entityDescriptor.getTableNameOrNull(),
+					entityDescriptor.getDetailId(),
+					entityDescriptor.getIsSOTrx());
 			layoutDetail.setSupportQuickInput(supportQuickInput);
 		}
 

@@ -2,6 +2,7 @@ package de.metas.ui.web.quickinput.forecastline;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -37,6 +38,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -73,23 +75,28 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 	}
 
 	@Override
-	public QuickInputDescriptor createQuickInputEntityDescriptor(final DocumentType documentType, final DocumentId documentTypeId, final DetailId detailId)
+	public QuickInputDescriptor createQuickInputEntityDescriptor(
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final DetailId detailId,
+			@NonNull final Optional<Boolean> soTrx)
 	{
-		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(documentType, documentTypeId, detailId);
+		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(documentTypeId, detailId, soTrx);
 		final QuickInputLayoutDescriptor layout = createLayout(entityDescriptor);
 
 		return QuickInputDescriptor.of(entityDescriptor, layout, ForecastLineQuickInputProcessor.class);
 	}
 
 	private DocumentEntityDescriptor createEntityDescriptor(
-			final DocumentType documentType,
 			final DocumentId documentTypeId,
-			final DetailId detailId)
+			final DetailId detailId,
+			@NonNull final Optional<Boolean> soTrx)
 	{
 		return createDescriptorBuilder(documentTypeId, detailId)
 				.addField(createProductFieldBuilder())
 				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), () -> createPackingInstructionFieldBuilder())
 				.addField(createQuantityFieldBuilder())
+				.setIsSOTrx(soTrx)
 				.build();
 	}
 
