@@ -151,7 +151,7 @@ class Table extends Component {
       showIncludedViewOnSelect({
         showIncludedView: false,
         windowType,
-        viewId
+        viewId,
       });
     }
   }
@@ -165,12 +165,10 @@ class Table extends Component {
         if (item.id === selected[0]) {
           showIncludedViewOnSelect({
             showIncludedView: item.supportIncludedViews,
-
             windowType: item.supportIncludedViews
               ? item.includedView.windowType || item.includedView.windowId
               : null,
-
-            viewId: item.supportIncludedViews ? item.includedView.viewId : ""
+            viewId: item.supportIncludedViews ? item.includedView.viewId : '',
           });
         }
       });
@@ -264,9 +262,7 @@ class Table extends Component {
   };
 
   changeListen = listenOnKeys => {
-    this.setState({
-      listenOnKeys: !!listenOnKeys
-    });
+    this.setState({ listenOnKeys: !!listenOnKeys });
   };
 
   selectProduct = (id, idFocused, idFocusedDown) => {
@@ -283,7 +279,7 @@ class Table extends Component {
           selectTableItems({
             windowType: type,
             viewId,
-            ids: selected
+            ids: selected,
           })
         );
       }
@@ -293,7 +289,7 @@ class Table extends Component {
           selectTableItems({
             windowType: type,
             viewId,
-            ids: selected
+            ids: selected,
           })
         );
       }
@@ -307,16 +303,14 @@ class Table extends Component {
   selectRangeProduct = ids => {
     const { dispatch, tabInfo, type, viewId } = this.props;
 
-    this.setState({
-      selected: ids
-    });
+    this.setState({ selected: ids });
 
     if (tabInfo) {
       dispatch(
         selectTableItems({
           windowType: type,
           viewId,
-          ids
+          ids,
         })
       );
     }
@@ -325,7 +319,7 @@ class Table extends Component {
   selectAll = () => {
     const { keyProperty } = this.props;
     const { rows } = this.state;
-    const property = keyProperty ? keyProperty : "rowId";
+    const property = keyProperty ? keyProperty : 'rowId';
     const toSelect = rows.map(item => item[property]);
 
     this.selectRangeProduct(toSelect);
@@ -336,7 +330,7 @@ class Table extends Component {
 
     this.setState(
       {
-        selected: [id]
+        selected: [id],
       },
       () => {
         if (tabInfo) {
@@ -344,7 +338,7 @@ class Table extends Component {
             selectTableItems({
               windowType: type,
               viewId,
-              ids: [id]
+              ids: [id],
             })
           );
         }
@@ -1234,14 +1228,14 @@ class Table extends Component {
             handleAdvancedEdit={
               selected.length > 0
                 ? () => this.handleAdvancedEdit(type, tabid, selected)
-                : ""
+                : ''
             }
             handleOpenNewTab={
               selected.length > 0 && mainTable
                 ? () => this.handleOpenNewTab(selected)
-                : ""
+                : ''
             }
-            handleDelete={selected.length > 0 ? () => this.handleDelete() : ""}
+            handleDelete={selected.length > 0 ? () => this.handleDelete() : ''}
             getAllLeafs={this.getAllLeafs}
             handleIndent={this.handleShortcutIndent}
           />
