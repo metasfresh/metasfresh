@@ -32,4 +32,6 @@ public class PickingConfig
 {
 	@NonNull
 	private final String webuiPickingTerminalViewProfileId;
+	
+	private final boolean allowOverDelivery;
 }

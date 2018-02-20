@@ -69,11 +69,13 @@ public class AddQtyToHUCommand
 	private final int targetHUId;
 	private final int pickingSlotId;
 	private final int shipmentScheduleId;
+	private final boolean isAllowOverdelivery;
 
 	@Builder
 	private AddQtyToHUCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			@NonNull final BigDecimal qtyCU,
+			final boolean isAllowOverdelivery,
 			final int targetHUId,
 			final int pickingSlotId,
 			final int shipmentScheduleId)
@@ -91,6 +93,7 @@ public class AddQtyToHUCommand
 		this.targetHUId = targetHUId;
 		this.pickingSlotId = pickingSlotId;
 		this.shipmentScheduleId = shipmentScheduleId;
+		this.isAllowOverdelivery = isAllowOverdelivery;
 
 	}
 
@@ -99,7 +102,15 @@ public class AddQtyToHUCommand
 	 */
 	public Quantity performAndGetQtyPicked()
 	{
+
 		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		final boolean overdeliveryError = !isAllowOverdelivery && isOverdelivery();
+
+		if (overdeliveryError)
+		{
+			throw new AdempiereException("Overdelivery not allowed for shipment schedule").setParameter("ShipmentSchedule", shipmentSchedule);
+		}
+
 		final I_M_Product product = shipmentSchedule.getM_Product();
 
 		final I_M_Picking_Candidate candidate = pickingCandidateRepository.getCreateCandidate(targetHUId, pickingSlotId, shipmentScheduleId);
@@ -191,5 +202,18 @@ public class AddQtyToHUCommand
 		candidate.setQtyPicked(qtyNew.getQty());
 		candidate.setC_UOM(qtyNew.getUOM());
 		pickingCandidateRepository.save(candidate);
+	}
+
+	private boolean isOverdelivery()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		final BigDecimal qtytoDeliver = shipmentSchedule.getQtyToDeliver().subtract(shipmentSchedule.getQtyPickList());
+
+		if (qtyCU.compareTo(qtytoDeliver) > 0)
+		{
+			return true;
+		}
+
+		return false;
 	}
 }
