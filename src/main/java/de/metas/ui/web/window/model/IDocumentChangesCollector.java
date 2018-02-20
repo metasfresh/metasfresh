@@ -56,6 +56,8 @@ public interface IDocumentChangesCollector
 
 	void collectLookupValuesStaled(IDocumentFieldView documentField, ReasonSupplier reason);
 
+	void collectFieldWarning(IDocumentFieldView documentField, DocumentFieldWarning fieldWarning);
+
 	void collectFrom(IDocumentChangesCollector fromCollector);
 
 	/**

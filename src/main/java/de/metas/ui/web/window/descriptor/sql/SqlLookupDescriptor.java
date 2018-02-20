@@ -98,7 +98,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 
 	public static final String SQL_PARAM_VALUE_ShowInactive_Yes = "Y"; // i.e. show all
 	public static final String SQL_PARAM_VALUE_ShowInactive_No = "N";
-	public static final CtxName SQL_PARAM_ShowInactive = CtxNames.parse("SqlShowInactive/N");
+	public static final CtxName SQL_PARAM_ShowInactive = CtxNames.ofNameAndDefaultValue("SqlShowInactive", SQL_PARAM_VALUE_ShowInactive_No);
 
 	private static final int WINDOWNO_Dummy = 99999;
 
@@ -294,7 +294,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		private boolean numericKey;
 		private Set<String> dependsOnFieldNames;
 
-		private List<IValidationRule> validationRules = new ArrayList<>();
+		private final List<IValidationRule> validationRules = new ArrayList<>();
 		private IValidationRule validationRuleEffective = NullValidationRule.instance;
 		private String sqlTableName;
 		private ICachedStringExpression sqlForFetchingExpression;

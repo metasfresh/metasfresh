@@ -1,6 +1,7 @@
 package de.metas.ui.web.quickinput;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.compiere.util.CCache;
@@ -14,10 +15,12 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory.MatchingKey;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -55,7 +58,9 @@ public class QuickInputDescriptorFactoryService
 		final DocumentId documentTypeId = includedDocumentDescriptor.getDocumentTypeId();
 		final String tableName = includedDocumentDescriptor.getTableNameOrNull();
 		final DetailId detailId = includedDocumentDescriptor.getDetailId();
-		return getQuickInputEntityDescriptor(documentType, documentTypeId, tableName, detailId);
+		final Optional<Boolean> soTrx = includedDocumentDescriptor.getIsSOTrx();
+
+		return getQuickInputEntityDescriptor(documentType, documentTypeId, tableName, detailId, soTrx);
 	}
 
 	@Autowired
@@ -91,61 +96,125 @@ public class QuickInputDescriptorFactoryService
 		return factories.build();
 	}
 
-	public boolean hasQuickInputEntityDescriptor(final DocumentEntityDescriptor includedDocumentDescriptor)
+	public boolean hasQuickInputEntityDescriptor(@NonNull final DocumentEntityDescriptor includedDocumentDescriptor)
 	{
 		final DocumentType documentType = includedDocumentDescriptor.getDocumentType();
 		final DocumentId documentTypeId = includedDocumentDescriptor.getDocumentTypeId();
 		final String tableName = includedDocumentDescriptor.getTableNameOrNull();
 		final DetailId detailId = includedDocumentDescriptor.getDetailId();
-		return getQuickInputEntityDescriptorOrNull(documentType, documentTypeId, tableName, detailId) != null;
+		final Optional<Boolean> soTrx = includedDocumentDescriptor.getIsSOTrx();
+
+		return getQuickInputEntityDescriptorOrNull(documentType, documentTypeId, tableName, detailId, soTrx) != null;
 	}
 
-	public boolean hasQuickInputEntityDescriptor(final DocumentType documentType, final DocumentId documentTypeId, final String tableName, final DetailId detailId)
+	public boolean hasQuickInputEntityDescriptor(
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final String tableName,
+			final DetailId detailId,
+			final Optional<Boolean> soTrx)
 	{
-		return getQuickInputEntityDescriptorOrNull(documentType, documentTypeId, tableName, detailId) != null;
+		final QuickInputDescriptor quickInputEntityDescriptorOrNull = getQuickInputEntityDescriptorOrNull(
+				documentType,
+				documentTypeId,
+				tableName,
+				detailId,
+				soTrx);
+		return quickInputEntityDescriptorOrNull != null;
 	}
 
-	public QuickInputDescriptor getQuickInputEntityDescriptor(final DocumentType documentType, final DocumentId documentTypeId, final String tableName, final DetailId detailId)
+	public QuickInputDescriptor getQuickInputEntityDescriptor(
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final String tableName,
+			final DetailId detailId,
+			final Optional<Boolean> soTrx)
 	{
-		final QuickInputDescriptor descriptor = getQuickInputEntityDescriptorOrNull(documentType, documentTypeId, tableName, detailId);
-		if(descriptor == null)
+		final QuickInputDescriptor descriptor = getQuickInputEntityDescriptorOrNull(
+				documentType,
+				documentTypeId,
+				tableName,
+				detailId,
+				soTrx);
+
+		if (descriptor == null)
 		{
-			throw new EntityNotFoundException("Batch input not available");
+			throw new EntityNotFoundException("Batch input not available; found no QuickInputDescriptor for the given parameters")
+					.appendParametersToMessage()
+					.setParameter("documentType", documentType)
+					.setParameter("documentTypeId", documentTypeId)
+					.setParameter("tableName", tableName)
+					.setParameter("detailId", detailId)
+					.setParameter("soTrx", soTrx);
+
 		}
 		return descriptor;
 	}
-	
-	private QuickInputDescriptor getQuickInputEntityDescriptorOrNull(final DocumentType documentType, final DocumentId documentTypeId, final String tableName, final DetailId detailId)
+
+	private QuickInputDescriptor getQuickInputEntityDescriptorOrNull(
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final String tableName,
+			final DetailId detailId,
+			final Optional<Boolean> soTrx)
 	{
-		final ArrayKey key = ArrayKey.of(documentType, documentTypeId, tableName, detailId);
-		return descriptors.getOrLoad(key, () -> createQuickInputEntityDescriptorOrNull(documentType, documentTypeId, tableName, detailId));
+		final ArrayKey key = ArrayKey.of(
+				documentType,
+				documentTypeId,
+				tableName,
+				detailId,
+				soTrx);
+
+		return descriptors.getOrLoad(key, () -> createQuickInputEntityDescriptorOrNull(
+				documentType,
+				documentTypeId,
+				tableName,
+				detailId,
+				soTrx));
 	}
 
-	private QuickInputDescriptor createQuickInputEntityDescriptorOrNull(final DocumentType documentType, final DocumentId documentTypeId, final String tableName, final DetailId detailId)
+	private QuickInputDescriptor createQuickInputEntityDescriptorOrNull(
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final String tableName,
+			final DetailId detailId,
+			final Optional<Boolean> soTrx)
 	{
-		final IQuickInputDescriptorFactory quickInputDescriptorFactory = getQuickInputDescriptorFactory(documentType, documentTypeId, tableName);
+		final IQuickInputDescriptorFactory quickInputDescriptorFactory = getQuickInputDescriptorFactory(
+				documentType,
+				documentTypeId,
+				tableName,
+				soTrx);
 		if (quickInputDescriptorFactory == null)
 		{
 			return null;
 		}
 
-		final QuickInputDescriptor quickInputDescriptor = quickInputDescriptorFactory.createQuickInputEntityDescriptor(documentType, documentTypeId, detailId);
+		final QuickInputDescriptor quickInputDescriptor = quickInputDescriptorFactory.createQuickInputEntityDescriptor(
+				documentType,
+				documentTypeId,
+				detailId,
+				soTrx);
 		return quickInputDescriptor;
 	}
 
-	private IQuickInputDescriptorFactory getQuickInputDescriptorFactory(final DocumentType documentType, final DocumentId documentTypeId, final String tableName)
+	private IQuickInputDescriptorFactory getQuickInputDescriptorFactory(
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final String tableName,
+			final Optional<Boolean> soTrx)
 	{
-		//
 		// Find factory for included document
 		{
-			final IQuickInputDescriptorFactory factory = factories.get(IQuickInputDescriptorFactory.MatchingKey.includedDocument(documentType, documentTypeId, tableName));
+			final MatchingKey matchingKey = IQuickInputDescriptorFactory.MatchingKey.includedDocument(documentType, documentTypeId, tableName);
+
+			final IQuickInputDescriptorFactory factory = factories.get(matchingKey);
 			if (factory != null)
 			{
 				return factory;
 			}
 		}
 
-		//
 		// Find factory for table
 		{
 			final IQuickInputDescriptorFactory factory = factories.get(IQuickInputDescriptorFactory.MatchingKey.ofTableName(tableName));

@@ -1,5 +1,6 @@
 package de.metas.ui.web.quickinput;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
@@ -48,7 +49,11 @@ public interface IQuickInputDescriptorFactory
 	 */
 	Set<MatchingKey> getMatchingKeys();
 
-	QuickInputDescriptor createQuickInputEntityDescriptor(final DocumentType documentType, final DocumentId documentTypeId, final DetailId detailId);
+	QuickInputDescriptor createQuickInputEntityDescriptor(
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final DetailId detailId,
+			final Optional<Boolean> soTrx);
 
 	//
 	//
