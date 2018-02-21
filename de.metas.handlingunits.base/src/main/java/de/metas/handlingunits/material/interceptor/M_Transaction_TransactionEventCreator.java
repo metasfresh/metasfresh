@@ -80,7 +80,10 @@ public class M_Transaction_TransactionEventCreator
 		{
 			result.add(createEventForMovementLine(transaction, deleted));
 		}
+		else if (transaction.getM_InventoryLine_ID() > 0)
+		{
 
+		}
 		return result.build();
 	}
 
