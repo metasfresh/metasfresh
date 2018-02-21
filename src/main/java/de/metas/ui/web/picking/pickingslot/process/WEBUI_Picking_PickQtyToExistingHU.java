@@ -7,10 +7,13 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
 import java.math.BigDecimal;
 import java.util.Objects;
 
+import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -54,6 +57,10 @@ public class WEBUI_Picking_PickQtyToExistingHU
 		extends WEBUI_Picking_With_M_Source_HU_Base
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+
+	@Autowired
+	private PickingConfigRepository pickingConfigRepo;
+
 	@Autowired
 	private PickingCandidateService pickingCandidateService;
 
@@ -93,11 +100,14 @@ public class WEBUI_Picking_PickQtyToExistingHU
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 
+		final boolean isAllowOverdelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
+
 		pickingCandidateService.addQtyToHU()
 				.qtyCU(qtyCU)
 				.targetHUId(pickingSlotRow.getHuId())
 				.pickingSlotId(pickingSlotRow.getPickingSlotId())
 				.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
+				.isAllowOverdelivery(isAllowOverdelivery)
 				.build()
 				.performAndGetQtyPicked();
 
@@ -119,7 +129,8 @@ public class WEBUI_Picking_PickQtyToExistingHU
 		}
 
 		final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
-		return shipmentSchedule.getQtyToDeliver();
+		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlanned(shipmentSchedule);
+		return shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned);
 	}
 
 }
