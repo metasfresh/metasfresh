@@ -23,6 +23,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -184,7 +185,8 @@ public class WEBUI_Picking_PickQtyToNewHU
 			// return shipmentSchedule.getQtyToDeliver(); // TODO: get the "better" value from teo, when it's available
 
 			// qty to deliver - picked qty)
-			return shipmentSchedule.getQtyToDeliver().subtract(shipmentSchedule.getQtyPickList()); 
+			final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlanned(shipmentSchedule);
+			return shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned); 
 
 		}
 		else if (Objects.equals(PARAM_M_HU_PI_Item_Product_ID, parameter.getColumnName()))
