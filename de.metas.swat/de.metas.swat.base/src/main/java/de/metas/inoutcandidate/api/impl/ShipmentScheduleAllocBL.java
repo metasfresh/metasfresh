@@ -16,15 +16,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -52,12 +51,20 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 		return Services.get(IShipmentScheduleAllocDAO.class).retrievePickedNotDeliveredQty(sched);
 	}
 
+	private enum Mode
+	{
+		/** Just take the given {@code qtyPicked} (converted to sched's UOM ) and set it as the new {@code schedQtyPicked}'s {@code QtyPicked value}. */
+		JUST_SET_QTY,
+
+		/** Retrieve the sched's qty that is picked, but not yet shipped, and subtract that quantity from the given {@code qtyPicked}. */
+		SUBTRACT_FROM_ALREADY_PICKED_QTY
+	}
+
 	@Override
 	public void setQtyPicked(final I_M_ShipmentSchedule sched, final BigDecimal qtyPicked)
 	{
-		final boolean justAdd = false;
 		final I_C_UOM uom = Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched);
-		setQtyPicked(sched, Quantity.of(qtyPicked, uom), justAdd);
+		setQtyPicked(sched, Quantity.of(qtyPicked, uom), Mode.SUBTRACT_FROM_ALREADY_PICKED_QTY);
 	}
 
 	@Override
@@ -65,8 +72,7 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 			final I_M_ShipmentSchedule sched,
 			final Quantity qtyPickedDiff)
 	{
-		final boolean justAdd = true;
-		return setQtyPicked(sched, qtyPickedDiff, justAdd);
+		return setQtyPicked(sched, qtyPickedDiff, Mode.JUST_SET_QTY);
 	}
 
 	/**
@@ -79,7 +85,7 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 	private I_M_ShipmentSchedule_QtyPicked setQtyPicked(
 			@NonNull final I_M_ShipmentSchedule sched,
 			@NonNull final Quantity qtyPicked,
-			final boolean justAdd)
+			@NonNull final Mode mode)
 	{
 		// Convert QtyPicked to shipment schedule's UOM
 		final org.compiere.model.I_M_Product product = sched.getM_Product();
@@ -88,10 +94,10 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 				qtyPicked.getQty(),
 				qtyPicked.getUOM(), // from UOM
 				schedUOM // to UOM
-				);
+		);
 
 		final BigDecimal qtyPickedToAdd;
-		if (justAdd)
+		if (Mode.JUST_SET_QTY.equals(mode))
 		{
 			qtyPickedToAdd = qtyPickedConv;
 		}
@@ -118,7 +124,7 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 		// task 08959
 		// Only the allocations made on inout lines that belong to a completed inout are considered Delivered.
 		final I_M_InOutLine line = alloc.getM_InOutLine();
-		if(line == null)
+		if (line == null)
 		{
 			return false;
 		}

@@ -660,6 +660,5 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		shipmentSchedule.setQtyTU_Calculated(qtyTU_Effective);
 		shipmentSchedule.setQtyOrdered_TU(qtyTU_Effective);
-		shipmentSchedule.setQtyTU_Override(qtyTU_Effective);
 	}
 }
