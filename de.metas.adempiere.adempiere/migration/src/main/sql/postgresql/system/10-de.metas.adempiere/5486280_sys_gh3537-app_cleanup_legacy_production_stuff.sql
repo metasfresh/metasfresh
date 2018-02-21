@@ -115,7 +115,7 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=3674
 DELETE FROM AD_Column WHERE AD_Column_ID=3674
 ;
 
-SELECT db_alter_table('M_Transaction', 'ALTER TABLE M_Transction DROP COLUMN IF EXISTS M_ProductionLine_ID;');
+SELECT db_alter_table('M_Transaction', 'ALTER TABLE M_Transaction DROP COLUMN IF EXISTS M_ProductionLine_ID;');
 
 DROP TABLE M_ProductionLineMA;
 
