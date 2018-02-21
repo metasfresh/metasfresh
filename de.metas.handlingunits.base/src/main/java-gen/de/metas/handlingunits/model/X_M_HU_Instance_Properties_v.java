@@ -15,7 +15,7 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1851984908L;
+	private static final long serialVersionUID = 1584325484L;
 
     /** Standard Constructor */
     public X_M_HU_Instance_Properties_v (Properties ctx, int M_HU_Instance_Properties_v_ID, String trxName)
@@ -82,7 +82,7 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 		return (java.lang.String)get_Value(COLUMNNAME_DocumentName);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -92,7 +92,7 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override

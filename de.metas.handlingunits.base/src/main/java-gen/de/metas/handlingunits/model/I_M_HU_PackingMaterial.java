@@ -352,10 +352,6 @@ public interface I_M_HU_PackingMaterial
 
 	/**
 	 * Set Geschlossen.
-	 * In diesem Feld kann gesteuert werden, ob beim Verpacken das Gesamtvolumen verändert wird oder gleich bleibt.
-Beispiel
-Beim Verpacken einer offenen Palette ändert sich das Gesamtvolumen.
-Beim Verpacken einer geschlossenen Kiste ändert sich das Gesamtvolumen nicht.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -365,10 +361,6 @@ Beim Verpacken einer geschlossenen Kiste ändert sich das Gesamtvolumen nicht.
 
 	/**
 	 * Get Geschlossen.
-	 * In diesem Feld kann gesteuert werden, ob beim Verpacken das Gesamtvolumen verändert wird oder gleich bleibt.
-Beispiel
-Beim Verpacken einer offenen Palette ändert sich das Gesamtvolumen.
-Beim Verpacken einer geschlossenen Kiste ändert sich das Gesamtvolumen nicht.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

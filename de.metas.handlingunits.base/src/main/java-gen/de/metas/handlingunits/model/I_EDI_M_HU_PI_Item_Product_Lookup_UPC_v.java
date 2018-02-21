@@ -48,7 +48,7 @@ public interface I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Packvorschrift-Produkt Zuordnung.
+	 * Set Packvorschrift.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -57,7 +57,7 @@ public interface I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v
 	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
 
 	/**
-	 * Get Packvorschrift-Produkt Zuordnung.
+	 * Get Packvorschrift.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false

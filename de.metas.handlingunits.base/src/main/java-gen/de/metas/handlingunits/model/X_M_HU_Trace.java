@@ -15,7 +15,7 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1131954781L;
+	private static final long serialVersionUID = 649082030L;
 
     /** Standard Constructor */
     public X_M_HU_Trace (Properties ctx, int M_HU_Trace_ID, String trxName)
@@ -390,18 +390,6 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
-	}
-
-	@Override
-	public void setM_ShipmentSchedule(de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule)
-	{
-		set_ValueFromPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class, M_ShipmentSchedule);
-	}
-
 	/** Set Lieferdisposition.
 		@param M_ShipmentSchedule_ID Lieferdisposition	  */
 	@Override
@@ -597,6 +585,8 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public static final String VHUSTATUS_Picked = "S";
 	/** Shipped = E */
 	public static final String VHUSTATUS_Shipped = "E";
+	/** Issued = I */
+	public static final String VHUSTATUS_Issued = "I";
 	/** Set CU (VHU) Gebindestatus.
 		@param VHUStatus CU (VHU) Gebindestatus	  */
 	@Override
