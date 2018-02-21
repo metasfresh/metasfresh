@@ -15,6 +15,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh
+  * [#3513](https://github.com/metasfresh/metasfresh/issues/3513) Webui: Pimp DATEV windows
+    * New Windows for accounting export and export formats in webui.
   * [#3515](https://github.com/metasfresh/metasfresh/issues/3515) Webui: Pimp Compensation Group Schema window
     * New Window for Compensation group maintenance.
 
