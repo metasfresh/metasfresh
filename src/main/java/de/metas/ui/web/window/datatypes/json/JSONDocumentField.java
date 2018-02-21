@@ -98,7 +98,7 @@ public final class JSONDocumentField implements Serializable
 				.setValue(jsonValue, reason);
 	}
 
-	public static JSONDocumentField ofDocumentFieldChangedEvent(final DocumentFieldChange event)
+	public static JSONDocumentField ofDocumentFieldChangedEvent(final DocumentFieldChange event, final JSONOptions jsonOpts)
 	{
 		final JSONLayoutWidgetType widgetType = JSONLayoutWidgetType.fromNullable(event.getWidgetType());
 		final JSONDocumentField jsonField = new JSONDocumentField(event.getFieldName(), widgetType);
@@ -137,6 +137,8 @@ public final class JSONDocumentField implements Serializable
 		{
 			jsonField.setValidStatus(validStatus);
 		}
+
+		jsonField.setFieldWarning(JSONDocumentFieldWarning.ofNullable(event.getFieldWarning(), jsonOpts.getAD_Language()));
 
 		jsonField.putDebugProperties(event.getDebugProperties());
 
@@ -199,6 +201,10 @@ public final class JSONDocumentField implements Serializable
 	@JsonProperty("viewEditorRenderMode")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String viewEditorRenderMode;
+
+	@JsonProperty("warning")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private JSONDocumentFieldWarning fieldWarning;
 
 	/** Other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
@@ -412,6 +418,12 @@ public final class JSONDocumentField implements Serializable
 	public JSONDocumentField setViewEditorRenderMode(final ViewEditorRenderMode viewEditorRenderMode)
 	{
 		this.viewEditorRenderMode = viewEditorRenderMode != null ? viewEditorRenderMode.toJson() : null;
+		return this;
+	}
+
+	public JSONDocumentField setFieldWarning(final JSONDocumentFieldWarning fieldWarning)
+	{
+		this.fieldWarning = fieldWarning;
 		return this;
 	}
 }

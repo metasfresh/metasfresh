@@ -1,18 +1,17 @@
 package de.metas.ui.web.quickinput.invoiceline;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_InvoiceLine;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.i18n.IMsgBL;
-import de.metas.ui.web.material.adapter.AvailableStockAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
@@ -24,6 +23,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -50,9 +50,6 @@ import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 @Component
 public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
-	@Autowired
-	private AvailableStockAdapter availableStockService;
-
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
 	{
@@ -60,20 +57,29 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 	}
 
 	@Override
-	public QuickInputDescriptor createQuickInputEntityDescriptor(final DocumentType documentType, final DocumentId documentTypeId, final DetailId detailId)
+	public QuickInputDescriptor createQuickInputEntityDescriptor(
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final DetailId detailId,
+			@NonNull final Optional<Boolean> soTrx)
 	{
-		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(documentType, documentTypeId, detailId);
+		final DocumentEntityDescriptor entityDescriptor = createEntityDescriptor(documentType, documentTypeId, detailId, soTrx);
 		final QuickInputLayoutDescriptor layout = createLayout(entityDescriptor);
 
 		return QuickInputDescriptor.of(entityDescriptor, layout, InvoiceLineQuickInputProcessor.class);
 	}
 
-	private DocumentEntityDescriptor createEntityDescriptor(final DocumentType documentType, final DocumentId documentTypeId, final DetailId detailId)
+	private DocumentEntityDescriptor createEntityDescriptor(
+			final DocumentType documentType,
+			final DocumentId documentTypeId,
+			final DetailId detailId,
+			@NonNull final Optional<Boolean> soTrx)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 		final DocumentEntityDescriptor.Builder entityDescriptor = DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.QuickInput, documentTypeId)
+				.setIsSOTrx(soTrx)
 				.disableDefaultTableCallouts()
 				// Defaults:
 				.setDetailId(detailId);
@@ -85,7 +91,6 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.setLookupDescriptorProvider(ProductLookupDescriptor.builderWithoutStockInfo()
 						.bpartnerParamName(I_C_Invoice.COLUMNNAME_C_BPartner_ID)
 						.pricingDateParamName(I_C_Invoice.COLUMNNAME_DateInvoiced)
-						.availableStockService(availableStockService)
 						.build())
 				.setMandatoryLogic(true)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
