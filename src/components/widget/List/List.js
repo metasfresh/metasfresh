@@ -1,12 +1,13 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { List } from 'immutable';
 
 import { dropdownRequest } from '../../../actions/GenericActions';
 import { getViewAttributeDropdown } from '../../../actions/ViewAttributesActions';
 import RawList from './RawList';
 
-class List extends Component {
+class ListWidget extends Component {
   previousValue = '';
 
   constructor(props) {
@@ -38,17 +39,7 @@ class List extends Component {
   componentWillReceiveProps(nextProps) {
     const { autoFocus: nextAutoFocus } = nextProps;
     const { autoFocus, isModal } = this.props;
-    // const { autoFocus: stateAutoFocus } = this.state;
-    // const { autoFocus } = this.state;
-    // if (!isFocused) {
-    //   if (autoFocus) {
-    //     this.focus();
-    //   } else {
-    //     if (initialFocus && !defaultValue) {
-    //       this.focus();
-    //     }
-    //   }
-    // }
+
     if (nextAutoFocus !== autoFocus && !isModal) {
       this.setState({
         autoFocus: nextAutoFocus,
@@ -58,24 +49,21 @@ class List extends Component {
 
   componentDidUpdate(prevProps) {
     const { isInputEmpty } = this.props;
-    const { initialFocus, defaultValue } = this.props;
+    const { initialFocus, defaultValue, doNotOpenOnFocus } = this.props;
     const { autoFocus, isFocused } = this.state;
 
     if (isInputEmpty && prevProps.isInputEmpty !== isInputEmpty) {
       this.previousValue = '';
     }
 
-    // if (!this.props.lookupList && this.dropdown.className.indexOf('select-dropdown') > 0) {
-    //   console.log('here1: ', autoFocus, initialFocus, defaultValue, doNotOpenOnFocus)
-    // }
-
-    // focus
     if (prevProps.autoFocus !== autoFocus && !isFocused) {
       if (autoFocus) {
         this.handleFocus();
+        !doNotOpenOnFocus && this.activate();
       } else {
         if (initialFocus && !defaultValue) {
           this.handleFocus();
+          !doNotOpenOnFocus && this.activate();
         }
       }
     }
@@ -96,10 +84,12 @@ class List extends Component {
       attribute,
       lastProperty,
       disableAutofocus,
+      doNotOpenOnFocus,
     } = this.props;
+    const { listFocused } = this.state;
 
     this.setState({
-      list: [],
+      list: List(),
       loading: true,
     });
 
@@ -130,7 +120,7 @@ class List extends Component {
         this.previousValue = '';
 
         this.setState({
-          list: values,
+          list: List(values),
           loading: false,
         });
 
@@ -140,16 +130,17 @@ class List extends Component {
         }
       } else {
         this.setState({
-          list: values,
+          list: List(values),
           loading: false,
         });
       }
 
       if (values.length === 0 && lastProperty) {
         disableAutofocus();
-      } else if ((forceFocus || (!forceFocus && this.state.autoFocus)) &&
-        values && values.length > 0) {
-        this.focus();
+      } else if ((forceFocus || this.state.autoFocus) &&
+        values && values.length > 1) {
+        !listFocused && this.handleFocus();
+        !doNotOpenOnFocus && this.activate();
       }
     });
   };
@@ -158,99 +149,47 @@ class List extends Component {
     const { onFocus } = this.props;
     const { list, loading } = this.state;
 
-    console.log('handleFocus: ', list, loading)
-
-    if (!list && !loading) {
-      this.requestListData();
-    }
-
+    this.focus();
     onFocus && onFocus();
 
-    this.focus();
+    if (!list && !loading) {
+      this.requestListData(true, true);
+    }
   };
 
-  // handleFocus = () => {
-  //   const { onFocus, doNotOpenOnFocus, autoFocus } = this.props;
-
-  //   console.log('RawList handle focus')
-
-  //   if (!doNotOpenOnFocus && !autoFocus) {
-  //     this.openDropdownList(true);
-  //   } else {
-  //     this.focus();
-  //   }
-
-  //   onFocus && onFocus();
-  // };
-
   focus = () => {
-    // if (this.rawList && this.rawList.focus) {
-    //   this.rawList.focus();
-    // }
-
     this.setState({
       listFocused: true,
     });
   };
 
-  // focus = () => {
-  //   if (this.state.isOpened) {
-  //   // console.log('RawList focus')
-  //     if (this.dropdown && this.dropdown.focus) {
-  //       this.dropdown.focus();
-  //     }
-
-  //     this.setState({
-  //       isFocused: true,
-  //     });
-  //   }
-  // };
-
   handleBlur = () => {
     const { onHandleBlur } = this.props;
 
     this.setState(
-    {
-      listFocused: false,
-    }, () => {
-      onHandleBlur && onHandleBlur();
-    });
+      {
+        listFocused: false,
+      },
+      () => {
+        onHandleBlur && onHandleBlur();
+      }
+    );
   };
-
-  // blur = () => {
-  //   if (this.state.isFocused) {
-  //     if (this.dropdown && this.dropdown.blur) {
-  //       this.dropdown.blur();
-  //     }
-
-  //     this.setState({
-  //       isFocused: false,
-  //     });
-  //   }
-  // };
 
   closeDropdownList = () => {
     this.setState({
       listToggled: false,
     });
-
-    this.handleBlur();
   };
 
   activate = () => {
-    const { list } = this.state;
+    const { list, listToggled } = this.state;
 
-    console.log('activate !!: ', list)
-
-    // if (list && list.length > 1) {
-      // if (this.rawList) {
-      //   this.rawList.focus();
-      //   this.rawList.openDropdownList();
-      // }
+    if (list && list.size > 1 && !listToggled) {
       this.setState({
         listToggled: true,
       });
-    // }
+    }
   };
 
   handleSelect = option => {
@@ -304,7 +243,6 @@ class List extends Component {
         }
 
         if (isModal) {
-          console.log('List handleSelect isModal !')
           this.setState({
             autoFocus: false,
           });
@@ -324,7 +262,7 @@ class List extends Component {
         {...this.props}
         autoFocus={autoFocus}
         loading={loading}
-        list={list || []}
+        list={list || List()}
         selected={lookupList ? selectedItem : selected}
         isToggled={listToggled}
         isFocused={listFocused}
@@ -342,11 +280,11 @@ class List extends Component {
  * doNotOpenOnFocus - by default we expect user to press space/arrow down when the dropdown field is focused ho
  *                    show the dropdown with options
  */
-// RawList.defaultProps = {
-//   doNotOpenOnFocus: true,
-// };
+ListWidget.defaultProps = {
+  doNotOpenOnFocus: true,
+};
 
-List.propTypes = {
+ListWidget.propTypes = {
   filter: PropTypes.object.isRequired,
   dispatch: PropTypes.func.isRequired,
   properties: PropTypes.array,
@@ -367,7 +305,10 @@ List.propTypes = {
   isModal: PropTypes.bool,
   autoFocus: PropTypes.bool,
   selected: PropTypes.object,
+  initialFocus: PropTypes.any,
+  doNotOpenOnFocus: PropTypes.bool,
   setNextProperty: PropTypes.func,
+  disableAutoFocus: PropTypes.func,
   enableAutofocus: PropTypes.func,
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
@@ -378,4 +319,6 @@ const mapStateToProps = state => ({
   filter: state.windowHandler.filter,
 });
 
-export default connect(mapStateToProps, false, false, { withRef: true })(List);
+export default connect(mapStateToProps, false, false, { withRef: true })(
+  ListWidget
+);

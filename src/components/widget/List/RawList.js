@@ -1,51 +1,12 @@
-import React, { Component, PureComponent } from 'react';
+import React, { PureComponent } from 'react';
+import { List } from 'immutable';
 import onClickOutside from 'react-onclickoutside';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
-export class ListDropdown extends Component {
-  static propTypes = {
-    isListEmpty: PropTypes.bool,
-    offsetWidth: PropTypes.number,
-    loading: PropTypes.bool,
-    children: PropTypes.any,
-  };
-
-  render() {
-    const { isListEmpty, offsetWidth, loading, children } = this.props;
-
-    return (
-      <div
-        className="input-dropdown-list"
-        style={{ width: `${offsetWidth}px` }}
-      >
-        {isListEmpty &&
-          loading === false && (
-            <div className="input-dropdown-list-header">
-              There is no choice available
-            </div>
-          )}
-        {loading &&
-          isListEmpty && (
-            <div className="input-dropdown-list-header">
-              <ReactCSSTransitionGroup
-                transitionName="rotate"
-                transitionEnterTimeout={1000}
-                transitionLeaveTimeout={1000}
-              >
-                <div className="rotate icon-rotate">
-                  <i className="meta-icon-settings" />
-                </div>
-              </ReactCSSTransitionGroup>
-            </div>
-          )}
-        {children}
-      </div>
-    );
-  }
-}
+import RawListDropdown from './RawListDropdown';
 
 class RawList extends PureComponent {
   constructor(props) {
@@ -53,7 +14,7 @@ class RawList extends PureComponent {
 
     this.state = {
       selected: props.selected || null,
-      dropdownList: props.list || [],
+      dropdownList: props.list,
     };
   }
 
@@ -65,49 +26,57 @@ class RawList extends PureComponent {
     window.removeEventListener('keydown', this.handleTab);
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    const { list, mandatory, defaultValue, selected, autoFocus,
-      onOpenDropdown, doNotOpenOnFocus } = this.props;
+  componentDidUpdate(prevProps) {
+    const {
+      list,
+      mandatory,
+      defaultValue,
+      selected,
+      autoFocus,
+      emptyText,
+    } = this.props;
 
-    //select
-    // TODO: Use Immutable structure here
-    if (prevProps.list.length !== list.length) {
-      let dropdownList = [...list];
+    if (prevProps.list !== list) {
+      let dropdownList = List(list);
 
-      if (!mandatory && defaultValue) {
+      if (!mandatory && emptyText) {
         dropdownList.unshift({
-          caption: defaultValue.caption,
+          caption: emptyText,
           key: null,
         });
       }
 
-      if (dropdownList.length > 0) {
-        let selectedValue = false;
+      if (dropdownList.size > 0) {
+        let idx = -1;
 
-        if (!selected && dropdownList.length) {
-          selectedValue = {
-            selected: dropdownList[0],
-          };
+        if (defaultValue) {
+          idx = dropdownList.findIndex(
+            item => item.caption === defaultValue.caption
+          );
         }
 
-        this.setState({
-          ...selectedValue,
-          dropdownList,
-        });
+        const selectedValue = {
+          selected: dropdownList.get(idx),
+        };
+
+        this.setState(
+          {
+            ...selectedValue,
+            dropdownList,
+          },
+          () => {
+            autoFocus && this.dropdown.focus();
+          }
+        );
+      } else {
+        // list changed so we reset selected value no matter what
+        this.handleSwitch(null);
       }
     }
 
+    // for lookups
     if (prevProps.selected !== selected) {
       this.handleSwitch(selected);
-    }
-
-    //open if selection changed via props
-    if (autoFocus) {
-      if (prevState.selected !== this.state.selected) {
-        if (!doNotOpenOnFocus && this.state.dropdownList.length > 1) {
-          onOpenDropdown();
-        }
-      }
     }
 
     this.checkIfDropDownListOutOfFilter();
@@ -134,10 +103,11 @@ class RawList extends PureComponent {
   };
 
   handleClickOutside() {
-    const { isToggled, onCloseDropdown } = this.props;
+    const { isToggled, onCloseDropdown, onBlur } = this.props;
 
     if (isToggled) {
       onCloseDropdown();
+      onBlur();
     }
   }
 
@@ -146,9 +116,9 @@ class RawList extends PureComponent {
    * on focus.
    */
   handleClick = () => {
-    const { onOpenDropdown, onFocus } = this.props;
+    const { onOpenDropdown } = this.props;
 
-    onFocus();
+    this.dropdown.focus();
     onOpenDropdown();
   };
 
@@ -191,7 +161,6 @@ class RawList extends PureComponent {
           break;
         case 'ArrowDown':
           e.preventDefault();
-
           if (!isToggled) {
             onOpenDropdown();
           } else {
@@ -216,26 +185,38 @@ class RawList extends PureComponent {
           onCloseDropdown();
           break;
         case 'Tab':
-          list.length === 0 && !readonly && onSelect(null);
+          list.size === 0 && !readonly && onSelect(null);
           break;
       }
     }
   };
 
-  handleTab = ({ key }) => {
-    const { isToggled, onCloseDropdown } = this.props;
+  handleTab = e => {
+    const { isToggled, isFocused, onCloseDropdown } = this.props;
 
-    if (key === 'Tab' && isToggled) {
-      onCloseDropdown();
+    if (e.key === 'Tab' && isFocused) {
+      if (isToggled) {
+        e.preventDefault();
+        onCloseDropdown();
+      } else {
+        this.handleBlur();
+      }
     }
   };
 
+  handleBlur() {
+    const { onBlur } = this.props;
+
+    this.dropdown.blur();
+    onBlur();
+  }
+
   navigateToAlphanumeric = char => {
-    const { isToggled, onOpenDropdown, onFocus } = this.props;
+    const { isToggled, onOpenDropdown } = this.props;
     const { selected, dropdownList } = this.state;
 
     if (!isToggled) {
-      onFocus();
+      this.dropdown.focus();
       onOpenDropdown();
     }
 
@@ -244,7 +225,8 @@ class RawList extends PureComponent {
     );
 
     const selectedIndex = items.indexOf(selected);
-    const item = selectedIndex > -1 ? items[selectedIndex + 1] : items[0];
+    const item =
+      selectedIndex > -1 ? items.get(selectedIndex + 1) : items.get(0);
 
     if (!item) {
       return;
@@ -254,11 +236,11 @@ class RawList extends PureComponent {
   };
 
   navigate = up => {
-    const { isToggled, onOpenDropdown, onFocus } = this.props;
+    const { isToggled, onOpenDropdown } = this.props;
     const { selected, dropdownList } = this.state;
 
     if (!isToggled) {
-      onFocus();
+      this.dropdown.focus();
       onOpenDropdown();
     }
 
@@ -274,8 +256,8 @@ class RawList extends PureComponent {
 
     this.setState({
       selected:
-        next >= 0 && next <= dropdownList.length - 1
-          ? dropdownList[next]
+        next >= 0 && next <= dropdownList.size - 1
+          ? dropdownList.get(next)
           : selected,
     });
   };
@@ -350,7 +332,7 @@ class RawList extends PureComponent {
 
     let value = '';
     let placeholder = '';
-    const isListEmpty = list.length === 0;
+    const isListEmpty = list.size === 0;
 
     if (typeof defaultValue === 'string') {
       placeholder = defaultValue;
@@ -434,14 +416,14 @@ class RawList extends PureComponent {
           </div>
           {isFocused &&
             isToggled && (
-              <ListDropdown
+              <RawListDropdown
                 ref={c => (this.tetheredList = c)}
                 isListEmpty={isListEmpty}
                 offsetWidth={this.dropdown.offsetWidth}
                 loading={loading}
               >
                 {this.renderOptions()}
-              </ListDropdown>
+              </RawListDropdown>
             )}
         </TetherComponent>
       </div>
@@ -452,7 +434,8 @@ class RawList extends PureComponent {
 RawList.propTypes = {
   filter: PropTypes.object.isRequired,
   readonly: PropTypes.bool,
-  list: PropTypes.array,
+  // Immutable List
+  list: PropTypes.object,
   rank: PropTypes.any,
   defaultValue: PropTypes.any,
   selected: PropTypes.any,

@@ -80,7 +80,8 @@
     "stylelint": "^7.9.0",
     "webpack": "~1.13.0",
     "webpack-dev-server": "~1.12.1",
-    "webpack-node-externals": "^1.6.0"
+    "webpack-node-externals": "^1.6.0",
+    "why-did-you-update": "^0.1.1"
   },
   "dependencies": {
     "axios": "^0.16.2",
@@ -93,6 +94,7 @@
     "d3": "4.10.0",
     "file-loader": "~0.8.5",
     "immutability-helper": "^2.1.2",
+    "immutable": "^3.8.2",
     "intro.js": "^2.7.0",
     "intro.js-react": "^0.1.5",
     "lodash": "^4.17.4",
