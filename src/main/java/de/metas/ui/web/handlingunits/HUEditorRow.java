@@ -163,7 +163,7 @@ public final class HUEditorRow implements IViewRow
 	private transient String _summary; // lazy
 	private transient Map<String, Object> _values; // lazy
 
-	private HUEditorRow(final Builder builder)
+	private HUEditorRow(@NonNull final Builder builder)
 	{
 		documentPath = builder.getDocumentPath();
 		rowId = builder.getRowId();
