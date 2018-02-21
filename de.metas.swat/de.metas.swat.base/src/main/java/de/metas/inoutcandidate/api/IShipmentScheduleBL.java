@@ -34,7 +34,6 @@ import org.compiere.util.Util.ArrayKey;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
-import de.metas.inoutcandidate.spi.IShipmentScheduleQtyUpdateListener;
 import de.metas.storage.IStorageQuery;
 
 public interface IShipmentScheduleBL extends ISingletonService
@@ -63,7 +62,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 */
 	void updateSchedules(
 			Properties ctx,
-			List<OlAndSched> olsAndScheds, 
+			List<OlAndSched> olsAndScheds,
 			String trxName);
 
 	void registerCandidateProcessor(IShipmentSchedulesAfterFirstPassUpdater processor);
@@ -96,7 +95,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	/**
 	 * Update the given {@code sched}'s delivery and preparation date from its underlying document (orderline etc).
-	 * 
+	 *
 	 * @param sched
 	 */
 	void updatePreparationAndDeliveryDate(I_M_ShipmentSchedule sched);
@@ -144,16 +143,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	BigDecimal updateQtyOrdered(I_M_ShipmentSchedule shipmentSchedule);
 
 	/**
-	 * Registers <code>ShipmentScheduleQtyUpdateListener</code> for given table name.
-	 *
-	 * This listener will be called when an update on delivery quantity is needed in shipmentSchedule
-	 *
-	 * @param tableName
-	 * @param listener
-	 */
-	void addShipmentScheduleQtyUpdateListener(final IShipmentScheduleQtyUpdateListener listener);
-
-	/**
 	 * Close the given Shipment Schedule.
 	 *
 	 * Closing a shipment schedule means overriding its QtyOrdered to the qty which was already delivered.
@@ -164,7 +153,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	/**
 	 * Creates a storage query for the given {@code shipmentSchedule}.
-	 * 
+	 *
 	 * @param sched
 	 * @param considerAttributes {@code true} if the query shall be strict with respect to the given {@code shipmentSchedule}'s ASI.
 	 * @return query
@@ -173,7 +162,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	/**
 	 * Reopen the closed shipment schedule given as parameter
-	 * 
+	 *
 	 * @param shipmentSchedule
 	 */
 	void openShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule);

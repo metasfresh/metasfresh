@@ -147,16 +147,16 @@ public class DDOrderLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public BigDecimal getQtyPacks()
+	public BigDecimal getQtyTU()
 	{
 		return ddOrderLine.getQtyEnteredTU();
 	}
 
 	@Override
-	public void setQtyPacks(final BigDecimal qtyPacks)
+	public void setQtyTU(final BigDecimal qtyPacks)
 	{
 		ddOrderLine.setQtyEnteredTU(qtyPacks);
-		values.setQtyPacks(qtyPacks);
+		values.setQtyTU(qtyPacks);
 	}
 
 	@Override

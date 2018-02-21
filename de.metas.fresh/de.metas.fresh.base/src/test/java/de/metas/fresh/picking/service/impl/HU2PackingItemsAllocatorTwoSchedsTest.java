@@ -43,6 +43,7 @@ import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.impl.HU2PackingItemsAllocator;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -54,12 +55,12 @@ import de.metas.picking.service.impl.HU2PackingItemsAllocator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -69,7 +70,7 @@ import de.metas.picking.service.impl.HU2PackingItemsAllocator;
 /**
  * Tests the behavior of {@link HU2PackingItemsAllocator} with two {@link IPackingItem}s that contain at least two {@link I_M_ShipmentSchedule}.
  * Note: if these tests fail, it makes sense to first verify that all tests in {@link HU2PackingItemsAllocatorTest} works.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -110,22 +111,22 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 
 	private void setupContext(final int... qtysToDeliver)
 	{
-		final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys = new LinkedHashMap<>(); // using LinkedHashMap because we want the ordering to be "stable".
+		final Map<I_M_ShipmentSchedule, Quantity> scheds2Qtys = new LinkedHashMap<>(); // using LinkedHashMap because we want the ordering to be "stable".
 		//
 		// Create Items to Pack
 		int qtyToDeliverSum = 0;
 		for (final int qtyToDeliver : qtysToDeliver)
 		{
-			BigDecimal qtyToDeliverBD = new BigDecimal(qtyToDeliver);
+			final BigDecimal qtyToDeliverBD = new BigDecimal(qtyToDeliver);
 			final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliverBD, BigDecimal.ZERO);
 
-			scheds2Qtys.put(schedule, qtyToDeliverBD);
+			scheds2Qtys.put(schedule, Quantity.of(qtyToDeliverBD, uomEach));
 			qtyToDeliverSum += qtyToDeliver;
 		}
 		this.itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
 		// Validate
 
-		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
+		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getQty(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
 
 		//
 		// Create Packing Items
@@ -141,7 +142,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 
 		//
 		// Validate initial context state
-		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
+		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getQty(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
 		assertTrue("We shall have unpacked items", packingItems.hasUnpackedItems());
 		assertFalse("We shall NOT have packed items", packingItems.hasPackedItems());
 
@@ -162,9 +163,9 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 	 * <li>allocate them</li>
 	 * <li>Result: the TU with quantity 11 is partially allocated to the both schedules; The TU with quantity 10 is fully allocate to the schedule with quantity 11</li>
 	 * </ul>
-	 * 
+	 *
 	 * Note that this reflects the current behavior..not necessarily the desired behavior..
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1712
 	 */
 	@Test
@@ -180,7 +181,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 
 		// get a reference to the two scheds now; the allocation() method might remove them from the packing item later on.
 		final List<I_M_ShipmentSchedule> shipmentSchedules = itemToPack.getShipmentSchedules();
-		
+
 		final I_M_ShipmentSchedule shipmentScheduleWithEleven = shipmentSchedules.get(0);
 		assertThat(shipmentScheduleWithEleven.getQtyToDeliver(), comparesEqualTo(huDefIFCOWithEleven.getQty()));
 
@@ -188,7 +189,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		assertThat(shipmentScheduleWithTen.getQtyToDeliver(), comparesEqualTo(huDefIFCOWithTen.getQty()));
 
 		// packing item guards
-		final Map<I_M_ShipmentSchedule, BigDecimal> qtys = itemToPack.getQtys();
+		final Map<I_M_ShipmentSchedule, Quantity> qtys = itemToPack.getQtys();
 		assertThat("Unexpected qtys.size(); qtys=" + qtys, qtys.size(), is(2));
 		assertThat(shipmentSchedules.size(), is(2));
 
@@ -251,7 +252,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		final List<I_M_ShipmentSchedule> shipmentSchedules = itemToPack.getShipmentSchedules();
 
 		// packing item guards
-		final Map<I_M_ShipmentSchedule, BigDecimal> qtys = itemToPack.getQtys();
+		final Map<I_M_ShipmentSchedule, Quantity> qtys = itemToPack.getQtys();
 		assertThat("Unexpected qtys.size(); qtys=" + qtys, qtys.size(), is(2));
 		assertThat(shipmentSchedules.size(), is(2));
 		itemToPack.getShipmentSchedules();

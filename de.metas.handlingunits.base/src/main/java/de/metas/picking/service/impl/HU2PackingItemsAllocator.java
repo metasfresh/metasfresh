@@ -1,28 +1,5 @@
 package de.metas.picking.service.impl;
 
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Properties;
@@ -30,6 +7,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -48,7 +26,6 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.impl.AbstractShipmentScheduleQtyPickedBuilder;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
@@ -58,20 +35,21 @@ import de.metas.picking.service.IPackingContext;
 import de.metas.picking.service.IPackingHandler;
 import de.metas.picking.service.IPackingService;
 import de.metas.picking.service.PackingHandlerAdapter;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /**
  * Class responsible for allocating given HUs to underlying shipment schedules from {@link IFreshPackingItem}.
- * 
+ *
  * As a result of an allocation, you shall get:
  * <ul>
  * <li>From {@link #getItemToPack()}'s Qty, the HU's Qtys will be subtracted
  * <li>to {@link IPackingContext#getPackingItemsMap()} we will have newly packed items and also current Item to Pack
  * <li>{@link I_M_ShipmentSchedule_QtyPicked} records will be created (shipment schedules are taken from Item to Pack)
  * </ul>
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedBuilder
 {
@@ -153,14 +131,16 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 			return;
 		}
 
-		final BigDecimal qtyToPackSrc = vhuProductStorage.getQty();
-		final I_C_UOM qtyToPackSrcUOM = vhuProductStorage.getC_UOM();
+		final Quantity qtyToPackSrc = Quantity.of(
+				vhuProductStorage.getQty(),
+				vhuProductStorage.getC_UOM());
 
-		//
 		final IFreshPackingItem itemToPack = getItemToPack();
 		final I_C_UOM qtyToPackUOM = itemToPack.getC_UOM();
-		BigDecimal qtyToPack = uomConversionBL.convertQty(product, qtyToPackSrc, qtyToPackSrcUOM, qtyToPackUOM);
-		qtyToPack = adjustQtyToPackConsideringRemaining(qtyToPack, qtyToPackUOM);
+		Quantity qtyToPack = uomConversionBL.convertQuantityTo(qtyToPackSrc, IUOMConversionContext.of(product), qtyToPackUOM);
+
+		//
+		qtyToPack = adjustQtyToPackConsideringRemaining(qtyToPack);
 		if (qtyToPack.signum() <= 0)
 		{
 			// nothing to pack here
@@ -178,12 +158,11 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 			{
 				for (final I_M_ShipmentSchedule sched : itemPacked.getShipmentSchedules())
 				{
-					final BigDecimal schedQty = itemPacked.getQtyForSched(sched); // qty to pack, available on current shipment schedule
+					final Quantity schedQty = itemPacked.getQtyForSched(sched); // qty to pack, available on current shipment schedule
 					if (schedQty.signum() != 0)
 					{
 						// gh #1712: only create M_ShipmentSchedule_QtyPicked etc etc for 'sched' if there is an actual quantity.
-						final I_C_UOM uom = itemPacked.getC_UOM();
-						onQtyAllocated(sched, schedQty, uom, vhu);
+						onQtyAllocated(sched, schedQty, vhu);
 					}
 				}
 			}
@@ -201,7 +180,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 			return;
 		}
 
-		final BigDecimal qtyToPack = getQtyToPackRemaining(); // in itemToPack's UOM
+		final Quantity qtyToPack = getQtyToPackRemaining();
 		if (qtyToPack.signum() <= 0)
 		{
 			return;
@@ -235,23 +214,24 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 		packingService.packItem(packingContext, itemToPack, qtyToPack, itemPackedProcessor);
 	}
 
-	private void transferQtyToTargetHU(final Map<I_M_ShipmentSchedule, BigDecimal> schedules2qty)
+	private void transferQtyToTargetHU(final Map<I_M_ShipmentSchedule, Quantity> schedules2qty)
 	{
-		for (final Map.Entry<I_M_ShipmentSchedule, BigDecimal> e : schedules2qty.entrySet())
+		for (final Map.Entry<I_M_ShipmentSchedule, Quantity> e : schedules2qty.entrySet())
 		{
 			final I_M_ShipmentSchedule schedule = e.getKey();
-			final BigDecimal qty = e.getValue();
-			final I_C_UOM uom = Services.get(IShipmentScheduleBL.class).getUomOfProduct(schedule);
+			final Quantity qty = e.getValue();
 
-			transferQtyToTargetHU(schedule, qty, uom);
+			transferQtyToTargetHU(schedule, qty);
 		}
 	}
 
-	private void transferQtyToTargetHU(final I_M_ShipmentSchedule schedule, final BigDecimal qty, final I_C_UOM uom)
+	private void transferQtyToTargetHU(
+			final I_M_ShipmentSchedule schedule,
+			final Quantity qty)
 	{
 		//
 		// Allocation Request
-		final IAllocationRequest request = createShipmentScheduleAllocationRequest(schedule, qty, uom);
+		final IAllocationRequest request = createShipmentScheduleAllocationRequest(schedule, qty);
 
 		//
 		// Allocation Source

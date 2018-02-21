@@ -13,11 +13,11 @@ package de.metas.handlingunits.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -77,21 +77,11 @@ public interface I_M_InOutLine extends de.metas.materialtracking.model.I_M_InOut
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Override() throws RuntimeException;
 	// @formatter:on
 
-
-
 	// @formatter:off
 		public static final String COLUMNNAME_M_HU_LUTU_Configuration_ID = "M_HU_LUTU_Configuration_ID";
 		public void setM_HU_LUTU_Configuration_ID(int M_HU_LUTU_Configuration_ID);
 		public void setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration M_HU_LUTU_Configuration);
 		public int getM_HU_LUTU_Configuration_ID();
 		public I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration();
-		// @formatter:on
-
-	// TODO
-		// @formatter:off
-		// task: http://dewiki908/mediawiki/index.php/08228_Packvorschrift_%C3%A4nderbar_in_Lieferschen_plus_Recalc_plus_Abweichende_Menge_plus_Prozess_plus_Rolle_Spedition
-		public static final String COLUMNNAME_IsHUPrepared = "IsHUPrepared";
-		public void setIsHUPrepared(boolean IsHUPrepared);
-		public boolean IsHUPrepared();
 		// @formatter:on
 }
