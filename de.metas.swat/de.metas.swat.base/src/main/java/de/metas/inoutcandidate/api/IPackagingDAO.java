@@ -1,9 +1,12 @@
 package de.metas.inoutcandidate.api;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.util.ISingletonService;
+
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /**
  * Packaging related DAO
@@ -36,4 +39,12 @@ public interface IPackagingDAO extends ISingletonService
 	 * @return
 	 */
 	List<IPackageable> retrievePackableLines(IPackageableQuery query);
+
+	/**
+	 * The QtyPickedPlanned is the qty that was picked, but not yet processed.
+	 * 
+	 * @param sched
+	 * @return The current PtyPickedPlanned for the given schedule
+	 */
+	BigDecimal retrieveQtyPickedPlanned(I_M_ShipmentSchedule sched);
 }
