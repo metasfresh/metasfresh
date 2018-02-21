@@ -211,11 +211,6 @@ public class AddQtyToHUCommand
 		final BigDecimal qtyPickedPlanned = Services.get(IPackagingDAO.class).retrieveQtyPickedPlanned(shipmentSchedule);
 		final BigDecimal qtytoDeliver =  shipmentSchedule.getQtyToDeliver().subtract(qtyPickedPlanned); 
 
-		if (qtyCU.compareTo(qtytoDeliver) > 0)
-		{
-			return true;
-		}
-
-		return false;
+		return qtyCU.compareTo(qtytoDeliver) 
 	}
 }
